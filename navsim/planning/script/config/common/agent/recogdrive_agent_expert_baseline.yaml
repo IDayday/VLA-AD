@@ -28,8 +28,8 @@ allow_dummy_expert_cache: false
 num_jepa_tokens: 4
 num_vggt_tokens: 4
 allow_expert_target_features: false
-use_jepa: true
-use_vggt: true
+use_jepa: false
+use_vggt: false
 jepa_dim: 0
 vggt_dim: 0
 expert_dropout: 0.0

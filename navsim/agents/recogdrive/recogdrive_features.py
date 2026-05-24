@@ -1,19 +1,166 @@
-from typing import Dict, Optional
-import torch
-import numpy as np
-import gzip
-import pickle
-from PIL import Image
+from __future__ import annotations
 
-from navsim.agents.abstract_agent import AgentInput
+from pathlib import Path
+from typing import Any, Dict, List, Optional, TYPE_CHECKING, Tuple
+import json
+import os
+import warnings
+import torch
+
 from navsim.planning.training.abstract_feature_target_builder import AbstractFeatureBuilder, AbstractTargetBuilder
-from navsim.common.dataclasses import Scene, Trajectory
-from nuplan.planning.simulation.trajectory.trajectory_sampling import TrajectorySampling
-from .recogdrive_backbone import RecogDriveBackbone
-from .utils.internvl_preprocess import load_image
+from .expert_backends import (
+    DummyExpertBackend,
+    EXPERT_ALL_KEYS,
+    EXPERT_TARGET_KEYS,
+    build_dummy_expert_backend,
+    normalize_expert_feature_source,
+)
+
+if TYPE_CHECKING:
+    from navsim.common.dataclasses import AgentInput, Scene
+    from nuplan.planning.simulation.trajectory.trajectory_sampling import TrajectorySampling
+
+try:
+    from safetensors.torch import load_file as load_safetensors_file
+except ImportError:  # safetensors is optional in this repo.
+    load_safetensors_file = None
+
+EXPERT_FEATURE_KEYS: Tuple[str, ...] = EXPERT_ALL_KEYS
+EXPERT_TARGET_FEATURE_KEYS: Tuple[str, ...] = EXPERT_TARGET_KEYS
+DUMMY_EXPERT_CACHE_WARNING = "Dummy cache for computation smoke tests only. Do not use for real training."
 
 def format_number(n, decimal_places=2):
     return f"{n:+.{decimal_places}f}" if abs(round(n, decimal_places)) > 1e-2 else "0.0"
+
+
+def stack_optional_expert_features(features: Dict[str, torch.Tensor], features_list: List[Dict[str, torch.Tensor]]) -> None:
+    """Stacks optional expert features into an existing collated feature dict."""
+    for key in EXPERT_FEATURE_KEYS:
+        present = [key in sample_features for sample_features in features_list]
+        if not any(present):
+            continue
+        if not all(present):
+            raise KeyError(
+                f"Expert feature '{key}' is present for only part of the batch. "
+                "Regenerate caches or disable use_expert_features."
+        )
+        features[key] = torch.stack([sample_features[key] for sample_features in features_list], dim=0).cpu()
+
+
+def _as_bool(value: Any) -> bool:
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "y", "on"}
+    return bool(value)
+
+
+def load_expert_cache_metadata(expert_cache_dir: Optional[str | Path]) -> Optional[Dict[str, Any]]:
+    """Loads expert-cache metadata.json when present."""
+    if not expert_cache_dir:
+        return None
+
+    metadata_path = Path(expert_cache_dir) / "metadata.json"
+    if not metadata_path.is_file():
+        return None
+
+    with metadata_path.open("r", encoding="utf-8") as f:
+        metadata = json.load(f)
+    if not isinstance(metadata, dict):
+        raise TypeError(f"Expert cache metadata {metadata_path} must contain a JSON object.")
+    return metadata
+
+
+def is_dummy_expert_cache(expert_cache_dir: Optional[str | Path]) -> bool:
+    """Returns True when expert_cache_dir/metadata.json declares is_dummy=true."""
+    metadata = load_expert_cache_metadata(expert_cache_dir)
+    return bool(metadata and metadata.get("is_dummy") is True)
+
+
+def assert_real_expert_cache_for_training(
+    expert_cache_dir: Optional[str | Path],
+    *,
+    use_expert_features: bool,
+    allow_dummy_expert_cache: bool = False,
+    expert_feature_source: str = "none",
+) -> None:
+    """Fails training early if a dummy expert cache is used without an explicit override."""
+    if not use_expert_features:
+        return
+
+    env_allows_dummy = _as_bool(os.environ.get("ALLOW_DUMMY_EXPERT_CACHE", False))
+    dummy_allowed = _as_bool(allow_dummy_expert_cache) or env_allows_dummy
+    if expert_feature_source == "dummy":
+        if dummy_allowed:
+            warnings.warn(
+                f"Using expert_feature_source='dummy' for training. {DUMMY_EXPERT_CACHE_WARNING}",
+                RuntimeWarning,
+            )
+            return
+        raise RuntimeError(
+            "Refusing to train with expert_feature_source='dummy'. "
+            f"{DUMMY_EXPERT_CACHE_WARNING} Set allow_dummy_expert_cache=true "
+            "or ALLOW_DUMMY_EXPERT_CACHE=true only for computation smoke tests."
+        )
+
+    if not expert_cache_dir or not is_dummy_expert_cache(expert_cache_dir):
+        return
+
+    if dummy_allowed:
+        warnings.warn(
+            f"Using dummy expert cache for training: {expert_cache_dir}. {DUMMY_EXPERT_CACHE_WARNING}",
+            RuntimeWarning,
+        )
+        return
+
+    raise RuntimeError(
+        f"Refusing to train with dummy expert cache: {expert_cache_dir}. "
+        f"{DUMMY_EXPERT_CACHE_WARNING} Set allow_dummy_expert_cache=true "
+        "or ALLOW_DUMMY_EXPERT_CACHE=true only for computation smoke tests."
+    )
+
+
+def warn_if_dummy_expert_cache(
+    expert_cache_dir: Optional[str | Path],
+    *,
+    use_expert_features: bool,
+    context: str = "evaluation",
+) -> None:
+    """Warns loudly when evaluation/inference is pointed at a dummy expert cache."""
+    if use_expert_features and expert_cache_dir and is_dummy_expert_cache(expert_cache_dir):
+        warnings.warn(
+            f"{context} is using dummy expert cache: {expert_cache_dir}. "
+            f"{DUMMY_EXPERT_CACHE_WARNING}",
+            RuntimeWarning,
+        )
+
+
+def load_expert_cache_sample(
+    expert_cache_dir: str | Path,
+    sample_token: str,
+    *,
+    log_name: str = "",
+    num_jepa_tokens: int = 4,
+    num_vggt_tokens: int = 4,
+    allow_expert_target_features: bool = True,
+) -> Dict[str, torch.Tensor]:
+    """Loads one cached expert sample by token, including flat dummy-cache files.
+
+    The loader uses the same path candidates and validation as ReCogDriveFeatureBuilder.
+    For the dummy cache generated by scripts/create_dummy_expert_cache.py, call:
+
+        load_expert_cache_sample(cache_dir, "sample_000000")
+    """
+    builder = ReCogDriveFeatureBuilder(
+        cache_hidden_state=False,
+        use_expert_features=True,
+        expert_feature_source="cache",
+        expert_cache_dir=str(expert_cache_dir),
+        num_jepa_tokens=num_jepa_tokens,
+        num_vggt_tokens=num_vggt_tokens,
+        allow_expert_target_features=allow_expert_target_features,
+    )
+    return builder._load_expert_features(log_name, sample_token)
 
 
 class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
@@ -22,7 +169,18 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
                  model_type: Optional[str] = None,
                  checkpoint_path: Optional[str] = None,
                  device: str = "cuda",
-                 cache_mode: bool = False, ):
+                 cache_mode: bool = False,
+                 use_expert_features: bool = False,
+                 expert_feature_source: str = "none",
+                 expert_cache_dir: Optional[str] = None,
+                 num_jepa_tokens: int = 4,
+                 num_vggt_tokens: int = 4,
+                 allow_expert_target_features: bool = False,
+                 use_jepa: bool = True,
+                 use_vggt: bool = True,
+                 jepa_dim: int = 768,
+                 vggt_dim: int = 2048,
+                 dummy_expert_seed: int = 0, ):
         """
         Initializes the feature builder.
 
@@ -40,10 +198,44 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
         self.cache_hidden_state = cache_hidden_state
         self.backbone = None
         self.cache_mode = cache_mode
+        self.device = torch.device(device)
+        self.use_expert_features = use_expert_features
+        self.expert_feature_source = normalize_expert_feature_source(
+            expert_feature_source,
+            use_expert_features=use_expert_features,
+            expert_cache_dir=expert_cache_dir,
+        )
+        self.expert_cache_dir = Path(expert_cache_dir) if expert_cache_dir else None
+        self.num_jepa_tokens = num_jepa_tokens
+        self.num_vggt_tokens = num_vggt_tokens
+        self.allow_expert_target_features = allow_expert_target_features
+        self.use_jepa = use_jepa
+        self.use_vggt = use_vggt
+        self.jepa_dim = jepa_dim
+        self.vggt_dim = vggt_dim
+        self.dummy_expert_seed = dummy_expert_seed
+        self._dummy_expert_backend: Optional[DummyExpertBackend] = None
+
+        if self.use_expert_features and self.expert_feature_source == "cache" and self.expert_cache_dir is None:
+            raise ValueError("use_expert_features=True requires expert_cache_dir to be set.")
+        if self.use_expert_features and self.expert_feature_source == "real":
+            raise NotImplementedError("expert_feature_source='real' is reserved for future JEPA/VGGT teacher integration.")
+        if self.use_expert_features and self.expert_feature_source == "dummy":
+            self._dummy_expert_backend = build_dummy_expert_backend(
+                num_jepa_tokens=self.num_jepa_tokens,
+                num_vggt_tokens=self.num_vggt_tokens,
+                jepa_dim=self.jepa_dim,
+                vggt_dim=self.vggt_dim,
+                use_jepa=self.use_jepa,
+                use_vggt=self.use_vggt,
+                seed=self.dummy_expert_seed,
+            )
 
         if self.cache_hidden_state and self.cache_mode:
             if not model_type or not checkpoint_path:
                 raise ValueError("In online mode (cache_hidden_state=True), `model_type` and `checkpoint_path` must be provided.")
+            from .recogdrive_backbone import RecogDriveBackbone
+
             self.backbone = RecogDriveBackbone(
                 model_type=model_type,
                 checkpoint_path=checkpoint_path,
@@ -52,6 +244,182 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
 
     def get_unique_name(self) -> str:
         return "internvl_feature"
+
+    def _expert_cache_candidates(self, log_name: str, token: str) -> List[Path]:
+        """
+        Returns candidate cache files using the NAVSIM cache convention.
+
+        Canonical layout:
+            expert_cache_dir / log_name / token / expert_features.pt
+
+        This mirrors the existing ReCogDrive feature-cache layout:
+            cache_path / log_name / token / internvl_feature.gz
+
+        Safetensors files are used only when safetensors is importable; .pt files
+        are always supported.
+        """
+        assert self.expert_cache_dir is not None
+
+        base_dir = self.expert_cache_dir / log_name / token
+        supported_suffixes = [".pt"]
+        if load_safetensors_file is not None:
+            supported_suffixes.insert(0, ".safetensors")
+
+        candidates: List[Path] = []
+        for suffix in supported_suffixes:
+            candidates.extend([
+                base_dir / f"expert_features{suffix}",
+                base_dir / f"expert_feature{suffix}",
+                base_dir / f"features{suffix}",
+                self.expert_cache_dir / log_name / f"{token}{suffix}",
+                self.expert_cache_dir / f"{token}{suffix}",
+            ])
+        return candidates
+
+    def _resolve_expert_cache_path(self, log_name: str, token: str) -> Path:
+        candidates = self._expert_cache_candidates(log_name, token)
+        for path in candidates:
+            if path.is_file():
+                return path
+
+        unsupported_safetensors: List[Path] = []
+        if load_safetensors_file is None and self.expert_cache_dir is not None:
+            unsupported_safetensors = [
+                path.with_suffix(".safetensors")
+                for path in candidates
+                if path.suffix == ".pt" and path.with_suffix(".safetensors").is_file()
+            ]
+
+        message = (
+            "Expert feature cache not found for "
+            f"log_name='{log_name}', token='{token}'. Tried: "
+            + ", ".join(str(path) for path in candidates)
+        )
+        if unsupported_safetensors:
+            message += (
+                ". Found safetensors cache files but safetensors is not installed: "
+                + ", ".join(str(path) for path in unsupported_safetensors)
+            )
+        raise FileNotFoundError(message)
+
+    def _cache_identity_from_agent_input(self, agent_input: AgentInput) -> Tuple[str, str]:
+        log_name = getattr(agent_input, "log_name", None)
+        token = getattr(agent_input, "token", None)
+        if log_name and token:
+            return str(log_name), str(token)
+
+        image_path = getattr(agent_input.cameras[-1].cam_f0, "image", None)
+        raise ValueError(
+            "use_expert_features=True requires AgentInput.log_name and AgentInput.token. "
+            "These are populated by SceneLoader/Scene.get_agent_input. "
+            f"Could not resolve cache identity from image path: {image_path!r}"
+        )
+
+    @staticmethod
+    def _load_expert_cache_file(path: Path) -> Dict[str, Any]:
+        if path.suffix == ".safetensors":
+            if load_safetensors_file is None:
+                raise ImportError(
+                    f"Cannot load safetensors expert cache at {path}: safetensors is not installed."
+                )
+            return dict(load_safetensors_file(str(path)))
+
+        if path.suffix == ".pt":
+            try:
+                data = torch.load(path, map_location="cpu", weights_only=True)
+            except TypeError:
+                data = torch.load(path, map_location="cpu")
+            if not isinstance(data, dict):
+                raise TypeError(f"Expert cache {path} must contain a dict, got {type(data).__name__}.")
+            return data
+
+        raise ValueError(f"Unsupported expert cache file extension for {path}.")
+
+    def _validate_expert_tensor(self, key: str, tensor: torch.Tensor, path: Path) -> torch.Tensor:
+        if not isinstance(tensor, torch.Tensor):
+            raise TypeError(
+                f"Expert cache {path} key '{key}' must be a torch.Tensor, got {type(tensor).__name__}."
+            )
+        if tensor.ndim != 2:
+            raise ValueError(
+                f"Expert cache {path} key '{key}' must have shape [K, D], got {tuple(tensor.shape)}."
+            )
+
+        expected_tokens: Optional[int]
+        if key.startswith("jepa_"):
+            expected_tokens = self.num_jepa_tokens
+        elif key.startswith("vggt_"):
+            expected_tokens = self.num_vggt_tokens
+        else:
+            expected_tokens = None
+
+        if expected_tokens is not None and tensor.shape[0] != expected_tokens:
+            raise ValueError(
+                f"Expert cache {path} key '{key}' has K={tensor.shape[0]}, "
+                f"expected K={expected_tokens}. Full shape: {tuple(tensor.shape)}."
+            )
+
+        return tensor.detach().cpu().float()
+
+    def _load_expert_features(self, log_name: str, token: str) -> Dict[str, torch.Tensor]:
+        if not self.use_expert_features:
+            return {}
+        if self.expert_feature_source == "none":
+            return {}
+        if self.expert_feature_source == "dummy":
+            assert self._dummy_expert_backend is not None
+            return self._dummy_expert_backend.generate_single(
+                sample_key=f"{log_name}/{token}",
+                include_targets=self.allow_expert_target_features,
+            )
+        if self.expert_feature_source == "real":
+            raise NotImplementedError("expert_feature_source='real' is not wired yet.")
+
+        path = self._resolve_expert_cache_path(log_name, token)
+        data = self._load_expert_cache_file(path)
+
+        expert_features: Dict[str, torch.Tensor] = {}
+        for key in EXPERT_FEATURE_KEYS:
+            if key in data:
+                if key in EXPERT_TARGET_FEATURE_KEYS and not self.allow_expert_target_features:
+                    warnings.warn(
+                        f"Expert cache {path} contains train-only '{key}', but "
+                        "allow_expert_target_features=False. Dropping it to prevent future-frame leakage.",
+                        RuntimeWarning,
+                    )
+                    continue
+                expert_features[key] = self._validate_expert_tensor(key, data[key], path)
+
+        if not expert_features:
+            raise KeyError(
+                f"Expert cache {path} did not contain any supported expert keys: {EXPERT_FEATURE_KEYS}."
+            )
+
+        return expert_features
+
+    def _add_expert_features(self, features: Dict[str, torch.Tensor], agent_input: AgentInput) -> Dict[str, torch.Tensor]:
+        if not self.use_expert_features:
+            return features
+
+        log_name, token = self._cache_identity_from_agent_input(agent_input)
+        features.update(self._load_expert_features(log_name, token))
+        return features
+
+    def add_expert_features_from_token_path(
+        self,
+        features: Dict[str, torch.Tensor],
+        token_path: Path,
+    ) -> Dict[str, torch.Tensor]:
+        """Adds external expert features for an existing cache_path/log_name/token cache item."""
+        if not self.use_expert_features:
+            return features
+
+        token_path = Path(token_path)
+        log_name = token_path.parent.name
+        token = token_path.name
+        for key, value in self._load_expert_features(log_name, token).items():
+            features.setdefault(key, value)
+        return features
 
     def compute_features(self, agent_input: AgentInput) -> Dict[str, torch.Tensor]:
 
@@ -77,15 +445,17 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
             
             path_tensor = torch.tensor(path_as_ordinals, dtype=torch.long)
             
-            return {
+            features = {
                 "history_trajectory": history_trajectory.cpu(),
                 "high_command_one_hot": high_command_one_hot.cpu(),
                 "status_feature": status_feature.cpu(),
                 "image_path_tensor": path_tensor.cpu(),
             }
+            return self._add_expert_features(features, agent_input)
         else:
             if self.backbone is None:
                 raise RuntimeError("FeatureBuilder is in online mode, but the backbone was not initialized.")
+            from .utils.internvl_preprocess import load_image
             
             pixel_values = load_image(str(cameras[-1].cam_f0.image),max_num=12).unsqueeze(0)
 
@@ -101,15 +471,16 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
             output_requirements = "\nOutput requirements:\n- Predict 8 future trajectory points\n- Each point format: (x:float, y:float, heading:float)\n- Use [PT, ...] to encapsulate the trajectory\n- Maintain numerical precision to 2 decimal places"
             questions = [f"{prompt}{output_requirements}"]
 
-            outputs = self.backbone(pixel_values_cat.cuda(), questions, num_patches_list=num_patches_list)
+            outputs = self.backbone(pixel_values_cat.to(self.device), questions, num_patches_list=num_patches_list)
             last_hidden_state = outputs.hidden_states[-1]
 
-            return {
+            features = {
                 "history_trajectory": history_trajectory.cpu(),
                 "high_command_one_hot": high_command_one_hot.cpu(),
                 "last_hidden_state": last_hidden_state.squeeze(0).float().cpu(),
                 "status_feature": status_feature.cpu(),
             }
+            return self._add_expert_features(features, agent_input)
 
 
 class TrajectoryTargetBuilder(AbstractTargetBuilder):

@@ -13,6 +13,10 @@ from navsim.common.dataclasses import SceneFilter
 from navsim.common.dataloader import SceneLoader
 from navsim.planning.training.dataset import CacheOnlyDataset, Dataset
 from navsim.planning.training.agent_lightning_module import AgentLightningModule, AgentLightningDiT
+from navsim.agents.recogdrive.recogdrive_features import (
+    assert_real_expert_cache_for_training,
+    stack_optional_expert_features,
+)
 import torch
 import torch.nn.utils.rnn as rnn_utils
 from typing import List, Dict
@@ -48,6 +52,7 @@ def custom_collate_fn(
         'status_feature': status_feature,
         'last_hidden_state': last_hidden_state,
     }
+    stack_optional_expert_features(features, list(features_list))
     targets = {
         'trajectory': trajectory
     }
@@ -132,6 +137,16 @@ def main(cfg: DictConfig) -> None:
     logger.info(f"Global Seed set to {cfg.seed}")
 
     logger.info(f"Path where all results are stored: {cfg.output_dir}")
+
+    assert_real_expert_cache_for_training(
+        cfg.agent.get("expert_cache_dir", None),
+        use_expert_features=cfg.agent.get("use_expert_features", False),
+        allow_dummy_expert_cache=cfg.get(
+            "allow_dummy_expert_cache",
+            cfg.agent.get("allow_dummy_expert_cache", False),
+        ),
+        expert_feature_source=cfg.agent.get("expert_feature_source", "none"),
+    )
 
     logger.info("Building Agent")
     agent: AbstractAgent = instantiate(cfg.agent)

@@ -156,6 +156,9 @@ class AgentInput:
     ego_statuses: List[EgoStatus]
     cameras: List[Cameras]
     lidars: List[Lidar]
+    token: Optional[str] = None
+    log_name: Optional[str] = None
+    scene_token: Optional[str] = None
 
     @classmethod
     def from_scene_dict_list(
@@ -223,7 +226,15 @@ class AgentInput:
                 )
             )
 
-        return AgentInput(ego_statuses, cameras, lidars)
+        current_frame = scene_dict_list[num_history_frames - 1]
+        return AgentInput(
+            ego_statuses,
+            cameras,
+            lidars,
+            token=current_frame.get("token"),
+            log_name=current_frame.get("log_name"),
+            scene_token=current_frame.get("scene_token"),
+        )
 
 
 @dataclass
@@ -375,7 +386,14 @@ class Scene:
             cameras.append(self.frames[frame_idx].cameras)
             lidars.append(self.frames[frame_idx].lidar)
 
-        return AgentInput(ego_statuses, cameras, lidars)
+        return AgentInput(
+            ego_statuses,
+            cameras,
+            lidars,
+            token=self.scene_metadata.initial_token,
+            log_name=self.scene_metadata.log_name,
+            scene_token=self.scene_metadata.scene_token,
+        )
 
     @classmethod
     def _build_map_api(cls, map_name: str) -> AbstractMap:

@@ -126,6 +126,8 @@ class CacheOnlyDataset(torch.utils.data.Dataset):
         for builder in self._feature_builders:
             data_dict_path = token_path / (builder.get_unique_name() + ".gz")
             data_dict = load_feature_target_from_pickle(data_dict_path)
+            if hasattr(builder, "add_expert_features_from_token_path"):
+                data_dict = builder.add_expert_features_from_token_path(data_dict, token_path)
             features.update(data_dict)
 
         targets: Dict[str, torch.Tensor] = {}
@@ -237,6 +239,8 @@ class Dataset(torch.utils.data.Dataset):
         for builder in self._feature_builders:
             data_dict_path = token_path / (builder.get_unique_name() + ".gz")
             data_dict = load_feature_target_from_pickle(data_dict_path)
+            if hasattr(builder, "add_expert_features_from_token_path"):
+                data_dict = builder.add_expert_features_from_token_path(data_dict, token_path)
             features.update(data_dict)
 
         targets: Dict[str, torch.Tensor] = {}
@@ -779,4 +783,3 @@ class BoundingBox2DIndex(IntEnum):
     def STATE_SE2(cls):
         # assumes X, Y, HEADING have subsequent indices
         return slice(cls._X, cls._HEADING + 1)
-

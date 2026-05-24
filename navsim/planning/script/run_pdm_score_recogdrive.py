@@ -4,6 +4,7 @@ from dataclasses import asdict
 from datetime import datetime
 import traceback
 import logging
+import warnings
 import lzma
 import pickle
 import os
@@ -29,6 +30,7 @@ from navsim.planning.script.builders.worker_pool_builder import build_worker
 from navsim.planning.simulation.planner.pdm_planner.simulation.pdm_simulator import PDMSimulator
 from navsim.planning.simulation.planner.pdm_planner.scoring.pdm_scorer import PDMScorer
 from navsim.planning.metric_caching.metric_cache import MetricCache
+from navsim.agents.recogdrive.recogdrive_features import warn_if_dummy_expert_cache
 
 logger = logging.getLogger(__name__)
 
@@ -178,6 +180,20 @@ def main(cfg: DictConfig) -> None:
 
     build_logger(cfg)
     worker = build_worker(cfg)
+
+    if rank == 0:
+        if cfg.agent.get("expert_feature_source", "none") == "dummy":
+            warnings.warn(
+                "ReCogDrive evaluation is using expert_feature_source='dummy'. "
+                "Dummy features are for computation-flow validation only; no benchmark metrics "
+                "should be reported in dummy mode.",
+                RuntimeWarning,
+            )
+        warn_if_dummy_expert_cache(
+            cfg.agent.get("expert_cache_dir", None),
+            use_expert_features=cfg.agent.get("use_expert_features", False),
+            context="ReCogDrive evaluation",
+        )
 
 
     scene_loader = SceneLoader(

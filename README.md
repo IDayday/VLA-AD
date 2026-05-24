@@ -64,6 +64,38 @@ Recent studies have explored leveraging the world knowledge and cognitive capabi
 - [Download NAVSIM datasets following official instruction](https://github.com/autonomousvision/navsim/blob/main/docs/install.md)
 - [Preparation of ReCogDrive environment](docs/Installation.md)
 - [ReCogDrive Training and Evaluation](docs/Train_Eval.md)
+- [中文：专家 Token 改造训练、开发与验证指南](docs/Expert_Token_ReCogDrive_Guide_zh.md)
+
+## Expert-Token ReCogDrive
+
+Optional JEPA/VGGT expert-token experiments use new `_expert` scripts and leave the official baseline scripts unchanged. Run order:
+
+1. Build the VLM hidden-state cache if needed with `scripts/cache_dataset/run_caching_recogdrive_hidden_state.sh`.
+2. Build the expert cache with `scripts/cache_dataset/run_caching_recogdrive_expert_features.sh`.
+3. Train IL with `scripts/training/run_recogdrive_train_multi_node_2b_expert.sh`.
+4. Evaluate IL with `scripts/evaluation/run_recogdrive_agent_pdm_score_evaluation_2b_expert.sh`.
+5. Train RL from the best IL checkpoint with `scripts/training/run_recogdrive_train_multi_node_rl_2b_expert.sh`.
+6. Evaluate RL with `scripts/evaluation/run_recogdrive_agent_pdm_score_evaluation_2b_expert.sh`.
+
+Set `EXPERT_VARIANT` to `baseline`, `jepa`, `vggt`, `jepa_vggt`, or `jepa_vggt_alignment`. Cache roots are controlled by `NAVSIM_EXP_ROOT`, `OPENSCENE_DATA_ROOT`, and `RECOGDRIVE_EXPERT_CACHE_DIR`; see [Train_Eval.md](docs/Train_Eval.md) for full commands.
+
+Expert cache safety: `jepa_tokens` and `vggt_tokens` are current-frame/observation tokens and may be used for both training and inference. `jepa_target_tokens` and `vggt_target_tokens` are future-frame auxiliary supervision only; they are loaded only when explicitly enabled for training and are ignored with a warning in inference/evaluation paths.
+
+For computation-only cache-loading smoke tests before NAVSIM/JEPA/VGGT are available, create fake cache files with `scripts/create_dummy_expert_cache.py`. Dummy caches write `metadata.json` with `is_dummy=true`; training refuses them unless `allow_dummy_expert_cache=true` or `ALLOW_DUMMY_EXPERT_CACHE=true` is set, and evaluation warns loudly. Do not use dummy caches for real training.
+
+No-data/no-weights smoke mode is also supported. Set `checkpoint_path=null` or `checkpoint_path=''`, keep `allow_random_init=true`, and use `expert_feature_source="dummy"` for deterministic fake JEPA/VGGT tensors. This mode is only for computation-flow validation: model construction, forward/backward, `get_action`, cache loading, and checkpoint compatibility. Random-init or dummy-feature outputs must not be reported as benchmark metrics or driving performance.
+
+Useful smoke commands:
+
+```bash
+PYTHONDONTWRITEBYTECODE=1 python scripts/smoke_test_recogdrive_expert_dummy_flow.py --device cpu
+PYTHONDONTWRITEBYTECODE=1 python scripts/smoke_test_recogdrive_agent_dummy_forward.py
+PYTHONDONTWRITEBYTECODE=1 python scripts/testing/smoke_recogdrive_dummy_expert_cache.py
+PYTHONDONTWRITEBYTECODE=1 python scripts/testing/smoke_recogdrive_checkpoint_loading.py
+PYTHONDONTWRITEBYTECODE=1 python scripts/debug_train_recogdrive_expert_on_dummy_data.py --device cpu --steps 1 --use-expert-features --use-alignment-loss
+```
+
+After evaluation, aggregate expert ablations with `scripts/evaluation/aggregate_recogdrive_expert_results.py`. It accepts NAVSIM PDM result JSON/CSV files or output directories and writes CSV plus Markdown comparison tables.
 
 ## Checkpoint
 
@@ -227,4 +259,3 @@ If you find ReCogDrive is useful in your research or applications, please consid
   year={2025}
 }
 ```
-

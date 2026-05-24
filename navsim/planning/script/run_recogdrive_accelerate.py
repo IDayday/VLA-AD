@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+from __future__ import annotations
+
 import os
 import math
 import json
@@ -30,6 +32,10 @@ from accelerate.utils import (
 )
 import shutil
 from navsim.agents.abstract_agent import AbstractAgent
+from navsim.agents.recogdrive.recogdrive_features import (
+    assert_real_expert_cache_for_training,
+    stack_optional_expert_features,
+)
 from navsim.common.dataclasses import SceneFilter
 from navsim.common.dataloader import SceneLoader
 from navsim.planning.training.dataset import CacheOnlyDataset, Dataset
@@ -115,6 +121,8 @@ def custom_collate_fn(
             "features must contain either 'last_hidden_state' or 'image_path_tensor'. "
             f"Got keys: {list(f0.keys())}"
         )
+
+    stack_optional_expert_features(features, list(features_list))
 
     # 目标：一如既往
     trajectory = torch.stack(
@@ -210,6 +218,16 @@ class ReCogDriveTrainer:
     def __init__(self, cfg: DictConfig):
         self.cfg = cfg
         self.state = State()
+
+        assert_real_expert_cache_for_training(
+            cfg.agent.get("expert_cache_dir", None),
+            use_expert_features=cfg.agent.get("use_expert_features", False),
+            allow_dummy_expert_cache=cfg.get(
+                "allow_dummy_expert_cache",
+                cfg.agent.get("allow_dummy_expert_cache", False),
+            ),
+            expert_feature_source=cfg.agent.get("expert_feature_source", "none"),
+        )
 
         self.agent: AbstractAgent = instantiate(cfg.agent)
 

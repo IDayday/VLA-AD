@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 from abc import abstractmethod
-from typing import Dict,Any
+from typing import Dict, TYPE_CHECKING
 
 from torch import Tensor
 
-from navsim.common.dataclasses import AgentInput, Scene
+if TYPE_CHECKING:
+    from navsim.common.dataclasses import AgentInput, Scene
 
 
 class AbstractFeatureBuilder:
