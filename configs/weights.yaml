@@ -1,0 +1,25 @@
+recogdrive_2b_il:
+  hf_repo: owl10/ReCogDrive-2B-IL
+  modelscope_repo: null
+  local_dir: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL
+
+recogdrive_vlm_2b:
+  hf_repo: owl10/ReCogDrive-VLM-2B
+  modelscope_repo: null
+  local_dir: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B
+
+vjepa2:
+  hf_repo: facebook/vjepa2-vitl-fpc64-256
+  modelscope_repo: null
+  local_dir: /mnt/project/VLA-AD/checkpoints/teachers/vjepa2-vitl-fpc64-256
+
+vggt_1b:
+  hf_repo: facebook/VGGT-1B
+  modelscope_repo: null
+  local_dir: /mnt/project/VLA-AD/checkpoints/teachers/VGGT-1B
+
+recogdrive_2b_rl:
+  hf_repo: owl10/ReCogDrive-2B-RL
+  modelscope_repo: null
+  local_dir: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL
+  optional: true
