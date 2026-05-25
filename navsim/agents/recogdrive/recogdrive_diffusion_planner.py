@@ -758,21 +758,34 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         elif self.config.sampling_method == 'ddim':
             alpha_prev = self.extract(self.ddim_alphas_prev, index, x.shape)
             
-            pred_noise = (x - (alpha_t**0.5) * x_recon) / sqrt_one_minus_alpha_t
+            ddim_denom = sqrt_one_minus_alpha_t.clamp_min(1e-6)
+
+            pred_noise = (x - (alpha_t**0.5) * x_recon) / ddim_denom
+            pred_noise = torch.where(
+                sqrt_one_minus_alpha_t > 0,
+                pred_noise,
+                torch.zeros_like(pred_noise),
+            )
 
             eps_clip_value = getattr(self, 'eps_clip_value', None)
             if eps_clip_value is not None:
                 pred_noise.clamp_(-eps_clip_value, eps_clip_value)
 
             if deterministic:
-                etas = torch.zeros((x.shape[0], 1, 1)).to(x.device)
+                sigma = torch.zeros_like(alpha_t)
             else:
                 etas = self.eta(x).unsqueeze(1)
-
-            sigma = (
-                etas
-                * ((1 - alpha_prev) / (1 - alpha_t) * (1 - alpha_t / alpha_prev)) ** 0.5
-            ).clamp_(min=1e-10)
+                sigma_variance = (
+                    (1 - alpha_prev)
+                    / (1 - alpha_t).clamp_min(1e-6)
+                    * (1 - alpha_t / alpha_prev)
+                )
+                sigma_variance = torch.where(
+                    (1 - alpha_t) > 0,
+                    sigma_variance,
+                    torch.zeros_like(sigma_variance),
+                )
+                sigma = (etas * sigma_variance.clamp_min(0).sqrt()).clamp_(min=1e-10)
 
             pred_dir_xt = (1.0 - alpha_prev - sigma**2).clamp(min=0).sqrt() * pred_noise
             model_mean = (alpha_prev**0.5) * x_recon + pred_dir_xt
