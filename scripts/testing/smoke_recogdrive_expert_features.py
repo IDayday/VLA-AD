@@ -52,9 +52,9 @@ def main() -> None:
         sample_dir.mkdir(parents=True)
         torch.save(
             {
-                "jepa_tokens": torch.randn(4, 16),
-                "vggt_tokens": torch.randn(4, 32),
-                "jepa_target_tokens": torch.randn(4, 16),
+                "jepa_context_tokens": torch.randn(12, 1024),
+                "vggt_context_tokens": torch.randn(12, 2048),
+                "jepa_target_tokens": torch.randn(12, 1024),
             },
             sample_dir / "expert_features.pt",
         )
@@ -63,42 +63,42 @@ def main() -> None:
 
         baseline_builder = ReCogDriveFeatureBuilder(cache_hidden_state=False)
         baseline_features = baseline_builder.compute_features(agent_input)
-        assert "jepa_tokens" not in baseline_features
-        assert "vggt_tokens" not in baseline_features
+        assert "jepa_context_tokens" not in baseline_features
+        assert "vggt_context_tokens" not in baseline_features
 
         expert_builder = ReCogDriveFeatureBuilder(
             cache_hidden_state=False,
             use_expert_features=True,
             expert_cache_dir=str(cache_root),
-            num_jepa_tokens=4,
-            num_vggt_tokens=4,
+            num_jepa_tokens=12,
+            num_vggt_tokens=12,
         )
         with warnings.catch_warnings(record=True) as caught:
             warnings.simplefilter("always")
             features = expert_builder.compute_features(agent_input)
 
-        assert features["jepa_tokens"].shape == (4, 16)
-        assert features["vggt_tokens"].shape == (4, 32)
+        assert features["jepa_context_tokens"].shape == (12, 1024)
+        assert features["vggt_context_tokens"].shape == (12, 2048)
         assert "jepa_target_tokens" not in features
         assert any("Dropping it to prevent future-frame leakage" in str(w.message) for w in caught)
-        assert features["jepa_tokens"].dtype == torch.float32
+        assert features["jepa_context_tokens"].dtype == torch.float32
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")
             augmented = expert_builder.add_expert_features_from_token_path({}, sample_dir)
-        assert augmented["jepa_tokens"].shape == (4, 16)
+        assert augmented["jepa_context_tokens"].shape == (12, 1024)
         assert "jepa_target_tokens" not in augmented
 
         training_expert_builder = ReCogDriveFeatureBuilder(
             cache_hidden_state=False,
             use_expert_features=True,
             expert_cache_dir=str(cache_root),
-            num_jepa_tokens=4,
-            num_vggt_tokens=4,
+            num_jepa_tokens=12,
+            num_vggt_tokens=12,
             allow_expert_target_features=True,
         )
         training_features = training_expert_builder.compute_features(agent_input)
-        assert training_features["jepa_target_tokens"].shape == (4, 16)
+        assert training_features["jepa_target_tokens"].shape == (12, 1024)
         print("ReCogDrive expert feature smoke test passed.")
 
 

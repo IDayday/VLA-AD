@@ -47,9 +47,9 @@ ACTION_HORIZON = 8
 ACTION_DIM = 3
 HISTORY_DIM = 12
 STATUS_DIM = 8
-NUM_JEPA_TOKENS = 4
-NUM_VGGT_TOKENS = 4
-JEPA_DIM = 768
+NUM_JEPA_TOKENS = 12
+NUM_VGGT_TOKENS = 12
+JEPA_DIM = 1024
 VGGT_DIM = 2048
 
 
@@ -65,6 +65,17 @@ def parse_args() -> argparse.Namespace:
         default="auto",
         choices=("auto", "cpu", "cuda"),
         help="Execution device. CUDA uses fp16/bf16; CPU always uses fp32.",
+    )
+    parser.add_argument(
+        "--use-expert-features",
+        action="store_true",
+        help="Accepted for the documented command; the suite always runs both baseline and expert paths.",
+    )
+    parser.add_argument(
+        "--expert-adapter-dim",
+        type=int,
+        default=768,
+        help="Internal expert adapter dimension; default matches ReCogDrive-2B expert-token setup.",
     )
     return parser.parse_args()
 
@@ -211,8 +222,8 @@ def make_action_input(
             scale=0.2,
             offset=0.4,
         )
-        data["jepa_tokens"] = jepa_tokens
-        data["vggt_tokens"] = vggt_tokens
+        data["jepa_context_tokens"] = jepa_tokens
+        data["vggt_context_tokens"] = vggt_tokens
 
         if include_targets:
             if nan_targets:
@@ -287,6 +298,9 @@ def make_config(
         use_vggt=True,
         jepa_dim=JEPA_DIM if use_expert_features else 0,
         vggt_dim=VGGT_DIM if use_expert_features else 0,
+        expert_adapter_dim=768,
+        num_jepa_tokens=NUM_JEPA_TOKENS,
+        num_vggt_tokens=NUM_VGGT_TOKENS,
         expert_dropout=0.0,
         expert_fusion_mode="concat_context",
         use_expert_type_embedding=True,
@@ -294,7 +308,7 @@ def make_config(
         expert_alignment_weight=0.0,
         jepa_alignment_weight=0.1 if use_expert_features else 0.0,
         vggt_alignment_weight=0.1 if use_expert_features else 0.0,
-        alignment_loss_type="mse",
+        alignment_loss_type="normalized_mse",
     )
 
 

@@ -111,9 +111,9 @@ NUM_VLM_TOKENS = 32
 VLM_HIDDEN_DIM = 1536
 ACTION_HORIZON = 8
 ACTION_DIM = 3
-NUM_JEPA_TOKENS = 4
-NUM_VGGT_TOKENS = 4
-JEPA_DIM = 768
+NUM_JEPA_TOKENS = 12
+NUM_VGGT_TOKENS = 12
+JEPA_DIM = 1024
 VGGT_DIM = 2048
 
 
@@ -194,8 +194,8 @@ def make_features(*, device: torch.device, use_expert_features: bool) -> dict[st
             offset=0.7,
         )
         features.update({
-            "jepa_tokens": jepa_tokens,
-            "vggt_tokens": vggt_tokens,
+            "jepa_context_tokens": jepa_tokens,
+            "vggt_context_tokens": vggt_tokens,
         })
 
     return features

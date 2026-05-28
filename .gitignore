@@ -1,0 +1,24 @@
+# python
+*.pyc
+**/__pycache__/
+.pytest_cache/
+*.egg-info/
+
+# IDE
+.vscode/
+
+# logs and generated files
+*.log
+*.pkl
+*.jpg
+*.pcd
+
+# ReCogDrive expert-token artifacts
+checkpoints/
+cache/
+experiments/
+hf_home/
+modelscope_cache/
+outputs/
+wandb/
+lightning_logs/

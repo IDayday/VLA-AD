@@ -8,10 +8,11 @@ import warnings
 import torch
 
 
-EXPERT_FEATURE_SOURCE_CHOICES = ("none", "dummy", "cache", "real")
-EXPERT_CURRENT_KEYS = ("jepa_tokens", "vggt_tokens")
+EXPERT_FEATURE_SOURCE_CHOICES = ("none", "dummy", "chunk", "disk", "online", "cache", "real")
+EXPERT_CONTEXT_KEYS = ("jepa_context_tokens", "vggt_context_tokens")
+EXPERT_LEGACY_CONTEXT_KEYS = ("jepa_tokens", "vggt_tokens")
 EXPERT_TARGET_KEYS = ("jepa_target_tokens", "vggt_target_tokens")
-EXPERT_ALL_KEYS = (*EXPERT_CURRENT_KEYS, *EXPERT_TARGET_KEYS)
+EXPERT_ALL_KEYS = (*EXPERT_CONTEXT_KEYS, *EXPERT_TARGET_KEYS, *EXPERT_LEGACY_CONTEXT_KEYS)
 DUMMY_EXPERT_WARNING = (
     "Dummy expert features are for computation-flow validation only. "
     "They are not training data and must not be used for performance claims."
@@ -29,8 +30,12 @@ def normalize_expert_feature_source(
         return "none"
 
     normalized = (source or "none").strip().lower()
+    if normalized == "cache":
+        normalized = "chunk"
+    elif normalized == "real":
+        normalized = "online"
     if normalized == "none" and expert_cache_dir:
-        normalized = "cache"
+        normalized = "chunk"
     if normalized not in EXPERT_FEATURE_SOURCE_CHOICES:
         raise ValueError(
             f"expert_feature_source={source!r} is invalid. "
@@ -50,9 +55,9 @@ def _stable_offset(sample_key: object, seed: int) -> float:
 class DummyExpertBackend:
     """Deterministic fake JEPA/VGGT tensor backend for smoke tests."""
 
-    num_jepa_tokens: int = 4
-    num_vggt_tokens: int = 4
-    jepa_dim: int = 768
+    num_jepa_tokens: int = 12
+    num_vggt_tokens: int = 12
+    jepa_dim: int = 1024
     vggt_dim: int = 2048
     use_jepa: bool = True
     use_vggt: bool = True
@@ -106,7 +111,7 @@ class DummyExpertBackend:
                 scale=0.2,
                 offset=0.3,
             )
-            features["jepa_tokens"] = jepa_tokens
+            features["jepa_context_tokens"] = jepa_tokens
             if include_targets:
                 features["jepa_target_tokens"] = jepa_tokens + self._tokens(
                     (batch_size, self.num_jepa_tokens, self.jepa_dim),
@@ -126,7 +131,7 @@ class DummyExpertBackend:
                 scale=0.15,
                 offset=0.7,
             )
-            features["vggt_tokens"] = vggt_tokens
+            features["vggt_context_tokens"] = vggt_tokens
             if include_targets:
                 features["vggt_target_tokens"] = vggt_tokens + self._tokens(
                     (batch_size, self.num_vggt_tokens, self.vggt_dim),

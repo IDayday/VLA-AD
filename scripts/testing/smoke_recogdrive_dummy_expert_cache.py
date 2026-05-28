@@ -61,7 +61,7 @@ def _planner_config() -> ReCogDriveDiffusionPlannerConfig:
         use_expert_features=True,
         use_jepa=True,
         use_vggt=True,
-        jepa_dim=768,
+        jepa_dim=1024,
         vggt_dim=2048,
         expert_dropout=0.0,
         jepa_alignment_weight=0.1,
@@ -78,8 +78,8 @@ def _action_input(sample: dict[str, torch.Tensor]) -> BatchFeature:
             torch.linspace(-0.4, 0.4, 8),
             torch.linspace(-0.1, 0.1, 8),
         ], dim=-1).view(1, 8, 3),
-        "jepa_tokens": sample["jepa_tokens"].unsqueeze(0),
-        "vggt_tokens": sample["vggt_tokens"].unsqueeze(0),
+        "jepa_context_tokens": sample["jepa_context_tokens"].unsqueeze(0),
+        "vggt_context_tokens": sample["vggt_context_tokens"].unsqueeze(0),
         "jepa_target_tokens": sample["jepa_target_tokens"].unsqueeze(0),
         "vggt_target_tokens": sample["vggt_target_tokens"].unsqueeze(0),
     })
@@ -115,10 +115,10 @@ def main() -> None:
         )
 
         sample = load_expert_cache_sample(cache_dir, "sample_000001")
-        assert sample["jepa_tokens"].shape == (4, 768)
-        assert sample["vggt_tokens"].shape == (4, 2048)
-        assert sample["jepa_target_tokens"].shape == (4, 768)
-        assert sample["vggt_target_tokens"].shape == (4, 2048)
+        assert sample["jepa_context_tokens"].shape == (12, 1024)
+        assert sample["vggt_context_tokens"].shape == (12, 2048)
+        assert sample["jepa_target_tokens"].shape == (12, 1024)
+        assert sample["vggt_target_tokens"].shape == (12, 2048)
 
         planner = ReCogDriveDiffusionPlanner(_planner_config())
         planner.train()

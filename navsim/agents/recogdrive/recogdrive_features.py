@@ -140,8 +140,8 @@ def load_expert_cache_sample(
     sample_token: str,
     *,
     log_name: str = "",
-    num_jepa_tokens: int = 4,
-    num_vggt_tokens: int = 4,
+    num_jepa_tokens: int = 12,
+    num_vggt_tokens: int = 12,
     allow_expert_target_features: bool = True,
 ) -> Dict[str, torch.Tensor]:
     """Loads one cached expert sample by token, including flat dummy-cache files.
@@ -154,7 +154,7 @@ def load_expert_cache_sample(
     builder = ReCogDriveFeatureBuilder(
         cache_hidden_state=False,
         use_expert_features=True,
-        expert_feature_source="cache",
+        expert_feature_source="chunk",
         expert_cache_dir=str(expert_cache_dir),
         num_jepa_tokens=num_jepa_tokens,
         num_vggt_tokens=num_vggt_tokens,
@@ -173,12 +173,12 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
                  use_expert_features: bool = False,
                  expert_feature_source: str = "none",
                  expert_cache_dir: Optional[str] = None,
-                 num_jepa_tokens: int = 4,
-                 num_vggt_tokens: int = 4,
+                 num_jepa_tokens: int = 12,
+                 num_vggt_tokens: int = 12,
                  allow_expert_target_features: bool = False,
                  use_jepa: bool = True,
                  use_vggt: bool = True,
-                 jepa_dim: int = 768,
+                 jepa_dim: int = 1024,
                  vggt_dim: int = 2048,
                  dummy_expert_seed: int = 0, ):
         """
@@ -216,10 +216,10 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
         self.dummy_expert_seed = dummy_expert_seed
         self._dummy_expert_backend: Optional[DummyExpertBackend] = None
 
-        if self.use_expert_features and self.expert_feature_source == "cache" and self.expert_cache_dir is None:
-            raise ValueError("use_expert_features=True requires expert_cache_dir to be set.")
-        if self.use_expert_features and self.expert_feature_source == "real":
-            raise NotImplementedError("expert_feature_source='real' is reserved for future JEPA/VGGT teacher integration.")
+        if self.use_expert_features and self.expert_feature_source in {"chunk", "disk"} and self.expert_cache_dir is None:
+            raise ValueError("use_expert_features=True with chunk/disk features requires expert_cache_dir to be set.")
+        if self.use_expert_features and self.expert_feature_source == "online":
+            raise NotImplementedError("expert_feature_source='online' is reserved for future JEPA/VGGT teacher integration.")
         if self.use_expert_features and self.expert_feature_source == "dummy":
             self._dummy_expert_backend = build_dummy_expert_backend(
                 num_jepa_tokens=self.num_jepa_tokens,
@@ -273,6 +273,9 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
                 base_dir / f"features{suffix}",
                 self.expert_cache_dir / log_name / f"{token}{suffix}",
                 self.expert_cache_dir / f"{token}{suffix}",
+                self.expert_cache_dir / "samples" / f"{token}{suffix}",
+                self.expert_cache_dir / log_name / f"{token}{suffix}",
+                self.expert_cache_dir / log_name / token / f"expert_features{suffix}",
             ])
         return candidates
 
@@ -346,9 +349,10 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
             )
 
         expected_tokens: Optional[int]
-        if key.startswith("jepa_"):
+        normalized_key = {"jepa_tokens": "jepa_context_tokens", "vggt_tokens": "vggt_context_tokens"}.get(key, key)
+        if normalized_key.startswith("jepa_"):
             expected_tokens = self.num_jepa_tokens
-        elif key.startswith("vggt_"):
+        elif normalized_key.startswith("vggt_"):
             expected_tokens = self.num_vggt_tokens
         else:
             expected_tokens = None
@@ -372,23 +376,25 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
                 sample_key=f"{log_name}/{token}",
                 include_targets=self.allow_expert_target_features,
             )
-        if self.expert_feature_source == "real":
-            raise NotImplementedError("expert_feature_source='real' is not wired yet.")
+        if self.expert_feature_source == "online":
+            raise NotImplementedError("expert_feature_source='online' is not wired yet.")
 
         path = self._resolve_expert_cache_path(log_name, token)
         data = self._load_expert_cache_file(path)
 
+        alias_map = {"jepa_tokens": "jepa_context_tokens", "vggt_tokens": "vggt_context_tokens"}
         expert_features: Dict[str, torch.Tensor] = {}
         for key in EXPERT_FEATURE_KEYS:
             if key in data:
-                if key in EXPERT_TARGET_FEATURE_KEYS and not self.allow_expert_target_features:
+                output_key = alias_map.get(key, key)
+                if output_key in EXPERT_TARGET_FEATURE_KEYS and not self.allow_expert_target_features:
                     warnings.warn(
-                        f"Expert cache {path} contains train-only '{key}', but "
+                        f"Expert cache {path} contains train-only '{output_key}', but "
                         "allow_expert_target_features=False. Dropping it to prevent future-frame leakage.",
                         RuntimeWarning,
                     )
                     continue
-                expert_features[key] = self._validate_expert_tensor(key, data[key], path)
+                expert_features.setdefault(output_key, self._validate_expert_tensor(output_key, data[key], path))
 
         if not expert_features:
             raise KeyError(

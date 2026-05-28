@@ -31,7 +31,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--file-workers", type=int, default=None, help="Default is 8, except vggt_1b uses 4.")
     parser.add_argument("--timeout", type=int, default=300)
     parser.add_argument("--stop-after-first-failure", action="store_true")
-    parser.add_argument("--continue-on-failure", action="store_true", default=True)
+    parser.add_argument("--continue-on-failure", dest="continue_on_failure", action="store_true", default=True)
+    parser.add_argument("--no-continue-on-failure", dest="continue_on_failure", action="store_false", help=argparse.SUPPRESS)
     parser.add_argument("--dry-run", action="store_true")
     return parser.parse_args()
 
@@ -176,7 +177,7 @@ def main() -> int:
         steps.append({"target": target, "command": shlex.join(cmd), "returncode": rc})
         if rc != 0:
             any_failed = True
-            if args.stop_after_first_failure:
+            if args.stop_after_first_failure or not args.continue_on_failure:
                 break
     status = refresh_status(args)
     write_reports(args, steps, status)

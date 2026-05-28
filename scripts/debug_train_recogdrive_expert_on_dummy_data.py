@@ -141,8 +141,8 @@ class SyntheticReCogDriveDataset(Dataset):
                 scale=0.15,
                 offset=0.7,
             )
-            features["jepa_tokens"] = jepa_tokens
-            features["vggt_tokens"] = vggt_tokens
+            features["jepa_context_tokens"] = jepa_tokens
+            features["vggt_context_tokens"] = vggt_tokens
 
             if self.include_alignment_targets:
                 features["jepa_target_tokens"] = jepa_tokens + self._deterministic_tensor(
@@ -216,7 +216,7 @@ def make_planner_config(*, use_expert_features: bool, use_alignment_loss: bool) 
         expert_alignment_weight=0.0,
         jepa_alignment_weight=0.1 if use_alignment_loss else 0.0,
         vggt_alignment_weight=0.1 if use_alignment_loss else 0.0,
-        alignment_loss_type="mse",
+        alignment_loss_type="normalized_mse",
     )
 
 
@@ -231,7 +231,7 @@ def build_action_input(features: Dict[str, torch.Tensor], targets: Dict[str, tor
         "status_feature": features["status_feature"],
         "action": targets["trajectory"],
     }
-    for key in ("jepa_tokens", "vggt_tokens", "jepa_target_tokens", "vggt_target_tokens"):
+    for key in ("jepa_context_tokens", "vggt_context_tokens", "jepa_target_tokens", "vggt_target_tokens"):
         if key in features:
             action_input[key] = features[key]
     return BatchFeature(data=action_input)

@@ -63,6 +63,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--repo-workers", type=int, default=4)
     parser.add_argument("--file-workers", type=int, default=8)
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument("--resume", dest="resume", action="store_true", default=True, help="Reuse local partial files and HF cache fragments. This is the default.")
+    parser.add_argument("--no-resume", dest="resume", action="store_false", help="Disable explicit Hugging Face resume mode for this run.")
     parser.add_argument("--force-download", action="store_true")
     parser.add_argument("--local-files-only", action="store_true")
     parser.add_argument("--include-recogdrive-rl", action="store_true")
@@ -303,6 +305,28 @@ def clean_partial_files(local_dir: Path) -> Dict[str, Any]:
     return {"removed_count": len(removed), "removed_files": removed, "errors": errors}
 
 
+def hf_cache_repo_dir(hf_cache: Path, repo_id: str) -> Path:
+    return hf_cache / f"models--{repo_id.replace('/', '--')}"
+
+
+def clean_selected_repo_partials(local_dir: Path, hf_cache: Path, hf_repo: str) -> Dict[str, Any]:
+    roots = [local_dir, hf_cache_repo_dir(hf_cache, hf_repo)]
+    removed: List[str] = []
+    errors: List[str] = []
+    scanned_roots: List[str] = []
+    for root in roots:
+        scanned_roots.append(str(root))
+        report = clean_partial_files(root)
+        removed.extend(report["removed_files"])
+        errors.extend(report["errors"])
+    return {
+        "removed_count": len(removed),
+        "removed_files": removed,
+        "errors": errors,
+        "scanned_roots": scanned_roots,
+    }
+
+
 def proxy_enabled(args: argparse.Namespace) -> bool:
     return bool(args.proxy or args.http_proxy or args.https_proxy or args.all_proxy or args.use_env_proxy)
 
@@ -357,7 +381,7 @@ def repo_jobs(args: argparse.Namespace, config: Dict[str, Dict[str, Any]], keys:
             raise ValueError(f"weights config entry {key} requires hf_repo")
         clean_report = None
         if args.clean_partials:
-            clean_report = clean_partial_files(Path(spec["local_dir"]))
+            clean_report = clean_selected_repo_partials(Path(spec["local_dir"]), args.hf_cache, hf_repo)
         jobs.append({
             "key": key,
             "hf_repo": hf_repo,
@@ -370,6 +394,7 @@ def repo_jobs(args: argparse.Namespace, config: Dict[str, Dict[str, Any]], keys:
             "file_workers": args.file_workers,
             "dry_run": args.dry_run,
             "force_download": args.force_download,
+            "resume": args.resume,
             "local_files_only": args.local_files_only,
             "allow_patterns": ALLOW_PATTERNS,
             "ignore_patterns": IGNORE_PATTERNS,
@@ -396,7 +421,7 @@ def hf_snapshot(job: Dict[str, Any]) -> Dict[str, Any]:
         ignore_patterns=job["ignore_patterns"],
         local_files_only=job["local_files_only"],
         force_download=job["force_download"],
-        resume_download=True,
+        resume_download=bool(job.get("resume", True)),
     )
     if job["dry_run"]:
         kwargs["dry_run"] = True
@@ -600,6 +625,8 @@ def main() -> int:
         print(f"  - {job['key']}: {job['hf_repo']} -> {job['local_dir']} (modelscope={mirror}, partials={partial_count})")
         if job.get("clean_partials"):
             print(f"    cleaned partials: {job['clean_partials']['removed_count']}")
+            for root in job["clean_partials"].get("scanned_roots", []):
+                print(f"    scanned partial root: {root}")
     records: List[Dict[str, Any]] = []
     if args.repo_workers <= 1:
         for job in jobs:
@@ -609,7 +636,18 @@ def main() -> int:
         with concurrent.futures.ProcessPoolExecutor(max_workers=args.repo_workers, mp_context=ctx) as executor:
             futures = [executor.submit(run_one, job) for job in jobs]
             for future in concurrent.futures.as_completed(futures):
-                records.append(future.result())
+                try:
+                    records.append(future.result())
+                except Exception as exc:
+                    records.append({
+                        "key": "<worker>",
+                        "repo": "<unknown>",
+                        "local_dir": "<unknown>",
+                        "requested_source": args.source,
+                        "ok": False,
+                        "error": f"worker failure: {exc}",
+                        "traceback": traceback.format_exc(),
+                    })
     records.sort(key=lambda item: item.get("key", ""))
     write_manifest(args.output_root, records)
     write_failure_report(args.output_root, args, records)

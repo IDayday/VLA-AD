@@ -203,7 +203,7 @@ def _tiny_config(
     expert_alignment_weight: float = 0.0,
     jepa_alignment_weight: float = 0.0,
     vggt_alignment_weight: float = 0.0,
-    alignment_loss_type: str = "mse",
+    alignment_loss_type: str = "normalized_mse",
 ) -> ReCogDriveDiffusionPlannerConfig:
     return ReCogDriveDiffusionPlannerConfig(
         diffusion_model_cfg={
@@ -228,8 +228,11 @@ def _tiny_config(
         use_expert_features=use_expert_features,
         use_jepa=use_jepa,
         use_vggt=use_vggt,
-        jepa_dim=5 if use_expert_features and use_jepa else 0,
-        vggt_dim=7 if use_expert_features and use_vggt else 0,
+        jepa_dim=1024 if use_expert_features and use_jepa else 0,
+        vggt_dim=2048 if use_expert_features and use_vggt else 0,
+        expert_adapter_dim=768,
+        num_jepa_tokens=12,
+        num_vggt_tokens=12,
         expert_dropout=0.0,
         expert_alignment_weight=expert_alignment_weight,
         jepa_alignment_weight=jepa_alignment_weight,
@@ -255,11 +258,11 @@ def _action_input(
     if include_action:
         data["action"] = torch.randn(batch_size, 8, 3)
     if include_experts:
-        data["jepa_tokens"] = torch.randn(batch_size, 4, 5)
-        data["vggt_tokens"] = torch.randn(batch_size, 4, 7)
+        data["jepa_context_tokens"] = torch.randn(batch_size, 12, 1024)
+        data["vggt_context_tokens"] = torch.randn(batch_size, 12, 2048)
         if include_targets:
-            data["jepa_target_tokens"] = torch.randn(batch_size, 4, 5)
-            data["vggt_target_tokens"] = torch.randn(batch_size, 4, 7)
+            data["jepa_target_tokens"] = torch.randn(batch_size, 12, 1024)
+            data["vggt_target_tokens"] = torch.randn(batch_size, 12, 2048)
     return BatchFeature(data=data)
 
 
@@ -291,14 +294,14 @@ def main() -> None:
     jepa_only = ReCogDriveDiffusionPlanner(_tiny_config(use_expert_features=True, use_jepa=True, use_vggt=False))
     jepa_only.train()
     jepa_only_input = _action_input(include_experts=False)
-    jepa_only_input["jepa_tokens"] = torch.randn(2, 4, 5)
+    jepa_only_input["jepa_context_tokens"] = torch.randn(2, 12, 1024)
     jepa_only_out = jepa_only(_features(), jepa_only_input)
     assert torch.isfinite(jepa_only_out.loss)
 
     vggt_only = ReCogDriveDiffusionPlanner(_tiny_config(use_expert_features=True, use_jepa=False, use_vggt=True))
     vggt_only.train()
     vggt_only_input = _action_input(include_experts=False)
-    vggt_only_input["vggt_tokens"] = torch.randn(2, 4, 7)
+    vggt_only_input["vggt_context_tokens"] = torch.randn(2, 12, 2048)
     vggt_only_out = vggt_only(_features(), vggt_only_input)
     assert torch.isfinite(vggt_only_out.loss)
 
@@ -354,7 +357,7 @@ def main() -> None:
     try:
         expert(_features(), _action_input(include_experts=False))
     except KeyError as exc:
-        assert "jepa_tokens" in str(exc)
+        assert "jepa_context_tokens" in str(exc)
     else:
         raise AssertionError("missing expert tensors should raise a clear KeyError")
 

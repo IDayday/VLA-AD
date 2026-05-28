@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import copy
 import lzma
-import math
 import pickle
 import warnings
 from dataclasses import asdict, dataclass, field
@@ -52,6 +51,14 @@ from .blocks.encoder import (
     SwiGLUFFN,
 )
 from .recogdrive_dit import LightningDiT
+from .expert_fusion import (
+    AlignmentHead,
+    ExpertAdapter768,
+    TeacherTokenProjector,
+    branch_logits_from_probs,
+    init_logit_from_prob,
+    normalized_mse_loss,
+)
 
 @dataclass
 class FlowConfig:
@@ -113,22 +120,35 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     model_dtype: str = "float16"
     grpo: bool = False
     vlm_size: str = 'large'
+    planner_dim: int = 384
     use_expert_features: bool = False
-    expert_feature_source: Literal['none', 'dummy', 'cache', 'real'] = 'none'
+    expert_feature_source: Literal['none', 'dummy', 'chunk', 'disk', 'online', 'cache', 'real'] = 'none'
+    expert_adapter_dim: int = 768
     allow_random_init: bool = True
     allow_dummy_expert_cache: bool = False
     use_jepa: bool = True
     use_vggt: bool = True
-    jepa_dim: int = 0
-    vggt_dim: int = 0
-    expert_dropout: float = 0.0
-    expert_fusion_mode: str = "concat_context"
+    jepa_dim: int = 1024
+    vggt_dim: int = 2048
+    num_jepa_tokens: int = 12
+    num_vggt_tokens: int = 12
+    use_teacher_context_tokens: bool = True
+    use_student_latent_adapters: bool = True
+    use_branch_weighted_mean: bool = True
     use_expert_type_embedding: bool = True
     use_expert_gates: bool = True
+    expert_dropout: float = 0.10
+    expert_fusion_mode: str = "concat_context"
     expert_alignment_weight: float = 0.0
-    jepa_alignment_weight: float = 0.0
-    vggt_alignment_weight: float = 0.0
-    alignment_loss_type: Literal['mse', 'cosine'] = 'mse'
+    jepa_alignment_weight: float = 0.03
+    vggt_alignment_weight: float = 0.05
+    alignment_loss_type: str = "normalized_mse"
+    jepa_gate_init: float = 0.05
+    vggt_gate_init: float = 0.05
+    branch_init_vlm: float = 0.90
+    branch_init_jepa: float = 0.05
+    branch_init_vggt: float = 0.05
+    allow_future_targets_in_inference: bool = False
     
     tune_projector: bool = True
     tune_diffusion_model: bool = True
@@ -179,8 +199,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         else:
             self.feature_encoder = nn.Linear(1536, config.input_embedding_dim)
 
-        if config.alignment_loss_type not in {"mse", "cosine"}:
-            raise ValueError("alignment_loss_type must be either 'mse' or 'cosine'.")
+        if config.alignment_loss_type not in {"normalized_mse", "mse", "cosine"}:
+            raise ValueError("alignment_loss_type must be one of 'normalized_mse', 'mse', or 'cosine'.")
         for weight_name in ("expert_alignment_weight", "jepa_alignment_weight", "vggt_alignment_weight"):
             if getattr(config, weight_name) < 0.0:
                 raise ValueError(f"{weight_name} must be non-negative.")
@@ -194,31 +214,57 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     "Only 'concat_context' is implemented."
                 )
             if config.use_jepa and config.jepa_dim <= 0:
-                raise ValueError(
-                    "use_expert_features=True with use_jepa=True requires positive jepa_dim."
-                )
+                raise ValueError("use_expert_features=True with use_jepa=True requires positive jepa_dim.")
             if config.use_vggt and config.vggt_dim <= 0:
-                raise ValueError(
-                    "use_expert_features=True with use_vggt=True requires positive vggt_dim."
-                )
+                raise ValueError("use_expert_features=True with use_vggt=True requires positive vggt_dim.")
+            if not config.use_teacher_context_tokens and not config.use_student_latent_adapters:
+                raise ValueError("Expert mode requires teacher context tokens and/or student latent adapters.")
             if not 0.0 <= config.expert_dropout < 1.0:
                 raise ValueError("expert_dropout must be in [0.0, 1.0).")
 
+            planner_dim = config.input_embedding_dim
             if config.use_jepa:
-                self.jepa_projector = nn.Linear(config.jepa_dim, config.input_embedding_dim)
+                self.jepa_projector = TeacherTokenProjector(
+                    config.jepa_dim,
+                    expert_adapter_dim=config.expert_adapter_dim,
+                    planner_dim=planner_dim,
+                )
+                self.jepa_adapter = ExpertAdapter768(
+                    planner_dim=planner_dim,
+                    expert_adapter_dim=config.expert_adapter_dim,
+                    num_tokens=config.num_jepa_tokens,
+                )
+                self.jepa_alignment_head = AlignmentHead(config.expert_adapter_dim, config.jepa_dim)
             if config.use_vggt:
-                self.vggt_projector = nn.Linear(config.vggt_dim, config.input_embedding_dim)
+                self.vggt_projector = TeacherTokenProjector(
+                    config.vggt_dim,
+                    expert_adapter_dim=config.expert_adapter_dim,
+                    planner_dim=planner_dim,
+                )
+                self.vggt_adapter = ExpertAdapter768(
+                    planner_dim=planner_dim,
+                    expert_adapter_dim=config.expert_adapter_dim,
+                    num_tokens=config.num_vggt_tokens,
+                )
+                self.vggt_alignment_head = AlignmentHead(config.expert_adapter_dim, config.vggt_dim)
 
             if config.use_expert_type_embedding:
-                self.expert_type_embedding = nn.Embedding(2, config.input_embedding_dim)
-                nn.init.normal_(self.expert_type_embedding.weight, mean=0.0, std=0.02)
+                self.jepa_type_embedding = nn.Parameter(torch.empty(1, 1, planner_dim))
+                self.vggt_type_embedding = nn.Parameter(torch.empty(1, 1, planner_dim))
+                self.z_jepa_type_embedding = nn.Parameter(torch.empty(1, 1, planner_dim))
+                self.z_vggt_type_embedding = nn.Parameter(torch.empty(1, 1, planner_dim))
+                nn.init.normal_(self.jepa_type_embedding, mean=0.0, std=0.02)
+                nn.init.normal_(self.vggt_type_embedding, mean=0.0, std=0.02)
+                nn.init.normal_(self.z_jepa_type_embedding, mean=0.0, std=0.02)
+                nn.init.normal_(self.z_vggt_type_embedding, mean=0.0, std=0.02)
 
-            if config.use_expert_gates:
-                gate_init = math.log(0.1 / 0.9)
-                if config.use_jepa:
-                    self.jepa_gate = nn.Parameter(torch.tensor(gate_init, dtype=torch.float32))
-                if config.use_vggt:
-                    self.vggt_gate = nn.Parameter(torch.tensor(gate_init, dtype=torch.float32))
+            self.jepa_gate = nn.Parameter(torch.tensor(init_logit_from_prob(config.jepa_gate_init), dtype=torch.float32))
+            self.vggt_gate = nn.Parameter(torch.tensor(init_logit_from_prob(config.vggt_gate_init), dtype=torch.float32))
+            self.branch_logits = nn.Parameter(branch_logits_from_probs([
+                config.branch_init_vlm,
+                config.branch_init_jepa,
+                config.branch_init_vggt,
+            ]))
             
         self.fusion_projector = nn.Linear(config.input_embedding_dim * 3, config.input_embedding_dim)
 
@@ -349,9 +395,17 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         expert_markers = (
             "jepa_projector",
             "vggt_projector",
-            "expert_type_embedding",
+            "jepa_adapter",
+            "vggt_adapter",
+            "jepa_alignment_head",
+            "vggt_alignment_head",
+            "jepa_type_embedding",
+            "vggt_type_embedding",
+            "z_jepa_type_embedding",
+            "z_vggt_type_embedding",
             "jepa_gate",
             "vggt_gate",
+            "branch_logits",
         )
         return any(marker in key for marker in expert_markers)
 
@@ -470,12 +524,17 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 self.feature_encoder.eval()
                 self.fusion_projector.eval()
                 if self.config.use_expert_features:
-                    if self.config.use_jepa:
-                        self.jepa_projector.eval()
-                    if self.config.use_vggt:
-                        self.vggt_projector.eval()
-                    if self.config.use_expert_type_embedding:
-                        self.expert_type_embedding.eval()
+                    for module_name in (
+                        "jepa_projector",
+                        "vggt_projector",
+                        "jepa_adapter",
+                        "vggt_adapter",
+                        "jepa_alignment_head",
+                        "vggt_alignment_head",
+                    ):
+                        module = getattr(self, module_name, None)
+                        if module is not None:
+                            module.eval()
                 if self.config.add_pos_embed:
                     self.position_embedding.eval()
             
@@ -492,16 +551,37 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         else:
             raise ValueError(f"Unsupported sampling method: {self.config.sampling_method}")
 
-    def _require_expert_tokens(
+    def _resolve_expert_tokens(
         self,
         action_input: Optional[BatchFeature],
-        key: str,
-    ) -> torch.Tensor:
-        if action_input is None or key not in action_input:
+        stream: str,
+        kind: str,
+        *,
+        required: bool,
+    ) -> Optional[torch.Tensor]:
+        if action_input is None:
+            if required:
+                raise KeyError(f"use_expert_features=True requires action_input for {stream} {kind} tokens.")
+            return None
+
+        if kind == "context":
+            keys = [f"{stream}_context_tokens"]
+            legacy_key = f"{stream}_tokens"
+            if legacy_key not in keys:
+                keys.append(legacy_key)
+        elif kind == "target":
+            keys = [f"{stream}_target_tokens"]
+        else:
+            raise ValueError(f"Unknown expert token kind: {kind!r}")
+
+        for key in keys:
+            if key in action_input:
+                return action_input[key]
+        if required:
             raise KeyError(
-                f"use_expert_features=True requires action_input['{key}'] for direct expert fusion."
+                f"use_expert_features=True requires one of {keys} in action_input for {stream} {kind} tokens."
             )
-        return action_input[key]
+        return None
 
     def _warn_if_expert_targets_present(
         self,
@@ -512,135 +592,162 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             return
         present = [key for key in self.expert_target_keys if key in action_input]
         if present:
-            warnings.warn(
+            message = (
                 f"{caller} received train-only expert target keys {present}. "
-                "They are ignored and are never used for inference conditioning.",
-                RuntimeWarning,
+                "They are ignored and are never used for inference conditioning."
             )
+            if not self.training and not self.config.allow_future_targets_in_inference:
+                warnings.warn(message, RuntimeWarning)
+            elif not self.training:
+                warnings.warn(message, RuntimeWarning)
 
-    def _project_expert_tokens(
+    def _validate_teacher_tokens(
         self,
         tokens: torch.Tensor,
-        projector: nn.Module,
+        *,
         expected_dim: int,
+        expected_tokens: Optional[int],
         name: str,
         vl_embeds: torch.Tensor,
-        type_index: int,
-        training: bool,
     ) -> torch.Tensor:
-        embeds = self._adapter_project_expert_tokens(
-            tokens=tokens,
-            projector=projector,
-            expected_dim=expected_dim,
-            tensor_name=f"{name}_tokens",
-            vl_embeds=vl_embeds,
-        )
-        return self._apply_expert_context_modifiers(embeds, name, type_index, training)
-
-    def _apply_expert_context_modifiers(
-        self,
-        embeds: torch.Tensor,
-        name: str,
-        type_index: int,
-        training: bool,
-    ) -> torch.Tensor:
-        if self.config.use_expert_type_embedding:
-            type_embed = self.expert_type_embedding.weight[type_index].view(1, 1, -1)
-            embeds = embeds + type_embed.to(device=embeds.device, dtype=embeds.dtype)
-
-        if training and self.config.expert_dropout > 0:
-            embeds = F.dropout(embeds, p=self.config.expert_dropout, training=True)
-
-        if self.config.use_expert_gates:
-            gate = self.jepa_gate if name == "jepa" else self.vggt_gate
-            embeds = embeds * torch.sigmoid(gate).to(device=embeds.device, dtype=embeds.dtype)
-
-        return embeds
-
-    def _adapter_project_expert_tokens(
-        self,
-        tokens: torch.Tensor,
-        projector: nn.Module,
-        expected_dim: int,
-        tensor_name: str,
-        vl_embeds: torch.Tensor,
-    ) -> torch.Tensor:
-        """Projects expert tokens [B, K, D_teacher] into planner space [B, K, D_planner]."""
         if not isinstance(tokens, torch.Tensor):
-            raise TypeError(f"action_input.{tensor_name} must be a torch.Tensor, got {type(tokens).__name__}.")
+            raise TypeError(f"action_input.{name} must be a torch.Tensor, got {type(tokens).__name__}.")
         if tokens.ndim != 3:
-            raise ValueError(
-                f"action_input.{tensor_name} must have shape [B, K, D], got {tuple(tokens.shape)}."
-            )
+            raise ValueError(f"action_input.{name} must have shape [B, K, D], got {tuple(tokens.shape)}.")
         if tokens.shape[0] != vl_embeds.shape[0]:
             raise ValueError(
-                f"action_input.{tensor_name} batch size {tokens.shape[0]} does not match "
-                f"vl_features batch size {vl_embeds.shape[0]}."
+                f"action_input.{name} batch size {tokens.shape[0]} does not match vl_features batch size {vl_embeds.shape[0]}."
+            )
+        if expected_tokens is not None and tokens.shape[1] != expected_tokens:
+            raise ValueError(
+                f"action_input.{name} token count {tokens.shape[1]} does not match expected {expected_tokens}."
             )
         if tokens.shape[-1] != expected_dim:
             raise ValueError(
-                f"action_input.{tensor_name} last dimension {tokens.shape[-1]} does not match "
-                f"configured expected_dim={expected_dim}."
+                f"action_input.{name} dim {tokens.shape[-1]} does not match expected_dim={expected_dim}."
             )
+        return tokens.to(device=vl_embeds.device, dtype=vl_embeds.dtype)
 
-        tokens = tokens.to(device=vl_embeds.device, dtype=vl_embeds.dtype)
-        return projector(tokens)
+    def _encode_vlm(self, vl_features: torch.Tensor) -> torch.Tensor:
+        return self.feature_encoder(vl_features)
 
-    def _build_context_embeds(
+    def _apply_stream_gate_and_dropout(
         self,
-        vl_features: torch.Tensor,
+        embeds: torch.Tensor,
+        *,
+        stream: str,
+        training: bool,
+    ) -> torch.Tensor:
+        gate = self.jepa_gate if stream == "jepa" else self.vggt_gate
+        embeds = embeds * torch.sigmoid(gate).to(device=embeds.device, dtype=embeds.dtype)
+        if training and self.config.expert_dropout > 0.0:
+            embeds = F.dropout(embeds, p=self.config.expert_dropout, training=True)
+        return embeds
+
+    def _build_stream_context(
+        self,
+        stream: str,
+        vl_embeds: torch.Tensor,
         action_input: Optional[BatchFeature],
         training: bool,
-        return_expert_embeds: bool = False,
-    ) -> torch.Tensor | tuple[torch.Tensor, Dict[str, torch.Tensor]]:
-        vl_embeds = self.feature_encoder(vl_features)
+    ) -> tuple[Optional[torch.Tensor], Optional[torch.Tensor]]:
+        if stream == "jepa":
+            enabled = self.config.use_jepa
+            projector = getattr(self, "jepa_projector", None)
+            adapter = getattr(self, "jepa_adapter", None)
+            expected_dim = self.config.jepa_dim
+            num_tokens = self.config.num_jepa_tokens
+            teacher_type = getattr(self, "jepa_type_embedding", None)
+            latent_type = getattr(self, "z_jepa_type_embedding", None)
+        elif stream == "vggt":
+            enabled = self.config.use_vggt
+            projector = getattr(self, "vggt_projector", None)
+            adapter = getattr(self, "vggt_adapter", None)
+            expected_dim = self.config.vggt_dim
+            num_tokens = self.config.num_vggt_tokens
+            teacher_type = getattr(self, "vggt_type_embedding", None)
+            latent_type = getattr(self, "z_vggt_type_embedding", None)
+        else:
+            raise ValueError(f"Unknown expert stream: {stream!r}")
 
-        if not self.config.use_expert_features:
-            if return_expert_embeds:
-                return vl_embeds, {}
-            return vl_embeds
+        if not enabled:
+            return None, None
 
-        context_parts = [vl_embeds]
-        expert_embeds: Dict[str, torch.Tensor] = {}
+        parts: list[torch.Tensor] = []
+        latent_768: Optional[torch.Tensor] = None
 
-        if self.config.use_jepa:
-            jepa_adapter_embeds = self._adapter_project_expert_tokens(
-                tokens=self._require_expert_tokens(action_input, "jepa_tokens"),
-                projector=self.jepa_projector,
-                expected_dim=self.config.jepa_dim,
-                tensor_name="jepa_tokens",
+        if self.config.use_teacher_context_tokens:
+            tokens = self._resolve_expert_tokens(action_input, stream, "context", required=True)
+            assert tokens is not None
+            tokens = self._validate_teacher_tokens(
+                tokens,
+                expected_dim=expected_dim,
+                expected_tokens=num_tokens,
+                name=f"{stream}_context_tokens",
                 vl_embeds=vl_embeds,
             )
-            jepa_embeds = self._apply_expert_context_modifiers(
-                embeds=jepa_adapter_embeds,
-                name="jepa",
-                type_index=0,
-                training=training,
-            )
-            context_parts.append(jepa_embeds)
-            expert_embeds["jepa"] = jepa_adapter_embeds
+            teacher_384 = projector(tokens)
+            if self.config.use_expert_type_embedding and teacher_type is not None:
+                teacher_384 = teacher_384 + teacher_type.to(device=teacher_384.device, dtype=teacher_384.dtype)
+            parts.append(teacher_384)
 
-        if self.config.use_vggt:
-            vggt_adapter_embeds = self._adapter_project_expert_tokens(
-                tokens=self._require_expert_tokens(action_input, "vggt_tokens"),
-                projector=self.vggt_projector,
-                expected_dim=self.config.vggt_dim,
-                tensor_name="vggt_tokens",
-                vl_embeds=vl_embeds,
-            )
-            vggt_embeds = self._apply_expert_context_modifiers(
-                embeds=vggt_adapter_embeds,
-                name="vggt",
-                type_index=1,
-                training=training,
-            )
-            context_parts.append(vggt_embeds)
-            expert_embeds["vggt"] = vggt_adapter_embeds
+        if self.config.use_student_latent_adapters:
+            latent_768, latent_384 = adapter(vl_embeds)
+            if self.config.use_expert_type_embedding and latent_type is not None:
+                latent_384 = latent_384 + latent_type.to(device=latent_384.device, dtype=latent_384.dtype)
+            parts.append(latent_384)
 
-        context_embeds = torch.cat(context_parts, dim=1)
-        if return_expert_embeds:
-            return context_embeds, expert_embeds
-        return context_embeds
+        if not parts:
+            return None, latent_768
+        stream_context = torch.cat(parts, dim=1) if len(parts) > 1 else parts[0]
+        stream_context = self._apply_stream_gate_and_dropout(stream_context, stream=stream, training=training)
+        return stream_context, latent_768
+
+    def _build_expert_context(
+        self,
+        vl_embeds: torch.Tensor,
+        action_input: Optional[BatchFeature],
+        training: bool,
+    ) -> Dict[str, Any]:
+        jepa_all, z_jepa_768 = self._build_stream_context("jepa", vl_embeds, action_input, training)
+        vggt_all, z_vggt_768 = self._build_stream_context("vggt", vl_embeds, action_input, training)
+        return {
+            "jepa_all": jepa_all,
+            "vggt_all": vggt_all,
+            "z_jepa_768": z_jepa_768,
+            "z_vggt_768": z_vggt_768,
+            "diagnostics": {
+                "jepa_gate": torch.sigmoid(self.jepa_gate.detach()).float(),
+                "vggt_gate": torch.sigmoid(self.vggt_gate.detach()).float(),
+                "branch_weights": torch.softmax(self.branch_logits.detach().float(), dim=0),
+            },
+        }
+
+    def _compute_branch_context_mean(
+        self,
+        vl_embeds: torch.Tensor,
+        jepa_all: Optional[torch.Tensor],
+        vggt_all: Optional[torch.Tensor],
+    ) -> torch.Tensor:
+        if not self.config.use_expert_features or not self.config.use_branch_weighted_mean:
+            parts = [vl_embeds]
+            if jepa_all is not None:
+                parts.append(jepa_all)
+            if vggt_all is not None:
+                parts.append(vggt_all)
+            return torch.cat(parts, dim=1).mean(1)
+
+        means = [vl_embeds.mean(1)]
+        logits = [self.branch_logits[0]]
+        if jepa_all is not None:
+            means.append(jepa_all.mean(1))
+            logits.append(self.branch_logits[1])
+        if vggt_all is not None:
+            means.append(vggt_all.mean(1))
+            logits.append(self.branch_logits[2])
+        weights = torch.softmax(torch.stack(logits).float(), dim=0).to(device=vl_embeds.device, dtype=vl_embeds.dtype)
+        stacked_means = torch.stack(means, dim=1)
+        return (stacked_means * weights.view(1, -1, 1)).sum(dim=1)
 
     def _stream_alignment_weight(self, stream: str) -> float:
         stream_weight = self.config.jepa_alignment_weight if stream == "jepa" else self.config.vggt_alignment_weight
@@ -648,46 +755,99 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
     def _alignment_loss(
         self,
-        current_embeds: torch.Tensor,
-        target_embeds: torch.Tensor,
+        pred: torch.Tensor,
+        target: torch.Tensor,
     ) -> torch.Tensor:
-        current = current_embeds.float()
-        target = target_embeds.detach().float()
+        if self.config.alignment_loss_type == "normalized_mse":
+            return normalized_mse_loss(pred, target)
         if self.config.alignment_loss_type == "mse":
-            return F.mse_loss(current, target, reduction='mean')
+            return F.mse_loss(pred.float(), target.detach().float())
         if self.config.alignment_loss_type == "cosine":
-            return (1.0 - F.cosine_similarity(current, target, dim=-1)).mean()
+            return (1.0 - F.cosine_similarity(pred.float(), target.detach().float(), dim=-1)).mean()
         raise ValueError(f"Unsupported alignment_loss_type: {self.config.alignment_loss_type}")
 
-    def _compute_expert_alignment_loss(
+    def _compute_alignment_losses(
         self,
-        stream: str,
-        action_input: BatchFeature,
-        current_embeds: Dict[str, torch.Tensor],
-        reference_loss: torch.Tensor,
-    ) -> torch.Tensor:
-        weight = self._stream_alignment_weight(stream)
-        target_key = f"{stream}_target_tokens"
-        if (
-            weight == 0.0
-            or not self.config.use_expert_features
-            or not self.training
-            or target_key not in action_input
-            or stream not in current_embeds
-        ):
-            return reference_loss.new_zeros(())
+        z_jepa_768: Optional[torch.Tensor],
+        z_vggt_768: Optional[torch.Tensor],
+        action_input: Optional[BatchFeature],
+        *,
+        training: bool,
+        reference: torch.Tensor,
+    ) -> Dict[str, torch.Tensor]:
+        losses = {
+            "jepa_alignment_loss": reference.new_zeros(()),
+            "vggt_alignment_loss": reference.new_zeros(()),
+        }
+        if not self.config.use_expert_features or not training:
+            return losses
 
-        projector = self.jepa_projector if stream == "jepa" else self.vggt_projector
-        expected_dim = self.config.jepa_dim if stream == "jepa" else self.config.vggt_dim
-        with torch.no_grad():
-            target_embeds = self._adapter_project_expert_tokens(
-                tokens=action_input[target_key],
-                projector=projector,
+        for stream, latent, head, expected_dim, expected_tokens in (
+            ("jepa", z_jepa_768, getattr(self, "jepa_alignment_head", None), self.config.jepa_dim, self.config.num_jepa_tokens),
+            ("vggt", z_vggt_768, getattr(self, "vggt_alignment_head", None), self.config.vggt_dim, self.config.num_vggt_tokens),
+        ):
+            if latent is None or head is None or self._stream_alignment_weight(stream) == 0.0:
+                continue
+            target = self._resolve_expert_tokens(action_input, stream, "target", required=False)
+            if target is None:
+                continue
+            target = self._validate_teacher_tokens(
+                target,
                 expected_dim=expected_dim,
-                tensor_name=target_key,
-                vl_embeds=current_embeds[stream],
+                expected_tokens=expected_tokens,
+                name=f"{stream}_target_tokens",
+                vl_embeds=latent,
             )
-        return self._alignment_loss(current_embeds[stream], target_embeds).to(reference_loss.dtype)
+            pred = head(latent)
+            if pred.shape != target.shape:
+                raise ValueError(
+                    f"{stream} alignment prediction shape {tuple(pred.shape)} does not match target {tuple(target.shape)}."
+                )
+            losses[f"{stream}_alignment_loss"] = self._alignment_loss(pred, target).to(dtype=reference.dtype)
+        return losses
+
+    def _prepare_dit_context(
+        self,
+        vl_features: torch.Tensor,
+        action_input: Optional[BatchFeature],
+        training: bool,
+    ) -> Dict[str, Any]:
+        vl_embeds = self._encode_vlm(vl_features)
+        if not self.config.use_expert_features:
+            zero = vl_embeds.new_zeros(())
+            return {
+                "vl_embeds": vl_embeds,
+                "context_tokens": vl_embeds,
+                "context_mean": vl_embeds.mean(1),
+                "jepa_alignment_loss": zero,
+                "vggt_alignment_loss": zero,
+                "diagnostics": {},
+            }
+
+        expert = self._build_expert_context(vl_embeds, action_input, training)
+        context_parts = [vl_embeds]
+        if expert["jepa_all"] is not None:
+            context_parts.append(expert["jepa_all"])
+        if expert["vggt_all"] is not None:
+            context_parts.append(expert["vggt_all"])
+        context_tokens = torch.cat(context_parts, dim=1)
+        context_mean = self._compute_branch_context_mean(vl_embeds, expert["jepa_all"], expert["vggt_all"])
+        zero = vl_embeds.new_zeros(())
+        alignment_losses = self._compute_alignment_losses(
+            expert["z_jepa_768"],
+            expert["z_vggt_768"],
+            action_input,
+            training=training,
+            reference=zero,
+        )
+        return {
+            "vl_embeds": vl_embeds,
+            "context_tokens": context_tokens,
+            "context_mean": context_mean,
+            "jepa_alignment_loss": alignment_losses["jepa_alignment_loss"],
+            "vggt_alignment_loss": alignment_losses["vggt_alignment_loss"],
+            "diagnostics": expert["diagnostics"],
+        }
 
     def _repeat_expert_action_input(
         self,
@@ -697,11 +857,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         if not self.config.use_expert_features:
             return None
 
-        return BatchFeature(data={
-            key: self._require_expert_tokens(action_input, key).repeat_interleave(repeat, 0)
-            for key, enabled in (("jepa_tokens", self.config.use_jepa), ("vggt_tokens", self.config.use_vggt))
-            if enabled
-        })
+        data: Dict[str, torch.Tensor] = {}
+        for stream, enabled in (("jepa", self.config.use_jepa), ("vggt", self.config.use_vggt)):
+            if not enabled:
+                continue
+            tokens = self._resolve_expert_tokens(action_input, stream, "context", required=True)
+            assert tokens is not None
+            data[f"{stream}_context_tokens"] = tokens.repeat_interleave(repeat, 0)
+        return BatchFeature(data=data)
 
 
     def p_mean_variance(
@@ -712,7 +875,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         context_embeds: torch.Tensor,
         his_traj_features: torch.Tensor,
         ego_status_features: torch.Tensor,
-        deterministic: bool = True
+        deterministic: bool = True,
+        context_mean: Optional[torch.Tensor] = None,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Calculates the mean and log variance of the reverse process p(x_{t-1} | x_t).
@@ -725,9 +889,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             pos_ids = torch.arange(action_features.shape[1], device=x.device)
             action_features = action_features + self.position_embedding(pos_ids)
 
-        context_mean = context_embeds.mean(1).unsqueeze(1).repeat(1, self.config.action_horizon, 1)
+        context_mean_features = context_embeds.mean(1) if context_mean is None else context_mean
+        context_mean_features = context_mean_features.unsqueeze(1).repeat(1, self.config.action_horizon, 1)
         fused_input = self.fusion_projector(
-            torch.cat((his_traj_features, context_mean, action_features), dim=2)
+            torch.cat((his_traj_features, context_mean_features, action_features), dim=2)
         )
 
         model_output = self.model(
@@ -807,12 +972,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         if not self.training:
             self._warn_if_expert_targets_present(action_input, "forward")
         
-        context_embeds, expert_embeds = self._build_context_embeds(
-            vl_features,
-            action_input,
-            training=self.training,
-            return_expert_embeds=True,
-        )
+        dit_context = self._prepare_dit_context(vl_features, action_input, training=self.training)
+        context_embeds = dit_context["context_tokens"]
+        context_mean = dit_context["context_mean"]
         his_traj_features = self.his_traj_encoder(
             action_input.his_traj.unsqueeze(1)
         ).repeat(1, self.config.action_horizon, 1)
@@ -834,9 +996,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 pos_ids = torch.arange(action_features.shape[1], device=gt_actions.device)
                 action_features += self.position_embedding(pos_ids)
             
-            context_mean = context_embeds.mean(1).unsqueeze(1).repeat(1, self.config.action_horizon, 1)
+            context_mean_features = context_mean.unsqueeze(1).repeat(1, self.config.action_horizon, 1)
             fused_input = self.fusion_projector(
-                torch.cat((his_traj_features, context_mean, action_features), dim=2)
+                torch.cat((his_traj_features, context_mean_features, action_features), dim=2)
             )
 
             model_output = self.model(fused_input, context_embeds, ego_status_features, t_discrete)
@@ -856,39 +1018,40 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 pos_ids = torch.arange(action_features.shape[1], device=gt_actions.device)
                 action_features += self.position_embedding(pos_ids)
             
-            context_mean = context_embeds.mean(1).unsqueeze(1).repeat(1, self.config.action_horizon, 1)
+            context_mean_features = context_mean.unsqueeze(1).repeat(1, self.config.action_horizon, 1)
             fused_input = self.fusion_projector(
-                torch.cat((his_traj_features, context_mean, action_features), dim=2)
+                torch.cat((his_traj_features, context_mean_features, action_features), dim=2)
             )
             
             model_output = self.model(fused_input, context_embeds, ego_status_features, t_discrete)
             pred_noise = self.action_decoder(model_output)
             diffusion_loss = F.mse_loss(pred_noise, noise, reduction='mean')
 
-        jepa_alignment_loss = self._compute_expert_alignment_loss(
-            "jepa",
-            action_input,
-            expert_embeds,
-            diffusion_loss,
-        )
-        vggt_alignment_loss = self._compute_expert_alignment_loss(
-            "vggt",
-            action_input,
-            expert_embeds,
-            diffusion_loss,
-        )
+        jepa_alignment_loss = dit_context["jepa_alignment_loss"].to(dtype=diffusion_loss.dtype)
+        vggt_alignment_loss = dit_context["vggt_alignment_loss"].to(dtype=diffusion_loss.dtype)
         loss = (
             diffusion_loss
             + self._stream_alignment_weight("jepa") * jepa_alignment_loss
             + self._stream_alignment_weight("vggt") * vggt_alignment_loss
         )
 
-        return BatchFeature(data={
+        output = {
             "loss": loss,
             "diffusion_loss": diffusion_loss,
             "jepa_alignment_loss": jepa_alignment_loss,
             "vggt_alignment_loss": vggt_alignment_loss,
-        })
+        }
+        diagnostics = dit_context.get("diagnostics", {})
+        if diagnostics:
+            branch_weights = diagnostics.get("branch_weights")
+            output["jepa_gate_value"] = diagnostics.get("jepa_gate", loss.detach().new_tensor(0.0)).to(device=loss.device)
+            output["vggt_gate_value"] = diagnostics.get("vggt_gate", loss.detach().new_tensor(0.0)).to(device=loss.device)
+            if branch_weights is not None:
+                branch_weights = branch_weights.to(device=loss.device, dtype=loss.dtype)
+                output["branch_weight_vlm"] = branch_weights[0]
+                output["branch_weight_jepa"] = branch_weights[1]
+                output["branch_weight_vggt"] = branch_weights[2]
+        return BatchFeature(data=output)
 
     def get_action(
         self,
@@ -915,7 +1078,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             BatchFeature: A batch containing the final predicted trajectory.
         """
         self._warn_if_expert_targets_present(action_input, "get_action")
-        context_embeds = self._build_context_embeds(vl_features, action_input, training=False)
+        dit_context = self._prepare_dit_context(vl_features, action_input, training=False)
+        context_embeds = dit_context["context_tokens"]
+        context_mean = dit_context["context_mean"]
         
         history_embeds = self.his_traj_encoder(
             action_input.his_traj.unsqueeze(1)
@@ -942,9 +1107,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 if hasattr(self, 'position_embedding'):
                     action_features += self.position_embedding(torch.arange(self.config.action_horizon, device=device))
                 
-                context_mean = context_embeds.mean(1).unsqueeze(1).repeat(1, self.config.action_horizon, 1)
+                context_mean_features = context_mean.unsqueeze(1).repeat(1, self.config.action_horizon, 1)
                 fused_input = self.fusion_projector(
-                    torch.cat((history_embeds, context_mean, action_features), dim=2)
+                    torch.cat((history_embeds, context_mean_features, action_features), dim=2)
                 )
                 
                 model_output = self.model(fused_input, context_embeds, ego_embeds, t)
@@ -962,7 +1127,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 index_batch = self.make_timesteps(B, i, device)
 
                 mean, logvar, _ = self.p_mean_variance(
-                    current_actions, t_batch, index_batch, context_embeds, history_embeds, ego_embeds, deterministic
+                    current_actions, t_batch, index_batch, context_embeds, history_embeds, ego_embeds, deterministic,
+                    context_mean=context_mean,
                 )
 
                 noise_sample = torch.randn_like(current_actions)
@@ -991,7 +1157,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 index_batch = self.make_timesteps(B, i, device)
 
                 mean, logvar, _ = self.p_mean_variance(
-                    current_actions, t_batch, index_batch, context_embeds, history_embeds, ego_embeds, deterministic
+                    current_actions, t_batch, index_batch, context_embeds, history_embeds, ego_embeds, deterministic,
+                    context_mean=context_mean,
                 )
 
                 std = torch.exp(0.5 * logvar)
@@ -1047,7 +1214,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         """
         if not self.training:
             self._warn_if_expert_targets_present(action_input, "sample_chain")
-        context_embeds = self._build_context_embeds(vl_features, action_input, training=self.training)
+        dit_context = self._prepare_dit_context(vl_features, action_input, training=self.training)
+        context_embeds = dit_context["context_tokens"]
+        context_mean = dit_context["context_mean"]
         B, D = context_embeds.shape[0], self.config.action_dim
         device, dtype = context_embeds.device, context_embeds.dtype
         
@@ -1074,9 +1243,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 if hasattr(self, 'position_embedding'):
                     action_features += self.position_embedding(torch.arange(self.config.action_horizon, device=device))
                 
-                context_mean = context_embeds.mean(1).unsqueeze(1).repeat(1, self.config.action_horizon, 1)
+                context_mean_features = context_mean.unsqueeze(1).repeat(1, self.config.action_horizon, 1)
                 fused_input = self.fusion_projector(
-                    torch.cat((his_traj_features, context_mean, action_features), dim=2)
+                    torch.cat((his_traj_features, context_mean_features, action_features), dim=2)
                 )
                 
                 model_output = self.model(fused_input, context_embeds, ego_status_features, t_batch)
@@ -1098,7 +1267,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 index_batch = self.make_timesteps(B, i, device) if self.config.sampling_method == 'ddim' else t_batch
 
                 mean, logvar, _ = self.p_mean_variance(
-                    current_actions, t_batch, index_batch, context_embeds, his_traj_features, ego_status_features, deterministic
+                    current_actions, t_batch, index_batch, context_embeds, his_traj_features, ego_status_features, deterministic,
+                    context_mean=context_mean,
                 )
 
                 std = torch.exp(0.5 * logvar).to(dtype)
@@ -1149,7 +1319,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         B, K1, H, D = chains.shape
         num_denoising_steps = K1 - 1
         
-        context_embeds = self._build_context_embeds(vl_features, action_input, training=self.training)
+        dit_context = self._prepare_dit_context(vl_features, action_input, training=self.training)
+        context_embeds = dit_context["context_tokens"]
+        context_mean = dit_context["context_mean"]
 
         his_traj_features = self.his_traj_encoder(
             his_traj_features.unsqueeze(1)          
@@ -1162,7 +1334,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         conditioning_embeds = {
             'context_embeds': context_embeds,
             'his_traj_features': his_traj_features,
-            'ego_status_features': ego_status_features
+            'ego_status_features': ego_status_features,
+            'context_mean': context_mean,
         }
         
         batched_conditioning = {}
@@ -1193,7 +1366,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             batched_conditioning['context_embeds'],
             batched_conditioning['his_traj_features'],
             batched_conditioning['ego_status_features'],
-            deterministic=deterministic
+            deterministic=deterministic,
+            context_mean=batched_conditioning['context_mean'],
         )
 
         std = torch.exp(0.5 * logvar).clamp(min=self.min_logprob_denoising_std)

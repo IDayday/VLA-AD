@@ -53,23 +53,35 @@ class ReCogDriveAgent(AbstractAgent):
         use_expert_features: bool = False,
         expert_feature_source: str = "none",
         expert_cache_dir: Optional[str] = None,
-        num_jepa_tokens: int = 4,
-        num_vggt_tokens: int = 4,
+        chunk_cache_dir: Optional[str] = None,
+        allow_dummy_cache: bool = False,
+        expert_adapter_dim: int = 768,
+        num_jepa_tokens: int = 12,
+        num_vggt_tokens: int = 12,
         allow_expert_target_features: bool = False,
         allow_random_init: bool = True,
         allow_dummy_expert_cache: bool = False,
         use_jepa: bool = True,
         use_vggt: bool = True,
-        jepa_dim: int = 0,
-        vggt_dim: int = 0,
-        expert_dropout: float = 0.0,
+        jepa_dim: int = 1024,
+        vggt_dim: int = 2048,
+        expert_dropout: float = 0.10,
         expert_fusion_mode: str = "concat_context",
+        use_teacher_context_tokens: bool = True,
+        use_student_latent_adapters: bool = True,
+        use_branch_weighted_mean: bool = True,
         use_expert_type_embedding: bool = True,
         use_expert_gates: bool = True,
         expert_alignment_weight: float = 0.0,
-        jepa_alignment_weight: float = 0.0,
-        vggt_alignment_weight: float = 0.0,
-        alignment_loss_type: str = "mse",
+        jepa_alignment_weight: float = 0.03,
+        vggt_alignment_weight: float = 0.05,
+        alignment_loss_type: str = "normalized_mse",
+        jepa_gate_init: float = 0.05,
+        vggt_gate_init: float = 0.05,
+        branch_init_vlm: float = 0.90,
+        branch_init_jepa: float = 0.05,
+        branch_init_vggt: float = 0.05,
+        allow_future_targets_in_inference: bool = False,
     ):
         super().__init__()
         self._trajectory_sampling = trajectory_sampling
@@ -87,12 +99,18 @@ class ReCogDriveAgent(AbstractAgent):
         self.vlm_size = vlm_size
         self.train_backbone = train_backbone
         self.use_expert_features = use_expert_features
+        if expert_cache_dir is None and chunk_cache_dir is not None:
+            expert_cache_dir = chunk_cache_dir
+        if allow_dummy_cache:
+            allow_dummy_expert_cache = True
         self.expert_feature_source = normalize_expert_feature_source(
             expert_feature_source,
             use_expert_features=use_expert_features,
             expert_cache_dir=expert_cache_dir,
         )
         self.expert_cache_dir = expert_cache_dir
+        self.chunk_cache_dir = chunk_cache_dir
+        self.expert_adapter_dim = expert_adapter_dim
         self.num_jepa_tokens = num_jepa_tokens
         self.num_vggt_tokens = num_vggt_tokens
         self.allow_expert_target_features = allow_expert_target_features
@@ -104,18 +122,27 @@ class ReCogDriveAgent(AbstractAgent):
         self.vggt_dim = vggt_dim
         self.expert_dropout = expert_dropout
         self.expert_fusion_mode = expert_fusion_mode
+        self.use_teacher_context_tokens = use_teacher_context_tokens
+        self.use_student_latent_adapters = use_student_latent_adapters
+        self.use_branch_weighted_mean = use_branch_weighted_mean
         self.use_expert_type_embedding = use_expert_type_embedding
         self.use_expert_gates = use_expert_gates
         self.expert_alignment_weight = expert_alignment_weight
         self.jepa_alignment_weight = jepa_alignment_weight
         self.vggt_alignment_weight = vggt_alignment_weight
         self.alignment_loss_type = alignment_loss_type
+        self.jepa_gate_init = jepa_gate_init
+        self.vggt_gate_init = vggt_gate_init
+        self.branch_init_vlm = branch_init_vlm
+        self.branch_init_jepa = branch_init_jepa
+        self.branch_init_vggt = branch_init_vggt
+        self.allow_future_targets_in_inference = allow_future_targets_in_inference
         self._warned_random_init = False
         self._warned_dummy_features = False
         self._dummy_expert_backend: Optional[DummyExpertBackend] = None
 
-        if self.use_expert_features and self.expert_feature_source == "real":
-            raise NotImplementedError("expert_feature_source='real' is reserved for future JEPA/VGGT teacher integration.")
+        if self.use_expert_features and self.expert_feature_source == "online":
+            raise NotImplementedError("expert_feature_source='online' is reserved for future JEPA/VGGT teacher integration.")
         if self.use_expert_features and self.expert_feature_source == "dummy":
             self._dummy_expert_backend = build_dummy_expert_backend(
                 num_jepa_tokens=self.num_jepa_tokens,
@@ -152,14 +179,21 @@ class ReCogDriveAgent(AbstractAgent):
             cfg = make_recogdrive_config(self.dit_type, action_dim=3, action_horizon=8, grpo=self.grpo, input_embedding_dim=384,sampling_method=sampling_method)
 
         cfg.vlm_size = self.vlm_size
+        cfg.planner_dim = cfg.input_embedding_dim
         cfg.use_expert_features = self.use_expert_features
         cfg.expert_feature_source = self.expert_feature_source
+        cfg.expert_adapter_dim = self.expert_adapter_dim
         cfg.allow_random_init = self.allow_random_init
         cfg.allow_dummy_expert_cache = self.allow_dummy_expert_cache
         cfg.use_jepa = self.use_jepa
         cfg.use_vggt = self.use_vggt
         cfg.jepa_dim = self.jepa_dim
         cfg.vggt_dim = self.vggt_dim
+        cfg.num_jepa_tokens = self.num_jepa_tokens
+        cfg.num_vggt_tokens = self.num_vggt_tokens
+        cfg.use_teacher_context_tokens = self.use_teacher_context_tokens
+        cfg.use_student_latent_adapters = self.use_student_latent_adapters
+        cfg.use_branch_weighted_mean = self.use_branch_weighted_mean
         cfg.expert_dropout = self.expert_dropout
         cfg.expert_fusion_mode = self.expert_fusion_mode
         cfg.use_expert_type_embedding = self.use_expert_type_embedding
@@ -168,6 +202,12 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.jepa_alignment_weight = self.jepa_alignment_weight
         cfg.vggt_alignment_weight = self.vggt_alignment_weight
         cfg.alignment_loss_type = self.alignment_loss_type
+        cfg.jepa_gate_init = self.jepa_gate_init
+        cfg.vggt_gate_init = self.vggt_gate_init
+        cfg.branch_init_vlm = self.branch_init_vlm
+        cfg.branch_init_jepa = self.branch_init_jepa
+        cfg.branch_init_vggt = self.branch_init_vggt
+        cfg.allow_future_targets_in_inference = self.allow_future_targets_in_inference
 
         if self.grpo:
             cfg.grpo_cfg.metric_cache_path = self.metric_cache_path
@@ -326,9 +366,17 @@ class ReCogDriveAgent(AbstractAgent):
         expert_markers = (
             "jepa_projector",
             "vggt_projector",
-            "expert_type_embedding",
+            "jepa_adapter",
+            "vggt_adapter",
+            "jepa_alignment_head",
+            "vggt_alignment_head",
+            "jepa_type_embedding",
+            "vggt_type_embedding",
+            "z_jepa_type_embedding",
+            "z_vggt_type_embedding",
             "jepa_gate",
             "vggt_gate",
+            "branch_logits",
         )
         return key.startswith("action_head.") and any(marker in key for marker in expert_markers)
 
@@ -340,23 +388,68 @@ class ReCogDriveAgent(AbstractAgent):
             return checkpoint
         raise TypeError(f"Checkpoint must be a dict or contain a 'state_dict' dict, got {type(checkpoint).__name__}.")
 
-    def _safe_load_checkpoint(self, checkpoint_path: str) -> None:
-        path = Path(checkpoint_path)
-        if not path.is_file():
-            if self.allow_random_init:
-                warnings.warn(
-                    f"Checkpoint not found at {path}. Continuing with random initialization because "
-                    "allow_random_init=True. This must not be interpreted as driving performance.",
-                    RuntimeWarning,
-                )
-                return
-            raise FileNotFoundError(f"Checkpoint not found: {path}")
+    @staticmethod
+    def _checkpoint_file_candidates(path: Path) -> List[Path]:
+        if path.is_file():
+            return [path]
+        if not path.exists():
+            return []
+        suffixes = (".ckpt", ".pth", ".pt", ".safetensors")
+        candidates: List[Path] = []
+        for suffix in suffixes:
+            candidates.extend(p for p in path.rglob(f"*{suffix}") if p.is_file())
+        return sorted(set(candidates))
 
+    @staticmethod
+    def _checkpoint_candidate_score(path: Path) -> tuple[int, int, str]:
+        name = path.name.lower()
+        size = path.stat().st_size if path.is_file() else 0
+        score = 0
+        if "il" in name:
+            score += 1000
+        if "model" in name:
+            score += 500
+        if path.suffix in {".ckpt", ".pth", ".pt"}:
+            score += 100
+        return score, size, str(path)
+
+    def _resolve_checkpoint_path(self, checkpoint_path: str) -> Optional[Path]:
+        path = Path(checkpoint_path)
+        candidates = self._checkpoint_file_candidates(path)
+        if not candidates:
+            return None
+        selected = max(candidates, key=self._checkpoint_candidate_score)
+        if path.is_dir():
+            print(f"Resolved checkpoint directory {path} to {selected}")
+            print("  checkpoint candidates:")
+            for candidate in candidates:
+                marker = " <= selected" if candidate == selected else ""
+                print(f"    - {candidate} ({candidate.stat().st_size} bytes){marker}")
+        return selected
+
+    def _load_checkpoint_file(self, path: Path) -> Dict[str, torch.Tensor]:
+        if path.suffix == ".safetensors":
+            from safetensors.torch import load_file
+            return dict(load_file(str(path), device="cpu"))
         try:
             checkpoint = torch.load(path, map_location="cpu", weights_only=False)
         except TypeError:
             checkpoint = torch.load(path, map_location="cpu")
-        state_dict = self._checkpoint_state_dict(checkpoint)
+        return self._checkpoint_state_dict(checkpoint)
+
+    def _safe_load_checkpoint(self, checkpoint_path: str) -> None:
+        path = self._resolve_checkpoint_path(checkpoint_path)
+        if path is None:
+            if self.allow_random_init:
+                warnings.warn(
+                    f"Checkpoint not found at {checkpoint_path}. Continuing with random initialization because "
+                    "allow_random_init=True. This must not be interpreted as driving performance.",
+                    RuntimeWarning,
+                )
+                return
+            raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
+
+        state_dict = self._load_checkpoint_file(path)
         model_dict = self.state_dict()
 
         filtered_state: Dict[str, torch.Tensor] = {}
@@ -428,9 +521,9 @@ class ReCogDriveAgent(AbstractAgent):
 
         required_keys = []
         if self.use_jepa:
-            required_keys.append("jepa_tokens")
+            required_keys.append("jepa_context_tokens")
         if self.use_vggt:
-            required_keys.append("vggt_tokens")
+            required_keys.append("vggt_context_tokens")
         if all(key in features for key in required_keys):
             return
 

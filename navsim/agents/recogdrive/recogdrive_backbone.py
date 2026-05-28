@@ -115,7 +115,7 @@ class RecogDriveBackbone(nn.Module):
             queries.append(query)
         self.tokenizer.padding_side = 'left'
         model_inputs = self.tokenizer(queries, return_tensors='pt', padding='max_length', max_length=2800)
-        device = torch.device('cuda')
+        device = torch.device(self.device)
         input_ids = model_inputs['input_ids'].to(device)
         attention_mask = model_inputs['attention_mask'].to(device)
 
@@ -123,7 +123,7 @@ class RecogDriveBackbone(nn.Module):
         position_ids.masked_fill_(attention_mask == 0, 1)
         
         num_patches = pixel_values.size(0)
-        image_flags = torch.tensor([1] * num_patches, dtype=torch.long)
+        image_flags = torch.tensor([1] * num_patches, dtype=torch.long, device=device)
 
 
         return self.model(

@@ -32,7 +32,7 @@ export ALL_PROXY=http://127.0.0.1:7890
 
 ## Download Weights
 
-The downloader is resumable by default. It reuses partial local files and the Hugging Face cache, and it does not remove incomplete fragments unless `--clean-partials` is explicitly passed for the selected target. Proxy is disabled by default; use CLI proxy flags only when needed.
+The downloader is resumable by default. It reuses partial local files and the Hugging Face cache (`--resume` is the default), and it does not remove incomplete fragments unless `--clean-partials` is explicitly passed for the selected target. Use `--no-resume` only when debugging a downloader issue. Proxy is disabled by default; use CLI proxy flags only when needed.
 
 List configured targets:
 
@@ -103,7 +103,7 @@ python scripts/download_required_weights.py \
   --timeout 300
 ```
 
-To clean only incomplete fragments for one selected repo:
+To clean only incomplete fragments for one selected repo. This scans that target's local checkpoint directory and its matching `HF_HUB_CACHE/models--org--repo` cache directory, not the whole checkpoint tree:
 
 ```bash
 python scripts/download_required_weights.py \
@@ -240,6 +240,115 @@ python scripts/train_recogdrive_expert_chunked.py \
   --precision bf16 \
   --debug-overfit \
   --output-dir /mnt/project/VLA-AD/experiments/recogdrive_expert/tiny_overfit
+```
+
+
+## Full Cache Generation
+
+For paper-scale IL experiments, generate the reusable full expert-token cache before training. The cache runner builds full VLM hidden states plus JEPA and VGGT context/target tokens, skips completed sample files, retries failed chunks, and writes resumable reports after every chunk.
+
+Recommended full-cache root:
+
+```bash
+/mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1
+```
+
+Dry-run/status:
+
+```bash
+python scripts/run_full_cache_generation.py \
+  --output-root /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1 \
+  --report-root /mnt/project/VLA-AD/experiments/recogdrive_expert/cache_generation \
+  --assume-navtrain-samples 103288 \
+  --assume-navtest-samples 12146 \
+  --train-chunk-size 4096 \
+  --eval-chunk-size 4096 \
+  --window-mode valid-fill \
+  --num-gpus 8 \
+  --workers-per-gpu 2 \
+  --dry-run
+```
+
+Long-running detached generation:
+
+```bash
+setsid bash -lc 'cd /mnt/project/VLA-AD && python scripts/run_full_cache_generation.py \
+  --output-root /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1 \
+  --report-root /mnt/project/VLA-AD/experiments/recogdrive_expert/cache_generation \
+  --assume-navtrain-samples 103288 \
+  --assume-navtest-samples 12146 \
+  --train-chunk-size 4096 \
+  --eval-chunk-size 4096 \
+  --window-mode valid-fill \
+  --num-gpus 8 \
+  --workers-per-gpu 2 \
+  --precision bf16 \
+  --retries 3 \
+  >> /mnt/project/VLA-AD/experiments/recogdrive_expert/cache_generation/full_cache_generation.nohup.log 2>&1' < /dev/null &
+```
+
+Monitor:
+
+```bash
+tail -f /mnt/project/VLA-AD/experiments/recogdrive_expert/cache_generation/full_cache_generation.nohup.log
+cat /mnt/project/VLA-AD/experiments/recogdrive_expert/cache_generation/full_cache_generation_report.md
+```
+
+Resume after interruption by running the same command again. Completed chunks are detected from `metadata.json`, `index.jsonl`, and sample file counts, and incomplete chunks are retried without deleting existing sample files.
+
+Full-cache generation now uses persistent workers by default. Each worker loads VLM, JEPA, and VGGT once, then receives one chunk shard after another from the runner, so model weights are not reloaded between chunks. If a persistent worker attempt fails, the runner restarts the worker pool before retrying that chunk. Use `--no-persistent-workers` only when debugging a long-lived CUDA/process state issue and you want the older one-builder-subprocess-per-chunk isolation.
+
+Use `--workers-per-gpu 2` on 80GB GPUs when utilization is low; this launches 16 persistent workers across 8 GPUs. Each worker still owns one VLM, JEPA, and VGGT model copy in memory, so `--workers-per-gpu 3` is close to the memory limit and should only be used after watching `nvidia-smi` during a full chunk. `--workers N` can force an exact total worker count.
+
+To split the full cache across two servers sharing the same disk, run partition 0 on the first server and partition 1 on the second server. Partitioning is by raw NAVSIM token range for each selected split, and each builder receives an exclusive `--chunk-stop`, so valid-fill scanning cannot cross into the other server's range. Reports are automatically written under `partition_00_of_02` and `partition_01_of_02` subdirectories.
+
+First server:
+
+```bash
+python scripts/run_full_cache_generation.py \
+  --output-root /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1 \
+  --report-root /mnt/project/VLA-AD/experiments/recogdrive_expert/cache_generation \
+  --assume-navtrain-samples 103288 \
+  --assume-navtest-samples 12146 \
+  --train-chunk-size 4096 \
+  --eval-chunk-size 4096 \
+  --window-mode valid-fill \
+  --partition-count 2 \
+  --partition-index 0 \
+  --num-gpus 8 \
+  --workers-per-gpu 2 \
+  --precision bf16 \
+  --retries 3
+```
+
+Second server:
+
+```bash
+python scripts/run_full_cache_generation.py \
+  --output-root /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1 \
+  --report-root /mnt/project/VLA-AD/experiments/recogdrive_expert/cache_generation \
+  --assume-navtrain-samples 103288 \
+  --assume-navtest-samples 12146 \
+  --train-chunk-size 4096 \
+  --eval-chunk-size 4096 \
+  --window-mode valid-fill \
+  --partition-count 2 \
+  --partition-index 1 \
+  --num-gpus 8 \
+  --workers-per-gpu 2 \
+  --precision bf16 \
+  --retries 3
+```
+
+With `--window-mode valid-fill`, each chunk starts at the previous chunk `chunk_end` and scans forward until it has up to `4096` valid samples. This avoids overlap while keeping chunks as full as possible despite missing sensor frames. Expected full VLM+JEPA+VGGT cache size is about 1.0-2.0 TiB depending on how many raw samples are skipped for missing images.
+
+Training from the full cache should point at the full-cache root and use the train chunk pattern:
+
+```bash
+python scripts/train_recogdrive_expert_chunked.py \
+  --chunk-cache-root /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1 \
+  --chunk-name-pattern 'train_full_chunk_*' \
+  ...
 ```
 
 ## Warmup
