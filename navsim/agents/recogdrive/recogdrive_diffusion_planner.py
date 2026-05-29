@@ -54,6 +54,7 @@ from .recogdrive_dit import LightningDiT
 from .expert_fusion import (
     AlignmentHead,
     ExpertAdapter768,
+    HorizonAwareExpertConditioner,
     TeacherTokenProjector,
     branch_logits_from_probs,
     init_logit_from_prob,
@@ -138,6 +139,10 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     use_expert_type_embedding: bool = True
     use_expert_gates: bool = True
     expert_dropout: float = 0.10
+    expert_stream_dropout: float = 0.0
+    expert_context_scale: float = 1.0
+    use_horizon_expert_residual: bool = False
+    expert_horizon_residual_scale: float = 0.0
     expert_fusion_mode: str = "concat_context"
     expert_alignment_weight: float = 0.0
     jepa_alignment_weight: float = 0.03
@@ -221,6 +226,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 raise ValueError("Expert mode requires teacher context tokens and/or student latent adapters.")
             if not 0.0 <= config.expert_dropout < 1.0:
                 raise ValueError("expert_dropout must be in [0.0, 1.0).")
+            if not 0.0 <= config.expert_stream_dropout < 1.0:
+                raise ValueError("expert_stream_dropout must be in [0.0, 1.0).")
+            if config.expert_context_scale < 0.0:
+                raise ValueError("expert_context_scale must be non-negative.")
+            if config.expert_horizon_residual_scale < 0.0:
+                raise ValueError("expert_horizon_residual_scale must be non-negative.")
 
             planner_dim = config.input_embedding_dim
             if config.use_jepa:
@@ -235,6 +246,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     num_tokens=config.num_jepa_tokens,
                 )
                 self.jepa_alignment_head = AlignmentHead(config.expert_adapter_dim, config.jepa_dim)
+                if config.use_horizon_expert_residual:
+                    self.jepa_horizon_conditioner = HorizonAwareExpertConditioner(
+                        planner_dim=planner_dim,
+                        action_horizon=config.action_horizon,
+                    )
             if config.use_vggt:
                 self.vggt_projector = TeacherTokenProjector(
                     config.vggt_dim,
@@ -247,6 +263,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     num_tokens=config.num_vggt_tokens,
                 )
                 self.vggt_alignment_head = AlignmentHead(config.expert_adapter_dim, config.vggt_dim)
+                if config.use_horizon_expert_residual:
+                    self.vggt_horizon_conditioner = HorizonAwareExpertConditioner(
+                        planner_dim=planner_dim,
+                        action_horizon=config.action_horizon,
+                    )
 
             if config.use_expert_type_embedding:
                 self.jepa_type_embedding = nn.Parameter(torch.empty(1, 1, planner_dim))
@@ -405,6 +426,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "z_vggt_type_embedding",
             "jepa_gate",
             "vggt_gate",
+            "jepa_horizon_conditioner",
+            "vggt_horizon_conditioner",
             "branch_logits",
         )
         return any(marker in key for marker in expert_markers)
@@ -531,6 +554,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         "vggt_adapter",
                         "jepa_alignment_head",
                         "vggt_alignment_head",
+                        "jepa_horizon_conditioner",
+                        "vggt_horizon_conditioner",
                     ):
                         module = getattr(self, module_name, None)
                         if module is not None:
@@ -638,8 +663,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         stream: str,
         training: bool,
     ) -> torch.Tensor:
-        gate = self.jepa_gate if stream == "jepa" else self.vggt_gate
-        embeds = embeds * torch.sigmoid(gate).to(device=embeds.device, dtype=embeds.dtype)
+        if self.config.use_expert_gates:
+            gate = self.jepa_gate if stream == "jepa" else self.vggt_gate
+            embeds = embeds * torch.sigmoid(gate).to(device=embeds.device, dtype=embeds.dtype)
+        if self.config.expert_context_scale != 1.0:
+            embeds = embeds * embeds.new_tensor(float(self.config.expert_context_scale))
+        if training and self.config.expert_stream_dropout > 0.0:
+            keep = torch.rand(embeds.shape[0], 1, 1, device=embeds.device) >= self.config.expert_stream_dropout
+            embeds = embeds * keep.to(dtype=embeds.dtype)
         if training and self.config.expert_dropout > 0.0:
             embeds = F.dropout(embeds, p=self.config.expert_dropout, training=True)
         return embeds
@@ -703,6 +734,35 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         stream_context = self._apply_stream_gate_and_dropout(stream_context, stream=stream, training=training)
         return stream_context, latent_768
 
+    def _compute_horizon_expert_residual(
+        self,
+        jepa_all: Optional[torch.Tensor],
+        vggt_all: Optional[torch.Tensor],
+        *,
+        reference: torch.Tensor,
+    ) -> Optional[torch.Tensor]:
+        if (
+            not self.config.use_expert_features
+            or not self.config.use_horizon_expert_residual
+        ):
+            return None
+
+        conditions: list[torch.Tensor] = []
+        logits: list[torch.Tensor] = []
+        if jepa_all is not None and hasattr(self, "jepa_horizon_conditioner"):
+            conditions.append(self.jepa_horizon_conditioner(jepa_all))
+            logits.append(self.branch_logits[1])
+        if vggt_all is not None and hasattr(self, "vggt_horizon_conditioner"):
+            conditions.append(self.vggt_horizon_conditioner(vggt_all))
+            logits.append(self.branch_logits[2])
+        if not conditions:
+            return None
+
+        weights = torch.softmax(torch.stack(logits).float(), dim=0).to(device=reference.device, dtype=reference.dtype)
+        stacked = torch.stack(conditions, dim=1)
+        residual = (stacked * weights.view(1, -1, 1, 1)).sum(dim=1)
+        return residual * residual.new_tensor(float(self.config.expert_horizon_residual_scale))
+
     def _build_expert_context(
         self,
         vl_embeds: torch.Tensor,
@@ -711,15 +771,19 @@ class ReCogDriveDiffusionPlanner(nn.Module):
     ) -> Dict[str, Any]:
         jepa_all, z_jepa_768 = self._build_stream_context("jepa", vl_embeds, action_input, training)
         vggt_all, z_vggt_768 = self._build_stream_context("vggt", vl_embeds, action_input, training)
+        horizon_residual = self._compute_horizon_expert_residual(jepa_all, vggt_all, reference=vl_embeds)
         return {
             "jepa_all": jepa_all,
             "vggt_all": vggt_all,
             "z_jepa_768": z_jepa_768,
             "z_vggt_768": z_vggt_768,
+            "horizon_residual": horizon_residual,
             "diagnostics": {
                 "jepa_gate": torch.sigmoid(self.jepa_gate.detach()).float(),
                 "vggt_gate": torch.sigmoid(self.vggt_gate.detach()).float(),
                 "branch_weights": torch.softmax(self.branch_logits.detach().float(), dim=0),
+                "expert_context_scale": torch.tensor(float(self.config.expert_context_scale)),
+                "expert_horizon_residual_scale": torch.tensor(float(self.config.expert_horizon_residual_scale)),
             },
         }
 
@@ -786,7 +850,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             ("jepa", z_jepa_768, getattr(self, "jepa_alignment_head", None), self.config.jepa_dim, self.config.num_jepa_tokens),
             ("vggt", z_vggt_768, getattr(self, "vggt_alignment_head", None), self.config.vggt_dim, self.config.num_vggt_tokens),
         ):
-            if latent is None or head is None or self._stream_alignment_weight(stream) == 0.0:
+            if latent is None or head is None:
                 continue
             target = self._resolve_expert_tokens(action_input, stream, "target", required=False)
             if target is None:
@@ -819,6 +883,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "vl_embeds": vl_embeds,
                 "context_tokens": vl_embeds,
                 "context_mean": vl_embeds.mean(1),
+                "expert_step_condition": None,
                 "jepa_alignment_loss": zero,
                 "vggt_alignment_loss": zero,
                 "diagnostics": {},
@@ -844,6 +909,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "vl_embeds": vl_embeds,
             "context_tokens": context_tokens,
             "context_mean": context_mean,
+            "expert_step_condition": expert["horizon_residual"],
             "jepa_alignment_loss": alignment_losses["jepa_alignment_loss"],
             "vggt_alignment_loss": alignment_losses["vggt_alignment_loss"],
             "diagnostics": expert["diagnostics"],
@@ -877,6 +943,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         ego_status_features: torch.Tensor,
         deterministic: bool = True,
         context_mean: Optional[torch.Tensor] = None,
+        expert_step_condition: Optional[torch.Tensor] = None,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Calculates the mean and log variance of the reverse process p(x_{t-1} | x_t).
@@ -894,6 +961,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         fused_input = self.fusion_projector(
             torch.cat((his_traj_features, context_mean_features, action_features), dim=2)
         )
+        if expert_step_condition is not None:
+            fused_input = fused_input + expert_step_condition.to(device=fused_input.device, dtype=fused_input.dtype)
 
         model_output = self.model(
             hidden_states=fused_input,
@@ -975,6 +1044,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         dit_context = self._prepare_dit_context(vl_features, action_input, training=self.training)
         context_embeds = dit_context["context_tokens"]
         context_mean = dit_context["context_mean"]
+        expert_step_condition = dit_context["expert_step_condition"]
         his_traj_features = self.his_traj_encoder(
             action_input.his_traj.unsqueeze(1)
         ).repeat(1, self.config.action_horizon, 1)
@@ -1000,6 +1070,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             fused_input = self.fusion_projector(
                 torch.cat((his_traj_features, context_mean_features, action_features), dim=2)
             )
+            if expert_step_condition is not None:
+                fused_input = fused_input + expert_step_condition.to(device=fused_input.device, dtype=fused_input.dtype)
 
             model_output = self.model(fused_input, context_embeds, ego_status_features, t_discrete)
             pred_velocity = self.action_decoder(model_output)
@@ -1022,6 +1094,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             fused_input = self.fusion_projector(
                 torch.cat((his_traj_features, context_mean_features, action_features), dim=2)
             )
+            if expert_step_condition is not None:
+                fused_input = fused_input + expert_step_condition.to(device=fused_input.device, dtype=fused_input.dtype)
             
             model_output = self.model(fused_input, context_embeds, ego_status_features, t_discrete)
             pred_noise = self.action_decoder(model_output)
@@ -1046,6 +1120,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             branch_weights = diagnostics.get("branch_weights")
             output["jepa_gate_value"] = diagnostics.get("jepa_gate", loss.detach().new_tensor(0.0)).to(device=loss.device)
             output["vggt_gate_value"] = diagnostics.get("vggt_gate", loss.detach().new_tensor(0.0)).to(device=loss.device)
+            output["expert_context_scale"] = diagnostics.get("expert_context_scale", loss.detach().new_tensor(0.0)).to(device=loss.device)
+            output["expert_horizon_residual_scale"] = diagnostics.get("expert_horizon_residual_scale", loss.detach().new_tensor(0.0)).to(device=loss.device)
             if branch_weights is not None:
                 branch_weights = branch_weights.to(device=loss.device, dtype=loss.dtype)
                 output["branch_weight_vlm"] = branch_weights[0]
@@ -1081,6 +1157,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         dit_context = self._prepare_dit_context(vl_features, action_input, training=False)
         context_embeds = dit_context["context_tokens"]
         context_mean = dit_context["context_mean"]
+        expert_step_condition = dit_context["expert_step_condition"]
         
         history_embeds = self.his_traj_encoder(
             action_input.his_traj.unsqueeze(1)
@@ -1111,6 +1188,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 fused_input = self.fusion_projector(
                     torch.cat((history_embeds, context_mean_features, action_features), dim=2)
                 )
+                if expert_step_condition is not None:
+                    fused_input = fused_input + expert_step_condition.to(device=fused_input.device, dtype=fused_input.dtype)
                 
                 model_output = self.model(fused_input, context_embeds, ego_embeds, t)
                 pred = self.action_decoder(model_output)
@@ -1129,6 +1208,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 mean, logvar, _ = self.p_mean_variance(
                     current_actions, t_batch, index_batch, context_embeds, history_embeds, ego_embeds, deterministic,
                     context_mean=context_mean,
+                    expert_step_condition=expert_step_condition,
                 )
 
                 noise_sample = torch.randn_like(current_actions)
@@ -1159,6 +1239,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 mean, logvar, _ = self.p_mean_variance(
                     current_actions, t_batch, index_batch, context_embeds, history_embeds, ego_embeds, deterministic,
                     context_mean=context_mean,
+                    expert_step_condition=expert_step_condition,
                 )
 
                 std = torch.exp(0.5 * logvar)
@@ -1217,6 +1298,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         dit_context = self._prepare_dit_context(vl_features, action_input, training=self.training)
         context_embeds = dit_context["context_tokens"]
         context_mean = dit_context["context_mean"]
+        expert_step_condition = dit_context["expert_step_condition"]
         B, D = context_embeds.shape[0], self.config.action_dim
         device, dtype = context_embeds.device, context_embeds.dtype
         
@@ -1247,6 +1329,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 fused_input = self.fusion_projector(
                     torch.cat((his_traj_features, context_mean_features, action_features), dim=2)
                 )
+                if expert_step_condition is not None:
+                    fused_input = fused_input + expert_step_condition.to(device=fused_input.device, dtype=fused_input.dtype)
                 
                 model_output = self.model(fused_input, context_embeds, ego_status_features, t_batch)
                 pred = self.action_decoder(model_output)
@@ -1269,6 +1353,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 mean, logvar, _ = self.p_mean_variance(
                     current_actions, t_batch, index_batch, context_embeds, his_traj_features, ego_status_features, deterministic,
                     context_mean=context_mean,
+                    expert_step_condition=expert_step_condition,
                 )
 
                 std = torch.exp(0.5 * logvar).to(dtype)
@@ -1322,6 +1407,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         dit_context = self._prepare_dit_context(vl_features, action_input, training=self.training)
         context_embeds = dit_context["context_tokens"]
         context_mean = dit_context["context_mean"]
+        expert_step_condition = dit_context["expert_step_condition"]
 
         his_traj_features = self.his_traj_encoder(
             his_traj_features.unsqueeze(1)          
@@ -1337,6 +1423,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             'ego_status_features': ego_status_features,
             'context_mean': context_mean,
         }
+        if expert_step_condition is not None:
+            conditioning_embeds['expert_step_condition'] = expert_step_condition
         
         batched_conditioning = {}
         for key, value in conditioning_embeds.items():
@@ -1368,6 +1456,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             batched_conditioning['ego_status_features'],
             deterministic=deterministic,
             context_mean=batched_conditioning['context_mean'],
+            expert_step_condition=batched_conditioning.get('expert_step_condition'),
         )
 
         std = torch.exp(0.5 * logvar).clamp(min=self.min_logprob_denoising_std)

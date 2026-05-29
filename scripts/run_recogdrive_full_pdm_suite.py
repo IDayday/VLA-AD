@@ -44,6 +44,11 @@ RUNS: Dict[str, Dict[str, str | None]] = {
         "checkpoint": "experiments/recogdrive_expert/main_il_full_v1_A4_20260527_1455/best.ckpt",
         "train_dir": "experiments/recogdrive_expert/main_il_full_v1_A4_20260527_1455",
     },
+    "a4_v2": {
+        "config": "configs/ablations/recogdrive2b_A4_v2.yaml",
+        "checkpoint": None,
+        "train_dir": None,
+    },
 }
 
 
@@ -70,7 +75,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--chunk-name-pattern", default="navtest_full_chunk_*")
     parser.add_argument("--metric-cache-dir", type=Path, default=Path("/mnt/project/VLA-AD/cache/metric_cache_navtest_full_v1"))
     parser.add_argument("--output-root", type=Path, default=None)
-    parser.add_argument("--runs", default="base_il,a0_no_expert,a1_jepa_only,a2_vggt_only,a3_context_only,a4_jepa_vggt")
+    parser.add_argument("--runs", default="a0_no_expert,a1_jepa_only,a2_vggt_only,a3_context_only,a4_jepa_vggt")
     parser.add_argument("--run-spec-json", type=Path, default=None)
     parser.add_argument("--root-report-name", default=None)
     parser.add_argument("--expected-metric-caches", type=int, default=12146)
@@ -240,7 +245,7 @@ def write_summary(output_root: Path, rows: List[Dict[str, Any]]) -> None:
         )
     lines.extend([
         "",
-        "Interpretation guardrail: compare trained expert runs against `a0_no_expert`, not only against `base_il`.",
+        "Interpretation guardrail: compare trained expert runs against `a0_no_expert`; `base_il` is a legacy optional baseline only when explicitly selected.",
         "A JEPA/VGGT improvement claim requires A4 to beat the same-budget A0 no-expert control on PDMS, with ablations supporting attribution.",
     ])
     (output_root / "summary.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
@@ -275,7 +280,7 @@ def fmt_delta(value: float | None) -> str:
 def write_interpretation_report(args: argparse.Namespace, output_root: Path, rows: List[Dict[str, Any]]) -> None:
     by_run = {str(row.get("run")): row for row in rows}
     a0 = by_run.get("a0_no_expert")
-    a4 = by_run.get("a4_jepa_vggt")
+    a4 = by_run.get("a4_jepa_vggt") or by_run.get("a4_v2")
     base = by_run.get("base_il")
     a0_pdms = metric_float(a0, "pdm_score")
     a4_pdms = metric_float(a4, "pdm_score")
@@ -303,7 +308,7 @@ def write_interpretation_report(args: argparse.Namespace, output_root: Path, row
         "",
         "## Decision Rule",
         "",
-        "只有当 A4 JEPA+VGGT 在 PDMS 上超过同训练预算的 A0 no-expert control 时，才认为外部模型知识注入改进了 ReCogDrive。Base-IL 只作为原始基线，不作为公平训练预算对照。",
+        "只有当 A4/A4-v2 JEPA+VGGT 在 PDMS 上超过同训练预算、同初始化策略的 A0 no-expert control 时，才认为外部模型知识注入改进了 ReCogDrive。若显式评估 Base-IL，它只作为历史参考，不作为公平训练预算对照。",
         "",
         "## Result Table",
         "",

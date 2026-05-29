@@ -38,7 +38,8 @@ from navsim.agents.recogdrive.recogdrive_diffusion_planner import (  # noqa: E40
 EXPERT_MARKERS = (
     "jepa_projector", "vggt_projector", "jepa_adapter", "vggt_adapter",
     "jepa_alignment_head", "vggt_alignment_head", "jepa_type_embedding", "vggt_type_embedding",
-    "z_jepa_type_embedding", "z_vggt_type_embedding", "jepa_gate", "vggt_gate", "branch_logits",
+    "z_jepa_type_embedding", "z_vggt_type_embedding", "jepa_gate", "vggt_gate",
+    "jepa_horizon_conditioner", "vggt_horizon_conditioner", "branch_logits",
 )
 ACTION_HEAD_MARKERS = (
     "feature_encoder", "his_traj_encoder", "ego_status_encoder", "action_encoder",
@@ -58,9 +59,10 @@ def resolve_index_path(chunk_dir: Path, path_value: str) -> Path:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Chunked ReCogDrive expert-token IL training.")
+    parser = argparse.ArgumentParser(description="Chunked ReCogDrive expert-token training from cached Stage1-base features.")
     parser.add_argument("--config", type=Path, required=True)
-    parser.add_argument("--base-il-checkpoint", type=Path, default=None)
+    parser.add_argument("--base-il-checkpoint", type=Path, default=None, help="Deprecated alias for --init-policy-checkpoint.")
+    parser.add_argument("--init-policy-checkpoint", type=Path, default=None, help="Optional policy/action-head checkpoint. Leave unset to train from config initialization.")
     parser.add_argument("--resume-from", type=Path, default=None)
     parser.add_argument("--recogdrive-vlm-path", type=Path, default=None)
     parser.add_argument("--chunk-cache-root", type=Path, default=None)
@@ -102,6 +104,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--jepa-align-weight", type=float, default=None)
     parser.add_argument("--vggt-align-weight", type=float, default=None)
     parser.add_argument("--expert-gate-init", type=float, default=None)
+    parser.add_argument("--alignment-ramp-start-epoch", type=int, default=0)
+    parser.add_argument("--alignment-ramp-end-epoch", type=int, default=0)
+    parser.add_argument("--expert-context-ramp-start-epoch", type=int, default=0)
+    parser.add_argument("--expert-context-ramp-end-epoch", type=int, default=0)
     parser.add_argument("--debug-overfit", action="store_true")
     parser.add_argument("--log-every", type=int, default=10)
     parser.add_argument("--save-every", type=int, default=500)
@@ -531,6 +537,8 @@ def reduce_metrics(output: Dict[str, Any], *, device: torch.device, distributed:
         "branch_weight_vlm",
         "branch_weight_jepa",
         "branch_weight_vggt",
+        "expert_context_scale",
+        "expert_horizon_residual_scale",
     ]
     values = torch.stack([scalar_or_zero(output, key, device) for key in keys]).to(device=device)
     if distributed:
@@ -560,6 +568,39 @@ def apply_epoch_lr(optimizer: torch.optim.Optimizer, args: argparse.Namespace, e
         base_lr = float(group.get("base_lr", group.get("initial_lr", group["lr"])))
         scale = float(group.get("lr_scale", 1.0))
         group["lr"] = official_cosine_lr(args, base_lr, scheduler_epoch) * scale
+
+
+def ramp_factor(epoch_index: int, start_epoch: int, end_epoch: int) -> float:
+    if end_epoch <= start_epoch:
+        return 1.0
+    if epoch_index < start_epoch:
+        return 0.0
+    if epoch_index >= end_epoch:
+        return 1.0
+    return float(epoch_index - start_epoch) / float(end_epoch - start_epoch)
+
+
+def schedule_targets(planner: ReCogDriveDiffusionPlanner) -> Dict[str, float]:
+    return {
+        "jepa_alignment_weight": float(planner.config.jepa_alignment_weight),
+        "vggt_alignment_weight": float(planner.config.vggt_alignment_weight),
+        "expert_context_scale": float(getattr(planner.config, "expert_context_scale", 1.0)),
+        "expert_horizon_residual_scale": float(getattr(planner.config, "expert_horizon_residual_scale", 0.0)),
+    }
+
+
+def apply_epoch_expert_schedules(
+    planner: ReCogDriveDiffusionPlanner,
+    args: argparse.Namespace,
+    epoch_index: int,
+    targets: Dict[str, float],
+) -> None:
+    align_factor = ramp_factor(epoch_index, args.alignment_ramp_start_epoch, args.alignment_ramp_end_epoch)
+    context_factor = ramp_factor(epoch_index, args.expert_context_ramp_start_epoch, args.expert_context_ramp_end_epoch)
+    planner.config.jepa_alignment_weight = targets["jepa_alignment_weight"] * align_factor
+    planner.config.vggt_alignment_weight = targets["vggt_alignment_weight"] * align_factor
+    planner.config.expert_context_scale = targets["expert_context_scale"] * context_factor
+    planner.config.expert_horizon_residual_scale = targets["expert_horizon_residual_scale"] * context_factor
 
 
 def optimizer_step(
@@ -616,14 +657,33 @@ def main() -> int:
     if dtype != torch.float32 and args.precision != "fp16":
         planner = planner.to(dtype=dtype)
 
-    load_report: Dict[str, Any] = {}
-    if args.base_il_checkpoint and not args.resume_from:
-        load_report = shape_safe_load(planner, args.base_il_checkpoint, strict_original=True)
+    load_report: Dict[str, Any] = {
+        "stage1_base_path": str(args.recogdrive_vlm_path) if args.recogdrive_vlm_path else None,
+    }
     if args.resume_from:
-        load_report = shape_safe_load(planner, args.resume_from, strict_original=False)
+        load_report.update(shape_safe_load(planner, args.resume_from, strict_original=False))
+        load_report.update({
+            "init_mode": "resume_from",
+            "init_policy_checkpoint": str(args.resume_from),
+        })
+    else:
+        init_policy_checkpoint = args.init_policy_checkpoint or args.base_il_checkpoint
+        if init_policy_checkpoint:
+            load_report.update(shape_safe_load(planner, init_policy_checkpoint, strict_original=True))
+            load_report.update({
+                "init_mode": "init_policy_checkpoint" if args.init_policy_checkpoint else "base_il_checkpoint_compat",
+                "init_policy_checkpoint": str(init_policy_checkpoint),
+            })
+        else:
+            load_report.update({
+                "init_mode": "random_policy_from_config",
+                "init_policy_checkpoint": None,
+                "loaded_key_count": 0,
+            })
 
     set_trainable(planner, args)
     optimizer = optimizer_for(planner, args)
+    expert_schedule_targets = schedule_targets(planner)
     train_model = planner
     if distributed:
         train_model = DistributedDataParallel(
@@ -715,12 +775,14 @@ def main() -> int:
                 flat_loader = make_loader(flat_dataset, flat_sampler)
                 for global_epoch in range(args.global_epochs):
                     apply_epoch_lr(optimizer, args, global_epoch)
+                    apply_epoch_expert_schedules(planner, args, global_epoch, expert_schedule_targets)
                     if flat_sampler is not None:
                         flat_sampler.set_epoch(global_epoch)
                     yield global_epoch, -1, None, 0, flat_loader
                 return
             for global_epoch in range(args.global_epochs):
                 apply_epoch_lr(optimizer, args, global_epoch)
+                apply_epoch_expert_schedules(planner, args, global_epoch, expert_schedule_targets)
                 for chunk_idx, chunk in enumerate(chunks):
                     dataset = ChunkDataset(
                         chunk,
@@ -745,6 +807,7 @@ def main() -> int:
         while True:
             for chunk_idx, chunk in enumerate(chunks):
                 for local_epoch in range(args.epochs_per_chunk):
+                    apply_epoch_expert_schedules(planner, args, chunk_cycle, expert_schedule_targets)
                     dataset = ChunkDataset(
                         chunk,
                         max_samples=args.max_samples,
@@ -821,6 +884,10 @@ def main() -> int:
                     "branch_weight_vlm": reduced["branch_weight_vlm"] if "branch_weight_vlm" in output else None,
                     "branch_weight_jepa": reduced["branch_weight_jepa"] if "branch_weight_jepa" in output else None,
                     "branch_weight_vggt": reduced["branch_weight_vggt"] if "branch_weight_vggt" in output else None,
+                    "expert_context_scale": reduced["expert_context_scale"] if "expert_context_scale" in output else None,
+                    "expert_horizon_residual_scale": reduced["expert_horizon_residual_scale"] if "expert_horizon_residual_scale" in output else None,
+                    "jepa_alignment_weight": float(planner.config.jepa_alignment_weight),
+                    "vggt_alignment_weight": float(planner.config.vggt_alignment_weight),
                     "grad_norm": grad_norm_value,
                     "learning_rate": lrs(optimizer),
                     "data_wait_sec": round(data_wait_sec, 4),

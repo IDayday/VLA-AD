@@ -133,3 +133,56 @@ class AlignmentHead(nn.Module):
 
     def forward(self, tokens: torch.Tensor) -> torch.Tensor:
         return self.net(tokens)
+
+
+class HorizonAwareExpertConditioner(nn.Module):
+    """Builds one expert residual token per future action step."""
+
+    def __init__(
+        self,
+        planner_dim: int = 384,
+        action_horizon: int = 8,
+        num_heads: int = 8,
+        ffn_multiplier: int = 4,
+    ) -> None:
+        super().__init__()
+        if planner_dim % num_heads != 0:
+            raise ValueError(f"planner_dim={planner_dim} must be divisible by num_heads={num_heads}.")
+        self.planner_dim = planner_dim
+        self.action_horizon = action_horizon
+        self.step_queries = nn.Parameter(torch.empty(action_horizon, planner_dim))
+        self.query_norm = nn.LayerNorm(planner_dim)
+        self.context_norm = nn.LayerNorm(planner_dim)
+        self.attn = nn.MultiheadAttention(
+            embed_dim=planner_dim,
+            num_heads=num_heads,
+            batch_first=True,
+        )
+        self.ffn = nn.Sequential(
+            nn.LayerNorm(planner_dim),
+            nn.Linear(planner_dim, ffn_multiplier * planner_dim),
+            nn.GELU(),
+            nn.Linear(ffn_multiplier * planner_dim, planner_dim),
+        )
+        self.out_norm = nn.LayerNorm(planner_dim)
+        self._reset_parameters()
+
+    def _reset_parameters(self) -> None:
+        nn.init.normal_(self.step_queries, mean=0.0, std=0.02)
+
+    def forward(self, expert_tokens: torch.Tensor) -> torch.Tensor:
+        if expert_tokens.ndim != 3:
+            raise ValueError(f"expert_tokens must have shape [B, K, D], got {tuple(expert_tokens.shape)}.")
+        if expert_tokens.shape[-1] != self.planner_dim:
+            raise ValueError(
+                f"expert_tokens dim {expert_tokens.shape[-1]} does not match planner_dim={self.planner_dim}."
+            )
+        batch_size = expert_tokens.shape[0]
+        queries = self.step_queries.unsqueeze(0).expand(batch_size, -1, -1)
+        attended, _ = self.attn(
+            self.query_norm(queries),
+            self.context_norm(expert_tokens),
+            self.context_norm(expert_tokens),
+            need_weights=False,
+        )
+        return self.out_norm(attended + self.ffn(attended))

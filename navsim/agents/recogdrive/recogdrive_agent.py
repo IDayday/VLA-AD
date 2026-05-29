@@ -73,6 +73,10 @@ class ReCogDriveAgent(AbstractAgent):
         use_expert_type_embedding: bool = True,
         use_expert_gates: bool = True,
         expert_alignment_weight: float = 0.0,
+        expert_stream_dropout: float = 0.0,
+        expert_context_scale: float = 1.0,
+        use_horizon_expert_residual: bool = False,
+        expert_horizon_residual_scale: float = 0.0,
         jepa_alignment_weight: float = 0.03,
         vggt_alignment_weight: float = 0.05,
         alignment_loss_type: str = "normalized_mse",
@@ -128,6 +132,10 @@ class ReCogDriveAgent(AbstractAgent):
         self.use_expert_type_embedding = use_expert_type_embedding
         self.use_expert_gates = use_expert_gates
         self.expert_alignment_weight = expert_alignment_weight
+        self.expert_stream_dropout = expert_stream_dropout
+        self.expert_context_scale = expert_context_scale
+        self.use_horizon_expert_residual = use_horizon_expert_residual
+        self.expert_horizon_residual_scale = expert_horizon_residual_scale
         self.jepa_alignment_weight = jepa_alignment_weight
         self.vggt_alignment_weight = vggt_alignment_weight
         self.alignment_loss_type = alignment_loss_type
@@ -199,6 +207,10 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.use_expert_type_embedding = self.use_expert_type_embedding
         cfg.use_expert_gates = self.use_expert_gates
         cfg.expert_alignment_weight = self.expert_alignment_weight
+        cfg.expert_stream_dropout = self.expert_stream_dropout
+        cfg.expert_context_scale = self.expert_context_scale
+        cfg.use_horizon_expert_residual = self.use_horizon_expert_residual
+        cfg.expert_horizon_residual_scale = self.expert_horizon_residual_scale
         cfg.jepa_alignment_weight = self.jepa_alignment_weight
         cfg.vggt_alignment_weight = self.vggt_alignment_weight
         cfg.alignment_loss_type = self.alignment_loss_type
@@ -376,6 +388,8 @@ class ReCogDriveAgent(AbstractAgent):
             "z_vggt_type_embedding",
             "jepa_gate",
             "vggt_gate",
+            "jepa_horizon_conditioner",
+            "vggt_horizon_conditioner",
             "branch_logits",
         )
         return key.startswith("action_head.") and any(marker in key for marker in expert_markers)

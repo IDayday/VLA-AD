@@ -15,7 +15,7 @@ from typing import Any, Dict, List
 
 PROJECT_ROOT = Path("/mnt/project/VLA-AD")
 DEFAULT_OUTPUT_PARENT = PROJECT_ROOT / "experiments/recogdrive_expert"
-BASE_IL = PROJECT_ROOT / "checkpoints/recogdrive/ReCogDrive-2B-IL"
+STAGE1_BASE = PROJECT_ROOT / "checkpoints/recogdrive/ReCogDrive-VLM-2B"
 CHUNK_ROOT = PROJECT_ROOT / "cache/recogdrive_expert_chunks/full_v1"
 METRIC_CACHE = PROJECT_ROOT / "cache/metric_cache_navtest_full_v1"
 PYTHON = "/root/miniconda3/envs/navsim/bin/python"
@@ -56,32 +56,46 @@ RUNS: Dict[str, Dict[str, Any]] = {
         "jepa_align_weight": 0.03,
         "vggt_align_weight": 0.05,
     },
+    "a4_v2": {
+        "label": "A4-v2 JEPA+VGGT horizon residual",
+        "config": "configs/ablations/recogdrive2b_A4_v2.yaml",
+        "lr_expert": 1e-4,
+        "jepa_align_weight": 0.03,
+        "vggt_align_weight": 0.05,
+        "alignment_ramp_start_epoch": 3,
+        "alignment_ramp_end_epoch": 20,
+        "expert_context_ramp_start_epoch": 0,
+        "expert_context_ramp_end_epoch": 10,
+    },
 }
 
 
 def parse_args() -> argparse.Namespace:
     stamp = datetime.now().strftime("%Y%m%d_%H%M")
-    parser = argparse.ArgumentParser(description="Launch Stage2-aligned ReCogDrive expert-token v2 finetunes.")
+    parser = argparse.ArgumentParser(description="Launch full-epoch ReCogDrive expert-token runs from the Stage1 VLM base cache.")
     parser.add_argument("--project-root", type=Path, default=PROJECT_ROOT)
-    parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_PARENT / f"stage2_aligned_v2_20ep_{stamp}")
-    parser.add_argument("--base-il-checkpoint", type=Path, default=BASE_IL)
+    parser.add_argument("--output-root", type=Path, default=DEFAULT_OUTPUT_PARENT / f"stage2_a4v2_stage1base_full200_{stamp}")
+    parser.add_argument("--stage1-base-path", type=Path, default=STAGE1_BASE)
+    parser.add_argument("--init-policy-checkpoint", type=Path, default=None)
+    parser.add_argument("--base-il-checkpoint", type=Path, default=None, help="Deprecated alias for --init-policy-checkpoint.")
     parser.add_argument("--chunk-cache-root", type=Path, default=CHUNK_ROOT)
     parser.add_argument("--metric-cache-dir", type=Path, default=METRIC_CACHE)
     parser.add_argument("--python", default=PYTHON)
     parser.add_argument("--torchrun", default=None)
-    parser.add_argument("--only", default=",".join(RUNS))
+    parser.add_argument("--only", default="a0_no_expert,a4_v2")
     parser.add_argument("--gpus", default="0,1,2,3,4,5,6,7")
     parser.add_argument("--nproc-per-node", type=int, default=8)
     parser.add_argument("--master-port", type=int, default=29671)
-    parser.add_argument("--global-epochs", type=int, default=20)
-    parser.add_argument("--official-epochs", type=int, default=100)
-    parser.add_argument("--batch-size", type=int, default=32)
+    parser.add_argument("--parallel", action="store_true")
+    parser.add_argument("--global-epochs", type=int, default=200)
+    parser.add_argument("--official-epochs", type=int, default=200)
+    parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--gradient-accumulation-steps", type=int, default=1)
     parser.add_argument("--num-workers", type=int, default=4)
     parser.add_argument("--prefetch-factor", type=int, default=4)
     parser.add_argument("--flat-global-dataset", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--lr", type=float, default=1e-4)
-    parser.add_argument("--precision", choices=("fp16", "bf16", "fp32"), default="fp16")
+    parser.add_argument("--precision", choices=("fp16", "bf16", "fp32"), default="bf16")
     parser.add_argument("--eval-precision", choices=("fp16", "bf16", "fp32"), default="fp32")
     parser.add_argument("--lr-scheduler-epochs", type=int, default=200)
     parser.add_argument("--lr-scheduler-start-epoch", type=int, default=0)
@@ -92,7 +106,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--launch", action="store_true")
     parser.add_argument("--launch-eval-watcher", action="store_true")
     parser.add_argument("--force", action="store_true")
-    return parser.parse_args()
+    args = parser.parse_args()
+    if args.base_il_checkpoint and args.init_policy_checkpoint is None:
+        args.init_policy_checkpoint = args.base_il_checkpoint
+    return args
 
 
 def selected_runs(args: argparse.Namespace) -> List[str]:
@@ -130,15 +147,19 @@ def run_dir(args: argparse.Namespace, run: str) -> Path:
     return args.output_root / run
 
 
-def train_command(args: argparse.Namespace, run: str) -> List[str]:
+def master_port_for_run(args: argparse.Namespace, run_index: int) -> int:
+    return int(args.master_port) + int(run_index)
+
+
+def train_command(args: argparse.Namespace, run: str, *, master_port: int | None = None) -> List[str]:
     spec = RUNS[run]
     script_cmd = [
         args.python,
         "scripts/train_recogdrive_expert_chunked.py",
         "--config",
         spec["config"],
-        "--base-il-checkpoint",
-        str(args.base_il_checkpoint),
+        "--recogdrive-vlm-path",
+        str(args.stage1_base_path),
         "--chunk-cache-root",
         str(args.chunk_cache_root),
         "--chunk-name-pattern",
@@ -161,6 +182,14 @@ def train_command(args: argparse.Namespace, run: str) -> List[str]:
         str(spec["jepa_align_weight"]),
         "--vggt-align-weight",
         str(spec["vggt_align_weight"]),
+        "--alignment-ramp-start-epoch",
+        str(spec.get("alignment_ramp_start_epoch", 0)),
+        "--alignment-ramp-end-epoch",
+        str(spec.get("alignment_ramp_end_epoch", 0)),
+        "--expert-context-ramp-start-epoch",
+        str(spec.get("expert_context_ramp_start_epoch", 0)),
+        "--expert-context-ramp-end-epoch",
+        str(spec.get("expert_context_ramp_end_epoch", 0)),
         "--precision",
         args.precision,
         "--lr-scheduler",
@@ -182,6 +211,8 @@ def train_command(args: argparse.Namespace, run: str) -> List[str]:
         "--output-dir",
         str(run_dir(args, run)),
     ]
+    if args.init_policy_checkpoint is not None:
+        script_cmd.extend(["--init-policy-checkpoint", str(args.init_policy_checkpoint)])
     if args.flat_global_dataset:
         script_cmd.append("--flat-global-dataset")
     if args.nproc_per_node <= 1:
@@ -191,19 +222,13 @@ def train_command(args: argparse.Namespace, run: str) -> List[str]:
         "--nproc_per_node",
         str(args.nproc_per_node),
         "--master_port",
-        str(args.master_port),
+        str(args.master_port if master_port is None else master_port),
         *script_cmd[1:],
     ]
 
 
 def run_specs(args: argparse.Namespace) -> Dict[str, Dict[str, str | None]]:
-    specs: Dict[str, Dict[str, str | None]] = {
-        "base_il": {
-            "config": str(args.project_root / "configs/ablations/recogdrive2b_A0_base_no_expert.yaml"),
-            "checkpoint": str(args.base_il_checkpoint),
-            "train_dir": None,
-        }
-    }
+    specs: Dict[str, Dict[str, str | None]] = {}
     for run in RUNS:
         specs[run] = {
             "config": str(args.project_root / RUNS[run]["config"]),
@@ -222,7 +247,7 @@ def eval_command(args: argparse.Namespace) -> List[str]:
         "--output-root",
         str(args.output_root / "pdm_full_navtest_latest"),
         "--runs",
-        "a0_no_expert,a1_jepa_only,a2_vggt_only,a4_jepa_vggt,a3_context_only",
+        ",".join(selected_runs(args)),
         "--chunk-cache-root",
         str(args.chunk_cache_root),
         "--chunk-name-pattern",
@@ -234,7 +259,7 @@ def eval_command(args: argparse.Namespace) -> List[str]:
         "--precision",
         args.eval_precision,
         "--root-report-name",
-        "FINAL_STAGE2_CORRECTED_V3_PDM_REPORT.md",
+        "FINAL_STAGE1BASE_FULL200_PDM_REPORT.md",
         "--wait",
         "--poll-seconds",
         "300",
@@ -243,20 +268,22 @@ def eval_command(args: argparse.Namespace) -> List[str]:
 
 def write_protocol(args: argparse.Namespace, selected: List[str]) -> None:
     effective_batch = args.batch_size * args.gradient_accumulation_steps * max(args.nproc_per_node, 1)
+    init_policy = str(args.init_policy_checkpoint) if args.init_policy_checkpoint else "none; policy/action-head initialized from config"
     lines = [
-        "# Stage2-Corrected V3 ReCogDrive Expert Finetune",
+        "# Stage1-Base Full-Epoch ReCogDrive Expert Training",
         "",
         f"Generated: {datetime.now().isoformat(timespec='seconds')}",
         "",
         "## Purpose",
         "",
-        "从官方 `ReCogDrive-2B-IL` 出发，只做官方 Stage2 epoch 数的 20% 专家注入微调，用同一训练范式重跑 A0-A4。",
+        "不再从官方 `ReCogDrive-2B-IL` policy checkpoint 微调；本轮使用 Stage1 预训练后的 `ReCogDrive-VLM-2B` 作为缓存特征来源，policy/action-head 与专家分支按当前配置从头训练完整 epoch。",
         "",
-        "## Official-Alignment Choices",
+        "## Training Choices",
         "",
-        f"- Base checkpoint: `{args.base_il_checkpoint}`",
+        f"- Stage1 VLM base path: `{args.stage1_base_path}`",
+        f"- Init policy checkpoint: `{init_policy}`",
         f"- Official Stage2 reference epochs: `{args.official_epochs}`",
-        f"- This corrected finetune epochs: `{args.global_epochs}`",
+        f"- This run epochs: `{args.global_epochs}`",
         f"- Per-device-style batch size: `{args.batch_size}`",
         f"- GPUs per experiment: `{args.nproc_per_node}`",
         f"- Gradient accumulation: `{args.gradient_accumulation_steps}`",
@@ -264,7 +291,7 @@ def write_protocol(args: argparse.Namespace, selected: List[str]) -> None:
         f"- DataLoader workers per rank: `{args.num_workers}`, prefetch_factor=`{args.prefetch_factor}`",
         f"- Sampling/DataLoader: `{'flat global all-chunk sampler' if args.flat_global_dataset else 'per-chunk sampler'}`",
         f"- Action-head LR: `{args.lr}` with AdamW weight_decay=1e-4 betas=(0.9,0.95)",
-        "- Expert LR: per-run table below (`0.0` for A0, `1e-4` for expert runs unless overridden in script)",
+        "- Expert LR: per-run table below (`0.0` for A0, `1e-4` for expert runs)",
         f"- LR scheduler: official-style warmup cosine, epochs=`{args.lr_scheduler_epochs}`, start_epoch=`{args.lr_scheduler_start_epoch}`, warmup=`{args.lr_warmup_epochs}`, min_lr=`{args.min_lr}`",
         f"- Train precision: `{args.precision}`",
         f"- Primary checkpoint for PDM: `latest.ckpt` after final epoch, not train-loss `best.ckpt`",
@@ -272,17 +299,27 @@ def write_protocol(args: argparse.Namespace, selected: List[str]) -> None:
         "",
         "## Runs",
         "",
-        "| Run | Config | Expert LR | JEPA align | VGGT align |",
-        "|---|---|---:|---:|---:|",
+        "| Run | Config | Expert LR | JEPA align | VGGT align | Align ramp | Expert context ramp |",
+        "|---|---|---:|---:|---:|---:|---:|",
     ]
     for run in selected:
         spec = RUNS[run]
-        lines.append("| {} | `{}` | {} | {} | {} |".format(run, spec["config"], spec["lr_expert"], spec["jepa_align_weight"], spec["vggt_align_weight"]))
+        align_ramp = "{}-{}".format(spec.get("alignment_ramp_start_epoch", 0), spec.get("alignment_ramp_end_epoch", 0))
+        context_ramp = "{}-{}".format(spec.get("expert_context_ramp_start_epoch", 0), spec.get("expert_context_ramp_end_epoch", 0))
+        lines.append("| {} | `{}` | {} | {} | {} | {} | {} |".format(
+            run,
+            spec["config"],
+            spec["lr_expert"],
+            spec["jepa_align_weight"],
+            spec["vggt_align_weight"],
+            align_ramp,
+            context_ramp,
+        ))
     lines.extend([
         "",
         "## Decision Rule",
         "",
-        "A4 必须在 full navtest PDMS 上超过同训练预算 A0 no-expert，才能声称 JEPA+VGGT 注入相对 Base-IL 微调范式带来有效增益。",
+        "A4-v2 必须在 full navtest PDMS 上超过同样从 Stage1 base/full-epoch 训练的 A0 no-expert control，才能声称 JEPA+VGGT 注入带来有效增益。",
     ])
     (args.output_root / "PROTOCOL.md").write_text("\n".join(lines) + "\n", encoding="utf-8")
 
@@ -297,7 +334,7 @@ def write_artifacts(args: argparse.Namespace, selected: List[str]) -> None:
     write_protocol(args, selected)
     shell_lines = ["#!/usr/bin/env bash", "set -euo pipefail", f"cd {shlex.quote(str(args.project_root))}", ""]
     for idx, run in enumerate(selected):
-        cmd = train_command(args, run)
+        cmd = train_command(args, run, master_port=master_port_for_run(args, idx))
         shell_lines.append(f"# {run}: {RUNS[run]['label']}")
         if args.nproc_per_node <= 1:
             prefix = f"CUDA_VISIBLE_DEVICES={shlex.quote(gpu_for_run(args, idx))} "
@@ -311,6 +348,30 @@ def write_artifacts(args: argparse.Namespace, selected: List[str]) -> None:
     sequence_path = sequence_shell_path(args)
     sequence_path.write_text("\n".join(shell_lines), encoding="utf-8")
     sequence_path.chmod(0o755)
+    parallel_lines = ["#!/usr/bin/env bash", "set -euo pipefail", f"cd {shlex.quote(str(args.project_root))}", ""]
+    parallel_lines.append("pids=()")
+    for idx, run in enumerate(selected):
+        cmd = train_command(args, run, master_port=master_port_for_run(args, idx))
+        out_dir = run_dir(args, run)
+        parallel_lines.append(f"mkdir -p {shlex.quote(str(out_dir))}")
+        parallel_lines.append(f"# {run}: {RUNS[run]['label']}")
+        if args.nproc_per_node <= 1:
+            prefix = f"CUDA_VISIBLE_DEVICES={shlex.quote(gpu_for_run(args, idx))} "
+        else:
+            prefix = f"CUDA_VISIBLE_DEVICES={shlex.quote(args.gpus)} "
+        parallel_lines.append(
+            prefix
+            + f"PYTHONPATH={shlex.quote(str(args.project_root))}:${{PYTHONPATH:-}} "
+            + shlex.join(cmd)
+            + f" > {shlex.quote(str(out_dir / 'console.log'))} 2>&1 &"
+        )
+        parallel_lines.append(f"echo $! > {shlex.quote(str(out_dir / 'pid.txt'))}")
+        parallel_lines.append("pids+=(\"$!\")")
+        parallel_lines.append("")
+    parallel_lines.append("wait \"${pids[@]}\"")
+    parallel_path = args.output_root / "run_train_8gpu_parallel.sh"
+    parallel_path.write_text("\n".join(parallel_lines), encoding="utf-8")
+    parallel_path.chmod(0o755)
     eval_shell = args.output_root / "run_pdm_full_wait.sh"
     eval_shell.write_text(
         "#!/usr/bin/env bash\nset -euo pipefail\n"
@@ -325,7 +386,7 @@ def sequence_shell_path(args: argparse.Namespace) -> Path:
     return args.output_root / "run_train_8gpu_sequence.sh"
 
 
-def launch_run(args: argparse.Namespace, run: str, gpu: str) -> Dict[str, Any]:
+def launch_run(args: argparse.Namespace, run: str, gpu: str, *, master_port: int | None = None) -> Dict[str, Any]:
     out_dir = run_dir(args, run)
     out_dir.mkdir(parents=True, exist_ok=True)
     pid_path = out_dir / "pid.txt"
@@ -336,7 +397,7 @@ def launch_run(args: argparse.Namespace, run: str, gpu: str) -> Dict[str, Any]:
             old_pid = -1
         if old_pid > 0 and is_alive(old_pid) and not args.force:
             return {"run": run, "pid": old_pid, "status": "already_running", "gpu": gpu}
-    cmd = train_command(args, run)
+    cmd = train_command(args, run, master_port=master_port)
     (out_dir / "command.txt").write_text(" ".join(shlex.quote(part) for part in cmd) + "\n", encoding="utf-8")
     env = os.environ.copy()
     env["CUDA_VISIBLE_DEVICES"] = gpu
@@ -346,6 +407,14 @@ def launch_run(args: argparse.Namespace, run: str, gpu: str) -> Dict[str, Any]:
     process = subprocess.Popen(cmd, cwd=args.project_root, env=env, stdout=log_fp, stderr=subprocess.STDOUT, start_new_session=True)
     pid_path.write_text(f"{process.pid}\n", encoding="utf-8")
     return {"run": run, "pid": process.pid, "status": "launched", "gpu": gpu}
+
+
+def launch_parallel(args: argparse.Namespace, selected: List[str]) -> List[Dict[str, Any]]:
+    launches: List[Dict[str, Any]] = []
+    for idx, run in enumerate(selected):
+        gpu = args.gpus if args.nproc_per_node > 1 else gpu_for_run(args, idx)
+        launches.append(launch_run(args, run, gpu, master_port=master_port_for_run(args, idx)))
+    return launches
 
 
 def launch_sequence(args: argparse.Namespace) -> Dict[str, Any]:
@@ -399,11 +468,13 @@ def main() -> int:
         "launch": [],
     }
     if args.launch:
-        if args.nproc_per_node > 1:
+        if args.parallel:
+            result["launch"] = launch_parallel(args, selected)
+        elif args.nproc_per_node > 1:
             result["launch_sequence"] = launch_sequence(args)
         else:
             for idx, run in enumerate(selected):
-                result["launch"].append(launch_run(args, run, gpu_for_run(args, idx)))
+                result["launch"].append(launch_run(args, run, gpu_for_run(args, idx), master_port=master_port_for_run(args, idx)))
         if args.launch_eval_watcher:
             result["eval_watcher"] = launch_eval_watcher(args)
     print(json.dumps(result, indent=2, sort_keys=True))
