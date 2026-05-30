@@ -91,3 +91,35 @@ def test_planner_forward_backward_expert_and_baseline():
         assert torch.isfinite(out["loss"])
         out["loss"].backward()
         assert any(p.grad is not None and torch.isfinite(p.grad).all() for p in planner.parameters())
+
+
+def test_align_only_loss_excludes_diffusion_path():
+    planner = _planner(True)
+    planner.config.diffusion_loss_weight = 0.0
+    planner.train()
+    vl, action_input = _batch(include_experts=True)
+    out = planner(vl, action_input)
+    expected = (
+        planner.config.jepa_alignment_weight * out["jepa_alignment_loss"]
+        + planner.config.vggt_alignment_weight * out["vggt_alignment_loss"]
+    )
+    assert torch.allclose(out["loss"], expected)
+    out["loss"].backward()
+    assert planner.action_decoder.fc1.weight.grad is not None
+    assert planner.action_decoder.fc1.weight.grad.abs().sum().item() == 0.0
+    assert planner.jepa_adapter.up.weight.grad is not None
+    assert planner.vggt_adapter.up.weight.grad is not None
+
+
+def test_freeze_expert_trainability_keeps_action_head_trainable():
+    from argparse import Namespace
+
+    from scripts.train_recogdrive_expert_chunked import set_trainable
+
+    planner = _planner(True)
+    args = Namespace(train_expert_only=False, freeze_base_action_head=False, freeze_expert=True)
+    set_trainable(planner, args)
+    expert_params = [param for name, param in planner.named_parameters() if "jepa_" in name or "vggt_" in name or name == "branch_logits"]
+    assert expert_params
+    assert not any(param.requires_grad for param in expert_params)
+    assert planner.action_decoder.fc1.weight.requires_grad

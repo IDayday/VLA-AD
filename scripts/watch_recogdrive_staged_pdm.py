@@ -19,6 +19,7 @@ CONFIGS = {
     "a3_context_only": "configs/ablations/recogdrive2b_A3_context_only.yaml",
     "a4_jepa_vggt": "configs/ablations/recogdrive2b_A4_full.yaml",
     "a4_v2": "configs/ablations/recogdrive2b_A4_v2.yaml",
+    "a4_align_first": "configs/ablations/recogdrive2b_A4_align_first_stage2.yaml",
 }
 
 
@@ -27,6 +28,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--project-root", type=Path, default=Path("/mnt/project/VLA-AD"))
     parser.add_argument("--experiment-root", type=Path, required=True)
     parser.add_argument("--runs", default="a0_no_expert,a4_v2")
+    parser.add_argument("--run-spec-json", type=Path, default=None)
     parser.add_argument("--checkpoint-steps", default="50000,60000,80000,100000,120000,140000,160000")
     parser.add_argument("--include-final", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--poll-seconds", type=int, default=300)
@@ -53,6 +55,52 @@ def selected_runs(args: argparse.Namespace) -> List[str]:
 
 def checkpoint_steps(args: argparse.Namespace) -> List[int]:
     return [int(item.strip()) for item in args.checkpoint_steps.split(",") if item.strip()]
+
+
+def resolve_path(project_root: Path, value: str | None) -> Path | None:
+    if value is None:
+        return None
+    path = Path(value)
+    return path if path.is_absolute() else project_root / path
+
+
+def load_configured_run_specs(args: argparse.Namespace) -> Dict[str, Dict[str, str | None]]:
+    if args.run_spec_json is None:
+        specs: Dict[str, Dict[str, str | None]] = {}
+        for run in selected_runs(args):
+            if run not in CONFIGS:
+                raise ValueError(f"Unknown run {run!r}; add it to CONFIGS or pass --run-spec-json.")
+            train_dir = args.experiment_root / run
+            specs[run] = {
+                "config": str(args.project_root / CONFIGS[run]),
+                "checkpoint": str(train_dir / "latest.ckpt"),
+                "train_dir": str(train_dir),
+            }
+        return specs
+
+    data = json.loads(args.run_spec_json.read_text(encoding="utf-8"))
+    if not isinstance(data, dict):
+        raise TypeError(f"{args.run_spec_json} must contain an object mapping run names to specs.")
+    required = {"config", "checkpoint", "train_dir"}
+    specs = {}
+    for run, spec in data.items():
+        if not isinstance(spec, dict):
+            raise TypeError(f"Run spec for {run!r} must be an object.")
+        missing = sorted(required - set(spec))
+        if missing:
+            raise ValueError(f"Run spec for {run!r} missing keys: {missing}")
+        specs[str(run)] = {
+            "config": None if spec["config"] is None else str(spec["config"]),
+            "checkpoint": None if spec["checkpoint"] is None else str(spec["checkpoint"]),
+            "train_dir": None if spec["train_dir"] is None else str(spec["train_dir"]),
+        }
+    return specs
+
+
+def train_dir_for(args: argparse.Namespace, run_specs: Dict[str, Dict[str, str | None]], run: str) -> Path:
+    value = run_specs[run].get("train_dir")
+    resolved = resolve_path(args.project_root, value)
+    return resolved if resolved is not None else args.experiment_root / run
 
 
 def write_json(path: Path, payload: Dict[str, Any]) -> None:
@@ -101,13 +149,20 @@ def checkpoint_meta(path: Path) -> Dict[str, Any]:
         return {"metadata_error": repr(exc)}
 
 
-def wait_for_paths(args: argparse.Namespace, paths: Dict[str, Path], stage_dir: Path, *, require_final_report: bool) -> None:
+def wait_for_paths(
+    args: argparse.Namespace,
+    run_specs: Dict[str, Dict[str, str | None]],
+    paths: Dict[str, Path],
+    stage_dir: Path,
+    *,
+    require_final_report: bool,
+) -> None:
     status_path = stage_dir / "wait_status.json"
     while True:
         missing = []
         run_status = {}
         for run, path in paths.items():
-            run_dir = args.experiment_root / run
+            run_dir = train_dir_for(args, run_specs, run)
             row = last_train_row(run_dir)
             exists = path.is_file()
             final_report = run_dir / "final_report.md"
@@ -166,13 +221,18 @@ def snapshot_paths(args: argparse.Namespace, paths: Dict[str, Path], stage_dir: 
     return snapshots
 
 
-def run_specs(args: argparse.Namespace, snapshots: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, str | None]]:
+def snapshot_run_specs(
+    args: argparse.Namespace,
+    configured_specs: Dict[str, Dict[str, str | None]],
+    snapshots: Dict[str, Dict[str, Any]],
+) -> Dict[str, Dict[str, str | None]]:
     specs: Dict[str, Dict[str, str | None]] = {}
     for run, info in snapshots.items():
-        if run not in CONFIGS:
-            raise ValueError(f"Unknown run {run!r}; add it to CONFIGS first.")
+        config = resolve_path(args.project_root, configured_specs[run].get("config"))
+        if config is None:
+            raise ValueError(f"Run spec for {run!r} has no config.")
         specs[run] = {
-            "config": str(args.project_root / CONFIGS[run]),
+            "config": str(config),
             "checkpoint": str(info["snapshot"]),
             "train_dir": None,
         }
@@ -218,21 +278,35 @@ def run_eval(args: argparse.Namespace, stage_dir: Path, spec_path: Path, stage_n
         return subprocess.run(cmd, cwd=args.project_root, env=env, stdout=log_fp, stderr=subprocess.STDOUT).returncode
 
 
-def stage_paths(args: argparse.Namespace, stage_name: str, step: int | None) -> Dict[str, Path]:
+def stage_paths(
+    args: argparse.Namespace,
+    run_specs: Dict[str, Dict[str, str | None]],
+    stage_name: str,
+    step: int | None,
+) -> Dict[str, Path]:
     paths: Dict[str, Path] = {}
     for run in selected_runs(args):
-        run_dir = args.experiment_root / run
-        paths[run] = run_dir / "latest.ckpt" if step is None else run_dir / f"step_{step:08d}.ckpt"
+        if step is None:
+            checkpoint = resolve_path(args.project_root, run_specs[run].get("checkpoint"))
+            paths[run] = checkpoint if checkpoint is not None else train_dir_for(args, run_specs, run) / "latest.ckpt"
+        else:
+            paths[run] = train_dir_for(args, run_specs, run) / f"step_{step:08d}.ckpt"
     return paths
 
 
-def process_stage(args: argparse.Namespace, output_root: Path, stage_name: str, step: int | None) -> int:
+def process_stage(
+    args: argparse.Namespace,
+    configured_specs: Dict[str, Dict[str, str | None]],
+    output_root: Path,
+    stage_name: str,
+    step: int | None,
+) -> int:
     stage_dir = output_root / stage_name
     stage_dir.mkdir(parents=True, exist_ok=True)
-    paths = stage_paths(args, stage_name, step)
-    wait_for_paths(args, paths, stage_dir, require_final_report=(step is None))
+    paths = stage_paths(args, configured_specs, stage_name, step)
+    wait_for_paths(args, configured_specs, paths, stage_dir, require_final_report=(step is None))
     snapshots = snapshot_paths(args, paths, stage_dir, stage_name)
-    specs = run_specs(args, snapshots)
+    specs = snapshot_run_specs(args, configured_specs, snapshots)
     spec_path = stage_dir / "run_specs.json"
     write_json(spec_path, specs)
     code = run_eval(args, stage_dir, spec_path, stage_name)
@@ -242,6 +316,10 @@ def process_stage(args: argparse.Namespace, output_root: Path, stage_name: str, 
 
 def main() -> int:
     args = parse_args()
+    configured_specs = load_configured_run_specs(args)
+    unknown = [run for run in selected_runs(args) if run not in configured_specs]
+    if unknown:
+        raise ValueError(f"Unknown runs in --runs: {unknown}")
     output_root = args.output_root or (args.experiment_root / "pdm_staged_navtest")
     output_root.mkdir(parents=True, exist_ok=True)
     write_json(output_root / "watcher_args.json", vars(args))
@@ -253,7 +331,7 @@ def main() -> int:
         if done_path.is_file():
             print(f"SKIP {stage_name}: {done_path} exists", flush=True)
             continue
-        code = process_stage(args, output_root, stage_name, step)
+        code = process_stage(args, configured_specs, output_root, stage_name, step)
         if code != 0:
             return code
     return 0

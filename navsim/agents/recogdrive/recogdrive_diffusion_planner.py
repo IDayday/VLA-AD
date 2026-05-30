@@ -144,6 +144,7 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     use_horizon_expert_residual: bool = False
     expert_horizon_residual_scale: float = 0.0
     expert_fusion_mode: str = "concat_context"
+    diffusion_loss_weight: float = 1.0
     expert_alignment_weight: float = 0.0
     jepa_alignment_weight: float = 0.03
     vggt_alignment_weight: float = 0.05
@@ -206,6 +207,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
         if config.alignment_loss_type not in {"normalized_mse", "mse", "cosine"}:
             raise ValueError("alignment_loss_type must be one of 'normalized_mse', 'mse', or 'cosine'.")
+        if config.diffusion_loss_weight < 0.0:
+            raise ValueError("diffusion_loss_weight must be non-negative.")
         for weight_name in ("expert_alignment_weight", "jepa_alignment_weight", "vggt_alignment_weight"):
             if getattr(config, weight_name) < 0.0:
                 raise ValueError(f"{weight_name} must be non-negative.")
@@ -1104,7 +1107,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         jepa_alignment_loss = dit_context["jepa_alignment_loss"].to(dtype=diffusion_loss.dtype)
         vggt_alignment_loss = dit_context["vggt_alignment_loss"].to(dtype=diffusion_loss.dtype)
         loss = (
-            diffusion_loss
+            float(self.config.diffusion_loss_weight) * diffusion_loss
             + self._stream_alignment_weight("jepa") * jepa_alignment_loss
             + self._stream_alignment_weight("vggt") * vggt_alignment_loss
         )

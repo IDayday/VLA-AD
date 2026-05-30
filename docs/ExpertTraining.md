@@ -351,6 +351,39 @@ python scripts/train_recogdrive_expert_chunked.py \
   ...
 ```
 
+## A4 Align-First Variant
+
+The align-first A4 variant separates JEPA/VGGT alignment from ReCogDrive Stage2 training:
+
+1. Stage 1 uses `configs/ablations/recogdrive2b_A4_align_first_stage1.yaml`, sets `diffusion_loss_weight=0`, freezes the base action head, and trains the expert branch with JEPA/VGGT alignment losses only.
+2. Stage 2 uses `configs/ablations/recogdrive2b_A4_align_first_stage2.yaml`, resumes from Stage 1, disables alignment losses, and trains ReCogDrive with the aligned expert branch injected as condition.
+
+Default paths assume the `navsim` conda environment, NAVSIM data under `/mnt/navsim`, and project-local caches under `/mnt/project/VLA-AD/cache`:
+
+```bash
+cd /mnt/project/VLA-AD
+
+/root/miniconda3/envs/navsim/bin/python scripts/run_recogdrive_a4_align_first.py \
+  --chunk-cache-root /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1 \
+  --metric-cache-dir /mnt/project/VLA-AD/cache/metric_cache_navtest_full_v1 \
+  --stage1-base-path /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B
+```
+
+This writes runnable scripts under the generated output root:
+
+- `run_sequence.sh`: Stage 1 alignment followed by Stage 2 condition training.
+- `run_align_stage.sh`: Stage 1 only.
+- `run_stage2_condition.sh`: Stage 2 only, expecting `stage1_align/latest.ckpt`.
+- `run_pdm_full_wait.sh`: wait for training and run full navtest PDM.
+
+Launch detached training and the eval watcher:
+
+```bash
+/root/miniconda3/envs/navsim/bin/python scripts/run_recogdrive_a4_align_first.py \
+  --launch \
+  --launch-eval-watcher
+```
+
 ## Warmup
 
 ```bash

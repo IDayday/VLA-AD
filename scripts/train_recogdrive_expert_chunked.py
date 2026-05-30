@@ -98,11 +98,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--final-check-precision", choices=("auto", "train", "fp32"), default="auto")
     parser.add_argument("--train-expert-only", action="store_true")
     parser.add_argument("--freeze-base-action-head", action="store_true")
+    parser.add_argument("--freeze-expert", action="store_true")
     parser.add_argument("--freeze-vlm", action="store_true", default=True)
     parser.add_argument("--lr-expert", type=float, default=1e-4)
     parser.add_argument("--lr-action-head", type=float, default=2e-5)
     parser.add_argument("--jepa-align-weight", type=float, default=None)
     parser.add_argument("--vggt-align-weight", type=float, default=None)
+    parser.add_argument("--diffusion-loss-weight", type=float, default=None)
     parser.add_argument("--expert-gate-init", type=float, default=None)
     parser.add_argument("--alignment-ramp-start-epoch", type=int, default=0)
     parser.add_argument("--alignment-ramp-end-epoch", type=int, default=0)
@@ -190,6 +192,10 @@ def build_planner(cfg_dict: Dict[str, Any], args: argparse.Namespace) -> ReCogDr
         cfg.jepa_alignment_weight = args.jepa_align_weight
     if args.vggt_align_weight is not None:
         cfg.vggt_alignment_weight = args.vggt_align_weight
+    if args.diffusion_loss_weight is not None:
+        if args.diffusion_loss_weight < 0.0:
+            raise ValueError("--diffusion-loss-weight must be non-negative.")
+        cfg.diffusion_loss_weight = args.diffusion_loss_weight
     if args.expert_gate_init is not None:
         cfg.jepa_gate_init = args.expert_gate_init
         cfg.vggt_gate_init = args.expert_gate_init
@@ -412,12 +418,14 @@ def collate(samples: List[Dict[str, Any]]) -> Tuple[torch.Tensor, BatchFeature]:
 
 
 def set_trainable(planner: ReCogDriveDiffusionPlanner, args: argparse.Namespace) -> None:
+    if args.freeze_expert and (args.train_expert_only or args.freeze_base_action_head):
+        raise ValueError("--freeze-expert leaves no trainable parameters when combined with --train-expert-only or --freeze-base-action-head.")
     for name, parameter in planner.named_parameters():
         expert = is_expert_key(name)
         if args.train_expert_only or args.freeze_base_action_head:
-            parameter.requires_grad = expert
+            parameter.requires_grad = expert and not args.freeze_expert
         else:
-            parameter.requires_grad = expert or any(marker in name for marker in ACTION_HEAD_MARKERS)
+            parameter.requires_grad = (expert and not args.freeze_expert) or any(marker in name for marker in ACTION_HEAD_MARKERS)
 
 
 def optimizer_for(planner: ReCogDriveDiffusionPlanner, args: argparse.Namespace) -> torch.optim.Optimizer:
@@ -628,6 +636,8 @@ def write_final_report(path: Path, summary: Dict[str, Any]) -> None:
         f"Effective batch size: {summary.get('effective_batch_size')}",
         f"World size: {summary.get('world_size')}",
         f"LR scheduler: {summary.get('lr_scheduler')}",
+        f"Diffusion loss weight: {summary.get('diffusion_loss_weight')}",
+        f"Freeze expert: {summary.get('freeze_expert')}",
         f"Best loss: {summary.get('best_loss')}",
         f"Last loss: {summary.get('last_loss')}",
         f"Expert gradients observed: {summary.get('expert_grad_observed')}",
@@ -729,6 +739,8 @@ def main() -> int:
         "effective_batch_size": args.batch_size * args.gradient_accumulation_steps * world_size,
         "world_size": world_size,
         "lr_scheduler": args.lr_scheduler,
+        "diffusion_loss_weight": float(planner.config.diffusion_loss_weight),
+        "freeze_expert": bool(args.freeze_expert),
         "expert_grad_observed": False,
         "pred_traj_finite": None,
         "latest_checkpoint": str(args.output_dir / "latest.ckpt"),
@@ -888,6 +900,7 @@ def main() -> int:
                     "expert_horizon_residual_scale": reduced["expert_horizon_residual_scale"] if "expert_horizon_residual_scale" in output else None,
                     "jepa_alignment_weight": float(planner.config.jepa_alignment_weight),
                     "vggt_alignment_weight": float(planner.config.vggt_alignment_weight),
+                    "diffusion_loss_weight": float(planner.config.diffusion_loss_weight),
                     "grad_norm": grad_norm_value,
                     "learning_rate": lrs(optimizer),
                     "data_wait_sec": round(data_wait_sec, 4),
@@ -972,7 +985,7 @@ def main() -> int:
             "pred_traj_finite_check_precision": pred_check_precision,
             "pred_traj_finite_checks": pred_checks,
         })
-        if planner.config.use_expert_features and not expert_grad_observed:
+        if planner.config.use_expert_features and not args.freeze_expert and not expert_grad_observed:
             raise RuntimeError("No expert parameter gradients were observed during training.")
     except Exception as exc:
         summary.update({
