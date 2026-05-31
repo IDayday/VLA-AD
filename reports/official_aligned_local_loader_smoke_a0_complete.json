@@ -1,0 +1,1117 @@
+{
+  "batch_size": 16,
+  "cache_path": "cache/recogdrive_expert_chunks/full_v1_a0_complete",
+  "dataset_len": 85109,
+  "duplicate_tokens_in_sample": 0,
+  "expert_context_keys_in_collated_features": [],
+  "feature_keys": [
+    "high_command_one_hot",
+    "history_trajectory",
+    "last_hidden_state",
+    "status_feature"
+  ],
+  "last_hidden_state_length_stats": {
+    "max": 2800,
+    "mean": 2800.0,
+    "min": 2800
+  },
+  "last_hidden_state_lengths": [
+    2800,
+    2800,
+    2800,
+    2800,
+    2800,
+    2800,
+    2800,
+    2800,
+    2800,
+    2800,
+    2800,
+    2800,
+    2800,
+    2800,
+    2800,
+    2800
+  ],
+  "missing_keys": {},
+  "official_log_split": true,
+  "sample_count": 16,
+  "sample_high_command_distribution": {
+    "0": 2,
+    "1": 12,
+    "2": 2
+  },
+  "sample_key_rows": [
+    {
+      "dtypes": {
+        "high_command_one_hot": "float32",
+        "history_trajectory": "float32",
+        "last_hidden_state": "float32",
+        "status_feature": "float32",
+        "trajectory": "float32"
+      },
+      "feature_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "last_hidden_state",
+        "status_feature"
+      ],
+      "sample_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "image_path_tensor",
+        "last_hidden_state",
+        "sample_token",
+        "scene_token",
+        "status_feature",
+        "trajectory"
+      ],
+      "shapes": {
+        "high_command_one_hot": [
+          4
+        ],
+        "history_trajectory": [
+          4,
+          3
+        ],
+        "last_hidden_state": [
+          2800,
+          1536
+        ],
+        "status_feature": [
+          8
+        ],
+        "trajectory": [
+          8,
+          3
+        ]
+      },
+      "target_keys": [
+        "trajectory"
+      ],
+      "token": "ffbb7cc8a7ee5b2d"
+    },
+    {
+      "dtypes": {
+        "high_command_one_hot": "float32",
+        "history_trajectory": "float32",
+        "last_hidden_state": "float32",
+        "status_feature": "float32",
+        "trajectory": "float32"
+      },
+      "feature_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "last_hidden_state",
+        "status_feature"
+      ],
+      "sample_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "image_path_tensor",
+        "jepa_context_tokens",
+        "jepa_target_tokens",
+        "last_hidden_state",
+        "sample_token",
+        "scene_token",
+        "status_feature",
+        "trajectory",
+        "vggt_context_tokens",
+        "vggt_target_tokens"
+      ],
+      "shapes": {
+        "high_command_one_hot": [
+          4
+        ],
+        "history_trajectory": [
+          4,
+          3
+        ],
+        "last_hidden_state": [
+          2800,
+          1536
+        ],
+        "status_feature": [
+          8
+        ],
+        "trajectory": [
+          8,
+          3
+        ]
+      },
+      "target_keys": [
+        "trajectory"
+      ],
+      "token": "a4bdcb1823dc52c6"
+    },
+    {
+      "dtypes": {
+        "high_command_one_hot": "float32",
+        "history_trajectory": "float32",
+        "last_hidden_state": "float32",
+        "status_feature": "float32",
+        "trajectory": "float32"
+      },
+      "feature_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "last_hidden_state",
+        "status_feature"
+      ],
+      "sample_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "image_path_tensor",
+        "jepa_context_tokens",
+        "jepa_target_tokens",
+        "last_hidden_state",
+        "sample_token",
+        "scene_token",
+        "status_feature",
+        "trajectory",
+        "vggt_context_tokens",
+        "vggt_target_tokens"
+      ],
+      "shapes": {
+        "high_command_one_hot": [
+          4
+        ],
+        "history_trajectory": [
+          4,
+          3
+        ],
+        "last_hidden_state": [
+          2800,
+          1536
+        ],
+        "status_feature": [
+          8
+        ],
+        "trajectory": [
+          8,
+          3
+        ]
+      },
+      "target_keys": [
+        "trajectory"
+      ],
+      "token": "25de3029e78359ef"
+    },
+    {
+      "dtypes": {
+        "high_command_one_hot": "float32",
+        "history_trajectory": "float32",
+        "last_hidden_state": "float32",
+        "status_feature": "float32",
+        "trajectory": "float32"
+      },
+      "feature_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "last_hidden_state",
+        "status_feature"
+      ],
+      "sample_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "image_path_tensor",
+        "jepa_context_tokens",
+        "jepa_target_tokens",
+        "last_hidden_state",
+        "sample_token",
+        "scene_token",
+        "status_feature",
+        "trajectory",
+        "vggt_context_tokens",
+        "vggt_target_tokens"
+      ],
+      "shapes": {
+        "high_command_one_hot": [
+          4
+        ],
+        "history_trajectory": [
+          4,
+          3
+        ],
+        "last_hidden_state": [
+          2800,
+          1536
+        ],
+        "status_feature": [
+          8
+        ],
+        "trajectory": [
+          8,
+          3
+        ]
+      },
+      "target_keys": [
+        "trajectory"
+      ],
+      "token": "4ba15c9596bd55ed"
+    },
+    {
+      "dtypes": {
+        "high_command_one_hot": "float32",
+        "history_trajectory": "float32",
+        "last_hidden_state": "float32",
+        "status_feature": "float32",
+        "trajectory": "float32"
+      },
+      "feature_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "last_hidden_state",
+        "status_feature"
+      ],
+      "sample_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "image_path_tensor",
+        "jepa_context_tokens",
+        "jepa_target_tokens",
+        "last_hidden_state",
+        "sample_token",
+        "scene_token",
+        "status_feature",
+        "trajectory",
+        "vggt_context_tokens",
+        "vggt_target_tokens"
+      ],
+      "shapes": {
+        "high_command_one_hot": [
+          4
+        ],
+        "history_trajectory": [
+          4,
+          3
+        ],
+        "last_hidden_state": [
+          2800,
+          1536
+        ],
+        "status_feature": [
+          8
+        ],
+        "trajectory": [
+          8,
+          3
+        ]
+      },
+      "target_keys": [
+        "trajectory"
+      ],
+      "token": "64fd95bc2d1d5660"
+    },
+    {
+      "dtypes": {
+        "high_command_one_hot": "float32",
+        "history_trajectory": "float32",
+        "last_hidden_state": "float32",
+        "status_feature": "float32",
+        "trajectory": "float32"
+      },
+      "feature_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "last_hidden_state",
+        "status_feature"
+      ],
+      "sample_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "image_path_tensor",
+        "jepa_context_tokens",
+        "jepa_target_tokens",
+        "last_hidden_state",
+        "sample_token",
+        "scene_token",
+        "status_feature",
+        "trajectory",
+        "vggt_context_tokens",
+        "vggt_target_tokens"
+      ],
+      "shapes": {
+        "high_command_one_hot": [
+          4
+        ],
+        "history_trajectory": [
+          4,
+          3
+        ],
+        "last_hidden_state": [
+          2800,
+          1536
+        ],
+        "status_feature": [
+          8
+        ],
+        "trajectory": [
+          8,
+          3
+        ]
+      },
+      "target_keys": [
+        "trajectory"
+      ],
+      "token": "15a85a658d715a0a"
+    },
+    {
+      "dtypes": {
+        "high_command_one_hot": "float32",
+        "history_trajectory": "float32",
+        "last_hidden_state": "float32",
+        "status_feature": "float32",
+        "trajectory": "float32"
+      },
+      "feature_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "last_hidden_state",
+        "status_feature"
+      ],
+      "sample_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "image_path_tensor",
+        "jepa_context_tokens",
+        "jepa_target_tokens",
+        "last_hidden_state",
+        "sample_token",
+        "scene_token",
+        "status_feature",
+        "trajectory",
+        "vggt_context_tokens",
+        "vggt_target_tokens"
+      ],
+      "shapes": {
+        "high_command_one_hot": [
+          4
+        ],
+        "history_trajectory": [
+          4,
+          3
+        ],
+        "last_hidden_state": [
+          2800,
+          1536
+        ],
+        "status_feature": [
+          8
+        ],
+        "trajectory": [
+          8,
+          3
+        ]
+      },
+      "target_keys": [
+        "trajectory"
+      ],
+      "token": "83bd8512653b5df2"
+    },
+    {
+      "dtypes": {
+        "high_command_one_hot": "float32",
+        "history_trajectory": "float32",
+        "last_hidden_state": "float32",
+        "status_feature": "float32",
+        "trajectory": "float32"
+      },
+      "feature_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "last_hidden_state",
+        "status_feature"
+      ],
+      "sample_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "image_path_tensor",
+        "jepa_context_tokens",
+        "jepa_target_tokens",
+        "last_hidden_state",
+        "sample_token",
+        "scene_token",
+        "status_feature",
+        "trajectory",
+        "vggt_context_tokens",
+        "vggt_target_tokens"
+      ],
+      "shapes": {
+        "high_command_one_hot": [
+          4
+        ],
+        "history_trajectory": [
+          4,
+          3
+        ],
+        "last_hidden_state": [
+          2800,
+          1536
+        ],
+        "status_feature": [
+          8
+        ],
+        "trajectory": [
+          8,
+          3
+        ]
+      },
+      "target_keys": [
+        "trajectory"
+      ],
+      "token": "a83e983fb7365f31"
+    },
+    {
+      "dtypes": {
+        "high_command_one_hot": "float32",
+        "history_trajectory": "float32",
+        "last_hidden_state": "float32",
+        "status_feature": "float32",
+        "trajectory": "float32"
+      },
+      "feature_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "last_hidden_state",
+        "status_feature"
+      ],
+      "sample_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "image_path_tensor",
+        "jepa_context_tokens",
+        "jepa_target_tokens",
+        "last_hidden_state",
+        "sample_token",
+        "scene_token",
+        "status_feature",
+        "trajectory",
+        "vggt_context_tokens",
+        "vggt_target_tokens"
+      ],
+      "shapes": {
+        "high_command_one_hot": [
+          4
+        ],
+        "history_trajectory": [
+          4,
+          3
+        ],
+        "last_hidden_state": [
+          2800,
+          1536
+        ],
+        "status_feature": [
+          8
+        ],
+        "trajectory": [
+          8,
+          3
+        ]
+      },
+      "target_keys": [
+        "trajectory"
+      ],
+      "token": "fd29f79b3f1554c6"
+    },
+    {
+      "dtypes": {
+        "high_command_one_hot": "float32",
+        "history_trajectory": "float32",
+        "last_hidden_state": "float32",
+        "status_feature": "float32",
+        "trajectory": "float32"
+      },
+      "feature_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "last_hidden_state",
+        "status_feature"
+      ],
+      "sample_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "image_path_tensor",
+        "jepa_context_tokens",
+        "jepa_target_tokens",
+        "last_hidden_state",
+        "sample_token",
+        "scene_token",
+        "status_feature",
+        "trajectory",
+        "vggt_context_tokens",
+        "vggt_target_tokens"
+      ],
+      "shapes": {
+        "high_command_one_hot": [
+          4
+        ],
+        "history_trajectory": [
+          4,
+          3
+        ],
+        "last_hidden_state": [
+          2800,
+          1536
+        ],
+        "status_feature": [
+          8
+        ],
+        "trajectory": [
+          8,
+          3
+        ]
+      },
+      "target_keys": [
+        "trajectory"
+      ],
+      "token": "883024c704b55ed4"
+    },
+    {
+      "dtypes": {
+        "high_command_one_hot": "float32",
+        "history_trajectory": "float32",
+        "last_hidden_state": "float32",
+        "status_feature": "float32",
+        "trajectory": "float32"
+      },
+      "feature_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "last_hidden_state",
+        "status_feature"
+      ],
+      "sample_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "image_path_tensor",
+        "jepa_context_tokens",
+        "jepa_target_tokens",
+        "last_hidden_state",
+        "sample_token",
+        "scene_token",
+        "status_feature",
+        "trajectory",
+        "vggt_context_tokens",
+        "vggt_target_tokens"
+      ],
+      "shapes": {
+        "high_command_one_hot": [
+          4
+        ],
+        "history_trajectory": [
+          4,
+          3
+        ],
+        "last_hidden_state": [
+          2800,
+          1536
+        ],
+        "status_feature": [
+          8
+        ],
+        "trajectory": [
+          8,
+          3
+        ]
+      },
+      "target_keys": [
+        "trajectory"
+      ],
+      "token": "150151392af556ca"
+    },
+    {
+      "dtypes": {
+        "high_command_one_hot": "float32",
+        "history_trajectory": "float32",
+        "last_hidden_state": "float32",
+        "status_feature": "float32",
+        "trajectory": "float32"
+      },
+      "feature_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "last_hidden_state",
+        "status_feature"
+      ],
+      "sample_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "image_path_tensor",
+        "jepa_context_tokens",
+        "jepa_target_tokens",
+        "last_hidden_state",
+        "sample_token",
+        "scene_token",
+        "status_feature",
+        "trajectory",
+        "vggt_context_tokens",
+        "vggt_target_tokens"
+      ],
+      "shapes": {
+        "high_command_one_hot": [
+          4
+        ],
+        "history_trajectory": [
+          4,
+          3
+        ],
+        "last_hidden_state": [
+          2800,
+          1536
+        ],
+        "status_feature": [
+          8
+        ],
+        "trajectory": [
+          8,
+          3
+        ]
+      },
+      "target_keys": [
+        "trajectory"
+      ],
+      "token": "3a973878be1256fd"
+    },
+    {
+      "dtypes": {
+        "high_command_one_hot": "float32",
+        "history_trajectory": "float32",
+        "last_hidden_state": "float32",
+        "status_feature": "float32",
+        "trajectory": "float32"
+      },
+      "feature_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "last_hidden_state",
+        "status_feature"
+      ],
+      "sample_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "image_path_tensor",
+        "jepa_context_tokens",
+        "jepa_target_tokens",
+        "last_hidden_state",
+        "sample_token",
+        "scene_token",
+        "status_feature",
+        "trajectory",
+        "vggt_context_tokens",
+        "vggt_target_tokens"
+      ],
+      "shapes": {
+        "high_command_one_hot": [
+          4
+        ],
+        "history_trajectory": [
+          4,
+          3
+        ],
+        "last_hidden_state": [
+          2800,
+          1536
+        ],
+        "status_feature": [
+          8
+        ],
+        "trajectory": [
+          8,
+          3
+        ]
+      },
+      "target_keys": [
+        "trajectory"
+      ],
+      "token": "c2e17640e91f5d96"
+    },
+    {
+      "dtypes": {
+        "high_command_one_hot": "float32",
+        "history_trajectory": "float32",
+        "last_hidden_state": "float32",
+        "status_feature": "float32",
+        "trajectory": "float32"
+      },
+      "feature_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "last_hidden_state",
+        "status_feature"
+      ],
+      "sample_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "image_path_tensor",
+        "jepa_context_tokens",
+        "jepa_target_tokens",
+        "last_hidden_state",
+        "sample_token",
+        "scene_token",
+        "status_feature",
+        "trajectory",
+        "vggt_context_tokens",
+        "vggt_target_tokens"
+      ],
+      "shapes": {
+        "high_command_one_hot": [
+          4
+        ],
+        "history_trajectory": [
+          4,
+          3
+        ],
+        "last_hidden_state": [
+          2800,
+          1536
+        ],
+        "status_feature": [
+          8
+        ],
+        "trajectory": [
+          8,
+          3
+        ]
+      },
+      "target_keys": [
+        "trajectory"
+      ],
+      "token": "bdd6de39859a5725"
+    },
+    {
+      "dtypes": {
+        "high_command_one_hot": "float32",
+        "history_trajectory": "float32",
+        "last_hidden_state": "float32",
+        "status_feature": "float32",
+        "trajectory": "float32"
+      },
+      "feature_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "last_hidden_state",
+        "status_feature"
+      ],
+      "sample_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "image_path_tensor",
+        "jepa_context_tokens",
+        "jepa_target_tokens",
+        "last_hidden_state",
+        "sample_token",
+        "scene_token",
+        "status_feature",
+        "trajectory",
+        "vggt_context_tokens",
+        "vggt_target_tokens"
+      ],
+      "shapes": {
+        "high_command_one_hot": [
+          4
+        ],
+        "history_trajectory": [
+          4,
+          3
+        ],
+        "last_hidden_state": [
+          2800,
+          1536
+        ],
+        "status_feature": [
+          8
+        ],
+        "trajectory": [
+          8,
+          3
+        ]
+      },
+      "target_keys": [
+        "trajectory"
+      ],
+      "token": "f57bfab20bf75084"
+    },
+    {
+      "dtypes": {
+        "high_command_one_hot": "float32",
+        "history_trajectory": "float32",
+        "last_hidden_state": "float32",
+        "status_feature": "float32",
+        "trajectory": "float32"
+      },
+      "feature_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "last_hidden_state",
+        "status_feature"
+      ],
+      "sample_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "image_path_tensor",
+        "jepa_context_tokens",
+        "jepa_target_tokens",
+        "last_hidden_state",
+        "sample_token",
+        "scene_token",
+        "status_feature",
+        "trajectory",
+        "vggt_context_tokens",
+        "vggt_target_tokens"
+      ],
+      "shapes": {
+        "high_command_one_hot": [
+          4
+        ],
+        "history_trajectory": [
+          4,
+          3
+        ],
+        "last_hidden_state": [
+          2800,
+          1536
+        ],
+        "status_feature": [
+          8
+        ],
+        "trajectory": [
+          8,
+          3
+        ]
+      },
+      "target_keys": [
+        "trajectory"
+      ],
+      "token": "0ef790d3d15b5e07"
+    }
+  ],
+  "sample_log_name_distribution": {
+    "2021.05.12.23.36.44_veh-35_01735_01957": 1,
+    "2021.06.09.11.54.15_veh-12_04138_04355": 1,
+    "2021.06.09.12.51.31_veh-35_01047_01415": 1,
+    "2021.06.09.17.37.09_veh-12_00875_01204": 1,
+    "2021.06.09.19.40.26_veh-12_00279_01212": 1,
+    "2021.06.14.13.27.42_veh-35_02853_02953": 1,
+    "2021.06.23.17.31.36_veh-16_00016_00377": 1,
+    "2021.07.09.17.06.37_veh-35_02609_05015": 1,
+    "2021.07.09.23.23.48_veh-26_04648_06327": 1,
+    "2021.07.16.18.06.21_veh-38_00770_01505": 1,
+    "2021.07.16.18.06.21_veh-38_03231_03712": 1,
+    "2021.07.16.18.06.21_veh-38_03733_04300": 1,
+    "2021.08.17.16.48.45_veh-43_01837_02038": 1,
+    "2021.09.15.13.52.55_veh-39_00134_00215": 1,
+    "2021.09.15.15.02.19_veh-39_01107_01666": 1,
+    "2021.10.06.18.52.07_veh-28_00123_00431": 1
+  },
+  "target_keys": [
+    "trajectory"
+  ],
+  "tensor_dtypes": {
+    "features.high_command_one_hot": "float32",
+    "features.history_trajectory": "float32",
+    "features.last_hidden_state": "float32",
+    "features.status_feature": "float32",
+    "targets.trajectory": "float32"
+  },
+  "tensor_shapes": {
+    "features.high_command_one_hot": [
+      16,
+      4
+    ],
+    "features.history_trajectory": [
+      16,
+      4,
+      3
+    ],
+    "features.last_hidden_state": [
+      16,
+      2800,
+      1536
+    ],
+    "features.status_feature": [
+      16,
+      8
+    ],
+    "targets.trajectory": [
+      16,
+      8,
+      3
+    ]
+  },
+  "tokens_list_len": 16,
+  "tokens_list_type": "tuple",
+  "train_dataset_report": {
+    "cache_path": "cache/recogdrive_expert_chunks/full_v1_a0_complete",
+    "chunk_counts": {
+      "train_a0_official_missing_chunk_000000": 191,
+      "train_backfill_chunk_000000": 3778,
+      "train_backfill_chunk_000001": 3468,
+      "train_backfill_chunk_000002": 3751,
+      "train_backfill_chunk_000003": 3469,
+      "train_backfill_chunk_000004": 2902,
+      "train_backfill_chunk_000005": 1853,
+      "train_backfill_p1_chunk_000000": 3145,
+      "train_backfill_p1_chunk_000001": 3703,
+      "train_backfill_p1_chunk_000002": 3453,
+      "train_backfill_p1_chunk_000003": 3472,
+      "train_backfill_p1_chunk_000004": 3135,
+      "train_backfill_p1_chunk_000005": 2163,
+      "train_full_chunk_000000": 3623,
+      "train_full_chunk_000001": 3460,
+      "train_full_chunk_000002": 3583,
+      "train_full_chunk_000003": 3615,
+      "train_full_chunk_000004": 3275,
+      "train_full_chunk_000005": 2399,
+      "train_full_chunk_000006": 3592,
+      "train_full_chunk_000007": 150,
+      "train_full_chunk_000013": 2849,
+      "train_full_chunk_000014": 3604,
+      "train_full_chunk_000015": 3512,
+      "train_full_chunk_000016": 3295,
+      "train_full_chunk_000017": 3448,
+      "train_full_chunk_000018": 3104,
+      "train_full_chunk_000019": 3117
+    },
+    "duplicate_sample_tokens": 0,
+    "include_expert_features": false,
+    "include_expert_targets": false,
+    "num_log_names": 978,
+    "num_records": 85109,
+    "skipped_by_log_name": 18179,
+    "split_name": "train",
+    "top_log_names": [
+      [
+        "2021.07.16.01.22.41_veh-14_04315_07102",
+        1080
+      ],
+      [
+        "2021.06.23.15.56.12_veh-16_01308_04289",
+        824
+      ],
+      [
+        "2021.06.23.14.58.13_veh-35_02037_04783",
+        767
+      ],
+      [
+        "2021.07.16.18.19.22_veh-35_00869_03454",
+        758
+      ],
+      [
+        "2021.07.16.18.49.56_veh-26_00833_03384",
+        752
+      ],
+      [
+        "2021.06.23.15.18.10_veh-26_00165_02848",
+        746
+      ],
+      [
+        "2021.06.23.20.00.35_veh-35_00960_03649",
+        736
+      ],
+      [
+        "2021.07.09.17.06.37_veh-35_02609_05015",
+        714
+      ],
+      [
+        "2021.07.09.23.23.48_veh-26_02228_04624",
+        682
+      ],
+      [
+        "2021.06.23.14.54.32_veh-16_01187_03336",
+        670
+      ]
+    ],
+    "unique_sample_tokens": 85109
+  },
+  "train_duplicate_sample_token_count": 0,
+  "train_only_target_keys_in_collated_features": [],
+  "train_unique_sample_token_count": 85109,
+  "train_val_overlap_if_available": 0,
+  "val_dataset_report": {
+    "cache_path": "cache/recogdrive_expert_chunks/full_v1_a0_complete",
+    "chunk_counts": {
+      "train_a0_official_missing_chunk_000000": 61,
+      "train_backfill_chunk_000000": 318,
+      "train_backfill_chunk_000001": 628,
+      "train_backfill_chunk_000002": 345,
+      "train_backfill_chunk_000003": 627,
+      "train_backfill_chunk_000004": 1194,
+      "train_backfill_chunk_000005": 283,
+      "train_backfill_p1_chunk_000000": 951,
+      "train_backfill_p1_chunk_000001": 393,
+      "train_backfill_p1_chunk_000002": 643,
+      "train_backfill_p1_chunk_000003": 624,
+      "train_backfill_p1_chunk_000004": 961,
+      "train_backfill_p1_chunk_000005": 375,
+      "train_full_chunk_000000": 473,
+      "train_full_chunk_000001": 636,
+      "train_full_chunk_000002": 513,
+      "train_full_chunk_000003": 481,
+      "train_full_chunk_000004": 821,
+      "train_full_chunk_000005": 1697,
+      "train_full_chunk_000006": 504,
+      "train_full_chunk_000007": 114,
+      "train_full_chunk_000013": 1247,
+      "train_full_chunk_000014": 492,
+      "train_full_chunk_000015": 584,
+      "train_full_chunk_000016": 801,
+      "train_full_chunk_000017": 648,
+      "train_full_chunk_000018": 992,
+      "train_full_chunk_000019": 773
+    },
+    "duplicate_sample_tokens": 0,
+    "include_expert_features": false,
+    "include_expert_targets": false,
+    "num_log_names": 214,
+    "num_records": 18179,
+    "skipped_by_log_name": 85109,
+    "split_name": "val",
+    "top_log_names": [
+      [
+        "2021.10.05.07.38.12_veh-50_01085_01463",
+        381
+      ],
+      [
+        "2021.10.05.07.10.04_veh-52_00689_01322",
+        369
+      ],
+      [
+        "2021.07.24.22.52.16_veh-35_03236_04096",
+        311
+      ],
+      [
+        "2021.10.05.07.49.39_veh-52_00934_01406",
+        303
+      ],
+      [
+        "2021.10.05.06.31.40_veh-52_01598_02013",
+        293
+      ],
+      [
+        "2021.10.05.07.10.04_veh-52_01442_01802",
+        284
+      ],
+      [
+        "2021.10.05.06.31.40_veh-52_00734_01305",
+        284
+      ],
+      [
+        "2021.09.14.16.46.51_veh-45_00149_00900",
+        281
+      ],
+      [
+        "2021.10.05.04.38.41_veh-50_00014_00429",
+        266
+      ],
+      [
+        "2021.06.07.13.53.57_veh-35_02489_03145",
+        254
+      ]
+    ],
+    "unique_sample_tokens": 18179
+  },
+  "val_duplicate_sample_token_count_if_available": 0,
+  "val_unique_sample_token_count_if_available": 18179
+}

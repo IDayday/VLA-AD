@@ -51,6 +51,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--recogdrive-vlm-path", type=Path, default=DEFAULT_RECOGDRIVE_VLM)
     parser.add_argument("--jepa-model-path", type=Path, default=DEFAULT_JEPA)
     parser.add_argument("--vggt-model-path", type=Path, default=DEFAULT_VGGT)
+    parser.add_argument("--build-vlm-hidden", dest="build_vlm_hidden", action="store_true", default=True)
+    parser.add_argument("--no-build-vlm-hidden", dest="build_vlm_hidden", action="store_false")
+    parser.add_argument("--build-jepa", dest="build_jepa", action="store_true", default=True)
+    parser.add_argument("--no-build-jepa", dest="build_jepa", action="store_false")
+    parser.add_argument("--build-vggt", dest="build_vggt", action="store_true", default=True)
+    parser.add_argument("--no-build-vggt", dest="build_vggt", action="store_false")
     parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="bf16")
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--num-gpus", type=int, default=8)
@@ -118,9 +124,9 @@ def make_builder_args(args: argparse.Namespace, local_chunk_index: int, rows: Li
             allow_partial_final_chunk=True,
             strict_token_window=False,
             output_dir=output_dir(args, local_chunk_index),
-            build_vlm_hidden=True,
-            build_jepa=True,
-            build_vggt=True,
+            build_vlm_hidden=args.build_vlm_hidden,
+            build_jepa=args.build_jepa,
+            build_vggt=args.build_vggt,
             recogdrive_vlm_path=args.recogdrive_vlm_path,
             jepa_model_path=args.jepa_model_path,
             vggt_model_path=args.vggt_model_path,
@@ -163,7 +169,13 @@ def records_from_manifest(
         future_frames = frames[h : h + 4]
         history_paths = [frame_camera_path(frame, blobs) for frame in history_frames[-4:]]
         future_paths = [frame_camera_path(frame, blobs) for frame in future_frames]
-        required_paths = history_paths[-4:] + future_paths[:4]
+        required_paths: List[str] = []
+        if builder_args.build_vlm_hidden or builder_args.build_jepa or builder_args.build_vggt:
+            required_paths.extend(history_paths[-4:])
+        if builder_args.build_jepa and not builder_args.allow_missing_future_frames:
+            required_paths.extend(future_paths[:4])
+        if builder_args.build_vggt and history_paths:
+            required_paths.append(history_paths[-1])
         missing_paths = [path for path in required_paths if not Path(path).is_file()]
         if missing_paths:
             missing_image_records += 1

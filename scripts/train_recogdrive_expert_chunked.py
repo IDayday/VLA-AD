@@ -5,11 +5,13 @@ import argparse
 import json
 import math
 import os
+import random
 import sys
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
+import numpy as np
 import torch
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel
@@ -41,6 +43,7 @@ EXPERT_MARKERS = (
     "z_jepa_type_embedding", "z_vggt_type_embedding", "jepa_gate", "vggt_gate",
     "jepa_horizon_conditioner", "vggt_horizon_conditioner", "branch_logits",
 )
+GATE_MARKERS = ("jepa_gate", "vggt_gate", "branch_logits")
 ACTION_HEAD_MARKERS = (
     "feature_encoder", "his_traj_encoder", "ego_status_encoder", "action_encoder",
     "fusion_projector", "model", "action_decoder", "position_embedding",
@@ -64,6 +67,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--base-il-checkpoint", type=Path, default=None, help="Deprecated alias for --init-policy-checkpoint.")
     parser.add_argument("--init-policy-checkpoint", type=Path, default=None, help="Optional policy/action-head checkpoint. Leave unset to train from config initialization.")
     parser.add_argument("--resume-from", type=Path, default=None)
+    parser.add_argument("--resume-mode", choices=("weights-only", "full"), default="weights-only")
     parser.add_argument("--recogdrive-vlm-path", type=Path, default=None)
     parser.add_argument("--chunk-cache-root", type=Path, default=None)
     parser.add_argument("--chunk-cache-dir", type=Path, default=None)
@@ -80,6 +84,7 @@ def parse_args() -> argparse.Namespace:
         help="Epoch-major training over all chunks. Use this for Stage2-aligned full-cache training.",
     )
     parser.add_argument("--num-steps", type=int, default=None)
+    parser.add_argument("--num-optimizer-steps", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--gradient-accumulation-steps", type=int, default=1)
     parser.add_argument("--num-workers", type=int, default=0)
@@ -101,6 +106,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--freeze-expert", action="store_true")
     parser.add_argument("--freeze-vlm", action="store_true", default=True)
     parser.add_argument("--lr-expert", type=float, default=1e-4)
+    parser.add_argument("--lr-expert-gate", type=float, default=None)
     parser.add_argument("--lr-action-head", type=float, default=2e-5)
     parser.add_argument("--jepa-align-weight", type=float, default=None)
     parser.add_argument("--vggt-align-weight", type=float, default=None)
@@ -113,6 +119,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--debug-overfit", action="store_true")
     parser.add_argument("--log-every", type=int, default=10)
     parser.add_argument("--save-every", type=int, default=500)
+    parser.add_argument("--seed", type=int, default=20260530)
+    parser.add_argument("--true-bf16-weights", action="store_true")
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--allow-dummy-cache", action="store_true")
     return parser.parse_args()
@@ -120,6 +128,13 @@ def parse_args() -> argparse.Namespace:
 
 def dtype_from_precision(precision: str) -> torch.dtype:
     return {"bf16": torch.bfloat16, "fp16": torch.float16, "fp32": torch.float32}[precision]
+
+
+def seed_everything(seed: int) -> None:
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
 
 
 def init_distributed() -> Tuple[bool, int, int, int]:
@@ -431,21 +446,45 @@ def set_trainable(planner: ReCogDriveDiffusionPlanner, args: argparse.Namespace)
 def optimizer_for(planner: ReCogDriveDiffusionPlanner, args: argparse.Namespace) -> torch.optim.Optimizer:
     expert_params = []
     action_params = []
+    gate_params = []
     for name, param in planner.named_parameters():
         if not param.requires_grad:
             continue
-        if is_expert_key(name):
+        is_gate = any(marker in name for marker in GATE_MARKERS)
+        if args.lr_expert_gate is not None and is_gate:
+            gate_params.append(param)
+        elif is_expert_key(name):
             expert_params.append(param)
         else:
             action_params.append(param)
     groups = []
     if expert_params and args.lr_expert > 0:
-        groups.append({"params": expert_params, "lr": args.lr_expert, "base_lr": args.lr_expert, "name": "expert"})
+        groups.append({
+            "params": expert_params,
+            "lr": args.lr_expert,
+            "base_lr": args.lr_expert,
+            "weight_decay": 1e-4,
+            "name": "expert",
+        })
+    if gate_params and args.lr_expert_gate is not None and args.lr_expert_gate > 0:
+        groups.append({
+            "params": gate_params,
+            "lr": args.lr_expert_gate,
+            "base_lr": args.lr_expert_gate,
+            "weight_decay": 0.0,
+            "name": "expert_gate",
+        })
     if action_params and args.lr_action_head > 0:
-        groups.append({"params": action_params, "lr": args.lr_action_head, "base_lr": args.lr_action_head, "name": "action_head"})
+        groups.append({
+            "params": action_params,
+            "lr": args.lr_action_head,
+            "base_lr": args.lr_action_head,
+            "weight_decay": 1e-4,
+            "name": "action_head",
+        })
     if not groups:
         raise RuntimeError("No trainable parameter groups. Check freeze flags and learning rates.")
-    return torch.optim.AdamW(groups, weight_decay=1e-4, betas=(0.9, 0.95))
+    return torch.optim.AdamW(groups, weight_decay=0.0, betas=(0.9, 0.95))
 
 
 def chunk_dirs(args: argparse.Namespace) -> List[Path]:
@@ -491,6 +530,40 @@ def dtype_label(dtype: torch.dtype) -> str:
     return str(dtype).replace("torch.", "")
 
 
+def count_tensor_dtypes(tensors: List[torch.Tensor]) -> Dict[str, int]:
+    counts: Dict[str, int] = {}
+    for tensor in tensors:
+        counts[dtype_label(tensor.dtype)] = counts.get(dtype_label(tensor.dtype), 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def model_param_dtype_counts(planner: ReCogDriveDiffusionPlanner) -> Dict[str, int]:
+    return count_tensor_dtypes([param.detach() for param in planner.parameters()])
+
+
+def model_buffer_dtype_counts(planner: ReCogDriveDiffusionPlanner) -> Dict[str, int]:
+    return count_tensor_dtypes([buffer.detach() for buffer in planner.buffers() if isinstance(buffer, torch.Tensor)])
+
+
+def checkpoint_state_dtype_counts(checkpoint_path: Optional[Path]) -> Dict[str, int]:
+    if checkpoint_path is None:
+        return {}
+    counts: Dict[str, int] = {}
+    for file in find_weight_files(checkpoint_path):
+        state = load_state_file(file)
+        for value in state.values():
+            label = dtype_label(value.dtype)
+            counts[label] = counts.get(label, 0) + 1
+    return dict(sorted(counts.items()))
+
+
+def optimizer_group_metadata(optimizer: torch.optim.Optimizer) -> Tuple[List[str], List[float], List[float]]:
+    names = [str(group.get("name", idx)) for idx, group in enumerate(optimizer.param_groups)]
+    lrs_out = [float(group["lr"]) for group in optimizer.param_groups]
+    weight_decays = [float(group.get("weight_decay", 0.0)) for group in optimizer.param_groups]
+    return names, lrs_out, weight_decays
+
+
 def final_pred_finite_check(
     planner: ReCogDriveDiffusionPlanner,
     last_batch: Tuple[torch.Tensor, BatchFeature],
@@ -498,23 +571,37 @@ def final_pred_finite_check(
     device: torch.device,
     dtype: torch.dtype,
 ) -> Dict[str, Any]:
-    planner.to(device=device, dtype=dtype)
-    planner.eval()
-    vl_features, action_input = last_batch
-    eval_input = BatchFeature(data={
-        key: value.to(device=device, dtype=dtype) if isinstance(value, torch.Tensor) else value
-        for key, value in action_input.items()
-        if key not in {"action", "jepa_target_tokens", "vggt_target_tokens"}
-    })
-    with torch.no_grad():
-        pred = planner.get_action(vl_features.to(device=device, dtype=dtype), eval_input, deterministic=True)["pred_traj"]
-    finite = bool(torch.isfinite(pred).all().item())
-    return {
-        "finite": finite,
-        "dtype": dtype_label(dtype),
-        "shape": list(pred.shape),
-        "max_abs": float(pred.detach().float().abs().max().item()) if pred.numel() else 0.0,
+    original_param_dtypes = {
+        name: param.dtype
+        for name, param in planner.named_parameters()
+        if param.is_floating_point()
     }
+    was_training = planner.training
+    try:
+        planner.to(device=device, dtype=dtype)
+        planner.eval()
+        vl_features, action_input = last_batch
+        eval_input = BatchFeature(data={
+            key: value.to(device=device, dtype=dtype) if isinstance(value, torch.Tensor) else value
+            for key, value in action_input.items()
+            if key not in {"action", "jepa_target_tokens", "vggt_target_tokens"}
+        })
+        with torch.no_grad():
+            pred = planner.get_action(vl_features.to(device=device, dtype=dtype), eval_input, deterministic=True)["pred_traj"]
+        finite = bool(torch.isfinite(pred).all().item())
+        return {
+            "finite": finite,
+            "dtype": dtype_label(dtype),
+            "shape": list(pred.shape),
+            "max_abs": float(pred.detach().float().abs().max().item()) if pred.numel() else 0.0,
+        }
+    finally:
+        with torch.no_grad():
+            for name, param in planner.named_parameters():
+                original_dtype = original_param_dtypes.get(name)
+                if original_dtype is not None and param.dtype != original_dtype:
+                    param.data = param.data.to(dtype=original_dtype)
+        planner.train(was_training)
 
 
 def current_gpu_memory(device: torch.device) -> Optional[int]:
@@ -659,37 +746,55 @@ def write_final_report(path: Path, summary: Dict[str, Any]) -> None:
 
 def main() -> int:
     args = parse_args()
+    seed_everything(args.seed)
+    if args.resume_mode == "full":
+        raise NotImplementedError("Full resume is not implemented; use weights-only for continuation ablations.")
+    if args.true_bf16_weights and args.precision != "bf16":
+        raise ValueError("--true-bf16-weights is only valid with --precision bf16.")
+    if args.num_optimizer_steps is not None and args.num_optimizer_steps <= 0:
+        raise ValueError("--num-optimizer-steps must be positive when set.")
     distributed, world_size, rank, local_rank = init_distributed()
     cfg_dict = load_yaml(args.config)
     device = torch.device(f"cuda:{local_rank}" if torch.cuda.is_available() else "cpu")
     dtype = dtype_from_precision(args.precision) if device.type == "cuda" else torch.float32
     planner = build_planner(cfg_dict, args).to(device)
-    if dtype != torch.float32 and args.precision != "fp16":
-        planner = planner.to(dtype=dtype)
 
     load_report: Dict[str, Any] = {
         "stage1_base_path": str(args.recogdrive_vlm_path) if args.recogdrive_vlm_path else None,
+        "resume_mode": args.resume_mode,
+        "optimizer_restored": False,
+        "rng_restored": False,
+        "scheduler_restored": False,
     }
+    loaded_checkpoint_state_dtype_counts: Dict[str, int] = {}
     if args.resume_from:
+        loaded_checkpoint_state_dtype_counts = checkpoint_state_dtype_counts(args.resume_from)
         load_report.update(shape_safe_load(planner, args.resume_from, strict_original=False))
         load_report.update({
             "init_mode": "resume_from",
             "init_policy_checkpoint": str(args.resume_from),
+            "loaded_checkpoint_state_dtype_counts": loaded_checkpoint_state_dtype_counts,
         })
     else:
         init_policy_checkpoint = args.init_policy_checkpoint or args.base_il_checkpoint
         if init_policy_checkpoint:
+            loaded_checkpoint_state_dtype_counts = checkpoint_state_dtype_counts(init_policy_checkpoint)
             load_report.update(shape_safe_load(planner, init_policy_checkpoint, strict_original=True))
             load_report.update({
                 "init_mode": "init_policy_checkpoint" if args.init_policy_checkpoint else "base_il_checkpoint_compat",
                 "init_policy_checkpoint": str(init_policy_checkpoint),
+                "loaded_checkpoint_state_dtype_counts": loaded_checkpoint_state_dtype_counts,
             })
         else:
             load_report.update({
                 "init_mode": "random_policy_from_config",
                 "init_policy_checkpoint": None,
                 "loaded_key_count": 0,
+                "loaded_checkpoint_state_dtype_counts": loaded_checkpoint_state_dtype_counts,
             })
+
+    if args.true_bf16_weights:
+        planner = planner.to(dtype=torch.bfloat16)
 
     set_trainable(planner, args)
     optimizer = optimizer_for(planner, args)
@@ -709,6 +814,22 @@ def main() -> int:
         train_args_payload.update({"distributed": distributed, "world_size": world_size})
         (args.output_dir / "train_args.json").write_text(json.dumps(train_args_payload, default=str, indent=2, sort_keys=True) + "\n", encoding="utf-8")
         (args.output_dir / "checkpoint_load.json").write_text(json.dumps(load_report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+        group_names, group_lrs, group_weight_decays = optimizer_group_metadata(optimizer)
+        precision_report = {
+            "requested_precision": args.precision,
+            "true_bf16_weights": bool(args.true_bf16_weights),
+            "model_param_dtype_counts": model_param_dtype_counts(planner),
+            "model_buffer_dtype_counts": model_buffer_dtype_counts(planner),
+            "loaded_checkpoint_state_dtype_counts": loaded_checkpoint_state_dtype_counts,
+            "optimizer_group_names": group_names,
+            "optimizer_group_lrs": group_lrs,
+            "optimizer_group_weight_decay": group_weight_decays,
+            "resume_mode": args.resume_mode,
+            "optimizer_restored": False,
+            "rng_restored": False,
+            "scheduler_restored": False,
+        }
+        (args.output_dir / "precision_report.json").write_text(json.dumps(precision_report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     if distributed:
         dist.barrier()
     log_path = args.output_dir / "train_log.jsonl"
@@ -751,6 +872,8 @@ def main() -> int:
     pred_checks: Dict[str, Any] = {}
 
     def make_loader(dataset: Dataset, sampler: Optional[DistributedSampler]) -> DataLoader:
+        generator = torch.Generator()
+        generator.manual_seed(args.seed)
         loader_kwargs: Dict[str, Any] = {
             "batch_size": args.batch_size,
             "shuffle": sampler is None,
@@ -758,6 +881,7 @@ def main() -> int:
             "collate_fn": collate,
             "num_workers": args.num_workers,
             "pin_memory": device.type == "cuda",
+            "generator": generator,
         }
         if args.num_workers > 0:
             loader_kwargs["persistent_workers"] = True
@@ -838,7 +962,7 @@ def main() -> int:
                     if sampler is not None:
                         sampler.set_epoch(chunk_cycle * len(chunks) + chunk_idx)
                     yield chunk_cycle, chunk_idx, chunk, local_epoch, make_loader(dataset, sampler)
-            if args.num_steps is None:
+            if args.num_steps is None and args.num_optimizer_steps is None:
                 return
             chunk_cycle += 1
 
@@ -935,6 +1059,9 @@ def main() -> int:
                     save_checkpoint(args.output_dir / f"step_{global_step:08d}.ckpt", planner, optimizer, global_step, cfg_dict, checkpoint_metrics)
                     save_checkpoint(args.output_dir / "latest.ckpt", planner, optimizer, global_step, cfg_dict, checkpoint_metrics)
                 if args.num_steps is not None and global_step >= args.num_steps:
+                    stop = True
+                    break
+                if args.num_optimizer_steps is not None and optimizer_step_count >= args.num_optimizer_steps:
                     stop = True
                     break
             if args.delete_old_chunk and chunk is not None:

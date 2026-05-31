@@ -1,0 +1,283 @@
+{
+  "chunk_cache_root": "cache/recogdrive_expert_chunks/full_v1",
+  "chunk_record_counts": {
+    "train": 84918,
+    "val": 18118
+  },
+  "chunk_unique_token_counts": {
+    "other": 0,
+    "train": 84918,
+    "val": 18118
+  },
+  "compare_hidden_state": false,
+  "navsim_log_path": "/mnt/navsim/trainval_navsim_logs/trainval",
+  "num_selected": 1,
+  "nuplan_maps_root": "/mnt/navsim/maps",
+  "output_cache_root": "outputs/cache_parity_official_raw_cache_count_fixed",
+  "raw_full_split_counts": {
+    "train": {
+      "chunk_minus_raw_count": 0,
+      "chunk_unique_token_count": 84918,
+      "missing_log_file_count": 0,
+      "missing_log_file_examples": [],
+      "num_workers": 32,
+      "raw_chunk_overlap_count": 84918,
+      "raw_duplicate_token_count": 0,
+      "raw_log_file_count": 978,
+      "raw_minus_chunk_count": 191,
+      "raw_scene_loader_count": 85109,
+      "raw_unique_token_count": 85109,
+      "scene_filter_token_count": 103288,
+      "top_raw_log_counts": [
+        [
+          "2021.07.16.01.22.41_veh-14_04315_07102",
+          1080
+        ],
+        [
+          "2021.06.23.15.56.12_veh-16_01308_04289",
+          824
+        ],
+        [
+          "2021.06.23.14.58.13_veh-35_02037_04783",
+          767
+        ],
+        [
+          "2021.07.16.18.19.22_veh-35_00869_03454",
+          758
+        ],
+        [
+          "2021.07.16.18.49.56_veh-26_00833_03384",
+          752
+        ],
+        [
+          "2021.06.23.15.18.10_veh-26_00165_02848",
+          746
+        ],
+        [
+          "2021.06.23.20.00.35_veh-35_00960_03649",
+          736
+        ],
+        [
+          "2021.07.09.17.06.37_veh-35_02609_05015",
+          714
+        ],
+        [
+          "2021.07.09.23.23.48_veh-26_02228_04624",
+          682
+        ],
+        [
+          "2021.06.23.14.54.32_veh-16_01187_03336",
+          670
+        ]
+      ]
+    },
+    "val": {
+      "chunk_minus_raw_count": 0,
+      "chunk_unique_token_count": 18118,
+      "missing_log_file_count": 0,
+      "missing_log_file_examples": [],
+      "num_workers": 32,
+      "raw_chunk_overlap_count": 18118,
+      "raw_duplicate_token_count": 0,
+      "raw_log_file_count": 214,
+      "raw_minus_chunk_count": 61,
+      "raw_scene_loader_count": 18179,
+      "raw_unique_token_count": 18179,
+      "scene_filter_token_count": 103288,
+      "top_raw_log_counts": [
+        [
+          "2021.10.05.07.38.12_veh-50_01085_01463",
+          381
+        ],
+        [
+          "2021.10.05.07.10.04_veh-52_00689_01322",
+          369
+        ],
+        [
+          "2021.07.24.22.52.16_veh-35_03236_04096",
+          311
+        ],
+        [
+          "2021.10.05.07.49.39_veh-52_00934_01406",
+          303
+        ],
+        [
+          "2021.10.05.06.31.40_veh-52_01598_02013",
+          293
+        ],
+        [
+          "2021.10.05.06.31.40_veh-52_00734_01305",
+          284
+        ],
+        [
+          "2021.10.05.07.10.04_veh-52_01442_01802",
+          284
+        ],
+        [
+          "2021.09.14.16.46.51_veh-45_00149_00900",
+          281
+        ],
+        [
+          "2021.10.05.04.38.41_veh-50_00014_00429",
+          266
+        ],
+        [
+          "2021.06.07.13.53.57_veh-35_02489_03145",
+          254
+        ]
+      ]
+    }
+  },
+  "raw_selected_scene_count": 1,
+  "raw_selected_unique_token_count": 1,
+  "samples": [
+    {
+      "chunk_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "image_path_tensor",
+        "jepa_context_tokens",
+        "jepa_target_tokens",
+        "last_hidden_state",
+        "sample_token",
+        "scene_token",
+        "status_feature",
+        "trajectory",
+        "vggt_context_tokens",
+        "vggt_target_tokens"
+      ],
+      "chunk_sample_path": "cache/recogdrive_expert_chunks/full_v1/train_backfill_chunk_000000/samples/eede1add4f7c52f7.pt",
+      "comparisons": {
+        "high_command_one_hot": {
+          "allclose_1e_4": true,
+          "allclose_1e_6": true,
+          "chunk": {
+            "dtype": "float32",
+            "shape": [
+              4
+            ]
+          },
+          "dtype_equal": true,
+          "max_abs_diff": 0.0,
+          "mean_abs_diff": 0.0,
+          "official": {
+            "dtype": "float32",
+            "shape": [
+              4
+            ]
+          },
+          "shape_equal": true
+        },
+        "history_trajectory": {
+          "allclose_1e_4": true,
+          "allclose_1e_6": true,
+          "chunk": {
+            "dtype": "float32",
+            "shape": [
+              4,
+              3
+            ]
+          },
+          "dtype_equal": true,
+          "max_abs_diff": 0.0,
+          "mean_abs_diff": 0.0,
+          "official": {
+            "dtype": "float32",
+            "shape": [
+              4,
+              3
+            ]
+          },
+          "shape_equal": true
+        },
+        "image_path_tensor": {
+          "chunk": {
+            "dtype": "int64",
+            "shape": [
+              122
+            ]
+          },
+          "chunk_normalized_suffix": "trainval/2021.06.14.16.48.02_veh-12_02412_02506/CAM_F0/748bca38790f5dfb.jpg",
+          "chunk_path": "/mnt/navsim/trainval_all/trainval_sensor_blobs/trainval/2021.06.14.16.48.02_veh-12_02412_02506/CAM_F0/748bca38790f5dfb.jpg",
+          "dtype_equal": true,
+          "exact_path_equal": false,
+          "normalized_path_equal": true,
+          "official": {
+            "dtype": "int64",
+            "shape": [
+              109
+            ]
+          },
+          "official_normalized_suffix": "trainval/2021.06.14.16.48.02_veh-12_02412_02506/CAM_F0/748bca38790f5dfb.jpg",
+          "official_path": "/mnt/navsim/trainval_sensor_blobs/trainval/2021.06.14.16.48.02_veh-12_02412_02506/CAM_F0/748bca38790f5dfb.jpg",
+          "shape_equal": false
+        },
+        "status_feature": {
+          "allclose_1e_4": true,
+          "allclose_1e_6": true,
+          "chunk": {
+            "dtype": "float32",
+            "shape": [
+              8
+            ]
+          },
+          "dtype_equal": true,
+          "max_abs_diff": 0.0,
+          "mean_abs_diff": 0.0,
+          "official": {
+            "dtype": "float32",
+            "shape": [
+              8
+            ]
+          },
+          "shape_equal": true
+        },
+        "trajectory": {
+          "allclose_1e_4": true,
+          "allclose_1e_6": true,
+          "chunk": {
+            "dtype": "float64",
+            "shape": [
+              8,
+              3
+            ]
+          },
+          "dtype_equal": true,
+          "max_abs_diff": 0.0,
+          "mean_abs_diff": 0.0,
+          "official": {
+            "dtype": "float64",
+            "shape": [
+              8,
+              3
+            ]
+          },
+          "shape_equal": true
+        }
+      },
+      "log_name": "2021.06.14.16.48.02_veh-12_02412_02506",
+      "official_feature_keys": [
+        "high_command_one_hot",
+        "history_trajectory",
+        "image_path_tensor",
+        "status_feature"
+      ],
+      "official_feature_path": "outputs/cache_parity_official_raw_cache_count_fixed/2021.06.14.16.48.02_veh-12_02412_02506/eede1add4f7c52f7/internvl_feature.gz",
+      "official_target_keys": [
+        "trajectory"
+      ],
+      "official_target_path": "outputs/cache_parity_official_raw_cache_count_fixed/2021.06.14.16.48.02_veh-12_02412_02506/eede1add4f7c52f7/trajectory_target.gz",
+      "sample_token": "eede1add4f7c52f7"
+    }
+  ],
+  "scene_filter": "navtrain",
+  "scene_filter_token_count": 103288,
+  "selection": "head",
+  "sensor_blobs_path": "/mnt/navsim/trainval_sensor_blobs/trainval",
+  "split": "train",
+  "split_log_counts": {
+    "train": 978,
+    "val": 214
+  },
+  "status": "aligned"
+}
