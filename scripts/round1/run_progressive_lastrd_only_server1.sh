@@ -47,7 +47,7 @@ torchrun --nproc_per_node=8 --master_port="${MASTER_PORT}" \
   force_cache_computation=false \
   agent.checkpoint_path="${A0_INIT_CHECKPOINT}" \
   ++agent.reference_a0_checkpoint="${A0_REFERENCE_CHECKPOINT}" \
-  agent.last_rd_adapter_checkpoint="${STAGE1_5_CHECKPOINT}" \
+  ++agent.last_rd_adapter_checkpoint="${STAGE1_5_CHECKPOINT}" \
   agent.use_expert_features=false \
   agent.use_jepa=true \
   agent.use_vggt=true \

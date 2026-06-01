@@ -106,6 +106,6 @@ torchrun --nproc_per_node=8 --master_port="${MASTER_PORT}" \
   dataloader.params.pin_memory=true \
   dataloader.params.prefetch_factor="${LAST_RD_PREFETCH_FACTOR}" \
   ++dataloader.params.persistent_workers="${LAST_RD_PERSISTENT_WORKERS}" \
-  agent.last_rd_adapter_checkpoint="${STAGE1_5_CHECKPOINT}" \
+  ++agent.last_rd_adapter_checkpoint="${STAGE1_5_CHECKPOINT}" \
   "${CHECKPOINT_OVERRIDE[@]}" \
   "${REFERENCE_OVERRIDE[@]}"
