@@ -68,6 +68,7 @@ torchrun --nproc_per_node=8 --master_port="${MASTER_PORT}" \
   agent.policy_kd_mode=noise \
   trainer.params.max_epochs=200 \
   trainer.params.devices=8 \
+  trainer.params.strategy=ddp_find_unused_parameters_true \
   dataloader.params.batch_size=16 \
   dataloader.params.num_workers="${LAST_RD_NUM_WORKERS}" \
   dataloader.params.pin_memory=true \
