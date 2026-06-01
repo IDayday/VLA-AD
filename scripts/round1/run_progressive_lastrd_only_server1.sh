@@ -46,7 +46,7 @@ torchrun --nproc_per_node=8 --master_port="${MASTER_PORT}" \
   use_cache_without_dataset=true \
   force_cache_computation=false \
   agent.checkpoint_path="${A0_INIT_CHECKPOINT}" \
-  agent.reference_a0_checkpoint="${A0_REFERENCE_CHECKPOINT}" \
+  ++agent.reference_a0_checkpoint="${A0_REFERENCE_CHECKPOINT}" \
   agent.last_rd_adapter_checkpoint="${STAGE1_5_CHECKPOINT}" \
   agent.use_expert_features=false \
   agent.use_jepa=true \
@@ -72,4 +72,4 @@ torchrun --nproc_per_node=8 --master_port="${MASTER_PORT}" \
   dataloader.params.num_workers="${LAST_RD_NUM_WORKERS}" \
   dataloader.params.pin_memory=true \
   dataloader.params.prefetch_factor="${LAST_RD_PREFETCH_FACTOR}" \
-  dataloader.params.persistent_workers="${LAST_RD_PERSISTENT_WORKERS}"
+  ++dataloader.params.persistent_workers="${LAST_RD_PERSISTENT_WORKERS}"

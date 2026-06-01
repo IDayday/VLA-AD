@@ -62,7 +62,7 @@ if [[ -n "${A0_INIT_CHECKPOINT}" ]]; then
 fi
 REFERENCE_OVERRIDE=()
 if [[ -n "${A0_REFERENCE_CHECKPOINT}" ]]; then
-  REFERENCE_OVERRIDE+=(agent.reference_a0_checkpoint="${A0_REFERENCE_CHECKPOINT}")
+  REFERENCE_OVERRIDE+=(++agent.reference_a0_checkpoint="${A0_REFERENCE_CHECKPOINT}")
 fi
 
 if [[ "${LAST_RD_DRY_RUN:-0}" == "1" ]]; then
@@ -105,7 +105,7 @@ torchrun --nproc_per_node=8 --master_port="${MASTER_PORT}" \
   dataloader.params.num_workers="${LAST_RD_NUM_WORKERS}" \
   dataloader.params.pin_memory=true \
   dataloader.params.prefetch_factor="${LAST_RD_PREFETCH_FACTOR}" \
-  dataloader.params.persistent_workers="${LAST_RD_PERSISTENT_WORKERS}" \
+  ++dataloader.params.persistent_workers="${LAST_RD_PERSISTENT_WORKERS}" \
   agent.last_rd_adapter_checkpoint="${STAGE1_5_CHECKPOINT}" \
   "${CHECKPOINT_OVERRIDE[@]}" \
   "${REFERENCE_OVERRIDE[@]}"
