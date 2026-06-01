@@ -51,12 +51,18 @@ def load_state_dict(path: Path) -> Dict[str, Any]:
 def audit_checkpoint(path: Path, *, allow_legacy: bool = False) -> Dict[str, Any]:
     state = load_state_dict(path)
     keys = sorted(str(key) for key in state.keys())
-    last_rd_keys = [key for key in keys if key.startswith("action_head.last_rd.") or key.startswith("last_rd.")]
+    last_rd_keys = [
+        key
+        for key in keys
+        if key.startswith("action_head.last_rd.")
+        or key.startswith("agent.action_head.last_rd.")
+        or key.startswith("last_rd.")
+    ]
     legacy_keys = [key for key in keys if any(marker in key for marker in LEGACY_A4_MARKERS)]
     warnings = []
     blockers = []
     if not last_rd_keys:
-        blockers.append("checkpoint contains no action_head.last_rd.* or last_rd.* tensors")
+        blockers.append("checkpoint contains no action_head.last_rd.*, agent.action_head.last_rd.*, or last_rd.* tensors")
     if legacy_keys and not allow_legacy:
         blockers.append("checkpoint contains legacy A4 expert tensors; pass --allow-legacy only for intentional mixed adapters")
         warnings.append("legacy_a4_tensors_present")
