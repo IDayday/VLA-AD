@@ -1,0 +1,13 @@
+defaults:
+  - last_rd_progressive_sft
+
+route_name: performance_from_a0_official_aligned
+init_policy: a0_official_aligned_best
+checkpoint_path: ${oc.env:A0_INIT_CHECKPOINT,null}
+reference_a0_checkpoint: ${oc.env:A0_REFERENCE_CHECKPOINT,null}
+last_rd_adapter_checkpoint: ${oc.env:STAGE1_5_CHECKPOINT,null}
+
+notes:
+  - Init Stage2 from A0-official-aligned best when A0_INIT_CHECKPOINT is set.
+  - Use reference_a0_checkpoint for optional noise/x0 KD.
+  - Do not report SOTA claims until full NAVSIM/PDM evaluation is run.

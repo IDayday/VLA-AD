@@ -66,6 +66,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--build-vlm-hidden", action="store_true")
     parser.add_argument("--build-jepa", action="store_true")
     parser.add_argument("--build-vggt", action="store_true")
+    parser.add_argument("--require-vggt-geometry", action="store_true")
     parser.add_argument("--recogdrive-vlm-path", type=Path, default=None)
     parser.add_argument("--jepa-model-path", type=Path, default=None)
     parser.add_argument("--vggt-model-path", type=Path, default=None)
@@ -394,7 +395,12 @@ def build_teacher_extractors(args: argparse.Namespace):
         if args.vggt_model_path is None:
             raise ValueError("--build-vggt requires --vggt-model-path")
         from navsim.agents.recogdrive.expert_extractors.vggt_extractor import VGGTExtractor
-        vggt = VGGTExtractor(args.vggt_model_path, device=args.device, precision=args.precision)
+        vggt = VGGTExtractor(
+            args.vggt_model_path,
+            device=args.device,
+            precision=args.precision,
+            require_geometry=bool(getattr(args, "require_vggt_geometry", False)),
+        )
     return jepa, vggt
 
 def navsim_training_fields(loader_token: str, args: argparse.Namespace) -> Dict[str, torch.Tensor]:
@@ -499,8 +505,12 @@ def process_records_with_models(
                 payload["jepa_target_tokens"] = jepa.extract_target(record["future_cam_f0"][:4])
         if vggt is not None:
             current = record["history_cam_f0"][-1]
-            payload["vggt_context_tokens"] = vggt.extract_context(current)
+            geometry_payload = vggt.extract_with_geometry(current)
+            payload["vggt_context_tokens"] = geometry_payload["vggt_context_tokens"]
+            payload["vggt_geometry_tokens"] = geometry_payload["vggt_geometry_tokens"]
+            payload["vggt_geometry_mode"] = geometry_payload["vggt_geometry_mode"]
             payload["vggt_target_tokens"] = vggt.extract_target(current)
+            payload["vggt_geometry_target_tokens"] = payload["vggt_geometry_tokens"]
         if args.build_jepa or args.build_vggt:
             validate_sample_payload(payload, require_jepa=args.build_jepa, require_vggt=args.build_vggt, require_targets=True)
         atomic_torch_save(payload, out_path)
@@ -682,7 +692,14 @@ def write_built_chunk_outputs(
             "jepa_target_tokens": [12, 1024] if args.build_jepa else None,
             "vggt_context_tokens": [12, 2048] if args.build_vggt else None,
             "vggt_target_tokens": [12, 2048] if args.build_vggt else None,
+            "vggt_geometry_tokens": [12, 2048] if args.build_vggt else None,
+            "vggt_geometry_target_tokens": [12, 2048] if args.build_vggt else None,
+            "vggt_depth_tokens": [12, 2048] if args.build_vggt else None,
+            "vggt_pointmap_tokens": [12, 2048] if args.build_vggt else None,
+            "vggt_camera_tokens": [12, 2048] if args.build_vggt else None,
         },
+        "contains_vggt_geometry": bool(args.build_vggt),
+        "require_vggt_geometry": bool(getattr(args, "require_vggt_geometry", False)),
         "split": args.split,
         "chunk_index": args.chunk_index,
         "chunk_start": chunk_start_value(args),
@@ -717,13 +734,16 @@ def finalize_existing_chunk(args: argparse.Namespace) -> int:
     if not sample_files:
         raise RuntimeError(f"No existing sample files found under {samples_dir}")
     index_records = []
-    contains_vlm = contains_jepa = contains_vggt = False
+    contains_vlm = contains_jepa = contains_vggt = contains_geometry = False
     checked = 0
     for sample_path in sample_files:
         payload = torch.load(sample_path, map_location="cpu")
         contains_vlm = contains_vlm or "last_hidden_state" in payload
         contains_jepa = contains_jepa or "jepa_context_tokens" in payload
         contains_vggt = contains_vggt or "vggt_context_tokens" in payload
+        contains_geometry = contains_geometry or any(
+            key in payload for key in ("vggt_geometry_tokens", "vggt_depth_tokens", "vggt_pointmap_tokens", "vggt_camera_tokens")
+        )
         validate_sample_payload(
             payload,
             require_jepa=args.build_jepa,
@@ -757,7 +777,14 @@ def finalize_existing_chunk(args: argparse.Namespace) -> int:
             "jepa_target_tokens": [12, 1024] if contains_jepa else None,
             "vggt_context_tokens": [12, 2048] if contains_vggt else None,
             "vggt_target_tokens": [12, 2048] if contains_vggt else None,
+            "vggt_geometry_tokens": [12, 2048] if contains_geometry else None,
+            "vggt_geometry_target_tokens": [12, 2048] if contains_geometry else None,
+            "vggt_depth_tokens": [12, 2048] if contains_geometry else None,
+            "vggt_pointmap_tokens": [12, 2048] if contains_geometry else None,
+            "vggt_camera_tokens": [12, 2048] if contains_geometry else None,
         },
+        "contains_vggt_geometry": contains_geometry,
+        "require_vggt_geometry": bool(getattr(args, "require_vggt_geometry", False)),
         "split": args.split,
         "chunk_index": args.chunk_index,
         "chunk_start": chunk_start_value(args),

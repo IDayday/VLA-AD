@@ -11,8 +11,33 @@ import torch
 EXPERT_FEATURE_SOURCE_CHOICES = ("none", "dummy", "chunk", "disk", "online", "cache", "real")
 EXPERT_CONTEXT_KEYS = ("jepa_context_tokens", "vggt_context_tokens")
 EXPERT_LEGACY_CONTEXT_KEYS = ("jepa_tokens", "vggt_tokens")
-EXPERT_TARGET_KEYS = ("jepa_target_tokens", "vggt_target_tokens")
-EXPERT_ALL_KEYS = (*EXPERT_CONTEXT_KEYS, *EXPERT_TARGET_KEYS, *EXPERT_LEGACY_CONTEXT_KEYS)
+EXPERT_GEOMETRY_CONTEXT_KEYS = (
+    "vggt_geometry_tokens",
+    "vggt_depth_tokens",
+    "vggt_pointmap_tokens",
+    "vggt_camera_tokens",
+)
+EXPERT_TARGET_KEYS = (
+    "jepa_target_tokens",
+    "vggt_target_tokens",
+    "vggt_geometry_target_tokens",
+    "vggt_depth_target_tokens",
+    "vggt_pointmap_target_tokens",
+)
+EXPERT_RISK_KEYS = (
+    "risk_labels",
+    "generic_risk_labels",
+    "drivable_risk_labels",
+    "ttc_risk_labels",
+    "comfort_risk_labels",
+)
+EXPERT_ALL_KEYS = (
+    *EXPERT_CONTEXT_KEYS,
+    *EXPERT_GEOMETRY_CONTEXT_KEYS,
+    *EXPERT_TARGET_KEYS,
+    *EXPERT_RISK_KEYS,
+    *EXPERT_LEGACY_CONTEXT_KEYS,
+)
 DUMMY_EXPERT_WARNING = (
     "Dummy expert features are for computation-flow validation only. "
     "They are not training data and must not be used for performance claims."
@@ -132,6 +157,7 @@ class DummyExpertBackend:
                 offset=0.7,
             )
             features["vggt_context_tokens"] = vggt_tokens
+            features["vggt_geometry_tokens"] = vggt_tokens
             if include_targets:
                 features["vggt_target_tokens"] = vggt_tokens + self._tokens(
                     (batch_size, self.num_vggt_tokens, self.vggt_dim),
@@ -141,6 +167,7 @@ class DummyExpertBackend:
                     scale=0.02,
                     offset=1.7,
                 )
+                features["vggt_geometry_target_tokens"] = features["vggt_target_tokens"]
 
         return features
 

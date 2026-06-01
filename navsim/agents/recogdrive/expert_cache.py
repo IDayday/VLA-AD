@@ -9,12 +9,17 @@ from typing import Any, Dict, Iterable, Iterator, Optional
 import torch
 
 
-CHUNK_VERSION = "recogdrive2b_expert768_chunk_v1"
+CHUNK_VERSION = "recogdrive2b_expert768_chunk_v2"
 CONTEXT_SCHEMA = {
     "jepa_context_tokens": (12, 1024),
     "jepa_target_tokens": (12, 1024),
     "vggt_context_tokens": (12, 2048),
     "vggt_target_tokens": (12, 2048),
+    "vggt_geometry_tokens": (12, 2048),
+    "vggt_geometry_target_tokens": (12, 2048),
+    "vggt_depth_tokens": (12, 2048),
+    "vggt_pointmap_tokens": (12, 2048),
+    "vggt_camera_tokens": (12, 2048),
 }
 LEGACY_CONTEXT_ALIASES = {
     "jepa_tokens": "jepa_context_tokens",
@@ -29,6 +34,7 @@ class ExpertCacheMetadata:
     contains_vlm_hidden: bool = False
     contains_jepa: bool = True
     contains_vggt: bool = True
+    contains_vggt_geometry: bool = False
     target_tokens_are_train_only: bool = True
 
     def to_dict(self) -> Dict[str, Any]:
@@ -38,6 +44,7 @@ class ExpertCacheMetadata:
             "contains_vlm_hidden": self.contains_vlm_hidden,
             "contains_jepa": self.contains_jepa,
             "contains_vggt": self.contains_vggt,
+            "contains_vggt_geometry": self.contains_vggt_geometry,
             "target_tokens_are_train_only": self.target_tokens_are_train_only,
         }
 
@@ -107,16 +114,30 @@ def validate_sample_payload(
     require_jepa: bool = True,
     require_vggt: bool = True,
     require_targets: bool = False,
+    use_last_rd: bool = False,
+    future_jepa_loss_weight: float = 0.0,
+    vggt_geometry_loss_weight: float = 0.0,
+    require_vggt_geometry: bool = False,
+    allow_patch_geometry_fallback: bool = True,
 ) -> Dict[str, Any]:
     payload = normalize_sample_payload(dict(payload))
     if require_jepa:
         validate_token_tensor(payload, "jepa_context_tokens", CONTEXT_SCHEMA["jepa_context_tokens"])
-        if require_targets:
+        if require_targets or (use_last_rd and future_jepa_loss_weight > 0.0):
             validate_token_tensor(payload, "jepa_target_tokens", CONTEXT_SCHEMA["jepa_target_tokens"])
     if require_vggt:
         validate_token_tensor(payload, "vggt_context_tokens", CONTEXT_SCHEMA["vggt_context_tokens"])
         if require_targets:
             validate_token_tensor(payload, "vggt_target_tokens", CONTEXT_SCHEMA["vggt_target_tokens"])
+    if use_last_rd and require_vggt:
+        has_geometry = any(key in payload for key in ("vggt_geometry_tokens", "vggt_depth_tokens", "vggt_pointmap_tokens", "vggt_camera_tokens"))
+        if require_vggt_geometry and not has_geometry:
+            raise KeyError("LaST-RD cache requires full VGGT geometry tokens but none were found.")
+        if vggt_geometry_loss_weight > 0.0 and not allow_patch_geometry_fallback and "vggt_geometry_target_tokens" not in payload:
+            raise KeyError("LaST-RD cache requires vggt_geometry_target_tokens because geometry fallback is disabled.")
+        for key in ("vggt_geometry_tokens", "vggt_geometry_target_tokens", "vggt_depth_tokens", "vggt_pointmap_tokens", "vggt_camera_tokens"):
+            if key in payload:
+                validate_token_tensor(payload, key, CONTEXT_SCHEMA[key])
     if "last_hidden_state" in payload:
         value = payload["last_hidden_state"]
         if not isinstance(value, torch.Tensor) or value.ndim != 2 or value.shape[-1] != 1536:

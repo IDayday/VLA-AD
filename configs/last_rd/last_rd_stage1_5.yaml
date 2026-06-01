@@ -1,0 +1,15 @@
+defaults:
+  - last_rd_base
+
+last_rd_stage: stage1_5
+diffusion_loss_weight: 0.0
+future_jepa_loss_weight: 0.30
+vggt_geometry_loss_weight: 0.10
+coarse_traj_loss_weight: 0.50
+coarse_heading_loss_weight: 0.10
+risk_loss_weight: 0.05
+policy_kd_loss_weight: 0.0
+
+freeze_base_action_head: true
+train_expert_only: false
+epochs: 20

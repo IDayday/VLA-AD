@@ -25,7 +25,31 @@ class AgentLightningModule(pl.LightningModule):
         self.agent = agent
 
     def _log_optional_recogdrive_metrics(self, prediction: Any, logging_prefix: str) -> None:
-        for key in ("diffusion_loss", "jepa_alignment_loss", "vggt_alignment_loss", "jepa_gate_value", "vggt_gate_value", "branch_weight_vlm", "branch_weight_jepa", "branch_weight_vggt"):
+        for key in (
+            "diffusion_loss",
+            "jepa_alignment_loss",
+            "vggt_alignment_loss",
+            "future_jepa_loss",
+            "vggt_geometry_loss",
+            "coarse_traj_loss",
+            "coarse_heading_loss",
+            "risk_loss",
+            "policy_kd_loss",
+            "jepa_gate_value",
+            "vggt_gate_value",
+            "branch_weight_vlm",
+            "branch_weight_jepa",
+            "branch_weight_vggt",
+            "last_rd_group_weight_vlm",
+            "last_rd_group_weight_dynamic",
+            "last_rd_group_weight_geometry",
+            "last_rd_group_weight_ego",
+            "last_rd_group_weight_risk",
+            "last_rd_token_norms",
+            "coarse_traj_l1",
+            "future_jepa_loss_raw",
+            "last_rd_geometry_mode_code",
+        ):
             value = _prediction_get(prediction, key)
             if value is not None:
                 self.log(

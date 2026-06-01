@@ -24,7 +24,12 @@ from .expert_backends import (
     build_dummy_expert_backend,
     normalize_expert_feature_source,
 )
-from .recogdrive_features import EXPERT_FEATURE_KEYS, ReCogDriveFeatureBuilder ,TrajectoryTargetBuilder
+from .recogdrive_features import (
+    EXPERT_FEATURE_KEYS,
+    EXPERT_TARGET_FEATURE_KEYS,
+    ReCogDriveFeatureBuilder,
+    TrajectoryTargetBuilder,
+)
 from .recogdrive_backbone import RecogDriveBackbone
 from .recogdrive_diffusion_planner import (
     ReCogDriveDiffusionPlanner,
@@ -77,6 +82,8 @@ class ReCogDriveAgent(AbstractAgent):
         expert_context_scale: float = 1.0,
         use_horizon_expert_residual: bool = False,
         expert_horizon_residual_scale: float = 0.0,
+        diffusion_loss_weight: float = 1.0,
+        use_alignment_loss: bool = True,
         jepa_alignment_weight: float = 0.03,
         vggt_alignment_weight: float = 0.05,
         alignment_loss_type: str = "normalized_mse",
@@ -86,6 +93,49 @@ class ReCogDriveAgent(AbstractAgent):
         branch_init_jepa: float = 0.05,
         branch_init_vggt: float = 0.05,
         allow_future_targets_in_inference: bool = False,
+        use_last_rd: bool = False,
+        last_rd_stage: str = "disabled",
+        use_future_jepa_prediction: bool = True,
+        use_vggt_geometry_tokens: bool = True,
+        use_ego_trajectory_tokens: bool = True,
+        use_risk_tokens: bool = True,
+        use_scene_aware_expert_gate: bool = True,
+        use_timestep_aware_expert_gate: bool = True,
+        last_rd_latent_dim: int = 384,
+        num_dynamic_tokens: int = 12,
+        num_geometry_tokens: int = 12,
+        num_ego_tokens: int = 8,
+        num_risk_tokens: int = 8,
+        require_vggt_geometry: bool = False,
+        allow_patch_geometry_fallback: bool = True,
+        future_jepa_loss_weight: float = 0.0,
+        vggt_geometry_loss_weight: float = 0.0,
+        coarse_traj_loss_weight: float = 0.0,
+        coarse_heading_loss_weight: float = 0.0,
+        risk_loss_weight: float = 0.0,
+        policy_kd_loss_weight: float = 0.0,
+        future_jepa_loss_floor: float = 0.0,
+        vggt_geometry_loss_floor: float = 0.0,
+        coarse_traj_loss_floor: float = 0.0,
+        risk_loss_floor: float = 0.0,
+        last_rd_context_scale: float = 1.0,
+        last_rd_horizon_condition_scale: float = 1.0,
+        last_rd_token_dropout: float = 0.0,
+        last_rd_group_dropout: float = 0.0,
+        reference_a0_checkpoint: Optional[str] = None,
+        last_rd_adapter_checkpoint: Optional[str] = None,
+        policy_kd_mode: str = "none",
+        current_train_epoch: int = 0,
+        total_train_epochs: int = 200,
+        lr_action_head: Optional[float] = None,
+        lr_expert: Optional[float] = None,
+        lr_expert_gate: Optional[float] = None,
+        train_expert_only: bool = False,
+        freeze_base_action_head: bool = False,
+        freeze_expert: bool = False,
+        scheduler_epochs: int = 200,
+        scheduler_warmup_epochs: int = 3,
+        scheduler_min_lr: float = 1e-6,
     ):
         super().__init__()
         self._trajectory_sampling = trajectory_sampling
@@ -136,8 +186,16 @@ class ReCogDriveAgent(AbstractAgent):
         self.expert_context_scale = expert_context_scale
         self.use_horizon_expert_residual = use_horizon_expert_residual
         self.expert_horizon_residual_scale = expert_horizon_residual_scale
+        self.diffusion_loss_weight = diffusion_loss_weight
+        if self.diffusion_loss_weight < 0.0:
+            raise ValueError("diffusion_loss_weight must be non-negative.")
+        self.use_alignment_loss = use_alignment_loss
         self.jepa_alignment_weight = jepa_alignment_weight
         self.vggt_alignment_weight = vggt_alignment_weight
+        if not self.use_alignment_loss:
+            self.expert_alignment_weight = 0.0
+            self.jepa_alignment_weight = 0.0
+            self.vggt_alignment_weight = 0.0
         self.alignment_loss_type = alignment_loss_type
         self.jepa_gate_init = jepa_gate_init
         self.vggt_gate_init = vggt_gate_init
@@ -145,6 +203,49 @@ class ReCogDriveAgent(AbstractAgent):
         self.branch_init_jepa = branch_init_jepa
         self.branch_init_vggt = branch_init_vggt
         self.allow_future_targets_in_inference = allow_future_targets_in_inference
+        self.use_last_rd = use_last_rd
+        self.last_rd_stage = last_rd_stage
+        self.use_future_jepa_prediction = use_future_jepa_prediction
+        self.use_vggt_geometry_tokens = use_vggt_geometry_tokens
+        self.use_ego_trajectory_tokens = use_ego_trajectory_tokens
+        self.use_risk_tokens = use_risk_tokens
+        self.use_scene_aware_expert_gate = use_scene_aware_expert_gate
+        self.use_timestep_aware_expert_gate = use_timestep_aware_expert_gate
+        self.last_rd_latent_dim = last_rd_latent_dim
+        self.num_dynamic_tokens = num_dynamic_tokens
+        self.num_geometry_tokens = num_geometry_tokens
+        self.num_ego_tokens = num_ego_tokens
+        self.num_risk_tokens = num_risk_tokens
+        self.require_vggt_geometry = require_vggt_geometry
+        self.allow_patch_geometry_fallback = allow_patch_geometry_fallback
+        self.future_jepa_loss_weight = future_jepa_loss_weight
+        self.vggt_geometry_loss_weight = vggt_geometry_loss_weight
+        self.coarse_traj_loss_weight = coarse_traj_loss_weight
+        self.coarse_heading_loss_weight = coarse_heading_loss_weight
+        self.risk_loss_weight = risk_loss_weight
+        self.policy_kd_loss_weight = policy_kd_loss_weight
+        self.future_jepa_loss_floor = future_jepa_loss_floor
+        self.vggt_geometry_loss_floor = vggt_geometry_loss_floor
+        self.coarse_traj_loss_floor = coarse_traj_loss_floor
+        self.risk_loss_floor = risk_loss_floor
+        self.last_rd_context_scale = last_rd_context_scale
+        self.last_rd_horizon_condition_scale = last_rd_horizon_condition_scale
+        self.last_rd_token_dropout = last_rd_token_dropout
+        self.last_rd_group_dropout = last_rd_group_dropout
+        self.reference_a0_checkpoint = reference_a0_checkpoint
+        self.last_rd_adapter_checkpoint = last_rd_adapter_checkpoint
+        self.policy_kd_mode = policy_kd_mode
+        self.current_train_epoch = current_train_epoch
+        self.total_train_epochs = total_train_epochs
+        self.lr_action_head = lr_action_head
+        self.lr_expert = lr_expert
+        self.lr_expert_gate = lr_expert_gate
+        self.train_expert_only = train_expert_only
+        self.freeze_base_action_head = freeze_base_action_head
+        self.freeze_expert = freeze_expert
+        self.scheduler_epochs = scheduler_epochs
+        self.scheduler_warmup_epochs = scheduler_warmup_epochs
+        self.scheduler_min_lr = scheduler_min_lr
         self._warned_random_init = False
         self._warned_dummy_features = False
         self._dummy_expert_backend: Optional[DummyExpertBackend] = None
@@ -211,6 +312,7 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.expert_context_scale = self.expert_context_scale
         cfg.use_horizon_expert_residual = self.use_horizon_expert_residual
         cfg.expert_horizon_residual_scale = self.expert_horizon_residual_scale
+        cfg.diffusion_loss_weight = self.diffusion_loss_weight
         cfg.jepa_alignment_weight = self.jepa_alignment_weight
         cfg.vggt_alignment_weight = self.vggt_alignment_weight
         cfg.alignment_loss_type = self.alignment_loss_type
@@ -220,17 +322,56 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.branch_init_jepa = self.branch_init_jepa
         cfg.branch_init_vggt = self.branch_init_vggt
         cfg.allow_future_targets_in_inference = self.allow_future_targets_in_inference
+        cfg.use_last_rd = self.use_last_rd
+        cfg.last_rd_stage = self.last_rd_stage
+        cfg.use_future_jepa_prediction = self.use_future_jepa_prediction
+        cfg.use_vggt_geometry_tokens = self.use_vggt_geometry_tokens
+        cfg.use_ego_trajectory_tokens = self.use_ego_trajectory_tokens
+        cfg.use_risk_tokens = self.use_risk_tokens
+        cfg.use_scene_aware_expert_gate = self.use_scene_aware_expert_gate
+        cfg.use_timestep_aware_expert_gate = self.use_timestep_aware_expert_gate
+        cfg.last_rd_latent_dim = self.last_rd_latent_dim
+        cfg.num_dynamic_tokens = self.num_dynamic_tokens
+        cfg.num_geometry_tokens = self.num_geometry_tokens
+        cfg.num_ego_tokens = self.num_ego_tokens
+        cfg.num_risk_tokens = self.num_risk_tokens
+        cfg.require_vggt_geometry = self.require_vggt_geometry
+        cfg.allow_patch_geometry_fallback = self.allow_patch_geometry_fallback
+        cfg.future_jepa_loss_weight = self.future_jepa_loss_weight
+        cfg.vggt_geometry_loss_weight = self.vggt_geometry_loss_weight
+        cfg.coarse_traj_loss_weight = self.coarse_traj_loss_weight
+        cfg.coarse_heading_loss_weight = self.coarse_heading_loss_weight
+        cfg.risk_loss_weight = self.risk_loss_weight
+        cfg.policy_kd_loss_weight = self.policy_kd_loss_weight
+        cfg.future_jepa_loss_floor = self.future_jepa_loss_floor
+        cfg.vggt_geometry_loss_floor = self.vggt_geometry_loss_floor
+        cfg.coarse_traj_loss_floor = self.coarse_traj_loss_floor
+        cfg.risk_loss_floor = self.risk_loss_floor
+        cfg.last_rd_context_scale = self.last_rd_context_scale
+        cfg.last_rd_horizon_condition_scale = self.last_rd_horizon_condition_scale
+        cfg.last_rd_token_dropout = self.last_rd_token_dropout
+        cfg.last_rd_group_dropout = self.last_rd_group_dropout
+        cfg.reference_a0_checkpoint = self.reference_a0_checkpoint
+        cfg.policy_kd_mode = self.policy_kd_mode
+        cfg.current_train_epoch = self.current_train_epoch
+        cfg.total_train_epochs = self.total_train_epochs
 
         if self.grpo:
             cfg.grpo_cfg.metric_cache_path = self.metric_cache_path
             cfg.grpo_cfg.reference_policy_checkpoint = self.reference_policy_checkpoint
             
         self.action_head = ReCogDriveDiffusionPlanner(cfg).to(device)
+        if self.last_rd_adapter_checkpoint:
+            self._safe_load_last_rd_adapter(self.last_rd_adapter_checkpoint)
         self.num_inference_samples = 1
         self.inference_selection_mode = "median"
 
     def name(self) -> str:
         return self.__class__.__name__
+
+    def set_training_progress(self, epoch: int, total_epochs: int) -> None:
+        if hasattr(self.action_head, "set_training_progress"):
+            self.action_head.set_training_progress(epoch, total_epochs)
 
     def initialize(self) -> None:
         if self.checkpoint_path:
@@ -353,15 +494,24 @@ class ReCogDriveAgent(AbstractAgent):
         action_input_data = {
             "state": input_state.to(model_dtype),
             "his_traj": history_trajectory_reshaped.to(model_dtype),
+            "history_trajectory": history_trajectory.to(model_dtype),
             "status_feature": status_feature.to(model_dtype),
+            "high_command_one_hot": high_command_one_hot.to(model_dtype),
         }
+        target_loss_mode = self.training or targets is not None
         for key in EXPERT_FEATURE_KEYS:
             if key in features and isinstance(features[key], torch.Tensor):
+                if key in EXPERT_TARGET_FEATURE_KEYS and not target_loss_mode:
+                    continue
                 action_input_data[key] = features[key].to(model_dtype)
 
-        if self.training and not self.grpo:
+        if targets is not None and not self.grpo:
             action_inputs = BatchFeature(
-                data={**action_input_data, "action": targets["trajectory"].to(device=action_device, dtype=model_dtype)}
+                data={
+                    **action_input_data,
+                    "action": targets["trajectory"].to(device=action_device, dtype=model_dtype),
+                    "_allow_target_tokens_for_loss": True,
+                }
             )
             return self.action_head(last_hidden_state, action_inputs)
         elif self.training and self.grpo:
@@ -391,8 +541,130 @@ class ReCogDriveAgent(AbstractAgent):
             "jepa_horizon_conditioner",
             "vggt_horizon_conditioner",
             "branch_logits",
+            "last_rd",
         )
         return key.startswith("action_head.") and any(marker in key for marker in expert_markers)
+
+    @staticmethod
+    def _is_gate_parameter_key(key: str) -> bool:
+        gate_markers = ("jepa_gate", "vggt_gate", "branch_logits", "scene_gate", "timestep_gate")
+        return key.startswith("action_head.") and any(marker in key for marker in gate_markers)
+
+    @staticmethod
+    def _is_action_head_parameter_key(key: str) -> bool:
+        return key.startswith("action_head.")
+
+    def _optimizer_grouping_requested(self) -> bool:
+        return (
+            self.lr_action_head is not None
+            or self.lr_expert is not None
+            or self.lr_expert_gate is not None
+            or self.train_expert_only
+            or self.freeze_base_action_head
+            or self.freeze_expert
+        )
+
+    def _set_trainable_parameters(self) -> None:
+        if self.freeze_expert and (self.train_expert_only or self.freeze_base_action_head):
+            raise ValueError(
+                "freeze_expert leaves no trainable A4 parameters when combined with "
+                "train_expert_only/freeze_base_action_head."
+            )
+        if not (self.train_expert_only or self.freeze_base_action_head or self.freeze_expert):
+            return
+
+        for name, parameter in self.named_parameters():
+            if not self._is_action_head_parameter_key(name):
+                if self.train_expert_only or self.freeze_base_action_head:
+                    parameter.requires_grad = False
+                continue
+            is_expert = self._is_expert_parameter_key(name)
+            if self.train_expert_only or self.freeze_base_action_head:
+                parameter.requires_grad = is_expert and not self.freeze_expert
+            elif self.freeze_expert:
+                parameter.requires_grad = not is_expert
+
+    @staticmethod
+    def _append_optimizer_group(
+        groups: List[Dict[str, Any]],
+        *,
+        params: List[torch.nn.Parameter],
+        lr: float,
+        base_lr: float,
+        weight_decay: float,
+        name: str,
+    ) -> None:
+        if not params or lr <= 0.0:
+            return
+        group: Dict[str, Any] = {
+            "params": params,
+            "lr": lr,
+            "weight_decay": weight_decay,
+            "name": name,
+        }
+        if base_lr > 0.0:
+            group["lr_scale"] = lr / base_lr
+        groups.append(group)
+
+    def _build_grouped_optimizer(self) -> Optimizer:
+        base_lr = float(self._lr)
+        action_lr = base_lr if self.lr_action_head is None else float(self.lr_action_head)
+        expert_lr = base_lr if self.lr_expert is None else float(self.lr_expert)
+        gate_lr = None if self.lr_expert_gate is None else float(self.lr_expert_gate)
+
+        action_params: List[torch.nn.Parameter] = []
+        expert_params: List[torch.nn.Parameter] = []
+        gate_params: List[torch.nn.Parameter] = []
+        backbone_params: List[torch.nn.Parameter] = []
+
+        for name, parameter in self.named_parameters():
+            if not parameter.requires_grad:
+                continue
+            if self._is_gate_parameter_key(name) and gate_lr is not None:
+                gate_params.append(parameter)
+            elif self._is_expert_parameter_key(name):
+                expert_params.append(parameter)
+            elif self._is_action_head_parameter_key(name):
+                action_params.append(parameter)
+            elif self.backbone is not None and name.startswith("backbone."):
+                backbone_params.append(parameter)
+
+        groups: List[Dict[str, Any]] = []
+        self._append_optimizer_group(
+            groups,
+            params=expert_params,
+            lr=expert_lr,
+            base_lr=base_lr,
+            weight_decay=1e-4,
+            name="expert",
+        )
+        self._append_optimizer_group(
+            groups,
+            params=gate_params,
+            lr=gate_lr if gate_lr is not None else 0.0,
+            base_lr=base_lr,
+            weight_decay=0.0,
+            name="expert_gate",
+        )
+        self._append_optimizer_group(
+            groups,
+            params=action_params,
+            lr=action_lr,
+            base_lr=base_lr,
+            weight_decay=1e-4,
+            name="action_head",
+        )
+        self._append_optimizer_group(
+            groups,
+            params=backbone_params,
+            lr=action_lr,
+            base_lr=base_lr,
+            weight_decay=1e-4,
+            name="backbone",
+        )
+        if not groups:
+            raise RuntimeError("No trainable parameters for ReCogDrive optimizer. Check freeze flags and learning rates.")
+        return optim.AdamW(groups, weight_decay=0.0, betas=(0.9, 0.95))
 
     @staticmethod
     def _checkpoint_state_dict(checkpoint: Any) -> Dict[str, torch.Tensor]:
@@ -520,6 +792,40 @@ class ReCogDriveAgent(AbstractAgent):
             for item in skipped_expert_shape:
                 print(f"    - {item}")
 
+    def _safe_load_last_rd_adapter(self, checkpoint_path: str) -> None:
+        path = self._resolve_checkpoint_path(checkpoint_path)
+        if path is None:
+            raise FileNotFoundError(f"LaST-RD adapter checkpoint not found: {checkpoint_path}")
+        state_dict = self._load_checkpoint_file(path)
+        model_dict = self.state_dict()
+        filtered: Dict[str, torch.Tensor] = {}
+        skipped: List[str] = []
+        for key, value in state_dict.items():
+            mapped_key = key[len("agent."):] if key.startswith("agent.") else key
+            if mapped_key.startswith("action_head.last_rd."):
+                candidate = mapped_key
+            elif mapped_key.startswith("last_rd."):
+                candidate = f"action_head.{mapped_key}"
+            elif mapped_key.startswith("action_head.") and ".last_rd." in mapped_key:
+                candidate = mapped_key
+            else:
+                continue
+            if candidate in model_dict and isinstance(value, torch.Tensor) and tuple(model_dict[candidate].shape) == tuple(value.shape):
+                filtered[candidate] = value
+            else:
+                skipped.append(candidate)
+        if not filtered:
+            raise RuntimeError(f"No compatible LaST-RD adapter weights found in {path}.")
+        incompatible = self.load_state_dict(filtered, strict=False)
+        print(f"Loaded LaST-RD adapter weights from {path}: {len(filtered)} tensors.")
+        if skipped:
+            print("  skipped incompatible LaST-RD keys:")
+            for key in skipped[:20]:
+                print(f"    - {key}")
+        missing_last_rd = [key for key in incompatible.missing_keys if "last_rd" in key]
+        if missing_last_rd:
+            print(f"  remaining missing LaST-RD keys: {len(missing_last_rd)}")
+
     def _add_dummy_expert_features_if_needed(
         self,
         features: Dict[str, torch.Tensor],
@@ -595,24 +901,37 @@ class ReCogDriveAgent(AbstractAgent):
     def compute_loss(self, features: Dict[str, torch.Tensor], targets: Dict[str, torch.Tensor], predictions: Dict[str, torch.Tensor]) -> torch.Tensor:
         if self.training and self.grpo:
             return predictions
-        elif self.training:
+        elif isinstance(predictions, dict) and "loss" in predictions:
+            return predictions["loss"]
+        elif hasattr(predictions, "loss"):
             return predictions.loss
         else:
             return torch.nn.functional.l1_loss(predictions["pred_traj"], targets["trajectory"])
 
     def get_optimizers(self) -> Union[Optimizer, Dict[str, LRScheduler]]:
-        optimizer_cfg = DictConfig(dict(type="AdamW", lr=self._lr, weight_decay=1e-4, betas=(0.9, 0.95)))
+        self._set_trainable_parameters()
 
-        params = list(self.action_head.parameters())
-        if self.backbone is not None and self.train_backbone:
-            params += list(self.backbone.parameters())
-
-        optimizer = build_from_configs(optim, optimizer_cfg, params=params)
+        if self._optimizer_grouping_requested():
+            optimizer = self._build_grouped_optimizer()
+        else:
+            optimizer_cfg = DictConfig(dict(type="AdamW", lr=self._lr, weight_decay=1e-4, betas=(0.9, 0.95)))
+            params = [parameter for parameter in self.action_head.parameters() if parameter.requires_grad]
+            if self.backbone is not None and self.train_backbone:
+                params += [parameter for parameter in self.backbone.parameters() if parameter.requires_grad]
+            if not params:
+                raise RuntimeError("No trainable parameters for ReCogDrive optimizer.")
+            optimizer = build_from_configs(optim, optimizer_cfg, params=params)
         
         if self.grpo:
             scheduler = WarmupCosLR(optimizer=optimizer, lr=self._lr, min_lr=0.0, epochs=10, warmup_epochs=0)
         else:
-            scheduler = WarmupCosLR(optimizer=optimizer, lr=self._lr, min_lr=1e-6, epochs=200, warmup_epochs=3)
+            scheduler = WarmupCosLR(
+                optimizer=optimizer,
+                lr=self._lr,
+                min_lr=self.scheduler_min_lr,
+                epochs=self.scheduler_epochs,
+                warmup_epochs=self.scheduler_warmup_epochs,
+            )
             
         return {'optimizer': optimizer, 'lr_scheduler': scheduler}
 

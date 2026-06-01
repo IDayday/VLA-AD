@@ -1,0 +1,29 @@
+use_expert_features: true
+use_jepa: true
+use_vggt: true
+use_last_rd: true
+last_rd_stage: progressive_sft
+
+use_future_jepa_prediction: true
+use_vggt_geometry_tokens: true
+use_ego_trajectory_tokens: true
+use_risk_tokens: true
+use_scene_aware_expert_gate: true
+use_timestep_aware_expert_gate: true
+
+planner_dim: 384
+jepa_dim: 1024
+vggt_dim: 2048
+num_dynamic_tokens: 12
+num_geometry_tokens: 12
+num_ego_tokens: 8
+num_risk_tokens: 8
+
+use_teacher_context_tokens: true
+use_student_latent_adapters: true
+use_horizon_expert_residual: true
+expert_horizon_residual_scale: 1.0
+
+require_vggt_geometry: false
+allow_patch_geometry_fallback: true
+allow_future_targets_in_inference: false

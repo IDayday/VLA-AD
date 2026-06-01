@@ -1,0 +1,13 @@
+defaults:
+  - last_rd_progressive_sft
+
+route_name: fair_from_official_stage2_protocol
+checkpoint_path: null
+reference_a0_checkpoint: null
+last_rd_adapter_checkpoint: ${oc.env:STAGE1_5_CHECKPOINT,null}
+policy_kd_loss_weight: 0.0
+policy_kd_mode: none
+
+notes:
+  - Use the same data, splits, schedule, and official-aligned loader as A0.
+  - Do not initialize Stage2 action head from A0 for fair-from-scratch comparisons.

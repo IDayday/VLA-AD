@@ -155,6 +155,40 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     branch_init_jepa: float = 0.05
     branch_init_vggt: float = 0.05
     allow_future_targets_in_inference: bool = False
+
+    use_last_rd: bool = False
+    last_rd_stage: Literal["disabled", "stage1_5", "progressive_sft"] = "disabled"
+    use_future_jepa_prediction: bool = True
+    use_vggt_geometry_tokens: bool = True
+    use_ego_trajectory_tokens: bool = True
+    use_risk_tokens: bool = True
+    use_scene_aware_expert_gate: bool = True
+    use_timestep_aware_expert_gate: bool = True
+    last_rd_latent_dim: int = 384
+    num_dynamic_tokens: int = 12
+    num_geometry_tokens: int = 12
+    num_ego_tokens: int = 8
+    num_risk_tokens: int = 8
+    require_vggt_geometry: bool = False
+    allow_patch_geometry_fallback: bool = True
+    future_jepa_loss_weight: float = 0.0
+    vggt_geometry_loss_weight: float = 0.0
+    coarse_traj_loss_weight: float = 0.0
+    coarse_heading_loss_weight: float = 0.0
+    risk_loss_weight: float = 0.0
+    policy_kd_loss_weight: float = 0.0
+    future_jepa_loss_floor: float = 0.0
+    vggt_geometry_loss_floor: float = 0.0
+    coarse_traj_loss_floor: float = 0.0
+    risk_loss_floor: float = 0.0
+    last_rd_context_scale: float = 1.0
+    last_rd_horizon_condition_scale: float = 1.0
+    last_rd_token_dropout: float = 0.0
+    last_rd_group_dropout: float = 0.0
+    reference_a0_checkpoint: Optional[str] = None
+    policy_kd_mode: Literal["none", "noise", "x0"] = "none"
+    current_train_epoch: int = 0
+    total_train_epochs: int = 200
     
     tune_projector: bool = True
     tune_diffusion_model: bool = True
@@ -167,7 +201,13 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
 
 class ReCogDriveDiffusionPlanner(nn.Module):
     config_class = ReCogDriveDiffusionPlannerConfig
-    expert_target_keys = ("jepa_target_tokens", "vggt_target_tokens")
+    expert_target_keys = (
+        "jepa_target_tokens",
+        "vggt_target_tokens",
+        "vggt_geometry_target_tokens",
+        "vggt_depth_target_tokens",
+        "vggt_pointmap_target_tokens",
+    )
 
     def __init__(self, config: ReCogDriveDiffusionPlannerConfig):
         super().__init__()
@@ -209,7 +249,23 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("alignment_loss_type must be one of 'normalized_mse', 'mse', or 'cosine'.")
         if config.diffusion_loss_weight < 0.0:
             raise ValueError("diffusion_loss_weight must be non-negative.")
-        for weight_name in ("expert_alignment_weight", "jepa_alignment_weight", "vggt_alignment_weight"):
+        if config.use_last_rd and config.last_rd_stage == "disabled":
+            raise ValueError("use_last_rd=True requires last_rd_stage='stage1_5' or 'progressive_sft'.")
+        if not config.use_last_rd and config.last_rd_stage != "disabled":
+            raise ValueError("last_rd_stage must be 'disabled' when use_last_rd=False.")
+        if config.policy_kd_mode not in {"none", "noise", "x0"}:
+            raise ValueError("policy_kd_mode must be one of 'none', 'noise', or 'x0'.")
+        for weight_name in (
+            "expert_alignment_weight",
+            "jepa_alignment_weight",
+            "vggt_alignment_weight",
+            "future_jepa_loss_weight",
+            "vggt_geometry_loss_weight",
+            "coarse_traj_loss_weight",
+            "coarse_heading_loss_weight",
+            "risk_loss_weight",
+            "policy_kd_loss_weight",
+        ):
             if getattr(config, weight_name) < 0.0:
                 raise ValueError(f"{weight_name} must be non-negative.")
 
@@ -289,6 +345,58 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 config.branch_init_jepa,
                 config.branch_init_vggt,
             ]))
+
+        if config.use_last_rd:
+            from .latent_spatiotemporal_planning import LastRDConfig, LatentSpatioTemporalReasoner
+
+            self.last_rd = LatentSpatioTemporalReasoner(
+                LastRDConfig(
+                    planner_dim=config.input_embedding_dim,
+                    jepa_dim=config.jepa_dim,
+                    vggt_dim=config.vggt_dim,
+                    latent_dim=config.last_rd_latent_dim,
+                    hidden_dim=config.hidden_size,
+                    action_dim=config.action_dim,
+                    action_horizon=config.action_horizon,
+                    num_dynamic_tokens=config.num_dynamic_tokens,
+                    num_geometry_tokens=config.num_geometry_tokens,
+                    num_ego_tokens=config.num_ego_tokens,
+                    num_risk_tokens=config.num_risk_tokens,
+                    use_future_jepa_prediction=config.use_future_jepa_prediction,
+                    use_vggt_geometry_tokens=config.use_vggt_geometry_tokens,
+                    use_ego_trajectory_tokens=config.use_ego_trajectory_tokens,
+                    use_risk_tokens=config.use_risk_tokens,
+                    use_scene_aware_gate=config.use_scene_aware_expert_gate,
+                    use_timestep_aware_gate=config.use_timestep_aware_expert_gate,
+                    require_vggt_geometry=config.require_vggt_geometry,
+                    allow_patch_geometry_fallback=config.allow_patch_geometry_fallback,
+                )
+            )
+
+        self.reference_a0_policy: Optional[ReCogDriveDiffusionPlanner] = None
+        if (
+            config.policy_kd_loss_weight > 0.0
+            and config.policy_kd_mode != "none"
+            and config.reference_a0_checkpoint
+        ):
+            reference_cfg = copy.deepcopy(config)
+            reference_cfg.use_last_rd = False
+            reference_cfg.last_rd_stage = "disabled"
+            reference_cfg.use_expert_features = False
+            reference_cfg.policy_kd_loss_weight = 0.0
+            reference_cfg.reference_a0_checkpoint = None
+            reference_cfg.policy_kd_mode = "none"
+            self.reference_a0_policy = ReCogDriveDiffusionPlanner(reference_cfg)
+            self.reference_a0_policy._safe_load_reference_policy(config.reference_a0_checkpoint)
+            self.reference_a0_policy.eval()
+            for parameter in self.reference_a0_policy.parameters():
+                parameter.requires_grad = False
+        elif config.policy_kd_loss_weight > 0.0 and config.policy_kd_mode != "none":
+            warnings.warn(
+                "policy_kd_loss_weight > 0 but reference_a0_checkpoint is empty; "
+                "policy_kd_loss will be reported as zero.",
+                RuntimeWarning,
+            )
             
         self.fusion_projector = nn.Linear(config.input_embedding_dim * 3, config.input_embedding_dim)
 
@@ -432,6 +540,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "jepa_horizon_conditioner",
             "vggt_horizon_conditioner",
             "branch_logits",
+            "last_rd",
         )
         return any(marker in key for marker in expert_markers)
 
@@ -534,6 +643,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         t = torch.full((batch_size,), i, device=device, dtype=torch.long)
         return t
 
+    def set_training_progress(self, epoch: int, total_epochs: int):
+        self.config.current_train_epoch = int(epoch)
+        self.config.total_train_epochs = max(1, int(total_epochs))
+        if hasattr(self, "last_rd"):
+            self.last_rd.set_training_progress(epoch, total_epochs)
 
     def set_frozen_modules_to_eval_mode(self):
         """
@@ -878,44 +992,131 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         vl_features: torch.Tensor,
         action_input: Optional[BatchFeature],
         training: bool,
+        noisy_actions: Optional[torch.Tensor] = None,
+        diffusion_timestep: Optional[torch.Tensor] = None,
+        allow_target_tokens: Optional[bool] = None,
     ) -> Dict[str, Any]:
         vl_embeds = self._encode_vlm(vl_features)
-        if not self.config.use_expert_features:
-            zero = vl_embeds.new_zeros(())
+        zero = vl_embeds.new_zeros(())
+        base_losses = {
+            "jepa_alignment_loss": zero,
+            "vggt_alignment_loss": zero,
+            "future_jepa_loss": zero,
+            "vggt_geometry_loss": zero,
+            "coarse_traj_loss": zero,
+            "coarse_heading_loss": zero,
+            "risk_loss": zero,
+            "policy_kd_loss": zero,
+        }
+        if not self.config.use_expert_features and not self.config.use_last_rd:
             return {
                 "vl_embeds": vl_embeds,
                 "context_tokens": vl_embeds,
                 "context_mean": vl_embeds.mean(1),
                 "expert_step_condition": None,
-                "jepa_alignment_loss": zero,
-                "vggt_alignment_loss": zero,
+                **base_losses,
                 "diagnostics": {},
             }
 
-        expert = self._build_expert_context(vl_embeds, action_input, training)
-        context_parts = [vl_embeds]
-        if expert["jepa_all"] is not None:
-            context_parts.append(expert["jepa_all"])
-        if expert["vggt_all"] is not None:
-            context_parts.append(expert["vggt_all"])
-        context_tokens = torch.cat(context_parts, dim=1)
-        context_mean = self._compute_branch_context_mean(vl_embeds, expert["jepa_all"], expert["vggt_all"])
-        zero = vl_embeds.new_zeros(())
-        alignment_losses = self._compute_alignment_losses(
-            expert["z_jepa_768"],
-            expert["z_vggt_768"],
-            action_input,
+        expert: Optional[Dict[str, Any]] = None
+        if self.config.use_expert_features:
+            expert = self._build_expert_context(vl_embeds, action_input, training)
+            alignment_losses = self._compute_alignment_losses(
+                expert["z_jepa_768"],
+                expert["z_vggt_768"],
+                action_input,
+                training=training if allow_target_tokens is None else bool(allow_target_tokens),
+                reference=zero,
+            )
+            base_losses.update(alignment_losses)
+
+        if not self.config.use_last_rd:
+            assert expert is not None
+            context_parts = [vl_embeds]
+            if expert["jepa_all"] is not None:
+                context_parts.append(expert["jepa_all"])
+            if expert["vggt_all"] is not None:
+                context_parts.append(expert["vggt_all"])
+            context_tokens = torch.cat(context_parts, dim=1)
+            context_mean = self._compute_branch_context_mean(vl_embeds, expert["jepa_all"], expert["vggt_all"])
+            return {
+                "vl_embeds": vl_embeds,
+                "context_tokens": context_tokens,
+                "context_mean": context_mean,
+                "expert_step_condition": expert["horizon_residual"],
+                **base_losses,
+                "diagnostics": expert["diagnostics"],
+            }
+
+        last_rd_input = action_input
+        if last_rd_input is not None and (
+            self.config.last_rd_token_dropout > 0.0
+            or self.config.last_rd_group_dropout > 0.0
+        ):
+            last_rd_data = dict(last_rd_input)
+            last_rd_data.setdefault("last_rd_token_dropout", float(self.config.last_rd_token_dropout))
+            last_rd_data.setdefault("last_rd_group_dropout", float(self.config.last_rd_group_dropout))
+            last_rd_input = BatchFeature(data=last_rd_data)
+        last_rd_output = self.last_rd(
+            vl_embeds,
+            last_rd_input,
             training=training,
-            reference=zero,
+            allow_target_tokens=allow_target_tokens,
+            noisy_actions=noisy_actions,
+            diffusion_timestep=diffusion_timestep,
+            norm_odo=self.norm_odo,
         )
+
+        context_parts = [vl_embeds]
+        if expert is not None:
+            if expert["jepa_all"] is not None:
+                context_parts.append(expert["jepa_all"])
+            if expert["vggt_all"] is not None:
+                context_parts.append(expert["vggt_all"])
+        last_rd_tokens = last_rd_output.planning_tokens
+        if self.config.last_rd_context_scale != 1.0:
+            last_rd_tokens = last_rd_tokens * last_rd_tokens.new_tensor(float(self.config.last_rd_context_scale))
+        context_parts.append(last_rd_tokens)
+        context_tokens = torch.cat(context_parts, dim=1)
+
+        if last_rd_output.group_weights is not None:
+            summaries = [vl_embeds.mean(1)]
+            for tokens in (
+                last_rd_output.dynamic_tokens,
+                last_rd_output.geometry_tokens,
+                last_rd_output.ego_tokens,
+                last_rd_output.risk_tokens,
+            ):
+                summaries.append(tokens.mean(1) if tokens is not None else vl_embeds.new_zeros(vl_embeds.shape[0], vl_embeds.shape[-1]))
+            stacked = torch.stack(summaries, dim=1)
+            context_mean = (stacked * last_rd_output.group_weights.to(stacked).unsqueeze(-1)).sum(dim=1)
+        else:
+            context_mean = context_tokens.mean(1)
+
+        expert_step_condition = expert["horizon_residual"] if expert is not None else None
+        if last_rd_output.horizon_condition is not None:
+            last_rd_condition = last_rd_output.horizon_condition * last_rd_output.horizon_condition.new_tensor(
+                float(self.config.last_rd_horizon_condition_scale)
+            )
+            expert_step_condition = (
+                last_rd_condition
+                if expert_step_condition is None
+                else expert_step_condition.to(last_rd_condition) + last_rd_condition
+            )
+
+        diagnostics = dict(expert["diagnostics"]) if expert is not None else {}
+        diagnostics.update(last_rd_output.diagnostics)
+        for key, value in last_rd_output.losses.items():
+            if key in base_losses:
+                base_losses[key] = value
         return {
             "vl_embeds": vl_embeds,
             "context_tokens": context_tokens,
             "context_mean": context_mean,
-            "expert_step_condition": expert["horizon_residual"],
-            "jepa_alignment_loss": alignment_losses["jepa_alignment_loss"],
-            "vggt_alignment_loss": alignment_losses["vggt_alignment_loss"],
-            "diagnostics": expert["diagnostics"],
+            "expert_step_condition": expert_step_condition,
+            **base_losses,
+            "diagnostics": diagnostics,
+            "last_rd_output": last_rd_output,
         }
 
     def _repeat_expert_action_input(
@@ -923,17 +1124,152 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         action_input: BatchFeature,
         repeat: int,
     ) -> Optional[BatchFeature]:
-        if not self.config.use_expert_features:
+        if not self.config.use_expert_features and not self.config.use_last_rd:
             return None
 
         data: Dict[str, torch.Tensor] = {}
-        for stream, enabled in (("jepa", self.config.use_jepa), ("vggt", self.config.use_vggt)):
-            if not enabled:
-                continue
-            tokens = self._resolve_expert_tokens(action_input, stream, "context", required=True)
-            assert tokens is not None
-            data[f"{stream}_context_tokens"] = tokens.repeat_interleave(repeat, 0)
+        for key in (
+            "his_traj",
+            "history_trajectory",
+            "status_feature",
+            "high_command_one_hot",
+            "jepa_context_tokens",
+            "jepa_tokens",
+            "vggt_context_tokens",
+            "vggt_tokens",
+            "vggt_geometry_tokens",
+            "vggt_depth_tokens",
+            "vggt_pointmap_tokens",
+            "vggt_camera_tokens",
+        ):
+            if key in action_input and isinstance(action_input[key], torch.Tensor):
+                data[key] = action_input[key].repeat_interleave(repeat, 0)
+        if self.config.use_expert_features:
+            for stream, enabled in (("jepa", self.config.use_jepa), ("vggt", self.config.use_vggt)):
+                if not enabled or f"{stream}_context_tokens" in data:
+                    continue
+                tokens = self._resolve_expert_tokens(action_input, stream, "context", required=True)
+                assert tokens is not None
+                data[f"{stream}_context_tokens"] = tokens.repeat_interleave(repeat, 0)
         return BatchFeature(data=data)
+
+    def _last_rd_aux_weight(self, loss_name: str) -> float:
+        base = {
+            "future_jepa_loss": self.config.future_jepa_loss_weight,
+            "vggt_geometry_loss": self.config.vggt_geometry_loss_weight,
+            "coarse_traj_loss": self.config.coarse_traj_loss_weight,
+            "coarse_heading_loss": self.config.coarse_heading_loss_weight,
+            "risk_loss": self.config.risk_loss_weight,
+            "policy_kd_loss": self.config.policy_kd_loss_weight,
+        }[loss_name]
+        if self.config.last_rd_stage != "progressive_sft":
+            return float(base)
+        floors = {
+            "future_jepa_loss": self.config.future_jepa_loss_floor,
+            "vggt_geometry_loss": self.config.vggt_geometry_loss_floor,
+            "coarse_traj_loss": self.config.coarse_traj_loss_floor,
+            "coarse_heading_loss": 0.0,
+            "risk_loss": self.config.risk_loss_floor,
+            "policy_kd_loss": self.config.policy_kd_loss_weight,
+        }
+        floor = float(floors[loss_name])
+        progress = min(max(float(self.config.current_train_epoch) / max(1.0, float(self.config.total_train_epochs)), 0.0), 1.0)
+        return floor + max(float(base) - floor, 0.0) * (1.0 - progress)
+
+    def _last_rd_aux_loss(self, dit_context: Dict[str, Any], dtype: torch.dtype) -> torch.Tensor:
+        loss = dit_context["future_jepa_loss"].new_zeros(()).to(dtype=dtype)
+        for key in (
+            "future_jepa_loss",
+            "vggt_geometry_loss",
+            "coarse_traj_loss",
+            "coarse_heading_loss",
+            "risk_loss",
+            "policy_kd_loss",
+        ):
+            loss = loss + self._last_rd_aux_weight(key) * dit_context[key].to(dtype=dtype)
+        return loss
+
+    @staticmethod
+    def _policy_kd_action_input(action_input: BatchFeature) -> BatchFeature:
+        safe_keys = ("his_traj", "history_trajectory", "status_feature", "high_command_one_hot", "action", "state")
+        return BatchFeature(data={key: action_input[key] for key in safe_keys if key in action_input})
+
+    def _denoise_model_output(
+        self,
+        noisy_actions: torch.Tensor,
+        timesteps: torch.Tensor,
+        dit_context: Dict[str, Any],
+        action_input: BatchFeature,
+    ) -> torch.Tensor:
+        context_embeds = dit_context["context_tokens"]
+        context_mean = dit_context["context_mean"]
+        expert_step_condition = dit_context["expert_step_condition"]
+        his_traj_features = self.his_traj_encoder(
+            action_input.his_traj.unsqueeze(1)
+        ).repeat(1, self.config.action_horizon, 1)
+        ego_status_features = self.ego_status_encoder(action_input.status_feature)
+
+        action_features = self.action_encoder(noisy_actions, timesteps)
+        if hasattr(self, 'position_embedding'):
+            pos_ids = torch.arange(action_features.shape[1], device=noisy_actions.device)
+            action_features = action_features + self.position_embedding(pos_ids)
+        context_mean_features = context_mean.unsqueeze(1).repeat(1, self.config.action_horizon, 1)
+        fused_input = self.fusion_projector(
+            torch.cat((his_traj_features, context_mean_features, action_features), dim=2)
+        )
+        if expert_step_condition is not None:
+            fused_input = fused_input + expert_step_condition.to(device=fused_input.device, dtype=fused_input.dtype)
+        model_output = self.model(
+            hidden_states=fused_input,
+            encoder_hidden_states=context_embeds,
+            conditioning_features=ego_status_features,
+            timesteps=timesteps,
+        )
+        return self.action_decoder(model_output)
+
+    def _x0_from_noise(self, noisy_actions: torch.Tensor, timesteps: torch.Tensor, pred_noise: torch.Tensor) -> torch.Tensor:
+        return (
+            self.extract(self.ddpm_sqrt_recip_alphas_cumprod, timesteps, noisy_actions.shape) * noisy_actions
+            - self.extract(self.ddpm_sqrt_recipm1_alphas_cumprod, timesteps, noisy_actions.shape) * pred_noise
+        )
+
+    def _compute_policy_kd_loss(
+        self,
+        vl_features: torch.Tensor,
+        action_input: BatchFeature,
+        noisy_actions: torch.Tensor,
+        timesteps: torch.Tensor,
+        student_prediction: torch.Tensor,
+    ) -> torch.Tensor:
+        if (
+            self.reference_a0_policy is None
+            or self.config.policy_kd_mode == "none"
+            or self.config.policy_kd_loss_weight <= 0.0
+            or self.config.sampling_method == "flow"
+        ):
+            return student_prediction.new_zeros(())
+        reference = self.reference_a0_policy.to(device=student_prediction.device)
+        reference.eval()
+        safe_action_input = self._policy_kd_action_input(action_input)
+        with torch.no_grad():
+            teacher_context = reference._prepare_dit_context(
+                vl_features,
+                safe_action_input,
+                training=False,
+            )
+            teacher_prediction = reference._denoise_model_output(
+                noisy_actions,
+                timesteps,
+                teacher_context,
+                safe_action_input,
+            )
+        if self.config.policy_kd_mode == "noise":
+            return F.mse_loss(student_prediction.float(), teacher_prediction.detach().float())
+        if self.config.policy_kd_mode == "x0":
+            student_x0 = self._x0_from_noise(noisy_actions, timesteps, student_prediction)
+            teacher_x0 = reference._x0_from_noise(noisy_actions, timesteps, teacher_prediction)
+            return F.mse_loss(student_x0.float(), teacher_x0.detach().float())
+        raise ValueError(f"Unsupported policy_kd_mode: {self.config.policy_kd_mode}")
 
 
     def p_mean_variance(
@@ -947,11 +1283,24 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         deterministic: bool = True,
         context_mean: Optional[torch.Tensor] = None,
         expert_step_condition: Optional[torch.Tensor] = None,
+        vl_features: Optional[torch.Tensor] = None,
+        action_input: Optional[BatchFeature] = None,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
         """
         Calculates the mean and log variance of the reverse process p(x_{t-1} | x_t).
         Also returns the predicted x0.
         """
+        if self.config.use_last_rd and vl_features is not None and action_input is not None:
+            last_rd_context = self._prepare_dit_context(
+                vl_features,
+                action_input,
+                training=False,
+                noisy_actions=x,
+                diffusion_timestep=t,
+            )
+            context_embeds = last_rd_context["context_tokens"]
+            context_mean = last_rd_context["context_mean"]
+            expert_step_condition = last_rd_context["expert_step_condition"]
         model_dtype = next(self.model.parameters()).dtype
         x = x.to(model_dtype)
         action_features = self.action_encoder(x, t)
@@ -1041,19 +1390,33 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         Returns:
             BatchFeature: A batch containing the computed loss.
         """
-        if not self.training:
-            self._warn_if_expert_targets_present(action_input, "forward")
-        
-        dit_context = self._prepare_dit_context(vl_features, action_input, training=self.training)
-        context_embeds = dit_context["context_tokens"]
-        context_mean = dit_context["context_mean"]
-        expert_step_condition = dit_context["expert_step_condition"]
-        his_traj_features = self.his_traj_encoder(
-            action_input.his_traj.unsqueeze(1)
-        ).repeat(1, self.config.action_horizon, 1)
-        ego_status_features = self.ego_status_encoder(action_input.status_feature)
-        
         gt_actions = self.norm_odo(action_input.action)
+        allow_target_tokens = self.training or bool(action_input.get("_allow_target_tokens_for_loss", False))
+        if not allow_target_tokens:
+            self._warn_if_expert_targets_present(action_input, "forward")
+
+        if (
+            self.config.use_last_rd
+            and self.config.last_rd_stage == "stage1_5"
+            and float(self.config.diffusion_loss_weight) == 0.0
+        ):
+            dit_context = self._prepare_dit_context(
+                vl_features,
+                action_input,
+                training=self.training,
+                allow_target_tokens=allow_target_tokens,
+            )
+            diffusion_loss = gt_actions.new_zeros(())
+            jepa_alignment_loss = dit_context["jepa_alignment_loss"].to(dtype=diffusion_loss.dtype)
+            vggt_alignment_loss = dit_context["vggt_alignment_loss"].to(dtype=diffusion_loss.dtype)
+            policy_kd_loss = diffusion_loss
+            dit_context["policy_kd_loss"] = policy_kd_loss
+            loss = (
+                self._stream_alignment_weight("jepa") * jepa_alignment_loss
+                + self._stream_alignment_weight("vggt") * vggt_alignment_loss
+                + self._last_rd_aux_loss(dit_context, diffusion_loss.dtype)
+            )
+            return self._format_training_output(loss, diffusion_loss, jepa_alignment_loss, vggt_alignment_loss, dit_context)
 
         if self.config.sampling_method == 'flow':
             noise = torch.randn_like(gt_actions)
@@ -1063,22 +1426,17 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             noisy_actions = (1 - t_cont_reshaped) * noise + t_cont_reshaped * gt_actions
             velocity_target = gt_actions - noise
             t_discrete = (t_cont * self.num_timestep_buckets).long()
-
-            action_features = self.action_encoder(noisy_actions, t_discrete)
-            if hasattr(self, 'position_embedding'):
-                pos_ids = torch.arange(action_features.shape[1], device=gt_actions.device)
-                action_features += self.position_embedding(pos_ids)
-            
-            context_mean_features = context_mean.unsqueeze(1).repeat(1, self.config.action_horizon, 1)
-            fused_input = self.fusion_projector(
-                torch.cat((his_traj_features, context_mean_features, action_features), dim=2)
+            dit_context = self._prepare_dit_context(
+                vl_features,
+                action_input,
+                training=self.training,
+                noisy_actions=noisy_actions,
+                diffusion_timestep=t_discrete,
+                allow_target_tokens=allow_target_tokens,
             )
-            if expert_step_condition is not None:
-                fused_input = fused_input + expert_step_condition.to(device=fused_input.device, dtype=fused_input.dtype)
-
-            model_output = self.model(fused_input, context_embeds, ego_status_features, t_discrete)
-            pred_velocity = self.action_decoder(model_output)
+            pred_velocity = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input)
             diffusion_loss = F.mse_loss(pred_velocity, velocity_target, reduction='mean')
+            policy_kd_loss = diffusion_loss.new_zeros(())
         else: 
             noise = torch.randn_like(gt_actions)
             t_discrete = self.sample_time(gt_actions.shape[0], device=gt_actions.device, dtype=gt_actions.dtype)
@@ -1087,22 +1445,18 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 self.extract(self.ddpm_sqrt_alphas_cumprod, t_discrete, gt_actions.shape) * gt_actions +
                 self.extract(self.ddpm_sqrt_one_minus_alphas_cumprod, t_discrete, gt_actions.shape) * noise
             )
-            
-            action_features = self.action_encoder(noisy_actions, t_discrete)
-            if hasattr(self, 'position_embedding'):
-                pos_ids = torch.arange(action_features.shape[1], device=gt_actions.device)
-                action_features += self.position_embedding(pos_ids)
-            
-            context_mean_features = context_mean.unsqueeze(1).repeat(1, self.config.action_horizon, 1)
-            fused_input = self.fusion_projector(
-                torch.cat((his_traj_features, context_mean_features, action_features), dim=2)
+            dit_context = self._prepare_dit_context(
+                vl_features,
+                action_input,
+                training=self.training,
+                noisy_actions=noisy_actions,
+                diffusion_timestep=t_discrete,
+                allow_target_tokens=allow_target_tokens,
             )
-            if expert_step_condition is not None:
-                fused_input = fused_input + expert_step_condition.to(device=fused_input.device, dtype=fused_input.dtype)
-            
-            model_output = self.model(fused_input, context_embeds, ego_status_features, t_discrete)
-            pred_noise = self.action_decoder(model_output)
+            pred_noise = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input)
             diffusion_loss = F.mse_loss(pred_noise, noise, reduction='mean')
+            policy_kd_loss = self._compute_policy_kd_loss(vl_features, action_input, noisy_actions, t_discrete, pred_noise)
+        dit_context["policy_kd_loss"] = policy_kd_loss.to(dtype=diffusion_loss.dtype)
 
         jepa_alignment_loss = dit_context["jepa_alignment_loss"].to(dtype=diffusion_loss.dtype)
         vggt_alignment_loss = dit_context["vggt_alignment_loss"].to(dtype=diffusion_loss.dtype)
@@ -1110,13 +1464,30 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             float(self.config.diffusion_loss_weight) * diffusion_loss
             + self._stream_alignment_weight("jepa") * jepa_alignment_loss
             + self._stream_alignment_weight("vggt") * vggt_alignment_loss
+            + self._last_rd_aux_loss(dit_context, diffusion_loss.dtype)
         )
 
+        return self._format_training_output(loss, diffusion_loss, jepa_alignment_loss, vggt_alignment_loss, dit_context)
+
+    def _format_training_output(
+        self,
+        loss: torch.Tensor,
+        diffusion_loss: torch.Tensor,
+        jepa_alignment_loss: torch.Tensor,
+        vggt_alignment_loss: torch.Tensor,
+        dit_context: Dict[str, Any],
+    ) -> BatchFeature:
         output = {
             "loss": loss,
             "diffusion_loss": diffusion_loss,
             "jepa_alignment_loss": jepa_alignment_loss,
             "vggt_alignment_loss": vggt_alignment_loss,
+            "future_jepa_loss": dit_context["future_jepa_loss"].to(dtype=loss.dtype),
+            "vggt_geometry_loss": dit_context["vggt_geometry_loss"].to(dtype=loss.dtype),
+            "coarse_traj_loss": dit_context["coarse_traj_loss"].to(dtype=loss.dtype),
+            "coarse_heading_loss": dit_context["coarse_heading_loss"].to(dtype=loss.dtype),
+            "risk_loss": dit_context["risk_loss"].to(dtype=loss.dtype),
+            "policy_kd_loss": dit_context["policy_kd_loss"].to(dtype=loss.dtype),
         }
         diagnostics = dit_context.get("diagnostics", {})
         if diagnostics:
@@ -1130,6 +1501,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 output["branch_weight_vlm"] = branch_weights[0]
                 output["branch_weight_jepa"] = branch_weights[1]
                 output["branch_weight_vggt"] = branch_weights[2]
+            for name in ("vlm", "dynamic", "geometry", "ego", "risk"):
+                key = f"last_rd_group_weight_{name}"
+                if key in diagnostics:
+                    output[key] = diagnostics[key].to(device=loss.device, dtype=loss.dtype)
+            for key in ("last_rd_token_norms", "coarse_traj_l1", "future_jepa_loss_raw", "geometry_mode_code"):
+                if key in diagnostics and isinstance(diagnostics[key], torch.Tensor):
+                    output[f"last_rd_{key}" if key == "geometry_mode_code" else key] = diagnostics[key].to(
+                        device=loss.device,
+                        dtype=loss.dtype,
+                    )
         return BatchFeature(data=output)
 
     def get_action(
@@ -1182,6 +1563,17 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             for step in range(self.config.num_inference_steps):
                 idx = int(step / self.config.num_inference_steps * self.config.flow_cfg.num_timestep_buckets)
                 t = torch.full((B,), idx, device=device, dtype=torch.long)
+                if self.config.use_last_rd:
+                    dit_context = self._prepare_dit_context(
+                        vl_features,
+                        action_input,
+                        training=False,
+                        noisy_actions=current_actions,
+                        diffusion_timestep=t,
+                    )
+                    context_embeds = dit_context["context_tokens"]
+                    context_mean = dit_context["context_mean"]
+                    expert_step_condition = dit_context["expert_step_condition"]
 
                 action_features = self.action_encoder(current_actions, t)
                 if hasattr(self, 'position_embedding'):
@@ -1212,6 +1604,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     current_actions, t_batch, index_batch, context_embeds, history_embeds, ego_embeds, deterministic,
                     context_mean=context_mean,
                     expert_step_condition=expert_step_condition,
+                    vl_features=vl_features,
+                    action_input=action_input,
                 )
 
                 noise_sample = torch.randn_like(current_actions)
@@ -1243,6 +1637,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     current_actions, t_batch, index_batch, context_embeds, history_embeds, ego_embeds, deterministic,
                     context_mean=context_mean,
                     expert_step_condition=expert_step_condition,
+                    vl_features=vl_features,
+                    action_input=action_input,
                 )
 
                 std = torch.exp(0.5 * logvar)
@@ -1323,6 +1719,17 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             for step in range(self.config.num_inference_steps):
                 idx = int(step / self.config.num_inference_steps * self.config.flow_cfg.num_timestep_buckets)
                 t_batch = torch.full((B,), idx, device=device, dtype=torch.long)
+                if self.config.use_last_rd and action_input is not None:
+                    dit_context = self._prepare_dit_context(
+                        vl_features,
+                        action_input,
+                        training=self.training,
+                        noisy_actions=current_actions,
+                        diffusion_timestep=t_batch,
+                    )
+                    context_embeds = dit_context["context_tokens"]
+                    context_mean = dit_context["context_mean"]
+                    expert_step_condition = dit_context["expert_step_condition"]
                 
                 action_features = self.action_encoder(current_actions, t_batch)
                 if hasattr(self, 'position_embedding'):
@@ -1357,6 +1764,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     current_actions, t_batch, index_batch, context_embeds, his_traj_features, ego_status_features, deterministic,
                     context_mean=context_mean,
                     expert_step_condition=expert_step_condition,
+                    vl_features=vl_features if action_input is not None else None,
+                    action_input=action_input,
                 )
 
                 std = torch.exp(0.5 * logvar).to(dtype)

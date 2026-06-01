@@ -1,0 +1,23 @@
+defaults:
+  - last_rd_base
+
+last_rd_stage: progressive_sft
+diffusion_loss_weight: 1.0
+
+future_jepa_loss_weight: 0.10
+future_jepa_loss_floor: 0.01
+
+vggt_geometry_loss_weight: 0.05
+vggt_geometry_loss_floor: 0.005
+
+coarse_traj_loss_weight: 0.20
+coarse_traj_loss_floor: 0.05
+
+coarse_heading_loss_weight: 0.05
+risk_loss_weight: 0.03
+risk_loss_floor: 0.005
+
+policy_kd_loss_weight: 0.05
+policy_kd_mode: noise
+
+epochs: 200
