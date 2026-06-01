@@ -9,14 +9,14 @@ import torch
 from scripts.audit_last_rd_cache_manifest import audit_cache
 
 
-def _write_sample(root: Path, name: str, high_command_shape: int = 3) -> None:
+def _write_sample(root: Path, name: str, high_command_shape: int = 3, legacy_fourth_value: float = 0.0) -> None:
     samples = root / "samples"
     samples.mkdir(parents=True, exist_ok=True)
     payload = {
         "sample_token": name,
         "scene_token": f"scene_{name}",
         "history_trajectory": torch.zeros(4, 3),
-        "high_command_one_hot": torch.zeros(high_command_shape),
+        "high_command_one_hot": torch.tensor([1.0, 0.0, 0.0]) if high_command_shape == 3 else torch.tensor([1.0, 0.0, 0.0, legacy_fourth_value]),
         "last_hidden_state": torch.zeros(5, 1536),
         "status_feature": torch.zeros(8),
         "trajectory": torch.zeros(8, 3),
@@ -40,21 +40,39 @@ def _write_index(root: Path, names: list[str]) -> None:
 def test_last_rd_cache_manifest_synthetic(tmp_path):
     _write_sample(tmp_path, "sample_a", high_command_shape=3)
     _write_index(tmp_path, ["sample_a"])
-    manifest = audit_cache(tmp_path, future_jepa_loss_weight=0.3, risk_loss_weight=0.0)
+    manifest = audit_cache(tmp_path, future_jepa_loss_weight=0.3, risk_loss_weight=0.0, strict=True)
     assert manifest["num_samples_scanned"] == 1
     assert manifest["required_base_key_coverage"]["high_command_one_hot"]["coverage"] == 1.0
     assert manifest["high_command_one_hot_shape_distribution"] == {"(3,)": 1}
+    assert manifest["high_command_one_hot_legacy_repair"]["normalized_shape_distribution"] == {"(3,)": 1}
     assert manifest["teacher_token_coverage"]["jepa_target_tokens"]["coverage"] == 1.0
     assert manifest["vggt_geometry_mode_distribution"]["patch_fallback"] == 1
+    assert manifest["readiness"]["pass"]
+    assert manifest["readiness"]["recommended_geometry_label"] == "geometry_lite_patch_fallback"
+    assert any("patch_fallback" in warning for warning in manifest["readiness"]["high_risk_warnings"])
 
 
-def test_chunk_cache_high_command_shape_four_fails_fast(tmp_path):
+def test_chunk_cache_high_command_shape_four_repairs_to_three(tmp_path):
     try:
         from navsim.planning.script.run_training_recogdrive import ChunkCacheDataset
     except Exception as exc:
         pytest.skip(f"training dependencies unavailable: {exc}")
 
-    _write_sample(tmp_path, "sample_bad", high_command_shape=4)
+    _write_sample(tmp_path, "sample_legacy", high_command_shape=4, legacy_fourth_value=0.0)
+    _write_index(tmp_path, ["sample_legacy"])
+    dataset = ChunkCacheDataset(str(tmp_path), include_expert_features=False)
+    features, _, _ = dataset[0]
+    assert tuple(features["high_command_one_hot"].shape) == (3,)
+    assert features["high_command_one_hot"].tolist() == [1.0, 0.0, 0.0]
+
+
+def test_chunk_cache_high_command_shape_four_nonzero_fourth_fails_fast(tmp_path):
+    try:
+        from navsim.planning.script.run_training_recogdrive import ChunkCacheDataset
+    except Exception as exc:
+        pytest.skip(f"training dependencies unavailable: {exc}")
+
+    _write_sample(tmp_path, "sample_bad", high_command_shape=4, legacy_fourth_value=1.0)
     _write_index(tmp_path, ["sample_bad"])
     dataset = ChunkCacheDataset(str(tmp_path), include_expert_features=False)
     with pytest.raises(ValueError, match="left/straight/right"):

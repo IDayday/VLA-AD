@@ -31,6 +31,8 @@ sh ./shell/internvl3.0/2nd_finetune/internvl3_8b_dynamic_res_2nd_finetune_recogd
 
 You can download our pretrained **ReCogDrive VLM** from [ReCogDrive VLM](https://huggingface.co/collections/owl10/recogdrive-68bafa143de172bab8de5752).  
 
+For reproducible local Stage2 work in this repository, use the official-aligned training path documented in [OfficialAlignedBaselineGuardrails.md](OfficialAlignedBaselineGuardrails.md). The verified A0 baseline uses `navsim/planning/script/run_training_recogdrive.py`, PyTorch Lightning mixed precision with fp32 model weights, official train/val log split, AdamW `1e-4`, `WarmupCosLR`, and full navtest fp32 evaluation.
+
 For the diffusion planner training, the first step is to **cache datasets for faster training**.  
 Since DiT training converges relatively slowly, training VLM and DiT jointly can be very time-consuming. To accelerate, we cache the hidden states output by the VLM, which enables much faster training.  
 > ⚠️ Note: Caching requires approximately **1–2 TB of disk space**. We are also working on faster training methods.  
@@ -108,6 +110,40 @@ EXPERT_VARIANT=jepa_vggt sh scripts/cache_dataset/run_caching_recogdrive_expert_
 export RECOGDRIVE_VLM_PATH=/path/to/ReCogDrive-VLM-2B
 export RECOGDRIVE_HIDDEN_CACHE_DIR=${NAVSIM_EXP_ROOT}/recogdrive_agent_cache_dir_train_2b
 EXPERT_VARIANT=jepa_vggt_alignment sh scripts/training/run_recogdrive_train_multi_node_2b_expert.sh
+```
+
+A4-V2 should now be trained on the official-aligned baseline instead of the legacy chunked training loop:
+
+```bash
+export RECOGDRIVE_VLM_PATH=/path/to/ReCogDrive-VLM-2B
+export CACHE_PATH=/path/to/local_chunk_cache_with_train_val_logs
+export TRAIN_TEST_SPLIT=navtrain
+export OUTPUT_DIR=/path/to/outputs/a4_v2_official_aligned
+export MASTER_PORT=29571
+bash scripts/run_a4_v2_official_aligned_8gpu.sh
+```
+
+For the align-first variant:
+
+```bash
+export RECOGDRIVE_VLM_PATH=/path/to/ReCogDrive-VLM-2B
+export CACHE_PATH=/path/to/local_chunk_cache_with_train_val_logs
+export TRAIN_TEST_SPLIT=navtrain
+export OUTPUT_DIR=/path/to/outputs/a4_v2_official_align_first
+export MASTER_PORT=29581
+bash scripts/run_a4_v2_official_align_first_8gpu.sh
+```
+
+Evaluate A4-V2 checkpoints through the same fp32 PDM evaluator:
+
+```bash
+export A4_EVAL_CONFIG=configs/ablations/recogdrive2b_A4_v2.yaml
+export CHECKPOINT_DIR=/path/to/outputs/a4_v2_official_aligned
+export EVAL_CHUNK_CACHE_ROOT=/path/to/navtest_chunk_cache
+export EVAL_CHUNK_NAME_PATTERN='navtest_full_chunk_*'
+export METRIC_CACHE_DIR=/path/to/navtest_metric_cache
+export EVAL_OUTPUT_DIR=/path/to/eval/a4_v2_official_aligned
+bash scripts/eval_a4_v2_official_aligned_checkpoints.sh
 ```
 
 4. Evaluate expert IL:

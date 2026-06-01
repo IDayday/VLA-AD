@@ -1,0 +1,72 @@
+_target_: navsim.agents.recogdrive.recogdrive_agent.ReCogDriveAgent
+_convert_: 'all'
+
+trajectory_sampling:
+  _target_: nuplan.planning.simulation.trajectory.trajectory_sampling.TrajectorySampling
+  _convert_: 'all'
+  time_horizon: 4
+  interval_length: 0.5
+
+checkpoint_path: ''
+allow_random_init: true
+vlm_path: ''
+cam_type: 'single'
+vlm_type: 'internvl'
+dit_type: 'small'
+sampling_method: 'ddim'
+cache_mode: false
+cache_hidden_state: true
+metric_cache_path: ''
+reference_policy_checkpoint: ''
+vlm_size: 'small'
+train_backbone: false
+grpo: false
+
+# Verified official Stage2 optimizer/scheduler defaults.
+lr: 1e-4
+scheduler_epochs: 200
+scheduler_warmup_epochs: 3
+scheduler_min_lr: 1e-6
+lr_action_head: null
+lr_expert: null
+lr_expert_gate: null
+train_expert_only: false
+freeze_base_action_head: false
+freeze_expert: false
+
+# A4-V2 expert-token structure.
+use_expert_features: true
+expert_feature_source: "chunk"
+expert_cache_dir: null
+allow_dummy_expert_cache: false
+expert_adapter_dim: 768
+num_jepa_tokens: 12
+num_vggt_tokens: 12
+allow_expert_target_features: false
+use_jepa: true
+use_vggt: true
+jepa_dim: 1024
+vggt_dim: 2048
+expert_dropout: 0.10
+expert_fusion_mode: "concat_context"
+use_teacher_context_tokens: true
+use_student_latent_adapters: true
+use_branch_weighted_mean: true
+use_expert_type_embedding: true
+use_expert_gates: true
+expert_alignment_weight: 0.0
+expert_stream_dropout: 0.15
+expert_context_scale: 1.0
+use_horizon_expert_residual: true
+expert_horizon_residual_scale: 1.0
+diffusion_loss_weight: 1.0
+use_alignment_loss: true
+jepa_alignment_weight: 0.03
+vggt_alignment_weight: 0.05
+alignment_loss_type: "normalized_mse"
+jepa_gate_init: 0.10
+vggt_gate_init: 0.10
+branch_init_vlm: 0.85
+branch_init_jepa: 0.075
+branch_init_vggt: 0.075
+allow_future_targets_in_inference: false

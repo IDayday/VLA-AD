@@ -309,17 +309,23 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
     def _check_shape(self, tensor: torch.Tensor, key: str, sample_path: Path) -> None:
         expected = self._expected_shape(key)
         if expected is not None and tuple(tensor.shape) != expected:
-            if key == "high_command_one_hot" and tuple(tensor.shape) == (4,):
-                raise ValueError(
-                    f"Chunk sample {sample_path} key 'high_command_one_hot' shape {tuple(tensor.shape)} != {expected}. "
-                    "Expected NAVSIM command one-hot is [3]: left/straight/right. "
-                    "Do not pad or truncate this field."
-                )
             raise ValueError(f"Chunk sample {sample_path} key '{key}' shape {tuple(tensor.shape)} != {expected}.")
         if key == "last_hidden_state" and (tensor.ndim != 2 or tensor.shape[-1] != 1536):
             raise ValueError(
                 f"Chunk sample {sample_path} key 'last_hidden_state' must have shape [N, 1536], got {tuple(tensor.shape)}."
             )
+
+    @staticmethod
+    def _normalize_high_command_one_hot(tensor: torch.Tensor, sample_path: Path) -> torch.Tensor:
+        if tuple(tensor.shape) == (3,):
+            return tensor
+        if tuple(tensor.shape) == (4,) and torch.isclose(tensor[-1].float(), torch.tensor(0.0, device=tensor.device)):
+            return tensor[:3].contiguous()
+        raise ValueError(
+            f"Chunk sample {sample_path} key 'high_command_one_hot' shape/value {tuple(tensor.shape)} is not supported. "
+            "Expected [3] left/straight/right, or legacy [4] with unused fourth slot exactly zero. "
+            "Do not silently pad or truncate this field."
+        )
 
     def sample_tokens(self) -> List[str]:
         return [
@@ -327,12 +333,20 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             for _, sample_path, record in self.records
         ]
 
+    def _report_records(self) -> List[tuple[Path, Path, Dict[str, Any]]]:
+        limit = int(os.getenv("LAST_RD_DATA_REPORT_MAX_SAMPLES", "256"))
+        if limit <= 0:
+            return self.records
+        return self.records[:limit]
+
     def report(self) -> Dict[str, Any]:
         tokens = self.sample_tokens()
         token_counts = Counter(tokens)
         log_counts = Counter(str(record.get("log_name") or "missing") for _, _, record in self.records)
         chunk_counts = Counter(str(chunk_dir.name) for chunk_dir, _, _ in self.records)
+        report_sample_count = len(self._report_records())
         high_command_shape_distribution = self._shape_distribution("high_command_one_hot")
+        high_command_normalized_distribution = self._high_command_normalized_distribution()
         return {
             "split_name": self.split_name,
             "cache_path": str(self.cache_path),
@@ -356,14 +370,17 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             "allow_patch_geometry_fallback": self.allow_patch_geometry_fallback,
             "future_jepa_loss_weight": self.future_jepa_loss_weight,
             "vggt_geometry_loss_weight": self.vggt_geometry_loss_weight,
+            "shape_distribution_sample_count": report_sample_count,
+            "shape_distribution_sample_limit": int(os.getenv("LAST_RD_DATA_REPORT_MAX_SAMPLES", "256")),
             "high_command_one_hot_shape_distribution": high_command_shape_distribution,
+            "high_command_one_hot_normalized_shape_distribution": high_command_normalized_distribution,
             "top_log_names": log_counts.most_common(10),
             "chunk_counts": dict(sorted(chunk_counts.items())),
         }
 
     def _shape_distribution(self, key: str) -> Dict[str, int]:
         distribution: Counter[str] = Counter()
-        for _, sample_path, _ in self.records:
+        for _, sample_path, _ in self._report_records():
             try:
                 sample = load_sample(sample_path)
                 value = sample.get(key)
@@ -373,11 +390,32 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             distribution[str(shape)] += 1
         return dict(sorted(distribution.items()))
 
+    def _high_command_normalized_distribution(self) -> Dict[str, int]:
+        distribution: Counter[str] = Counter()
+        for _, sample_path, _ in self._report_records():
+            try:
+                sample = load_sample(sample_path)
+                value = sample.get("high_command_one_hot")
+                if not isinstance(value, torch.Tensor):
+                    shape = type(value).__name__
+                else:
+                    normalized = self._normalize_high_command_one_hot(value.float(), sample_path)
+                    shape = tuple(normalized.shape)
+            except Exception as exc:
+                shape = f"error:{type(exc).__name__}"
+            distribution[str(shape)] += 1
+        return dict(sorted(distribution.items()))
+
     def __getitem__(self, idx: int) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], str]:
         _, sample_path, record = self.records[idx]
         sample = load_sample(sample_path)
+        required_values: Dict[str, torch.Tensor] = {}
         for key in self.REQUIRED_FEATURE_KEYS + self.REQUIRED_TARGET_KEYS:
-            self._check_shape(self._require_tensor(sample, key, sample_path), key, sample_path)
+            value = self._require_tensor(sample, key, sample_path)
+            if key == "high_command_one_hot":
+                value = self._normalize_high_command_one_hot(value.float(), sample_path)
+            self._check_shape(value, key, sample_path)
+            required_values[key] = value
         expert_keys = self._required_expert_context_keys() + self._required_expert_target_keys()
         for key in expert_keys:
             self._check_shape(self._require_tensor(sample, key, sample_path), key, sample_path)
@@ -389,14 +427,14 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             value = self._require_tensor(sample, key, sample_path)
             self._check_shape(value, key, sample_path)
         features = {
-            "history_trajectory": sample["history_trajectory"].float(),
-            "high_command_one_hot": sample["high_command_one_hot"].float(),
-            "last_hidden_state": sample["last_hidden_state"].float(),
-            "status_feature": sample["status_feature"].float(),
+            "history_trajectory": required_values["history_trajectory"].float(),
+            "high_command_one_hot": required_values["high_command_one_hot"].float(),
+            "last_hidden_state": required_values["last_hidden_state"].float(),
+            "status_feature": required_values["status_feature"].float(),
         }
         for key in [*expert_keys, *optional_expert_keys]:
             features[key] = sample[key].float()
-        targets = {"trajectory": sample["trajectory"].float()}
+        targets = {"trajectory": required_values["trajectory"].float()}
         token = str(sample.get("sample_token") or record.get("sample_token") or sample_path.stem)
         return features, targets, token
 
@@ -655,15 +693,18 @@ def main(cfg: DictConfig) -> None:
             if overlap_count:
                 raise RuntimeError(f"Local chunk train/val split overlap is not allowed; overlap_count={overlap_count}")
             loader_mode = "official-aligned-local-loader-log-split"
-            data_report = {
-                "loader_mode": loader_mode,
-                "train": train_data.report(),
-                "val": val_data.report(),
-                "train_val_overlap_count": overlap_count,
-                "train_unique_sample_token_count": len(train_tokens),
-                "val_unique_sample_token_count": len(val_tokens),
-                "a0_strict_feature_whitelist": not include_expert_features,
-            }
+            if int(os.getenv("RANK", "0")) == 0:
+                data_report = {
+                    "loader_mode": loader_mode,
+                    "train": train_data.report(),
+                    "val": val_data.report(),
+                    "train_val_overlap_count": overlap_count,
+                    "train_unique_sample_token_count": len(train_tokens),
+                    "val_unique_sample_token_count": len(val_tokens),
+                    "a0_strict_feature_whitelist": not include_expert_features,
+                }
+            else:
+                data_report = None
         else:
             train_data = CacheOnlyDataset(
                 cache_path=cfg.cache_path,

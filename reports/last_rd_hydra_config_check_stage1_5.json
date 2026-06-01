@@ -1,6 +1,8 @@
 {
   "agent.allow_expert_target_features": true,
+  "agent.freeze_base_action_head": true,
   "agent.last_rd_stage": "stage1_5",
+  "agent.train_expert_only": true,
   "agent.use_expert_features": false,
   "agent.use_last_rd": true,
   "dataloader_batch_size": 16,

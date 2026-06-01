@@ -32,6 +32,18 @@ DUMMY_EXPERT_CACHE_WARNING = "Dummy cache for computation smoke tests only. Do n
 def format_number(n, decimal_places=2):
     return f"{n:+.{decimal_places}f}" if abs(round(n, decimal_places)) > 1e-2 else "0.0"
 
+def normalize_high_command_one_hot(command: torch.Tensor) -> torch.Tensor:
+    """Return the official three-way NAVSIM command: left, straight, right."""
+    command = command.detach().clone().float().view(-1)
+    if command.numel() == 3:
+        return command
+    if command.numel() == 4 and float(command[-1].abs().item()) < 1e-6:
+        return command[:3]
+    raise ValueError(
+        "Unsupported NAVSIM driving_command shape/value for ReCogDrive. "
+        f"Expected [3] left/straight/right, or legacy [4] with unused fourth slot zero; got {command.tolist()}."
+    )
+
 
 def stack_optional_expert_features(features: Dict[str, torch.Tensor], features_list: List[Dict[str, torch.Tensor]]) -> None:
     """Stacks optional expert features into an existing collated feature dict."""
@@ -436,9 +448,10 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
             [[float(e.ego_pose[0]), float(e.ego_pose[1]), float(e.ego_pose[2])] for e in ego_statuses[:4]],
             dtype=torch.float32
         )
-        high_command_one_hot = torch.tensor(ego_statuses[-1].driving_command, dtype=torch.float32)
+        raw_driving_command = torch.tensor(ego_statuses[-1].driving_command, dtype=torch.float32)
+        high_command_one_hot = normalize_high_command_one_hot(raw_driving_command)
         status_feature = torch.cat([
-            high_command_one_hot.clone(),
+            raw_driving_command.clone(),
             torch.tensor(ego_statuses[-1].ego_velocity, dtype=torch.float32),
             torch.tensor(ego_statuses[-1].ego_acceleration, dtype=torch.float32)
         ], dim=-1)

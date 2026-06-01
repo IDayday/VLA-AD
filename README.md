@@ -64,6 +64,7 @@ Recent studies have explored leveraging the world knowledge and cognitive capabi
 - [Download NAVSIM datasets following official instruction](https://github.com/autonomousvision/navsim/blob/main/docs/install.md)
 - [Preparation of ReCogDrive environment](docs/Installation.md)
 - [ReCogDrive Training and Evaluation](docs/Train_Eval.md)
+- [Official-aligned Stage2 baseline guardrails](docs/OfficialAlignedBaselineGuardrails.md)
 - [中文：专家 Token 改造训练、开发与验证指南](docs/Expert_Token_ReCogDrive_Guide_zh.md)
 
 ## Expert-Token ReCogDrive

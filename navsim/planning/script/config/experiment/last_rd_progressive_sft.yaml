@@ -1,9 +1,16 @@
 # @package _global_
 
+defaults:
+  - override /agent: recogdrive_agent
+
 agent:
   use_expert_features: true
   use_jepa: true
   use_vggt: true
+  num_jepa_tokens: 12
+  num_vggt_tokens: 12
+  jepa_dim: 1024
+  vggt_dim: 2048
   allow_expert_target_features: true
   use_last_rd: true
   last_rd_stage: progressive_sft

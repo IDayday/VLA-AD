@@ -1,0 +1,47 @@
+{
+  "configs": {
+    "hybrid_eval": {
+      "checks": {
+        "allow_expert_target_features_false": true,
+        "allow_future_targets_in_inference_false": true,
+        "policy_kd_loss_weight_zero": true,
+        "policy_kd_mode_none": true,
+        "use_expert_features_expected": true,
+        "use_last_rd": true
+      },
+      "errors": [],
+      "pass": true,
+      "path": "/mnt/project/VLA-AD/configs/last_rd/last_rd_progressive_sft_hybrid_eval.yaml",
+      "resolved": {
+        "allow_expert_target_features": false,
+        "allow_future_targets_in_inference": false,
+        "policy_kd_loss_weight": 0.0,
+        "policy_kd_mode": "none",
+        "use_expert_features": true,
+        "use_last_rd": true
+      }
+    },
+    "lastrd_only_eval": {
+      "checks": {
+        "allow_expert_target_features_false": true,
+        "allow_future_targets_in_inference_false": true,
+        "policy_kd_loss_weight_zero": true,
+        "policy_kd_mode_none": true,
+        "use_expert_features_expected": true,
+        "use_last_rd": true
+      },
+      "errors": [],
+      "pass": true,
+      "path": "/mnt/project/VLA-AD/configs/last_rd/last_rd_progressive_sft_lastrd_only_eval.yaml",
+      "resolved": {
+        "allow_expert_target_features": false,
+        "allow_future_targets_in_inference": false,
+        "policy_kd_loss_weight": 0.0,
+        "policy_kd_mode": "none",
+        "use_expert_features": false,
+        "use_last_rd": true
+      }
+    }
+  },
+  "pass": true
+}

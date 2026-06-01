@@ -1,0 +1,177 @@
+{
+  "all_losses_finite": true,
+  "batch_shapes": {
+    "high_command_one_hot": [
+      2,
+      3
+    ],
+    "history_trajectory": [
+      2,
+      4,
+      3
+    ],
+    "jepa_context_tokens": [
+      2,
+      12,
+      1024
+    ],
+    "jepa_target_tokens": [
+      2,
+      12,
+      1024
+    ],
+    "last_hidden_state": [
+      2,
+      2800,
+      1536
+    ],
+    "status_feature": [
+      2,
+      8
+    ],
+    "vggt_context_tokens": [
+      2,
+      12,
+      2048
+    ],
+    "vggt_target_tokens": [
+      2,
+      12,
+      2048
+    ]
+  },
+  "cache_root": "/mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1",
+  "geometry_mode_distribution": {
+    "patch_fallback": 2
+  },
+  "get_action_no_future_targets_pass": true,
+  "high_command_one_hot_shape": [
+    2,
+    3
+  ],
+  "pass": true,
+  "stage1_5_trainable_scope_pass": true,
+  "stages": [
+    {
+      "get_action": {
+        "get_action_no_future_targets_pass": true,
+        "pred_traj_finite": true,
+        "pred_traj_shape": [
+          2,
+          8,
+          3
+        ],
+        "target_keys_in_get_action_batch": [],
+        "target_tokens_absent_for_get_action": true
+      },
+      "loss_finite": true,
+      "losses": {
+        "coarse_heading_loss": 0.07914204150438309,
+        "coarse_traj_loss": 0.12706604599952698,
+        "diffusion_loss": 0.0,
+        "future_jepa_loss": 0.0019076287280768156,
+        "loss": 0.07211604714393616,
+        "risk_loss": 0.0,
+        "vggt_geometry_loss": 0.0009652402950450778
+      },
+      "stage": "stage1_5",
+      "stage1_5_trainable_scope_pass": true,
+      "target_keys_in_training_batch": [
+        "jepa_target_tokens",
+        "vggt_target_tokens"
+      ],
+      "target_tokens_present_for_training": true,
+      "trainable_parameter_counts": {
+        "action_base": {
+          "total": 34329220,
+          "trainable": 0
+        },
+        "all": {
+          "total": 53295078,
+          "trainable": 18965858
+        },
+        "backbone": {
+          "total": 0,
+          "trainable": 0
+        },
+        "last_rd": {
+          "total": 18965858,
+          "trainable": 18965858
+        },
+        "legacy_a4_expert": {
+          "total": 0,
+          "trainable": 0
+        },
+        "other": {
+          "total": 0,
+          "trainable": 0
+        }
+      },
+      "use_expert_features": false,
+      "use_last_rd": true
+    },
+    {
+      "get_action": {
+        "get_action_no_future_targets_pass": true,
+        "pred_traj_finite": true,
+        "pred_traj_shape": [
+          2,
+          8,
+          3
+        ],
+        "target_keys_in_get_action_batch": [],
+        "target_tokens_absent_for_get_action": true
+      },
+      "loss_finite": true,
+      "losses": {
+        "coarse_heading_loss": 0.04702227562665939,
+        "coarse_traj_loss": 0.09997062385082245,
+        "diffusion_loss": 1.036271095275879,
+        "future_jepa_loss": 0.0018972831312566996,
+        "loss": 1.058856725692749,
+        "risk_loss": 0.0,
+        "vggt_geometry_loss": 0.0010131673188880086
+      },
+      "stage": "progressive_sft",
+      "stage1_5_trainable_scope_pass": true,
+      "target_keys_in_training_batch": [
+        "jepa_target_tokens",
+        "vggt_target_tokens"
+      ],
+      "target_tokens_present_for_training": true,
+      "trainable_parameter_counts": {
+        "action_base": {
+          "total": 34329220,
+          "trainable": 34329219
+        },
+        "all": {
+          "total": 73994219,
+          "trainable": 73994218
+        },
+        "backbone": {
+          "total": 0,
+          "trainable": 0
+        },
+        "last_rd": {
+          "total": 18965858,
+          "trainable": 18965858
+        },
+        "legacy_a4_expert": {
+          "total": 20699141,
+          "trainable": 20699141
+        },
+        "other": {
+          "total": 0,
+          "trainable": 0
+        }
+      },
+      "use_expert_features": true,
+      "use_last_rd": true
+    }
+  ],
+  "target_keys_in_get_action_batch": [],
+  "target_keys_in_training_batch": [
+    "jepa_target_tokens",
+    "vggt_target_tokens"
+  ]
+}

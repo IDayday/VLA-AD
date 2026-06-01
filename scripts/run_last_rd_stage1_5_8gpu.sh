@@ -46,6 +46,12 @@ mkdir -p "${OUTPUT_DIR}"
   printf 'Recommended preflight: python scripts/audit_last_rd_cache_manifest.py --cache-root %s --output reports/last_rd_cache_manifest.json\n' "${TRAIN_CHUNK_CACHE_ROOT}"
 } > "${OUTPUT_DIR}/commands.log"
 
+if [[ "${LAST_RD_DRY_RUN:-0}" == "1" ]]; then
+  echo "LAST_RD_DRY_RUN=1; Stage1.5 launcher validated commands.log and will not start torchrun."
+  echo "Would run: torchrun --nproc_per_node=8 --master_port=${MASTER_PORT} ${REPO_ROOT}/navsim/planning/script/run_training_recogdrive.py +experiment=${BASE_CONFIG} ..."
+  exit 0
+fi
+
 torchrun --nproc_per_node=8 --master_port="${MASTER_PORT}" \
   "${REPO_ROOT}/navsim/planning/script/run_training_recogdrive.py" \
   +experiment="${BASE_CONFIG}" \
@@ -53,6 +59,7 @@ torchrun --nproc_per_node=8 --master_port="${MASTER_PORT}" \
   train_test_split="${TRAIN_TEST_SPLIT}" \
   output_dir="${OUTPUT_DIR}" \
   use_cache_without_dataset=true \
+  force_cache_computation=false \
   agent.use_expert_features=false \
   agent.use_jepa=true \
   agent.use_vggt=true \

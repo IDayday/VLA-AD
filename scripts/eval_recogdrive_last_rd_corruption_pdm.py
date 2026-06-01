@@ -122,7 +122,12 @@ def corrupt_action_input(action_input: BatchFeature, args: argparse.Namespace) -
 def make_batch(sample: Dict[str, Any], planner, device: torch.device, dtype: torch.dtype, args: argparse.Namespace) -> Tuple[torch.Tensor, BatchFeature]:
     vl_features, action_input = base.make_batch(sample, planner, device, dtype)
     if "high_command_one_hot" in sample:
-        action_input["high_command_one_hot"] = sample["high_command_one_hot"].float().unsqueeze(0).to(device=device, dtype=dtype)
+        command = sample["high_command_one_hot"].float().view(-1)
+        if command.numel() == 4 and torch.isclose(command[-1], torch.tensor(0.0)):
+            command = command[:3]
+        elif command.numel() != 3:
+            raise ValueError(f"Unsupported high_command_one_hot for eval: shape={tuple(sample['high_command_one_hot'].shape)}")
+        action_input["high_command_one_hot"] = command.unsqueeze(0).to(device=device, dtype=dtype)
     if "history_trajectory" in sample:
         action_input["history_trajectory"] = sample["history_trajectory"].float().unsqueeze(0).to(device=device, dtype=dtype)
     for key in ("vggt_geometry_tokens", "vggt_depth_tokens", "vggt_pointmap_tokens", "vggt_camera_tokens"):

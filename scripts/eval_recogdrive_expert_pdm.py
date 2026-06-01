@@ -296,8 +296,9 @@ def write_pdm_csv(path: Path, rows: List[Dict[str, Any]], averages: Dict[str, Op
 
 def make_batch(sample: Dict[str, Any], planner: ReCogDriveDiffusionPlanner, device: torch.device, dtype: torch.dtype) -> Tuple[torch.Tensor, BatchFeature]:
     global _WARNED_TRAIN_ONLY_TARGET_KEYS
-    require_jepa = bool(planner.config.use_expert_features and planner.config.use_jepa)
-    require_vggt = bool(planner.config.use_expert_features and planner.config.use_vggt)
+    use_last_rd = bool(getattr(planner.config, "use_last_rd", False))
+    require_jepa = bool((planner.config.use_expert_features or use_last_rd) and planner.config.use_jepa)
+    require_vggt = bool((planner.config.use_expert_features or use_last_rd) and planner.config.use_vggt)
     validate_sample_payload(sample, require_jepa=require_jepa, require_vggt=require_vggt, require_targets=False)
     if "last_hidden_state" not in sample:
         raise KeyError("Evaluation sample is missing last_hidden_state. Build a VLM-hidden chunk first.")
@@ -309,7 +310,7 @@ def make_batch(sample: Dict[str, Any], planner: ReCogDriveDiffusionPlanner, devi
         data["jepa_context_tokens"] = sample["jepa_context_tokens"].float().unsqueeze(0).to(device=device, dtype=dtype)
     if require_vggt:
         data["vggt_context_tokens"] = sample["vggt_context_tokens"].float().unsqueeze(0).to(device=device, dtype=dtype)
-    target_keys = [key for key in ("jepa_target_tokens", "vggt_target_tokens") if key in sample]
+    target_keys = [key for key in ("jepa_target_tokens", "vggt_target_tokens", "vggt_geometry_target_tokens") if key in sample]
     if target_keys and not _WARNED_TRAIN_ONLY_TARGET_KEYS:
         warnings.warn(f"Evaluation sample contains train-only target keys {target_keys}; they are not passed to get_action.", RuntimeWarning)
         _WARNED_TRAIN_ONLY_TARGET_KEYS = True

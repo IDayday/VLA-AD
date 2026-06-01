@@ -27,10 +27,17 @@ def selected_report(cfg: Any) -> Dict[str, Any]:
     trainer_params = cfg.trainer.params
     dataloader_params = cfg.dataloader.params
     return {
+        "agent._target_": str(agent.get("_target_", "")),
         "agent.use_last_rd": bool(agent.use_last_rd),
         "agent.last_rd_stage": str(agent.last_rd_stage),
         "agent.use_expert_features": bool(agent.use_expert_features),
         "agent.allow_expert_target_features": bool(agent.allow_expert_target_features),
+        "agent.num_jepa_tokens": int(agent.get("num_jepa_tokens", -1)),
+        "agent.num_vggt_tokens": int(agent.get("num_vggt_tokens", -1)),
+        "agent.jepa_dim": int(agent.get("jepa_dim", -1)),
+        "agent.vggt_dim": int(agent.get("vggt_dim", -1)),
+        "agent.freeze_base_action_head": bool(agent.get("freeze_base_action_head", False)),
+        "agent.train_expert_only": bool(agent.get("train_expert_only", False)),
         "loss_weights": {
             "diffusion_loss_weight": float(agent.diffusion_loss_weight),
             "future_jepa_loss_weight": float(agent.future_jepa_loss_weight),
@@ -63,15 +70,34 @@ def main() -> int:
         result.update(selected_report(cfg))
         expected_stage = "stage1_5" if args.experiment == "last_rd_stage1_5" else "progressive_sft"
         checks = [
+            result["agent._target_"] == "navsim.agents.recogdrive.recogdrive_agent.ReCogDriveAgent",
             result["agent.use_last_rd"] is True,
             result["agent.last_rd_stage"] == expected_stage,
             result["agent.allow_expert_target_features"] is True,
+            result["agent.num_jepa_tokens"] == 12,
+            result["agent.num_vggt_tokens"] == 12,
+            result["agent.jepa_dim"] == 1024,
+            result["agent.vggt_dim"] == 2048,
+            result["dataloader_batch_size"] == 16,
         ]
         if args.experiment == "last_rd_stage1_5":
             checks.extend([
                 result["agent.use_expert_features"] is False,
                 result["loss_weights"]["diffusion_loss_weight"] == 0.0,
+                result["loss_weights"]["future_jepa_loss_weight"] == 0.30,
                 result["loss_weights"]["risk_loss_weight"] == 0.0,
+                result["agent.freeze_base_action_head"] is True,
+                result["agent.train_expert_only"] is True,
+                result["trainer_params"].get("strategy") == "ddp_find_unused_parameters_true",
+                int(result["trainer_params"].get("max_epochs", -1)) == 20,
+            ])
+        else:
+            checks.extend([
+                result["agent.use_expert_features"] is True,
+                result["loss_weights"]["diffusion_loss_weight"] == 1.0,
+                result["loss_weights"]["policy_kd_loss_weight"] == 0.05,
+                result["loss_weights"]["policy_kd_mode"] == "noise",
+                int(result["trainer_params"].get("max_epochs", -1)) == 200,
             ])
         result["pass"] = bool(all(checks))
         if not result["pass"]:

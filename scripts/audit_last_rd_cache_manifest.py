@@ -42,6 +42,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--future-jepa-loss-weight", type=float, default=0.0)
     parser.add_argument("--require-vggt-geometry", action="store_true")
     parser.add_argument("--risk-loss-weight", type=float, default=0.0)
+    parser.add_argument("--strict", action="store_true", help="Apply pretraining readiness gates and exit nonzero on blockers.")
     return parser.parse_args()
 
 
@@ -90,6 +91,28 @@ def tensor_error(key: str, value: Any) -> Optional[str]:
     return None
 
 
+def high_command_status(value: Any) -> Tuple[str, str, Optional[str]]:
+    if not isinstance(value, torch.Tensor):
+        return type(value).__name__, "missing_or_invalid", f"high_command_one_hot:not_tensor:{type(value).__name__}"
+    shape = str(tuple(value.shape))
+    if not torch.isfinite(value.float()).all():
+        return shape, "missing_or_invalid", "high_command_one_hot:non_finite"
+    flat = value.float().view(-1)
+    if flat.numel() == 3:
+        normalized = flat
+        mode = "native_3d"
+    elif flat.numel() == 4 and torch.isclose(flat[-1], torch.tensor(0.0, device=flat.device)):
+        normalized = flat[:3]
+        mode = "legacy_4d_repairable"
+    else:
+        return shape, "legacy_4d_unrepairable", f"high_command_one_hot:unsupported_shape_or_fourth_slot:{flat.tolist()}"
+    if not torch.isclose(normalized.sum(), torch.tensor(1.0, device=normalized.device)):
+        return shape, mode, f"high_command_one_hot:not_one_hot_sum:{normalized.tolist()}"
+    if not torch.all((normalized == 0.0) | (normalized == 1.0)):
+        return shape, mode, f"high_command_one_hot:not_binary_one_hot:{normalized.tolist()}"
+    return shape, mode, None
+
+
 def mode_from_sample(sample: Dict[str, Any]) -> str:
     raw = sample.get("vggt_geometry_mode")
     if isinstance(raw, bytes):
@@ -111,12 +134,15 @@ def audit_cache(
     future_jepa_loss_weight: float = 0.0,
     require_vggt_geometry: bool = False,
     risk_loss_weight: float = 0.0,
+    strict: bool = False,
 ) -> Dict[str, Any]:
     base_counts = Counter()
     token_counts = Counter()
     risk_counts = Counter()
     geometry_modes = Counter({mode: 0 for mode in GEOMETRY_MODES})
     high_command_shapes = Counter()
+    high_command_modes = Counter()
+    high_command_normalized_shapes = Counter()
     last_hidden_lengths: List[int] = []
     sample_tokens: List[str] = []
     errors: List[str] = []
@@ -139,7 +165,13 @@ def audit_cache(
                 if err:
                     errors.append(f"{sample_path}:{err}")
             if key == "high_command_one_hot" and key in sample and isinstance(sample[key], torch.Tensor):
-                high_command_shapes[str(tuple(sample[key].shape))] += 1
+                shape, command_mode, command_error = high_command_status(sample[key])
+                high_command_shapes[shape] += 1
+                high_command_modes[command_mode] += 1
+                if command_mode in {"native_3d", "legacy_4d_repairable"}:
+                    high_command_normalized_shapes["(3,)"] += 1
+                if command_error:
+                    errors.append(f"{sample_path}:{command_error}")
             if key == "last_hidden_state" and key in sample and isinstance(sample[key], torch.Tensor) and sample[key].ndim >= 1:
                 last_hidden_lengths.append(int(sample[key].shape[0]))
 
@@ -161,21 +193,61 @@ def audit_cache(
 
     token_dupes = Counter(sample_tokens)
     warnings: List[Dict[str, str]] = []
+    blockers: List[str] = []
+    high_risk_warnings: List[str] = []
     if future_jepa_loss_weight > 0 and scanned and token_counts["jepa_target_tokens"] / scanned < 0.99:
-        warnings.append({
-            "level": "high_risk",
-            "message": "future_jepa_loss_weight > 0 but jepa_target_tokens coverage is below 99%.",
-        })
+        message = "future_jepa_loss_weight > 0 but jepa_target_tokens coverage is below 99%."
+        warnings.append({"level": "high_risk", "message": message})
+        high_risk_warnings.append(message)
     if require_vggt_geometry and scanned and geometry_modes["full_geometry"] / scanned < 0.99:
-        warnings.append({
-            "level": "blocker",
-            "message": "require_vggt_geometry=true but full_geometry coverage is below 99%.",
-        })
+        message = "require_vggt_geometry=true but full_geometry coverage is below 99%."
+        warnings.append({"level": "blocker", "message": message})
+        blockers.append(message)
     if risk_loss_weight > 0 and sum(risk_counts.values()) == 0:
-        warnings.append({
-            "level": "high_risk",
-            "message": "risk_loss_weight > 0 but risk label coverage is zero.",
-        })
+        message = "risk_loss_weight > 0 but risk label coverage is zero."
+        warnings.append({"level": "high_risk", "message": message})
+        high_risk_warnings.append(message)
+
+    if scanned:
+        full_geometry_coverage = geometry_modes["full_geometry"] / scanned
+        if full_geometry_coverage < 0.5:
+            high_risk_warnings.append(
+                "VGGT geometry is mostly patch_fallback; do not claim full geometry distillation."
+            )
+    else:
+        full_geometry_coverage = 0.0
+
+    def token_cov(key: str) -> float:
+        return token_counts[key] / scanned if scanned else 0.0
+
+    def base_cov(key: str) -> float:
+        return base_counts[key] / scanned if scanned else 0.0
+
+    duplicate_tokens = sum(count - 1 for count in token_dupes.values() if count > 1)
+    if strict:
+        if scanned <= 0:
+            blockers.append("no samples scanned")
+        if errors:
+            blockers.append("shape/dtype/finiteness errors are present")
+        if high_command_normalized_shapes.get("(3,)", 0) != scanned:
+            blockers.append(
+                "high_command_one_hot must normalize to (3,) for every sample; "
+                f"raw shapes={dict(high_command_shapes)}, modes={dict(high_command_modes)}"
+            )
+        for key in BASE_KEYS:
+            if base_cov(key) < 1.0:
+                blockers.append(f"required base key {key} coverage is below 1.0")
+        for key in ("jepa_context_tokens", "jepa_target_tokens", "vggt_context_tokens", "vggt_target_tokens"):
+            if token_cov(key) < 0.99:
+                blockers.append(f"{key} coverage is below 0.99")
+        if duplicate_tokens:
+            blockers.append("duplicate sample_token values are present")
+        if risk_loss_weight > 0 and sum(risk_counts.values()) == 0:
+            blockers.append("risk_loss_weight > 0 but no risk labels are present")
+        if require_vggt_geometry and full_geometry_coverage < 0.99:
+            blockers.append("require_vggt_geometry=true but full_geometry coverage is below 0.99")
+
+    recommended_geometry_label = "full_geometry" if full_geometry_coverage >= 0.99 else "geometry_lite_patch_fallback"
 
     length_stats = {
         "min": min(last_hidden_lengths) if last_hidden_lengths else None,
@@ -188,6 +260,12 @@ def audit_cache(
         "num_samples_scanned": scanned,
         "required_base_key_coverage": {key: coverage(base_counts[key], scanned) for key in BASE_KEYS},
         "high_command_one_hot_shape_distribution": dict(sorted(high_command_shapes.items())),
+        "high_command_one_hot_legacy_repair": {
+            "mode_distribution": dict(sorted(high_command_modes.items())),
+            "normalized_shape_distribution": dict(sorted(high_command_normalized_shapes.items())),
+            "num_legacy_4d_repairable": int(high_command_modes["legacy_4d_repairable"]),
+            "num_legacy_4d_unrepairable": int(high_command_modes["legacy_4d_unrepairable"]),
+        },
         "last_hidden_state_length": length_stats,
         "teacher_token_coverage": {key: coverage(token_counts[key], scanned) for key in TOKEN_KEYS},
         "vggt_geometry_mode_distribution": dict(sorted(geometry_modes.items())),
@@ -195,11 +273,18 @@ def audit_cache(
         "shape_dtype_finiteness_errors": errors,
         "num_shape_dtype_finiteness_errors": len(errors),
         "sample_token_duplicates": {
-            "num_duplicate_tokens": sum(count - 1 for count in token_dupes.values() if count > 1),
+            "num_duplicate_tokens": duplicate_tokens,
             "examples": [token for token, count in token_dupes.items() if count > 1][:20],
         },
         "warnings": warnings,
-        "pass": not any(item["level"] == "blocker" for item in warnings) and not errors,
+        "readiness": {
+            "pass": not blockers,
+            "strict": bool(strict),
+            "blockers": blockers,
+            "high_risk_warnings": high_risk_warnings,
+            "recommended_geometry_label": recommended_geometry_label,
+        },
+        "pass": (not blockers if strict else not any(item["level"] == "blocker" for item in warnings) and not errors),
     }
 
 
@@ -212,6 +297,7 @@ def main() -> int:
         future_jepa_loss_weight=args.future_jepa_loss_weight,
         require_vggt_geometry=args.require_vggt_geometry,
         risk_loss_weight=args.risk_loss_weight,
+        strict=args.strict,
     )
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(manifest, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")

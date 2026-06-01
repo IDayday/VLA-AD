@@ -15,6 +15,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from navsim.agents.recogdrive.recogdrive_agent import ReCogDriveAgent
+from navsim.agents.recogdrive.expert_cache import load_sample
 from navsim.planning.script.run_training_recogdrive import ChunkCacheDataset, custom_collate_fn
 from nuplan.planning.simulation.trajectory.trajectory_sampling import TrajectorySampling
 
@@ -44,6 +45,26 @@ def build_dataset(cache_root: Path, include_targets: bool, use_last_rd: bool = T
 def take_batch(dataset: ChunkCacheDataset, max_samples: int):
     count = min(max_samples, len(dataset))
     return custom_collate_fn([dataset[idx] for idx in range(count)])
+
+
+def sample_geometry_mode(sample: Dict[str, Any]) -> str:
+    raw = sample.get("vggt_geometry_mode")
+    if isinstance(raw, bytes):
+        raw = raw.decode("utf-8", errors="replace")
+    if isinstance(raw, str) and raw in {"full_geometry", "patch_fallback", "no_geometry", "missing"}:
+        return raw
+    if "vggt_geometry_tokens" in sample:
+        return "missing"
+    if "vggt_context_tokens" in sample:
+        return "patch_fallback"
+    return "no_geometry"
+
+
+def geometry_mode_distribution(dataset: ChunkCacheDataset, max_samples: int) -> Dict[str, int]:
+    modes: Counter[str] = Counter()
+    for _, sample_path, _ in dataset.records[:min(max_samples, len(dataset.records))]:
+        modes[sample_geometry_mode(load_sample(sample_path))] += 1
+    return dict(sorted(modes.items()))
 
 
 def build_agent(stage: str) -> ReCogDriveAgent:
@@ -90,46 +111,73 @@ def run_stage(stage: str, batch) -> Dict[str, Any]:
     features, targets, _ = batch
     agent = build_agent(stage)
     agent.train()
+    target_keys_in_training_batch = sorted(key for key in features if "target" in key)
     prediction = agent.forward(dict(features), dict(targets))
     loss = prediction["loss"] if isinstance(prediction, dict) else prediction.loss
     loss.backward()
     trainable_counts = agent.count_trainable_parameters_by_group()
+    stage1_5_scope_pass = True
+    if stage == "stage1_5":
+        stage1_5_scope_pass = (
+            trainable_counts["last_rd"]["trainable"] > 0
+            and trainable_counts["action_base"]["trainable"] == 0
+            and trainable_counts["legacy_a4_expert"]["trainable"] == 0
+            and trainable_counts["backbone"]["trainable"] == 0
+        )
     report = {
         "stage": stage,
+        "use_expert_features": bool(agent.use_expert_features),
+        "use_last_rd": bool(agent.use_last_rd),
         "losses": scalar_dict(
             prediction,
             ["loss", "diffusion_loss", "future_jepa_loss", "vggt_geometry_loss", "coarse_traj_loss", "coarse_heading_loss", "risk_loss"],
         ),
         "loss_finite": bool(torch.isfinite(loss.detach()).item()),
         "trainable_parameter_counts": trainable_counts,
+        "target_keys_in_training_batch": target_keys_in_training_batch,
         "target_tokens_present_for_training": any(key in features for key in ("jepa_target_tokens", "vggt_target_tokens", "vggt_geometry_target_tokens")),
+        "stage1_5_trainable_scope_pass": stage1_5_scope_pass,
     }
     agent.eval()
     eval_features = {key: value for key, value in features.items() if "target" not in key}
+    target_keys_in_get_action_batch = sorted(key for key in eval_features if "target" in key)
     with torch.no_grad():
         pred = agent.forward(dict(eval_features), targets=None)
+    no_future_targets_pass = not target_keys_in_get_action_batch
     report["get_action"] = {
         "pred_traj_shape": list(pred["pred_traj"].shape),
         "pred_traj_finite": bool(torch.isfinite(pred["pred_traj"]).all().item()),
-        "target_tokens_absent_for_get_action": not any("target" in key for key in eval_features),
+        "target_keys_in_get_action_batch": target_keys_in_get_action_batch,
+        "target_tokens_absent_for_get_action": no_future_targets_pass,
+        "get_action_no_future_targets_pass": no_future_targets_pass,
     }
     return report
 
 
 def main() -> int:
     args = parse_args()
-    dataset = build_dataset(args.cache_root, include_targets=True)
-    batch = take_batch(dataset, args.max_samples)
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    try:
+        dataset = build_dataset(args.cache_root, include_targets=True)
+        batch = take_batch(dataset, args.max_samples)
+    except Exception as exc:
+        report = {
+            "cache_root": str(args.cache_root),
+            "max_samples": int(args.max_samples),
+            "pass": False,
+            "error": repr(exc),
+            "stage1_5_trainable_scope_pass": False,
+            "get_action_no_future_targets_pass": False,
+        }
+        args.output.write_text(json.dumps(report, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
+        print(json.dumps(report, indent=2, sort_keys=True, default=str))
+        return 1
     features, _, _ = batch
-    geometry_modes = Counter()
-    if "vggt_geometry_tokens" in features:
-        geometry_modes["full_or_cached_geometry_tokens"] += int(features["vggt_geometry_tokens"].shape[0])
-    elif "vggt_context_tokens" in features:
-        geometry_modes["patch_fallback"] += int(features["vggt_context_tokens"].shape[0])
-    else:
-        geometry_modes["no_geometry"] += 1
-
     stages = ["stage1_5", "progressive_sft"] if args.stage == "both" else [args.stage]
+    stage_reports = [run_stage(stage, batch) for stage in stages]
+    stage1_5_scope_pass = all(item["stage1_5_trainable_scope_pass"] for item in stage_reports if item["stage"] == "stage1_5")
+    get_action_no_future_targets_pass = all(item["get_action"]["get_action_no_future_targets_pass"] for item in stage_reports)
+    all_losses_finite = all(item["loss_finite"] for item in stage_reports)
     report = {
         "cache_root": str(args.cache_root),
         "batch_shapes": {
@@ -137,13 +185,19 @@ def main() -> int:
             for key, value in features.items()
             if isinstance(value, torch.Tensor)
         },
-        "geometry_mode_distribution": dict(geometry_modes),
-        "stages": [run_stage(stage, batch) for stage in stages],
+        "high_command_one_hot_shape": list(features["high_command_one_hot"].shape) if "high_command_one_hot" in features else None,
+        "target_keys_in_training_batch": sorted(key for key in features if "target" in key),
+        "target_keys_in_get_action_batch": [],
+        "geometry_mode_distribution": geometry_mode_distribution(dataset, args.max_samples),
+        "stage1_5_trainable_scope_pass": stage1_5_scope_pass,
+        "get_action_no_future_targets_pass": get_action_no_future_targets_pass,
+        "all_losses_finite": all_losses_finite,
+        "pass": bool(stage1_5_scope_pass and get_action_no_future_targets_pass and all_losses_finite),
+        "stages": stage_reports,
     }
-    args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(report, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2, sort_keys=True, default=str))
-    return 0
+    return 0 if report["pass"] else 1
 
 
 if __name__ == "__main__":
