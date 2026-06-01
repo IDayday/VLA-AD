@@ -15,7 +15,11 @@ from navsim.agents.recogdrive.recogdrive_diffusion_planner import (
 )
 
 
-def make_last_rd_planner(stage: str = "progressive_sft", diffusion_loss_weight: float = 1.0) -> ReCogDriveDiffusionPlanner:
+def make_last_rd_planner(
+    stage: str = "progressive_sft",
+    diffusion_loss_weight: float = 1.0,
+    **overrides,
+) -> ReCogDriveDiffusionPlanner:
     cfg = ReCogDriveDiffusionPlannerConfig(
         diffusion_model_cfg={
             "num_heads": 4,
@@ -61,9 +65,11 @@ def make_last_rd_planner(stage: str = "progressive_sft", diffusion_loss_weight: 
         vggt_geometry_loss_weight=0.1,
         coarse_traj_loss_weight=0.5,
         coarse_heading_loss_weight=0.1,
-        risk_loss_weight=0.05,
+        risk_loss_weight=0.0,
         policy_kd_loss_weight=0.0,
     )
+    for key, value in overrides.items():
+        setattr(cfg, key, value)
     return ReCogDriveDiffusionPlanner(cfg)
 
 

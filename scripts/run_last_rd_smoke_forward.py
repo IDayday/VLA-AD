@@ -65,7 +65,7 @@ def build_planner(stage: str, diffusion_loss_weight: float) -> ReCogDriveDiffusi
         vggt_geometry_loss_weight=0.10,
         coarse_traj_loss_weight=0.50,
         coarse_heading_loss_weight=0.10,
-        risk_loss_weight=0.05,
+        risk_loss_weight=0.0,
     )
     return ReCogDriveDiffusionPlanner(cfg)
 

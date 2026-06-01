@@ -1,0 +1,24 @@
+{
+  "get_action": {
+    "pred_traj_finite": true,
+    "pred_traj_shape": [
+      1,
+      8,
+      3
+    ],
+    "target_tokens_passed": false
+  },
+  "progressive_sft": {
+    "coarse_traj_loss": 0.2576453387737274,
+    "diffusion_loss": 1.2802734375,
+    "future_jepa_loss": 0.001942108734510839,
+    "loss": 1.4514384269714355
+  },
+  "source": "chunk_or_synthetic",
+  "stage1_5": {
+    "coarse_traj_loss": 0.23783887922763824,
+    "future_jepa_loss": 0.0019309954950585961,
+    "loss": 0.15595337748527527,
+    "vggt_geometry_loss": 0.0009812131756916642
+  }
+}

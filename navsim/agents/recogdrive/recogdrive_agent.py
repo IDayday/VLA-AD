@@ -363,6 +363,7 @@ class ReCogDriveAgent(AbstractAgent):
         self.action_head = ReCogDriveDiffusionPlanner(cfg).to(device)
         if self.last_rd_adapter_checkpoint:
             self._safe_load_last_rd_adapter(self.last_rd_adapter_checkpoint)
+        self._set_trainable_parameters()
         self.num_inference_samples = 1
         self.inference_selection_mode = "median"
 
@@ -372,6 +373,52 @@ class ReCogDriveAgent(AbstractAgent):
     def set_training_progress(self, epoch: int, total_epochs: int) -> None:
         if hasattr(self.action_head, "set_training_progress"):
             self.action_head.set_training_progress(epoch, total_epochs)
+
+    def count_trainable_parameters_by_group(self) -> Dict[str, Dict[str, int]]:
+        groups = {
+            "last_rd": {"trainable": 0, "total": 0},
+            "legacy_a4_expert": {"trainable": 0, "total": 0},
+            "action_base": {"trainable": 0, "total": 0},
+            "backbone": {"trainable": 0, "total": 0},
+            "other": {"trainable": 0, "total": 0},
+        }
+        legacy_markers = (
+            "jepa_projector",
+            "vggt_projector",
+            "jepa_adapter",
+            "vggt_adapter",
+            "jepa_alignment_head",
+            "vggt_alignment_head",
+            "jepa_type_embedding",
+            "vggt_type_embedding",
+            "z_jepa_type_embedding",
+            "z_vggt_type_embedding",
+            "jepa_gate",
+            "vggt_gate",
+            "jepa_horizon_conditioner",
+            "vggt_horizon_conditioner",
+            "branch_logits",
+        )
+        for name, parameter in self.named_parameters():
+            count = int(parameter.numel())
+            if "action_head.last_rd." in name:
+                group = "last_rd"
+            elif name.startswith("action_head.") and any(marker in name for marker in legacy_markers):
+                group = "legacy_a4_expert"
+            elif name.startswith("action_head."):
+                group = "action_base"
+            elif name.startswith("backbone."):
+                group = "backbone"
+            else:
+                group = "other"
+            groups[group]["total"] += count
+            if parameter.requires_grad:
+                groups[group]["trainable"] += count
+        groups["all"] = {
+            "total": sum(item["total"] for item in groups.values()),
+            "trainable": sum(item["trainable"] for item in groups.values()),
+        }
+        return groups
 
     def initialize(self) -> None:
         if self.checkpoint_path:

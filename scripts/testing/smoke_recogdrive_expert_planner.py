@@ -29,13 +29,26 @@ def _install_dependency_stubs() -> None:
     if hasattr(torch, "compile"):
         torch.compile = lambda fn=None, *args, **kwargs: fn if fn is not None else (lambda f: f)
 
-    transformers_mod = ModuleType("transformers")
+    transformers_mod = sys.modules.get("transformers", ModuleType("transformers"))
 
     class PretrainedConfig:
         pass
 
-    transformers_mod.PretrainedConfig = PretrainedConfig
+    class _AutoModelStub:
+        @classmethod
+        def from_pretrained(cls, *args, **kwargs):
+            return cls()
+
+    class _AutoTokenizerStub:
+        @classmethod
+        def from_pretrained(cls, *args, **kwargs):
+            return cls()
+
+    transformers_mod.PretrainedConfig = getattr(transformers_mod, "PretrainedConfig", PretrainedConfig)
+    transformers_mod.AutoModel = getattr(transformers_mod, "AutoModel", _AutoModelStub)
+    transformers_mod.AutoTokenizer = getattr(transformers_mod, "AutoTokenizer", _AutoTokenizerStub)
     feature_extraction_mod = ModuleType("transformers.feature_extraction_utils")
+    modeling_outputs_mod = ModuleType("transformers.modeling_outputs")
 
     class BatchFeature(dict):
         def __init__(self, data=None, **kwargs):
@@ -48,8 +61,14 @@ def _install_dependency_stubs() -> None:
                 raise AttributeError(key) from exc
 
     feature_extraction_mod.BatchFeature = BatchFeature
+    modeling_outputs_mod.CausalLMOutputWithPast = getattr(
+        modeling_outputs_mod,
+        "CausalLMOutputWithPast",
+        type("CausalLMOutputWithPast", (), {}),
+    )
     sys.modules.setdefault("transformers", transformers_mod)
     sys.modules.setdefault("transformers.feature_extraction_utils", feature_extraction_mod)
+    sys.modules.setdefault("transformers.modeling_outputs", modeling_outputs_mod)
 
     timm_mod = ModuleType("timm")
     timm_models_mod = ModuleType("timm.models")

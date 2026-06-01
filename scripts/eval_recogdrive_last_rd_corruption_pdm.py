@@ -38,13 +38,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--deterministic", action="store_true", default=True)
     parser.add_argument("--allow-noop", action="store_true")
     parser.add_argument("--zero-jepa-dynamic", action="store_true")
-    parser.add_argument("--shuffle-jepa-dynamic", action="store_true")
+    parser.add_argument("--shuffle-jepa-dynamic", action="store_true", help="Shuffle context-side JEPA tokens. In per-sample eval (B=1), this reverses token order rather than cross-scene shuffling.")
     parser.add_argument("--zero-vggt-geometry", action="store_true")
-    parser.add_argument("--shuffle-vggt-geometry", action="store_true")
+    parser.add_argument("--shuffle-vggt-geometry", action="store_true", help="Shuffle context-side VGGT/geometry tokens. In per-sample eval (B=1), this reverses token order rather than cross-scene shuffling.")
     parser.add_argument("--zero-ego-tokens", action="store_true")
-    parser.add_argument("--shuffle-ego-tokens", action="store_true")
+    parser.add_argument("--shuffle-ego-tokens", action="store_true", help="Shuffle generated ego token group. In per-sample eval (B=1), this reverses token order semantics inside LaST-RD.")
     parser.add_argument("--zero-risk-tokens", action="store_true")
-    parser.add_argument("--shuffle-risk-tokens", action="store_true")
+    parser.add_argument("--shuffle-risk-tokens", action="store_true", help="Shuffle generated risk token group. In per-sample eval (B=1), this reverses token order semantics inside LaST-RD.")
     parser.add_argument("--zero-all-last-rd", action="store_true")
     return parser.parse_args()
 
@@ -71,6 +71,18 @@ def _shuffle_batch(tokens: torch.Tensor) -> torch.Tensor:
     if tokens.shape[0] > 1:
         return tokens[torch.randperm(tokens.shape[0], device=tokens.device)]
     return tokens.flip(1)
+
+
+def corruption_semantics(batch_size: int, args: argparse.Namespace) -> str:
+    uses_shuffle = any((
+        args.shuffle_jepa_dynamic,
+        args.shuffle_vggt_geometry,
+        args.shuffle_ego_tokens,
+        args.shuffle_risk_tokens,
+    ))
+    if not uses_shuffle:
+        return "zero_or_none"
+    return "scene_batch_shuffle" if batch_size > 1 else "token_order_reverse"
 
 
 def corrupt_action_input(action_input: BatchFeature, args: argparse.Namespace) -> BatchFeature:
@@ -151,6 +163,7 @@ def main() -> int:
     for chunk_dir, sample_path, index_record in paths:
         sample = load_sample(sample_path)
         vl_features, action_input = make_batch(sample, planner, device, dtype, args)
+        semantics = corruption_semantics(vl_features.shape[0], args)
         with torch.no_grad():
             output = planner.get_action(vl_features, action_input, deterministic=args.deterministic)
         pred = output["pred_traj"].detach().float().cpu().squeeze(0)
@@ -160,6 +173,7 @@ def main() -> int:
             "chunk": chunk_dir.name,
             "valid": None,
             "corruption_mode": "+".join(corruption_modes(args)),
+            "corruption_semantics": semantics,
         }
         if "trajectory" in sample:
             l1 = torch.nn.functional.l1_loss(pred, sample["trajectory"].float()).item()
@@ -194,6 +208,9 @@ def main() -> int:
     averages = {key: mean_or_none(values) for key, values in pdm_values.items()}
     metrics = {
         "corruption_mode": "+".join(corruption_modes(args)),
+        "corruption_semantics": corruption_semantics(1, args),
+        "permutation_file_supported": False,
+        "permutation_file_todo": "Scene-level shuffle for per-sample eval requires a permutation-file mapping sample_token to replacement expert-token sample.",
         "use_last_rd": bool(getattr(planner.config, "use_last_rd", False)),
         "target_teacher_tokens_disabled_in_eval": True,
         "num_samples": len(rows),

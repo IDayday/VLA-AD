@@ -1,0 +1,46 @@
+# @package _global_
+
+agent:
+  use_expert_features: true
+  use_jepa: true
+  use_vggt: true
+  allow_expert_target_features: true
+  use_last_rd: true
+  last_rd_stage: progressive_sft
+  use_future_jepa_prediction: true
+  use_vggt_geometry_tokens: true
+  use_ego_trajectory_tokens: true
+  use_risk_tokens: true
+  use_scene_aware_expert_gate: true
+  use_timestep_aware_expert_gate: true
+  last_rd_latent_dim: 384
+  num_dynamic_tokens: 12
+  num_geometry_tokens: 12
+  num_ego_tokens: 8
+  num_risk_tokens: 8
+  require_vggt_geometry: false
+  allow_patch_geometry_fallback: true
+  diffusion_loss_weight: 1.0
+  future_jepa_loss_weight: 0.10
+  future_jepa_loss_floor: 0.01
+  vggt_geometry_loss_weight: 0.05
+  vggt_geometry_loss_floor: 0.005
+  coarse_traj_loss_weight: 0.20
+  coarse_traj_loss_floor: 0.05
+  coarse_heading_loss_weight: 0.05
+  risk_loss_weight: 0.0
+  risk_loss_floor: 0.0
+  policy_kd_loss_weight: 0.05
+  policy_kd_mode: noise
+  last_rd_context_scale: 1.0
+  last_rd_horizon_condition_scale: 1.0
+  last_rd_token_dropout: 0.0
+  last_rd_group_dropout: 0.0
+
+trainer:
+  params:
+    max_epochs: 200
+
+dataloader:
+  params:
+    batch_size: 16

@@ -300,7 +300,7 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             return expert_shapes[key]
         expected = {
             "history_trajectory": (4, 3),
-            "high_command_one_hot": (4,),
+            "high_command_one_hot": (3,),
             "status_feature": (8,),
             "trajectory": (8, 3),
         }.get(key)
@@ -309,6 +309,12 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
     def _check_shape(self, tensor: torch.Tensor, key: str, sample_path: Path) -> None:
         expected = self._expected_shape(key)
         if expected is not None and tuple(tensor.shape) != expected:
+            if key == "high_command_one_hot" and tuple(tensor.shape) == (4,):
+                raise ValueError(
+                    f"Chunk sample {sample_path} key 'high_command_one_hot' shape {tuple(tensor.shape)} != {expected}. "
+                    "Expected NAVSIM command one-hot is [3]: left/straight/right. "
+                    "Do not pad or truncate this field."
+                )
             raise ValueError(f"Chunk sample {sample_path} key '{key}' shape {tuple(tensor.shape)} != {expected}.")
         if key == "last_hidden_state" and (tensor.ndim != 2 or tensor.shape[-1] != 1536):
             raise ValueError(
@@ -326,6 +332,7 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         token_counts = Counter(tokens)
         log_counts = Counter(str(record.get("log_name") or "missing") for _, _, record in self.records)
         chunk_counts = Counter(str(chunk_dir.name) for chunk_dir, _, _ in self.records)
+        high_command_shape_distribution = self._shape_distribution("high_command_one_hot")
         return {
             "split_name": self.split_name,
             "cache_path": str(self.cache_path),
@@ -349,9 +356,22 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             "allow_patch_geometry_fallback": self.allow_patch_geometry_fallback,
             "future_jepa_loss_weight": self.future_jepa_loss_weight,
             "vggt_geometry_loss_weight": self.vggt_geometry_loss_weight,
+            "high_command_one_hot_shape_distribution": high_command_shape_distribution,
             "top_log_names": log_counts.most_common(10),
             "chunk_counts": dict(sorted(chunk_counts.items())),
         }
+
+    def _shape_distribution(self, key: str) -> Dict[str, int]:
+        distribution: Counter[str] = Counter()
+        for _, sample_path, _ in self.records:
+            try:
+                sample = load_sample(sample_path)
+                value = sample.get(key)
+                shape = tuple(value.shape) if isinstance(value, torch.Tensor) else type(value).__name__
+            except Exception as exc:
+                shape = f"error:{type(exc).__name__}"
+            distribution[str(shape)] += 1
+        return dict(sorted(distribution.items()))
 
     def __getitem__(self, idx: int) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], str]:
         _, sample_path, record = self.records[idx]
@@ -401,6 +421,11 @@ def write_run_reports(
         "optimizer_group_names": group_names,
         "optimizer_group_lrs": group_lrs,
         "optimizer_group_weight_decay": group_wds,
+        "trainable_parameter_counts": (
+            agent.count_trainable_parameters_by_group()
+            if hasattr(agent, "count_trainable_parameters_by_group")
+            else None
+        ),
         "loader_mode": loader_mode,
         "key_checkpoint_steps": key_steps,
         "data_report": data_report,
@@ -424,6 +449,7 @@ def write_run_reports(
             "use_last_rd": bool(cfg.agent.get("use_last_rd", False)),
             "last_rd_stage": cfg.agent.get("last_rd_stage", "disabled"),
             "last_rd_adapter_checkpoint": cfg.agent.get("last_rd_adapter_checkpoint", None),
+            "reference_a0_checkpoint": cfg.agent.get("reference_a0_checkpoint", None),
             "future_jepa_loss_weight": cfg.agent.get("future_jepa_loss_weight", 0.0),
             "vggt_geometry_loss_weight": cfg.agent.get("vggt_geometry_loss_weight", 0.0),
             "coarse_traj_loss_weight": cfg.agent.get("coarse_traj_loss_weight", 0.0),

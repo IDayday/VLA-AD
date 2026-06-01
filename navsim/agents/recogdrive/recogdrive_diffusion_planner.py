@@ -374,11 +374,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             )
 
         self.reference_a0_policy: Optional[ReCogDriveDiffusionPlanner] = None
-        if (
-            config.policy_kd_loss_weight > 0.0
-            and config.policy_kd_mode != "none"
-            and config.reference_a0_checkpoint
-        ):
+        if config.policy_kd_loss_weight > 0.0 and config.policy_kd_mode != "none":
+            if not config.reference_a0_checkpoint:
+                raise ValueError(
+                    "policy_kd_loss_weight > 0 and policy_kd_mode != 'none' requires "
+                    "reference_a0_checkpoint. Set policy_kd_loss_weight=0.0 or provide "
+                    "the A0-official-aligned reference checkpoint."
+                )
             reference_cfg = copy.deepcopy(config)
             reference_cfg.use_last_rd = False
             reference_cfg.last_rd_stage = "disabled"
@@ -391,12 +393,6 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             self.reference_a0_policy.eval()
             for parameter in self.reference_a0_policy.parameters():
                 parameter.requires_grad = False
-        elif config.policy_kd_loss_weight > 0.0 and config.policy_kd_mode != "none":
-            warnings.warn(
-                "policy_kd_loss_weight > 0 but reference_a0_checkpoint is empty; "
-                "policy_kd_loss will be reported as zero.",
-                RuntimeWarning,
-            )
             
         self.fusion_projector = nn.Linear(config.input_embedding_dim * 3, config.input_embedding_dim)
 

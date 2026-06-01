@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import torch
+import pytest
 
 from tests.test_last_rd_shapes import make_last_rd_batch, make_last_rd_planner
 
@@ -33,3 +34,13 @@ def test_last_rd_progressive_sft_diffusion_aux_and_diagnostics():
         for parameter in planner.parameters()
         if parameter.requires_grad
     )
+
+
+def test_policy_kd_requires_reference_checkpoint():
+    with pytest.raises(ValueError, match="policy_kd_loss_weight"):
+        make_last_rd_planner(
+            stage="progressive_sft",
+            policy_kd_loss_weight=0.05,
+            policy_kd_mode="noise",
+            reference_a0_checkpoint=None,
+        )

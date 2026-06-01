@@ -1,0 +1,37 @@
+{
+  "agent.allow_expert_target_features": true,
+  "agent.last_rd_stage": "progressive_sft",
+  "agent.use_expert_features": true,
+  "agent.use_last_rd": true,
+  "dataloader_batch_size": 16,
+  "experiment": "last_rd_progressive_sft",
+  "loss_weights": {
+    "coarse_heading_loss_weight": 0.05,
+    "coarse_traj_loss_weight": 0.2,
+    "diffusion_loss_weight": 1.0,
+    "future_jepa_loss_weight": 0.1,
+    "policy_kd_loss_weight": 0.05,
+    "policy_kd_mode": "noise",
+    "risk_loss_weight": 0.0,
+    "vggt_geometry_loss_weight": 0.05
+  },
+  "pass": true,
+  "trainer_params": {
+    "accelerator": "gpu",
+    "accumulate_grad_batches": 1,
+    "check_val_every_n_epoch": 1,
+    "default_root_dir": "reports/last_rd_hydra_dryrun",
+    "devices": 8,
+    "fast_dev_run": false,
+    "gradient_clip_algorithm": "norm",
+    "gradient_clip_val": 1.0,
+    "limit_train_batches": 1.0,
+    "limit_val_batches": 1.0,
+    "max_epochs": 200,
+    "num_nodes": 1,
+    "num_sanity_val_steps": 0,
+    "precision": "16-mixed",
+    "strategy": "ddp",
+    "val_check_interval": 1.0
+  }
+}

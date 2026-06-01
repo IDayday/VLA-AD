@@ -278,7 +278,10 @@ class VGGTGeometryEncoder(nn.Module):
         self.config = config
         self.vlm_proj = nn.Sequential(nn.LayerNorm(config.planner_dim), nn.Linear(config.planner_dim, config.latent_dim))
         self.vggt_proj = nn.Sequential(nn.LayerNorm(config.vggt_dim), nn.Linear(config.vggt_dim, config.latent_dim))
-        self.geometry_proj = nn.LazyLinear(config.latent_dim)
+        self.geometry_proj = nn.Sequential(
+            nn.LayerNorm(config.vggt_dim),
+            nn.Linear(config.vggt_dim, config.latent_dim),
+        )
         self.state_proj = nn.Sequential(
             nn.LayerNorm(8 + 3),
             nn.Linear(8 + 3, config.latent_dim),
@@ -363,6 +366,7 @@ class VGGTGeometryEncoder(nn.Module):
             return None, None, losses, diagnostics
 
         source_tokens = source_tokens.to(device=vlm_tokens.device, dtype=vlm_tokens.dtype)
+        source_tokens = _match_last_dim(source_tokens, self.config.vggt_dim)
         memory_parts = [self.vlm_proj(vlm_tokens)]
         if source_is_vggt:
             memory_parts.append(self.vggt_proj(source_tokens))
