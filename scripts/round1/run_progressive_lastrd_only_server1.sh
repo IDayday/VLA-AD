@@ -10,6 +10,11 @@ A0_REFERENCE_CHECKPOINT="${A0_REFERENCE_CHECKPOINT:?Set A0_REFERENCE_CHECKPOINT.
 TRAIN_TEST_SPLIT="${TRAIN_TEST_SPLIT:-navtrain}"
 STAGE1_5_CHECKPOINT="${STAGE1_5_CHECKPOINT:-${OUT_ROOT}/wave1_stage1_5/full/last_rd_adapter.pt}"
 OUTPUT_DIR="${OUT_ROOT}/wave2_progressive/lastrd_only"
+LAST_RD_NUM_WORKERS="${LAST_RD_NUM_WORKERS:-12}"
+LAST_RD_PREFETCH_FACTOR="${LAST_RD_PREFETCH_FACTOR:-4}"
+LAST_RD_PERSISTENT_WORKERS="${LAST_RD_PERSISTENT_WORKERS:-true}"
+export LAST_RD_RUNTIME_FINITE_CHECK="${LAST_RD_RUNTIME_FINITE_CHECK:-1}"
+export LAST_RD_RUNTIME_FINITE_CHECK_MAX_ELEMENTS="${LAST_RD_RUNTIME_FINITE_CHECK_MAX_ELEMENTS:-262144}"
 
 [[ -f "${STAGE1_5_CHECKPOINT}" ]] || { echo "Missing STAGE1_5_CHECKPOINT=${STAGE1_5_CHECKPOINT}" >&2; exit 1; }
 [[ -f "${A0_INIT_CHECKPOINT}" ]] || { echo "Missing A0_INIT_CHECKPOINT=${A0_INIT_CHECKPOINT}" >&2; exit 1; }
@@ -25,6 +30,11 @@ mkdir -p "${OUTPUT_DIR}"
   printf 'A0_REFERENCE_CHECKPOINT=%s\n' "${A0_REFERENCE_CHECKPOINT}"
   printf 'OUTPUT_DIR=%s\n' "${OUTPUT_DIR}"
   printf 'MASTER_PORT=%s\n' "${MASTER_PORT}"
+  printf 'LAST_RD_NUM_WORKERS=%s\n' "${LAST_RD_NUM_WORKERS}"
+  printf 'LAST_RD_PREFETCH_FACTOR=%s\n' "${LAST_RD_PREFETCH_FACTOR}"
+  printf 'LAST_RD_PERSISTENT_WORKERS=%s\n' "${LAST_RD_PERSISTENT_WORKERS}"
+  printf 'LAST_RD_RUNTIME_FINITE_CHECK=%s\n' "${LAST_RD_RUNTIME_FINITE_CHECK}"
+  printf 'LAST_RD_RUNTIME_FINITE_CHECK_MAX_ELEMENTS=%s\n' "${LAST_RD_RUNTIME_FINITE_CHECK_MAX_ELEMENTS}"
 } > "${OUTPUT_DIR}/commands.log"
 
 torchrun --nproc_per_node=8 --master_port="${MASTER_PORT}" \
@@ -59,4 +69,7 @@ torchrun --nproc_per_node=8 --master_port="${MASTER_PORT}" \
   trainer.params.max_epochs=200 \
   trainer.params.devices=8 \
   dataloader.params.batch_size=16 \
-  dataloader.params.num_workers=8
+  dataloader.params.num_workers="${LAST_RD_NUM_WORKERS}" \
+  dataloader.params.pin_memory=true \
+  dataloader.params.prefetch_factor="${LAST_RD_PREFETCH_FACTOR}" \
+  dataloader.params.persistent_workers="${LAST_RD_PERSISTENT_WORKERS}"

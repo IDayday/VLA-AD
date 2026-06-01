@@ -256,8 +256,12 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         value = sample[key]
         if not isinstance(value, torch.Tensor):
             raise TypeError(f"Chunk sample {sample_path} key '{key}' must be a torch.Tensor, got {type(value).__name__}.")
-        if not torch.isfinite(value.float()).all():
-            raise ValueError(f"Chunk sample {sample_path} key '{key}' contains non-finite values.")
+        finite_check = os.getenv("LAST_RD_RUNTIME_FINITE_CHECK", "1").strip().lower()
+        if finite_check not in {"0", "false", "no", "off"} and (torch.is_floating_point(value) or torch.is_complex(value)):
+            max_elements = int(os.getenv("LAST_RD_RUNTIME_FINITE_CHECK_MAX_ELEMENTS", "-1"))
+            if max_elements < 0 or value.numel() <= max_elements:
+                if not torch.isfinite(value).all():
+                    raise ValueError(f"Chunk sample {sample_path} key '{key}' contains non-finite values.")
         return value
 
     def _required_expert_context_keys(self) -> List[str]:
@@ -283,6 +287,38 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         if self.use_last_rd and self.require_vggt_geometry:
             keys.append("vggt_geometry_target_tokens")
         return keys
+
+    def _optional_expert_keys(self, sample: Dict[str, Any], required_keys: List[str]) -> List[str]:
+        candidates: List[str] = []
+        if self.include_expert_features:
+            if self.use_jepa:
+                candidates.append("jepa_context_tokens")
+            if self.use_vggt:
+                candidates.extend(
+                    [
+                        "vggt_context_tokens",
+                        "vggt_geometry_tokens",
+                        "vggt_depth_tokens",
+                        "vggt_pointmap_tokens",
+                        "vggt_camera_tokens",
+                    ]
+                )
+        if self.include_expert_targets:
+            if self.use_jepa:
+                candidates.append("jepa_target_tokens")
+            if self.use_vggt:
+                candidates.extend(
+                    [
+                        "vggt_target_tokens",
+                        "vggt_geometry_target_tokens",
+                        "vggt_depth_target_tokens",
+                        "vggt_pointmap_target_tokens",
+                    ]
+                )
+        if self.use_last_rd:
+            candidates.extend(self.RISK_KEYS)
+        required = set(required_keys)
+        return [key for key in candidates if key in sample and key not in required]
 
     def _expected_shape(self, key: str) -> Optional[Tuple[int, ...]]:
         expert_shapes = {
@@ -419,10 +455,7 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         expert_keys = self._required_expert_context_keys() + self._required_expert_target_keys()
         for key in expert_keys:
             self._check_shape(self._require_tensor(sample, key, sample_path), key, sample_path)
-        optional_expert_keys = [
-            key for key in self.EXPERT_CONTEXT_KEYS + self.EXPERT_GEOMETRY_KEYS + self.EXPERT_TARGET_KEYS + self.RISK_KEYS
-            if key in sample and key not in expert_keys
-        ]
+        optional_expert_keys = self._optional_expert_keys(sample, expert_keys)
         for key in optional_expert_keys:
             value = self._require_tensor(sample, key, sample_path)
             self._check_shape(value, key, sample_path)
@@ -520,7 +553,7 @@ def custom_collate_fn(
         [features['last_hidden_state'] for features in features_list],
         batch_first=True,
         padding_value=0.0
-    ).clone().detach()
+    )
 
     trajectory = torch.stack([targets['trajectory'].float() for targets in targets_list], dim=0).cpu()
 

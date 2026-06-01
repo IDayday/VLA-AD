@@ -13,6 +13,11 @@ A0_REFERENCE_CHECKPOINT="${A0_REFERENCE_CHECKPOINT:-}"
 LAST_RD_POLICY_KD_WEIGHT="${LAST_RD_POLICY_KD_WEIGHT:-0.05}"
 LAST_RD_POLICY_KD_MODE="${LAST_RD_POLICY_KD_MODE:-noise}"
 LAST_RD_RISK_LOSS_WEIGHT="${LAST_RD_RISK_LOSS_WEIGHT:-0.0}"
+LAST_RD_NUM_WORKERS="${LAST_RD_NUM_WORKERS:-12}"
+LAST_RD_PREFETCH_FACTOR="${LAST_RD_PREFETCH_FACTOR:-4}"
+LAST_RD_PERSISTENT_WORKERS="${LAST_RD_PERSISTENT_WORKERS:-true}"
+export LAST_RD_RUNTIME_FINITE_CHECK="${LAST_RD_RUNTIME_FINITE_CHECK:-1}"
+export LAST_RD_RUNTIME_FINITE_CHECK_MAX_ELEMENTS="${LAST_RD_RUNTIME_FINITE_CHECK_MAX_ELEMENTS:-262144}"
 POLICY_KD_ENABLED="$(python - "${LAST_RD_POLICY_KD_WEIGHT}" "${LAST_RD_POLICY_KD_MODE}" <<'PY'
 import sys
 weight = float(sys.argv[1])
@@ -40,6 +45,11 @@ mkdir -p "${OUTPUT_DIR}"
   printf 'LAST_RD_POLICY_KD_WEIGHT=%s\n' "${LAST_RD_POLICY_KD_WEIGHT}"
   printf 'LAST_RD_POLICY_KD_MODE=%s\n' "${LAST_RD_POLICY_KD_MODE}"
   printf 'LAST_RD_RISK_LOSS_WEIGHT=%s\n' "${LAST_RD_RISK_LOSS_WEIGHT}"
+  printf 'LAST_RD_NUM_WORKERS=%s\n' "${LAST_RD_NUM_WORKERS}"
+  printf 'LAST_RD_PREFETCH_FACTOR=%s\n' "${LAST_RD_PREFETCH_FACTOR}"
+  printf 'LAST_RD_PERSISTENT_WORKERS=%s\n' "${LAST_RD_PERSISTENT_WORKERS}"
+  printf 'LAST_RD_RUNTIME_FINITE_CHECK=%s\n' "${LAST_RD_RUNTIME_FINITE_CHECK}"
+  printf 'LAST_RD_RUNTIME_FINITE_CHECK_MAX_ELEMENTS=%s\n' "${LAST_RD_RUNTIME_FINITE_CHECK_MAX_ELEMENTS}"
   printf 'TRAIN_CHUNK_CACHE_ROOT=%s\n' "${TRAIN_CHUNK_CACHE_ROOT}"
   printf 'TRAIN_TEST_SPLIT=%s\n' "${TRAIN_TEST_SPLIT}"
   printf 'OUTPUT_DIR=%s\n' "${OUTPUT_DIR}"
@@ -92,7 +102,10 @@ torchrun --nproc_per_node=8 --master_port="${MASTER_PORT}" \
   trainer.params.max_epochs=200 \
   trainer.params.devices=8 \
   dataloader.params.batch_size=16 \
-  dataloader.params.num_workers=8 \
+  dataloader.params.num_workers="${LAST_RD_NUM_WORKERS}" \
+  dataloader.params.pin_memory=true \
+  dataloader.params.prefetch_factor="${LAST_RD_PREFETCH_FACTOR}" \
+  dataloader.params.persistent_workers="${LAST_RD_PERSISTENT_WORKERS}" \
   agent.last_rd_adapter_checkpoint="${STAGE1_5_CHECKPOINT}" \
   "${CHECKPOINT_OVERRIDE[@]}" \
   "${REFERENCE_OVERRIDE[@]}"
