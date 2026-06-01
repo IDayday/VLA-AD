@@ -256,6 +256,10 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         value = sample[key]
         if not isinstance(value, torch.Tensor):
             raise TypeError(f"Chunk sample {sample_path} key '{key}' must be a torch.Tensor, got {type(value).__name__}.")
+        # Chunk cache tensors are supervision/features, never graph-carrying values.
+        # Some historical caches saved VLM hidden states with requires_grad=True;
+        # detach here so DataLoader workers never serialize autograd tensors.
+        value = value.detach()
         finite_check = os.getenv("LAST_RD_RUNTIME_FINITE_CHECK", "1").strip().lower()
         if finite_check not in {"0", "false", "no", "off"} and (torch.is_floating_point(value) or torch.is_complex(value)):
             max_elements = int(os.getenv("LAST_RD_RUNTIME_FINITE_CHECK_MAX_ELEMENTS", "-1"))
@@ -466,7 +470,7 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             "status_feature": required_values["status_feature"].float(),
         }
         for key in [*expert_keys, *optional_expert_keys]:
-            features[key] = sample[key].float()
+            features[key] = self._require_tensor(sample, key, sample_path).float()
         targets = {"trajectory": required_values["trajectory"].float()}
         token = str(sample.get("sample_token") or record.get("sample_token") or sample_path.stem)
         return features, targets, token
@@ -545,17 +549,17 @@ def custom_collate_fn(
 ) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
     features_list, targets_list, tokens_list = zip(*batch)
 
-    history_trajectory = torch.stack([features['history_trajectory'] for features in features_list], dim=0).cpu()
-    high_command_one_hot = torch.stack([features['high_command_one_hot'] for features in features_list], dim=0).cpu()
-    status_feature = torch.stack([features['status_feature'] for features in features_list], dim=0).cpu()
+    history_trajectory = torch.stack([features['history_trajectory'].detach() for features in features_list], dim=0).cpu()
+    high_command_one_hot = torch.stack([features['high_command_one_hot'].detach() for features in features_list], dim=0).cpu()
+    status_feature = torch.stack([features['status_feature'].detach() for features in features_list], dim=0).cpu()
 
     last_hidden_state = rnn_utils.pad_sequence(
-        [features['last_hidden_state'] for features in features_list],
+        [features['last_hidden_state'].detach() for features in features_list],
         batch_first=True,
         padding_value=0.0
-    )
+    ).detach()
 
-    trajectory = torch.stack([targets['trajectory'].float() for targets in targets_list], dim=0).cpu()
+    trajectory = torch.stack([targets['trajectory'].detach().float() for targets in targets_list], dim=0).cpu()
 
     features = {
         'history_trajectory': history_trajectory,
