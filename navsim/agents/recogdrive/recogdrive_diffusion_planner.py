@@ -60,6 +60,8 @@ from .expert_fusion import (
     init_logit_from_prob,
     normalized_mse_loss,
 )
+from .bit_drive import BitRiskHead, ReverseTrajectoryDecoder, RiskTokenEncoder, TargetPathTokenEncoder, TerminalPathHead
+from .bit_losses import bit_loss_bundle, build_path_targets
 
 @dataclass
 class FlowConfig:
@@ -155,6 +157,63 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     branch_init_jepa: float = 0.05
     branch_init_vggt: float = 0.05
     allow_future_targets_in_inference: bool = False
+
+    use_bit_drive: bool = False
+    bit_terminal_loss_weight: float = 0.05
+    bit_path_loss_weight: float = 0.05
+    bit_end_consistency_loss_weight: float = 0.03
+    bit_reverse_loss_weight: float = 0.03
+    bit_cycle_loss_weight: float = 0.00
+    bit_num_path_anchors: int = 4
+    bit_path_anchor_indices: tuple = (1, 3, 5, 7)
+    bit_condition_mode: str = "context_tokens"
+    bit_use_gt_condition_prob: float = 0.20
+    bit_condition_noise_std: float = 0.05
+    bit_condition_dropout: float = 0.10
+    bit_reverse_decoder_hidden_dim: int = 384
+    bit_use_reverse_decoder: bool = False
+    bit_use_path_anchors: bool = True
+    bit_use_terminal_head: bool = True
+    bit_fail_if_gt_condition_in_eval: bool = True
+    bit_log_diagnostics: bool = True
+    bit_context_condition_strength: float = 0.10
+    bit_action_condition_strength: float = 0.00
+    bit_learnable_condition_gates: bool = True
+    bit_context_gate_init: float = 0.05
+    bit_action_gate_init: float = 0.00
+    bit_detach_condition: bool = True
+    bit_detach_condition_until_step: int = 100000
+    bit_use_gt_condition_schedule: str = "constant"
+    bit_use_gt_condition_prob_start: float = 0.20
+    bit_use_gt_condition_prob_end: float = 0.00
+    bit_use_gt_condition_decay_steps: int = 1000
+    bit_loss_normalization: str = "norm_odo"
+    bit_enable_terminal_condition: bool = True
+    bit_enable_path_condition: bool = True
+    bit_enable_action_add: bool = False
+    bit_enable_context_tokens: bool = True
+    bit_condition_coordinate_mode: str = "full"
+    bit_condition_axis_scale_x: float = 0.10
+    bit_condition_axis_scale_y: float = 1.00
+    bit_condition_axis_scale_heading: float = 1.00
+    bit_preserve_base_longitudinal: bool = False
+    bit_base_longitudinal_loss_weight: float = 0.00
+    bit_base_early_points: int = 3
+    bit_base_lateral_loss_weight: float = 0.00
+    bit_store_base_traj_for_loss: bool = False
+    bit_use_safety_fallback: bool = False
+    bit_fallback_mode: str = "rule"
+    bit_fallback_early_x_delta_threshold: float = 1.0
+    bit_fallback_terminal_x_delta_threshold: float = 2.0
+    bit_use_risk_head: bool = False
+    bit_use_risk_tokens: bool = False
+    bit_risk_loss_weight: float = 0.00
+    bit_risk_token_strength: float = 0.05
+    bit_risk_hidden_dim: int = 512
+    bit_risk_positive_weight_zero: float = 1.0
+    bit_risk_positive_weight_dac: float = 2.0
+    bit_risk_positive_weight_nc: float = 4.0
+    bit_risk_positive_weight_ttc: float = 2.0
 
     use_last_rd: bool = False
     last_rd_stage: Literal["disabled", "stage1_5", "progressive_sft"] = "disabled"
@@ -265,9 +324,106 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "coarse_heading_loss_weight",
             "risk_loss_weight",
             "policy_kd_loss_weight",
+            "bit_terminal_loss_weight",
+            "bit_path_loss_weight",
+            "bit_end_consistency_loss_weight",
+            "bit_reverse_loss_weight",
+            "bit_cycle_loss_weight",
+            "bit_context_condition_strength",
+            "bit_action_condition_strength",
+            "bit_base_longitudinal_loss_weight",
+            "bit_base_lateral_loss_weight",
+            "bit_risk_loss_weight",
+            "bit_risk_token_strength",
         ):
             if getattr(config, weight_name) < 0.0:
                 raise ValueError(f"{weight_name} must be non-negative.")
+
+        if config.use_bit_drive:
+            if config.bit_condition_mode not in {"none", "context_tokens", "action_add", "tokens_and_action"}:
+                raise ValueError(
+                    "bit_condition_mode must be one of 'none', 'context_tokens', 'action_add', or 'tokens_and_action'."
+                )
+            if config.bit_num_path_anchors <= 0:
+                raise ValueError("bit_num_path_anchors must be positive.")
+            if len(tuple(config.bit_path_anchor_indices)) != int(config.bit_num_path_anchors):
+                raise ValueError("bit_path_anchor_indices length must match bit_num_path_anchors.")
+            if not 0.0 <= float(config.bit_use_gt_condition_prob) <= 1.0:
+                raise ValueError("bit_use_gt_condition_prob must be in [0, 1].")
+            if config.bit_use_gt_condition_schedule not in {"constant", "linear_decay"}:
+                raise ValueError("bit_use_gt_condition_schedule must be 'constant' or 'linear_decay'.")
+            if not 0.0 <= float(config.bit_use_gt_condition_prob_start) <= 1.0:
+                raise ValueError("bit_use_gt_condition_prob_start must be in [0, 1].")
+            if not 0.0 <= float(config.bit_use_gt_condition_prob_end) <= 1.0:
+                raise ValueError("bit_use_gt_condition_prob_end must be in [0, 1].")
+            if int(config.bit_use_gt_condition_decay_steps) <= 0:
+                raise ValueError("bit_use_gt_condition_decay_steps must be positive.")
+            if not 0.0 <= float(config.bit_condition_dropout) < 1.0:
+                raise ValueError("bit_condition_dropout must be in [0, 1).")
+            if float(config.bit_condition_noise_std) < 0.0:
+                raise ValueError("bit_condition_noise_std must be non-negative.")
+            if config.bit_loss_normalization not in {"norm_odo", "manual_scale", "raw"}:
+                raise ValueError("bit_loss_normalization must be one of 'norm_odo', 'manual_scale', or 'raw'.")
+            if config.bit_condition_coordinate_mode not in {
+                "full",
+                "lateral_heading_only",
+                "path_lateral_heading_only",
+                "terminal_lateral_heading_only",
+            }:
+                raise ValueError("Unsupported bit_condition_coordinate_mode.")
+            if config.bit_fallback_mode not in {"oracle_eval_only", "rule", "learned"}:
+                raise ValueError("bit_fallback_mode must be 'oracle_eval_only', 'rule', or 'learned'.")
+            if int(config.bit_base_early_points) <= 0:
+                raise ValueError("bit_base_early_points must be positive.")
+            if int(config.bit_risk_hidden_dim) <= 0:
+                raise ValueError("bit_risk_hidden_dim must be positive.")
+            if not config.bit_use_terminal_head:
+                raise ValueError("BiT Step 1-3 requires bit_use_terminal_head=True.")
+
+            self._bit_train_step = 0
+            self.bit_terminal_head = TerminalPathHead(
+                planner_dim=config.input_embedding_dim,
+                status_dim=8,
+                his_dim=12,
+                hidden_dim=max(config.hidden_size // 2, config.input_embedding_dim),
+                num_anchors=config.bit_num_path_anchors,
+            )
+            self.bit_condition_encoder = TargetPathTokenEncoder(
+                planner_dim=config.input_embedding_dim,
+                hidden_dim=max(config.hidden_size // 2, config.input_embedding_dim),
+                num_anchors=config.bit_num_path_anchors,
+            )
+            if config.bit_learnable_condition_gates:
+                context_gate_init = min(max(float(config.bit_context_gate_init), 1e-6), 1.0 - 1e-6)
+                action_gate_init = min(max(float(config.bit_action_gate_init), 1e-6), 1.0 - 1e-6)
+                self.bit_context_gate = nn.Parameter(
+                    torch.tensor(init_logit_from_prob(context_gate_init), dtype=torch.float32)
+                )
+                self.bit_action_gate = nn.Parameter(
+                    torch.tensor(init_logit_from_prob(action_gate_init), dtype=torch.float32)
+                )
+            if config.bit_use_reverse_decoder:
+                self.bit_reverse_decoder = ReverseTrajectoryDecoder(
+                    planner_dim=config.input_embedding_dim,
+                    hidden_dim=config.bit_reverse_decoder_hidden_dim,
+                    num_anchors=config.bit_num_path_anchors,
+                    reverse_points=max(config.action_horizon - 1, 1),
+                )
+            if config.bit_use_risk_head:
+                self.bit_risk_head = BitRiskHead(
+                    planner_dim=config.input_embedding_dim,
+                    status_dim=8,
+                    his_dim=12,
+                    hidden_dim=config.bit_risk_hidden_dim,
+                    num_anchors=config.bit_num_path_anchors,
+                    num_risks=4,
+                )
+                if config.bit_use_risk_tokens:
+                    self.bit_risk_token_encoder = RiskTokenEncoder(
+                        planner_dim=config.input_embedding_dim,
+                        hidden_dim=max(config.input_embedding_dim // 2, 128),
+                        num_risks=4,
+                    )
 
         if config.use_expert_features:
             if not config.use_jepa and not config.use_vggt:
@@ -537,6 +693,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "vggt_horizon_conditioner",
             "branch_logits",
             "last_rd",
+            "bit_terminal_head",
+            "bit_condition_encoder",
+            "bit_reverse_decoder",
+            "bit_context_gate",
+            "bit_action_gate",
+            "bit_risk_head",
+            "bit_risk_token_encoder",
         )
         return any(marker in key for marker in expert_markers)
 
@@ -669,6 +832,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         "vggt_alignment_head",
                         "jepa_horizon_conditioner",
                         "vggt_horizon_conditioner",
+                        "bit_terminal_head",
+                        "bit_condition_encoder",
+                        "bit_reverse_decoder",
                     ):
                         module = getattr(self, module_name, None)
                         if module is not None:
@@ -983,6 +1149,314 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             losses[f"{stream}_alignment_loss"] = self._alignment_loss(pred, target).to(dtype=reference.dtype)
         return losses
 
+    def _prepare_base_context(
+        self,
+        vl_features: torch.Tensor,
+        action_input: Optional[BatchFeature] = None,
+    ) -> Dict[str, torch.Tensor]:
+        vl_embeds = self._encode_vlm(vl_features)
+        return {
+            "vl_embeds": vl_embeds,
+            "context_tokens": vl_embeds,
+            "context_mean": vl_embeds.mean(1),
+        }
+
+    def _bit_zero_outputs(self, reference: torch.Tensor) -> Dict[str, Any]:
+        zero = reference.new_zeros(())
+        return {
+            "bit_terminal_loss": zero,
+            "bit_path_loss": zero,
+            "bit_end_consistency_loss": zero,
+            "bit_reverse_loss": zero,
+            "bit_cycle_loss": zero,
+            "bit_terminal_pred_mean_l2": zero,
+            "bit_path_pred_mean_l2": zero,
+            "bit_used_gt_condition_rate": zero,
+            "bit_context_gate_value": zero,
+            "bit_action_gate_value": zero,
+            "bit_gt_condition_prob_current": zero,
+            "bit_condition_strength_context": zero,
+            "bit_condition_strength_action": zero,
+            "bit_base_longitudinal_loss": zero,
+            "bit_base_lateral_loss": zero,
+            "bit_risk_loss": zero,
+            "bit_risk_zero_loss": zero,
+            "bit_risk_dac_loss": zero,
+            "bit_risk_nc_loss": zero,
+            "bit_risk_ttc_loss": zero,
+            "bit_risk_token_strength": zero,
+            "bit_terminal_pred": None,
+            "bit_path_anchor_pred": None,
+            "bit_risk_logits": None,
+            "bit_risk_prob_mean": None,
+            "bit_terminal_gt": None,
+            "bit_path_gt": None,
+            "bit_selected_terminal": None,
+            "bit_selected_path_anchors": None,
+            "bit_action_condition": None,
+            "bit_reverse_points": None,
+        }
+
+    def _bit_current_gt_condition_prob(self) -> float:
+        if self.config.bit_use_gt_condition_schedule == "constant":
+            return float(self.config.bit_use_gt_condition_prob)
+        progress = min(
+            max(float(getattr(self, "_bit_train_step", 0)) / float(self.config.bit_use_gt_condition_decay_steps), 0.0),
+            1.0,
+        )
+        start = float(self.config.bit_use_gt_condition_prob_start)
+        end = float(self.config.bit_use_gt_condition_prob_end)
+        return start + (end - start) * progress
+
+    def _bit_gate_value(self, name: str, reference: torch.Tensor) -> torch.Tensor:
+        if not self.config.bit_learnable_condition_gates:
+            return reference.new_tensor(1.0)
+        gate = getattr(self, f"bit_{name}_gate")
+        return torch.sigmoid(gate).to(device=reference.device, dtype=reference.dtype)
+
+    def _bit_condition_strength(self, name: str, reference: torch.Tensor) -> torch.Tensor:
+        base = float(
+            self.config.bit_context_condition_strength
+            if name == "context"
+            else self.config.bit_action_condition_strength
+        )
+        return reference.new_tensor(base) * self._bit_gate_value(name, reference)
+
+    def _bit_should_detach_condition(self, training: bool) -> bool:
+        if not self.config.bit_detach_condition:
+            return False
+        if not training:
+            return True
+        until_step = int(self.config.bit_detach_condition_until_step)
+        return until_step <= 0 or int(getattr(self, "_bit_train_step", 0)) < until_step
+
+    def _bit_effective_context_tokens_enabled(self) -> bool:
+        mode = self.config.bit_condition_mode
+        if mode == "none":
+            return False
+        return bool(self.config.bit_enable_context_tokens) or mode in {"context_tokens", "tokens_and_action"}
+
+    def _bit_effective_action_add_enabled(self) -> bool:
+        mode = self.config.bit_condition_mode
+        if mode == "none":
+            return False
+        return bool(self.config.bit_enable_action_add) or mode in {"action_add", "tokens_and_action"}
+
+    def _bit_loss_space(self, values: Optional[torch.Tensor]) -> Optional[torch.Tensor]:
+        if values is None:
+            return None
+        mode = self.config.bit_loss_normalization
+        if mode == "raw":
+            return values
+        if mode == "norm_odo":
+            return self.norm_odo(values)
+        if mode == "manual_scale":
+            scale = values.new_tensor([30.0, 10.0, 3.14])
+            return values / scale
+        raise ValueError(f"Unsupported bit_loss_normalization={mode!r}")
+
+    def _bit_apply_coordinate_mode(
+        self,
+        terminal: torch.Tensor,
+        path_anchors: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        axis_scale = terminal.new_tensor([
+            float(self.config.bit_condition_axis_scale_x),
+            float(self.config.bit_condition_axis_scale_y),
+            float(self.config.bit_condition_axis_scale_heading),
+        ])
+        mode = self.config.bit_condition_coordinate_mode
+        terminal_condition = terminal * axis_scale
+        path_condition = path_anchors * axis_scale
+        if mode == "full":
+            return terminal_condition, path_condition
+        if mode == "lateral_heading_only":
+            return terminal_condition, path_condition
+        if mode == "path_lateral_heading_only":
+            terminal_full = terminal * terminal.new_tensor([
+                min(float(self.config.bit_condition_axis_scale_x), 1.0),
+                1.0,
+                1.0,
+            ])
+            return terminal_full, path_condition
+        if mode == "terminal_lateral_heading_only":
+            path_full = path_anchors * path_anchors.new_tensor([
+                min(float(self.config.bit_condition_axis_scale_x), 1.0),
+                1.0,
+                1.0,
+            ])
+            return terminal_condition, path_full
+        raise ValueError(f"Unsupported bit_condition_coordinate_mode={mode!r}")
+
+    def _build_bit_condition(
+        self,
+        context_mean: torch.Tensor,
+        context_tokens: torch.Tensor,
+        action_input: Optional[BatchFeature],
+        *,
+        gt_actions: Optional[torch.Tensor] = None,
+        training: bool = True,
+    ) -> Dict[str, Any]:
+        if not self.config.use_bit_drive:
+            return self._bit_zero_outputs(context_mean)
+        if action_input is None:
+            action_input = BatchFeature(data={})
+
+        status_feature = action_input.get("status_feature")
+        his_traj = action_input.get("his_traj")
+        terminal_pred, path_anchor_pred = self.bit_terminal_head(
+            context_mean,
+            status_feature=status_feature,
+            his_traj=his_traj,
+        )
+
+        terminal_gt = None
+        path_gt = None
+        if gt_actions is None and "action" in action_input and isinstance(action_input["action"], torch.Tensor):
+            gt_actions = action_input["action"]
+        if gt_actions is not None:
+            terminal_gt = gt_actions[:, -1, :].to(device=context_mean.device, dtype=context_mean.dtype)
+            path_gt = build_path_targets(
+                gt_actions.to(device=context_mean.device, dtype=context_mean.dtype),
+                tuple(self.config.bit_path_anchor_indices),
+                expected_anchors=int(self.config.bit_num_path_anchors),
+            )
+
+        current_gt_prob = self._bit_current_gt_condition_prob() if training else 0.0
+        use_gt_mask: Optional[torch.Tensor] = None
+        used_gt_condition_rate = context_mean.new_zeros(())
+        if training and terminal_gt is not None and path_gt is not None and current_gt_prob > 0.0:
+            use_gt_mask = (torch.rand(context_mean.shape[0], 1, device=context_mean.device) < current_gt_prob).to(dtype=context_mean.dtype)
+            selected_terminal = torch.where(use_gt_mask.bool(), terminal_gt, terminal_pred)
+            selected_path_anchors = torch.where(use_gt_mask.view(-1, 1, 1).bool(), path_gt, path_anchor_pred)
+            used_gt_condition_rate = use_gt_mask.mean()
+        else:
+            selected_terminal = terminal_pred
+            selected_path_anchors = path_anchor_pred
+
+        if not training and self.config.bit_fail_if_gt_condition_in_eval and use_gt_mask is not None and bool(use_gt_mask.any().item()):
+            raise RuntimeError("BiT evaluation attempted to condition on ground-truth future trajectory.")
+
+        if training and self.config.bit_condition_noise_std > 0.0:
+            noise_std = float(self.config.bit_condition_noise_std)
+            selected_terminal = selected_terminal + noise_std * torch.randn_like(selected_terminal)
+            selected_path_anchors = selected_path_anchors + noise_std * torch.randn_like(selected_path_anchors)
+        if training and self.config.bit_condition_dropout > 0.0:
+            keep = (
+                torch.rand(context_mean.shape[0], 1, device=context_mean.device)
+                >= float(self.config.bit_condition_dropout)
+            ).to(dtype=context_mean.dtype)
+            selected_terminal = selected_terminal * keep
+            selected_path_anchors = selected_path_anchors * keep.view(-1, 1, 1)
+
+        if self._bit_should_detach_condition(training):
+            selected_terminal_for_injection = selected_terminal.detach()
+            selected_path_anchors_for_injection = selected_path_anchors.detach()
+        else:
+            selected_terminal_for_injection = selected_terminal
+            selected_path_anchors_for_injection = selected_path_anchors
+        selected_terminal_for_injection, selected_path_anchors_for_injection = self._bit_apply_coordinate_mode(
+            selected_terminal_for_injection,
+            selected_path_anchors_for_injection,
+        )
+
+        terminal_token, path_tokens, target_path_summary = self.bit_condition_encoder(
+            selected_terminal_for_injection,
+            selected_path_anchors_for_injection,
+            use_path_anchors=bool(self.config.bit_use_path_anchors and self.config.bit_enable_path_condition),
+        )
+        enabled_condition_tokens: list[torch.Tensor] = []
+        if bool(self.config.bit_enable_terminal_condition):
+            enabled_condition_tokens.append(terminal_token)
+        if bool(self.config.bit_enable_path_condition and self.config.bit_use_path_anchors):
+            enabled_condition_tokens.append(path_tokens)
+        if enabled_condition_tokens:
+            condition_tokens = torch.cat(enabled_condition_tokens, dim=1)
+            target_path_summary = condition_tokens.mean(dim=1)
+        else:
+            condition_tokens = context_tokens.new_zeros(context_tokens.shape[0], 0, context_tokens.shape[-1])
+            target_path_summary = context_mean.new_zeros(context_mean.shape)
+
+        risk_logits = None
+        risk_prob_mean = None
+        risk_token = None
+        if self.config.bit_use_risk_head and hasattr(self, "bit_risk_head"):
+            risk_logits = self.bit_risk_head(
+                context_mean,
+                terminal_pred,
+                path_anchor_pred,
+                status_feature=status_feature,
+                his_traj=his_traj,
+            )
+            risk_prob = torch.sigmoid(risk_logits.float()).to(dtype=context_mean.dtype)
+            risk_prob_mean = risk_prob.mean(dim=0).detach()
+            if self.config.bit_use_risk_tokens and hasattr(self, "bit_risk_token_encoder"):
+                risk_token = self.bit_risk_token_encoder(risk_logits)
+
+        context_gate = self._bit_gate_value("context", context_mean)
+        action_gate = self._bit_gate_value("action", context_mean)
+        context_strength = self._bit_condition_strength("context", context_mean)
+        action_strength = self._bit_condition_strength("action", context_mean)
+
+        if self._bit_effective_context_tokens_enabled() and condition_tokens.shape[1] > 0:
+            context_tokens = torch.cat([context_tokens, condition_tokens * context_strength], dim=1)
+        if risk_token is not None:
+            risk_strength = context_mean.new_tensor(float(self.config.bit_risk_token_strength))
+            context_tokens = torch.cat([context_tokens, risk_token * risk_strength], dim=1)
+        action_condition = (
+            target_path_summary * action_strength
+            if self._bit_effective_action_add_enabled() and condition_tokens.shape[1] > 0
+            else None
+        )
+
+        return {
+            "context_tokens": context_tokens,
+            "bit_action_condition": action_condition,
+            "bit_terminal_pred": terminal_pred,
+            "bit_path_anchor_pred": path_anchor_pred,
+            "bit_terminal_gt": terminal_gt,
+            "bit_path_gt": path_gt,
+            "bit_selected_terminal": selected_terminal_for_injection,
+            "bit_selected_path_anchors": selected_path_anchors_for_injection,
+            "bit_used_gt_condition_rate": used_gt_condition_rate,
+            "bit_context_gate_value": context_gate.detach(),
+            "bit_action_gate_value": action_gate.detach(),
+            "bit_gt_condition_prob_current": context_mean.new_tensor(current_gt_prob),
+            "bit_condition_strength_context": context_strength.detach(),
+            "bit_condition_strength_action": action_strength.detach(),
+            "bit_risk_logits": risk_logits,
+            "bit_risk_prob_mean": risk_prob_mean,
+            "bit_risk_token_strength": context_mean.new_tensor(float(self.config.bit_risk_token_strength)),
+        }
+
+    def _augment_with_bit_condition(
+        self,
+        dit_context: Dict[str, Any],
+        action_input: Optional[BatchFeature],
+        *,
+        training: bool,
+        gt_actions: Optional[torch.Tensor] = None,
+    ) -> Dict[str, Any]:
+        if not self.config.use_bit_drive:
+            dit_context.update(self._bit_zero_outputs(dit_context["context_mean"]))
+            return dit_context
+        bit = self._build_bit_condition(
+            dit_context["context_mean"],
+            dit_context["context_tokens"],
+            action_input,
+            gt_actions=gt_actions,
+            training=training,
+        )
+        dit_context["context_tokens"] = bit.pop("context_tokens")
+        dit_context.update(bit)
+        return dit_context
+
+    def _apply_bit_action_condition(self, action_features: torch.Tensor, dit_context: Dict[str, Any]) -> torch.Tensor:
+        bit_action_condition = dit_context.get("bit_action_condition")
+        if bit_action_condition is None:
+            return action_features
+        return action_features + bit_action_condition.to(device=action_features.device, dtype=action_features.dtype).unsqueeze(1)
+
     def _prepare_dit_context(
         self,
         vl_features: torch.Tensor,
@@ -1004,15 +1478,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "risk_loss": zero,
             "policy_kd_loss": zero,
         }
+        base_losses.update(self._bit_zero_outputs(zero))
         if not self.config.use_expert_features and not self.config.use_last_rd:
-            return {
+            return self._augment_with_bit_condition({
                 "vl_embeds": vl_embeds,
                 "context_tokens": vl_embeds,
                 "context_mean": vl_embeds.mean(1),
                 "expert_step_condition": None,
                 **base_losses,
                 "diagnostics": {},
-            }
+            }, action_input, training=training)
 
         expert: Optional[Dict[str, Any]] = None
         if self.config.use_expert_features:
@@ -1035,14 +1510,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 context_parts.append(expert["vggt_all"])
             context_tokens = torch.cat(context_parts, dim=1)
             context_mean = self._compute_branch_context_mean(vl_embeds, expert["jepa_all"], expert["vggt_all"])
-            return {
+            return self._augment_with_bit_condition({
                 "vl_embeds": vl_embeds,
                 "context_tokens": context_tokens,
                 "context_mean": context_mean,
                 "expert_step_condition": expert["horizon_residual"],
                 **base_losses,
                 "diagnostics": expert["diagnostics"],
-            }
+            }, action_input, training=training)
 
         last_rd_input = action_input
         if last_rd_input is not None and (
@@ -1105,7 +1580,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         for key, value in last_rd_output.losses.items():
             if key in base_losses:
                 base_losses[key] = value
-        return {
+        return self._augment_with_bit_condition({
             "vl_embeds": vl_embeds,
             "context_tokens": context_tokens,
             "context_mean": context_mean,
@@ -1113,7 +1588,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             **base_losses,
             "diagnostics": diagnostics,
             "last_rd_output": last_rd_output,
-        }
+        }, action_input, training=training)
 
     def _repeat_expert_action_input(
         self,
@@ -1206,6 +1681,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         ego_status_features = self.ego_status_encoder(action_input.status_feature)
 
         action_features = self.action_encoder(noisy_actions, timesteps)
+        action_features = self._apply_bit_action_condition(action_features, dit_context)
         if hasattr(self, 'position_embedding'):
             pos_ids = torch.arange(action_features.shape[1], device=noisy_actions.device)
             action_features = action_features + self.position_embedding(pos_ids)
@@ -1267,6 +1743,148 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             return F.mse_loss(student_x0.float(), teacher_x0.detach().float())
         raise ValueError(f"Unsupported policy_kd_mode: {self.config.policy_kd_mode}")
 
+    def _compute_bit_losses(
+        self,
+        dit_context: Dict[str, Any],
+        action_input: BatchFeature,
+        pred_x0_norm: Optional[torch.Tensor],
+    ) -> torch.Tensor:
+        reference = pred_x0_norm if pred_x0_norm is not None else dit_context["context_mean"]
+        if not self.config.use_bit_drive:
+            dit_context.update(self._bit_zero_outputs(reference))
+            return reference.new_zeros(())
+
+        selected_terminal = dit_context.get("bit_selected_terminal")
+        selected_path_anchors = dit_context.get("bit_selected_path_anchors")
+        terminal_condition_norm = None
+        pred_x0_terminal_norm = None
+        if pred_x0_norm is not None and selected_terminal is not None:
+            pred_x0_terminal_norm = pred_x0_norm[:, -1, :]
+            terminal_condition_norm = self.norm_odo(selected_terminal.unsqueeze(1)).squeeze(1)
+
+        reverse_points = None
+        reverse_gt = None
+        cycle_pred_norm = None
+        cycle_target_norm = None
+        if (
+            self.config.bit_use_reverse_decoder
+            and hasattr(self, "bit_reverse_decoder")
+            and selected_terminal is not None
+            and selected_path_anchors is not None
+            and "action" in action_input
+        ):
+            reverse_points = self.bit_reverse_decoder(
+                dit_context["context_mean"],
+                selected_terminal,
+                selected_path_anchors,
+                use_path_anchors=bool(self.config.bit_use_path_anchors),
+            )
+            reverse_gt = action_input.action[:, : reverse_points.shape[1], :].to(
+                device=reverse_points.device,
+                dtype=reverse_points.dtype,
+            )
+            if pred_x0_norm is not None and self.config.bit_cycle_loss_weight > 0.0:
+                cycle_pred_norm = pred_x0_norm[:, : reverse_points.shape[1], :]
+                cycle_target_norm = self.norm_odo(reverse_points)
+
+        base_longitudinal_loss = reference.new_zeros(())
+        base_lateral_loss = reference.new_zeros(())
+        if (
+            self.config.bit_preserve_base_longitudinal
+            and pred_x0_norm is not None
+            and "base_pred_traj" in action_input
+            and isinstance(action_input["base_pred_traj"], torch.Tensor)
+        ):
+            points = min(int(self.config.bit_base_early_points), pred_x0_norm.shape[1])
+            pred_raw = self.denorm_odo(pred_x0_norm[:, :points, :]).to(dtype=reference.dtype)
+            base_raw = action_input["base_pred_traj"][:, :points, :].to(device=pred_raw.device, dtype=pred_raw.dtype)
+            base_longitudinal_loss = F.smooth_l1_loss(
+                pred_raw[..., 0].float(),
+                base_raw[..., 0].detach().float(),
+                reduction="mean",
+            ).to(dtype=reference.dtype)
+            if float(self.config.bit_base_lateral_loss_weight) > 0.0:
+                base_lateral_loss = F.smooth_l1_loss(
+                    pred_raw[..., 1].float(),
+                    base_raw[..., 1].detach().float(),
+                    reduction="mean",
+                ).to(dtype=reference.dtype)
+
+        losses = bit_loss_bundle(
+            terminal_pred=self._bit_loss_space(dit_context.get("bit_terminal_pred")),
+            path_anchor_pred=self._bit_loss_space(dit_context.get("bit_path_anchor_pred")),
+            terminal_gt=self._bit_loss_space(dit_context.get("bit_terminal_gt")),
+            path_gt=self._bit_loss_space(dit_context.get("bit_path_gt")),
+            pred_x0_terminal_norm=pred_x0_terminal_norm,
+            terminal_condition_norm=terminal_condition_norm,
+            reverse_points=reverse_points,
+            reverse_gt=reverse_gt,
+            cycle_pred_norm=cycle_pred_norm,
+            cycle_target_norm=cycle_target_norm,
+            reference=reference,
+        )
+        dit_context.update(losses)
+        dit_context["bit_base_longitudinal_loss"] = base_longitudinal_loss
+        dit_context["bit_base_lateral_loss"] = base_lateral_loss
+        dit_context["bit_reverse_points"] = reverse_points
+        risk_loss = reference.new_zeros(())
+        risk_parts = {
+            "bit_risk_zero_loss": reference.new_zeros(()),
+            "bit_risk_dac_loss": reference.new_zeros(()),
+            "bit_risk_nc_loss": reference.new_zeros(()),
+            "bit_risk_ttc_loss": reference.new_zeros(()),
+        }
+        risk_logits = dit_context.get("bit_risk_logits")
+        risk_labels = action_input.get("bit_risk_labels") if action_input is not None else None
+        if (
+            self.config.bit_use_risk_head
+            and risk_logits is not None
+            and isinstance(risk_labels, torch.Tensor)
+        ):
+            labels = risk_labels.to(device=risk_logits.device, dtype=risk_logits.dtype)
+            if labels.ndim != 2 or labels.shape[-1] != 4:
+                raise ValueError(f"bit_risk_labels must have shape [B, 4], got {tuple(labels.shape)}.")
+            valid_mask_bool = torch.isfinite(labels)
+            safe_labels = torch.where(valid_mask_bool, labels, torch.zeros_like(labels))
+            pos_weight = risk_logits.new_tensor([
+                float(self.config.bit_risk_positive_weight_zero),
+                float(self.config.bit_risk_positive_weight_dac),
+                float(self.config.bit_risk_positive_weight_nc),
+                float(self.config.bit_risk_positive_weight_ttc),
+            ])
+            element_loss = F.binary_cross_entropy_with_logits(
+                risk_logits.float(),
+                safe_labels.float(),
+                pos_weight=pos_weight.float(),
+                reduction="none",
+            ).to(dtype=reference.dtype)
+            valid_mask = valid_mask_bool.to(dtype=element_loss.dtype)
+            element_loss = torch.where(valid_mask.bool(), element_loss, torch.zeros_like(element_loss))
+            denom = valid_mask.sum(dim=0).clamp_min(1.0)
+            per_risk = element_loss.sum(dim=0) / denom
+            risk_loss = per_risk.mean()
+            risk_parts = {
+                "bit_risk_zero_loss": per_risk[0],
+                "bit_risk_dac_loss": per_risk[1],
+                "bit_risk_nc_loss": per_risk[2],
+                "bit_risk_ttc_loss": per_risk[3],
+            }
+        dit_context["bit_risk_loss"] = risk_loss
+        dit_context.update(risk_parts)
+        dit_context["bit_used_gt_condition_rate"] = dit_context.get(
+            "bit_used_gt_condition_rate",
+            reference.new_zeros(()),
+        ).to(device=reference.device, dtype=reference.dtype)
+        return (
+            float(self.config.bit_terminal_loss_weight) * losses["bit_terminal_loss"]
+            + float(self.config.bit_path_loss_weight) * losses["bit_path_loss"]
+            + float(self.config.bit_end_consistency_loss_weight) * losses["bit_end_consistency_loss"]
+            + float(self.config.bit_reverse_loss_weight) * losses["bit_reverse_loss"]
+            + float(self.config.bit_cycle_loss_weight) * losses["bit_cycle_loss"]
+            + float(self.config.bit_base_longitudinal_loss_weight) * base_longitudinal_loss
+            + float(self.config.bit_base_lateral_loss_weight) * base_lateral_loss
+            + float(self.config.bit_risk_loss_weight) * risk_loss
+        ).to(dtype=reference.dtype)
 
     def p_mean_variance(
         self,
@@ -1279,6 +1897,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         deterministic: bool = True,
         context_mean: Optional[torch.Tensor] = None,
         expert_step_condition: Optional[torch.Tensor] = None,
+        bit_action_condition: Optional[torch.Tensor] = None,
         vl_features: Optional[torch.Tensor] = None,
         action_input: Optional[BatchFeature] = None,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
@@ -1297,9 +1916,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             context_embeds = last_rd_context["context_tokens"]
             context_mean = last_rd_context["context_mean"]
             expert_step_condition = last_rd_context["expert_step_condition"]
+            bit_action_condition = last_rd_context.get("bit_action_condition")
         model_dtype = next(self.model.parameters()).dtype
         x = x.to(model_dtype)
         action_features = self.action_encoder(x, t)
+        if bit_action_condition is not None:
+            action_features = action_features + bit_action_condition.to(
+                device=action_features.device,
+                dtype=action_features.dtype,
+            ).unsqueeze(1)
         if hasattr(self, 'position_embedding'):
             pos_ids = torch.arange(action_features.shape[1], device=x.device)
             action_features = action_features + self.position_embedding(pos_ids)
@@ -1386,6 +2011,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         Returns:
             BatchFeature: A batch containing the computed loss.
         """
+        if self.config.use_bit_drive and self.training:
+            self._bit_train_step = int(getattr(self, "_bit_train_step", 0)) + 1
         gt_actions = self.norm_odo(action_input.action)
         allow_target_tokens = self.training or bool(action_input.get("_allow_target_tokens_for_loss", False))
         if not allow_target_tokens:
@@ -1432,6 +2059,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             )
             pred_velocity = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input)
             diffusion_loss = F.mse_loss(pred_velocity, velocity_target, reduction='mean')
+            pred_x0_norm = noisy_actions + (1 - t_cont_reshaped) * pred_velocity
             policy_kd_loss = diffusion_loss.new_zeros(())
         else: 
             noise = torch.randn_like(gt_actions)
@@ -1451,16 +2079,19 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             )
             pred_noise = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input)
             diffusion_loss = F.mse_loss(pred_noise, noise, reduction='mean')
+            pred_x0_norm = self._x0_from_noise(noisy_actions, t_discrete, pred_noise)
             policy_kd_loss = self._compute_policy_kd_loss(vl_features, action_input, noisy_actions, t_discrete, pred_noise)
         dit_context["policy_kd_loss"] = policy_kd_loss.to(dtype=diffusion_loss.dtype)
 
         jepa_alignment_loss = dit_context["jepa_alignment_loss"].to(dtype=diffusion_loss.dtype)
         vggt_alignment_loss = dit_context["vggt_alignment_loss"].to(dtype=diffusion_loss.dtype)
+        bit_aux_loss = self._compute_bit_losses(dit_context, action_input, pred_x0_norm).to(dtype=diffusion_loss.dtype)
         loss = (
             float(self.config.diffusion_loss_weight) * diffusion_loss
             + self._stream_alignment_weight("jepa") * jepa_alignment_loss
             + self._stream_alignment_weight("vggt") * vggt_alignment_loss
             + self._last_rd_aux_loss(dit_context, diffusion_loss.dtype)
+            + bit_aux_loss
         )
 
         return self._format_training_output(loss, diffusion_loss, jepa_alignment_loss, vggt_alignment_loss, dit_context)
@@ -1484,7 +2115,35 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "coarse_heading_loss": dit_context["coarse_heading_loss"].to(dtype=loss.dtype),
             "risk_loss": dit_context["risk_loss"].to(dtype=loss.dtype),
             "policy_kd_loss": dit_context["policy_kd_loss"].to(dtype=loss.dtype),
+            "bit_terminal_loss": dit_context["bit_terminal_loss"].to(dtype=loss.dtype),
+            "bit_path_loss": dit_context["bit_path_loss"].to(dtype=loss.dtype),
+            "bit_end_consistency_loss": dit_context["bit_end_consistency_loss"].to(dtype=loss.dtype),
+            "bit_reverse_loss": dit_context["bit_reverse_loss"].to(dtype=loss.dtype),
+            "bit_cycle_loss": dit_context["bit_cycle_loss"].to(dtype=loss.dtype),
+            "bit_terminal_pred_mean_l2": dit_context["bit_terminal_pred_mean_l2"].to(dtype=loss.dtype),
+            "bit_path_pred_mean_l2": dit_context["bit_path_pred_mean_l2"].to(dtype=loss.dtype),
+            "bit_used_gt_condition_rate": dit_context["bit_used_gt_condition_rate"].to(dtype=loss.dtype),
+            "bit_context_gate_value": dit_context["bit_context_gate_value"].to(dtype=loss.dtype),
+            "bit_action_gate_value": dit_context["bit_action_gate_value"].to(dtype=loss.dtype),
+            "bit_gt_condition_prob_current": dit_context["bit_gt_condition_prob_current"].to(dtype=loss.dtype),
+            "bit_condition_strength_context": dit_context["bit_condition_strength_context"].to(dtype=loss.dtype),
+            "bit_condition_strength_action": dit_context["bit_condition_strength_action"].to(dtype=loss.dtype),
+            "bit_base_longitudinal_loss": dit_context["bit_base_longitudinal_loss"].to(dtype=loss.dtype),
+            "bit_base_lateral_loss": dit_context["bit_base_lateral_loss"].to(dtype=loss.dtype),
+            "bit_risk_loss": dit_context["bit_risk_loss"].to(dtype=loss.dtype),
+            "bit_risk_zero_loss": dit_context["bit_risk_zero_loss"].to(dtype=loss.dtype),
+            "bit_risk_dac_loss": dit_context["bit_risk_dac_loss"].to(dtype=loss.dtype),
+            "bit_risk_nc_loss": dit_context["bit_risk_nc_loss"].to(dtype=loss.dtype),
+            "bit_risk_ttc_loss": dit_context["bit_risk_ttc_loss"].to(dtype=loss.dtype),
+            "bit_risk_token_strength": dit_context["bit_risk_token_strength"].to(dtype=loss.dtype),
         }
+        risk_prob_mean = dit_context.get("bit_risk_prob_mean")
+        if isinstance(risk_prob_mean, torch.Tensor) and risk_prob_mean.numel() == 4:
+            risk_prob_mean = risk_prob_mean.to(device=loss.device, dtype=loss.dtype)
+            output["bit_risk_zero_prob_mean"] = risk_prob_mean[0]
+            output["bit_risk_dac_prob_mean"] = risk_prob_mean[1]
+            output["bit_risk_nc_prob_mean"] = risk_prob_mean[2]
+            output["bit_risk_ttc_prob_mean"] = risk_prob_mean[3]
         diagnostics = dit_context.get("diagnostics", {})
         if diagnostics:
             branch_weights = diagnostics.get("branch_weights")
@@ -1538,6 +2197,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         context_embeds = dit_context["context_tokens"]
         context_mean = dit_context["context_mean"]
         expert_step_condition = dit_context["expert_step_condition"]
+        bit_action_condition = dit_context.get("bit_action_condition")
         
         history_embeds = self.his_traj_encoder(
             action_input.his_traj.unsqueeze(1)
@@ -1570,8 +2230,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     context_embeds = dit_context["context_tokens"]
                     context_mean = dit_context["context_mean"]
                     expert_step_condition = dit_context["expert_step_condition"]
+                    bit_action_condition = dit_context.get("bit_action_condition")
 
                 action_features = self.action_encoder(current_actions, t)
+                if bit_action_condition is not None:
+                    action_features = action_features + bit_action_condition.to(
+                        device=action_features.device,
+                        dtype=action_features.dtype,
+                    ).unsqueeze(1)
                 if hasattr(self, 'position_embedding'):
                     action_features += self.position_embedding(torch.arange(self.config.action_horizon, device=device))
                 
@@ -1600,6 +2266,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     current_actions, t_batch, index_batch, context_embeds, history_embeds, ego_embeds, deterministic,
                     context_mean=context_mean,
                     expert_step_condition=expert_step_condition,
+                    bit_action_condition=bit_action_condition,
                     vl_features=vl_features,
                     action_input=action_input,
                 )
@@ -1633,6 +2300,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     current_actions, t_batch, index_batch, context_embeds, history_embeds, ego_embeds, deterministic,
                     context_mean=context_mean,
                     expert_step_condition=expert_step_condition,
+                    bit_action_condition=bit_action_condition,
                     vl_features=vl_features,
                     action_input=action_input,
                 )
@@ -1660,7 +2328,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
         final_actions = self.denorm_odo(current_actions)
 
-        return BatchFeature(data={"pred_traj": final_actions})
+        result = {"pred_traj": final_actions}
+        if self.config.use_bit_drive and self.config.bit_log_diagnostics:
+            if dit_context.get("bit_terminal_pred") is not None:
+                result["bit_terminal_pred"] = dit_context["bit_terminal_pred"].detach()
+            if dit_context.get("bit_path_anchor_pred") is not None:
+                result["bit_path_anchor_pred"] = dit_context["bit_path_anchor_pred"].detach()
+        return BatchFeature(data=result)
 
     def sample_chain(
         self,
@@ -1694,6 +2368,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         context_embeds = dit_context["context_tokens"]
         context_mean = dit_context["context_mean"]
         expert_step_condition = dit_context["expert_step_condition"]
+        bit_action_condition = dit_context.get("bit_action_condition")
         B, D = context_embeds.shape[0], self.config.action_dim
         device, dtype = context_embeds.device, context_embeds.dtype
         
@@ -1726,8 +2401,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     context_embeds = dit_context["context_tokens"]
                     context_mean = dit_context["context_mean"]
                     expert_step_condition = dit_context["expert_step_condition"]
+                    bit_action_condition = dit_context.get("bit_action_condition")
                 
                 action_features = self.action_encoder(current_actions, t_batch)
+                if bit_action_condition is not None:
+                    action_features = action_features + bit_action_condition.to(
+                        device=action_features.device,
+                        dtype=action_features.dtype,
+                    ).unsqueeze(1)
                 if hasattr(self, 'position_embedding'):
                     action_features += self.position_embedding(torch.arange(self.config.action_horizon, device=device))
                 
@@ -1760,6 +2441,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     current_actions, t_batch, index_batch, context_embeds, his_traj_features, ego_status_features, deterministic,
                     context_mean=context_mean,
                     expert_step_condition=expert_step_condition,
+                    bit_action_condition=bit_action_condition,
                     vl_features=vl_features if action_input is not None else None,
                     action_input=action_input,
                 )
@@ -1816,6 +2498,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         context_embeds = dit_context["context_tokens"]
         context_mean = dit_context["context_mean"]
         expert_step_condition = dit_context["expert_step_condition"]
+        bit_action_condition = dit_context.get("bit_action_condition")
 
         his_traj_features = self.his_traj_encoder(
             his_traj_features.unsqueeze(1)          
@@ -1833,6 +2516,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         }
         if expert_step_condition is not None:
             conditioning_embeds['expert_step_condition'] = expert_step_condition
+        if bit_action_condition is not None:
+            conditioning_embeds['bit_action_condition'] = bit_action_condition
         
         batched_conditioning = {}
         for key, value in conditioning_embeds.items():
@@ -1865,6 +2550,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             deterministic=deterministic,
             context_mean=batched_conditioning['context_mean'],
             expert_step_condition=batched_conditioning.get('expert_step_condition'),
+            bit_action_condition=batched_conditioning.get('bit_action_condition'),
         )
 
         std = torch.exp(0.5 * logvar).clamp(min=self.min_logprob_denoising_std)

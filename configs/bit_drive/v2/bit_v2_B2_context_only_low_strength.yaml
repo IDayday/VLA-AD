@@ -1,0 +1,52 @@
+use_bit_drive: true
+use_expert_features: false
+use_last_rd: false
+planner_dim: 384
+action_horizon: 8
+action_dim: 3
+sampling_method: ddim
+num_inference_steps: 5
+vlm_size: small
+
+bit_use_terminal_head: true
+bit_use_path_anchors: true
+bit_use_reverse_decoder: false
+bit_condition_mode: context_tokens
+bit_enable_context_tokens: true
+bit_enable_action_add: false
+bit_enable_terminal_condition: true
+bit_enable_path_condition: true
+bit_num_path_anchors: 4
+bit_path_anchor_indices: [1, 3, 5, 7]
+
+bit_terminal_loss_weight: 0.05
+bit_path_loss_weight: 0.05
+bit_end_consistency_loss_weight: 0.00
+bit_reverse_loss_weight: 0.00
+bit_cycle_loss_weight: 0.00
+
+bit_context_condition_strength: 0.05
+bit_action_condition_strength: 0.00
+bit_learnable_condition_gates: true
+bit_context_gate_init: 0.05
+bit_action_gate_init: 0.00
+bit_detach_condition: true
+bit_detach_condition_until_step: 100000
+bit_use_gt_condition_prob: 0.20
+bit_use_gt_condition_schedule: linear_decay
+bit_use_gt_condition_prob_start: 0.20
+bit_use_gt_condition_prob_end: 0.00
+bit_use_gt_condition_decay_steps: 1000
+bit_condition_noise_std: 0.10
+bit_condition_dropout: 0.30
+bit_loss_normalization: norm_odo
+bit_condition_coordinate_mode: full
+bit_condition_axis_scale_x: 1.0
+bit_condition_axis_scale_y: 1.0
+bit_condition_axis_scale_heading: 1.0
+bit_fail_if_gt_condition_in_eval: true
+bit_log_diagnostics: true
+
+freeze_vlm: true
+lr_bit: 1.0e-4
+lr_action_head: 2.0e-5

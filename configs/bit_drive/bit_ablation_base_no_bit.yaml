@@ -1,0 +1,10 @@
+use_bit_drive: false
+use_expert_features: false
+use_last_rd: false
+planner_dim: 384
+action_horizon: 8
+action_dim: 3
+sampling_method: ddim
+num_inference_steps: 5
+vlm_size: small
+freeze_vlm: true

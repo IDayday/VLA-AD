@@ -93,6 +93,62 @@ class ReCogDriveAgent(AbstractAgent):
         branch_init_jepa: float = 0.05,
         branch_init_vggt: float = 0.05,
         allow_future_targets_in_inference: bool = False,
+        use_bit_drive: bool = False,
+        bit_terminal_loss_weight: float = 0.05,
+        bit_path_loss_weight: float = 0.05,
+        bit_end_consistency_loss_weight: float = 0.03,
+        bit_reverse_loss_weight: float = 0.03,
+        bit_cycle_loss_weight: float = 0.00,
+        bit_num_path_anchors: int = 4,
+        bit_path_anchor_indices: tuple = (1, 3, 5, 7),
+        bit_condition_mode: str = "context_tokens",
+        bit_use_gt_condition_prob: float = 0.20,
+        bit_condition_noise_std: float = 0.05,
+        bit_condition_dropout: float = 0.10,
+        bit_reverse_decoder_hidden_dim: int = 384,
+        bit_use_reverse_decoder: bool = False,
+        bit_use_path_anchors: bool = True,
+        bit_use_terminal_head: bool = True,
+        bit_fail_if_gt_condition_in_eval: bool = True,
+        bit_log_diagnostics: bool = True,
+        bit_context_condition_strength: float = 0.10,
+        bit_action_condition_strength: float = 0.00,
+        bit_learnable_condition_gates: bool = True,
+        bit_context_gate_init: float = 0.05,
+        bit_action_gate_init: float = 0.00,
+        bit_detach_condition: bool = True,
+        bit_detach_condition_until_step: int = 100000,
+        bit_use_gt_condition_schedule: str = "constant",
+        bit_use_gt_condition_prob_start: float = 0.20,
+        bit_use_gt_condition_prob_end: float = 0.00,
+        bit_use_gt_condition_decay_steps: int = 1000,
+        bit_loss_normalization: str = "norm_odo",
+        bit_enable_terminal_condition: bool = True,
+        bit_enable_path_condition: bool = True,
+        bit_enable_action_add: bool = False,
+        bit_enable_context_tokens: bool = True,
+        bit_condition_coordinate_mode: str = "full",
+        bit_condition_axis_scale_x: float = 0.10,
+        bit_condition_axis_scale_y: float = 1.00,
+        bit_condition_axis_scale_heading: float = 1.00,
+        bit_preserve_base_longitudinal: bool = False,
+        bit_base_longitudinal_loss_weight: float = 0.00,
+        bit_base_early_points: int = 3,
+        bit_base_lateral_loss_weight: float = 0.00,
+        bit_store_base_traj_for_loss: bool = False,
+        bit_use_safety_fallback: bool = False,
+        bit_fallback_mode: str = "rule",
+        bit_fallback_early_x_delta_threshold: float = 1.0,
+        bit_fallback_terminal_x_delta_threshold: float = 2.0,
+        bit_use_risk_head: bool = False,
+        bit_use_risk_tokens: bool = False,
+        bit_risk_loss_weight: float = 0.00,
+        bit_risk_token_strength: float = 0.05,
+        bit_risk_hidden_dim: int = 512,
+        bit_risk_positive_weight_zero: float = 1.0,
+        bit_risk_positive_weight_dac: float = 2.0,
+        bit_risk_positive_weight_nc: float = 4.0,
+        bit_risk_positive_weight_ttc: float = 2.0,
         use_last_rd: bool = False,
         last_rd_stage: str = "disabled",
         use_future_jepa_prediction: bool = True,
@@ -203,6 +259,62 @@ class ReCogDriveAgent(AbstractAgent):
         self.branch_init_jepa = branch_init_jepa
         self.branch_init_vggt = branch_init_vggt
         self.allow_future_targets_in_inference = allow_future_targets_in_inference
+        self.use_bit_drive = use_bit_drive
+        self.bit_terminal_loss_weight = bit_terminal_loss_weight
+        self.bit_path_loss_weight = bit_path_loss_weight
+        self.bit_end_consistency_loss_weight = bit_end_consistency_loss_weight
+        self.bit_reverse_loss_weight = bit_reverse_loss_weight
+        self.bit_cycle_loss_weight = bit_cycle_loss_weight
+        self.bit_num_path_anchors = bit_num_path_anchors
+        self.bit_path_anchor_indices = bit_path_anchor_indices
+        self.bit_condition_mode = bit_condition_mode
+        self.bit_use_gt_condition_prob = bit_use_gt_condition_prob
+        self.bit_condition_noise_std = bit_condition_noise_std
+        self.bit_condition_dropout = bit_condition_dropout
+        self.bit_reverse_decoder_hidden_dim = bit_reverse_decoder_hidden_dim
+        self.bit_use_reverse_decoder = bit_use_reverse_decoder
+        self.bit_use_path_anchors = bit_use_path_anchors
+        self.bit_use_terminal_head = bit_use_terminal_head
+        self.bit_fail_if_gt_condition_in_eval = bit_fail_if_gt_condition_in_eval
+        self.bit_log_diagnostics = bit_log_diagnostics
+        self.bit_context_condition_strength = bit_context_condition_strength
+        self.bit_action_condition_strength = bit_action_condition_strength
+        self.bit_learnable_condition_gates = bit_learnable_condition_gates
+        self.bit_context_gate_init = bit_context_gate_init
+        self.bit_action_gate_init = bit_action_gate_init
+        self.bit_detach_condition = bit_detach_condition
+        self.bit_detach_condition_until_step = bit_detach_condition_until_step
+        self.bit_use_gt_condition_schedule = bit_use_gt_condition_schedule
+        self.bit_use_gt_condition_prob_start = bit_use_gt_condition_prob_start
+        self.bit_use_gt_condition_prob_end = bit_use_gt_condition_prob_end
+        self.bit_use_gt_condition_decay_steps = bit_use_gt_condition_decay_steps
+        self.bit_loss_normalization = bit_loss_normalization
+        self.bit_enable_terminal_condition = bit_enable_terminal_condition
+        self.bit_enable_path_condition = bit_enable_path_condition
+        self.bit_enable_action_add = bit_enable_action_add
+        self.bit_enable_context_tokens = bit_enable_context_tokens
+        self.bit_condition_coordinate_mode = bit_condition_coordinate_mode
+        self.bit_condition_axis_scale_x = bit_condition_axis_scale_x
+        self.bit_condition_axis_scale_y = bit_condition_axis_scale_y
+        self.bit_condition_axis_scale_heading = bit_condition_axis_scale_heading
+        self.bit_preserve_base_longitudinal = bit_preserve_base_longitudinal
+        self.bit_base_longitudinal_loss_weight = bit_base_longitudinal_loss_weight
+        self.bit_base_early_points = bit_base_early_points
+        self.bit_base_lateral_loss_weight = bit_base_lateral_loss_weight
+        self.bit_store_base_traj_for_loss = bit_store_base_traj_for_loss
+        self.bit_use_safety_fallback = bit_use_safety_fallback
+        self.bit_fallback_mode = bit_fallback_mode
+        self.bit_fallback_early_x_delta_threshold = bit_fallback_early_x_delta_threshold
+        self.bit_fallback_terminal_x_delta_threshold = bit_fallback_terminal_x_delta_threshold
+        self.bit_use_risk_head = bit_use_risk_head
+        self.bit_use_risk_tokens = bit_use_risk_tokens
+        self.bit_risk_loss_weight = bit_risk_loss_weight
+        self.bit_risk_token_strength = bit_risk_token_strength
+        self.bit_risk_hidden_dim = bit_risk_hidden_dim
+        self.bit_risk_positive_weight_zero = bit_risk_positive_weight_zero
+        self.bit_risk_positive_weight_dac = bit_risk_positive_weight_dac
+        self.bit_risk_positive_weight_nc = bit_risk_positive_weight_nc
+        self.bit_risk_positive_weight_ttc = bit_risk_positive_weight_ttc
         self.use_last_rd = use_last_rd
         self.last_rd_stage = last_rd_stage
         self.use_future_jepa_prediction = use_future_jepa_prediction
@@ -322,6 +434,62 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.branch_init_jepa = self.branch_init_jepa
         cfg.branch_init_vggt = self.branch_init_vggt
         cfg.allow_future_targets_in_inference = self.allow_future_targets_in_inference
+        cfg.use_bit_drive = self.use_bit_drive
+        cfg.bit_terminal_loss_weight = self.bit_terminal_loss_weight
+        cfg.bit_path_loss_weight = self.bit_path_loss_weight
+        cfg.bit_end_consistency_loss_weight = self.bit_end_consistency_loss_weight
+        cfg.bit_reverse_loss_weight = self.bit_reverse_loss_weight
+        cfg.bit_cycle_loss_weight = self.bit_cycle_loss_weight
+        cfg.bit_num_path_anchors = self.bit_num_path_anchors
+        cfg.bit_path_anchor_indices = self.bit_path_anchor_indices
+        cfg.bit_condition_mode = self.bit_condition_mode
+        cfg.bit_use_gt_condition_prob = self.bit_use_gt_condition_prob
+        cfg.bit_condition_noise_std = self.bit_condition_noise_std
+        cfg.bit_condition_dropout = self.bit_condition_dropout
+        cfg.bit_reverse_decoder_hidden_dim = self.bit_reverse_decoder_hidden_dim
+        cfg.bit_use_reverse_decoder = self.bit_use_reverse_decoder
+        cfg.bit_use_path_anchors = self.bit_use_path_anchors
+        cfg.bit_use_terminal_head = self.bit_use_terminal_head
+        cfg.bit_fail_if_gt_condition_in_eval = self.bit_fail_if_gt_condition_in_eval
+        cfg.bit_log_diagnostics = self.bit_log_diagnostics
+        cfg.bit_context_condition_strength = self.bit_context_condition_strength
+        cfg.bit_action_condition_strength = self.bit_action_condition_strength
+        cfg.bit_learnable_condition_gates = self.bit_learnable_condition_gates
+        cfg.bit_context_gate_init = self.bit_context_gate_init
+        cfg.bit_action_gate_init = self.bit_action_gate_init
+        cfg.bit_detach_condition = self.bit_detach_condition
+        cfg.bit_detach_condition_until_step = self.bit_detach_condition_until_step
+        cfg.bit_use_gt_condition_schedule = self.bit_use_gt_condition_schedule
+        cfg.bit_use_gt_condition_prob_start = self.bit_use_gt_condition_prob_start
+        cfg.bit_use_gt_condition_prob_end = self.bit_use_gt_condition_prob_end
+        cfg.bit_use_gt_condition_decay_steps = self.bit_use_gt_condition_decay_steps
+        cfg.bit_loss_normalization = self.bit_loss_normalization
+        cfg.bit_enable_terminal_condition = self.bit_enable_terminal_condition
+        cfg.bit_enable_path_condition = self.bit_enable_path_condition
+        cfg.bit_enable_action_add = self.bit_enable_action_add
+        cfg.bit_enable_context_tokens = self.bit_enable_context_tokens
+        cfg.bit_condition_coordinate_mode = self.bit_condition_coordinate_mode
+        cfg.bit_condition_axis_scale_x = self.bit_condition_axis_scale_x
+        cfg.bit_condition_axis_scale_y = self.bit_condition_axis_scale_y
+        cfg.bit_condition_axis_scale_heading = self.bit_condition_axis_scale_heading
+        cfg.bit_preserve_base_longitudinal = self.bit_preserve_base_longitudinal
+        cfg.bit_base_longitudinal_loss_weight = self.bit_base_longitudinal_loss_weight
+        cfg.bit_base_early_points = self.bit_base_early_points
+        cfg.bit_base_lateral_loss_weight = self.bit_base_lateral_loss_weight
+        cfg.bit_store_base_traj_for_loss = self.bit_store_base_traj_for_loss
+        cfg.bit_use_safety_fallback = self.bit_use_safety_fallback
+        cfg.bit_fallback_mode = self.bit_fallback_mode
+        cfg.bit_fallback_early_x_delta_threshold = self.bit_fallback_early_x_delta_threshold
+        cfg.bit_fallback_terminal_x_delta_threshold = self.bit_fallback_terminal_x_delta_threshold
+        cfg.bit_use_risk_head = self.bit_use_risk_head
+        cfg.bit_use_risk_tokens = self.bit_use_risk_tokens
+        cfg.bit_risk_loss_weight = self.bit_risk_loss_weight
+        cfg.bit_risk_token_strength = self.bit_risk_token_strength
+        cfg.bit_risk_hidden_dim = self.bit_risk_hidden_dim
+        cfg.bit_risk_positive_weight_zero = self.bit_risk_positive_weight_zero
+        cfg.bit_risk_positive_weight_dac = self.bit_risk_positive_weight_dac
+        cfg.bit_risk_positive_weight_nc = self.bit_risk_positive_weight_nc
+        cfg.bit_risk_positive_weight_ttc = self.bit_risk_positive_weight_ttc
         cfg.use_last_rd = self.use_last_rd
         cfg.last_rd_stage = self.last_rd_stage
         cfg.use_future_jepa_prediction = self.use_future_jepa_prediction
@@ -398,6 +566,13 @@ class ReCogDriveAgent(AbstractAgent):
             "jepa_horizon_conditioner",
             "vggt_horizon_conditioner",
             "branch_logits",
+            "bit_terminal_head",
+            "bit_condition_encoder",
+            "bit_reverse_decoder",
+            "bit_context_gate",
+            "bit_action_gate",
+            "bit_risk_head",
+            "bit_risk_token_encoder",
         )
         for name, parameter in self.named_parameters():
             count = int(parameter.numel())
@@ -589,12 +764,19 @@ class ReCogDriveAgent(AbstractAgent):
             "vggt_horizon_conditioner",
             "branch_logits",
             "last_rd",
+            "bit_terminal_head",
+            "bit_condition_encoder",
+            "bit_reverse_decoder",
+            "bit_context_gate",
+            "bit_action_gate",
+            "bit_risk_head",
+            "bit_risk_token_encoder",
         )
         return key.startswith("action_head.") and any(marker in key for marker in expert_markers)
 
     @staticmethod
     def _is_gate_parameter_key(key: str) -> bool:
-        gate_markers = ("jepa_gate", "vggt_gate", "branch_logits", "scene_gate", "timestep_gate")
+        gate_markers = ("jepa_gate", "vggt_gate", "branch_logits", "scene_gate", "timestep_gate", "bit_context_gate", "bit_action_gate")
         return key.startswith("action_head.") and any(marker in key for marker in gate_markers)
 
     @staticmethod
