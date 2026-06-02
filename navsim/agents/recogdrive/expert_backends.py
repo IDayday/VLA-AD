@@ -31,11 +31,20 @@ EXPERT_RISK_KEYS = (
     "ttc_risk_labels",
     "comfort_risk_labels",
 )
+EXPERT_LAST_VLA_TEACHER_KEYS = (
+    "teacher_trajectory",
+    "teacher_trajectory_norm",
+    "teacher_score",
+    "gt_score",
+    "oracle_best_of_k_score",
+    "candidate_count",
+)
 EXPERT_ALL_KEYS = (
     *EXPERT_CONTEXT_KEYS,
     *EXPERT_GEOMETRY_CONTEXT_KEYS,
     *EXPERT_TARGET_KEYS,
     *EXPERT_RISK_KEYS,
+    *EXPERT_LAST_VLA_TEACHER_KEYS,
     *EXPERT_LEGACY_CONTEXT_KEYS,
 )
 DUMMY_EXPERT_WARNING = (

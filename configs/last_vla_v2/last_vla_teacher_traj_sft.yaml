@@ -1,0 +1,36 @@
+use_last_vla: true
+last_vla_stage: teacher_traj_sft
+use_last_rd: false
+last_rd_stage: disabled
+use_expert_features: false
+use_jepa: true
+use_vggt: true
+jepa_dim: 1024
+vggt_dim: 2048
+num_jepa_tokens: 12
+num_vggt_tokens: 12
+allow_expert_target_features: true
+allow_future_targets_in_inference: false
+
+last_vla_cot_num_tokens: 32
+last_vla_cot_num_steps: 4
+last_vla_vlm_summary_tokens: 4
+last_vla_raw_vlm_context_to_dit: false
+last_vla_cot_bottleneck_mode: true
+last_vla_use_action_conditioned_dynamics: true
+last_vla_use_residual_diffusion: true
+last_vla_residual_detach_coarse: true
+last_vla_teacher_traj_mode: teacher_if_better
+last_vla_teacher_score_margin: 0.0
+
+diffusion_loss_weight: 1.0
+last_vla_geometry_loss_weight: 0.1
+last_vla_dynamic_loss_weight: 0.1
+last_vla_coarse_loss_weight: 0.3
+last_vla_heading_loss_weight: 0.05
+last_vla_progress_loss_weight: 0.1
+last_vla_risk_loss_weight: 0.0
+last_vla_cot_consistency_loss_weight: 0.02
+policy_kd_loss_weight: 0.0
+policy_kd_mode: none
+epochs: 100

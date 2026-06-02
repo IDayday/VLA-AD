@@ -186,7 +186,14 @@ def chunk_dirs(args: argparse.Namespace) -> List[Path]:
         return [args.chunk_cache_dir]
     if args.chunk_cache_root is None:
         raise ValueError("chunk/disk evaluation requires --chunk-cache-dir or --chunk-cache-root")
-    dirs = sorted(path for path in args.chunk_cache_root.glob(args.chunk_name_pattern) if path.is_dir())
+    patterns = [item.strip() for item in str(args.chunk_name_pattern).split(",") if item.strip()]
+    dirs: List[Path] = []
+    seen = set()
+    for pattern in patterns:
+        for path in sorted(args.chunk_cache_root.glob(pattern)):
+            if path.is_dir() and path not in seen:
+                dirs.append(path)
+                seen.add(path)
     if not dirs:
         raise FileNotFoundError(f"No {args.chunk_name_pattern!r} directories found under {args.chunk_cache_root}")
     return dirs

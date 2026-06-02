@@ -1,0 +1,128 @@
+{
+  "cache_root": "/mnt/project/VLA-AD/cache/recogdrive_expert_chunks",
+  "chunk_name_pattern": "train_full_chunk_*",
+  "high_command_one_hot_legacy_repair": {
+    "mode_distribution": {
+      "legacy_4d_repairable": 32
+    },
+    "normalized_shape_distribution": {
+      "(3,)": 32
+    },
+    "num_legacy_4d_repairable": 32,
+    "num_legacy_4d_unrepairable": 0
+  },
+  "high_command_one_hot_shape_distribution": {
+    "(4,)": 32
+  },
+  "last_hidden_state_length": {
+    "max": 2800,
+    "mean": 2800.0,
+    "min": 2800
+  },
+  "num_samples_scanned": 32,
+  "num_shape_dtype_finiteness_errors": 0,
+  "pass": true,
+  "readiness": {
+    "blockers": [],
+    "high_risk_warnings": [
+      "VGGT geometry is mostly patch_fallback; do not claim full geometry distillation."
+    ],
+    "pass": true,
+    "recommended_geometry_label": "geometry_lite_patch_fallback",
+    "strict": false
+  },
+  "required_base_key_coverage": {
+    "high_command_one_hot": {
+      "count": 32,
+      "coverage": 1.0
+    },
+    "history_trajectory": {
+      "count": 32,
+      "coverage": 1.0
+    },
+    "last_hidden_state": {
+      "count": 32,
+      "coverage": 1.0
+    },
+    "status_feature": {
+      "count": 32,
+      "coverage": 1.0
+    },
+    "trajectory": {
+      "count": 32,
+      "coverage": 1.0
+    }
+  },
+  "risk_label_coverage": {
+    "comfort_risk_labels": {
+      "count": 0,
+      "coverage": 0.0
+    },
+    "drivable_risk_labels": {
+      "count": 0,
+      "coverage": 0.0
+    },
+    "generic_risk_labels": {
+      "count": 0,
+      "coverage": 0.0
+    },
+    "risk_labels": {
+      "count": 0,
+      "coverage": 0.0
+    },
+    "ttc_risk_labels": {
+      "count": 0,
+      "coverage": 0.0
+    }
+  },
+  "sample_token_duplicates": {
+    "examples": [],
+    "num_duplicate_tokens": 0
+  },
+  "shape_dtype_finiteness_errors": [],
+  "teacher_token_coverage": {
+    "jepa_context_tokens": {
+      "count": 32,
+      "coverage": 1.0
+    },
+    "jepa_target_tokens": {
+      "count": 32,
+      "coverage": 1.0
+    },
+    "vggt_camera_tokens": {
+      "count": 0,
+      "coverage": 0.0
+    },
+    "vggt_context_tokens": {
+      "count": 32,
+      "coverage": 1.0
+    },
+    "vggt_depth_tokens": {
+      "count": 0,
+      "coverage": 0.0
+    },
+    "vggt_geometry_target_tokens": {
+      "count": 0,
+      "coverage": 0.0
+    },
+    "vggt_geometry_tokens": {
+      "count": 0,
+      "coverage": 0.0
+    },
+    "vggt_pointmap_tokens": {
+      "count": 0,
+      "coverage": 0.0
+    },
+    "vggt_target_tokens": {
+      "count": 32,
+      "coverage": 1.0
+    }
+  },
+  "vggt_geometry_mode_distribution": {
+    "full_geometry": 0,
+    "missing": 0,
+    "no_geometry": 0,
+    "patch_fallback": 32
+  },
+  "warnings": []
+}

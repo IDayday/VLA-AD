@@ -162,6 +162,14 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         "vggt_pointmap_target_tokens",
     )
     RISK_KEYS = ("risk_labels", "generic_risk_labels", "drivable_risk_labels", "ttc_risk_labels", "comfort_risk_labels")
+    LAST_VLA_TEACHER_KEYS = (
+        "teacher_trajectory",
+        "teacher_trajectory_norm",
+        "teacher_score",
+        "gt_score",
+        "oracle_best_of_k_score",
+        "candidate_count",
+    )
 
     def __init__(
         self,
@@ -182,6 +190,9 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         allow_patch_geometry_fallback: bool = True,
         future_jepa_loss_weight: float = 0.0,
         vggt_geometry_loss_weight: float = 0.0,
+        use_last_vla: bool = False,
+        last_vla_stage: str = "disabled",
+        last_vla_teacher_traj_mode: str = "none",
     ) -> None:
         super().__init__()
         self.cache_path = Path(cache_path)
@@ -199,6 +210,9 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         self.allow_patch_geometry_fallback = bool(allow_patch_geometry_fallback)
         self.future_jepa_loss_weight = float(future_jepa_loss_weight)
         self.vggt_geometry_loss_weight = float(vggt_geometry_loss_weight)
+        self.use_last_vla = bool(use_last_vla)
+        self.last_vla_stage = str(last_vla_stage)
+        self.last_vla_teacher_traj_mode = str(last_vla_teacher_traj_mode)
         if self.include_expert_targets and not self.include_expert_features:
             raise ValueError("include_expert_targets=True requires include_expert_features=True.")
         self.log_name_filter: Optional[Set[str]] = set(str(item) for item in log_names) if log_names is not None else None
@@ -290,7 +304,16 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             keys.append("vggt_target_tokens")
         if self.use_last_rd and self.require_vggt_geometry:
             keys.append("vggt_geometry_target_tokens")
+        if (
+            self.use_last_vla
+            and self.last_vla_stage == "teacher_traj_sft"
+            and self.last_vla_teacher_traj_mode != "none"
+        ):
+            keys.append("teacher_trajectory_norm_or_teacher_trajectory")
         return keys
+
+    def _has_teacher_trajectory(self, sample: Dict[str, Any]) -> bool:
+        return isinstance(sample.get("teacher_trajectory_norm"), torch.Tensor) or isinstance(sample.get("teacher_trajectory"), torch.Tensor)
 
     def _optional_expert_keys(self, sample: Dict[str, Any], required_keys: List[str]) -> List[str]:
         candidates: List[str] = []
@@ -321,8 +344,11 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
                 )
         if self.use_last_rd:
             candidates.extend(self.RISK_KEYS)
+        if self.use_last_vla:
+            candidates.extend(self.LAST_VLA_TEACHER_KEYS)
+            candidates.extend(self.RISK_KEYS)
         required = set(required_keys)
-        return [key for key in candidates if key in sample and key not in required]
+        return [key for key in candidates if key in sample and key not in required and key != "teacher_trajectory_norm_or_teacher_trajectory"]
 
     def _expected_shape(self, key: str) -> Optional[Tuple[int, ...]]:
         expert_shapes = {
@@ -343,6 +369,8 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             "high_command_one_hot": (3,),
             "status_feature": (8,),
             "trajectory": (8, 3),
+            "teacher_trajectory": (8, 3),
+            "teacher_trajectory_norm": (8, 3),
         }.get(key)
         return expected
 
@@ -406,6 +434,9 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             "required_expert_context_keys": self._required_expert_context_keys(),
             "required_expert_target_keys": self._required_expert_target_keys(),
             "use_last_rd": self.use_last_rd,
+            "use_last_vla": self.use_last_vla,
+            "last_vla_stage": self.last_vla_stage,
+            "last_vla_teacher_traj_mode": self.last_vla_teacher_traj_mode,
             "require_vggt_geometry": self.require_vggt_geometry,
             "allow_patch_geometry_fallback": self.allow_patch_geometry_fallback,
             "future_jepa_loss_weight": self.future_jepa_loss_weight,
@@ -458,6 +489,13 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             required_values[key] = value
         expert_keys = self._required_expert_context_keys() + self._required_expert_target_keys()
         for key in expert_keys:
+            if key == "teacher_trajectory_norm_or_teacher_trajectory":
+                if not self._has_teacher_trajectory(sample):
+                    raise KeyError(
+                        f"Chunk sample {sample_path} requires teacher_trajectory_norm or teacher_trajectory "
+                        "for Last-VLA teacher_traj_sft."
+                    )
+                continue
             self._check_shape(self._require_tensor(sample, key, sample_path), key, sample_path)
         optional_expert_keys = self._optional_expert_keys(sample, expert_keys)
         for key in optional_expert_keys:
@@ -524,6 +562,10 @@ def write_run_reports(
             "use_last_rd": bool(cfg.agent.get("use_last_rd", False)),
             "last_rd_stage": cfg.agent.get("last_rd_stage", "disabled"),
             "last_rd_adapter_checkpoint": cfg.agent.get("last_rd_adapter_checkpoint", None),
+            "use_last_vla": bool(cfg.agent.get("use_last_vla", False)),
+            "last_vla_stage": cfg.agent.get("last_vla_stage", "disabled"),
+            "last_vla_teacher_traj_mode": cfg.agent.get("last_vla_teacher_traj_mode", "none"),
+            "last_vla_adapter_checkpoint": cfg.agent.get("last_vla_adapter_checkpoint", None),
             "reference_a0_checkpoint": cfg.agent.get("reference_a0_checkpoint", None),
             "future_jepa_loss_weight": cfg.agent.get("future_jepa_loss_weight", 0.0),
             "vggt_geometry_loss_weight": cfg.agent.get("vggt_geometry_loss_weight", 0.0),
@@ -684,8 +726,9 @@ def main(cfg: DictConfig) -> None:
         if ChunkCacheDataset.looks_like(cfg.cache_path):
             logger.warning("Using official-aligned-local-loader for chunk cache path: %s", cfg.cache_path)
             use_last_rd = bool(cfg.agent.get("use_last_rd", False))
-            include_expert_features = bool(cfg.agent.get("use_expert_features", False) or use_last_rd)
-            include_expert_targets = bool(cfg.agent.get("allow_expert_target_features", False) or use_last_rd)
+            use_last_vla = bool(cfg.agent.get("use_last_vla", False))
+            include_expert_features = bool(cfg.agent.get("use_expert_features", False) or use_last_rd or use_last_vla)
+            include_expert_targets = bool(cfg.agent.get("allow_expert_target_features", False) or use_last_rd or use_last_vla)
             use_jepa = bool(cfg.agent.get("use_jepa", True))
             use_vggt = bool(cfg.agent.get("use_vggt", True))
             train_data = ChunkCacheDataset(
@@ -705,13 +748,16 @@ def main(cfg: DictConfig) -> None:
                 allow_patch_geometry_fallback=bool(cfg.agent.get("allow_patch_geometry_fallback", True)),
                 future_jepa_loss_weight=float(cfg.agent.get("future_jepa_loss_weight", 0.0)),
                 vggt_geometry_loss_weight=float(cfg.agent.get("vggt_geometry_loss_weight", 0.0)),
+                use_last_vla=use_last_vla,
+                last_vla_stage=str(cfg.agent.get("last_vla_stage", "disabled")),
+                last_vla_teacher_traj_mode=str(cfg.agent.get("last_vla_teacher_traj_mode", "none")),
             )
             val_data = ChunkCacheDataset(
                 cfg.cache_path,
                 log_names=list(cfg.val_logs),
                 split_name="val",
                 include_expert_features=include_expert_features,
-                include_expert_targets=use_last_rd,
+                include_expert_targets=use_last_rd or use_last_vla,
                 use_jepa=use_jepa,
                 use_vggt=use_vggt,
                 num_jepa_tokens=int(cfg.agent.get("num_jepa_tokens", 12)),
@@ -723,6 +769,9 @@ def main(cfg: DictConfig) -> None:
                 allow_patch_geometry_fallback=bool(cfg.agent.get("allow_patch_geometry_fallback", True)),
                 future_jepa_loss_weight=float(cfg.agent.get("future_jepa_loss_weight", 0.0)),
                 vggt_geometry_loss_weight=float(cfg.agent.get("vggt_geometry_loss_weight", 0.0)),
+                use_last_vla=use_last_vla,
+                last_vla_stage=str(cfg.agent.get("last_vla_stage", "disabled")),
+                last_vla_teacher_traj_mode=str(cfg.agent.get("last_vla_teacher_traj_mode", "none")),
             )
             train_tokens = set(train_data.sample_tokens())
             val_tokens = set(val_data.sample_tokens())

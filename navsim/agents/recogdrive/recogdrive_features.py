@@ -26,7 +26,14 @@ except ImportError:  # safetensors is optional in this repo.
     load_safetensors_file = None
 
 EXPERT_FEATURE_KEYS: Tuple[str, ...] = EXPERT_ALL_KEYS
-EXPERT_TARGET_FEATURE_KEYS: Tuple[str, ...] = EXPERT_TARGET_KEYS
+EXPERT_TARGET_FEATURE_KEYS: Tuple[str, ...] = (
+    *EXPERT_TARGET_KEYS,
+    "teacher_trajectory",
+    "teacher_trajectory_norm",
+    "teacher_score",
+    "gt_score",
+    "oracle_best_of_k_score",
+)
 DUMMY_EXPERT_CACHE_WARNING = "Dummy cache for computation smoke tests only. Do not use for real training."
 
 def format_number(n, decimal_places=2):
@@ -355,6 +362,18 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
             raise TypeError(
                 f"Expert cache {path} key '{key}' must be a torch.Tensor, got {type(tensor).__name__}."
             )
+        if key in {"teacher_score", "gt_score", "oracle_best_of_k_score", "candidate_count"}:
+            if tensor.ndim > 1:
+                raise ValueError(
+                    f"Expert cache {path} key '{key}' must be scalar or [1], got {tuple(tensor.shape)}."
+                )
+            return tensor.detach().cpu().float()
+        if key in {"teacher_trajectory", "teacher_trajectory_norm"}:
+            if tuple(tensor.shape) != (8, 3):
+                raise ValueError(
+                    f"Expert cache {path} key '{key}' must have shape [8, 3], got {tuple(tensor.shape)}."
+                )
+            return tensor.detach().cpu().float()
         if tensor.ndim != 2:
             raise ValueError(
                 f"Expert cache {path} key '{key}' must have shape [K, D], got {tuple(tensor.shape)}."

@@ -36,6 +36,41 @@ from .recogdrive_diffusion_planner import (
     ReCogDriveDiffusionPlannerConfig,
 )
 
+LAST_VLA_FEATURE_KEYS = (
+    "jepa_context_tokens",
+    "jepa_target_tokens",
+    "vggt_context_tokens",
+    "vggt_target_tokens",
+    "vggt_geometry_tokens",
+    "vggt_geometry_target_tokens",
+    "vggt_depth_tokens",
+    "vggt_pointmap_tokens",
+    "vggt_camera_tokens",
+    "teacher_trajectory",
+    "teacher_trajectory_norm",
+    "teacher_score",
+    "gt_score",
+    "oracle_best_of_k_score",
+    "candidate_count",
+    "risk_labels",
+    "generic_risk_labels",
+    "drivable_risk_labels",
+    "ttc_risk_labels",
+    "comfort_risk_labels",
+)
+LAST_VLA_TARGET_KEYS = (
+    "jepa_target_tokens",
+    "vggt_target_tokens",
+    "vggt_geometry_target_tokens",
+    "vggt_depth_target_tokens",
+    "vggt_pointmap_target_tokens",
+    "teacher_trajectory",
+    "teacher_trajectory_norm",
+    "teacher_score",
+    "gt_score",
+    "oracle_best_of_k_score",
+)
+
 
 class ReCogDriveAgent(AbstractAgent):
     def __init__(
@@ -127,6 +162,46 @@ class ReCogDriveAgent(AbstractAgent):
         policy_kd_mode: str = "none",
         current_train_epoch: int = 0,
         total_train_epochs: int = 200,
+        use_last_vla: bool = False,
+        last_vla_stage: str = "disabled",
+        last_vla_cot_num_tokens: int = 32,
+        last_vla_cot_num_steps: int = 4,
+        last_vla_vlm_summary_tokens: int = 4,
+        last_vla_raw_vlm_context_to_dit: bool = False,
+        last_vla_cot_bottleneck_mode: bool = True,
+        last_vla_vlm_context_dropout_start: float = 0.0,
+        last_vla_vlm_context_dropout_end: float = 0.7,
+        last_vla_use_geometry_step: bool = True,
+        last_vla_use_dynamic_step: bool = True,
+        last_vla_use_ego_step: bool = True,
+        last_vla_use_action_refine_step: bool = True,
+        last_vla_use_action_conditioned_dynamics: bool = True,
+        last_vla_use_risk_head: bool = True,
+        last_vla_require_full_geometry: bool = False,
+        last_vla_allow_patch_geometry_fallback: bool = False,
+        last_vla_use_residual_diffusion: bool = True,
+        last_vla_residual_detach_coarse: bool = True,
+        last_vla_coarse_prior_clip: float = 1.0,
+        last_vla_teacher_traj_mode: str = "none",
+        last_vla_teacher_traj_mix_start: float = 0.0,
+        last_vla_teacher_traj_mix_end: float = 1.0,
+        last_vla_teacher_score_margin: float = 0.0,
+        last_vla_geometry_loss_weight: float = 0.0,
+        last_vla_dynamic_loss_weight: float = 0.0,
+        last_vla_coarse_loss_weight: float = 0.0,
+        last_vla_heading_loss_weight: float = 0.0,
+        last_vla_progress_loss_weight: float = 0.0,
+        last_vla_risk_loss_weight: float = 0.0,
+        last_vla_cot_consistency_loss_weight: float = 0.0,
+        last_vla_geometry_loss_floor: float = 0.0,
+        last_vla_dynamic_loss_floor: float = 0.0,
+        last_vla_coarse_loss_floor: float = 0.0,
+        last_vla_progress_loss_floor: float = 0.0,
+        last_vla_adapter_checkpoint: Optional[str] = None,
+        last_vla_train_vlm_lora: bool = False,
+        last_vla_vlm_lora_r: int = 16,
+        last_vla_vlm_lora_alpha: int = 32,
+        last_vla_vlm_lora_target_modules: str = "",
         lr_action_head: Optional[float] = None,
         lr_expert: Optional[float] = None,
         lr_expert_gate: Optional[float] = None,
@@ -205,6 +280,14 @@ class ReCogDriveAgent(AbstractAgent):
         self.allow_future_targets_in_inference = allow_future_targets_in_inference
         self.use_last_rd = use_last_rd
         self.last_rd_stage = last_rd_stage
+        self.use_last_vla = use_last_vla
+        self.last_vla_stage = last_vla_stage
+        if self.use_last_vla and self.use_last_rd:
+            raise ValueError("use_last_vla and use_last_rd are mutually exclusive.")
+        if self.use_last_vla and self.last_vla_stage == "disabled":
+            raise ValueError("use_last_vla=True requires last_vla_stage to be non-disabled.")
+        if not self.use_last_vla and self.last_vla_stage != "disabled":
+            raise ValueError("last_vla_stage must be 'disabled' when use_last_vla=False.")
         self.use_future_jepa_prediction = use_future_jepa_prediction
         self.use_vggt_geometry_tokens = use_vggt_geometry_tokens
         self.use_ego_trajectory_tokens = use_ego_trajectory_tokens
@@ -237,6 +320,44 @@ class ReCogDriveAgent(AbstractAgent):
         self.policy_kd_mode = policy_kd_mode
         self.current_train_epoch = current_train_epoch
         self.total_train_epochs = total_train_epochs
+        self.last_vla_cot_num_tokens = last_vla_cot_num_tokens
+        self.last_vla_cot_num_steps = last_vla_cot_num_steps
+        self.last_vla_vlm_summary_tokens = last_vla_vlm_summary_tokens
+        self.last_vla_raw_vlm_context_to_dit = last_vla_raw_vlm_context_to_dit
+        self.last_vla_cot_bottleneck_mode = last_vla_cot_bottleneck_mode
+        self.last_vla_vlm_context_dropout_start = last_vla_vlm_context_dropout_start
+        self.last_vla_vlm_context_dropout_end = last_vla_vlm_context_dropout_end
+        self.last_vla_use_geometry_step = last_vla_use_geometry_step
+        self.last_vla_use_dynamic_step = last_vla_use_dynamic_step
+        self.last_vla_use_ego_step = last_vla_use_ego_step
+        self.last_vla_use_action_refine_step = last_vla_use_action_refine_step
+        self.last_vla_use_action_conditioned_dynamics = last_vla_use_action_conditioned_dynamics
+        self.last_vla_use_risk_head = last_vla_use_risk_head
+        self.last_vla_require_full_geometry = last_vla_require_full_geometry
+        self.last_vla_allow_patch_geometry_fallback = last_vla_allow_patch_geometry_fallback
+        self.last_vla_use_residual_diffusion = last_vla_use_residual_diffusion
+        self.last_vla_residual_detach_coarse = last_vla_residual_detach_coarse
+        self.last_vla_coarse_prior_clip = last_vla_coarse_prior_clip
+        self.last_vla_teacher_traj_mode = last_vla_teacher_traj_mode
+        self.last_vla_teacher_traj_mix_start = last_vla_teacher_traj_mix_start
+        self.last_vla_teacher_traj_mix_end = last_vla_teacher_traj_mix_end
+        self.last_vla_teacher_score_margin = last_vla_teacher_score_margin
+        self.last_vla_geometry_loss_weight = last_vla_geometry_loss_weight
+        self.last_vla_dynamic_loss_weight = last_vla_dynamic_loss_weight
+        self.last_vla_coarse_loss_weight = last_vla_coarse_loss_weight
+        self.last_vla_heading_loss_weight = last_vla_heading_loss_weight
+        self.last_vla_progress_loss_weight = last_vla_progress_loss_weight
+        self.last_vla_risk_loss_weight = last_vla_risk_loss_weight
+        self.last_vla_cot_consistency_loss_weight = last_vla_cot_consistency_loss_weight
+        self.last_vla_geometry_loss_floor = last_vla_geometry_loss_floor
+        self.last_vla_dynamic_loss_floor = last_vla_dynamic_loss_floor
+        self.last_vla_coarse_loss_floor = last_vla_coarse_loss_floor
+        self.last_vla_progress_loss_floor = last_vla_progress_loss_floor
+        self.last_vla_adapter_checkpoint = last_vla_adapter_checkpoint
+        self.last_vla_train_vlm_lora = last_vla_train_vlm_lora
+        self.last_vla_vlm_lora_r = last_vla_vlm_lora_r
+        self.last_vla_vlm_lora_alpha = last_vla_vlm_lora_alpha
+        self.last_vla_vlm_lora_target_modules = last_vla_vlm_lora_target_modules
         self.lr_action_head = lr_action_head
         self.lr_expert = lr_expert
         self.lr_expert_gate = lr_expert_gate
@@ -261,6 +382,8 @@ class ReCogDriveAgent(AbstractAgent):
                 use_jepa=self.use_jepa,
                 use_vggt=self.use_vggt,
             )
+        if self.last_vla_train_vlm_lora and self.cache_hidden_state:
+            raise ValueError("VLM LoRA training requires no-cache/online VLM forward or regenerated hidden cache.")
 
         local_rank = int(os.getenv("LOCAL_RANK", "0"))
         device = torch.device(f"cuda:{local_rank}" if torch.cuda.is_available() else "cpu")
@@ -281,6 +404,8 @@ class ReCogDriveAgent(AbstractAgent):
             else:
                 for p in self.backbone.parameters():
                     p.requires_grad = True
+            if self.last_vla_train_vlm_lora:
+                self._enable_last_vla_vlm_lora()
 
         if self.dit_type == "large":
             cfg = make_recogdrive_config(self.dit_type, action_dim=3, action_horizon=8, grpo=self.grpo, input_embedding_dim=1536,sampling_method=sampling_method)
@@ -355,6 +480,45 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.policy_kd_mode = self.policy_kd_mode
         cfg.current_train_epoch = self.current_train_epoch
         cfg.total_train_epochs = self.total_train_epochs
+        cfg.use_last_vla = self.use_last_vla
+        cfg.last_vla_stage = self.last_vla_stage
+        cfg.last_vla_cot_num_tokens = self.last_vla_cot_num_tokens
+        cfg.last_vla_cot_num_steps = self.last_vla_cot_num_steps
+        cfg.last_vla_vlm_summary_tokens = self.last_vla_vlm_summary_tokens
+        cfg.last_vla_raw_vlm_context_to_dit = self.last_vla_raw_vlm_context_to_dit
+        cfg.last_vla_cot_bottleneck_mode = self.last_vla_cot_bottleneck_mode
+        cfg.last_vla_vlm_context_dropout_start = self.last_vla_vlm_context_dropout_start
+        cfg.last_vla_vlm_context_dropout_end = self.last_vla_vlm_context_dropout_end
+        cfg.last_vla_use_geometry_step = self.last_vla_use_geometry_step
+        cfg.last_vla_use_dynamic_step = self.last_vla_use_dynamic_step
+        cfg.last_vla_use_ego_step = self.last_vla_use_ego_step
+        cfg.last_vla_use_action_refine_step = self.last_vla_use_action_refine_step
+        cfg.last_vla_use_action_conditioned_dynamics = self.last_vla_use_action_conditioned_dynamics
+        cfg.last_vla_use_risk_head = self.last_vla_use_risk_head
+        cfg.last_vla_require_full_geometry = self.last_vla_require_full_geometry
+        cfg.last_vla_allow_patch_geometry_fallback = self.last_vla_allow_patch_geometry_fallback
+        cfg.last_vla_use_residual_diffusion = self.last_vla_use_residual_diffusion
+        cfg.last_vla_residual_detach_coarse = self.last_vla_residual_detach_coarse
+        cfg.last_vla_coarse_prior_clip = self.last_vla_coarse_prior_clip
+        cfg.last_vla_teacher_traj_mode = self.last_vla_teacher_traj_mode
+        cfg.last_vla_teacher_traj_mix_start = self.last_vla_teacher_traj_mix_start
+        cfg.last_vla_teacher_traj_mix_end = self.last_vla_teacher_traj_mix_end
+        cfg.last_vla_teacher_score_margin = self.last_vla_teacher_score_margin
+        cfg.last_vla_geometry_loss_weight = self.last_vla_geometry_loss_weight
+        cfg.last_vla_dynamic_loss_weight = self.last_vla_dynamic_loss_weight
+        cfg.last_vla_coarse_loss_weight = self.last_vla_coarse_loss_weight
+        cfg.last_vla_heading_loss_weight = self.last_vla_heading_loss_weight
+        cfg.last_vla_progress_loss_weight = self.last_vla_progress_loss_weight
+        cfg.last_vla_risk_loss_weight = self.last_vla_risk_loss_weight
+        cfg.last_vla_cot_consistency_loss_weight = self.last_vla_cot_consistency_loss_weight
+        cfg.last_vla_geometry_loss_floor = self.last_vla_geometry_loss_floor
+        cfg.last_vla_dynamic_loss_floor = self.last_vla_dynamic_loss_floor
+        cfg.last_vla_coarse_loss_floor = self.last_vla_coarse_loss_floor
+        cfg.last_vla_progress_loss_floor = self.last_vla_progress_loss_floor
+        cfg.last_vla_train_vlm_lora = self.last_vla_train_vlm_lora
+        cfg.last_vla_vlm_lora_r = self.last_vla_vlm_lora_r
+        cfg.last_vla_vlm_lora_alpha = self.last_vla_vlm_lora_alpha
+        cfg.last_vla_vlm_lora_target_modules = self.last_vla_vlm_lora_target_modules
 
         if self.grpo:
             cfg.grpo_cfg.metric_cache_path = self.metric_cache_path
@@ -363,6 +527,8 @@ class ReCogDriveAgent(AbstractAgent):
         self.action_head = ReCogDriveDiffusionPlanner(cfg).to(device)
         if self.last_rd_adapter_checkpoint:
             self._safe_load_last_rd_adapter(self.last_rd_adapter_checkpoint)
+        if self.last_vla_adapter_checkpoint:
+            self._safe_load_last_vla_adapter(self.last_vla_adapter_checkpoint)
         self._set_trainable_parameters()
         self.num_inference_samples = 1
         self.inference_selection_mode = "median"
@@ -374,12 +540,40 @@ class ReCogDriveAgent(AbstractAgent):
         if hasattr(self.action_head, "set_training_progress"):
             self.action_head.set_training_progress(epoch, total_epochs)
 
+    def _enable_last_vla_vlm_lora(self) -> None:
+        if self.backbone is None:
+            raise ValueError("VLM LoRA training requires an initialized online backbone.")
+        try:
+            from peft import LoraConfig, get_peft_model
+        except ImportError as exc:
+            raise ImportError(
+                "last_vla_train_vlm_lora=True requires peft. Install it with `pip install peft` "
+                "or disable Last-VLA VLM LoRA."
+            ) from exc
+        target_modules = [
+            item.strip()
+            for item in str(self.last_vla_vlm_lora_target_modules).split(",")
+            if item.strip()
+        ]
+        if not target_modules:
+            target_modules = ["q_proj", "k_proj", "v_proj", "o_proj"]
+        lora_cfg = LoraConfig(
+            r=int(self.last_vla_vlm_lora_r),
+            lora_alpha=int(self.last_vla_vlm_lora_alpha),
+            target_modules=target_modules,
+            bias="none",
+            task_type="CAUSAL_LM",
+        )
+        self.backbone = get_peft_model(self.backbone, lora_cfg)
+
     def count_trainable_parameters_by_group(self) -> Dict[str, Dict[str, int]]:
         groups = {
+            "last_vla_cot": {"trainable": 0, "total": 0},
             "last_rd": {"trainable": 0, "total": 0},
             "legacy_a4_expert": {"trainable": 0, "total": 0},
             "action_base": {"trainable": 0, "total": 0},
             "backbone": {"trainable": 0, "total": 0},
+            "vlm_lora": {"trainable": 0, "total": 0},
             "other": {"trainable": 0, "total": 0},
         }
         legacy_markers = (
@@ -401,12 +595,16 @@ class ReCogDriveAgent(AbstractAgent):
         )
         for name, parameter in self.named_parameters():
             count = int(parameter.numel())
-            if "action_head.last_rd." in name:
+            if "action_head.last_vla_cot." in name:
+                group = "last_vla_cot"
+            elif "action_head.last_rd." in name:
                 group = "last_rd"
             elif name.startswith("action_head.") and any(marker in name for marker in legacy_markers):
                 group = "legacy_a4_expert"
             elif name.startswith("action_head."):
                 group = "action_base"
+            elif "lora_" in name:
+                group = "vlm_lora"
             elif name.startswith("backbone."):
                 group = "backbone"
             else:
@@ -546,9 +744,13 @@ class ReCogDriveAgent(AbstractAgent):
             "high_command_one_hot": high_command_one_hot.to(model_dtype),
         }
         target_loss_mode = self.training or targets is not None
-        for key in EXPERT_FEATURE_KEYS:
+        optional_feature_keys = tuple(dict.fromkeys((*EXPERT_FEATURE_KEYS, *(LAST_VLA_FEATURE_KEYS if self.use_last_vla else ()))))
+        target_feature_keys = set(EXPERT_TARGET_FEATURE_KEYS)
+        if self.use_last_vla:
+            target_feature_keys.update(LAST_VLA_TARGET_KEYS)
+        for key in optional_feature_keys:
             if key in features and isinstance(features[key], torch.Tensor):
-                if key in EXPERT_TARGET_FEATURE_KEYS and not target_loss_mode:
+                if key in target_feature_keys and not target_loss_mode:
                     continue
                 action_input_data[key] = features[key].to(model_dtype)
 
@@ -593,6 +795,10 @@ class ReCogDriveAgent(AbstractAgent):
         return key.startswith("action_head.") and any(marker in key for marker in expert_markers)
 
     @staticmethod
+    def _is_last_vla_parameter_key(key: str) -> bool:
+        return key.startswith("action_head.last_vla_cot.")
+
+    @staticmethod
     def _is_gate_parameter_key(key: str) -> bool:
         gate_markers = ("jepa_gate", "vggt_gate", "branch_logits", "scene_gate", "timestep_gate")
         return key.startswith("action_head.") and any(marker in key for marker in gate_markers)
@@ -626,10 +832,14 @@ class ReCogDriveAgent(AbstractAgent):
                     parameter.requires_grad = False
                 continue
             is_expert = self._is_expert_parameter_key(name)
+            is_last_vla = self._is_last_vla_parameter_key(name)
             if self.train_expert_only or self.freeze_base_action_head:
-                parameter.requires_grad = is_expert and not self.freeze_expert
+                if self.use_last_vla:
+                    parameter.requires_grad = is_last_vla and not self.freeze_expert
+                else:
+                    parameter.requires_grad = is_expert and not self.freeze_expert
             elif self.freeze_expert:
-                parameter.requires_grad = not is_expert
+                parameter.requires_grad = not (is_expert or is_last_vla)
 
     @staticmethod
     def _append_optimizer_group(
@@ -801,7 +1011,7 @@ class ReCogDriveAgent(AbstractAgent):
             expected = model_dict[mapped_key]
             if expected.shape != value.shape:
                 message = f"{mapped_key}: checkpoint {tuple(value.shape)} vs model {tuple(expected.shape)}"
-                if self._is_expert_parameter_key(mapped_key):
+                if self._is_expert_parameter_key(mapped_key) or self._is_last_vla_parameter_key(mapped_key):
                     skipped_expert_shape.append(message)
                     continue
                 shape_mismatches.append(message)
@@ -816,8 +1026,8 @@ class ReCogDriveAgent(AbstractAgent):
 
         incompatible = self.load_state_dict(filtered_state, strict=False)
         missing_keys = list(incompatible.missing_keys)
-        missing_expert = [key for key in missing_keys if self._is_expert_parameter_key(key)]
-        missing_other = [key for key in missing_keys if not self._is_expert_parameter_key(key)]
+        missing_expert = [key for key in missing_keys if self._is_expert_parameter_key(key) or self._is_last_vla_parameter_key(key)]
+        missing_other = [key for key in missing_keys if key not in missing_expert]
 
         print(f"Loaded checkpoint from {path} with strict=False.")
         print(f"  loaded keys: {len(filtered_state)}")
@@ -872,6 +1082,40 @@ class ReCogDriveAgent(AbstractAgent):
         missing_last_rd = [key for key in incompatible.missing_keys if "last_rd" in key]
         if missing_last_rd:
             print(f"  remaining missing LaST-RD keys: {len(missing_last_rd)}")
+
+    def _safe_load_last_vla_adapter(self, checkpoint_path: str) -> None:
+        path = self._resolve_checkpoint_path(checkpoint_path)
+        if path is None:
+            raise FileNotFoundError(f"Last-VLA adapter checkpoint not found: {checkpoint_path}")
+        state_dict = self._load_checkpoint_file(path)
+        model_dict = self.state_dict()
+        filtered: Dict[str, torch.Tensor] = {}
+        skipped: List[str] = []
+        for key, value in state_dict.items():
+            mapped_key = key[len("agent."):] if key.startswith("agent.") else key
+            if mapped_key.startswith("action_head.last_vla_cot."):
+                candidate = mapped_key
+            elif mapped_key.startswith("last_vla_cot."):
+                candidate = f"action_head.{mapped_key}"
+            elif mapped_key.startswith("action_head.") and ".last_vla_cot." in mapped_key:
+                candidate = mapped_key
+            else:
+                continue
+            if candidate in model_dict and isinstance(value, torch.Tensor) and tuple(model_dict[candidate].shape) == tuple(value.shape):
+                filtered[candidate] = value
+            else:
+                skipped.append(candidate)
+        if not filtered:
+            raise RuntimeError(f"No compatible Last-VLA adapter weights found in {path}.")
+        incompatible = self.load_state_dict(filtered, strict=False)
+        print(f"Loaded Last-VLA adapter weights from {path}: {len(filtered)} tensors.")
+        if skipped:
+            print("  skipped incompatible Last-VLA keys:")
+            for key in skipped[:20]:
+                print(f"    - {key}")
+        missing_last_vla = [key for key in incompatible.missing_keys if "last_vla_cot" in key]
+        if missing_last_vla:
+            print(f"  remaining missing Last-VLA keys: {len(missing_last_vla)}")
 
     def _add_dummy_expert_features_if_needed(
         self,

@@ -20,6 +20,8 @@ CONTEXT_SCHEMA = {
     "vggt_depth_tokens": (12, 2048),
     "vggt_pointmap_tokens": (12, 2048),
     "vggt_camera_tokens": (12, 2048),
+    "teacher_trajectory": (8, 3),
+    "teacher_trajectory_norm": (8, 3),
 }
 LEGACY_CONTEXT_ALIASES = {
     "jepa_tokens": "jepa_context_tokens",
@@ -119,6 +121,9 @@ def validate_sample_payload(
     vggt_geometry_loss_weight: float = 0.0,
     require_vggt_geometry: bool = False,
     allow_patch_geometry_fallback: bool = True,
+    use_last_vla: bool = False,
+    last_vla_stage: str = "disabled",
+    last_vla_teacher_traj_mode: str = "none",
 ) -> Dict[str, Any]:
     payload = normalize_sample_payload(dict(payload))
     if require_jepa:
@@ -138,6 +143,22 @@ def validate_sample_payload(
         for key in ("vggt_geometry_tokens", "vggt_geometry_target_tokens", "vggt_depth_tokens", "vggt_pointmap_tokens", "vggt_camera_tokens"):
             if key in payload:
                 validate_token_tensor(payload, key, CONTEXT_SCHEMA[key])
+    if use_last_vla:
+        for key in ("teacher_trajectory", "teacher_trajectory_norm"):
+            if key in payload:
+                validate_token_tensor(payload, key, CONTEXT_SCHEMA[key])
+        if last_vla_stage == "teacher_traj_sft" and last_vla_teacher_traj_mode != "none":
+            if "teacher_trajectory" not in payload and "teacher_trajectory_norm" not in payload:
+                raise KeyError("Last-VLA teacher_traj_sft requires teacher_trajectory or teacher_trajectory_norm.")
+        for key in ("teacher_score", "gt_score", "oracle_best_of_k_score", "candidate_count"):
+            if key in payload:
+                value = payload[key]
+                if not isinstance(value, torch.Tensor):
+                    raise TypeError(f"Expert cache key '{key}' must be a torch.Tensor, got {type(value).__name__}.")
+                if value.ndim > 1:
+                    raise ValueError(f"Expert cache key '{key}' must be scalar or [1], got {tuple(value.shape)}.")
+                if not torch.isfinite(value.float()).all():
+                    raise ValueError(f"Expert cache key '{key}' contains non-finite values.")
     if "last_hidden_state" in payload:
         value = payload["last_hidden_state"]
         if not isinstance(value, torch.Tensor) or value.ndim != 2 or value.shape[-1] != 1536:
