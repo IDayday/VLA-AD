@@ -1,0 +1,58 @@
+round: risk_vla_round1
+description: Controlled RISK-VLA diagnostics and small pilot experiments on cached train/val data.
+experiments:
+  A0_base:
+    role: baseline
+    description: ReCogDrive/BiT branch baseline without RISK-VLA.
+    use_risk_vla: false
+    config_fragments: []
+    expected_outputs:
+      - matched_pdm_metrics.csv
+      - transition_metrics.csv
+  B3_direct_bit:
+    role: strategy_baseline
+    description: Direct BiT path/terminal intent output formulation.
+    use_risk_vla: false
+    config_fragments:
+      - configs/bit_drive/v3/bit_v3_C1_lateral_terminal.yaml
+    expected_outputs:
+      - matched_pdm_metrics.csv
+      - transition_metrics.csv
+  R0_risk_head_diagnostic:
+    role: diagnostic
+    description: Risk-head diagnostic with strategy conditioning disabled.
+    use_risk_vla: true
+    strategy_token_scale: 0.0
+    horizon_residual_scale: 0.0
+    use_oracle_router: false
+    config_fragments:
+      - configs/risk_vla/risk_vla_diagnostic.yaml
+    expected_outputs:
+      - risk_predictions.csv
+      - risk_prediction_metrics.csv
+      - risk_vla_diagnostics.md
+  R1_oracle_router_pilot:
+    role: oracle_upper_bound
+    description: Analysis-only routing upper bound using train/val risk labels.
+    use_risk_vla: true
+    use_oracle_router: true
+    analysis_only: true
+    strategy_token_scale: 0.25
+    horizon_residual_scale: 0.25
+    config_fragments:
+      - configs/risk_vla/risk_vla_oracle_router_pilot.yaml
+    expected_outputs:
+      - oracle_router_eval_metrics.json
+      - strategy_activation_by_subset.csv
+  R2_predicted_router_pilot:
+    role: pilot
+    description: Predicted-risk router pilot with small strategy conditioning scales.
+    use_risk_vla: true
+    use_oracle_router: false
+    strategy_token_scale: 0.25
+    horizon_residual_scale: 0.25
+    config_fragments:
+      - configs/risk_vla/risk_vla_predicted_router_pilot.yaml
+    expected_outputs:
+      - predicted_router_eval_metrics.json
+      - strategy_activation_by_subset.csv
