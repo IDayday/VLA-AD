@@ -34,6 +34,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--schema", choices=("mvp", "extended", "both"), default="both")
     parser.add_argument("--progress-percentile", type=float, default=10.0)
     parser.add_argument("--comfort-percentile", type=float, default=10.0)
+    parser.add_argument("--split", default=None, help="Optional split name to store in every label row.")
     return parser.parse_args()
 
 
@@ -95,6 +96,7 @@ def build_rows(
     schema: str,
     progress_percentile: float,
     comfort_percentile: float,
+    split: Optional[str] = None,
 ) -> tuple[List[Dict[str, Any]], pd.DataFrame, Dict[str, Any]]:
     token_col = detect_token_column(df)
     columns = {metric: resolve_metric_column(df, metric) for metric in METRIC_ALIASES}
@@ -162,12 +164,16 @@ def build_rows(
                 "comfort": comfort,
             }.items() if metric_value is None],
         }
+        if split:
+            output["split"] = str(split)
         if schema in {"mvp", "both"}:
             output.update(mvp)
         if schema in {"extended", "both"}:
             output["risk_labels"] = extended_tensor(scores, horizon)
         json_rows.append(output)
         csv_row: Dict[str, Any] = {"token": token}
+        if split:
+            csv_row["split"] = str(split)
         for name in RISK_ORDER:
             csv_row[f"hard_{name}"] = int(hard[name])
             csv_row[f"soft_{name}"] = soft[name]
@@ -184,6 +190,7 @@ def build_rows(
         "missing_metric_columns": missing_metric_columns,
         "mvp_keys": list(MVP_KEYS) if schema in {"mvp", "both"} else [],
         "extended": schema in {"extended", "both"},
+        "split": split,
     }
     return json_rows, pd.DataFrame(csv_rows), summary
 
@@ -228,6 +235,7 @@ def main() -> int:
         schema=args.schema,
         progress_percentile=args.progress_percentile,
         comfort_percentile=args.comfort_percentile,
+        split=args.split,
     )
     args.output_jsonl.parent.mkdir(parents=True, exist_ok=True)
     write_jsonl(args.output_jsonl, rows)

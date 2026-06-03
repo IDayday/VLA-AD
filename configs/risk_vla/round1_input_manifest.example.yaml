@@ -1,0 +1,28 @@
+round: risk_vla_round1
+
+analysis_pdm:
+  A0_base:
+    csv: /path/to/a0_pdm.csv
+    split: navtest1024_or_analysis
+    use_for_training: false
+  B3_direct_bit:
+    csv: /path/to/b3_pdm.csv
+    split: navtest1024_or_analysis
+    use_for_training: false
+
+trainval_pdm:
+  train:
+    csv: /path/to/train_pdm.csv
+    split: navtrain
+    use_for_training: true
+  val:
+    csv: /path/to/val_pdm.csv
+    split: navval
+    use_for_training: true
+
+cache:
+  source_chunk_cache_dir: /path/to/chunk_cache
+  overlay_output_dir: /path/to/output_overlay
+
+checkpoints:
+  base_or_bit_checkpoint: /path/to/checkpoint_or_dir

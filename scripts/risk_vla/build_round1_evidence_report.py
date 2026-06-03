@@ -28,9 +28,12 @@ def build_evidence_report(
     *,
     output_md: Path,
     input_discovery_md: Optional[Path] = None,
+    input_manifest_md: Optional[Path] = None,
+    candidate_search_md: Optional[Path] = None,
     dryrun_summary_md: Optional[Path] = None,
     r0_diagnostics_md: Optional[Path] = None,
     go_no_go_md: Optional[Path] = None,
+    first_result_summary_md: Optional[Path] = None,
     r1_results: Optional[Path] = None,
     r2_results: Optional[Path] = None,
 ) -> None:
@@ -53,6 +56,14 @@ def build_evidence_report(
         "",
         read_optional(input_discovery_md),
         "",
+        "## Input Candidate Search",
+        "",
+        read_optional(candidate_search_md),
+        "",
+        "## Explicit Manifest Status",
+        "",
+        read_optional(input_manifest_md),
+        "",
         "## 3. Risk Label Distribution Summary",
         "",
         "See input discovery and diagnostic aggregation artifacts for label coverage. Do not proceed with training if leakage checks fail.",
@@ -68,6 +79,14 @@ def build_evidence_report(
         "## 6. GO/NO-GO Decision",
         "",
         read_optional(go_no_go_md),
+        "",
+        "## First-Result Tables",
+        "",
+        read_optional(first_result_summary_md),
+        "",
+        "## R1/R2 Permission",
+        "",
+        "R1 oracle-router may proceed only as analysis. R2 predicted-router should be blocked unless the GO/NO-GO decision is `GO_R1_R2`.",
         "",
         "## 7. R1 Oracle-Router Pilot Status",
         "",
@@ -97,18 +116,24 @@ def build_evidence_report(
 def main() -> int:
     parser = argparse.ArgumentParser(description="Build a RISK-VLA Round 1 evidence report from partial artifacts.")
     parser.add_argument("--input-discovery-md", type=Path, default=None)
+    parser.add_argument("--input-manifest-md", type=Path, default=None)
+    parser.add_argument("--candidate-search-md", type=Path, default=None)
     parser.add_argument("--dryrun-summary-md", type=Path, default=None)
     parser.add_argument("--r0-diagnostics-md", type=Path, default=None)
     parser.add_argument("--go-no-go-md", type=Path, default=None)
+    parser.add_argument("--first-result-summary-md", type=Path, default=None)
     parser.add_argument("--r1-results", type=Path, default=None)
     parser.add_argument("--r2-results", type=Path, default=None)
     parser.add_argument("--output-md", type=Path, required=True)
     args = parser.parse_args()
     build_evidence_report(
         input_discovery_md=args.input_discovery_md,
+        input_manifest_md=args.input_manifest_md,
+        candidate_search_md=args.candidate_search_md,
         dryrun_summary_md=args.dryrun_summary_md,
         r0_diagnostics_md=args.r0_diagnostics_md,
         go_no_go_md=args.go_no_go_md,
+        first_result_summary_md=args.first_result_summary_md,
         r1_results=args.r1_results,
         r2_results=args.r2_results,
         output_md=args.output_md,
