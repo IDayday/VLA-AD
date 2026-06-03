@@ -19,6 +19,7 @@ if str(REPO_ROOT) not in sys.path:
 DEFAULT_A0_CONFIG = Path("configs/bit_drive/bit_ablation_base_no_bit.yaml")
 DEFAULT_B3_CONFIG = Path("configs/bit_drive/v3/bit_v3_C1_lateral_terminal.yaml")
 EVALUATOR = Path("navsim/planning/script/run_pdm_score_recogdrive.py")
+TRAIN_TEST_SPLIT_DIR = Path("navsim/planning/script/config/common/train_test_split")
 REQUIRED_PDM_COLUMNS = [
     "token",
     "score",
@@ -72,6 +73,33 @@ def infer_vlm_path(checkpoint_root: Optional[Path], explicit: Optional[Path]) ->
         if candidate.exists():
             return candidate
     return None
+
+
+def split_config_path(split: str) -> Path:
+    return TRAIN_TEST_SPLIT_DIR / f"{split}.yaml"
+
+
+def split_config_exists(split: str) -> bool:
+    return split_config_path(split).is_file()
+
+
+def split_is_test_like(split: str) -> bool:
+    lowered = split.lower()
+    return any(marker in lowered for marker in ("test", "navtest", "challenge", "eval-only"))
+
+
+def path_is_test_like(path: Optional[Path]) -> bool:
+    if path is None:
+        return False
+    parts = [part.lower() for part in path.parts]
+    for part in parts:
+        if part in {"test", "navtest", "challenge", "eval-only"}:
+            return True
+        if "navtest" in part or "challenge" in part or "eval-only" in part:
+            return True
+        if part.startswith(("metric_cache_test", "metric_cache_navtest", "test_navsim", "test_sensor")):
+            return True
+    return False
 
 
 def shell_script_for_job(
@@ -214,6 +242,9 @@ def evaluator_report(args: argparse.Namespace, blockers: List[str], *, vlm_path:
         f"- metric cache: `{args.metric_cache_path}`",
         f"- navsim logs: `{args.navsim_log_path}`",
         f"- sensor blobs: `{args.sensor_blobs_path}`",
+        f"- analysis split: `{args.split}`",
+        f"- train split: `{args.train_split}`",
+        f"- val split: `{args.val_split}`",
         "",
         "## Missing Inputs",
         "",
@@ -255,14 +286,46 @@ def build_commands(args: argparse.Namespace) -> Dict[str, Any]:
     if args.cache_path and not Path(args.cache_path).exists():
         blockers.append("Chunk cache path is missing or does not exist; PDM generation can be planned, but R0 overlay creation will be blocked.")
 
+    requested_splits = {
+        "analysis": args.split,
+        "train": args.train_split,
+        "val": args.val_split,
+    }
+    for role, split in requested_splits.items():
+        if not split_config_exists(split):
+            blockers.append(
+                f"Train/test split config missing for {role}: {split} "
+                f"(expected {split_config_path(split)})."
+            )
+
+    data_paths = {
+        "metric cache": metric_cache,
+        "navsim logs": navsim_logs,
+        "sensor blobs": sensor_blobs,
+    }
+    if split_is_test_like(args.split):
+        for label, path in data_paths.items():
+            if path is not None and not path_is_test_like(path):
+                blockers.append(
+                    f"Analysis split {args.split} is test-like, but {label} does not look test/navtest-specific: {path}."
+                )
+    for role, split in (("train", args.train_split), ("val", args.val_split)):
+        if not split_is_test_like(split):
+            for label, path in data_paths.items():
+                if path_is_test_like(path):
+                    blockers.append(
+                        f"{label} appears test/navtest-only and cannot be used for non-test {role} PDM labels "
+                        f"(split={split}, path={path})."
+                    )
+
     (output_dir / "pdm_generation_blockers.md").write_text(blocker_report(blockers), encoding="utf-8")
     (output_dir / "evaluator_path_report.md").write_text(evaluator_report(args, blockers, vlm_path=vlm_path), encoding="utf-8")
 
     jobs = [
         ("generate_a0_pdm.sh", "A0_base", a0_checkpoint, DEFAULT_A0_CONFIG, args.split, True),
         ("generate_b3_pdm.sh", "B3_direct_bit", b3_checkpoint, DEFAULT_B3_CONFIG, args.split, True),
-        ("generate_train_pdm.sh", "train", b3_checkpoint or a0_checkpoint, DEFAULT_B3_CONFIG if b3_checkpoint else DEFAULT_A0_CONFIG, "navtrain", False),
-        ("generate_val_pdm.sh", "val", b3_checkpoint or a0_checkpoint, DEFAULT_B3_CONFIG if b3_checkpoint else DEFAULT_A0_CONFIG, "navval", False),
+        ("generate_train_pdm.sh", "train", b3_checkpoint or a0_checkpoint, DEFAULT_B3_CONFIG if b3_checkpoint else DEFAULT_A0_CONFIG, args.train_split, False),
+        ("generate_val_pdm.sh", "val", b3_checkpoint or a0_checkpoint, DEFAULT_B3_CONFIG if b3_checkpoint else DEFAULT_A0_CONFIG, args.val_split, False),
     ]
     command_rows: List[Dict[str, Any]] = []
     for script_name, name, checkpoint, config, split, analysis_only in jobs:
@@ -328,6 +391,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--sensor-blobs-path", default=None)
     parser.add_argument("--vlm-path", default=None)
     parser.add_argument("--split", default="navval")
+    parser.add_argument("--train-split", default="navtrain")
+    parser.add_argument("--val-split", default="navval")
     parser.add_argument("--max-samples", type=int, default=256)
     parser.add_argument("--devices", type=int, default=1)
     parser.add_argument("--master-port", type=int, default=29671)

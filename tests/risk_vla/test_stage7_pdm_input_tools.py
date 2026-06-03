@@ -65,6 +65,8 @@ def test_small_pdm_command_builder_writes_blockers_when_inputs_missing(tmp_path)
             "sensor_blobs_path": "",
             "vlm_path": "",
             "split": "navval",
+            "train_split": "navtrain",
+            "val_split": "navval",
             "max_samples": 256,
             "devices": 1,
             "master_port": 29671,
@@ -103,7 +105,9 @@ def test_small_pdm_command_builder_includes_max_scenes_guard_when_ready(tmp_path
             "navsim_log_path": str(logs),
             "sensor_blobs_path": str(blobs),
             "vlm_path": "",
-            "split": "navval",
+            "split": "trainval",
+            "train_split": "navtrain",
+            "val_split": "navtrain",
             "max_samples": 17,
             "devices": 1,
             "master_port": 29671,
@@ -116,6 +120,86 @@ def test_small_pdm_command_builder_includes_max_scenes_guard_when_ready(tmp_path
     assert "train_test_split.scene_filter.max_scenes=${MAX_SAMPLES}" in script
     assert "configs/bit_drive/v3/bit_v3_C1_lateral_terminal.yaml" not in script
     assert "agent.use_bit_drive=true" in script
+
+
+def test_small_pdm_command_builder_blocks_missing_split_config(tmp_path, monkeypatch):
+    ckpt_root = tmp_path / "ckpts"
+    vlm = ckpt_root / "recogdrive" / "ReCogDrive-VLM-2B"
+    vlm.mkdir(parents=True)
+    a0 = tmp_path / "a0.ckpt"
+    b3 = tmp_path / "b3.ckpt"
+    metric = tmp_path / "metric"
+    logs = tmp_path / "logs"
+    blobs = tmp_path / "blobs"
+    for path in (a0, b3):
+        path.write_text("ckpt", encoding="utf-8")
+    for path in (metric, logs, blobs):
+        path.mkdir()
+    monkeypatch.setenv("CHECKPOINT_ROOT", str(ckpt_root))
+    args = type(
+        "Args",
+        (),
+        {
+            "output_dir": tmp_path / "pdm_inputs",
+            "a0_checkpoint": str(a0),
+            "b3_checkpoint": str(b3),
+            "cache_path": "",
+            "metric_cache_path": str(metric),
+            "navsim_log_path": str(logs),
+            "sensor_blobs_path": str(blobs),
+            "vlm_path": "",
+            "split": "navtest",
+            "train_split": "navtrain",
+            "val_split": "navval",
+            "max_samples": 17,
+            "devices": 1,
+            "master_port": 29671,
+        },
+    )()
+    summary = build_commands(args)
+    assert summary["has_blockers"]
+    blockers = "\n".join(summary["blockers"])
+    assert "Train/test split config missing for val: navval" in blockers
+
+
+def test_small_pdm_command_builder_blocks_test_cache_for_train_labels(tmp_path, monkeypatch):
+    ckpt_root = tmp_path / "ckpts"
+    vlm = ckpt_root / "recogdrive" / "ReCogDrive-VLM-2B"
+    vlm.mkdir(parents=True)
+    a0 = tmp_path / "a0.ckpt"
+    b3 = tmp_path / "b3.ckpt"
+    metric = tmp_path / "metric_cache_navtest"
+    logs = tmp_path / "test_navsim_logs" / "test"
+    blobs = tmp_path / "test_sensor_blobs" / "test"
+    for path in (a0, b3):
+        path.write_text("ckpt", encoding="utf-8")
+    for path in (metric, logs, blobs):
+        path.mkdir(parents=True)
+    monkeypatch.setenv("CHECKPOINT_ROOT", str(ckpt_root))
+    args = type(
+        "Args",
+        (),
+        {
+            "output_dir": tmp_path / "pdm_inputs",
+            "a0_checkpoint": str(a0),
+            "b3_checkpoint": str(b3),
+            "cache_path": "",
+            "metric_cache_path": str(metric),
+            "navsim_log_path": str(logs),
+            "sensor_blobs_path": str(blobs),
+            "vlm_path": "",
+            "split": "navtest",
+            "train_split": "navtrain",
+            "val_split": "navtrain",
+            "max_samples": 17,
+            "devices": 1,
+            "master_port": 29671,
+        },
+    )()
+    summary = build_commands(args)
+    assert summary["has_blockers"]
+    blockers = "\n".join(summary["blockers"])
+    assert "cannot be used for non-test train PDM labels" in blockers
 
 
 def test_artifact_dashboard_validates_pdm_columns(tmp_path):

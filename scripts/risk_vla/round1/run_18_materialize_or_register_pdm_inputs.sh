@@ -74,6 +74,8 @@ python scripts/risk_vla/build_small_pdm_eval_commands.py \
   --sensor-blobs-path "${SENSOR_BLOBS_PATH:-}" \
   --vlm-path "${VLM_PATH:-${RECOGDRIVE_VLM_PATH:-}}" \
   --split "${PDM_ANALYSIS_SPLIT:-navval}" \
+  --train-split "${PDM_TRAIN_SPLIT:-navtrain}" \
+  --val-split "${PDM_VAL_SPLIT:-navval}" \
   --max-samples "${MAX_SAMPLES}" \
   --devices "${DEVICES:-1}" \
   --master-port "${MASTER_PORT:-29671}"
