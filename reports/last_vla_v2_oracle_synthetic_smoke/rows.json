@@ -1,0 +1,122 @@
+[
+  {
+    "best_index": 2,
+    "candidate_PDMS": [
+      null,
+      null,
+      null,
+      null
+    ],
+    "candidate_components": [],
+    "candidate_scores": [
+      0.11502702534198761,
+      0.07206916809082031,
+      0.12176432460546494,
+      0.11830437183380127
+    ],
+    "deterministic_components": {
+      "DAC": null,
+      "DDC": null,
+      "EP": null,
+      "NC": null,
+      "PDMS": null,
+      "TTC": null,
+      "comfort": null,
+      "score_mode": "proxy"
+    },
+    "deterministic_score": 0.11502702534198761,
+    "oracle_best_score": 0.12176432460546494,
+    "sample_token": "synthetic_0000",
+    "score_mode": "proxy"
+  },
+  {
+    "best_index": 3,
+    "candidate_PDMS": [
+      null,
+      null,
+      null,
+      null
+    ],
+    "candidate_components": [],
+    "candidate_scores": [
+      0.08146095275878906,
+      0.10455101728439331,
+      0.10083118826150894,
+      0.11614331603050232
+    ],
+    "deterministic_components": {
+      "DAC": null,
+      "DDC": null,
+      "EP": null,
+      "NC": null,
+      "PDMS": null,
+      "TTC": null,
+      "comfort": null,
+      "score_mode": "proxy"
+    },
+    "deterministic_score": 0.08146095275878906,
+    "oracle_best_score": 0.11614331603050232,
+    "sample_token": "synthetic_0001",
+    "score_mode": "proxy"
+  },
+  {
+    "best_index": 3,
+    "candidate_PDMS": [
+      null,
+      null,
+      null,
+      null
+    ],
+    "candidate_components": [],
+    "candidate_scores": [
+      0.08758457750082016,
+      0.0984794870018959,
+      0.08871631324291229,
+      0.11064431071281433
+    ],
+    "deterministic_components": {
+      "DAC": null,
+      "DDC": null,
+      "EP": null,
+      "NC": null,
+      "PDMS": null,
+      "TTC": null,
+      "comfort": null,
+      "score_mode": "proxy"
+    },
+    "deterministic_score": 0.08758457750082016,
+    "oracle_best_score": 0.11064431071281433,
+    "sample_token": "synthetic_0002",
+    "score_mode": "proxy"
+  },
+  {
+    "best_index": 3,
+    "candidate_PDMS": [
+      null,
+      null,
+      null,
+      null
+    ],
+    "candidate_components": [],
+    "candidate_scores": [
+      0.06536857783794403,
+      0.06240436062216759,
+      0.08441122621297836,
+      0.09941691160202026
+    ],
+    "deterministic_components": {
+      "DAC": null,
+      "DDC": null,
+      "EP": null,
+      "NC": null,
+      "PDMS": null,
+      "TTC": null,
+      "comfort": null,
+      "score_mode": "proxy"
+    },
+    "deterministic_score": 0.06536857783794403,
+    "oracle_best_score": 0.09941691160202026,
+    "sample_token": "synthetic_0003",
+    "score_mode": "proxy"
+  }
+]

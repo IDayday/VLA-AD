@@ -5,7 +5,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import torch
 
@@ -14,7 +14,12 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 
-A0_OFFICIAL_BASELINE_PDMS = 0.864891
+from scripts.last_vla_v2.pdm_scoring_utils import (  # noqa: E402
+    A0_OFFICIAL_BASELINE_PDMS,
+    PDM_COMPONENT_KEYS,
+    TrajectoryScorer,
+    json_default,
+)
 
 
 def parse_args() -> argparse.Namespace:
@@ -29,28 +34,20 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="fp32")
     parser.add_argument("--sampling-seed", type=int, default=2026)
+    parser.add_argument("--score-mode", choices=("pdm", "proxy"), default="pdm")
     parser.add_argument("--synthetic-smoke", action="store_true")
     return parser.parse_args()
 
 
-def proxy_score(trajectory: torch.Tensor, gt: Optional[torch.Tensor] = None) -> float:
-    traj = trajectory.detach().float()
-    progress = traj[-1, 0] - traj[0, 0]
-    lateral = traj[:, 1].abs().mean()
-    heading = traj[:, 2].abs().mean()
-    comfort = traj[1:, :2].diff(dim=0).norm(dim=-1).mean() if traj.shape[0] > 2 else traj.new_tensor(0.0)
-    score = 0.10 * progress - 0.05 * lateral - 0.02 * heading - 0.01 * comfort
-    if gt is not None:
-        score = score - 0.03 * (traj - gt.detach().float()).abs().mean()
-    return float(score.item())
-
-
-def oracle_metrics(rows: List[Dict[str, Any]], *, k: int) -> Dict[str, Any]:
+def oracle_metrics(rows: List[Dict[str, Any]], *, k: int, score_mode: str) -> Dict[str, Any]:
     deterministic = [float(row["deterministic_score"]) for row in rows]
     means = [sum(row["candidate_scores"]) / len(row["candidate_scores"]) for row in rows]
     best = [float(row["oracle_best_score"]) for row in rows]
     if not rows:
         return {
+            "deterministic_score": None,
+            "stochastic_mean_score": None,
+            "oracle_best_of_K_score": None,
             "deterministic_PDMS": None,
             "stochastic_mean_PDMS": None,
             "oracle_best_of_K_PDMS": None,
@@ -60,25 +57,39 @@ def oracle_metrics(rows: List[Dict[str, Any]], *, k: int) -> Dict[str, Any]:
             "candidate_score_std": None,
             "num_samples": 0,
             "K": int(k),
+            "score_mode": score_mode,
+            "pdm_scoring_active": score_mode == "pdm",
+            "proxy_scoring_active": score_mode == "proxy",
+            "hard_gate_teacher_sft_plausible": False,
         }
     all_candidate_scores = torch.tensor([score for row in rows for score in row["candidate_scores"]], dtype=torch.float32)
     det_mean = float(torch.tensor(deterministic).mean().item())
     oracle_mean = float(torch.tensor(best).mean().item())
-    return {
-        "deterministic_PDMS": det_mean,
-        "stochastic_mean_PDMS": float(torch.tensor(means).mean().item()),
-        "oracle_best_of_K_PDMS": oracle_mean,
+    stochastic_mean = float(torch.tensor(means).mean().item())
+    metrics = {
+        "deterministic_score": det_mean,
+        "stochastic_mean_score": stochastic_mean,
+        "oracle_best_of_K_score": oracle_mean,
+        "deterministic_PDMS": det_mean if score_mode == "pdm" else None,
+        "stochastic_mean_PDMS": stochastic_mean if score_mode == "pdm" else None,
+        "oracle_best_of_K_PDMS": oracle_mean if score_mode == "pdm" else None,
         "oracle_delta_vs_deterministic": oracle_mean - det_mean,
-        "oracle_delta_vs_A0_baseline": oracle_mean - A0_OFFICIAL_BASELINE_PDMS,
+        "oracle_delta_vs_A0_baseline": (oracle_mean - A0_OFFICIAL_BASELINE_PDMS) if score_mode == "pdm" else None,
         "candidate_score_mean": float(all_candidate_scores.mean().item()),
         "candidate_score_std": float(all_candidate_scores.std(unbiased=False).item()),
         "num_samples": len(rows),
         "K": int(k),
-        "hard_gate_teacher_sft_plausible": (oracle_mean - det_mean) >= 0.01,
+        "score_mode": score_mode,
+        "pdm_scoring_active": score_mode == "pdm",
+        "proxy_scoring_active": score_mode == "proxy",
+        "hard_gate_teacher_sft_plausible": (score_mode == "pdm" and (oracle_mean - det_mean) >= 0.01),
     }
+    return metrics
 
 
 def synthetic_rows(num_samples: int, k: int, seed: int) -> List[Dict[str, Any]]:
+    from scripts.last_vla_v2.pdm_scoring_utils import proxy_score
+
     generator = torch.Generator().manual_seed(seed)
     rows: List[Dict[str, Any]] = []
     for idx in range(num_samples):
@@ -92,15 +103,17 @@ def synthetic_rows(num_samples: int, k: int, seed: int) -> List[Dict[str, Any]]:
             candidates.append(traj)
             scores.append(proxy_score(traj, gt))
         best_index = int(torch.tensor(scores).argmax().item())
-        rows.append(
-            {
-                "sample_token": f"synthetic_{idx:04d}",
-                "candidate_scores": scores,
-                "best_index": best_index,
-                "oracle_best_score": scores[best_index],
-                "deterministic_score": scores[0],
-            }
-        )
+        rows.append({
+            "sample_token": f"synthetic_{idx:04d}",
+            "candidate_scores": scores,
+            "candidate_PDMS": [None for _ in scores],
+            "candidate_components": [],
+            "best_index": best_index,
+            "oracle_best_score": scores[best_index],
+            "deterministic_score": scores[0],
+            "deterministic_components": {"score_mode": "proxy", **{key: None for key in PDM_COMPONENT_KEYS}},
+            "score_mode": "proxy",
+        })
     return rows
 
 
@@ -115,7 +128,10 @@ def real_rows(args: argparse.Namespace) -> List[Dict[str, Any]]:
 
     if args.config is None or args.checkpoint is None or args.chunk_cache_root is None:
         raise ValueError("Real oracle mode requires --config, --checkpoint, and --chunk-cache-root.")
+    if args.score_mode == "pdm" and args.metric_cache_dir is None:
+        raise ValueError("--score-mode pdm requires --metric-cache-dir.")
     cfg = base.load_yaml(args.config)
+    scorer = TrajectoryScorer(args.score_mode, args.metric_cache_dir)
     planner = base.build_planner(cfg)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     dtype = base.dtype_from_precision(args.precision) if device.type == "cuda" else torch.float32
@@ -132,6 +148,7 @@ def real_rows(args: argparse.Namespace) -> List[Dict[str, Any]]:
         action_input = type(action_input)(data=_strip_train_only(dict(action_input)))
         generator = torch.Generator(device=device).manual_seed(int(args.sampling_seed) + sample_idx * 1009)
         scores: List[float] = []
+        score_dicts: List[Dict[str, Any]] = []
         trajectories: List[torch.Tensor] = []
         with torch.no_grad():
             for candidate_idx in range(int(args.num_candidates)):
@@ -146,27 +163,33 @@ def real_rows(args: argparse.Namespace) -> List[Dict[str, Any]]:
                 pred = planner.get_action(vl_features, action_input, init_actions=init, deterministic=False)["pred_traj"]
                 traj = pred.detach().float().cpu().squeeze(0)
                 trajectories.append(traj)
-                gt = sample.get("trajectory")
-                scores.append(proxy_score(traj, gt if isinstance(gt, torch.Tensor) else None))
+                score_dict = scorer.score(sample, str(sample.get("sample_token") or record.get("sample_token") or sample_path.stem), traj)
+                score_dicts.append(score_dict)
+                scores.append(float(score_dict["score"]))
         best_index = int(torch.tensor(scores).argmax().item())
+        deterministic_components = score_dicts[0] if score_dicts else {}
         rows.append(
             {
                 "sample_token": str(sample.get("sample_token") or record.get("sample_token") or sample_path.stem),
                 "scene_token": str(sample.get("scene_token") or sample_path.stem),
                 "chunk": chunk_dir.name,
                 "candidate_scores": scores,
+                "candidate_PDMS": [item.get("PDMS") for item in score_dicts],
+                "candidate_components": score_dicts if args.score_mode == "pdm" else [],
                 "best_index": best_index,
                 "oracle_best_score": scores[best_index],
                 "deterministic_score": scores[0],
+                "deterministic_components": deterministic_components,
+                "score_mode": args.score_mode,
             }
         )
     return rows
 
 
-def write_outputs(rows: List[Dict[str, Any]], output_dir: Path, k: int) -> Dict[str, Any]:
+def write_outputs(rows: List[Dict[str, Any]], output_dir: Path, k: int, score_mode: str) -> Dict[str, Any]:
     output_dir.mkdir(parents=True, exist_ok=True)
-    metrics = oracle_metrics(rows, k=k)
-    (output_dir / "rows.json").write_text(json.dumps(rows, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    metrics = oracle_metrics(rows, k=k, score_mode=score_mode)
+    (output_dir / "rows.json").write_text(json.dumps(rows, indent=2, sort_keys=True, default=json_default) + "\n", encoding="utf-8")
     (output_dir / "metrics.json").write_text(json.dumps(metrics, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     return metrics
 
@@ -178,7 +201,8 @@ def main() -> int:
         if args.synthetic_smoke
         else real_rows(args)
     )
-    metrics = write_outputs(rows, args.output_dir, args.num_candidates)
+    effective_score_mode = "proxy" if args.synthetic_smoke else args.score_mode
+    metrics = write_outputs(rows, args.output_dir, args.num_candidates, effective_score_mode)
     print(json.dumps(metrics, indent=2, sort_keys=True))
     return 0
 

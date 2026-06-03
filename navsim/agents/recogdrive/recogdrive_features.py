@@ -362,6 +362,12 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
             raise TypeError(
                 f"Expert cache {path} key '{key}' must be a torch.Tensor, got {type(tensor).__name__}."
             )
+        if key == "vggt_geometry_mode_code":
+            if tensor.ndim > 1:
+                raise ValueError(
+                    f"Expert cache {path} key '{key}' must be scalar or [1], got {tuple(tensor.shape)}."
+                )
+            return tensor.detach().cpu().long()
         if key in {"teacher_score", "gt_score", "oracle_best_of_k_score", "candidate_count"}:
             if tensor.ndim > 1:
                 raise ValueError(

@@ -9,6 +9,11 @@ for name in "${required[@]}"; do
   fi
 done
 PYTHON_BIN="${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}"
+SCORE_MODE="${SCORE_MODE:-pdm}"
+if [[ "${SCORE_MODE}" == "pdm" && -z "${METRIC_CACHE_DIR:-}" ]]; then
+  echo "METRIC_CACHE_DIR is required when SCORE_MODE=pdm." >&2
+  exit 2
+fi
 mkdir -p "${OUTPUT_CACHE_ROOT}"
 cmd=(
   "${PYTHON_BIN}" scripts/generate_last_vla_teacher_trajectory_cache.py
@@ -19,7 +24,7 @@ cmd=(
   --output-cache-root "${OUTPUT_CACHE_ROOT}"
   --num-candidates "${NUM_CANDIDATES:-8}"
   --precision "${PRECISION:-fp32}"
-  --score-mode "${SCORE_MODE:-proxy}"
+  --score-mode "${SCORE_MODE}"
 )
 if [[ -n "${MAX_SAMPLES:-}" ]]; then cmd+=(--max-samples "${MAX_SAMPLES}"); fi
 if [[ -n "${METRIC_CACHE_DIR:-}" ]]; then cmd+=(--metric-cache-dir "${METRIC_CACHE_DIR}"); fi

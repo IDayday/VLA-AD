@@ -155,10 +155,12 @@ class VGGTExtractor:
         else:
             geometry_mode = "full_geometry"
         self.last_geometry_mode = geometry_mode
+        geometry_mode_code = 2 if geometry_mode == "full_geometry" else 1
         return {
             "vggt_context_tokens": pooled.squeeze(0).to(dtype=torch.float16, device="cpu"),
             "vggt_geometry_tokens": geometry.squeeze(0).to(dtype=torch.float16, device="cpu"),
             "vggt_geometry_mode": geometry_mode,
+            "vggt_geometry_mode_code": torch.tensor(geometry_mode_code, dtype=torch.int64),
         }
 
     @torch.no_grad()

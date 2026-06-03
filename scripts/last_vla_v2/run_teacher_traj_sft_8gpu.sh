@@ -43,7 +43,7 @@ cmd=(
   agent.last_vla_teacher_traj_mode="${LAST_VLA_TEACHER_TRAJ_MODE:-teacher_if_better}"
   agent.policy_kd_loss_weight="${LAST_VLA_POLICY_KD_WEIGHT:-0.0}"
   agent.policy_kd_mode="${LAST_VLA_POLICY_KD_MODE:-none}"
-  ++agent.last_vla_adapter_checkpoint="${PROGRESSIVE_CHECKPOINT}"
+  agent.last_vla_adapter_checkpoint="${PROGRESSIVE_CHECKPOINT}"
   trainer.params.devices=8
   trainer.params.strategy=ddp_find_unused_parameters_true
 )

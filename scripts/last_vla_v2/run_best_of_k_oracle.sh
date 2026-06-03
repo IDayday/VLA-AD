@@ -9,6 +9,11 @@ for name in "${required[@]}"; do
   fi
 done
 PYTHON_BIN="${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}"
+SCORE_MODE="${SCORE_MODE:-pdm}"
+if [[ "${SCORE_MODE}" == "pdm" && -z "${METRIC_CACHE_DIR:-}" ]]; then
+  echo "METRIC_CACHE_DIR is required when SCORE_MODE=pdm." >&2
+  exit 2
+fi
 mkdir -p "${OUTPUT_DIR}"
 cmd=(
   "${PYTHON_BIN}" scripts/eval_last_vla_best_of_k_oracle.py
@@ -19,6 +24,7 @@ cmd=(
   --num-candidates "${NUM_CANDIDATES:-8}"
   --output-dir "${OUTPUT_DIR}"
   --precision "${PRECISION:-fp32}"
+  --score-mode "${SCORE_MODE}"
 )
 if [[ -n "${MAX_SAMPLES:-}" ]]; then cmd+=(--max-samples "${MAX_SAMPLES}"); fi
 if [[ -n "${METRIC_CACHE_DIR:-}" ]]; then cmd+=(--metric-cache-dir "${METRIC_CACHE_DIR}"); fi

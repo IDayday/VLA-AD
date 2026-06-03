@@ -304,8 +304,9 @@ def write_pdm_csv(path: Path, rows: List[Dict[str, Any]], averages: Dict[str, Op
 def make_batch(sample: Dict[str, Any], planner: ReCogDriveDiffusionPlanner, device: torch.device, dtype: torch.dtype) -> Tuple[torch.Tensor, BatchFeature]:
     global _WARNED_TRAIN_ONLY_TARGET_KEYS
     use_last_rd = bool(getattr(planner.config, "use_last_rd", False))
-    require_jepa = bool((planner.config.use_expert_features or use_last_rd) and planner.config.use_jepa)
-    require_vggt = bool((planner.config.use_expert_features or use_last_rd) and planner.config.use_vggt)
+    use_last_vla = bool(getattr(planner.config, "use_last_vla", False))
+    require_jepa = bool((planner.config.use_expert_features or use_last_rd or use_last_vla) and planner.config.use_jepa)
+    require_vggt = bool((planner.config.use_expert_features or use_last_rd or use_last_vla) and planner.config.use_vggt)
     validate_sample_payload(sample, require_jepa=require_jepa, require_vggt=require_vggt, require_targets=False)
     if "last_hidden_state" not in sample:
         raise KeyError("Evaluation sample is missing last_hidden_state. Build a VLM-hidden chunk first.")
@@ -317,6 +318,19 @@ def make_batch(sample: Dict[str, Any], planner: ReCogDriveDiffusionPlanner, devi
         data["jepa_context_tokens"] = sample["jepa_context_tokens"].float().unsqueeze(0).to(device=device, dtype=dtype)
     if require_vggt:
         data["vggt_context_tokens"] = sample["vggt_context_tokens"].float().unsqueeze(0).to(device=device, dtype=dtype)
+        if use_last_vla:
+            for key in ("vggt_geometry_tokens", "vggt_depth_tokens", "vggt_pointmap_tokens", "vggt_camera_tokens"):
+                if key in sample and isinstance(sample[key], torch.Tensor):
+                    data[key] = sample[key].float().unsqueeze(0).to(device=device, dtype=dtype)
+            mode_code = sample.get("vggt_geometry_mode_code")
+            if isinstance(mode_code, torch.Tensor):
+                data["vggt_geometry_mode_code"] = mode_code.view(1).to(device=device)
+            elif "vggt_geometry_mode" in sample:
+                raw_mode = sample.get("vggt_geometry_mode")
+                if isinstance(raw_mode, bytes):
+                    raw_mode = raw_mode.decode("utf-8", errors="replace")
+                mode_map = {"missing": -1, "no_geometry": 0, "patch_fallback": 1, "full_geometry": 2}
+                data["vggt_geometry_mode_code"] = torch.tensor([mode_map.get(str(raw_mode), -1)], device=device, dtype=torch.long)
     target_keys = [key for key in ("jepa_target_tokens", "vggt_target_tokens", "vggt_geometry_target_tokens") if key in sample]
     if target_keys and not _WARNED_TRAIN_ONLY_TARGET_KEYS:
         warnings.warn(f"Evaluation sample contains train-only target keys {target_keys}; they are not passed to get_action.", RuntimeWarning)

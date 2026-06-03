@@ -13,6 +13,13 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from scripts.last_vla_v2.pdm_scoring_utils import (
+    PDM_COMPONENT_KEYS,
+    TrajectoryScorer,
+    average_score_dicts,
+    json_default,
+)
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Evaluate Last-VLA CoT corruption without future teacher leakage.")
@@ -21,6 +28,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--chunk-cache-root", type=Path, required=True)
     parser.add_argument("--chunk-name-pattern", default="navtest_full_chunk_*")
     parser.add_argument("--metric-cache-dir", type=Path, default=None)
+    parser.add_argument("--score-mode", choices=("pdm", "proxy"), default="pdm")
+    parser.add_argument("--allow-proxy-scoring", action="store_true")
     parser.add_argument("--max-samples", type=int, default=None)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="fp32")
@@ -62,30 +71,18 @@ def install_hooks(planner, args: argparse.Namespace):
     if args.drop_vlm_summary:
         planner.last_vla_cot.config.vlm_summary_tokens = 0
 
-    if not any((args.zero_all_cot, args.zero_geometry_cot, args.zero_dynamic_cot, args.zero_ego_cot, args.zero_action_refine_cot, args.zero_coarse_prior)):
-        return None
+    return None
 
-    original = planner.last_vla_cot.forward
 
-    def wrapped(*forward_args, **forward_kwargs):
-        out = original(*forward_args, **forward_kwargs)
-        if args.zero_all_cot:
-            out.cot_tokens.zero_()
-            out.planner_context_tokens[:, : out.cot_tokens.shape[1]].zero_()
-        for flag, key in (
-            (args.zero_geometry_cot, "geometry"),
-            (args.zero_dynamic_cot, "dynamic"),
-            (args.zero_ego_cot, "ego"),
-            (args.zero_action_refine_cot, "action_refine"),
-        ):
-            if flag and key in out.cot_tokens_by_step:
-                out.cot_tokens_by_step[key].zero_()
-        if args.zero_coarse_prior:
-            out.coarse_traj_norm.zero_()
-        return out
-
-    planner.last_vla_cot.forward = wrapped
-    return original
+def add_corruption_flags(data: Dict[str, Any], args: argparse.Namespace) -> Dict[str, Any]:
+    data = dict(data)
+    data["last_vla_corrupt_zero_all_cot"] = bool(args.zero_all_cot)
+    data["last_vla_corrupt_geometry_cot"] = bool(args.zero_geometry_cot)
+    data["last_vla_corrupt_dynamic_cot"] = bool(args.zero_dynamic_cot)
+    data["last_vla_corrupt_ego_cot"] = bool(args.zero_ego_cot)
+    data["last_vla_corrupt_action_refine_cot"] = bool(args.zero_action_refine_cot)
+    data["last_vla_zero_coarse_prior"] = bool(args.zero_coarse_prior)
+    return data
 
 
 def _strip_train_only(action_input: Dict[str, Any]) -> Dict[str, Any]:
@@ -93,11 +90,41 @@ def _strip_train_only(action_input: Dict[str, Any]) -> Dict[str, Any]:
     return {key: value for key, value in action_input.items() if not any(token in key for token in blocked)}
 
 
+def build_metrics_summary(
+    *,
+    args: argparse.Namespace,
+    planner: Any,
+    scorer: TrajectoryScorer,
+    score_results: List[Dict[str, Any]],
+    l1_values: List[float],
+    num_rows: int,
+) -> Dict[str, Any]:
+    averaged = average_score_dicts(score_results)
+    return {
+        "score_mode": args.score_mode,
+        "pdm_scoring_active": scorer.pdm_scoring_active,
+        "proxy_scoring_active": scorer.proxy_scoring_active,
+        "corruption_mode": corruption_mode(args),
+        "target_teacher_tokens_disabled_in_eval": True,
+        "cot_bottleneck_active": bool(planner.config.last_vla_cot_bottleneck_mode),
+        "raw_vlm_context_used": bool(planner.config.last_vla_raw_vlm_context_to_dit and not planner.config.last_vla_cot_bottleneck_mode),
+        **{key: averaged.get(key) if args.score_mode == "pdm" else None for key in PDM_COMPONENT_KEYS},
+        "trajectory_l1": averaged.get("trajectory_l1"),
+        "mean_trajectory_l1": sum(l1_values) / len(l1_values) if l1_values else None,
+        "proxy_score_mean": averaged.get("proxy_score") if args.score_mode == "proxy" else None,
+        "num_samples": int(num_rows),
+    }
+
+
 def main() -> int:
     from scripts import eval_recogdrive_expert_pdm as base
     from navsim.agents.recogdrive.expert_cache import load_sample
 
     args = parse_args()
+    if args.score_mode == "pdm" and args.metric_cache_dir is None:
+        raise ValueError("--score-mode pdm requires --metric-cache-dir.")
+    if args.score_mode == "proxy" and not args.allow_proxy_scoring:
+        raise ValueError("--score-mode proxy requires --allow-proxy-scoring; proxy is smoke/debug only.")
     cfg = base.load_yaml(args.config)
     planner = base.build_planner(cfg)
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -108,12 +135,15 @@ def main() -> int:
     base.load_checkpoint(planner, args.checkpoint)
     planner.eval()
     install_hooks(planner, args)
+    scorer = TrajectoryScorer(args.score_mode, args.metric_cache_dir)
     rows: List[Dict[str, Any]] = []
     l1_values: List[float] = []
+    score_results: List[Dict[str, Any]] = []
     for chunk_dir, sample_path, record in base.sample_paths(base.chunk_dirs(args), args.max_samples):
         sample = load_sample(sample_path)
         vl_features, action_input = base.make_batch(sample, planner, device, dtype)
-        action_input = type(action_input)(data=_strip_train_only(dict(action_input)))
+        action_data = add_corruption_flags(_strip_train_only(dict(action_input)), args)
+        action_input = type(action_input)(data=action_data)
         with torch.no_grad():
             output = planner.get_action(vl_features, action_input, deterministic=args.deterministic)
         pred = output["pred_traj"].detach().float().cpu().squeeze(0)
@@ -121,29 +151,36 @@ def main() -> int:
         l1 = float((pred - gt.float()).abs().mean().item()) if isinstance(gt, torch.Tensor) else None
         if l1 is not None:
             l1_values.append(l1)
+        sample_token = str(sample.get("sample_token") or record.get("sample_token") or sample_path.stem)
+        score = scorer.score(sample, sample_token, pred)
+        score_results.append(score)
+        components = {key: score.get(key) for key in PDM_COMPONENT_KEYS}
         rows.append(
             {
-                "sample_token": str(sample.get("sample_token") or record.get("sample_token") or sample_path.stem),
+                "sample_token": sample_token,
                 "chunk": chunk_dir.name,
+                "score_mode": args.score_mode,
                 "corruption_mode": corruption_mode(args),
                 "target_teacher_tokens_disabled_in_eval": True,
                 "cot_bottleneck_active": bool(planner.config.last_vla_cot_bottleneck_mode),
                 "raw_vlm_context_used": bool(planner.config.last_vla_raw_vlm_context_to_dit and not planner.config.last_vla_cot_bottleneck_mode),
                 "trajectory_l1": l1,
+                "proxy_score": score.get("proxy_score") if args.score_mode == "proxy" else None,
+                **components,
             }
         )
-    summary = {
-        "corruption_mode": corruption_mode(args),
-        "target_teacher_tokens_disabled_in_eval": True,
-        "cot_bottleneck_active": bool(planner.config.last_vla_cot_bottleneck_mode),
-        "raw_vlm_context_used": bool(planner.config.last_vla_raw_vlm_context_to_dit and not planner.config.last_vla_cot_bottleneck_mode),
-        "mean_trajectory_l1": sum(l1_values) / len(l1_values) if l1_values else None,
-        "num_samples": len(rows),
-    }
+    summary = build_metrics_summary(
+        args=args,
+        planner=planner,
+        scorer=scorer,
+        score_results=score_results,
+        l1_values=l1_values,
+        num_rows=len(rows),
+    )
     args.output_dir.mkdir(parents=True, exist_ok=True)
-    (args.output_dir / "rows.json").write_text(json.dumps(rows, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    (args.output_dir / "metrics.json").write_text(json.dumps(summary, indent=2, sort_keys=True) + "\n", encoding="utf-8")
-    print(json.dumps(summary, indent=2, sort_keys=True))
+    (args.output_dir / "rows.json").write_text(json.dumps(rows, indent=2, sort_keys=True, default=json_default) + "\n", encoding="utf-8")
+    (args.output_dir / "metrics.json").write_text(json.dumps(summary, indent=2, sort_keys=True, default=json_default) + "\n", encoding="utf-8")
+    print(json.dumps(summary, indent=2, sort_keys=True, default=json_default))
     return 0
 
 

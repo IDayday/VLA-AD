@@ -16,6 +16,7 @@ EXPERT_GEOMETRY_CONTEXT_KEYS = (
     "vggt_depth_tokens",
     "vggt_pointmap_tokens",
     "vggt_camera_tokens",
+    "vggt_geometry_mode_code",
 )
 EXPERT_TARGET_KEYS = (
     "jepa_target_tokens",
@@ -167,6 +168,7 @@ class DummyExpertBackend:
             )
             features["vggt_context_tokens"] = vggt_tokens
             features["vggt_geometry_tokens"] = vggt_tokens
+            features["vggt_geometry_mode_code"] = torch.tensor(1, device=device, dtype=torch.int64)
             if include_targets:
                 features["vggt_target_tokens"] = vggt_tokens + self._tokens(
                     (batch_size, self.num_vggt_tokens, self.vggt_dim),

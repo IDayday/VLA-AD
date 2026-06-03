@@ -88,7 +88,8 @@ class LastVLAOutput:
     diagnostics: Dict[str, torch.Tensor]
 
 
-GEOMETRY_MODE_TO_CODE = {"no_geometry": 0, "patch_fallback": 1, "full_geometry": 2}
+GEOMETRY_MODE_TO_CODE = {"missing": -1, "no_geometry": 0, "patch_fallback": 1, "full_geometry": 2}
+GEOMETRY_CODE_TO_MODE = {-1: "missing", 0: "no_geometry", 1: "patch_fallback", 2: "full_geometry"}
 CONTEXT_MODE_TO_CODE = {"cot_bottleneck": 1, "cot_plus_raw_vlm": 2}
 TARGET_KEYS = (
     "jepa_target_tokens",
@@ -169,6 +170,13 @@ def safe_get(action_input: Optional[Dict[str, Any]], key: str, default: Any = No
     if key in action_input:
         return action_input[key]
     return getattr(action_input, key, default)
+
+
+def _bool_flag(action_input: Optional[Dict[str, Any]], key: str) -> bool:
+    value = safe_get(action_input, key, False)
+    if isinstance(value, torch.Tensor):
+        return bool(value.detach().float().max().item() > 0.5)
+    return bool(value)
 
 
 def _num_heads(dim: int) -> int:
@@ -324,6 +332,22 @@ class GeometryTeacherHead(nn.Module):
             nn.Linear(config.hidden_dim, config.geometry_teacher_dim),
         )
 
+    def _mode_from_action_input(self, action_input: Optional[Dict[str, Any]]) -> str:
+        raw_code = safe_get(action_input, "vggt_geometry_mode_code")
+        if isinstance(raw_code, torch.Tensor):
+            codes = raw_code.detach().cpu().view(-1).long().tolist()
+            if codes and all(code == GEOMETRY_MODE_TO_CODE["full_geometry"] for code in codes):
+                return "full_geometry"
+            if any(code == GEOMETRY_MODE_TO_CODE["patch_fallback"] for code in codes):
+                return "patch_fallback"
+            if any(code == GEOMETRY_MODE_TO_CODE["no_geometry"] for code in codes):
+                return "no_geometry"
+            return "missing"
+        raw = safe_get(action_input, "vggt_geometry_mode")
+        if isinstance(raw, str):
+            return raw if raw in GEOMETRY_MODE_TO_CODE else "missing"
+        return "missing"
+
     def _target(
         self,
         action_input: Optional[Dict[str, Any]],
@@ -333,14 +357,35 @@ class GeometryTeacherHead(nn.Module):
         allow_target_tokens: bool,
     ) -> Tuple[Optional[torch.Tensor], str]:
         batch_size = ref.shape[0]
+        explicit_mode = self._mode_from_action_input(action_input)
         full_keys = ["vggt_geometry_tokens", "vggt_depth_tokens", "vggt_pointmap_tokens", "vggt_camera_tokens"]
         if training and allow_target_tokens:
             full_keys.append("vggt_geometry_target_tokens")
         for key in full_keys:
             tokens = safe_get(action_input, key)
             if isinstance(tokens, torch.Tensor):
-                tokens = _validate_tokens(key, tokens.to(device=ref.device, dtype=ref.dtype), batch_size=batch_size)
-                return match_last_dim(tokens, self.config.geometry_teacher_dim), "full_geometry"
+                if explicit_mode == "full_geometry":
+                    tokens = _validate_tokens(key, tokens.to(device=ref.device, dtype=ref.dtype), batch_size=batch_size)
+                    return match_last_dim(tokens, self.config.geometry_teacher_dim), "full_geometry"
+                if explicit_mode == "patch_fallback":
+                    if self.config.allow_patch_geometry_fallback:
+                        tokens = _validate_tokens(key, tokens.to(device=ref.device, dtype=ref.dtype), batch_size=batch_size)
+                        return match_last_dim(tokens, self.config.geometry_teacher_dim), "patch_fallback"
+                    raise KeyError("VGGT geometry tokens are marked patch_fallback, but patch fallback is disabled.")
+                if explicit_mode == "no_geometry":
+                    if self.config.require_full_geometry:
+                        raise KeyError("Full geometry is required, but vggt_geometry_mode is no_geometry.")
+                    return None, "no_geometry"
+                if self.config.require_full_geometry:
+                    raise KeyError("Full geometry is required, but vggt_geometry_mode is not full_geometry.")
+                if self.config.allow_patch_geometry_fallback:
+                    warnings.warn(
+                        f"{key} is present without explicit full_geometry mode; treating it as patch_fallback.",
+                        RuntimeWarning,
+                    )
+                    tokens = _validate_tokens(key, tokens.to(device=ref.device, dtype=ref.dtype), batch_size=batch_size)
+                    return match_last_dim(tokens, self.config.geometry_teacher_dim), "patch_fallback"
+                return None, "missing"
         fallback = safe_get(action_input, "vggt_context_tokens")
         if isinstance(fallback, torch.Tensor) and self.config.allow_patch_geometry_fallback:
             fallback = _validate_tokens("vggt_context_tokens", fallback.to(device=ref.device, dtype=ref.dtype), batch_size=batch_size)
@@ -596,9 +641,22 @@ class LastVLACoTTransformer(nn.Module):
         return value
 
     def _geometry_memory(self, action_input: Optional[Dict[str, Any]], ref: torch.Tensor) -> Optional[torch.Tensor]:
+        mode = self.geometry_head._mode_from_action_input(action_input)
         for key in ("vggt_geometry_tokens", "vggt_depth_tokens", "vggt_pointmap_tokens", "vggt_camera_tokens"):
             value = safe_get(action_input, key)
             if isinstance(value, torch.Tensor):
+                if mode == "full_geometry":
+                    value = _validate_tokens(key, match_last_dim(value.to(ref), self.config.vggt_dim), batch_size=ref.shape[0], dim=self.config.vggt_dim)
+                    return self.vggt_context_proj(value)
+                if mode == "patch_fallback" and self.config.allow_patch_geometry_fallback:
+                    value = _validate_tokens(key, match_last_dim(value.to(ref), self.config.vggt_dim), batch_size=ref.shape[0], dim=self.config.vggt_dim)
+                    return self.vggt_context_proj(value)
+                if mode == "no_geometry":
+                    return None
+                if self.config.require_full_geometry:
+                    raise KeyError("Full geometry memory is required, but vggt_geometry_mode is not full_geometry.")
+                if not self.config.allow_patch_geometry_fallback:
+                    return None
                 value = _validate_tokens(key, match_last_dim(value.to(ref), self.config.vggt_dim), batch_size=ref.shape[0], dim=self.config.vggt_dim)
                 return self.vggt_context_proj(value)
         value = self._context_tokens(action_input, "vggt_context_tokens", self.config.vggt_dim, ref)
@@ -650,10 +708,18 @@ class LastVLACoTTransformer(nn.Module):
         t_embed = None
         if diffusion_timestep is not None:
             t_embed = sinusoidal_timestep_embedding(diffusion_timestep, self.config.planner_dim).to(vlm_tokens)
+        corrupt_zero_all = _bool_flag(action_input, "last_vla_corrupt_zero_all_cot")
+        corrupt_geometry = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_geometry_cot")
+        corrupt_dynamic = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_dynamic_cot")
+        corrupt_ego = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_ego_cot")
+        corrupt_action_refine = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_action_refine_cot")
+        corrupt_coarse_prior = corrupt_zero_all or _bool_flag(action_input, "last_vla_zero_coarse_prior")
 
         geometry_memory = self._geometry_memory(action_input, vlm_tokens)
         geometry_memory_for_step = torch.cat([vlm_summary, geometry_memory], dim=1) if geometry_memory is not None else vlm_summary
         cot_geometry = self.geometry_step(cot, geometry_memory_for_step, timestep_embedding=t_embed) if self.config.use_geometry_step else cot
+        if corrupt_geometry:
+            cot_geometry = torch.zeros_like(cot_geometry)
         predicted_geometry, geometry_target, geometry_loss, geometry_diag = self.geometry_head(
             cot_geometry,
             action_input,
@@ -671,6 +737,8 @@ class LastVLACoTTransformer(nn.Module):
             dynamic_memory.append(self.geometry_pred_proj(predicted_geometry.to(vlm_tokens)))
         action_tokens = self.action_encoder(coarse_0, noisy_action_norm, t_embed, reference=vlm_tokens)
         cot_dynamic = self.dynamic_step(cot_geometry, torch.cat(dynamic_memory, dim=1), action_tokens=action_tokens, timestep_embedding=t_embed) if self.config.use_dynamic_step else cot_geometry
+        if corrupt_dynamic:
+            cot_dynamic = torch.zeros_like(cot_dynamic)
         jepa_target = safe_get(action_input, "jepa_target_tokens") if training and allow_target_tokens else None
         predicted_future_jepa, dynamic_target, dynamic_loss = self.dynamic_head(
             cot_dynamic,
@@ -686,17 +754,26 @@ class LastVLACoTTransformer(nn.Module):
         ego_memory = torch.cat([vlm_summary, state_token, cot_dynamic], dim=1)
         ego_action_tokens = self.action_encoder(coarse_0, None, None, reference=vlm_tokens)
         cot_ego = self.ego_step(cot_dynamic, ego_memory, action_tokens=ego_action_tokens, timestep_embedding=t_embed) if self.config.use_ego_step else cot_dynamic
+        if corrupt_ego:
+            cot_ego = torch.zeros_like(cot_ego)
         coarse_traj_norm, ego_tokens, coarse_losses = self.coarse_head(cot_ego, ego_status, command, history, target_action_norm)
+        if corrupt_coarse_prior:
+            coarse_traj_norm = torch.zeros_like(coarse_traj_norm)
+            ego_tokens = torch.zeros_like(ego_tokens)
         cot_steps["ego"] = cot_ego
 
         refine_memory = torch.cat([vlm_summary, cot_geometry, cot_dynamic, ego_tokens], dim=1)
         refine_action_tokens = self.action_encoder(coarse_traj_norm, noisy_action_norm, t_embed, reference=vlm_tokens)
         cot_final = self.action_refine_step(cot_ego, refine_memory, action_tokens=refine_action_tokens, timestep_embedding=t_embed) if self.config.use_action_refine_step else cot_ego
+        if corrupt_action_refine:
+            cot_final = torch.zeros_like(cot_final)
         cot_steps["action_refine"] = cot_final
 
         if self.config.use_cot_risk_head:
             risk_tokens, risk_logits, risk_loss = self.risk_head(cot_final, coarse_traj_norm, action_input)
             cot_final = torch.cat([cot_final, risk_tokens], dim=1)
+            if corrupt_zero_all:
+                cot_final = torch.zeros_like(cot_final)
         else:
             risk_logits = None
             risk_loss = cot_final.new_zeros(())
@@ -759,6 +836,9 @@ class LastVLACoTTransformer(nn.Module):
             "cot_bottleneck_active": cot_final.new_tensor(float(self.config.cot_bottleneck_mode)),
             "teacher_traj_used_ratio": cot_final.new_zeros(()),
             "dynamic_teacher_missing": diagnostics_dynamic_missing,
+            "geometry_teacher_missing": cot_final.new_tensor(float(geometry_target is None)),
+            "corruption_zero_all_cot": cot_final.new_tensor(float(corrupt_zero_all)),
+            "corruption_zero_coarse_prior": cot_final.new_tensor(float(corrupt_coarse_prior)),
         }
         finite_or_raise("planner_context_tokens", planner_context)
         return LastVLAOutput(

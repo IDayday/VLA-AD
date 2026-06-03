@@ -1150,6 +1150,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     "Last-VLA dynamic teacher loss has positive weight but action_input is missing "
                     "jepa_target_tokens. Disable the loss or provide train-only future JEPA targets."
                 )
+            if (
+                training
+                and allow_targets
+                and self.config.last_vla_geometry_loss_weight > 0.0
+                and float(last_vla_output.diagnostics.get("geometry_teacher_missing", zero).detach().float().item()) > 0.0
+            ):
+                raise KeyError(
+                    "Last-VLA geometry teacher loss has positive weight but no geometry target is available. "
+                    "Provide explicit full_geometry cache, or enable patch fallback with vggt_context_tokens."
+                )
             loss_map = {
                 "geometry_loss": "last_vla_geometry_loss",
                 "dynamic_loss": "last_vla_dynamic_loss",
@@ -1293,6 +1303,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "vggt_context_tokens",
             "vggt_tokens",
             "vggt_geometry_tokens",
+            "vggt_geometry_mode_code",
             "vggt_depth_tokens",
             "vggt_pointmap_tokens",
             "vggt_camera_tokens",
@@ -1307,6 +1318,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "drivable_risk_labels",
             "ttc_risk_labels",
             "comfort_risk_labels",
+            "last_vla_corrupt_zero_all_cot",
+            "last_vla_corrupt_geometry_cot",
+            "last_vla_corrupt_dynamic_cot",
+            "last_vla_corrupt_ego_cot",
+            "last_vla_corrupt_action_refine_cot",
+            "last_vla_zero_coarse_prior",
         ):
             if key in action_input and isinstance(action_input[key], torch.Tensor):
                 data[key] = action_input[key].repeat_interleave(repeat, 0)

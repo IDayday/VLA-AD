@@ -81,6 +81,16 @@ Corruption eval should show normal minus zero-all-CoT dependency:
 
 - at least 0.01 on full eval, or 0.008 on a 1k subset.
 
+## Readiness Fixes Before SOTA Training
+
+Production Last-VLA v2 training must not use proxy diagnostics as proof of progress.
+
+1. Best-of-K oracle and teacher trajectory cache generation use real NAVSIM metric-cache PDM when `--score-mode=pdm`. Missing metric cache is a hard failure.
+2. Proxy scoring is only for smoke/debug via `--score-mode=proxy`; proxy outputs keep PDMS and submetrics null and cannot support SOTA claims.
+3. CoT corruption eval reports PDMS and NAVSIM submetrics in PDM mode, not only trajectory L1. Proxy corruption mode is opt-in and clearly labeled.
+4. Geometry mode is explicit: `full_geometry`, `patch_fallback`, `no_geometry`, or `missing`. Patch fallback is never reported as full geometry.
+5. Teacher trajectory SFT should not run in production until best-of-K oracle PDM gain is positive and meaningful, teacher trajectory coverage is at least 99%, and geometry mode coverage has been audited.
+
 ## Baseline
 
 All training/eval reports must use A0-official-aligned as the primary comparison:

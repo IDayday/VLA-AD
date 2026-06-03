@@ -509,6 +509,8 @@ def process_records_with_models(
             payload["vggt_context_tokens"] = geometry_payload["vggt_context_tokens"]
             payload["vggt_geometry_tokens"] = geometry_payload["vggt_geometry_tokens"]
             payload["vggt_geometry_mode"] = geometry_payload["vggt_geometry_mode"]
+            if "vggt_geometry_mode_code" in geometry_payload:
+                payload["vggt_geometry_mode_code"] = geometry_payload["vggt_geometry_mode_code"]
             payload["vggt_target_tokens"] = vggt.extract_target(current)
             payload["vggt_geometry_target_tokens"] = payload["vggt_geometry_tokens"]
         if args.build_jepa or args.build_vggt:

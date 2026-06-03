@@ -96,7 +96,21 @@ def main() -> int:
                 sample = load_sample(src_path)
                 teacher = load_sample(teacher_index[token])
                 updated = dict(sample)
-                for key in ("teacher_trajectory", "teacher_trajectory_norm", "teacher_score", "gt_score", "oracle_best_of_k_score", "candidate_count"):
+                for key in (
+                    "teacher_trajectory",
+                    "teacher_trajectory_norm",
+                    "teacher_score",
+                    "gt_score",
+                    "oracle_best_of_k_score",
+                    "candidate_scores",
+                    "candidate_count",
+                    "teacher_source",
+                    "score_mode",
+                    "pdm_components",
+                    "gt_pdm_components",
+                    "candidate_pdm_components",
+                    "candidate_trajectories",
+                ):
                     if key in teacher:
                         updated[key] = teacher[key]
                 atomic_torch_save(updated, dst_path)

@@ -37,6 +37,7 @@ CONFIG_NAME = "default_training"
 
 
 KEY_CHECKPOINT_STEPS = (50000, 60000, 80000, 100000, 120000, 140000, 160000)
+GEOMETRY_MODE_TO_CODE = {"missing": -1, "no_geometry": 0, "patch_fallback": 1, "full_geometry": 2}
 
 
 def _dtype_name(dtype: torch.dtype) -> str:
@@ -154,6 +155,7 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
     REQUIRED_TARGET_KEYS = ("trajectory",)
     EXPERT_CONTEXT_KEYS = ("jepa_context_tokens", "vggt_context_tokens")
     EXPERT_GEOMETRY_KEYS = ("vggt_geometry_tokens", "vggt_depth_tokens", "vggt_pointmap_tokens", "vggt_camera_tokens")
+    EXPERT_GEOMETRY_MODE_KEYS = ("vggt_geometry_mode_code",)
     EXPERT_TARGET_KEYS = (
         "jepa_target_tokens",
         "vggt_target_tokens",
@@ -193,6 +195,9 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         use_last_vla: bool = False,
         last_vla_stage: str = "disabled",
         last_vla_teacher_traj_mode: str = "none",
+        last_vla_require_full_geometry: bool = False,
+        last_vla_allow_patch_geometry_fallback: bool = False,
+        last_vla_geometry_loss_weight: float = 0.0,
     ) -> None:
         super().__init__()
         self.cache_path = Path(cache_path)
@@ -213,6 +218,9 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         self.use_last_vla = bool(use_last_vla)
         self.last_vla_stage = str(last_vla_stage)
         self.last_vla_teacher_traj_mode = str(last_vla_teacher_traj_mode)
+        self.last_vla_require_full_geometry = bool(last_vla_require_full_geometry)
+        self.last_vla_allow_patch_geometry_fallback = bool(last_vla_allow_patch_geometry_fallback)
+        self.last_vla_geometry_loss_weight = float(last_vla_geometry_loss_weight)
         if self.include_expert_targets and not self.include_expert_features:
             raise ValueError("include_expert_targets=True requires include_expert_features=True.")
         self.log_name_filter: Optional[Set[str]] = set(str(item) for item in log_names) if log_names is not None else None
@@ -292,6 +300,8 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             keys.append("vggt_context_tokens")
         if self.use_last_rd and self.require_vggt_geometry:
             keys.append("vggt_geometry_tokens")
+        if self.use_last_vla and self.last_vla_require_full_geometry:
+            keys.extend(["vggt_geometry_tokens", "vggt_geometry_mode_code"])
         return keys
 
     def _required_expert_target_keys(self) -> List[str]:
@@ -346,6 +356,7 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             candidates.extend(self.RISK_KEYS)
         if self.use_last_vla:
             candidates.extend(self.LAST_VLA_TEACHER_KEYS)
+            candidates.extend(self.EXPERT_GEOMETRY_MODE_KEYS)
             candidates.extend(self.RISK_KEYS)
         required = set(required_keys)
         return [key for key in candidates if key in sample and key not in required and key != "teacher_trajectory_norm_or_teacher_trajectory"]
@@ -437,6 +448,9 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             "use_last_vla": self.use_last_vla,
             "last_vla_stage": self.last_vla_stage,
             "last_vla_teacher_traj_mode": self.last_vla_teacher_traj_mode,
+            "last_vla_require_full_geometry": self.last_vla_require_full_geometry,
+            "last_vla_allow_patch_geometry_fallback": self.last_vla_allow_patch_geometry_fallback,
+            "last_vla_geometry_loss_weight": self.last_vla_geometry_loss_weight,
             "require_vggt_geometry": self.require_vggt_geometry,
             "allow_patch_geometry_fallback": self.allow_patch_geometry_fallback,
             "future_jepa_loss_weight": self.future_jepa_loss_weight,
@@ -480,6 +494,9 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
     def __getitem__(self, idx: int) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], str]:
         _, sample_path, record = self.records[idx]
         sample = load_sample(sample_path)
+        mode_code = self._geometry_mode_code_from_sample(sample, sample_path)
+        if mode_code is not None:
+            sample["vggt_geometry_mode_code"] = mode_code
         required_values: Dict[str, torch.Tensor] = {}
         for key in self.REQUIRED_FEATURE_KEYS + self.REQUIRED_TARGET_KEYS:
             value = self._require_tensor(sample, key, sample_path)
@@ -508,10 +525,52 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             "status_feature": required_values["status_feature"].float(),
         }
         for key in [*expert_keys, *optional_expert_keys]:
-            features[key] = self._require_tensor(sample, key, sample_path).float()
+            if key == "teacher_trajectory_norm_or_teacher_trajectory":
+                for teacher_key in ("teacher_trajectory_norm", "teacher_trajectory"):
+                    if teacher_key in sample:
+                        features[teacher_key] = self._require_tensor(sample, teacher_key, sample_path).float()
+                continue
+            value = self._require_tensor(sample, key, sample_path)
+            features[key] = value.long() if key == "vggt_geometry_mode_code" else value.float()
         targets = {"trajectory": required_values["trajectory"].float()}
         token = str(sample.get("sample_token") or record.get("sample_token") or sample_path.stem)
         return features, targets, token
+
+    def _geometry_mode_code_from_sample(self, sample: Dict[str, Any], sample_path: Path) -> Optional[torch.Tensor]:
+        if not self.use_last_vla:
+            return None
+
+        raw_code = sample.get("vggt_geometry_mode_code")
+        if isinstance(raw_code, torch.Tensor):
+            if raw_code.numel() != 1:
+                raise ValueError(f"Chunk sample {sample_path} key 'vggt_geometry_mode_code' must be scalar or [1].")
+            code = int(raw_code.detach().cpu().view(-1)[0].item())
+            return torch.tensor(code, dtype=torch.int64)
+        if raw_code is not None:
+            return torch.tensor(int(raw_code), dtype=torch.int64)
+
+        raw_mode = sample.get("vggt_geometry_mode")
+        if isinstance(raw_mode, bytes):
+            raw_mode = raw_mode.decode("utf-8", errors="replace")
+        if isinstance(raw_mode, str):
+            if raw_mode not in GEOMETRY_MODE_TO_CODE:
+                raise ValueError(f"Chunk sample {sample_path} has unsupported vggt_geometry_mode={raw_mode!r}.")
+            return torch.tensor(GEOMETRY_MODE_TO_CODE[raw_mode], dtype=torch.int64)
+
+        has_geometry_tokens = any(key in sample for key in self.EXPERT_GEOMETRY_KEYS)
+        has_context_tokens = "vggt_context_tokens" in sample
+        if has_geometry_tokens and self.last_vla_require_full_geometry:
+            raise KeyError(
+                f"Chunk sample {sample_path} has geometry tokens but no explicit full_geometry mode; "
+                "strict Last-VLA geometry requires vggt_geometry_mode/full_geometry or vggt_geometry_mode_code=2."
+            )
+        if has_geometry_tokens:
+            return torch.tensor(GEOMETRY_MODE_TO_CODE["patch_fallback"], dtype=torch.int64)
+        if has_context_tokens and self.last_vla_allow_patch_geometry_fallback:
+            return torch.tensor(GEOMETRY_MODE_TO_CODE["patch_fallback"], dtype=torch.int64)
+        if self.use_last_vla and self.last_vla_geometry_loss_weight > 0.0:
+            return torch.tensor(GEOMETRY_MODE_TO_CODE["missing"], dtype=torch.int64)
+        return None
 
 
 def write_run_reports(
@@ -751,6 +810,9 @@ def main(cfg: DictConfig) -> None:
                 use_last_vla=use_last_vla,
                 last_vla_stage=str(cfg.agent.get("last_vla_stage", "disabled")),
                 last_vla_teacher_traj_mode=str(cfg.agent.get("last_vla_teacher_traj_mode", "none")),
+                last_vla_require_full_geometry=bool(cfg.agent.get("last_vla_require_full_geometry", False)),
+                last_vla_allow_patch_geometry_fallback=bool(cfg.agent.get("last_vla_allow_patch_geometry_fallback", False)),
+                last_vla_geometry_loss_weight=float(cfg.agent.get("last_vla_geometry_loss_weight", 0.0)),
             )
             val_data = ChunkCacheDataset(
                 cfg.cache_path,
@@ -772,6 +834,9 @@ def main(cfg: DictConfig) -> None:
                 use_last_vla=use_last_vla,
                 last_vla_stage=str(cfg.agent.get("last_vla_stage", "disabled")),
                 last_vla_teacher_traj_mode=str(cfg.agent.get("last_vla_teacher_traj_mode", "none")),
+                last_vla_require_full_geometry=bool(cfg.agent.get("last_vla_require_full_geometry", False)),
+                last_vla_allow_patch_geometry_fallback=bool(cfg.agent.get("last_vla_allow_patch_geometry_fallback", False)),
+                last_vla_geometry_loss_weight=float(cfg.agent.get("last_vla_geometry_loss_weight", 0.0)),
             )
             train_tokens = set(train_data.sample_tokens())
             val_tokens = set(val_data.sample_tokens())
