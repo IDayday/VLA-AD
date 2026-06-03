@@ -47,6 +47,8 @@ def build_evidence_report(
         "",
         "Oracle-router results are analysis-only. Navtest/test labels must not be used for train-time supervision.",
         "",
+        "PDM CSVs may be missing because Stage 0-6 intentionally built analysis/training harnesses and ran only safe dry-runs/smoke tests. Candidate search looks only for already-created PDM result CSVs in safe experiment roots; it does not create them. Creating PDM CSVs requires running NAVSIM PDM evaluation with real checkpoints, metric cache, logs, and sensor blobs. If no small-scale eval has been executed and no CSV paths were explicitly registered, no valid PDM CSVs exist to discover.",
+        "",
         "## 1. Current Branch / Commit",
         "",
         f"- branch: `{branch}`",

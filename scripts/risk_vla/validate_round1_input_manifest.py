@@ -15,7 +15,7 @@ from scripts.risk_vla.round1_manifest import markdown_report, validate_manifest
 
 def main() -> int:
     parser = argparse.ArgumentParser(description="Validate an explicit RISK-VLA Round 1 input manifest.")
-    parser.add_argument("--manifest-yaml", type=Path, required=True)
+    parser.add_argument("--manifest-yaml", "--input-yaml", dest="manifest_yaml", type=Path, required=True)
     parser.add_argument("--output-json", type=Path, required=True)
     parser.add_argument("--output-md", type=Path, required=True)
     args = parser.parse_args()

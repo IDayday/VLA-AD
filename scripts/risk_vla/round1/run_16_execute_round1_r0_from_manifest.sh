@@ -158,10 +158,15 @@ LABELS_JSONL="${LABEL_DIR}/risk_labels.jsonl" \
 bash scripts/risk_vla/round1/run_12_aggregate_r0_diagnostics.sh
 
 DIAG_DIR="${R0_DIR}/diagnostics_${SPLIT}"
+cp "${DIAG_DIR}/risk_vla_diagnostics.md" "${R0_DIR}/risk_vla_diagnostics.md"
+cp "${DIAG_DIR}/risk_prediction_metrics.csv" "${R0_DIR}/risk_prediction_metrics.csv"
+cp "${DIAG_DIR}/strategy_activation_by_subset.csv" "${R0_DIR}/strategy_activation_by_subset.csv"
+
 python scripts/risk_vla/round1/check_round1_go_no_go.py \
   --risk-metrics-csv "${DIAG_DIR}/risk_prediction_metrics.csv" \
   --strategy-activation-csv "${DIAG_DIR}/strategy_activation_by_subset.csv" \
-  --output-md "${ROUND_DIR}/go_no_go_report.md"
+  --output-md "${R0_DIR}/go_no_go_report.md"
+cp "${R0_DIR}/go_no_go_report.md" "${ROUND_DIR}/go_no_go_report.md"
 
 TRANSITION_CSV=""
 if [[ -n "${A0_CSV}" && -n "${B3_CSV}" ]]; then
