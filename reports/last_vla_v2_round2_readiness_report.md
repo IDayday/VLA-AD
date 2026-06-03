@@ -78,6 +78,8 @@ No performance is claimed before training and full PDM eval.
 - VLM summary keep schedule is implemented without reintroducing full raw VLM tokens in bottleneck mode.
 - Aux loss decay uses `last_vla_aux_decay_epochs` and reports effective weights.
 - VLM-LoRA trainable scope keeps only LoRA and `last_vla_cot` trainable while freezing base backbone/action modules.
+- Line B online VLM launchers pass `NAVSIM_LOG_PATH` and `SENSOR_BLOBS_PATH` through as Hydra overrides:
+  `navsim_log_path=...` and `sensor_blobs_path=...`.
 - LoRA hidden-cache regeneration script preserves teacher keys and supports sharding.
 - Round2 launchers are dry-run by default and require `RUN_TRAIN=1`, `RUN_EVAL=1`, or `RUN_CACHE=1` for expensive execution.
 
@@ -119,6 +121,7 @@ The requested synthetic manifest fixture `tests/fixtures/synthetic_last_vla_cach
 - `pytest -q tests/test_last_vla_*.py tests/test_last_rd_*.py tests/test_expert_*.py tests/test_no_future_leakage.py`: pass, `54 passed, 2 skipped`.
 - `python scripts/eval_last_vla_best_of_k_oracle.py --synthetic-smoke --score-mode proxy --num-candidates 4 --max-samples 4 --output-dir reports/last_vla_v2_oracle_synthetic_smoke`: pass.
 - `python scripts/audit_last_vla_cache_manifest.py --cache-root tests/fixtures/synthetic_last_vla_cache --output reports/last_vla_v2_manifest_synthetic.json || true`: skipped because fixture is absent.
+- `RUN_TRAIN=0 ... scripts/last_vla_v2/round2/serverB_vlm_lora_full_sft.sh`: pass; `commands.log` contains `navsim_log_path=...` and `sensor_blobs_path=...`.
 - `git diff --check`: pass.
 
 ## Exact Commands

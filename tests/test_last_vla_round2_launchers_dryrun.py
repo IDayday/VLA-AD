@@ -44,6 +44,9 @@ def test_round2_launchers_dryrun_do_not_launch_training(tmp_path: Path):
         assert "agent.last_vla_adapter_checkpoint=" in text
         assert "++agent.last_vla_adapter_checkpoint" not in text
         assert "+experiment=last_vla" in text
+    server_b_text = logs[1].read_text(encoding="utf-8")
+    assert "navsim_log_path=" in server_b_text
+    assert "sensor_blobs_path=" in server_b_text
 
 
 def test_vlm_lora_alignment_launcher_dryrun(tmp_path: Path):
@@ -55,3 +58,5 @@ def test_vlm_lora_alignment_launcher_dryrun(tmp_path: Path):
     assert "+experiment=last_vla_vlm_lora_cot_alignment" in text
     assert "agent.cache_hidden_state=false" in text
     assert "agent.expert_cache_dir=" in text
+    assert "navsim_log_path=" in text
+    assert "sensor_blobs_path=" in text

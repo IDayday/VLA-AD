@@ -73,6 +73,10 @@ scripts/last_vla_v2/round2/serverA_frozen_vlm_full_sft.sh
 
 ## Server B: VLM-LoRA
 
+The Server B launchers pass `NAVSIM_LOG_PATH` and `SENSOR_BLOBS_PATH` through to Hydra as
+`navsim_log_path=${NAVSIM_LOG_PATH}` and `sensor_blobs_path=${SENSOR_BLOBS_PATH}`. Check
+`commands.log` before setting `RUN_TRAIN=1`.
+
 Dry-run:
 
 ```bash
