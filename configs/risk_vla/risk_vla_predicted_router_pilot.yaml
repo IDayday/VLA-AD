@@ -1,0 +1,16 @@
+# RISK-VLA predicted-router pilot: actual risk-conditioned strategy modulation.
+# BiT is only the path/terminal intent strategy in the strategy bank, not the core method.
+# Use train/val labels only. Test labels are analysis-only and must not supervise training.
+
+use_risk_vla: true
+risk_vla_num_classes: 6
+risk_vla_router_mode: independent
+risk_vla_use_bit_summary: true
+risk_vla_strategy_token_scale: 0.25
+risk_vla_horizon_residual_scale: 0.25
+risk_vla_risk_loss_weight: 0.02
+risk_vla_focal_loss_weight: 0.0
+risk_vla_strategy_entropy_weight: 0.0
+risk_vla_detach_risk_for_strategy: true
+risk_vla_use_oracle_router: false
+risk_vla_log_diagnostics: true

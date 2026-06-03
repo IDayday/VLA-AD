@@ -207,13 +207,41 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     bit_fallback_terminal_x_delta_threshold: float = 2.0
     bit_use_risk_head: bool = False
     bit_use_risk_tokens: bool = False
+    bit_use_risk_token: bool = False
     bit_risk_loss_weight: float = 0.00
+    bit_risk_bce_loss_weight: float = 0.00
     bit_risk_token_strength: float = 0.05
     bit_risk_hidden_dim: int = 512
     bit_risk_positive_weight_zero: float = 1.0
     bit_risk_positive_weight_dac: float = 2.0
     bit_risk_positive_weight_nc: float = 4.0
     bit_risk_positive_weight_ttc: float = 2.0
+    bit_use_d5_conservative_loss: bool = False
+    bit_safe_kd_loss_weight: float = 0.05
+    bit_safe_kd_points: int = 3
+    bit_safe_kd_x_weight: float = 1.0
+    bit_safe_kd_step_weight: float = 0.5
+    bit_safe_kd_heading_weight: float = 0.2
+    bit_safe_kd_y_weight: float = 0.0
+    bit_safe_kd_apply_on_nc: bool = True
+    bit_safe_kd_apply_on_ttc: bool = True
+    bit_safe_kd_apply_on_soft_safety: bool = True
+    bit_soft_safe_kd_weight_scale: float = 0.25
+    bit_dac_path_preserve_weight: float = 0.02
+    bit_dac_path_preserve_apply_on_dac_fix: bool = True
+
+    use_risk_vla: bool = False
+    risk_vla_num_classes: int = 6
+    risk_vla_router_mode: str = "independent"
+    risk_vla_use_bit_summary: bool = True
+    risk_vla_use_oracle_router: bool = False
+    risk_vla_strategy_token_scale: float = 1.0
+    risk_vla_horizon_residual_scale: float = 1.0
+    risk_vla_risk_loss_weight: float = 0.0
+    risk_vla_focal_loss_weight: float = 0.0
+    risk_vla_strategy_entropy_weight: float = 0.0
+    risk_vla_detach_risk_for_strategy: bool = True
+    risk_vla_log_diagnostics: bool = True
 
     use_last_rd: bool = False
     last_rd_stage: Literal["disabled", "stage1_5", "progressive_sft"] = "disabled"
@@ -334,7 +362,20 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "bit_base_longitudinal_loss_weight",
             "bit_base_lateral_loss_weight",
             "bit_risk_loss_weight",
+            "bit_risk_bce_loss_weight",
             "bit_risk_token_strength",
+            "bit_safe_kd_loss_weight",
+            "bit_safe_kd_x_weight",
+            "bit_safe_kd_step_weight",
+            "bit_safe_kd_heading_weight",
+            "bit_safe_kd_y_weight",
+            "bit_soft_safe_kd_weight_scale",
+            "bit_dac_path_preserve_weight",
+            "risk_vla_strategy_token_scale",
+            "risk_vla_horizon_residual_scale",
+            "risk_vla_risk_loss_weight",
+            "risk_vla_focal_loss_weight",
+            "risk_vla_strategy_entropy_weight",
         ):
             if getattr(config, weight_name) < 0.0:
                 raise ValueError(f"{weight_name} must be non-negative.")
@@ -375,6 +416,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 raise ValueError("bit_fallback_mode must be 'oracle_eval_only', 'rule', or 'learned'.")
             if int(config.bit_base_early_points) <= 0:
                 raise ValueError("bit_base_early_points must be positive.")
+            if int(config.bit_safe_kd_points) <= 0:
+                raise ValueError("bit_safe_kd_points must be positive.")
             if int(config.bit_risk_hidden_dim) <= 0:
                 raise ValueError("bit_risk_hidden_dim must be positive.")
             if not config.bit_use_terminal_head:
@@ -418,7 +461,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     num_anchors=config.bit_num_path_anchors,
                     num_risks=4,
                 )
-                if config.bit_use_risk_tokens:
+                if bool(config.bit_use_risk_tokens or config.bit_use_risk_token):
                     self.bit_risk_token_encoder = RiskTokenEncoder(
                         planner_dim=config.input_embedding_dim,
                         hidden_dim=max(config.input_embedding_dim // 2, 128),
@@ -529,6 +572,31 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 )
             )
 
+        if config.use_risk_vla:
+            if config.risk_vla_router_mode not in {"independent", "learned_softmax"}:
+                raise ValueError("risk_vla_router_mode must be 'independent' or 'learned_softmax'.")
+            from .risk_vla import RiskConditionedStrategyBank, RiskConditionedStrategyRouter, RiskStateEncoder
+
+            self.risk_state_encoder = RiskStateEncoder(
+                planner_dim=config.input_embedding_dim,
+                hidden_dim=max(config.hidden_size // 2, config.input_embedding_dim),
+                num_risk_classes=config.risk_vla_num_classes,
+                action_horizon=config.action_horizon,
+                use_bit_summary=config.risk_vla_use_bit_summary,
+                use_uncertainty_head=True,
+            )
+            self.risk_strategy_router = RiskConditionedStrategyRouter(
+                planner_dim=config.input_embedding_dim,
+                mode=config.risk_vla_router_mode,
+                hidden_dim=max(config.hidden_size // 4, 128),
+            )
+            self.risk_strategy_bank = RiskConditionedStrategyBank(
+                planner_dim=config.input_embedding_dim,
+                action_horizon=config.action_horizon,
+                action_dim=config.action_dim,
+                tokens_per_strategy=2,
+            )
+
         self.reference_a0_policy: Optional[ReCogDriveDiffusionPlanner] = None
         if config.policy_kd_loss_weight > 0.0 and config.policy_kd_mode != "none":
             if not config.reference_a0_checkpoint:
@@ -541,6 +609,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             reference_cfg.use_last_rd = False
             reference_cfg.last_rd_stage = "disabled"
             reference_cfg.use_expert_features = False
+            reference_cfg.use_risk_vla = False
             reference_cfg.policy_kd_loss_weight = 0.0
             reference_cfg.reference_a0_checkpoint = None
             reference_cfg.policy_kd_mode = "none"
@@ -700,6 +769,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "bit_action_gate",
             "bit_risk_head",
             "bit_risk_token_encoder",
+            "risk_state_encoder",
+            "risk_strategy_router",
+            "risk_strategy_bank",
         )
         return any(marker in key for marker in expert_markers)
 
@@ -1180,11 +1252,19 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "bit_base_longitudinal_loss": zero,
             "bit_base_lateral_loss": zero,
             "bit_risk_loss": zero,
+            "bit_risk_bce_loss": zero,
+            "risk_bce_loss": zero,
             "bit_risk_zero_loss": zero,
             "bit_risk_dac_loss": zero,
             "bit_risk_nc_loss": zero,
             "bit_risk_ttc_loss": zero,
             "bit_risk_token_strength": zero,
+            "d5_safe_kd_loss": zero,
+            "d5_dac_path_preserve_loss": zero,
+            "d5_safety_mask_rate": zero,
+            "d5_hard_safety_mask_rate": zero,
+            "d5_soft_safety_mask_rate": zero,
+            "d5_dac_fix_mask_rate": zero,
             "bit_terminal_pred": None,
             "bit_path_anchor_pred": None,
             "bit_risk_logits": None,
@@ -1390,7 +1470,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             )
             risk_prob = torch.sigmoid(risk_logits.float()).to(dtype=context_mean.dtype)
             risk_prob_mean = risk_prob.mean(dim=0).detach()
-            if self.config.bit_use_risk_tokens and hasattr(self, "bit_risk_token_encoder"):
+            if bool(self.config.bit_use_risk_tokens or self.config.bit_use_risk_token) and hasattr(self, "bit_risk_token_encoder"):
                 risk_token = self.bit_risk_token_encoder(risk_logits)
 
         context_gate = self._bit_gate_value("context", context_mean)
@@ -1451,6 +1531,300 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         dit_context.update(bit)
         return dit_context
 
+    def _risk_vla_zero_outputs(self, reference: torch.Tensor) -> Dict[str, torch.Tensor]:
+        zero = reference.new_zeros(())
+        return {
+            "risk_vla_risk_loss": zero,
+            "risk_vla_focal_loss": zero,
+            "risk_vla_strategy_entropy_loss": zero,
+            "risk_vla_total_aux_loss": zero,
+            "risk_vla_prob_low_score": zero,
+            "risk_vla_prob_path_dac": zero,
+            "risk_vla_prob_interaction_nc": zero,
+            "risk_vla_prob_ttc": zero,
+            "risk_vla_prob_progress": zero,
+            "risk_vla_prob_comfort": zero,
+            "risk_vla_weight_base": zero,
+            "risk_vla_weight_path_intent": zero,
+            "risk_vla_weight_interaction": zero,
+            "risk_vla_weight_progress": zero,
+            "risk_vla_weight_comfort": zero,
+            "risk_vla_strategy_entropy": zero,
+        }
+
+    @staticmethod
+    def _action_input_tensor(action_input: Optional[BatchFeature], *keys: str) -> Optional[torch.Tensor]:
+        if action_input is None:
+            return None
+        for key in keys:
+            value = None
+            if isinstance(action_input, dict):
+                value = action_input.get(key)
+            elif hasattr(action_input, key):
+                value = getattr(action_input, key)
+            else:
+                try:
+                    value = action_input[key]
+                except Exception:
+                    value = None
+            if isinstance(value, torch.Tensor):
+                return value
+        return None
+
+    def _risk_vla_inputs(
+        self,
+        action_input: Optional[BatchFeature],
+        reference: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        batch = reference.shape[0]
+        dtype = reference.dtype
+        device = reference.device
+        status = self._action_input_tensor(action_input, "status_feature")
+        if status is None:
+            status = reference.new_zeros(batch, 8)
+        else:
+            status = status.to(device=device, dtype=dtype)
+        if status.ndim != 2 or status.shape[0] != batch:
+            raise ValueError(f"status_feature must have shape [B, 8], got {tuple(status.shape)}.")
+        if status.shape[-1] != 8:
+            raise ValueError(f"status_feature must have last dimension 8, got {tuple(status.shape)}.")
+
+        history = self._action_input_tensor(action_input, "history_trajectory", "his_traj")
+        if history is None:
+            history = reference.new_zeros(batch, 12)
+        else:
+            history = history.to(device=device, dtype=dtype)
+        if history.shape[0] != batch or history.ndim not in {2, 3}:
+            raise ValueError(f"history_trajectory/his_traj must be [B, 12] or [B, 4, 3], got {tuple(history.shape)}.")
+
+        command = self._action_input_tensor(action_input, "high_command_one_hot")
+        if command is None:
+            command = reference.new_zeros(batch, 3)
+        else:
+            command = command.to(device=device, dtype=dtype)
+        if command.ndim != 2 or command.shape[0] != batch:
+            raise ValueError(f"high_command_one_hot must have shape [B, 3], got {tuple(command.shape)}.")
+        if command.shape[-1] != 3:
+            raise ValueError(f"high_command_one_hot must have last dimension 3, got {tuple(command.shape)}.")
+        return status, history, command
+
+    def _risk_vla_extract_labels(
+        self,
+        action_input: Optional[BatchFeature],
+        reference: torch.Tensor,
+    ) -> Optional[torch.Tensor]:
+        if action_input is None:
+            return None
+        labels = self._action_input_tensor(action_input, "risk_labels")
+        if labels is None:
+            generic = self._action_input_tensor(action_input, "generic_risk_labels")
+            drivable = self._action_input_tensor(action_input, "drivable_risk_labels")
+            ttc = self._action_input_tensor(action_input, "ttc_risk_labels")
+            comfort = self._action_input_tensor(action_input, "comfort_risk_labels")
+            if all(tensor is not None for tensor in (generic, drivable, ttc, comfort)):
+                from .risk_vla import mvp_labels_to_extended
+
+                labels = mvp_labels_to_extended(generic, drivable, ttc, comfort)
+        if labels is None:
+            return None
+        labels = labels.to(device=reference.device, dtype=reference.dtype)
+        expected_classes = int(self.config.risk_vla_num_classes)
+        if labels.ndim not in {2, 3}:
+            raise ValueError(f"risk labels must be [B, K] or [B, H, K], got {tuple(labels.shape)}.")
+        if labels.shape[0] != reference.shape[0] or labels.shape[-1] != expected_classes:
+            raise ValueError(
+                f"risk labels must have batch {reference.shape[0]} and {expected_classes} classes, got {tuple(labels.shape)}."
+            )
+        return labels.clamp(0.0, 1.0)
+
+    @staticmethod
+    def _risk_vla_detach_state(risk_state: Any) -> Any:
+        from .risk_vla import RiskState
+
+        return RiskState(
+            risk_logits=risk_state.risk_logits.detach(),
+            risk_probs=risk_state.risk_probs.detach(),
+            risk_embedding=risk_state.risk_embedding.detach(),
+            uncertainty=risk_state.uncertainty.detach() if risk_state.uncertainty is not None else None,
+            diagnostics={key: value.detach() for key, value in risk_state.diagnostics.items()},
+        )
+
+    def _risk_vla_oracle_state(self, risk_state: Any, labels: Optional[torch.Tensor]) -> Any:
+        if labels is None:
+            raise RuntimeError(
+                "risk_vla_use_oracle_router=True requires train/val risk labels in action_input. "
+                "Oracle routing is analysis-only and must not be enabled for label-free inference."
+            )
+        from .risk_vla import RiskState, ensure_scene_level_labels
+
+        probs = ensure_scene_level_labels(labels).to(device=risk_state.risk_probs.device, dtype=risk_state.risk_probs.dtype).clamp(
+            1e-4, 1.0 - 1e-4
+        )
+        logits = torch.logit(probs)
+        diagnostics = dict(risk_state.diagnostics)
+        for idx, name in enumerate(("low_score", "path_dac", "interaction_nc", "ttc", "progress", "comfort")):
+            if idx < probs.shape[-1]:
+                diagnostics[f"risk_vla_oracle_prob_{name}"] = probs[:, idx].detach()
+        return RiskState(
+            risk_logits=logits,
+            risk_probs=probs,
+            risk_embedding=risk_state.risk_embedding,
+            uncertainty=risk_state.uncertainty,
+            diagnostics=diagnostics,
+        )
+
+    def _augment_with_risk_vla_condition(
+        self,
+        dit_context: Dict[str, Any],
+        action_input: Optional[BatchFeature],
+        *,
+        training: bool,
+    ) -> Dict[str, Any]:
+        reference = dit_context["context_tokens"]
+        if not self.config.use_risk_vla:
+            dit_context.update(self._risk_vla_zero_outputs(reference))
+            return dit_context
+
+        from .risk_vla import (
+            RiskState,
+            extract_bit_intents,
+            risk_bce_loss,
+            risk_focal_loss,
+            strategy_entropy_loss,
+        )
+
+        vl_embeds = dit_context["vl_embeds"]
+        status_feature, history_trajectory, high_command_one_hot = self._risk_vla_inputs(action_input, vl_embeds)
+        labels = self._risk_vla_extract_labels(action_input, vl_embeds)
+        bit_terminal, bit_path, bit_diagnostics = extract_bit_intents(
+            action_input,
+            batch_size=vl_embeds.shape[0],
+            action_horizon=int(self.config.action_horizon),
+            action_dim=int(self.config.action_dim),
+            reference=vl_embeds,
+            use_bit_summary=bool(self.config.risk_vla_use_bit_summary),
+            strict=bool(training),
+        )
+        risk_state = self.risk_state_encoder(
+            vlm_tokens=vl_embeds,
+            status_feature=status_feature,
+            history_trajectory=history_trajectory,
+            high_command_one_hot=high_command_one_hot,
+            bit_terminal=bit_terminal,
+            bit_path=bit_path,
+        )
+
+        strategy_state = risk_state
+        if self.config.risk_vla_use_oracle_router:
+            strategy_state = self._risk_vla_oracle_state(strategy_state, labels)
+        if self.config.risk_vla_detach_risk_for_strategy:
+            strategy_state = self._risk_vla_detach_state(strategy_state)
+
+        strategy_weights = self.risk_strategy_router(strategy_state)
+        strategy_output = self.risk_strategy_bank(
+            vlm_tokens=vl_embeds,
+            risk_state=strategy_state,
+            strategy_weights=strategy_weights,
+            status_feature=status_feature,
+            history_trajectory=history_trajectory,
+            high_command_one_hot=high_command_one_hot,
+            bit_terminal=bit_terminal,
+            bit_path=bit_path,
+        )
+
+        token_scale = float(self.config.risk_vla_strategy_token_scale)
+        if token_scale > 0.0 and strategy_output.strategy_tokens.shape[1] > 0:
+            scaled_tokens = strategy_output.strategy_tokens * strategy_output.strategy_tokens.new_tensor(token_scale)
+            dit_context["context_tokens"] = torch.cat([dit_context["context_tokens"], scaled_tokens], dim=1)
+            dit_context["context_mean"] = dit_context["context_tokens"].mean(dim=1)
+
+        residual_scale = float(self.config.risk_vla_horizon_residual_scale)
+        if residual_scale > 0.0:
+            scaled_residual = strategy_output.horizon_residual * strategy_output.horizon_residual.new_tensor(residual_scale)
+            current_condition = dit_context.get("expert_step_condition")
+            dit_context["expert_step_condition"] = (
+                scaled_residual
+                if current_condition is None
+                else current_condition.to(device=scaled_residual.device, dtype=scaled_residual.dtype) + scaled_residual
+            )
+
+        zero = vl_embeds.new_zeros(())
+        risk_loss = zero
+        focal_loss = zero
+        entropy_loss = zero
+        if labels is not None and float(self.config.risk_vla_risk_loss_weight) > 0.0:
+            risk_loss = risk_bce_loss(risk_state.risk_logits, labels).to(dtype=vl_embeds.dtype)
+        if labels is not None and float(self.config.risk_vla_focal_loss_weight) > 0.0:
+            focal_loss = risk_focal_loss(risk_state.risk_logits, labels).to(dtype=vl_embeds.dtype)
+        if float(self.config.risk_vla_strategy_entropy_weight) > 0.0:
+            entropy_loss = strategy_entropy_loss(strategy_weights).to(dtype=vl_embeds.dtype)
+        total_aux = (
+            float(self.config.risk_vla_risk_loss_weight) * risk_loss
+            + float(self.config.risk_vla_focal_loss_weight) * focal_loss
+            + float(self.config.risk_vla_strategy_entropy_weight) * entropy_loss
+        )
+
+        diagnostics = dit_context.setdefault("diagnostics", {})
+        if self.config.risk_vla_log_diagnostics:
+            for key, value in bit_diagnostics.items():
+                diagnostics[f"risk_vla_{key}"] = value.detach()
+            for key, value in risk_state.diagnostics.items():
+                diagnostics[f"risk_vla_{key}"] = value.detach()
+            for key, value in strategy_weights.diagnostics.items():
+                diagnostics[f"risk_vla_{key}"] = value.detach()
+            for key, value in strategy_output.diagnostics.items():
+                diagnostics[f"risk_vla_{key}"] = value.detach()
+
+        prob_means = risk_state.risk_probs.detach().mean(dim=0)
+        weight_means = {
+            "base": strategy_weights.base.detach().mean(),
+            "path_intent": strategy_weights.path_intent.detach().mean(),
+            "interaction": strategy_weights.interaction.detach().mean(),
+            "progress": strategy_weights.progress.detach().mean(),
+            "comfort": strategy_weights.comfort.detach().mean(),
+        }
+        strategy_entropy = strategy_weights.diagnostics["strategy_entropy"].detach().mean()
+        outputs = self._risk_vla_zero_outputs(vl_embeds)
+        outputs.update(
+            {
+                "risk_vla_risk_loss": risk_loss,
+                "risk_vla_focal_loss": focal_loss,
+                "risk_vla_strategy_entropy_loss": entropy_loss,
+                "risk_vla_total_aux_loss": total_aux,
+                "risk_vla_strategy_entropy": strategy_entropy,
+                "risk_vla_weight_base": weight_means["base"],
+                "risk_vla_weight_path_intent": weight_means["path_intent"],
+                "risk_vla_weight_interaction": weight_means["interaction"],
+                "risk_vla_weight_progress": weight_means["progress"],
+                "risk_vla_weight_comfort": weight_means["comfort"],
+                "risk_vla_risk_logits": risk_state.risk_logits,
+                "risk_vla_risk_probs": risk_state.risk_probs,
+                "risk_vla_labels": labels,
+            }
+        )
+        class_names = ("low_score", "path_dac", "interaction_nc", "ttc", "progress", "comfort")
+        for idx, name in enumerate(class_names):
+            if idx < prob_means.shape[0]:
+                outputs[f"risk_vla_prob_{name}"] = prob_means[idx].to(dtype=vl_embeds.dtype)
+        dit_context.update(outputs)
+        return dit_context
+
+    def _finalize_dit_context(
+        self,
+        dit_context: Dict[str, Any],
+        action_input: Optional[BatchFeature],
+        *,
+        training: bool,
+        gt_actions: Optional[torch.Tensor] = None,
+    ) -> Dict[str, Any]:
+        dit_context = self._augment_with_bit_condition(
+            dit_context,
+            action_input,
+            training=training,
+            gt_actions=gt_actions,
+        )
+        return self._augment_with_risk_vla_condition(dit_context, action_input, training=training)
+
     def _apply_bit_action_condition(self, action_features: torch.Tensor, dit_context: Dict[str, Any]) -> torch.Tensor:
         bit_action_condition = dit_context.get("bit_action_condition")
         if bit_action_condition is None:
@@ -1479,8 +1853,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "policy_kd_loss": zero,
         }
         base_losses.update(self._bit_zero_outputs(zero))
+        base_losses.update(self._risk_vla_zero_outputs(zero))
         if not self.config.use_expert_features and not self.config.use_last_rd:
-            return self._augment_with_bit_condition({
+            return self._finalize_dit_context({
                 "vl_embeds": vl_embeds,
                 "context_tokens": vl_embeds,
                 "context_mean": vl_embeds.mean(1),
@@ -1510,7 +1885,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 context_parts.append(expert["vggt_all"])
             context_tokens = torch.cat(context_parts, dim=1)
             context_mean = self._compute_branch_context_mean(vl_embeds, expert["jepa_all"], expert["vggt_all"])
-            return self._augment_with_bit_condition({
+            return self._finalize_dit_context({
                 "vl_embeds": vl_embeds,
                 "context_tokens": context_tokens,
                 "context_mean": context_mean,
@@ -1580,7 +1955,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         for key, value in last_rd_output.losses.items():
             if key in base_losses:
                 base_losses[key] = value
-        return self._augment_with_bit_condition({
+        return self._finalize_dit_context({
             "vl_embeds": vl_embeds,
             "context_tokens": context_tokens,
             "context_mean": context_mean,
@@ -1743,6 +2118,187 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             return F.mse_loss(student_x0.float(), teacher_x0.detach().float())
         raise ValueError(f"Unsupported policy_kd_mode: {self.config.policy_kd_mode}")
 
+    @staticmethod
+    def _masked_smooth_l1(
+        pred: torch.Tensor,
+        target: torch.Tensor,
+        mask: torch.Tensor,
+        reference: torch.Tensor,
+    ) -> torch.Tensor:
+        if pred.numel() == 0:
+            return reference.new_zeros(())
+        mask = mask.to(device=pred.device, dtype=pred.dtype).view(pred.shape[0])
+        if mask.sum().item() <= 0:
+            return reference.new_zeros(())
+        per_item = F.smooth_l1_loss(pred.float(), target.detach().float(), reduction="none")
+        per_item = per_item.reshape(pred.shape[0], -1).mean(dim=1).to(dtype=pred.dtype)
+        return (per_item * mask).sum().to(dtype=reference.dtype) / mask.sum().clamp_min(1.0).to(dtype=reference.dtype)
+
+    @staticmethod
+    def _weighted_smooth_l1(
+        pred: torch.Tensor,
+        target: torch.Tensor,
+        weights: torch.Tensor,
+        reference: torch.Tensor,
+    ) -> torch.Tensor:
+        if pred.numel() == 0:
+            return reference.new_zeros(())
+        weights = weights.to(device=pred.device, dtype=pred.dtype).view(pred.shape[0]).clamp_min(0.0)
+        active = weights > 0
+        if active.sum().item() <= 0:
+            return reference.new_zeros(())
+        per_item = F.smooth_l1_loss(pred.float(), target.detach().float(), reduction="none")
+        per_item = per_item.reshape(pred.shape[0], -1).mean(dim=1).to(dtype=pred.dtype)
+        # Divide by active row count so soft rows scale the effective KD weight down.
+        denom = active.to(dtype=pred.dtype).sum().clamp_min(1.0)
+        return (per_item * weights).sum().to(dtype=reference.dtype) / denom.to(dtype=reference.dtype)
+
+    def _compute_d5_losses(
+        self,
+        action_input: BatchFeature,
+        pred_x0_norm: Optional[torch.Tensor],
+        losses: Dict[str, torch.Tensor],
+        reference: torch.Tensor,
+    ) -> Dict[str, torch.Tensor]:
+        zero = reference.new_zeros(())
+        out = {
+            "d5_safe_kd_loss": zero,
+            "d5_dac_path_preserve_loss": zero,
+            "d5_safety_mask_rate": zero,
+            "d5_hard_safety_mask_rate": zero,
+            "d5_soft_safety_mask_rate": zero,
+            "d5_dac_fix_mask_rate": zero,
+        }
+        if not bool(self.config.bit_use_d5_conservative_loss):
+            return out
+
+        def optional_bool_mask(name: str) -> Optional[torch.Tensor]:
+            value = action_input.get(name) if action_input is not None else None
+            if not isinstance(value, torch.Tensor):
+                return None
+            return value.to(device=reference.device).bool().view(-1)
+
+        base_safety_mask = optional_bool_mask("bit_safety_regression_mask")
+        hard_safety_mask = optional_bool_mask("hard_safety_mask")
+        soft_safety_mask = optional_bool_mask("soft_safety_mask")
+        nc_mask = optional_bool_mask("bit_nc_regression_mask")
+        ttc_mask = optional_bool_mask("bit_ttc_regression_mask")
+        dac_fix_mask = action_input.get("bit_dac_fix_mask") if action_input is not None else None
+        hard_parts: list[torch.Tensor] = []
+        if hard_safety_mask is not None:
+            hard_parts.append(hard_safety_mask)
+        if bool(self.config.bit_safe_kd_apply_on_nc) and nc_mask is not None:
+            hard_parts.append(nc_mask)
+        if bool(self.config.bit_safe_kd_apply_on_ttc) and ttc_mask is not None:
+            hard_parts.append(ttc_mask)
+        if not hard_parts and base_safety_mask is not None and (
+            bool(self.config.bit_safe_kd_apply_on_nc) or bool(self.config.bit_safe_kd_apply_on_ttc)
+        ):
+            hard_parts.append(base_safety_mask)
+        hard_mask = torch.stack(hard_parts, dim=0).any(dim=0) if hard_parts else None
+        if not bool(self.config.bit_safe_kd_apply_on_soft_safety):
+            soft_safety_mask = None
+        safety_mask = None
+        if hard_mask is not None and soft_safety_mask is not None:
+            safety_mask = hard_mask | soft_safety_mask
+        elif hard_mask is not None:
+            safety_mask = hard_mask
+        elif soft_safety_mask is not None:
+            safety_mask = soft_safety_mask
+        if hard_mask is not None:
+            out["d5_hard_safety_mask_rate"] = hard_mask.float().mean().to(dtype=reference.dtype)
+        if soft_safety_mask is not None:
+            out["d5_soft_safety_mask_rate"] = soft_safety_mask.float().mean().to(dtype=reference.dtype)
+        if safety_mask is not None:
+            out["d5_safety_mask_rate"] = safety_mask.float().mean().to(dtype=reference.dtype)
+        if isinstance(dac_fix_mask, torch.Tensor):
+            dac_fix_mask = dac_fix_mask.to(device=reference.device).bool().view(-1)
+            out["d5_dac_fix_mask_rate"] = dac_fix_mask.float().mean().to(dtype=reference.dtype)
+
+        safety_weight_tensor = action_input.get("safety_weight") if action_input is not None else None
+        if isinstance(safety_weight_tensor, torch.Tensor):
+            safety_weights = safety_weight_tensor.to(device=reference.device, dtype=reference.dtype).view(-1).clamp_min(0.0)
+            if hard_mask is not None:
+                safety_weights = torch.maximum(safety_weights, hard_mask.to(dtype=safety_weights.dtype))
+            if soft_safety_mask is not None:
+                soft_weights = soft_safety_mask.to(dtype=safety_weights.dtype) * float(self.config.bit_soft_safe_kd_weight_scale)
+                safety_weights = torch.maximum(safety_weights, soft_weights)
+            if safety_mask is not None:
+                safety_weights = safety_weights * safety_mask.to(dtype=safety_weights.dtype)
+        elif safety_mask is not None:
+            safety_weights = safety_mask.to(dtype=reference.dtype)
+            if soft_safety_mask is not None:
+                soft_scale = float(self.config.bit_soft_safe_kd_weight_scale)
+                safety_weights = torch.where(
+                    soft_safety_mask,
+                    safety_weights.new_tensor(soft_scale),
+                    safety_weights,
+                )
+            if hard_mask is not None:
+                safety_weights = torch.where(hard_mask, safety_weights.new_tensor(1.0), safety_weights)
+        else:
+            safety_weights = None
+
+        base_pred_traj = action_input.get("base_pred_traj") if action_input is not None else None
+        if (
+            pred_x0_norm is not None
+            and isinstance(base_pred_traj, torch.Tensor)
+            and isinstance(safety_weights, torch.Tensor)
+            and (safety_weights > 0).any()
+        ):
+            points = min(int(self.config.bit_safe_kd_points), pred_x0_norm.shape[1], base_pred_traj.shape[1])
+            pred_raw = self.denorm_odo(pred_x0_norm[:, :points, :]).to(dtype=reference.dtype)
+            base_raw = base_pred_traj[:, :points, :].to(device=pred_raw.device, dtype=pred_raw.dtype)
+            safe_loss = zero
+            if float(self.config.bit_safe_kd_x_weight) > 0.0:
+                safe_loss = safe_loss + float(self.config.bit_safe_kd_x_weight) * self._weighted_smooth_l1(
+                    pred_raw[..., 0],
+                    base_raw[..., 0],
+                    safety_weights,
+                    reference,
+                )
+            if float(self.config.bit_safe_kd_y_weight) > 0.0:
+                safe_loss = safe_loss + float(self.config.bit_safe_kd_y_weight) * self._weighted_smooth_l1(
+                    pred_raw[..., 1],
+                    base_raw[..., 1],
+                    safety_weights,
+                    reference,
+                )
+            if float(self.config.bit_safe_kd_heading_weight) > 0.0:
+                safe_loss = safe_loss + float(self.config.bit_safe_kd_heading_weight) * self._weighted_smooth_l1(
+                    pred_raw[..., 2],
+                    base_raw[..., 2],
+                    safety_weights,
+                    reference,
+                )
+            if points > 1 and float(self.config.bit_safe_kd_step_weight) > 0.0:
+                pred_step = torch.linalg.vector_norm(pred_raw[:, 1:, :2] - pred_raw[:, :-1, :2], dim=-1)
+                base_step = torch.linalg.vector_norm(base_raw[:, 1:, :2] - base_raw[:, :-1, :2], dim=-1)
+                safe_loss = safe_loss + float(self.config.bit_safe_kd_step_weight) * self._weighted_smooth_l1(
+                    pred_step,
+                    base_step,
+                    safety_weights,
+                    reference,
+                )
+            out["d5_safe_kd_loss"] = safe_loss.to(dtype=reference.dtype)
+
+        if (
+            bool(self.config.bit_dac_path_preserve_apply_on_dac_fix)
+            and isinstance(dac_fix_mask, torch.Tensor)
+            and dac_fix_mask.any()
+            and losses.get("bit_path_loss") is not None
+        ):
+            path_pred = self._bit_loss_space(losses.get("_path_anchor_pred_raw"))
+            path_gt = self._bit_loss_space(losses.get("_path_gt_raw"))
+            if isinstance(path_pred, torch.Tensor) and isinstance(path_gt, torch.Tensor):
+                out["d5_dac_path_preserve_loss"] = self._masked_smooth_l1(
+                    path_pred,
+                    path_gt,
+                    dac_fix_mask,
+                    reference,
+                )
+        return out
+
     def _compute_bit_losses(
         self,
         dit_context: Dict[str, Any],
@@ -1823,7 +2379,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             cycle_target_norm=cycle_target_norm,
             reference=reference,
         )
+        losses["_path_anchor_pred_raw"] = dit_context.get("bit_path_anchor_pred")
+        losses["_path_gt_raw"] = dit_context.get("bit_path_gt")
+        d5_losses = self._compute_d5_losses(action_input, pred_x0_norm, losses, reference)
         dit_context.update(losses)
+        dit_context.update(d5_losses)
         dit_context["bit_base_longitudinal_loss"] = base_longitudinal_loss
         dit_context["bit_base_lateral_loss"] = base_lateral_loss
         dit_context["bit_reverse_points"] = reverse_points
@@ -1868,13 +2428,18 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "bit_risk_dac_loss": per_risk[1],
                 "bit_risk_nc_loss": per_risk[2],
                 "bit_risk_ttc_loss": per_risk[3],
-            }
+        }
         dit_context["bit_risk_loss"] = risk_loss
+        dit_context["bit_risk_bce_loss"] = risk_loss
+        dit_context["risk_bce_loss"] = risk_loss
         dit_context.update(risk_parts)
         dit_context["bit_used_gt_condition_rate"] = dit_context.get(
             "bit_used_gt_condition_rate",
             reference.new_zeros(()),
         ).to(device=reference.device, dtype=reference.dtype)
+        risk_weight = float(self.config.bit_risk_loss_weight)
+        if bool(self.config.bit_use_d5_conservative_loss):
+            risk_weight += float(self.config.bit_risk_bce_loss_weight)
         return (
             float(self.config.bit_terminal_loss_weight) * losses["bit_terminal_loss"]
             + float(self.config.bit_path_loss_weight) * losses["bit_path_loss"]
@@ -1883,7 +2448,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             + float(self.config.bit_cycle_loss_weight) * losses["bit_cycle_loss"]
             + float(self.config.bit_base_longitudinal_loss_weight) * base_longitudinal_loss
             + float(self.config.bit_base_lateral_loss_weight) * base_lateral_loss
-            + float(self.config.bit_risk_loss_weight) * risk_loss
+            + float(self.config.bit_safe_kd_loss_weight) * d5_losses["d5_safe_kd_loss"]
+            + float(self.config.bit_dac_path_preserve_weight) * d5_losses["d5_dac_path_preserve_loss"]
+            + risk_weight * risk_loss
         ).to(dtype=reference.dtype)
 
     def p_mean_variance(
@@ -2038,6 +2605,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 self._stream_alignment_weight("jepa") * jepa_alignment_loss
                 + self._stream_alignment_weight("vggt") * vggt_alignment_loss
                 + self._last_rd_aux_loss(dit_context, diffusion_loss.dtype)
+                + dit_context["risk_vla_total_aux_loss"].to(dtype=diffusion_loss.dtype)
             )
             return self._format_training_output(loss, diffusion_loss, jepa_alignment_loss, vggt_alignment_loss, dit_context)
 
@@ -2092,6 +2660,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             + self._stream_alignment_weight("vggt") * vggt_alignment_loss
             + self._last_rd_aux_loss(dit_context, diffusion_loss.dtype)
             + bit_aux_loss
+            + dit_context["risk_vla_total_aux_loss"].to(dtype=diffusion_loss.dtype)
         )
 
         return self._format_training_output(loss, diffusion_loss, jepa_alignment_loss, vggt_alignment_loss, dit_context)
@@ -2131,12 +2700,40 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "bit_base_longitudinal_loss": dit_context["bit_base_longitudinal_loss"].to(dtype=loss.dtype),
             "bit_base_lateral_loss": dit_context["bit_base_lateral_loss"].to(dtype=loss.dtype),
             "bit_risk_loss": dit_context["bit_risk_loss"].to(dtype=loss.dtype),
+            "bit_risk_bce_loss": dit_context["bit_risk_bce_loss"].to(dtype=loss.dtype),
+            "risk_bce_loss": dit_context["risk_bce_loss"].to(dtype=loss.dtype),
             "bit_risk_zero_loss": dit_context["bit_risk_zero_loss"].to(dtype=loss.dtype),
             "bit_risk_dac_loss": dit_context["bit_risk_dac_loss"].to(dtype=loss.dtype),
             "bit_risk_nc_loss": dit_context["bit_risk_nc_loss"].to(dtype=loss.dtype),
             "bit_risk_ttc_loss": dit_context["bit_risk_ttc_loss"].to(dtype=loss.dtype),
             "bit_risk_token_strength": dit_context["bit_risk_token_strength"].to(dtype=loss.dtype),
+            "d5_safe_kd_loss": dit_context["d5_safe_kd_loss"].to(dtype=loss.dtype),
+            "d5_dac_path_preserve_loss": dit_context["d5_dac_path_preserve_loss"].to(dtype=loss.dtype),
+            "d5_safety_mask_rate": dit_context["d5_safety_mask_rate"].to(dtype=loss.dtype),
+            "d5_hard_safety_mask_rate": dit_context["d5_hard_safety_mask_rate"].to(dtype=loss.dtype),
+            "d5_soft_safety_mask_rate": dit_context["d5_soft_safety_mask_rate"].to(dtype=loss.dtype),
+            "d5_dac_fix_mask_rate": dit_context["d5_dac_fix_mask_rate"].to(dtype=loss.dtype),
         }
+        if self.config.use_risk_vla:
+            for key in (
+                "risk_vla_risk_loss",
+                "risk_vla_focal_loss",
+                "risk_vla_strategy_entropy_loss",
+                "risk_vla_total_aux_loss",
+                "risk_vla_prob_low_score",
+                "risk_vla_prob_path_dac",
+                "risk_vla_prob_interaction_nc",
+                "risk_vla_prob_ttc",
+                "risk_vla_prob_progress",
+                "risk_vla_prob_comfort",
+                "risk_vla_weight_base",
+                "risk_vla_weight_path_intent",
+                "risk_vla_weight_interaction",
+                "risk_vla_weight_progress",
+                "risk_vla_weight_comfort",
+                "risk_vla_strategy_entropy",
+            ):
+                output[key] = dit_context[key].to(dtype=loss.dtype)
         risk_prob_mean = dit_context.get("bit_risk_prob_mean")
         if isinstance(risk_prob_mean, torch.Tensor) and risk_prob_mean.numel() == 4:
             risk_prob_mean = risk_prob_mean.to(device=loss.device, dtype=loss.dtype)

@@ -66,6 +66,35 @@ Update `.gitignore` accordingly. Never commit model weights, generated caches, e
 
 ---
 
+## 1.1 Resource utilization policy
+
+Training, evaluation, cache construction, mining, and other experiment scripts should use multiprocessing or multi-worker execution whenever the code path supports it. Prefer configurations that keep available CPU and GPU resources saturated without interfering with other active jobs in the shared workspace.
+
+When GPU resources are not needed by the current task, keep the GPU pressure test script under `/mnt/project` running to avoid idle GPUs. Before starting experiments that need GPU memory or compute, inspect active GPU processes and kill only the GPU pressure script/process group as needed. Do not kill unrelated training, evaluation, cache generation, or user experiment processes.
+
+After GPU-consuming experiments finish, restart the `/mnt/project` GPU pressure script if GPUs would otherwise remain idle. Treat the pressure script as disposable load only; it may be killed whenever real experiments require resources.
+
+## 1.2 BiT branch isolation policy
+
+The `/mnt/project/VLA-AD` checkout is shared by multiple branch-level tasks. For BiT-Drive / left-tail experiments, prefer writing new experiment outputs outside the shared checkout:
+
+```bash
+BIT_WORK_ROOT=/mnt/project/bit_drive_left_tail
+BIT_EXP_ROOT=/mnt/project/bit_drive_left_tail/experiments/bit_drive
+BIT_CACHE_ROOT=/mnt/project/bit_drive_left_tail/cache
+```
+
+Reuse existing heavyweight inputs such as checkpoints and chunk caches as read-only inputs when possible:
+
+```bash
+CHECKPOINT_ROOT=/mnt/project/VLA-AD/checkpoints
+SHARED_CHUNK_CACHE_ROOT=/mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1
+```
+
+Do not copy the multi-TB shared chunk cache unless explicitly requested. New BiT mining outputs, D5 checkpoints, logs, reports, and temporary files should go under `BIT_WORK_ROOT` to avoid interfering with other experiments running from `/mnt/project/VLA-AD`.
+
+---
+
 ## 2. Download policy
 
 Weights must be downloaded into:

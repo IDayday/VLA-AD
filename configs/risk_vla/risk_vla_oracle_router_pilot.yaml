@@ -1,0 +1,16 @@
+# RISK-VLA oracle-router pilot: analysis-only upper bound for strategy routing.
+# This mode routes from provided risk labels and must not be used as a standard training config.
+# Test labels are analysis-only and must never supervise training.
+
+use_risk_vla: true
+risk_vla_num_classes: 6
+risk_vla_router_mode: independent
+risk_vla_use_bit_summary: true
+risk_vla_use_oracle_router: true
+risk_vla_strategy_token_scale: 0.25
+risk_vla_horizon_residual_scale: 0.25
+risk_vla_risk_loss_weight: 0.0
+risk_vla_focal_loss_weight: 0.0
+risk_vla_strategy_entropy_weight: 0.0
+risk_vla_detach_risk_for_strategy: true
+risk_vla_log_diagnostics: true

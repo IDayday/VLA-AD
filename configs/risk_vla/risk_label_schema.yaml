@@ -1,0 +1,77 @@
+schema_version: risk_vla_labels_v0
+
+description: >
+  RISK-VLA risk-label schema for Stage 0-1 diagnostics. Labels are derived
+  from PDM metrics and are intended for risk taxonomy analysis, non-test label
+  construction, and risk-head diagnostics.
+
+mvp_labels:
+  generic_risk_labels:
+    meaning: low-score / generic critical-risk subset risk
+    shape: [H]
+  drivable_risk_labels:
+    meaning: path / drivable-area-compliance risk
+    shape: [H]
+  ttc_risk_labels:
+    meaning: interaction plus TTC risk
+    shape: [H]
+  comfort_risk_labels:
+    meaning: comfort plus progress risk
+    shape: [H]
+
+extended_labels:
+  risk_labels:
+    meaning: per-horizon multi-class risk tensor
+    shape: [H, 6]
+    order:
+      - low_score
+      - path_dac
+      - interaction_nc
+      - ttc
+      - progress
+      - comfort
+
+metric_to_risk_mapping:
+  score:
+    hard: score == 0
+    soft: clip(1 - score, 0, 1)
+    risk_class: low_score
+  drivable_area_compliance:
+    hard: drivable_area_compliance == 0
+    soft: clip(1 - drivable_area_compliance, 0, 1)
+    risk_class: path_dac
+  no_at_fault_collisions:
+    hard: no_at_fault_collisions == 0
+    soft: clip(1 - no_at_fault_collisions, 0, 1)
+    risk_class: interaction_nc
+  time_to_collision_within_bound:
+    hard: time_to_collision_within_bound == 0
+    soft: clip(1 - time_to_collision_within_bound, 0, 1)
+    risk_class: ttc
+  ego_progress:
+    hard: ego_progress <= train_configured_percentile
+    soft: low-progress score from configured percentile threshold
+    risk_class: progress
+  comfort:
+    hard: comfort <= train_configured_percentile
+    soft: max(clip(1 - comfort, 0, 1), low-comfort percentile score)
+    risk_class: comfort
+
+expected_tensor_shapes:
+  default_horizon: 8
+  generic_risk_labels: [8]
+  drivable_risk_labels: [8]
+  ttc_risk_labels: [8]
+  comfort_risk_labels: [8]
+  risk_labels: [8, 6]
+
+leakage_warnings:
+  - PDM-derived labels from navtest/test are for analysis only and must not be used for training.
+  - NAVSIM annotations may be used to select mining/analysis strata but must not be used as inference features.
+  - Metric values should be training supervision or logging labels only; do not feed metric values into the model at inference.
+  - Keep split name, scene list, and token list in reports when constructing labels.
+
+research_note: >
+  BiT-style terminal/path outputs are one path-risk strategy, not the core
+  RISK-VLA method. The core method is risk state -> strategy
+  routing/modulation -> diffusion planning.

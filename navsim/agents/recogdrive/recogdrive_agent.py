@@ -142,13 +142,40 @@ class ReCogDriveAgent(AbstractAgent):
         bit_fallback_terminal_x_delta_threshold: float = 2.0,
         bit_use_risk_head: bool = False,
         bit_use_risk_tokens: bool = False,
+        bit_use_risk_token: bool = False,
         bit_risk_loss_weight: float = 0.00,
+        bit_risk_bce_loss_weight: float = 0.00,
         bit_risk_token_strength: float = 0.05,
         bit_risk_hidden_dim: int = 512,
         bit_risk_positive_weight_zero: float = 1.0,
         bit_risk_positive_weight_dac: float = 2.0,
         bit_risk_positive_weight_nc: float = 4.0,
         bit_risk_positive_weight_ttc: float = 2.0,
+        bit_use_d5_conservative_loss: bool = False,
+        bit_safe_kd_loss_weight: float = 0.05,
+        bit_safe_kd_points: int = 3,
+        bit_safe_kd_x_weight: float = 1.0,
+        bit_safe_kd_step_weight: float = 0.5,
+        bit_safe_kd_heading_weight: float = 0.2,
+        bit_safe_kd_y_weight: float = 0.0,
+        bit_safe_kd_apply_on_nc: bool = True,
+        bit_safe_kd_apply_on_ttc: bool = True,
+        bit_safe_kd_apply_on_soft_safety: bool = True,
+        bit_soft_safe_kd_weight_scale: float = 0.25,
+        bit_dac_path_preserve_weight: float = 0.02,
+        bit_dac_path_preserve_apply_on_dac_fix: bool = True,
+        use_risk_vla: bool = False,
+        risk_vla_num_classes: int = 6,
+        risk_vla_router_mode: str = "independent",
+        risk_vla_use_bit_summary: bool = True,
+        risk_vla_use_oracle_router: bool = False,
+        risk_vla_strategy_token_scale: float = 1.0,
+        risk_vla_horizon_residual_scale: float = 1.0,
+        risk_vla_risk_loss_weight: float = 0.0,
+        risk_vla_focal_loss_weight: float = 0.0,
+        risk_vla_strategy_entropy_weight: float = 0.0,
+        risk_vla_detach_risk_for_strategy: bool = True,
+        risk_vla_log_diagnostics: bool = True,
         use_last_rd: bool = False,
         last_rd_stage: str = "disabled",
         use_future_jepa_prediction: bool = True,
@@ -308,13 +335,40 @@ class ReCogDriveAgent(AbstractAgent):
         self.bit_fallback_terminal_x_delta_threshold = bit_fallback_terminal_x_delta_threshold
         self.bit_use_risk_head = bit_use_risk_head
         self.bit_use_risk_tokens = bit_use_risk_tokens
+        self.bit_use_risk_token = bit_use_risk_token
         self.bit_risk_loss_weight = bit_risk_loss_weight
+        self.bit_risk_bce_loss_weight = bit_risk_bce_loss_weight
         self.bit_risk_token_strength = bit_risk_token_strength
         self.bit_risk_hidden_dim = bit_risk_hidden_dim
         self.bit_risk_positive_weight_zero = bit_risk_positive_weight_zero
         self.bit_risk_positive_weight_dac = bit_risk_positive_weight_dac
         self.bit_risk_positive_weight_nc = bit_risk_positive_weight_nc
         self.bit_risk_positive_weight_ttc = bit_risk_positive_weight_ttc
+        self.bit_use_d5_conservative_loss = bit_use_d5_conservative_loss
+        self.bit_safe_kd_loss_weight = bit_safe_kd_loss_weight
+        self.bit_safe_kd_points = bit_safe_kd_points
+        self.bit_safe_kd_x_weight = bit_safe_kd_x_weight
+        self.bit_safe_kd_step_weight = bit_safe_kd_step_weight
+        self.bit_safe_kd_heading_weight = bit_safe_kd_heading_weight
+        self.bit_safe_kd_y_weight = bit_safe_kd_y_weight
+        self.bit_safe_kd_apply_on_nc = bit_safe_kd_apply_on_nc
+        self.bit_safe_kd_apply_on_ttc = bit_safe_kd_apply_on_ttc
+        self.bit_safe_kd_apply_on_soft_safety = bit_safe_kd_apply_on_soft_safety
+        self.bit_soft_safe_kd_weight_scale = bit_soft_safe_kd_weight_scale
+        self.bit_dac_path_preserve_weight = bit_dac_path_preserve_weight
+        self.bit_dac_path_preserve_apply_on_dac_fix = bit_dac_path_preserve_apply_on_dac_fix
+        self.use_risk_vla = use_risk_vla
+        self.risk_vla_num_classes = risk_vla_num_classes
+        self.risk_vla_router_mode = risk_vla_router_mode
+        self.risk_vla_use_bit_summary = risk_vla_use_bit_summary
+        self.risk_vla_use_oracle_router = risk_vla_use_oracle_router
+        self.risk_vla_strategy_token_scale = risk_vla_strategy_token_scale
+        self.risk_vla_horizon_residual_scale = risk_vla_horizon_residual_scale
+        self.risk_vla_risk_loss_weight = risk_vla_risk_loss_weight
+        self.risk_vla_focal_loss_weight = risk_vla_focal_loss_weight
+        self.risk_vla_strategy_entropy_weight = risk_vla_strategy_entropy_weight
+        self.risk_vla_detach_risk_for_strategy = risk_vla_detach_risk_for_strategy
+        self.risk_vla_log_diagnostics = risk_vla_log_diagnostics
         self.use_last_rd = use_last_rd
         self.last_rd_stage = last_rd_stage
         self.use_future_jepa_prediction = use_future_jepa_prediction
@@ -483,13 +537,40 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.bit_fallback_terminal_x_delta_threshold = self.bit_fallback_terminal_x_delta_threshold
         cfg.bit_use_risk_head = self.bit_use_risk_head
         cfg.bit_use_risk_tokens = self.bit_use_risk_tokens
+        cfg.bit_use_risk_token = self.bit_use_risk_token
         cfg.bit_risk_loss_weight = self.bit_risk_loss_weight
+        cfg.bit_risk_bce_loss_weight = self.bit_risk_bce_loss_weight
         cfg.bit_risk_token_strength = self.bit_risk_token_strength
         cfg.bit_risk_hidden_dim = self.bit_risk_hidden_dim
         cfg.bit_risk_positive_weight_zero = self.bit_risk_positive_weight_zero
         cfg.bit_risk_positive_weight_dac = self.bit_risk_positive_weight_dac
         cfg.bit_risk_positive_weight_nc = self.bit_risk_positive_weight_nc
         cfg.bit_risk_positive_weight_ttc = self.bit_risk_positive_weight_ttc
+        cfg.bit_use_d5_conservative_loss = self.bit_use_d5_conservative_loss
+        cfg.bit_safe_kd_loss_weight = self.bit_safe_kd_loss_weight
+        cfg.bit_safe_kd_points = self.bit_safe_kd_points
+        cfg.bit_safe_kd_x_weight = self.bit_safe_kd_x_weight
+        cfg.bit_safe_kd_step_weight = self.bit_safe_kd_step_weight
+        cfg.bit_safe_kd_heading_weight = self.bit_safe_kd_heading_weight
+        cfg.bit_safe_kd_y_weight = self.bit_safe_kd_y_weight
+        cfg.bit_safe_kd_apply_on_nc = self.bit_safe_kd_apply_on_nc
+        cfg.bit_safe_kd_apply_on_ttc = self.bit_safe_kd_apply_on_ttc
+        cfg.bit_safe_kd_apply_on_soft_safety = self.bit_safe_kd_apply_on_soft_safety
+        cfg.bit_soft_safe_kd_weight_scale = self.bit_soft_safe_kd_weight_scale
+        cfg.bit_dac_path_preserve_weight = self.bit_dac_path_preserve_weight
+        cfg.bit_dac_path_preserve_apply_on_dac_fix = self.bit_dac_path_preserve_apply_on_dac_fix
+        cfg.use_risk_vla = self.use_risk_vla
+        cfg.risk_vla_num_classes = self.risk_vla_num_classes
+        cfg.risk_vla_router_mode = self.risk_vla_router_mode
+        cfg.risk_vla_use_bit_summary = self.risk_vla_use_bit_summary
+        cfg.risk_vla_use_oracle_router = self.risk_vla_use_oracle_router
+        cfg.risk_vla_strategy_token_scale = self.risk_vla_strategy_token_scale
+        cfg.risk_vla_horizon_residual_scale = self.risk_vla_horizon_residual_scale
+        cfg.risk_vla_risk_loss_weight = self.risk_vla_risk_loss_weight
+        cfg.risk_vla_focal_loss_weight = self.risk_vla_focal_loss_weight
+        cfg.risk_vla_strategy_entropy_weight = self.risk_vla_strategy_entropy_weight
+        cfg.risk_vla_detach_risk_for_strategy = self.risk_vla_detach_risk_for_strategy
+        cfg.risk_vla_log_diagnostics = self.risk_vla_log_diagnostics
         cfg.use_last_rd = self.use_last_rd
         cfg.last_rd_stage = self.last_rd_stage
         cfg.use_future_jepa_prediction = self.use_future_jepa_prediction
@@ -573,6 +654,9 @@ class ReCogDriveAgent(AbstractAgent):
             "bit_action_gate",
             "bit_risk_head",
             "bit_risk_token_encoder",
+            "risk_state_encoder",
+            "risk_strategy_router",
+            "risk_strategy_bank",
         )
         for name, parameter in self.named_parameters():
             count = int(parameter.numel())
@@ -725,6 +809,22 @@ class ReCogDriveAgent(AbstractAgent):
             if key in features and isinstance(features[key], torch.Tensor):
                 if key in EXPERT_TARGET_FEATURE_KEYS and not target_loss_mode:
                     continue
+                action_input_data[key] = features[key].to(model_dtype)
+        for key in (
+            "risk_labels",
+            "generic_risk_labels",
+            "drivable_risk_labels",
+            "ttc_risk_labels",
+            "comfort_risk_labels",
+            "bit_terminal",
+            "bit_path",
+            "terminal_intent",
+            "path_intent",
+            "bit_pred_path",
+            "pred_path_intent",
+            "pred_terminal_intent",
+        ):
+            if key in features and isinstance(features[key], torch.Tensor):
                 action_input_data[key] = features[key].to(model_dtype)
 
         if targets is not None and not self.grpo:

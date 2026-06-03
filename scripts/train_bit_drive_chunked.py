@@ -7,6 +7,7 @@ import math
 import random
 import sys
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -80,6 +81,17 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--failure-sampling-enabled", action="store_true")
     parser.add_argument("--risk-label-jsonl", type=Path, default=None)
     parser.add_argument("--require-risk-labels", action="store_true")
+    parser.add_argument("--counterfactual-label-jsonl", type=Path, default=None)
+    parser.add_argument("--require-counterfactual-labels", action="store_true")
+    parser.add_argument("--use-base-traj-kd", action="store_true")
+    parser.add_argument(
+        "--base-traj-kd-mode",
+        choices=("early_longitudinal", "early_step", "early_longitudinal_step_heading"),
+        default="early_longitudinal",
+    )
+    parser.add_argument("--safety-tag-filter", default="bit_nc_regression,bit_ttc_regression")
+    parser.add_argument("--dac-tag-filter", default="bit_dac_fix")
+    parser.add_argument("--max-counterfactual-label-age", type=float, default=None, help="Maximum metadata age in seconds.")
     parser.add_argument("--include-tags", default=None)
     parser.add_argument("--exclude-tags", default=None)
     parser.add_argument("--max-failure-fraction-per-batch", type=float, default=None)
@@ -264,18 +276,37 @@ class BitChunkDataset(Dataset):
         max_samples: Optional[int] = None,
         risk_labels: Optional[Dict[str, torch.Tensor]] = None,
         require_risk_labels: bool = False,
+        counterfactual_labels: Optional[Dict[str, List[Dict[str, Any]]]] = None,
+        require_counterfactual_labels: bool = False,
     ) -> None:
         self.chunk_dir = chunk_dir
         records = list(iter_index(chunk_dir))
         self.risk_labels = risk_labels or {}
+        self.counterfactual_labels = counterfactual_labels or {}
         if require_risk_labels:
             records = [record for record in records if str(record.get("sample_token")) in self.risk_labels]
+        if self.counterfactual_labels:
+            expanded_records = []
+            for record in records:
+                sample_token = str(record.get("sample_token"))
+                labels = self.counterfactual_labels.get(sample_token)
+                if labels:
+                    for label_index in range(len(labels)):
+                        expanded = dict(record)
+                        expanded["_counterfactual_label_index"] = label_index
+                        expanded_records.append(expanded)
+                elif not require_counterfactual_labels:
+                    expanded_records.append(record)
+            records = expanded_records
+        elif require_counterfactual_labels:
+            records = []
         self.records = records
         if max_samples is not None:
             self.records = self.records[:max_samples]
         if not self.records:
             raise RuntimeError(f"No records found in {chunk_dir}")
         self.require_risk_labels = bool(require_risk_labels)
+        self.require_counterfactual_labels = bool(require_counterfactual_labels)
 
     def __len__(self) -> int:
         return len(self.records)
@@ -293,6 +324,31 @@ class BitChunkDataset(Dataset):
             sample["bit_risk_labels"] = self.risk_labels[sample_token]
         elif self.require_risk_labels:
             raise KeyError(f"Missing required bit_risk_labels for sample_token={sample_token}")
+        if sample_token in self.counterfactual_labels:
+            labels = self.counterfactual_labels[sample_token]
+            label_index = int(record.get("_counterfactual_label_index", 0))
+            label = labels[min(max(label_index, 0), len(labels) - 1)]
+            for key in (
+                "base_pred_traj",
+                "counterfactual_candidate_mode",
+                "bit_counterfactual_tags",
+                "bit_safety_regression_mask",
+                "hard_safety_mask",
+                "soft_safety_mask",
+                "safety_weight",
+                "bit_nc_regression_mask",
+                "bit_ttc_regression_mask",
+                "bit_dac_fix_mask",
+                "dac_fix_mask",
+                "dac_weight",
+                "bit_risk_labels",
+                "base_metrics",
+                "bit_metrics",
+            ):
+                if key in label and key not in sample:
+                    sample[key] = label[key]
+        elif self.require_counterfactual_labels:
+            raise KeyError(f"Missing required counterfactual label for sample_token={sample_token}")
         return {key: value.detach().cpu() if isinstance(value, torch.Tensor) else value for key, value in sample.items()}
 
 
@@ -310,18 +366,117 @@ def collate(samples: List[Dict[str, Any]]) -> Tuple[torch.Tensor, BatchFeature]:
             ],
             dim=0,
         )
+    if any("base_pred_traj" in sample for sample in samples):
+        data["base_pred_traj"] = torch.stack(
+            [
+                sample.get("base_pred_traj", torch.full((8, 3), float("nan"))).float()
+                for sample in samples
+            ],
+            dim=0,
+        )
+    if any("bit_safety_regression_mask" in sample for sample in samples):
+        data["bit_safety_regression_mask"] = torch.tensor(
+            [bool(sample.get("bit_safety_regression_mask", False)) for sample in samples],
+            dtype=torch.bool,
+        )
+    if any("hard_safety_mask" in sample for sample in samples):
+        data["hard_safety_mask"] = torch.tensor(
+            [bool(sample.get("hard_safety_mask", False)) for sample in samples],
+            dtype=torch.bool,
+        )
+    if any("soft_safety_mask" in sample for sample in samples):
+        data["soft_safety_mask"] = torch.tensor(
+            [bool(sample.get("soft_safety_mask", False)) for sample in samples],
+            dtype=torch.bool,
+        )
+    if any("safety_weight" in sample for sample in samples):
+        data["safety_weight"] = torch.tensor(
+            [float(sample.get("safety_weight", 0.0)) for sample in samples],
+            dtype=torch.float32,
+        )
+    if any("bit_nc_regression_mask" in sample for sample in samples):
+        data["bit_nc_regression_mask"] = torch.tensor(
+            [bool(sample.get("bit_nc_regression_mask", False)) for sample in samples],
+            dtype=torch.bool,
+        )
+    if any("bit_ttc_regression_mask" in sample for sample in samples):
+        data["bit_ttc_regression_mask"] = torch.tensor(
+            [bool(sample.get("bit_ttc_regression_mask", False)) for sample in samples],
+            dtype=torch.bool,
+        )
+    if any("bit_dac_fix_mask" in sample for sample in samples):
+        data["bit_dac_fix_mask"] = torch.tensor(
+            [bool(sample.get("bit_dac_fix_mask", False)) for sample in samples],
+            dtype=torch.bool,
+        )
+    if any("dac_fix_mask" in sample for sample in samples):
+        data["dac_fix_mask"] = torch.tensor(
+            [bool(sample.get("dac_fix_mask", False)) for sample in samples],
+            dtype=torch.bool,
+        )
+    if any("dac_weight" in sample for sample in samples):
+        data["dac_weight"] = torch.tensor(
+            [float(sample.get("dac_weight", 0.0)) for sample in samples],
+            dtype=torch.float32,
+        )
+    if any("bit_counterfactual_tags" in sample for sample in samples):
+        data["bit_counterfactual_tags"] = [sample.get("bit_counterfactual_tags", []) for sample in samples]
+    if any("counterfactual_candidate_mode" in sample for sample in samples):
+        data["counterfactual_candidate_mode"] = [sample.get("counterfactual_candidate_mode") for sample in samples]
+    if any("base_metrics" in sample for sample in samples):
+        data["base_metrics"] = [sample.get("base_metrics") for sample in samples]
+    if any("bit_metrics" in sample for sample in samples):
+        data["bit_metrics"] = [sample.get("bit_metrics") for sample in samples]
     return vl_features, BatchFeature(data=data)
+
+
+def _validate_training_label_metadata(path: Path, *, max_age_seconds: Optional[float] = None) -> Dict[str, Any]:
+    metadata_path = path.parent / "metadata.json"
+    metadata: Dict[str, Any] = {}
+    if metadata_path.is_file():
+        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+        split = str(metadata.get("split", "")).lower()
+        training_allowed = metadata.get("training_allowed")
+        if "test" in split or bool(metadata.get("analysis_only", False)) or training_allowed is False:
+            raise RuntimeError(f"Refusing to use test/analysis counterfactual labels for training: {path}")
+        if max_age_seconds is not None and metadata.get("created_at"):
+            created_at = str(metadata["created_at"]).replace("Z", "+00:00")
+            try:
+                created = datetime.fromisoformat(created_at)
+                if created.tzinfo is None:
+                    created = created.replace(tzinfo=timezone.utc)
+                age = (datetime.now(timezone.utc) - created).total_seconds()
+                if age > float(max_age_seconds):
+                    raise RuntimeError(
+                        f"Counterfactual labels are older than --max-counterfactual-label-age: "
+                        f"{age:.1f}s > {max_age_seconds:.1f}s"
+                    )
+            except ValueError:
+                raise RuntimeError(f"Could not parse metadata.created_at={metadata['created_at']!r} for {path}") from None
+    return metadata
+
+
+def _row_uses_test_split(row: Dict[str, Any]) -> bool:
+    split = str(row.get("split") or row.get("split_alias") or "").lower()
+    return "test" in split
+
+
+def risk_tensor_from_metrics(metrics: Dict[str, Any]) -> torch.Tensor:
+    return torch.tensor(
+        [
+            1.0 if float(metrics.get("pdm") or 0.0) <= 1e-9 else 0.0,
+            1.0 if float(metrics.get("dac") or 0.0) <= 1e-9 else 0.0,
+            1.0 if float(metrics.get("nc") or 0.0) <= 1e-9 else 0.0,
+            1.0 if float(metrics.get("ttc") or 0.0) <= 1e-9 else 0.0,
+        ],
+        dtype=torch.float32,
+    )
 
 
 def load_risk_labels(path: Optional[Path]) -> Dict[str, torch.Tensor]:
     if path is None:
         return {}
-    metadata_path = path.parent / "metadata.json"
-    if metadata_path.is_file():
-        metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-        split = str(metadata.get("split", "")).lower()
-        if "test" in split or bool(metadata.get("analysis_only", False)):
-            raise RuntimeError(f"Refusing to use test/analysis counterfactual labels for training: {path}")
+    _validate_training_label_metadata(path)
     labels: Dict[str, torch.Tensor] = {}
     with path.open("r", encoding="utf-8") as f:
         for line in f:
@@ -329,20 +484,123 @@ def load_risk_labels(path: Optional[Path]) -> Dict[str, torch.Tensor]:
             if not line:
                 continue
             row = json.loads(line)
+            if _row_uses_test_split(row):
+                raise RuntimeError(f"Refusing to use navtest/test risk labels for training: {path}")
             sample_token = row.get("sample_token")
             metrics = row.get("bit_metrics") or {}
             if not sample_token or not metrics:
                 continue
-            labels[str(sample_token)] = torch.tensor(
-                [
-                    1.0 if float(metrics.get("pdm") or 0.0) <= 1e-9 else 0.0,
-                    1.0 if float(metrics.get("dac") or 0.0) <= 1e-9 else 0.0,
-                    1.0 if float(metrics.get("nc") or 0.0) <= 1e-9 else 0.0,
-                    1.0 if float(metrics.get("ttc") or 0.0) <= 1e-9 else 0.0,
-                ],
-                dtype=torch.float32,
-            )
+            labels[str(sample_token)] = risk_tensor_from_metrics(metrics)
     return labels
+
+
+def infer_counterfactual_tags(row: Dict[str, Any]) -> List[str]:
+    tags = list(row.get("tags") or row.get("bit_counterfactual_tags") or [])
+    if tags:
+        return [str(tag) for tag in tags]
+    base = row.get("base_metrics") or {}
+    bit = row.get("bit_metrics") or {}
+    if not base or not bit:
+        return ["neutral"]
+    eps = 1e-9
+    if float(base.get("dac") or 0.0) <= eps and float(bit.get("dac") or 0.0) > eps:
+        tags.append("bit_dac_fix")
+    if float(base.get("nc") or 0.0) > eps and float(bit.get("nc") or 0.0) <= eps:
+        tags.append("bit_nc_regression")
+    if float(base.get("ttc") or 0.0) > eps and float(bit.get("ttc") or 0.0) <= eps:
+        tags.append("bit_ttc_regression")
+    if float(base.get("pdm") or 0.0) <= eps and float(bit.get("pdm") or 0.0) > eps:
+        tags.append("bit_zero_fix")
+    if float(bit.get("pdm") or 0.0) + eps < float(base.get("pdm") or 0.0):
+        tags.append("bit_bad")
+    return tags or ["neutral"]
+
+
+def load_counterfactual_labels(
+    path: Optional[Path],
+    *,
+    safety_tags: Optional[List[str]],
+    dac_tags: Optional[List[str]],
+    max_age_seconds: Optional[float],
+) -> Tuple[Dict[str, List[Dict[str, Any]]], Dict[str, Any]]:
+    if path is None:
+        return {}, {}
+    metadata = _validate_training_label_metadata(path, max_age_seconds=max_age_seconds)
+    safety_set = set(
+        safety_tags
+        or ["bit_nc_regression", "bit_ttc_regression", "hard_nc_regression", "hard_ttc_regression", "soft_safety_regression"]
+    )
+    hard_safety_tags = {"bit_nc_regression", "bit_ttc_regression", "hard_nc_regression", "hard_ttc_regression"}
+    soft_safety_tags = {"soft_safety_regression", "soft_ttc_regression"}
+    dac_set = set(dac_tags or ["bit_dac_fix", "dac_fix"])
+    labels: Dict[str, List[Dict[str, Any]]] = {}
+    summary = {
+        "path": str(path),
+        "metadata": metadata,
+        "rows": 0,
+        "usable": 0,
+        "safety_regression": 0,
+        "hard_safety_regression": 0,
+        "soft_safety_regression": 0,
+        "dac_fix": 0,
+        "tag_counts": {},
+    }
+    with path.open("r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            summary["rows"] += 1
+            row = json.loads(line)
+            if _row_uses_test_split(row):
+                raise RuntimeError(f"Refusing to use navtest/test counterfactual labels for training: {path}")
+            sample_token = row.get("sample_token")
+            base_traj = row.get("base_pred_traj")
+            base_metrics = row.get("base_metrics") or {}
+            bit_metrics = row.get("bit_metrics") or {}
+            if not sample_token or base_traj is None:
+                continue
+            tags = infer_counterfactual_tags(row)
+            tag_set = set(tags)
+            for tag in tags:
+                summary["tag_counts"][tag] = summary["tag_counts"].get(tag, 0) + 1
+            hard_mask = bool(row.get("hard_safety_mask", False) or tag_set & hard_safety_tags)
+            soft_mask = bool(row.get("soft_safety_mask", False) or tag_set & soft_safety_tags)
+            safety_mask = bool(row.get("bit_safety_regression_mask", False) or hard_mask or soft_mask or tag_set & safety_set)
+            nc_mask = "bit_nc_regression" in tag_set or "hard_nc_regression" in tag_set
+            ttc_mask = "bit_ttc_regression" in tag_set or "hard_ttc_regression" in tag_set
+            dac_mask = bool(row.get("dac_fix_mask", False) or row.get("bit_dac_fix_mask", False) or tag_set & dac_set)
+            if hard_mask:
+                safety_weight = 1.0
+            elif soft_mask:
+                safety_weight = float(row.get("safety_weight", 0.25))
+            else:
+                safety_weight = float(row.get("safety_weight", 0.0))
+            label = {
+                "base_pred_traj": torch.tensor(base_traj, dtype=torch.float32),
+                "counterfactual_candidate_mode": row.get("counterfactual_candidate_mode") or row.get("candidate_mode"),
+                "bit_counterfactual_tags": tags,
+                "bit_safety_regression_mask": safety_mask,
+                "hard_safety_mask": hard_mask,
+                "soft_safety_mask": soft_mask,
+                "safety_weight": safety_weight,
+                "bit_nc_regression_mask": nc_mask,
+                "bit_ttc_regression_mask": ttc_mask,
+                "bit_dac_fix_mask": dac_mask,
+                "dac_fix_mask": dac_mask,
+                "dac_weight": float(row.get("dac_weight", 1.0 if dac_mask else 0.0)),
+                "base_metrics": base_metrics,
+                "bit_metrics": bit_metrics,
+            }
+            if bit_metrics:
+                label["bit_risk_labels"] = risk_tensor_from_metrics(bit_metrics)
+            labels.setdefault(str(sample_token), []).append(label)
+            summary["usable"] += 1
+            summary["safety_regression"] += int(safety_mask)
+            summary["hard_safety_regression"] += int(hard_mask)
+            summary["soft_safety_regression"] += int(soft_mask)
+            summary["dac_fix"] += int(dac_mask)
+    return labels, summary
 
 
 def chunk_dirs(args: argparse.Namespace) -> List[Path]:
@@ -433,6 +691,20 @@ def main() -> int:
         args.lr_action_head = float(cfg["lr_action_head"])
     if bool(cfg.get("freeze_base_action_head", False)):
         args.freeze_base_action_head = True
+    if args.use_base_traj_kd:
+        cfg["bit_use_d5_conservative_loss"] = True
+        if args.base_traj_kd_mode == "early_longitudinal":
+            cfg.setdefault("bit_safe_kd_x_weight", 1.0)
+            cfg.setdefault("bit_safe_kd_step_weight", 0.0)
+            cfg.setdefault("bit_safe_kd_heading_weight", 0.0)
+        elif args.base_traj_kd_mode == "early_step":
+            cfg.setdefault("bit_safe_kd_x_weight", 1.0)
+            cfg.setdefault("bit_safe_kd_step_weight", 0.5)
+            cfg.setdefault("bit_safe_kd_heading_weight", 0.0)
+        elif args.base_traj_kd_mode == "early_longitudinal_step_heading":
+            cfg.setdefault("bit_safe_kd_x_weight", 1.0)
+            cfg.setdefault("bit_safe_kd_step_weight", 0.5)
+            cfg.setdefault("bit_safe_kd_heading_weight", 0.2)
     failure_options = resolve_failure_options(args, cfg)
     failure_index = None
     failure_metadata: Dict[str, Any] = {}
@@ -461,11 +733,27 @@ def main() -> int:
         planner = planner.to(dtype=dtype)
     set_trainable(planner, args.freeze_base_action_head)
     optimizer = optimizer_for(planner, args)
+    counterfactual_labels, counterfactual_summary = load_counterfactual_labels(
+        args.counterfactual_label_jsonl,
+        safety_tags=tag_list(args.safety_tag_filter),
+        dac_tags=tag_list(args.dac_tag_filter),
+        max_age_seconds=args.max_counterfactual_label_age,
+    )
     risk_labels = load_risk_labels(args.risk_label_jsonl)
+    for sample_token, labels_for_token in counterfactual_labels.items():
+        for label in labels_for_token:
+            if "bit_risk_labels" in label:
+                risk_labels.setdefault(sample_token, label["bit_risk_labels"])
+                break
     scaler = torch.cuda.amp.GradScaler(enabled=(args.precision == "fp16" and device.type == "cuda"))
     args.output_dir.mkdir(parents=True, exist_ok=True)
     (args.output_dir / "checkpoint_load.json").write_text(json.dumps(load_report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     (args.output_dir / "train_args.json").write_text(json.dumps(vars(args), default=str, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if args.counterfactual_label_jsonl is not None:
+        (args.output_dir / "counterfactual_label_summary.json").write_text(
+            json.dumps(counterfactual_summary, default=str, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
     (args.output_dir / "failure_sampling_options.json").write_text(
         json.dumps({**failure_options, "path": str(failure_options["path"]) if failure_options["path"] else None, "metadata": failure_metadata}, default=str, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -490,10 +778,12 @@ def main() -> int:
                         max_samples=args.max_samples,
                         risk_labels=risk_labels,
                         require_risk_labels=args.require_risk_labels,
+                        counterfactual_labels=counterfactual_labels,
+                        require_counterfactual_labels=args.require_counterfactual_labels,
                     )
                 except RuntimeError as exc:
-                    if args.require_risk_labels and "No records found" in str(exc):
-                        print(f"Skipping {chunk.name}: no samples with risk labels.")
+                    if (args.require_risk_labels or args.require_counterfactual_labels) and "No records found" in str(exc):
+                        print(f"Skipping {chunk.name}: no samples with required labels.")
                         continue
                     raise
                 sampler = None
@@ -595,10 +885,18 @@ def main() -> int:
                             "bit_base_longitudinal_loss": finite_float(output, "bit_base_longitudinal_loss"),
                             "bit_base_lateral_loss": finite_float(output, "bit_base_lateral_loss"),
                             "bit_risk_loss": finite_float(output, "bit_risk_loss"),
+                            "bit_risk_bce_loss": finite_float(output, "bit_risk_bce_loss"),
+                            "risk_bce_loss": finite_float(output, "risk_bce_loss"),
                             "bit_risk_zero_loss": finite_float(output, "bit_risk_zero_loss"),
                             "bit_risk_dac_loss": finite_float(output, "bit_risk_dac_loss"),
                             "bit_risk_nc_loss": finite_float(output, "bit_risk_nc_loss"),
                             "bit_risk_ttc_loss": finite_float(output, "bit_risk_ttc_loss"),
+                            "d5_safe_kd_loss": finite_float(output, "d5_safe_kd_loss"),
+                            "d5_dac_path_preserve_loss": finite_float(output, "d5_dac_path_preserve_loss"),
+                            "d5_safety_mask_rate": finite_float(output, "d5_safety_mask_rate"),
+                            "d5_hard_safety_mask_rate": finite_float(output, "d5_hard_safety_mask_rate"),
+                            "d5_soft_safety_mask_rate": finite_float(output, "d5_soft_safety_mask_rate"),
+                            "d5_dac_fix_mask_rate": finite_float(output, "d5_dac_fix_mask_rate"),
                             "bit_risk_zero_prob_mean": finite_float(output, "bit_risk_zero_prob_mean"),
                             "bit_risk_dac_prob_mean": finite_float(output, "bit_risk_dac_prob_mean"),
                             "bit_risk_nc_prob_mean": finite_float(output, "bit_risk_nc_prob_mean"),
