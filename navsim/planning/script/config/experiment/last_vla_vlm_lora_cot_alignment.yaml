@@ -4,11 +4,19 @@ defaults:
   - override /agent: recogdrive_agent
 
 agent:
+  cache_hidden_state: false
+  train_backbone: true
+  last_vla_train_vlm_lora: true
+  last_vla_vlm_lora_r: 16
+  last_vla_vlm_lora_alpha: 32
+  last_vla_vlm_lora_target_modules: ""
   use_last_vla: true
   last_vla_stage: cot_alignment
   use_last_rd: false
   last_rd_stage: disabled
-  use_expert_features: false
+  use_expert_features: true
+  expert_feature_source: chunk
+  expert_cache_dir: null
   use_jepa: true
   use_vggt: true
   jepa_dim: 1024
@@ -36,9 +44,9 @@ agent:
 
 trainer:
   params:
-    max_epochs: 20
+    max_epochs: 10
     strategy: ddp_find_unused_parameters_true
 
 dataloader:
   params:
-    batch_size: 16
+    batch_size: 4

@@ -1,8 +1,17 @@
+cache_hidden_state: false
+train_backbone: true
+last_vla_train_vlm_lora: true
+last_vla_vlm_lora_r: 16
+last_vla_vlm_lora_alpha: 32
+last_vla_vlm_lora_target_modules: ""
+
 use_last_vla: true
 last_vla_stage: cot_alignment
 use_last_rd: false
 last_rd_stage: disabled
-use_expert_features: false
+use_expert_features: true
+expert_feature_source: chunk
+expert_cache_dir: null
 use_jepa: true
 use_vggt: true
 jepa_dim: 1024
@@ -17,12 +26,6 @@ last_vla_cot_num_steps: 4
 last_vla_vlm_summary_tokens: 4
 last_vla_raw_vlm_context_to_dit: false
 last_vla_cot_bottleneck_mode: true
-last_vla_use_geometry_step: true
-last_vla_use_dynamic_step: true
-last_vla_use_ego_step: true
-last_vla_use_action_refine_step: true
-last_vla_use_action_conditioned_dynamics: true
-last_vla_use_risk_head: true
 last_vla_require_full_geometry: true
 last_vla_allow_patch_geometry_fallback: false
 last_vla_geometry_teacher_dim: 512
@@ -43,4 +46,4 @@ policy_kd_mode: none
 freeze_base_action_head: true
 train_expert_only: true
 freeze_expert: false
-epochs: 20
+epochs: 10

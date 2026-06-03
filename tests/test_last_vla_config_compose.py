@@ -13,6 +13,8 @@ def test_last_vla_yaml_configs_load_directly():
         config_dir / "last_vla_teacher_traj_sft.yaml",
         config_dir / "last_vla_progressive_bottleneck_eval.yaml",
         config_dir / "last_vla_teacher_traj_sft_eval.yaml",
+        config_dir / "last_vla_cot_alignment_geometry_lite.yaml",
+        config_dir / "last_vla_vlm_lora_cot_alignment.yaml",
     ):
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
         assert data["use_last_vla"] is True
@@ -25,6 +27,7 @@ def test_last_vla_hydra_experiment_yaml_loads():
         "last_vla_cot_alignment.yaml",
         "last_vla_progressive_bottleneck.yaml",
         "last_vla_teacher_traj_sft.yaml",
+        "last_vla_vlm_lora_cot_alignment.yaml",
     ):
         path = Path("navsim/planning/script/config/experiment") / name
         data = yaml.safe_load(path.read_text(encoding="utf-8"))

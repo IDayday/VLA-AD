@@ -23,8 +23,8 @@ last_vla_use_ego_step: true
 last_vla_use_action_refine_step: true
 last_vla_use_action_conditioned_dynamics: true
 last_vla_use_risk_head: true
-last_vla_require_full_geometry: true
-last_vla_allow_patch_geometry_fallback: false
+last_vla_require_full_geometry: false
+last_vla_allow_patch_geometry_fallback: true
 last_vla_geometry_teacher_dim: 512
 last_vla_use_residual_diffusion: true
 last_vla_teacher_traj_mode: none

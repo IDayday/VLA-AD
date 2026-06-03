@@ -7,6 +7,7 @@ import torch
 from PIL import Image
 from torchvision import transforms
 
+from ..geometry_tokenizer import GeometryTokenPacker
 from .pooling import pool_vggt_tokens
 
 
@@ -23,12 +24,17 @@ class VGGTExtractor:
         precision: str = "bf16",
         image_size: int = 518,
         require_geometry: bool = False,
+        geometry_output_dim: int = 512,
+        geometry_num_tokens: int = 12,
     ) -> None:
         self.model_path = str(model_path)
         self.device = torch.device(device)
         self.dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp32": torch.float32}[precision]
         self.image_size = image_size
         self.require_geometry = require_geometry
+        self.geometry_output_dim = int(geometry_output_dim)
+        self.geometry_num_tokens = int(geometry_num_tokens)
+        self.geometry_packer = GeometryTokenPacker(num_tokens=self.geometry_num_tokens, output_dim=self.geometry_output_dim)
         self.last_geometry_mode = "no_geometry"
         self.model = self._load_model(self.model_path).to(self.device)
         if self.dtype != torch.float32:
@@ -102,7 +108,8 @@ class VGGTExtractor:
                 return value
         return None
 
-    def _compact_geometry_tokens(self, tensor: torch.Tensor, fallback: torch.Tensor) -> torch.Tensor:
+    def _compact_geometry_tokens(self, tensor: torch.Tensor, fallback: torch.Tensor, *, output_dim: int | None = None) -> torch.Tensor:
+        output_dim = int(output_dim or self.teacher_dim)
         values = tensor.float()
         while values.ndim > 3:
             values = values.flatten(1, -2)
@@ -110,14 +117,14 @@ class VGGTExtractor:
             values = values.unsqueeze(1)
         if values.ndim != 3:
             raise ValueError(f"VGGT geometry tensor could not be compacted from shape {tuple(tensor.shape)}.")
-        pooled = torch.nn.functional.adaptive_avg_pool1d(values.transpose(1, 2), 12).transpose(1, 2)
-        if pooled.shape[-1] < self.teacher_dim:
-            pooled = torch.nn.functional.pad(pooled, (0, self.teacher_dim - pooled.shape[-1]))
-        elif pooled.shape[-1] > self.teacher_dim:
-            pooled = pooled[..., : self.teacher_dim]
+        pooled = torch.nn.functional.adaptive_avg_pool1d(values.transpose(1, 2), self.geometry_num_tokens).transpose(1, 2)
+        if pooled.shape[-1] < output_dim:
+            pooled = torch.nn.functional.pad(pooled, (0, output_dim - pooled.shape[-1]))
+        elif pooled.shape[-1] > output_dim:
+            pooled = pooled[..., : output_dim]
         return pooled.to(device=fallback.device, dtype=fallback.dtype)
 
-    def _try_extract_full_geometry(self, image: torch.Tensor, fallback: torch.Tensor) -> torch.Tensor | None:
+    def _try_extract_full_geometry(self, image: torch.Tensor, fallback: torch.Tensor) -> dict[str, torch.Tensor] | None:
         prediction_fns = ("predict", "forward", "__call__")
         predictions = None
         for fn_name in prediction_fns:
@@ -131,13 +138,23 @@ class VGGTExtractor:
                 predictions = None
         if predictions is None:
             return None
-        geometry = self._extract_prediction_tensor(
-            predictions,
-            ("point_map", "pointmap", "world_points", "depth", "depth_map", "camera", "camera_tokens"),
-        )
-        if geometry is None:
+        depth = self._extract_prediction_tensor(predictions, ("depth", "depth_map", "depths"))
+        point_map = self._extract_prediction_tensor(predictions, ("point_map", "pointmap", "world_points", "points3d"))
+        camera = self._extract_prediction_tensor(predictions, ("camera", "camera_tokens", "intrinsics", "extrinsics", "pose_enc"))
+        tracks = self._extract_prediction_tensor(predictions, ("tracks", "track_tokens"))
+        if depth is None and point_map is None and camera is None and tracks is None:
             return None
-        return self._compact_geometry_tokens(geometry, fallback)
+        tokens = self.geometry_packer.pack(depth=depth, point_map=point_map, camera=camera, tracks=tracks).unsqueeze(0)
+        output = {
+            "vggt_geometry_tokens": tokens.to(device=fallback.device, dtype=fallback.dtype),
+        }
+        if depth is not None:
+            output["vggt_depth_tokens"] = self._compact_geometry_tokens(depth, fallback, output_dim=self.geometry_output_dim)
+        if point_map is not None:
+            output["vggt_pointmap_tokens"] = self._compact_geometry_tokens(point_map, fallback, output_dim=self.geometry_output_dim)
+        if camera is not None:
+            output["vggt_camera_tokens"] = self._compact_geometry_tokens(camera, fallback, output_dim=self.geometry_output_dim)
+        return output
 
     @torch.no_grad()
     def extract_with_geometry(self, current_frame: str | Path | Image.Image) -> dict[str, torch.Tensor | str]:
@@ -146,22 +163,30 @@ class VGGTExtractor:
             image = image.to(dtype=self.dtype)
         output = self.model.aggregator(image)
         pooled = self._pool_patch_tokens(output)
-        geometry = self._try_extract_full_geometry(image, pooled)
-        if geometry is None:
+        geometry_payload = self._try_extract_full_geometry(image, pooled)
+        if geometry_payload is None:
             if self.require_geometry:
                 raise RuntimeError("VGGT full geometry output is unavailable and require_geometry=True.")
-            geometry = pooled
+            geometry = self._compact_geometry_tokens(pooled, pooled, output_dim=self.geometry_output_dim)
             geometry_mode = "patch_fallback"
         else:
+            geometry = geometry_payload["vggt_geometry_tokens"]
             geometry_mode = "full_geometry"
         self.last_geometry_mode = geometry_mode
         geometry_mode_code = 2 if geometry_mode == "full_geometry" else 1
-        return {
+        payload = {
             "vggt_context_tokens": pooled.squeeze(0).to(dtype=torch.float16, device="cpu"),
             "vggt_geometry_tokens": geometry.squeeze(0).to(dtype=torch.float16, device="cpu"),
             "vggt_geometry_mode": geometry_mode,
             "vggt_geometry_mode_code": torch.tensor(geometry_mode_code, dtype=torch.int64),
+            "vggt_geometry_source": "vggt_full_geometry" if geometry_mode == "full_geometry" else "vggt_patch_fallback",
+            "vggt_geometry_tokenizer_metadata": self.geometry_packer.metadata(),
         }
+        if geometry_payload is not None:
+            for key in ("vggt_depth_tokens", "vggt_pointmap_tokens", "vggt_camera_tokens"):
+                if key in geometry_payload:
+                    payload[key] = geometry_payload[key].squeeze(0).to(dtype=torch.float16, device="cpu")
+        return payload
 
     @torch.no_grad()
     def extract(self, current_frame: str | Path | Image.Image) -> torch.Tensor:

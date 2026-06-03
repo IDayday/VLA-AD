@@ -20,6 +20,8 @@ cmd=(
   --chunk-name-pattern "${TRAIN_CHUNK_NAME_PATTERN:-train_full_chunk_*,train_backfill_chunk_*,train_backfill_p1_chunk_*}"
   --copy-mode "${COPY_MODE:-hardlink}"
   --min-coverage "${MIN_COVERAGE:-0.99}"
+  --geometry-teacher-dim "${GEOMETRY_TEACHER_DIM:-512}"
+  --num-geometry-tokens "${NUM_GEOMETRY_TOKENS:-12}"
 )
 if [[ "${OVERWRITE_CONTEXT:-0}" == "1" ]]; then cmd+=(--overwrite-context); fi
 if [[ "${STRICT_COVERAGE:-0}" == "1" ]]; then cmd+=(--strict-coverage); fi

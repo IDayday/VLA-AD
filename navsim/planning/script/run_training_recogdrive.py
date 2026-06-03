@@ -197,6 +197,7 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         last_vla_teacher_traj_mode: str = "none",
         last_vla_require_full_geometry: bool = False,
         last_vla_allow_patch_geometry_fallback: bool = False,
+        last_vla_geometry_teacher_dim: int = 512,
         last_vla_geometry_loss_weight: float = 0.0,
     ) -> None:
         super().__init__()
@@ -220,6 +221,7 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         self.last_vla_teacher_traj_mode = str(last_vla_teacher_traj_mode)
         self.last_vla_require_full_geometry = bool(last_vla_require_full_geometry)
         self.last_vla_allow_patch_geometry_fallback = bool(last_vla_allow_patch_geometry_fallback)
+        self.last_vla_geometry_teacher_dim = int(last_vla_geometry_teacher_dim)
         self.last_vla_geometry_loss_weight = float(last_vla_geometry_loss_weight)
         if self.include_expert_targets and not self.include_expert_features:
             raise ValueError("include_expert_targets=True requires include_expert_features=True.")
@@ -367,11 +369,11 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             "jepa_target_tokens": (self.num_jepa_tokens, self.jepa_dim),
             "vggt_context_tokens": (self.num_vggt_tokens, self.vggt_dim),
             "vggt_target_tokens": (self.num_vggt_tokens, self.vggt_dim),
-            "vggt_geometry_tokens": (self.num_vggt_tokens, self.vggt_dim),
-            "vggt_geometry_target_tokens": (self.num_vggt_tokens, self.vggt_dim),
-            "vggt_depth_tokens": (self.num_vggt_tokens, self.vggt_dim),
-            "vggt_pointmap_tokens": (self.num_vggt_tokens, self.vggt_dim),
-            "vggt_camera_tokens": (self.num_vggt_tokens, self.vggt_dim),
+            "vggt_geometry_tokens": (self.num_vggt_tokens, self.last_vla_geometry_teacher_dim if self.use_last_vla else self.vggt_dim),
+            "vggt_geometry_target_tokens": (self.num_vggt_tokens, self.last_vla_geometry_teacher_dim if self.use_last_vla else self.vggt_dim),
+            "vggt_depth_tokens": (self.num_vggt_tokens, self.last_vla_geometry_teacher_dim if self.use_last_vla else self.vggt_dim),
+            "vggt_pointmap_tokens": (self.num_vggt_tokens, self.last_vla_geometry_teacher_dim if self.use_last_vla else self.vggt_dim),
+            "vggt_camera_tokens": (self.num_vggt_tokens, self.last_vla_geometry_teacher_dim if self.use_last_vla else self.vggt_dim),
         }
         if key in expert_shapes:
             return expert_shapes[key]
@@ -450,6 +452,7 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             "last_vla_teacher_traj_mode": self.last_vla_teacher_traj_mode,
             "last_vla_require_full_geometry": self.last_vla_require_full_geometry,
             "last_vla_allow_patch_geometry_fallback": self.last_vla_allow_patch_geometry_fallback,
+            "last_vla_geometry_teacher_dim": self.last_vla_geometry_teacher_dim,
             "last_vla_geometry_loss_weight": self.last_vla_geometry_loss_weight,
             "require_vggt_geometry": self.require_vggt_geometry,
             "allow_patch_geometry_fallback": self.allow_patch_geometry_fallback,
@@ -812,6 +815,7 @@ def main(cfg: DictConfig) -> None:
                 last_vla_teacher_traj_mode=str(cfg.agent.get("last_vla_teacher_traj_mode", "none")),
                 last_vla_require_full_geometry=bool(cfg.agent.get("last_vla_require_full_geometry", False)),
                 last_vla_allow_patch_geometry_fallback=bool(cfg.agent.get("last_vla_allow_patch_geometry_fallback", False)),
+                last_vla_geometry_teacher_dim=int(cfg.agent.get("last_vla_geometry_teacher_dim", 512)),
                 last_vla_geometry_loss_weight=float(cfg.agent.get("last_vla_geometry_loss_weight", 0.0)),
             )
             val_data = ChunkCacheDataset(
@@ -836,6 +840,7 @@ def main(cfg: DictConfig) -> None:
                 last_vla_teacher_traj_mode=str(cfg.agent.get("last_vla_teacher_traj_mode", "none")),
                 last_vla_require_full_geometry=bool(cfg.agent.get("last_vla_require_full_geometry", False)),
                 last_vla_allow_patch_geometry_fallback=bool(cfg.agent.get("last_vla_allow_patch_geometry_fallback", False)),
+                last_vla_geometry_teacher_dim=int(cfg.agent.get("last_vla_geometry_teacher_dim", 512)),
                 last_vla_geometry_loss_weight=float(cfg.agent.get("last_vla_geometry_loss_weight", 0.0)),
             )
             train_tokens = set(train_data.sample_tokens())

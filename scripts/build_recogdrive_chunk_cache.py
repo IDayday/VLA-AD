@@ -70,6 +70,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--recogdrive-vlm-path", type=Path, default=None)
     parser.add_argument("--jepa-model-path", type=Path, default=None)
     parser.add_argument("--vggt-model-path", type=Path, default=None)
+    parser.add_argument("--vggt-geometry-teacher-dim", type=int, default=512)
     parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="bf16")
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--num-gpus", type=int, default=1)
@@ -400,6 +401,7 @@ def build_teacher_extractors(args: argparse.Namespace):
             device=args.device,
             precision=args.precision,
             require_geometry=bool(getattr(args, "require_vggt_geometry", False)),
+            geometry_output_dim=int(getattr(args, "vggt_geometry_teacher_dim", 512)),
         )
     return jepa, vggt
 
@@ -511,6 +513,15 @@ def process_records_with_models(
             payload["vggt_geometry_mode"] = geometry_payload["vggt_geometry_mode"]
             if "vggt_geometry_mode_code" in geometry_payload:
                 payload["vggt_geometry_mode_code"] = geometry_payload["vggt_geometry_mode_code"]
+            for key in (
+                "vggt_depth_tokens",
+                "vggt_pointmap_tokens",
+                "vggt_camera_tokens",
+                "vggt_geometry_source",
+                "vggt_geometry_tokenizer_metadata",
+            ):
+                if key in geometry_payload:
+                    payload[key] = geometry_payload[key]
             payload["vggt_target_tokens"] = vggt.extract_target(current)
             payload["vggt_geometry_target_tokens"] = payload["vggt_geometry_tokens"]
         if args.build_jepa or args.build_vggt:
@@ -694,11 +705,11 @@ def write_built_chunk_outputs(
             "jepa_target_tokens": [12, 1024] if args.build_jepa else None,
             "vggt_context_tokens": [12, 2048] if args.build_vggt else None,
             "vggt_target_tokens": [12, 2048] if args.build_vggt else None,
-            "vggt_geometry_tokens": [12, 2048] if args.build_vggt else None,
-            "vggt_geometry_target_tokens": [12, 2048] if args.build_vggt else None,
-            "vggt_depth_tokens": [12, 2048] if args.build_vggt else None,
-            "vggt_pointmap_tokens": [12, 2048] if args.build_vggt else None,
-            "vggt_camera_tokens": [12, 2048] if args.build_vggt else None,
+            "vggt_geometry_tokens": [12, int(args.vggt_geometry_teacher_dim)] if args.build_vggt else None,
+            "vggt_geometry_target_tokens": [12, int(args.vggt_geometry_teacher_dim)] if args.build_vggt else None,
+            "vggt_depth_tokens": [12, int(args.vggt_geometry_teacher_dim)] if args.build_vggt else None,
+            "vggt_pointmap_tokens": [12, int(args.vggt_geometry_teacher_dim)] if args.build_vggt else None,
+            "vggt_camera_tokens": [12, int(args.vggt_geometry_teacher_dim)] if args.build_vggt else None,
         },
         "contains_vggt_geometry": bool(args.build_vggt),
         "require_vggt_geometry": bool(getattr(args, "require_vggt_geometry", False)),
@@ -779,11 +790,11 @@ def finalize_existing_chunk(args: argparse.Namespace) -> int:
             "jepa_target_tokens": [12, 1024] if contains_jepa else None,
             "vggt_context_tokens": [12, 2048] if contains_vggt else None,
             "vggt_target_tokens": [12, 2048] if contains_vggt else None,
-            "vggt_geometry_tokens": [12, 2048] if contains_geometry else None,
-            "vggt_geometry_target_tokens": [12, 2048] if contains_geometry else None,
-            "vggt_depth_tokens": [12, 2048] if contains_geometry else None,
-            "vggt_pointmap_tokens": [12, 2048] if contains_geometry else None,
-            "vggt_camera_tokens": [12, 2048] if contains_geometry else None,
+            "vggt_geometry_tokens": [12, int(args.vggt_geometry_teacher_dim)] if contains_geometry else None,
+            "vggt_geometry_target_tokens": [12, int(args.vggt_geometry_teacher_dim)] if contains_geometry else None,
+            "vggt_depth_tokens": [12, int(args.vggt_geometry_teacher_dim)] if contains_geometry else None,
+            "vggt_pointmap_tokens": [12, int(args.vggt_geometry_teacher_dim)] if contains_geometry else None,
+            "vggt_camera_tokens": [12, int(args.vggt_geometry_teacher_dim)] if contains_geometry else None,
         },
         "contains_vggt_geometry": contains_geometry,
         "require_vggt_geometry": bool(getattr(args, "require_vggt_geometry", False)),

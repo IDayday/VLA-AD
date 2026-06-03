@@ -71,6 +71,37 @@ Agent-level LoRA hooks are present but disabled by default. If `last_vla_train_v
 2. `progressive_sft_bottleneck`: enable residual diffusion through the CoT bottleneck with auxiliary loss floors.
 3. `teacher_traj_sft`: train with best-of-K/PDM-reranked teacher trajectory targets.
 
+Strict Last-VLA v2 SFT uses `cot_alignment -> progressive_sft_bottleneck` as the core path. PDM-reranked teacher trajectory SFT is an optional extension for later diagnostics and performance exploration; it is not required for LaST-VLA SFT alignment. GRPO is deferred and not part of this stage.
+
+## Full Geometry Cache
+
+Strict reproduction requires full VGGT geometry teacher tokens with `vggt_geometry_mode=full_geometry` and `vggt_geometry_mode_code=2`. The geometry tokenizer packs VGGT depth/point-map/camera outputs into deterministic non-trainable geometry teacher tokens, default shape `[12, 512]`.
+
+Patch fallback is geometry-lite only. It may be used for smoke tests or ablations, but it must be reported as `patch_fallback` and cannot be used for strict SOTA claims.
+
+## Progressive Residual Schedule
+
+Progressive SFT uses a residual alpha schedule:
+
+`diffusion_target = selected_target_norm - alpha * coarse_traj_norm`
+
+At alpha `0`, the diffusion target matches A0 full-action training. At alpha `1`, the model trains on the residual to the CoT coarse prior. Inference always uses alpha `1` and returns `coarse + sampled_residual`.
+
+The VLM summary context is separately scheduled inside the CoT bottleneck. Full raw VLM tokens remain disabled in strict bottleneck mode.
+
+## Two-Server Round2 Plan
+
+Server A runs the frozen-VLM line using the original ReCogDrive Stage1 hidden cache plus strict full-geometry teacher cache.
+
+Server B runs the VLM-LoRA line:
+
+1. online VLM-LoRA CoT alignment with full geometry and future JEPA teachers;
+2. extract VLM LoRA and Last-VLA CoT adapters;
+3. regenerate train/val hidden-state cache with the LoRA adapter;
+4. run progressive bottleneck SFT on the regenerated hidden cache.
+
+VLM-LoRA cannot train on static cached hidden states. It requires online VLM forward during alignment, then regenerated hidden cache for frozen-cache SFT/eval.
+
 ## Success Criteria
 
 The hard diagnostic before teacher trajectory SFT is best-of-K oracle gain:

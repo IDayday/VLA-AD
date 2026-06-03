@@ -77,11 +77,12 @@ def install_hooks(planner, args: argparse.Namespace):
 def add_corruption_flags(data: Dict[str, Any], args: argparse.Namespace) -> Dict[str, Any]:
     data = dict(data)
     data["last_vla_corrupt_zero_all_cot"] = bool(args.zero_all_cot)
-    data["last_vla_corrupt_geometry_cot"] = bool(args.zero_geometry_cot)
-    data["last_vla_corrupt_dynamic_cot"] = bool(args.zero_dynamic_cot)
-    data["last_vla_corrupt_ego_cot"] = bool(args.zero_ego_cot)
-    data["last_vla_corrupt_action_refine_cot"] = bool(args.zero_action_refine_cot)
-    data["last_vla_zero_coarse_prior"] = bool(args.zero_coarse_prior)
+    data["last_vla_corrupt_zero_geometry_cot"] = bool(args.zero_geometry_cot)
+    data["last_vla_corrupt_zero_dynamic_cot"] = bool(args.zero_dynamic_cot)
+    data["last_vla_corrupt_zero_ego_cot"] = bool(args.zero_ego_cot)
+    data["last_vla_corrupt_zero_action_refine_cot"] = bool(args.zero_action_refine_cot)
+    data["last_vla_corrupt_zero_coarse_prior"] = bool(args.zero_coarse_prior)
+    data["last_vla_corrupt_drop_vlm_summary"] = bool(args.drop_vlm_summary)
     return data
 
 

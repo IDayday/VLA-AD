@@ -40,6 +40,10 @@ class LastVLACoTConfig:
     min_cot_context_ratio: float = 0.80
     vlm_context_dropout_start: float = 0.0
     vlm_context_dropout_end: float = 0.7
+    vlm_summary_keep_start: float = 1.0
+    vlm_summary_keep_end: float = 0.3
+    vlm_summary_decay_epochs: int = 80
+    eval_drop_vlm_summary: bool = False
 
     use_residual_diffusion: bool = True
     residual_detach_coarse_for_diffusion: bool = True
@@ -709,11 +713,12 @@ class LastVLACoTTransformer(nn.Module):
         if diffusion_timestep is not None:
             t_embed = sinusoidal_timestep_embedding(diffusion_timestep, self.config.planner_dim).to(vlm_tokens)
         corrupt_zero_all = _bool_flag(action_input, "last_vla_corrupt_zero_all_cot")
-        corrupt_geometry = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_geometry_cot")
-        corrupt_dynamic = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_dynamic_cot")
-        corrupt_ego = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_ego_cot")
-        corrupt_action_refine = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_action_refine_cot")
-        corrupt_coarse_prior = corrupt_zero_all or _bool_flag(action_input, "last_vla_zero_coarse_prior")
+        corrupt_geometry = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_zero_geometry_cot") or _bool_flag(action_input, "last_vla_corrupt_geometry_cot")
+        corrupt_dynamic = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_zero_dynamic_cot") or _bool_flag(action_input, "last_vla_corrupt_dynamic_cot")
+        corrupt_ego = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_zero_ego_cot") or _bool_flag(action_input, "last_vla_corrupt_ego_cot")
+        corrupt_action_refine = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_zero_action_refine_cot") or _bool_flag(action_input, "last_vla_corrupt_action_refine_cot")
+        corrupt_coarse_prior = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_zero_coarse_prior") or _bool_flag(action_input, "last_vla_zero_coarse_prior")
+        corrupt_drop_summary = _bool_flag(action_input, "last_vla_corrupt_drop_vlm_summary")
 
         geometry_memory = self._geometry_memory(action_input, vlm_tokens)
         geometry_memory_for_step = torch.cat([vlm_summary, geometry_memory], dim=1) if geometry_memory is not None else vlm_summary
@@ -780,10 +785,21 @@ class LastVLACoTTransformer(nn.Module):
 
         if self.config.cot_bottleneck_mode:
             keep_summary = True
-            if training and self.config.vlm_context_dropout_end > 0.0:
-                drop_prob = schedule_linear(self.config.vlm_context_dropout_start, self.config.vlm_context_dropout_end, progress)
-                if torch.rand((), device=vlm_tokens.device) < float(drop_prob):
+            if training:
+                keep_progress = progress
+                if self.config.vlm_summary_decay_epochs > 0 and current_epoch is not None:
+                    keep_progress = min(max(float(current_epoch) / float(max(1, self.config.vlm_summary_decay_epochs)), 0.0), 1.0)
+                keep_prob = schedule_linear(self.config.vlm_summary_keep_start, self.config.vlm_summary_keep_end, keep_progress)
+                if self.config.vlm_context_dropout_end > 0.0:
+                    drop_prob = schedule_linear(self.config.vlm_context_dropout_start, self.config.vlm_context_dropout_end, progress)
+                    keep_prob = min(float(keep_prob), 1.0 - float(drop_prob))
+                if torch.rand((), device=vlm_tokens.device) > float(keep_prob):
                     keep_summary = False
+            else:
+                keep_prob = 0.0 if self.config.eval_drop_vlm_summary else 1.0
+                keep_summary = not bool(self.config.eval_drop_vlm_summary)
+            if corrupt_drop_summary:
+                keep_summary = False
             context_parts = [cot_final]
             if keep_summary and self.config.vlm_summary_tokens > 0:
                 context_parts.append(vlm_summary)
@@ -799,6 +815,8 @@ class LastVLACoTTransformer(nn.Module):
             planner_context = torch.cat(context_parts, dim=1)
             raw_vlm_used = bool(self.config.raw_vlm_context_to_dit)
             context_mode = "cot_plus_raw_vlm" if raw_vlm_used else "cot_bottleneck"
+            keep_prob = 1.0
+            keep_summary = True
 
         horizon_queries = self.horizon_queries.unsqueeze(0).expand(batch_size, -1, -1).to(vlm_tokens)
         horizon_condition = self.horizon_attn(horizon_queries, planner_context)
@@ -839,6 +857,8 @@ class LastVLACoTTransformer(nn.Module):
             "geometry_teacher_missing": cot_final.new_tensor(float(geometry_target is None)),
             "corruption_zero_all_cot": cot_final.new_tensor(float(corrupt_zero_all)),
             "corruption_zero_coarse_prior": cot_final.new_tensor(float(corrupt_coarse_prior)),
+            "vlm_summary_keep_prob": cot_final.new_tensor(float(keep_prob)),
+            "vlm_summary_kept": cot_final.new_tensor(float(keep_summary)),
         }
         finite_or_raise("planner_context_tokens", planner_context)
         return LastVLAOutput(

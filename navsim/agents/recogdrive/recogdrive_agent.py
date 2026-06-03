@@ -179,9 +179,18 @@ class ReCogDriveAgent(AbstractAgent):
         last_vla_use_risk_head: bool = True,
         last_vla_require_full_geometry: bool = False,
         last_vla_allow_patch_geometry_fallback: bool = False,
+        last_vla_geometry_teacher_dim: int = 512,
         last_vla_use_residual_diffusion: bool = True,
         last_vla_residual_detach_coarse: bool = True,
         last_vla_coarse_prior_clip: float = 1.0,
+        last_vla_residual_alpha_start: float = 0.0,
+        last_vla_residual_alpha_end: float = 1.0,
+        last_vla_residual_alpha_warmup_epochs: int = 80,
+        last_vla_vlm_summary_keep_start: float = 1.0,
+        last_vla_vlm_summary_keep_end: float = 0.3,
+        last_vla_vlm_summary_decay_epochs: int = 80,
+        last_vla_eval_drop_vlm_summary: bool = False,
+        last_vla_aux_decay_epochs: int = 160,
         last_vla_teacher_traj_mode: str = "none",
         last_vla_teacher_traj_mix_start: float = 0.0,
         last_vla_teacher_traj_mix_end: float = 1.0,
@@ -335,9 +344,18 @@ class ReCogDriveAgent(AbstractAgent):
         self.last_vla_use_risk_head = last_vla_use_risk_head
         self.last_vla_require_full_geometry = last_vla_require_full_geometry
         self.last_vla_allow_patch_geometry_fallback = last_vla_allow_patch_geometry_fallback
+        self.last_vla_geometry_teacher_dim = last_vla_geometry_teacher_dim
         self.last_vla_use_residual_diffusion = last_vla_use_residual_diffusion
         self.last_vla_residual_detach_coarse = last_vla_residual_detach_coarse
         self.last_vla_coarse_prior_clip = last_vla_coarse_prior_clip
+        self.last_vla_residual_alpha_start = last_vla_residual_alpha_start
+        self.last_vla_residual_alpha_end = last_vla_residual_alpha_end
+        self.last_vla_residual_alpha_warmup_epochs = last_vla_residual_alpha_warmup_epochs
+        self.last_vla_vlm_summary_keep_start = last_vla_vlm_summary_keep_start
+        self.last_vla_vlm_summary_keep_end = last_vla_vlm_summary_keep_end
+        self.last_vla_vlm_summary_decay_epochs = last_vla_vlm_summary_decay_epochs
+        self.last_vla_eval_drop_vlm_summary = last_vla_eval_drop_vlm_summary
+        self.last_vla_aux_decay_epochs = last_vla_aux_decay_epochs
         self.last_vla_teacher_traj_mode = last_vla_teacher_traj_mode
         self.last_vla_teacher_traj_mix_start = last_vla_teacher_traj_mix_start
         self.last_vla_teacher_traj_mix_end = last_vla_teacher_traj_mix_end
@@ -497,9 +515,18 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.last_vla_use_risk_head = self.last_vla_use_risk_head
         cfg.last_vla_require_full_geometry = self.last_vla_require_full_geometry
         cfg.last_vla_allow_patch_geometry_fallback = self.last_vla_allow_patch_geometry_fallback
+        cfg.last_vla_geometry_teacher_dim = self.last_vla_geometry_teacher_dim
         cfg.last_vla_use_residual_diffusion = self.last_vla_use_residual_diffusion
         cfg.last_vla_residual_detach_coarse = self.last_vla_residual_detach_coarse
         cfg.last_vla_coarse_prior_clip = self.last_vla_coarse_prior_clip
+        cfg.last_vla_residual_alpha_start = self.last_vla_residual_alpha_start
+        cfg.last_vla_residual_alpha_end = self.last_vla_residual_alpha_end
+        cfg.last_vla_residual_alpha_warmup_epochs = self.last_vla_residual_alpha_warmup_epochs
+        cfg.last_vla_vlm_summary_keep_start = self.last_vla_vlm_summary_keep_start
+        cfg.last_vla_vlm_summary_keep_end = self.last_vla_vlm_summary_keep_end
+        cfg.last_vla_vlm_summary_decay_epochs = self.last_vla_vlm_summary_decay_epochs
+        cfg.last_vla_eval_drop_vlm_summary = self.last_vla_eval_drop_vlm_summary
+        cfg.last_vla_aux_decay_epochs = self.last_vla_aux_decay_epochs
         cfg.last_vla_teacher_traj_mode = self.last_vla_teacher_traj_mode
         cfg.last_vla_teacher_traj_mix_start = self.last_vla_teacher_traj_mix_start
         cfg.last_vla_teacher_traj_mix_end = self.last_vla_teacher_traj_mix_end
@@ -573,6 +600,7 @@ class ReCogDriveAgent(AbstractAgent):
             "legacy_a4_expert": {"trainable": 0, "total": 0},
             "action_base": {"trainable": 0, "total": 0},
             "backbone": {"trainable": 0, "total": 0},
+            "backbone_non_lora": {"trainable": 0, "total": 0},
             "vlm_lora": {"trainable": 0, "total": 0},
             "other": {"trainable": 0, "total": 0},
         }
@@ -606,15 +634,19 @@ class ReCogDriveAgent(AbstractAgent):
             elif "lora_" in name:
                 group = "vlm_lora"
             elif name.startswith("backbone."):
-                group = "backbone"
+                group = "backbone_non_lora"
             else:
                 group = "other"
             groups[group]["total"] += count
             if parameter.requires_grad:
                 groups[group]["trainable"] += count
+            if group in {"backbone_non_lora", "vlm_lora"}:
+                groups["backbone"]["total"] += count
+                if parameter.requires_grad:
+                    groups["backbone"]["trainable"] += count
         groups["all"] = {
-            "total": sum(item["total"] for item in groups.values()),
-            "trainable": sum(item["trainable"] for item in groups.values()),
+            "total": sum(item["total"] for key, item in groups.items() if key != "backbone"),
+            "trainable": sum(item["trainable"] for key, item in groups.items() if key != "backbone"),
         }
         return groups
 
@@ -818,6 +850,12 @@ class ReCogDriveAgent(AbstractAgent):
         )
 
     def _set_trainable_parameters(self) -> None:
+        if self.last_vla_train_vlm_lora:
+            for name, parameter in self.named_parameters():
+                is_last_vla_cot = self._is_last_vla_parameter_key(name)
+                is_lora = "lora_" in name
+                parameter.requires_grad = bool(is_last_vla_cot or is_lora)
+            return
         if self.freeze_expert and (self.train_expert_only or self.freeze_base_action_head):
             raise ValueError(
                 "freeze_expert leaves no trainable A4 parameters when combined with "

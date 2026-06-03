@@ -37,6 +37,8 @@ GEOMETRY_KEYS = (
 )
 CONTEXT_KEYS = ("vggt_context_tokens", "vggt_target_tokens")
 MODE_KEY = "vggt_geometry_mode"
+MODE_CODE_KEY = "vggt_geometry_mode_code"
+GEOMETRY_META_KEYS = ("vggt_geometry_source", "vggt_geometry_tokenizer_metadata", MODE_CODE_KEY)
 
 
 def parse_args() -> argparse.Namespace:
@@ -51,6 +53,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--overwrite-context", action="store_true")
     parser.add_argument("--strict-coverage", action="store_true")
     parser.add_argument("--min-coverage", type=float, default=0.99)
+    parser.add_argument("--geometry-teacher-dim", type=int, default=512)
+    parser.add_argument("--num-geometry-tokens", type=int, default=12)
     return parser.parse_args()
 
 
@@ -128,36 +132,63 @@ def copy_or_link(src: Path, dst: Path, mode: str) -> None:
     shutil.copy2(src, dst)
 
 
-def _validate_geometry_value(key: str, payload: Dict[str, Any]) -> None:
+def _validate_geometry_value(key: str, payload: Dict[str, Any], *, geometry_teacher_dim: int, num_geometry_tokens: int) -> None:
     if key not in payload:
         return
-    if key in CONTEXT_SCHEMA:
+    if key in CONTEXT_SCHEMA and key in CONTEXT_KEYS:
         validate_token_tensor(payload, key, CONTEXT_SCHEMA[key])
         return
     value = payload[key]
     if not isinstance(value, torch.Tensor):
         raise TypeError(f"Geometry cache key '{key}' must be a tensor, got {type(value).__name__}.")
-    if value.ndim != 2 or value.shape[-1] != 2048:
-        raise ValueError(f"Geometry cache key '{key}' expected [K, 2048], got {tuple(value.shape)}.")
+    if value.ndim != 2 or tuple(value.shape) != (num_geometry_tokens, geometry_teacher_dim):
+        raise ValueError(f"Geometry cache key '{key}' expected [{num_geometry_tokens}, {geometry_teacher_dim}], got {tuple(value.shape)}.")
     if not torch.isfinite(value.float()).all():
         raise ValueError(f"Geometry cache key '{key}' contains non-finite values.")
 
 
-def extract_geometry_payload(overlay: Dict[str, Any], *, overwrite_context: bool) -> Dict[str, Any]:
+def extract_geometry_payload(
+    overlay: Dict[str, Any],
+    *,
+    overwrite_context: bool,
+    geometry_teacher_dim: int,
+    num_geometry_tokens: int,
+) -> Dict[str, Any]:
     keys: Iterable[str] = (*GEOMETRY_KEYS, *(CONTEXT_KEYS if overwrite_context else ()))
     output: Dict[str, Any] = {}
     for key in keys:
         if key in overlay:
-            _validate_geometry_value(key, overlay)
+            _validate_geometry_value(
+                key,
+                overlay,
+                geometry_teacher_dim=geometry_teacher_dim,
+                num_geometry_tokens=num_geometry_tokens,
+            )
             output[key] = overlay[key]
     if MODE_KEY in overlay:
         output[MODE_KEY] = str(overlay[MODE_KEY])
+    if MODE_CODE_KEY in overlay:
+        code = overlay[MODE_CODE_KEY]
+        output[MODE_CODE_KEY] = code.detach().cpu().long() if isinstance(code, torch.Tensor) else torch.tensor(int(code), dtype=torch.int64)
+    for key in GEOMETRY_META_KEYS:
+        if key in overlay and key not in output:
+            output[key] = overlay[key]
     if "vggt_geometry_tokens" not in output and "vggt_geometry_target_tokens" not in output:
         raise KeyError("Geometry overlay sample does not contain vggt_geometry_tokens or vggt_geometry_target_tokens.")
     return output
 
 
-def write_chunk_metadata(base_chunk: Path, out_chunk: Path, num_records: int, merged: int, missing: int, *, overwrite_context: bool) -> None:
+def write_chunk_metadata(
+    base_chunk: Path,
+    out_chunk: Path,
+    num_records: int,
+    merged: int,
+    missing: int,
+    *,
+    overwrite_context: bool,
+    geometry_teacher_dim: int,
+    num_geometry_tokens: int,
+) -> None:
     try:
         metadata = dict(load_metadata(base_chunk))
     except FileNotFoundError:
@@ -167,7 +198,7 @@ def write_chunk_metadata(base_chunk: Path, out_chunk: Path, num_records: int, me
         if key in CONTEXT_SCHEMA:
             token_shapes[key] = list(CONTEXT_SCHEMA[key])
         elif key.endswith("_tokens"):
-            token_shapes[key] = [12, 2048]
+            token_shapes[key] = [num_geometry_tokens, geometry_teacher_dim]
     metadata.update(
         {
             "contains_vggt_geometry": True,
@@ -177,6 +208,8 @@ def write_chunk_metadata(base_chunk: Path, out_chunk: Path, num_records: int, me
             "num_geometry_merged": int(merged),
             "num_geometry_missing": int(missing),
             "geometry_coverage": float(merged / num_records) if num_records else 0.0,
+            "geometry_teacher_dim": int(geometry_teacher_dim),
+            "num_geometry_tokens": int(num_geometry_tokens),
             "token_shapes": token_shapes,
         }
     )
@@ -192,6 +225,7 @@ def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
     overlay_index = load_overlay_index(args.geometry_cache_root, args.geometry_chunk_name_pattern)
     total_merged = 0
     total_missing = 0
+    mode_counts = {"full_geometry": 0, "patch_fallback": 0, "missing": 0}
     chunk_reports = []
     for chunk_dir in chunk_dirs(args.base_chunk_root, args.chunk_name_pattern):
         out_chunk = args.output_chunk_root / chunk_dir.name
@@ -207,14 +241,21 @@ def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
             if token in overlay_index:
                 sample = load_sample(src_path)
                 overlay = load_sample(overlay_index[token])
-                geometry_payload = extract_geometry_payload(overlay, overwrite_context=bool(args.overwrite_context))
+                geometry_payload = extract_geometry_payload(
+                    overlay,
+                    overwrite_context=bool(args.overwrite_context),
+                    geometry_teacher_dim=int(args.geometry_teacher_dim),
+                    num_geometry_tokens=int(args.num_geometry_tokens),
+                )
                 updated = dict(sample)
                 updated.update(geometry_payload)
                 atomic_torch_save(updated, dst_path)
                 chunk_merged += 1
+                mode_counts[str(geometry_payload.get(MODE_KEY, "missing"))] = mode_counts.get(str(geometry_payload.get(MODE_KEY, "missing")), 0) + 1
             else:
                 copy_or_link(src_path, dst_path, args.copy_mode)
                 chunk_missing += 1
+                mode_counts["missing"] += 1
             out_record = dict(record)
             out_record["path"] = str(rel)
             index_records.append(out_record)
@@ -228,6 +269,8 @@ def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
             chunk_merged,
             chunk_missing,
             overwrite_context=bool(args.overwrite_context),
+            geometry_teacher_dim=int(args.geometry_teacher_dim),
+            num_geometry_tokens=int(args.num_geometry_tokens),
         )
         total_merged += chunk_merged
         total_missing += chunk_missing
@@ -249,10 +292,16 @@ def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
         "merged": int(total_merged),
         "missing": int(total_missing),
         "coverage": float(total_merged / total) if total else 0.0,
+        "full_geometry": int(mode_counts.get("full_geometry", 0)),
+        "patch_fallback": int(mode_counts.get("patch_fallback", 0)),
+        "mode_counts": mode_counts,
+        "geometry_teacher_dim": int(args.geometry_teacher_dim),
+        "num_geometry_tokens": int(args.num_geometry_tokens),
         "overwrite_context": bool(args.overwrite_context),
         "chunk_reports": chunk_reports,
     }
     args.output_chunk_root.mkdir(parents=True, exist_ok=True)
+    write_json(args.output_chunk_root / "merge_summary.json", summary)
     write_json(args.output_chunk_root / "last_vla_geometry_merge_summary.json", summary)
     return summary
 
