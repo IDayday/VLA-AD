@@ -39,6 +39,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--no-rslora", dest="use_rslora", action="store_false")
     parser.add_argument("--use-dora", action="store_true", default=False)
     parser.add_argument("--lora-target-report", type=Path, default=None)
+    parser.add_argument("--lora-training-config", type=Path, default=None)
+    parser.add_argument("--allow-config-mismatch", action="store_true")
     return parser.parse_args()
 
 
@@ -66,6 +68,52 @@ def _read_target_report(path: Optional[Path]) -> Dict[str, Any]:
     if path is None or not path.is_file():
         return {}
     return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _read_training_config(args: argparse.Namespace) -> Dict[str, Any]:
+    candidates = []
+    if args.lora_training_config is not None:
+        candidates.append(args.lora_training_config)
+    candidates.append(args.checkpoint.parent / "lora_training_config.json")
+    for path in candidates:
+        if path is not None and path.is_file():
+            return json.loads(path.read_text(encoding="utf-8"))
+    return {}
+
+
+def _config_value(config: Dict[str, Any], key: str, default: Any) -> Any:
+    return config.get(key, default)
+
+
+def _canonical_targets(value: Any) -> Any:
+    if isinstance(value, str):
+        return _split_targets(value)
+    if isinstance(value, list):
+        return [str(item) for item in value]
+    return value
+
+
+def _check_cli_matches_training_config(args: argparse.Namespace, training_config: Dict[str, Any]) -> list[str]:
+    checks = {
+        "preset": (args.preset, str(_config_value(training_config, "preset", args.preset))),
+        "scope": (args.scope, str(_config_value(training_config, "scope", args.scope))),
+        "r": (int(args.r), int(_config_value(training_config, "r", args.r))),
+        "alpha": (int(args.alpha), int(_config_value(training_config, "alpha", args.alpha))),
+        "dropout": (float(args.dropout), float(_config_value(training_config, "dropout", args.dropout))),
+        "bias": (args.bias, str(_config_value(training_config, "bias", args.bias))),
+        "use_rslora": (bool(args.use_rslora), bool(_config_value(training_config, "use_rslora", args.use_rslora))),
+        "use_dora": (bool(args.use_dora), bool(_config_value(training_config, "use_dora", args.use_dora))),
+    }
+    warnings_list = []
+    for key, (cli_value, train_value) in checks.items():
+        if cli_value != train_value:
+            warnings_list.append(f"{key}: cli={cli_value!r} training_config={train_value!r}")
+    if args.target_modules:
+        cli_targets = _canonical_targets(args.target_modules)
+        train_targets = _canonical_targets(training_config.get("target_modules", training_config.get("resolved_target_modules", cli_targets)))
+        if cli_targets != train_targets:
+            warnings_list.append(f"target_modules: cli={cli_targets!r} training_config={train_targets!r}")
+    return warnings_list
 
 
 def main() -> int:
@@ -96,19 +144,34 @@ def main() -> int:
     torch.save({"state_dict": lora}, lora_path)
     torch.save(lora, lora_model_path)
     target_report = _read_target_report(args.lora_target_report)
-    resolved = target_report.get("resolved_target_modules") or _split_targets(args.resolved_target_modules or args.target_modules)
+    training_config = _read_training_config(args)
+    mismatch_warnings = _check_cli_matches_training_config(args, training_config) if training_config else []
+    if mismatch_warnings and not args.allow_config_mismatch:
+        raise ValueError(
+            "LoRA extraction CLI arguments do not match lora_training_config.json: "
+            + "; ".join(mismatch_warnings)
+            + ". Pass --allow-config-mismatch only for explicit recovery/debug use."
+        )
+    resolved = (
+        training_config.get("resolved_target_modules")
+        or training_config.get("target_modules")
+        or target_report.get("resolved_target_modules")
+        or _split_targets(args.resolved_target_modules or args.target_modules)
+    )
     config_payload = build_lora_config_payload(
-        preset=args.preset,
-        scope=args.scope,
+        preset=str(training_config.get("preset", args.preset)),
+        scope=str(training_config.get("scope", args.scope)),
         target_modules=resolved,
-        r=args.r,
-        alpha=args.alpha,
-        dropout=args.dropout,
-        bias=args.bias,
-        use_rslora=args.use_rslora,
-        use_dora=args.use_dora,
-        init="default",
-        vision_last_n=0,
+        r=int(training_config.get("r", args.r)),
+        alpha=int(training_config.get("alpha", args.alpha)),
+        dropout=float(training_config.get("dropout", args.dropout)),
+        bias=str(training_config.get("bias", args.bias)),
+        use_rslora=bool(training_config.get("use_rslora", args.use_rslora)),
+        use_dora=bool(training_config.get("use_dora", args.use_dora)),
+        init=str(training_config.get("init", "default")),
+        vision_last_n=int(training_config.get("vision_last_n", 0) or 0),
+        allow_all_linear_global=bool(training_config.get("allow_all_linear_global", False)),
+        hidden_anchor_every_n_steps=training_config.get("hidden_anchor_every_n_steps", None),
         peft_version=getattr(peft, "__version__", None),
     )
     write_json(vlm_lora_dir / "adapter_config.json", config_payload)
@@ -124,6 +187,10 @@ def main() -> int:
         "trainable_lora_param_count": target_report.get("trainable_lora_param_count", None),
         "peft_version": getattr(peft, "__version__", None),
         "source_checkpoint": str(args.checkpoint),
+        "training_config_path": str(args.lora_training_config or (args.checkpoint.parent / "lora_training_config.json")),
+        "used_training_config": bool(training_config),
+        "config_mismatch_warnings": mismatch_warnings,
+        "high_risk_warnings": ["allowed_config_mismatch"] if mismatch_warnings and args.allow_config_mismatch else [],
     }
     metadata["adapter_config_hash"] = stable_config_hash(config_payload)
     write_json(vlm_lora_dir / "lora_metadata.json", metadata)
@@ -140,6 +207,8 @@ def main() -> int:
         "num_cot_keys": len(cot),
         "num_lora_keys": len(lora),
         "adapter_config_hash": metadata["adapter_config_hash"],
+        "used_training_config": bool(training_config),
+        "config_mismatch_warnings": mismatch_warnings,
     }
     (args.output_dir / "adapter_extract_report.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     print(json.dumps(report, indent=2, sort_keys=True))

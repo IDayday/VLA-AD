@@ -685,6 +685,7 @@ def write_run_reports(
         dataloader_params = dataloader_cfg.get("params", {}) if dataloader_cfg is not None else {}
         trainer_cfg = cfg.get("trainer", {})
         trainer_params = trainer_cfg.get("params", {}) if trainer_cfg is not None else {}
+        actual_lora_audit = (lora_target_report or {}).get("actual_trainable_audit", {})
         runtime_report = {
             "effective_batch_size": dataloader_params.get("batch_size", None),
             "precision": str(trainer_params.get("precision", "")),
@@ -699,8 +700,12 @@ def write_run_reports(
             "lr_last_vla_cot": cfg.agent.get("lr_last_vla_cot", None),
             "hidden_anchor_weight": cfg.agent.get("last_vla_hidden_anchor_weight", 0.0),
             "hidden_anchor_mode": cfg.agent.get("last_vla_hidden_anchor_mode", "none"),
+            "hidden_anchor_every_n_steps": cfg.agent.get("last_vla_hidden_anchor_every_n_steps", None),
             "matched_module_counts": (lora_target_report or {}).get("matched_by_category", {}),
             "matched_total": (lora_target_report or {}).get("matched_total", 0),
+            "actual_trainable_lora_audit": actual_lora_audit,
+            "actual_trainable_lora_param_count": actual_lora_audit.get("actual_trainable_lora_param_count", 0),
+            "actual_trainable_lora_module_count": actual_lora_audit.get("actual_trainable_lora_module_count", 0),
             "trainable_parameter_counts": trainable_counts,
             "trainable_ratio": (lora_target_report or {}).get("trainable_ratio", 0.0),
             "backbone_non_lora_trainable": bool(

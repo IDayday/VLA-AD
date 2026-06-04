@@ -11,6 +11,7 @@ last_vla_vlm_lora_use_dora: false
 last_vla_vlm_lora_target_modules: ""
 last_vla_hidden_anchor_weight: 0.01
 last_vla_hidden_anchor_mode: summary_cosine
+last_vla_hidden_anchor_every_n_steps: 4
 lr_vlm_lora: 1e-5
 lr_last_vla_cot: 1e-4
 

@@ -4,7 +4,7 @@ import hashlib
 import inspect
 import json
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Sequence
+from typing import Any, Dict, List, Sequence
 
 import torch
 from torch import nn
@@ -71,11 +71,6 @@ def _matches_any_suffix(name: str, suffixes: Sequence[str]) -> bool:
     return _module_name_suffix(name) in set(suffixes)
 
 
-def _unique_suffixes(module_names: Iterable[str]) -> List[str]:
-    suffixes = sorted({_module_name_suffix(name) for name in module_names})
-    return suffixes
-
-
 def infer_lora_module_category(module_name: str) -> str:
     suffix = _module_name_suffix(module_name)
     if _is_projector_name(module_name):
@@ -139,6 +134,7 @@ def resolve_lora_target_modules(
     scope: str,
     custom_target_modules: str,
     vision_last_n: int,
+    allow_all_linear_global: bool = False,
 ) -> list[str] | str:
     preset = str(preset)
     scope = str(scope)
@@ -156,15 +152,16 @@ def resolve_lora_target_modules(
         return targets
     if preset == "attention_only":
         matched = _suffix_target_matches(model, ATTENTION_SUFFIXES, scope)
-        targets = _unique_suffixes(matched)
+        targets = sorted(matched)
     elif preset == "attention_mlp":
         matched = _suffix_target_matches(model, (*ATTENTION_SUFFIXES, *MLP_SUFFIXES), scope)
-        targets = _unique_suffixes(matched)
+        targets = sorted(matched)
     elif preset == "all_linear":
         matched = [name for name in _named_linear_modules(model) if _matches_scope(name, scope)]
-        targets = _unique_suffixes(matched)
-        if not targets:
+        if scope == "all" and allow_all_linear_global:
             targets = "all-linear"
+        else:
+            targets = sorted(matched)
     elif preset == "vision_last_n":
         matched = _vision_last_n_matches(model, vision_last_n=vision_last_n, scope=scope)
         targets = sorted(matched)
@@ -215,6 +212,7 @@ def audit_lora_target_modules(
     if preset == "attention_mlp" and matched_by_category["llm_mlp"] + matched_by_category["vision_mlp"] == 0:
         warnings_list.append("preset=attention_mlp matched no MLP modules.")
     return {
+        "audit_type": "intended",
         "preset": preset,
         "scope": scope,
         "resolved_target_modules": target_modules,
@@ -228,19 +226,64 @@ def audit_lora_target_modules(
     }
 
 
+def _base_module_from_lora_parameter(parameter_name: str) -> str:
+    name = parameter_name
+    if ".lora_" in name:
+        name = name.split(".lora_", 1)[0]
+    for prefix in ("base_model.model.", "model."):
+        if name.startswith(prefix):
+            name = name[len(prefix):]
+    return name
+
+
+def audit_actual_trainable_lora_modules(model: nn.Module, *, scope: str | None = None) -> dict:
+    modules: Dict[str, int] = {}
+    total_params = 0
+    for name, parameter in model.named_parameters():
+        if "lora_" not in name or not parameter.requires_grad:
+            continue
+        base_module = _base_module_from_lora_parameter(name)
+        count = int(parameter.numel())
+        total_params += count
+        modules[base_module] = modules.get(base_module, 0) + count
+
+    by_category = {category: 0 for category in LORA_CATEGORIES}
+    param_by_category = {category: 0 for category in LORA_CATEGORIES}
+    for module_name, param_count in modules.items():
+        category = infer_lora_module_category(module_name)
+        by_category[category] += 1
+        param_by_category[category] += int(param_count)
+
+    return {
+        "audit_type": "actual_trainable",
+        "scope": scope,
+        "actual_trainable_lora_param_count": int(total_params),
+        "actual_trainable_lora_module_count": int(len(modules)),
+        "actual_trainable_lora_modules": sorted(modules),
+        "actual_trainable_by_category": by_category,
+        "actual_trainable_params_by_category": param_by_category,
+    }
+
+
 def validate_lora_scope_audit(audit: dict, *, allow_mixed_scope: bool = False) -> None:
     scope = str(audit.get("scope"))
-    by_cat = audit.get("matched_by_category") or {}
-    if int(audit.get("matched_total", 0)) <= 0:
+    by_cat = audit.get("matched_by_category") or audit.get("actual_trainable_by_category") or {}
+    total = int(audit.get("matched_total", audit.get("actual_trainable_lora_module_count", 0)))
+    if total <= 0:
         raise ValueError("LoRA target audit matched zero modules.")
     if allow_mixed_scope:
         return
     vision_count = int(by_cat.get("vision_attention", 0)) + int(by_cat.get("vision_mlp", 0))
     llm_count = int(by_cat.get("llm_attention", 0)) + int(by_cat.get("llm_mlp", 0))
+    projector_count = int(by_cat.get("projector", 0))
     if scope == "llm" and vision_count > 0:
         raise ValueError("LoRA scope=llm matched vision modules; set allow_mixed_scope only for explicit ablations.")
-    if scope == "vision" and llm_count > 0:
+    if scope == "llm" and projector_count > 0:
+        raise ValueError("LoRA scope=llm matched projector modules; set allow_mixed_scope only for explicit ablations.")
+    if scope == "vision" and (llm_count > 0 or projector_count > 0):
         raise ValueError("LoRA scope=vision matched LLM modules; set allow_mixed_scope only for explicit ablations.")
+    if scope == "projector" and (llm_count > 0 or vision_count > 0):
+        raise ValueError("LoRA scope=projector matched non-projector modules; set allow_mixed_scope only for explicit ablations.")
 
 
 def peft_lora_config_kwargs_supported() -> set[str]:
@@ -271,6 +314,8 @@ def build_lora_config_payload(
     use_dora: bool,
     init: str,
     vision_last_n: int,
+    allow_all_linear_global: bool = False,
+    hidden_anchor_every_n_steps: int | None = None,
     peft_version: str | None = None,
 ) -> Dict[str, Any]:
     return {
@@ -288,6 +333,8 @@ def build_lora_config_payload(
         "use_dora": bool(use_dora),
         "init": str(init),
         "vision_last_n": int(vision_last_n),
+        "allow_all_linear_global": bool(allow_all_linear_global),
+        "hidden_anchor_every_n_steps": None if hidden_anchor_every_n_steps is None else int(hidden_anchor_every_n_steps),
         "peft_version": peft_version,
     }
 

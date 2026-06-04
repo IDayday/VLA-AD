@@ -108,6 +108,8 @@ High-cap no-risk deliberately excludes the risk branch, PDM-reranked SFT as the 
 
 The high-cap cache is not compatible with old 12-token JEPA caches. JEPA cache generation must expose dense or sufficiently many JEPA tokens and deterministically pool to `128`; re-pooling or repeating the old 12 already-pooled tokens is invalid. Full VGGT geometry cache must also be regenerated to `[192, 512]` with mode code `2`.
 
+The former minimal `4/32/12/12`, geometry-lite, patch-fallback, and teacher-trajectory/PDM-reranked Last-VLA v2 configs are archived and are not production entrypoints. A0/A4/LastRD baseline code remains in place; the cleanup only applies to obsolete Last-VLA v2 training configs and launchers. Canonical Last-VLA v2 config names now resolve to high-cap no-risk values.
+
 ## Progressive Residual Schedule
 
 Progressive SFT uses a residual alpha schedule:

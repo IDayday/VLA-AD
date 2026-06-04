@@ -54,6 +54,8 @@ Scopes:
 
 If a preset matches zero modules, startup fails. If `attention_mlp` matches no MLP modules, the target report records a high-risk warning.
 
+Scoped presets resolve to full module names rather than bare suffixes. This prevents PEFT from globally matching `q_proj` or `gate_proj` inside the vision tower when `scope=llm`. After PEFT injection, the code audits actual trainable `lora_` parameters and fails if the trainable scope crosses into vision/projector modules unless `last_vla_lora_allow_mixed_scope=true` is explicitly set.
+
 ## Trainable Scope
 
 During online VLM-LoRA CoT alignment, only two groups are trainable:
@@ -79,6 +81,8 @@ Hidden-anchor regularization keeps LoRA from destroying the ReCogDrive semantic 
 `loss = 1 - cosine(mean(lora_hidden), mean(frozen_hidden))`
 
 Default weight is `0.01`. The loss is training-only and disabled for cached hidden progressive SFT.
+
+The frozen-base anchor forward is throttled by `last_vla_hidden_anchor_every_n_steps`, default `4`, to avoid doubling VLM forward cost every step. Skipped steps log `hidden_anchor_computed=0` and do not add a zero-valued anchor loss.
 
 ## Adapter Saving
 

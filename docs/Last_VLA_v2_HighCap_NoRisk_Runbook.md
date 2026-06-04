@@ -4,6 +4,8 @@ Baseline: A0-official-aligned `step_00100000`, full navtest PDMS `0.864891`, eva
 
 This is the formal Last-VLA v2 SFT path. Minimal configs are smoke only. Do not set `RUN_CACHE=1`, `RUN_TRAIN=1`, or `RUN_EVAL=1` until the commands have been reviewed.
 
+Production configs are high-cap no-risk only. Old minimal `4/32/12/12`, geometry-lite, patch-fallback, and teacher-trajectory/PDM-reranked Last-VLA v2 configs are archived under `configs/last_vla_v2/archive/` and `scripts/last_vla_v2/archive/`.
+
 ## Token Contract
 
 - VLM summary: `64`
@@ -45,6 +47,20 @@ python scripts/build_recogdrive_chunk_cache.py \
 ```
 
 For smoke only, add `--max-samples N`. Production cache generation should be scheduled explicitly outside this task.
+
+Unified strict data prep dry-run:
+
+```bash
+BASE_CHUNK_ROOT=/path/to/official_aligned_base_chunks \
+OUTPUT_ROOT=$OUT_ROOT/last_vla_v2 \
+VGGT_MODEL_PATH=/path/to/VGGT-1B \
+VJEPA_MODEL_PATH=/path/to/vjepa2 \
+CHUNK_INDEX=0 \
+CHUNK_SIZE=1024 \
+scripts/last_vla_v2/highcap_no_risk/prepare_highcap_no_risk_data.sh
+```
+
+Actual cache generation still requires `RUN_CACHE=1` and either `MAX_SAMPLES` for smoke or `ALLOW_FULL_CACHE_WITHOUT_MAX=1` for production.
 
 ## 2. Generate Full Geometry Overlay
 
@@ -140,7 +156,7 @@ Regenerate Line B navtest hidden cache before eval:
 ```bash
 NAVTEST_CHUNK_CACHE_ROOT=/path/to/navtest_highcap_full_geometry_chunks \
 VLM_PATH=/path/to/base_vlm \
-VLM_LORA_ADAPTER=$OUT_ROOT/highcap_no_risk/serverB_lora_highcap_no_risk/vlm_lora_cot_alignment/adapters/vlm_lora_adapter_state.pt \
+VLM_LORA_ADAPTER_DIR=$OUT_ROOT/highcap_no_risk/serverB_lora_highcap_no_risk/vlm_lora_cot_alignment/adapters/vlm_lora \
 OUTPUT_CHUNK_ROOT=$OUT_ROOT/highcap_no_risk/serverB_lora_highcap_no_risk/lora_navtest_cache \
 scripts/last_vla_v2/highcap_no_risk/build_lora_navtest_cache_highcap.sh
 ```
@@ -180,3 +196,43 @@ python scripts/last_vla_v2/highcap_no_risk/summarize_highcap_no_risk.py \
 ```
 
 No performance should be claimed before full training and full PDM eval artifacts exist.
+
+## 10. Final Readiness And Launch
+
+Run the strict gate before training:
+
+```bash
+FULL_HIGHCAP_TRAIN_CHUNK_ROOT=/path/to/highcap_no_risk/train_full_highcap_chunks \
+A0_INIT_CHECKPOINT=/path/to/step_00100000.ckpt \
+OUT_ROOT=$OUT_ROOT/highcap_no_risk \
+scripts/last_vla_v2/highcap_no_risk/run_final_readiness_gate.sh
+```
+
+Only when the report says `READY`, launch local Server A and remote Server B:
+
+```bash
+RUN_TRAIN=1 \
+PROJECT_ROOT=/mnt/project/VLA-AD \
+OUT_ROOT=$OUT_ROOT/highcap_no_risk \
+FULL_HIGHCAP_TRAIN_CHUNK_ROOT=/path/to/highcap_no_risk/train_full_highcap_chunks \
+A0_INIT_CHECKPOINT=/path/to/step_00100000.ckpt \
+REMOTE_HOST=training-vla-zt-peer \
+REMOTE_PROJECT_ROOT=/mnt/project/VLA-AD \
+REMOTE_OUT_ROOT=$OUT_ROOT/highcap_no_risk \
+REMOTE_FULL_HIGHCAP_TRAIN_CHUNK_ROOT=/path/to/highcap_no_risk/train_full_highcap_chunks \
+REMOTE_A0_INIT_CHECKPOINT=/path/to/step_00100000.ckpt \
+REMOTE_VLM_PATH=/path/to/base_vlm \
+REMOTE_NAVSIM_LOG_PATH=/path/to/navsim_logs \
+REMOTE_SENSOR_BLOBS_PATH=/path/to/sensor_blobs \
+scripts/last_vla_v2/highcap_no_risk/launch_local_remote_full_training.sh
+```
+
+Prepare eval commands after training, without running full eval:
+
+```bash
+OUT_ROOT=$OUT_ROOT/highcap_no_risk \
+NAVTEST_HIGHCAP_CHUNK_ROOT=/path/to/navtest_highcap_chunks \
+VLM_PATH=/path/to/base_vlm \
+PDM_METRIC_CACHE_DIR=/path/to/navtest_metric_cache \
+scripts/last_vla_v2/highcap_no_risk/prepare_eval_after_training.sh
+```

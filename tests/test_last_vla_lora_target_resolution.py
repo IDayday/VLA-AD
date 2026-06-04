@@ -41,10 +41,13 @@ def test_attention_only_resolves_attention_suffixes_only():
         vision_last_n=0,
     )
 
-    assert targets == ["k_proj", "o_proj", "q_proj", "v_proj"]
+    assert all(name.startswith("llm.layers.") for name in targets)
+    assert all(name.rsplit(".", 1)[-1] in {"k_proj", "o_proj", "q_proj", "v_proj"} for name in targets)
+    assert "q_proj" not in targets
+    assert "vision_tower.blocks.0.q_proj" not in targets
 
 
-def test_attention_mlp_resolves_attention_and_mlp_suffixes():
+def test_attention_mlp_scope_llm_returns_full_names_not_suffixes():
     targets = resolve_lora_target_modules(
         SyntheticVLM(),
         preset="attention_mlp",
@@ -54,10 +57,26 @@ def test_attention_mlp_resolves_attention_and_mlp_suffixes():
     )
 
     for name in ("q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj", "fc1", "fc2"):
-        assert name in targets
+        assert f"llm.layers.0.{name}" in targets
+        assert name not in targets
+    assert all(target.startswith("llm.layers.") for target in targets)
 
 
-def test_all_linear_resolves_all_allowed_linear_suffixes():
+def test_all_linear_scope_llm_does_not_return_global_all_linear():
+    targets = resolve_lora_target_modules(
+        SyntheticVLM(),
+        preset="all_linear",
+        scope="llm",
+        custom_target_modules="",
+        vision_last_n=0,
+    )
+
+    assert targets != "all-linear"
+    assert all(name.startswith("llm.layers.") for name in targets)
+    assert "vision_tower.blocks.0.q_proj" not in targets
+
+
+def test_all_linear_resolves_all_allowed_linear_full_names():
     targets = resolve_lora_target_modules(
         SyntheticVLM(),
         preset="all_linear",
@@ -68,8 +87,29 @@ def test_all_linear_resolves_all_allowed_linear_suffixes():
 
     assert "lm_head" not in targets
     assert "action_head" not in targets
-    assert "q_proj" in targets
+    assert "llm.layers.0.q_proj" in targets
     assert "mm_projector" in targets
+
+
+def test_all_linear_scope_all_can_use_global_all_linear_only_when_explicitly_allowed():
+    targets = resolve_lora_target_modules(
+        SyntheticVLM(),
+        preset="all_linear",
+        scope="all",
+        custom_target_modules="",
+        vision_last_n=0,
+    )
+    assert targets != "all-linear"
+
+    global_targets = resolve_lora_target_modules(
+        SyntheticVLM(),
+        preset="all_linear",
+        scope="all",
+        custom_target_modules="",
+        vision_last_n=0,
+        allow_all_linear_global=True,
+    )
+    assert global_targets == "all-linear"
 
 
 def test_custom_resolves_exact_list_and_zero_match_raises():

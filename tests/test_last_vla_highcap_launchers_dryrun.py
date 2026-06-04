@@ -32,6 +32,16 @@ def _env(tmp_path: Path) -> dict[str, str]:
 
 def test_highcap_launchers_dryrun_do_not_launch_training_and_include_overrides(tmp_path: Path):
     env = _env(tmp_path)
+    env.update(
+        {
+            "LORA_PRESET": "all_linear",
+            "LORA_SCOPE": "llm",
+            "LORA_R": "64",
+            "LORA_ALPHA": "128",
+            "LORA_DROPOUT": "0.05",
+            "LORA_USE_RSLORA": "true",
+        }
+    )
     subprocess.run(["bash", "scripts/last_vla_v2/highcap_no_risk/serverA_frozen_vlm_highcap_no_risk.sh"], env=env, check=True)
     subprocess.run(["bash", "scripts/last_vla_v2/highcap_no_risk/serverB_vlm_lora_highcap_no_risk.sh"], env=env, check=True)
 
@@ -52,3 +62,13 @@ def test_highcap_launchers_dryrun_do_not_launch_training_and_include_overrides(t
     assert "navsim_log_path=" in text_b
     assert "sensor_blobs_path=" in text_b
     assert "--cache-variant highcap_no_risk" in text_b
+    assert "agent.last_vla_vlm_lora_preset=all_linear" in text_b
+    assert "agent.last_vla_vlm_lora_scope=llm" in text_b
+    assert "agent.last_vla_vlm_lora_r=64" in text_b
+    assert "agent.last_vla_vlm_lora_alpha=128" in text_b
+    assert "--preset all_linear" in text_b
+    assert "--scope llm" in text_b
+    assert "--r 64" in text_b
+    assert "--alpha 128" in text_b
+    assert "--use-rslora" in text_b
+    assert "attention_mlp" not in text_b

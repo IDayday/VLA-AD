@@ -36,6 +36,7 @@ from .recogdrive_diffusion_planner import (
     ReCogDriveDiffusionPlannerConfig,
 )
 from .vlm_lora_utils import (
+    audit_actual_trainable_lora_modules,
     audit_lora_target_modules,
     build_lora_config_payload,
     infer_lora_module_category,
@@ -230,13 +231,14 @@ class ReCogDriveAgent(AbstractAgent):
         last_vla_vlm_lora_init: str = "default",
         last_vla_vlm_lora_vision_last_n: int = 0,
         last_vla_lora_allow_mixed_scope: bool = False,
+        last_vla_lora_allow_all_linear_global: bool = False,
         lr_vlm_lora: Optional[float] = 1e-5,
         weight_decay_vlm_lora: float = 0.0,
         lr_last_vla_cot: Optional[float] = 1e-4,
         weight_decay_last_vla_cot: float = 1e-4,
         last_vla_hidden_anchor_weight: float = 0.01,
         last_vla_hidden_anchor_mode: str = "summary_cosine",
-        last_vla_hidden_anchor_every_n_steps: int = 1,
+        last_vla_hidden_anchor_every_n_steps: int = 4,
         last_vla_log_lora_diagnostics: bool = True,
         lr_action_head: Optional[float] = None,
         lr_expert: Optional[float] = None,
@@ -414,6 +416,7 @@ class ReCogDriveAgent(AbstractAgent):
         self.last_vla_vlm_lora_init = str(last_vla_vlm_lora_init)
         self.last_vla_vlm_lora_vision_last_n = int(last_vla_vlm_lora_vision_last_n)
         self.last_vla_lora_allow_mixed_scope = bool(last_vla_lora_allow_mixed_scope)
+        self.last_vla_lora_allow_all_linear_global = bool(last_vla_lora_allow_all_linear_global)
         self.lr_vlm_lora = lr_vlm_lora
         self.weight_decay_vlm_lora = float(weight_decay_vlm_lora)
         self.lr_last_vla_cot = lr_last_vla_cot
@@ -425,6 +428,7 @@ class ReCogDriveAgent(AbstractAgent):
         self._last_vla_lora_audit: Optional[Dict[str, Any]] = None
         self._last_vla_lora_config_payload: Optional[Dict[str, Any]] = None
         self._optimizer_group_report: List[Dict[str, Any]] = []
+        self._hidden_anchor_forward_index = 0
         self.lr_action_head = lr_action_head
         self.lr_expert = lr_expert
         self.lr_expert_gate = lr_expert_gate
@@ -646,6 +650,8 @@ class ReCogDriveAgent(AbstractAgent):
             raise ValueError("lr_last_vla_cot must be positive when set.")
         if self.weight_decay_vlm_lora < 0.0 or self.weight_decay_last_vla_cot < 0.0:
             raise ValueError("LoRA/Last-VLA CoT weight decay must be non-negative.")
+        if self.last_vla_hidden_anchor_every_n_steps <= 0:
+            raise ValueError("last_vla_hidden_anchor_every_n_steps must be positive.")
 
     def _enable_last_vla_vlm_lora(self) -> None:
         if self.backbone is None:
@@ -666,6 +672,7 @@ class ReCogDriveAgent(AbstractAgent):
             scope=self.last_vla_vlm_lora_scope,
             custom_target_modules=self.last_vla_vlm_lora_target_modules,
             vision_last_n=self.last_vla_vlm_lora_vision_last_n,
+            allow_all_linear_global=self.last_vla_lora_allow_all_linear_global,
         )
         pre_audit = audit_lora_target_modules(
             base_vlm,
@@ -714,7 +721,30 @@ class ReCogDriveAgent(AbstractAgent):
             post_audit["matched_total"] = pre_audit["matched_total"]
             post_audit["matched_module_names"] = pre_audit["matched_module_names"]
             post_audit["matched_by_category"] = pre_audit["matched_by_category"]
-        self._last_vla_lora_audit = post_audit
+        actual_audit = audit_actual_trainable_lora_modules(
+            self.backbone.model,
+            scope=self.last_vla_vlm_lora_scope,
+        )
+        validate_lora_scope_audit(actual_audit, allow_mixed_scope=self.last_vla_lora_allow_mixed_scope)
+        if int(actual_audit.get("actual_trainable_lora_param_count", 0)) <= 0:
+            raise RuntimeError("PEFT injection produced zero trainable LoRA parameters.")
+        self._last_vla_lora_audit = {
+            "preset": self.last_vla_vlm_lora_preset,
+            "scope": self.last_vla_vlm_lora_scope,
+            "resolved_target_modules": target_modules,
+            "matched_total": post_audit.get("matched_total", 0),
+            "matched_by_category": post_audit.get("matched_by_category", {}),
+            "trainable_lora_param_count": actual_audit.get("actual_trainable_lora_param_count", 0),
+            "base_model_param_count": post_audit.get("base_model_param_count", 0),
+            "trainable_ratio": (
+                float(actual_audit.get("actual_trainable_lora_param_count", 0))
+                / float(post_audit.get("base_model_param_count", 1) or 1)
+            ),
+            "intended_audit": pre_audit,
+            "post_injection_intended_audit": post_audit,
+            "actual_trainable_audit": actual_audit,
+            "high_risk_warnings": list(post_audit.get("high_risk_warnings", [])),
+        }
         self._last_vla_lora_config_payload = build_lora_config_payload(
             preset=self.last_vla_vlm_lora_preset,
             scope=self.last_vla_vlm_lora_scope,
@@ -727,6 +757,8 @@ class ReCogDriveAgent(AbstractAgent):
             use_dora=self.last_vla_vlm_lora_use_dora,
             init=self.last_vla_vlm_lora_init,
             vision_last_n=self.last_vla_vlm_lora_vision_last_n,
+            allow_all_linear_global=self.last_vla_lora_allow_all_linear_global,
+            hidden_anchor_every_n_steps=self.last_vla_hidden_anchor_every_n_steps,
         )
         if int(os.getenv("LOCAL_RANK", os.getenv("RANK", "0"))) == 0:
             print(
@@ -735,7 +767,8 @@ class ReCogDriveAgent(AbstractAgent):
                 f"r={self.last_vla_vlm_lora_r}, alpha={self.last_vla_vlm_lora_alpha}, "
                 f"dropout={self.last_vla_vlm_lora_dropout}, use_rslora={self.last_vla_vlm_lora_use_rslora}, "
                 f"use_dora={self.last_vla_vlm_lora_use_dora}, matched={post_audit['matched_total']}, "
-                f"trainable_lora_params={post_audit['trainable_lora_param_count']}"
+                f"actual_lora_modules={actual_audit['actual_trainable_lora_module_count']}, "
+                f"trainable_lora_params={actual_audit['actual_trainable_lora_param_count']}"
             )
 
     def count_trainable_parameters_by_group(self) -> Dict[str, Dict[str, int]]:
@@ -876,6 +909,8 @@ class ReCogDriveAgent(AbstractAgent):
         hidden_anchor_loss: Optional[torch.Tensor] = None
         hidden_drift_cosine: Optional[torch.Tensor] = None
         hidden_drift_l2: Optional[torch.Tensor] = None
+        hidden_anchor_computed = False
+        hidden_anchor_step_index: Optional[int] = None
         if self.cache_hidden_state:
             last_hidden_state = features["last_hidden_state"].to(action_device)
         else:
@@ -924,8 +959,10 @@ class ReCogDriveAgent(AbstractAgent):
                 questions.append(f"{prompt}{output_requirements}")
 
             frozen_hidden_state = None
-            if self._hidden_anchor_active():
+            should_compute_anchor, hidden_anchor_step_index = self._next_hidden_anchor_decision()
+            if should_compute_anchor:
                 frozen_hidden_state = self._compute_frozen_vlm_hidden(pixel_values_cat, questions, num_patches_list)
+                hidden_anchor_computed = frozen_hidden_state is not None
             outputs = self.backbone(pixel_values_cat, questions, num_patches_list=num_patches_list)
             last_hidden_state = outputs.hidden_states[-1]
             if frozen_hidden_state is not None:
@@ -970,7 +1007,14 @@ class ReCogDriveAgent(AbstractAgent):
                 }
             )
             predictions = self.action_head(last_hidden_state, action_inputs)
-            self._attach_hidden_anchor_outputs(predictions, hidden_anchor_loss, hidden_drift_cosine, hidden_drift_l2)
+            self._attach_hidden_anchor_outputs(
+                predictions,
+                hidden_anchor_loss,
+                hidden_drift_cosine,
+                hidden_drift_l2,
+                hidden_anchor_computed=hidden_anchor_computed,
+                hidden_anchor_step_index=hidden_anchor_step_index,
+            )
             return predictions
         elif self.training and self.grpo:
             action_inputs = BatchFeature(
@@ -1231,6 +1275,13 @@ class ReCogDriveAgent(AbstractAgent):
             return False
         return True
 
+    def _next_hidden_anchor_decision(self) -> tuple[bool, Optional[int]]:
+        if not self._hidden_anchor_active():
+            return False, None
+        step_index = self._hidden_anchor_forward_index
+        self._hidden_anchor_forward_index += 1
+        return step_index % self.last_vla_hidden_anchor_every_n_steps == 0, step_index
+
     def _compute_frozen_vlm_hidden(self, pixel_values: torch.Tensor, questions: List[str], num_patches_list: List[int]) -> Optional[torch.Tensor]:
         if self.backbone is None or getattr(self.backbone, "model", None) is None:
             return None
@@ -1277,8 +1328,27 @@ class ReCogDriveAgent(AbstractAgent):
         hidden_anchor_loss: Optional[torch.Tensor],
         hidden_drift_cosine: Optional[torch.Tensor],
         hidden_drift_l2: Optional[torch.Tensor],
+        *,
+        hidden_anchor_computed: bool = False,
+        hidden_anchor_step_index: Optional[int] = None,
     ) -> None:
+        ref_tensor = predictions.get("loss")
+        if ref_tensor is None and hidden_anchor_loss is not None:
+            ref_tensor = hidden_anchor_loss
+        if ref_tensor is not None and hidden_anchor_step_index is not None:
+            ref = ref_tensor.detach()
+            predictions["hidden_anchor_computed"] = ref.new_tensor(1.0 if hidden_anchor_computed else 0.0)
+            predictions["hidden_anchor_every_n_steps_tensor"] = ref.new_tensor(float(self.last_vla_hidden_anchor_every_n_steps))
+            predictions["hidden_anchor_step_index"] = ref.new_tensor(float(hidden_anchor_step_index))
         if hidden_anchor_loss is None:
+            if ref_tensor is not None and self._last_vla_lora_audit is not None:
+                ref = ref_tensor.detach()
+                predictions["lora_trainable_param_count"] = ref.new_tensor(
+                    float(self._last_vla_lora_audit.get("trainable_lora_param_count", 0))
+                )
+                predictions["lora_matched_module_count"] = ref.new_tensor(
+                    float(self._last_vla_lora_audit.get("matched_total", 0))
+                )
             return
         weighted = hidden_anchor_loss * float(self.last_vla_hidden_anchor_weight)
         if "loss" in predictions:

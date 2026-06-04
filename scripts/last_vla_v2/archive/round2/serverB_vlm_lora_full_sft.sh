@@ -14,6 +14,16 @@ done
 PYTHON_BIN="${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}"
 TORCHRUN_BIN="${TORCHRUN_BIN:-$(dirname "${PYTHON_BIN}")/torchrun}"
 TRAIN_TEST_SPLIT="${TRAIN_TEST_SPLIT:-navtrain}"
+LORA_PRESET="${LORA_PRESET:-attention_mlp}"
+LORA_SCOPE="${LORA_SCOPE:-llm}"
+LORA_R="${LORA_R:-32}"
+LORA_ALPHA="${LORA_ALPHA:-64}"
+LORA_DROPOUT="${LORA_DROPOUT:-0.05}"
+LORA_BIAS="${LORA_BIAS:-none}"
+LORA_USE_RSLORA="${LORA_USE_RSLORA:-true}"
+LORA_USE_DORA="${LORA_USE_DORA:-false}"
+LORA_TARGET_MODULES="${LORA_TARGET_MODULES:-}"
+LORA_HIDDEN_ANCHOR_EVERY_N_STEPS="${LORA_HIDDEN_ANCHOR_EVERY_N_STEPS:-4}"
 export NAVSIM_EXP_ROOT="${NAVSIM_EXP_ROOT:-/mnt/project/VLA-AD}"
 export NUPLAN_MAPS_ROOT="${NUPLAN_MAPS_ROOT:-/mnt/navsim/maps}"
 ROOT="${OUT_ROOT}/serverB_lora"
@@ -37,14 +47,16 @@ cmd_b1=(
   agent.cache_hidden_state=false
   agent.train_backbone=true
   agent.last_vla_train_vlm_lora=true
-  agent.last_vla_vlm_lora_preset="${LORA_PRESET:-attention_mlp}"
-  agent.last_vla_vlm_lora_scope="${LORA_SCOPE:-llm}"
-  agent.last_vla_vlm_lora_r="${LORA_R:-32}"
-  agent.last_vla_vlm_lora_alpha="${LORA_ALPHA:-64}"
-  agent.last_vla_vlm_lora_dropout="${LORA_DROPOUT:-0.05}"
-  agent.last_vla_vlm_lora_use_rslora="${LORA_USE_RSLORA:-true}"
-  agent.last_vla_vlm_lora_use_dora="${LORA_USE_DORA:-false}"
-  "agent.last_vla_vlm_lora_target_modules='${LORA_TARGET_MODULES:-}'"
+  agent.last_vla_vlm_lora_preset="${LORA_PRESET}"
+  agent.last_vla_vlm_lora_scope="${LORA_SCOPE}"
+  agent.last_vla_vlm_lora_r="${LORA_R}"
+  agent.last_vla_vlm_lora_alpha="${LORA_ALPHA}"
+  agent.last_vla_vlm_lora_dropout="${LORA_DROPOUT}"
+  agent.last_vla_vlm_lora_bias="${LORA_BIAS}"
+  agent.last_vla_vlm_lora_use_rslora="${LORA_USE_RSLORA}"
+  agent.last_vla_vlm_lora_use_dora="${LORA_USE_DORA}"
+  "agent.last_vla_vlm_lora_target_modules='${LORA_TARGET_MODULES}'"
+  agent.last_vla_hidden_anchor_every_n_steps="${LORA_HIDDEN_ANCHOR_EVERY_N_STEPS}"
   agent.vlm_path="${VLM_PATH}"
   agent.vlm_type="${VLM_TYPE:-internvl}"
   agent.use_expert_features=true
@@ -64,15 +76,24 @@ cmd_extract=(
   --output-dir "${B1}/adapters"
   --base-vlm-path "${VLM_PATH}"
   --vlm-type "${VLM_TYPE:-internvl}"
-  --preset "${LORA_PRESET:-attention_mlp}"
-  --scope "${LORA_SCOPE:-llm}"
-  --r "${LORA_R:-32}"
-  --alpha "${LORA_ALPHA:-64}"
-  --dropout "${LORA_DROPOUT:-0.05}"
-  --bias "${LORA_BIAS:-none}"
+  --preset "${LORA_PRESET}"
+  --scope "${LORA_SCOPE}"
+  --r "${LORA_R}"
+  --alpha "${LORA_ALPHA}"
+  --dropout "${LORA_DROPOUT}"
+  --bias "${LORA_BIAS}"
+  --target-modules "${LORA_TARGET_MODULES}"
   --lora-target-report "${B1}/lora_target_report.json"
+  --lora-training-config "${B1}/lora_training_config.json"
 )
-if [[ "${LORA_USE_RSLORA:-1}" == "1" ]]; then cmd_extract+=(--use-rslora); else cmd_extract+=(--no-rslora); fi
+if [[ "${LORA_USE_RSLORA}" == "true" || "${LORA_USE_RSLORA}" == "1" ]]; then
+  cmd_extract+=(--use-rslora)
+else
+  cmd_extract+=(--no-rslora)
+fi
+if [[ "${LORA_USE_DORA}" == "true" || "${LORA_USE_DORA}" == "1" ]]; then
+  cmd_extract+=(--use-dora)
+fi
 cmd_cache=(
   "${PYTHON_BIN}" scripts/build_recogdrive_hidden_cache_with_lora.py
   --base-chunk-root "${FULL_GEOMETRY_CHUNK_ROOT}"

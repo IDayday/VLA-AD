@@ -5,28 +5,31 @@ last_rd_stage: disabled
 use_expert_features: false
 use_jepa: true
 use_vggt: true
-jepa_dim: 1024
-vggt_dim: 2048
-num_jepa_tokens: 12
-num_vggt_tokens: 12
 allow_expert_target_features: true
 allow_future_targets_in_inference: false
 
-last_vla_cot_num_tokens: 32
+jepa_dim: 1024
+vggt_dim: 2048
+num_jepa_tokens: 128
+num_dynamic_tokens: 128
+num_vggt_tokens: 128
+num_geometry_tokens: 192
+num_risk_tokens: 0
+
+last_vla_vlm_summary_tokens: 64
+last_vla_cot_num_tokens: 192
 last_vla_cot_num_steps: 4
-last_vla_vlm_summary_tokens: 4
-last_vla_raw_vlm_context_to_dit: false
-last_vla_cot_bottleneck_mode: true
-last_vla_use_geometry_step: true
-last_vla_use_dynamic_step: true
-last_vla_use_ego_step: true
-last_vla_use_action_refine_step: true
-last_vla_use_action_conditioned_dynamics: true
-last_vla_use_risk_head: true
+last_vla_use_risk_head: false
+last_vla_risk_loss_weight: 0.0
+last_vla_geometry_teacher_dim: 512
+last_vla_geometry_grid_rows: 12
+last_vla_geometry_grid_cols: 16
 last_vla_require_full_geometry: true
 last_vla_allow_patch_geometry_fallback: false
-last_vla_geometry_teacher_dim: 512
+last_vla_raw_vlm_context_to_dit: false
+last_vla_cot_bottleneck_mode: true
 last_vla_use_residual_diffusion: true
+last_vla_residual_detach_coarse: true
 last_vla_teacher_traj_mode: none
 
 diffusion_loss_weight: 0.0
@@ -35,8 +38,8 @@ last_vla_dynamic_loss_weight: 0.5
 last_vla_coarse_loss_weight: 0.5
 last_vla_heading_loss_weight: 0.1
 last_vla_progress_loss_weight: 0.1
-last_vla_risk_loss_weight: 0.0
 last_vla_cot_consistency_loss_weight: 0.05
+
 policy_kd_loss_weight: 0.0
 policy_kd_mode: none
 

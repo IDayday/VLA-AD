@@ -112,6 +112,7 @@ for idx in "${!configs[@]}"; do
     --dropout "${lora_dropout}"
     --bias none
     --lora-target-report "${run_dir}/lora_target_report.json"
+    --lora-training-config "${run_dir}/lora_training_config.json"
   )
   if [[ "${lora_use_rslora}" == "true" ]]; then
     cmd_extract+=(--use-rslora)

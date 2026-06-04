@@ -28,4 +28,10 @@ def test_lora_sweep_launcher_dryrun_writes_commands(tmp_path: Path):
     text = (tmp_path / "sweep" / "last_vla_vlm_lora_attention_mlp_r32" / "commands.log").read_text(encoding="utf-8")
     assert "+experiment=last_vla_vlm_lora_attention_mlp_r32" in text
     assert "extract_vlm_lora_and_cot_adapters.py" in text
+    assert "--preset attention_mlp" in text
+    assert "--scope llm" in text
+    assert "--r 32" in text
+    assert "--alpha 64" in text
+    assert "--use-rslora" in text
+    assert "--lora-training-config" in text
     assert "/bin/false" in text

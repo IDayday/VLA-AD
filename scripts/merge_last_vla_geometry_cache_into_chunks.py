@@ -39,6 +39,8 @@ CONTEXT_KEYS = ("vggt_context_tokens", "vggt_target_tokens")
 MODE_KEY = "vggt_geometry_mode"
 MODE_CODE_KEY = "vggt_geometry_mode_code"
 GEOMETRY_META_KEYS = ("vggt_geometry_source", "vggt_geometry_tokenizer_metadata", MODE_CODE_KEY)
+JEPA_KEYS = ("jepa_context_tokens", "jepa_target_tokens")
+JEPA_META_KEYS = ("jepa_tokenizer_metadata", "jepa_num_tokens")
 
 
 def parse_args() -> argparse.Namespace:
@@ -57,6 +59,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--num-geometry-tokens", type=int, default=12)
     parser.add_argument("--geometry-grid-rows", type=int, default=3)
     parser.add_argument("--geometry-grid-cols", type=int, default=4)
+    parser.add_argument("--jepa-cache-root", type=Path, default=None)
+    parser.add_argument("--jepa-chunk-name-pattern", default="*")
+    parser.add_argument("--expected-jepa-tokens", type=int, default=128)
+    parser.add_argument("--jepa-dim", type=int, default=1024)
+    parser.add_argument("--strict-jepa-coverage", action="store_true")
+    parser.add_argument("--min-jepa-coverage", type=float, default=0.99)
     return parser.parse_args()
 
 
@@ -180,6 +188,31 @@ def extract_geometry_payload(
     return output
 
 
+def extract_jepa_payload(
+    overlay: Dict[str, Any],
+    *,
+    expected_jepa_tokens: int,
+    jepa_dim: int,
+) -> Dict[str, Any]:
+    output: Dict[str, Any] = {}
+    for key in JEPA_KEYS:
+        if key not in overlay:
+            raise KeyError(f"JEPA overlay sample is missing {key}.")
+        value = overlay[key]
+        if not isinstance(value, torch.Tensor):
+            raise TypeError(f"JEPA cache key '{key}' must be a tensor, got {type(value).__name__}.")
+        if value.ndim != 2 or tuple(value.shape) != (expected_jepa_tokens, jepa_dim):
+            raise ValueError(f"JEPA cache key '{key}' expected [{expected_jepa_tokens}, {jepa_dim}], got {tuple(value.shape)}.")
+        if not torch.isfinite(value.float()).all():
+            raise ValueError(f"JEPA cache key '{key}' contains non-finite values.")
+        output[key] = value
+    for key in JEPA_META_KEYS:
+        if key in overlay:
+            output[key] = overlay[key]
+    output["jepa_num_tokens"] = int(expected_jepa_tokens)
+    return output
+
+
 def write_chunk_metadata(
     base_chunk: Path,
     out_chunk: Path,
@@ -191,6 +224,9 @@ def write_chunk_metadata(
     geometry_teacher_dim: int,
     num_geometry_tokens: int,
     geometry_grid: tuple[int, int],
+    contains_jepa_overlay: bool = False,
+    expected_jepa_tokens: int = 128,
+    jepa_dim: int = 1024,
 ) -> None:
     try:
         metadata = dict(load_metadata(base_chunk))
@@ -202,6 +238,9 @@ def write_chunk_metadata(
             token_shapes[key] = list(CONTEXT_SCHEMA[key])
         elif key.endswith("_tokens"):
             token_shapes[key] = [num_geometry_tokens, geometry_teacher_dim]
+    if contains_jepa_overlay:
+        for key in JEPA_KEYS:
+            token_shapes[key] = [int(expected_jepa_tokens), int(jepa_dim)]
     metadata.update(
         {
             "contains_vggt_geometry": True,
@@ -214,6 +253,9 @@ def write_chunk_metadata(
             "geometry_teacher_dim": int(geometry_teacher_dim),
             "num_geometry_tokens": int(num_geometry_tokens),
             "geometry_grid": [int(geometry_grid[0]), int(geometry_grid[1])],
+            "contains_highcap_jepa": bool(contains_jepa_overlay),
+            "num_jepa_tokens": int(expected_jepa_tokens) if contains_jepa_overlay else metadata.get("num_jepa_tokens"),
+            "jepa_dim": int(jepa_dim) if contains_jepa_overlay else metadata.get("jepa_dim"),
             "token_shapes": token_shapes,
         }
     )
@@ -233,6 +275,10 @@ def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
     total_missing = 0
     mode_counts = {"full_geometry": 0, "patch_fallback": 0, "missing": 0}
     geometry_shape_counts: Dict[str, int] = {}
+    jepa_index = load_overlay_index(args.jepa_cache_root, args.jepa_chunk_name_pattern) if args.jepa_cache_root is not None else {}
+    total_jepa_merged = 0
+    total_jepa_missing = 0
+    jepa_shape_counts: Dict[str, int] = {}
     chunk_reports = []
     for chunk_dir in chunk_dirs(args.base_chunk_root, args.chunk_name_pattern):
         out_chunk = args.output_chunk_root / chunk_dir.name
@@ -245,28 +291,48 @@ def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
             token = str(record.get("sample_token") or src_path.stem)
             rel = Path("samples") / src_path.name
             dst_path = out_chunk / rel
-            if token in overlay_index:
+            has_geometry = token in overlay_index
+            has_jepa = token in jepa_index
+            if has_geometry or has_jepa:
                 sample = load_sample(src_path)
-                overlay = load_sample(overlay_index[token])
-                geometry_payload = extract_geometry_payload(
-                    overlay,
-                    overwrite_context=bool(args.overwrite_context),
-                    geometry_teacher_dim=int(args.geometry_teacher_dim),
-                    num_geometry_tokens=int(args.num_geometry_tokens),
-                )
                 updated = dict(sample)
-                updated.update(geometry_payload)
-                tokens = geometry_payload.get("vggt_geometry_tokens")
-                if isinstance(tokens, torch.Tensor):
-                    shape_key = str(tuple(tokens.shape))
-                    geometry_shape_counts[shape_key] = geometry_shape_counts.get(shape_key, 0) + 1
+                if has_geometry:
+                    overlay = load_sample(overlay_index[token])
+                    geometry_payload = extract_geometry_payload(
+                        overlay,
+                        overwrite_context=bool(args.overwrite_context),
+                        geometry_teacher_dim=int(args.geometry_teacher_dim),
+                        num_geometry_tokens=int(args.num_geometry_tokens),
+                    )
+                    updated.update(geometry_payload)
+                    tokens = geometry_payload.get("vggt_geometry_tokens")
+                    if isinstance(tokens, torch.Tensor):
+                        shape_key = str(tuple(tokens.shape))
+                        geometry_shape_counts[shape_key] = geometry_shape_counts.get(shape_key, 0) + 1
+                    chunk_merged += 1
+                    mode_counts[str(geometry_payload.get(MODE_KEY, "missing"))] = mode_counts.get(str(geometry_payload.get(MODE_KEY, "missing")), 0) + 1
+                else:
+                    chunk_missing += 1
+                    mode_counts["missing"] += 1
+                if has_jepa:
+                    jepa_payload = extract_jepa_payload(
+                        load_sample(jepa_index[token]),
+                        expected_jepa_tokens=int(args.expected_jepa_tokens),
+                        jepa_dim=int(args.jepa_dim),
+                    )
+                    updated.update(jepa_payload)
+                    shape_key = str(tuple(jepa_payload["jepa_context_tokens"].shape))
+                    jepa_shape_counts[shape_key] = jepa_shape_counts.get(shape_key, 0) + 1
+                    total_jepa_merged += 1
+                else:
+                    total_jepa_missing += 1
                 atomic_torch_save(updated, dst_path)
-                chunk_merged += 1
-                mode_counts[str(geometry_payload.get(MODE_KEY, "missing"))] = mode_counts.get(str(geometry_payload.get(MODE_KEY, "missing")), 0) + 1
             else:
                 copy_or_link(src_path, dst_path, args.copy_mode)
                 chunk_missing += 1
                 mode_counts["missing"] += 1
+                if args.jepa_cache_root is not None:
+                    total_jepa_missing += 1
             out_record = dict(record)
             out_record["path"] = str(rel)
             index_records.append(out_record)
@@ -283,6 +349,9 @@ def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
             geometry_teacher_dim=int(args.geometry_teacher_dim),
             num_geometry_tokens=int(args.num_geometry_tokens),
             geometry_grid=(int(args.geometry_grid_rows), int(args.geometry_grid_cols)),
+            contains_jepa_overlay=args.jepa_cache_root is not None,
+            expected_jepa_tokens=int(args.expected_jepa_tokens),
+            jepa_dim=int(args.jepa_dim),
         )
         total_merged += chunk_merged
         total_missing += chunk_missing
@@ -311,6 +380,13 @@ def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
         "num_geometry_tokens": int(args.num_geometry_tokens),
         "geometry_grid": [int(args.geometry_grid_rows), int(args.geometry_grid_cols)],
         "geometry_token_shape_distribution": dict(sorted(geometry_shape_counts.items())),
+        "jepa_cache_root": str(args.jepa_cache_root) if args.jepa_cache_root is not None else None,
+        "jepa_merged": int(total_jepa_merged),
+        "jepa_missing": int(total_jepa_missing),
+        "jepa_coverage": float(total_jepa_merged / (total_jepa_merged + total_jepa_missing)) if (total_jepa_merged + total_jepa_missing) else 0.0,
+        "jepa_token_shape_distribution": dict(sorted(jepa_shape_counts.items())),
+        "expected_jepa_tokens": int(args.expected_jepa_tokens),
+        "jepa_dim": int(args.jepa_dim),
         "overwrite_context": bool(args.overwrite_context),
         "chunk_reports": chunk_reports,
     }
@@ -325,6 +401,8 @@ def main() -> int:
     summary = merge_cache(args)
     print(json.dumps(summary, indent=2, sort_keys=True))
     if args.strict_coverage and summary["coverage"] < float(args.min_coverage):
+        return 2
+    if args.strict_jepa_coverage and summary["jepa_coverage"] < float(args.min_jepa_coverage):
         return 2
     return 0
 

@@ -53,6 +53,9 @@ class AgentLightningModule(pl.LightningModule):
             "hidden_anchor_loss_weighted",
             "hidden_drift_cosine",
             "hidden_drift_l2",
+            "hidden_anchor_computed",
+            "hidden_anchor_every_n_steps_tensor",
+            "hidden_anchor_step_index",
             "lora_trainable_param_count",
             "lora_matched_module_count",
         ):

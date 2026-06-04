@@ -110,6 +110,8 @@ def test_vlm_lora_uses_generic_peft_forward(monkeypatch):
 
     def fake_get_peft_model(base_model, config):
         assert "task_type" not in config.kwargs
+        base_model.q_proj.lora_A = torch.nn.Parameter(torch.ones(1, 2))
+        base_model.q_proj.lora_B = torch.nn.Parameter(torch.ones(2, 1))
         return FakePeftModel(base_model, config)
 
     monkeypatch.setitem(

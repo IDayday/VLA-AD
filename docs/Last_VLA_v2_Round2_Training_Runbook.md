@@ -4,6 +4,19 @@ Baseline: A0-official-aligned `step_00100000`, full navtest PDMS `0.864891`, eva
 
 This runbook prepares two full SFT lines. Do not set `RUN_TRAIN=1` or `RUN_EVAL=1` until preflight passes.
 
+## Current Status
+
+The old Round2/minimal launchers and teacher-trajectory/PDM-reranked Last-VLA configs have been moved to `scripts/last_vla_v2/archive/` and `configs/last_vla_v2/archive/`. They are retained for historical inspection only and are not production training entrypoints.
+
+Formal Last-VLA v2 training now uses only the high-capacity no-risk path:
+
+- `scripts/last_vla_v2/highcap_no_risk/serverA_frozen_vlm_highcap_no_risk.sh`
+- `scripts/last_vla_v2/highcap_no_risk/serverB_vlm_lora_highcap_no_risk.sh`
+- `scripts/last_vla_v2/highcap_no_risk/run_final_readiness_gate.sh`
+- `scripts/last_vla_v2/highcap_no_risk/launch_local_remote_full_training.sh`
+
+The canonical config names `last_vla_cot_alignment`, `last_vla_progressive_bottleneck`, `last_vla_progressive_bottleneck_eval`, and `last_vla_vlm_lora_cot_alignment` now point to high-cap no-risk settings. Minimal `4/32/12/12` and `patch_fallback` configs must not be used as a formal training path.
+
 ## High-capacity No-risk Official Config
 
 The minimal Last-VLA configs are smoke/debug configs only. The formal Last-VLA v2 training config is the high-capacity no-risk line in `docs/Last_VLA_v2_HighCap_NoRisk_Runbook.md`.

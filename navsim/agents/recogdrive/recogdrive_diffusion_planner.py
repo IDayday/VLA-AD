@@ -253,6 +253,7 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     last_vla_vlm_lora_use_dora: bool = False
     last_vla_vlm_lora_init: str = "default"
     last_vla_vlm_lora_vision_last_n: int = 0
+    last_vla_lora_allow_all_linear_global: bool = False
     
     tune_projector: bool = True
     tune_diffusion_model: bool = True

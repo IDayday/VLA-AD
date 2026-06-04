@@ -10,29 +10,33 @@ def test_last_vla_yaml_configs_load_directly():
     for path in (
         config_dir / "last_vla_cot_alignment.yaml",
         config_dir / "last_vla_progressive_bottleneck.yaml",
-        config_dir / "last_vla_teacher_traj_sft.yaml",
         config_dir / "last_vla_progressive_bottleneck_eval.yaml",
-        config_dir / "last_vla_teacher_traj_sft_eval.yaml",
-        config_dir / "last_vla_cot_alignment_geometry_lite.yaml",
         config_dir / "last_vla_vlm_lora_cot_alignment.yaml",
     ):
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
         assert data["use_last_vla"] is True
         assert data["use_last_rd"] is False
         assert data["policy_kd_loss_weight"] == 0.0
+        assert data["num_jepa_tokens"] == 128
+        assert data["num_geometry_tokens"] == 192
+        assert data["num_risk_tokens"] == 0
+        assert data["last_vla_use_risk_head"] is False
+        assert data["last_vla_allow_patch_geometry_fallback"] is False
 
 
 def test_last_vla_hydra_experiment_yaml_loads():
     for name in (
         "last_vla_cot_alignment.yaml",
         "last_vla_progressive_bottleneck.yaml",
-        "last_vla_teacher_traj_sft.yaml",
         "last_vla_vlm_lora_cot_alignment.yaml",
     ):
         path = Path("navsim/planning/script/config/experiment") / name
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
         assert data["agent"]["use_last_vla"] is True
         assert data["agent"]["use_last_rd"] is False
+        assert data["agent"]["num_jepa_tokens"] == 128
+        assert data["agent"]["num_geometry_tokens"] == 192
+        assert data["agent"]["num_risk_tokens"] == 0
 
 
 def test_last_vla_hydra_compose_if_available():
@@ -49,3 +53,6 @@ def test_last_vla_hydra_compose_if_available():
         )
     assert cfg.agent.use_last_vla is True
     assert cfg.agent.last_vla_stage == "cot_alignment"
+    assert cfg.agent.num_jepa_tokens == 128
+    assert cfg.agent.num_geometry_tokens == 192
+    assert cfg.agent.last_vla_use_risk_head is False
