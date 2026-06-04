@@ -23,6 +23,7 @@ BASE_KEYS = ("history_trajectory", "high_command_one_hot", "last_hidden_state", 
 TOKEN_KEYS = ("jepa_context_tokens", "jepa_target_tokens", "vggt_context_tokens", "vggt_target_tokens")
 GEOMETRY_MODE_TO_CODE = {"missing": -1, "no_geometry": 0, "patch_fallback": 1, "full_geometry": 2}
 GEOMETRY_CODE_TO_MODE = {-1: "missing", 0: "no_geometry", 1: "patch_fallback", 2: "full_geometry"}
+RISK_KEYS = ("risk_labels", "generic_risk_labels", "drivable_risk_labels", "ttc_risk_labels", "comfort_risk_labels")
 
 
 def parse_args() -> argparse.Namespace:
@@ -39,6 +40,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--allow-patch-fallback", action="store_true")
     parser.add_argument("--min-full-geometry-coverage", type=float, default=0.99)
     parser.add_argument("--geometry-teacher-dim", type=int, default=512)
+    parser.add_argument("--expected-jepa-tokens", type=int, default=12)
+    parser.add_argument("--expected-geometry-tokens", type=int, default=12)
+    parser.add_argument("--strict-no-risk", action="store_true")
     return parser.parse_args()
 
 
@@ -109,10 +113,21 @@ def geometry_mode_from_sample(sample: Dict[str, Any]) -> str:
     return "no_geometry"
 
 
-def audit_cache(cache_root: Path, *, chunk_name_pattern: Optional[str], max_samples: Optional[int]) -> Dict[str, Any]:
+def audit_cache(
+    cache_root: Path,
+    *,
+    chunk_name_pattern: Optional[str] = None,
+    max_samples: Optional[int] = None,
+    expected_jepa_tokens: int = 12,
+    expected_geometry_tokens: int = 12,
+    geometry_teacher_dim: int = 512,
+    strict_no_risk: bool = False,
+) -> Dict[str, Any]:
     counts = Counter()
     geometry_counts = Counter({mode: 0 for mode in GEOMETRY_MODE_TO_CODE})
     geometry_shape_counts = Counter()
+    jepa_shape_counts = Counter()
+    risk_counts = Counter()
     sample_token_counts = Counter()
     errors: List[str] = []
     deltas: List[float] = []
@@ -129,6 +144,9 @@ def audit_cache(cache_root: Path, *, chunk_name_pattern: Optional[str], max_samp
         for key in (*BASE_KEYS, *TOKEN_KEYS):
             if key in sample:
                 counts[key] += 1
+                value = sample[key]
+                if key.startswith("jepa_") and isinstance(value, torch.Tensor):
+                    jepa_shape_counts[f"{key}:{tuple(value.shape)}"] += 1
         has_teacher = isinstance(sample.get("teacher_trajectory"), torch.Tensor) or isinstance(sample.get("teacher_trajectory_norm"), torch.Tensor)
         if has_teacher:
             counts["teacher_trajectory_any"] += 1
@@ -152,6 +170,17 @@ def audit_cache(cache_root: Path, *, chunk_name_pattern: Optional[str], max_samp
         geometry_tokens = sample.get("vggt_geometry_tokens")
         if isinstance(geometry_tokens, torch.Tensor):
             geometry_shape_counts[str(tuple(geometry_tokens.shape))] += 1
+            if tuple(geometry_tokens.shape) != (int(expected_geometry_tokens), int(geometry_teacher_dim)):
+                errors.append(f"{sample_path}:vggt_geometry_tokens:bad_shape:{tuple(geometry_tokens.shape)}")
+        for key in RISK_KEYS:
+            if key in sample:
+                risk_counts[key] += 1
+        for key in ("jepa_context_tokens", "jepa_target_tokens"):
+            value = sample.get(key)
+            if isinstance(value, torch.Tensor) and tuple(value.shape) != (int(expected_jepa_tokens), 1024):
+                errors.append(f"{sample_path}:{key}:bad_shape:{tuple(value.shape)}")
+        if strict_no_risk and any(key in sample for key in RISK_KEYS):
+            errors.append(f"{sample_path}:risk_labels_present_in_strict_no_risk")
         if "vggt_geometry_tokens" in sample and geometry_mode == "patch_fallback":
             # Explicitly allowed, but it must not be reported as full geometry.
             pass
@@ -166,6 +195,8 @@ def audit_cache(cache_root: Path, *, chunk_name_pattern: Optional[str], max_samp
         "geometry_coverage": {key: coverage(counts[key], scanned) for key in GEOMETRY_KEYS},
         "vggt_geometry_mode_distribution": dict(sorted(geometry_counts.items())),
         "geometry_token_shape_distribution": dict(sorted(geometry_shape_counts.items())),
+        "jepa_token_shape_distribution": dict(sorted(jepa_shape_counts.items())),
+        "risk_label_coverage": {key: coverage(risk_counts[key], scanned) for key in RISK_KEYS},
         "duplicate_sample_tokens": {"count": len(duplicate_tokens), "examples": list(duplicate_tokens)[:20]},
         "oracle_delta_vs_gt": {
             "count": len(deltas),
@@ -192,14 +223,22 @@ def collect_tokens(cache_root: Path, pattern: Optional[str], max_samples: Option
 
 def main() -> int:
     args = parse_args()
-    report = audit_cache(args.cache_root, chunk_name_pattern=args.chunk_name_pattern, max_samples=args.max_samples)
+    report = audit_cache(
+        args.cache_root,
+        chunk_name_pattern=args.chunk_name_pattern,
+        max_samples=args.max_samples,
+        expected_jepa_tokens=int(args.expected_jepa_tokens),
+        expected_geometry_tokens=int(args.expected_geometry_tokens),
+        geometry_teacher_dim=int(args.geometry_teacher_dim),
+        strict_no_risk=bool(args.strict_no_risk),
+    )
     teacher_cov = report["coverage"]["teacher_trajectory_any"]["coverage"]
     full_geometry_cov = (
         report["vggt_geometry_mode_distribution"].get("full_geometry", 0) / report["scanned"]
         if report["scanned"]
         else 0.0
     )
-    expected_shape = str((12, int(args.geometry_teacher_dim)))
+    expected_shape = str((int(args.expected_geometry_tokens), int(args.geometry_teacher_dim)))
     shape_mismatch = [
         shape for shape, count in report["geometry_token_shape_distribution"].items()
         if count > 0 and shape != expected_shape
@@ -208,6 +247,9 @@ def main() -> int:
     report["strict_full_geometry"] = bool(args.strict_full_geometry)
     report["allow_patch_fallback"] = bool(args.allow_patch_fallback)
     report["geometry_teacher_dim"] = int(args.geometry_teacher_dim)
+    report["expected_jepa_tokens"] = int(args.expected_jepa_tokens)
+    report["expected_geometry_tokens"] = int(args.expected_geometry_tokens)
+    report["strict_no_risk"] = bool(args.strict_no_risk)
     report["full_geometry_coverage"] = float(full_geometry_cov)
     report["geometry_shape_mismatch"] = shape_mismatch
     report["ready_for_strict_full_geometry"] = bool(
@@ -215,6 +257,21 @@ def main() -> int:
         and report["num_errors"] == 0
         and not shape_mismatch
         and (args.allow_patch_fallback or report["vggt_geometry_mode_distribution"].get("patch_fallback", 0) == 0)
+    )
+    base_ready = all(item["coverage"] >= 1.0 for item in report["base_field_coverage"].values())
+    jepa_context_ready = report["teacher_token_coverage"]["jepa_context_tokens"]["coverage"] >= 0.99
+    jepa_target_ready = report["teacher_token_coverage"]["jepa_target_tokens"]["coverage"] >= 0.99
+    no_duplicates = report["duplicate_sample_tokens"]["count"] == 0
+    no_risk_required_ok = True
+    if args.strict_no_risk:
+        no_risk_required_ok = all(item["count"] == 0 for item in report["risk_label_coverage"].values())
+    report["ready_for_highcap_no_risk_strict"] = bool(
+        base_ready
+        and jepa_context_ready
+        and jepa_target_ready
+        and report["ready_for_strict_full_geometry"]
+        and no_duplicates
+        and no_risk_required_ok
     )
     report["geometry_high_risk_warning"] = bool(
         args.allow_patch_fallback and report["vggt_geometry_mode_distribution"].get("patch_fallback", 0) > 0
@@ -231,6 +288,8 @@ def main() -> int:
         return 2
     if args.strict_full_geometry and not report["ready_for_strict_full_geometry"]:
         return 3
+    if args.strict_no_risk and not report["ready_for_highcap_no_risk_strict"]:
+        return 4
     return 0
 
 

@@ -21,7 +21,9 @@ cmd=(
   --copy-mode "${COPY_MODE:-hardlink}"
   --min-coverage "${MIN_COVERAGE:-0.99}"
   --geometry-teacher-dim "${GEOMETRY_TEACHER_DIM:-512}"
-  --num-geometry-tokens "${NUM_GEOMETRY_TOKENS:-12}"
+  --num-geometry-tokens "${NUM_GEOMETRY_TOKENS:-192}"
+  --geometry-grid-rows "${GEOMETRY_GRID_ROWS:-12}"
+  --geometry-grid-cols "${GEOMETRY_GRID_COLS:-16}"
 )
 if [[ "${OVERWRITE_CONTEXT:-0}" == "1" ]]; then cmd+=(--overwrite-context); fi
 if [[ "${STRICT_COVERAGE:-0}" == "1" ]]; then cmd+=(--strict-coverage); fi

@@ -65,6 +65,8 @@ when full VGGT teacher cache exists.
 
 Agent-level LoRA hooks are present but disabled by default. If `last_vla_train_vlm_lora=True`, cached hidden-state training is rejected because VLM LoRA requires online VLM forward or regenerated hidden caches.
 
+The recommended Line B latent adaptation setting is `attention_mlp`, scope `llm`, rank `32`, alpha `64`, dropout `0.05`, and rsLoRA enabled. The old q/k/v/o rank-16 configuration remains available as a conservative baseline. See `docs/Last_VLA_v2_VLM_LoRA_Design.md` for target module auditing, optimizer grouping, hidden-anchor regularization, and adapter save/load format.
+
 ## Training Stages
 
 1. `cot_alignment`: train only Last-VLA CoT/teacher/coarse heads, diffusion loss off.
@@ -75,9 +77,36 @@ Strict Last-VLA v2 SFT uses `cot_alignment -> progressive_sft_bottleneck` as the
 
 ## Full Geometry Cache
 
-Strict reproduction requires full VGGT geometry teacher tokens with `vggt_geometry_mode=full_geometry` and `vggt_geometry_mode_code=2`. The geometry tokenizer packs VGGT depth/point-map/camera outputs into deterministic non-trainable geometry teacher tokens, default shape `[12, 512]`.
+Strict reproduction requires full VGGT geometry teacher tokens with `vggt_geometry_mode=full_geometry` and `vggt_geometry_mode_code=2`. The geometry tokenizer packs VGGT depth/point-map/camera outputs into deterministic non-trainable geometry teacher tokens. Legacy smoke configs may use `[12, 512]`; the formal high-cap config uses `[192, 512]`.
 
 Patch fallback is geometry-lite only. It may be used for smoke tests or ablations, but it must be reported as `patch_fallback` and cannot be used for strict SOTA claims.
+
+## High-capacity No-risk Official Configuration
+
+Minimal Last-VLA configs remain smoke/debug only. The formal Last-VLA v2 SFT line is the high-capacity no-risk configuration:
+
+- VLM summary tokens: `64`
+- latent CoT tokens: `192`
+- JEPA context and target tokens: `128 x 1024`
+- dynamic teacher tokens: `128`
+- VGGT full geometry tokens: `192 x 512`
+- geometry grid: `12 x 16`
+- risk branch: disabled, `num_risk_tokens=0`, `last_vla_risk_loss_weight=0.0`
+- patch fallback: disabled
+
+The expected DiT context length in eval, when the summary is kept, is:
+
+`192 CoT + 64 VLM summary = 256 tokens`
+
+Full raw VLM tokens still do not enter DiT in bottleneck mode. Training may schedule the summary keep/drop probability, but the raw hidden sequence is not used as DiT context when `last_vla_cot_bottleneck_mode=true` and `last_vla_raw_vlm_context_to_dit=false`.
+
+High-cap no-risk deliberately excludes the risk branch, PDM-reranked SFT as the main line, and GRPO. The strict SFT path is:
+
+1. frozen or VLM-LoRA CoT alignment with full VGGT geometry and JEPA future dynamics teachers;
+2. progressive residual-diffusion bottleneck SFT;
+3. optional VLM-LoRA hidden-cache regeneration for the Line B frozen-cache phase and navtest eval.
+
+The high-cap cache is not compatible with old 12-token JEPA caches. JEPA cache generation must expose dense or sufficiently many JEPA tokens and deterministically pool to `128`; re-pooling or repeating the old 12 already-pooled tokens is invalid. Full VGGT geometry cache must also be regenerated to `[192, 512]` with mode code `2`.
 
 ## Progressive Residual Schedule
 

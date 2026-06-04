@@ -71,6 +71,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--jepa-model-path", type=Path, default=None)
     parser.add_argument("--vggt-model-path", type=Path, default=None)
     parser.add_argument("--vggt-geometry-teacher-dim", type=int, default=512)
+    parser.add_argument("--num-jepa-tokens", type=int, default=12)
+    parser.add_argument("--num-vggt-tokens", type=int, default=12)
+    parser.add_argument("--num-geometry-tokens", type=int, default=12)
+    parser.add_argument("--geometry-grid-rows", type=int, default=3)
+    parser.add_argument("--geometry-grid-cols", type=int, default=4)
+    parser.add_argument("--strict-highcap-jepa", action="store_true")
     parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="bf16")
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--num-gpus", type=int, default=1)
@@ -391,7 +397,13 @@ def build_teacher_extractors(args: argparse.Namespace):
         if args.jepa_model_path is None:
             raise ValueError("--build-jepa requires --jepa-model-path")
         from navsim.agents.recogdrive.expert_extractors.vjepa2_extractor import VJEPA2Extractor
-        jepa = VJEPA2Extractor(args.jepa_model_path, device=args.device, precision=args.precision)
+        jepa = VJEPA2Extractor(
+            args.jepa_model_path,
+            device=args.device,
+            precision=args.precision,
+            num_tokens=int(args.num_jepa_tokens),
+            strict_highcap_jepa=bool(args.strict_highcap_jepa),
+        )
     if args.build_vggt:
         if args.vggt_model_path is None:
             raise ValueError("--build-vggt requires --vggt-model-path")
@@ -402,6 +414,8 @@ def build_teacher_extractors(args: argparse.Namespace):
             precision=args.precision,
             require_geometry=bool(getattr(args, "require_vggt_geometry", False)),
             geometry_output_dim=int(getattr(args, "vggt_geometry_teacher_dim", 512)),
+            geometry_num_tokens=int(getattr(args, "num_geometry_tokens", 12)),
+            geometry_grid=(int(getattr(args, "geometry_grid_rows", 3)), int(getattr(args, "geometry_grid_cols", 4))),
         )
     return jepa, vggt
 
@@ -503,6 +517,8 @@ def process_records_with_models(
             payload.update(vlm_builder.compute_features(agent_input))
         if jepa is not None:
             payload["jepa_context_tokens"] = jepa.extract_context(record["history_cam_f0"][-4:])
+            payload["jepa_tokenizer_metadata"] = dict(getattr(jepa, "last_tokenizer_metadata", {}) or {})
+            payload["jepa_num_tokens"] = torch.tensor(int(args.num_jepa_tokens), dtype=torch.int64)
             if len(record["future_cam_f0"]) >= 4:
                 payload["jepa_target_tokens"] = jepa.extract_target(record["future_cam_f0"][:4])
         if vggt is not None:
@@ -525,7 +541,16 @@ def process_records_with_models(
             payload["vggt_target_tokens"] = vggt.extract_target(current)
             payload["vggt_geometry_target_tokens"] = payload["vggt_geometry_tokens"]
         if args.build_jepa or args.build_vggt:
-            validate_sample_payload(payload, require_jepa=args.build_jepa, require_vggt=args.build_vggt, require_targets=True)
+            validate_sample_payload(
+                payload,
+                require_jepa=args.build_jepa,
+                require_vggt=args.build_vggt,
+                require_targets=True,
+                expected_jepa_tokens=int(args.num_jepa_tokens),
+                expected_vggt_tokens=int(args.num_vggt_tokens),
+                expected_geometry_tokens=int(args.num_geometry_tokens),
+                geometry_teacher_dim=int(args.vggt_geometry_teacher_dim),
+            )
         atomic_torch_save(payload, out_path)
         index_records.append(index_record)
         written += 1
@@ -701,16 +726,21 @@ def write_built_chunk_outputs(
         "vggt_model_path": str(args.vggt_model_path) if args.vggt_model_path else None,
         "token_shapes": {
             "last_hidden_state": [None, 1536] if args.build_vlm_hidden else None,
-            "jepa_context_tokens": [12, 1024] if args.build_jepa else None,
-            "jepa_target_tokens": [12, 1024] if args.build_jepa else None,
-            "vggt_context_tokens": [12, 2048] if args.build_vggt else None,
-            "vggt_target_tokens": [12, 2048] if args.build_vggt else None,
-            "vggt_geometry_tokens": [12, int(args.vggt_geometry_teacher_dim)] if args.build_vggt else None,
-            "vggt_geometry_target_tokens": [12, int(args.vggt_geometry_teacher_dim)] if args.build_vggt else None,
-            "vggt_depth_tokens": [12, int(args.vggt_geometry_teacher_dim)] if args.build_vggt else None,
-            "vggt_pointmap_tokens": [12, int(args.vggt_geometry_teacher_dim)] if args.build_vggt else None,
-            "vggt_camera_tokens": [12, int(args.vggt_geometry_teacher_dim)] if args.build_vggt else None,
+            "jepa_context_tokens": [int(args.num_jepa_tokens), 1024] if args.build_jepa else None,
+            "jepa_target_tokens": [int(args.num_jepa_tokens), 1024] if args.build_jepa else None,
+            "vggt_context_tokens": [int(args.num_vggt_tokens), 2048] if args.build_vggt else None,
+            "vggt_target_tokens": [int(args.num_vggt_tokens), 2048] if args.build_vggt else None,
+            "vggt_geometry_tokens": [int(args.num_geometry_tokens), int(args.vggt_geometry_teacher_dim)] if args.build_vggt else None,
+            "vggt_geometry_target_tokens": [int(args.num_geometry_tokens), int(args.vggt_geometry_teacher_dim)] if args.build_vggt else None,
+            "vggt_depth_tokens": [int(args.num_geometry_tokens), int(args.vggt_geometry_teacher_dim)] if args.build_vggt else None,
+            "vggt_pointmap_tokens": [int(args.num_geometry_tokens), int(args.vggt_geometry_teacher_dim)] if args.build_vggt else None,
+            "vggt_camera_tokens": [int(args.num_geometry_tokens), int(args.vggt_geometry_teacher_dim)] if args.build_vggt else None,
         },
+        "jepa_num_tokens": int(args.num_jepa_tokens),
+        "num_vggt_tokens": int(args.num_vggt_tokens),
+        "num_geometry_tokens": int(args.num_geometry_tokens),
+        "geometry_grid": [int(args.geometry_grid_rows), int(args.geometry_grid_cols)],
+        "strict_highcap_jepa": bool(args.strict_highcap_jepa),
         "contains_vggt_geometry": bool(args.build_vggt),
         "require_vggt_geometry": bool(getattr(args, "require_vggt_geometry", False)),
         "split": args.split,
@@ -762,6 +792,10 @@ def finalize_existing_chunk(args: argparse.Namespace) -> int:
             require_jepa=args.build_jepa,
             require_vggt=args.build_vggt,
             require_targets=bool(args.build_jepa or args.build_vggt),
+            expected_jepa_tokens=int(args.num_jepa_tokens),
+            expected_vggt_tokens=int(args.num_vggt_tokens),
+            expected_geometry_tokens=int(args.num_geometry_tokens),
+            geometry_teacher_dim=int(args.vggt_geometry_teacher_dim),
         )
         rel_path = sample_path.relative_to(args.output_dir)
         index_records.append({
@@ -786,16 +820,20 @@ def finalize_existing_chunk(args: argparse.Namespace) -> int:
         "vggt_model_path": str(args.vggt_model_path) if args.vggt_model_path else None,
         "token_shapes": {
             "last_hidden_state": [None, 1536] if contains_vlm else None,
-            "jepa_context_tokens": [12, 1024] if contains_jepa else None,
-            "jepa_target_tokens": [12, 1024] if contains_jepa else None,
-            "vggt_context_tokens": [12, 2048] if contains_vggt else None,
-            "vggt_target_tokens": [12, 2048] if contains_vggt else None,
-            "vggt_geometry_tokens": [12, int(args.vggt_geometry_teacher_dim)] if contains_geometry else None,
-            "vggt_geometry_target_tokens": [12, int(args.vggt_geometry_teacher_dim)] if contains_geometry else None,
-            "vggt_depth_tokens": [12, int(args.vggt_geometry_teacher_dim)] if contains_geometry else None,
-            "vggt_pointmap_tokens": [12, int(args.vggt_geometry_teacher_dim)] if contains_geometry else None,
-            "vggt_camera_tokens": [12, int(args.vggt_geometry_teacher_dim)] if contains_geometry else None,
+            "jepa_context_tokens": [int(args.num_jepa_tokens), 1024] if contains_jepa else None,
+            "jepa_target_tokens": [int(args.num_jepa_tokens), 1024] if contains_jepa else None,
+            "vggt_context_tokens": [int(args.num_vggt_tokens), 2048] if contains_vggt else None,
+            "vggt_target_tokens": [int(args.num_vggt_tokens), 2048] if contains_vggt else None,
+            "vggt_geometry_tokens": [int(args.num_geometry_tokens), int(args.vggt_geometry_teacher_dim)] if contains_geometry else None,
+            "vggt_geometry_target_tokens": [int(args.num_geometry_tokens), int(args.vggt_geometry_teacher_dim)] if contains_geometry else None,
+            "vggt_depth_tokens": [int(args.num_geometry_tokens), int(args.vggt_geometry_teacher_dim)] if contains_geometry else None,
+            "vggt_pointmap_tokens": [int(args.num_geometry_tokens), int(args.vggt_geometry_teacher_dim)] if contains_geometry else None,
+            "vggt_camera_tokens": [int(args.num_geometry_tokens), int(args.vggt_geometry_teacher_dim)] if contains_geometry else None,
         },
+        "jepa_num_tokens": int(args.num_jepa_tokens),
+        "num_vggt_tokens": int(args.num_vggt_tokens),
+        "num_geometry_tokens": int(args.num_geometry_tokens),
+        "geometry_grid": [int(args.geometry_grid_rows), int(args.geometry_grid_cols)],
         "contains_vggt_geometry": contains_geometry,
         "require_vggt_geometry": bool(getattr(args, "require_vggt_geometry", False)),
         "split": args.split,
@@ -818,6 +856,8 @@ def main() -> int:
     args = normalize_path_args(parse_args())
     if args.chunk_size <= 0:
         raise ValueError("--chunk-size must be positive")
+    if int(args.num_geometry_tokens) != int(args.geometry_grid_rows) * int(args.geometry_grid_cols):
+        raise ValueError("--num-geometry-tokens must equal --geometry-grid-rows * --geometry-grid-cols")
     if args.finalize_existing:
         return finalize_existing_chunk(args)
     records, info = build_records(args)

@@ -37,9 +37,14 @@ cmd_b1=(
   agent.cache_hidden_state=false
   agent.train_backbone=true
   agent.last_vla_train_vlm_lora=true
-  agent.last_vla_vlm_lora_r="${LORA_R:-16}"
-  agent.last_vla_vlm_lora_alpha="${LORA_ALPHA:-32}"
-  "agent.last_vla_vlm_lora_target_modules='${LORA_TARGET_MODULES:-q_proj,k_proj,v_proj,o_proj}'"
+  agent.last_vla_vlm_lora_preset="${LORA_PRESET:-attention_mlp}"
+  agent.last_vla_vlm_lora_scope="${LORA_SCOPE:-llm}"
+  agent.last_vla_vlm_lora_r="${LORA_R:-32}"
+  agent.last_vla_vlm_lora_alpha="${LORA_ALPHA:-64}"
+  agent.last_vla_vlm_lora_dropout="${LORA_DROPOUT:-0.05}"
+  agent.last_vla_vlm_lora_use_rslora="${LORA_USE_RSLORA:-true}"
+  agent.last_vla_vlm_lora_use_dora="${LORA_USE_DORA:-false}"
+  "agent.last_vla_vlm_lora_target_modules='${LORA_TARGET_MODULES:-}'"
   agent.vlm_path="${VLM_PATH}"
   agent.vlm_type="${VLM_TYPE:-internvl}"
   agent.use_expert_features=true
@@ -57,18 +62,25 @@ cmd_extract=(
   "${PYTHON_BIN}" scripts/last_vla_v2/extract_vlm_lora_and_cot_adapters.py
   --checkpoint "${B1}/latest.ckpt"
   --output-dir "${B1}/adapters"
+  --base-vlm-path "${VLM_PATH}"
+  --vlm-type "${VLM_TYPE:-internvl}"
+  --preset "${LORA_PRESET:-attention_mlp}"
+  --scope "${LORA_SCOPE:-llm}"
+  --r "${LORA_R:-32}"
+  --alpha "${LORA_ALPHA:-64}"
+  --dropout "${LORA_DROPOUT:-0.05}"
+  --bias "${LORA_BIAS:-none}"
+  --lora-target-report "${B1}/lora_target_report.json"
 )
+if [[ "${LORA_USE_RSLORA:-1}" == "1" ]]; then cmd_extract+=(--use-rslora); else cmd_extract+=(--no-rslora); fi
 cmd_cache=(
   "${PYTHON_BIN}" scripts/build_recogdrive_hidden_cache_with_lora.py
   --base-chunk-root "${FULL_GEOMETRY_CHUNK_ROOT}"
   --output-chunk-root "${B2}"
   --vlm-path "${VLM_PATH}"
   --vlm-type "${VLM_TYPE:-internvl}"
-  --vlm-lora-adapter "${B1}/adapters/vlm_lora_adapter_state.pt"
+  --vlm-lora-adapter-dir "${B1}/adapters/vlm_lora"
   --precision "${PRECISION:-bf16}"
-  --lora-r "${LORA_R:-16}"
-  --lora-alpha "${LORA_ALPHA:-32}"
-  --lora-target-modules "${LORA_TARGET_MODULES:-q_proj,k_proj,v_proj,o_proj}"
   --chunk-name-pattern "${TRAIN_CHUNK_NAME_PATTERN:-train_full_chunk_*,train_backfill_chunk_*,train_backfill_p1_chunk_*}"
   --batch-size "${LORA_CACHE_BATCH_SIZE:-1}"
   --shard-index "${SHARD_INDEX:-0}"

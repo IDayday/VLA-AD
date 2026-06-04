@@ -13,7 +13,9 @@ PYTHON_BIN="${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}"
 PRECISION="${PRECISION:-fp32}"
 DEVICE="${DEVICE:-cuda}"
 GEOMETRY_TEACHER_DIM="${GEOMETRY_TEACHER_DIM:-512}"
-NUM_GEOMETRY_TOKENS="${NUM_GEOMETRY_TOKENS:-12}"
+NUM_GEOMETRY_TOKENS="${NUM_GEOMETRY_TOKENS:-192}"
+GEOMETRY_GRID_ROWS="${GEOMETRY_GRID_ROWS:-12}"
+GEOMETRY_GRID_COLS="${GEOMETRY_GRID_COLS:-16}"
 CHUNK_NAME="${CHUNK_NAME:-full_geometry_overlay_shard_${SHARD_INDEX:-0}_of_${NUM_SHARDS:-1}}"
 OUT_CHUNK="${OUTPUT_CACHE_ROOT}/${CHUNK_NAME}"
 
@@ -28,6 +30,8 @@ cmd=(
   --device "${DEVICE}"
   --geometry-teacher-dim "${GEOMETRY_TEACHER_DIM}"
   --num-geometry-tokens "${NUM_GEOMETRY_TOKENS}"
+  --geometry-grid-rows "${GEOMETRY_GRID_ROWS}"
+  --geometry-grid-cols "${GEOMETRY_GRID_COLS}"
 )
 if [[ "${ALLOW_PATCH_FALLBACK:-0}" != "1" ]]; then cmd+=(--require-full-geometry); fi
 if [[ "${ALLOW_PATCH_FALLBACK:-0}" == "1" ]]; then cmd+=(--allow-patch-fallback); fi

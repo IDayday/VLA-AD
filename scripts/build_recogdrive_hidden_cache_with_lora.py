@@ -14,6 +14,11 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from navsim.agents.recogdrive.expert_cache import atomic_torch_save, iter_index, load_sample, write_json  # noqa: E402
+from navsim.agents.recogdrive.vlm_lora_utils import (  # noqa: E402
+    load_lora_adapter_metadata,
+    peft_lora_config_kwargs_supported,
+    stable_config_hash,
+)
 
 
 PRESERVE_KEYS = (
@@ -27,6 +32,8 @@ PRESERVE_KEYS = (
     "log_name",
     "jepa_context_tokens",
     "jepa_target_tokens",
+    "jepa_tokenizer_metadata",
+    "jepa_num_tokens",
     "vggt_context_tokens",
     "vggt_target_tokens",
     "vggt_geometry_tokens",
@@ -35,6 +42,9 @@ PRESERVE_KEYS = (
     "vggt_pointmap_tokens",
     "vggt_camera_tokens",
     "vggt_geometry_mode_code",
+    "vggt_geometry_mode",
+    "vggt_geometry_source",
+    "vggt_geometry_tokenizer_metadata",
     "teacher_trajectory",
     "teacher_trajectory_norm",
     "teacher_score",
@@ -50,20 +60,112 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-chunk-root", type=Path, required=True)
     parser.add_argument("--vlm-path", type=Path, required=True)
     parser.add_argument("--vlm-type", default="internvl")
-    parser.add_argument("--vlm-lora-adapter", type=Path, required=True)
+    parser.add_argument("--vlm-lora-adapter", type=Path, default=None, help="Legacy state-only LoRA adapter .pt.")
+    parser.add_argument("--vlm-lora-adapter-dir", type=Path, default=None, help="Preferred adapter directory containing adapter_config.json/lora_metadata.json.")
     parser.add_argument("--chunk-name-pattern", default="train_full_chunk_*,train_backfill_chunk_*,train_backfill_p1_chunk_*")
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--num-workers", type=int, default=0)
     parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="bf16")
     parser.add_argument("--device", default="cuda")
-    parser.add_argument("--lora-r", type=int, default=16)
-    parser.add_argument("--lora-alpha", type=int, default=32)
-    parser.add_argument("--lora-target-modules", default="q_proj,k_proj,v_proj,o_proj")
+    parser.add_argument("--lora-r", type=int, default=None)
+    parser.add_argument("--lora-alpha", type=int, default=None)
+    parser.add_argument("--lora-dropout", type=float, default=None)
+    parser.add_argument("--lora-target-modules", default=None)
+    parser.add_argument("--lora-use-rslora", action="store_true", default=None)
+    parser.add_argument("--lora-use-dora", action="store_true", default=None)
+    parser.add_argument("--allow-lora-config-override", action="store_true")
     parser.add_argument("--max-samples", type=int, default=None)
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--num-shards", type=int, default=1)
+    parser.add_argument("--cache-variant", default="lora_hidden_regeneration")
     parser.add_argument("--synthetic-smoke", action="store_true")
     return parser.parse_args()
+
+
+def _split_targets(value: Any) -> List[str] | str:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        if value.strip() == "all-linear":
+            return "all-linear"
+        return [item.strip() for item in value.split(",") if item.strip()]
+    if isinstance(value, (list, tuple)):
+        return [str(item).strip() for item in value if str(item).strip()]
+    return [str(value)]
+
+
+def _adapter_state_path(adapter_dir: Path) -> Path:
+    for name in ("adapter_model.safetensors", "adapter_model.bin", "vlm_lora_adapter_state.pt"):
+        candidate = adapter_dir / name
+        if candidate.is_file():
+            return candidate
+    raise FileNotFoundError(f"No adapter model file found under {adapter_dir}")
+
+
+def _load_lora_state(path: Path) -> Dict[str, torch.Tensor]:
+    if path.suffix == ".safetensors":
+        from safetensors.torch import load_file
+        return dict(load_file(str(path), device="cpu"))
+    try:
+        payload = torch.load(path, map_location="cpu", weights_only=False)
+    except TypeError:
+        payload = torch.load(path, map_location="cpu")
+    state = payload.get("state_dict", payload) if isinstance(payload, dict) else payload
+    if not isinstance(state, dict):
+        raise TypeError(f"LoRA adapter {path} must contain a state_dict or raw state dict.")
+    return state
+
+
+def _resolve_lora_runtime_config(args: argparse.Namespace) -> tuple[Dict[str, Any], Optional[Path], str]:
+    if args.vlm_lora_adapter_dir is not None:
+        metadata = load_lora_adapter_metadata(args.vlm_lora_adapter_dir)
+        state_path = _adapter_state_path(args.vlm_lora_adapter_dir)
+        config = {
+            "r": int(metadata.get("r", metadata.get("rank", 0))),
+            "alpha": int(metadata.get("alpha", metadata.get("lora_alpha", 0))),
+            "dropout": float(metadata.get("dropout", metadata.get("lora_dropout", 0.0))),
+            "target_modules": metadata.get("resolved_target_modules", metadata.get("target_modules", [])),
+            "bias": metadata.get("bias", "none"),
+            "use_rslora": bool(metadata.get("use_rslora", False)),
+            "use_dora": bool(metadata.get("use_dora", False)),
+            "adapter_config_hash": metadata.get("adapter_config_hash"),
+            "metadata": metadata,
+        }
+        explicit = {
+            "r": args.lora_r,
+            "alpha": args.lora_alpha,
+            "dropout": args.lora_dropout,
+            "target_modules": _split_targets(args.lora_target_modules) if args.lora_target_modules is not None else None,
+        }
+        mismatches = []
+        for key, value in explicit.items():
+            if value is None:
+                continue
+            if key == "target_modules":
+                if value != _split_targets(config[key]):
+                    mismatches.append(f"{key}: CLI {value!r} != adapter {config[key]!r}")
+            elif value != config[key]:
+                mismatches.append(f"{key}: CLI {value!r} != adapter {config[key]!r}")
+        if mismatches and not args.allow_lora_config_override:
+            raise ValueError(
+                "Explicit LoRA CLI config does not match adapter directory metadata:\n"
+                + "\n".join(f"  - {item}" for item in mismatches)
+            )
+        return config, state_path, "adapter_dir"
+    if args.vlm_lora_adapter is None:
+        raise ValueError("Provide --vlm-lora-adapter-dir or legacy --vlm-lora-adapter.")
+    config = {
+        "r": int(args.lora_r or 16),
+        "alpha": int(args.lora_alpha or 32),
+        "dropout": float(args.lora_dropout or 0.0),
+        "target_modules": _split_targets(args.lora_target_modules or "q_proj,k_proj,v_proj,o_proj"),
+        "bias": "none",
+        "use_rslora": bool(args.lora_use_rslora or False),
+        "use_dora": bool(args.lora_use_dora or False),
+        "adapter_config_hash": None,
+        "metadata": {},
+    }
+    return config, args.vlm_lora_adapter, "legacy_state"
 
 
 def chunk_dirs(root: Path, pattern: str) -> List[Path]:
@@ -136,27 +238,32 @@ def load_backbone(args: argparse.Namespace):
     except ImportError as exc:
         raise ImportError("Regenerating hidden cache with LoRA requires peft. Install it with `pip install peft`.") from exc
 
-    target_modules = [item.strip() for item in str(args.lora_target_modules).split(",") if item.strip()]
-    if not target_modules:
-        target_modules = ["q_proj", "k_proj", "v_proj", "o_proj"]
-    lora_cfg = LoraConfig(
-        r=int(args.lora_r),
-        lora_alpha=int(args.lora_alpha),
-        target_modules=target_modules,
-        bias="none",
-    )
+    lora_config, adapter_state_path, _ = _resolve_lora_runtime_config(args)
+    supported_kwargs = peft_lora_config_kwargs_supported()
+    if lora_config["use_rslora"] and "use_rslora" not in supported_kwargs:
+        raise RuntimeError("Adapter requires use_rslora, but installed PEFT does not support it.")
+    if lora_config["use_dora"] and "use_dora" not in supported_kwargs:
+        raise RuntimeError("Adapter requires use_dora, but installed PEFT does not support it.")
+    lora_kwargs: Dict[str, Any] = {
+        "r": int(lora_config["r"]),
+        "lora_alpha": int(lora_config["alpha"]),
+        "lora_dropout": float(lora_config["dropout"]),
+        "target_modules": lora_config["target_modules"],
+        "bias": str(lora_config["bias"]),
+    }
+    if "use_rslora" in supported_kwargs:
+        lora_kwargs["use_rslora"] = bool(lora_config["use_rslora"])
+    if "use_dora" in supported_kwargs:
+        lora_kwargs["use_dora"] = bool(lora_config["use_dora"])
+    if "task_type" in supported_kwargs:
+        lora_kwargs["task_type"] = "CAUSAL_LM"
+    lora_cfg = LoraConfig(**lora_kwargs)
     peft_vlm = get_peft_model(backbone.model, lora_cfg)
     for attr in ("img_context_token_id", "system_message"):
         if hasattr(backbone.model, attr) and not hasattr(peft_vlm, attr):
             setattr(peft_vlm, attr, getattr(backbone.model, attr))
 
-    try:
-        payload = torch.load(args.vlm_lora_adapter, map_location="cpu", weights_only=False)
-    except TypeError:
-        payload = torch.load(args.vlm_lora_adapter, map_location="cpu")
-    state = payload.get("state_dict", payload) if isinstance(payload, dict) else payload
-    if not isinstance(state, dict):
-        raise TypeError(f"LoRA adapter {args.vlm_lora_adapter} must contain a state_dict or raw state dict.")
+    state = _load_lora_state(adapter_state_path)
 
     model_state = peft_vlm.state_dict()
     filtered: Dict[str, torch.Tensor] = {}
@@ -178,9 +285,9 @@ def load_backbone(args: argparse.Namespace):
         else:
             skipped.append(str(key))
     if not filtered:
-        raise RuntimeError(f"No compatible VLM LoRA weights found in {args.vlm_lora_adapter}.")
+        raise RuntimeError(f"No compatible VLM LoRA weights found in {adapter_state_path}.")
     peft_vlm.load_state_dict(filtered, strict=False)
-    print(f"Loaded {len(filtered)} VLM LoRA tensors from {args.vlm_lora_adapter}.")
+    print(f"Loaded {len(filtered)} VLM LoRA tensors from {adapter_state_path}.")
     if skipped:
         print(f"Skipped {len(skipped)} incompatible/non-LoRA adapter tensors.")
     backbone._patch_internvl_visual_feature_dtype(backbone.model)
@@ -222,6 +329,7 @@ def regenerate(args: argparse.Namespace) -> Dict[str, Any]:
         raise ValueError("--num-shards must be positive.")
     if not (0 <= args.shard_index < args.num_shards):
         raise ValueError("--shard-index must be in [0, num_shards).")
+    lora_config, adapter_state_path, adapter_source = _resolve_lora_runtime_config(args)
     backbone = None if args.synthetic_smoke else load_backbone(args)
     samples_dir = args.output_chunk_root / "samples"
     samples_dir.mkdir(parents=True, exist_ok=True)
@@ -257,11 +365,18 @@ def regenerate(args: argparse.Namespace) -> Dict[str, Any]:
             f.write(json.dumps(row, sort_keys=True) + "\n")
     metadata = {
         "version": "recogdrive_hidden_cache_with_lora_v1",
+        "cache_variant": str(args.cache_variant),
         "source_base_cache": str(args.base_chunk_root),
-        "vlm_lora_adapter": str(args.vlm_lora_adapter),
+        "vlm_lora_adapter": str(adapter_state_path) if adapter_state_path is not None else None,
+        "vlm_lora_adapter_dir": str(args.vlm_lora_adapter_dir) if args.vlm_lora_adapter_dir is not None else None,
+        "vlm_lora_adapter_source": adapter_source,
+        "vlm_lora_config": {key: value for key, value in lora_config.items() if key != "metadata"},
+        "vlm_lora_adapter_config_hash": lora_config.get("adapter_config_hash") or stable_config_hash(
+            {key: value for key, value in lora_config.items() if key not in {"metadata", "adapter_config_hash"}}
+        ),
         "cache_hidden_state_regenerated": True,
         "hidden_cache_source": "vlm_lora_regenerated",
-        "source_lora_adapter": str(args.vlm_lora_adapter),
+        "source_lora_adapter": str(adapter_state_path) if adapter_state_path is not None else None,
         "hidden_dtype": "fp32",
         "num_samples": int(written),
         "num_skipped_by_shard": int(skipped),

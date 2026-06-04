@@ -124,16 +124,21 @@ def validate_sample_payload(
     use_last_vla: bool = False,
     last_vla_stage: str = "disabled",
     last_vla_teacher_traj_mode: str = "none",
+    expected_jepa_tokens: int = 12,
+    expected_vggt_tokens: int = 12,
+    expected_geometry_tokens: int = 12,
+    geometry_teacher_dim: int = 2048,
+    strict_last_vla_full_geometry: bool = False,
 ) -> Dict[str, Any]:
     payload = normalize_sample_payload(dict(payload))
     if require_jepa:
-        validate_token_tensor(payload, "jepa_context_tokens", CONTEXT_SCHEMA["jepa_context_tokens"])
+        validate_token_tensor(payload, "jepa_context_tokens", (int(expected_jepa_tokens), 1024))
         if require_targets or (use_last_rd and future_jepa_loss_weight > 0.0):
-            validate_token_tensor(payload, "jepa_target_tokens", CONTEXT_SCHEMA["jepa_target_tokens"])
-    if require_vggt:
-        validate_token_tensor(payload, "vggt_context_tokens", CONTEXT_SCHEMA["vggt_context_tokens"])
+            validate_token_tensor(payload, "jepa_target_tokens", (int(expected_jepa_tokens), 1024))
+    if require_vggt and not strict_last_vla_full_geometry:
+        validate_token_tensor(payload, "vggt_context_tokens", (int(expected_vggt_tokens), 2048))
         if require_targets:
-            validate_token_tensor(payload, "vggt_target_tokens", CONTEXT_SCHEMA["vggt_target_tokens"])
+            validate_token_tensor(payload, "vggt_target_tokens", (int(expected_vggt_tokens), 2048))
     if use_last_rd and require_vggt:
         has_geometry = any(key in payload for key in ("vggt_geometry_tokens", "vggt_depth_tokens", "vggt_pointmap_tokens", "vggt_camera_tokens"))
         if require_vggt_geometry and not has_geometry:
@@ -144,6 +149,15 @@ def validate_sample_payload(
             if key in payload:
                 validate_token_tensor(payload, key, CONTEXT_SCHEMA[key])
     if use_last_vla:
+        if strict_last_vla_full_geometry:
+            validate_token_tensor(payload, "vggt_geometry_tokens", (int(expected_geometry_tokens), int(geometry_teacher_dim)))
+            code = payload.get("vggt_geometry_mode_code")
+            if isinstance(code, torch.Tensor):
+                code_value = int(code.detach().cpu().view(-1)[0].item())
+            else:
+                code_value = int(code) if code is not None else -1
+            if code_value != 2:
+                raise ValueError("Strict Last-VLA full geometry requires vggt_geometry_mode_code=2.")
         for key in ("teacher_trajectory", "teacher_trajectory_norm"):
             if key in payload:
                 validate_token_tensor(payload, key, CONTEXT_SCHEMA[key])

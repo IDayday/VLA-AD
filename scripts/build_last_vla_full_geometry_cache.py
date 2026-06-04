@@ -27,6 +27,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="fp32")
     parser.add_argument("--geometry-teacher-dim", type=int, default=512)
     parser.add_argument("--num-geometry-tokens", type=int, default=12)
+    parser.add_argument("--geometry-grid-rows", type=int, default=3)
+    parser.add_argument("--geometry-grid-cols", type=int, default=4)
     parser.add_argument("--require-full-geometry", action="store_true")
     parser.add_argument("--allow-patch-fallback", action="store_true")
     parser.add_argument("--max-samples", type=int, default=None)
@@ -112,6 +114,8 @@ def main() -> int:
     args = parse_args()
     if args.require_full_geometry and args.allow_patch_fallback:
         raise ValueError("--require-full-geometry and --allow-patch-fallback are mutually incompatible.")
+    if int(args.num_geometry_tokens) != int(args.geometry_grid_rows) * int(args.geometry_grid_cols):
+        raise ValueError("--num-geometry-tokens must equal --geometry-grid-rows * --geometry-grid-cols.")
     if args.num_shards <= 0:
         raise ValueError("--num-shards must be positive.")
     if not (0 <= args.shard_index < args.num_shards):
@@ -124,6 +128,7 @@ def main() -> int:
         require_geometry=bool(args.require_full_geometry),
         geometry_output_dim=int(args.geometry_teacher_dim),
         geometry_num_tokens=int(args.num_geometry_tokens),
+        geometry_grid=(int(args.geometry_grid_rows), int(args.geometry_grid_cols)),
     )
     samples_dir = args.output_cache_root / "samples"
     samples_dir.mkdir(parents=True, exist_ok=True)
@@ -177,6 +182,7 @@ def main() -> int:
         "precision": args.precision,
         "geometry_teacher_dim": int(args.geometry_teacher_dim),
         "num_geometry_tokens": int(args.num_geometry_tokens),
+        "geometry_grid": [int(args.geometry_grid_rows), int(args.geometry_grid_cols)],
         "require_full_geometry": bool(args.require_full_geometry),
         "allow_patch_fallback": bool(args.allow_patch_fallback),
         "shard_index": int(args.shard_index),

@@ -55,6 +55,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-coverage", type=float, default=0.99)
     parser.add_argument("--geometry-teacher-dim", type=int, default=512)
     parser.add_argument("--num-geometry-tokens", type=int, default=12)
+    parser.add_argument("--geometry-grid-rows", type=int, default=3)
+    parser.add_argument("--geometry-grid-cols", type=int, default=4)
     return parser.parse_args()
 
 
@@ -188,6 +190,7 @@ def write_chunk_metadata(
     overwrite_context: bool,
     geometry_teacher_dim: int,
     num_geometry_tokens: int,
+    geometry_grid: tuple[int, int],
 ) -> None:
     try:
         metadata = dict(load_metadata(base_chunk))
@@ -210,6 +213,7 @@ def write_chunk_metadata(
             "geometry_coverage": float(merged / num_records) if num_records else 0.0,
             "geometry_teacher_dim": int(geometry_teacher_dim),
             "num_geometry_tokens": int(num_geometry_tokens),
+            "geometry_grid": [int(geometry_grid[0]), int(geometry_grid[1])],
             "token_shapes": token_shapes,
         }
     )
@@ -217,6 +221,8 @@ def write_chunk_metadata(
 
 
 def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
+    if int(args.num_geometry_tokens) != int(args.geometry_grid_rows) * int(args.geometry_grid_cols):
+        raise ValueError("--num-geometry-tokens must equal --geometry-grid-rows * --geometry-grid-cols.")
     if args.in_place:
         args.output_chunk_root = args.base_chunk_root
     elif args.output_chunk_root.resolve() == args.base_chunk_root.resolve():
@@ -226,6 +232,7 @@ def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
     total_merged = 0
     total_missing = 0
     mode_counts = {"full_geometry": 0, "patch_fallback": 0, "missing": 0}
+    geometry_shape_counts: Dict[str, int] = {}
     chunk_reports = []
     for chunk_dir in chunk_dirs(args.base_chunk_root, args.chunk_name_pattern):
         out_chunk = args.output_chunk_root / chunk_dir.name
@@ -249,6 +256,10 @@ def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
                 )
                 updated = dict(sample)
                 updated.update(geometry_payload)
+                tokens = geometry_payload.get("vggt_geometry_tokens")
+                if isinstance(tokens, torch.Tensor):
+                    shape_key = str(tuple(tokens.shape))
+                    geometry_shape_counts[shape_key] = geometry_shape_counts.get(shape_key, 0) + 1
                 atomic_torch_save(updated, dst_path)
                 chunk_merged += 1
                 mode_counts[str(geometry_payload.get(MODE_KEY, "missing"))] = mode_counts.get(str(geometry_payload.get(MODE_KEY, "missing")), 0) + 1
@@ -271,6 +282,7 @@ def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
             overwrite_context=bool(args.overwrite_context),
             geometry_teacher_dim=int(args.geometry_teacher_dim),
             num_geometry_tokens=int(args.num_geometry_tokens),
+            geometry_grid=(int(args.geometry_grid_rows), int(args.geometry_grid_cols)),
         )
         total_merged += chunk_merged
         total_missing += chunk_missing
@@ -297,6 +309,8 @@ def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
         "mode_counts": mode_counts,
         "geometry_teacher_dim": int(args.geometry_teacher_dim),
         "num_geometry_tokens": int(args.num_geometry_tokens),
+        "geometry_grid": [int(args.geometry_grid_rows), int(args.geometry_grid_cols)],
+        "geometry_token_shape_distribution": dict(sorted(geometry_shape_counts.items())),
         "overwrite_context": bool(args.overwrite_context),
         "chunk_reports": chunk_reports,
     }

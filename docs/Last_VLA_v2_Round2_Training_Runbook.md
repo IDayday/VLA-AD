@@ -4,6 +4,22 @@ Baseline: A0-official-aligned `step_00100000`, full navtest PDMS `0.864891`, eva
 
 This runbook prepares two full SFT lines. Do not set `RUN_TRAIN=1` or `RUN_EVAL=1` until preflight passes.
 
+## High-capacity No-risk Official Config
+
+The minimal Last-VLA configs are smoke/debug configs only. The formal Last-VLA v2 training config is the high-capacity no-risk line in `docs/Last_VLA_v2_HighCap_NoRisk_Runbook.md`.
+
+Official values:
+
+- VLM summary `64`
+- CoT `192`
+- JEPA context/target `128 x 1024`
+- VGGT full geometry `192 x 512`
+- geometry grid `12 x 16`
+- risk disabled
+- expected eval DiT context length `256`
+
+Full raw VLM tokens still do not enter DiT in bottleneck mode. The high-cap line requires regenerated full geometry cache and regenerated 128-token JEPA cache; old 12-token JEPA cache is not acceptable for strict high-cap training. Line B VLM-LoRA requires regenerated train and navtest hidden caches before frozen-cache training/eval.
+
 ## Full Geometry Cache
 
 Build strict full VGGT geometry overlay:
@@ -76,6 +92,8 @@ scripts/last_vla_v2/round2/serverA_frozen_vlm_full_sft.sh
 The Server B launchers pass `NAVSIM_LOG_PATH` and `SENSOR_BLOBS_PATH` through to Hydra as
 `navsim_log_path=${NAVSIM_LOG_PATH}` and `sensor_blobs_path=${SENSOR_BLOBS_PATH}`. Check
 `commands.log` before setting `RUN_TRAIN=1`.
+
+The formal Line B LoRA setting is now `attention_mlp` / `llm` / `r=32` / `alpha=64` / `dropout=0.05` / `rsLoRA=true`. The launcher writes `lora_target_report.json`, `trainable_parameter_counts.json`, `lora_training_config.json`, and `lora_runtime_report.json` during startup. Adapter extraction writes both the Last-VLA CoT adapter and a `vlm_lora/` directory containing LoRA state, config, metadata, and target audit. Hidden-cache regeneration should use `--vlm-lora-adapter-dir`, not manually retyped rank/alpha/target modules.
 
 Dry-run:
 

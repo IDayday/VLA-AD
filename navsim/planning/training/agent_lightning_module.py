@@ -49,6 +49,12 @@ class AgentLightningModule(pl.LightningModule):
             "coarse_traj_l1",
             "future_jepa_loss_raw",
             "last_rd_geometry_mode_code",
+            "hidden_anchor_loss",
+            "hidden_anchor_loss_weighted",
+            "hidden_drift_cosine",
+            "hidden_drift_l2",
+            "lora_trainable_param_count",
+            "lora_matched_module_count",
         ):
             value = _prediction_get(prediction, key)
             if value is not None:

@@ -195,11 +195,13 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
                  expert_cache_dir: Optional[str] = None,
                  num_jepa_tokens: int = 12,
                  num_vggt_tokens: int = 12,
+                 num_geometry_tokens: Optional[int] = None,
                  allow_expert_target_features: bool = False,
                  use_jepa: bool = True,
                  use_vggt: bool = True,
                  jepa_dim: int = 1024,
                  vggt_dim: int = 2048,
+                 geometry_teacher_dim: Optional[int] = None,
                  dummy_expert_seed: int = 0, ):
         """
         Initializes the feature builder.
@@ -230,11 +232,13 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
         self._expert_cache_index_by_token: Optional[Dict[str, Path]] = None
         self.num_jepa_tokens = num_jepa_tokens
         self.num_vggt_tokens = num_vggt_tokens
+        self.num_geometry_tokens = int(num_geometry_tokens) if num_geometry_tokens is not None else int(num_vggt_tokens)
         self.allow_expert_target_features = allow_expert_target_features
         self.use_jepa = use_jepa
         self.use_vggt = use_vggt
         self.jepa_dim = jepa_dim
         self.vggt_dim = vggt_dim
+        self.geometry_teacher_dim = int(geometry_teacher_dim) if geometry_teacher_dim is not None else int(vggt_dim)
         self.dummy_expert_seed = dummy_expert_seed
         self._dummy_expert_backend: Optional[DummyExpertBackend] = None
 
@@ -449,17 +453,37 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
 
         expected_tokens: Optional[int]
         normalized_key = {"jepa_tokens": "jepa_context_tokens", "vggt_tokens": "vggt_context_tokens"}.get(key, key)
+        expected_dim: Optional[int]
         if normalized_key.startswith("jepa_"):
             expected_tokens = self.num_jepa_tokens
+            expected_dim = self.jepa_dim
+        elif normalized_key in {
+            "vggt_geometry_tokens",
+            "vggt_geometry_target_tokens",
+            "vggt_depth_tokens",
+            "vggt_pointmap_tokens",
+            "vggt_camera_tokens",
+            "vggt_depth_target_tokens",
+            "vggt_pointmap_target_tokens",
+        }:
+            expected_tokens = self.num_geometry_tokens
+            expected_dim = self.geometry_teacher_dim
         elif normalized_key.startswith("vggt_"):
             expected_tokens = self.num_vggt_tokens
+            expected_dim = self.vggt_dim
         else:
             expected_tokens = None
+            expected_dim = None
 
         if expected_tokens is not None and tensor.shape[0] != expected_tokens:
             raise ValueError(
                 f"Expert cache {path} key '{key}' has K={tensor.shape[0]}, "
                 f"expected K={expected_tokens}. Full shape: {tuple(tensor.shape)}."
+            )
+        if expected_dim is not None and tensor.shape[-1] != expected_dim:
+            raise ValueError(
+                f"Expert cache {path} key '{key}' has D={tensor.shape[-1]}, "
+                f"expected D={expected_dim}. Full shape: {tuple(tensor.shape)}."
             )
 
         return tensor.detach().cpu().float()

@@ -307,7 +307,24 @@ def make_batch(sample: Dict[str, Any], planner: ReCogDriveDiffusionPlanner, devi
     use_last_vla = bool(getattr(planner.config, "use_last_vla", False))
     require_jepa = bool((planner.config.use_expert_features or use_last_rd or use_last_vla) and planner.config.use_jepa)
     require_vggt = bool((planner.config.use_expert_features or use_last_rd or use_last_vla) and planner.config.use_vggt)
-    validate_sample_payload(sample, require_jepa=require_jepa, require_vggt=require_vggt, require_targets=False)
+    strict_last_vla_full_geometry = bool(
+        use_last_vla
+        and getattr(planner.config, "last_vla_require_full_geometry", False)
+        and not getattr(planner.config, "last_vla_allow_patch_geometry_fallback", False)
+    )
+    validate_sample_payload(
+        sample,
+        require_jepa=require_jepa,
+        require_vggt=require_vggt,
+        require_targets=False,
+        use_last_rd=use_last_rd,
+        use_last_vla=use_last_vla,
+        expected_jepa_tokens=int(getattr(planner.config, "num_jepa_tokens", 12)),
+        expected_vggt_tokens=int(getattr(planner.config, "num_vggt_tokens", 12)),
+        expected_geometry_tokens=int(getattr(planner.config, "num_geometry_tokens", 12)),
+        geometry_teacher_dim=int(getattr(planner.config, "last_vla_geometry_teacher_dim", 512)),
+        strict_last_vla_full_geometry=strict_last_vla_full_geometry,
+    )
     if "last_hidden_state" not in sample:
         raise KeyError("Evaluation sample is missing last_hidden_state. Build a VLM-hidden chunk first.")
     vl_features = sample["last_hidden_state"].float().unsqueeze(0).to(device=device, dtype=dtype)
@@ -317,7 +334,8 @@ def make_batch(sample: Dict[str, Any], planner: ReCogDriveDiffusionPlanner, devi
     if require_jepa:
         data["jepa_context_tokens"] = sample["jepa_context_tokens"].float().unsqueeze(0).to(device=device, dtype=dtype)
     if require_vggt:
-        data["vggt_context_tokens"] = sample["vggt_context_tokens"].float().unsqueeze(0).to(device=device, dtype=dtype)
+        if not strict_last_vla_full_geometry:
+            data["vggt_context_tokens"] = sample["vggt_context_tokens"].float().unsqueeze(0).to(device=device, dtype=dtype)
         if use_last_vla:
             for key in ("vggt_geometry_tokens", "vggt_depth_tokens", "vggt_pointmap_tokens", "vggt_camera_tokens"):
                 if key in sample and isinstance(sample[key], torch.Tensor):

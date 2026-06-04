@@ -213,6 +213,8 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     last_vla_require_full_geometry: bool = False
     last_vla_allow_patch_geometry_fallback: bool = False
     last_vla_geometry_teacher_dim: int = 512
+    last_vla_geometry_grid_rows: int = 3
+    last_vla_geometry_grid_cols: int = 4
     last_vla_use_residual_diffusion: bool = True
     last_vla_residual_detach_coarse: bool = True
     last_vla_coarse_prior_clip: float = 1.0
@@ -240,9 +242,17 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     last_vla_coarse_loss_floor: float = 0.0
     last_vla_progress_loss_floor: float = 0.0
     last_vla_train_vlm_lora: bool = False
-    last_vla_vlm_lora_r: int = 16
-    last_vla_vlm_lora_alpha: int = 32
+    last_vla_vlm_lora_preset: str = "attention_mlp"
+    last_vla_vlm_lora_scope: str = "llm"
+    last_vla_vlm_lora_r: int = 32
+    last_vla_vlm_lora_alpha: int = 64
+    last_vla_vlm_lora_dropout: float = 0.05
+    last_vla_vlm_lora_bias: str = "none"
     last_vla_vlm_lora_target_modules: str = ""
+    last_vla_vlm_lora_use_rslora: bool = True
+    last_vla_vlm_lora_use_dora: bool = False
+    last_vla_vlm_lora_init: str = "default"
+    last_vla_vlm_lora_vision_last_n: int = 0
     
     tune_projector: bool = True
     tune_diffusion_model: bool = True
@@ -317,6 +327,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("last_vla_require_full_geometry=True is incompatible with patch fallback.")
         if config.use_last_vla and config.last_vla_geometry_teacher_dim <= 0:
             raise ValueError("last_vla_geometry_teacher_dim must be positive when use_last_vla=True.")
+        if config.use_last_vla and config.num_geometry_tokens != int(config.last_vla_geometry_grid_rows) * int(config.last_vla_geometry_grid_cols):
+            if (int(config.last_vla_geometry_grid_rows), int(config.last_vla_geometry_grid_cols)) == (3, 4):
+                pass
+            else:
+                raise ValueError(
+                    "num_geometry_tokens must equal last_vla_geometry_grid_rows * last_vla_geometry_grid_cols "
+                    f"({config.num_geometry_tokens} != {config.last_vla_geometry_grid_rows} * {config.last_vla_geometry_grid_cols})."
+                )
         if not (0.0 <= config.last_vla_residual_alpha_start <= 1.0 and 0.0 <= config.last_vla_residual_alpha_end <= 1.0):
             raise ValueError("last_vla_residual_alpha_start/end must be in [0, 1].")
         if config.policy_kd_mode not in {"none", "noise", "x0"}:
@@ -454,6 +472,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     require_full_geometry=config.last_vla_require_full_geometry,
                     allow_patch_geometry_fallback=config.last_vla_allow_patch_geometry_fallback,
                     geometry_teacher_dim=config.last_vla_geometry_teacher_dim,
+                    geometry_grid_rows=config.last_vla_geometry_grid_rows,
+                    geometry_grid_cols=config.last_vla_geometry_grid_cols,
                     vlm_summary_keep_start=config.last_vla_vlm_summary_keep_start,
                     vlm_summary_keep_end=config.last_vla_vlm_summary_keep_end,
                     vlm_summary_decay_epochs=config.last_vla_vlm_summary_decay_epochs,

@@ -15,6 +15,7 @@ class GeometryTokenizerMetadata:
     fourier_bands: int
     seed: int
     projection_input_dim: int
+    source_fields_used: Tuple[str, ...]
 
 
 class GeometryTokenPacker:
@@ -33,6 +34,7 @@ class GeometryTokenPacker:
         self.grid = (int(grid[0]), int(grid[1]))
         self.fourier_bands = int(fourier_bands)
         self.seed = int(seed)
+        self._last_source_fields_used: Tuple[str, ...] = ()
         if self.num_tokens != self.grid[0] * self.grid[1]:
             raise ValueError(f"num_tokens={self.num_tokens} must equal grid cells {self.grid[0] * self.grid[1]}.")
         if self.output_dim <= 0:
@@ -168,6 +170,16 @@ class GeometryTokenPacker:
     ) -> torch.Tensor:
         depth_hw = self._as_hw(depth)
         point_hwc = self._as_hwc(point_map)
+        source_fields = []
+        if depth_hw is not None:
+            source_fields.append("depth")
+        if point_hwc is not None:
+            source_fields.append("point_map")
+        if isinstance(camera, torch.Tensor):
+            source_fields.append("camera")
+        if isinstance(tracks, torch.Tensor):
+            source_fields.append("tracks")
+        self._last_source_fields_used = tuple(source_fields)
         raw = self._raw_stats(depth_hw, point_hwc, camera, tracks)
         features = self._fourier(raw)
         tokens = torch.tanh(features @ self._projection(features.shape[-1]))
@@ -189,5 +201,6 @@ class GeometryTokenPacker:
                 fourier_bands=self.fourier_bands,
                 seed=self.seed,
                 projection_input_dim=projected_dim,
+                source_fields_used=self._last_source_fields_used,
             )
         )

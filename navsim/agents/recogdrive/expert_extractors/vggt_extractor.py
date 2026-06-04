@@ -26,6 +26,7 @@ class VGGTExtractor:
         require_geometry: bool = False,
         geometry_output_dim: int = 512,
         geometry_num_tokens: int = 12,
+        geometry_grid: tuple[int, int] | None = None,
     ) -> None:
         self.model_path = str(model_path)
         self.device = torch.device(device)
@@ -34,7 +35,13 @@ class VGGTExtractor:
         self.require_geometry = require_geometry
         self.geometry_output_dim = int(geometry_output_dim)
         self.geometry_num_tokens = int(geometry_num_tokens)
-        self.geometry_packer = GeometryTokenPacker(num_tokens=self.geometry_num_tokens, output_dim=self.geometry_output_dim)
+        if geometry_grid is None:
+            geometry_grid = (3, 4) if self.geometry_num_tokens == 12 else (1, self.geometry_num_tokens)
+        self.geometry_packer = GeometryTokenPacker(
+            num_tokens=self.geometry_num_tokens,
+            output_dim=self.geometry_output_dim,
+            grid=geometry_grid,
+        )
         self.last_geometry_mode = "no_geometry"
         self.model = self._load_model(self.model_path).to(self.device)
         if self.dtype != torch.float32:

@@ -7,9 +7,18 @@ agent:
   cache_hidden_state: false
   train_backbone: true
   last_vla_train_vlm_lora: true
+  last_vla_vlm_lora_preset: attention_only
+  last_vla_vlm_lora_scope: llm
   last_vla_vlm_lora_r: 16
   last_vla_vlm_lora_alpha: 32
+  last_vla_vlm_lora_dropout: 0.05
+  last_vla_vlm_lora_use_rslora: false
+  last_vla_vlm_lora_use_dora: false
   last_vla_vlm_lora_target_modules: ""
+  last_vla_hidden_anchor_weight: 0.01
+  last_vla_hidden_anchor_mode: summary_cosine
+  lr_vlm_lora: 1e-5
+  lr_last_vla_cot: 1e-4
   use_last_vla: true
   last_vla_stage: cot_alignment
   use_last_rd: false

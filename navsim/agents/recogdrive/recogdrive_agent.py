@@ -35,6 +35,14 @@ from .recogdrive_diffusion_planner import (
     ReCogDriveDiffusionPlanner,
     ReCogDriveDiffusionPlannerConfig,
 )
+from .vlm_lora_utils import (
+    audit_lora_target_modules,
+    build_lora_config_payload,
+    infer_lora_module_category,
+    peft_lora_config_kwargs_supported,
+    resolve_lora_target_modules,
+    validate_lora_scope_audit,
+)
 
 LAST_VLA_FEATURE_KEYS = (
     "jepa_context_tokens",
@@ -180,6 +188,8 @@ class ReCogDriveAgent(AbstractAgent):
         last_vla_require_full_geometry: bool = False,
         last_vla_allow_patch_geometry_fallback: bool = False,
         last_vla_geometry_teacher_dim: int = 512,
+        last_vla_geometry_grid_rows: int = 3,
+        last_vla_geometry_grid_cols: int = 4,
         last_vla_use_residual_diffusion: bool = True,
         last_vla_residual_detach_coarse: bool = True,
         last_vla_coarse_prior_clip: float = 1.0,
@@ -208,9 +218,26 @@ class ReCogDriveAgent(AbstractAgent):
         last_vla_progress_loss_floor: float = 0.0,
         last_vla_adapter_checkpoint: Optional[str] = None,
         last_vla_train_vlm_lora: bool = False,
-        last_vla_vlm_lora_r: int = 16,
-        last_vla_vlm_lora_alpha: int = 32,
+        last_vla_vlm_lora_preset: str = "attention_mlp",
+        last_vla_vlm_lora_scope: str = "llm",
+        last_vla_vlm_lora_r: int = 32,
+        last_vla_vlm_lora_alpha: int = 64,
+        last_vla_vlm_lora_dropout: float = 0.05,
+        last_vla_vlm_lora_bias: str = "none",
         last_vla_vlm_lora_target_modules: str = "",
+        last_vla_vlm_lora_use_rslora: bool = True,
+        last_vla_vlm_lora_use_dora: bool = False,
+        last_vla_vlm_lora_init: str = "default",
+        last_vla_vlm_lora_vision_last_n: int = 0,
+        last_vla_lora_allow_mixed_scope: bool = False,
+        lr_vlm_lora: Optional[float] = 1e-5,
+        weight_decay_vlm_lora: float = 0.0,
+        lr_last_vla_cot: Optional[float] = 1e-4,
+        weight_decay_last_vla_cot: float = 1e-4,
+        last_vla_hidden_anchor_weight: float = 0.01,
+        last_vla_hidden_anchor_mode: str = "summary_cosine",
+        last_vla_hidden_anchor_every_n_steps: int = 1,
+        last_vla_log_lora_diagnostics: bool = True,
         lr_action_head: Optional[float] = None,
         lr_expert: Optional[float] = None,
         lr_expert_gate: Optional[float] = None,
@@ -345,6 +372,8 @@ class ReCogDriveAgent(AbstractAgent):
         self.last_vla_require_full_geometry = last_vla_require_full_geometry
         self.last_vla_allow_patch_geometry_fallback = last_vla_allow_patch_geometry_fallback
         self.last_vla_geometry_teacher_dim = last_vla_geometry_teacher_dim
+        self.last_vla_geometry_grid_rows = last_vla_geometry_grid_rows
+        self.last_vla_geometry_grid_cols = last_vla_geometry_grid_cols
         self.last_vla_use_residual_diffusion = last_vla_use_residual_diffusion
         self.last_vla_residual_detach_coarse = last_vla_residual_detach_coarse
         self.last_vla_coarse_prior_clip = last_vla_coarse_prior_clip
@@ -373,9 +402,29 @@ class ReCogDriveAgent(AbstractAgent):
         self.last_vla_progress_loss_floor = last_vla_progress_loss_floor
         self.last_vla_adapter_checkpoint = last_vla_adapter_checkpoint
         self.last_vla_train_vlm_lora = last_vla_train_vlm_lora
-        self.last_vla_vlm_lora_r = last_vla_vlm_lora_r
-        self.last_vla_vlm_lora_alpha = last_vla_vlm_lora_alpha
+        self.last_vla_vlm_lora_preset = str(last_vla_vlm_lora_preset)
+        self.last_vla_vlm_lora_scope = str(last_vla_vlm_lora_scope)
+        self.last_vla_vlm_lora_r = int(last_vla_vlm_lora_r)
+        self.last_vla_vlm_lora_alpha = int(last_vla_vlm_lora_alpha)
+        self.last_vla_vlm_lora_dropout = float(last_vla_vlm_lora_dropout)
+        self.last_vla_vlm_lora_bias = str(last_vla_vlm_lora_bias)
         self.last_vla_vlm_lora_target_modules = last_vla_vlm_lora_target_modules
+        self.last_vla_vlm_lora_use_rslora = bool(last_vla_vlm_lora_use_rslora)
+        self.last_vla_vlm_lora_use_dora = bool(last_vla_vlm_lora_use_dora)
+        self.last_vla_vlm_lora_init = str(last_vla_vlm_lora_init)
+        self.last_vla_vlm_lora_vision_last_n = int(last_vla_vlm_lora_vision_last_n)
+        self.last_vla_lora_allow_mixed_scope = bool(last_vla_lora_allow_mixed_scope)
+        self.lr_vlm_lora = lr_vlm_lora
+        self.weight_decay_vlm_lora = float(weight_decay_vlm_lora)
+        self.lr_last_vla_cot = lr_last_vla_cot
+        self.weight_decay_last_vla_cot = float(weight_decay_last_vla_cot)
+        self.last_vla_hidden_anchor_weight = float(last_vla_hidden_anchor_weight)
+        self.last_vla_hidden_anchor_mode = str(last_vla_hidden_anchor_mode)
+        self.last_vla_hidden_anchor_every_n_steps = int(last_vla_hidden_anchor_every_n_steps)
+        self.last_vla_log_lora_diagnostics = bool(last_vla_log_lora_diagnostics)
+        self._last_vla_lora_audit: Optional[Dict[str, Any]] = None
+        self._last_vla_lora_config_payload: Optional[Dict[str, Any]] = None
+        self._optimizer_group_report: List[Dict[str, Any]] = []
         self.lr_action_head = lr_action_head
         self.lr_expert = lr_expert
         self.lr_expert_gate = lr_expert_gate
@@ -402,6 +451,7 @@ class ReCogDriveAgent(AbstractAgent):
             )
         if self.last_vla_train_vlm_lora and self.cache_hidden_state:
             raise ValueError("VLM LoRA training requires no-cache/online VLM forward or regenerated hidden cache.")
+        self._validate_last_vla_lora_config()
 
         local_rank = int(os.getenv("LOCAL_RANK", "0"))
         device = torch.device(f"cuda:{local_rank}" if torch.cuda.is_available() else "cpu")
@@ -516,6 +566,8 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.last_vla_require_full_geometry = self.last_vla_require_full_geometry
         cfg.last_vla_allow_patch_geometry_fallback = self.last_vla_allow_patch_geometry_fallback
         cfg.last_vla_geometry_teacher_dim = self.last_vla_geometry_teacher_dim
+        cfg.last_vla_geometry_grid_rows = self.last_vla_geometry_grid_rows
+        cfg.last_vla_geometry_grid_cols = self.last_vla_geometry_grid_cols
         cfg.last_vla_use_residual_diffusion = self.last_vla_use_residual_diffusion
         cfg.last_vla_residual_detach_coarse = self.last_vla_residual_detach_coarse
         cfg.last_vla_coarse_prior_clip = self.last_vla_coarse_prior_clip
@@ -546,6 +598,14 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.last_vla_vlm_lora_r = self.last_vla_vlm_lora_r
         cfg.last_vla_vlm_lora_alpha = self.last_vla_vlm_lora_alpha
         cfg.last_vla_vlm_lora_target_modules = self.last_vla_vlm_lora_target_modules
+        cfg.last_vla_vlm_lora_preset = self.last_vla_vlm_lora_preset
+        cfg.last_vla_vlm_lora_scope = self.last_vla_vlm_lora_scope
+        cfg.last_vla_vlm_lora_dropout = self.last_vla_vlm_lora_dropout
+        cfg.last_vla_vlm_lora_bias = self.last_vla_vlm_lora_bias
+        cfg.last_vla_vlm_lora_use_rslora = self.last_vla_vlm_lora_use_rslora
+        cfg.last_vla_vlm_lora_use_dora = self.last_vla_vlm_lora_use_dora
+        cfg.last_vla_vlm_lora_init = self.last_vla_vlm_lora_init
+        cfg.last_vla_vlm_lora_vision_last_n = self.last_vla_vlm_lora_vision_last_n
 
         if self.grpo:
             cfg.grpo_cfg.metric_cache_path = self.metric_cache_path
@@ -567,6 +627,26 @@ class ReCogDriveAgent(AbstractAgent):
         if hasattr(self.action_head, "set_training_progress"):
             self.action_head.set_training_progress(epoch, total_epochs)
 
+    def _validate_last_vla_lora_config(self) -> None:
+        if self.last_vla_vlm_lora_preset not in {"attention_only", "attention_mlp", "all_linear", "vision_last_n", "custom"}:
+            raise ValueError(f"Unknown last_vla_vlm_lora_preset={self.last_vla_vlm_lora_preset!r}.")
+        if self.last_vla_vlm_lora_scope not in {"llm", "vision", "llm_vision", "projector", "all"}:
+            raise ValueError(f"Unknown last_vla_vlm_lora_scope={self.last_vla_vlm_lora_scope!r}.")
+        if self.last_vla_vlm_lora_r <= 0:
+            raise ValueError("last_vla_vlm_lora_r must be positive.")
+        if self.last_vla_vlm_lora_alpha <= 0:
+            raise ValueError("last_vla_vlm_lora_alpha must be positive.")
+        if not (0.0 <= self.last_vla_vlm_lora_dropout < 1.0):
+            raise ValueError("last_vla_vlm_lora_dropout must be in [0, 1).")
+        if self.last_vla_hidden_anchor_mode not in {"none", "summary_cosine", "token_mean_cosine", "mse_mean"}:
+            raise ValueError(f"Unknown last_vla_hidden_anchor_mode={self.last_vla_hidden_anchor_mode!r}.")
+        if self.lr_vlm_lora is not None and float(self.lr_vlm_lora) <= 0.0:
+            raise ValueError("lr_vlm_lora must be positive when set.")
+        if self.lr_last_vla_cot is not None and float(self.lr_last_vla_cot) <= 0.0:
+            raise ValueError("lr_last_vla_cot must be positive when set.")
+        if self.weight_decay_vlm_lora < 0.0 or self.weight_decay_last_vla_cot < 0.0:
+            raise ValueError("LoRA/Last-VLA CoT weight decay must be non-negative.")
+
     def _enable_last_vla_vlm_lora(self) -> None:
         if self.backbone is None:
             raise ValueError("VLM LoRA training requires an initialized online backbone.")
@@ -577,22 +657,44 @@ class ReCogDriveAgent(AbstractAgent):
                 "last_vla_train_vlm_lora=True requires peft. Install it with `pip install peft` "
                 "or disable Last-VLA VLM LoRA."
             ) from exc
-        target_modules = [
-            item.strip()
-            for item in str(self.last_vla_vlm_lora_target_modules).split(",")
-            if item.strip()
-        ]
-        if not target_modules:
-            target_modules = ["q_proj", "k_proj", "v_proj", "o_proj"]
-        lora_cfg = LoraConfig(
-            r=int(self.last_vla_vlm_lora_r),
-            lora_alpha=int(self.last_vla_vlm_lora_alpha),
-            target_modules=target_modules,
-            bias="none",
-        )
         base_vlm = getattr(self.backbone, "model", None)
         if base_vlm is None:
             raise ValueError("VLM LoRA training requires RecogDriveBackbone.model to be initialized.")
+        target_modules = resolve_lora_target_modules(
+            base_vlm,
+            preset=self.last_vla_vlm_lora_preset,
+            scope=self.last_vla_vlm_lora_scope,
+            custom_target_modules=self.last_vla_vlm_lora_target_modules,
+            vision_last_n=self.last_vla_vlm_lora_vision_last_n,
+        )
+        pre_audit = audit_lora_target_modules(
+            base_vlm,
+            target_modules=target_modules,
+            scope=self.last_vla_vlm_lora_scope,
+            preset=self.last_vla_vlm_lora_preset,
+        )
+        validate_lora_scope_audit(pre_audit, allow_mixed_scope=self.last_vla_lora_allow_mixed_scope)
+        supported_kwargs = peft_lora_config_kwargs_supported()
+        if self.last_vla_vlm_lora_use_rslora and "use_rslora" not in supported_kwargs:
+            raise RuntimeError("last_vla_vlm_lora_use_rslora=True requires a PEFT version with LoraConfig(use_rslora=...).")
+        if self.last_vla_vlm_lora_use_dora and "use_dora" not in supported_kwargs:
+            raise RuntimeError("last_vla_vlm_lora_use_dora=True requires a PEFT version with LoraConfig(use_dora=...).")
+        lora_kwargs: Dict[str, Any] = {
+            "r": int(self.last_vla_vlm_lora_r),
+            "lora_alpha": int(self.last_vla_vlm_lora_alpha),
+            "lora_dropout": float(self.last_vla_vlm_lora_dropout),
+            "target_modules": target_modules,
+            "bias": self.last_vla_vlm_lora_bias,
+        }
+        if "use_rslora" in supported_kwargs:
+            lora_kwargs["use_rslora"] = bool(self.last_vla_vlm_lora_use_rslora)
+        if "use_dora" in supported_kwargs:
+            lora_kwargs["use_dora"] = bool(self.last_vla_vlm_lora_use_dora)
+        if "task_type" in supported_kwargs:
+            lora_kwargs["task_type"] = "CAUSAL_LM"
+        if self.last_vla_vlm_lora_init != "default" and "init_lora_weights" in supported_kwargs:
+            lora_kwargs["init_lora_weights"] = self.last_vla_vlm_lora_init
+        lora_cfg = LoraConfig(**lora_kwargs)
         peft_vlm = get_peft_model(base_vlm, lora_cfg)
         # Keep the RecogDriveBackbone wrapper intact so image/token preprocessing and
         # hidden-state extraction continue to use the existing forward path.
@@ -602,6 +704,39 @@ class ReCogDriveAgent(AbstractAgent):
         if hasattr(self.backbone, "_patch_internvl_visual_feature_dtype"):
             self.backbone._patch_internvl_visual_feature_dtype(base_vlm)
         self.backbone.model = peft_vlm
+        post_audit = audit_lora_target_modules(
+            self.backbone.model,
+            target_modules=target_modules,
+            scope=self.last_vla_vlm_lora_scope,
+            preset=self.last_vla_vlm_lora_preset,
+        )
+        if post_audit["matched_total"] <= 0:
+            post_audit["matched_total"] = pre_audit["matched_total"]
+            post_audit["matched_module_names"] = pre_audit["matched_module_names"]
+            post_audit["matched_by_category"] = pre_audit["matched_by_category"]
+        self._last_vla_lora_audit = post_audit
+        self._last_vla_lora_config_payload = build_lora_config_payload(
+            preset=self.last_vla_vlm_lora_preset,
+            scope=self.last_vla_vlm_lora_scope,
+            target_modules=target_modules,
+            r=self.last_vla_vlm_lora_r,
+            alpha=self.last_vla_vlm_lora_alpha,
+            dropout=self.last_vla_vlm_lora_dropout,
+            bias=self.last_vla_vlm_lora_bias,
+            use_rslora=self.last_vla_vlm_lora_use_rslora,
+            use_dora=self.last_vla_vlm_lora_use_dora,
+            init=self.last_vla_vlm_lora_init,
+            vision_last_n=self.last_vla_vlm_lora_vision_last_n,
+        )
+        if int(os.getenv("LOCAL_RANK", os.getenv("RANK", "0"))) == 0:
+            print(
+                "Last-VLA VLM-LoRA enabled: "
+                f"preset={self.last_vla_vlm_lora_preset}, scope={self.last_vla_vlm_lora_scope}, "
+                f"r={self.last_vla_vlm_lora_r}, alpha={self.last_vla_vlm_lora_alpha}, "
+                f"dropout={self.last_vla_vlm_lora_dropout}, use_rslora={self.last_vla_vlm_lora_use_rslora}, "
+                f"use_dora={self.last_vla_vlm_lora_use_dora}, matched={post_audit['matched_total']}, "
+                f"trainable_lora_params={post_audit['trainable_lora_param_count']}"
+            )
 
     def count_trainable_parameters_by_group(self) -> Dict[str, Dict[str, int]]:
         groups = {
@@ -614,6 +749,7 @@ class ReCogDriveAgent(AbstractAgent):
             "vlm_lora": {"trainable": 0, "total": 0},
             "other": {"trainable": 0, "total": 0},
         }
+        lora_by_category: Dict[str, Dict[str, int]] = {}
         legacy_markers = (
             "jepa_projector",
             "vggt_projector",
@@ -654,11 +790,27 @@ class ReCogDriveAgent(AbstractAgent):
                 groups["backbone"]["total"] += count
                 if parameter.requires_grad:
                     groups["backbone"]["trainable"] += count
+            if group == "vlm_lora":
+                category = infer_lora_module_category(name.split(".lora_", 1)[0])
+                lora_by_category.setdefault(category, {"trainable": 0, "total": 0})
+                lora_by_category[category]["total"] += count
+                if parameter.requires_grad:
+                    lora_by_category[category]["trainable"] += count
         groups["all"] = {
             "total": sum(item["total"] for key, item in groups.items() if key != "backbone"),
             "trainable": sum(item["trainable"] for key, item in groups.items() if key != "backbone"),
         }
+        groups["vlm_lora_by_category"] = lora_by_category
         return groups
+
+    def get_lora_target_report(self) -> Optional[Dict[str, Any]]:
+        return self._last_vla_lora_audit
+
+    def get_lora_training_config(self) -> Optional[Dict[str, Any]]:
+        return self._last_vla_lora_config_payload
+
+    def get_optimizer_group_report(self) -> List[Dict[str, Any]]:
+        return list(self._optimizer_group_report)
 
     def initialize(self) -> None:
         if self.checkpoint_path:
@@ -692,11 +844,13 @@ class ReCogDriveAgent(AbstractAgent):
             expert_cache_dir=self.expert_cache_dir,
             num_jepa_tokens=self.num_jepa_tokens,
             num_vggt_tokens=self.num_vggt_tokens,
+            num_geometry_tokens=self.num_geometry_tokens,
             allow_expert_target_features=self.allow_expert_target_features and self.training,
             use_jepa=self.use_jepa,
             use_vggt=self.use_vggt,
             jepa_dim=self.jepa_dim,
             vggt_dim=self.vggt_dim,
+            geometry_teacher_dim=self.last_vla_geometry_teacher_dim if self.use_last_vla else self.vggt_dim,
         )]
 
     def forward(self, features: Dict[str, torch.Tensor], targets=None, tokens_list=None) -> Dict[str, torch.Tensor]:
@@ -719,6 +873,9 @@ class ReCogDriveAgent(AbstractAgent):
         if high_command_one_hot.ndim == 1:
             high_command_one_hot = high_command_one_hot.unsqueeze(0)
 
+        hidden_anchor_loss: Optional[torch.Tensor] = None
+        hidden_drift_cosine: Optional[torch.Tensor] = None
+        hidden_drift_l2: Optional[torch.Tensor] = None
         if self.cache_hidden_state:
             last_hidden_state = features["last_hidden_state"].to(action_device)
         else:
@@ -766,8 +923,16 @@ class ReCogDriveAgent(AbstractAgent):
                 )
                 questions.append(f"{prompt}{output_requirements}")
 
+            frozen_hidden_state = None
+            if self._hidden_anchor_active():
+                frozen_hidden_state = self._compute_frozen_vlm_hidden(pixel_values_cat, questions, num_patches_list)
             outputs = self.backbone(pixel_values_cat, questions, num_patches_list=num_patches_list)
             last_hidden_state = outputs.hidden_states[-1]
+            if frozen_hidden_state is not None:
+                hidden_anchor_loss, hidden_drift_cosine, hidden_drift_l2 = self._hidden_anchor_metrics(
+                    last_hidden_state,
+                    frozen_hidden_state.to(device=last_hidden_state.device, dtype=last_hidden_state.dtype),
+                )
 
         status_feature = features["status_feature"].to(action_device)
         if status_feature.ndim == 1:
@@ -804,7 +969,9 @@ class ReCogDriveAgent(AbstractAgent):
                     "_allow_target_tokens_for_loss": True,
                 }
             )
-            return self.action_head(last_hidden_state, action_inputs)
+            predictions = self.action_head(last_hidden_state, action_inputs)
+            self._attach_hidden_anchor_outputs(predictions, hidden_anchor_loss, hidden_drift_cosine, hidden_drift_l2)
+            return predictions
         elif self.training and self.grpo:
             action_inputs = BatchFeature(
                 data={**action_input_data, "action": targets["trajectory"].to(device=action_device, dtype=model_dtype)}
@@ -851,7 +1018,8 @@ class ReCogDriveAgent(AbstractAgent):
 
     def _optimizer_grouping_requested(self) -> bool:
         return (
-            self.lr_action_head is not None
+            self.last_vla_train_vlm_lora
+            or self.lr_action_head is not None
             or self.lr_expert is not None
             or self.lr_expert_gate is not None
             or self.train_expert_only
@@ -865,6 +1033,15 @@ class ReCogDriveAgent(AbstractAgent):
                 is_last_vla_cot = self._is_last_vla_parameter_key(name)
                 is_lora = "lora_" in name
                 parameter.requires_grad = bool(is_last_vla_cot or is_lora)
+            counts = self.count_trainable_parameters_by_group()
+            if counts["vlm_lora"]["trainable"] <= 0:
+                raise RuntimeError("last_vla_train_vlm_lora=True but no trainable LoRA parameters were found.")
+            if counts["last_vla_cot"]["trainable"] <= 0:
+                raise RuntimeError("last_vla_train_vlm_lora=True but no trainable Last-VLA CoT parameters were found.")
+            if counts["action_base"]["trainable"] > 0:
+                raise RuntimeError("Last-VLA VLM-LoRA training must not train action_base parameters.")
+            if counts["backbone_non_lora"]["trainable"] > 0:
+                raise RuntimeError("Last-VLA VLM-LoRA training must not train non-LoRA backbone parameters.")
             return
         if self.freeze_expert and (self.train_expert_only or self.freeze_base_action_head):
             raise ValueError(
@@ -913,6 +1090,8 @@ class ReCogDriveAgent(AbstractAgent):
 
     def _build_grouped_optimizer(self) -> Optimizer:
         base_lr = float(self._lr)
+        if self.last_vla_train_vlm_lora:
+            return self._build_last_vla_lora_optimizer(base_lr)
         action_lr = base_lr if self.lr_action_head is None else float(self.lr_action_head)
         expert_lr = base_lr if self.lr_expert is None else float(self.lr_expert)
         gate_lr = None if self.lr_expert_gate is None else float(self.lr_expert_gate)
@@ -969,7 +1148,155 @@ class ReCogDriveAgent(AbstractAgent):
         )
         if not groups:
             raise RuntimeError("No trainable parameters for ReCogDrive optimizer. Check freeze flags and learning rates.")
+        self._optimizer_group_report = self._optimizer_group_report_from_groups(groups)
         return optim.AdamW(groups, weight_decay=0.0, betas=(0.9, 0.95))
+
+    def _build_last_vla_lora_optimizer(self, base_lr: float) -> Optimizer:
+        self._set_trainable_parameters()
+        last_vla_cot_params: List[torch.nn.Parameter] = []
+        vlm_lora_params: List[torch.nn.Parameter] = []
+        action_base_params: List[torch.nn.Parameter] = []
+        backbone_non_lora_params: List[torch.nn.Parameter] = []
+        for name, parameter in self.named_parameters():
+            if not parameter.requires_grad:
+                continue
+            if self._is_last_vla_parameter_key(name):
+                last_vla_cot_params.append(parameter)
+            elif "lora_" in name:
+                vlm_lora_params.append(parameter)
+            elif name.startswith("action_head."):
+                action_base_params.append(parameter)
+            elif name.startswith("backbone."):
+                backbone_non_lora_params.append(parameter)
+        if action_base_params:
+            raise RuntimeError("LoRA alignment optimizer found trainable action_base parameters.")
+        if backbone_non_lora_params:
+            raise RuntimeError("LoRA alignment optimizer found trainable non-LoRA backbone parameters.")
+        if not last_vla_cot_params:
+            raise RuntimeError("LoRA alignment optimizer requires a non-empty Last-VLA CoT parameter group.")
+        if not vlm_lora_params:
+            raise RuntimeError("LoRA alignment optimizer requires a non-empty VLM LoRA parameter group.")
+        cot_lr = float(self.lr_last_vla_cot) if self.lr_last_vla_cot is not None else float(self.lr_action_head or base_lr)
+        lora_lr = float(self.lr_vlm_lora) if self.lr_vlm_lora is not None else 1e-5
+        groups: List[Dict[str, Any]] = [
+            {
+                "params": last_vla_cot_params,
+                "lr": cot_lr,
+                "weight_decay": float(self.weight_decay_last_vla_cot),
+                "name": "last_vla_cot",
+                "lr_scale": cot_lr / base_lr if base_lr > 0 else 1.0,
+            },
+            {
+                "params": vlm_lora_params,
+                "lr": lora_lr,
+                "weight_decay": float(self.weight_decay_vlm_lora),
+                "name": "vlm_lora",
+                "lr_scale": lora_lr / base_lr if base_lr > 0 else 1.0,
+            },
+        ]
+        self._optimizer_group_report = self._optimizer_group_report_from_groups(groups)
+        if int(os.getenv("LOCAL_RANK", os.getenv("RANK", "0"))) == 0:
+            for item in self._optimizer_group_report:
+                print(
+                    "Optimizer group "
+                    f"{item['name']}: lr={item['lr']}, weight_decay={item['weight_decay']}, "
+                    f"tensors={item['num_tensors']}, parameters={item['parameter_count']}"
+                )
+        return optim.AdamW(groups, weight_decay=0.0, betas=(0.9, 0.95))
+
+    @staticmethod
+    def _optimizer_group_report_from_groups(groups: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+        report = []
+        for group in groups:
+            params = [param for param in group.get("params", []) if isinstance(param, torch.nn.Parameter)]
+            report.append(
+                {
+                    "name": group.get("name", "unnamed"),
+                    "lr": float(group.get("lr", 0.0)),
+                    "weight_decay": float(group.get("weight_decay", 0.0)),
+                    "num_tensors": int(len(params)),
+                    "parameter_count": int(sum(param.numel() for param in params)),
+                }
+            )
+        return report
+
+    def _hidden_anchor_active(self) -> bool:
+        if not (self.training and self.last_vla_train_vlm_lora):
+            return False
+        if self.cache_hidden_state:
+            return False
+        if self.last_vla_stage != "cot_alignment":
+            return False
+        if self.last_vla_hidden_anchor_mode == "none" or self.last_vla_hidden_anchor_weight <= 0.0:
+            return False
+        return True
+
+    def _compute_frozen_vlm_hidden(self, pixel_values: torch.Tensor, questions: List[str], num_patches_list: List[int]) -> Optional[torch.Tensor]:
+        if self.backbone is None or getattr(self.backbone, "model", None) is None:
+            return None
+        model = self.backbone.model
+        disable_adapter = getattr(model, "disable_adapter", None)
+        if disable_adapter is None:
+            warnings.warn(
+                "PEFT model does not expose disable_adapter(); hidden-anchor loss is skipped for this step.",
+                RuntimeWarning,
+            )
+            return None
+        with torch.no_grad():
+            with disable_adapter():
+                outputs = self.backbone(pixel_values, questions, num_patches_list=num_patches_list)
+        return outputs.hidden_states[-1].detach()
+
+    def _hidden_anchor_metrics(
+        self,
+        lora_hidden: torch.Tensor,
+        frozen_hidden: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+        if lora_hidden.ndim == 2:
+            lora_hidden = lora_hidden.unsqueeze(0)
+        if frozen_hidden.ndim == 2:
+            frozen_hidden = frozen_hidden.unsqueeze(0)
+        token_count = min(lora_hidden.shape[1], frozen_hidden.shape[1])
+        lora = lora_hidden[:, :token_count].float()
+        frozen = frozen_hidden[:, :token_count].float().detach()
+        lora_mean = lora.mean(dim=1)
+        frozen_mean = frozen.mean(dim=1)
+        cosine = torch.nn.functional.cosine_similarity(lora_mean, frozen_mean, dim=-1).mean()
+        l2 = torch.nn.functional.mse_loss(lora_mean, frozen_mean)
+        if self.last_vla_hidden_anchor_mode in {"summary_cosine", "token_mean_cosine"}:
+            loss = 1.0 - cosine
+        elif self.last_vla_hidden_anchor_mode == "mse_mean":
+            loss = l2
+        else:
+            loss = lora.new_zeros(())
+        return loss.to(lora_hidden), cosine.to(lora_hidden), l2.to(lora_hidden)
+
+    def _attach_hidden_anchor_outputs(
+        self,
+        predictions: Dict[str, torch.Tensor],
+        hidden_anchor_loss: Optional[torch.Tensor],
+        hidden_drift_cosine: Optional[torch.Tensor],
+        hidden_drift_l2: Optional[torch.Tensor],
+    ) -> None:
+        if hidden_anchor_loss is None:
+            return
+        weighted = hidden_anchor_loss * float(self.last_vla_hidden_anchor_weight)
+        if "loss" in predictions:
+            predictions["loss"] = predictions["loss"] + weighted.to(predictions["loss"])
+        predictions["hidden_anchor_loss"] = hidden_anchor_loss.detach()
+        predictions["hidden_anchor_loss_weighted"] = weighted.detach()
+        if hidden_drift_cosine is not None:
+            predictions["hidden_drift_cosine"] = hidden_drift_cosine.detach()
+        if hidden_drift_l2 is not None:
+            predictions["hidden_drift_l2"] = hidden_drift_l2.detach()
+        if self._last_vla_lora_audit is not None:
+            ref = hidden_anchor_loss.detach()
+            predictions["lora_trainable_param_count"] = ref.new_tensor(
+                float(self._last_vla_lora_audit.get("trainable_lora_param_count", 0))
+            )
+            predictions["lora_matched_module_count"] = ref.new_tensor(
+                float(self._last_vla_lora_audit.get("matched_total", 0))
+            )
 
     @staticmethod
     def _checkpoint_state_dict(checkpoint: Any) -> Dict[str, torch.Tensor]:

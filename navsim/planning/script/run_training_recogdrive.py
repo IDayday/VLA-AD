@@ -66,6 +66,17 @@ def _tensor_dtype_counts(tensors) -> Dict[str, int]:
 
 def _configured_optimizer_groups(agent_cfg: DictConfig) -> Tuple[List[str], List[float], List[float]]:
     base_lr = float(agent_cfg.get("lr", 1e-4))
+    if bool(agent_cfg.get("last_vla_train_vlm_lora", False)):
+        lr_lora = float(agent_cfg.get("lr_vlm_lora", 1e-5))
+        lr_cot = float(agent_cfg.get("lr_last_vla_cot", agent_cfg.get("lr_action_head", base_lr)))
+        return (
+            ["last_vla_cot", "vlm_lora"],
+            [lr_cot, lr_lora],
+            [
+                float(agent_cfg.get("weight_decay_last_vla_cot", 1e-4)),
+                float(agent_cfg.get("weight_decay_vlm_lora", 0.0)),
+            ],
+        )
     lr_action_head = agent_cfg.get("lr_action_head", None)
     lr_expert = agent_cfg.get("lr_expert", None)
     lr_expert_gate = agent_cfg.get("lr_expert_gate", None)
@@ -185,6 +196,7 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         use_vggt: bool = True,
         num_jepa_tokens: int = 12,
         num_vggt_tokens: int = 12,
+        num_geometry_tokens: int = 12,
         jepa_dim: int = 1024,
         vggt_dim: int = 2048,
         use_last_rd: bool = False,
@@ -209,6 +221,7 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         self.use_vggt = bool(use_vggt)
         self.num_jepa_tokens = int(num_jepa_tokens)
         self.num_vggt_tokens = int(num_vggt_tokens)
+        self.num_geometry_tokens = int(num_geometry_tokens)
         self.jepa_dim = int(jepa_dim)
         self.vggt_dim = int(vggt_dim)
         self.use_last_rd = bool(use_last_rd)
@@ -299,7 +312,12 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         if self.use_jepa:
             keys.append("jepa_context_tokens")
         if self.use_vggt or (self.use_last_rd and self.vggt_geometry_loss_weight > 0.0):
-            keys.append("vggt_context_tokens")
+            if not (
+                self.use_last_vla
+                and self.last_vla_require_full_geometry
+                and not self.last_vla_allow_patch_geometry_fallback
+            ):
+                keys.append("vggt_context_tokens")
         if self.use_last_rd and self.require_vggt_geometry:
             keys.append("vggt_geometry_tokens")
         if self.use_last_vla and self.last_vla_require_full_geometry:
@@ -312,7 +330,11 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         keys: List[str] = []
         if self.use_jepa and (not self.use_last_rd or self.future_jepa_loss_weight > 0.0):
             keys.append("jepa_target_tokens")
-        if self.use_vggt:
+        if self.use_vggt and not (
+            self.use_last_vla
+            and self.last_vla_require_full_geometry
+            and not self.last_vla_allow_patch_geometry_fallback
+        ):
             keys.append("vggt_target_tokens")
         if self.use_last_rd and self.require_vggt_geometry:
             keys.append("vggt_geometry_target_tokens")
@@ -369,11 +391,11 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             "jepa_target_tokens": (self.num_jepa_tokens, self.jepa_dim),
             "vggt_context_tokens": (self.num_vggt_tokens, self.vggt_dim),
             "vggt_target_tokens": (self.num_vggt_tokens, self.vggt_dim),
-            "vggt_geometry_tokens": (self.num_vggt_tokens, self.last_vla_geometry_teacher_dim if self.use_last_vla else self.vggt_dim),
-            "vggt_geometry_target_tokens": (self.num_vggt_tokens, self.last_vla_geometry_teacher_dim if self.use_last_vla else self.vggt_dim),
-            "vggt_depth_tokens": (self.num_vggt_tokens, self.last_vla_geometry_teacher_dim if self.use_last_vla else self.vggt_dim),
-            "vggt_pointmap_tokens": (self.num_vggt_tokens, self.last_vla_geometry_teacher_dim if self.use_last_vla else self.vggt_dim),
-            "vggt_camera_tokens": (self.num_vggt_tokens, self.last_vla_geometry_teacher_dim if self.use_last_vla else self.vggt_dim),
+            "vggt_geometry_tokens": (self.num_geometry_tokens, self.last_vla_geometry_teacher_dim if self.use_last_vla else self.vggt_dim),
+            "vggt_geometry_target_tokens": (self.num_geometry_tokens, self.last_vla_geometry_teacher_dim if self.use_last_vla else self.vggt_dim),
+            "vggt_depth_tokens": (self.num_geometry_tokens, self.last_vla_geometry_teacher_dim if self.use_last_vla else self.vggt_dim),
+            "vggt_pointmap_tokens": (self.num_geometry_tokens, self.last_vla_geometry_teacher_dim if self.use_last_vla else self.vggt_dim),
+            "vggt_camera_tokens": (self.num_geometry_tokens, self.last_vla_geometry_teacher_dim if self.use_last_vla else self.vggt_dim),
         }
         if key in expert_shapes:
             return expert_shapes[key]
@@ -442,6 +464,7 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             "use_vggt": self.use_vggt,
             "num_jepa_tokens": self.num_jepa_tokens,
             "num_vggt_tokens": self.num_vggt_tokens,
+            "num_geometry_tokens": self.num_geometry_tokens,
             "jepa_dim": self.jepa_dim,
             "vggt_dim": self.vggt_dim,
             "required_expert_context_keys": self._required_expert_context_keys(),
@@ -588,6 +611,14 @@ def write_run_reports(
     output_dir = Path(cfg.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
     group_names, group_lrs, group_wds = _configured_optimizer_groups(cfg.agent)
+    trainable_counts = (
+        agent.count_trainable_parameters_by_group()
+        if hasattr(agent, "count_trainable_parameters_by_group")
+        else None
+    )
+    lora_target_report = agent.get_lora_target_report() if hasattr(agent, "get_lora_target_report") else None
+    lora_training_config = agent.get_lora_training_config() if hasattr(agent, "get_lora_training_config") else None
+    optimizer_group_report = agent.get_optimizer_group_report() if hasattr(agent, "get_optimizer_group_report") else []
     report = {
         "requested_precision": str(cfg.trainer.params.get("precision", "")),
         "true_bf16_weights": False,
@@ -596,11 +627,10 @@ def write_run_reports(
         "optimizer_group_names": group_names,
         "optimizer_group_lrs": group_lrs,
         "optimizer_group_weight_decay": group_wds,
-        "trainable_parameter_counts": (
-            agent.count_trainable_parameters_by_group()
-            if hasattr(agent, "count_trainable_parameters_by_group")
-            else None
-        ),
+        "optimizer_group_report": optimizer_group_report,
+        "trainable_parameter_counts": trainable_counts,
+        "lora_target_report": lora_target_report,
+        "lora_training_config": lora_training_config,
         "loader_mode": loader_mode,
         "key_checkpoint_steps": key_steps,
         "data_report": data_report,
@@ -636,6 +666,52 @@ def write_run_reports(
         },
     }
     (output_dir / "precision_report.json").write_text(json.dumps(report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    if trainable_counts is not None:
+        (output_dir / "trainable_parameter_counts.json").write_text(
+            json.dumps(trainable_counts, indent=2, sort_keys=True, default=str) + "\n",
+            encoding="utf-8",
+        )
+    if lora_target_report is not None:
+        (output_dir / "lora_target_report.json").write_text(
+            json.dumps(lora_target_report, indent=2, sort_keys=True, default=str) + "\n",
+            encoding="utf-8",
+        )
+    if lora_training_config is not None:
+        (output_dir / "lora_training_config.json").write_text(
+            json.dumps(lora_training_config, indent=2, sort_keys=True, default=str) + "\n",
+            encoding="utf-8",
+        )
+        dataloader_cfg = cfg.get("dataloader", {})
+        dataloader_params = dataloader_cfg.get("params", {}) if dataloader_cfg is not None else {}
+        trainer_cfg = cfg.get("trainer", {})
+        trainer_params = trainer_cfg.get("params", {}) if trainer_cfg is not None else {}
+        runtime_report = {
+            "effective_batch_size": dataloader_params.get("batch_size", None),
+            "precision": str(trainer_params.get("precision", "")),
+            "preset": lora_training_config.get("preset"),
+            "scope": lora_training_config.get("scope"),
+            "r": lora_training_config.get("r"),
+            "alpha": lora_training_config.get("alpha"),
+            "dropout": lora_training_config.get("dropout"),
+            "use_rslora": lora_training_config.get("use_rslora"),
+            "use_dora": lora_training_config.get("use_dora"),
+            "lr_vlm_lora": cfg.agent.get("lr_vlm_lora", None),
+            "lr_last_vla_cot": cfg.agent.get("lr_last_vla_cot", None),
+            "hidden_anchor_weight": cfg.agent.get("last_vla_hidden_anchor_weight", 0.0),
+            "hidden_anchor_mode": cfg.agent.get("last_vla_hidden_anchor_mode", "none"),
+            "matched_module_counts": (lora_target_report or {}).get("matched_by_category", {}),
+            "matched_total": (lora_target_report or {}).get("matched_total", 0),
+            "trainable_parameter_counts": trainable_counts,
+            "trainable_ratio": (lora_target_report or {}).get("trainable_ratio", 0.0),
+            "backbone_non_lora_trainable": bool(
+                trainable_counts
+                and trainable_counts.get("backbone_non_lora", {}).get("trainable", 0) > 0
+            ),
+        }
+        (output_dir / "lora_runtime_report.json").write_text(
+            json.dumps(runtime_report, indent=2, sort_keys=True, default=str) + "\n",
+            encoding="utf-8",
+        )
     if data_report is not None:
         (output_dir / "data_report.json").write_text(json.dumps(data_report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     payload = OmegaConf.to_container(cfg, resolve=False)
@@ -918,6 +994,7 @@ def main(cfg: DictConfig) -> None:
                 use_vggt=use_vggt,
                 num_jepa_tokens=int(cfg.agent.get("num_jepa_tokens", 12)),
                 num_vggt_tokens=int(cfg.agent.get("num_vggt_tokens", 12)),
+                num_geometry_tokens=int(cfg.agent.get("num_geometry_tokens", cfg.agent.get("num_vggt_tokens", 12))),
                 jepa_dim=int(cfg.agent.get("jepa_dim", 1024)),
                 vggt_dim=int(cfg.agent.get("vggt_dim", 2048)),
                 use_last_rd=use_last_rd,
@@ -943,6 +1020,7 @@ def main(cfg: DictConfig) -> None:
                 use_vggt=use_vggt,
                 num_jepa_tokens=int(cfg.agent.get("num_jepa_tokens", 12)),
                 num_vggt_tokens=int(cfg.agent.get("num_vggt_tokens", 12)),
+                num_geometry_tokens=int(cfg.agent.get("num_geometry_tokens", cfg.agent.get("num_vggt_tokens", 12))),
                 jepa_dim=int(cfg.agent.get("jepa_dim", 1024)),
                 vggt_dim=int(cfg.agent.get("vggt_dim", 2048)),
                 use_last_rd=use_last_rd,

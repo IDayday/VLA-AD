@@ -52,6 +52,8 @@ class LastVLACoTConfig:
     require_full_geometry: bool = False
     allow_patch_geometry_fallback: bool = False
     geometry_teacher_dim: int = 2048
+    geometry_grid_rows: int = 3
+    geometry_grid_cols: int = 4
 
     risk_num_classes: int = 4
     requires_risk_labels: bool = False
@@ -188,6 +190,14 @@ def _num_heads(dim: int) -> int:
         if dim % heads == 0:
             return heads
     return 1
+
+
+def _infer_token_grid(num_tokens: int) -> tuple[int, int]:
+    best = 1
+    for rows in range(1, int(num_tokens**0.5) + 1):
+        if num_tokens % rows == 0:
+            best = rows
+    return best, num_tokens // best
 
 
 def _zero(batch_size: int, dim: int, ref: torch.Tensor) -> torch.Tensor:
@@ -361,6 +371,23 @@ class GeometryTeacherHead(nn.Module):
         allow_target_tokens: bool,
     ) -> Tuple[Optional[torch.Tensor], str]:
         batch_size = ref.shape[0]
+        strict_full_geometry = bool(self.config.require_full_geometry)
+
+        def prepare_tokens(name: str, value: torch.Tensor) -> torch.Tensor:
+            tokens = _validate_tokens(
+                name,
+                value.to(device=ref.device, dtype=ref.dtype),
+                batch_size=batch_size,
+                dim=self.config.geometry_teacher_dim if strict_full_geometry else None,
+            )
+            if strict_full_geometry:
+                if tokens.shape[1] != self.config.geometry_tokens:
+                    raise ValueError(
+                        f"{name} token count {tokens.shape[1]} != expected {self.config.geometry_tokens}."
+                    )
+                return tokens
+            return match_token_count(match_last_dim(tokens, self.config.geometry_teacher_dim), self.config.geometry_tokens)
+
         explicit_mode = self._mode_from_action_input(action_input)
         full_keys = ["vggt_geometry_tokens", "vggt_depth_tokens", "vggt_pointmap_tokens", "vggt_camera_tokens"]
         if training and allow_target_tokens:
@@ -369,12 +396,10 @@ class GeometryTeacherHead(nn.Module):
             tokens = safe_get(action_input, key)
             if isinstance(tokens, torch.Tensor):
                 if explicit_mode == "full_geometry":
-                    tokens = _validate_tokens(key, tokens.to(device=ref.device, dtype=ref.dtype), batch_size=batch_size)
-                    return match_last_dim(tokens, self.config.geometry_teacher_dim), "full_geometry"
+                    return prepare_tokens(key, tokens), "full_geometry"
                 if explicit_mode == "patch_fallback":
                     if self.config.allow_patch_geometry_fallback:
-                        tokens = _validate_tokens(key, tokens.to(device=ref.device, dtype=ref.dtype), batch_size=batch_size)
-                        return match_last_dim(tokens, self.config.geometry_teacher_dim), "patch_fallback"
+                        return prepare_tokens(key, tokens), "patch_fallback"
                     raise KeyError("VGGT geometry tokens are marked patch_fallback, but patch fallback is disabled.")
                 if explicit_mode == "no_geometry":
                     if self.config.require_full_geometry:
@@ -387,13 +412,12 @@ class GeometryTeacherHead(nn.Module):
                         f"{key} is present without explicit full_geometry mode; treating it as patch_fallback.",
                         RuntimeWarning,
                     )
-                    tokens = _validate_tokens(key, tokens.to(device=ref.device, dtype=ref.dtype), batch_size=batch_size)
-                    return match_last_dim(tokens, self.config.geometry_teacher_dim), "patch_fallback"
+                    return prepare_tokens(key, tokens), "patch_fallback"
                 return None, "missing"
         fallback = safe_get(action_input, "vggt_context_tokens")
         if isinstance(fallback, torch.Tensor) and self.config.allow_patch_geometry_fallback:
             fallback = _validate_tokens("vggt_context_tokens", fallback.to(device=ref.device, dtype=ref.dtype), batch_size=batch_size)
-            return match_last_dim(fallback, self.config.geometry_teacher_dim), "patch_fallback"
+            return match_token_count(match_last_dim(fallback, self.config.geometry_teacher_dim), self.config.geometry_tokens), "patch_fallback"
         if self.config.require_full_geometry:
             raise KeyError(
                 "Last-VLA geometry teacher requires full geometry keys "
@@ -418,7 +442,6 @@ class GeometryTeacherHead(nn.Module):
             allow_target_tokens=allow_target_tokens,
         )
         if target is not None:
-            target = match_token_count(target, self.config.geometry_tokens)
             loss = normalized_mse(predicted, target) if self.config.normalized_teacher_loss else smooth_l1(predicted, target)
         else:
             loss = predicted.new_zeros(())
@@ -466,7 +489,12 @@ class DynamicTeacherHead(nn.Module):
         target = None
         if training and allow_target_tokens and isinstance(jepa_target_tokens, torch.Tensor):
             target = _validate_tokens("jepa_target_tokens", jepa_target_tokens.to(predicted), batch_size=predicted.shape[0], dim=self.config.jepa_dim)
-            target = match_token_count(target, self.config.dynamic_tokens)
+            if target.shape[1] != self.config.dynamic_tokens:
+                if self.config.dynamic_tokens > 12:
+                    raise ValueError(
+                        f"jepa_target_tokens token count {target.shape[1]} != expected {self.config.dynamic_tokens}."
+                    )
+                target = match_token_count(target, self.config.dynamic_tokens)
             loss = normalized_mse(predicted, target) if self.config.normalized_teacher_loss else smooth_l1(predicted, target)
         else:
             loss = predicted.new_zeros(())
@@ -594,6 +622,24 @@ class LastVLACoTTransformer(nn.Module):
         self.config = config
         if config.require_full_geometry and config.allow_patch_geometry_fallback:
             raise ValueError("require_full_geometry=True is incompatible with allow_patch_geometry_fallback=True.")
+        if config.geometry_tokens != int(config.geometry_grid_rows) * int(config.geometry_grid_cols):
+            if (int(config.geometry_grid_rows), int(config.geometry_grid_cols)) == (3, 4):
+                config.geometry_grid_rows, config.geometry_grid_cols = _infer_token_grid(config.geometry_tokens)
+            else:
+                raise ValueError(
+                    "geometry_tokens must equal geometry_grid_rows * geometry_grid_cols "
+                    f"({config.geometry_tokens} != {config.geometry_grid_rows} * {config.geometry_grid_cols})."
+                )
+        if config.geometry_tokens != int(config.geometry_grid_rows) * int(config.geometry_grid_cols):
+            raise ValueError(
+                "geometry_tokens must equal geometry_grid_rows * geometry_grid_cols "
+                f"({config.geometry_tokens} != {config.geometry_grid_rows} * {config.geometry_grid_cols})."
+            )
+        if not config.use_cot_risk_head and config.risk_tokens != 0:
+            warnings.warn(
+                "use_cot_risk_head=False ignores configured risk_tokens; no risk tokens will be appended.",
+                RuntimeWarning,
+            )
         self.current_epoch = 0
         self.total_epochs = 1
 
@@ -618,7 +664,7 @@ class LastVLACoTTransformer(nn.Module):
         self.geometry_head = GeometryTeacherHead(config)
         self.dynamic_head = DynamicTeacherHead(config)
         self.coarse_head = CoTCoarseTrajectoryHead(config)
-        self.risk_head = RiskTeacherHead(config)
+        self.risk_head = RiskTeacherHead(config) if config.use_cot_risk_head and config.risk_tokens > 0 else None
         self.horizon_queries = nn.Parameter(torch.randn(config.action_horizon, config.planner_dim) * 0.02)
         self.horizon_attn = CrossAttentionBlock(config.planner_dim, config.hidden_dim)
 
@@ -646,23 +692,37 @@ class LastVLACoTTransformer(nn.Module):
 
     def _geometry_memory(self, action_input: Optional[Dict[str, Any]], ref: torch.Tensor) -> Optional[torch.Tensor]:
         mode = self.geometry_head._mode_from_action_input(action_input)
+        strict_full_geometry = bool(self.config.require_full_geometry)
+
+        def prepare_geometry_memory(name: str, value: torch.Tensor) -> torch.Tensor:
+            tokens = _validate_tokens(
+                name,
+                value.to(ref),
+                batch_size=ref.shape[0],
+                dim=self.config.geometry_teacher_dim if strict_full_geometry else None,
+            )
+            if strict_full_geometry:
+                if tokens.shape[1] != self.config.geometry_tokens:
+                    raise ValueError(
+                        f"{name} token count {tokens.shape[1]} != expected {self.config.geometry_tokens}."
+                    )
+                return tokens
+            return match_token_count(match_last_dim(tokens, self.config.geometry_teacher_dim), self.config.geometry_tokens)
+
         for key in ("vggt_geometry_tokens", "vggt_depth_tokens", "vggt_pointmap_tokens", "vggt_camera_tokens"):
             value = safe_get(action_input, key)
             if isinstance(value, torch.Tensor):
                 if mode == "full_geometry":
-                    value = _validate_tokens(key, match_last_dim(value.to(ref), self.config.vggt_dim), batch_size=ref.shape[0], dim=self.config.vggt_dim)
-                    return self.vggt_context_proj(value)
+                    return self.geometry_pred_proj(prepare_geometry_memory(key, value))
                 if mode == "patch_fallback" and self.config.allow_patch_geometry_fallback:
-                    value = _validate_tokens(key, match_last_dim(value.to(ref), self.config.vggt_dim), batch_size=ref.shape[0], dim=self.config.vggt_dim)
-                    return self.vggt_context_proj(value)
+                    return self.geometry_pred_proj(prepare_geometry_memory(key, value))
                 if mode == "no_geometry":
                     return None
                 if self.config.require_full_geometry:
                     raise KeyError("Full geometry memory is required, but vggt_geometry_mode is not full_geometry.")
                 if not self.config.allow_patch_geometry_fallback:
                     return None
-                value = _validate_tokens(key, match_last_dim(value.to(ref), self.config.vggt_dim), batch_size=ref.shape[0], dim=self.config.vggt_dim)
-                return self.vggt_context_proj(value)
+                return self.geometry_pred_proj(prepare_geometry_memory(key, value))
         value = self._context_tokens(action_input, "vggt_context_tokens", self.config.vggt_dim, ref)
         if value is not None and self.config.allow_patch_geometry_fallback:
             return self.vggt_context_proj(value)
@@ -735,6 +795,10 @@ class LastVLACoTTransformer(nn.Module):
 
         coarse_0, _, _ = self.coarse_head(cot_geometry, ego_status, command, history, target_action_norm)
         jepa_context = self._context_tokens(action_input, "jepa_context_tokens", self.config.jepa_dim, vlm_tokens)
+        if jepa_context is not None and self.config.dynamic_tokens > 12 and jepa_context.shape[1] != self.config.dynamic_tokens:
+            raise ValueError(
+                f"jepa_context_tokens token count {jepa_context.shape[1]} != expected {self.config.dynamic_tokens}."
+            )
         dynamic_memory = [vlm_summary, cot_geometry]
         if jepa_context is not None:
             dynamic_memory.append(self.jepa_context_proj(jepa_context))
@@ -774,7 +838,7 @@ class LastVLACoTTransformer(nn.Module):
             cot_final = torch.zeros_like(cot_final)
         cot_steps["action_refine"] = cot_final
 
-        if self.config.use_cot_risk_head:
+        if self.config.use_cot_risk_head and self.risk_head is not None:
             risk_tokens, risk_logits, risk_loss = self.risk_head(cot_final, coarse_traj_norm, action_input)
             cot_final = torch.cat([cot_final, risk_tokens], dim=1)
             if corrupt_zero_all:
@@ -859,6 +923,11 @@ class LastVLACoTTransformer(nn.Module):
             "corruption_zero_coarse_prior": cot_final.new_tensor(float(corrupt_coarse_prior)),
             "vlm_summary_keep_prob": cot_final.new_tensor(float(keep_prob)),
             "vlm_summary_kept": cot_final.new_tensor(float(keep_summary)),
+            "last_vla_use_risk_head": cot_final.new_tensor(float(self.config.use_cot_risk_head and self.risk_head is not None)),
+            "last_vla_num_risk_tokens": cot_final.new_tensor(float(self.config.risk_tokens if self.config.use_cot_risk_head else 0)),
+            "last_vla_context_token_count": cot_final.new_tensor(float(planner_context.shape[1])),
+            "last_vla_cot_token_count": cot_final.new_tensor(float(cot_final.shape[1])),
+            "last_vla_vlm_summary_token_count": cot_final.new_tensor(float(vlm_summary.shape[1])),
         }
         finite_or_raise("planner_context_tokens", planner_context)
         return LastVLAOutput(
