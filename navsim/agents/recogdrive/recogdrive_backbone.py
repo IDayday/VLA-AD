@@ -90,13 +90,78 @@ class RecogDriveBackbone(nn.Module):
         self.model.system_message = system_message
         self.img_context_token_id = self.tokenizer.convert_tokens_to_ids(IMG_CONTEXT_TOKEN)
         self.model.img_context_token_id = self.img_context_token_id
+        self._patch_internvl_visual_feature_dtype(self.model)
         print("InternVL model configured.")
+
+    @staticmethod
+    def _infer_model_compute_dtype(model: nn.Module) -> torch.dtype:
+        """Prefer the base model dtype over FP32 LoRA adapter parameters."""
+        modules_to_scan = []
+        if hasattr(model, "get_base_model"):
+            try:
+                modules_to_scan.append(model.get_base_model())
+            except Exception:
+                pass
+        modules_to_scan.append(model)
+
+        fallback_dtype = None
+        for module in modules_to_scan:
+            for name, parameter in module.named_parameters():
+                if fallback_dtype is None:
+                    fallback_dtype = parameter.dtype
+                if "lora_" not in name:
+                    return parameter.dtype
+        if fallback_dtype is not None:
+            return fallback_dtype
+        raise ValueError("Cannot infer compute dtype from a model without parameters.")
+
+    @staticmethod
+    def _infer_language_embedding_dtype(model: nn.Module) -> Optional[torch.dtype]:
+        language_model = getattr(model, "language_model", None)
+        if language_model is None and hasattr(model, "get_base_model"):
+            try:
+                language_model = getattr(model.get_base_model(), "language_model", None)
+            except Exception:
+                language_model = None
+        if language_model is None or not hasattr(language_model, "get_input_embeddings"):
+            return None
+        try:
+            embedding = language_model.get_input_embeddings()
+        except Exception:
+            return None
+        weight = getattr(embedding, "weight", None)
+        if isinstance(weight, torch.Tensor) and weight.is_floating_point():
+            return weight.dtype
+        return None
+
+    @staticmethod
+    def _patch_internvl_visual_feature_dtype(model: nn.Module) -> None:
+        if getattr(model, "_recogdrive_cast_visual_feature_dtype", False):
+            return
+        if not hasattr(model, "extract_feature") or not hasattr(model, "language_model"):
+            return
+        original_extract_feature = model.extract_feature
+
+        def extract_feature_with_language_dtype(pixel_values, *args, **kwargs):
+            features = original_extract_feature(pixel_values, *args, **kwargs)
+            target_dtype = RecogDriveBackbone._infer_language_embedding_dtype(model)
+            if (
+                target_dtype is not None
+                and isinstance(features, torch.Tensor)
+                and features.is_floating_point()
+                and features.dtype != target_dtype
+            ):
+                features = features.to(dtype=target_dtype)
+            return features
+
+        model.extract_feature = extract_feature_with_language_dtype
+        model._recogdrive_cast_visual_feature_dtype = True
     
     def forward(self, pixel_values: torch.Tensor, questions: List[str], num_patches_list: List[int]):
         if not self.model:
             raise RuntimeError("Backbone model has not been initialized. Call initialize() on the agent first.")
         
-        model_dtype = next(self.model.parameters()).dtype
+        model_dtype = self._infer_model_compute_dtype(self.model)
 
         queries = []
         for idx, num_patches in enumerate(num_patches_list):
@@ -127,7 +192,7 @@ class RecogDriveBackbone(nn.Module):
 
 
         return self.model(
-                pixel_values=pixel_values.to(model_dtype),
+                pixel_values=pixel_values.to(device=device, dtype=model_dtype),
                 input_ids=input_ids,
                 attention_mask=attention_mask,
                 position_ids=position_ids,

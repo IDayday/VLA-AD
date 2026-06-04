@@ -15,6 +15,7 @@ from .expert_backends import (
     build_dummy_expert_backend,
     normalize_expert_feature_source,
 )
+from .expert_cache import iter_index
 
 if TYPE_CHECKING:
     from navsim.common.dataclasses import AgentInput, Scene
@@ -225,6 +226,8 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
             expert_cache_dir=expert_cache_dir,
         )
         self.expert_cache_dir = Path(expert_cache_dir) if expert_cache_dir else None
+        self._expert_cache_index_by_log_token: Optional[Dict[Tuple[str, str], Path]] = None
+        self._expert_cache_index_by_token: Optional[Dict[str, Path]] = None
         self.num_jepa_tokens = num_jepa_tokens
         self.num_vggt_tokens = num_vggt_tokens
         self.allow_expert_target_features = allow_expert_target_features
@@ -274,6 +277,9 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
         This mirrors the existing ReCogDrive feature-cache layout:
             cache_path / log_name / token / internvl_feature.gz
 
+        Chunk-cache roots are resolved through their index.jsonl files by
+        _expert_cache_index_candidates.
+
         Safetensors files are used only when safetensors is importable; .pt files
         are always supported.
         """
@@ -298,9 +304,65 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
             ])
         return candidates
 
+    @staticmethod
+    def _expert_cache_chunk_dirs(cache_root: Path) -> List[Path]:
+        if (cache_root / "index.jsonl").is_file():
+            return [cache_root]
+        if not cache_root.is_dir():
+            return []
+        return sorted(
+            child for child in cache_root.iterdir()
+            if child.is_dir() and (child / "index.jsonl").is_file()
+        )
+
+    def _ensure_expert_cache_index(self) -> None:
+        if self._expert_cache_index_by_token is not None and self._expert_cache_index_by_log_token is not None:
+            return
+
+        by_token: Dict[str, Path] = {}
+        by_log_token: Dict[Tuple[str, str], Path] = {}
+        if self.expert_cache_dir is not None:
+            for chunk_dir in self._expert_cache_chunk_dirs(self.expert_cache_dir):
+                for record in iter_index(chunk_dir):
+                    raw_path = record.get("path")
+                    if not raw_path:
+                        continue
+                    sample_path = Path(raw_path)
+                    token = str(record.get("sample_token") or sample_path.stem)
+                    if not token:
+                        continue
+                    by_token.setdefault(token, sample_path)
+                    record_log_name = record.get("log_name")
+                    if record_log_name is not None:
+                        by_log_token.setdefault((str(record_log_name), token), sample_path)
+
+        self._expert_cache_index_by_token = by_token
+        self._expert_cache_index_by_log_token = by_log_token
+
+    def _expert_cache_index_candidates(self, log_name: str, token: str) -> List[Path]:
+        if self.expert_feature_source not in {"chunk", "disk"}:
+            return []
+        self._ensure_expert_cache_index()
+        assert self._expert_cache_index_by_token is not None
+        assert self._expert_cache_index_by_log_token is not None
+
+        candidates: List[Path] = []
+        log_token_path = self._expert_cache_index_by_log_token.get((str(log_name), str(token)))
+        if log_token_path is not None:
+            candidates.append(log_token_path)
+        token_path = self._expert_cache_index_by_token.get(str(token))
+        if token_path is not None and token_path not in candidates:
+            candidates.append(token_path)
+        return candidates
+
     def _resolve_expert_cache_path(self, log_name: str, token: str) -> Path:
         candidates = self._expert_cache_candidates(log_name, token)
         for path in candidates:
+            if path.is_file():
+                return path
+
+        index_candidates = self._expert_cache_index_candidates(log_name, token)
+        for path in index_candidates:
             if path.is_file():
                 return path
 
@@ -315,7 +377,7 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
         message = (
             "Expert feature cache not found for "
             f"log_name='{log_name}', token='{token}'. Tried: "
-            + ", ".join(str(path) for path in candidates)
+            + ", ".join(str(path) for path in [*candidates, *index_candidates])
         )
         if unsupported_safetensors:
             message += (

@@ -13,6 +13,7 @@ done
 
 PYTHON_BIN="${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}"
 TORCHRUN_BIN="${TORCHRUN_BIN:-$(dirname "${PYTHON_BIN}")/torchrun}"
+TRAIN_TEST_SPLIT="${TRAIN_TEST_SPLIT:-navtrain}"
 ROOT="${OUT_ROOT}/serverA_frozen"
 mkdir -p "${ROOT}/logs"
 COMMANDS_LOG="${ROOT}/commands.log"
@@ -25,6 +26,7 @@ cmd_a1=(
   "${TORCHRUN_BIN}" --nproc_per_node=8 --master_port "${MASTER_PORT}"
   navsim/planning/script/run_training_recogdrive.py
   +experiment=last_vla_cot_alignment
+  "train_test_split=${TRAIN_TEST_SPLIT}"
   "cache_path=${FULL_GEOMETRY_CHUNK_ROOT}"
   use_cache_without_dataset=true
   force_cache_computation=false
@@ -40,6 +42,7 @@ cmd_a2=(
   "${TORCHRUN_BIN}" --nproc_per_node=8 --master_port "$((MASTER_PORT + 1))"
   navsim/planning/script/run_training_recogdrive.py
   +experiment=last_vla_progressive_bottleneck
+  "train_test_split=${TRAIN_TEST_SPLIT}"
   "cache_path=${FULL_GEOMETRY_CHUNK_ROOT}"
   use_cache_without_dataset=true
   force_cache_computation=false

@@ -589,9 +589,19 @@ class ReCogDriveAgent(AbstractAgent):
             lora_alpha=int(self.last_vla_vlm_lora_alpha),
             target_modules=target_modules,
             bias="none",
-            task_type="CAUSAL_LM",
         )
-        self.backbone = get_peft_model(self.backbone, lora_cfg)
+        base_vlm = getattr(self.backbone, "model", None)
+        if base_vlm is None:
+            raise ValueError("VLM LoRA training requires RecogDriveBackbone.model to be initialized.")
+        peft_vlm = get_peft_model(base_vlm, lora_cfg)
+        # Keep the RecogDriveBackbone wrapper intact so image/token preprocessing and
+        # hidden-state extraction continue to use the existing forward path.
+        for attr in ("img_context_token_id", "system_message"):
+            if hasattr(base_vlm, attr) and not hasattr(peft_vlm, attr):
+                setattr(peft_vlm, attr, getattr(base_vlm, attr))
+        if hasattr(self.backbone, "_patch_internvl_visual_feature_dtype"):
+            self.backbone._patch_internvl_visual_feature_dtype(base_vlm)
+        self.backbone.model = peft_vlm
 
     def count_trainable_parameters_by_group(self) -> Dict[str, Dict[str, int]]:
         groups = {

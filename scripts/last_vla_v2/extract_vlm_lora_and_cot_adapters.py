@@ -23,16 +23,28 @@ def _state_dict(payload: Dict[str, Any]) -> Dict[str, torch.Tensor]:
     return state
 
 
+def _strip_agent_prefix(key: str) -> str:
+    return key[len("agent."):] if key.startswith("agent.") else key
+
+
 def main() -> int:
     args = parse_args()
     checkpoint = torch.load(args.checkpoint, map_location="cpu")
     state = _state_dict(checkpoint)
-    cot = {
-        key: value
-        for key, value in state.items()
-        if key.startswith("action_head.last_vla_cot.") or key.startswith("last_vla_cot.")
-    }
-    lora = {key: value for key, value in state.items() if "lora_" in key and key.startswith("backbone.")}
+    cot: Dict[str, torch.Tensor] = {}
+    lora: Dict[str, torch.Tensor] = {}
+    for key, value in state.items():
+        mapped_key = _strip_agent_prefix(key)
+        if mapped_key.startswith("action_head.last_vla_cot.") or mapped_key.startswith("last_vla_cot."):
+            cot[mapped_key] = value
+        if "lora_" not in mapped_key:
+            continue
+        if mapped_key.startswith("backbone.model."):
+            lora[mapped_key[len("backbone.model."):]] = value
+        elif mapped_key.startswith("backbone."):
+            lora[mapped_key[len("backbone."):]] = value
+        else:
+            lora[mapped_key] = value
     args.output_dir.mkdir(parents=True, exist_ok=True)
     cot_path = args.output_dir / "last_vla_cot_adapter.pt"
     lora_path = args.output_dir / "vlm_lora_adapter_state.pt"
@@ -49,6 +61,8 @@ def main() -> int:
     print(json.dumps(report, indent=2, sort_keys=True))
     if not cot:
         raise RuntimeError("No Last-VLA CoT keys found in checkpoint.")
+    if not lora:
+        raise RuntimeError("No VLM LoRA keys found in checkpoint.")
     return 0
 
 

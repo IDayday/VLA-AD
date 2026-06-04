@@ -24,6 +24,7 @@ PRESERVE_KEYS = (
     "image_path_tensor",
     "sample_token",
     "scene_token",
+    "log_name",
     "jepa_context_tokens",
     "jepa_target_tokens",
     "vggt_context_tokens",
@@ -55,6 +56,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--num-workers", type=int, default=0)
     parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="bf16")
     parser.add_argument("--device", default="cuda")
+    parser.add_argument("--lora-r", type=int, default=16)
+    parser.add_argument("--lora-alpha", type=int, default=32)
+    parser.add_argument("--lora-target-modules", default="q_proj,k_proj,v_proj,o_proj")
     parser.add_argument("--max-samples", type=int, default=None)
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--num-shards", type=int, default=1)
@@ -114,15 +118,73 @@ def synthetic_hidden(sample: Dict[str, Any]) -> torch.Tensor:
     return torch.full((10, 1536), 0.123, dtype=torch.float32)
 
 
+def normalize_hidden_state(hidden: torch.Tensor) -> torch.Tensor:
+    hidden = hidden.detach().float().cpu()
+    if hidden.ndim == 3 and hidden.shape[0] == 1:
+        hidden = hidden.squeeze(0)
+    if hidden.ndim != 2 or hidden.shape[-1] != 1536:
+        raise ValueError(f"Regenerated VLM hidden state must have shape [N, 1536], got {tuple(hidden.shape)}.")
+    return hidden.contiguous()
+
+
 def load_backbone(args: argparse.Namespace):
     from navsim.agents.recogdrive.recogdrive_backbone import RecogDriveBackbone
 
     backbone = RecogDriveBackbone(model_type=args.vlm_type, checkpoint_path=str(args.vlm_path), device=args.device)
     try:
-        from peft import PeftModel
+        from peft import LoraConfig, get_peft_model
     except ImportError as exc:
         raise ImportError("Regenerating hidden cache with LoRA requires peft. Install it with `pip install peft`.") from exc
-    backbone = PeftModel.from_pretrained(backbone, str(args.vlm_lora_adapter))
+
+    target_modules = [item.strip() for item in str(args.lora_target_modules).split(",") if item.strip()]
+    if not target_modules:
+        target_modules = ["q_proj", "k_proj", "v_proj", "o_proj"]
+    lora_cfg = LoraConfig(
+        r=int(args.lora_r),
+        lora_alpha=int(args.lora_alpha),
+        target_modules=target_modules,
+        bias="none",
+    )
+    peft_vlm = get_peft_model(backbone.model, lora_cfg)
+    for attr in ("img_context_token_id", "system_message"):
+        if hasattr(backbone.model, attr) and not hasattr(peft_vlm, attr):
+            setattr(peft_vlm, attr, getattr(backbone.model, attr))
+
+    try:
+        payload = torch.load(args.vlm_lora_adapter, map_location="cpu", weights_only=False)
+    except TypeError:
+        payload = torch.load(args.vlm_lora_adapter, map_location="cpu")
+    state = payload.get("state_dict", payload) if isinstance(payload, dict) else payload
+    if not isinstance(state, dict):
+        raise TypeError(f"LoRA adapter {args.vlm_lora_adapter} must contain a state_dict or raw state dict.")
+
+    model_state = peft_vlm.state_dict()
+    filtered: Dict[str, torch.Tensor] = {}
+    skipped: List[str] = []
+    for key, value in state.items():
+        mapped_key = key[len("agent."):] if isinstance(key, str) and key.startswith("agent.") else key
+        if isinstance(mapped_key, str) and mapped_key.startswith("backbone.model."):
+            mapped_key = mapped_key[len("backbone.model."):]
+        elif isinstance(mapped_key, str) and mapped_key.startswith("backbone."):
+            mapped_key = mapped_key[len("backbone."):]
+        if (
+            isinstance(mapped_key, str)
+            and "lora_" in mapped_key
+            and isinstance(value, torch.Tensor)
+            and mapped_key in model_state
+            and tuple(model_state[mapped_key].shape) == tuple(value.shape)
+        ):
+            filtered[mapped_key] = value
+        else:
+            skipped.append(str(key))
+    if not filtered:
+        raise RuntimeError(f"No compatible VLM LoRA weights found in {args.vlm_lora_adapter}.")
+    peft_vlm.load_state_dict(filtered, strict=False)
+    print(f"Loaded {len(filtered)} VLM LoRA tensors from {args.vlm_lora_adapter}.")
+    if skipped:
+        print(f"Skipped {len(skipped)} incompatible/non-LoRA adapter tensors.")
+    backbone._patch_internvl_visual_feature_dtype(backbone.model)
+    backbone.model = peft_vlm
     backbone.eval()
     return backbone
 
@@ -152,7 +214,7 @@ def compute_hidden(backbone: Any, sample: Dict[str, Any], *, device: str) -> tor
     )
     with torch.no_grad():
         outputs = backbone(pixel_values, [prompt], [pixel_values.shape[0]])
-    return outputs.hidden_states[-1].detach().float().cpu()
+    return normalize_hidden_state(outputs.hidden_states[-1])
 
 
 def regenerate(args: argparse.Namespace) -> Dict[str, Any]:
@@ -172,13 +234,22 @@ def regenerate(args: argparse.Namespace) -> Dict[str, Any]:
             continue
         sample = load_sample(sample_path)
         token = str(sample.get("sample_token") or record.get("sample_token") or sample_path.stem)
+        scene_token = str(sample.get("scene_token") or record.get("scene_token") or "")
+        log_name = sample.get("log_name") or record.get("log_name")
+        log_name = str(log_name) if log_name is not None and str(log_name) else ""
         preserved = {key: sample[key] for key in PRESERVE_KEYS if key in sample}
+        if log_name:
+            preserved["log_name"] = log_name
         hidden = synthetic_hidden(sample) if args.synthetic_smoke else compute_hidden(backbone, sample, device=args.device)
+        hidden = normalize_hidden_state(hidden)
         preserved["last_hidden_state"] = hidden
         hidden_lengths.append(int(hidden.shape[0]))
         out_path = samples_dir / f"{token}.pt"
         atomic_torch_save(preserved, out_path)
-        rows.append({"sample_token": token, "scene_token": str(sample.get("scene_token") or record.get("scene_token") or ""), "path": str(out_path.relative_to(args.output_chunk_root))})
+        row = {"sample_token": token, "scene_token": scene_token, "path": str(out_path.relative_to(args.output_chunk_root))}
+        if log_name:
+            row["log_name"] = log_name
+        rows.append(row)
         written += 1
 
     with (args.output_chunk_root / "index.jsonl").open("w", encoding="utf-8") as f:

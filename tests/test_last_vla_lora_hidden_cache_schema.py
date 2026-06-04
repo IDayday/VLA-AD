@@ -8,6 +8,7 @@ from pathlib import Path
 import torch
 
 from navsim.agents.recogdrive.expert_cache import atomic_torch_save, load_sample
+from scripts.build_recogdrive_hidden_cache_with_lora import normalize_hidden_state
 
 
 def test_lora_hidden_cache_synthetic_preserves_teacher_keys(tmp_path: Path):
@@ -25,7 +26,10 @@ def test_lora_hidden_cache_synthetic_preserves_teacher_keys(tmp_path: Path):
         "vggt_geometry_mode_code": torch.tensor(2),
     }
     atomic_torch_save(sample, base / "samples" / "sample_000.pt")
-    (base / "index.jsonl").write_text(json.dumps({"sample_token": "sample_000", "path": "samples/sample_000.pt"}) + "\n", encoding="utf-8")
+    (base / "index.jsonl").write_text(
+        json.dumps({"sample_token": "sample_000", "log_name": "log_000", "path": "samples/sample_000.pt"}) + "\n",
+        encoding="utf-8",
+    )
     lora = tmp_path / "lora.pt"
     vlm = tmp_path / "vlm"
     lora.write_bytes(b"dummy")
@@ -49,10 +53,19 @@ def test_lora_hidden_cache_synthetic_preserves_teacher_keys(tmp_path: Path):
         check=True,
     )
     metadata = json.loads((out / "metadata.json").read_text(encoding="utf-8"))
+    index_row = json.loads((out / "index.jsonl").read_text(encoding="utf-8").strip())
     regenerated = load_sample(out / "samples" / "sample_000.pt")
 
     assert metadata["cache_hidden_state_regenerated"] is True
     assert metadata["hidden_cache_source"] == "vlm_lora_regenerated"
+    assert index_row["log_name"] == "log_000"
+    assert regenerated["log_name"] == "log_000"
     assert torch.allclose(regenerated["jepa_context_tokens"], sample["jepa_context_tokens"])
     assert torch.allclose(regenerated["vggt_geometry_tokens"], sample["vggt_geometry_tokens"])
     assert regenerated["last_hidden_state"].shape == sample["last_hidden_state"].shape
+
+
+def test_lora_hidden_cache_normalizes_single_batch_hidden_state():
+    hidden = normalize_hidden_state(torch.zeros(1, 7, 1536))
+
+    assert tuple(hidden.shape) == (7, 1536)

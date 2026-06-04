@@ -649,35 +649,145 @@ def write_run_reports(
 
 
 def custom_collate_fn(
-    batch: List[Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]]
-) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
-    features_list, targets_list, tokens_list = zip(*batch)
+    batch: List[Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], Any]]
+) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], List[Any]]:
+    if not batch:
+        raise ValueError("custom_collate_fn received an empty batch.")
+
+    sample_size = len(batch[0])
+    if sample_size == 3:
+        features_list, targets_list, tokens_list = zip(*batch)
+    elif sample_size == 2:
+        features_list, targets_list = zip(*batch)
+        tokens_list = [None] * len(batch)
+    else:
+        raise ValueError(f"Expected batch samples with 2 or 3 fields, got {sample_size}.")
 
     history_trajectory = torch.stack([features['history_trajectory'].detach() for features in features_list], dim=0).cpu()
     high_command_one_hot = torch.stack([features['high_command_one_hot'].detach() for features in features_list], dim=0).cpu()
     status_feature = torch.stack([features['status_feature'].detach() for features in features_list], dim=0).cpu()
-
-    last_hidden_state = rnn_utils.pad_sequence(
-        [features['last_hidden_state'].detach() for features in features_list],
-        batch_first=True,
-        padding_value=0.0
-    ).detach()
 
     trajectory = torch.stack([targets['trajectory'].detach().float() for targets in targets_list], dim=0).cpu()
 
     features = {
         'history_trajectory': history_trajectory,
         'high_command_one_hot': high_command_one_hot,
-        'last_hidden_state': last_hidden_state,
         'status_feature': status_feature
     }
+    first_features = features_list[0]
+    if "last_hidden_state" in first_features:
+        features["last_hidden_state"] = rnn_utils.pad_sequence(
+            [sample_features["last_hidden_state"].detach() for sample_features in features_list],
+            batch_first=True,
+            padding_value=0.0,
+        ).detach()
+    elif "image_path_tensor" in first_features:
+        features["image_path_tensor"] = rnn_utils.pad_sequence(
+            [sample_features["image_path_tensor"].detach() for sample_features in features_list],
+            batch_first=True,
+            padding_value=0,
+        ).cpu()
+    else:
+        raise KeyError(
+            "features must contain either 'last_hidden_state' or 'image_path_tensor'. "
+            f"Got keys: {list(first_features.keys())}"
+        )
     stack_optional_expert_features(features, list(features_list))
 
     targets = {
         'trajectory': trajectory
     }
 
-    return features, targets, tokens_list
+    return features, targets, list(tokens_list)
+
+def _expert_cache_index_tokens(expert_cache_dir: Optional[str]) -> tuple[Set[str], Set[str]]:
+    """Returns sample/log names present in a chunk-style expert cache index."""
+    if not expert_cache_dir:
+        return set(), set()
+
+    cache_root = Path(expert_cache_dir)
+    if not cache_root.is_dir():
+        return set(), set()
+
+    if (cache_root / "index.jsonl").is_file():
+        chunk_dirs = [cache_root]
+    else:
+        chunk_dirs = sorted(
+            child for child in cache_root.iterdir()
+            if child.is_dir() and (child / "index.jsonl").is_file()
+        )
+
+    sample_tokens: Set[str] = set()
+    log_names: Set[str] = set()
+    for chunk_dir in chunk_dirs:
+        for record in iter_index(chunk_dir):
+            token = record.get("sample_token")
+            if token is not None:
+                sample_tokens.add(str(token))
+            log_name = record.get("log_name")
+            if log_name is not None:
+                log_names.add(str(log_name))
+    return sample_tokens, log_names
+
+
+def _maybe_restrict_scene_filter_to_expert_cache(
+    scene_filter: SceneFilter,
+    cfg: DictConfig,
+    *,
+    split_name: str,
+) -> None:
+    """Align online SceneLoader sampling with strict teacher-cache coverage."""
+    agent_cfg = cfg.agent
+    use_online_dataset = not bool(cfg.get("use_cache_without_dataset", False))
+    cache_path = cfg.get("cache_path", None)
+    uses_chunk_expert = (
+        bool(agent_cfg.get("use_expert_features", False))
+        and str(agent_cfg.get("expert_feature_source", "none")) in {"chunk", "disk"}
+        and bool(agent_cfg.get("expert_cache_dir", None))
+    )
+    if not (use_online_dataset and cache_path is None and uses_chunk_expert):
+        return
+
+    sample_tokens, log_names = _expert_cache_index_tokens(str(agent_cfg.get("expert_cache_dir")))
+    if not sample_tokens:
+        raise FileNotFoundError(
+            "Online expert-cache training requested but no sample tokens were found in "
+            f"agent.expert_cache_dir={agent_cfg.get('expert_cache_dir')!r}."
+        )
+
+    if scene_filter.tokens is None:
+        scene_filter.tokens = sorted(sample_tokens)
+    else:
+        scene_filter.tokens = sorted(set(str(token) for token in scene_filter.tokens) & sample_tokens)
+    if not scene_filter.tokens:
+        raise FileNotFoundError(
+            f"{split_name} SceneLoader has no token overlap with expert cache "
+            f"{agent_cfg.get('expert_cache_dir')!r}."
+        )
+
+    if scene_filter.log_names is not None and log_names:
+        scene_filter.log_names = sorted(set(str(log_name) for log_name in scene_filter.log_names) & log_names)
+
+    logger.info(
+        "Restricted %s SceneLoader to %d expert-cache sample tokens from %s.",
+        split_name,
+        len(scene_filter.tokens),
+        agent_cfg.get("expert_cache_dir"),
+    )
+
+
+def _normalized_dataloader_params(params_cfg: DictConfig) -> Dict[str, Any]:
+    params = OmegaConf.to_container(params_cfg, resolve=True)
+    if not isinstance(params, dict):
+        raise TypeError(f"dataloader.params must resolve to a dict, got {type(params).__name__}.")
+    num_workers = int(params.get("num_workers", 0) or 0)
+    if num_workers <= 0:
+        if params.get("prefetch_factor", None) is not None:
+            params["prefetch_factor"] = None
+        if params.get("persistent_workers", None) is not None:
+            params["persistent_workers"] = False
+    return params
+
 
 def build_datasets(cfg: DictConfig, agent: AbstractAgent) -> Tuple[Dataset, Dataset]:
     """
@@ -700,6 +810,9 @@ def build_datasets(cfg: DictConfig, agent: AbstractAgent) -> Tuple[Dataset, Data
     else:
         val_scene_filter.log_names = cfg.val_logs
 
+    _maybe_restrict_scene_filter_to_expert_cache(train_scene_filter, cfg, split_name="train")
+    _maybe_restrict_scene_filter_to_expert_cache(val_scene_filter, cfg, split_name="val")
+
     data_path = Path(cfg.navsim_log_path)
     sensor_blobs_path = Path(cfg.sensor_blobs_path)
 
@@ -708,6 +821,7 @@ def build_datasets(cfg: DictConfig, agent: AbstractAgent) -> Tuple[Dataset, Data
         data_path=data_path,
         scene_filter=train_scene_filter,
         sensor_config=agent.get_sensor_config(),
+        load_image_path=True,
     )
 
     val_scene_loader = SceneLoader(
@@ -715,6 +829,7 @@ def build_datasets(cfg: DictConfig, agent: AbstractAgent) -> Tuple[Dataset, Data
         data_path=data_path,
         scene_filter=val_scene_filter,
         sensor_config=agent.get_sensor_config(),
+        load_image_path=True,
     )
 
     train_data = Dataset(
@@ -883,9 +998,10 @@ def main(cfg: DictConfig) -> None:
         data_report = None
 
     logger.info("Building Datasets")
-    train_dataloader = DataLoader(train_data, collate_fn=custom_collate_fn,  **cfg.dataloader.params, shuffle=True)
+    dataloader_params = _normalized_dataloader_params(cfg.dataloader.params)
+    train_dataloader = DataLoader(train_data, collate_fn=custom_collate_fn,  **dataloader_params, shuffle=True)
     logger.info("Num training samples: %d", len(train_data))
-    val_dataloader = DataLoader(val_data, collate_fn=custom_collate_fn, **cfg.dataloader.params, shuffle=False)
+    val_dataloader = DataLoader(val_data, collate_fn=custom_collate_fn, **dataloader_params, shuffle=False)
     logger.info("Num validation samples: %d", len(val_data))
 
     logger.info("Building Trainer")

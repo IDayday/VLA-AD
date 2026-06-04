@@ -169,6 +169,37 @@ def validate_sample_payload(
     return payload
 
 
+def _indexed_chunk_dirs(cache_dir: Path) -> list[Path]:
+    if (cache_dir / "index.jsonl").is_file():
+        return [cache_dir]
+    if not cache_dir.is_dir():
+        return []
+    return sorted(
+        child for child in cache_dir.iterdir()
+        if child.is_dir() and (child / "index.jsonl").is_file()
+    )
+
+
+def find_indexed_sample_path(
+    cache_dir: str | Path,
+    sample_token: str,
+    scene_token: Optional[str] = None,
+) -> Optional[Path]:
+    cache_dir = Path(cache_dir)
+    for chunk_dir in _indexed_chunk_dirs(cache_dir):
+        for record in iter_index(chunk_dir):
+            path = Path(record.get("path", ""))
+            token = str(record.get("sample_token") or path.stem)
+            if token != str(sample_token):
+                continue
+            record_scene_token = record.get("scene_token")
+            if scene_token and record_scene_token and str(record_scene_token) != str(scene_token):
+                continue
+            if path.is_file():
+                return path
+    return None
+
+
 def sample_cache_path(cache_dir: str | Path, sample_token: str, scene_token: Optional[str] = None) -> Path:
     cache_dir = Path(cache_dir)
     candidates = []
@@ -186,9 +217,19 @@ def sample_cache_path(cache_dir: str | Path, sample_token: str, scene_token: Opt
     for candidate in candidates:
         if candidate.is_file():
             return candidate
+
+    indexed_path = find_indexed_sample_path(cache_dir, sample_token=sample_token, scene_token=scene_token)
+    if indexed_path is not None:
+        return indexed_path
+
+    indexed_dirs = _indexed_chunk_dirs(cache_dir)
     raise FileNotFoundError(
         f"Expert chunk sample '{sample_token}' not found under {cache_dir}. Tried: "
         + ", ".join(str(path) for path in candidates)
+        + (
+            f". Also scanned {len(indexed_dirs)} indexed chunk dirs."
+            if indexed_dirs else ""
+        )
     )
 
 

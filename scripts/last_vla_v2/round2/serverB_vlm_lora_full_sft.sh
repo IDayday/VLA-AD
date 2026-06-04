@@ -13,6 +13,9 @@ done
 
 PYTHON_BIN="${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}"
 TORCHRUN_BIN="${TORCHRUN_BIN:-$(dirname "${PYTHON_BIN}")/torchrun}"
+TRAIN_TEST_SPLIT="${TRAIN_TEST_SPLIT:-navtrain}"
+export NAVSIM_EXP_ROOT="${NAVSIM_EXP_ROOT:-/mnt/project/VLA-AD}"
+export NUPLAN_MAPS_ROOT="${NUPLAN_MAPS_ROOT:-/mnt/navsim/maps}"
 ROOT="${OUT_ROOT}/serverB_lora"
 B1="${ROOT}/vlm_lora_cot_alignment"
 B2="${ROOT}/lora_hidden_cache"
@@ -24,6 +27,8 @@ cmd_b1=(
   "${TORCHRUN_BIN}" --nproc_per_node=8 --master_port "${MASTER_PORT}"
   navsim/planning/script/run_training_recogdrive.py
   +experiment=last_vla_vlm_lora_cot_alignment
+  "train_test_split=${TRAIN_TEST_SPLIT}"
+  cache_path=null
   use_cache_without_dataset=false
   force_cache_computation=false
   "navsim_log_path=${NAVSIM_LOG_PATH}"
@@ -32,6 +37,9 @@ cmd_b1=(
   agent.cache_hidden_state=false
   agent.train_backbone=true
   agent.last_vla_train_vlm_lora=true
+  agent.last_vla_vlm_lora_r="${LORA_R:-16}"
+  agent.last_vla_vlm_lora_alpha="${LORA_ALPHA:-32}"
+  "agent.last_vla_vlm_lora_target_modules='${LORA_TARGET_MODULES:-q_proj,k_proj,v_proj,o_proj}'"
   agent.vlm_path="${VLM_PATH}"
   agent.vlm_type="${VLM_TYPE:-internvl}"
   agent.use_expert_features=true
@@ -58,6 +66,9 @@ cmd_cache=(
   --vlm-type "${VLM_TYPE:-internvl}"
   --vlm-lora-adapter "${B1}/adapters/vlm_lora_adapter_state.pt"
   --precision "${PRECISION:-bf16}"
+  --lora-r "${LORA_R:-16}"
+  --lora-alpha "${LORA_ALPHA:-32}"
+  --lora-target-modules "${LORA_TARGET_MODULES:-q_proj,k_proj,v_proj,o_proj}"
   --chunk-name-pattern "${TRAIN_CHUNK_NAME_PATTERN:-train_full_chunk_*,train_backfill_chunk_*,train_backfill_p1_chunk_*}"
   --batch-size "${LORA_CACHE_BATCH_SIZE:-1}"
   --shard-index "${SHARD_INDEX:-0}"
@@ -67,6 +78,7 @@ cmd_b3=(
   "${TORCHRUN_BIN}" --nproc_per_node=8 --master_port "$((MASTER_PORT + 1))"
   navsim/planning/script/run_training_recogdrive.py
   +experiment=last_vla_progressive_bottleneck
+  "train_test_split=${TRAIN_TEST_SPLIT}"
   "cache_path=${B2}"
   use_cache_without_dataset=true
   force_cache_computation=false
