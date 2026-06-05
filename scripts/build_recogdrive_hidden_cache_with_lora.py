@@ -255,8 +255,6 @@ def load_backbone(args: argparse.Namespace):
         lora_kwargs["use_rslora"] = bool(lora_config["use_rslora"])
     if "use_dora" in supported_kwargs:
         lora_kwargs["use_dora"] = bool(lora_config["use_dora"])
-    if "task_type" in supported_kwargs:
-        lora_kwargs["task_type"] = "CAUSAL_LM"
     lora_cfg = LoraConfig(**lora_kwargs)
     peft_vlm = get_peft_model(backbone.model, lora_cfg)
     for attr in ("img_context_token_id", "system_message"):

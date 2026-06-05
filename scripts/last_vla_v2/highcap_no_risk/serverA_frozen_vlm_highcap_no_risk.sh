@@ -23,7 +23,7 @@ mkdir -p "${A1}" "${A2}"
 common_overrides=(
   agent.num_jepa_tokens=128
   agent.num_dynamic_tokens=128
-  agent.num_vggt_tokens=128
+  agent.num_vggt_tokens=12
   agent.num_geometry_tokens=192
   agent.num_risk_tokens=0
   agent.last_vla_cot_num_tokens=192

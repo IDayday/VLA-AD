@@ -697,8 +697,6 @@ class ReCogDriveAgent(AbstractAgent):
             lora_kwargs["use_rslora"] = bool(self.last_vla_vlm_lora_use_rslora)
         if "use_dora" in supported_kwargs:
             lora_kwargs["use_dora"] = bool(self.last_vla_vlm_lora_use_dora)
-        if "task_type" in supported_kwargs:
-            lora_kwargs["task_type"] = "CAUSAL_LM"
         if self.last_vla_vlm_lora_init != "default" and "init_lora_weights" in supported_kwargs:
             lora_kwargs["init_lora_weights"] = self.last_vla_vlm_lora_init
         lora_cfg = LoraConfig(**lora_kwargs)
