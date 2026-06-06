@@ -1,0 +1,10 @@
+{
+  "checkpoint_files": [
+    "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt"
+  ],
+  "loaded_key_count": 347,
+  "missing_bit_key_count": 0,
+  "missing_non_bit_key_count": 50,
+  "shape_mismatch_count": 0,
+  "unexpected_key_count": 0
+}

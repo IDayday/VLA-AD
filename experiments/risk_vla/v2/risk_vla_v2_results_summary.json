@@ -1,0 +1,30 @@
+{
+  "artifacts": {
+    "candidate_bank": {
+      "exists": false,
+      "path": "experiments/risk_vla/v2/candidate_bank/summary.json",
+      "size": null
+    },
+    "critic": {
+      "exists": false,
+      "path": "experiments/risk_vla/v2/critic/summary.json",
+      "size": null
+    },
+    "router": {
+      "exists": false,
+      "path": "experiments/risk_vla/v2/router/summary.json",
+      "size": null
+    },
+    "safe_alignment_pairs": {
+      "exists": false,
+      "path": "experiments/risk_vla/v2/safe_alignment_pairs/summary.json",
+      "size": null
+    },
+    "utility_labels": {
+      "exists": false,
+      "path": "experiments/risk_vla/v2/utility_labels/summary.json",
+      "size": null
+    }
+  },
+  "exp_root": "experiments/risk_vla/v2"
+}

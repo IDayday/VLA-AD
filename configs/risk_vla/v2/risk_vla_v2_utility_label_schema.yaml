@@ -1,0 +1,47 @@
+schema_version: risk_vla_v2_utility_labels_v1
+method: "RISK-VLA v2: Risk-Conditioned Multi-Candidate Strategy Planning for Vision-Language-Action Driving"
+risk_class_order:
+  - low_score
+  - path_dac
+  - interaction_nc
+  - ttc
+  - progress
+  - comfort
+required_fields:
+  - sample_token
+  - candidate_id
+  - strategy_name
+  - trajectory_source_path
+  - pdm_score
+  - delta_score
+  - delta_dac
+  - delta_nc
+  - delta_ttc
+  - delta_progress
+  - delta_comfort
+  - repairs_path
+  - regresses_path
+  - repairs_nc
+  - regresses_nc
+  - repairs_ttc
+  - regresses_ttc
+  - constrained_best_strategy
+  - positive_anchor
+  - negative_anchor
+  - tail_risk_label
+leakage_guard:
+  training_allowed_splits:
+    - train
+    - val
+  analysis_only_splits:
+    - navtest
+    - test
+thresholds:
+  zero_eps: 1.0e-9
+  low_score_threshold: 0.5
+  progress_threshold: 0.5
+  comfort_threshold: 0.5
+selection:
+  constrained_best: "highest utility subject to no NC/TTC regression if possible"
+  positive_anchor: "safest useful candidate"
+  negative_anchor: "risky candidate, prioritizing NC/TTC regressions"

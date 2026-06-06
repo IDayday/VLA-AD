@@ -1,0 +1,23 @@
+{
+  "dry_run": true,
+  "exp_root": "experiments/risk_vla/v2",
+  "guardrails": [
+    "no navtest/test labels for training",
+    "small pilots before full train/val/navtest",
+    "GRPO disabled until supervised safety gates pass",
+    "shared caches are read-only inputs"
+  ],
+  "max_samples": 256,
+  "method": "RISK-VLA v2: Risk-Conditioned Multi-Candidate Strategy Planning for Vision-Language-Action Driving",
+  "stages": [
+    "discover_inputs",
+    "build_labels",
+    "build_candidate_bank",
+    "train_critic",
+    "train_router",
+    "eval_small",
+    "eval_full_if_ready",
+    "build_report"
+  ],
+  "work_root": null
+}

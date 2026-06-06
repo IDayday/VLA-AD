@@ -1,0 +1,15 @@
+{
+  "path": "/mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/rare_risk_d5_mining_full7095/selected_risk_labels.jsonl",
+  "positive_counts": {
+    "0": 278,
+    "1": 211,
+    "2": 52,
+    "3": 215,
+    "4": 710
+  },
+  "rows": 7095,
+  "split_counts": {
+    "navtrain": 7095
+  },
+  "usable": 7095
+}

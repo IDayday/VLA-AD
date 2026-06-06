@@ -1,0 +1,13 @@
+method: risk_vla_v2
+stage: R9_vlm_lora_risk_grounding
+enabled: false
+vlm_lora:
+  freeze_planner: true
+  train_projector_or_top_lora_only: true
+  objectives:
+    - fine_grained_risk
+    - strategy_utility
+    - template_safety_rationale
+guardrails:
+  train_val_only: true
+  require_corruption_ablation: true

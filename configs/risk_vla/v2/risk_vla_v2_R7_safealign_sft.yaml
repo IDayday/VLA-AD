@@ -1,0 +1,11 @@
+method: risk_vla_v2
+stage: R7_safealign_sft
+safe_alignment:
+  positive_kd_weight: 1.0
+  negative_margin_weight: 1.0
+  path_anchor_weight: 0.5
+  margin: 0.5
+  train_from_safe_alignment_pairs: true
+guardrails:
+  forbid_navtest_pairs: true
+  grpo_enabled: false

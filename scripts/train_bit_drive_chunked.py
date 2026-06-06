@@ -46,6 +46,11 @@ BIT_MARKERS = (
     "bit_risk_head",
     "bit_risk_token_encoder",
 )
+RISK_VLA_MARKERS = (
+    "risk_state_encoder",
+    "risk_strategy_router",
+    "risk_strategy_bank",
+)
 ACTION_HEAD_MARKERS = (
     "feature_encoder",
     "his_traj_encoder",
@@ -74,6 +79,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--epochs-per-chunk", type=int, default=1)
     parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="bf16")
     parser.add_argument("--lr-bit", type=float, default=1e-4)
+    parser.add_argument("--lr-risk-vla", type=float, default=1e-4)
     parser.add_argument("--lr-action-head", type=float, default=2e-5)
     parser.add_argument("--freeze-vlm", action="store_true", default=True)
     parser.add_argument("--freeze-base-action-head", action="store_true")
@@ -81,6 +87,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--failure-sampling-enabled", action="store_true")
     parser.add_argument("--risk-label-jsonl", type=Path, default=None)
     parser.add_argument("--require-risk-labels", action="store_true")
+    parser.add_argument("--risk-vla-label-jsonl", type=Path, default=None)
+    parser.add_argument("--require-risk-vla-labels", action="store_true")
     parser.add_argument("--counterfactual-label-jsonl", type=Path, default=None)
     parser.add_argument("--require-counterfactual-labels", action="store_true")
     parser.add_argument("--use-base-traj-kd", action="store_true")
@@ -223,6 +231,10 @@ def is_bit_key(key: str) -> bool:
     return any(marker in key for marker in BIT_MARKERS)
 
 
+def is_risk_vla_key(key: str) -> bool:
+    return any(marker in key for marker in RISK_VLA_MARKERS)
+
+
 def shape_safe_load(planner: ReCogDriveDiffusionPlanner, checkpoint_path: Path, *, strict_original: bool) -> Dict[str, Any]:
     if checkpoint_path is None:
         return {"loaded_key_count": 0, "checkpoint_files": []}
@@ -276,15 +288,20 @@ class BitChunkDataset(Dataset):
         max_samples: Optional[int] = None,
         risk_labels: Optional[Dict[str, torch.Tensor]] = None,
         require_risk_labels: bool = False,
+        risk_vla_labels: Optional[Dict[str, torch.Tensor]] = None,
+        require_risk_vla_labels: bool = False,
         counterfactual_labels: Optional[Dict[str, List[Dict[str, Any]]]] = None,
         require_counterfactual_labels: bool = False,
     ) -> None:
         self.chunk_dir = chunk_dir
         records = list(iter_index(chunk_dir))
         self.risk_labels = risk_labels or {}
+        self.risk_vla_labels = risk_vla_labels or {}
         self.counterfactual_labels = counterfactual_labels or {}
         if require_risk_labels:
             records = [record for record in records if str(record.get("sample_token")) in self.risk_labels]
+        if require_risk_vla_labels:
+            records = [record for record in records if str(record.get("sample_token")) in self.risk_vla_labels]
         if self.counterfactual_labels:
             expanded_records = []
             for record in records:
@@ -306,6 +323,7 @@ class BitChunkDataset(Dataset):
         if not self.records:
             raise RuntimeError(f"No records found in {chunk_dir}")
         self.require_risk_labels = bool(require_risk_labels)
+        self.require_risk_vla_labels = bool(require_risk_vla_labels)
         self.require_counterfactual_labels = bool(require_counterfactual_labels)
 
     def __len__(self) -> int:
@@ -324,6 +342,10 @@ class BitChunkDataset(Dataset):
             sample["bit_risk_labels"] = self.risk_labels[sample_token]
         elif self.require_risk_labels:
             raise KeyError(f"Missing required bit_risk_labels for sample_token={sample_token}")
+        if sample_token in self.risk_vla_labels:
+            sample["risk_labels"] = self.risk_vla_labels[sample_token]
+        elif self.require_risk_vla_labels:
+            raise KeyError(f"Missing required risk_labels for sample_token={sample_token}")
         if sample_token in self.counterfactual_labels:
             labels = self.counterfactual_labels[sample_token]
             label_index = int(record.get("_counterfactual_label_index", 0))
@@ -362,6 +384,14 @@ def collate(samples: List[Dict[str, Any]]) -> Tuple[torch.Tensor, BatchFeature]:
         data["bit_risk_labels"] = torch.stack(
             [
                 sample.get("bit_risk_labels", torch.full((4,), float("nan"))).float()
+                for sample in samples
+            ],
+            dim=0,
+        )
+    if any("risk_labels" in sample for sample in samples):
+        data["risk_labels"] = torch.stack(
+            [
+                sample.get("risk_labels", torch.full((8, 6), float("nan"))).float()
                 for sample in samples
             ],
             dim=0,
@@ -494,6 +524,45 @@ def load_risk_labels(path: Optional[Path]) -> Dict[str, torch.Tensor]:
     return labels
 
 
+def load_risk_vla_labels(path: Optional[Path]) -> Tuple[Dict[str, torch.Tensor], Dict[str, Any]]:
+    if path is None:
+        return {}, {}
+    _validate_training_label_metadata(path)
+    labels: Dict[str, torch.Tensor] = {}
+    summary: Dict[str, Any] = {
+        "path": str(path),
+        "rows": 0,
+        "usable": 0,
+        "split_counts": {},
+        "positive_counts": {},
+    }
+    with path.open("r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            summary["rows"] += 1
+            row = json.loads(line)
+            split = str(row.get("split", "")).lower()
+            summary["split_counts"][split or "unknown"] = summary["split_counts"].get(split or "unknown", 0) + 1
+            if "test" in split or "navtest" in split:
+                raise RuntimeError(f"Refusing to use test/navtest RISK-VLA labels for training: {path}")
+            sample_token = row.get("sample_token") or row.get("token")
+            risk_labels = row.get("risk_labels")
+            if not sample_token or risk_labels is None:
+                continue
+            tensor = torch.tensor(risk_labels, dtype=torch.float32)
+            if tensor.ndim != 2 or tensor.shape[-1] != 6:
+                raise ValueError(f"risk_labels for {sample_token} must have shape [H, 6], got {tuple(tensor.shape)}")
+            labels[str(sample_token)] = tensor
+            summary["usable"] += 1
+            class_positive = (tensor > 0.5).any(dim=0)
+            for index, is_positive in enumerate(class_positive.tolist()):
+                if is_positive:
+                    summary["positive_counts"][str(index)] = summary["positive_counts"].get(str(index), 0) + 1
+    return labels, summary
+
+
 def infer_counterfactual_tags(row: Dict[str, Any]) -> List[str]:
     tags = list(row.get("tags") or row.get("bit_counterfactual_tags") or [])
     if tags:
@@ -616,7 +685,7 @@ def chunk_dirs(args: argparse.Namespace) -> List[Path]:
 
 def set_trainable(planner: ReCogDriveDiffusionPlanner, freeze_base_action_head: bool) -> None:
     for name, param in planner.named_parameters():
-        if is_bit_key(name):
+        if is_bit_key(name) or is_risk_vla_key(name):
             param.requires_grad = True
         elif freeze_base_action_head:
             param.requires_grad = False
@@ -626,21 +695,26 @@ def set_trainable(planner: ReCogDriveDiffusionPlanner, freeze_base_action_head: 
 
 def optimizer_for(planner: ReCogDriveDiffusionPlanner, args: argparse.Namespace) -> torch.optim.Optimizer:
     bit_params = []
+    risk_vla_params = []
     action_params = []
     for name, param in planner.named_parameters():
         if not param.requires_grad:
             continue
         if is_bit_key(name):
             bit_params.append(param)
+        elif is_risk_vla_key(name):
+            risk_vla_params.append(param)
         else:
             action_params.append(param)
     groups = []
     if bit_params:
         groups.append({"params": bit_params, "lr": args.lr_bit, "weight_decay": 1e-4, "name": "bit"})
+    if risk_vla_params and args.lr_risk_vla > 0:
+        groups.append({"params": risk_vla_params, "lr": args.lr_risk_vla, "weight_decay": 1e-4, "name": "risk_vla"})
     if action_params and args.lr_action_head > 0:
         groups.append({"params": action_params, "lr": args.lr_action_head, "weight_decay": 1e-4, "name": "action_head"})
     if not groups:
-        raise RuntimeError("No trainable BiT/action_head parameters.")
+        raise RuntimeError("No trainable BiT/RISK-VLA/action_head parameters.")
     return torch.optim.AdamW(groups, betas=(0.9, 0.95), weight_decay=0.0)
 
 
@@ -687,6 +761,8 @@ def main() -> int:
     cfg = load_yaml(args.config)
     if "lr_bit" in cfg:
         args.lr_bit = float(cfg["lr_bit"])
+    if "lr_risk_vla" in cfg:
+        args.lr_risk_vla = float(cfg["lr_risk_vla"])
     if "lr_action_head" in cfg:
         args.lr_action_head = float(cfg["lr_action_head"])
     if bool(cfg.get("freeze_base_action_head", False)):
@@ -740,6 +816,7 @@ def main() -> int:
         max_age_seconds=args.max_counterfactual_label_age,
     )
     risk_labels = load_risk_labels(args.risk_label_jsonl)
+    risk_vla_labels, risk_vla_summary = load_risk_vla_labels(args.risk_vla_label_jsonl)
     for sample_token, labels_for_token in counterfactual_labels.items():
         for label in labels_for_token:
             if "bit_risk_labels" in label:
@@ -752,6 +829,11 @@ def main() -> int:
     if args.counterfactual_label_jsonl is not None:
         (args.output_dir / "counterfactual_label_summary.json").write_text(
             json.dumps(counterfactual_summary, default=str, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+    if args.risk_vla_label_jsonl is not None:
+        (args.output_dir / "risk_vla_label_summary.json").write_text(
+            json.dumps(risk_vla_summary, default=str, indent=2, sort_keys=True) + "\n",
             encoding="utf-8",
         )
     (args.output_dir / "failure_sampling_options.json").write_text(
@@ -778,11 +860,17 @@ def main() -> int:
                         max_samples=args.max_samples,
                         risk_labels=risk_labels,
                         require_risk_labels=args.require_risk_labels,
+                        risk_vla_labels=risk_vla_labels,
+                        require_risk_vla_labels=args.require_risk_vla_labels,
                         counterfactual_labels=counterfactual_labels,
                         require_counterfactual_labels=args.require_counterfactual_labels,
                     )
                 except RuntimeError as exc:
-                    if (args.require_risk_labels or args.require_counterfactual_labels) and "No records found" in str(exc):
+                    if (
+                        args.require_risk_labels
+                        or args.require_risk_vla_labels
+                        or args.require_counterfactual_labels
+                    ) and "No records found" in str(exc):
                         print(f"Skipping {chunk.name}: no samples with required labels.")
                         continue
                     raise
@@ -901,8 +989,25 @@ def main() -> int:
                             "bit_risk_dac_prob_mean": finite_float(output, "bit_risk_dac_prob_mean"),
                             "bit_risk_nc_prob_mean": finite_float(output, "bit_risk_nc_prob_mean"),
                             "bit_risk_ttc_prob_mean": finite_float(output, "bit_risk_ttc_prob_mean"),
+                            "risk_vla_risk_loss": finite_float(output, "risk_vla_risk_loss"),
+                            "risk_vla_focal_loss": finite_float(output, "risk_vla_focal_loss"),
+                            "risk_vla_strategy_entropy_loss": finite_float(output, "risk_vla_strategy_entropy_loss"),
+                            "risk_vla_total_aux_loss": finite_float(output, "risk_vla_total_aux_loss"),
+                            "risk_vla_prob_low_score": finite_float(output, "risk_vla_prob_low_score"),
+                            "risk_vla_prob_path_dac": finite_float(output, "risk_vla_prob_path_dac"),
+                            "risk_vla_prob_interaction_nc": finite_float(output, "risk_vla_prob_interaction_nc"),
+                            "risk_vla_prob_ttc": finite_float(output, "risk_vla_prob_ttc"),
+                            "risk_vla_prob_progress": finite_float(output, "risk_vla_prob_progress"),
+                            "risk_vla_prob_comfort": finite_float(output, "risk_vla_prob_comfort"),
+                            "risk_vla_weight_base": finite_float(output, "risk_vla_weight_base"),
+                            "risk_vla_weight_path_intent": finite_float(output, "risk_vla_weight_path_intent"),
+                            "risk_vla_weight_interaction": finite_float(output, "risk_vla_weight_interaction"),
+                            "risk_vla_weight_progress": finite_float(output, "risk_vla_weight_progress"),
+                            "risk_vla_weight_comfort": finite_float(output, "risk_vla_weight_comfort"),
+                            "risk_vla_strategy_entropy": finite_float(output, "risk_vla_strategy_entropy"),
                             "grad_norm": grad_norm_value,
                             "lr_bit": args.lr_bit,
+                            "lr_risk_vla": args.lr_risk_vla,
                             "lr_action_head": args.lr_action_head,
                             "gpu_memory": current_gpu_memory(device),
                             "step_time": round(time.time() - step_start, 4),

@@ -1,0 +1,12 @@
+method: risk_vla_v2
+stage: R5_candidate_scorer
+candidate_bank:
+  k_small: 4
+  k_sota: 8
+  cache_format:
+    - compressed_npz
+    - metadata_jsonl
+router_mode: scorer_select
+safety:
+  suppress_nc_ttc_risk: true
+  no_posthoc_clamp_ablation: true

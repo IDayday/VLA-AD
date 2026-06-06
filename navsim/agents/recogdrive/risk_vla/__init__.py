@@ -25,6 +25,10 @@ from .strategy_bank import (
     RiskConditionedStrategyBank,
 )
 from .strategy_router import RiskConditionedStrategyRouter
+from .candidate_bank import CandidateBank, CandidateSpec
+from .trajectory_risk_critic import TrajectoryRiskCritic, TrajectoryRiskCriticOutput
+from .utility_router import RiskVLAv2UtilityRouter, UtilityRouterOutput
+from .risk_world_tokens import RiskWorldTokenEncoder
 
 __all__ = [
     "DEFAULT_RISK_CLASS_ORDER",
@@ -46,4 +50,11 @@ __all__ = [
     "reduce_horizon_labels",
     "mvp_labels_to_extended",
     "ensure_scene_level_labels",
+    "CandidateBank",
+    "CandidateSpec",
+    "TrajectoryRiskCritic",
+    "TrajectoryRiskCriticOutput",
+    "RiskVLAv2UtilityRouter",
+    "UtilityRouterOutput",
+    "RiskWorldTokenEncoder",
 ]

@@ -1,0 +1,12 @@
+method: risk_vla_v2
+stage: R6_cvar_tailrisk
+tail_risk:
+  q: 0.2
+  optimize_cvar_surrogate: true
+  metrics:
+    - zero_score
+    - DAC0
+    - NC0
+    - TTC0
+guardrails:
+  no_full_scale_until_small_gates_pass: true

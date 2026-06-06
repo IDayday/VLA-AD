@@ -1,0 +1,7 @@
+method: risk_vla_v2
+stage: R8_anchor_grpo
+enabled: false
+reason: "Disabled until supervised utility critic, scorer, and safe alignment gates pass."
+guardrails:
+  require_supervised_gates_pass: true
+  forbid_navtest_reward_tuning: true

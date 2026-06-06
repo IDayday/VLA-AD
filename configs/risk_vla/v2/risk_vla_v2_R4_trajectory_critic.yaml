@@ -1,0 +1,17 @@
+method: risk_vla_v2
+stage: R4_trajectory_critic
+critic:
+  planner_dim: 4096
+  hidden_dim: 512
+  num_risk_classes: 6
+  horizon: 8
+  num_submetrics: 6
+losses:
+  scene_risk_loss: 1.0
+  horizon_risk_loss: 1.0
+  submetric_delta_loss: 1.0
+  pairwise_preference_loss: 1.0
+  constrained_safety_loss: 0.5
+  cvar_tail_risk_loss: 0.25
+leakage_guard:
+  forbid_navtest_training_labels: true

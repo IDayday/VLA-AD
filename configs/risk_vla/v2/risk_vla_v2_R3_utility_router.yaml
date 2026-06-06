@@ -1,0 +1,11 @@
+method: risk_vla_v2
+stage: R3_utility_router
+use_risk_vla: true
+risk_vla_v2_router_mode: constrained_utility_router
+risk_vla_v2_num_candidates: 4
+risk_vla_v2_safety_penalty: 3.0
+train_labels:
+  source: strategy_utility_labels
+  forbid_navtest: true
+outputs:
+  report: "${BIT_EXP_ROOT}/v2/R3_utility_router/report.md"

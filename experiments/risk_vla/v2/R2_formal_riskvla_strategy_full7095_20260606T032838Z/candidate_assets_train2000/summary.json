@@ -1,0 +1,126 @@
+{
+  "candidate_metadata_jsonl": "experiments/risk_vla/v2/R2_formal_riskvla_strategy_full7095_20260606T032838Z/candidate_assets_train2000/candidate_metadata.jsonl",
+  "candidate_summary": [
+    {
+      "candidate_name": "base_det",
+      "dac0": 54,
+      "mean_pdms": 0.916046999018748,
+      "nc0": 6,
+      "regresses_nc": 0,
+      "regresses_path": 0,
+      "regresses_ttc": 0,
+      "repairs_nc": 0,
+      "repairs_path": 0,
+      "repairs_ttc": 0,
+      "rows": 2000,
+      "tail_risk": 94,
+      "ttc0": 35,
+      "zero_score": 60
+    },
+    {
+      "candidate_name": "bit_det",
+      "dac0": 54,
+      "mean_pdms": 0.9163703060240358,
+      "nc0": 4,
+      "regresses_nc": 0,
+      "regresses_path": 7,
+      "regresses_ttc": 2,
+      "repairs_nc": 2,
+      "repairs_path": 7,
+      "repairs_ttc": 8,
+      "rows": 2000,
+      "tail_risk": 88,
+      "ttc0": 29,
+      "zero_score": 58
+    },
+    {
+      "candidate_name": "bit_stochastic_seed0",
+      "dac0": 51,
+      "mean_pdms": 0.9181723286121192,
+      "nc0": 2,
+      "regresses_nc": 0,
+      "regresses_path": 6,
+      "regresses_ttc": 2,
+      "repairs_nc": 4,
+      "repairs_path": 9,
+      "repairs_ttc": 9,
+      "rows": 2000,
+      "tail_risk": 84,
+      "ttc0": 28,
+      "zero_score": 53
+    },
+    {
+      "candidate_name": "bit_stochastic_seed1",
+      "dac0": 52,
+      "mean_pdms": 0.9177552884204847,
+      "nc0": 2,
+      "regresses_nc": 0,
+      "regresses_path": 6,
+      "regresses_ttc": 2,
+      "repairs_nc": 4,
+      "repairs_path": 8,
+      "repairs_ttc": 9,
+      "rows": 2000,
+      "tail_risk": 85,
+      "ttc0": 28,
+      "zero_score": 54
+    },
+    {
+      "candidate_name": "bit_stochastic_seed2",
+      "dac0": 50,
+      "mean_pdms": 0.9188132758237936,
+      "nc0": 3,
+      "regresses_nc": 0,
+      "regresses_path": 5,
+      "regresses_ttc": 1,
+      "repairs_nc": 3,
+      "repairs_path": 9,
+      "repairs_ttc": 10,
+      "rows": 2000,
+      "tail_risk": 81,
+      "ttc0": 26,
+      "zero_score": 53
+    }
+  ],
+  "candidate_tensor_shape": [
+    2000,
+    5,
+    8,
+    3
+  ],
+  "candidate_trajectories_npz": "experiments/risk_vla/v2/R2_formal_riskvla_strategy_full7095_20260606T032838Z/candidate_assets_train2000/candidate_trajectories.npz",
+  "input_jsonl": "/mnt/project/bit_drive_left_tail/experiments/bit_drive/d5_mining_v2_final/counterfactual_candidates.jsonl",
+  "mode_counts": {
+    "base_det": 2000,
+    "bit_det": 2000,
+    "bit_stochastic_seed0": 2000,
+    "bit_stochastic_seed1": 2000,
+    "bit_stochastic_seed2": 2000
+  },
+  "negative_anchor_counts": {
+    "base_det": 837,
+    "bit_det": 396,
+    "bit_stochastic_seed0": 272,
+    "bit_stochastic_seed1": 245,
+    "bit_stochastic_seed2": 250
+  },
+  "num_label_rows": 10000,
+  "num_pairs": 1353,
+  "num_tokens": 2000,
+  "positive_anchor_counts": {
+    "base_det": 1490,
+    "bit_det": 201,
+    "bit_stochastic_seed0": 103,
+    "bit_stochastic_seed1": 108,
+    "bit_stochastic_seed2": 98
+  },
+  "purpose": "training",
+  "safe_alignment_pairs_jsonl": "experiments/risk_vla/v2/R2_formal_riskvla_strategy_full7095_20260606T032838Z/candidate_assets_train2000/safe_alignment_pairs.jsonl",
+  "skipped_tokens": [],
+  "split": "navtrain",
+  "split_counts": {
+    "navtrain": 2000
+  },
+  "strategy_utility_labels_csv": "experiments/risk_vla/v2/R2_formal_riskvla_strategy_full7095_20260606T032838Z/candidate_assets_train2000/strategy_utility_labels.csv",
+  "strategy_utility_labels_jsonl": "experiments/risk_vla/v2/R2_formal_riskvla_strategy_full7095_20260606T032838Z/candidate_assets_train2000/strategy_utility_labels.jsonl"
+}

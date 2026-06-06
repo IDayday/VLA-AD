@@ -1,0 +1,9 @@
+{
+  "claimed_metrics": false,
+  "missing_inputs": [
+    "baseline A0/Base matched PDM table",
+    "one or more matched candidate PDM tables",
+    "declared non-test split for training labels"
+  ],
+  "status": "not_built"
+}

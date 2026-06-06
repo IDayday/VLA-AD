@@ -1,0 +1,112 @@
+{
+  "best_epoch": 19,
+  "best_val": {
+    "base_metrics": {
+      "comfort": 1.0,
+      "dac0": 9,
+      "nc0": 2,
+      "pdms": 0.9188331365585327,
+      "progress": 0.8536995053291321,
+      "ttc0": 6,
+      "zero_score": 11
+    },
+    "loss": 0.7282723858952522,
+    "num_samples": 400,
+    "oracle_metrics": {
+      "comfort": 1.0,
+      "dac0": 8,
+      "nc0": 1,
+      "pdms": 0.9247975945472717,
+      "progress": 0.8610143065452576,
+      "ttc0": 5,
+      "zero_score": 9
+    },
+    "pairwise_accuracy": 0.625,
+    "risk_metrics": {
+      "comfort_auprc": null,
+      "comfort_auroc": null,
+      "interaction_nc_auprc": 0.005130964693487017,
+      "interaction_nc_auroc": 0.658893346706787,
+      "low_score_auprc": 0.05559524816998759,
+      "low_score_auroc": 0.7230995656924091,
+      "path_dac_auprc": 0.05945912327443204,
+      "path_dac_auroc": 0.7648081841432225,
+      "progress_auprc": 0.0756944137442075,
+      "progress_auroc": 0.7541703409758965,
+      "ttc_auprc": 0.020103419215056043,
+      "ttc_auroc": 0.6234787018255578
+    },
+    "selected_metrics": {
+      "comfort": 1.0,
+      "dac0": 9,
+      "nc0": 2,
+      "pdms": 0.9184603691101074,
+      "progress": 0.8553049564361572,
+      "ttc0": 7,
+      "zero_score": 11
+    },
+    "selection_accuracy": 0.5825
+  },
+  "candidate_npz": "experiments/risk_vla/v2/R2_formal_riskvla_strategy_full7095_20260606T032838Z/candidate_assets_train2000/candidate_trajectories.npz",
+  "device": "cuda",
+  "epochs": 80,
+  "final_val": {
+    "base_metrics": {
+      "comfort": 1.0,
+      "dac0": 9,
+      "nc0": 2,
+      "pdms": 0.9188331365585327,
+      "progress": 0.8536995053291321,
+      "ttc0": 6,
+      "zero_score": 11
+    },
+    "loss": 0.7925277054309845,
+    "num_samples": 400,
+    "oracle_metrics": {
+      "comfort": 1.0,
+      "dac0": 8,
+      "nc0": 1,
+      "pdms": 0.9247975945472717,
+      "progress": 0.8610143065452576,
+      "ttc0": 5,
+      "zero_score": 9
+    },
+    "pairwise_accuracy": 0.6225,
+    "risk_metrics": {
+      "comfort_auprc": null,
+      "comfort_auroc": null,
+      "interaction_nc_auprc": 0.005191628231788874,
+      "interaction_nc_auroc": 0.6690906051487797,
+      "low_score_auprc": 0.16496856588553066,
+      "low_score_auroc": 0.784354091610911,
+      "path_dac_auprc": 0.18231488580842972,
+      "path_dac_auroc": 0.8332480818414322,
+      "progress_auprc": 0.11389752328560702,
+      "progress_auroc": 0.7484384185773074,
+      "ttc_auprc": 0.01925129581430456,
+      "ttc_auroc": 0.6420059403071573
+    },
+    "selected_metrics": {
+      "comfort": 1.0,
+      "dac0": 9,
+      "nc0": 2,
+      "pdms": 0.9184226989746094,
+      "progress": 0.855214536190033,
+      "ttc0": 7,
+      "zero_score": 11
+    },
+    "selection_accuracy": 0.57
+  },
+  "labels_jsonl": "experiments/risk_vla/v2/R2_formal_riskvla_strategy_full7095_20260606T032838Z/candidate_assets_train2000/strategy_utility_labels.jsonl",
+  "loss_weights": {
+    "constrained_safety_loss": 0.25,
+    "cvar_tail_risk_loss": 0.1,
+    "horizon_risk_loss": 0.25,
+    "pairwise_preference_loss": 2.0,
+    "scene_risk_loss": 1.0,
+    "submetric_delta_loss": 1.0
+  },
+  "num_train": 1600,
+  "num_val": 400,
+  "output_dir": "experiments/risk_vla/v2/R2_formal_riskvla_strategy_full7095_20260606T032838Z/critic_train2000"
+}

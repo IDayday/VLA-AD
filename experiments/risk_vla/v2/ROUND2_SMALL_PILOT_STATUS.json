@@ -1,0 +1,11 @@
+{
+  "claimed_metrics": false,
+  "missing_inputs": [
+    "A0_PDM_TABLE",
+    "CANDIDATE_PDM_TABLES",
+    "candidate trajectory cache or trajectory_source_path",
+    "critic/router checkpoint paths for learned stages"
+  ],
+  "reason": "No explicit matched train/val A0/Base plus candidate PDM input bundle was provided or discoverable.",
+  "status": "not_run"
+}
