@@ -1,0 +1,863 @@
+round: risk_vla_v3_full
+git_commit: 2a00819a3e3bd4993869ab65c4656da889e9eede
+scale_policy:
+  min_real_samples: 10000
+  debug_runs_are_not_evidence: true
+  navtest_labels_analysis_only: true
+roots:
+  cache_root: /mnt/project/bit_drive_left_tail/cache/risk_vla_v3
+  exp_root: /mnt/project/bit_drive_left_tail/experiments/risk_vla_v3
+  project_root: /mnt/project/VLA-AD
+  search_roots:
+  - /mnt/project/VLA-AD
+  - /mnt/project/bit_drive_left_tail
+  work_root: /mnt/project/bit_drive_left_tail
+chunk_caches:
+  train_chunks:
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_backfill_chunk_000000
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_backfill_chunk_000001
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_backfill_chunk_000002
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_backfill_chunk_000003
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_backfill_chunk_000004
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_backfill_chunk_000005
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_backfill_p1_chunk_000000
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_backfill_p1_chunk_000001
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_backfill_p1_chunk_000002
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_backfill_p1_chunk_000003
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_backfill_p1_chunk_000004
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_backfill_p1_chunk_000005
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_full_chunk_000000
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_full_chunk_000001
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_full_chunk_000002
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_full_chunk_000003
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_full_chunk_000004
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_full_chunk_000005
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_full_chunk_000006
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_full_chunk_000007
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_full_chunk_000013
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_full_chunk_000014
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_full_chunk_000015
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_full_chunk_000016
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_full_chunk_000017
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_full_chunk_000018
+  - /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks/train_full_chunk_000019
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_backfill_chunk_000000
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_backfill_chunk_000001
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_backfill_chunk_000002
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_backfill_chunk_000003
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_backfill_chunk_000004
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_backfill_chunk_000005
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_backfill_p1_chunk_000000
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_backfill_p1_chunk_000001
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_backfill_p1_chunk_000002
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_backfill_p1_chunk_000003
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_backfill_p1_chunk_000004
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_backfill_p1_chunk_000005
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_full_chunk_000000
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_full_chunk_000001
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_full_chunk_000002
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_full_chunk_000003
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_full_chunk_000004
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_full_chunk_000005
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_full_chunk_000006
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_full_chunk_000007
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_full_chunk_000013
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_full_chunk_000014
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_full_chunk_000015
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_full_chunk_000016
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_full_chunk_000017
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_full_chunk_000018
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/train_full_chunk_000019
+  val_chunks:
+  - /mnt/project/bit_drive_left_tail/cache/risk_vla_heldout_val_proxy_chunk000006_overlay
+  navtest_chunks_analysis_only:
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/navtest_full_chunk_000000
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/navtest_full_chunk_000001
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/navtest_full_chunk_000002
+  - /mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1/navtest_full_chunk_000003
+metric_caches:
+  train:
+  - /mnt/project/VLA-AD/experiments/bit_drive/select/P7_safety_mining/metric_cache_train_chunk000013_1024
+  - /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/active_mining/metric_cache_backfill_chunks000000_000005_balanced_rr_next1024_interaction_ttc
+  - /mnt/project/VLA-AD/experiments/bit_drive/d5_mining_background/metric_cache_train_chunk000015_512
+  - /mnt/project/VLA-AD/experiments/bit_drive/d5_mining_background/metric_cache_train_chunk000016_512
+  - /mnt/project/VLA-AD/experiments/bit_drive/d5_mining_background/metric_cache_train_chunk000017_512
+  - /mnt/project/bit_drive_left_tail/experiments/bit_drive/d5_mining_background_gpu2/metric_cache_train_chunk000019_512
+  - /mnt/project/bit_drive_left_tail/experiments/bit_drive/d5_mining_background_gpu2/metric_cache_train_chunk000018_512
+  - /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/active_mining/metric_cache_train_backfill_chunk000000_top512_interaction_ttc
+  - /mnt/project/VLA-AD/experiments/bit_drive/select/P7_safety_mining/metric_cache_train_chunk000007_264
+  - /mnt/project/VLA-AD/experiments/bit_drive/select/P10_safety_holdout_mining/metric_cache_train_chunk000019_256
+  - /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/active_mining/metric_cache_backfill_chunks000000_000005_balanced_rr_next256_interaction_ttc
+  - /mnt/project/VLA-AD/experiments/bit_drive/select/P10_safety_holdout_mining/metric_cache_train_chunk000018_256
+  - /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/active_mining/metric_cache_backfill_chunks000000_000005_balanced_rr_next64_interaction_ttc_smoke
+  - /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/active_mining/metric_cache_train_backfill_chunk000000_balanced_next32_interaction_ttc_smoke
+  - /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/active_mining/metric_cache_train_backfill_chunk000000_top32_interaction_ttc_smoke
+  - /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/active_mining/metric_cache_train_backfill_chunk000000_balanced_rr_next32_interaction_ttc_smoke
+  - /mnt/project/VLA-AD/experiments/bit_drive/select/metric_cache_train_probe16
+  - /mnt/project/VLA-AD/experiments/bit_drive/select/P10_safety_holdout_mining/metric_cache_train_chunk000014_1024
+  val:
+  - /mnt/project/VLA-AD/experiments/bit_drive/select/P4_train2048_val1024/metric_cache_val_chunk000006_1024
+  - /mnt/project/VLA-AD/experiments/bit_drive/select/P4_train2048_val1024/metric_cache_train_chunk000002_512
+  - /mnt/project/VLA-AD/experiments/bit_drive/select/P4_train2048_val1024/metric_cache_train_chunk000003_512
+  - /mnt/project/VLA-AD/experiments/bit_drive/select/P4_train2048_val1024/metric_cache_train_chunk000005_512
+  - /mnt/project/VLA-AD/experiments/bit_drive/select/P1_train512_val256/metric_cache_train_512
+  - /mnt/project/VLA-AD/experiments/bit_drive/select/P4_train2048_val1024/metric_cache_train_chunk000004_512
+  - /mnt/project/VLA-AD/experiments/bit_drive/select/P1_train512_val256/metric_cache_val_256
+  - /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/metric_cache_trainval_counterfactual_128
+  - /mnt/project/VLA-AD/experiments/bit_drive/select/metric_cache_val_probe16
+  - /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/metric_cache_trainval_counterfactual_smoke8
+  navtest_analysis_only:
+  - /mnt/project/VLA-AD/cache/metric_cache_navtest_first1024
+  - /mnt/project/VLA-AD/cache/metric_cache_navtest_smoke16
+  - /mnt/project/VLA-AD/cache/metric_cache_navtest_full_v1
+  - /mnt/project/VLA-AD/experiments/recogdrive_expert/pdm_flow/metric_cache_navtest_first1024
+  - /mnt/project/VLA-AD/experiments/recogdrive_expert/pdm_flow/metric_cache_navtest_full_v1
+  - /mnt/project/VLA-AD/experiments/recogdrive_expert/pdm_flow/metric_cache_navtest_full_v1_shard_backfill_20260528_0000
+checkpoints:
+  a0_base: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt
+  bit: /mnt/project/VLA-AD/experiments/bit_drive/select/P11_enriched_features/selector_feature_mlp/selector.pt
+  d5: /mnt/project/VLA-AD/experiments/bit_drive/v5_d5/D5A_safe_x_kd/best.ckpt
+  risk_vla: /mnt/project/VLA-AD/experiments/risk_vla/v2/R2_formal_riskvla_strategy_full7095_20260606T032838Z/critic_train2000/best_critic.pt
+pdm_tables:
+  train:
+  - method: risk_vla
+    metric_columns:
+    - comfort
+    missing_metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    path: /mnt/project/VLA-AD/experiments/risk_vla/v2/R2_formal_riskvla_strategy_full7095_20260606T032838Z/candidate_assets_train2000/strategy_utility_labels.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: train
+    token_column: sample_token
+  val:
+  - method: a0_base
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/VLA-AD/outputs/a0_stage2_repro_20260531_003029/a0_official_aligned_a0complete/eval/final/pdm_results.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: val
+    token_column: sample_token
+  - method: a0_base
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/VLA-AD/outputs/a0_stage2_repro_20260531_003029/a0_official_aligned_a0complete/eval/step_00050000/pdm_results.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: val
+    token_column: sample_token
+  - method: a0_base
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/VLA-AD/outputs/a0_stage2_repro_20260531_003029/a0_official_aligned_a0complete/eval/step_00060000/pdm_results.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: val
+    token_column: sample_token
+  - method: a0_base
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/VLA-AD/outputs/a0_stage2_repro_20260531_003029/a0_official_aligned_a0complete/eval/step_00080000/pdm_results.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: val
+    token_column: sample_token
+  - method: a0_base
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/VLA-AD/outputs/a0_stage2_repro_20260531_003029/a0_official_aligned_a0complete/eval/step_00100000/pdm_results.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: val
+    token_column: sample_token
+  - method: a0_base
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/VLA-AD/outputs/a0_stage2_repro_20260531_003029/a0_official_aligned_a0complete/eval/step_00120000/pdm_results.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: val
+    token_column: sample_token
+  - method: a0_base
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/VLA-AD/outputs/a0_stage2_repro_20260531_003029/a0_official_aligned_a0complete/eval/topk_epoch=189-step=126350/pdm_results.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: val
+    token_column: sample_token
+  - method: a0_base
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/VLA-AD/outputs/a0_stage2_repro_20260531_003029/a0_official_aligned_a0complete/eval/topk_epoch=190-step=127015/pdm_results.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: val
+    token_column: sample_token
+  - method: a0_base
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/VLA-AD/outputs/a0_stage2_repro_20260531_003029/a0_official_aligned_a0complete/eval/topk_epoch=192-step=128345/pdm_results.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: val
+    token_column: sample_token
+  - method: a0_base
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/VLA-AD/outputs/a0_stage2_repro_20260531_003029/a0_official_aligned_a0complete/eval/topk_epoch=197-step=131670/pdm_results.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: val
+    token_column: sample_token
+  - method: a0_base
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/VLA-AD/outputs/a0_stage2_repro_20260531_003029/a0_official_aligned_a0complete/eval/topk_epoch=199-step=133000/pdm_results.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: val
+    token_column: sample_token
+  navtest_analysis_only:
+  - method: a0_base
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/VLA-AD/experiments/recogdrive_expert/pdm_flow/full_navtest_suite_wait_metric12138_20260527_1830/a0_no_expert/pdm_results.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: navtest
+    token_column: sample_token
+  - method: jepa
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/VLA-AD/experiments/recogdrive_expert/pdm_flow/full_navtest_suite_wait_metric12138_20260527_1830/a1_jepa_only/pdm_results.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: navtest
+    token_column: sample_token
+  - method: vggt
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/VLA-AD/experiments/recogdrive_expert/pdm_flow/full_navtest_suite_wait_metric12138_20260527_1830/a2_vggt_only/pdm_results.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: navtest
+    token_column: sample_token
+  - method: unknown
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/VLA-AD/experiments/recogdrive_expert/pdm_flow/full_navtest_suite_wait_metric12138_20260527_1830/a3_context_only/pdm_results.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: navtest
+    token_column: sample_token
+  - method: jepa
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/VLA-AD/experiments/recogdrive_expert/pdm_flow/full_navtest_suite_wait_metric12138_20260527_1830/a4_jepa_vggt/pdm_results.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: navtest
+    token_column: sample_token
+  - method: a0_base
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/VLA-AD/experiments/recogdrive_expert/pdm_flow/full_navtest_suite_wait_metric12138_20260527_1830/base_il/pdm_results.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: navtest
+    token_column: sample_token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R10_riskvla_only_riskprob_semantic_navtestfull_pdm_parallel32/merged_full/per_sample_metrics.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R11_riskvla_only_riskprob_semantic_navtestfull_pdm_parallel32/merged_full/per_sample_metrics.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R14_vlm_full5506_provided_mask09_navtestfull_pdm_parallel32/merged_full/per_sample_metrics.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns: []
+    missing_metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R15_vs_R12_vs_R4_navtest10k_delta.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns: []
+    missing_metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R16_best_latest_vs_R15_R12_R4_navtest10k_delta.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns: []
+    missing_metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R16_vs_R15_vs_R12_vs_R4_navtest10k_delta.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns: []
+    missing_metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R17_vs_R12_R4_R15_R16_navtest10k_delta.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns: []
+    missing_metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R6_vs_R5_vs_R4_vs_R3_navtest10k_compare/deltas.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns: []
+    missing_metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R7_vs_R6_vs_R5_vs_R4_vs_R3_navtest10k_compare/deltas.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns: []
+    missing_metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R8_riskprob_semantic_vs_prior_navtest10k_compare/deltas.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns: []
+    missing_metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R9_vs_R8_vs_prior_navtest10k_compare/deltas.csv
+    row_count: 10002
+    row_count_is_lower_bound: true
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R10_riskvla_only_riskprob_semantic_navtest10k_pdm_parallel32/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R11_R10_riskprob_semantic_mask09_navtest10k_pdm_parallel32/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R11_riskvla_only_riskprob_semantic_navtest10k_pdm_parallel32/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R12_riskvla_only_riskprob_mask09_navtest10k_pdm_parallel32/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R13_R12_perclass_dense08_progress095_other0925_navtest10k_pdm_parallel32/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R13_vlm_pilot256_provided_mask09_navtest10k_pdm_parallel32/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R14_R12_mask09_scale020_navtest10k_pdm_parallel32/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R14_vlm_full5506_provided_mask09_navtest10k_pdm_parallel32/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R15_riskvla_ttc_calibrated_navtest10k_pdm_parallel32/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R16_latest_riskvla_ttc_trajloss_navtest10k_pdm_parallel32/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R16_riskvla_ttc_trajloss_navtest10k_pdm_parallel32/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R17_R12_eval_ttc_slowdown09_scale03_navtest10k_pdm_parallel32/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R3_predicted_router_navtest10k_pdm_parallel32/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R4_predicted_router_navtest10k_pdm_parallel8/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R5_predicted_router_navtest10k_pdm_parallel32/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R6_predicted_router_navtest10k_pdm_parallel32/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R7_predicted_router_navtest10k_pdm_parallel32/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R8_R4_riskprob_semantic_navtest10k_pdm_parallel32/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+  - method: risk_vla
+    metric_columns:
+    - score
+    - no_at_fault_collisions
+    - drivable_area_compliance
+    - ego_progress
+    - time_to_collision_within_bound
+    - comfort
+    missing_metric_columns: []
+    path: /mnt/project/bit_drive_left_tail/experiments/risk_vla/round1/R9_riskprob_semantic_navtest10k_pdm_parallel32/merged_10k/per_sample_metrics.csv
+    row_count: 10000
+    row_count_is_lower_bound: false
+    split: navtest
+    token_column: token
+candidate_assets:
+  train:
+  - kind: jsonl
+    method: risk_vla
+    path: /mnt/project/VLA-AD/experiments/risk_vla/v2/R2_formal_riskvla_strategy_full7095_20260606T032838Z/candidate_assets_train2000/candidate_metadata.jsonl
+    row_or_token_count: 10000
+    row_or_token_count_is_lower_bound: false
+    size_bytes: 1836000
+    split: train
+  - kind: csv
+    method: risk_vla
+    path: /mnt/project/VLA-AD/experiments/risk_vla/v2/R2_formal_riskvla_strategy_full7095_20260606T032838Z/candidate_assets_train2000/strategy_utility_labels.csv
+    row_or_token_count: 10000
+    row_or_token_count_is_lower_bound: false
+    size_bytes: 3698728
+    split: train
+  - kind: jsonl
+    method: risk_vla
+    path: /mnt/project/VLA-AD/experiments/risk_vla/v2/R2_formal_riskvla_strategy_full7095_20260606T032838Z/candidate_assets_train2000/strategy_utility_labels.jsonl
+    row_or_token_count: 10000
+    row_or_token_count_is_lower_bound: false
+    size_bytes: 9468226
+    split: train
+  navtest_analysis_only: []
+expert_caches:
+- index_file_count: 0
+  kind: last_rd
+  path: /mnt/project/VLA-AD/cache/last_vla_v2
+- index_file_count: 27
+  kind: last_rd
+  path: /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_full_highcap_chunks
+- index_file_count: 16
+  kind: last_rd
+  path: /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_geometry192_overlay
+- index_file_count: 43
+  kind: jepa
+  path: /mnt/project/VLA-AD/cache/last_vla_v2/highcap_no_risk/train_jepa128_overlay
+- index_file_count: 0
+  kind: unknown
+  path: /mnt/project/VLA-AD/cache/recogdrive_expert_chunks
+- index_file_count: 0
+  kind: unknown
+  path: /mnt/project/VLA-AD/checkpoints/teachers
+readiness:
+  base_checkpoint_found: true
+  bit_checkpoint_found: true
+  blockers:
+  - 'held-out val chunk tokens below 10000: 1024; do not substitute navtest for tuning'
+  large_candidate_assets_found: true
+  large_train_utility_labels_possible: false
+  large_val_utility_labels_possible: true
+  min_real_samples: 10000
+  navtest_10k_possible: true
+  navtest_analysis_pdm_found: true
+  risk_vla_checkpoint_found: true
+  train_10k_possible: true
+  val_10k_possible: false
+blockers:
+- 'held-out val chunk tokens below 10000: 1024; do not substitute navtest for tuning'
+- Need at least two train split PDM tables with >=10k rows to build strategy utility
+  labels.
+launchable:
+  train_labels_10k: false
+  critic_10k: false
+  router_10k: false
+  navtest_10k_analysis: true
+  full_training: false

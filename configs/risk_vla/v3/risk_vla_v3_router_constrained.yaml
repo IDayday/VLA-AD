@@ -1,0 +1,10 @@
+method: risk_vla_v3_router
+mode: constrained_utility_router
+min_real_samples: 10000
+safety_penalty: 3.0
+candidate_k: 8
+selection:
+  suppress_nc_ttc_risk: true
+  use_critic_utility: true
+leakage_guard:
+  forbid_navtest_for_training: true

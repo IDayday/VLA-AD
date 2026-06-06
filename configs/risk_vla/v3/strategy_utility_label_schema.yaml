@@ -1,0 +1,68 @@
+schema_name: risk_vla_v3_strategy_utility_labels
+version: 3
+leakage_policy:
+  train_splits_allowed: [train, val]
+  navtest_test_labels_training_forbidden: true
+  navtest_test_labels_analysis_only: true
+scale_policy:
+  min_real_samples: 10000
+  debug_runs_are_not_evidence: true
+columns:
+  identity:
+    - split
+    - token
+    - candidate_id
+    - strategy_name
+    - source_method
+    - source_checkpoint
+    - trajectory_source_path
+  pdm_submetrics:
+    - score
+    - drivable_area_compliance
+    - no_at_fault_collisions
+    - time_to_collision_within_bound
+    - ego_progress
+    - comfort
+  deltas_vs_a0:
+    - delta_score_vs_a0
+    - delta_dac_vs_a0
+    - delta_nc_vs_a0
+    - delta_ttc_vs_a0
+    - delta_progress_vs_a0
+    - delta_comfort_vs_a0
+  flags:
+    - zero_repair
+    - zero_regression
+    - path_repair
+    - path_regression
+    - nc_repair
+    - nc_regression
+    - ttc_repair
+    - ttc_regression
+    - progress_recovery
+    - comfort_recovery
+    - unsafe_regression
+    - safe_path_repair
+    - no_safe_candidate
+  anchors:
+    - utility_score
+    - constrained_best_candidate
+    - positive_anchor
+    - negative_anchor
+    - pair_type
+utility_formula:
+  delta_score_vs_a0: 1.0
+  path_repair: 0.5
+  zero_repair: 0.4
+  ttc_repair: 0.4
+  progress_recovery: 0.2
+  comfort_recovery: 0.1
+  nc_regression: -2.5
+  ttc_regression: -2.0
+  path_regression: -1.0
+  zero_regression: -1.0
+  comfort_regression_if_available: -0.5
+constrained_best_rule:
+  prefer_no_nc_ttc_regression: true
+  tie_breaker: highest_utility
+  if_all_unsafe: least_unsafe_and_mark_no_safe_candidate

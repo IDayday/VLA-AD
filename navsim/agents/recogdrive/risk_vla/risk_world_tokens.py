@@ -7,14 +7,15 @@ from torch import nn
 
 
 class RiskWorldTokenEncoder(nn.Module):
-    """Builds expert-style tokens for semantic, geometric, dynamic, progress, comfort, and tail risk."""
+    """Builds expert-style semantic, geometry, dynamics, progress, comfort, uncertainty, and tail-risk tokens."""
 
     TOKEN_NAMES = [
         "semantic_interaction",
-        "geometric_drivable",
+        "drivable_geometry",
         "dynamic_ttc",
-        "ego_intent_progress",
+        "ego_progress",
         "comfort",
+        "uncertainty",
         "tail_risk",
     ]
 

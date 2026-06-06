@@ -1,0 +1,25 @@
+method: risk_vla_v3_anchor_grpo
+enabled_by_default: false
+minimum_gate:
+  mean_pdms_gte_a0: true
+  p10_gte_a0: true
+  zero_lte_a0: true
+  dac0_lte_a0: true
+  nc0_lte_a0_plus_one: true
+  ttc0_lte_a0: true
+  critic_pairwise_positive_gt_negative: true
+  validation_samples_gte: 10000
+reward:
+  utility: 1.0
+  zero_path_repair: 0.4
+  ttc_repair: 0.4
+  progress_recovery: 0.2
+  comfort_stability: 0.1
+  nc_regression: -2.5
+  ttc_regression: -2.0
+  dac_regression: -1.0
+  cvar_tail_risk: -0.5
+  positive_anchor_deviation: -0.3
+  negative_anchor_margin: 0.3
+leakage_guard:
+  forbid_navtest_for_training: true

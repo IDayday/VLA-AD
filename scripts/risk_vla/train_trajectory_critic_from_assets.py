@@ -4,6 +4,7 @@ import argparse
 import json
 import math
 import random
+import sys
 from pathlib import Path
 from statistics import mean
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -11,6 +12,10 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 import numpy as np
 import torch
 from torch.utils.data import DataLoader, Dataset
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from navsim.agents.recogdrive.risk_vla.critic_losses import critic_total_loss
 from navsim.agents.recogdrive.risk_vla.trajectory_risk_critic import TrajectoryRiskCritic
@@ -313,16 +318,38 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--comfort-threshold", type=float, default=0.5)
     parser.add_argument("--zero-eps", type=float, default=1e-9)
     parser.add_argument("--log-every", type=int, default=10)
+    parser.add_argument("--min-real-samples", type=int, default=0)
+    parser.add_argument("--debug-allow-small", action="store_true")
+    parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args(argv)
 
     output_dir = args.output_dir
-    output_dir.mkdir(parents=True, exist_ok=True)
     random.seed(args.seed)
     np.random.seed(args.seed)
     torch.manual_seed(args.seed)
 
     data = np.load(args.candidate_npz, allow_pickle=False)
     num_tokens = len(data["sample_tokens"])
+    if args.dry_run:
+        print(
+            json.dumps(
+                {
+                    "candidate_npz": str(args.candidate_npz),
+                    "labels_jsonl": str(args.labels_jsonl),
+                    "num_tokens": num_tokens,
+                    "min_real_samples": args.min_real_samples,
+                    "would_write": str(args.output_dir),
+                },
+                sort_keys=True,
+            )
+        )
+        return 0
+    if args.min_real_samples and num_tokens < args.min_real_samples and not args.debug_allow_small:
+        raise RuntimeError(
+            f"Refusing formal critic training with {num_tokens} samples; "
+            f"minimum is {args.min_real_samples}. Use --debug-allow-small only for debug-only runs."
+        )
+    output_dir.mkdir(parents=True, exist_ok=True)
     indices = list(range(num_tokens))
     random.shuffle(indices)
     num_val = max(1, int(round(num_tokens * float(args.val_fraction))))

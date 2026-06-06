@@ -1,0 +1,16 @@
+method: risk_vla_v3_vlm_risk_lora
+enabled_by_default: false
+min_real_samples: 10000
+policy:
+  freeze_planner_first: true
+  train_projector_or_top_lora_only: true
+  keep_only_if_downstream_pdm_improves: true
+objectives:
+  fine_grained_risk: 1.0
+  strategy_utility: 1.0
+  template_rationale_auxiliary: 0.1
+grounding_checks:
+  blank_or_perturbed_image_must_reduce_confidence: true
+  command_shuffle_must_reduce_strategy_accuracy: true
+leakage_guard:
+  forbid_navtest_for_training: true

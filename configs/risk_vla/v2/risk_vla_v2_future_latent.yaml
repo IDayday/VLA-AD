@@ -1,0 +1,21 @@
+method_name: "RISK-VLA v2 Future-Aware Latent Conditioning"
+enabled: false
+
+future_latent:
+  use_future_latent_predictor: false
+  planner_dim: 384
+  hidden_dim: 256
+  future_steps: 4
+  loss_weight: 0.0
+  detach_world_tokens: true
+  target_source: "train_val_cached_future_latents"
+
+leakage_guard:
+  train_splits: ["train", "val"]
+  forbidden_training_splits: ["test", "navtest"]
+  note: "Do not train or tune future latent targets using navtest/test labels or analysis-only metadata."
+
+experiment:
+  dry_run_first: true
+  output_root_env: "BIT_EXP_ROOT"
+  report: "experiments/risk_vla/v2/ROUND2_PHASE2_REPORT.md"

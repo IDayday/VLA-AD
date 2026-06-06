@@ -62,6 +62,8 @@ class CandidateInput:
     path: Path
     strategy_name: str
     trajectory_source_path: Optional[str] = None
+    source_method: Optional[str] = None
+    source_checkpoint: Optional[str] = None
 
 
 def parse_candidate(value: str) -> CandidateInput:
@@ -83,6 +85,8 @@ def parse_candidate(value: str) -> CandidateInput:
         path=Path(fields["path"]),
         strategy_name=fields.get("strategy") or name,
         trajectory_source_path=fields.get("trajectory_source_path"),
+        source_method=fields.get("source_method") or fields.get("method"),
+        source_checkpoint=fields.get("source_checkpoint") or fields.get("checkpoint"),
     )
 
 
@@ -145,22 +149,31 @@ def delta(candidate: Dict[str, Optional[float]], baseline: Dict[str, Optional[fl
 
 
 def utility(candidate: Dict[str, Any], nc_penalty: float, ttc_penalty: float) -> float:
-    score = float(candidate.get("pdm_score") or 0.0)
-    if candidate.get("regresses_nc"):
-        score -= nc_penalty
-    if candidate.get("regresses_ttc"):
-        score -= ttc_penalty
-    return score
+    """Default v3 candidate utility: reward repairs/recovery and heavily penalize safety regressions."""
+
+    del nc_penalty, ttc_penalty  # Kept in the API for older callers/tests.
+    value = float(candidate.get("delta_score_vs_a0") or candidate.get("delta_score") or 0.0)
+    value += 0.5 * float(bool(candidate.get("path_repair") or candidate.get("repairs_path")))
+    value += 0.4 * float(bool(candidate.get("zero_repair")))
+    value += 0.4 * float(bool(candidate.get("ttc_repair") or candidate.get("repairs_ttc")))
+    value += 0.2 * float(bool(candidate.get("progress_recovery")))
+    value += 0.1 * float(bool(candidate.get("comfort_recovery")))
+    value -= 2.5 * float(bool(candidate.get("nc_regression") or candidate.get("regresses_nc")))
+    value -= 2.0 * float(bool(candidate.get("ttc_regression") or candidate.get("regresses_ttc")))
+    value -= 1.0 * float(bool(candidate.get("path_regression") or candidate.get("regresses_path")))
+    value -= 1.0 * float(bool(candidate.get("zero_regression")))
+    value -= 0.5 * float(bool(candidate.get("comfort_regression")))
+    return value
 
 
-def choose_anchors(rows: List[Dict[str, Any]], nc_penalty: float, ttc_penalty: float) -> Tuple[str, str]:
+def choose_anchors(rows: List[Dict[str, Any]], nc_penalty: float, ttc_penalty: float) -> Tuple[str, str, bool]:
     safe_rows = [row for row in rows if not row["regresses_nc"] and not row["regresses_ttc"]]
     pool = safe_rows if safe_rows else rows
     positive = max(pool, key=lambda row: utility(row, nc_penalty, ttc_penalty))
     risky = [row for row in rows if row["regresses_nc"] or row["regresses_ttc"] or row["tail_risk_label"]]
     negative_pool = risky if risky else rows
     negative = min(negative_pool, key=lambda row: utility(row, nc_penalty, ttc_penalty))
-    return str(positive["candidate_id"]), str(negative["candidate_id"])
+    return str(positive["candidate_id"]), str(negative["candidate_id"]), not bool(safe_rows)
 
 
 def build_labels(
@@ -190,24 +203,40 @@ def build_labels(
             metrics = table[token]
             row: Dict[str, Any] = {
                 "sample_token": token,
+                "token": token,
+                "token_id": token,
                 "split": split,
                 "purpose": purpose,
                 "candidate_id": candidate_id,
                 "strategy_name": candidate.strategy_name,
                 "trajectory_source_path": candidate.trajectory_source_path,
+                "source_method": candidate.source_method or candidate.name,
+                "source_checkpoint": candidate.source_checkpoint,
                 "baseline_candidate": baseline.name,
                 "candidate_name": candidate.name,
+                "score": metrics["score"],
                 "pdm_score": metrics["score"],
                 "dac": metrics["dac"],
+                "drivable_area_compliance": metrics["dac"],
                 "nc": metrics["nc"],
+                "no_at_fault_collisions": metrics["nc"],
                 "ttc": metrics["ttc"],
+                "time_to_collision_within_bound": metrics["ttc"],
+                "prog": metrics["progress"],
                 "progress": metrics["progress"],
+                "ego_progress": metrics["progress"],
                 "comfort": metrics["comfort"],
             }
             for metric_name in METRIC_NAMES:
                 row[f"delta_{metric_name}"] = delta(metrics, base_metrics, metric_name)
+                row[f"delta_{metric_name}_vs_a0"] = row[f"delta_{metric_name}"]
+            row["delta_dac_vs_a0"] = row["delta_dac"]
+            row["delta_nc_vs_a0"] = row["delta_nc"]
+            row["delta_ttc_vs_a0"] = row["delta_ttc"]
             row.update(
                 {
+                    "zero_repair": is_zero(base_metrics.get("score"), zero_eps) and not is_zero(metrics.get("score"), zero_eps),
+                    "zero_regression": not is_zero(base_metrics.get("score"), zero_eps) and is_zero(metrics.get("score"), zero_eps),
                     "repairs_path": is_zero(base_metrics.get("dac"), zero_eps) and not is_zero(metrics.get("dac"), zero_eps),
                     "regresses_path": not is_zero(base_metrics.get("dac"), zero_eps) and is_zero(metrics.get("dac"), zero_eps),
                     "repairs_nc": is_zero(base_metrics.get("nc"), zero_eps) and not is_zero(metrics.get("nc"), zero_eps),
@@ -217,13 +246,39 @@ def build_labels(
                     "tail_risk_label": tail_risk(metrics, low_score_threshold, progress_threshold, comfort_threshold, zero_eps),
                 }
             )
+            row["path_repair"] = row["repairs_path"]
+            row["path_regression"] = row["regresses_path"]
+            row["nc_repair"] = row["repairs_nc"]
+            row["nc_regression"] = row["regresses_nc"]
+            row["ttc_repair"] = row["repairs_ttc"]
+            row["ttc_regression"] = row["regresses_ttc"]
+            row["progress_recovery"] = bool((row["delta_progress"] or 0.0) > 0.0 and (base_metrics.get("progress") or 0.0) < progress_threshold)
+            row["comfort_recovery"] = bool((row["delta_comfort"] or 0.0) > 0.0 and (base_metrics.get("comfort") or 0.0) < comfort_threshold)
+            row["comfort_regression"] = bool(row["delta_comfort"] is not None and row["delta_comfort"] < 0.0)
+            row["unsafe_path"] = bool(row["regresses_path"] or is_zero(metrics.get("dac"), zero_eps))
+            row["unsafe_nc"] = bool(row["regresses_nc"] or is_zero(metrics.get("nc"), zero_eps))
+            row["unsafe_ttc"] = bool(row["regresses_ttc"] or is_zero(metrics.get("ttc"), zero_eps))
+            row["unsafe_any"] = bool(row["unsafe_path"] or row["unsafe_nc"] or row["unsafe_ttc"] or row["tail_risk_label"])
+            row["unsafe_regression"] = bool(row["regresses_path"] or row["regresses_nc"] or row["regresses_ttc"] or row["zero_regression"])
+            row["safe_path_repair"] = bool(row["repairs_path"] and not row["regresses_nc"] and not row["regresses_ttc"])
+            row["utility_score"] = utility(row, nc_penalty, ttc_penalty)
             token_rows.append(row)
-        positive, negative = choose_anchors(token_rows, nc_penalty, ttc_penalty)
+        positive, negative, no_safe_candidate = choose_anchors(token_rows, nc_penalty, ttc_penalty)
         constrained = positive
         for row in token_rows:
             row["constrained_best_strategy"] = constrained
+            row["constrained_best_candidate"] = constrained
+            row["no_safe_candidate"] = no_safe_candidate
             row["positive_anchor"] = positive
             row["negative_anchor"] = negative
+            if str(row["candidate_id"]) == positive and str(row["candidate_id"]) == negative:
+                row["pair_type"] = "positive_negative"
+            elif str(row["candidate_id"]) == positive:
+                row["pair_type"] = "positive"
+            elif str(row["candidate_id"]) == negative:
+                row["pair_type"] = "negative"
+            else:
+                row["pair_type"] = "neutral"
             output_rows.append(row)
     summary = {
         "baseline": baseline.name,
@@ -309,12 +364,19 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--purpose", choices=("training", "analysis"), default="training")
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--max-tokens", type=int, default=None)
+    parser.add_argument("--min-real-samples", type=int, default=0)
+    parser.add_argument("--debug-allow-small", action="store_true")
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args(argv)
     rows, summary = build_labels(args.baseline, args.candidate, args.split, args.purpose, max_tokens=args.max_tokens)
     if args.dry_run:
         print(json.dumps(summary, indent=2, sort_keys=True))
         return 0
+    if args.min_real_samples and summary["num_tokens"] < args.min_real_samples and not args.debug_allow_small:
+        raise RuntimeError(
+            f"Refusing formal utility-label construction with {summary['num_tokens']} matched tokens; "
+            f"minimum is {args.min_real_samples}. Use --debug-allow-small only for debug-only runs."
+        )
     write_outputs(rows, summary, args.output_dir)
     print(json.dumps(summary, sort_keys=True))
     return 0

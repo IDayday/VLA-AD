@@ -1,0 +1,14 @@
+method: risk_vla_v3_scorer_select
+mode: scorer_select
+min_real_samples: 10000
+candidate_k: 8
+full_candidate_k: 16
+requires:
+  - trajectory_risk_critic_checkpoint
+  - candidate_bank_cache
+selection:
+  hard_select_best_adjusted_utility: true
+  safety_penalty: 3.0
+leakage_guard:
+  forbid_navtest_for_training: true
+  navtest_analysis_only: true

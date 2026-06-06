@@ -28,6 +28,10 @@ def build_pairs(labels_jsonl: Path, output_dir: Path, max_pairs: int | None = No
                 continue
             pair = {
                 "sample_token": token,
+                "token": token,
+                "token_id": token,
+                "split": rows[0].get("split"),
+                "purpose": rows[0].get("purpose"),
                 "positive_candidate_id": positive_id,
                 "negative_candidate_id": negative_id,
                 "positive_strategy_name": positive.get("strategy_name"),
@@ -37,6 +41,9 @@ def build_pairs(labels_jsonl: Path, output_dir: Path, max_pairs: int | None = No
                 "negative_regresses_nc": negative.get("regresses_nc"),
                 "negative_regresses_ttc": negative.get("regresses_ttc"),
                 "positive_repairs_path": positive.get("repairs_path"),
+                "positive_utility_score": positive.get("utility_score"),
+                "negative_utility_score": negative.get("utility_score"),
+                "pair_type": "safe_positive_vs_risky_negative",
                 "tail_risk_label": bool(positive.get("tail_risk_label") or negative.get("tail_risk_label")),
             }
             out.write(json.dumps(pair, sort_keys=True))

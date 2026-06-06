@@ -1,0 +1,13 @@
+method: risk_vla_v3_router
+mode: learned_strategy_softmax
+min_real_samples: 10000
+model:
+  planner_dim: 384
+  hidden_dim: 256
+training:
+  epochs: 60
+  batch_size: 128
+  lr: 0.001
+  seeds: [0, 1, 2]
+leakage_guard:
+  forbid_navtest_for_training: true

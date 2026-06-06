@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from scripts.risk_vla.aggregate_strategy_utility_report import aggregate
+from scripts.risk_vla.aggregate_strategy_utility_labels import aggregate as aggregate_labels
 from scripts.risk_vla.build_safe_alignment_pairs import build_pairs
 from scripts.risk_vla.build_strategy_utility_labels import build_labels, CandidateInput, write_outputs
 from scripts.risk_vla.check_strategy_utility_labels import check_labels
@@ -34,10 +35,30 @@ def test_strategy_utility_labels_choose_safe_positive_and_risky_negative(tmp_pat
     )
     assert summary["num_tokens"] == 1
     by_name = {row["candidate_name"]: row for row in rows}
+    assert by_name["BiT"]["token"] == "a"
+    assert by_name["BiT"]["token_id"] == "a"
+    assert by_name["BiT"]["source_method"] == "BiT"
+    assert by_name["BiT"]["drivable_area_compliance"] == by_name["BiT"]["dac"]
+    assert by_name["BiT"]["no_at_fault_collisions"] == by_name["BiT"]["nc"]
+    assert by_name["BiT"]["time_to_collision_within_bound"] == by_name["BiT"]["ttc"]
+    assert by_name["BiT"]["ego_progress"] == by_name["BiT"]["progress"]
+    assert by_name["BiT"]["score"] == by_name["BiT"]["pdm_score"]
+    assert by_name["BiT"]["prog"] == by_name["BiT"]["progress"]
     assert by_name["BiT"]["repairs_path"] is True
+    assert by_name["BiT"]["path_repair"] is True
     assert by_name["BiT"]["regresses_nc"] is True
+    assert by_name["BiT"]["nc_regression"] is True
+    assert by_name["BiT"]["unsafe_nc"] is True
+    assert by_name["BiT"]["unsafe_regression"] is True
+    assert by_name["BiT"]["delta_score_vs_a0"] == by_name["BiT"]["delta_score"]
+    assert by_name["BiT"]["utility_score"] < by_name["Safe"]["utility_score"]
+    assert by_name["Safe"]["safe_path_repair"] is True
+    assert by_name["Safe"]["no_safe_candidate"] is False
     assert str(by_name["Safe"]["positive_anchor"]) == str(by_name["Safe"]["candidate_id"])
+    assert str(by_name["Safe"]["constrained_best_candidate"]) == str(by_name["Safe"]["candidate_id"])
+    assert by_name["Safe"]["pair_type"] == "positive"
     assert str(by_name["BiT"]["negative_anchor"]) == str(by_name["BiT"]["candidate_id"])
+    assert by_name["BiT"]["pair_type"] == "negative"
 
     out = tmp_path / "out"
     write_outputs(rows, summary, out)
@@ -45,6 +66,8 @@ def test_strategy_utility_labels_choose_safe_positive_and_risky_negative(tmp_pat
     assert check["ready_for_training"] is True
     agg = aggregate(out / "strategy_utility_labels.jsonl")
     assert agg["num_rows"] == 2
+    agg2 = aggregate_labels(out / "strategy_utility_labels.jsonl")
+    assert agg2["transition_counts"]["nc_regression"] == 1
     pair_summary = build_pairs(out / "strategy_utility_labels.jsonl", tmp_path / "pairs")
     assert pair_summary["num_pairs"] == 1
 

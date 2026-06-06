@@ -22,6 +22,15 @@ args=(--baseline "name=A0,path=${A0_PDM_TABLE},strategy=base" "${candidate_args[
 if [[ -n "${MAX_SAMPLES}" ]]; then args+=(--max-tokens "${MAX_SAMPLES}"); fi
 if [[ "${DRY_RUN}" == "1" ]]; then args+=(--dry-run); fi
 python scripts/risk_vla/build_strategy_utility_labels.py "${args[@]}"
+if [[ "${DRY_RUN}" != "1" && -f "${EXP_ROOT}/utility_labels/strategy_utility_labels.jsonl" ]]; then
+  mkdir -p "${EXP_ROOT}/safe_alignment_pairs"
+  python scripts/risk_vla/build_safe_alignment_pairs.py \
+    --labels-jsonl "${EXP_ROOT}/utility_labels/strategy_utility_labels.jsonl" \
+    --output-dir "${EXP_ROOT}/safe_alignment_pairs"
+  python scripts/risk_vla/aggregate_strategy_utility_labels.py \
+    --labels-jsonl "${EXP_ROOT}/utility_labels/strategy_utility_labels.jsonl" \
+    --output-dir "${EXP_ROOT}/utility_labels"
+fi
 if [[ -n "${FINEGRAINED_PDM_TABLE:-}" ]]; then
   fg_args=(--pdm-table "${FINEGRAINED_PDM_TABLE}" --split "${SPLIT}" --purpose "${PURPOSE}" --output-dir "${EXP_ROOT}/finegrained_labels")
   if [[ -n "${MAX_SAMPLES}" ]]; then fg_args+=(--max-rows "${MAX_SAMPLES}"); fi

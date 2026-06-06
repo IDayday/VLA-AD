@@ -44,3 +44,14 @@ BiT/path intent remains one `PathIntentStrategy`, not the core algorithm.
 ## Reporting
 
 Every stage writes Markdown plus JSON/CSV outputs. Do not claim SOTA unless the benchmark, split, and protocol match exactly.
+
+## Round3 Scale Policy Update
+
+Round3 upgrades this roadmap to the v3 full-scale execution policy:
+
+- Real experiment deliverables must use at least 10000 samples; smaller runs are debug-only and not evidence.
+- Full train/val/navtest is preferred whenever explicit data and checkpoints exist.
+- Navtest/test labels remain analysis-only and never feed training labels, threshold tuning, router supervision, hard-negative mining, VLM instruction data, or GRPO rewards.
+- If full inputs are missing, discovery and blocker reports are the deliverable; do not replace the run with a toy subset.
+
+Current Round3 discovery found enough train chunk tokens and navtest analysis tokens, but not enough held-out validation tokens and not enough matched train PDM tables for utility-label construction. Formal critic/router/safealign training is blocked until those inputs are materialized.

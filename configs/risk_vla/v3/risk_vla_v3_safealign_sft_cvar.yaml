@@ -1,0 +1,11 @@
+inherits: configs/risk_vla/v3/risk_vla_v3_safealign_sft.yaml
+method: risk_vla_v3_safealign_sft_cvar
+objectives:
+  positive_anchor_kd: 1.0
+  negative_anchor_margin: 1.0
+  candidate_preference: 1.0
+  path_preservation: 0.25
+  conservative_kd: 0.1
+  cvar_tail_risk: 0.4
+cvar:
+  q: 0.1

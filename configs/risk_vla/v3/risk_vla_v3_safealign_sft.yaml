@@ -1,0 +1,19 @@
+method: risk_vla_v3_safealign_sft
+min_real_samples: 10000
+training:
+  epochs: 80
+  batch_size: 128
+  lr: 0.001
+  seeds: [0, 1, 2]
+objectives:
+  positive_anchor_kd: 1.0
+  negative_anchor_margin: 1.0
+  candidate_preference: 1.0
+  path_preservation: 0.25
+  conservative_kd: 0.1
+save_by:
+  - mean_pdms_no_regression
+  - p10_pdms
+  - zero_dac_nc_ttc
+leakage_guard:
+  forbid_navtest_for_training: true

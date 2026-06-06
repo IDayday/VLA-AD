@@ -1,0 +1,12 @@
+inherits: configs/risk_vla/v3/risk_vla_v3_critic_base.yaml
+stage: critic_cvar
+loss_weights:
+  scene_risk_loss: 1.0
+  horizon_risk_loss: 0.5
+  submetric_delta_loss: 1.0
+  pairwise_preference_loss: 2.0
+  constrained_safety_loss: 0.5
+  cvar_tail_risk_loss: 0.4
+cvar:
+  q: 0.1
+  safety_channels: [no_at_fault_collisions, time_to_collision_within_bound]

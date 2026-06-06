@@ -29,6 +29,8 @@ from .candidate_bank import CandidateBank, CandidateSpec
 from .trajectory_risk_critic import TrajectoryRiskCritic, TrajectoryRiskCriticOutput
 from .utility_router import RiskVLAv2UtilityRouter, UtilityRouterOutput
 from .risk_world_tokens import RiskWorldTokenEncoder
+from .future_latent_predictor import FutureLatentPrediction, FutureLatentPredictor, future_latent_smooth_l1_loss
+from .anchor_grpo_rewards import anchor_grpo_reward, supervised_gates_pass
 
 __all__ = [
     "DEFAULT_RISK_CLASS_ORDER",
@@ -57,4 +59,9 @@ __all__ = [
     "RiskVLAv2UtilityRouter",
     "UtilityRouterOutput",
     "RiskWorldTokenEncoder",
+    "FutureLatentPrediction",
+    "FutureLatentPredictor",
+    "future_latent_smooth_l1_loss",
+    "anchor_grpo_reward",
+    "supervised_gates_pass",
 ]
