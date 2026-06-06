@@ -48,3 +48,12 @@ def test_production_launchers_use_decoupled_experiments_only():
     assert "last_vla_decoupled_cot_alignment_highcap_no_risk" in text
     assert "last_vla_progressive_bottleneck" not in text
     assert "vlm_summary" not in text
+
+
+def test_hard_bottleneck_entrypoints_are_archived():
+    assert Path("configs/last_vla_v2/archive/hard_bottleneck_legacy/last_vla_progressive_bottleneck_highcap_no_risk.yaml").is_file()
+    assert Path(
+        "navsim/planning/script/config/experiment/archive/hard_bottleneck_legacy/last_vla_progressive_bottleneck_highcap_no_risk.yaml"
+    ).is_file()
+    assert Path("scripts/last_vla_v2/archive/hard_bottleneck_legacy/serverA_frozen_vlm_highcap_no_risk.sh").is_file()
+    assert not Path("navsim/planning/script/config/experiment/last_vla_progressive_bottleneck_highcap_no_risk.yaml").exists()

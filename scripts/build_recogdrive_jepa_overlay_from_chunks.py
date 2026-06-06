@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import importlib.util
 import json
 import sys
@@ -32,11 +33,35 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--num-shards", type=int, default=1)
+    parser.add_argument(
+        "--output-shard-subdir",
+        action="store_true",
+        help="When --num-shards > 1, write to output-dir/shards/shard_XXXXX instead of the root.",
+    )
+    parser.add_argument(
+        "--write-shard-manifest",
+        action="store_true",
+        help="Write shard_manifest.json next to shard metadata for explicit merge auditing.",
+    )
     parser.add_argument("--max-samples", type=int, default=None)
     parser.add_argument("--loader-max-scenes", type=int, default=None)
     parser.add_argument("--strict-coverage", action="store_true")
     parser.add_argument("--log-every", type=int, default=50)
     return parser.parse_args()
+
+
+def output_root_for_args(args: argparse.Namespace) -> Path:
+    if int(args.num_shards) <= 1:
+        return args.output_dir
+    if not bool(args.output_shard_subdir):
+        raise ValueError("--num-shards > 1 requires --output-shard-subdir to avoid root index overwrite.")
+    return args.output_dir / "shards" / f"shard_{int(args.shard_index):05d}"
+
+
+def sample_token_summary(records: List[Dict[str, Any]]) -> Dict[str, Any]:
+    tokens = [str(record.get("sample_token") or "") for record in records]
+    digest = hashlib.sha256("\n".join(sorted(tokens)).encode("utf-8")).hexdigest()
+    return {"count": len(tokens), "sha256": digest, "first": sorted(tokens)[:20]}
 
 
 def _load_chunk_builder_helpers():
@@ -210,7 +235,8 @@ def main() -> int:
         num_tokens=int(args.num_jepa_tokens),
         strict_highcap_jepa=bool(args.strict_highcap_jepa),
     )
-    samples_dir = args.output_dir / "samples"
+    output_root = output_root_for_args(args)
+    samples_dir = output_root / "samples"
     samples_dir.mkdir(parents=True, exist_ok=True)
     index_records: List[Dict[str, Any]] = []
     errors: List[str] = []
@@ -243,7 +269,7 @@ def main() -> int:
             index_record = {
                 "sample_token": token,
                 "scene_token": str(payload.get("scene_token", "")),
-                "path": str(out_path.relative_to(args.output_dir)),
+                "path": str(out_path.relative_to(output_root)),
             }
             if payload.get("log_name"):
                 index_record["log_name"] = str(payload["log_name"])
@@ -260,12 +286,15 @@ def main() -> int:
                 flush=True,
             )
 
-    with (args.output_dir / "index.jsonl").open("w", encoding="utf-8") as f:
+    with (output_root / "index.jsonl").open("w", encoding="utf-8") as f:
         for item in index_records:
             f.write(json.dumps(item, sort_keys=True) + "\n")
 
     metadata = {
         "version": "recogdrive_jepa_overlay_from_chunks_v1",
+        "overlay_type": "jepa128",
+        "output_dir": str(args.output_dir),
+        "output_root": str(output_root),
         "source_base_chunk_root": str(args.base_chunk_root),
         "chunk_name_pattern": str(args.chunk_name_pattern),
         "split": str(args.split),
@@ -284,10 +313,13 @@ def main() -> int:
         "num_written": int(written),
         "num_skipped_by_shard": int(skipped_by_shard),
         "num_missing_in_shard": int(missing),
+        "sample_token_minimal_list_or_hash": sample_token_summary(index_records),
         "errors": errors[:100],
         **loader_metadata,
     }
-    write_json(args.output_dir / "metadata.json", metadata)
+    write_json(output_root / "metadata.json", metadata)
+    if args.write_shard_manifest:
+        write_json(output_root / "shard_manifest.json", metadata)
     print(json.dumps(metadata, indent=2, sort_keys=True))
     if args.strict_coverage and missing:
         return 2

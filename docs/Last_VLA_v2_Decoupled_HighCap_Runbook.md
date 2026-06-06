@@ -6,6 +6,14 @@ Baseline: A0-official-aligned `step_00100000`, full navtest PDMS `0.864891`.
 
 Do not set `RUN_CACHE=1`, `RUN_TRAIN=1`, or `RUN_EVAL=1` until paths are reviewed.
 
+Deprecated hard-bottleneck / summary replacement configs and launch wrappers are archived under:
+
+- `configs/last_vla_v2/archive/hard_bottleneck_legacy/`
+- `navsim/planning/script/config/experiment/archive/hard_bottleneck_legacy/`
+- `scripts/last_vla_v2/archive/hard_bottleneck_legacy/`
+
+Formal configs live only under `configs/last_vla_v2/decoupled_highcap_no_risk/`.
+
 ## Configs
 
 Agent configs:
@@ -60,13 +68,69 @@ Output:
 
 `$OUTPUT_ROOT/decoupled_highcap_no_risk/train_full_highcap_chunks`
 
+## Two-Machine Sharded Cache
+
+Each shard writes an isolated overlay directory:
+
+- JEPA: `$OUTPUT_ROOT/decoupled_highcap_no_risk/train_jepa128_overlay_raw/shards/shard_XXXXX/`
+- geometry: `$OUTPUT_ROOT/decoupled_highcap_no_risk/train_geometry192_overlay_raw/shards/shard_XXXXX/`
+
+Server 0:
+
+```bash
+RUN_CACHE=1 \
+BASE_CHUNK_ROOT=/path/to/base_chunks \
+OUTPUT_ROOT=/path/to/out \
+VGGT_MODEL_PATH=/path/to/VGGT-1B \
+VJEPA_MODEL_PATH=/path/to/vjepa2 \
+NUM_SHARDS=2 \
+SHARD_INDEX=0 \
+MERGE_SHARDS=0 \
+ALLOW_FULL_CACHE_WITHOUT_MAX=1 \
+scripts/last_vla_v2/decoupled_highcap_no_risk/prepare_decoupled_highcap_no_risk_data.sh
+```
+
+Server 1:
+
+```bash
+RUN_CACHE=1 \
+BASE_CHUNK_ROOT=/path/to/base_chunks \
+OUTPUT_ROOT=/path/to/out \
+VGGT_MODEL_PATH=/path/to/VGGT-1B \
+VJEPA_MODEL_PATH=/path/to/vjepa2 \
+NUM_SHARDS=2 \
+SHARD_INDEX=1 \
+MERGE_SHARDS=0 \
+ALLOW_FULL_CACHE_WITHOUT_MAX=1 \
+scripts/last_vla_v2/decoupled_highcap_no_risk/prepare_decoupled_highcap_no_risk_data.sh
+```
+
+Merge and audit from one server after both shard directories exist:
+
+```bash
+RUN_CACHE=1 \
+BASE_CHUNK_ROOT=/path/to/base_chunks \
+OUTPUT_ROOT=/path/to/out \
+NUM_SHARDS=2 \
+EXPECTED_NUM_SHARDS=2 \
+SKIP_BUILD_SHARDS=1 \
+MERGE_SHARDS=1 \
+ALLOW_FULL_CACHE_WITHOUT_MAX=1 \
+scripts/last_vla_v2/decoupled_highcap_no_risk/prepare_decoupled_highcap_no_risk_data.sh
+```
+
 ## Preflight
 
 ```bash
+RUN_PREFLIGHT=1 \
 FULL_HIGHCAP_TRAIN_CHUNK_ROOT=/path/to/train_full_highcap_chunks \
 OUT_ROOT=/path/to/out \
 scripts/last_vla_v2/decoupled_highcap_no_risk/run_strict_preflight_decoupled.sh
 ```
+
+The preflight report is written to:
+
+`$OUT_ROOT/decoupled_highcap_no_risk_preflight/readiness.md`
 
 ## Line A
 

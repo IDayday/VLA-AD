@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -34,7 +35,31 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-samples", type=int, default=None)
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--num-shards", type=int, default=1)
+    parser.add_argument(
+        "--output-shard-subdir",
+        action="store_true",
+        help="When --num-shards > 1, write to output-cache-root/shards/shard_XXXXX instead of the root.",
+    )
+    parser.add_argument(
+        "--write-shard-manifest",
+        action="store_true",
+        help="Write shard_manifest.json next to shard metadata for explicit merge auditing.",
+    )
     return parser.parse_args()
+
+
+def output_root_for_args(args: argparse.Namespace) -> Path:
+    if int(args.num_shards) <= 1:
+        return args.output_cache_root
+    if not bool(args.output_shard_subdir):
+        raise ValueError("--num-shards > 1 requires --output-shard-subdir to avoid root index overwrite.")
+    return args.output_cache_root / "shards" / f"shard_{int(args.shard_index):05d}"
+
+
+def sample_token_summary(records: List[Dict[str, Any]]) -> Dict[str, Any]:
+    tokens = [str(record.get("sample_token") or "") for record in records]
+    digest = hashlib.sha256("\n".join(sorted(tokens)).encode("utf-8")).hexdigest()
+    return {"count": len(tokens), "sha256": digest, "first": sorted(tokens)[:20]}
 
 
 def chunk_dirs(root: Path, pattern: str) -> List[Path]:
@@ -130,14 +155,23 @@ def main() -> int:
         geometry_num_tokens=int(args.num_geometry_tokens),
         geometry_grid=(int(args.geometry_grid_rows), int(args.geometry_grid_cols)),
     )
-    samples_dir = args.output_cache_root / "samples"
+    output_root = output_root_for_args(args)
+    samples_dir = output_root / "samples"
     samples_dir.mkdir(parents=True, exist_ok=True)
     index_records: List[Dict[str, Any]] = []
-    counts = {"processed": 0, "written": 0, "full_geometry": 0, "patch_fallback": 0, "errors": 0}
+    counts = {
+        "processed": 0,
+        "written": 0,
+        "full_geometry": 0,
+        "patch_fallback": 0,
+        "errors": 0,
+        "num_skipped_by_shard": 0,
+    }
     errors: List[str] = []
 
     for idx, (_, sample_path, record) in enumerate(iter_records(args.chunk_cache_root, args.chunk_name_pattern, args.max_samples)):
         if idx % int(args.num_shards) != int(args.shard_index):
+            counts["num_skipped_by_shard"] += 1
             continue
         sample = load_sample(sample_path)
         sample_token = str(sample.get("sample_token") or record.get("sample_token") or sample_path.stem)
@@ -169,14 +203,17 @@ def main() -> int:
             **payload,
         }
         atomic_torch_save(out_payload, out_path)
-        index_records.append({"sample_token": sample_token, "scene_token": scene_token, "path": str(out_path.relative_to(args.output_cache_root))})
+        index_records.append({"sample_token": sample_token, "scene_token": scene_token, "path": str(out_path.relative_to(output_root))})
         counts["written"] += 1
 
-    with (args.output_cache_root / "index.jsonl").open("w", encoding="utf-8") as f:
+    with (output_root / "index.jsonl").open("w", encoding="utf-8") as f:
         for record in index_records:
             f.write(json.dumps(record, sort_keys=True) + "\n")
     metadata = {
         "version": "last_vla_full_geometry_overlay_v1",
+        "overlay_type": "geometry192",
+        "output_cache_root": str(args.output_cache_root),
+        "output_root": str(output_root),
         "source_chunk_cache_root": str(args.chunk_cache_root),
         "vggt_model_path": str(args.vggt_model_path),
         "precision": args.precision,
@@ -187,10 +224,14 @@ def main() -> int:
         "allow_patch_fallback": bool(args.allow_patch_fallback),
         "shard_index": int(args.shard_index),
         "num_shards": int(args.num_shards),
+        "num_written": int(counts["written"]),
+        "sample_token_minimal_list_or_hash": sample_token_summary(index_records),
         **counts,
         "errors": errors[:100],
     }
-    write_json(args.output_cache_root / "metadata.json", metadata)
+    write_json(output_root / "metadata.json", metadata)
+    if args.write_shard_manifest:
+        write_json(output_root / "shard_manifest.json", metadata)
     print(json.dumps(metadata, indent=2, sort_keys=True))
     return 0
 

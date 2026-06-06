@@ -2,7 +2,11 @@
 
 Baseline for reporting: A0-official-aligned `step_00100000`, full navtest PDMS `0.864891`.
 
-## 1. Generate Train Cache
+Formal path: `ReCogDrive-LaST-v2 Decoupled HighCap NoRisk`.
+
+Deprecated hard-bottleneck / summary replacement configs, Hydra experiments, and launch wrappers are archived. Formal configs live only under `configs/last_vla_v2/decoupled_highcap_no_risk/`.
+
+## 1. Single-Machine Full Cache Generation
 
 ```bash
 RUN_CACHE=1 \
@@ -20,15 +24,68 @@ Output:
 $OUTPUT_ROOT/decoupled_highcap_no_risk/train_full_highcap_chunks
 ```
 
-## 2. Run Readiness
+## 2. Two-Machine Sharded Cache Generation
+
+Server 0:
 
 ```bash
+RUN_CACHE=1 \
+BASE_CHUNK_ROOT=/path/to/base_train_chunks \
+OUTPUT_ROOT=/path/to/last_vla_v2_outputs \
+VGGT_MODEL_PATH=/path/to/VGGT-1B \
+VJEPA_MODEL_PATH=/path/to/vjepa2 \
+NUM_SHARDS=2 \
+SHARD_INDEX=0 \
+MERGE_SHARDS=0 \
+ALLOW_FULL_CACHE_WITHOUT_MAX=1 \
+scripts/last_vla_v2/decoupled_highcap_no_risk/prepare_decoupled_highcap_no_risk_data.sh
+```
+
+Server 1:
+
+```bash
+RUN_CACHE=1 \
+BASE_CHUNK_ROOT=/path/to/base_train_chunks \
+OUTPUT_ROOT=/path/to/last_vla_v2_outputs \
+VGGT_MODEL_PATH=/path/to/VGGT-1B \
+VJEPA_MODEL_PATH=/path/to/vjepa2 \
+NUM_SHARDS=2 \
+SHARD_INDEX=1 \
+MERGE_SHARDS=0 \
+ALLOW_FULL_CACHE_WITHOUT_MAX=1 \
+scripts/last_vla_v2/decoupled_highcap_no_risk/prepare_decoupled_highcap_no_risk_data.sh
+```
+
+Merge/audit after both shard directories exist:
+
+```bash
+RUN_CACHE=1 \
+BASE_CHUNK_ROOT=/path/to/base_train_chunks \
+OUTPUT_ROOT=/path/to/last_vla_v2_outputs \
+NUM_SHARDS=2 \
+EXPECTED_NUM_SHARDS=2 \
+SKIP_BUILD_SHARDS=1 \
+MERGE_SHARDS=1 \
+ALLOW_FULL_CACHE_WITHOUT_MAX=1 \
+scripts/last_vla_v2/decoupled_highcap_no_risk/prepare_decoupled_highcap_no_risk_data.sh
+```
+
+## 3. Readiness Gate
+
+```bash
+RUN_PREFLIGHT=1 \
 FULL_HIGHCAP_TRAIN_CHUNK_ROOT=/path/to/last_vla_v2_outputs/decoupled_highcap_no_risk/train_full_highcap_chunks \
 OUT_ROOT=/path/to/last_vla_v2_outputs \
 scripts/last_vla_v2/decoupled_highcap_no_risk/run_strict_preflight_decoupled.sh
 ```
 
-## 3. Launch A
+Readiness report:
+
+```text
+$OUT_ROOT/decoupled_highcap_no_risk_preflight/readiness.md
+```
+
+## 4. Launch A
 
 ```bash
 RUN_TRAIN=1 \
@@ -38,7 +95,7 @@ MASTER_PORT=29601 \
 scripts/last_vla_v2/decoupled_highcap_no_risk/serverA_frozen_vlm_decoupled_highcap_no_risk.sh
 ```
 
-## 4. Launch B
+## 5. Launch B
 
 ```bash
 RUN_TRAIN=1 \

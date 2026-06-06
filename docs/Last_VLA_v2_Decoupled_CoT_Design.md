@@ -8,6 +8,14 @@ Baseline for comparison: A0-official-aligned `step_00100000`, full navtest PDMS 
 
 Hard bottleneck and VLM summary replacement are deprecated. The formal code path does not instantiate a VLM summary compressor and does not generate or consume `vlm_summary` tokens.
 
+Deprecated hard-bottleneck / summary replacement entrypoints are archived in:
+
+- `configs/last_vla_v2/archive/hard_bottleneck_legacy/`
+- `navsim/planning/script/config/experiment/archive/hard_bottleneck_legacy/`
+- `scripts/last_vla_v2/archive/hard_bottleneck_legacy/`
+
+Formal configs live only under `configs/last_vla_v2/decoupled_highcap_no_risk/`.
+
 Invalid formal settings:
 
 - `last_vla_cot_bottleneck_mode=true`

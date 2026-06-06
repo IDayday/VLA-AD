@@ -84,7 +84,6 @@ cmd_b1=(
   agent.last_vla_vlm_lora_bias="${LORA_BIAS}"
   agent.last_vla_vlm_lora_use_rslora="${LORA_USE_RSLORA}"
   agent.last_vla_vlm_lora_use_dora="${LORA_USE_DORA}"
-  "agent.last_vla_vlm_lora_target_modules='${LORA_TARGET_MODULES}'"
   agent.last_vla_hidden_anchor_every_n_steps="${LORA_HIDDEN_ANCHOR_EVERY_N_STEPS}"
   "${common_overrides[@]}"
   "${validation_overrides[@]}"
@@ -92,6 +91,9 @@ cmd_b1=(
   trainer.params.devices="${NPROC_PER_NODE:-8}"
   trainer.params.strategy=ddp_find_unused_parameters_true
 )
+if [[ -n "${LORA_TARGET_MODULES}" ]]; then
+  cmd_b1+=(agent.last_vla_vlm_lora_target_modules="${LORA_TARGET_MODULES}")
+fi
 cmd_extract=(
   "${PYTHON_BIN}" scripts/last_vla_v2/extract_vlm_lora_and_cot_adapters.py
   --checkpoint "${B1}/latest.ckpt"

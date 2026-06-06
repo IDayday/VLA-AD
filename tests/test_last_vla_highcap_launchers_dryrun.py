@@ -76,3 +76,14 @@ def test_highcap_launchers_dryrun_do_not_launch_training_and_include_overrides(t
     assert "--alpha 128" in text_b
     assert "--use-rslora" in text_b
     assert "attention_mlp" not in text_b
+    assert "agent.last_vla_vlm_lora_target_modules=" not in text_b
+
+
+def test_server_b_dryrun_only_passes_lora_target_modules_when_nonempty(tmp_path: Path):
+    env = _env(tmp_path)
+    env["LORA_TARGET_MODULES"] = "q_proj,k_proj"
+    subprocess.run(["bash", "scripts/last_vla_v2/decoupled_highcap_no_risk/serverB_vlm_lora_decoupled_highcap_no_risk.sh"], env=env, check=True)
+
+    server_b = tmp_path / "out" / "serverB_vlm_lora_decoupled_highcap_no_risk" / "commands.log"
+    text_b = server_b.read_text(encoding="utf-8")
+    assert "agent.last_vla_vlm_lora_target_modules=q_proj\\,k_proj" in text_b

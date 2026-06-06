@@ -33,9 +33,17 @@ def _env(tmp_path: Path) -> dict[str, str]:
 
 def test_round2_launchers_dryrun_do_not_launch_training(tmp_path: Path):
     env = _env(tmp_path)
-    subprocess.run(["bash", "scripts/last_vla_v2/highcap_no_risk/serverA_frozen_vlm_highcap_no_risk.sh"], env=env, check=True)
+    subprocess.run(
+        ["bash", "scripts/last_vla_v2/archive/hard_bottleneck_legacy/serverA_frozen_vlm_highcap_no_risk.sh"],
+        env=env,
+        check=True,
+    )
     env["RUN_TRAIN"] = "0"
-    subprocess.run(["bash", "scripts/last_vla_v2/highcap_no_risk/serverB_vlm_lora_highcap_no_risk.sh"], env=env, check=True)
+    subprocess.run(
+        ["bash", "scripts/last_vla_v2/archive/hard_bottleneck_legacy/serverB_vlm_lora_highcap_no_risk.sh"],
+        env=env,
+        check=True,
+    )
 
     logs = [
         tmp_path / "out" / "serverA_frozen_highcap_no_risk" / "commands.log",

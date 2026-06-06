@@ -108,6 +108,16 @@ B: online VLM-LoRA CoT alignment, adapter extraction, regenerated train hidden c
 
 All launchers are dry-run unless `RUN_TRAIN=1`, `RUN_CACHE=1`, or `RUN_EVAL=1`.
 
+## Deprecated Path Archive
+
+Old hard-bottleneck / summary replacement configs and launch wrappers are archived under:
+
+- `configs/last_vla_v2/archive/hard_bottleneck_legacy/`
+- `navsim/planning/script/config/experiment/archive/hard_bottleneck_legacy/`
+- `scripts/last_vla_v2/archive/hard_bottleneck_legacy/`
+
+Formal configs live only under `configs/last_vla_v2/decoupled_highcap_no_risk/`.
+
 ## Tests
 
 Passed:
@@ -146,21 +156,9 @@ Also passed: `git diff --check`.
 
 See `reports/last_vla_v2_decoupled_cache_generation_commands.md`.
 
-## Deletion Pending Confirmation
+## Archived Legacy Files
 
-No old config/script files were deleted in this pass because deletion requires an explicit path-level confirmation. Candidate old hard-bottleneck/summary files:
-
-- `configs/last_vla_v2/last_vla_cot_alignment.yaml`
-- `configs/last_vla_v2/last_vla_cot_alignment_highcap_no_risk.yaml`
-- `configs/last_vla_v2/last_vla_highcap_no_risk_base.yaml`
-- `configs/last_vla_v2/last_vla_progressive_bottleneck.yaml`
-- `configs/last_vla_v2/last_vla_progressive_bottleneck_eval.yaml`
-- `configs/last_vla_v2/last_vla_progressive_bottleneck_highcap_no_risk.yaml`
-- `configs/last_vla_v2/last_vla_progressive_bottleneck_highcap_no_risk_eval.yaml`
-- `configs/last_vla_v2/last_vla_vlm_lora_cot_alignment.yaml`
-- `configs/last_vla_v2/last_vla_vlm_lora_cot_alignment_highcap_no_risk.yaml`
-- old `navsim/planning/script/config/experiment/last_vla_*` hard-bottleneck experiments
-- old `scripts/last_vla_v2/highcap_no_risk/*` hard-bottleneck launch/eval wrappers
+The old hard-bottleneck / summary replacement configs and wrappers are archived, not deleted. Use only the decoupled highcap no-risk directory for formal cache generation and training.
 
 ## Remaining Blockers
 
