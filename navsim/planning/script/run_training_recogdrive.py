@@ -1103,11 +1103,19 @@ def main(cfg: DictConfig) -> None:
     write_run_reports(cfg, agent, loader_mode, key_steps, data_report)
     trainer = pl.Trainer(**cfg.trainer.params, callbacks=callbacks)
 
+    resume_ckpt_path = cfg.get("resume_ckpt_path", None)
+    if resume_ckpt_path:
+        resume_ckpt_path = str(resume_ckpt_path)
+        logger.info("Resuming Training from checkpoint: %s", resume_ckpt_path)
+    else:
+        resume_ckpt_path = None
+
     logger.info("Starting Training")
     trainer.fit(
         model=lightning_module,
         train_dataloaders=train_dataloader,
         val_dataloaders=val_dataloader,
+        ckpt_path=resume_ckpt_path,
     )
 
 

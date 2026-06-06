@@ -22,6 +22,8 @@ LORA_USE_RSLORA="${LORA_USE_RSLORA:-true}"
 LORA_USE_DORA="${LORA_USE_DORA:-false}"
 LORA_TARGET_MODULES="${LORA_TARGET_MODULES:-}"
 LORA_HIDDEN_ANCHOR_EVERY_N_STEPS="${LORA_HIDDEN_ANCHOR_EVERY_N_STEPS:-4}"
+SKIP_VALIDATION="${SKIP_VALIDATION:-0}"
+B1_EPOCHS="${B1_EPOCHS:-}"
 export NAVSIM_EXP_ROOT="${NAVSIM_EXP_ROOT:-/mnt/project/VLA-AD}"
 export NUPLAN_MAPS_ROOT="${NUPLAN_MAPS_ROOT:-/mnt/navsim/maps}"
 ROOT="${OUT_ROOT}/serverB_lora_highcap_no_risk"
@@ -48,6 +50,17 @@ common_overrides=(
   agent.last_vla_geometry_grid_cols=16
   agent.last_vla_raw_vlm_context_to_dit=false
 )
+validation_overrides=()
+if [[ "${SKIP_VALIDATION}" == "1" || "${SKIP_VALIDATION}" == "true" ]]; then
+  validation_overrides+=(
+    trainer.params.limit_val_batches=0
+    trainer.params.check_val_every_n_epoch=999999
+  )
+fi
+b1_overrides=()
+if [[ -n "${B1_EPOCHS}" ]]; then
+  b1_overrides+=(trainer.params.max_epochs="${B1_EPOCHS}")
+fi
 
 cmd_b1=(
   "${TORCHRUN_BIN}" --nproc_per_node=8 --master_port "${MASTER_PORT}"
@@ -81,6 +94,8 @@ cmd_b1=(
   agent.allow_expert_target_features=true
   agent.checkpoint_path="${A0_INIT_CHECKPOINT}"
   "${common_overrides[@]}"
+  "${validation_overrides[@]}"
+  "${b1_overrides[@]}"
   trainer.params.devices=8
   trainer.params.strategy=ddp_find_unused_parameters_true
 )
@@ -135,6 +150,7 @@ cmd_b3=(
   agent.checkpoint_path="${A0_INIT_CHECKPOINT}"
   agent.last_vla_adapter_checkpoint="${B1}/adapters/last_vla_cot_adapter.pt"
   "${common_overrides[@]}"
+  "${validation_overrides[@]}"
   trainer.params.devices=8
   trainer.params.strategy=ddp_find_unused_parameters_true
 )
@@ -168,5 +184,9 @@ fi
 [[ -e "${A0_INIT_CHECKPOINT}" ]] || { echo "A0_INIT_CHECKPOINT missing: ${A0_INIT_CHECKPOINT}" >&2; exit 2; }
 "${cmd_b1[@]}" >"${ROOT}/logs/vlm_lora_cot_alignment.log" 2>&1
 "${cmd_extract[@]}" >"${ROOT}/logs/extract_adapters.log" 2>&1
+if [[ "${STOP_AFTER_EXTRACT:-0}" == "1" ]]; then
+  echo "STOP_AFTER_EXTRACT=1; completed LoRA alignment and adapter extraction." >>"${COMMANDS_LOG}"
+  exit 0
+fi
 "${cmd_cache[@]}" >"${ROOT}/logs/regenerate_hidden_cache.log" 2>&1
 "${cmd_b3[@]}" >"${ROOT}/logs/progressive_bottleneck.log" 2>&1
