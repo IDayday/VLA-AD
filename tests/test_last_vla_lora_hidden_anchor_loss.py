@@ -44,7 +44,7 @@ def test_hidden_anchor_active_only_for_lora_cot_alignment_with_weight():
     agent.last_vla_hidden_anchor_weight = 0.0
     assert not agent._hidden_anchor_active()
     agent.last_vla_hidden_anchor_weight = 0.01
-    agent.last_vla_stage = "progressive_sft_bottleneck"
+    agent.last_vla_stage = "progressive_sft_decoupled"
     assert not agent._hidden_anchor_active()
 
 

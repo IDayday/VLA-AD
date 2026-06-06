@@ -34,13 +34,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="fp32")
     parser.add_argument("--zero-all-cot", action="store_true")
+    parser.add_argument("--zero-scene-cot", action="store_true")
     parser.add_argument("--zero-geometry-cot", action="store_true")
     parser.add_argument("--zero-dynamic-cot", action="store_true")
+    parser.add_argument("--zero-fusion-cot", action="store_true")
     parser.add_argument("--zero-ego-cot", action="store_true")
     parser.add_argument("--zero-action-refine-cot", action="store_true")
     parser.add_argument("--zero-coarse-prior", action="store_true")
-    parser.add_argument("--use-raw-vlm-context-ablation", action="store_true")
-    parser.add_argument("--drop-vlm-summary", action="store_true")
+    parser.add_argument("--zero-cot-condition-branch", action="store_true")
+    parser.add_argument("--raw-vlm-only", action="store_true")
+    parser.add_argument("--cot-only-for-debug-only", action="store_true")
     parser.add_argument("--deterministic", action="store_true", default=True)
     return parser.parse_args()
 
@@ -48,13 +51,16 @@ def parse_args() -> argparse.Namespace:
 def corruption_mode(args: argparse.Namespace) -> str:
     names = [
         "zero_all_cot",
+        "zero_scene_cot",
         "zero_geometry_cot",
         "zero_dynamic_cot",
+        "zero_fusion_cot",
         "zero_ego_cot",
         "zero_action_refine_cot",
         "zero_coarse_prior",
-        "use_raw_vlm_context_ablation",
-        "drop_vlm_summary",
+        "zero_cot_condition_branch",
+        "raw_vlm_only",
+        "cot_only_for_debug_only",
     ]
     active = [name for name in names if getattr(args, name)]
     return "+".join(active) if active else "none"
@@ -63,26 +69,22 @@ def corruption_mode(args: argparse.Namespace) -> str:
 def install_hooks(planner, args: argparse.Namespace):
     if not getattr(planner.config, "use_last_vla", False):
         raise RuntimeError("Last-VLA corruption eval requires use_last_vla=True.")
-    if args.use_raw_vlm_context_ablation:
-        planner.config.last_vla_cot_bottleneck_mode = False
-        planner.config.last_vla_raw_vlm_context_to_dit = True
-        planner.last_vla_cot.config.cot_bottleneck_mode = False
-        planner.last_vla_cot.config.raw_vlm_context_to_dit = True
-    if args.drop_vlm_summary:
-        planner.last_vla_cot.config.vlm_summary_tokens = 0
-
     return None
 
 
 def add_corruption_flags(data: Dict[str, Any], args: argparse.Namespace) -> Dict[str, Any]:
     data = dict(data)
     data["last_vla_corrupt_zero_all_cot"] = bool(args.zero_all_cot)
+    data["last_vla_corrupt_zero_scene_cot"] = bool(args.zero_scene_cot)
     data["last_vla_corrupt_zero_geometry_cot"] = bool(args.zero_geometry_cot)
     data["last_vla_corrupt_zero_dynamic_cot"] = bool(args.zero_dynamic_cot)
+    data["last_vla_corrupt_zero_fusion_cot"] = bool(args.zero_fusion_cot)
     data["last_vla_corrupt_zero_ego_cot"] = bool(args.zero_ego_cot)
     data["last_vla_corrupt_zero_action_refine_cot"] = bool(args.zero_action_refine_cot)
     data["last_vla_corrupt_zero_coarse_prior"] = bool(args.zero_coarse_prior)
-    data["last_vla_corrupt_drop_vlm_summary"] = bool(args.drop_vlm_summary)
+    data["last_vla_corrupt_zero_cot_condition_branch"] = bool(args.zero_cot_condition_branch)
+    data["last_vla_raw_vlm_only"] = bool(args.raw_vlm_only)
+    data["last_vla_cot_only_for_debug_only"] = bool(args.cot_only_for_debug_only)
     return data
 
 
@@ -107,8 +109,9 @@ def build_metrics_summary(
         "proxy_scoring_active": scorer.proxy_scoring_active,
         "corruption_mode": corruption_mode(args),
         "target_teacher_tokens_disabled_in_eval": True,
-        "cot_bottleneck_active": bool(planner.config.last_vla_cot_bottleneck_mode),
-        "raw_vlm_context_used": bool(planner.config.last_vla_raw_vlm_context_to_dit and not planner.config.last_vla_cot_bottleneck_mode),
+        "cot_bottleneck_active": False,
+        "raw_vlm_context_used": not bool(args.cot_only_for_debug_only),
+        "cot_only_for_debug_only": bool(args.cot_only_for_debug_only),
         **{key: averaged.get(key) if args.score_mode == "pdm" else None for key in PDM_COMPONENT_KEYS},
         "trajectory_l1": averaged.get("trajectory_l1"),
         "mean_trajectory_l1": sum(l1_values) / len(l1_values) if l1_values else None,
@@ -163,8 +166,9 @@ def main() -> int:
                 "score_mode": args.score_mode,
                 "corruption_mode": corruption_mode(args),
                 "target_teacher_tokens_disabled_in_eval": True,
-                "cot_bottleneck_active": bool(planner.config.last_vla_cot_bottleneck_mode),
-                "raw_vlm_context_used": bool(planner.config.last_vla_raw_vlm_context_to_dit and not planner.config.last_vla_cot_bottleneck_mode),
+                "cot_bottleneck_active": False,
+                "raw_vlm_context_used": not bool(args.cot_only_for_debug_only),
+                "cot_only_for_debug_only": bool(args.cot_only_for_debug_only),
                 "trajectory_l1": l1,
                 "proxy_score": score.get("proxy_score") if args.score_mode == "proxy" else None,
                 **components,

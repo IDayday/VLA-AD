@@ -20,7 +20,6 @@ def _module(action_conditioned: bool) -> LastVLACoTTransformer:
             vggt_dim=24,
             hidden_dim=64,
             cot_num_tokens=6,
-            vlm_summary_tokens=2,
             geometry_tokens=3,
             dynamic_tokens=3,
             ego_tokens=2,
@@ -29,6 +28,8 @@ def _module(action_conditioned: bool) -> LastVLACoTTransformer:
             use_action_conditioned_dynamics=action_conditioned,
             allow_patch_geometry_fallback=True,
             geometry_teacher_dim=24,
+            raw_vlm_context_to_dit=True,
+            cot_bottleneck_mode=False,
         )
     )
 

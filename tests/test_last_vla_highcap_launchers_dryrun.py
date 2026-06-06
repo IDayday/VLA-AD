@@ -15,7 +15,7 @@ def _env(tmp_path: Path) -> dict[str, str]:
     env = os.environ.copy()
     env.update(
         {
-            "FULL_GEOMETRY_CHUNK_ROOT": str(cache),
+            "FULL_HIGHCAP_TRAIN_CHUNK_ROOT": str(cache),
             "A0_INIT_CHECKPOINT": str(ckpt),
             "OUT_ROOT": str(tmp_path / "out"),
             "MASTER_PORT": "29991",
@@ -42,26 +42,30 @@ def test_highcap_launchers_dryrun_do_not_launch_training_and_include_overrides(t
             "LORA_USE_RSLORA": "true",
         }
     )
-    subprocess.run(["bash", "scripts/last_vla_v2/highcap_no_risk/serverA_frozen_vlm_highcap_no_risk.sh"], env=env, check=True)
-    subprocess.run(["bash", "scripts/last_vla_v2/highcap_no_risk/serverB_vlm_lora_highcap_no_risk.sh"], env=env, check=True)
+    subprocess.run(["bash", "scripts/last_vla_v2/decoupled_highcap_no_risk/serverA_frozen_vlm_decoupled_highcap_no_risk.sh"], env=env, check=True)
+    subprocess.run(["bash", "scripts/last_vla_v2/decoupled_highcap_no_risk/serverB_vlm_lora_decoupled_highcap_no_risk.sh"], env=env, check=True)
 
-    server_a = tmp_path / "out" / "serverA_frozen_highcap_no_risk" / "commands.log"
-    server_b = tmp_path / "out" / "serverB_lora_highcap_no_risk" / "commands.log"
+    server_a = tmp_path / "out" / "serverA_frozen_vlm_decoupled_highcap_no_risk" / "commands.log"
+    server_b = tmp_path / "out" / "serverB_vlm_lora_decoupled_highcap_no_risk" / "commands.log"
     text_a = server_a.read_text(encoding="utf-8")
     text_b = server_b.read_text(encoding="utf-8")
 
     for text in (text_a, text_b):
-        assert "last_vla_cot_alignment_highcap_no_risk" in text or "last_vla_vlm_lora_cot_alignment_highcap_no_risk" in text
-        assert "last_vla_progressive_bottleneck_highcap_no_risk" in text
+        assert "last_vla_decoupled_cot_alignment_highcap_no_risk" in text or "last_vla_decoupled_vlm_lora_cot_alignment_highcap_no_risk" in text
+        assert "last_vla_decoupled_progressive_highcap_no_risk" in text
         assert "agent.num_jepa_tokens=128" in text
         assert "agent.num_dynamic_tokens=128" in text
         assert "agent.num_geometry_tokens=192" in text
         assert "agent.last_vla_geometry_teacher_dim=512" in text
         assert "agent.last_vla_use_risk_head=false" in text
         assert "agent.last_vla_allow_patch_geometry_fallback=false" in text
+        assert "agent.last_vla_condition_mode=decoupled_cot_residual" in text
+        assert "agent.last_vla_cot_bottleneck_mode=false" in text
+        assert "agent.last_vla_raw_vlm_context_to_dit=true" in text
+        assert "vlm_summary" not in text
     assert "navsim_log_path=" in text_b
     assert "sensor_blobs_path=" in text_b
-    assert "--cache-variant highcap_no_risk" in text_b
+    assert "--cache-variant decoupled_highcap_no_risk" in text_b
     assert "agent.last_vla_vlm_lora_preset=all_linear" in text_b
     assert "agent.last_vla_vlm_lora_scope=llm" in text_b
     assert "agent.last_vla_vlm_lora_r=64" in text_b

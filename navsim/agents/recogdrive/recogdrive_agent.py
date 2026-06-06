@@ -175,11 +175,15 @@ class ReCogDriveAgent(AbstractAgent):
         last_vla_stage: str = "disabled",
         last_vla_cot_num_tokens: int = 32,
         last_vla_cot_num_steps: int = 4,
-        last_vla_vlm_summary_tokens: int = 4,
-        last_vla_raw_vlm_context_to_dit: bool = False,
-        last_vla_cot_bottleneck_mode: bool = True,
+        last_vla_condition_mode: str = "decoupled_cot_residual",
+        last_vla_raw_vlm_context_to_dit: bool = True,
+        last_vla_cot_bottleneck_mode: bool = False,
         last_vla_vlm_context_dropout_start: float = 0.0,
         last_vla_vlm_context_dropout_end: float = 0.7,
+        last_vla_use_scene_step: bool = True,
+        last_vla_use_parallel_geometry_dynamic: bool = True,
+        last_vla_fusion_tokens: int = 192,
+        last_vla_dynamic_uses_geometry_memory: bool = True,
         last_vla_use_geometry_step: bool = True,
         last_vla_use_dynamic_step: bool = True,
         last_vla_use_ego_step: bool = True,
@@ -197,10 +201,13 @@ class ReCogDriveAgent(AbstractAgent):
         last_vla_residual_alpha_start: float = 0.0,
         last_vla_residual_alpha_end: float = 1.0,
         last_vla_residual_alpha_warmup_epochs: int = 80,
-        last_vla_vlm_summary_keep_start: float = 1.0,
-        last_vla_vlm_summary_keep_end: float = 0.3,
-        last_vla_vlm_summary_decay_epochs: int = 80,
-        last_vla_eval_drop_vlm_summary: bool = False,
+        last_vla_cot_condition_zero_init: bool = True,
+        last_vla_cot_condition_dropout: float = 0.0,
+        last_vla_cot_condition_layers: str = "all",
+        last_vla_cot_condition_scale_init: float = 1.0,
+        last_vla_cot_condition_trainable_scale: bool = True,
+        last_vla_context_mean_mode: str = "raw_vlm_plus_zero_init_cot_residual",
+        last_vla_horizon_condition_mode: str = "raw_vlm_plus_zero_init_cot_residual",
         last_vla_aux_decay_epochs: int = 160,
         last_vla_teacher_traj_mode: str = "none",
         last_vla_teacher_traj_mix_start: float = 0.0,
@@ -360,11 +367,15 @@ class ReCogDriveAgent(AbstractAgent):
         self.total_train_epochs = total_train_epochs
         self.last_vla_cot_num_tokens = last_vla_cot_num_tokens
         self.last_vla_cot_num_steps = last_vla_cot_num_steps
-        self.last_vla_vlm_summary_tokens = last_vla_vlm_summary_tokens
+        self.last_vla_condition_mode = str(last_vla_condition_mode)
         self.last_vla_raw_vlm_context_to_dit = last_vla_raw_vlm_context_to_dit
         self.last_vla_cot_bottleneck_mode = last_vla_cot_bottleneck_mode
         self.last_vla_vlm_context_dropout_start = last_vla_vlm_context_dropout_start
         self.last_vla_vlm_context_dropout_end = last_vla_vlm_context_dropout_end
+        self.last_vla_use_scene_step = bool(last_vla_use_scene_step)
+        self.last_vla_use_parallel_geometry_dynamic = bool(last_vla_use_parallel_geometry_dynamic)
+        self.last_vla_fusion_tokens = int(last_vla_fusion_tokens)
+        self.last_vla_dynamic_uses_geometry_memory = bool(last_vla_dynamic_uses_geometry_memory)
         self.last_vla_use_geometry_step = last_vla_use_geometry_step
         self.last_vla_use_dynamic_step = last_vla_use_dynamic_step
         self.last_vla_use_ego_step = last_vla_use_ego_step
@@ -382,10 +393,13 @@ class ReCogDriveAgent(AbstractAgent):
         self.last_vla_residual_alpha_start = last_vla_residual_alpha_start
         self.last_vla_residual_alpha_end = last_vla_residual_alpha_end
         self.last_vla_residual_alpha_warmup_epochs = last_vla_residual_alpha_warmup_epochs
-        self.last_vla_vlm_summary_keep_start = last_vla_vlm_summary_keep_start
-        self.last_vla_vlm_summary_keep_end = last_vla_vlm_summary_keep_end
-        self.last_vla_vlm_summary_decay_epochs = last_vla_vlm_summary_decay_epochs
-        self.last_vla_eval_drop_vlm_summary = last_vla_eval_drop_vlm_summary
+        self.last_vla_cot_condition_zero_init = bool(last_vla_cot_condition_zero_init)
+        self.last_vla_cot_condition_dropout = float(last_vla_cot_condition_dropout)
+        self.last_vla_cot_condition_layers = str(last_vla_cot_condition_layers)
+        self.last_vla_cot_condition_scale_init = float(last_vla_cot_condition_scale_init)
+        self.last_vla_cot_condition_trainable_scale = bool(last_vla_cot_condition_trainable_scale)
+        self.last_vla_context_mean_mode = str(last_vla_context_mean_mode)
+        self.last_vla_horizon_condition_mode = str(last_vla_horizon_condition_mode)
         self.last_vla_aux_decay_epochs = last_vla_aux_decay_epochs
         self.last_vla_teacher_traj_mode = last_vla_teacher_traj_mode
         self.last_vla_teacher_traj_mix_start = last_vla_teacher_traj_mix_start
@@ -556,11 +570,15 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.last_vla_stage = self.last_vla_stage
         cfg.last_vla_cot_num_tokens = self.last_vla_cot_num_tokens
         cfg.last_vla_cot_num_steps = self.last_vla_cot_num_steps
-        cfg.last_vla_vlm_summary_tokens = self.last_vla_vlm_summary_tokens
+        cfg.last_vla_condition_mode = self.last_vla_condition_mode
         cfg.last_vla_raw_vlm_context_to_dit = self.last_vla_raw_vlm_context_to_dit
         cfg.last_vla_cot_bottleneck_mode = self.last_vla_cot_bottleneck_mode
         cfg.last_vla_vlm_context_dropout_start = self.last_vla_vlm_context_dropout_start
         cfg.last_vla_vlm_context_dropout_end = self.last_vla_vlm_context_dropout_end
+        cfg.last_vla_use_scene_step = self.last_vla_use_scene_step
+        cfg.last_vla_use_parallel_geometry_dynamic = self.last_vla_use_parallel_geometry_dynamic
+        cfg.last_vla_fusion_tokens = self.last_vla_fusion_tokens
+        cfg.last_vla_dynamic_uses_geometry_memory = self.last_vla_dynamic_uses_geometry_memory
         cfg.last_vla_use_geometry_step = self.last_vla_use_geometry_step
         cfg.last_vla_use_dynamic_step = self.last_vla_use_dynamic_step
         cfg.last_vla_use_ego_step = self.last_vla_use_ego_step
@@ -578,10 +596,13 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.last_vla_residual_alpha_start = self.last_vla_residual_alpha_start
         cfg.last_vla_residual_alpha_end = self.last_vla_residual_alpha_end
         cfg.last_vla_residual_alpha_warmup_epochs = self.last_vla_residual_alpha_warmup_epochs
-        cfg.last_vla_vlm_summary_keep_start = self.last_vla_vlm_summary_keep_start
-        cfg.last_vla_vlm_summary_keep_end = self.last_vla_vlm_summary_keep_end
-        cfg.last_vla_vlm_summary_decay_epochs = self.last_vla_vlm_summary_decay_epochs
-        cfg.last_vla_eval_drop_vlm_summary = self.last_vla_eval_drop_vlm_summary
+        cfg.last_vla_cot_condition_zero_init = self.last_vla_cot_condition_zero_init
+        cfg.last_vla_cot_condition_dropout = self.last_vla_cot_condition_dropout
+        cfg.last_vla_cot_condition_layers = self.last_vla_cot_condition_layers
+        cfg.last_vla_cot_condition_scale_init = self.last_vla_cot_condition_scale_init
+        cfg.last_vla_cot_condition_trainable_scale = self.last_vla_cot_condition_trainable_scale
+        cfg.last_vla_context_mean_mode = self.last_vla_context_mean_mode
+        cfg.last_vla_horizon_condition_mode = self.last_vla_horizon_condition_mode
         cfg.last_vla_aux_decay_epochs = self.last_vla_aux_decay_epochs
         cfg.last_vla_teacher_traj_mode = self.last_vla_teacher_traj_mode
         cfg.last_vla_teacher_traj_mix_start = self.last_vla_teacher_traj_mix_start
@@ -772,6 +793,7 @@ class ReCogDriveAgent(AbstractAgent):
     def count_trainable_parameters_by_group(self) -> Dict[str, Dict[str, int]]:
         groups = {
             "last_vla_cot": {"trainable": 0, "total": 0},
+            "cot_condition_branch": {"trainable": 0, "total": 0},
             "last_rd": {"trainable": 0, "total": 0},
             "legacy_a4_expert": {"trainable": 0, "total": 0},
             "action_base": {"trainable": 0, "total": 0},
@@ -800,7 +822,9 @@ class ReCogDriveAgent(AbstractAgent):
         )
         for name, parameter in self.named_parameters():
             count = int(parameter.numel())
-            if "action_head.last_vla_cot." in name:
+            if self._is_last_vla_condition_parameter_key(name):
+                group = "cot_condition_branch"
+            elif "action_head.last_vla_cot." in name:
                 group = "last_vla_cot"
             elif "action_head.last_rd." in name:
                 group = "last_rd"
@@ -1050,6 +1074,22 @@ class ReCogDriveAgent(AbstractAgent):
         return key.startswith("action_head.last_vla_cot.")
 
     @staticmethod
+    def _is_last_vla_condition_parameter_key(key: str) -> bool:
+        if not key.startswith("action_head."):
+            return False
+        condition_markers = (
+            "last_vla_context_mean_cot_proj",
+            "last_vla_horizon_cot_queries",
+            "last_vla_horizon_cot_attn",
+            "last_vla_horizon_cot_proj",
+            "last_vla_cot_condition_scale",
+            "cot_cross_attn",
+            "cot_out_proj",
+            "cot_condition_scale",
+        )
+        return any(marker in key for marker in condition_markers)
+
+    @staticmethod
     def _is_gate_parameter_key(key: str) -> bool:
         gate_markers = ("jepa_gate", "vggt_gate", "branch_logits", "scene_gate", "timestep_gate")
         return key.startswith("action_head.") and any(marker in key for marker in gate_markers)
@@ -1073,13 +1113,16 @@ class ReCogDriveAgent(AbstractAgent):
         if self.last_vla_train_vlm_lora:
             for name, parameter in self.named_parameters():
                 is_last_vla_cot = self._is_last_vla_parameter_key(name)
+                is_last_vla_condition = self._is_last_vla_condition_parameter_key(name)
                 is_lora = "lora_" in name
-                parameter.requires_grad = bool(is_last_vla_cot or is_lora)
+                parameter.requires_grad = bool(is_last_vla_cot or is_last_vla_condition or is_lora)
             counts = self.count_trainable_parameters_by_group()
             if counts["vlm_lora"]["trainable"] <= 0:
                 raise RuntimeError("last_vla_train_vlm_lora=True but no trainable LoRA parameters were found.")
             if counts["last_vla_cot"]["trainable"] <= 0:
                 raise RuntimeError("last_vla_train_vlm_lora=True but no trainable Last-VLA CoT parameters were found.")
+            if counts["cot_condition_branch"]["trainable"] <= 0:
+                raise RuntimeError("last_vla_train_vlm_lora=True but no trainable CoT condition branch parameters were found.")
             if counts["action_base"]["trainable"] > 0:
                 raise RuntimeError("Last-VLA VLM-LoRA training must not train action_base parameters.")
             if counts["backbone_non_lora"]["trainable"] > 0:
@@ -1100,9 +1143,10 @@ class ReCogDriveAgent(AbstractAgent):
                 continue
             is_expert = self._is_expert_parameter_key(name)
             is_last_vla = self._is_last_vla_parameter_key(name)
+            is_last_vla_condition = self._is_last_vla_condition_parameter_key(name)
             if self.train_expert_only or self.freeze_base_action_head:
                 if self.use_last_vla:
-                    parameter.requires_grad = is_last_vla and not self.freeze_expert
+                    parameter.requires_grad = (is_last_vla or is_last_vla_condition) and not self.freeze_expert
                 else:
                     parameter.requires_grad = is_expert and not self.freeze_expert
             elif self.freeze_expert:
@@ -1202,7 +1246,7 @@ class ReCogDriveAgent(AbstractAgent):
         for name, parameter in self.named_parameters():
             if not parameter.requires_grad:
                 continue
-            if self._is_last_vla_parameter_key(name):
+            if self._is_last_vla_parameter_key(name) or self._is_last_vla_condition_parameter_key(name):
                 last_vla_cot_params.append(parameter)
             elif "lora_" in name:
                 vlm_lora_params.append(parameter)

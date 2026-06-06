@@ -25,7 +25,7 @@ def test_last_vla_forward_cot_alignment_and_progressive_get_action():
         assert torch.isfinite(out[key]).all()
     assert out["diffusion_loss"].item() == 0.0
 
-    progressive = make_last_vla_planner(stage="progressive_sft_bottleneck", residual=True)
+    progressive = make_last_vla_planner(stage="progressive_sft_decoupled", residual=True)
     progressive.train()
     out = progressive(vl_features, action_input)
     assert torch.isfinite(out["loss"]).all()

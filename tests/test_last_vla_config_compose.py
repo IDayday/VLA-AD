@@ -6,13 +6,8 @@ import yaml
 
 
 def test_last_vla_yaml_configs_load_directly():
-    config_dir = Path("configs/last_vla_v2")
-    for path in (
-        config_dir / "last_vla_cot_alignment.yaml",
-        config_dir / "last_vla_progressive_bottleneck.yaml",
-        config_dir / "last_vla_progressive_bottleneck_eval.yaml",
-        config_dir / "last_vla_vlm_lora_cot_alignment.yaml",
-    ):
+    config_dir = Path("configs/last_vla_v2/decoupled_highcap_no_risk")
+    for path in (config_dir / "base.yaml",):
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
         assert data["use_last_vla"] is True
         assert data["use_last_rd"] is False
@@ -22,13 +17,15 @@ def test_last_vla_yaml_configs_load_directly():
         assert data["num_risk_tokens"] == 0
         assert data["last_vla_use_risk_head"] is False
         assert data["last_vla_allow_patch_geometry_fallback"] is False
+        assert data["last_vla_condition_mode"] == "decoupled_cot_residual"
+        assert data["last_vla_cot_bottleneck_mode"] is False
+        assert data["last_vla_raw_vlm_context_to_dit"] is True
 
 
 def test_last_vla_hydra_experiment_yaml_loads():
     for name in (
-        "last_vla_cot_alignment.yaml",
-        "last_vla_progressive_bottleneck.yaml",
-        "last_vla_vlm_lora_cot_alignment.yaml",
+        "last_vla_decoupled_cot_alignment_highcap_no_risk.yaml",
+        "last_vla_decoupled_progressive_highcap_no_risk.yaml",
     ):
         path = Path("navsim/planning/script/config/experiment") / name
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -37,6 +34,9 @@ def test_last_vla_hydra_experiment_yaml_loads():
         assert data["agent"]["num_jepa_tokens"] == 128
         assert data["agent"]["num_geometry_tokens"] == 192
         assert data["agent"]["num_risk_tokens"] == 0
+        assert data["agent"]["last_vla_condition_mode"] == "decoupled_cot_residual"
+        assert data["agent"]["last_vla_cot_bottleneck_mode"] is False
+        assert data["agent"]["last_vla_raw_vlm_context_to_dit"] is True
 
 
 def test_last_vla_hydra_compose_if_available():
@@ -49,10 +49,13 @@ def test_last_vla_hydra_compose_if_available():
     with initialize_config_module(config_module="navsim.planning.script.config.training", version_base=None):
         cfg = compose(
             config_name="default_training",
-            overrides=["train_test_split=trainval", "+experiment=last_vla_cot_alignment"],
+            overrides=["train_test_split=trainval", "+experiment=last_vla_decoupled_cot_alignment_highcap_no_risk"],
         )
     assert cfg.agent.use_last_vla is True
     assert cfg.agent.last_vla_stage == "cot_alignment"
     assert cfg.agent.num_jepa_tokens == 128
     assert cfg.agent.num_geometry_tokens == 192
     assert cfg.agent.last_vla_use_risk_head is False
+    assert cfg.agent.last_vla_condition_mode == "decoupled_cot_residual"
+    assert cfg.agent.last_vla_cot_bottleneck_mode is False
+    assert cfg.agent.last_vla_raw_vlm_context_to_dit is True

@@ -22,7 +22,6 @@ class LastVLACoTConfig:
 
     cot_num_tokens: int = 32
     cot_num_steps: int = 4
-    vlm_summary_tokens: int = 4
     geometry_tokens: int = 12
     dynamic_tokens: int = 12
     ego_tokens: int = 8
@@ -35,15 +34,11 @@ class LastVLACoTConfig:
     use_action_conditioned_dynamics: bool = True
     use_cot_risk_head: bool = True
 
-    raw_vlm_context_to_dit: bool = False
-    cot_bottleneck_mode: bool = True
+    raw_vlm_context_to_dit: bool = True
+    cot_bottleneck_mode: bool = False
     min_cot_context_ratio: float = 0.80
     vlm_context_dropout_start: float = 0.0
     vlm_context_dropout_end: float = 0.7
-    vlm_summary_keep_start: float = 1.0
-    vlm_summary_keep_end: float = 0.3
-    vlm_summary_decay_epochs: int = 80
-    eval_drop_vlm_summary: bool = False
 
     use_residual_diffusion: bool = True
     residual_detach_coarse_for_diffusion: bool = True
@@ -65,6 +60,16 @@ class LastVLACoTConfig:
     normalized_teacher_loss: bool = True
     allow_missing_dynamic_teacher: bool = False
 
+    condition_mode: str = "decoupled_cot_residual"
+    use_scene_step: bool = True
+    use_parallel_geometry_dynamic: bool = True
+    fusion_tokens: int = 192
+    dynamic_uses_geometry_memory: bool = True
+    cot_condition_zero_init: bool = True
+    cot_condition_dropout: float = 0.0
+    cot_condition_scale_init: float = 1.0
+    cot_condition_trainable_scale: bool = True
+
 
 @dataclass
 class CoTStepOutput:
@@ -80,7 +85,13 @@ class CoTStepOutput:
 class LastVLAOutput:
     cot_tokens: torch.Tensor
     cot_tokens_by_step: Dict[str, torch.Tensor]
-    vlm_summary_tokens: Optional[torch.Tensor]
+    raw_vlm_context_tokens: torch.Tensor
+    cot_condition_tokens: torch.Tensor
+    cot_scene_tokens: torch.Tensor
+    cot_geometry_tokens: torch.Tensor
+    cot_dynamic_tokens: torch.Tensor
+    cot_fusion_tokens: torch.Tensor
+    base_context_tokens: torch.Tensor
     planner_context_tokens: torch.Tensor
     context_mean: torch.Tensor
     horizon_condition: torch.Tensor
@@ -96,7 +107,7 @@ class LastVLAOutput:
 
 GEOMETRY_MODE_TO_CODE = {"missing": -1, "no_geometry": 0, "patch_fallback": 1, "full_geometry": 2}
 GEOMETRY_CODE_TO_MODE = {-1: "missing", 0: "no_geometry", 1: "patch_fallback", 2: "full_geometry"}
-CONTEXT_MODE_TO_CODE = {"cot_bottleneck": 1, "cot_plus_raw_vlm": 2}
+CONTEXT_MODE_TO_CODE = {"cot_bottleneck": 1, "cot_plus_raw_vlm": 2, "decoupled_cot_residual": 3}
 TARGET_KEYS = (
     "jepa_target_tokens",
     "vggt_target_tokens",
@@ -242,21 +253,6 @@ class CrossAttentionBlock(nn.Module):
     def forward(self, query: torch.Tensor, memory: torch.Tensor) -> torch.Tensor:
         attended, _ = self.attn(self.query_norm(query), self.memory_norm(memory), self.memory_norm(memory), need_weights=False)
         return self.mlp(query + attended)
-
-
-class VLMTokenCompressor(nn.Module):
-    def __init__(self, config: LastVLACoTConfig) -> None:
-        super().__init__()
-        self.summary_queries = nn.Parameter(torch.randn(config.vlm_summary_tokens, config.planner_dim) * 0.02)
-        self.cross_attn = CrossAttentionBlock(config.planner_dim, config.hidden_dim)
-        self.out_norm = nn.LayerNorm(config.planner_dim)
-
-    def forward(self, vlm_tokens: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
-        batch_size = vlm_tokens.shape[0]
-        queries = self.summary_queries.unsqueeze(0).expand(batch_size, -1, -1).to(vlm_tokens)
-        summary_tokens = self.out_norm(self.cross_attn(queries, vlm_tokens))
-        finite_or_raise("vlm_summary_tokens", summary_tokens)
-        return summary_tokens, summary_tokens.mean(dim=1)
 
 
 class LatentCoTStepBlock(nn.Module):
@@ -620,6 +616,10 @@ class LastVLACoTTransformer(nn.Module):
     def __init__(self, config: LastVLACoTConfig) -> None:
         super().__init__()
         self.config = config
+        if config.condition_mode != "decoupled_cot_residual" or config.cot_bottleneck_mode or not config.raw_vlm_context_to_dit:
+            raise ValueError(
+                "LastVLACoTTransformer only supports decoupled_cot_residual with raw VLM context preserved."
+            )
         if config.require_full_geometry and config.allow_patch_geometry_fallback:
             raise ValueError("require_full_geometry=True is incompatible with allow_patch_geometry_fallback=True.")
         if config.geometry_tokens != int(config.geometry_grid_rows) * int(config.geometry_grid_cols):
@@ -643,7 +643,6 @@ class LastVLACoTTransformer(nn.Module):
         self.current_epoch = 0
         self.total_epochs = 1
 
-        self.vlm_compressor = VLMTokenCompressor(config)
         self.cot_queries = nn.Parameter(torch.randn(config.cot_num_tokens, config.planner_dim) * 0.02)
         self.state_proj = nn.Sequential(
             nn.LayerNorm(8 + 3 + 12),
@@ -656,8 +655,10 @@ class LastVLACoTTransformer(nn.Module):
         self.geometry_pred_proj = nn.Sequential(nn.LayerNorm(config.geometry_teacher_dim), nn.Linear(config.geometry_teacher_dim, config.planner_dim))
         self.action_encoder = ActionTokenEncoder(config)
 
+        self.scene_step = LatentCoTStepBlock(config.planner_dim, config.hidden_dim)
         self.geometry_step = LatentCoTStepBlock(config.planner_dim, config.hidden_dim)
         self.dynamic_step = LatentCoTStepBlock(config.planner_dim, config.hidden_dim)
+        self.fusion_step = LatentCoTStepBlock(config.planner_dim, config.hidden_dim)
         self.ego_step = LatentCoTStepBlock(config.planner_dim, config.hidden_dim)
         self.action_refine_step = LatentCoTStepBlock(config.planner_dim, config.hidden_dim)
 
@@ -741,8 +742,12 @@ class LastVLACoTTransformer(nn.Module):
         total_epochs: Optional[int] = None,
         allow_target_tokens: bool = False,
     ) -> LastVLAOutput:
+        if self.config.condition_mode != "decoupled_cot_residual" or self.config.cot_bottleneck_mode:
+            raise ValueError(
+                "Last-VLA v2 supports only decoupled_cot_residual. "
+                "Hard bottleneck and summary replacement paths have been removed."
+            )
         batch_size = vlm_tokens.shape[0]
-        progress = self._progress(current_epoch, total_epochs)
         if not training and action_input is not None:
             present_targets = [key for key in TARGET_KEYS if key in action_input]
             if present_targets:
@@ -763,7 +768,7 @@ class LastVLACoTTransformer(nn.Module):
         else:
             history = None
 
-        vlm_summary, _ = self.vlm_compressor(vlm_tokens)
+        raw_vlm_tokens = vlm_tokens
         cot = self.cot_queries.unsqueeze(0).expand(batch_size, -1, -1).to(vlm_tokens)
         state_token = self._state_token(ego_status, command, history)
         cot = cot + state_token
@@ -773,16 +778,27 @@ class LastVLACoTTransformer(nn.Module):
         if diffusion_timestep is not None:
             t_embed = sinusoidal_timestep_embedding(diffusion_timestep, self.config.planner_dim).to(vlm_tokens)
         corrupt_zero_all = _bool_flag(action_input, "last_vla_corrupt_zero_all_cot")
+        corrupt_scene = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_zero_scene_cot")
         corrupt_geometry = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_zero_geometry_cot") or _bool_flag(action_input, "last_vla_corrupt_geometry_cot")
         corrupt_dynamic = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_zero_dynamic_cot") or _bool_flag(action_input, "last_vla_corrupt_dynamic_cot")
+        corrupt_fusion = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_zero_fusion_cot")
         corrupt_ego = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_zero_ego_cot") or _bool_flag(action_input, "last_vla_corrupt_ego_cot")
         corrupt_action_refine = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_zero_action_refine_cot") or _bool_flag(action_input, "last_vla_corrupt_action_refine_cot")
         corrupt_coarse_prior = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_zero_coarse_prior") or _bool_flag(action_input, "last_vla_zero_coarse_prior")
-        corrupt_drop_summary = _bool_flag(action_input, "last_vla_corrupt_drop_vlm_summary")
+        corrupt_cot_condition = corrupt_zero_all or _bool_flag(action_input, "last_vla_corrupt_zero_cot_condition_branch") or _bool_flag(action_input, "last_vla_raw_vlm_only")
+        cot_only_for_debug = _bool_flag(action_input, "last_vla_cot_only_for_debug_only")
+
+        cot_scene = self.scene_step(cot, raw_vlm_tokens, timestep_embedding=t_embed) if self.config.use_scene_step else cot
+        if corrupt_scene:
+            cot_scene = torch.zeros_like(cot_scene)
+        cot_steps["scene"] = cot_scene
 
         geometry_memory = self._geometry_memory(action_input, vlm_tokens)
-        geometry_memory_for_step = torch.cat([vlm_summary, geometry_memory], dim=1) if geometry_memory is not None else vlm_summary
-        cot_geometry = self.geometry_step(cot, geometry_memory_for_step, timestep_embedding=t_embed) if self.config.use_geometry_step else cot
+        geometry_memory_parts = [raw_vlm_tokens]
+        if geometry_memory is not None:
+            geometry_memory_parts.append(geometry_memory)
+        geometry_memory_for_step = torch.cat(geometry_memory_parts, dim=1)
+        cot_geometry = self.geometry_step(cot_scene, geometry_memory_for_step, timestep_embedding=t_embed) if self.config.use_geometry_step else cot_scene
         if corrupt_geometry:
             cot_geometry = torch.zeros_like(cot_geometry)
         predicted_geometry, geometry_target, geometry_loss, geometry_diag = self.geometry_head(
@@ -793,19 +809,19 @@ class LastVLACoTTransformer(nn.Module):
         )
         cot_steps["geometry"] = cot_geometry
 
-        coarse_0, _, _ = self.coarse_head(cot_geometry, ego_status, command, history, target_action_norm)
+        coarse_0, _, _ = self.coarse_head(cot_scene, ego_status, command, history, target_action_norm)
         jepa_context = self._context_tokens(action_input, "jepa_context_tokens", self.config.jepa_dim, vlm_tokens)
         if jepa_context is not None and self.config.dynamic_tokens > 12 and jepa_context.shape[1] != self.config.dynamic_tokens:
             raise ValueError(
                 f"jepa_context_tokens token count {jepa_context.shape[1]} != expected {self.config.dynamic_tokens}."
             )
-        dynamic_memory = [vlm_summary, cot_geometry]
+        dynamic_memory = [raw_vlm_tokens]
         if jepa_context is not None:
             dynamic_memory.append(self.jepa_context_proj(jepa_context))
-        if predicted_geometry is not None:
+        if predicted_geometry is not None and self.config.dynamic_uses_geometry_memory:
             dynamic_memory.append(self.geometry_pred_proj(predicted_geometry.to(vlm_tokens)))
         action_tokens = self.action_encoder(coarse_0, noisy_action_norm, t_embed, reference=vlm_tokens)
-        cot_dynamic = self.dynamic_step(cot_geometry, torch.cat(dynamic_memory, dim=1), action_tokens=action_tokens, timestep_embedding=t_embed) if self.config.use_dynamic_step else cot_geometry
+        cot_dynamic = self.dynamic_step(cot_scene, torch.cat(dynamic_memory, dim=1), action_tokens=action_tokens, timestep_embedding=t_embed) if self.config.use_dynamic_step else cot_scene
         if corrupt_dynamic:
             cot_dynamic = torch.zeros_like(cot_dynamic)
         jepa_target = safe_get(action_input, "jepa_target_tokens") if training and allow_target_tokens else None
@@ -820,23 +836,31 @@ class LastVLACoTTransformer(nn.Module):
         )
         cot_steps["dynamic"] = cot_dynamic
 
-        ego_memory = torch.cat([vlm_summary, state_token, cot_dynamic], dim=1)
+        fusion_memory = torch.cat([cot_scene, cot_geometry, cot_dynamic, raw_vlm_tokens], dim=1)
+        cot_fusion = self.fusion_step(cot_scene, fusion_memory, timestep_embedding=t_embed) if self.config.use_parallel_geometry_dynamic else cot_dynamic
+        if corrupt_fusion:
+            cot_fusion = torch.zeros_like(cot_fusion)
+        cot_steps["fusion"] = cot_fusion
+
+        ego_memory = torch.cat([raw_vlm_tokens, state_token, cot_fusion], dim=1)
         ego_action_tokens = self.action_encoder(coarse_0, None, None, reference=vlm_tokens)
-        cot_ego = self.ego_step(cot_dynamic, ego_memory, action_tokens=ego_action_tokens, timestep_embedding=t_embed) if self.config.use_ego_step else cot_dynamic
+        cot_ego = self.ego_step(cot_fusion, ego_memory, action_tokens=ego_action_tokens, timestep_embedding=t_embed) if self.config.use_ego_step else cot_fusion
         if corrupt_ego:
             cot_ego = torch.zeros_like(cot_ego)
-        coarse_traj_norm, ego_tokens, coarse_losses = self.coarse_head(cot_ego, ego_status, command, history, target_action_norm)
+        coarse_traj_norm, ego_tokens, coarse_losses = self.coarse_head(cot_fusion, ego_status, command, history, target_action_norm)
         if corrupt_coarse_prior:
             coarse_traj_norm = torch.zeros_like(coarse_traj_norm)
             ego_tokens = torch.zeros_like(ego_tokens)
         cot_steps["ego"] = cot_ego
 
-        refine_memory = torch.cat([vlm_summary, cot_geometry, cot_dynamic, ego_tokens], dim=1)
+        refine_memory = torch.cat([raw_vlm_tokens, cot_geometry, cot_dynamic, ego_tokens], dim=1)
         refine_action_tokens = self.action_encoder(coarse_traj_norm, noisy_action_norm, t_embed, reference=vlm_tokens)
-        cot_final = self.action_refine_step(cot_ego, refine_memory, action_tokens=refine_action_tokens, timestep_embedding=t_embed) if self.config.use_action_refine_step else cot_ego
+        cot_action = self.action_refine_step(cot_ego, refine_memory, action_tokens=refine_action_tokens, timestep_embedding=t_embed) if self.config.use_action_refine_step else cot_ego
         if corrupt_action_refine:
-            cot_final = torch.zeros_like(cot_final)
-        cot_steps["action_refine"] = cot_final
+            cot_action = torch.zeros_like(cot_action)
+        cot_steps["action_refine"] = cot_action
+        cot_condition_tokens = torch.zeros_like(cot_action) if corrupt_cot_condition else cot_action
+        cot_final = cot_action
 
         if self.config.use_cot_risk_head and self.risk_head is not None:
             risk_tokens, risk_logits, risk_loss = self.risk_head(cot_final, coarse_traj_norm, action_input)
@@ -847,40 +871,12 @@ class LastVLACoTTransformer(nn.Module):
             risk_logits = None
             risk_loss = cot_final.new_zeros(())
 
-        if self.config.cot_bottleneck_mode:
-            keep_summary = True
-            if training:
-                keep_progress = progress
-                if self.config.vlm_summary_decay_epochs > 0 and current_epoch is not None:
-                    keep_progress = min(max(float(current_epoch) / float(max(1, self.config.vlm_summary_decay_epochs)), 0.0), 1.0)
-                keep_prob = schedule_linear(self.config.vlm_summary_keep_start, self.config.vlm_summary_keep_end, keep_progress)
-                if self.config.vlm_context_dropout_end > 0.0:
-                    drop_prob = schedule_linear(self.config.vlm_context_dropout_start, self.config.vlm_context_dropout_end, progress)
-                    keep_prob = min(float(keep_prob), 1.0 - float(drop_prob))
-                if torch.rand((), device=vlm_tokens.device) > float(keep_prob):
-                    keep_summary = False
-            else:
-                keep_prob = 0.0 if self.config.eval_drop_vlm_summary else 1.0
-                keep_summary = not bool(self.config.eval_drop_vlm_summary)
-            if corrupt_drop_summary:
-                keep_summary = False
-            context_parts = [cot_final]
-            if keep_summary and self.config.vlm_summary_tokens > 0:
-                context_parts.append(vlm_summary)
-            planner_context = torch.cat(context_parts, dim=1)
-            raw_vlm_used = False
-            context_mode = "cot_bottleneck"
-        else:
-            context_parts = [cot_final]
-            if self.config.raw_vlm_context_to_dit:
-                context_parts.insert(0, vlm_tokens)
-            else:
-                context_parts.append(vlm_summary)
-            planner_context = torch.cat(context_parts, dim=1)
-            raw_vlm_used = bool(self.config.raw_vlm_context_to_dit)
-            context_mode = "cot_plus_raw_vlm" if raw_vlm_used else "cot_bottleneck"
-            keep_prob = 1.0
-            keep_summary = True
+        base_context_tokens = raw_vlm_tokens
+        if cot_only_for_debug:
+            base_context_tokens = torch.zeros_like(base_context_tokens)
+        planner_context = base_context_tokens
+        raw_vlm_used = not cot_only_for_debug
+        context_mode = "decoupled_cot_residual"
 
         horizon_queries = self.horizon_queries.unsqueeze(0).expand(batch_size, -1, -1).to(vlm_tokens)
         horizon_condition = self.horizon_attn(horizon_queries, planner_context)
@@ -890,7 +886,7 @@ class LastVLACoTTransformer(nn.Module):
             base = coarse_traj_norm.detach() if self.config.residual_detach_coarse_for_diffusion else coarse_traj_norm
             residual_target = final_target - base
 
-        cot_consistency = smooth_l1(cot_final[:, : cot_ego.shape[1]], cot_ego.detach())
+        cot_consistency = smooth_l1(cot_condition_tokens[:, : cot_ego.shape[1]], cot_ego.detach())
         losses = {
             "geometry_loss": geometry_loss,
             "dynamic_loss": dynamic_loss,
@@ -908,32 +904,44 @@ class LastVLACoTTransformer(nn.Module):
 
         diagnostics = {
             "cot_token_norm": cot_final.detach().float().norm(dim=-1).mean(),
-            "vlm_summary_norm": vlm_summary.detach().float().norm(dim=-1).mean(),
             "geometry_loss_raw": geometry_loss.detach().float(),
             "dynamic_loss_raw": dynamic_loss.detach().float(),
             "coarse_traj_l1": smooth_l1(coarse_traj_norm, final_target).detach().float() if final_target is not None else cot_final.new_zeros(()),
             "geometry_mode_code": geometry_diag["geometry_mode_code"].to(cot_final),
             "context_mode_code": cot_final.new_tensor(float(CONTEXT_MODE_TO_CODE[context_mode])),
+            "last_vla_condition_mode_code": cot_final.new_tensor(float(CONTEXT_MODE_TO_CODE[context_mode])),
             "raw_vlm_context_used": cot_final.new_tensor(float(raw_vlm_used)),
-            "cot_bottleneck_active": cot_final.new_tensor(float(self.config.cot_bottleneck_mode)),
+            "cot_bottleneck_active": cot_final.new_tensor(0.0),
+            "last_vla_no_global_gate": cot_final.new_tensor(1.0),
             "teacher_traj_used_ratio": cot_final.new_zeros(()),
             "dynamic_teacher_missing": diagnostics_dynamic_missing,
             "geometry_teacher_missing": cot_final.new_tensor(float(geometry_target is None)),
             "corruption_zero_all_cot": cot_final.new_tensor(float(corrupt_zero_all)),
             "corruption_zero_coarse_prior": cot_final.new_tensor(float(corrupt_coarse_prior)),
-            "vlm_summary_keep_prob": cot_final.new_tensor(float(keep_prob)),
-            "vlm_summary_kept": cot_final.new_tensor(float(keep_summary)),
             "last_vla_use_risk_head": cot_final.new_tensor(float(self.config.use_cot_risk_head and self.risk_head is not None)),
             "last_vla_num_risk_tokens": cot_final.new_tensor(float(self.config.risk_tokens if self.config.use_cot_risk_head else 0)),
             "last_vla_context_token_count": cot_final.new_tensor(float(planner_context.shape[1])),
             "last_vla_cot_token_count": cot_final.new_tensor(float(cot_final.shape[1])),
-            "last_vla_vlm_summary_token_count": cot_final.new_tensor(float(vlm_summary.shape[1])),
+            "raw_vlm_token_count": cot_final.new_tensor(float(raw_vlm_tokens.shape[1])),
+            "cot_condition_token_count": cot_final.new_tensor(float(cot_condition_tokens.shape[1])),
+            "cot_scene_norm": cot_scene.detach().float().norm(dim=-1).mean(),
+            "cot_geometry_norm": cot_geometry.detach().float().norm(dim=-1).mean(),
+            "cot_dynamic_norm": cot_dynamic.detach().float().norm(dim=-1).mean(),
+            "cot_fusion_norm": cot_fusion.detach().float().norm(dim=-1).mean(),
+            "cot_action_norm": cot_action.detach().float().norm(dim=-1).mean(),
+            "geometry_dynamic_parallel": cot_final.new_tensor(float(self.config.use_parallel_geometry_dynamic)),
         }
         finite_or_raise("planner_context_tokens", planner_context)
         return LastVLAOutput(
             cot_tokens=cot_final,
             cot_tokens_by_step=cot_steps,
-            vlm_summary_tokens=vlm_summary,
+            raw_vlm_context_tokens=raw_vlm_tokens,
+            cot_condition_tokens=cot_condition_tokens,
+            cot_scene_tokens=cot_scene,
+            cot_geometry_tokens=cot_geometry,
+            cot_dynamic_tokens=cot_dynamic,
+            cot_fusion_tokens=cot_fusion,
+            base_context_tokens=base_context_tokens,
             planner_context_tokens=planner_context,
             context_mean=planner_context.mean(dim=1),
             horizon_condition=horizon_condition,

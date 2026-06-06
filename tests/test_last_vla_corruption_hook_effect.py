@@ -17,7 +17,7 @@ def _context(planner, vl_features, action_input):
     )
 
 
-def test_zero_all_cot_changes_planner_context():
+def test_zero_all_cot_zeros_condition_but_keeps_raw_context():
     torch.manual_seed(11)
     planner = make_last_vla_planner()
     planner.eval()
@@ -32,7 +32,8 @@ def test_zero_all_cot_changes_planner_context():
     )
 
     assert torch.allclose(zero["last_vla_output"].cot_tokens, torch.zeros_like(zero["last_vla_output"].cot_tokens))
-    assert not torch.allclose(normal["context_tokens"], zero["context_tokens"])
+    assert torch.allclose(zero["last_vla_output"].cot_condition_tokens, torch.zeros_like(zero["last_vla_output"].cot_condition_tokens))
+    assert torch.allclose(normal["context_tokens"], zero["context_tokens"])
 
 
 def test_zero_coarse_prior_affects_residual_prior_path():

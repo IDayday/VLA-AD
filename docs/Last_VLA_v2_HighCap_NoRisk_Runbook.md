@@ -2,22 +2,22 @@
 
 Baseline: A0-official-aligned `step_00100000`, full navtest PDMS `0.864891`, eval precision `fp32`.
 
-This is the formal Last-VLA v2 SFT path. Minimal configs are smoke only. Do not set `RUN_CACHE=1`, `RUN_TRAIN=1`, or `RUN_EVAL=1` until the commands have been reviewed.
+This document is retained for context. The formal path is now `ReCogDrive-LaST-v2 Decoupled HighCap NoRisk`; use `docs/Last_VLA_v2_Decoupled_HighCap_Runbook.md` and `scripts/last_vla_v2/decoupled_highcap_no_risk/`.
 
-Production configs are high-cap no-risk only. Old minimal `4/32/12/12`, geometry-lite, patch-fallback, and teacher-trajectory/PDM-reranked Last-VLA v2 configs are archived under `configs/last_vla_v2/archive/` and `scripts/last_vla_v2/archive/`.
+Old hard-bottleneck and VLM summary replacement configs are deprecated. Minimal `4/32/12/12`, geometry-lite, patch-fallback, and teacher-trajectory/PDM-reranked Last-VLA v2 configs are not formal training entrypoints.
 
 ## Token Contract
 
-- VLM summary: `64`
+- raw VLM hidden tokens: preserved as base DiT context
 - latent CoT: `192`
 - JEPA context/target: `[128, 1024]`
 - dynamic teacher: `[128, 1024]`
 - VGGT full geometry: `[192, 512]`
 - geometry grid: `[12, 16]`
 - risk: disabled, no risk labels required
-- DiT context in eval: `192 + 64 = 256`
+- DiT CoT condition: independent `192` token residual branch
 
-Full raw VLM hidden tokens do not enter DiT in bottleneck mode. Patch fallback is not allowed. Old 12-token JEPA caches are invalid for strict high-cap.
+VLM summary tokens are not generated or consumed. Full raw VLM hidden tokens enter DiT as the base context. Patch fallback is not allowed. Old 12-token JEPA caches are invalid for strict high-cap.
 
 ## 1. Generate High-cap Expert/JEPA Chunk Cache
 

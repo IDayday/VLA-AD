@@ -1,0 +1,19 @@
+defaults:
+  - base
+  - _self_
+
+last_vla_stage: progressive_sft_decoupled
+
+diffusion_loss_weight: 1.0
+last_vla_geometry_loss_weight: 0.10
+last_vla_geometry_loss_floor: 0.01
+last_vla_dynamic_loss_weight: 0.10
+last_vla_dynamic_loss_floor: 0.01
+last_vla_coarse_loss_weight: 0.20
+last_vla_coarse_loss_floor: 0.03
+last_vla_heading_loss_weight: 0.03
+last_vla_progress_loss_weight: 0.05
+last_vla_progress_loss_floor: 0.01
+last_vla_cot_consistency_loss_weight: 0.01
+
+epochs: 200

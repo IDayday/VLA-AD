@@ -4,7 +4,7 @@ Baseline: A0-official-aligned full navtest PDMS `0.864891`.
 
 ## Why LoRA
 
-VLM-LoRA adapts the VLM latent space for Last-VLA without full Stage1 VLM retraining. Line B uses online VLM-LoRA CoT alignment, extracts LoRA and CoT adapters, regenerates train/navtest hidden caches with that exact LoRA adapter, then runs progressive bottleneck SFT on regenerated hidden cache.
+VLM-LoRA adapts the VLM latent space for Last-VLA without full Stage1 VLM retraining. Line B uses online VLM-LoRA CoT alignment with the same decoupled CoT architecture as Line A, extracts LoRA and CoT adapters, regenerates train/navtest hidden caches with that exact LoRA adapter, then runs `progressive_sft_decoupled` on regenerated hidden cache.
 
 Hidden caches produced before LoRA are not valid for Line B after LoRA alignment. Train and navtest hidden caches must be regenerated.
 
@@ -61,6 +61,7 @@ Scoped presets resolve to full module names rather than bare suffixes. This prev
 During online VLM-LoRA CoT alignment, only two groups are trainable:
 
 - `action_head.last_vla_cot.*`
+- `action_head.*cot_condition*` and DiT CoT residual branch parameters
 - VLM LoRA parameters containing `lora_`
 
 Non-LoRA backbone parameters and action base parameters must be frozen. `cache_hidden_state=true` with `last_vla_train_vlm_lora=true` raises `ValueError`.

@@ -195,15 +195,20 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
         "disabled",
         "cot_alignment",
         "progressive_sft_bottleneck",
+        "progressive_sft_decoupled",
         "teacher_traj_sft",
     ] = "disabled"
     last_vla_cot_num_tokens: int = 32
     last_vla_cot_num_steps: int = 4
-    last_vla_vlm_summary_tokens: int = 4
-    last_vla_raw_vlm_context_to_dit: bool = False
-    last_vla_cot_bottleneck_mode: bool = True
+    last_vla_condition_mode: str = "decoupled_cot_residual"
+    last_vla_raw_vlm_context_to_dit: bool = True
+    last_vla_cot_bottleneck_mode: bool = False
     last_vla_vlm_context_dropout_start: float = 0.0
     last_vla_vlm_context_dropout_end: float = 0.7
+    last_vla_use_scene_step: bool = True
+    last_vla_use_parallel_geometry_dynamic: bool = True
+    last_vla_fusion_tokens: int = 192
+    last_vla_dynamic_uses_geometry_memory: bool = True
     last_vla_use_geometry_step: bool = True
     last_vla_use_dynamic_step: bool = True
     last_vla_use_ego_step: bool = True
@@ -221,10 +226,13 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     last_vla_residual_alpha_start: float = 0.0
     last_vla_residual_alpha_end: float = 1.0
     last_vla_residual_alpha_warmup_epochs: int = 80
-    last_vla_vlm_summary_keep_start: float = 1.0
-    last_vla_vlm_summary_keep_end: float = 0.3
-    last_vla_vlm_summary_decay_epochs: int = 80
-    last_vla_eval_drop_vlm_summary: bool = False
+    last_vla_cot_condition_zero_init: bool = True
+    last_vla_cot_condition_dropout: float = 0.0
+    last_vla_cot_condition_layers: str = "all"
+    last_vla_cot_condition_scale_init: float = 1.0
+    last_vla_cot_condition_trainable_scale: bool = True
+    last_vla_context_mean_mode: str = "raw_vlm_plus_zero_init_cot_residual"
+    last_vla_horizon_condition_mode: str = "raw_vlm_plus_zero_init_cot_residual"
     last_vla_aux_decay_epochs: int = 160
     last_vla_teacher_traj_mode: Literal["none", "gt", "teacher_if_better", "mix"] = "none"
     last_vla_teacher_traj_mix_start: float = 0.0
@@ -324,6 +332,19 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("use_last_vla=True requires last_vla_stage to be non-disabled.")
         if not config.use_last_vla and config.last_vla_stage != "disabled":
             raise ValueError("last_vla_stage must be 'disabled' when use_last_vla=False.")
+        if (
+            config.use_last_vla
+            and (
+                config.last_vla_condition_mode != "decoupled_cot_residual"
+                or config.last_vla_cot_bottleneck_mode
+                or not config.last_vla_raw_vlm_context_to_dit
+            )
+        ):
+            raise ValueError(
+                "Last-VLA v2 only supports decoupled_cot_residual with "
+                "last_vla_cot_bottleneck_mode=False and last_vla_raw_vlm_context_to_dit=True. "
+                "Hard bottleneck and summary replacement were removed."
+            )
         if config.last_vla_require_full_geometry and config.last_vla_allow_patch_geometry_fallback:
             raise ValueError("last_vla_require_full_geometry=True is incompatible with patch fallback.")
         if config.use_last_vla and config.last_vla_geometry_teacher_dim <= 0:
@@ -452,7 +473,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     action_horizon=config.action_horizon,
                     cot_num_tokens=config.last_vla_cot_num_tokens,
                     cot_num_steps=config.last_vla_cot_num_steps,
-                    vlm_summary_tokens=config.last_vla_vlm_summary_tokens,
+                    condition_mode=config.last_vla_condition_mode,
+                    use_scene_step=config.last_vla_use_scene_step,
+                    use_parallel_geometry_dynamic=config.last_vla_use_parallel_geometry_dynamic,
+                    fusion_tokens=config.last_vla_fusion_tokens,
+                    dynamic_uses_geometry_memory=config.last_vla_dynamic_uses_geometry_memory,
                     geometry_tokens=config.num_geometry_tokens,
                     dynamic_tokens=config.num_dynamic_tokens,
                     ego_tokens=config.num_ego_tokens,
@@ -475,15 +500,36 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     geometry_teacher_dim=config.last_vla_geometry_teacher_dim,
                     geometry_grid_rows=config.last_vla_geometry_grid_rows,
                     geometry_grid_cols=config.last_vla_geometry_grid_cols,
-                    vlm_summary_keep_start=config.last_vla_vlm_summary_keep_start,
-                    vlm_summary_keep_end=config.last_vla_vlm_summary_keep_end,
-                    vlm_summary_decay_epochs=config.last_vla_vlm_summary_decay_epochs,
-                    eval_drop_vlm_summary=config.last_vla_eval_drop_vlm_summary,
                     teacher_traj_mode=config.last_vla_teacher_traj_mode,
                     teacher_traj_mix_start=config.last_vla_teacher_traj_mix_start,
                     teacher_traj_mix_end=config.last_vla_teacher_traj_mix_end,
+                    cot_condition_zero_init=config.last_vla_cot_condition_zero_init,
+                    cot_condition_dropout=config.last_vla_cot_condition_dropout,
+                    cot_condition_scale_init=config.last_vla_cot_condition_scale_init,
+                    cot_condition_trainable_scale=config.last_vla_cot_condition_trainable_scale,
                 )
             )
+            self.last_vla_context_mean_cot_proj = nn.Linear(config.input_embedding_dim, config.input_embedding_dim)
+            self.last_vla_horizon_cot_queries = nn.Parameter(
+                torch.randn(config.action_horizon, config.input_embedding_dim) * 0.02
+            )
+            cot_heads = 8 if config.input_embedding_dim % 8 == 0 else 1
+            self.last_vla_horizon_cot_attn = nn.MultiheadAttention(
+                config.input_embedding_dim,
+                cot_heads,
+                batch_first=True,
+            )
+            self.last_vla_horizon_cot_proj = nn.Linear(config.input_embedding_dim, config.input_embedding_dim)
+            if config.last_vla_cot_condition_zero_init:
+                nn.init.constant_(self.last_vla_context_mean_cot_proj.weight, 0.0)
+                nn.init.constant_(self.last_vla_context_mean_cot_proj.bias, 0.0)
+                nn.init.constant_(self.last_vla_horizon_cot_proj.weight, 0.0)
+                nn.init.constant_(self.last_vla_horizon_cot_proj.bias, 0.0)
+            scale = torch.tensor(float(config.last_vla_cot_condition_scale_init), dtype=torch.float32)
+            if config.last_vla_cot_condition_trainable_scale:
+                self.last_vla_cot_condition_scale = nn.Parameter(scale)
+            else:
+                self.register_buffer("last_vla_cot_condition_scale", scale)
 
         if config.use_last_rd:
             from .latent_spatiotemporal_planning import LastRDConfig, LatentSpatioTemporalReasoner
@@ -1210,13 +1256,68 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             for source_key, output_key in loss_map.items():
                 if source_key in last_vla_output.losses:
                     base_losses[output_key] = last_vla_output.losses[source_key]
+            decoupled_mode = (
+                self.config.last_vla_condition_mode == "decoupled_cot_residual"
+                and not self.config.last_vla_cot_bottleneck_mode
+            )
+            context_tokens = last_vla_output.planner_context_tokens
+            context_mean = last_vla_output.context_mean
+            expert_step_condition = last_vla_output.horizon_condition
+            cot_condition_tokens = None
+            diagnostics = dict(last_vla_output.diagnostics)
+            if decoupled_mode:
+                context_tokens = last_vla_output.base_context_tokens
+                cot_condition_tokens = last_vla_output.cot_condition_tokens
+                if training and self.config.last_vla_cot_condition_dropout > 0.0:
+                    cot_condition_tokens = F.dropout(
+                        cot_condition_tokens,
+                        p=float(self.config.last_vla_cot_condition_dropout),
+                        training=True,
+                    )
+                context_mean_base = context_tokens.mean(1)
+                cot_context_mean_residual = self.last_vla_context_mean_cot_proj(cot_condition_tokens.mean(1))
+                cot_scale = self.last_vla_cot_condition_scale.to(
+                    device=cot_context_mean_residual.device,
+                    dtype=cot_context_mean_residual.dtype,
+                )
+                cot_context_mean_residual = cot_context_mean_residual * cot_scale
+                context_mean = context_mean_base + cot_context_mean_residual
+                horizon_queries = self.last_vla_horizon_cot_queries.unsqueeze(0).expand(
+                    context_tokens.shape[0],
+                    -1,
+                    -1,
+                ).to(cot_condition_tokens)
+                cot_horizon_raw, _ = self.last_vla_horizon_cot_attn(
+                    horizon_queries,
+                    cot_condition_tokens,
+                    cot_condition_tokens,
+                    need_weights=False,
+                )
+                cot_horizon_residual = self.last_vla_horizon_cot_proj(cot_horizon_raw) * cot_scale
+                expert_step_condition = last_vla_output.horizon_condition + cot_horizon_residual
+                diagnostics.update(
+                    {
+                        "last_vla_cot_condition_norm": cot_condition_tokens.detach().float().norm(dim=-1).mean(),
+                        "last_vla_cot_condition_delta_norm": cot_horizon_residual.detach().float().norm(dim=-1).mean(),
+                        "last_vla_cot_branch_zero_init": cot_horizon_residual.new_tensor(
+                            float(
+                                torch.count_nonzero(self.last_vla_context_mean_cot_proj.weight.detach()).item() == 0
+                                and torch.count_nonzero(self.last_vla_horizon_cot_proj.weight.detach()).item() == 0
+                            )
+                        ),
+                        "last_vla_raw_vlm_base_context_norm": context_tokens.detach().float().norm(dim=-1).mean(),
+                        "last_vla_context_mean_cot_residual_norm": cot_context_mean_residual.detach().float().norm(dim=-1).mean(),
+                        "last_vla_horizon_cot_residual_norm": cot_horizon_residual.detach().float().norm(dim=-1).mean(),
+                    }
+                )
             return {
                 "vl_embeds": vl_embeds,
-                "context_tokens": last_vla_output.planner_context_tokens,
-                "context_mean": last_vla_output.context_mean,
-                "expert_step_condition": last_vla_output.horizon_condition,
+                "context_tokens": context_tokens,
+                "context_mean": context_mean,
+                "expert_step_condition": expert_step_condition,
+                "cot_condition_tokens": cot_condition_tokens,
                 **base_losses,
-                "diagnostics": dict(last_vla_output.diagnostics),
+                "diagnostics": diagnostics,
                 "last_vla_output": last_vla_output,
                 "selected_target_norm": target_action_norm,
             }
@@ -1361,8 +1462,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "last_vla_corrupt_zero_dynamic_cot",
             "last_vla_corrupt_zero_ego_cot",
             "last_vla_corrupt_zero_action_refine_cot",
+            "last_vla_corrupt_zero_fusion_cot",
+            "last_vla_corrupt_zero_cot_condition_branch",
+            "last_vla_raw_vlm_only",
+            "last_vla_cot_only_for_debug_only",
             "last_vla_corrupt_zero_coarse_prior",
-            "last_vla_corrupt_drop_vlm_summary",
             "last_vla_corrupt_geometry_cot",
             "last_vla_corrupt_dynamic_cot",
             "last_vla_corrupt_ego_cot",
@@ -1502,7 +1606,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "last_vla_risk_loss": self.config.last_vla_risk_loss_weight,
             "last_vla_cot_consistency_loss": self.config.last_vla_cot_consistency_loss_weight,
         }[loss_name]
-        if self.config.last_vla_stage != "progressive_sft_bottleneck":
+        if self.config.last_vla_stage not in {"progressive_sft_bottleneck", "progressive_sft_decoupled"}:
             return float(base)
         floors = {
             "last_vla_geometry_loss": self.config.last_vla_geometry_loss_floor,
@@ -1596,6 +1700,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         context_embeds = dit_context["context_tokens"]
         context_mean = dit_context["context_mean"]
         expert_step_condition = dit_context["expert_step_condition"]
+        cot_condition_tokens = dit_context.get("cot_condition_tokens")
         his_traj_features = self.his_traj_encoder(
             action_input.his_traj.unsqueeze(1)
         ).repeat(1, self.config.action_horizon, 1)
@@ -1616,7 +1721,20 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             encoder_hidden_states=context_embeds,
             conditioning_features=ego_status_features,
             timesteps=timesteps,
+            cot_condition_tokens=cot_condition_tokens,
         )
+        if self.config.use_last_vla:
+            diagnostics = dit_context.setdefault("diagnostics", {})
+            diagnostics["last_vla_cot_condition_delta_norm"] = getattr(
+                self.model,
+                "last_cot_condition_delta_norm",
+                context_embeds.new_zeros(()),
+            )
+            diagnostics["last_vla_cot_branch_zero_init"] = getattr(
+                self.model,
+                "last_cot_branch_zero_init",
+                context_embeds.new_zeros(()),
+            )
         return self.action_decoder(model_output)
 
     def _x0_from_noise(self, noisy_actions: torch.Tensor, timesteps: torch.Tensor, pred_noise: torch.Tensor) -> torch.Tensor:
@@ -1675,6 +1793,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         deterministic: bool = True,
         context_mean: Optional[torch.Tensor] = None,
         expert_step_condition: Optional[torch.Tensor] = None,
+        cot_condition_tokens: Optional[torch.Tensor] = None,
         vl_features: Optional[torch.Tensor] = None,
         action_input: Optional[BatchFeature] = None,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
@@ -1694,6 +1813,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             context_embeds = latent_context["context_tokens"]
             context_mean = latent_context["context_mean"]
             expert_step_condition = latent_context["expert_step_condition"]
+            cot_condition_tokens = latent_context.get("cot_condition_tokens")
         model_dtype = next(self.model.parameters()).dtype
         x = x.to(model_dtype)
         action_features = self.action_encoder(x, t)
@@ -1713,7 +1833,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             hidden_states=fused_input,
             encoder_hidden_states=context_embeds,
             conditioning_features=ego_status_features,
-            timesteps=t
+            timesteps=t,
+            cot_condition_tokens=cot_condition_tokens,
         )
         pred_noise = self.action_decoder(model_output)
 
@@ -2011,22 +2132,36 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "gt_score_mean",
                 "geometry_mode_code",
                 "cot_token_norm",
-                "vlm_summary_norm",
                 "cot_bottleneck_active",
                 "raw_vlm_context_used",
                 "coarse_traj_l1",
                 "dynamic_loss_raw",
                 "geometry_loss_raw",
                 "residual_alpha",
-                "vlm_summary_keep_prob",
-                "vlm_summary_kept",
                 "geometry_weight_effective",
                 "dynamic_weight_effective",
                 "coarse_weight_effective",
                 "progress_weight_effective",
+                "last_vla_condition_mode_code",
+                "last_vla_no_global_gate",
+                "raw_vlm_token_count",
+                "cot_condition_token_count",
+                "cot_scene_norm",
+                "cot_geometry_norm",
+                "cot_dynamic_norm",
+                "cot_fusion_norm",
+                "cot_action_norm",
+                "geometry_dynamic_parallel",
+                "last_vla_cot_condition_norm",
+                "last_vla_cot_condition_delta_norm",
+                "last_vla_cot_branch_zero_init",
+                "last_vla_raw_vlm_base_context_norm",
+                "last_vla_context_mean_cot_residual_norm",
+                "last_vla_horizon_cot_residual_norm",
             ):
                 if key in diagnostics and isinstance(diagnostics[key], torch.Tensor):
-                    output[f"last_vla_{key}"] = diagnostics[key].to(device=loss.device, dtype=loss.dtype)
+                    output_key = key if key.startswith("last_vla_") else f"last_vla_{key}"
+                    output[output_key] = diagnostics[key].to(device=loss.device, dtype=loss.dtype)
         return BatchFeature(data=output)
 
     def get_action(
@@ -2058,6 +2193,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         context_embeds = dit_context["context_tokens"]
         context_mean = dit_context["context_mean"]
         expert_step_condition = dit_context["expert_step_condition"]
+        cot_condition_tokens = dit_context.get("cot_condition_tokens")
         coarse_prior_norm = None
         if self.config.use_last_vla and self.config.last_vla_use_residual_diffusion:
             coarse_prior_norm = dit_context["last_vla_output"].coarse_traj_norm.detach()
@@ -2094,6 +2230,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     context_embeds = dit_context["context_tokens"]
                     context_mean = dit_context["context_mean"]
                     expert_step_condition = dit_context["expert_step_condition"]
+                    cot_condition_tokens = dit_context.get("cot_condition_tokens")
 
                 action_features = self.action_encoder(current_actions, t)
                 if hasattr(self, 'position_embedding'):
@@ -2106,7 +2243,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 if expert_step_condition is not None:
                     fused_input = fused_input + expert_step_condition.to(device=fused_input.device, dtype=fused_input.dtype)
                 
-                model_output = self.model(fused_input, context_embeds, ego_embeds, t)
+                model_output = self.model(
+                    fused_input,
+                    context_embeds,
+                    ego_embeds,
+                    t,
+                    cot_condition_tokens=cot_condition_tokens,
+                )
                 pred = self.action_decoder(model_output)
                 
                 pred_flow = pred.chunk(2, dim=-1)[0] if self.config.flow_cfg.mean_variance_net else pred
@@ -2124,6 +2267,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     current_actions, t_batch, index_batch, context_embeds, history_embeds, ego_embeds, deterministic,
                     context_mean=context_mean,
                     expert_step_condition=expert_step_condition,
+                    cot_condition_tokens=cot_condition_tokens,
                     vl_features=vl_features,
                     action_input=action_input,
                 )
@@ -2157,6 +2301,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     current_actions, t_batch, index_batch, context_embeds, history_embeds, ego_embeds, deterministic,
                     context_mean=context_mean,
                     expert_step_condition=expert_step_condition,
+                    cot_condition_tokens=cot_condition_tokens,
                     vl_features=vl_features,
                     action_input=action_input,
                 )
@@ -2278,7 +2423,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 if expert_step_condition is not None:
                     fused_input = fused_input + expert_step_condition.to(device=fused_input.device, dtype=fused_input.dtype)
                 
-                model_output = self.model(fused_input, context_embeds, ego_status_features, t_batch)
+                model_output = self.model(
+                    fused_input,
+                    context_embeds,
+                    ego_status_features,
+                    t_batch,
+                    cot_condition_tokens=cot_condition_tokens,
+                )
                 pred = self.action_decoder(model_output)
                 
                 pred_flow = pred.chunk(2, dim=-1)[0] if self.config.flow_cfg.mean_variance_net else pred
@@ -2300,6 +2451,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     current_actions, t_batch, index_batch, context_embeds, his_traj_features, ego_status_features, deterministic,
                     context_mean=context_mean,
                     expert_step_condition=expert_step_condition,
+                    cot_condition_tokens=cot_condition_tokens,
                     vl_features=vl_features if action_input is not None else None,
                     action_input=action_input,
                 )

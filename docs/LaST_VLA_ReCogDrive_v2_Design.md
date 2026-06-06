@@ -8,14 +8,18 @@ LaST-RD v1 is retained under `use_last_rd`. It appends latent reasoning/adaptati
 
 `use_last_vla` and `use_last_rd` are mutually exclusive. A0/A4/LastRD configs still instantiate and forward through their old branches when `use_last_vla=False`.
 
-## CoT Bottleneck
+## Formal Decoupled HighCap NoRisk Path
 
-Last-VLA compresses raw VLM tokens with learned summary queries and cross-attention, then performs latent geometry, dynamics, ego-intent, and action-refinement CoT steps. In bottleneck mode, DiT context is only:
+The formal path is `ReCogDrive-LaST-v2 Decoupled HighCap NoRisk`.
 
-- final CoT tokens
-- optional compressed VLM summary tokens
+Hard bottleneck and VLM summary replacement are deprecated and removed from the formal code path. `VLMTokenCompressor` is not instantiated, `vlm_summary` tokens are not produced, and configs containing `last_vla_cot_bottleneck_mode=true` or `last_vla_raw_vlm_context_to_dit=false` are invalid for Last-VLA v2.
 
-Full raw VLM tokens are not passed to DiT when `last_vla_cot_bottleneck_mode=true` and `last_vla_raw_vlm_context_to_dit=false`.
+DiT now receives:
+
+- full raw ReCogDrive VLM hidden tokens as the base cross-attention context
+- latent CoT tokens through a separate zero-init residual condition branch
+
+The CoT branch is not a concat replacement and does not compete with raw VLM through a scalar or softmax gate.
 
 ## Dual Teacher Alignment
 
@@ -73,7 +77,7 @@ The recommended Line B latent adaptation setting is `attention_mlp`, scope `llm`
 2. `progressive_sft_bottleneck`: enable residual diffusion through the CoT bottleneck with auxiliary loss floors.
 3. `teacher_traj_sft`: train with best-of-K/PDM-reranked teacher trajectory targets.
 
-Strict Last-VLA v2 SFT uses `cot_alignment -> progressive_sft_bottleneck` as the core path. PDM-reranked teacher trajectory SFT is an optional extension for later diagnostics and performance exploration; it is not required for LaST-VLA SFT alignment. GRPO is deferred and not part of this stage.
+Strict Last-VLA v2 SFT uses `cot_alignment -> progressive_sft_decoupled` as the core path. PDM-reranked teacher trajectory SFT and GRPO are not part of the formal path.
 
 ## Full Geometry Cache
 

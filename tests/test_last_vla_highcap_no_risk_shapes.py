@@ -40,7 +40,7 @@ def _planner() -> ReCogDriveDiffusionPlanner:
         ddim_cfg=DDIMConfig(num_train_timesteps=10),
         use_expert_features=False,
         use_last_vla=True,
-        last_vla_stage="progressive_sft_bottleneck",
+        last_vla_stage="progressive_sft_decoupled",
         use_last_rd=False,
         last_rd_stage="disabled",
         use_jepa=True,
@@ -54,7 +54,6 @@ def _planner() -> ReCogDriveDiffusionPlanner:
         num_ego_tokens=8,
         num_risk_tokens=0,
         last_vla_cot_num_tokens=192,
-        last_vla_vlm_summary_tokens=64,
         last_vla_use_risk_head=False,
         last_vla_risk_loss_weight=0.0,
         last_vla_geometry_teacher_dim=512,
@@ -62,11 +61,10 @@ def _planner() -> ReCogDriveDiffusionPlanner:
         last_vla_geometry_grid_cols=16,
         last_vla_require_full_geometry=True,
         last_vla_allow_patch_geometry_fallback=False,
-        last_vla_raw_vlm_context_to_dit=False,
-        last_vla_cot_bottleneck_mode=True,
+        last_vla_condition_mode="decoupled_cot_residual",
+        last_vla_raw_vlm_context_to_dit=True,
+        last_vla_cot_bottleneck_mode=False,
         last_vla_use_residual_diffusion=True,
-        last_vla_vlm_summary_keep_start=1.0,
-        last_vla_vlm_summary_keep_end=1.0,
         diffusion_loss_weight=1.0,
         last_vla_geometry_loss_weight=0.1,
         last_vla_dynamic_loss_weight=0.1,
@@ -123,11 +121,15 @@ def test_highcap_no_risk_planner_shapes_and_get_action():
             init_actions=torch.zeros(1, 8, 3),
             deterministic=True,
         )
-    assert dit_context["context_tokens"].shape == (1, 256, 384)
+    assert dit_context["context_tokens"].shape == (1, 6, 384)
+    assert dit_context["cot_condition_tokens"].shape == (1, 192, 384)
+    assert last_vla_eval.raw_vlm_context_tokens.shape == (1, 6, 384)
+    assert last_vla_eval.planner_context_tokens.shape == (1, 6, 384)
     assert last_vla_eval.diagnostics["last_vla_use_risk_head"].item() == 0.0
     assert last_vla_eval.diagnostics["last_vla_num_risk_tokens"].item() == 0.0
-    assert last_vla_eval.diagnostics["last_vla_context_token_count"].item() == 256.0
+    assert last_vla_eval.diagnostics["last_vla_context_token_count"].item() == 6.0
     assert last_vla_eval.diagnostics["last_vla_cot_token_count"].item() == 192.0
-    assert last_vla_eval.diagnostics["last_vla_vlm_summary_token_count"].item() == 64.0
+    assert last_vla_eval.diagnostics["cot_condition_token_count"].item() == 192.0
+    assert last_vla_eval.diagnostics["raw_vlm_context_used"].item() == 1.0
     assert pred["pred_traj"].shape == (1, 8, 3)
     assert torch.isfinite(pred["pred_traj"]).all()

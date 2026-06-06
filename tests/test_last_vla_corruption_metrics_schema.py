@@ -11,18 +11,21 @@ def test_corruption_proxy_metrics_schema_has_nullable_pdm_fields():
     args = Namespace(
         score_mode="proxy",
         zero_all_cot=True,
+        zero_scene_cot=False,
         zero_geometry_cot=False,
         zero_dynamic_cot=False,
+        zero_fusion_cot=False,
         zero_ego_cot=False,
         zero_action_refine_cot=False,
         zero_coarse_prior=False,
-        use_raw_vlm_context_ablation=False,
-        drop_vlm_summary=False,
+        zero_cot_condition_branch=False,
+        raw_vlm_only=False,
+        cot_only_for_debug_only=False,
     )
     planner = SimpleNamespace(
         config=SimpleNamespace(
-            last_vla_cot_bottleneck_mode=True,
-            last_vla_raw_vlm_context_to_dit=False,
+            last_vla_cot_bottleneck_mode=False,
+            last_vla_raw_vlm_context_to_dit=True,
         )
     )
     scorer = TrajectoryScorer("proxy")

@@ -96,6 +96,20 @@ class LightningDiTBlock(nn.Module):
             bias=attention_bias,
             cross_attention_dim=cross_attention_dim,
         )
+        self.cot_cross_attn = Attention(
+            query_dim=dim,
+            heads=num_heads,
+            dim_head=head_dim,
+            dropout=dropout,
+            bias=attention_bias,
+            cross_attention_dim=dim,
+        )
+        self.cot_out_proj = nn.Linear(dim, dim)
+        nn.init.constant_(self.cot_out_proj.weight, 0.0)
+        nn.init.constant_(self.cot_out_proj.bias, 0.0)
+        self.cot_condition_scale = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
+        self.cot_branch_gradient_scale = 1e-3
+        self.last_cot_delta_norm: Optional[torch.Tensor] = None
 
         if norm_type == "layer_norm":
             self.norm2 = nn.LayerNorm(dim, elementwise_affine=False, eps=1e-6)
@@ -123,6 +137,7 @@ class LightningDiTBlock(nn.Module):
         hidden_states: torch.Tensor,
         conditioning: torch.Tensor,
         encoder_hidden_states: Optional[torch.Tensor] = None,
+        cot_condition_tokens: Optional[torch.Tensor] = None,
         rotary_embedder: Optional[nn.Module] = None,
     ) -> torch.Tensor:
         mod_params = self.adaLN_modulation(conditioning)
@@ -138,6 +153,19 @@ class LightningDiTBlock(nn.Module):
             rotary_embedder=rotary_embedder
         )
         hidden_states = hidden_states + gate_attn.unsqueeze(1) * attn_output
+        self.last_cot_delta_norm = hidden_states.new_zeros(())
+        if cot_condition_tokens is not None:
+            cot_attn_output = self.cot_cross_attn(
+                modulated_states,
+                encoder_hidden_states=cot_condition_tokens,
+                rotary_embedder=rotary_embedder,
+            )
+            cot_delta = self.cot_out_proj(cot_attn_output)
+            if self.cot_branch_gradient_scale > 0.0:
+                cot_delta = cot_delta + float(self.cot_branch_gradient_scale) * (cot_attn_output - cot_attn_output.detach())
+            cot_delta = cot_delta * self.cot_condition_scale.to(device=cot_delta.device, dtype=cot_delta.dtype)
+            self.last_cot_delta_norm = cot_delta.detach().float().norm(dim=-1).mean()
+            hidden_states = hidden_states + cot_delta
 
         normed_states = self.norm2(hidden_states)
         modulated_states = self.modulate(normed_states, shift_ffn, scale_ffn)
@@ -216,6 +244,7 @@ class LightningDiT(nn.Module):
         encoder_hidden_states: torch.Tensor,
         conditioning_features: torch.Tensor,
         timesteps: torch.LongTensor,
+        cot_condition_tokens: Optional[torch.Tensor] = None,
         return_hidden_states: bool = False,
     ) -> torch.Tensor | tuple[torch.Tensor, List[torch.Tensor]]:
         """
@@ -238,11 +267,14 @@ class LightningDiT(nn.Module):
         hidden_states = hidden_states.contiguous()
         encoder_hidden_states = encoder_hidden_states.contiguous()
         conditioning_features = conditioning_features.contiguous()
+        if cot_condition_tokens is not None:
+            cot_condition_tokens = cot_condition_tokens.contiguous()
 
         time_embedding = self.timestep_encoder(timesteps)
         conditioning = time_embedding + conditioning_features
 
         all_hidden_states = [hidden_states]
+        cot_delta_norms = []
         for idx, block in enumerate(self.transformer_blocks):
             use_cross_attention = not (idx % 2 == 0 and self.interleave_attention)
             current_encoder_states = encoder_hidden_states if use_cross_attention else None
@@ -251,12 +283,21 @@ class LightningDiT(nn.Module):
                 hidden_states,
                 conditioning=conditioning,
                 encoder_hidden_states=current_encoder_states,
+                cot_condition_tokens=cot_condition_tokens,
                 rotary_embedder=self.rotary_embedder,
             )
+            if cot_condition_tokens is not None and block.last_cot_delta_norm is not None:
+                cot_delta_norms.append(block.last_cot_delta_norm)
             all_hidden_states.append(hidden_states)
 
         output = self.final_layer(hidden_states, conditioning)
+        if cot_delta_norms:
+            self.last_cot_condition_delta_norm = torch.stack([item.to(output) for item in cot_delta_norms]).mean()
+        else:
+            self.last_cot_condition_delta_norm = output.new_zeros(())
+        self.last_cot_branch_zero_init = output.new_tensor(
+            float(all(torch.count_nonzero(block.cot_out_proj.weight.detach()).item() == 0 for block in self.transformer_blocks))
+        )
         
         return (output, all_hidden_states) if return_hidden_states else output
-
 

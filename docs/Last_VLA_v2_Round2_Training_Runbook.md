@@ -8,14 +8,14 @@ This runbook prepares two full SFT lines. Do not set `RUN_TRAIN=1` or `RUN_EVAL=
 
 The old Round2/minimal launchers and teacher-trajectory/PDM-reranked Last-VLA configs have been moved to `scripts/last_vla_v2/archive/` and `configs/last_vla_v2/archive/`. They are retained for historical inspection only and are not production training entrypoints.
 
-Formal Last-VLA v2 training now uses only the high-capacity no-risk path:
+Formal Last-VLA v2 training now uses only the decoupled high-capacity no-risk path:
 
-- `scripts/last_vla_v2/highcap_no_risk/serverA_frozen_vlm_highcap_no_risk.sh`
-- `scripts/last_vla_v2/highcap_no_risk/serverB_vlm_lora_highcap_no_risk.sh`
-- `scripts/last_vla_v2/highcap_no_risk/run_final_readiness_gate.sh`
-- `scripts/last_vla_v2/highcap_no_risk/launch_local_remote_full_training.sh`
+- `scripts/last_vla_v2/decoupled_highcap_no_risk/serverA_frozen_vlm_decoupled_highcap_no_risk.sh`
+- `scripts/last_vla_v2/decoupled_highcap_no_risk/serverB_vlm_lora_decoupled_highcap_no_risk.sh`
+- `scripts/last_vla_v2/decoupled_highcap_no_risk/run_strict_preflight_decoupled.sh`
+- `scripts/last_vla_v2/decoupled_highcap_no_risk/prepare_decoupled_highcap_no_risk_data.sh`
 
-The canonical config names `last_vla_cot_alignment`, `last_vla_progressive_bottleneck`, `last_vla_progressive_bottleneck_eval`, and `last_vla_vlm_lora_cot_alignment` now point to high-cap no-risk settings. Minimal `4/32/12/12` and `patch_fallback` configs must not be used as a formal training path.
+Old hard-bottleneck configs are not compatible with the current code path. Minimal `4/32/12/12`, summary replacement, and `patch_fallback` configs must not be used as formal training.
 
 ## High-capacity No-risk Official Config
 
@@ -23,15 +23,15 @@ The minimal Last-VLA configs are smoke/debug configs only. The formal Last-VLA v
 
 Official values:
 
-- VLM summary `64`
+- raw VLM tokens preserved as base DiT context
 - CoT `192`
 - JEPA context/target `128 x 1024`
 - VGGT full geometry `192 x 512`
 - geometry grid `12 x 16`
 - risk disabled
-- expected eval DiT context length `256`
+- CoT condition tokens `192` enter through a zero-init residual branch
 
-Full raw VLM tokens still do not enter DiT in bottleneck mode. The high-cap line requires regenerated full geometry cache and regenerated 128-token JEPA cache; old 12-token JEPA cache is not acceptable for strict high-cap training. Line B VLM-LoRA requires regenerated train and navtest hidden caches before frozen-cache training/eval.
+VLM summary tokens are not generated or consumed. The high-cap line requires regenerated full geometry cache and regenerated 128-token JEPA cache; old 12-token JEPA cache is not acceptable for strict high-cap training. Line B VLM-LoRA requires regenerated train and navtest hidden caches before frozen-cache training/eval.
 
 ## Full Geometry Cache
 
