@@ -1,12 +1,12 @@
 use_last_vla: true
-last_vla_stage: disabled
+last_vla_stage: progressive_sft_decoupled
 use_last_rd: false
 last_rd_stage: disabled
 use_expert_features: false
 
 use_jepa: true
 use_vggt: false
-allow_expert_target_features: true
+allow_expert_target_features: false
 allow_future_targets_in_inference: false
 
 jepa_dim: 1024
@@ -57,3 +57,15 @@ last_vla_cot_condition_scale_init: 1.0
 last_vla_cot_condition_trainable_scale: true
 last_vla_context_mean_mode: raw_vlm_plus_zero_init_cot_residual
 last_vla_horizon_condition_mode: raw_vlm_plus_zero_init_cot_residual
+
+diffusion_loss_weight: 1.0
+last_vla_geometry_loss_weight: 0.10
+last_vla_geometry_loss_floor: 0.01
+last_vla_dynamic_loss_weight: 0.10
+last_vla_dynamic_loss_floor: 0.01
+last_vla_coarse_loss_weight: 0.20
+last_vla_coarse_loss_floor: 0.03
+last_vla_heading_loss_weight: 0.03
+last_vla_progress_loss_weight: 0.05
+last_vla_progress_loss_floor: 0.01
+last_vla_cot_consistency_loss_weight: 0.01

@@ -510,6 +510,10 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
         for key in EXPERT_FEATURE_KEYS:
             if key in data:
                 output_key = alias_map.get(key, key)
+                if output_key.startswith("jepa_") and not self.use_jepa:
+                    continue
+                if output_key in {"vggt_context_tokens", "vggt_target_tokens"} and not self.use_vggt:
+                    continue
                 if output_key in EXPERT_TARGET_FEATURE_KEYS and not self.allow_expert_target_features:
                     warnings.warn(
                         f"Expert cache {path} contains train-only '{output_key}', but "

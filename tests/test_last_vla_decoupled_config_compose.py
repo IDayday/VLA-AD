@@ -9,6 +9,7 @@ def _assert_decoupled(agent) -> None:
     assert agent["use_last_vla"] is True
     assert agent["use_last_rd"] is False
     assert agent["use_expert_features"] is False
+    assert agent["use_vggt"] is False
     assert agent["last_vla_condition_mode"] == "decoupled_cot_residual"
     assert agent["last_vla_cot_bottleneck_mode"] is False
     assert agent["last_vla_raw_vlm_context_to_dit"] is True

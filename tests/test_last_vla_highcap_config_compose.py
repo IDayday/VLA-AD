@@ -8,6 +8,7 @@ import yaml
 def _assert_highcap_agent(agent) -> None:
     assert agent["use_last_vla"] is True
     assert agent["use_last_rd"] is False
+    assert agent["use_vggt"] is False
     assert agent["last_vla_use_risk_head"] is False
     assert agent["num_risk_tokens"] == 0
     assert agent["last_vla_risk_loss_weight"] == 0.0

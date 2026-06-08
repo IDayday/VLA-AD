@@ -57,6 +57,20 @@ Scripts:
 
 Formal configs live only under `configs/last_vla_v2/decoupled_highcap_no_risk/`.
 
+## JEPA Split And Data-Root Fix
+
+`prepare_decoupled_highcap_no_risk_data.sh` now defaults train cache generation to:
+
+- `TRAIN_SPLIT=navtrain`
+- `NAVSIM_DATA_ROOT=/mnt/navsim`
+
+The JEPA overlay builder command receives both values explicitly:
+
+- `--split "${TRAIN_SPLIT}"`
+- `--data-root "${NAVSIM_DATA_ROOT}"`
+
+If `LOADER_MAX_SCENES` is set, the script also passes `--loader-max-scenes`. JEPA builder metadata records the actual `split` and CLI `data_root_arg`, so generated overlay metadata can be audited for `navtrain` and the expected NAVSIM root before full training.
+
 ## Sharded Cache Fix
 
 JEPA and geometry overlay builders now support safe parallel sharding:
@@ -135,7 +149,7 @@ pytest -q \
   tests/test_no_future_leakage.py
 ```
 
-Result: `121 passed, 3 skipped`.
+Result: `124 passed, 3 skipped`.
 
 Passed dry-run:
 
@@ -145,6 +159,8 @@ BASE_CHUNK_ROOT=/tmp/base \
 OUTPUT_ROOT=/tmp/out \
 VGGT_MODEL_PATH=/tmp/vggt \
 VJEPA_MODEL_PATH=/tmp/vjepa \
+NAVSIM_DATA_ROOT=/tmp/navsim \
+TRAIN_SPLIT=navtrain \
 NUM_SHARDS=2 \
 SHARD_INDEX=0 \
 scripts/last_vla_v2/decoupled_highcap_no_risk/prepare_decoupled_highcap_no_risk_data.sh
@@ -168,6 +184,8 @@ BASE_CHUNK_ROOT=/path/to/base_train_chunks \
 OUTPUT_ROOT=/path/to/last_vla_v2_outputs \
 VGGT_MODEL_PATH=/path/to/VGGT-1B \
 VJEPA_MODEL_PATH=/path/to/vjepa2 \
+NAVSIM_DATA_ROOT=/mnt/navsim \
+TRAIN_SPLIT=navtrain \
 ALLOW_FULL_CACHE_WITHOUT_MAX=1 \
 scripts/last_vla_v2/decoupled_highcap_no_risk/prepare_decoupled_highcap_no_risk_data.sh
 ```
@@ -180,6 +198,8 @@ BASE_CHUNK_ROOT=/path/to/base_train_chunks \
 OUTPUT_ROOT=/path/to/last_vla_v2_outputs \
 VGGT_MODEL_PATH=/path/to/VGGT-1B \
 VJEPA_MODEL_PATH=/path/to/vjepa2 \
+NAVSIM_DATA_ROOT=/mnt/navsim \
+TRAIN_SPLIT=navtrain \
 NUM_SHARDS=2 \
 SHARD_INDEX=0 \
 MERGE_SHARDS=0 \
@@ -195,6 +215,8 @@ BASE_CHUNK_ROOT=/path/to/base_train_chunks \
 OUTPUT_ROOT=/path/to/last_vla_v2_outputs \
 VGGT_MODEL_PATH=/path/to/VGGT-1B \
 VJEPA_MODEL_PATH=/path/to/vjepa2 \
+NAVSIM_DATA_ROOT=/mnt/navsim \
+TRAIN_SPLIT=navtrain \
 NUM_SHARDS=2 \
 SHARD_INDEX=1 \
 MERGE_SHARDS=0 \

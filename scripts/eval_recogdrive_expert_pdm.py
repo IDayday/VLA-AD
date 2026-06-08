@@ -10,6 +10,7 @@ import sys
 import warnings
 from dataclasses import asdict
 from pathlib import Path
+from types import SimpleNamespace
 from typing import Any, Dict, List, Optional, Tuple
 
 import torch
@@ -56,8 +57,14 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--chunk-name-pattern", default="navtest_full_chunk_*")
     parser.add_argument("--metric-cache-dir", type=Path, default=None)
     parser.add_argument("--max-samples", type=int, default=None)
+    parser.add_argument("--shard-index", type=int, default=0)
+    parser.add_argument("--num-shards", type=int, default=1)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="fp32")
+    parser.add_argument("--trajectory-output-key", choices=("pred_traj", "pred_coarse_traj"), default="pred_traj")
+    parser.add_argument("--online-vlm-path", type=Path, default=None)
+    parser.add_argument("--online-vlm-type", default="internvl")
+    parser.add_argument("--online-vlm-lora-adapter-dir", type=Path, default=None)
     parser.add_argument("--deterministic", action="store_true", default=True)
     return parser.parse_args()
 
@@ -336,19 +343,19 @@ def make_batch(sample: Dict[str, Any], planner: ReCogDriveDiffusionPlanner, devi
     if require_vggt:
         if not strict_last_vla_full_geometry:
             data["vggt_context_tokens"] = sample["vggt_context_tokens"].float().unsqueeze(0).to(device=device, dtype=dtype)
-        if use_last_vla:
-            for key in ("vggt_geometry_tokens", "vggt_depth_tokens", "vggt_pointmap_tokens", "vggt_camera_tokens"):
-                if key in sample and isinstance(sample[key], torch.Tensor):
-                    data[key] = sample[key].float().unsqueeze(0).to(device=device, dtype=dtype)
-            mode_code = sample.get("vggt_geometry_mode_code")
-            if isinstance(mode_code, torch.Tensor):
-                data["vggt_geometry_mode_code"] = mode_code.view(1).to(device=device)
-            elif "vggt_geometry_mode" in sample:
-                raw_mode = sample.get("vggt_geometry_mode")
-                if isinstance(raw_mode, bytes):
-                    raw_mode = raw_mode.decode("utf-8", errors="replace")
-                mode_map = {"missing": -1, "no_geometry": 0, "patch_fallback": 1, "full_geometry": 2}
-                data["vggt_geometry_mode_code"] = torch.tensor([mode_map.get(str(raw_mode), -1)], device=device, dtype=torch.long)
+    if use_last_vla:
+        for key in ("vggt_geometry_tokens", "vggt_depth_tokens", "vggt_pointmap_tokens", "vggt_camera_tokens"):
+            if key in sample and isinstance(sample[key], torch.Tensor):
+                data[key] = sample[key].float().unsqueeze(0).to(device=device, dtype=dtype)
+        mode_code = sample.get("vggt_geometry_mode_code")
+        if isinstance(mode_code, torch.Tensor):
+            data["vggt_geometry_mode_code"] = mode_code.view(1).to(device=device)
+        elif "vggt_geometry_mode" in sample:
+            raw_mode = sample.get("vggt_geometry_mode")
+            if isinstance(raw_mode, bytes):
+                raw_mode = raw_mode.decode("utf-8", errors="replace")
+            mode_map = {"missing": -1, "no_geometry": 0, "patch_fallback": 1, "full_geometry": 2}
+            data["vggt_geometry_mode_code"] = torch.tensor([mode_map.get(str(raw_mode), -1)], device=device, dtype=torch.long)
     target_keys = [key for key in ("jepa_target_tokens", "vggt_target_tokens", "vggt_geometry_target_tokens") if key in sample]
     if target_keys and not _WARNED_TRAIN_ONLY_TARGET_KEYS:
         warnings.warn(f"Evaluation sample contains train-only target keys {target_keys}; they are not passed to get_action.", RuntimeWarning)
@@ -356,8 +363,34 @@ def make_batch(sample: Dict[str, Any], planner: ReCogDriveDiffusionPlanner, devi
     return vl_features, BatchFeature(data=data)
 
 
+def build_online_vlm(args: argparse.Namespace, device: torch.device):
+    if args.online_vlm_path is None:
+        return None, None
+    from scripts.build_recogdrive_hidden_cache_with_lora import compute_hidden, load_backbone
+
+    runtime_args = SimpleNamespace(
+        vlm_path=args.online_vlm_path,
+        vlm_type=args.online_vlm_type,
+        device="cuda" if device.type == "cuda" else "cpu",
+        vlm_lora_adapter=None,
+        vlm_lora_adapter_dir=args.online_vlm_lora_adapter_dir,
+        lora_r=None,
+        lora_alpha=None,
+        lora_dropout=None,
+        lora_target_modules=None,
+        lora_use_rslora=None,
+        lora_use_dora=None,
+        allow_lora_config_override=False,
+    )
+    return load_backbone(runtime_args), compute_hidden
+
+
 def main() -> int:
     args = parse_args()
+    if args.num_shards <= 0:
+        raise ValueError("--num-shards must be positive.")
+    if not (0 <= args.shard_index < args.num_shards):
+        raise ValueError("--shard-index must be in [0, num_shards).")
     if args.feature_source in {"chunk", "disk", "chunk_or_online"}:
         chunks = chunk_dirs(args)
     else:
@@ -372,6 +405,7 @@ def main() -> int:
         planner = planner.to(dtype=dtype)
     load_checkpoint(planner, args.checkpoint)
     planner.eval()
+    online_backbone, online_compute_hidden = build_online_vlm(args, device)
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
     predictions = []
@@ -391,12 +425,24 @@ def main() -> int:
     missing_metric_cache = 0
     failed_pdm = 0
     paths = sample_paths(chunks, args.max_samples)
+    if args.num_shards > 1:
+        paths = [item for idx, item in enumerate(paths) if idx % args.num_shards == args.shard_index]
     for idx, (chunk_dir, path, index_record) in enumerate(paths):
         sample = load_sample(path)
+        if online_backbone is not None and online_compute_hidden is not None:
+            sample = dict(sample)
+            sample["last_hidden_state"] = online_compute_hidden(
+                online_backbone,
+                sample,
+                device="cuda" if device.type == "cuda" else "cpu",
+            )
         vl_features, action_input = make_batch(sample, planner, device, dtype)
         with torch.no_grad():
             output = planner.get_action(vl_features, action_input, deterministic=args.deterministic)
-        pred = output["pred_traj"].detach().float().cpu().squeeze(0)
+        if args.trajectory_output_key not in output:
+            available_keys = ", ".join(sorted(output.keys()))
+            raise KeyError(f"Missing requested trajectory output {args.trajectory_output_key!r}; available keys: {available_keys}")
+        pred = output[args.trajectory_output_key].detach().float().cpu().squeeze(0)
         if not torch.isfinite(pred).all():
             raise RuntimeError(f"Non-finite prediction for {path}")
         record = {
@@ -404,6 +450,7 @@ def main() -> int:
             "chunk": str(chunk_dir),
             "scene_token": str(sample.get("scene_token", path.stem)),
             "sample_token": str(sample.get("sample_token", index_record.get("sample_token", path.stem))),
+            "trajectory_output_key": args.trajectory_output_key,
             "pred_traj": pred.tolist(),
             "pdm_valid": None,
         }
@@ -457,6 +504,11 @@ def main() -> int:
         "feature_source": args.feature_source,
         "checkpoint": str(args.checkpoint),
         "precision": args.precision,
+        "trajectory_output_key": args.trajectory_output_key,
+        "online_vlm_path": str(args.online_vlm_path) if args.online_vlm_path is not None else None,
+        "online_vlm_lora_adapter_dir": str(args.online_vlm_lora_adapter_dir) if args.online_vlm_lora_adapter_dir is not None else None,
+        "shard_index": args.shard_index,
+        "num_shards": args.num_shards,
         "chunk_cache_dirs": [str(chunk) for chunk in chunks],
         "metric_cache_dir": str(args.metric_cache_dir) if args.metric_cache_dir is not None else None,
         "num_samples": len(predictions),
@@ -490,6 +542,7 @@ def main() -> int:
         f"Checkpoint: `{args.checkpoint}`",
         f"Split: `{args.split}`",
         f"Samples: {len(predictions)}",
+        f"Trajectory output key: `{args.trajectory_output_key}`",
         f"Target teacher tokens disabled in eval: {metrics['target_teacher_tokens_disabled_in_eval']}",
         f"Trajectory L1: {metrics.get('trajectory_l1')}",
         f"PDM valid samples: {metrics['num_pdm_valid']}",

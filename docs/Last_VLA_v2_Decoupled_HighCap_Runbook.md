@@ -30,6 +30,21 @@ Hydra experiments:
 - `last_vla_decoupled_progressive_highcap_no_risk`
 - `last_vla_decoupled_vlm_lora_cot_alignment_highcap_no_risk`
 
+## Organized Cache Entrypoint
+
+Use this stable cache entrypoint for preflight, Line A, and Line B:
+
+```bash
+source /mnt/project/VLA-AD/cache/last_vla_v2/experiments/decoupled_highcap_no_risk/cache.env
+```
+
+It exposes `BASE_CHUNK_ROOT`, `JEPA_DENSE_CACHE_ROOT`, `GEOMETRY_CACHE_ROOT`,
+`FULL_HIGHCAP_TRAIN_CHUNK_ROOT`, `NAVSIM_DATA_ROOT=/mnt/navsim`, and
+`PYTHON_BIN=/root/miniconda3/envs/navsim/bin/python`.
+
+The directory contains symlinks only; large cache payloads stay in their
+generation directories.
+
 ## Cache Contract
 
 - full raw VLM hidden state preserved
@@ -49,6 +64,8 @@ BASE_CHUNK_ROOT=/path/to/base_chunks \
 OUTPUT_ROOT=/path/to/out \
 VGGT_MODEL_PATH=/path/to/VGGT-1B \
 VJEPA_MODEL_PATH=/path/to/vjepa2 \
+NAVSIM_DATA_ROOT=/mnt/navsim \
+TRAIN_SPLIT=navtrain \
 scripts/last_vla_v2/decoupled_highcap_no_risk/prepare_decoupled_highcap_no_risk_data.sh
 ```
 
@@ -60,6 +77,8 @@ BASE_CHUNK_ROOT=/path/to/base_chunks \
 OUTPUT_ROOT=/path/to/out \
 VGGT_MODEL_PATH=/path/to/VGGT-1B \
 VJEPA_MODEL_PATH=/path/to/vjepa2 \
+NAVSIM_DATA_ROOT=/mnt/navsim \
+TRAIN_SPLIT=navtrain \
 ALLOW_FULL_CACHE_WITHOUT_MAX=1 \
 scripts/last_vla_v2/decoupled_highcap_no_risk/prepare_decoupled_highcap_no_risk_data.sh
 ```
@@ -83,6 +102,8 @@ BASE_CHUNK_ROOT=/path/to/base_chunks \
 OUTPUT_ROOT=/path/to/out \
 VGGT_MODEL_PATH=/path/to/VGGT-1B \
 VJEPA_MODEL_PATH=/path/to/vjepa2 \
+NAVSIM_DATA_ROOT=/mnt/navsim \
+TRAIN_SPLIT=navtrain \
 NUM_SHARDS=2 \
 SHARD_INDEX=0 \
 MERGE_SHARDS=0 \
@@ -98,6 +119,8 @@ BASE_CHUNK_ROOT=/path/to/base_chunks \
 OUTPUT_ROOT=/path/to/out \
 VGGT_MODEL_PATH=/path/to/VGGT-1B \
 VJEPA_MODEL_PATH=/path/to/vjepa2 \
+NAVSIM_DATA_ROOT=/mnt/navsim \
+TRAIN_SPLIT=navtrain \
 NUM_SHARDS=2 \
 SHARD_INDEX=1 \
 MERGE_SHARDS=0 \

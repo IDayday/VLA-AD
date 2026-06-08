@@ -3,6 +3,8 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
+import shutil
 import sys
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Optional, Tuple
@@ -78,6 +80,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--shard-index", type=int, default=0)
     parser.add_argument("--num-shards", type=int, default=1)
     parser.add_argument("--cache-variant", default="lora_hidden_regeneration")
+    parser.add_argument("--skip-existing", action="store_true", help="Reuse existing sample .pt files in the output shard.")
+    parser.add_argument(
+        "--reuse-existing-root",
+        type=Path,
+        action="append",
+        default=[],
+        help="Existing cache/shard root to hardlink samples from by sample_token before regenerating.",
+    )
+    parser.add_argument("--progress-every", type=int, default=0, help="Print progress every N written or reused samples.")
     parser.add_argument("--synthetic-smoke", action="store_true")
     return parser.parse_args()
 
@@ -294,14 +305,9 @@ def load_backbone(args: argparse.Namespace):
     return backbone
 
 
-def compute_hidden(backbone: Any, sample: Dict[str, Any], *, device: str) -> torch.Tensor:
+def build_prompt(sample: Dict[str, Any]) -> str:
     from navsim.agents.recogdrive.recogdrive_agent import format_number
-    from navsim.agents.recogdrive.utils.internvl_preprocess import load_image
 
-    if not isinstance(sample.get("image_path_tensor"), torch.Tensor):
-        raise KeyError("LoRA hidden regeneration requires image_path_tensor in the base chunk cache.")
-    image_path = decode_path_tensor(sample["image_path_tensor"])
-    pixel_values = load_image(image_path, max_num=12).to(device)
     history = sample["history_trajectory"].float()
     command = sample["high_command_one_hot"].float()
     command_names = ["turn left", "go straight", "turn right"]
@@ -317,9 +323,64 @@ def compute_hidden(backbone: Any, sample: Dict[str, Any], *, device: str) -> tor
         "- Each point format: (x:float, y:float, heading:float)\n- Use [PT, ...] to encapsulate the trajectory\n"
         "- Maintain numerical precision to 2 decimal places"
     )
+    return prompt
+
+
+def compute_hidden_batch(backbone: Any, batch: List[Dict[str, Any]], *, device: str) -> List[torch.Tensor]:
+    if not batch:
+        return []
+    pixel_values = torch.cat([item["pixel_values"] for item in batch], dim=0).to(device)
+    prompts = [str(item["prompt"]) for item in batch]
+    num_patches_list = [int(item["pixel_values"].shape[0]) for item in batch]
     with torch.no_grad():
-        outputs = backbone(pixel_values, [prompt], [pixel_values.shape[0]])
-    return normalize_hidden_state(outputs.hidden_states[-1])
+        outputs = backbone(pixel_values, prompts, num_patches_list)
+    hidden = outputs.hidden_states[-1]
+    if hidden.ndim == 2:
+        if len(batch) != 1:
+            raise ValueError(f"Batched VLM returned 2D hidden state for batch_size={len(batch)}.")
+        return [normalize_hidden_state(hidden)]
+    if hidden.ndim != 3 or hidden.shape[0] != len(batch):
+        raise ValueError(f"Batched VLM hidden state shape {tuple(hidden.shape)} is incompatible with batch_size={len(batch)}.")
+    return [normalize_hidden_state(hidden[idx]) for idx in range(len(batch))]
+
+
+def compute_hidden(backbone: Any, sample: Dict[str, Any], *, device: str) -> torch.Tensor:
+    from navsim.agents.recogdrive.utils.internvl_preprocess import load_image
+
+    if not isinstance(sample.get("image_path_tensor"), torch.Tensor):
+        raise KeyError("LoRA hidden regeneration requires image_path_tensor in the base chunk cache.")
+    image_path = decode_path_tensor(sample["image_path_tensor"])
+    item = {
+        "pixel_values": load_image(image_path, max_num=12),
+        "prompt": build_prompt(sample),
+    }
+    return compute_hidden_batch(backbone, [item], device=device)[0]
+
+
+def build_reuse_index(roots: List[Path]) -> Dict[str, Path]:
+    mapping: Dict[str, Path] = {}
+    for root in roots:
+        if not root.exists():
+            continue
+        sample_dirs: List[Path]
+        if (root / "samples").is_dir():
+            sample_dirs = [root / "samples"]
+        else:
+            sample_dirs = sorted(path for path in root.glob("*/samples") if path.is_dir())
+        for samples_dir in sample_dirs:
+            for path in samples_dir.glob("*.pt"):
+                mapping.setdefault(path.stem, path)
+    return mapping
+
+
+def link_or_copy(src: Path, dst: Path) -> None:
+    dst.parent.mkdir(parents=True, exist_ok=True)
+    if dst.exists():
+        return
+    try:
+        os.link(src, dst)
+    except OSError:
+        shutil.copy2(src, dst)
 
 
 def regenerate(args: argparse.Namespace) -> Dict[str, Any]:
@@ -333,7 +394,48 @@ def regenerate(args: argparse.Namespace) -> Dict[str, Any]:
     samples_dir.mkdir(parents=True, exist_ok=True)
     rows: List[Dict[str, Any]] = []
     hidden_lengths: List[int] = []
-    written = skipped = 0
+    batch: List[Dict[str, Any]] = []
+    reuse_index = build_reuse_index(list(args.reuse_existing_root))
+    written = skipped = reused = reused_external = regenerated = 0
+
+    def progress() -> None:
+        if args.progress_every > 0 and written > 0 and written % args.progress_every == 0:
+            print(
+                json.dumps(
+                    {
+                        "progress_written": written,
+                        "regenerated": regenerated,
+                        "reused_existing": reused,
+                        "reused_external": reused_external,
+                        "skipped_by_shard": skipped,
+                        "shard_index": int(args.shard_index),
+                        "num_shards": int(args.num_shards),
+                    },
+                    sort_keys=True,
+                ),
+                flush=True,
+            )
+
+    def flush_batch() -> None:
+        nonlocal regenerated, written
+        if not batch:
+            return
+        if args.synthetic_smoke:
+            hidden_states = [normalize_hidden_state(synthetic_hidden(item["sample"])) for item in batch]
+        else:
+            hidden_states = compute_hidden_batch(backbone, batch, device=args.device)
+        for item, hidden in zip(batch, hidden_states):
+            preserved = dict(item["preserved"])
+            preserved["last_hidden_state"] = hidden
+            hidden_lengths.append(int(hidden.shape[0]))
+            atomic_torch_save(preserved, item["out_path"])
+            rows.append(item["row"])
+            regenerated += 1
+            written += 1
+            progress()
+        batch.clear()
+
+    batch_size = max(1, int(args.batch_size))
     for idx, (_, sample_path, record) in enumerate(iter_samples(args.base_chunk_root, args.chunk_name_pattern, args.max_samples)):
         if idx % int(args.num_shards) != int(args.shard_index):
             skipped += 1
@@ -346,17 +448,42 @@ def regenerate(args: argparse.Namespace) -> Dict[str, Any]:
         preserved = {key: sample[key] for key in PRESERVE_KEYS if key in sample}
         if log_name:
             preserved["log_name"] = log_name
-        hidden = synthetic_hidden(sample) if args.synthetic_smoke else compute_hidden(backbone, sample, device=args.device)
-        hidden = normalize_hidden_state(hidden)
-        preserved["last_hidden_state"] = hidden
-        hidden_lengths.append(int(hidden.shape[0]))
         out_path = samples_dir / f"{token}.pt"
-        atomic_torch_save(preserved, out_path)
         row = {"sample_token": token, "scene_token": scene_token, "path": str(out_path.relative_to(args.output_chunk_root))}
         if log_name:
             row["log_name"] = log_name
-        rows.append(row)
-        written += 1
+        if args.skip_existing and out_path.is_file():
+            rows.append(row)
+            reused += 1
+            written += 1
+            progress()
+            continue
+        reuse_path = reuse_index.get(token)
+        if reuse_path is not None and reuse_path.is_file():
+            link_or_copy(reuse_path, out_path)
+            rows.append(row)
+            reused_external += 1
+            written += 1
+            progress()
+            continue
+        item = {
+            "sample": sample,
+            "preserved": preserved,
+            "out_path": out_path,
+            "row": row,
+        }
+        if not args.synthetic_smoke:
+            from navsim.agents.recogdrive.utils.internvl_preprocess import load_image
+
+            if not isinstance(sample.get("image_path_tensor"), torch.Tensor):
+                raise KeyError("LoRA hidden regeneration requires image_path_tensor in the base chunk cache.")
+            image_path = decode_path_tensor(sample["image_path_tensor"])
+            item["pixel_values"] = load_image(image_path, max_num=12)
+            item["prompt"] = build_prompt(sample)
+        batch.append(item)
+        if len(batch) >= batch_size:
+            flush_batch()
+    flush_batch()
 
     with (args.output_chunk_root / "index.jsonl").open("w", encoding="utf-8") as f:
         for row in rows:
@@ -377,6 +504,9 @@ def regenerate(args: argparse.Namespace) -> Dict[str, Any]:
         "source_lora_adapter": str(adapter_state_path) if adapter_state_path is not None else None,
         "hidden_dtype": "fp32",
         "num_samples": int(written),
+        "num_regenerated": int(regenerated),
+        "num_reused_existing": int(reused),
+        "num_reused_external": int(reused_external),
         "num_skipped_by_shard": int(skipped),
         "shard_index": int(args.shard_index),
         "num_shards": int(args.num_shards),

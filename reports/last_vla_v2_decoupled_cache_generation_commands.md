@@ -14,6 +14,8 @@ BASE_CHUNK_ROOT=/path/to/base_train_chunks \
 OUTPUT_ROOT=/path/to/last_vla_v2_outputs \
 VGGT_MODEL_PATH=/path/to/VGGT-1B \
 VJEPA_MODEL_PATH=/path/to/vjepa2 \
+NAVSIM_DATA_ROOT=/mnt/navsim \
+TRAIN_SPLIT=navtrain \
 ALLOW_FULL_CACHE_WITHOUT_MAX=1 \
 scripts/last_vla_v2/decoupled_highcap_no_risk/prepare_decoupled_highcap_no_risk_data.sh
 ```
@@ -34,6 +36,8 @@ BASE_CHUNK_ROOT=/path/to/base_train_chunks \
 OUTPUT_ROOT=/path/to/last_vla_v2_outputs \
 VGGT_MODEL_PATH=/path/to/VGGT-1B \
 VJEPA_MODEL_PATH=/path/to/vjepa2 \
+NAVSIM_DATA_ROOT=/mnt/navsim \
+TRAIN_SPLIT=navtrain \
 NUM_SHARDS=2 \
 SHARD_INDEX=0 \
 MERGE_SHARDS=0 \
@@ -49,6 +53,8 @@ BASE_CHUNK_ROOT=/path/to/base_train_chunks \
 OUTPUT_ROOT=/path/to/last_vla_v2_outputs \
 VGGT_MODEL_PATH=/path/to/VGGT-1B \
 VJEPA_MODEL_PATH=/path/to/vjepa2 \
+NAVSIM_DATA_ROOT=/mnt/navsim \
+TRAIN_SPLIT=navtrain \
 NUM_SHARDS=2 \
 SHARD_INDEX=1 \
 MERGE_SHARDS=0 \

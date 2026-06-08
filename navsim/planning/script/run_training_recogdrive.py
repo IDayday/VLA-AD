@@ -126,6 +126,21 @@ def _parse_key_steps() -> List[int]:
     return sorted(set(steps))
 
 
+def _parse_key_epochs() -> List[int]:
+    raw = os.getenv("RECOGDRIVE_KEY_EPOCHS", os.getenv("LAST_VLA_KEY_EPOCHS", ""))
+    if not raw:
+        return []
+    epochs: List[int] = []
+    for item in raw.replace(";", ",").split(","):
+        item = item.strip()
+        if item:
+            epoch = int(item)
+            if epoch <= 0:
+                raise ValueError(f"RECOGDRIVE_KEY_EPOCHS must contain 1-based positive epochs, got {epoch}")
+            epochs.append(epoch)
+    return sorted(set(epochs))
+
+
 class StepCheckpointCallback(pl.Callback):
     """Save exact global-step checkpoints for staged PDM evaluation."""
 
@@ -148,6 +163,25 @@ class StepCheckpointCallback(pl.Callback):
 
     def on_train_end(self, trainer, pl_module) -> None:
         self._save(trainer, self.dirpath / "latest.ckpt")
+
+
+class EpochCheckpointCallback(pl.Callback):
+    """Save exact completed-epoch checkpoints independent of validation."""
+
+    def __init__(self, dirpath: Path, epochs: List[int]) -> None:
+        self.dirpath = dirpath
+        self.epochs = set(int(epoch) for epoch in epochs)
+        self.saved_epochs: set[int] = set()
+
+    def _save(self, trainer: pl.Trainer, path: Path) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        trainer.save_checkpoint(str(path))
+
+    def on_train_epoch_end(self, trainer, pl_module) -> None:
+        completed_epoch = int(trainer.current_epoch) + 1
+        if completed_epoch in self.epochs and completed_epoch not in self.saved_epochs:
+            self._save(trainer, self.dirpath / f"epoch_{completed_epoch:03d}.ckpt")
+            self.saved_epochs.add(completed_epoch)
 
 
 class ReCogDriveTrainingProgressCallback(pl.Callback):
@@ -604,6 +638,7 @@ def write_run_reports(
     agent: AbstractAgent,
     loader_mode: str,
     key_steps: List[int],
+    key_epochs: List[int],
     data_report: Optional[Dict[str, Any]] = None,
 ) -> None:
     if int(os.getenv("RANK", "0")) != 0:
@@ -723,6 +758,7 @@ def write_run_reports(
     if isinstance(payload, dict):
         payload["loader_mode"] = loader_mode
         payload["key_checkpoint_steps"] = key_steps
+        payload["key_checkpoint_epochs"] = key_epochs
         payload["data_report"] = data_report
     (output_dir / "train_args.json").write_text(json.dumps(payload, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
 
@@ -1089,6 +1125,7 @@ def main(cfg: DictConfig) -> None:
 
     logger.info("Building Trainer")
     key_steps = _parse_key_steps()
+    key_epochs = _parse_key_epochs()
     callbacks = [
         pl.callbacks.ModelCheckpoint(
             monitor="val/loss_epoch",
@@ -1100,7 +1137,9 @@ def main(cfg: DictConfig) -> None:
         StepCheckpointCallback(Path(cfg.output_dir), key_steps),
         ReCogDriveTrainingProgressCallback(),
     ]
-    write_run_reports(cfg, agent, loader_mode, key_steps, data_report)
+    if key_epochs:
+        callbacks.append(EpochCheckpointCallback(Path(cfg.output_dir), key_epochs))
+    write_run_reports(cfg, agent, loader_mode, key_steps, key_epochs, data_report)
     trainer = pl.Trainer(**cfg.trainer.params, callbacks=callbacks)
 
     resume_ckpt_path = cfg.get("resume_ckpt_path", None)

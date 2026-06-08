@@ -23,6 +23,8 @@ def _write_sample(root: Path, token: str) -> None:
         "trajectory": torch.zeros(8, 3),
         "jepa_context_tokens": torch.zeros(128, 1024),
         "jepa_target_tokens": torch.zeros(128, 1024),
+        "vggt_context_tokens": torch.zeros(12, 2048),
+        "vggt_target_tokens": torch.zeros(12, 2048),
         "vggt_geometry_tokens": torch.zeros(192, 512),
         "vggt_geometry_mode_code": torch.tensor(2),
     }
@@ -47,7 +49,7 @@ def test_highcap_no_risk_dataset_does_not_require_risk_or_vggt_context(tmp_path:
         include_expert_features=True,
         include_expert_targets=True,
         use_jepa=True,
-        use_vggt=True,
+        use_vggt=False,
         num_jepa_tokens=128,
         num_vggt_tokens=128,
         num_geometry_tokens=192,
@@ -65,6 +67,7 @@ def test_highcap_no_risk_dataset_does_not_require_risk_or_vggt_context(tmp_path:
     assert token == "sample_000"
     assert "risk_labels" not in features
     assert "vggt_context_tokens" not in features
+    assert "vggt_target_tokens" not in features
     assert features["jepa_context_tokens"].shape == (128, 1024)
     assert features["jepa_target_tokens"].shape == (128, 1024)
     assert features["vggt_geometry_tokens"].shape == (192, 512)
@@ -74,3 +77,41 @@ def test_highcap_no_risk_dataset_does_not_require_risk_or_vggt_context(tmp_path:
     assert collated_features["jepa_target_tokens"].shape == (1, 128, 1024)
     assert collated_targets["trajectory"].shape == (1, 8, 3)
     assert tokens == ["sample_000"]
+
+
+def test_highcap_no_risk_feature_builder_ignores_legacy_vggt_context(tmp_path: Path):
+    try:
+        from navsim.agents.recogdrive.recogdrive_features import ReCogDriveFeatureBuilder
+    except Exception as exc:
+        pytest.skip(f"feature builder dependencies unavailable: {exc}")
+
+    (tmp_path / "samples").mkdir(parents=True)
+    _write_sample(tmp_path, "sample_000")
+    (tmp_path / "index.jsonl").write_text(
+        json.dumps({"sample_token": "sample_000", "path": "samples/sample_000.pt"}) + "\n",
+        encoding="utf-8",
+    )
+
+    builder = ReCogDriveFeatureBuilder(
+        cache_hidden_state=False,
+        cache_mode=False,
+        use_expert_features=True,
+        expert_feature_source="chunk",
+        expert_cache_dir=str(tmp_path),
+        num_jepa_tokens=128,
+        num_vggt_tokens=128,
+        num_geometry_tokens=192,
+        allow_expert_target_features=True,
+        use_jepa=True,
+        use_vggt=False,
+        jepa_dim=1024,
+        vggt_dim=2048,
+        geometry_teacher_dim=512,
+    )
+    features = builder._load_expert_features("unused_log", "sample_000")
+    assert features["jepa_context_tokens"].shape == (128, 1024)
+    assert features["jepa_target_tokens"].shape == (128, 1024)
+    assert features["vggt_geometry_tokens"].shape == (192, 512)
+    assert features["vggt_geometry_mode_code"].item() == 2
+    assert "vggt_context_tokens" not in features
+    assert "vggt_target_tokens" not in features

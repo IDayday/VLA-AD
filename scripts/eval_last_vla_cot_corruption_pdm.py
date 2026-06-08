@@ -33,6 +33,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-samples", type=int, default=None)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="fp32")
+    parser.add_argument("--trajectory-output-key", choices=("pred_traj", "pred_coarse_traj"), default="pred_traj")
     parser.add_argument("--zero-all-cot", action="store_true")
     parser.add_argument("--zero-scene-cot", action="store_true")
     parser.add_argument("--zero-geometry-cot", action="store_true")
@@ -150,7 +151,10 @@ def main() -> int:
         action_input = type(action_input)(data=action_data)
         with torch.no_grad():
             output = planner.get_action(vl_features, action_input, deterministic=args.deterministic)
-        pred = output["pred_traj"].detach().float().cpu().squeeze(0)
+        if args.trajectory_output_key not in output:
+            available_keys = ", ".join(sorted(output.keys()))
+            raise KeyError(f"Missing requested trajectory output {args.trajectory_output_key!r}; available keys: {available_keys}")
+        pred = output[args.trajectory_output_key].detach().float().cpu().squeeze(0)
         gt = sample.get("trajectory")
         l1 = float((pred - gt.float()).abs().mean().item()) if isinstance(gt, torch.Tensor) else None
         if l1 is not None:
@@ -165,6 +169,7 @@ def main() -> int:
                 "chunk": chunk_dir.name,
                 "score_mode": args.score_mode,
                 "corruption_mode": corruption_mode(args),
+                "trajectory_output_key": args.trajectory_output_key,
                 "target_teacher_tokens_disabled_in_eval": True,
                 "cot_bottleneck_active": False,
                 "raw_vlm_context_used": not bool(args.cot_only_for_debug_only),

@@ -413,6 +413,7 @@ def build_teacher_extractors(args: argparse.Namespace):
             device=args.device,
             precision=args.precision,
             require_geometry=bool(getattr(args, "require_vggt_geometry", False)),
+            context_num_tokens=int(getattr(args, "num_vggt_tokens", 12)),
             geometry_output_dim=int(getattr(args, "vggt_geometry_teacher_dim", 512)),
             geometry_num_tokens=int(getattr(args, "num_geometry_tokens", 12)),
             geometry_grid=(int(getattr(args, "geometry_grid_rows", 3)), int(getattr(args, "geometry_grid_cols", 4))),

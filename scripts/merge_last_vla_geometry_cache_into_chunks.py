@@ -35,7 +35,8 @@ GEOMETRY_KEYS = (
     "vggt_depth_target_tokens",
     "vggt_pointmap_target_tokens",
 )
-CONTEXT_KEYS = ("vggt_context_tokens", "vggt_target_tokens")
+CONTEXT_KEYS = ("vggt_context_tokens",)
+LEGACY_VGGT_TARGET_KEY = "vggt_target_tokens"
 MODE_KEY = "vggt_geometry_mode"
 MODE_CODE_KEY = "vggt_geometry_mode_code"
 GEOMETRY_META_KEYS = ("vggt_geometry_source", "vggt_geometry_tokenizer_metadata", MODE_CODE_KEY)
@@ -63,9 +64,21 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--jepa-chunk-name-pattern", default="*")
     parser.add_argument("--expected-jepa-tokens", type=int, default=128)
     parser.add_argument("--jepa-dim", type=int, default=1024)
+    parser.add_argument("--expected-vggt-context-tokens", type=int, default=None)
+    parser.add_argument("--expected-vggt-tokens", type=int, default=None, help="Deprecated alias for --expected-vggt-context-tokens.")
+    parser.add_argument("--vggt-dim", type=int, default=2048)
+    parser.add_argument("--keep-legacy-vggt-target", action="store_true")
     parser.add_argument("--strict-jepa-coverage", action="store_true")
     parser.add_argument("--min-jepa-coverage", type=float, default=0.99)
     return parser.parse_args()
+
+
+def expected_vggt_context_tokens(args: argparse.Namespace) -> int:
+    if args.expected_vggt_context_tokens is not None:
+        return int(args.expected_vggt_context_tokens)
+    if args.expected_vggt_tokens is not None:
+        return int(args.expected_vggt_tokens)
+    return 12
 
 
 def chunk_dirs(root: Path, pattern: str) -> List[Path]:
@@ -146,8 +159,7 @@ def _validate_geometry_value(key: str, payload: Dict[str, Any], *, geometry_teac
     if key not in payload:
         return
     if key in CONTEXT_SCHEMA and key in CONTEXT_KEYS:
-        validate_token_tensor(payload, key, CONTEXT_SCHEMA[key])
-        return
+        raise RuntimeError("Context keys require explicit VGGT shape validation.")
     value = payload[key]
     if not isinstance(value, torch.Tensor):
         raise TypeError(f"Geometry cache key '{key}' must be a tensor, got {type(value).__name__}.")
@@ -163,17 +175,24 @@ def extract_geometry_payload(
     overwrite_context: bool,
     geometry_teacher_dim: int,
     num_geometry_tokens: int,
+    expected_vggt_context_tokens: int,
+    vggt_dim: int,
+    keep_legacy_vggt_target: bool,
 ) -> Dict[str, Any]:
-    keys: Iterable[str] = (*GEOMETRY_KEYS, *(CONTEXT_KEYS if overwrite_context else ()))
+    context_keys = (*CONTEXT_KEYS, *( (LEGACY_VGGT_TARGET_KEY,) if keep_legacy_vggt_target else () ))
+    keys: Iterable[str] = (*GEOMETRY_KEYS, *(context_keys if overwrite_context else ()))
     output: Dict[str, Any] = {}
     for key in keys:
         if key in overlay:
-            _validate_geometry_value(
-                key,
-                overlay,
-                geometry_teacher_dim=geometry_teacher_dim,
-                num_geometry_tokens=num_geometry_tokens,
-            )
+            if key in context_keys:
+                validate_token_tensor(overlay, key, (int(expected_vggt_context_tokens), int(vggt_dim)))
+            else:
+                _validate_geometry_value(
+                    key,
+                    overlay,
+                    geometry_teacher_dim=geometry_teacher_dim,
+                    num_geometry_tokens=num_geometry_tokens,
+                )
             output[key] = overlay[key]
     if MODE_KEY in overlay:
         output[MODE_KEY] = str(overlay[MODE_KEY])
@@ -227,6 +246,9 @@ def write_chunk_metadata(
     contains_jepa_overlay: bool = False,
     expected_jepa_tokens: int = 128,
     jepa_dim: int = 1024,
+    expected_vggt_context_tokens: int = 12,
+    vggt_dim: int = 2048,
+    keep_legacy_vggt_target: bool = False,
 ) -> None:
     try:
         metadata = dict(load_metadata(base_chunk))
@@ -238,6 +260,13 @@ def write_chunk_metadata(
             token_shapes[key] = list(CONTEXT_SCHEMA[key])
         elif key.endswith("_tokens"):
             token_shapes[key] = [num_geometry_tokens, geometry_teacher_dim]
+    if not keep_legacy_vggt_target:
+        token_shapes.pop(LEGACY_VGGT_TARGET_KEY, None)
+    if overwrite_context:
+        for key in CONTEXT_KEYS:
+            token_shapes[key] = [int(expected_vggt_context_tokens), int(vggt_dim)]
+        if keep_legacy_vggt_target:
+            token_shapes[LEGACY_VGGT_TARGET_KEY] = [int(expected_vggt_context_tokens), int(vggt_dim)]
     if contains_jepa_overlay:
         for key in JEPA_KEYS:
             token_shapes[key] = [int(expected_jepa_tokens), int(jepa_dim)]
@@ -253,6 +282,11 @@ def write_chunk_metadata(
             "geometry_teacher_dim": int(geometry_teacher_dim),
             "num_geometry_tokens": int(num_geometry_tokens),
             "geometry_grid": [int(geometry_grid[0]), int(geometry_grid[1])],
+            "num_vggt_context_tokens": int(expected_vggt_context_tokens) if overwrite_context else metadata.get("num_vggt_context_tokens", metadata.get("num_vggt_tokens")),
+            "num_vggt_tokens": int(expected_vggt_context_tokens) if overwrite_context else metadata.get("num_vggt_tokens"),
+            "vggt_dim": int(vggt_dim) if overwrite_context else metadata.get("vggt_dim"),
+            "legacy_vggt_target_tokens_kept": bool(keep_legacy_vggt_target),
+            "legacy_vggt_target_tokens_removed": not bool(keep_legacy_vggt_target),
             "contains_highcap_jepa": bool(contains_jepa_overlay),
             "num_jepa_tokens": int(expected_jepa_tokens) if contains_jepa_overlay else metadata.get("num_jepa_tokens"),
             "jepa_dim": int(jepa_dim) if contains_jepa_overlay else metadata.get("jepa_dim"),
@@ -276,6 +310,7 @@ def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
     mode_counts = {"full_geometry": 0, "patch_fallback": 0, "missing": 0}
     geometry_shape_counts: Dict[str, int] = {}
     jepa_index = load_overlay_index(args.jepa_cache_root, args.jepa_chunk_name_pattern) if args.jepa_cache_root is not None else {}
+    expected_context_tokens = expected_vggt_context_tokens(args)
     total_jepa_merged = 0
     total_jepa_missing = 0
     jepa_shape_counts: Dict[str, int] = {}
@@ -296,6 +331,8 @@ def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
             if has_geometry or has_jepa:
                 sample = load_sample(src_path)
                 updated = dict(sample)
+                if not args.keep_legacy_vggt_target:
+                    updated.pop(LEGACY_VGGT_TARGET_KEY, None)
                 if has_geometry:
                     overlay = load_sample(overlay_index[token])
                     geometry_payload = extract_geometry_payload(
@@ -303,6 +340,9 @@ def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
                         overwrite_context=bool(args.overwrite_context),
                         geometry_teacher_dim=int(args.geometry_teacher_dim),
                         num_geometry_tokens=int(args.num_geometry_tokens),
+                        expected_vggt_context_tokens=expected_context_tokens,
+                        vggt_dim=int(args.vggt_dim),
+                        keep_legacy_vggt_target=bool(args.keep_legacy_vggt_target),
                     )
                     updated.update(geometry_payload)
                     tokens = geometry_payload.get("vggt_geometry_tokens")
@@ -328,7 +368,16 @@ def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
                     total_jepa_missing += 1
                 atomic_torch_save(updated, dst_path)
             else:
-                copy_or_link(src_path, dst_path, args.copy_mode)
+                if args.keep_legacy_vggt_target:
+                    copy_or_link(src_path, dst_path, args.copy_mode)
+                else:
+                    sample = load_sample(src_path)
+                    if LEGACY_VGGT_TARGET_KEY in sample:
+                        updated = dict(sample)
+                        updated.pop(LEGACY_VGGT_TARGET_KEY, None)
+                        atomic_torch_save(updated, dst_path)
+                    else:
+                        copy_or_link(src_path, dst_path, args.copy_mode)
                 chunk_missing += 1
                 mode_counts["missing"] += 1
                 if args.jepa_cache_root is not None:
@@ -352,6 +401,9 @@ def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
             contains_jepa_overlay=args.jepa_cache_root is not None,
             expected_jepa_tokens=int(args.expected_jepa_tokens),
             jepa_dim=int(args.jepa_dim),
+            expected_vggt_context_tokens=expected_context_tokens,
+            vggt_dim=int(args.vggt_dim),
+            keep_legacy_vggt_target=bool(args.keep_legacy_vggt_target),
         )
         total_merged += chunk_merged
         total_missing += chunk_missing
@@ -387,7 +439,11 @@ def merge_cache(args: argparse.Namespace) -> Dict[str, Any]:
         "jepa_token_shape_distribution": dict(sorted(jepa_shape_counts.items())),
         "expected_jepa_tokens": int(args.expected_jepa_tokens),
         "jepa_dim": int(args.jepa_dim),
+        "expected_vggt_context_tokens": int(expected_context_tokens),
+        "expected_vggt_tokens": int(expected_context_tokens),
+        "vggt_dim": int(args.vggt_dim),
         "overwrite_context": bool(args.overwrite_context),
+        "keep_legacy_vggt_target": bool(args.keep_legacy_vggt_target),
         "chunk_reports": chunk_reports,
     }
     args.output_chunk_root.mkdir(parents=True, exist_ok=True)

@@ -10,7 +10,7 @@ agent:
   last_rd_stage: disabled
   use_expert_features: false
   use_jepa: true
-  use_vggt: true
+  use_vggt: false
   allow_expert_target_features: true
   allow_future_targets_in_inference: false
   jepa_dim: 1024

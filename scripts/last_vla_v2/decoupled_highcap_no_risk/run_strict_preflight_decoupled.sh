@@ -142,6 +142,7 @@ readiness_path.write_text(
             f"- Cache path: `{cache_path}`",
             f"- Manifest path: `{manifest_path}`",
             "- Expected JEPA shape: `[128,1024]`",
+            "- Expected VGGT context shape: `[128,2048]`",
             "- Expected geometry shape: `[192,512]`",
             f"- Full geometry coverage: `{full_geometry_coverage:.6f}`",
             f"- Patch fallback count: `{patch_fallback_count}`",

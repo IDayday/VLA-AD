@@ -36,6 +36,9 @@ NUM_SHARDS_VALUE="${NUM_SHARDS:-1}"
 SHARD_INDEX_VALUE="${SHARD_INDEX:-0}"
 EXPECTED_NUM_SHARDS_VALUE="${EXPECTED_NUM_SHARDS:-${NUM_SHARDS_VALUE}}"
 COPY_MODE_VALUE="${COPY_MODE:-hardlink}"
+TRAIN_SPLIT="${TRAIN_SPLIT:-navtrain}"
+NAVSIM_DATA_ROOT="${NAVSIM_DATA_ROOT:-/mnt/navsim}"
+LOADER_MAX_SCENES="${LOADER_MAX_SCENES:-}"
 mkdir -p "${ROOT}" "${MANIFEST_DIR}"
 
 if (( NUM_SHARDS_VALUE <= 0 )); then
@@ -83,6 +86,8 @@ if [[ -z "${JEPA_DENSE_CACHE_ROOT:-}" ]]; then
     --base-chunk-root "${BASE_CHUNK_ROOT}"
     --chunk-name-pattern "${TRAIN_CHUNK_NAME_PATTERN:-train_full_chunk_*,train_backfill_chunk_*,train_backfill_p1_chunk_*}"
     --output-dir "${BUILD_JEPA_ROOT}"
+    --data-root "${NAVSIM_DATA_ROOT}"
+    --split "${TRAIN_SPLIT}"
     --jepa-model-path "${VJEPA_MODEL_PATH:-}"
     --num-jepa-tokens 128
     --strict-highcap-jepa
@@ -95,6 +100,7 @@ if [[ -z "${JEPA_DENSE_CACHE_ROOT:-}" ]]; then
     cmd_jepa+=(--output-shard-subdir --write-shard-manifest)
   fi
   if [[ -n "${MAX_SAMPLES:-}" ]]; then cmd_jepa+=(--max-samples "${MAX_SAMPLES}"); fi
+  if [[ -n "${LOADER_MAX_SCENES}" ]]; then cmd_jepa+=(--loader-max-scenes "${LOADER_MAX_SCENES}"); fi
 else
   cmd_jepa=(echo "Using prebuilt JEPA128 overlay: ${JEPA_DENSE_CACHE_ROOT}")
 fi
@@ -107,6 +113,9 @@ cmd_geometry=(
   --vggt-model-path "${VGGT_MODEL_PATH:-}"
   --precision "${PRECISION:-fp32}"
   --device "${DEVICE:-cuda}"
+  --num-vggt-tokens 128
+  --vggt-context-grid-rows 8
+  --vggt-context-grid-cols 16
   --num-geometry-tokens 192
   --geometry-grid-rows 12
   --geometry-grid-cols 16
@@ -149,12 +158,15 @@ cmd_merge=(
   --output-chunk-root "${TRAIN_FULL}"
   --chunk-name-pattern "${TRAIN_CHUNK_NAME_PATTERN:-train_full_chunk_*,train_backfill_chunk_*,train_backfill_p1_chunk_*}"
   --copy-mode "${COPY_MODE_VALUE}"
+  --overwrite-context
   --strict-coverage
   --min-coverage 0.99
   --strict-jepa-coverage
   --min-jepa-coverage 0.99
   --expected-jepa-tokens 128
   --jepa-dim 1024
+  --expected-vggt-context-tokens 128
+  --vggt-dim 2048
   --num-geometry-tokens 192
   --geometry-grid-rows 12
   --geometry-grid-cols 16
@@ -178,6 +190,8 @@ cmd_audit=(
   date -Is
   printf '# num_shards=%q shard_index=%q expected_num_shards=%q skip_build_shards=%q merge_shards=%q\n' \
     "${NUM_SHARDS_VALUE}" "${SHARD_INDEX_VALUE}" "${EXPECTED_NUM_SHARDS_VALUE}" "${SKIP_BUILD_SHARDS}" "${MERGE_SHARDS}"
+  printf '# train_split=%q navsim_data_root=%q loader_max_scenes=%q\n' \
+    "${TRAIN_SPLIT}" "${NAVSIM_DATA_ROOT}" "${LOADER_MAX_SCENES}"
   if (( NUM_SHARDS_VALUE > 1 )); then
     printf '# jepa_shard_dir=%q\n' "${JEPA_SHARD_DIR}"
     printf '# geometry_shard_dir=%q\n' "${GEOMETRY_SHARD_DIR}"

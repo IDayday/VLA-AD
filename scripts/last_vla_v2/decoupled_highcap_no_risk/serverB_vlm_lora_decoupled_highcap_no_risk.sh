@@ -12,6 +12,10 @@ done
 PYTHON_BIN="${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}"
 TORCHRUN_BIN="${TORCHRUN_BIN:-$(dirname "${PYTHON_BIN}")/torchrun}"
 TRAIN_TEST_SPLIT="${TRAIN_TEST_SPLIT:-navtrain}"
+export NAVSIM_DATA_ROOT="${NAVSIM_DATA_ROOT:-/mnt/navsim}"
+export OPENSCENE_DATA_ROOT="${OPENSCENE_DATA_ROOT:-${NAVSIM_DATA_ROOT}}"
+export NUPLAN_MAPS_ROOT="${NUPLAN_MAPS_ROOT:-${NAVSIM_DATA_ROOT}/maps}"
+export NAVSIM_EXP_ROOT="${NAVSIM_EXP_ROOT:-/mnt/project/VLA-AD}"
 ROOT="${OUT_ROOT}/serverB_vlm_lora_decoupled_highcap_no_risk"
 B1="${ROOT}/vlm_lora_cot_alignment"
 B2="${ROOT}/lora_regenerated_train_hidden_cache"
@@ -30,6 +34,10 @@ LORA_USE_DORA="${LORA_USE_DORA:-false}"
 LORA_TARGET_MODULES="${LORA_TARGET_MODULES:-}"
 LORA_HIDDEN_ANCHOR_EVERY_N_STEPS="${LORA_HIDDEN_ANCHOR_EVERY_N_STEPS:-4}"
 SKIP_VALIDATION="${SKIP_VALIDATION:-0}"
+B1_BATCH_SIZE="${B1_BATCH_SIZE:-4}"
+B1_ACCUMULATE_GRAD_BATCHES="${B1_ACCUMULATE_GRAD_BATCHES:-}"
+B1_EPOCHS="${B1_EPOCHS:-5}"
+B1_KEY_EPOCHS="${B1_KEY_EPOCHS:-2,3,5}"
 
 common_overrides=(
   agent.last_vla_condition_mode=decoupled_cot_residual
@@ -37,6 +45,7 @@ common_overrides=(
   agent.last_vla_raw_vlm_context_to_dit=true
   agent.last_vla_use_risk_head=false
   agent.num_jepa_tokens=128
+  agent.use_vggt=false
   agent.num_dynamic_tokens=128
   agent.num_vggt_tokens=128
   agent.num_geometry_tokens=192
@@ -55,6 +64,9 @@ if [[ "${SKIP_VALIDATION}" == "1" || "${SKIP_VALIDATION}" == "true" ]]; then
 fi
 b1_overrides=()
 if [[ -n "${B1_EPOCHS:-}" ]]; then b1_overrides+=(trainer.params.max_epochs="${B1_EPOCHS}"); fi
+if [[ -n "${B1_ACCUMULATE_GRAD_BATCHES}" ]]; then
+  b1_overrides+=(trainer.params.accumulate_grad_batches="${B1_ACCUMULATE_GRAD_BATCHES}")
+fi
 
 cmd_b1=(
   "${TORCHRUN_BIN}" --nproc_per_node="${NPROC_PER_NODE:-8}" --master_port "${MASTER_PORT}"
@@ -88,6 +100,7 @@ cmd_b1=(
   "${common_overrides[@]}"
   "${validation_overrides[@]}"
   "${b1_overrides[@]}"
+  dataloader.params.batch_size="${B1_BATCH_SIZE}"
   trainer.params.devices="${NPROC_PER_NODE:-8}"
   trainer.params.strategy=ddp_find_unused_parameters_true
 )
@@ -151,6 +164,7 @@ cmd_b4=(
 
 {
   date -Is
+  printf 'RECOGDRIVE_KEY_EPOCHS=%q ' "${B1_KEY_EPOCHS}"
   printf '%q ' "${cmd_b1[@]}"; printf '\n'
   printf '%q ' "${cmd_extract[@]}"; printf '\n'
   printf '%q ' "${cmd_cache[@]}"; printf '\n'
@@ -175,7 +189,7 @@ if [[ "${RUN_TRAIN:-0}" != "1" ]]; then
   exit 0
 fi
 [[ -d "${FULL_HIGHCAP_TRAIN_CHUNK_ROOT}" ]] || { echo "FULL_HIGHCAP_TRAIN_CHUNK_ROOT missing: ${FULL_HIGHCAP_TRAIN_CHUNK_ROOT}" >&2; exit 2; }
-"${cmd_b1[@]}" >"${ROOT}/logs/vlm_lora_cot_alignment.log" 2>&1
+RECOGDRIVE_KEY_EPOCHS="${B1_KEY_EPOCHS}" "${cmd_b1[@]}" >"${ROOT}/logs/vlm_lora_cot_alignment.log" 2>&1
 "${cmd_extract[@]}" >"${ROOT}/logs/extract_adapters.log" 2>&1
 if [[ "${STOP_AFTER_EXTRACT:-0}" == "1" ]]; then
   echo "STOP_AFTER_EXTRACT=1; completed LoRA alignment and adapter extraction." >>"${COMMANDS_LOG}"

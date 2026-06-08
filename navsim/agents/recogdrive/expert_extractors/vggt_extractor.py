@@ -11,6 +11,16 @@ from ..geometry_tokenizer import GeometryTokenPacker
 from .pooling import pool_vggt_tokens
 
 
+def _infer_factor_hw(num_tokens: int) -> tuple[int, int]:
+    if num_tokens <= 0:
+        raise ValueError(f"Cannot infer VGGT context grid for {num_tokens} tokens.")
+    best_h = 1
+    for h in range(1, int(num_tokens**0.5) + 1):
+        if num_tokens % h == 0:
+            best_h = h
+    return best_h, num_tokens // best_h
+
+
 class VGGTExtractor:
     teacher_dim = 2048
     layer_index = 23
@@ -24,6 +34,8 @@ class VGGTExtractor:
         precision: str = "bf16",
         image_size: int = 518,
         require_geometry: bool = False,
+        context_num_tokens: int = 12,
+        context_grid: tuple[int, int] | None = None,
         geometry_output_dim: int = 512,
         geometry_num_tokens: int = 12,
         geometry_grid: tuple[int, int] | None = None,
@@ -33,6 +45,12 @@ class VGGTExtractor:
         self.dtype = {"bf16": torch.bfloat16, "fp16": torch.float16, "fp32": torch.float32}[precision]
         self.image_size = image_size
         self.require_geometry = require_geometry
+        self.context_num_tokens = int(context_num_tokens)
+        if context_grid is None:
+            context_grid = (3, 4) if self.context_num_tokens == 12 else _infer_factor_hw(self.context_num_tokens)
+        if int(context_grid[0]) * int(context_grid[1]) != self.context_num_tokens:
+            raise ValueError("context_grid must multiply to context_num_tokens.")
+        self.context_grid = (int(context_grid[0]), int(context_grid[1]))
         self.geometry_output_dim = int(geometry_output_dim)
         self.geometry_num_tokens = int(geometry_num_tokens)
         if geometry_grid is None:
@@ -100,9 +118,17 @@ class VGGTExtractor:
         if layer_tokens.ndim != 3:
             raise ValueError(f"VGGT layer tokens must have shape [B,N,D], got {tuple(layer_tokens.shape)}.")
         patch_tokens = layer_tokens[:, patch_start_idx:, :]
-        pooled = pool_vggt_tokens(patch_tokens.float(), teacher_dim=self.teacher_dim, grid_size=self.grid_size)
-        if pooled.shape != (1, 12, self.teacher_dim):
-            raise RuntimeError(f"VGGT pooled shape {tuple(pooled.shape)} != (1, 12, {self.teacher_dim}).")
+        pooled = pool_vggt_tokens(
+            patch_tokens.float(),
+            teacher_dim=self.teacher_dim,
+            grid_size=self.grid_size,
+            output_size=self.context_grid,
+        )
+        if pooled.shape != (1, self.context_num_tokens, self.teacher_dim):
+            raise RuntimeError(
+                f"VGGT pooled shape {tuple(pooled.shape)} != "
+                f"(1, {self.context_num_tokens}, {self.teacher_dim})."
+            )
         return pooled
 
     def _extract_prediction_tensor(self, predictions: Any, names: tuple[str, ...]) -> torch.Tensor | None:

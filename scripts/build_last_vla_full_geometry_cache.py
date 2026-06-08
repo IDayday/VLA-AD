@@ -26,6 +26,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--vggt-model-path", default="facebook/VGGT-1B")
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="fp32")
+    parser.add_argument("--num-vggt-tokens", type=int, default=12)
+    parser.add_argument("--vggt-context-grid-rows", type=int, default=None)
+    parser.add_argument("--vggt-context-grid-cols", type=int, default=None)
     parser.add_argument("--geometry-teacher-dim", type=int, default=512)
     parser.add_argument("--num-geometry-tokens", type=int, default=12)
     parser.add_argument("--geometry-grid-rows", type=int, default=3)
@@ -146,11 +149,21 @@ def main() -> int:
     if not (0 <= args.shard_index < args.num_shards):
         raise ValueError("--shard-index must be in [0, num_shards).")
 
+    context_grid = None
+    if args.vggt_context_grid_rows is not None or args.vggt_context_grid_cols is not None:
+        if args.vggt_context_grid_rows is None or args.vggt_context_grid_cols is None:
+            raise ValueError("--vggt-context-grid-rows and --vggt-context-grid-cols must be provided together.")
+        context_grid = (int(args.vggt_context_grid_rows), int(args.vggt_context_grid_cols))
+        if context_grid[0] * context_grid[1] != int(args.num_vggt_tokens):
+            raise ValueError("--vggt context grid must multiply to --num-vggt-tokens.")
+
     extractor = VGGTExtractor(
         args.vggt_model_path,
         device=args.device,
         precision=args.precision,
         require_geometry=bool(args.require_full_geometry),
+        context_num_tokens=int(args.num_vggt_tokens),
+        context_grid=context_grid,
         geometry_output_dim=int(args.geometry_teacher_dim),
         geometry_num_tokens=int(args.num_geometry_tokens),
         geometry_grid=(int(args.geometry_grid_rows), int(args.geometry_grid_cols)),
@@ -218,6 +231,8 @@ def main() -> int:
         "vggt_model_path": str(args.vggt_model_path),
         "precision": args.precision,
         "geometry_teacher_dim": int(args.geometry_teacher_dim),
+        "num_vggt_tokens": int(args.num_vggt_tokens),
+        "vggt_context_grid": list(context_grid) if context_grid is not None else None,
         "num_geometry_tokens": int(args.num_geometry_tokens),
         "geometry_grid": [int(args.geometry_grid_rows), int(args.geometry_grid_cols)],
         "require_full_geometry": bool(args.require_full_geometry),

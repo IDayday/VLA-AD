@@ -41,6 +41,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--min-full-geometry-coverage", type=float, default=0.99)
     parser.add_argument("--geometry-teacher-dim", type=int, default=512)
     parser.add_argument("--expected-jepa-tokens", type=int, default=12)
+    parser.add_argument("--expected-vggt-tokens", type=int, default=None)
     parser.add_argument("--expected-geometry-tokens", type=int, default=12)
     parser.add_argument("--strict-no-risk", action="store_true")
     return parser.parse_args()
@@ -119,6 +120,7 @@ def audit_cache(
     chunk_name_pattern: Optional[str] = None,
     max_samples: Optional[int] = None,
     expected_jepa_tokens: int = 12,
+    expected_vggt_tokens: Optional[int] = None,
     expected_geometry_tokens: int = 12,
     geometry_teacher_dim: int = 512,
     strict_no_risk: bool = False,
@@ -127,6 +129,7 @@ def audit_cache(
     geometry_counts = Counter({mode: 0 for mode in GEOMETRY_MODE_TO_CODE})
     geometry_shape_counts = Counter()
     jepa_shape_counts = Counter()
+    vggt_shape_counts = Counter()
     risk_counts = Counter()
     sample_token_counts = Counter()
     errors: List[str] = []
@@ -147,6 +150,8 @@ def audit_cache(
                 value = sample[key]
                 if key.startswith("jepa_") and isinstance(value, torch.Tensor):
                     jepa_shape_counts[f"{key}:{tuple(value.shape)}"] += 1
+                if key.startswith("vggt_") and isinstance(value, torch.Tensor):
+                    vggt_shape_counts[f"{key}:{tuple(value.shape)}"] += 1
         has_teacher = isinstance(sample.get("teacher_trajectory"), torch.Tensor) or isinstance(sample.get("teacher_trajectory_norm"), torch.Tensor)
         if has_teacher:
             counts["teacher_trajectory_any"] += 1
@@ -179,6 +184,14 @@ def audit_cache(
             value = sample.get(key)
             if isinstance(value, torch.Tensor) and tuple(value.shape) != (int(expected_jepa_tokens), 1024):
                 errors.append(f"{sample_path}:{key}:bad_shape:{tuple(value.shape)}")
+        if expected_vggt_tokens is not None:
+            for key in ("vggt_context_tokens", "vggt_target_tokens"):
+                value = sample.get(key)
+                if not isinstance(value, torch.Tensor):
+                    errors.append(f"{sample_path}:{key}:missing")
+                    continue
+                if tuple(value.shape) != (int(expected_vggt_tokens), 2048):
+                    errors.append(f"{sample_path}:{key}:bad_shape:{tuple(value.shape)}")
         if strict_no_risk and any(key in sample for key in RISK_KEYS):
             errors.append(f"{sample_path}:risk_labels_present_in_strict_no_risk")
         if "vggt_geometry_tokens" in sample and geometry_mode == "patch_fallback":
@@ -196,6 +209,7 @@ def audit_cache(
         "vggt_geometry_mode_distribution": dict(sorted(geometry_counts.items())),
         "geometry_token_shape_distribution": dict(sorted(geometry_shape_counts.items())),
         "jepa_token_shape_distribution": dict(sorted(jepa_shape_counts.items())),
+        "vggt_token_shape_distribution": dict(sorted(vggt_shape_counts.items())),
         "risk_label_coverage": {key: coverage(risk_counts[key], scanned) for key in RISK_KEYS},
         "duplicate_sample_tokens": {"count": len(duplicate_tokens), "examples": list(duplicate_tokens)[:20]},
         "oracle_delta_vs_gt": {
@@ -228,6 +242,7 @@ def main() -> int:
         chunk_name_pattern=args.chunk_name_pattern,
         max_samples=args.max_samples,
         expected_jepa_tokens=int(args.expected_jepa_tokens),
+        expected_vggt_tokens=args.expected_vggt_tokens,
         expected_geometry_tokens=int(args.expected_geometry_tokens),
         geometry_teacher_dim=int(args.geometry_teacher_dim),
         strict_no_risk=bool(args.strict_no_risk),
@@ -248,6 +263,7 @@ def main() -> int:
     report["allow_patch_fallback"] = bool(args.allow_patch_fallback)
     report["geometry_teacher_dim"] = int(args.geometry_teacher_dim)
     report["expected_jepa_tokens"] = int(args.expected_jepa_tokens)
+    report["expected_vggt_tokens"] = int(args.expected_vggt_tokens) if args.expected_vggt_tokens is not None else None
     report["expected_geometry_tokens"] = int(args.expected_geometry_tokens)
     report["strict_no_risk"] = bool(args.strict_no_risk)
     report["full_geometry_coverage"] = float(full_geometry_cov)

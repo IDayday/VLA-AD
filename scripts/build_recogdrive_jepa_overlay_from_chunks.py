@@ -298,6 +298,7 @@ def main() -> int:
         "source_base_chunk_root": str(args.base_chunk_root),
         "chunk_name_pattern": str(args.chunk_name_pattern),
         "split": str(args.split),
+        "data_root_arg": str(args.data_root),
         "jepa_model_path": str(args.jepa_model_path),
         "precision": str(args.precision),
         "strict_highcap_jepa": bool(args.strict_highcap_jepa),

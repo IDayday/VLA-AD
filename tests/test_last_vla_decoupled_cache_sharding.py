@@ -109,6 +109,40 @@ def test_prepare_decoupled_cache_dryrun_uses_shard_subdirs(tmp_path: Path):
     ).read_text(encoding="utf-8")
     assert "train_jepa128_overlay_raw/shards/shard_00000" in commands
     assert "train_geometry192_overlay_raw/shards/shard_00000" in commands
+    assert "--split navtrain" in commands
+    assert "--data-root /mnt/navsim" in commands
     assert "--output-shard-subdir" in commands
     assert "merge_last_vla_geometry_cache_into_chunks.py" not in commands
     assert "train_jepa128_overlay/index.jsonl" not in commands
+
+
+def test_prepare_decoupled_cache_dryrun_allows_explicit_train_split_and_data_root(tmp_path: Path):
+    env = os.environ.copy()
+    env.update(
+        {
+            "RUN_CACHE": "0",
+            "BASE_CHUNK_ROOT": str(tmp_path / "base"),
+            "OUTPUT_ROOT": str(tmp_path / "out"),
+            "VGGT_MODEL_PATH": str(tmp_path / "vggt"),
+            "VJEPA_MODEL_PATH": str(tmp_path / "vjepa"),
+            "NAVSIM_DATA_ROOT": str(tmp_path / "navsim_data"),
+            "TRAIN_SPLIT": "navtest",
+            "LOADER_MAX_SCENES": "3",
+            "NUM_SHARDS": "2",
+            "SHARD_INDEX": "0",
+            "PYTHON_BIN": "python",
+        }
+    )
+
+    subprocess.run(
+        ["bash", "scripts/last_vla_v2/decoupled_highcap_no_risk/prepare_decoupled_highcap_no_risk_data.sh"],
+        env=env,
+        check=True,
+    )
+
+    commands = (
+        tmp_path / "out" / "decoupled_highcap_no_risk" / "commands.log"
+    ).read_text(encoding="utf-8")
+    assert "--split navtest" in commands
+    assert f"--data-root {tmp_path / 'navsim_data'}" in commands
+    assert "--loader-max-scenes 3" in commands
