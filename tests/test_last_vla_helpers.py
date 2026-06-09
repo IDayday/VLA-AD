@@ -18,7 +18,7 @@ from navsim.agents.recogdrive.recogdrive_diffusion_planner import (
 def make_last_vla_planner(
     *,
     stage: str = "progressive_sft_decoupled",
-    residual: bool = True,
+    residual: bool = False,
     diffusion_loss_weight: float = 1.0,
     dynamic_loss_weight: float = 0.0,
     cot_tokens: int = 8,

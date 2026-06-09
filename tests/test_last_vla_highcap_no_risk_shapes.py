@@ -64,7 +64,7 @@ def _planner() -> ReCogDriveDiffusionPlanner:
         last_vla_condition_mode="decoupled_cot_residual",
         last_vla_raw_vlm_context_to_dit=True,
         last_vla_cot_bottleneck_mode=False,
-        last_vla_use_residual_diffusion=True,
+        last_vla_use_residual_diffusion=False,
         diffusion_loss_weight=1.0,
         last_vla_geometry_loss_weight=0.1,
         last_vla_dynamic_loss_weight=0.1,

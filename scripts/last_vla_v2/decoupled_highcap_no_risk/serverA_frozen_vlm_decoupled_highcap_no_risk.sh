@@ -26,6 +26,7 @@ common_overrides=(
   agent.last_vla_condition_mode=decoupled_cot_residual
   agent.last_vla_cot_bottleneck_mode=false
   agent.last_vla_raw_vlm_context_to_dit=true
+  agent.last_vla_use_residual_diffusion=false
   agent.last_vla_use_risk_head=false
   agent.num_jepa_tokens=128
   agent.use_vggt=false

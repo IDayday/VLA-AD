@@ -220,7 +220,7 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     last_vla_geometry_teacher_dim: int = 512
     last_vla_geometry_grid_rows: int = 3
     last_vla_geometry_grid_cols: int = 4
-    last_vla_use_residual_diffusion: bool = True
+    last_vla_use_residual_diffusion: bool = False
     last_vla_residual_detach_coarse: bool = True
     last_vla_coarse_prior_clip: float = 1.0
     last_vla_residual_alpha_start: float = 0.0
@@ -357,8 +357,6 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     "num_geometry_tokens must equal last_vla_geometry_grid_rows * last_vla_geometry_grid_cols "
                     f"({config.num_geometry_tokens} != {config.last_vla_geometry_grid_rows} * {config.last_vla_geometry_grid_cols})."
                 )
-        if not (0.0 <= config.last_vla_residual_alpha_start <= 1.0 and 0.0 <= config.last_vla_residual_alpha_end <= 1.0):
-            raise ValueError("last_vla_residual_alpha_start/end must be in [0, 1].")
         if config.policy_kd_mode not in {"none", "noise", "x0"}:
             raise ValueError("policy_kd_mode must be one of 'none', 'noise', or 'x0'.")
         for weight_name in (
@@ -492,7 +490,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     cot_bottleneck_mode=config.last_vla_cot_bottleneck_mode,
                     vlm_context_dropout_start=config.last_vla_vlm_context_dropout_start,
                     vlm_context_dropout_end=config.last_vla_vlm_context_dropout_end,
-                    use_residual_diffusion=config.last_vla_use_residual_diffusion,
+                    use_residual_diffusion=False,
                     residual_detach_coarse_for_diffusion=config.last_vla_residual_detach_coarse,
                     coarse_prior_clip=config.last_vla_coarse_prior_clip,
                     require_full_geometry=config.last_vla_require_full_geometry,
@@ -1492,31 +1490,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             1.0,
         )
 
-    def _last_vla_epoch_schedule(self, start: float, end: float, epochs: int) -> float:
-        if epochs <= 0:
-            return float(end)
-        progress = min(max(float(self.config.current_train_epoch) / float(max(1, epochs)), 0.0), 1.0)
-        return float(start) + (float(end) - float(start)) * progress
-
-    def _last_vla_residual_alpha(self, *, training: bool) -> float:
-        if not training:
-            return 1.0
-        return self._last_vla_epoch_schedule(
-            self.config.last_vla_residual_alpha_start,
-            self.config.last_vla_residual_alpha_end,
-            self.config.last_vla_residual_alpha_warmup_epochs,
-        )
-
-    def _last_vla_residual_diffusion_target(
+    def _last_vla_diffusion_target(
         self,
         selected_target_norm: torch.Tensor,
-        coarse_traj_norm: torch.Tensor,
         *,
         training: bool,
     ) -> tuple[torch.Tensor, float]:
-        alpha = self._last_vla_residual_alpha(training=training)
-        base = coarse_traj_norm.detach() if self.config.last_vla_residual_detach_coarse else coarse_traj_norm
-        return selected_target_norm - float(alpha) * base, float(alpha)
+        del training
+        return selected_target_norm, 0.0
 
     def _select_last_vla_training_target(
         self,
@@ -1928,24 +1909,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 loss = self._last_vla_aux_loss(dit_context, gt_actions.dtype)
                 return self._format_training_output(loss, zero, zero, zero, dit_context)
 
-            if self.config.last_vla_use_residual_diffusion:
-                prior_context = self._prepare_dit_context(
-                    vl_features,
-                    action_input,
-                    training=self.training,
-                    target_action_norm=selected_target_norm,
-                    allow_target_tokens=allow_target_tokens,
-                )
-                prior_output = prior_context["last_vla_output"]
-                diffusion_target, residual_alpha = self._last_vla_residual_diffusion_target(
-                    selected_target_norm,
-                    prior_output.coarse_traj_norm,
-                    training=self.training,
-                )
-                prior_context["diagnostics"]["residual_alpha"] = selected_target_norm.new_tensor(float(residual_alpha))
-            else:
-                diffusion_target = selected_target_norm
-                residual_alpha = 0.0
+            diffusion_target, residual_alpha = self._last_vla_diffusion_target(
+                selected_target_norm,
+                training=self.training,
+            )
 
             if self.config.sampling_method == "flow":
                 noise = torch.randn_like(diffusion_target)
@@ -1991,8 +1958,6 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             dit_context["policy_kd_loss"] = policy_kd_loss.to(dtype=diffusion_loss.dtype)
             dit_context["diagnostics"].update(target_diagnostics)
             dit_context["diagnostics"].update(self._last_vla_effective_aux_weights(diffusion_loss))
-            if self.config.last_vla_use_residual_diffusion:
-                dit_context["residual_target_norm"] = diffusion_target
             loss = (
                 float(self.config.diffusion_loss_weight) * diffusion_loss
                 + self._last_vla_aux_loss(dit_context, diffusion_loss.dtype)
@@ -2195,7 +2160,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         expert_step_condition = dit_context["expert_step_condition"]
         cot_condition_tokens = dit_context.get("cot_condition_tokens")
         coarse_prior_norm = None
-        if self.config.use_last_vla and self.config.last_vla_use_residual_diffusion:
+        if self.config.use_last_vla:
             coarse_prior_norm = dit_context["last_vla_output"].coarse_traj_norm.detach()
         
         history_embeds = self.his_traj_encoder(
@@ -2330,9 +2295,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         final_norm = current_actions
         output_data: Dict[str, torch.Tensor] = {}
         if coarse_prior_norm is not None:
-            final_norm = coarse_prior_norm.to(current_actions) + current_actions
             output_data["pred_coarse_traj"] = self.denorm_odo(coarse_prior_norm.to(current_actions))
-            output_data["pred_residual_norm"] = current_actions.detach()
 
         final_action_clip_value = getattr(self, 'final_action_clip_value', 1.0)
         if final_action_clip_value is not None:
@@ -2375,9 +2338,6 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         context_embeds = dit_context["context_tokens"]
         context_mean = dit_context["context_mean"]
         expert_step_condition = dit_context["expert_step_condition"]
-        coarse_prior_norm = None
-        if self.config.use_last_vla and self.config.last_vla_use_residual_diffusion:
-            coarse_prior_norm = dit_context["last_vla_output"].coarse_traj_norm.detach()
         B, D = context_embeds.shape[0], self.config.action_dim
         device, dtype = context_embeds.device, context_embeds.dtype
         
@@ -2484,7 +2444,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         else:
             raise ValueError(f"Unsupported sampling method: {self.config.sampling_method}")
 
-        final_norm = current_actions if coarse_prior_norm is None else coarse_prior_norm.to(current_actions) + current_actions
+        final_norm = current_actions
         final_actions = self.denorm_odo(final_norm)
         chain_tensor = torch.stack(denoising_chain, dim=1)
         

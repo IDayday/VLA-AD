@@ -40,7 +40,7 @@ class LastVLACoTConfig:
     vlm_context_dropout_start: float = 0.0
     vlm_context_dropout_end: float = 0.7
 
-    use_residual_diffusion: bool = True
+    use_residual_diffusion: bool = False
     residual_detach_coarse_for_diffusion: bool = True
     coarse_prior_clip: float = 1.0
 
@@ -882,7 +882,7 @@ class LastVLACoTTransformer(nn.Module):
         horizon_condition = self.horizon_attn(horizon_queries, planner_context)
         final_target = target_action_norm.detach().to(coarse_traj_norm) if target_action_norm is not None else None
         residual_target = None
-        if final_target is not None:
+        if final_target is not None and self.config.use_residual_diffusion:
             base = coarse_traj_norm.detach() if self.config.residual_detach_coarse_for_diffusion else coarse_traj_norm
             residual_target = final_target - base
 

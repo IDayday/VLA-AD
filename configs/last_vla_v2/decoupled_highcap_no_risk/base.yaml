@@ -43,7 +43,7 @@ policy_kd_loss_weight: 0.0
 policy_kd_mode: none
 last_vla_teacher_traj_mode: none
 
-last_vla_use_residual_diffusion: true
+last_vla_use_residual_diffusion: false
 last_vla_residual_detach_coarse: true
 last_vla_coarse_prior_clip: 1.0
 last_vla_residual_alpha_start: 0.0

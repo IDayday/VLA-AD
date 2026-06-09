@@ -89,7 +89,7 @@ last_vla_allow_patch_geometry_fallback: false
 last_vla_geometry_teacher_dim: 512
 last_vla_geometry_grid_rows: 3
 last_vla_geometry_grid_cols: 4
-last_vla_use_residual_diffusion: true
+last_vla_use_residual_diffusion: false
 last_vla_residual_detach_coarse: true
 last_vla_coarse_prior_clip: 1.0
 last_vla_residual_alpha_start: 0.0

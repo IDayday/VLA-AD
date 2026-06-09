@@ -195,7 +195,7 @@ class ReCogDriveAgent(AbstractAgent):
         last_vla_geometry_teacher_dim: int = 512,
         last_vla_geometry_grid_rows: int = 3,
         last_vla_geometry_grid_cols: int = 4,
-        last_vla_use_residual_diffusion: bool = True,
+        last_vla_use_residual_diffusion: bool = False,
         last_vla_residual_detach_coarse: bool = True,
         last_vla_coarse_prior_clip: float = 1.0,
         last_vla_residual_alpha_start: float = 0.0,
