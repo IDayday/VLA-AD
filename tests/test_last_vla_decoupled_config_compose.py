@@ -23,6 +23,7 @@ def _assert_decoupled(agent) -> None:
     assert agent["last_vla_geometry_teacher_dim"] == 512
     assert agent["last_vla_geometry_grid_rows"] == 12
     assert agent["last_vla_geometry_grid_cols"] == 16
+    assert agent["last_vla_residual_anchor_source"] == "vlm_text_traj"
 
 
 def test_decoupled_yaml_base_has_formal_values():
@@ -38,6 +39,21 @@ def test_decoupled_hydra_experiments_have_formal_values():
     ):
         payload = yaml.safe_load((exp_dir / name).read_text(encoding="utf-8"))
         _assert_decoupled(payload["agent"])
+        assert payload["agent"]["last_vla_use_residual_diffusion"] is False
+
+
+def test_decoupled_vlm_text_residual_experiment_is_separate_from_current_ab_configs():
+    exp_dir = Path("navsim/planning/script/config/experiment")
+    payload = yaml.safe_load(
+        (exp_dir / "last_vla_decoupled_progressive_highcap_no_risk_vlm_text_residual.yaml").read_text(encoding="utf-8")
+    )
+    _assert_decoupled(payload["agent"])
+    assert payload["agent"]["last_vla_use_residual_diffusion"] is True
+    assert payload["agent"]["last_vla_residual_anchor_source"] == "vlm_text_traj"
+    assert payload["agent"]["last_vla_require_residual_anchor"] is True
+    assert payload["agent"]["last_vla_residual_alpha_start"] == 1.0
+    assert payload["agent"]["last_vla_residual_alpha_end"] == 1.0
+    assert payload["agent"]["last_vla_residual_alpha_warmup_epochs"] == 0
 
 
 def test_decoupled_hydra_compose_if_available():
@@ -51,6 +67,7 @@ def test_decoupled_hydra_compose_if_available():
         "last_vla_decoupled_cot_alignment_highcap_no_risk",
         "last_vla_decoupled_progressive_highcap_no_risk",
         "last_vla_decoupled_vlm_lora_cot_alignment_highcap_no_risk",
+        "last_vla_decoupled_progressive_highcap_no_risk_vlm_text_residual",
     ):
         GlobalHydra.instance().clear()
         with initialize_config_module(config_module="navsim.planning.script.config.training", version_base=None):

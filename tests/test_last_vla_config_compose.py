@@ -26,6 +26,7 @@ def test_last_vla_hydra_experiment_yaml_loads():
     for name in (
         "last_vla_decoupled_cot_alignment_highcap_no_risk.yaml",
         "last_vla_decoupled_progressive_highcap_no_risk.yaml",
+        "last_vla_decoupled_progressive_highcap_no_risk_vlm_text_residual.yaml",
     ):
         path = Path("navsim/planning/script/config/experiment") / name
         data = yaml.safe_load(path.read_text(encoding="utf-8"))
@@ -37,6 +38,7 @@ def test_last_vla_hydra_experiment_yaml_loads():
         assert data["agent"]["last_vla_condition_mode"] == "decoupled_cot_residual"
         assert data["agent"]["last_vla_cot_bottleneck_mode"] is False
         assert data["agent"]["last_vla_raw_vlm_context_to_dit"] is True
+        assert data["agent"]["last_vla_residual_anchor_source"] == "vlm_text_traj"
 
 
 def test_last_vla_hydra_compose_if_available():

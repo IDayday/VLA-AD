@@ -1,0 +1,11 @@
+defaults:
+  - progressive_sft
+  - _self_
+
+allow_expert_target_features: false
+allow_future_targets_in_inference: false
+last_vla_teacher_traj_mode: none
+policy_kd_loss_weight: 0.0
+policy_kd_mode: none
+last_vla_risk_loss_weight: 0.0
+risk_loss_weight: 0.0

@@ -25,6 +25,7 @@ def make_last_vla_planner(
     risk_head: bool = False,
     action_conditioned: bool = True,
     teacher_mode: str = "none",
+    residual_anchor_source: str = "vlm_text_traj",
 ) -> ReCogDriveDiffusionPlanner:
     cfg = ReCogDriveDiffusionPlannerConfig(
         diffusion_model_cfg={
@@ -67,6 +68,8 @@ def make_last_vla_planner(
         last_vla_use_risk_head=risk_head,
         last_vla_allow_patch_geometry_fallback=True,
         last_vla_use_residual_diffusion=residual,
+        last_vla_residual_anchor_source=residual_anchor_source,
+        last_vla_require_residual_anchor=True,
         last_vla_use_action_conditioned_dynamics=action_conditioned,
         last_vla_geometry_loss_weight=0.1,
         last_vla_dynamic_loss_weight=dynamic_loss_weight,
@@ -89,6 +92,8 @@ def make_last_vla_batch(batch: int = 2, include_targets: bool = True) -> tuple[t
         "high_command_one_hot": torch.eye(3)[torch.arange(batch) % 3].float(),
         "jepa_context_tokens": torch.randn(batch, 12, 1024),
         "vggt_context_tokens": torch.randn(batch, 12, 2048),
+        "vlm_text_trajectory": torch.randn(batch, 8, 3),
+        "vlm_text_parse_ok": torch.ones(batch),
     }
     if include_targets:
         data.update(

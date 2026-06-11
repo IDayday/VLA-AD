@@ -1,0 +1,20 @@
+use_last_vla: false
+last_vla_stage: disabled
+use_last_rd: false
+last_rd_stage: disabled
+use_expert_features: false
+
+use_jepa: false
+use_vggt: false
+allow_expert_target_features: false
+allow_future_targets_in_inference: false
+
+sampling_method: ddim
+
+last_vla_use_residual_diffusion: true
+last_vla_residual_anchor_source: vlm_text_traj
+last_vla_require_residual_anchor: true
+last_vla_residual_detach_coarse: true
+last_vla_residual_alpha_start: 1.0
+last_vla_residual_alpha_end: 1.0
+last_vla_residual_alpha_warmup_epochs: 0

@@ -61,6 +61,9 @@ LAST_VLA_FEATURE_KEYS = (
     "gt_score",
     "oracle_best_of_k_score",
     "candidate_count",
+    "vlm_text_trajectory",
+    "vlm_text_trajectory_norm",
+    "vlm_text_parse_ok",
     "risk_labels",
     "generic_risk_labels",
     "drivable_risk_labels",
@@ -197,6 +200,9 @@ class ReCogDriveAgent(AbstractAgent):
         last_vla_geometry_grid_cols: int = 4,
         last_vla_use_residual_diffusion: bool = False,
         last_vla_residual_detach_coarse: bool = True,
+        last_vla_residual_anchor_source: str = "vlm_text_traj",
+        last_vla_require_residual_anchor: bool = True,
+        last_vla_residual_anchor_cache_dir: Optional[str] = None,
         last_vla_coarse_prior_clip: float = 1.0,
         last_vla_residual_alpha_start: float = 0.0,
         last_vla_residual_alpha_end: float = 1.0,
@@ -389,6 +395,9 @@ class ReCogDriveAgent(AbstractAgent):
         self.last_vla_geometry_grid_cols = last_vla_geometry_grid_cols
         self.last_vla_use_residual_diffusion = last_vla_use_residual_diffusion
         self.last_vla_residual_detach_coarse = last_vla_residual_detach_coarse
+        self.last_vla_residual_anchor_source = str(last_vla_residual_anchor_source)
+        self.last_vla_require_residual_anchor = bool(last_vla_require_residual_anchor)
+        self.last_vla_residual_anchor_cache_dir = last_vla_residual_anchor_cache_dir
         self.last_vla_coarse_prior_clip = last_vla_coarse_prior_clip
         self.last_vla_residual_alpha_start = last_vla_residual_alpha_start
         self.last_vla_residual_alpha_end = last_vla_residual_alpha_end
@@ -592,6 +601,8 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.last_vla_geometry_grid_cols = self.last_vla_geometry_grid_cols
         cfg.last_vla_use_residual_diffusion = self.last_vla_use_residual_diffusion
         cfg.last_vla_residual_detach_coarse = self.last_vla_residual_detach_coarse
+        cfg.last_vla_residual_anchor_source = self.last_vla_residual_anchor_source
+        cfg.last_vla_require_residual_anchor = self.last_vla_require_residual_anchor
         cfg.last_vla_coarse_prior_clip = self.last_vla_coarse_prior_clip
         cfg.last_vla_residual_alpha_start = self.last_vla_residual_alpha_start
         cfg.last_vla_residual_alpha_end = self.last_vla_residual_alpha_end
@@ -665,6 +676,8 @@ class ReCogDriveAgent(AbstractAgent):
             raise ValueError("last_vla_vlm_lora_dropout must be in [0, 1).")
         if self.last_vla_hidden_anchor_mode not in {"none", "summary_cosine", "token_mean_cosine", "mse_mean"}:
             raise ValueError(f"Unknown last_vla_hidden_anchor_mode={self.last_vla_hidden_anchor_mode!r}.")
+        if self.last_vla_residual_anchor_source not in {"vlm_text_traj", "none"}:
+            raise ValueError(f"Unknown last_vla_residual_anchor_source={self.last_vla_residual_anchor_source!r}.")
         if self.lr_vlm_lora is not None and float(self.lr_vlm_lora) <= 0.0:
             raise ValueError("lr_vlm_lora must be positive when set.")
         if self.lr_last_vla_cot is not None and float(self.lr_last_vla_cot) <= 0.0:
@@ -1128,6 +1141,10 @@ class ReCogDriveAgent(AbstractAgent):
             if counts["backbone_non_lora"]["trainable"] > 0:
                 raise RuntimeError("Last-VLA VLM-LoRA training must not train non-LoRA backbone parameters.")
             return
+        if not self.use_last_vla:
+            for name, parameter in self.named_parameters():
+                if self._is_last_vla_condition_parameter_key(name):
+                    parameter.requires_grad = False
         if self.freeze_expert and (self.train_expert_only or self.freeze_base_action_head):
             raise ValueError(
                 "freeze_expert leaves no trainable A4 parameters when combined with "

@@ -440,7 +440,13 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
                     f"Expert cache {path} key '{key}' must be scalar or [1], got {tuple(tensor.shape)}."
                 )
             return tensor.detach().cpu().float()
-        if key in {"teacher_trajectory", "teacher_trajectory_norm"}:
+        if key == "vlm_text_parse_ok":
+            if tensor.ndim > 1:
+                raise ValueError(
+                    f"Expert cache {path} key '{key}' must be scalar or [1], got {tuple(tensor.shape)}."
+                )
+            return tensor.detach().cpu().float()
+        if key in {"teacher_trajectory", "teacher_trajectory_norm", "vlm_text_trajectory", "vlm_text_trajectory_norm"}:
             if tuple(tensor.shape) != (8, 3):
                 raise ValueError(
                     f"Expert cache {path} key '{key}' must have shape [8, 3], got {tuple(tensor.shape)}."

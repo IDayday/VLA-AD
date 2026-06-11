@@ -15,7 +15,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--sharded-root", type=Path, required=True)
     parser.add_argument("--output-root", type=Path, required=True)
     parser.add_argument("--expected-num-shards", type=int, required=True)
-    parser.add_argument("--overlay-type", choices=("jepa128", "geometry192"), required=True)
+    parser.add_argument("--overlay-type", choices=("jepa128", "geometry192", "vlm_text_anchor"), required=True)
     parser.add_argument("--copy-mode", choices=("hardlink", "copy"), default="hardlink")
     parser.add_argument("--strict", action="store_true")
     return parser.parse_args()

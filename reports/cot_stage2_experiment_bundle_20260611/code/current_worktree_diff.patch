@@ -1,0 +1,2436 @@
+diff --git a/configs/last_vla_v2/decoupled_highcap_no_risk/base.yaml b/configs/last_vla_v2/decoupled_highcap_no_risk/base.yaml
+index f0bf2ac..724b376 100644
+--- a/configs/last_vla_v2/decoupled_highcap_no_risk/base.yaml
++++ b/configs/last_vla_v2/decoupled_highcap_no_risk/base.yaml
+@@ -45,6 +45,9 @@ last_vla_teacher_traj_mode: none
+
+ last_vla_use_residual_diffusion: false
+ last_vla_residual_detach_coarse: true
++last_vla_residual_anchor_source: vlm_text_traj
++last_vla_require_residual_anchor: true
++last_vla_residual_anchor_cache_dir: null
+ last_vla_coarse_prior_clip: 1.0
+ last_vla_residual_alpha_start: 0.0
+ last_vla_residual_alpha_end: 1.0
+diff --git a/docs/Last_VLA_v2_Decoupled_HighCap_Runbook.md b/docs/Last_VLA_v2_Decoupled_HighCap_Runbook.md
+index d4a120f..1d15f2c 100644
+--- a/docs/Last_VLA_v2_Decoupled_HighCap_Runbook.md
++++ b/docs/Last_VLA_v2_Decoupled_HighCap_Runbook.md
+@@ -45,6 +45,28 @@ It exposes `BASE_CHUNK_ROOT`, `JEPA_DENSE_CACHE_ROOT`, `GEOMETRY_CACHE_ROOT`,
+ The directory contains symlinks only; large cache payloads stay in their
+ generation directories.
+
++Current concrete cache and adapter paths:
++
++- Line A stage2 train cache:
++  `/mnt/project/VLA-AD/cache/last_vla_v2/decoupled_highcap_no_risk/train_full_highcap_chunks`
++- Line A CoT adapter for stage2:
++  `/mnt/project/VLA-AD/outputs/last_vla_v2/decoupled_highcap_no_risk_ab_cacheenv_setsid_20260607T022706Z/A/serverA_frozen_vlm_decoupled_highcap_no_risk/cot_alignment/latest.ckpt`
++- Line B LoRA-regenerated train hidden cache:
++  `/mnt/project/VLA-AD/outputs/last_vla_v2/decoupled_highcap_no_risk_ab_cacheenv_setsid_20260607T022706Z/B/serverB_vlm_lora_decoupled_highcap_no_risk/lora_regenerated_train_hidden_cache`
++- Line B extracted CoT adapter:
++  `/mnt/project/VLA-AD/outputs/last_vla_v2/decoupled_highcap_no_risk_ab_cacheenv_setsid_20260607T022706Z/B/serverB_vlm_lora_decoupled_highcap_no_risk/vlm_lora_cot_alignment/adapters/last_vla_cot_adapter.pt`
++- Line B extracted VLM LoRA adapter:
++  `/mnt/project/VLA-AD/outputs/last_vla_v2/decoupled_highcap_no_risk_ab_cacheenv_setsid_20260607T022706Z/B/serverB_vlm_lora_decoupled_highcap_no_risk/vlm_lora_cot_alignment/adapters/vlm_lora`
++- Frozen-VLM navtest cache for Line A eval:
++  `/mnt/project/VLA-AD/cache/last_vla_v2/decoupled_highcap_no_risk/navtest_full_highcap_chunks`
++- NAVTEST metric cache:
++  `/mnt/project/VLA-AD/cache/metric_cache_navtest_full_v1`
++
++Do not use old VLM-summary caches or old 12-token target caches for this path.
++B stage2 training reads the LoRA-regenerated train hidden cache above. For B
++navtest eval, prefer direct-online VLM+LoRA evaluation unless a dedicated
++LoRA-regenerated navtest hidden cache has been explicitly generated.
++
+ ## Cache Contract
+
+ - full raw VLM hidden state preserved
+@@ -55,6 +77,49 @@ generation directories.
+ - no summary cache
+ - no patch fallback
+
++For the current A/B no-residual stage2 experiments, `vlm_text_trajectory` is
++not required and is ignored by the chunk loader. For the separate VLM-text
++anchor residual experiment, each training and navtest sample must additionally
++contain either `vlm_text_trajectory_norm` or `vlm_text_trajectory`; these fields
++come from the frozen 2B-base direct text `[PT,...]` trajectory output.
++
++## VLM-Text Anchor Residual Variant
++
++Current A/B stage2 no-residual config remains:
++
++`+experiment=last_vla_decoupled_progressive_highcap_no_risk`
++
++The residual-anchor variant is separate:
++
++`+experiment=last_vla_decoupled_progressive_highcap_no_risk_vlm_text_residual`
++
++Generate fixed 2B-base direct-text trajectory anchors:
++
++```bash
++python scripts/build_vlm_text_traj_anchor_cache.py \
++  --model-path /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B \
++  --navsim-log-path /mnt/navsim/train_navsim_logs/train \
++  --sensor-blobs-path /mnt/navsim/train_sensor_blobs/train \
++  --scene-filter-yaml navsim/planning/script/config/common/train_test_split/scene_filter/trainval.yaml \
++  --base-chunk-root /path/to/train_full_highcap_chunks \
++  --output-dir /path/to/vlm_text_anchor_cache \
++  --num-shards 8 --shard-index 0 \
++  --precision bf16 --allow-tolerant-parse
++```
++
++Merge anchors into the stage2 chunk cache:
++
++```bash
++python scripts/merge_vlm_text_traj_anchor_cache_into_chunks.py \
++  --base-chunk-root /path/to/train_full_highcap_chunks \
++  --anchor-cache-root /path/to/vlm_text_anchor_cache \
++  --output-chunk-root /path/to/train_full_highcap_chunks_vlm_text_anchor
++```
++
++Use the merged cache for residual-anchor stage2 training. Build and merge the
++same anchor fields for navtest before evaluating a residual-anchor checkpoint.
++No-residual checkpoints can continue to use the existing train/navtest caches.
++
+ ## Generate Train Cache
+
+ Dry-run:
+@@ -197,7 +262,8 @@ scripts/last_vla_v2/decoupled_highcap_no_risk/build_lora_navtest_cache_decoupled
+
+ ## Eval
+
+-Checkpoint sweep:
++Checkpoint sweep, including original ReCogDrive-style Lightning top-5
++validation checkpoints:
+
+ ```bash
+ OUT_ROOT=/path/to/out \
+@@ -207,6 +273,45 @@ METRIC_CACHE_DIR=/path/to/navtest_metric_cache \
+ scripts/last_vla_v2/decoupled_highcap_no_risk/eval_checkpoint_sweep_decoupled.sh
+ ```
+
++For the current A/B no-residual stage2 runs, keep validation enabled during
++training. Do not pass `trainer.params.limit_val_batches=0`,
++`trainer.params.check_val_every_n_epoch=999999`, or `SKIP_VALIDATION=1` when
++top-5 eval is required. The training script already uses
++`ModelCheckpoint(save_top_k=5, monitor="val/loss_epoch")`.
++
++The reusable no-residual A/B stage2 launcher starts both training jobs and
++attaches a watcher that waits for training completion before running the top-5
++NAVTEST sweep:
++
++```bash
++RUN_TRAIN=1 \
++PROJECT_ROOT=/mnt/project/VLA-AD_last_vla_dev \
++REMOTE_HOST=training-rl-zt2 \
++scripts/last_vla_v2/decoupled_highcap_no_risk/launch_no_residual_stage2_ab_top5val.sh
++```
++
++B top-5 eval can avoid building a LoRA navtest cache by using direct-online VLM
++hidden computation:
++
++```bash
++OUT_ROOT=/path/to/no_residual_stage2_ab_top5val_run \
++NAVTEST_CHUNK_CACHE_ROOT=/mnt/project/VLA-AD/cache/last_vla_v2/decoupled_highcap_no_risk/navtest_full_highcap_chunks \
++METRIC_CACHE_DIR=/mnt/project/VLA-AD/cache/metric_cache_navtest_full_v1 \
++B_ONLINE_VLM_PATH=/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B \
++B_ONLINE_VLM_LORA_ADAPTER_DIR=/mnt/project/VLA-AD/outputs/last_vla_v2/decoupled_highcap_no_risk_ab_cacheenv_setsid_20260607T022706Z/B/serverB_vlm_lora_decoupled_highcap_no_risk/vlm_lora_cot_alignment/adapters/vlm_lora \
++INCLUDE_TOPK_CHECKPOINTS=1 \
++INCLUDE_CHECKPOINTS_TO_EVAL=0 \
++scripts/last_vla_v2/decoupled_highcap_no_risk/eval_checkpoint_sweep_decoupled.sh
++```
++
++Training and eval progress monitor:
++
++```bash
++python scripts/monitor_last_vla_stage2_ab_progress.py \
++  --out-root /path/to/no_residual_stage2_ab_top5val_run \
++  --watch 30
++```
++
+ CoT corruption:
+
+ ```bash
+diff --git a/navsim/agents/recogdrive/expert_backends.py b/navsim/agents/recogdrive/expert_backends.py
+index eaef556..abe7229 100644
+--- a/navsim/agents/recogdrive/expert_backends.py
++++ b/navsim/agents/recogdrive/expert_backends.py
+@@ -40,12 +40,18 @@ EXPERT_LAST_VLA_TEACHER_KEYS = (
+     "oracle_best_of_k_score",
+     "candidate_count",
+ )
++EXPERT_LAST_VLA_TEXT_ANCHOR_KEYS = (
++    "vlm_text_trajectory",
++    "vlm_text_trajectory_norm",
++    "vlm_text_parse_ok",
++)
+ EXPERT_ALL_KEYS = (
+     *EXPERT_CONTEXT_KEYS,
+     *EXPERT_GEOMETRY_CONTEXT_KEYS,
+     *EXPERT_TARGET_KEYS,
+     *EXPERT_RISK_KEYS,
+     *EXPERT_LAST_VLA_TEACHER_KEYS,
++    *EXPERT_LAST_VLA_TEXT_ANCHOR_KEYS,
+     *EXPERT_LEGACY_CONTEXT_KEYS,
+ )
+ DUMMY_EXPERT_WARNING = (
+diff --git a/navsim/agents/recogdrive/expert_cache.py b/navsim/agents/recogdrive/expert_cache.py
+index f58a32b..2c99db0 100644
+--- a/navsim/agents/recogdrive/expert_cache.py
++++ b/navsim/agents/recogdrive/expert_cache.py
+@@ -22,6 +22,8 @@ CONTEXT_SCHEMA = {
+     "vggt_camera_tokens": (12, 2048),
+     "teacher_trajectory": (8, 3),
+     "teacher_trajectory_norm": (8, 3),
++    "vlm_text_trajectory": (8, 3),
++    "vlm_text_trajectory_norm": (8, 3),
+ }
+ LEGACY_CONTEXT_ALIASES = {
+     "jepa_tokens": "jepa_context_tokens",
+@@ -161,6 +163,15 @@ def validate_sample_payload(
+         for key in ("teacher_trajectory", "teacher_trajectory_norm"):
+             if key in payload:
+                 validate_token_tensor(payload, key, CONTEXT_SCHEMA[key])
++        for key in ("vlm_text_trajectory", "vlm_text_trajectory_norm"):
++            if key in payload:
++                validate_token_tensor(payload, key, CONTEXT_SCHEMA[key])
++        if "vlm_text_parse_ok" in payload:
++            value = payload["vlm_text_parse_ok"]
++            if not isinstance(value, torch.Tensor):
++                raise TypeError(f"Expert cache key 'vlm_text_parse_ok' must be a torch.Tensor, got {type(value).__name__}.")
++            if value.ndim > 1:
++                raise ValueError(f"Expert cache key 'vlm_text_parse_ok' must be scalar or [1], got {tuple(value.shape)}.")
+         if last_vla_stage == "teacher_traj_sft" and last_vla_teacher_traj_mode != "none":
+             if "teacher_trajectory" not in payload and "teacher_trajectory_norm" not in payload:
+                 raise KeyError("Last-VLA teacher_traj_sft requires teacher_trajectory or teacher_trajectory_norm.")
+diff --git a/navsim/agents/recogdrive/recogdrive_agent.py b/navsim/agents/recogdrive/recogdrive_agent.py
+index f323fb7..5f0cccb 100644
+--- a/navsim/agents/recogdrive/recogdrive_agent.py
++++ b/navsim/agents/recogdrive/recogdrive_agent.py
+@@ -61,6 +61,9 @@ LAST_VLA_FEATURE_KEYS = (
+     "gt_score",
+     "oracle_best_of_k_score",
+     "candidate_count",
++    "vlm_text_trajectory",
++    "vlm_text_trajectory_norm",
++    "vlm_text_parse_ok",
+     "risk_labels",
+     "generic_risk_labels",
+     "drivable_risk_labels",
+@@ -197,6 +200,9 @@ class ReCogDriveAgent(AbstractAgent):
+         last_vla_geometry_grid_cols: int = 4,
+         last_vla_use_residual_diffusion: bool = False,
+         last_vla_residual_detach_coarse: bool = True,
++        last_vla_residual_anchor_source: str = "vlm_text_traj",
++        last_vla_require_residual_anchor: bool = True,
++        last_vla_residual_anchor_cache_dir: Optional[str] = None,
+         last_vla_coarse_prior_clip: float = 1.0,
+         last_vla_residual_alpha_start: float = 0.0,
+         last_vla_residual_alpha_end: float = 1.0,
+@@ -389,6 +395,9 @@ class ReCogDriveAgent(AbstractAgent):
+         self.last_vla_geometry_grid_cols = last_vla_geometry_grid_cols
+         self.last_vla_use_residual_diffusion = last_vla_use_residual_diffusion
+         self.last_vla_residual_detach_coarse = last_vla_residual_detach_coarse
++        self.last_vla_residual_anchor_source = str(last_vla_residual_anchor_source)
++        self.last_vla_require_residual_anchor = bool(last_vla_require_residual_anchor)
++        self.last_vla_residual_anchor_cache_dir = last_vla_residual_anchor_cache_dir
+         self.last_vla_coarse_prior_clip = last_vla_coarse_prior_clip
+         self.last_vla_residual_alpha_start = last_vla_residual_alpha_start
+         self.last_vla_residual_alpha_end = last_vla_residual_alpha_end
+@@ -592,6 +601,8 @@ class ReCogDriveAgent(AbstractAgent):
+         cfg.last_vla_geometry_grid_cols = self.last_vla_geometry_grid_cols
+         cfg.last_vla_use_residual_diffusion = self.last_vla_use_residual_diffusion
+         cfg.last_vla_residual_detach_coarse = self.last_vla_residual_detach_coarse
++        cfg.last_vla_residual_anchor_source = self.last_vla_residual_anchor_source
++        cfg.last_vla_require_residual_anchor = self.last_vla_require_residual_anchor
+         cfg.last_vla_coarse_prior_clip = self.last_vla_coarse_prior_clip
+         cfg.last_vla_residual_alpha_start = self.last_vla_residual_alpha_start
+         cfg.last_vla_residual_alpha_end = self.last_vla_residual_alpha_end
+@@ -665,6 +676,8 @@ class ReCogDriveAgent(AbstractAgent):
+             raise ValueError("last_vla_vlm_lora_dropout must be in [0, 1).")
+         if self.last_vla_hidden_anchor_mode not in {"none", "summary_cosine", "token_mean_cosine", "mse_mean"}:
+             raise ValueError(f"Unknown last_vla_hidden_anchor_mode={self.last_vla_hidden_anchor_mode!r}.")
++        if self.last_vla_residual_anchor_source not in {"vlm_text_traj", "none"}:
++            raise ValueError(f"Unknown last_vla_residual_anchor_source={self.last_vla_residual_anchor_source!r}.")
+         if self.lr_vlm_lora is not None and float(self.lr_vlm_lora) <= 0.0:
+             raise ValueError("lr_vlm_lora must be positive when set.")
+         if self.lr_last_vla_cot is not None and float(self.lr_last_vla_cot) <= 0.0:
+@@ -1128,6 +1141,10 @@ class ReCogDriveAgent(AbstractAgent):
+             if counts["backbone_non_lora"]["trainable"] > 0:
+                 raise RuntimeError("Last-VLA VLM-LoRA training must not train non-LoRA backbone parameters.")
+             return
++        if not self.use_last_vla:
++            for name, parameter in self.named_parameters():
++                if self._is_last_vla_condition_parameter_key(name):
++                    parameter.requires_grad = False
+         if self.freeze_expert and (self.train_expert_only or self.freeze_base_action_head):
+             raise ValueError(
+                 "freeze_expert leaves no trainable A4 parameters when combined with "
+diff --git a/navsim/agents/recogdrive/recogdrive_diffusion_planner.py b/navsim/agents/recogdrive/recogdrive_diffusion_planner.py
+index 78fec6d..2f56b4e 100644
+--- a/navsim/agents/recogdrive/recogdrive_diffusion_planner.py
++++ b/navsim/agents/recogdrive/recogdrive_diffusion_planner.py
+@@ -17,9 +17,9 @@ import copy
+ import lzma
+ import pickle
+ import warnings
+-from dataclasses import asdict, dataclass, field
++from dataclasses import asdict, dataclass, field, is_dataclass
+ from pathlib import Path
+-from typing import Any, Dict, Literal, Optional
++from typing import Any, Dict, Literal, Optional, Union
+
+ import numpy as np
+ import torch
+@@ -102,6 +102,55 @@ class GRPOConfig:
+         progress_weight=10.0, ttc_weight=5.0, comfortable_weight=2.0
+     ))
+
++    # reward extraction and shaping
++    use_safety_shaped_reward: bool = True
++    hard_gate_nc: bool = True
++    hard_gate_dac: bool = True
++    hard_gate_ttc: bool = False
++    hard_gate_ddc: bool = False
++    hard_gate_tlc: bool = False
++
++    nc_safe_threshold: float = 1.0
++    dac_safe_threshold: float = 1.0
++    ttc_safe_threshold: float = 1.0
++    ddc_safe_threshold: float = 1.0
++    tlc_safe_threshold: float = 1.0
++
++    progress_bonus_weight: float = 0.05
++    unsafe_reward_floor: float = -0.5
++    unsafe_pdms_scale: float = 0.05
++
++    # asymmetric safe advantage
++    use_asymmetric_safe_advantage: bool = True
++    advantage_std_floor: float = 0.05
++    safe_negative_adv_scale: float = 0.2
++    unsafe_advantage_offset: float = 1.0
++
++    # trajectory-level objective
++    use_trajectory_level_objective: bool = True
++    trajectory_logprob_reduce: Literal["mean", "discounted_mean"] = "discounted_mean"
++
++    # optional strict GSPO ratio; default OFF
++    use_gspo_ratio: bool = False
++    gspo_clip_low: float = 0.05
++    gspo_clip_high: float = 0.05
++    behavior_policy_sync_interval: int = 4
++    behavior_policy_sample: bool = True
++
++    # dynamic group weighting
++    use_dynamic_group_weight: bool = True
++    min_group_reward_std: float = 0.02
++    all_safe_low_std_group_weight: float = 0.2
++    all_unsafe_group_weight: float = 0.25
++
++    # diversity logging / optional reward
++    log_safe_diversity: bool = True
++    use_diversity_reward: bool = False
++    diversity_reward_weight: float = 0.005
++    diversity_pdms_threshold: float = 0.7
++    diversity_distance_scale: float = 5.0
++    diversity_metric: Literal["endpoint", "trajectory"] = "endpoint"
++
+
+ @dataclass
+ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
+@@ -222,6 +271,8 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
+     last_vla_geometry_grid_cols: int = 4
+     last_vla_use_residual_diffusion: bool = False
+     last_vla_residual_detach_coarse: bool = True
++    last_vla_residual_anchor_source: Literal["vlm_text_traj", "none"] = "vlm_text_traj"
++    last_vla_require_residual_anchor: bool = True
+     last_vla_coarse_prior_clip: float = 1.0
+     last_vla_residual_alpha_start: float = 0.0
+     last_vla_residual_alpha_end: float = 1.0
+@@ -690,6 +741,45 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+         self.clip_advantage_lower_quantile = cfg.clip_advantage_lower_quantile
+         self.clip_advantage_upper_quantile = cfg.clip_advantage_upper_quantile
+         self.gamma_denoising = cfg.gamma_denoising
++        for name in (
++            "use_safety_shaped_reward",
++            "hard_gate_nc",
++            "hard_gate_dac",
++            "hard_gate_ttc",
++            "hard_gate_ddc",
++            "hard_gate_tlc",
++            "nc_safe_threshold",
++            "dac_safe_threshold",
++            "ttc_safe_threshold",
++            "ddc_safe_threshold",
++            "tlc_safe_threshold",
++            "progress_bonus_weight",
++            "unsafe_reward_floor",
++            "unsafe_pdms_scale",
++            "use_asymmetric_safe_advantage",
++            "advantage_std_floor",
++            "safe_negative_adv_scale",
++            "unsafe_advantage_offset",
++            "use_trajectory_level_objective",
++            "trajectory_logprob_reduce",
++            "use_gspo_ratio",
++            "gspo_clip_low",
++            "gspo_clip_high",
++            "behavior_policy_sync_interval",
++            "behavior_policy_sample",
++            "use_dynamic_group_weight",
++            "min_group_reward_std",
++            "all_safe_low_std_group_weight",
++            "all_unsafe_group_weight",
++            "log_safe_diversity",
++            "use_diversity_reward",
++            "diversity_reward_weight",
++            "diversity_pdms_threshold",
++            "diversity_distance_scale",
++            "diversity_metric",
++        ):
++            setattr(self, name, getattr(cfg, name))
++        self.grpo_update_counter = 0
+
+         self.metric_cache_loader = MetricCacheLoader(Path(cfg.metric_cache_path))
+         proposal_sampling = TrajectorySampling(time_horizon=4, interval_length=0.1)
+@@ -697,12 +787,22 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+         self.train_scorer = PDMScorer(proposal_sampling, cfg.scorer_config)
+
+         self._safe_load_reference_policy(cfg.reference_policy_checkpoint)
+-
++
++        behavior_policy = None
++        if self.use_gspo_ratio:
++            behavior_policy = copy.deepcopy(self)
++            behavior_policy.eval()
++            for param in behavior_policy.parameters():
++                param.requires_grad = False
++
+         self.old_policy = copy.deepcopy(self)
+         self.old_policy.eval()
+         for param in self.old_policy.parameters():
+             param.requires_grad = False
+
++        if behavior_policy is not None:
++            self.behavior_policy = behavior_policy
++
+     @staticmethod
+     def _is_expert_parameter_key(key: str) -> bool:
+         expert_markers = (
+@@ -1426,7 +1526,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+         action_input: BatchFeature,
+         repeat: int,
+     ) -> Optional[BatchFeature]:
+-        if not self.config.use_expert_features and not self.config.use_last_rd and not self.config.use_last_vla:
++        if (
++            not self.config.use_expert_features
++            and not self.config.use_last_rd
++            and not self.config.use_last_vla
++            and not self.config.last_vla_use_residual_diffusion
++        ):
+             return None
+
+         data: Dict[str, torch.Tensor] = {}
+@@ -1450,6 +1555,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+             "gt_score",
+             "oracle_best_of_k_score",
+             "candidate_count",
++            "vlm_text_trajectory",
++            "vlm_text_trajectory_norm",
++            "vlm_text_parse_ok",
+             "risk_labels",
+             "generic_risk_labels",
+             "drivable_risk_labels",
+@@ -1490,14 +1598,129 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+             1.0,
+         )
+
++    def _last_vla_residual_alpha(self, *, training: bool) -> float:
++        if not self.config.last_vla_use_residual_diffusion:
++            return 0.0
++        if str(self.config.last_vla_residual_anchor_source) == "none":
++            return 0.0
++        start = float(self.config.last_vla_residual_alpha_start)
++        end = float(self.config.last_vla_residual_alpha_end)
++        if not training:
++            return end
++        warmup_epochs = int(self.config.last_vla_residual_alpha_warmup_epochs)
++        if warmup_epochs <= 0:
++            return end
++        progress = min(max(float(self.config.current_train_epoch) / float(warmup_epochs), 0.0), 1.0)
++        return start + (end - start) * progress
++
++    def _last_vla_residual_anchor_norm(
++        self,
++        action_input: Optional[BatchFeature],
++        reference_norm: torch.Tensor,
++        *,
++        required: Optional[bool] = None,
++    ) -> tuple[Optional[torch.Tensor], Dict[str, torch.Tensor]]:
++        diagnostics: Dict[str, torch.Tensor] = {
++            "residual_anchor_source_code": reference_norm.new_tensor(0.0),
++            "residual_anchor_missing": reference_norm.new_tensor(0.0),
++        }
++        if not self.config.last_vla_use_residual_diffusion:
++            return None, diagnostics
++
++        source = str(self.config.last_vla_residual_anchor_source)
++        if source == "none":
++            return None, diagnostics
++        if source != "vlm_text_traj":
++            raise ValueError(f"Unsupported Last-VLA residual anchor source: {source!r}.")
++
++        require_anchor = self.config.last_vla_require_residual_anchor if required is None else bool(required)
++        if action_input is None:
++            diagnostics["residual_anchor_missing"] = reference_norm.new_tensor(1.0)
++            if require_anchor:
++                raise KeyError("Last-VLA residual diffusion requires action_input with a VLM text trajectory anchor.")
++            return None, diagnostics
++
++        anchor_value = action_input.get("vlm_text_trajectory_norm", None)
++        if isinstance(anchor_value, torch.Tensor):
++            anchor_norm = anchor_value.to(device=reference_norm.device, dtype=reference_norm.dtype)
++        else:
++            anchor_value = action_input.get("vlm_text_trajectory", None)
++            if isinstance(anchor_value, torch.Tensor):
++                anchor_norm = self.norm_odo(anchor_value.to(device=reference_norm.device, dtype=reference_norm.dtype))
++            else:
++                diagnostics["residual_anchor_missing"] = reference_norm.new_tensor(1.0)
++                if require_anchor:
++                    raise KeyError(
++                        "Last-VLA residual diffusion anchor_source='vlm_text_traj' requires "
++                        "'vlm_text_trajectory_norm' or 'vlm_text_trajectory' in action_input."
++                    )
++                return None, diagnostics
++
++        if anchor_norm.ndim == 2 and reference_norm.ndim == 3 and reference_norm.shape[0] == 1:
++            anchor_norm = anchor_norm.unsqueeze(0)
++        if tuple(anchor_norm.shape) != tuple(reference_norm.shape):
++            raise ValueError(
++                f"VLM text trajectory anchor shape {tuple(anchor_norm.shape)} does not match "
++                f"reference trajectory shape {tuple(reference_norm.shape)}."
++            )
++        if not torch.isfinite(anchor_norm).all():
++            raise ValueError("VLM text trajectory anchor contains non-finite values.")
++
++        parse_ok = action_input.get("vlm_text_parse_ok", None)
++        if isinstance(parse_ok, torch.Tensor):
++            parse_ok_value = parse_ok.to(device=reference_norm.device).float()
++            if parse_ok_value.numel() > 0 and not bool((parse_ok_value > 0.5).all().item()):
++                raise ValueError("VLM text trajectory anchor has parse failures in this batch.")
++
++        anchor_norm = anchor_norm.detach()
++        diagnostics.update(
++            {
++                "residual_anchor_source_code": reference_norm.new_tensor(1.0),
++                "residual_anchor_norm": anchor_norm.float().norm(dim=-1).mean().to(reference_norm.dtype),
++                "residual_anchor_l1_to_reference": F.l1_loss(anchor_norm, reference_norm, reduction="mean").detach(),
++            }
++        )
++        return anchor_norm, diagnostics
++
++    def _last_vla_diffusion_target_info(
++        self,
++        selected_target_norm: torch.Tensor,
++        *,
++        training: bool,
++        action_input: Optional[BatchFeature] = None,
++    ) -> tuple[torch.Tensor, float, Optional[torch.Tensor], Dict[str, torch.Tensor]]:
++        alpha = self._last_vla_residual_alpha(training=training)
++        if alpha == 0.0:
++            diagnostics = {
++                "residual_anchor_source_code": selected_target_norm.new_tensor(0.0),
++                "residual_anchor_missing": selected_target_norm.new_tensor(0.0),
++                "residual_target_norm": selected_target_norm.float().norm(dim=-1).mean().to(selected_target_norm.dtype),
++            }
++            return selected_target_norm, 0.0, None, diagnostics
++
++        anchor_norm, diagnostics = self._last_vla_residual_anchor_norm(
++            action_input,
++            selected_target_norm,
++            required=True,
++        )
++        assert anchor_norm is not None
++        diffusion_target = selected_target_norm - float(alpha) * anchor_norm
++        diagnostics["residual_target_norm"] = diffusion_target.float().norm(dim=-1).mean().to(selected_target_norm.dtype)
++        return diffusion_target, float(alpha), anchor_norm, diagnostics
++
+     def _last_vla_diffusion_target(
+         self,
+         selected_target_norm: torch.Tensor,
+         *,
+         training: bool,
++        action_input: Optional[BatchFeature] = None,
+     ) -> tuple[torch.Tensor, float]:
+-        del training
+-        return selected_target_norm, 0.0
++        diffusion_target, alpha, _, _ = self._last_vla_diffusion_target_info(
++            selected_target_norm,
++            training=training,
++            action_input=action_input,
++        )
++        return diffusion_target, alpha
+
+     def _select_last_vla_training_target(
+         self,
+@@ -1909,9 +2132,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+                 loss = self._last_vla_aux_loss(dit_context, gt_actions.dtype)
+                 return self._format_training_output(loss, zero, zero, zero, dit_context)
+
+-            diffusion_target, residual_alpha = self._last_vla_diffusion_target(
++            diffusion_target, residual_alpha, _, residual_diagnostics = self._last_vla_diffusion_target_info(
+                 selected_target_norm,
+                 training=self.training,
++                action_input=action_input,
+             )
+
+             if self.config.sampling_method == "flow":
+@@ -1931,6 +2155,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+                     allow_target_tokens=allow_target_tokens,
+                 )
+                 dit_context["diagnostics"]["residual_alpha"] = diffusion_target.new_tensor(float(residual_alpha))
++                dit_context["diagnostics"].update(residual_diagnostics)
+                 pred_velocity = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input)
+                 diffusion_loss = F.mse_loss(pred_velocity, velocity_target, reduction="mean")
+                 policy_kd_loss = diffusion_loss.new_zeros(())
+@@ -1951,6 +2176,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+                     allow_target_tokens=allow_target_tokens,
+                 )
+                 dit_context["diagnostics"]["residual_alpha"] = diffusion_target.new_tensor(float(residual_alpha))
++                dit_context["diagnostics"].update(residual_diagnostics)
+                 pred_noise = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input)
+                 diffusion_loss = F.mse_loss(pred_noise, noise, reduction="mean")
+                 policy_kd_loss = self._compute_policy_kd_loss(vl_features, action_input, noisy_actions, t_discrete, pred_noise)
+@@ -1988,13 +2214,19 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+             )
+             return self._format_training_output(loss, diffusion_loss, jepa_alignment_loss, vggt_alignment_loss, dit_context)
+
++        diffusion_target, residual_alpha, _, residual_diagnostics = self._last_vla_diffusion_target_info(
++            gt_actions,
++            training=self.training,
++            action_input=action_input,
++        )
++
+         if self.config.sampling_method == 'flow':
+-            noise = torch.randn_like(gt_actions)
+-            t_cont = self.sample_time(gt_actions.shape[0], device=gt_actions.device, dtype=gt_actions.dtype)
++            noise = torch.randn_like(diffusion_target)
++            t_cont = self.sample_time(diffusion_target.shape[0], device=diffusion_target.device, dtype=diffusion_target.dtype)
+             t_cont_reshaped = t_cont[:, None, None]
+
+-            noisy_actions = (1 - t_cont_reshaped) * noise + t_cont_reshaped * gt_actions
+-            velocity_target = gt_actions - noise
++            noisy_actions = (1 - t_cont_reshaped) * noise + t_cont_reshaped * diffusion_target
++            velocity_target = diffusion_target - noise
+             t_discrete = (t_cont * self.num_timestep_buckets).long()
+             dit_context = self._prepare_dit_context(
+                 vl_features,
+@@ -2004,16 +2236,18 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+                 diffusion_timestep=t_discrete,
+                 allow_target_tokens=allow_target_tokens,
+             )
++            dit_context["diagnostics"]["residual_alpha"] = diffusion_target.new_tensor(float(residual_alpha))
++            dit_context["diagnostics"].update(residual_diagnostics)
+             pred_velocity = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input)
+             diffusion_loss = F.mse_loss(pred_velocity, velocity_target, reduction='mean')
+             policy_kd_loss = diffusion_loss.new_zeros(())
+         else:
+-            noise = torch.randn_like(gt_actions)
+-            t_discrete = self.sample_time(gt_actions.shape[0], device=gt_actions.device, dtype=gt_actions.dtype)
++            noise = torch.randn_like(diffusion_target)
++            t_discrete = self.sample_time(diffusion_target.shape[0], device=diffusion_target.device, dtype=diffusion_target.dtype)
+
+             noisy_actions = (
+-                self.extract(self.ddpm_sqrt_alphas_cumprod, t_discrete, gt_actions.shape) * gt_actions +
+-                self.extract(self.ddpm_sqrt_one_minus_alphas_cumprod, t_discrete, gt_actions.shape) * noise
++                self.extract(self.ddpm_sqrt_alphas_cumprod, t_discrete, diffusion_target.shape) * diffusion_target +
++                self.extract(self.ddpm_sqrt_one_minus_alphas_cumprod, t_discrete, diffusion_target.shape) * noise
+             )
+             dit_context = self._prepare_dit_context(
+                 vl_features,
+@@ -2023,6 +2257,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+                 diffusion_timestep=t_discrete,
+                 allow_target_tokens=allow_target_tokens,
+             )
++            dit_context["diagnostics"]["residual_alpha"] = diffusion_target.new_tensor(float(residual_alpha))
++            dit_context["diagnostics"].update(residual_diagnostics)
+             pred_noise = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input)
+             diffusion_loss = F.mse_loss(pred_noise, noise, reduction='mean')
+             policy_kd_loss = self._compute_policy_kd_loss(vl_features, action_input, noisy_actions, t_discrete, pred_noise)
+@@ -2103,6 +2339,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+                 "dynamic_loss_raw",
+                 "geometry_loss_raw",
+                 "residual_alpha",
++                "residual_anchor_source_code",
++                "residual_anchor_missing",
++                "residual_anchor_norm",
++                "residual_anchor_l1_to_reference",
++                "residual_target_norm",
+                 "geometry_weight_effective",
+                 "dynamic_weight_effective",
+                 "coarse_weight_effective",
+@@ -2292,10 +2533,25 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+         if final_action_clip_value is not None:
+             current_actions.clamp_(-final_action_clip_value, final_action_clip_value)
+
++        residual_alpha = self._last_vla_residual_alpha(training=False)
++        residual_anchor_norm = None
+         final_norm = current_actions
++        if residual_alpha != 0.0:
++            residual_anchor_norm, _ = self._last_vla_residual_anchor_norm(
++                action_input,
++                current_actions,
++                required=True,
++            )
++            assert residual_anchor_norm is not None
++            final_norm = current_actions + float(residual_alpha) * residual_anchor_norm.to(current_actions)
++
+         output_data: Dict[str, torch.Tensor] = {}
+         if coarse_prior_norm is not None:
+             output_data["pred_coarse_traj"] = self.denorm_odo(coarse_prior_norm.to(current_actions))
++        if residual_anchor_norm is not None:
++            output_data["pred_residual_norm"] = current_actions
++            output_data["pred_vlm_text_anchor_traj"] = self.denorm_odo(residual_anchor_norm.to(current_actions))
++            output_data["pred_residual_anchor_alpha"] = current_actions.new_tensor(float(residual_alpha))
+
+         final_action_clip_value = getattr(self, 'final_action_clip_value', 1.0)
+         if final_action_clip_value is not None:
+@@ -2338,6 +2594,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+         context_embeds = dit_context["context_tokens"]
+         context_mean = dit_context["context_mean"]
+         expert_step_condition = dit_context["expert_step_condition"]
++        cot_condition_tokens = dit_context.get("cot_condition_tokens")
+         B, D = context_embeds.shape[0], self.config.action_dim
+         device, dtype = context_embeds.device, context_embeds.dtype
+
+@@ -2371,6 +2628,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+                     context_embeds = dit_context["context_tokens"]
+                     context_mean = dit_context["context_mean"]
+                     expert_step_condition = dit_context["expert_step_condition"]
++                    cot_condition_tokens = dit_context.get("cot_condition_tokens")
+
+                 action_features = self.action_encoder(current_actions, t_batch)
+                 if hasattr(self, 'position_embedding'):
+@@ -2444,7 +2702,19 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+         else:
+             raise ValueError(f"Unsupported sampling method: {self.config.sampling_method}")
+
++        residual_alpha = self._last_vla_residual_alpha(training=self.training)
+         final_norm = current_actions
++        if residual_alpha != 0.0:
++            residual_anchor_norm, _ = self._last_vla_residual_anchor_norm(
++                action_input,
++                current_actions,
++                required=True,
++            )
++            assert residual_anchor_norm is not None
++            final_norm = current_actions + float(residual_alpha) * residual_anchor_norm.to(current_actions)
++            final_action_clip_value = getattr(self, 'final_action_clip_value', 1.0)
++            if final_action_clip_value is not None:
++                final_norm = final_norm.clamp(-final_action_clip_value, final_action_clip_value)
+         final_actions = self.denorm_odo(final_norm)
+         chain_tensor = torch.stack(denoising_chain, dim=1)
+
+@@ -2469,6 +2739,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+         context_embeds = dit_context["context_tokens"]
+         context_mean = dit_context["context_mean"]
+         expert_step_condition = dit_context["expert_step_condition"]
++        cot_condition_tokens = dit_context.get("cot_condition_tokens")
+
+         his_traj_features = self.his_traj_encoder(
+             his_traj_features.unsqueeze(1)
+@@ -2486,6 +2757,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+         }
+         if expert_step_condition is not None:
+             conditioning_embeds['expert_step_condition'] = expert_step_condition
++        if cot_condition_tokens is not None:
++            conditioning_embeds['cot_condition_tokens'] = cot_condition_tokens
+
+         batched_conditioning = {}
+         for key, value in conditioning_embeds.items():
+@@ -2518,6 +2791,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+             deterministic=deterministic,
+             context_mean=batched_conditioning['context_mean'],
+             expert_step_condition=batched_conditioning.get('expert_step_condition'),
++            cot_condition_tokens=batched_conditioning.get('cot_condition_tokens'),
+         )
+
+         std = torch.exp(0.5 * logvar).clamp(min=self.min_logprob_denoising_std)
+@@ -2526,6 +2800,265 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+
+         return log_prob
+
++    def _sync_behavior_policy(self):
++        """Synchronizes the frozen GRPO behavior policy with the current policy."""
++        if not hasattr(self, "behavior_policy"):
++            return
++
++        behavior_state = self.behavior_policy.state_dict()
++        current_state = self.state_dict()
++        filtered_state = {
++            key: current_state[key].detach()
++            for key, value in behavior_state.items()
++            if key in current_state and current_state[key].shape == value.shape
++        }
++        self.behavior_policy.load_state_dict(filtered_state, strict=False)
++        self.behavior_policy.eval()
++        for param in self.behavior_policy.parameters():
++            param.requires_grad = False
++
++    @staticmethod
++    def _to_python_float(value: Any, default: float) -> float:
++        if value is None:
++            return default
++        if isinstance(value, torch.Tensor):
++            if value.numel() == 0:
++                return default
++            value = value.detach().reshape(-1)[0].cpu().item()
++        elif isinstance(value, np.ndarray):
++            if value.size == 0:
++                return default
++            value = value.reshape(-1)[0].item()
++        elif isinstance(value, np.generic):
++            value = value.item()
++        try:
++            return float(value)
++        except (TypeError, ValueError):
++            return default
++
++    def _extract_pdm_components(self, pdm_result) -> Dict[str, float]:
++        """Normalizes PDM result containers into Stage-3 reward components."""
++        while isinstance(pdm_result, tuple) and len(pdm_result) > 0:
++            pdm_result = pdm_result[0]
++
++        if is_dataclass(pdm_result) and not isinstance(pdm_result, type):
++            raw = asdict(pdm_result)
++        elif isinstance(pdm_result, dict):
++            raw = dict(pdm_result)
++        elif hasattr(pdm_result, "iloc") and hasattr(pdm_result, "columns"):
++            raw = pdm_result.iloc[0].to_dict() if len(pdm_result) > 0 else {}
++        elif hasattr(pdm_result, "_asdict"):
++            raw = pdm_result._asdict()
++        elif hasattr(pdm_result, "__dict__"):
++            raw = {
++                key: value
++                for key, value in vars(pdm_result).items()
++                if not key.startswith("_")
++            }
++        else:
++            raw = {}
++
++        raw_by_key = {str(key).lower(): value for key, value in raw.items()}
++
++        def pick(keys: tuple[str, ...], default: float) -> float:
++            for key in keys:
++                normalized_key = key.lower()
++                if normalized_key in raw_by_key:
++                    return self._to_python_float(raw_by_key[normalized_key], default)
++            return default
++
++        return {
++            "pdms": pick(("score", "pdm_score", "pdms"), 0.0),
++            "no_at_fault_collisions": pick(("no_at_fault_collisions", "nc"), 1.0),
++            "drivable_area_compliance": pick(("drivable_area_compliance", "dac"), 1.0),
++            "time_to_collision_within_bound": pick(("time_to_collision_within_bound", "ttc"), 1.0),
++            "ego_progress": pick(("ego_progress", "ep", "progress"), 0.0),
++            "history_comfort": pick(("history_comfort", "comfort", "comfortable"), 0.0),
++            "lane_keeping": pick(("lane_keeping", "lane_keeping_compliance"), 0.0),
++            "driving_direction_compliance": pick(("driving_direction_compliance", "ddc"), 1.0),
++            "traffic_light_compliance": pick(("traffic_light_compliance", "tlc"), 1.0),
++        }
++
++    def _compute_hard_safety_mask(self, components: Dict[str, torch.Tensor]) -> torch.Tensor:
++        pdms = components["pdms"]
++        hard_safe_mask = torch.ones(pdms.shape, device=pdms.device, dtype=torch.bool)
++        if self.hard_gate_nc:
++            hard_safe_mask &= components["no_at_fault_collisions"] >= float(self.nc_safe_threshold)
++        if self.hard_gate_dac:
++            hard_safe_mask &= components["drivable_area_compliance"] >= float(self.dac_safe_threshold)
++        if self.hard_gate_ttc:
++            hard_safe_mask &= components["time_to_collision_within_bound"] >= float(self.ttc_safe_threshold)
++        if self.hard_gate_ddc:
++            hard_safe_mask &= components["driving_direction_compliance"] >= float(self.ddc_safe_threshold)
++        if self.hard_gate_tlc:
++            hard_safe_mask &= components["traffic_light_compliance"] >= float(self.tlc_safe_threshold)
++        return hard_safe_mask
++
++    def _compute_safe_diversity_bonus(
++        self,
++        trajs: torch.Tensor,
++        hard_safe_mask: torch.Tensor,
++        pdms: torch.Tensor,
++        B: int,
++        G: int,
++    ) -> torch.Tensor:
++        # trajs: [B * G, H, D], hard_safe_mask/pdms: [B * G]
++        assert trajs.shape[0] == B * G
++        assert hard_safe_mask.shape == (B * G,)
++        assert pdms.shape == (B * G,)
++
++        xy = trajs.reshape(B, G, trajs.shape[1], trajs.shape[2])[..., :2]
++        valid = (hard_safe_mask.reshape(B, G) & (pdms.reshape(B, G) >= float(self.diversity_pdms_threshold)))
++        scale = max(float(self.diversity_distance_scale), 1e-8)
++
++        if self.diversity_metric == "endpoint":
++            points = xy[:, :, -1, :]
++            pairwise = torch.linalg.norm(points[:, :, None, :] - points[:, None, :, :], dim=-1)
++        elif self.diversity_metric == "trajectory":
++            delta = xy[:, :, None, :, :] - xy[:, None, :, :, :]
++            pairwise = torch.linalg.norm(delta, dim=-1).mean(dim=-1)
++        else:
++            raise ValueError(f"Unsupported diversity_metric: {self.diversity_metric!r}")
++
++        eye = torch.eye(G, device=trajs.device, dtype=torch.bool).unsqueeze(0)
++        pair_mask = valid[:, :, None] & valid[:, None, :] & ~eye
++        pair_count = pair_mask.sum(dim=2)
++        pair_sum = (pairwise * pair_mask.to(dtype=pairwise.dtype)).sum(dim=2)
++        bonus = pair_sum / pair_count.clamp(min=1).to(dtype=pairwise.dtype)
++        bonus = (bonus / scale).clamp(min=0.0, max=1.0)
++        bonus = torch.where(valid & (pair_count > 0), bonus, torch.zeros_like(bonus))
++        return bonus.reshape(B * G)
++
++    def _compose_stage3_reward(
++        self,
++        base_rewards: torch.Tensor,
++        components: Dict[str, torch.Tensor],
++        trajs: torch.Tensor,
++        B: int,
++        G: int,
++    ) -> tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
++        # base_rewards/reward/hard_safe_mask: [B * G]
++        assert base_rewards.shape == (B * G,)
++        pdms = base_rewards
++        hard_safe_mask = self._compute_hard_safety_mask(components)
++        assert hard_safe_mask.shape == (B * G,)
++
++        ego_progress = components["ego_progress"]
++        if self.use_safety_shaped_reward:
++            safe_reward = pdms + float(self.progress_bonus_weight) * ego_progress
++            unsafe_reward = float(self.unsafe_reward_floor) + float(self.unsafe_pdms_scale) * pdms
++            reward = torch.where(hard_safe_mask, safe_reward, unsafe_reward)
++        else:
++            reward = pdms
++
++        if self.log_safe_diversity or self.use_diversity_reward:
++            diversity_bonus = self._compute_safe_diversity_bonus(trajs, hard_safe_mask, pdms, B, G)
++        else:
++            diversity_bonus = torch.zeros_like(reward)
++
++        if self.use_diversity_reward:
++            diversity_valid = hard_safe_mask & (pdms >= float(self.diversity_pdms_threshold))
++            reward = reward + torch.where(
++                diversity_valid,
++                float(self.diversity_reward_weight) * diversity_bonus,
++                torch.zeros_like(diversity_bonus),
++            )
++
++        aux = {
++            "pdms": pdms,
++            "ego_progress": ego_progress,
++            "diversity_bonus": diversity_bonus,
++        }
++        for key in (
++            "no_at_fault_collisions",
++            "drivable_area_compliance",
++            "time_to_collision_within_bound",
++            "history_comfort",
++            "lane_keeping",
++            "driving_direction_compliance",
++            "traffic_light_compliance",
++        ):
++            if key in components:
++                aux[key] = components[key]
++        return reward, hard_safe_mask, aux
++
++    def _compute_stage3_advantages(
++        self,
++        rewards_matrix: torch.Tensor,
++        hard_safe_matrix: torch.Tensor,
++    ) -> tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
++        # rewards_matrix/hard_safe_matrix: [B, G]
++        assert rewards_matrix.shape == hard_safe_matrix.shape
++        B, G = rewards_matrix.shape
++
++        mean_r = rewards_matrix.mean(dim=1, keepdim=True)
++        if G > 1:
++            std_r = rewards_matrix.std(dim=1, keepdim=True).clamp(min=float(self.advantage_std_floor))
++            reward_std = rewards_matrix.std(dim=1)
++        else:
++            std_r = rewards_matrix.new_full((B, 1), float(self.advantage_std_floor))
++            reward_std = rewards_matrix.new_zeros(B)
++        z = (rewards_matrix - mean_r) / std_r
++
++        if self.use_asymmetric_safe_advantage:
++            safe_adv = torch.clamp(z, min=0.0) + float(self.safe_negative_adv_scale) * torch.clamp(z, max=0.0)
++            unsafe_adv = -float(self.unsafe_advantage_offset) + torch.clamp(z, max=0.0)
++            advantages = torch.where(hard_safe_matrix, safe_adv, unsafe_adv)
++        else:
++            advantages = z
++
++        flat_advantages = advantages.flatten()
++        adv_min = torch.quantile(flat_advantages.float(), float(self.clip_advantage_lower_quantile)).to(advantages)
++        adv_max = torch.quantile(flat_advantages.float(), float(self.clip_advantage_upper_quantile)).to(advantages)
++        advantages = advantages.clamp(min=adv_min, max=adv_max)
++
++        safe_count = hard_safe_matrix.sum(dim=1)
++        mixed = (safe_count > 0) & (safe_count < G)
++        all_safe = safe_count == G
++        all_unsafe = safe_count == 0
++
++        if self.use_dynamic_group_weight:
++            group_weight = torch.ones(B, device=rewards_matrix.device, dtype=rewards_matrix.dtype)
++            group_weight[all_safe & (reward_std <= float(self.min_group_reward_std))] = float(self.all_safe_low_std_group_weight)
++            group_weight[all_unsafe] = float(self.all_unsafe_group_weight)
++        else:
++            group_weight = torch.ones(B, device=rewards_matrix.device, dtype=rewards_matrix.dtype)
++
++        aux = {
++            "reward_std": reward_std.detach(),
++            "safe_count": safe_count.detach().to(dtype=rewards_matrix.dtype),
++            "mixed_group_ratio": mixed.float().mean().to(dtype=rewards_matrix.dtype),
++            "all_safe_group_ratio": all_safe.float().mean().to(dtype=rewards_matrix.dtype),
++            "all_unsafe_group_ratio": all_unsafe.float().mean().to(dtype=rewards_matrix.dtype),
++        }
++        return advantages.reshape(B * G).detach(), group_weight.detach(), aux
++
++    def _reduce_chain_logprobs(
++        self,
++        log_probs: torch.Tensor,
++        B: int,
++        G: int,
++        K: int,
++        discount: torch.Tensor,
++    ) -> torch.Tensor:
++        # raw log_probs: [B * G * K, H, D]
++        assert log_probs.shape[0] == B * G * K
++        step_logp = log_probs.clamp(min=-5, max=2).mean(dim=[1, 2])
++        step_logp = step_logp.view(B * G, K)
++
++        if self.trajectory_logprob_reduce == "discounted_mean":
++            discount = discount.to(device=step_logp.device, dtype=step_logp.dtype)
++            discount_norm = discount / discount.sum().clamp(min=1e-8)
++            traj_logp = (step_logp * discount_norm.view(1, K)).sum(dim=1)
++        elif self.trajectory_logprob_reduce == "mean":
++            traj_logp = step_logp.mean(dim=1)
++        else:
++            raise ValueError(f"Unsupported trajectory_logprob_reduce: {self.trajectory_logprob_reduce!r}")
++
++        # traj_logp: [B * G]
++        assert traj_logp.shape == (B * G,)
++        return traj_logp
++
+     def forward_grpo(
+         self,
+         vl_features: torch.Tensor,
+@@ -2546,13 +3079,32 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+         status_feature_rep = action_input.status_feature.repeat_interleave(G, 0)
+         expert_action_input_rep = self._repeat_expert_action_input(action_input, G)
+
+-        chains, trajs = self.sample_chain(
+-            vl_features_rep,
+-            his_traj_rep,
+-            status_feature_rep,
+-            deterministic=False,
+-            action_input=expert_action_input_rep,
+-        )
++        sampled_from_behavior_policy = False
++        if self.use_trajectory_level_objective and self.use_gspo_ratio and self.behavior_policy_sample:
++            if not hasattr(self, "behavior_policy"):
++                raise RuntimeError("use_gspo_ratio=True requires a frozen behavior_policy initialized in _init_grpo.")
++            sync_interval = max(1, int(self.behavior_policy_sync_interval))
++            if int(getattr(self, "grpo_update_counter", 0)) % sync_interval == 0:
++                self._sync_behavior_policy()
++            sampled_from_behavior_policy = True
++            self.behavior_policy.eval()
++            with torch.no_grad():
++                chains, trajs = self.behavior_policy.sample_chain(
++                    vl_features_rep,
++                    his_traj_rep,
++                    status_feature_rep,
++                    deterministic=False,
++                    action_input=expert_action_input_rep,
++                )
++        else:
++            with torch.no_grad():
++                chains, trajs = self.sample_chain(
++                    vl_features_rep,
++                    his_traj_rep,
++                    status_feature_rep,
++                    deterministic=False,
++                    action_input=expert_action_input_rep,
++                )
+
+         tokens_rep = [tok for tok in tokens_list for _ in range(G)]
+         unique_tokens = set(tokens_list)
+@@ -2561,27 +3113,36 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+             path = self.metric_cache_loader.metric_cache_paths[token]
+             with lzma.open(path, 'rb') as f:
+                 metric_cache[token] = pickle.load(f)
+-        rewards = self.reward_fn(trajs, tokens_rep, metric_cache)
++        base_rewards, components = self.reward_fn(trajs, tokens_rep, metric_cache, return_components=True)
++        # rewards: [B * G]
++        assert base_rewards.shape == (B * G,)
++        rewards, hard_safe_mask, reward_aux = self._compose_stage3_reward(
++            base_rewards,
++            components,
++            trajs,
++            B,
++            G,
++        )
++        assert rewards.shape == (B * G,)
++        assert hard_safe_mask.shape == (B * G,)
+
++        # rewards_matrix: [B, G], hard_safe_matrix: [B, G]
+         rewards_matrix = rewards.view(B, G)
+-        mean_r = rewards_matrix.mean(dim=1, keepdim=True)
+-        std_r = rewards_matrix.std(dim=1, keepdim=True) + 1e-8
+-        advantages = ((rewards_matrix - mean_r) / std_r).view(-1).detach()
+-
+-        adv_min = torch.quantile(advantages, self.clip_advantage_lower_quantile)
+-        adv_max = torch.quantile(advantages, self.clip_advantage_upper_quantile)
+-        advantages = advantages.clamp(min=adv_min, max=adv_max)
++        hard_safe_matrix = hard_safe_mask.view(B, G)
++        advantages, group_weight, advantage_aux = self._compute_stage3_advantages(rewards_matrix, hard_safe_matrix)
++        # advantages: [B * G], group_weight: [B]
++        assert advantages.shape == (B * G,)
++        assert group_weight.shape == (B,)
+
+         num_denoising_steps = chains.shape[1] - 1
+         denoising_indices = torch.arange(num_denoising_steps, device=advantages.device)
+-        discount = (self.gamma_denoising ** (num_denoising_steps - denoising_indices - 1))
+-
+-
+-        adv_steps = advantages.view(B, G, 1).expand(-1, -1, num_denoising_steps)
+-        discount = discount.view(1, 1, num_denoising_steps).expand(B, G, num_denoising_steps)
+-        adv_weighted_flat = (adv_steps * discount).reshape(-1)
++        discount = (float(self.gamma_denoising) ** (num_denoising_steps - denoising_indices - 1)).to(
++            device=advantages.device,
++            dtype=advantages.dtype,
++        )
+
+-        log_probs = self.get_logprobs(
++        adv = advantages * group_weight.repeat_interleave(G)
++        new_log_probs = self.get_logprobs(
+             vl_features_rep,
+             his_traj_rep,
+             status_feature_rep,
+@@ -2589,13 +3150,73 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+             deterministic=False,
+             action_input=expert_action_input_rep,
+         )
+-        log_probs = log_probs.clamp(min=-5, max=2).mean(dim=[1, 2])
+-
+-        policy_loss = -torch.mean(log_probs * adv_weighted_flat)
++        # raw log_probs: [B * G * K, H, D]
++        assert new_log_probs.shape[0] == B * G * num_denoising_steps
++
++        gspo_ratio_mean = new_log_probs.new_tensor(1.0)
++        gspo_ratio_clip_frac = new_log_probs.new_tensor(0.0)
++
++        use_strict_gspo = (
++            self.use_trajectory_level_objective
++            and self.use_gspo_ratio
++            and sampled_from_behavior_policy
++        )
++        if self.use_trajectory_level_objective:
++            new_traj_logp = self._reduce_chain_logprobs(new_log_probs, B, G, num_denoising_steps, discount)
++            # traj_logp: [B * G]
++            assert new_traj_logp.shape == (B * G,)
++
++            if use_strict_gspo:
++                with torch.no_grad():
++                    old_log_probs = self.behavior_policy.get_logprobs(
++                        vl_features_rep,
++                        his_traj_rep,
++                        status_feature_rep,
++                        chains,
++                        deterministic=False,
++                        action_input=expert_action_input_rep,
++                    )
++                    old_traj_logp = self.behavior_policy._reduce_chain_logprobs(
++                        old_log_probs,
++                        B,
++                        G,
++                        num_denoising_steps,
++                        discount,
++                    )
++
++                log_ratio = new_traj_logp - old_traj_logp
++                ratio = torch.exp(log_ratio.clamp(min=-20.0, max=20.0))
++                ratio_clip_low = 1.0 - float(self.gspo_clip_low)
++                ratio_clip_high = 1.0 + float(self.gspo_clip_high)
++                clipped_ratio = ratio.clamp(ratio_clip_low, ratio_clip_high)
++                surrogate = torch.minimum(ratio * adv, clipped_ratio * adv)
++                policy_loss = -torch.mean(surrogate)
++                gspo_ratio_mean = ratio.detach().mean()
++                gspo_ratio_clip_frac = (
++                    ((ratio < ratio_clip_low) | (ratio > ratio_clip_high)).detach().float().mean().to(ratio)
++                )
++            else:
++                policy_loss = -torch.mean(new_traj_logp * adv)
++            trajectory_logp = new_traj_logp.detach()
++        else:
++            step_logp = new_log_probs.clamp(min=-5, max=2).mean(dim=[1, 2])
++            adv_steps = adv.view(B, G, 1).expand(-1, -1, num_denoising_steps)
++            discount_steps = discount.view(1, 1, num_denoising_steps).expand(B, G, num_denoising_steps)
++            adv_weighted_flat = (adv_steps * discount_steps).reshape(-1)
++            policy_loss = -torch.mean(step_logp * adv_weighted_flat)
++            trajectory_logp = self._reduce_chain_logprobs(
++                new_log_probs,
++                B,
++                G,
++                num_denoising_steps,
++                discount,
++            ).detach()
++
+         total_loss = policy_loss
+
+-        bc_loss = 0.0
++        bc_loss = policy_loss.new_zeros(())
+         if use_bc_loss:
++            self.old_policy.eval()
+             with torch.no_grad():
+                 teacher_chains, _ = self.old_policy.sample_chain(
+                     vl_features,
+@@ -2618,15 +3239,42 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+             bc_loss = -bc_logp.mean()
+             total_loss = total_loss + bc_coeff * bc_loss
+
++        self.grpo_update_counter = int(getattr(self, "grpo_update_counter", 0)) + 1
++
+         zero_loss = total_loss.new_zeros(())
++        hard_safe_ratio = hard_safe_mask.detach().float().mean().to(dtype=total_loss.dtype)
++        diversity_bonus = reward_aux["diversity_bonus"].detach()
++        if bool(hard_safe_mask.detach().any().item()):
++            safe_diversity = diversity_bonus[hard_safe_mask.detach()].mean().to(dtype=total_loss.dtype)
++        else:
++            safe_diversity = zero_loss
++
+         return BatchFeature(data={
+             "loss": total_loss,
+             "diffusion_loss": zero_loss,
+             "jepa_alignment_loss": zero_loss,
+             "vggt_alignment_loss": zero_loss,
+             "reward": rewards.mean(),
++            "base_reward": base_rewards.mean(),
++            "shaped_reward": rewards.mean(),
+             "policy_loss": policy_loss,
+             "bc_loss": bc_loss,
++            "safe_ratio": hard_safe_ratio,
++            "hard_safe_ratio": hard_safe_ratio,
++            "mean_ep": reward_aux["ego_progress"].mean(),
++            "mean_ttc": reward_aux["time_to_collision_within_bound"].mean(),
++            "mean_comfort": reward_aux["history_comfort"].mean(),
++            "diversity_bonus": diversity_bonus.mean(),
++            "safe_diversity": safe_diversity,
++            "group_reward_std": advantage_aux["reward_std"].mean(),
++            "mixed_group_ratio": advantage_aux["mixed_group_ratio"],
++            "all_safe_group_ratio": advantage_aux["all_safe_group_ratio"],
++            "all_unsafe_group_ratio": advantage_aux["all_unsafe_group_ratio"],
++            "mean_advantage": advantages.mean(),
++            "mean_abs_advantage": advantages.abs().mean(),
++            "trajectory_logp": trajectory_logp.mean(),
++            "gspo_ratio_mean": gspo_ratio_mean.to(dtype=total_loss.dtype),
++            "gspo_ratio_clip_frac": gspo_ratio_clip_frac.to(dtype=total_loss.dtype),
+         })
+
+     def norm_odo(self, trajectory: torch.Tensor) -> torch.Tensor:
+@@ -2648,10 +3296,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+         pred_traj: torch.Tensor,
+         tokens_list,
+         cache_dict,
+-    ) -> torch.Tensor:
++        return_components: bool = False,
++    ) -> Union[torch.Tensor, tuple[torch.Tensor, Dict[str, torch.Tensor]]]:
+         """Calculates PDM scores for a batch of predicted trajectories."""
+         pred_np = pred_traj.detach().cpu().numpy()
+-        rewards = []
++        component_rows = []
+         for i, token in enumerate(tokens_list):
+             trajectory = Trajectory(pred_np[i])
+             metric_cache = cache_dict[token]
+@@ -2662,8 +3311,31 @@ class ReCogDriveDiffusionPlanner(nn.Module):
+                 simulator=self.simulator,
+                 scorer=self.train_scorer,
+             )
+-            rewards.append(asdict(pdm_result)["score"])
+-        return torch.tensor(rewards, device=pred_traj.device, dtype=pred_traj.dtype).detach()
++            component_rows.append(self._extract_pdm_components(pdm_result))
++
++        component_keys = (
++            "pdms",
++            "no_at_fault_collisions",
++            "drivable_area_compliance",
++            "time_to_collision_within_bound",
++            "ego_progress",
++            "history_comfort",
++            "lane_keeping",
++            "driving_direction_compliance",
++            "traffic_light_compliance",
++        )
++        components = {
++            key: torch.tensor(
++                [row[key] for row in component_rows],
++                device=pred_traj.device,
++                dtype=pred_traj.dtype,
++            ).detach()
++            for key in component_keys
++        }
++        rewards = components["pdms"]
++        if return_components:
++            return rewards, components
++        return rewards
+
+     @property
+     def device(self):
+diff --git a/navsim/agents/recogdrive/recogdrive_features.py b/navsim/agents/recogdrive/recogdrive_features.py
+index a501521..12b4ce1 100644
+--- a/navsim/agents/recogdrive/recogdrive_features.py
++++ b/navsim/agents/recogdrive/recogdrive_features.py
+@@ -440,7 +440,13 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
+                     f"Expert cache {path} key '{key}' must be scalar or [1], got {tuple(tensor.shape)}."
+                 )
+             return tensor.detach().cpu().float()
+-        if key in {"teacher_trajectory", "teacher_trajectory_norm"}:
++        if key == "vlm_text_parse_ok":
++            if tensor.ndim > 1:
++                raise ValueError(
++                    f"Expert cache {path} key '{key}' must be scalar or [1], got {tuple(tensor.shape)}."
++                )
++            return tensor.detach().cpu().float()
++        if key in {"teacher_trajectory", "teacher_trajectory_norm", "vlm_text_trajectory", "vlm_text_trajectory_norm"}:
+             if tuple(tensor.shape) != (8, 3):
+                 raise ValueError(
+                     f"Expert cache {path} key '{key}' must have shape [8, 3], got {tuple(tensor.shape)}."
+diff --git a/navsim/planning/script/config/common/agent/recogdrive_agent.yaml b/navsim/planning/script/config/common/agent/recogdrive_agent.yaml
+index 134b678..7df5b7b 100644
+--- a/navsim/planning/script/config/common/agent/recogdrive_agent.yaml
++++ b/navsim/planning/script/config/common/agent/recogdrive_agent.yaml
+@@ -91,6 +91,9 @@ last_vla_geometry_grid_rows: 3
+ last_vla_geometry_grid_cols: 4
+ last_vla_use_residual_diffusion: false
+ last_vla_residual_detach_coarse: true
++last_vla_residual_anchor_source: vlm_text_traj
++last_vla_require_residual_anchor: true
++last_vla_residual_anchor_cache_dir: null
+ last_vla_coarse_prior_clip: 1.0
+ last_vla_residual_alpha_start: 0.0
+ last_vla_residual_alpha_end: 1.0
+diff --git a/navsim/planning/script/config/experiment/last_vla_decoupled_cot_alignment_highcap_no_risk.yaml b/navsim/planning/script/config/experiment/last_vla_decoupled_cot_alignment_highcap_no_risk.yaml
+index 597feed..1193a42 100644
+--- a/navsim/planning/script/config/experiment/last_vla_decoupled_cot_alignment_highcap_no_risk.yaml
++++ b/navsim/planning/script/config/experiment/last_vla_decoupled_cot_alignment_highcap_no_risk.yaml
+@@ -39,6 +39,9 @@ agent:
+   last_vla_allow_patch_geometry_fallback: false
+   last_vla_use_residual_diffusion: false
+   last_vla_residual_detach_coarse: true
++  last_vla_residual_anchor_source: vlm_text_traj
++  last_vla_require_residual_anchor: true
++  last_vla_residual_anchor_cache_dir: null
+   last_vla_teacher_traj_mode: none
+   last_vla_cot_condition_zero_init: true
+   last_vla_cot_condition_dropout: 0.0
+diff --git a/navsim/planning/script/config/experiment/last_vla_decoupled_progressive_highcap_no_risk.yaml b/navsim/planning/script/config/experiment/last_vla_decoupled_progressive_highcap_no_risk.yaml
+index 029c4fd..2bdee05 100644
+--- a/navsim/planning/script/config/experiment/last_vla_decoupled_progressive_highcap_no_risk.yaml
++++ b/navsim/planning/script/config/experiment/last_vla_decoupled_progressive_highcap_no_risk.yaml
+@@ -39,6 +39,9 @@ agent:
+   last_vla_allow_patch_geometry_fallback: false
+   last_vla_use_residual_diffusion: false
+   last_vla_residual_detach_coarse: true
++  last_vla_residual_anchor_source: vlm_text_traj
++  last_vla_require_residual_anchor: true
++  last_vla_residual_anchor_cache_dir: null
+   last_vla_coarse_prior_clip: 1.0
+   last_vla_residual_alpha_start: 0.0
+   last_vla_residual_alpha_end: 1.0
+diff --git a/navsim/planning/script/run_training_recogdrive.py b/navsim/planning/script/run_training_recogdrive.py
+index 40b7aa3..c38df61 100644
+--- a/navsim/planning/script/run_training_recogdrive.py
++++ b/navsim/planning/script/run_training_recogdrive.py
+@@ -141,6 +141,16 @@ def _parse_key_epochs() -> List[int]:
+     return sorted(set(epochs))
+
+
++def _parse_key_epoch_interval() -> int:
++    raw = os.getenv("RECOGDRIVE_KEY_EPOCH_INTERVAL", os.getenv("LAST_VLA_KEY_EPOCH_INTERVAL", "0")).strip()
++    if not raw:
++        return 0
++    interval = int(raw)
++    if interval < 0:
++        raise ValueError(f"RECOGDRIVE_KEY_EPOCH_INTERVAL must be non-negative, got {interval}")
++    return interval
++
++
+ class StepCheckpointCallback(pl.Callback):
+     """Save exact global-step checkpoints for staged PDM evaluation."""
+
+@@ -168,9 +178,10 @@ class StepCheckpointCallback(pl.Callback):
+ class EpochCheckpointCallback(pl.Callback):
+     """Save exact completed-epoch checkpoints independent of validation."""
+
+-    def __init__(self, dirpath: Path, epochs: List[int]) -> None:
++    def __init__(self, dirpath: Path, epochs: List[int], every_n_epochs: int = 0) -> None:
+         self.dirpath = dirpath
+         self.epochs = set(int(epoch) for epoch in epochs)
++        self.every_n_epochs = int(every_n_epochs)
+         self.saved_epochs: set[int] = set()
+
+     def _save(self, trainer: pl.Trainer, path: Path) -> None:
+@@ -179,7 +190,10 @@ class EpochCheckpointCallback(pl.Callback):
+
+     def on_train_epoch_end(self, trainer, pl_module) -> None:
+         completed_epoch = int(trainer.current_epoch) + 1
+-        if completed_epoch in self.epochs and completed_epoch not in self.saved_epochs:
++        should_save = completed_epoch in self.epochs
++        if self.every_n_epochs > 0 and completed_epoch % self.every_n_epochs == 0:
++            should_save = True
++        if should_save and completed_epoch not in self.saved_epochs:
+             self._save(trainer, self.dirpath / f"epoch_{completed_epoch:03d}.ckpt")
+             self.saved_epochs.add(completed_epoch)
+
+@@ -217,6 +231,11 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
+         "oracle_best_of_k_score",
+         "candidate_count",
+     )
++    LAST_VLA_TEXT_ANCHOR_KEYS = (
++        "vlm_text_trajectory",
++        "vlm_text_trajectory_norm",
++        "vlm_text_parse_ok",
++    )
+
+     def __init__(
+         self,
+@@ -241,6 +260,10 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
+         use_last_vla: bool = False,
+         last_vla_stage: str = "disabled",
+         last_vla_teacher_traj_mode: str = "none",
++        last_vla_use_residual_diffusion: bool = False,
++        last_vla_residual_anchor_source: str = "vlm_text_traj",
++        last_vla_require_residual_anchor: bool = True,
++        last_vla_residual_anchor_cache_dir: Optional[str] = None,
+         last_vla_require_full_geometry: bool = False,
+         last_vla_allow_patch_geometry_fallback: bool = False,
+         last_vla_geometry_teacher_dim: int = 512,
+@@ -266,6 +289,13 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
+         self.use_last_vla = bool(use_last_vla)
+         self.last_vla_stage = str(last_vla_stage)
+         self.last_vla_teacher_traj_mode = str(last_vla_teacher_traj_mode)
++        self.last_vla_use_residual_diffusion = bool(last_vla_use_residual_diffusion)
++        self.last_vla_residual_anchor_source = str(last_vla_residual_anchor_source)
++        self.last_vla_require_residual_anchor = bool(last_vla_require_residual_anchor)
++        self.last_vla_residual_anchor_cache_dir = Path(last_vla_residual_anchor_cache_dir) if last_vla_residual_anchor_cache_dir else None
++        self.last_vla_residual_anchor_index: Dict[str, Path] = {}
++        if self.last_vla_residual_anchor_cache_dir is not None:
++            self.last_vla_residual_anchor_index = self._load_residual_anchor_index(self.last_vla_residual_anchor_cache_dir)
+         self.last_vla_require_full_geometry = bool(last_vla_require_full_geometry)
+         self.last_vla_allow_patch_geometry_fallback = bool(last_vla_allow_patch_geometry_fallback)
+         self.last_vla_geometry_teacher_dim = int(last_vla_geometry_teacher_dim)
+@@ -317,6 +347,27 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
+             for child in path.iterdir()
+         )
+
++    @staticmethod
++    def _load_residual_anchor_index(cache_dir: Path) -> Dict[str, Path]:
++        if not cache_dir.is_dir():
++            raise FileNotFoundError(f"Last-VLA residual anchor cache dir does not exist: {cache_dir}")
++        chunk_dirs = [cache_dir] if (cache_dir / "index.jsonl").is_file() else [
++            child for child in sorted(cache_dir.iterdir()) if child.is_dir() and (child / "index.jsonl").is_file()
++        ]
++        if not chunk_dirs:
++            raise FileNotFoundError(f"No indexed residual anchor cache found under {cache_dir}")
++        index: Dict[str, Path] = {}
++        for chunk_dir in chunk_dirs:
++            for record in iter_index(chunk_dir):
++                token = str(record.get("sample_token") or Path(record.get("path", "")).stem)
++                path = Path(record.get("path", ""))
++                if not path:
++                    continue
++                index[token] = path if path.is_absolute() else chunk_dir / path
++        if not index:
++            raise FileNotFoundError(f"Residual anchor cache index is empty: {cache_dir}")
++        return index
++
+     def __len__(self) -> int:
+         return len(self.records)
+
+@@ -383,6 +434,31 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
+     def _has_teacher_trajectory(self, sample: Dict[str, Any]) -> bool:
+         return isinstance(sample.get("teacher_trajectory_norm"), torch.Tensor) or isinstance(sample.get("teacher_trajectory"), torch.Tensor)
+
++    def _required_last_vla_anchor_keys(self) -> List[str]:
++        if not (
++            self.last_vla_use_residual_diffusion
++            and self.last_vla_residual_anchor_source == "vlm_text_traj"
++            and self.last_vla_require_residual_anchor
++        ):
++            return []
++        return ["vlm_text_trajectory_norm_or_vlm_text_trajectory"]
++
++    def _has_vlm_text_anchor(self, sample: Dict[str, Any], token: Optional[str] = None) -> bool:
++        if token is not None and token in self.last_vla_residual_anchor_index:
++            return True
++        return isinstance(sample.get("vlm_text_trajectory_norm"), torch.Tensor) or isinstance(sample.get("vlm_text_trajectory"), torch.Tensor)
++
++    def _load_vlm_text_anchor_sample(self, token: str, sample_path: Path) -> Dict[str, Any]:
++        path = self.last_vla_residual_anchor_index.get(str(token))
++        if path is None:
++            return {}
++        if not path.is_file():
++            raise FileNotFoundError(f"Residual anchor cache file for token {token} not found: {path}")
++        anchor = load_sample(path)
++        if not self._has_vlm_text_anchor(anchor):
++            raise KeyError(f"Residual anchor cache file {path} for {sample_path} lacks vlm_text_trajectory(_norm).")
++        return anchor
++
+     def _optional_expert_keys(self, sample: Dict[str, Any], required_keys: List[str]) -> List[str]:
+         candidates: List[str] = []
+         if self.include_expert_features:
+@@ -416,8 +492,14 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
+             candidates.extend(self.LAST_VLA_TEACHER_KEYS)
+             candidates.extend(self.EXPERT_GEOMETRY_MODE_KEYS)
+             candidates.extend(self.RISK_KEYS)
++        if self.last_vla_use_residual_diffusion and self.last_vla_residual_anchor_source == "vlm_text_traj":
++            candidates.extend(self.LAST_VLA_TEXT_ANCHOR_KEYS)
+         required = set(required_keys)
+-        return [key for key in candidates if key in sample and key not in required and key != "teacher_trajectory_norm_or_teacher_trajectory"]
++        composite_keys = {
++            "teacher_trajectory_norm_or_teacher_trajectory",
++            "vlm_text_trajectory_norm_or_vlm_text_trajectory",
++        }
++        return [key for key in candidates if key in sample and key not in required and key not in composite_keys]
+
+     def _expected_shape(self, key: str) -> Optional[Tuple[int, ...]]:
+         expert_shapes = {
+@@ -440,6 +522,8 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
+             "trajectory": (8, 3),
+             "teacher_trajectory": (8, 3),
+             "teacher_trajectory_norm": (8, 3),
++            "vlm_text_trajectory": (8, 3),
++            "vlm_text_trajectory_norm": (8, 3),
+         }.get(key)
+         return expected
+
+@@ -507,6 +591,12 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
+             "use_last_vla": self.use_last_vla,
+             "last_vla_stage": self.last_vla_stage,
+             "last_vla_teacher_traj_mode": self.last_vla_teacher_traj_mode,
++            "last_vla_use_residual_diffusion": self.last_vla_use_residual_diffusion,
++            "last_vla_residual_anchor_source": self.last_vla_residual_anchor_source,
++            "last_vla_require_residual_anchor": self.last_vla_require_residual_anchor,
++            "last_vla_residual_anchor_cache_dir": str(self.last_vla_residual_anchor_cache_dir) if self.last_vla_residual_anchor_cache_dir is not None else None,
++            "last_vla_residual_anchor_cache_records": len(self.last_vla_residual_anchor_index),
++            "required_last_vla_anchor_keys": self._required_last_vla_anchor_keys(),
+             "last_vla_require_full_geometry": self.last_vla_require_full_geometry,
+             "last_vla_allow_patch_geometry_fallback": self.last_vla_allow_patch_geometry_fallback,
+             "last_vla_geometry_teacher_dim": self.last_vla_geometry_teacher_dim,
+@@ -554,6 +644,10 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
+     def __getitem__(self, idx: int) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], str]:
+         _, sample_path, record = self.records[idx]
+         sample = load_sample(sample_path)
++        token = str(sample.get("sample_token") or record.get("sample_token") or sample_path.stem)
++        anchor_sample = self._load_vlm_text_anchor_sample(token, sample_path) if self.last_vla_residual_anchor_index else {}
++        if anchor_sample:
++            sample = {**sample, **{key: anchor_sample[key] for key in self.LAST_VLA_TEXT_ANCHOR_KEYS if key in anchor_sample}}
+         mode_code = self._geometry_mode_code_from_sample(sample, sample_path)
+         if mode_code is not None:
+             sample["vggt_geometry_mode_code"] = mode_code
+@@ -564,7 +658,11 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
+                 value = self._normalize_high_command_one_hot(value.float(), sample_path)
+             self._check_shape(value, key, sample_path)
+             required_values[key] = value
+-        expert_keys = self._required_expert_context_keys() + self._required_expert_target_keys()
++        expert_keys = (
++            self._required_expert_context_keys()
++            + self._required_expert_target_keys()
++            + self._required_last_vla_anchor_keys()
++        )
+         for key in expert_keys:
+             if key == "teacher_trajectory_norm_or_teacher_trajectory":
+                 if not self._has_teacher_trajectory(sample):
+@@ -573,6 +671,13 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
+                         "for Last-VLA teacher_traj_sft."
+                     )
+                 continue
++            if key == "vlm_text_trajectory_norm_or_vlm_text_trajectory":
++                if not self._has_vlm_text_anchor(sample, token):
++                    raise KeyError(
++                        f"Chunk sample {sample_path} requires vlm_text_trajectory_norm or vlm_text_trajectory "
++                        "for Last-VLA residual anchor_source='vlm_text_traj'."
++                    )
++                continue
+             self._check_shape(self._require_tensor(sample, key, sample_path), key, sample_path)
+         optional_expert_keys = self._optional_expert_keys(sample, expert_keys)
+         for key in optional_expert_keys:
+@@ -590,10 +695,14 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
+                     if teacher_key in sample:
+                         features[teacher_key] = self._require_tensor(sample, teacher_key, sample_path).float()
+                 continue
++            if key == "vlm_text_trajectory_norm_or_vlm_text_trajectory":
++                for anchor_key in ("vlm_text_trajectory_norm", "vlm_text_trajectory", "vlm_text_parse_ok"):
++                    if anchor_key in sample:
++                        features[anchor_key] = self._require_tensor(sample, anchor_key, sample_path).float()
++                continue
+             value = self._require_tensor(sample, key, sample_path)
+             features[key] = value.long() if key == "vggt_geometry_mode_code" else value.float()
+         targets = {"trajectory": required_values["trajectory"].float()}
+-        token = str(sample.get("sample_token") or record.get("sample_token") or sample_path.stem)
+         return features, targets, token
+
+     def _geometry_mode_code_from_sample(self, sample: Dict[str, Any], sample_path: Path) -> Optional[torch.Tensor]:
+@@ -639,6 +748,7 @@ def write_run_reports(
+     loader_mode: str,
+     key_steps: List[int],
+     key_epochs: List[int],
++    key_epoch_interval: int,
+     data_report: Optional[Dict[str, Any]] = None,
+ ) -> None:
+     if int(os.getenv("RANK", "0")) != 0:
+@@ -668,6 +778,7 @@ def write_run_reports(
+         "lora_training_config": lora_training_config,
+         "loader_mode": loader_mode,
+         "key_checkpoint_steps": key_steps,
++        "key_checkpoint_epoch_interval": key_epoch_interval,
+         "data_report": data_report,
+         "agent_expert_config": {
+             "use_expert_features": bool(cfg.agent.get("use_expert_features", False)),
+@@ -759,6 +870,7 @@ def write_run_reports(
+         payload["loader_mode"] = loader_mode
+         payload["key_checkpoint_steps"] = key_steps
+         payload["key_checkpoint_epochs"] = key_epochs
++        payload["key_checkpoint_epoch_interval"] = key_epoch_interval
+         payload["data_report"] = data_report
+     (output_dir / "train_args.json").write_text(json.dumps(payload, indent=2, sort_keys=True, default=str) + "\n", encoding="utf-8")
+
+@@ -1046,6 +1158,10 @@ def main(cfg: DictConfig) -> None:
+                 use_last_vla=use_last_vla,
+                 last_vla_stage=str(cfg.agent.get("last_vla_stage", "disabled")),
+                 last_vla_teacher_traj_mode=str(cfg.agent.get("last_vla_teacher_traj_mode", "none")),
++                last_vla_use_residual_diffusion=bool(cfg.agent.get("last_vla_use_residual_diffusion", False)),
++                last_vla_residual_anchor_source=str(cfg.agent.get("last_vla_residual_anchor_source", "vlm_text_traj")),
++                last_vla_require_residual_anchor=bool(cfg.agent.get("last_vla_require_residual_anchor", True)),
++                last_vla_residual_anchor_cache_dir=cfg.agent.get("last_vla_residual_anchor_cache_dir", None),
+                 last_vla_require_full_geometry=bool(cfg.agent.get("last_vla_require_full_geometry", False)),
+                 last_vla_allow_patch_geometry_fallback=bool(cfg.agent.get("last_vla_allow_patch_geometry_fallback", False)),
+                 last_vla_geometry_teacher_dim=int(cfg.agent.get("last_vla_geometry_teacher_dim", 512)),
+@@ -1072,6 +1188,10 @@ def main(cfg: DictConfig) -> None:
+                 use_last_vla=use_last_vla,
+                 last_vla_stage=str(cfg.agent.get("last_vla_stage", "disabled")),
+                 last_vla_teacher_traj_mode=str(cfg.agent.get("last_vla_teacher_traj_mode", "none")),
++                last_vla_use_residual_diffusion=bool(cfg.agent.get("last_vla_use_residual_diffusion", False)),
++                last_vla_residual_anchor_source=str(cfg.agent.get("last_vla_residual_anchor_source", "vlm_text_traj")),
++                last_vla_require_residual_anchor=bool(cfg.agent.get("last_vla_require_residual_anchor", True)),
++                last_vla_residual_anchor_cache_dir=cfg.agent.get("last_vla_residual_anchor_cache_dir", None),
+                 last_vla_require_full_geometry=bool(cfg.agent.get("last_vla_require_full_geometry", False)),
+                 last_vla_allow_patch_geometry_fallback=bool(cfg.agent.get("last_vla_allow_patch_geometry_fallback", False)),
+                 last_vla_geometry_teacher_dim=int(cfg.agent.get("last_vla_geometry_teacher_dim", 512)),
+@@ -1126,6 +1246,7 @@ def main(cfg: DictConfig) -> None:
+     logger.info("Building Trainer")
+     key_steps = _parse_key_steps()
+     key_epochs = _parse_key_epochs()
++    key_epoch_interval = _parse_key_epoch_interval()
+     callbacks = [
+         pl.callbacks.ModelCheckpoint(
+             monitor="val/loss_epoch",
+@@ -1137,9 +1258,9 @@ def main(cfg: DictConfig) -> None:
+         StepCheckpointCallback(Path(cfg.output_dir), key_steps),
+         ReCogDriveTrainingProgressCallback(),
+     ]
+-    if key_epochs:
+-        callbacks.append(EpochCheckpointCallback(Path(cfg.output_dir), key_epochs))
+-    write_run_reports(cfg, agent, loader_mode, key_steps, key_epochs, data_report)
++    if key_epochs or key_epoch_interval > 0:
++        callbacks.append(EpochCheckpointCallback(Path(cfg.output_dir), key_epochs, every_n_epochs=key_epoch_interval))
++    write_run_reports(cfg, agent, loader_mode, key_steps, key_epochs, key_epoch_interval, data_report)
+     trainer = pl.Trainer(**cfg.trainer.params, callbacks=callbacks)
+
+     resume_ckpt_path = cfg.get("resume_ckpt_path", None)
+diff --git a/navsim/planning/script/run_training_recogdrive_rl.py b/navsim/planning/script/run_training_recogdrive_rl.py
+index 9c4dac5..8f7d404 100644
+--- a/navsim/planning/script/run_training_recogdrive_rl.py
++++ b/navsim/planning/script/run_training_recogdrive_rl.py
+@@ -1,4 +1,4 @@
+-from typing import Tuple
++from typing import Any, Tuple
+ from pathlib import Path
+ import logging
+ import os
+@@ -28,21 +28,47 @@ CONFIG_NAME = "default_training"
+
+
+
++class TokenizedDataset(torch.utils.data.Dataset):
++    """Adds NAVSIM sample tokens to online Dataset items for GRPO rewards."""
++
++    def __init__(self, dataset: Dataset):
++        self._dataset = dataset
++        scene_loader = getattr(dataset, "_scene_loader", None)
++        tokens = getattr(scene_loader, "tokens", None)
++        if tokens is None:
++            raise AttributeError("TokenizedDataset requires an online Dataset with _scene_loader.tokens.")
++        self._tokens = tokens
++
++    def __len__(self) -> int:
++        return len(self._dataset)
++
++    def __getitem__(self, idx: int) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], str]:
++        sample = self._dataset[idx]
++        if len(sample) == 3:
++            return sample
++        features, targets = sample
++        return features, targets, self._tokens[idx]
++
++
+ def custom_collate_fn(
+-    batch: List[Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], str]]
+-) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
+-    features_list, targets_list, tokens_list = zip(*batch)
++    batch: List[Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], Any]]
++) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], List[Any]]:
++    if not batch:
++        raise ValueError("custom_collate_fn received an empty batch.")
++
++    sample_size = len(batch[0])
++    if sample_size == 3:
++        features_list, targets_list, tokens_list = zip(*batch)
++    elif sample_size == 2:
++        features_list, targets_list = zip(*batch)
++        tokens_list = [None] * len(batch)
++    else:
++        raise ValueError(f"Expected batch samples with 2 or 3 fields, got {sample_size}.")
+
+     history_trajectory = torch.stack([features['history_trajectory'] for features in features_list], dim=0).cpu()
+     high_command_one_hot = torch.stack([features['high_command_one_hot'] for features in features_list], dim=0).cpu()
+     status_feature = torch.stack([features['status_feature'] for features in features_list], dim=0).cpu()
+
+-    last_hidden_state = rnn_utils.pad_sequence(
+-        [features['last_hidden_state'] for features in features_list],
+-        batch_first=True,
+-        padding_value=0.0
+-    ).clone().detach()
+-
+     trajectory = torch.stack([targets['trajectory'] for targets in targets_list], dim=0).cpu()
+
+
+@@ -50,14 +76,31 @@ def custom_collate_fn(
+         'history_trajectory': history_trajectory,
+         'high_command_one_hot': high_command_one_hot,
+         'status_feature': status_feature,
+-        'last_hidden_state': last_hidden_state,
+     }
++    first_features = features_list[0]
++    if "last_hidden_state" in first_features:
++        features["last_hidden_state"] = rnn_utils.pad_sequence(
++            [features['last_hidden_state'] for features in features_list],
++            batch_first=True,
++            padding_value=0.0
++        ).clone().detach()
++    elif "image_path_tensor" in first_features:
++        features["image_path_tensor"] = rnn_utils.pad_sequence(
++            [features["image_path_tensor"] for features in features_list],
++            batch_first=True,
++            padding_value=0,
++        ).cpu()
++    else:
++        raise KeyError(
++            "features must contain either 'last_hidden_state' or 'image_path_tensor'. "
++            f"Got keys: {list(first_features.keys())}"
++        )
+     stack_optional_expert_features(features, list(features_list))
+     targets = {
+         'trajectory': trajectory
+     }
+
+-    return features, targets, tokens_list
++    return features, targets, list(tokens_list)
+
+
+ def build_datasets(cfg: DictConfig, agent: AbstractAgent) -> Tuple[Dataset, Dataset]:
+@@ -83,12 +126,14 @@ def build_datasets(cfg: DictConfig, agent: AbstractAgent) -> Tuple[Dataset, Data
+
+     data_path = Path(cfg.navsim_log_path)
+     sensor_blobs_path = Path(cfg.sensor_blobs_path)
++    load_image_path = not getattr(agent, "cache_hidden_state", True)
+
+     train_scene_loader = SceneLoader(
+         sensor_blobs_path=sensor_blobs_path,
+         data_path=data_path,
+         scene_filter=train_scene_filter,
+         sensor_config=agent.get_sensor_config(),
++        load_image_path=load_image_path,
+     )
+
+     val_scene_loader = SceneLoader(
+@@ -96,6 +141,7 @@ def build_datasets(cfg: DictConfig, agent: AbstractAgent) -> Tuple[Dataset, Data
+         data_path=data_path,
+         scene_filter=val_scene_filter,
+         sensor_config=agent.get_sensor_config(),
++        load_image_path=load_image_path,
+     )
+
+     train_data = Dataset(
+@@ -180,6 +226,8 @@ def main(cfg: DictConfig) -> None:
+     else:
+         logger.info("Building SceneLoader")
+         train_data, val_data = build_datasets(cfg, agent)
++        train_data = TokenizedDataset(train_data)
++        val_data = TokenizedDataset(val_data)
+
+     logger.info("Building Datasets")
+     train_dataloader = DataLoader(train_data, collate_fn=custom_collate_fn,  **cfg.dataloader.params, shuffle=True)
+diff --git a/navsim/planning/training/agent_lightning_module.py b/navsim/planning/training/agent_lightning_module.py
+index 61c0d91..2855fc2 100644
+--- a/navsim/planning/training/agent_lightning_module.py
++++ b/navsim/planning/training/agent_lightning_module.py
+@@ -73,6 +73,24 @@ class AgentLightningModule(pl.LightningModule):
+             "hidden_anchor_step_index",
+             "lora_trainable_param_count",
+             "lora_matched_module_count",
++            "base_reward",
++            "shaped_reward",
++            "safe_ratio",
++            "hard_safe_ratio",
++            "mean_ep",
++            "mean_ttc",
++            "mean_comfort",
++            "diversity_bonus",
++            "safe_diversity",
++            "group_reward_std",
++            "mixed_group_ratio",
++            "all_safe_group_ratio",
++            "all_unsafe_group_ratio",
++            "mean_advantage",
++            "mean_abs_advantage",
++            "trajectory_logp",
++            "gspo_ratio_mean",
++            "gspo_ratio_clip_frac",
+         ):
+             value = _prediction_get(prediction, key)
+             if value is not None:
+diff --git a/scripts/eval_recogdrive_expert_pdm.py b/scripts/eval_recogdrive_expert_pdm.py
+index 6fffa23..3178117 100644
+--- a/scripts/eval_recogdrive_expert_pdm.py
++++ b/scripts/eval_recogdrive_expert_pdm.py
+@@ -55,7 +55,14 @@ def parse_args() -> argparse.Namespace:
+     parser.add_argument("--chunk-cache-dir", type=Path, default=None)
+     parser.add_argument("--chunk-cache-root", type=Path, default=None)
+     parser.add_argument("--chunk-name-pattern", default="navtest_full_chunk_*")
++    parser.add_argument("--vlm-text-anchor-cache-root", type=Path, default=None)
+     parser.add_argument("--metric-cache-dir", type=Path, default=None)
++    parser.add_argument(
++        "--sample-token-file",
++        type=Path,
++        default=None,
++        help="Optional newline token file restricting evaluation to a deterministic subset.",
++    )
+     parser.add_argument("--max-samples", type=int, default=None)
+     parser.add_argument("--shard-index", type=int, default=0)
+     parser.add_argument("--num-shards", type=int, default=1)
+@@ -216,6 +223,43 @@ def sample_paths(chunks: List[Path], max_samples: Optional[int]) -> List[Tuple[P
+     return samples
+
+
++def load_sample_token_filter(path: Optional[Path]) -> Optional[set[str]]:
++    if path is None:
++        return None
++    if not path.is_file():
++        raise FileNotFoundError(path)
++    tokens: set[str] = set()
++    with path.open("r", encoding="utf-8") as f:
++        for raw in f:
++            token = raw.strip()
++            if token and not token.startswith("#"):
++                tokens.add(token)
++    if not tokens:
++        raise RuntimeError(f"No sample tokens found in {path}")
++    return tokens
++
++
++def load_vlm_text_anchor_index(root: Optional[Path]) -> Dict[str, Path]:
++    if root is None:
++        return {}
++    if not root.is_dir():
++        raise FileNotFoundError(f"VLM text anchor cache root does not exist: {root}")
++    dirs = [root] if (root / "index.jsonl").is_file() else [
++        child for child in sorted(root.iterdir()) if child.is_dir() and (child / "index.jsonl").is_file()
++    ]
++    if not dirs:
++        raise FileNotFoundError(f"No VLM text anchor index.jsonl found under {root}")
++    index: Dict[str, Path] = {}
++    for chunk_dir in dirs:
++        for record in iter_index(chunk_dir):
++            path = Path(record.get("path", ""))
++            if not path:
++                continue
++            token = str(record.get("sample_token") or path.stem)
++            index[token] = path if path.is_absolute() else chunk_dir / path
++    return index
++
++
+ def build_pdm_tools() -> Tuple[TrajectorySampling, PDMSimulator, PDMScorer]:
+     proposal_sampling = TrajectorySampling(num_poses=40, interval_length=0.1)
+     simulator = PDMSimulator(proposal_sampling=proposal_sampling)
+@@ -308,7 +352,14 @@ def write_pdm_csv(path: Path, rows: List[Dict[str, Any]], averages: Dict[str, Op
+         writer.writerow(average_row)
+
+
+-def make_batch(sample: Dict[str, Any], planner: ReCogDriveDiffusionPlanner, device: torch.device, dtype: torch.dtype) -> Tuple[torch.Tensor, BatchFeature]:
++def make_batch(
++    sample: Dict[str, Any],
++    planner: ReCogDriveDiffusionPlanner,
++    device: torch.device,
++    dtype: torch.dtype,
++    *,
++    anchor_index: Optional[Dict[str, Path]] = None,
++) -> Tuple[torch.Tensor, BatchFeature]:
+     global _WARNED_TRAIN_ONLY_TARGET_KEYS
+     use_last_rd = bool(getattr(planner.config, "use_last_rd", False))
+     use_last_vla = bool(getattr(planner.config, "use_last_vla", False))
+@@ -343,6 +394,27 @@ def make_batch(sample: Dict[str, Any], planner: ReCogDriveDiffusionPlanner, devi
+     if require_vggt:
+         if not strict_last_vla_full_geometry:
+             data["vggt_context_tokens"] = sample["vggt_context_tokens"].float().unsqueeze(0).to(device=device, dtype=dtype)
++
++    residual_anchor_source = str(getattr(planner.config, "last_vla_residual_anchor_source", "vlm_text_traj"))
++    requires_vlm_text_anchor = bool(
++        getattr(planner.config, "last_vla_use_residual_diffusion", False)
++        and residual_anchor_source == "vlm_text_traj"
++        and getattr(planner.config, "last_vla_require_residual_anchor", True)
++    )
++    has_vlm_text_anchor = isinstance(sample.get("vlm_text_trajectory_norm"), torch.Tensor) or isinstance(sample.get("vlm_text_trajectory"), torch.Tensor)
++    if requires_vlm_text_anchor and anchor_index and not has_vlm_text_anchor:
++        token = str(sample.get("sample_token") or sample.get("scene_token") or "")
++        anchor_path = anchor_index.get(token)
++        if anchor_path is not None:
++            anchor = load_sample(anchor_path)
++            sample = {**sample, **{key: anchor[key] for key in ("vlm_text_trajectory_norm", "vlm_text_trajectory", "vlm_text_parse_ok") if key in anchor}}
++            has_vlm_text_anchor = isinstance(sample.get("vlm_text_trajectory_norm"), torch.Tensor) or isinstance(sample.get("vlm_text_trajectory"), torch.Tensor)
++    if requires_vlm_text_anchor and not has_vlm_text_anchor:
++        raise KeyError(
++            "Residual-anchor evaluation requires navtest cache or --vlm-text-anchor-cache-root "
++            "with vlm_text_trajectory_norm or vlm_text_trajectory."
++        )
++
+     if use_last_vla:
+         for key in ("vggt_geometry_tokens", "vggt_depth_tokens", "vggt_pointmap_tokens", "vggt_camera_tokens"):
+             if key in sample and isinstance(sample[key], torch.Tensor):
+@@ -356,6 +428,9 @@ def make_batch(sample: Dict[str, Any], planner: ReCogDriveDiffusionPlanner, devi
+                 raw_mode = raw_mode.decode("utf-8", errors="replace")
+             mode_map = {"missing": -1, "no_geometry": 0, "patch_fallback": 1, "full_geometry": 2}
+             data["vggt_geometry_mode_code"] = torch.tensor([mode_map.get(str(raw_mode), -1)], device=device, dtype=torch.long)
++    for key in ("vlm_text_trajectory_norm", "vlm_text_trajectory", "vlm_text_parse_ok"):
++        if key in sample and isinstance(sample[key], torch.Tensor):
++            data[key] = sample[key].float().unsqueeze(0).to(device=device, dtype=dtype)
+     target_keys = [key for key in ("jepa_target_tokens", "vggt_target_tokens", "vggt_geometry_target_tokens") if key in sample]
+     if target_keys and not _WARNED_TRAIN_ONLY_TARGET_KEYS:
+         warnings.warn(f"Evaluation sample contains train-only target keys {target_keys}; they are not passed to get_action.", RuntimeWarning)
+@@ -406,6 +481,7 @@ def main() -> int:
+     load_checkpoint(planner, args.checkpoint)
+     planner.eval()
+     online_backbone, online_compute_hidden = build_online_vlm(args, device)
++    anchor_index = load_vlm_text_anchor_index(args.vlm_text_anchor_cache_root)
+     args.output_dir.mkdir(parents=True, exist_ok=True)
+
+     predictions = []
+@@ -424,7 +500,16 @@ def main() -> int:
+     pdm_tools = build_pdm_tools() if metric_cache_loader is not None else None
+     missing_metric_cache = 0
+     failed_pdm = 0
+-    paths = sample_paths(chunks, args.max_samples)
++    sample_token_filter = load_sample_token_filter(args.sample_token_file)
++    paths = sample_paths(chunks, None if sample_token_filter is not None else args.max_samples)
++    if sample_token_filter is not None:
++        paths = [
++            item
++            for item in paths
++            if str(item[2].get("sample_token") or item[1].stem) in sample_token_filter
++        ]
++        if args.max_samples is not None:
++            paths = paths[:args.max_samples]
+     if args.num_shards > 1:
+         paths = [item for idx, item in enumerate(paths) if idx % args.num_shards == args.shard_index]
+     for idx, (chunk_dir, path, index_record) in enumerate(paths):
+@@ -436,7 +521,7 @@ def main() -> int:
+                 sample,
+                 device="cuda" if device.type == "cuda" else "cpu",
+             )
+-        vl_features, action_input = make_batch(sample, planner, device, dtype)
++        vl_features, action_input = make_batch(sample, planner, device, dtype, anchor_index=anchor_index)
+         with torch.no_grad():
+             output = planner.get_action(vl_features, action_input, deterministic=args.deterministic)
+         if args.trajectory_output_key not in output:
+diff --git a/scripts/last_vla_v2/decoupled_highcap_no_risk/eval_checkpoint_sweep_decoupled.sh b/scripts/last_vla_v2/decoupled_highcap_no_risk/eval_checkpoint_sweep_decoupled.sh
+index 10767a3..c073eac 100755
+--- a/scripts/last_vla_v2/decoupled_highcap_no_risk/eval_checkpoint_sweep_decoupled.sh
++++ b/scripts/last_vla_v2/decoupled_highcap_no_risk/eval_checkpoint_sweep_decoupled.sh
+@@ -10,50 +10,270 @@ for name in "${required[@]}"; do
+ done
+
+ PYTHON_BIN="${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}"
+-EVAL_ROOT="${OUT_ROOT}/decoupled_highcap_no_risk_eval"
++EVAL_ROOT="${EVAL_ROOT:-${OUT_ROOT}/decoupled_highcap_no_risk_eval}"
++CONFIG="${CONFIG:-configs/last_vla_v2/decoupled_highcap_no_risk/progressive_sft_eval.yaml}"
++NAVTEST_CHUNK_NAME_PATTERN="${NAVTEST_CHUNK_NAME_PATTERN:-navtest_full_chunk_*}"
++TRAJECTORY_OUTPUT_KEY="${TRAJECTORY_OUTPUT_KEY:-pred_traj}"
++PRECISION="${PRECISION:-fp32}"
++INCLUDE_TOPK_CHECKPOINTS="${INCLUDE_TOPK_CHECKPOINTS:-1}"
++INCLUDE_CHECKPOINTS_TO_EVAL="${INCLUDE_CHECKPOINTS_TO_EVAL:-1}"
++SKIP_COMPLETED="${SKIP_COMPLETED:-1}"
++PARALLEL_EVAL="${PARALLEL_EVAL:-1}"
++EVAL_GPUS="${EVAL_GPUS:-0,1,2,3,4,5,6,7}"
++MAX_PARALLEL_EVAL="${MAX_PARALLEL_EVAL:-}"
++B_ONLINE_VLM_PATH="${B_ONLINE_VLM_PATH:-}"
++B_ONLINE_VLM_TYPE="${B_ONLINE_VLM_TYPE:-internvl}"
++B_ONLINE_VLM_LORA_ADAPTER_DIR="${B_ONLINE_VLM_LORA_ADAPTER_DIR:-}"
++VLM_TEXT_ANCHOR_CACHE_ROOT="${VLM_TEXT_ANCHOR_CACHE_ROOT:-}"
++
+ mkdir -p "${EVAL_ROOT}/logs"
+ COMMANDS_LOG="${EVAL_ROOT}/commands.log"
+-CONFIG="${CONFIG:-configs/last_vla_v2/decoupled_highcap_no_risk/progressive_sft_eval.yaml}"
+
+-write_eval_cmd() {
++safe_name() {
++  basename "$1" .ckpt | tr '/ :' '___'
++}
++
++line_specs() {
++  # Current no-residual stage2 direct layout.
++  if [[ -d "${OUT_ROOT}/A_frozen_vlm_stage2_progressive" ]]; then
++    printf '%s\t%s\t%s\t%s\t%s\n' \
++      "A_frozen_vlm_stage2_progressive" \
++      "${OUT_ROOT}/A_frozen_vlm_stage2_progressive" \
++      "${OUT_ROOT}/A_frozen_vlm_stage2_progressive/checkpoints_to_eval.txt" \
++      "${NAVTEST_CHUNK_CACHE_ROOT}" \
++      "0"
++  fi
++  if [[ -d "${OUT_ROOT}/B_lora_stage2_progressive" ]]; then
++    local b_cache="${LORA_NAVTEST_CHUNK_CACHE_ROOT:-${NAVTEST_CHUNK_CACHE_ROOT}}"
++    printf '%s\t%s\t%s\t%s\t%s\n' \
++      "B_lora_stage2_progressive" \
++      "${OUT_ROOT}/B_lora_stage2_progressive" \
++      "${OUT_ROOT}/B_lora_stage2_progressive/checkpoints_to_eval.txt" \
++      "${b_cache}" \
++      "1"
++  fi
++
++  # Historical decoupled runbook layout.
++  if [[ -d "${OUT_ROOT}/serverA_frozen_vlm_decoupled_highcap_no_risk/progressive_sft_decoupled" ]]; then
++    printf '%s\t%s\t%s\t%s\t%s\n' \
++      "serverA_frozen_vlm_decoupled_highcap_no_risk" \
++      "${OUT_ROOT}/serverA_frozen_vlm_decoupled_highcap_no_risk/progressive_sft_decoupled" \
++      "${OUT_ROOT}/serverA_frozen_vlm_decoupled_highcap_no_risk/checkpoints_to_eval.txt" \
++      "${NAVTEST_CHUNK_CACHE_ROOT}" \
++      "0"
++  fi
++  if [[ -d "${OUT_ROOT}/serverB_vlm_lora_decoupled_highcap_no_risk/progressive_sft_decoupled" ]]; then
++    local b_cache="${LORA_NAVTEST_CHUNK_CACHE_ROOT:-${NAVTEST_CHUNK_CACHE_ROOT}}"
++    printf '%s\t%s\t%s\t%s\t%s\n' \
++      "serverB_vlm_lora_decoupled_highcap_no_risk" \
++      "${OUT_ROOT}/serverB_vlm_lora_decoupled_highcap_no_risk/progressive_sft_decoupled" \
++      "${OUT_ROOT}/serverB_vlm_lora_decoupled_highcap_no_risk/checkpoints_to_eval.txt" \
++      "${b_cache}" \
++      "1"
++  fi
++}
++
++discover_topk_ckpts() {
++  local run_dir="$1"
++  if [[ "${INCLUDE_TOPK_CHECKPOINTS}" != "1" && "${INCLUDE_TOPK_CHECKPOINTS}" != "true" ]]; then
++    return 0
++  fi
++  "${PYTHON_BIN}" - "${run_dir}" <<'PY'
++from __future__ import annotations
++
++import sys
++from pathlib import Path
++
++run_dir = Path(sys.argv[1])
++paths = []
++
++state_candidates = [
++    run_dir / "latest.ckpt",
++    run_dir / "final.ckpt",
++    run_dir / "last.ckpt",
++]
++state_candidates.extend(run_dir.glob("lightning_logs/version_*/checkpoints/last.ckpt"))
++
++for state_path in state_candidates:
++    if not state_path.is_file():
++        continue
++    try:
++        import torch
++
++        ckpt = torch.load(state_path, map_location="cpu")
++    except Exception:
++        continue
++    callbacks = ckpt.get("callbacks", {}) if isinstance(ckpt, dict) else {}
++    for state in callbacks.values():
++        if not isinstance(state, dict):
++            continue
++        best_k = state.get("best_k_models")
++        if not isinstance(best_k, dict):
++            continue
++        for raw_path in best_k:
++            p = Path(raw_path)
++            if not p.is_file():
++                candidate = run_dir / "lightning_logs" / "version_0" / "checkpoints" / p.name
++                p = candidate if candidate.is_file() else p
++            if p.is_file() and p.name != "last.ckpt":
++                paths.append(p)
++    if paths:
++        break
++
++if not paths:
++    paths = sorted(run_dir.glob("lightning_logs/version_*/checkpoints/epoch=*-step=*.ckpt"))
++
++seen = set()
++for p in sorted(paths, key=lambda item: item.name):
++    resolved = str(p.resolve())
++    if resolved in seen:
++        continue
++    seen.add(resolved)
++    print(resolved)
++PY
++}
++
++collect_ckpts_for_line() {
++  local run_dir="$1"
++  local list_path="$2"
++  if [[ "${INCLUDE_CHECKPOINTS_TO_EVAL}" == "1" || "${INCLUDE_CHECKPOINTS_TO_EVAL}" == "true" ]]; then
++    if [[ -f "${list_path}" ]]; then
++      while IFS= read -r ckpt; do
++        [[ -n "${ckpt}" ]] && printf '%s\n' "${ckpt}"
++      done <"${list_path}"
++    fi
++  fi
++  discover_topk_ckpts "${run_dir}"
++}
++
++run_eval_one() {
+   local line_name="$1"
+-  local cache_root="$2"
+-  local ckpt="$3"
+-  local out_dir="${EVAL_ROOT}/${line_name}/$(basename "${ckpt}" .ckpt)"
+-  mkdir -p "${out_dir}"
+-  cmd=(
++  local run_dir="$2"
++  local cache_root="$3"
++  local is_b="$4"
++  local ckpt="$5"
++  local gpu="${6:-}"
++  local label
++  label="$(safe_name "${ckpt}")"
++
++  if [[ ! -f "${ckpt}" ]]; then
++    echo "Skipping missing checkpoint: ${ckpt}" >&2
++    return 0
++  fi
++
++  local out_dir="${EVAL_ROOT}/${line_name}/${label}"
++  local log_dir="${EVAL_ROOT}/logs/${line_name}"
++  local log_file="${log_dir}/${label}.eval.log"
++  mkdir -p "${out_dir}" "${log_dir}"
++  if [[ -f "${out_dir}/metrics.json" && "${SKIP_COMPLETED}" == "1" ]]; then
++    echo "Skipping completed eval: ${out_dir}/metrics.json"
++    return 0
++  fi
++
++  local cmd=(
+     "${PYTHON_BIN}" scripts/eval_recogdrive_expert_pdm.py
+     --config "${CONFIG}"
+     --checkpoint "${ckpt}"
+     --chunk-cache-root "${cache_root}"
+-    --chunk-name-pattern "${NAVTEST_CHUNK_NAME_PATTERN:-navtest_full_chunk_*}"
++    --chunk-name-pattern "${NAVTEST_CHUNK_NAME_PATTERN}"
+     --metric-cache-dir "${METRIC_CACHE_DIR}"
+-    --precision fp32
++    --precision "${PRECISION}"
++    --trajectory-output-key "${TRAJECTORY_OUTPUT_KEY}"
+     --output-dir "${out_dir}"
+   )
+-  printf '%q ' "${cmd[@]}" >>"${COMMANDS_LOG}"; printf '\n' >>"${COMMANDS_LOG}"
+-  if [[ "${RUN_EVAL:-0}" == "1" ]]; then
+-    "${cmd[@]}" >"${out_dir}/eval.log" 2>&1
++  if [[ -n "${VLM_TEXT_ANCHOR_CACHE_ROOT}" ]]; then
++    cmd+=(--vlm-text-anchor-cache-root "${VLM_TEXT_ANCHOR_CACHE_ROOT}")
+   fi
+-}
+
+-for line in serverA_frozen_vlm_decoupled_highcap_no_risk serverB_vlm_lora_decoupled_highcap_no_risk; do
+-  list="${OUT_ROOT}/${line}/checkpoints_to_eval.txt"
+-  [[ -f "${list}" ]] || continue
+-  cache="${NAVTEST_CHUNK_CACHE_ROOT}"
+-  if [[ "${line}" == "serverB_vlm_lora_decoupled_highcap_no_risk" ]]; then
+-    if [[ -z "${LORA_NAVTEST_CHUNK_CACHE_ROOT:-}" ]]; then
+-      echo "Skipping B eval commands: LORA_NAVTEST_CHUNK_CACHE_ROOT is required for Line B." >&2
+-      continue
++  if [[ "${is_b}" == "1" && -n "${B_ONLINE_VLM_PATH}" && -n "${B_ONLINE_VLM_LORA_ADAPTER_DIR}" ]]; then
++    cmd+=(
++      --feature-source chunk_or_online
++      --online-vlm-path "${B_ONLINE_VLM_PATH}"
++      --online-vlm-type "${B_ONLINE_VLM_TYPE}"
++      --online-vlm-lora-adapter-dir "${B_ONLINE_VLM_LORA_ADAPTER_DIR}"
++    )
++  elif [[ "${is_b}" == "1" && -z "${LORA_NAVTEST_CHUNK_CACHE_ROOT:-}" ]]; then
++    echo "Skipping B eval for ${ckpt}: set LORA_NAVTEST_CHUNK_CACHE_ROOT or B_ONLINE_VLM_PATH+B_ONLINE_VLM_LORA_ADAPTER_DIR." >&2
++    return 0
++  fi
++
++  {
++    printf '[%s] line=%q checkpoint=%q ' "$(date -Is)" "${line_name}" "${ckpt}"
++    if [[ -n "${gpu}" ]]; then
++      printf 'CUDA_VISIBLE_DEVICES=%q ' "${gpu}"
+     fi
+-    cache="${LORA_NAVTEST_CHUNK_CACHE_ROOT}"
++    printf '%q ' "${cmd[@]}"
++    printf '\n'
++  } >>"${COMMANDS_LOG}"
++
++  echo "Evaluating ${line_name}/${label}: ${ckpt}${gpu:+ on GPU ${gpu}}"
++  if [[ -n "${gpu}" ]]; then
++    CUDA_VISIBLE_DEVICES="${gpu}" "${cmd[@]}" >"${log_file}" 2>&1
++  else
++    "${cmd[@]}" >"${log_file}" 2>&1
+   fi
++}
++
++mapfile -t specs < <(line_specs)
++if [[ "${#specs[@]}" -eq 0 ]]; then
++  echo "No A/B run directories found under OUT_ROOT=${OUT_ROOT}" >&2
++  exit 2
++fi
++
++tasks_file="${EVAL_ROOT}/tasks.tsv"
++: >"${tasks_file}"
++for spec in "${specs[@]}"; do
++  IFS=$'\t' read -r line_name run_dir list_path cache_root is_b <<<"${spec}"
++  seen=""
+   while IFS= read -r ckpt; do
+-    [[ -z "${ckpt}" ]] && continue
+-    write_eval_cmd "${line}" "${cache}" "${ckpt}"
+-  done <"${list}"
++    [[ -n "${ckpt}" ]] || continue
++    if [[ "${seen}" == *"|${ckpt}|"* ]]; then
++      continue
++    fi
++    seen="${seen}|${ckpt}|"
++    printf '%s\t%s\t%s\t%s\t%s\n' "${line_name}" "${run_dir}" "${cache_root}" "${is_b}" "${ckpt}" >>"${tasks_file}"
++  done < <(collect_ckpts_for_line "${run_dir}" "${list_path}")
+ done
+
+-if [[ "${RUN_EVAL:-0}" != "1" ]]; then
+-  echo "RUN_EVAL is not 1; dry-run only. Commands written to ${COMMANDS_LOG}"
++if [[ ! -s "${tasks_file}" ]]; then
++  echo "No checkpoints discovered for eval under OUT_ROOT=${OUT_ROOT}" >&2
++  exit 0
++fi
++
++if [[ "${PARALLEL_EVAL}" == "1" || "${PARALLEL_EVAL}" == "true" ]]; then
++  IFS=',' read -r -a gpu_list <<<"${EVAL_GPUS}"
++  if [[ "${#gpu_list[@]}" -eq 0 ]]; then
++    echo "PARALLEL_EVAL=1 requires EVAL_GPUS to contain at least one GPU id." >&2
++    exit 2
++  fi
++  if [[ -z "${MAX_PARALLEL_EVAL}" ]]; then
++    MAX_PARALLEL_EVAL="${#gpu_list[@]}"
++  fi
++  pids=()
++  failed=0
++  task_index=0
++  while IFS=$'\t' read -r line_name run_dir cache_root is_b ckpt; do
++    gpu="${gpu_list[$((task_index % ${#gpu_list[@]}))]}"
++    run_eval_one "${line_name}" "${run_dir}" "${cache_root}" "${is_b}" "${ckpt}" "${gpu}" &
++    pids+=("$!")
++    task_index=$((task_index + 1))
++    if [[ "${#pids[@]}" -ge "${MAX_PARALLEL_EVAL}" ]]; then
++      for pid in "${pids[@]}"; do
++        if ! wait "${pid}"; then
++          failed=1
++        fi
++      done
++      pids=()
++    fi
++  done <"${tasks_file}"
++  for pid in "${pids[@]}"; do
++    if ! wait "${pid}"; then
++      failed=1
++    fi
++  done
++  exit "${failed}"
+ fi
++
++while IFS=$'\t' read -r line_name run_dir cache_root is_b ckpt; do
++  run_eval_one "${line_name}" "${run_dir}" "${cache_root}" "${is_b}" "${ckpt}" ""
++done <"${tasks_file}"
+diff --git a/scripts/merge_last_vla_overlay_shards.py b/scripts/merge_last_vla_overlay_shards.py
+index 240ccfd..55c36dc 100755
+--- a/scripts/merge_last_vla_overlay_shards.py
++++ b/scripts/merge_last_vla_overlay_shards.py
+@@ -15,7 +15,7 @@ def parse_args() -> argparse.Namespace:
+     parser.add_argument("--sharded-root", type=Path, required=True)
+     parser.add_argument("--output-root", type=Path, required=True)
+     parser.add_argument("--expected-num-shards", type=int, required=True)
+-    parser.add_argument("--overlay-type", choices=("jepa128", "geometry192"), required=True)
++    parser.add_argument("--overlay-type", choices=("jepa128", "geometry192", "vlm_text_anchor"), required=True)
+     parser.add_argument("--copy-mode", choices=("hardlink", "copy"), default="hardlink")
+     parser.add_argument("--strict", action="store_true")
+     return parser.parse_args()
+diff --git a/tests/test_last_vla_config_compose.py b/tests/test_last_vla_config_compose.py
+index 07a7f1c..f765000 100644
+--- a/tests/test_last_vla_config_compose.py
++++ b/tests/test_last_vla_config_compose.py
+@@ -26,6 +26,7 @@ def test_last_vla_hydra_experiment_yaml_loads():
+     for name in (
+         "last_vla_decoupled_cot_alignment_highcap_no_risk.yaml",
+         "last_vla_decoupled_progressive_highcap_no_risk.yaml",
++        "last_vla_decoupled_progressive_highcap_no_risk_vlm_text_residual.yaml",
+     ):
+         path = Path("navsim/planning/script/config/experiment") / name
+         data = yaml.safe_load(path.read_text(encoding="utf-8"))
+@@ -37,6 +38,7 @@ def test_last_vla_hydra_experiment_yaml_loads():
+         assert data["agent"]["last_vla_condition_mode"] == "decoupled_cot_residual"
+         assert data["agent"]["last_vla_cot_bottleneck_mode"] is False
+         assert data["agent"]["last_vla_raw_vlm_context_to_dit"] is True
++        assert data["agent"]["last_vla_residual_anchor_source"] == "vlm_text_traj"
+
+
+ def test_last_vla_hydra_compose_if_available():
+diff --git a/tests/test_last_vla_decoupled_config_compose.py b/tests/test_last_vla_decoupled_config_compose.py
+index 2303645..bee6a23 100644
+--- a/tests/test_last_vla_decoupled_config_compose.py
++++ b/tests/test_last_vla_decoupled_config_compose.py
+@@ -23,6 +23,7 @@ def _assert_decoupled(agent) -> None:
+     assert agent["last_vla_geometry_teacher_dim"] == 512
+     assert agent["last_vla_geometry_grid_rows"] == 12
+     assert agent["last_vla_geometry_grid_cols"] == 16
++    assert agent["last_vla_residual_anchor_source"] == "vlm_text_traj"
+
+
+ def test_decoupled_yaml_base_has_formal_values():
+@@ -38,6 +39,21 @@ def test_decoupled_hydra_experiments_have_formal_values():
+     ):
+         payload = yaml.safe_load((exp_dir / name).read_text(encoding="utf-8"))
+         _assert_decoupled(payload["agent"])
++        assert payload["agent"]["last_vla_use_residual_diffusion"] is False
++
++
++def test_decoupled_vlm_text_residual_experiment_is_separate_from_current_ab_configs():
++    exp_dir = Path("navsim/planning/script/config/experiment")
++    payload = yaml.safe_load(
++        (exp_dir / "last_vla_decoupled_progressive_highcap_no_risk_vlm_text_residual.yaml").read_text(encoding="utf-8")
++    )
++    _assert_decoupled(payload["agent"])
++    assert payload["agent"]["last_vla_use_residual_diffusion"] is True
++    assert payload["agent"]["last_vla_residual_anchor_source"] == "vlm_text_traj"
++    assert payload["agent"]["last_vla_require_residual_anchor"] is True
++    assert payload["agent"]["last_vla_residual_alpha_start"] == 1.0
++    assert payload["agent"]["last_vla_residual_alpha_end"] == 1.0
++    assert payload["agent"]["last_vla_residual_alpha_warmup_epochs"] == 0
+
+
+ def test_decoupled_hydra_compose_if_available():
+@@ -51,6 +67,7 @@ def test_decoupled_hydra_compose_if_available():
+         "last_vla_decoupled_cot_alignment_highcap_no_risk",
+         "last_vla_decoupled_progressive_highcap_no_risk",
+         "last_vla_decoupled_vlm_lora_cot_alignment_highcap_no_risk",
++        "last_vla_decoupled_progressive_highcap_no_risk_vlm_text_residual",
+     ):
+         GlobalHydra.instance().clear()
+         with initialize_config_module(config_module="navsim.planning.script.config.training", version_base=None):
+diff --git a/tests/test_last_vla_helpers.py b/tests/test_last_vla_helpers.py
+index d8e9324..12a0f0a 100644
+--- a/tests/test_last_vla_helpers.py
++++ b/tests/test_last_vla_helpers.py
+@@ -25,6 +25,7 @@ def make_last_vla_planner(
+     risk_head: bool = False,
+     action_conditioned: bool = True,
+     teacher_mode: str = "none",
++    residual_anchor_source: str = "vlm_text_traj",
+ ) -> ReCogDriveDiffusionPlanner:
+     cfg = ReCogDriveDiffusionPlannerConfig(
+         diffusion_model_cfg={
+@@ -67,6 +68,8 @@ def make_last_vla_planner(
+         last_vla_use_risk_head=risk_head,
+         last_vla_allow_patch_geometry_fallback=True,
+         last_vla_use_residual_diffusion=residual,
++        last_vla_residual_anchor_source=residual_anchor_source,
++        last_vla_require_residual_anchor=True,
+         last_vla_use_action_conditioned_dynamics=action_conditioned,
+         last_vla_geometry_loss_weight=0.1,
+         last_vla_dynamic_loss_weight=dynamic_loss_weight,
+@@ -89,6 +92,8 @@ def make_last_vla_batch(batch: int = 2, include_targets: bool = True) -> tuple[t
+         "high_command_one_hot": torch.eye(3)[torch.arange(batch) % 3].float(),
+         "jepa_context_tokens": torch.randn(batch, 12, 1024),
+         "vggt_context_tokens": torch.randn(batch, 12, 2048),
++        "vlm_text_trajectory": torch.randn(batch, 8, 3),
++        "vlm_text_parse_ok": torch.ones(batch),
+     }
+     if include_targets:
+         data.update(
+diff --git a/tests/test_last_vla_highcap_no_risk_cache_schema.py b/tests/test_last_vla_highcap_no_risk_cache_schema.py
+index ee8ec2c..e5df23d 100644
+--- a/tests/test_last_vla_highcap_no_risk_cache_schema.py
++++ b/tests/test_last_vla_highcap_no_risk_cache_schema.py
+@@ -79,6 +79,62 @@ def test_highcap_no_risk_dataset_does_not_require_risk_or_vggt_context(tmp_path:
+     assert tokens == ["sample_000"]
+
+
++def test_highcap_residual_anchor_dataset_can_read_separate_vlm_text_anchor_cache(tmp_path: Path):
++    try:
++        from navsim.planning.script.run_training_recogdrive import ChunkCacheDataset, custom_collate_fn
++    except Exception as exc:
++        pytest.skip(f"training dependencies unavailable: {exc}")
++
++    base = tmp_path / "base"
++    anchor = tmp_path / "anchor"
++    (base / "samples").mkdir(parents=True)
++    (anchor / "samples").mkdir(parents=True)
++    _write_sample(base, "sample_000")
++    (base / "index.jsonl").write_text(
++        json.dumps({"sample_token": "sample_000", "path": "samples/sample_000.pt"}) + "\n",
++        encoding="utf-8",
++    )
++    atomic_torch_save(
++        {
++            "sample_token": "sample_000",
++            "vlm_text_trajectory": torch.ones(8, 3),
++            "vlm_text_parse_ok": torch.tensor(1.0),
++        },
++        anchor / "samples" / "sample_000.pt",
++    )
++    (anchor / "index.jsonl").write_text(
++        json.dumps({"sample_token": "sample_000", "path": "samples/sample_000.pt"}) + "\n",
++        encoding="utf-8",
++    )
++
++    dataset = ChunkCacheDataset(
++        str(base),
++        include_expert_features=True,
++        include_expert_targets=True,
++        use_jepa=True,
++        use_vggt=False,
++        num_jepa_tokens=128,
++        num_vggt_tokens=128,
++        num_geometry_tokens=192,
++        use_last_vla=True,
++        last_vla_stage="progressive_sft_decoupled",
++        last_vla_use_residual_diffusion=True,
++        last_vla_residual_anchor_source="vlm_text_traj",
++        last_vla_require_residual_anchor=True,
++        last_vla_residual_anchor_cache_dir=str(anchor),
++        last_vla_require_full_geometry=True,
++        last_vla_allow_patch_geometry_fallback=False,
++        last_vla_geometry_teacher_dim=512,
++        last_vla_geometry_loss_weight=0.2,
++    )
++    features, targets, token = dataset[0]
++    assert token == "sample_000"
++    assert features["vlm_text_trajectory"].shape == (8, 3)
++    collated_features, _, _ = custom_collate_fn([(features, targets, token)])
++    assert collated_features["vlm_text_trajectory"].shape == (1, 8, 3)
++    assert collated_features["vlm_text_parse_ok"].shape == (1,)
++
++
+ def test_highcap_no_risk_feature_builder_ignores_legacy_vggt_context(tmp_path: Path):
+     try:
+         from navsim.agents.recogdrive.recogdrive_features import ReCogDriveFeatureBuilder

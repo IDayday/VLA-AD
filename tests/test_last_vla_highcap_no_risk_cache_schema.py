@@ -79,6 +79,62 @@ def test_highcap_no_risk_dataset_does_not_require_risk_or_vggt_context(tmp_path:
     assert tokens == ["sample_000"]
 
 
+def test_highcap_residual_anchor_dataset_can_read_separate_vlm_text_anchor_cache(tmp_path: Path):
+    try:
+        from navsim.planning.script.run_training_recogdrive import ChunkCacheDataset, custom_collate_fn
+    except Exception as exc:
+        pytest.skip(f"training dependencies unavailable: {exc}")
+
+    base = tmp_path / "base"
+    anchor = tmp_path / "anchor"
+    (base / "samples").mkdir(parents=True)
+    (anchor / "samples").mkdir(parents=True)
+    _write_sample(base, "sample_000")
+    (base / "index.jsonl").write_text(
+        json.dumps({"sample_token": "sample_000", "path": "samples/sample_000.pt"}) + "\n",
+        encoding="utf-8",
+    )
+    atomic_torch_save(
+        {
+            "sample_token": "sample_000",
+            "vlm_text_trajectory": torch.ones(8, 3),
+            "vlm_text_parse_ok": torch.tensor(1.0),
+        },
+        anchor / "samples" / "sample_000.pt",
+    )
+    (anchor / "index.jsonl").write_text(
+        json.dumps({"sample_token": "sample_000", "path": "samples/sample_000.pt"}) + "\n",
+        encoding="utf-8",
+    )
+
+    dataset = ChunkCacheDataset(
+        str(base),
+        include_expert_features=True,
+        include_expert_targets=True,
+        use_jepa=True,
+        use_vggt=False,
+        num_jepa_tokens=128,
+        num_vggt_tokens=128,
+        num_geometry_tokens=192,
+        use_last_vla=True,
+        last_vla_stage="progressive_sft_decoupled",
+        last_vla_use_residual_diffusion=True,
+        last_vla_residual_anchor_source="vlm_text_traj",
+        last_vla_require_residual_anchor=True,
+        last_vla_residual_anchor_cache_dir=str(anchor),
+        last_vla_require_full_geometry=True,
+        last_vla_allow_patch_geometry_fallback=False,
+        last_vla_geometry_teacher_dim=512,
+        last_vla_geometry_loss_weight=0.2,
+    )
+    features, targets, token = dataset[0]
+    assert token == "sample_000"
+    assert features["vlm_text_trajectory"].shape == (8, 3)
+    collated_features, _, _ = custom_collate_fn([(features, targets, token)])
+    assert collated_features["vlm_text_trajectory"].shape == (1, 8, 3)
+    assert collated_features["vlm_text_parse_ok"].shape == (1,)
+
+
 def test_highcap_no_risk_feature_builder_ignores_legacy_vggt_context(tmp_path: Path):
     try:
         from navsim.agents.recogdrive.recogdrive_features import ReCogDriveFeatureBuilder
