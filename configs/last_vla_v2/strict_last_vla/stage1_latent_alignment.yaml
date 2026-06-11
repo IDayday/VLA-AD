@@ -1,0 +1,53 @@
+use_last_vla: true
+use_strict_last_vla: true
+last_vla_reasoner_type: strict_latent_slots
+last_vla_stage: stage1_latent_alignment
+last_vla_latent_cache_mode: false
+
+cache_hidden_state: false
+train_backbone: false
+freeze_vlm_backbone: true
+train_latent_slots: true
+train_adapters: true
+train_dit: false
+freeze_base_action_head: true
+
+use_last_rd: false
+last_rd_stage: disabled
+use_expert_features: false
+use_jepa: false
+use_vggt: false
+allow_expert_target_features: true
+allow_future_targets_in_inference: false
+
+last_vla_wm_teacher_source: jepa_dev
+last_vla_geometry_teacher_dim: 512
+last_vla_num_dyn_latent_tokens: 64
+last_vla_num_geo_latent_tokens: 64
+last_vla_num_plan_latent_tokens: 32
+last_vla_random_mask_ratio: 0.30
+
+last_vla_condition_mode: decoupled_cot_residual
+last_vla_cot_bottleneck_mode: false
+last_vla_raw_vlm_context_to_dit: true
+last_vla_teacher_traj_mode: none
+last_vla_use_residual_diffusion: false
+last_vla_residual_anchor_source: none
+last_vla_train_vlm_lora: false
+
+diffusion_loss_weight: 0.0
+last_vla_dynamic_loss_weight: 0.30
+last_vla_geometry_loss_weight: 0.30
+last_vla_coarse_loss_weight: 1.00
+last_vla_heading_loss_weight: 0.20
+last_vla_progress_loss_weight: 0.20
+last_vla_risk_loss_weight: 0.0
+last_vla_cot_consistency_loss_weight: 0.0
+
+lr_last_vla_latent_slots: 1e-4
+lr_last_vla_adapters: 1e-4
+weight_decay_last_vla_latent_slots: 1e-4
+weight_decay_last_vla_adapters: 1e-4
+scheduler_epochs: 20
+scheduler_warmup_epochs: 1
+scheduler_min_lr: 1e-6

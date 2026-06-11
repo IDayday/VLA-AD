@@ -31,6 +31,7 @@ from .recogdrive_features import (
     TrajectoryTargetBuilder,
 )
 from .recogdrive_backbone import RecogDriveBackbone
+from .last_vla_latent_slots import LastVLALatentSlotConfig
 from .recogdrive_diffusion_planner import (
     ReCogDriveDiffusionPlanner,
     ReCogDriveDiffusionPlannerConfig,
@@ -61,6 +62,14 @@ LAST_VLA_FEATURE_KEYS = (
     "gt_score",
     "oracle_best_of_k_score",
     "candidate_count",
+    "cosmos_future_features",
+    "last_vla_h_dyn",
+    "last_vla_h_geo",
+    "last_vla_h_plan",
+    "h_dyn",
+    "h_geo",
+    "h_plan",
+    "image_hidden_states",
     "vlm_text_trajectory",
     "vlm_text_trajectory_norm",
     "vlm_text_parse_ok",
@@ -76,6 +85,8 @@ LAST_VLA_TARGET_KEYS = (
     "vggt_geometry_target_tokens",
     "vggt_depth_target_tokens",
     "vggt_pointmap_target_tokens",
+    "cosmos_future_features",
+    "vggt_geometry_tokens",
     "teacher_trajectory",
     "teacher_trajectory_norm",
     "teacher_score",
@@ -176,6 +187,18 @@ class ReCogDriveAgent(AbstractAgent):
         total_train_epochs: int = 200,
         use_last_vla: bool = False,
         last_vla_stage: str = "disabled",
+        use_strict_last_vla: bool = False,
+        last_vla_reasoner_type: str = "legacy_action_cot",
+        last_vla_latent_cache_mode: bool = True,
+        last_vla_num_dyn_latent_tokens: int = 64,
+        last_vla_num_geo_latent_tokens: int = 64,
+        last_vla_num_plan_latent_tokens: int = 32,
+        last_vla_wm_teacher_source: str = "jepa_dev",
+        last_vla_random_mask_ratio: float = 0.30,
+        freeze_vlm_backbone: bool = True,
+        train_latent_slots: bool = True,
+        train_adapters: bool = True,
+        train_dit: bool = True,
         last_vla_cot_num_tokens: int = 32,
         last_vla_cot_num_steps: int = 4,
         last_vla_condition_mode: str = "decoupled_cot_residual",
@@ -229,6 +252,7 @@ class ReCogDriveAgent(AbstractAgent):
         last_vla_geometry_loss_floor: float = 0.0,
         last_vla_dynamic_loss_floor: float = 0.0,
         last_vla_coarse_loss_floor: float = 0.0,
+        last_vla_plan_loss_floor: float = 0.0,
         last_vla_progress_loss_floor: float = 0.0,
         last_vla_adapter_checkpoint: Optional[str] = None,
         last_vla_train_vlm_lora: bool = False,
@@ -249,6 +273,10 @@ class ReCogDriveAgent(AbstractAgent):
         weight_decay_vlm_lora: float = 0.0,
         lr_last_vla_cot: Optional[float] = 1e-4,
         weight_decay_last_vla_cot: float = 1e-4,
+        lr_last_vla_latent_slots: Optional[float] = 1e-4,
+        lr_last_vla_adapters: Optional[float] = 1e-4,
+        weight_decay_last_vla_latent_slots: float = 1e-4,
+        weight_decay_last_vla_adapters: float = 1e-4,
         last_vla_hidden_anchor_weight: float = 0.01,
         last_vla_hidden_anchor_mode: str = "summary_cosine",
         last_vla_hidden_anchor_every_n_steps: int = 4,
@@ -331,14 +359,33 @@ class ReCogDriveAgent(AbstractAgent):
         self.allow_future_targets_in_inference = allow_future_targets_in_inference
         self.use_last_rd = use_last_rd
         self.last_rd_stage = last_rd_stage
+        self.use_strict_last_vla = bool(use_strict_last_vla)
+        if self.use_strict_last_vla:
+            use_last_vla = True
         self.use_last_vla = use_last_vla
         self.last_vla_stage = last_vla_stage
+        self.last_vla_reasoner_type = "strict_latent_slots" if self.use_strict_last_vla else str(last_vla_reasoner_type)
+        self.last_vla_latent_cache_mode = bool(last_vla_latent_cache_mode)
+        self.last_vla_num_dyn_latent_tokens = int(last_vla_num_dyn_latent_tokens)
+        self.last_vla_num_geo_latent_tokens = int(last_vla_num_geo_latent_tokens)
+        self.last_vla_num_plan_latent_tokens = int(last_vla_num_plan_latent_tokens)
+        self.last_vla_wm_teacher_source = str(last_vla_wm_teacher_source)
+        self.last_vla_random_mask_ratio = float(last_vla_random_mask_ratio)
+        self.freeze_vlm_backbone = bool(freeze_vlm_backbone)
+        self.train_latent_slots = bool(train_latent_slots)
+        self.train_adapters = bool(train_adapters)
+        self.train_dit = bool(train_dit)
         if self.use_last_vla and self.use_last_rd:
             raise ValueError("use_last_vla and use_last_rd are mutually exclusive.")
         if self.use_last_vla and self.last_vla_stage == "disabled":
             raise ValueError("use_last_vla=True requires last_vla_stage to be non-disabled.")
         if not self.use_last_vla and self.last_vla_stage != "disabled":
             raise ValueError("last_vla_stage must be 'disabled' when use_last_vla=False.")
+        if self.use_strict_last_vla:
+            if self.last_vla_reasoner_type != "strict_latent_slots":
+                raise ValueError("Strict LaST-VLA requires last_vla_reasoner_type='strict_latent_slots'.")
+            if last_vla_train_vlm_lora:
+                raise ValueError("Strict LaST-VLA forbids VLM LoRA.")
         self.use_future_jepa_prediction = use_future_jepa_prediction
         self.use_vggt_geometry_tokens = use_vggt_geometry_tokens
         self.use_ego_trajectory_tokens = use_ego_trajectory_tokens
@@ -424,6 +471,7 @@ class ReCogDriveAgent(AbstractAgent):
         self.last_vla_geometry_loss_floor = last_vla_geometry_loss_floor
         self.last_vla_dynamic_loss_floor = last_vla_dynamic_loss_floor
         self.last_vla_coarse_loss_floor = last_vla_coarse_loss_floor
+        self.last_vla_plan_loss_floor = last_vla_plan_loss_floor
         self.last_vla_progress_loss_floor = last_vla_progress_loss_floor
         self.last_vla_adapter_checkpoint = last_vla_adapter_checkpoint
         self.last_vla_train_vlm_lora = last_vla_train_vlm_lora
@@ -444,6 +492,10 @@ class ReCogDriveAgent(AbstractAgent):
         self.weight_decay_vlm_lora = float(weight_decay_vlm_lora)
         self.lr_last_vla_cot = lr_last_vla_cot
         self.weight_decay_last_vla_cot = float(weight_decay_last_vla_cot)
+        self.lr_last_vla_latent_slots = lr_last_vla_latent_slots
+        self.lr_last_vla_adapters = lr_last_vla_adapters
+        self.weight_decay_last_vla_latent_slots = float(weight_decay_last_vla_latent_slots)
+        self.weight_decay_last_vla_adapters = float(weight_decay_last_vla_adapters)
         self.last_vla_hidden_anchor_weight = float(last_vla_hidden_anchor_weight)
         self.last_vla_hidden_anchor_mode = str(last_vla_hidden_anchor_mode)
         self.last_vla_hidden_anchor_every_n_steps = int(last_vla_hidden_anchor_every_n_steps)
@@ -493,12 +545,26 @@ class ReCogDriveAgent(AbstractAgent):
                 device=str(device)
             )
 
-            if not self.train_backbone:
+            if self.freeze_vlm_backbone or not self.train_backbone:
                 for p in self.backbone.parameters():
                     p.requires_grad = False
             else:
                 for p in self.backbone.parameters():
                     p.requires_grad = True
+            if self.use_strict_last_vla:
+                slot_config = LastVLALatentSlotConfig(
+                    num_dyn_latent_tokens=self.last_vla_num_dyn_latent_tokens,
+                    num_geo_latent_tokens=self.last_vla_num_geo_latent_tokens,
+                    num_plan_latent_tokens=self.last_vla_num_plan_latent_tokens,
+                    vlm_hidden_dim=3584 if self.vlm_size == "large" else 1536,
+                    planner_dim=384 if self.dit_type == "small" else 1536,
+                    use_soft_latent_slots=True,
+                    use_answer_tokens=False,
+                    structured_mask_mode="stage1_alignment" if self.last_vla_stage == "stage1_latent_alignment" else "stage2_sft",
+                )
+                slots = self.backbone.configure_last_vla_latent_slots(slot_config).to(device)
+                for parameter in slots.parameters():
+                    parameter.requires_grad = bool(self.train_latent_slots)
             if self.last_vla_train_vlm_lora:
                 self._enable_last_vla_vlm_lora()
 
@@ -577,6 +643,17 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.total_train_epochs = self.total_train_epochs
         cfg.use_last_vla = self.use_last_vla
         cfg.last_vla_stage = self.last_vla_stage
+        cfg.use_strict_last_vla = self.use_strict_last_vla
+        cfg.last_vla_reasoner_type = self.last_vla_reasoner_type
+        cfg.last_vla_latent_cache_mode = self.last_vla_latent_cache_mode
+        cfg.last_vla_num_dyn_latent_tokens = self.last_vla_num_dyn_latent_tokens
+        cfg.last_vla_num_geo_latent_tokens = self.last_vla_num_geo_latent_tokens
+        cfg.last_vla_num_plan_latent_tokens = self.last_vla_num_plan_latent_tokens
+        cfg.last_vla_wm_teacher_source = self.last_vla_wm_teacher_source
+        cfg.last_vla_random_mask_ratio = self.last_vla_random_mask_ratio
+        if self.use_strict_last_vla:
+            cfg.tune_projector = bool(self.train_dit)
+            cfg.tune_diffusion_model = bool(self.train_dit)
         cfg.last_vla_cot_num_tokens = self.last_vla_cot_num_tokens
         cfg.last_vla_cot_num_steps = self.last_vla_cot_num_steps
         cfg.last_vla_condition_mode = self.last_vla_condition_mode
@@ -629,6 +706,7 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.last_vla_geometry_loss_floor = self.last_vla_geometry_loss_floor
         cfg.last_vla_dynamic_loss_floor = self.last_vla_dynamic_loss_floor
         cfg.last_vla_coarse_loss_floor = self.last_vla_coarse_loss_floor
+        cfg.last_vla_plan_loss_floor = self.last_vla_plan_loss_floor
         cfg.last_vla_progress_loss_floor = self.last_vla_progress_loss_floor
         cfg.last_vla_train_vlm_lora = self.last_vla_train_vlm_lora
         cfg.last_vla_vlm_lora_r = self.last_vla_vlm_lora_r
@@ -805,6 +883,8 @@ class ReCogDriveAgent(AbstractAgent):
 
     def count_trainable_parameters_by_group(self) -> Dict[str, Dict[str, int]]:
         groups = {
+            "strict_last_vla_slots": {"trainable": 0, "total": 0},
+            "strict_last_vla_adapters": {"trainable": 0, "total": 0},
             "last_vla_cot": {"trainable": 0, "total": 0},
             "cot_condition_branch": {"trainable": 0, "total": 0},
             "last_rd": {"trainable": 0, "total": 0},
@@ -835,7 +915,11 @@ class ReCogDriveAgent(AbstractAgent):
         )
         for name, parameter in self.named_parameters():
             count = int(parameter.numel())
-            if self._is_last_vla_condition_parameter_key(name):
+            if self._is_strict_last_vla_slot_parameter_key(name):
+                group = "strict_last_vla_slots"
+            elif self._is_strict_last_vla_adapter_parameter_key(name):
+                group = "strict_last_vla_adapters"
+            elif self._is_last_vla_condition_parameter_key(name):
                 group = "cot_condition_branch"
             elif "action_head.last_vla_cot." in name:
                 group = "last_vla_cot"
@@ -870,6 +954,19 @@ class ReCogDriveAgent(AbstractAgent):
         }
         groups["vlm_lora_by_category"] = lora_by_category
         return groups
+
+    def validate_strict_last_vla_trainable_scope(self) -> None:
+        if not self.use_strict_last_vla:
+            return
+        counts = self.count_trainable_parameters_by_group()
+        if self.freeze_vlm_backbone and counts["backbone_non_lora"]["trainable"] > 0:
+            raise RuntimeError("Strict LaST-VLA Stage1 requires frozen VLM base parameters.")
+        if self.train_latent_slots and counts["strict_last_vla_slots"]["trainable"] <= 0:
+            raise RuntimeError("Strict LaST-VLA requires trainable soft latent slot embeddings.")
+        if self.train_adapters and counts["strict_last_vla_adapters"]["trainable"] <= 0:
+            raise RuntimeError("Strict LaST-VLA requires trainable WM/Geometry/Plan adapters.")
+        if self.last_vla_train_vlm_lora or counts["vlm_lora"]["trainable"] > 0:
+            raise RuntimeError("Strict LaST-VLA forbids VLM LoRA trainable parameters.")
 
     def get_lora_target_report(self) -> Optional[Dict[str, Any]]:
         return self._last_vla_lora_audit
@@ -946,6 +1043,7 @@ class ReCogDriveAgent(AbstractAgent):
         hidden_drift_l2: Optional[torch.Tensor] = None
         hidden_anchor_computed = False
         hidden_anchor_step_index: Optional[int] = None
+        strict_latent_outputs: Optional[Dict[str, torch.Tensor]] = None
         if self.cache_hidden_state:
             last_hidden_state = features["last_hidden_state"].to(action_device)
         else:
@@ -998,8 +1096,33 @@ class ReCogDriveAgent(AbstractAgent):
             if should_compute_anchor:
                 frozen_hidden_state = self._compute_frozen_vlm_hidden(pixel_values_cat, questions, num_patches_list)
                 hidden_anchor_computed = frozen_hidden_state is not None
-            outputs = self.backbone(pixel_values_cat, questions, num_patches_list=num_patches_list)
-            last_hidden_state = outputs.hidden_states[-1]
+            if self.use_strict_last_vla:
+                slot_config = LastVLALatentSlotConfig(
+                    num_dyn_latent_tokens=self.last_vla_num_dyn_latent_tokens,
+                    num_geo_latent_tokens=self.last_vla_num_geo_latent_tokens,
+                    num_plan_latent_tokens=self.last_vla_num_plan_latent_tokens,
+                    vlm_hidden_dim=3584 if self.vlm_size == "large" else 1536,
+                    planner_dim=384 if self.dit_type == "small" else 1536,
+                    use_soft_latent_slots=True,
+                    use_answer_tokens=False,
+                    structured_mask_mode="stage1_alignment" if self.last_vla_stage == "stage1_latent_alignment" else "stage2_sft",
+                )
+                strict_latent_outputs = self.backbone.forward_last_vla_latent_slots(
+                    pixel_values_cat,
+                    questions,
+                    status_feature=features["status_feature"].to(action_device),
+                    high_command_one_hot=high_command_one_hot,
+                    history_trajectory=history_trajectory,
+                    slot_config=slot_config,
+                    structured_mask_mode=slot_config.structured_mask_mode,
+                    return_image_hidden=True,
+                    return_answer_logits=False,
+                    num_patches_list=num_patches_list,
+                )
+                last_hidden_state = strict_latent_outputs["last_hidden_state"]
+            else:
+                outputs = self.backbone(pixel_values_cat, questions, num_patches_list=num_patches_list)
+                last_hidden_state = outputs.hidden_states[-1]
             if frozen_hidden_state is not None:
                 hidden_anchor_loss, hidden_drift_cosine, hidden_drift_l2 = self._hidden_anchor_metrics(
                     last_hidden_state,
@@ -1022,6 +1145,12 @@ class ReCogDriveAgent(AbstractAgent):
             "status_feature": status_feature.to(model_dtype),
             "high_command_one_hot": high_command_one_hot.to(model_dtype),
         }
+        if strict_latent_outputs is not None:
+            action_input_data["last_vla_h_dyn"] = strict_latent_outputs["h_dyn"].to(model_dtype)
+            action_input_data["last_vla_h_geo"] = strict_latent_outputs["h_geo"].to(model_dtype)
+            action_input_data["last_vla_h_plan"] = strict_latent_outputs["h_plan"].to(model_dtype)
+            if "image_hidden_states" in strict_latent_outputs:
+                action_input_data["image_hidden_states"] = strict_latent_outputs["image_hidden_states"].to(model_dtype)
         target_loss_mode = self.training or targets is not None
         optional_feature_keys = tuple(dict.fromkeys((*EXPERT_FEATURE_KEYS, *(LAST_VLA_FEATURE_KEYS if self.use_last_vla else ()))))
         target_feature_keys = set(EXPERT_TARGET_FEATURE_KEYS)
@@ -1084,7 +1213,15 @@ class ReCogDriveAgent(AbstractAgent):
 
     @staticmethod
     def _is_last_vla_parameter_key(key: str) -> bool:
-        return key.startswith("action_head.last_vla_cot.")
+        return key.startswith("action_head.last_vla_cot.") or key.startswith("action_head.strict_last_vla_reasoner.")
+
+    @staticmethod
+    def _is_strict_last_vla_slot_parameter_key(key: str) -> bool:
+        return key.startswith("backbone.last_vla_soft_slots.")
+
+    @staticmethod
+    def _is_strict_last_vla_adapter_parameter_key(key: str) -> bool:
+        return key.startswith("action_head.strict_last_vla_reasoner.")
 
     @staticmethod
     def _is_last_vla_condition_parameter_key(key: str) -> bool:
@@ -1120,9 +1257,24 @@ class ReCogDriveAgent(AbstractAgent):
             or self.train_expert_only
             or self.freeze_base_action_head
             or self.freeze_expert
+            or self.use_strict_last_vla
         )
 
     def _set_trainable_parameters(self) -> None:
+        if self.use_strict_last_vla and self.last_vla_stage == "stage1_latent_alignment":
+            for name, parameter in self.named_parameters():
+                if self._is_strict_last_vla_slot_parameter_key(name):
+                    parameter.requires_grad = bool(self.train_latent_slots)
+                elif self._is_strict_last_vla_adapter_parameter_key(name):
+                    parameter.requires_grad = bool(self.train_adapters)
+                elif name.startswith("backbone."):
+                    parameter.requires_grad = False if self.freeze_vlm_backbone else bool(self.train_backbone)
+                elif name.startswith("action_head."):
+                    parameter.requires_grad = bool(self.train_dit)
+                else:
+                    parameter.requires_grad = False
+            self.validate_strict_last_vla_trainable_scope()
+            return
         if self.last_vla_train_vlm_lora:
             for name, parameter in self.named_parameters():
                 is_last_vla_cot = self._is_last_vla_parameter_key(name)
@@ -1203,11 +1355,17 @@ class ReCogDriveAgent(AbstractAgent):
         expert_params: List[torch.nn.Parameter] = []
         gate_params: List[torch.nn.Parameter] = []
         backbone_params: List[torch.nn.Parameter] = []
+        strict_slot_params: List[torch.nn.Parameter] = []
+        strict_adapter_params: List[torch.nn.Parameter] = []
 
         for name, parameter in self.named_parameters():
             if not parameter.requires_grad:
                 continue
-            if self._is_gate_parameter_key(name) and gate_lr is not None:
+            if self._is_strict_last_vla_slot_parameter_key(name):
+                strict_slot_params.append(parameter)
+            elif self._is_strict_last_vla_adapter_parameter_key(name):
+                strict_adapter_params.append(parameter)
+            elif self._is_gate_parameter_key(name) and gate_lr is not None:
                 gate_params.append(parameter)
             elif self._is_expert_parameter_key(name):
                 expert_params.append(parameter)
@@ -1217,6 +1375,24 @@ class ReCogDriveAgent(AbstractAgent):
                 backbone_params.append(parameter)
 
         groups: List[Dict[str, Any]] = []
+        slot_lr = float(self.lr_last_vla_latent_slots) if self.lr_last_vla_latent_slots is not None else base_lr
+        adapter_lr = float(self.lr_last_vla_adapters) if self.lr_last_vla_adapters is not None else expert_lr
+        self._append_optimizer_group(
+            groups,
+            params=strict_slot_params,
+            lr=slot_lr,
+            base_lr=base_lr,
+            weight_decay=float(self.weight_decay_last_vla_latent_slots),
+            name="strict_last_vla_slots",
+        )
+        self._append_optimizer_group(
+            groups,
+            params=strict_adapter_params,
+            lr=adapter_lr,
+            base_lr=base_lr,
+            weight_decay=float(self.weight_decay_last_vla_adapters),
+            name="strict_last_vla_adapters",
+        )
         self._append_optimizer_group(
             groups,
             params=expert_params,
@@ -1599,9 +1775,15 @@ class ReCogDriveAgent(AbstractAgent):
             mapped_key = key[len("agent."):] if key.startswith("agent.") else key
             if mapped_key.startswith("action_head.last_vla_cot."):
                 candidate = mapped_key
+            elif mapped_key.startswith("action_head.strict_last_vla_reasoner."):
+                candidate = mapped_key
             elif mapped_key.startswith("last_vla_cot."):
                 candidate = f"action_head.{mapped_key}"
+            elif mapped_key.startswith("strict_last_vla_reasoner."):
+                candidate = f"action_head.{mapped_key}"
             elif mapped_key.startswith("action_head.") and ".last_vla_cot." in mapped_key:
+                candidate = mapped_key
+            elif mapped_key.startswith("action_head.") and ".strict_last_vla_reasoner." in mapped_key:
                 candidate = mapped_key
             else:
                 continue
@@ -1617,7 +1799,7 @@ class ReCogDriveAgent(AbstractAgent):
             print("  skipped incompatible Last-VLA keys:")
             for key in skipped[:20]:
                 print(f"    - {key}")
-        missing_last_vla = [key for key in incompatible.missing_keys if "last_vla_cot" in key]
+        missing_last_vla = [key for key in incompatible.missing_keys if "last_vla_cot" in key or "strict_last_vla_reasoner" in key]
         if missing_last_vla:
             print(f"  remaining missing Last-VLA keys: {len(missing_last_vla)}")
 

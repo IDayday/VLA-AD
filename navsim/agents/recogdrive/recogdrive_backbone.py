@@ -1,9 +1,11 @@
-from typing import List, Optional, Tuple, Union
+import inspect
+from typing import Dict, List, Optional, Tuple, Union
 import torch
 from torch import nn
 from transformers import AutoModel, AutoTokenizer
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
+from .last_vla_latent_slots import LastVLALatentSlotConfig, LastVLASoftLatentSlots, StructuredCausalMaskBuilder
 from .utils.conversation import get_conv_template
 
 IMG_CONTEXT_TOKEN = '<IMG_CONTEXT>'
@@ -45,6 +47,7 @@ class RecogDriveBackbone(nn.Module):
         self.tokenizer = None  
         self.model_type = model_type.lower()
         self.device = device
+        self.last_vla_soft_slots: Optional[LastVLASoftLatentSlots] = None
 
         print(f"Initializing backbone of type: '{self.model_type}' from path: '{checkpoint_path}'")
 
@@ -84,6 +87,10 @@ class RecogDriveBackbone(nn.Module):
 
 
         print(f"Backbone '{self.model_type}' loaded successfully on device '{self.device}'.")
+
+    def configure_last_vla_latent_slots(self, config: LastVLALatentSlotConfig) -> LastVLASoftLatentSlots:
+        self.last_vla_soft_slots = LastVLASoftLatentSlots(config)
+        return self.last_vla_soft_slots
 
     def _configure_internvl(self):
         """Applies specific configurations required for the InternVL model."""
@@ -156,19 +163,14 @@ class RecogDriveBackbone(nn.Module):
 
         model.extract_feature = extract_feature_with_language_dtype
         model._recogdrive_cast_visual_feature_dtype = True
-    
-    def forward(self, pixel_values: torch.Tensor, questions: List[str], num_patches_list: List[int]):
-        if not self.model:
-            raise RuntimeError("Backbone model has not been initialized. Call initialize() on the agent first.")
-        
-        model_dtype = self._infer_model_compute_dtype(self.model)
 
+    def _build_internvl_queries(self, pixel_values: Optional[torch.Tensor], questions: List[str], num_patches_list: List[int]) -> List[str]:
         queries = []
         for idx, num_patches in enumerate(num_patches_list):
             question = questions[idx]
             if pixel_values is not None and '<image>' not in question:
                 question = '<image>\n' + question
-            
+
             template = get_conv_template("internvl2_5")
             template.system_message = system_message
             template.append_message(template.roles[0], question)
@@ -178,6 +180,56 @@ class RecogDriveBackbone(nn.Module):
             image_tokens = IMG_START_TOKEN + IMG_CONTEXT_TOKEN * self.num_image_token * num_patches + IMG_END_TOKEN
             query = query.replace('<image>', image_tokens, 1)
             queries.append(query)
+        return queries
+
+    @staticmethod
+    def _language_embedding_layer(model: nn.Module) -> nn.Module:
+        language_model = getattr(model, "language_model", None)
+        if language_model is None and hasattr(model, "get_base_model"):
+            try:
+                language_model = getattr(model.get_base_model(), "language_model", None)
+            except Exception:
+                language_model = None
+        if language_model is None or not hasattr(language_model, "get_input_embeddings"):
+            raise NotImplementedError(
+                "Strict LaST-VLA soft slots require access to language_model.get_input_embeddings()."
+            )
+        embeddings = language_model.get_input_embeddings()
+        if embeddings is None:
+            raise NotImplementedError("language_model.get_input_embeddings() returned None.")
+        return embeddings
+
+    @staticmethod
+    def _model_accepts_inputs_embeds(model: nn.Module) -> bool:
+        try:
+            signature = inspect.signature(model.forward)
+        except (TypeError, ValueError):
+            return False
+        if "inputs_embeds" in signature.parameters:
+            return True
+        return any(param.kind == inspect.Parameter.VAR_KEYWORD for param in signature.parameters.values())
+
+    @staticmethod
+    def _gather_masked_tokens(hidden: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+        if mask.ndim != 2:
+            raise ValueError("mask must have shape [B, N].")
+        lengths = mask.long().sum(dim=1)
+        max_len = int(lengths.max().item()) if lengths.numel() else 0
+        if max_len == 0:
+            return hidden.new_zeros(hidden.shape[0], 0, hidden.shape[-1])
+        out = hidden.new_zeros(hidden.shape[0], max_len, hidden.shape[-1])
+        for index in range(hidden.shape[0]):
+            selected = hidden[index, mask[index]]
+            out[index, : selected.shape[0]] = selected
+        return out
+
+    def forward(self, pixel_values: torch.Tensor, questions: List[str], num_patches_list: List[int]):
+        if not self.model:
+            raise RuntimeError("Backbone model has not been initialized. Call initialize() on the agent first.")
+
+        model_dtype = self._infer_model_compute_dtype(self.model)
+
+        queries = self._build_internvl_queries(pixel_values, questions, num_patches_list)
         self.tokenizer.padding_side = 'left'
         model_inputs = self.tokenizer(queries, return_tensors='pt', padding='max_length', max_length=2800)
         device = torch.device(self.device)
@@ -200,5 +252,91 @@ class RecogDriveBackbone(nn.Module):
                 output_hidden_states=True,
                 return_dict=True,
         )
+
+    def forward_last_vla_latent_slots(
+        self,
+        images: torch.Tensor,
+        questions: List[str],
+        status_feature: Optional[torch.Tensor] = None,
+        high_command_one_hot: Optional[torch.Tensor] = None,
+        history_trajectory: Optional[torch.Tensor] = None,
+        slot_config: Optional[LastVLALatentSlotConfig] = None,
+        structured_mask_mode: str = "stage1_alignment",
+        return_image_hidden: bool = True,
+        return_answer_logits: bool = False,
+        num_patches_list: Optional[List[int]] = None,
+    ) -> Dict[str, torch.Tensor]:
+        if not self.model:
+            raise RuntimeError("Backbone model has not been initialized. Call initialize() on the agent first.")
+        if self.model_type != "internvl":
+            raise NotImplementedError("Strict LaST-VLA latent slots are currently implemented for InternVL backbones only.")
+        if slot_config is None:
+            slot_config = LastVLALatentSlotConfig(structured_mask_mode=structured_mask_mode)
+        if self.last_vla_soft_slots is None or self.last_vla_soft_slots.config != slot_config:
+            self.configure_last_vla_latent_slots(slot_config)
+        assert self.last_vla_soft_slots is not None
+        if num_patches_list is None:
+            num_patches_list = [images.shape[0] // len(questions)] * len(questions)
+        if not self._model_accepts_inputs_embeds(self.model):
+            raise NotImplementedError(
+                "Strict LaST-VLA requires the VLM wrapper to accept inputs_embeds. "
+                "The current InternVL wrapper forward signature does not expose inputs_embeds; "
+                "implement a low-level language_model forward before enabling strict latent slots."
+            )
+
+        model_dtype = self._infer_model_compute_dtype(self.model)
+        queries = self._build_internvl_queries(images, questions, num_patches_list)
+        self.tokenizer.padding_side = 'left'
+        model_inputs = self.tokenizer(queries, return_tensors='pt', padding='max_length', max_length=2800)
+        device = torch.device(self.device)
+        input_ids = model_inputs['input_ids'].to(device)
+        attention_mask = model_inputs['attention_mask'].to(device)
+        position_ids = attention_mask.long().cumsum(-1) - 1
+        position_ids.masked_fill_(attention_mask == 0, 1)
+
+        embeddings = self._language_embedding_layer(self.model)
+        token_embeddings = embeddings(input_ids)
+        slot_batch = self.last_vla_soft_slots.build_inputs_embeds(
+            token_embeddings=token_embeddings,
+            attention_mask=attention_mask,
+            position_ids=position_ids,
+            build_structured_mask=True,
+        )
+        StructuredCausalMaskBuilder.require_4d_attention_mask_support(self.model)
+
+        num_patches = images.size(0)
+        image_flags = torch.tensor([1] * num_patches, dtype=torch.long, device=device)
+        outputs = self.model(
+            pixel_values=images.to(device=device, dtype=model_dtype),
+            inputs_embeds=slot_batch.inputs_embeds.to(device=device, dtype=token_embeddings.dtype),
+            attention_mask=slot_batch.structured_attention_mask,
+            position_ids=slot_batch.position_ids,
+            image_flags=image_flags.squeeze(-1),
+            output_hidden_states=True,
+            return_dict=True,
+        )
+        last_hidden_state = outputs.hidden_states[-1]
+        slots = self.last_vla_soft_slots.extract_slot_hidden(last_hidden_state, slot_batch.slot_spans)
+        base_hidden = last_hidden_state[:, : input_ids.shape[1]]
+        image_mask = input_ids == self.img_context_token_id
+        text_mask = (attention_mask > 0) & (~image_mask)
+        result: Dict[str, torch.Tensor] = {
+            "last_hidden_state": last_hidden_state,
+            "h_dyn": slots["h_dyn"],
+            "h_geo": slots["h_geo"],
+            "h_plan": slots["h_plan"],
+            "slot_metadata": {
+                "dyn_count": slot_config.num_dyn_latent_tokens,
+                "geo_count": slot_config.num_geo_latent_tokens,
+                "plan_count": slot_config.num_plan_latent_tokens,
+                "structured_mask_mode": structured_mask_mode,
+            },
+        }
+        if return_image_hidden:
+            result["image_hidden_states"] = self._gather_masked_tokens(base_hidden, image_mask)
+        result["text_hidden_states"] = self._gather_masked_tokens(base_hidden, text_mask)
+        if return_answer_logits:
+            result["answer_logits"] = getattr(outputs, "logits", None)
+        return result
 
     

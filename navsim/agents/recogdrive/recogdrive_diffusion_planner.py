@@ -246,7 +246,17 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
         "progressive_sft_bottleneck",
         "progressive_sft_decoupled",
         "teacher_traj_sft",
+        "stage1_latent_alignment",
+        "stage2_diffusion_sft",
     ] = "disabled"
+    use_strict_last_vla: bool = False
+    last_vla_reasoner_type: Literal["legacy_action_cot", "strict_latent_slots"] = "legacy_action_cot"
+    last_vla_latent_cache_mode: bool = True
+    last_vla_num_dyn_latent_tokens: int = 64
+    last_vla_num_geo_latent_tokens: int = 64
+    last_vla_num_plan_latent_tokens: int = 32
+    last_vla_wm_teacher_source: Literal["cosmos", "jepa_dev"] = "jepa_dev"
+    last_vla_random_mask_ratio: float = 0.30
     last_vla_cot_num_tokens: int = 32
     last_vla_cot_num_steps: int = 4
     last_vla_condition_mode: str = "decoupled_cot_residual"
@@ -299,6 +309,7 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     last_vla_geometry_loss_floor: float = 0.0
     last_vla_dynamic_loss_floor: float = 0.0
     last_vla_coarse_loss_floor: float = 0.0
+    last_vla_plan_loss_floor: float = 0.0
     last_vla_progress_loss_floor: float = 0.0
     last_vla_train_vlm_lora: bool = False
     last_vla_vlm_lora_preset: str = "attention_mlp"
@@ -331,6 +342,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         "vggt_geometry_target_tokens",
         "vggt_depth_target_tokens",
         "vggt_pointmap_target_tokens",
+        "cosmos_future_features",
+        "vggt_geometry_tokens",
     )
 
     def __init__(self, config: ReCogDriveDiffusionPlannerConfig):
@@ -383,7 +396,25 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("use_last_vla=True requires last_vla_stage to be non-disabled.")
         if not config.use_last_vla and config.last_vla_stage != "disabled":
             raise ValueError("last_vla_stage must be 'disabled' when use_last_vla=False.")
-        if (
+        if config.use_strict_last_vla:
+            if not config.use_last_vla:
+                raise ValueError("use_strict_last_vla=True requires use_last_vla=True.")
+            if config.last_vla_reasoner_type != "strict_latent_slots":
+                raise ValueError("Strict LaST-VLA requires last_vla_reasoner_type='strict_latent_slots'.")
+            if config.last_vla_stage not in {"stage1_latent_alignment", "stage2_diffusion_sft"}:
+                raise ValueError(
+                    "Strict LaST-VLA requires last_vla_stage to be "
+                    "'stage1_latent_alignment' or 'stage2_diffusion_sft'."
+                )
+            if config.last_vla_use_residual_diffusion:
+                raise ValueError("Strict LaST-VLA forbids residual diffusion targets.")
+            if config.last_vla_teacher_traj_mode != "none":
+                raise ValueError("Strict LaST-VLA Stage2 diffusion target must remain GT normalized trajectory.")
+            if config.last_vla_train_vlm_lora:
+                raise ValueError("Strict LaST-VLA forbids VLM LoRA.")
+            if config.last_vla_wm_teacher_source not in {"cosmos", "jepa_dev"}:
+                raise ValueError("last_vla_wm_teacher_source must be 'cosmos' or 'jepa_dev'.")
+        elif (
             config.use_last_vla
             and (
                 config.last_vla_condition_mode != "decoupled_cot_residual"
@@ -508,7 +539,24 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 config.branch_init_vggt,
             ]))
 
-        if config.use_last_vla:
+        if config.use_last_vla and config.use_strict_last_vla:
+            from .last_vla_strict_reasoner import StrictLastVLAReasoner, StrictLastVLAReasonerConfig
+
+            self.strict_last_vla_reasoner = StrictLastVLAReasoner(
+                StrictLastVLAReasonerConfig(
+                    vlm_hidden_dim=3584 if config.vlm_size == "large" else 1536,
+                    planner_dim=config.input_embedding_dim,
+                    action_horizon=config.action_horizon,
+                    action_dim=config.action_dim,
+                    num_dyn_latent_tokens=config.last_vla_num_dyn_latent_tokens,
+                    num_geo_latent_tokens=config.last_vla_num_geo_latent_tokens,
+                    num_plan_latent_tokens=config.last_vla_num_plan_latent_tokens,
+                    wm_teacher_source=config.last_vla_wm_teacher_source,
+                    random_mask_ratio=config.last_vla_random_mask_ratio,
+                    strict_teacher_targets=config.last_vla_stage == "stage1_latent_alignment",
+                )
+            )
+        elif config.use_last_vla:
             from .last_vla_cot_planning import LastVLACoTConfig, LastVLACoTTransformer
 
             self.last_vla_cot = LastVLACoTTransformer(
@@ -1309,6 +1357,64 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "diagnostics": {},
             }
 
+        if self.config.use_last_vla and self.config.use_strict_last_vla:
+            if action_input is None:
+                raise KeyError("Strict LaST-VLA requires action_input with cached or online latent slots.")
+            h_dyn = action_input.get("last_vla_h_dyn", action_input.get("h_dyn", None))
+            h_geo = action_input.get("last_vla_h_geo", action_input.get("h_geo", None))
+            h_plan = action_input.get("last_vla_h_plan", action_input.get("h_plan", None))
+            missing = [
+                name for name, value in (
+                    ("last_vla_h_dyn", h_dyn),
+                    ("last_vla_h_geo", h_geo),
+                    ("last_vla_h_plan", h_plan),
+                )
+                if not isinstance(value, torch.Tensor)
+            ]
+            if missing:
+                raise KeyError(f"Strict LaST-VLA latent cache is missing required keys: {missing}")
+            raw_image_hidden = action_input.get("image_hidden_states", vl_features)
+            allow_targets = training if allow_target_tokens is None else bool(allow_target_tokens)
+            require_teacher = bool(training and self.config.last_vla_stage == "stage1_latent_alignment")
+            strict_out = self.strict_last_vla_reasoner(
+                {
+                    "last_hidden_state": vl_features,
+                    "image_hidden_states": raw_image_hidden,
+                    "h_dyn": h_dyn.to(device=vl_features.device, dtype=vl_features.dtype),
+                    "h_geo": h_geo.to(device=vl_features.device, dtype=vl_features.dtype),
+                    "h_plan": h_plan.to(device=vl_features.device, dtype=vl_features.dtype),
+                },
+                action_input,
+                target_action_norm=target_action_norm,
+                allow_teacher_targets=allow_targets,
+                require_teacher_targets=require_teacher,
+            )
+            base_losses["last_vla_dynamic_loss"] = strict_out["losses"]["wm_loss"]
+            base_losses["last_vla_geometry_loss"] = strict_out["losses"]["geometry_loss"]
+            base_losses["last_vla_coarse_loss"] = strict_out["losses"]["plan_loss"]
+            base_losses["last_vla_heading_loss"] = strict_out["losses"]["heading_loss"]
+            base_losses["last_vla_progress_loss"] = strict_out["losses"]["progress_loss"]
+            diagnostics = dict(strict_out["diagnostics"])
+            diagnostics.update(
+                {
+                    "last_vla_strict_mode": vl_embeds.new_tensor(1.0),
+                    "raw_vlm_token_count": vl_embeds.new_tensor(float(vl_embeds.shape[1])),
+                    "cot_condition_token_count": vl_embeds.new_tensor(float(strict_out["latent_condition_tokens"].shape[1])),
+                }
+            )
+            return {
+                "vl_embeds": vl_embeds,
+                "context_tokens": vl_embeds,
+                "context_mean": vl_embeds.mean(1),
+                "expert_step_condition": None,
+                "cot_condition_tokens": strict_out["latent_condition_tokens"],
+                "pred_coarse_traj_norm": strict_out["pred_coarse_traj_norm"],
+                **base_losses,
+                "diagnostics": diagnostics,
+                "strict_last_vla_output": strict_out,
+                "selected_target_norm": target_action_norm,
+            }
+
         if self.config.use_last_vla:
             allow_targets = training if allow_target_tokens is None else bool(allow_target_tokens)
             last_vla_output = self.last_vla_cot(
@@ -1810,12 +1916,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "last_vla_risk_loss": self.config.last_vla_risk_loss_weight,
             "last_vla_cot_consistency_loss": self.config.last_vla_cot_consistency_loss_weight,
         }[loss_name]
-        if self.config.last_vla_stage not in {"progressive_sft_bottleneck", "progressive_sft_decoupled"}:
+        if self.config.last_vla_stage not in {"progressive_sft_bottleneck", "progressive_sft_decoupled", "stage2_diffusion_sft"}:
             return float(base)
         floors = {
             "last_vla_geometry_loss": self.config.last_vla_geometry_loss_floor,
             "last_vla_dynamic_loss": self.config.last_vla_dynamic_loss_floor,
-            "last_vla_coarse_loss": self.config.last_vla_coarse_loss_floor,
+            "last_vla_coarse_loss": self.config.last_vla_plan_loss_floor or self.config.last_vla_coarse_loss_floor,
             "last_vla_heading_loss": 0.0,
             "last_vla_progress_loss": self.config.last_vla_progress_loss_floor,
             "last_vla_risk_loss": 0.0,
@@ -2117,7 +2223,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             selected_target_norm, target_diagnostics = self._select_last_vla_training_target(action_input, gt_actions)
             zero = gt_actions.new_zeros(())
 
-            if self.config.last_vla_stage == "cot_alignment" and float(self.config.diffusion_loss_weight) == 0.0:
+            if self.config.last_vla_stage in {"cot_alignment", "stage1_latent_alignment"} and float(self.config.diffusion_loss_weight) == 0.0:
                 dit_context = self._prepare_dit_context(
                     vl_features,
                     action_input,
@@ -2364,6 +2470,19 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "last_vla_raw_vlm_base_context_norm",
                 "last_vla_context_mean_cot_residual_norm",
                 "last_vla_horizon_cot_residual_norm",
+                "last_vla_strict_mode",
+                "wm_mask_ratio",
+                "wm_teacher_missing",
+                "geometry_mask_ratio",
+                "geometry_teacher_missing",
+                "h_dyn_norm",
+                "h_geo_norm",
+                "h_plan_norm",
+                "dyn_slot_count",
+                "geo_slot_count",
+                "plan_slot_count",
+                "latent_condition_token_count",
+                "plan_coarse_norm",
             ):
                 if key in diagnostics and isinstance(diagnostics[key], torch.Tensor):
                     output_key = key if key.startswith("last_vla_") else f"last_vla_{key}"
@@ -2402,7 +2521,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         cot_condition_tokens = dit_context.get("cot_condition_tokens")
         coarse_prior_norm = None
         if self.config.use_last_vla:
-            coarse_prior_norm = dit_context["last_vla_output"].coarse_traj_norm.detach()
+            if self.config.use_strict_last_vla:
+                coarse_prior_norm = dit_context.get("pred_coarse_traj_norm")
+                if coarse_prior_norm is not None:
+                    coarse_prior_norm = coarse_prior_norm.detach()
+            else:
+                coarse_prior_norm = dit_context["last_vla_output"].coarse_traj_norm.detach()
         
         history_embeds = self.his_traj_encoder(
             action_input.his_traj.unsqueeze(1)
