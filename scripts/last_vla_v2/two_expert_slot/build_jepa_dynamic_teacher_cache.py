@@ -275,6 +275,19 @@ def _sample_sequence_indices(length: int, out_len: int) -> List[int]:
     return torch.linspace(0, length - 1, steps=int(out_len)).round().long().tolist()
 
 
+def _load_indexed_rgb_frames(source_image_paths: Sequence[Path], frame_indices: Sequence[int]) -> List[Image.Image]:
+    image_cache: Dict[int, Image.Image] = {}
+    frames: List[Image.Image] = []
+    for index in frame_indices:
+        key = int(index)
+        if key < 0 or key >= len(source_image_paths):
+            raise IndexError(f"Frame index {key} out of range for {len(source_image_paths)} source images.")
+        if key not in image_cache:
+            image_cache[key] = load_rgb(source_image_paths[key])
+        frames.append(image_cache[key])
+    return frames
+
+
 def _future_record_indices(
     records: Sequence[Tuple[Path, Path, Dict[str, Any]]],
     current_index: int,
@@ -318,7 +331,7 @@ def extract_vjepa2_dynamic_teacher(
         _sample_image_path(records[index][1], records[index][2], image_path_index) for index in source_indices
     ]
     frame_indices = _sample_sequence_indices(len(source_image_paths), int(args.frames_per_clip))
-    frames = [load_rgb(source_image_paths[index]) for index in frame_indices]
+    frames = _load_indexed_rgb_frames(source_image_paths, frame_indices)
     inputs = processor(frames, return_tensors="pt")
     pixel_values = inputs["pixel_values_videos"].to(device=torch.device(args.device))
     if str(args.precision) == "bf16":
@@ -375,7 +388,7 @@ def extract_vjepa2_dynamic_teacher_batch(
             _sample_image_path(records[index][1], records[index][2], image_path_index) for index in source_indices
         ]
         frame_indices = _sample_sequence_indices(len(source_image_paths), int(args.frames_per_clip))
-        videos.append([load_rgb(source_image_paths[index]) for index in frame_indices])
+        videos.append(_load_indexed_rgb_frames(source_image_paths, frame_indices))
         diagnostics_items.append(
             {
                 "source_image_paths": [str(path) for path in source_image_paths],
