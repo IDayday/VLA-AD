@@ -250,8 +250,6 @@ def _save_records(
     }
     selected_source_index = awac_batch["selected_source_index"].detach().cpu().long().numpy()
     candidate_sources = awac_batch["candidate_sources"]
-    best_raw_indices = awac_batch["best_raw_index"].detach().cpu().long().numpy()
-    best_valid_indices = awac_batch["best_valid_index"].detach().cpu().long().numpy()
     for batch_idx, token in enumerate(tokens):
         real_count = int(selected_real_mask[batch_idx].sum())
         source_indices = selected_source_index[batch_idx, :real_count]
@@ -259,10 +257,22 @@ def _save_records(
             candidate_sources[int(index)] if int(index) >= 0 else "unknown"
             for index in source_indices
         ]
-        best_selected_pos = int(selected_rewards[batch_idx, :real_count].argmax()) if real_count > 0 else 0
+        row_rewards = selected_rewards[batch_idx, :real_count]
+        row_valid_mask = selected_valid_mask[batch_idx, :real_count]
+        best_raw_pos = int(row_rewards.argmax()) if real_count > 0 else 0
+        valid_positions = row_valid_mask.nonzero()[0]
+        has_valid = bool(valid_positions.size > 0)
+        if has_valid:
+            best_valid_pos = int(valid_positions[int(row_rewards[valid_positions].argmax())])
+        else:
+            best_valid_pos = best_raw_pos
+        best_selected_pos = best_raw_pos
+        best_raw_reward = float(row_rewards[best_raw_pos]) if real_count > 0 else 0.0
+        best_valid_reward = float(row_rewards[best_valid_pos]) if real_count > 0 else 0.0
+        best_selected_reward = float(row_rewards[best_selected_pos]) if real_count > 0 else 0.0
+        best_raw_source = sources[best_raw_pos] if sources else "unknown"
+        best_valid_source = sources[best_valid_pos] if sources else "unknown"
         best_selected_source = sources[best_selected_pos] if sources else "unknown"
-        global_best_idx = int(best_raw_indices[batch_idx])
-        valid_best_idx = int(best_valid_indices[batch_idx])
         record = {
             "token": token,
             "candidates": selected_trajs[batch_idx, :real_count],
@@ -277,15 +287,15 @@ def _save_records(
             "selection_score": selected_selection_score[batch_idx, :real_count],
             "gt_reward": float(awac_batch["gt_reward"][batch_idx].detach().cpu().item()),
             "il_reward": float(awac_batch["il_reward"][batch_idx].detach().cpu().item()),
-            "best_reward": float(awac_batch["best_reward"][batch_idx].detach().cpu().item()),
-            "best_source": candidate_sources[valid_best_idx],
-            "best_raw_reward": float(awac_batch["best_raw_reward"][batch_idx].detach().cpu().item()),
-            "best_valid_reward": float(awac_batch["best_valid_reward"][batch_idx].detach().cpu().item()),
-            "best_selected_reward": float(awac_batch["best_selected_reward"][batch_idx].detach().cpu().item()),
-            "best_raw_source": candidate_sources[global_best_idx],
-            "best_valid_source": candidate_sources[valid_best_idx],
+            "best_reward": best_valid_reward,
+            "best_source": best_valid_source,
+            "best_raw_reward": best_raw_reward,
+            "best_valid_reward": best_valid_reward,
+            "best_selected_reward": best_selected_reward,
+            "best_raw_source": best_raw_source,
+            "best_valid_source": best_valid_source,
             "best_selected_source": best_selected_source,
-            "has_valid_candidate": bool(awac_batch["has_valid_candidate"][batch_idx].detach().cpu().item()),
+            "has_valid_candidate": has_valid,
             "version": 2,
         }
         if not dry_run:
