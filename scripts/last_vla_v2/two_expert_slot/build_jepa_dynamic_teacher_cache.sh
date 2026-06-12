@@ -8,8 +8,8 @@ for name in "${required[@]}"; do
     exit 2
   fi
 done
-if [[ "${RUN_CACHE:-0}" == "1" && -e "${OUTPUT_ROOT}" && "${OVERWRITE:-0}" != "1" ]]; then
-  echo "OUTPUT_ROOT exists: ${OUTPUT_ROOT}; set OVERWRITE=1 to replace shard outputs." >&2
+if [[ "${RUN_CACHE:-0}" == "1" && -e "${OUTPUT_ROOT}" && "${OVERWRITE:-0}" != "1" && "${RESUME_EXISTING:-0}" != "1" ]]; then
+  echo "OUTPUT_ROOT exists: ${OUTPUT_ROOT}; set OVERWRITE=1 to replace shard outputs or RESUME_EXISTING=1 to reuse complete samples." >&2
   exit 2
 fi
 
@@ -31,6 +31,9 @@ if [[ "${ALLOW_DEV_FALLBACK_TEACHERS:-0}" != "1" && "${STRICT_TEACHER:-1}" == "1
   cmd+=(--strict-teacher)
 fi
 if [[ "${OVERWRITE:-0}" == "1" ]]; then cmd+=(--overwrite); fi
+if [[ "${RESUME_EXISTING:-0}" == "1" ]]; then cmd+=(--resume-existing); fi
+cmd+=(--extract-batch-size "${JEPA_EXTRACT_BATCH_SIZE:-1}")
+cmd+=(--progress-interval "${PROGRESS_INTERVAL:-1000}")
 if [[ -n "${MAX_SAMPLES:-}" ]]; then cmd+=(--max-samples "${MAX_SAMPLES}"); fi
 
 printf '%q ' "${cmd[@]}" >>"${COMMANDS_LOG}"; printf '\n' >>"${COMMANDS_LOG}"

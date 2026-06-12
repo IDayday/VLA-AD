@@ -92,6 +92,37 @@ def pack_vjepa_hidden_to_dynamic_tokens(
     return torch.stack(groups, dim=0).contiguous()
 
 
+def pack_vjepa_hidden_batch_to_dynamic_tokens(
+    hidden: torch.Tensor,
+    *,
+    frames_per_clip: int = 64,
+    tubelet_size: int = 2,
+    spatial_tokens: int = 256,
+) -> torch.Tensor:
+    hidden = _as_feature_tensor(hidden, "vjepa2_last_hidden_state")
+    if hidden.ndim == 2:
+        return pack_vjepa_hidden_to_dynamic_tokens(
+            hidden,
+            frames_per_clip=frames_per_clip,
+            tubelet_size=tubelet_size,
+            spatial_tokens=spatial_tokens,
+        ).unsqueeze(0)
+    if hidden.ndim != 3 or hidden.shape[-1] != 1024:
+        raise ValueError(f"V-JEPA hidden state batch must have shape [B,N,1024], got {tuple(hidden.shape)}.")
+    return torch.stack(
+        [
+            pack_vjepa_hidden_to_dynamic_tokens(
+                hidden[item],
+                frames_per_clip=frames_per_clip,
+                tubelet_size=tubelet_size,
+                spatial_tokens=spatial_tokens,
+            )
+            for item in range(hidden.shape[0])
+        ],
+        dim=0,
+    ).contiguous()
+
+
 def resolve_dynamic_teacher(sample: Dict[str, Any], *, strict_teacher: bool) -> Tuple[torch.Tensor, Dict[str, Any]]:
     if "jepa_dynamic_teacher_tokens" in sample:
         tokens = _as_feature_tensor(sample["jepa_dynamic_teacher_tokens"], "jepa_dynamic_teacher_tokens")
@@ -328,6 +359,71 @@ def extract_vjepa2_dynamic_teacher(
     return tokens, metadata, diagnostics
 
 
+def extract_vjepa2_dynamic_teacher_batch(
+    model,
+    processor,
+    records: Sequence[Tuple[Path, Path, Dict[str, Any]]],
+    current_indices: Sequence[int],
+    args: argparse.Namespace,
+    image_path_index: Dict[str, str],
+) -> List[Tuple[torch.Tensor, Dict[str, Any], Dict[str, Any]]]:
+    videos: List[List[Image.Image]] = []
+    diagnostics_items: List[Dict[str, Any]] = []
+    for current_index in current_indices:
+        source_indices = _future_record_indices(records, current_index, int(args.sequence_sample_count))
+        source_image_paths = [
+            _sample_image_path(records[index][1], records[index][2], image_path_index) for index in source_indices
+        ]
+        frame_indices = _sample_sequence_indices(len(source_image_paths), int(args.frames_per_clip))
+        videos.append([load_rgb(source_image_paths[index]) for index in frame_indices])
+        diagnostics_items.append(
+            {
+                "source_image_paths": [str(path) for path in source_image_paths],
+                "frame_indices": [int(item) for item in frame_indices],
+            }
+        )
+    processor_input: Any = videos[0] if len(videos) == 1 else videos
+    inputs = processor(processor_input, return_tensors="pt")
+    pixel_values = inputs["pixel_values_videos"].to(device=torch.device(args.device))
+    if str(args.precision) == "bf16":
+        pixel_values = pixel_values.to(dtype=torch.bfloat16)
+    elif str(args.precision) == "fp16":
+        pixel_values = pixel_values.to(dtype=torch.float16)
+    else:
+        pixel_values = pixel_values.to(dtype=torch.float32)
+    with torch.no_grad():
+        output = model(pixel_values_videos=pixel_values, skip_predictor=bool(args.skip_predictor))
+    hidden = output.last_hidden_state.detach().float().cpu()
+    tokens_batch = pack_vjepa_hidden_batch_to_dynamic_tokens(
+        hidden,
+        frames_per_clip=int(args.frames_per_clip),
+        tubelet_size=int(args.tubelet_size),
+        spatial_tokens=int(args.spatial_tokens),
+    )
+    results: List[Tuple[torch.Tensor, Dict[str, Any], Dict[str, Any]]] = []
+    for batch_index, tokens in enumerate(tokens_batch):
+        metadata = {
+            "teacher_type": "jepa_dynamic",
+            "teacher_source": "vjepa2_index_order_future_sequence",
+            "strict_dynamic_teacher": True,
+            "num_dyn_groups": 3,
+            "tokens_per_group": 12,
+            "feature_dim": 1024,
+            "horizon_definition": "short_mid_long_from_base_index_order_future_front_camera_frames",
+            "vjepa_model_path": str(args.jepa_model_path),
+            "frames_per_clip": int(args.frames_per_clip),
+            "sequence_sample_count": int(args.sequence_sample_count),
+            "tubelet_size": int(args.tubelet_size),
+            "spatial_tokens": int(args.spatial_tokens),
+            "packer_version": PACKER_VERSION,
+        }
+        diagnostics = dict(diagnostics_items[batch_index])
+        diagnostics["vjepa_last_hidden_shape"] = list(hidden.shape)
+        diagnostics["batch_index"] = int(batch_index)
+        results.append((tokens.contiguous(), metadata, diagnostics))
+    return results
+
+
 def output_dir_for_shard(output_root: Path, shard_index: int) -> Path:
     return output_root / "shards" / f"shard_{int(shard_index):05d}"
 
@@ -337,9 +433,11 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
         raise ValueError("--num-shards must be positive.")
     if not 0 <= args.shard_index < args.num_shards:
         raise ValueError("--shard-index must be in [0, num_shards).")
+    if int(args.extract_batch_size) <= 0:
+        raise ValueError("--extract-batch-size must be positive.")
     out_dir = output_dir_for_shard(args.output_root, args.shard_index)
-    if out_dir.exists() and not args.overwrite:
-        raise FileExistsError(f"Output shard exists: {out_dir}. Pass --overwrite to replace it.")
+    if out_dir.exists() and not (args.overwrite or args.resume_existing):
+        raise FileExistsError(f"Output shard exists: {out_dir}. Pass --overwrite or --resume-existing.")
     samples_dir = out_dir / "samples"
     samples_dir.mkdir(parents=True, exist_ok=True)
     records = list(iter_indexed_records(args.input_chunk_root, pattern=args.chunk_name_pattern, max_records=args.max_samples))
@@ -348,20 +446,40 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
     if args.jepa_model_path is not None:
         model, processor = load_vjepa2(args)
     rows: List[Dict[str, Any]] = []
-    written = skipped = fallback_count = strict_count = 0
-    for idx, (_, sample_path, record) in enumerate(records):
-        if idx % int(args.num_shards) != int(args.shard_index):
-            skipped += 1
-            continue
-        sample = {} if model is not None else load_sample(sample_path)
-        token = str(sample.get("sample_token") or record.get("sample_token") or sample_path.stem)
-        scene_token = str(sample.get("scene_token") or record.get("scene_token") or "")
-        log_name = sample.get("log_name") or record.get("log_name")
-        if model is not None and processor is not None:
-            tokens, metadata, diagnostics = extract_vjepa2_dynamic_teacher(model, processor, records, idx, args, image_path_index)
-        else:
-            tokens, metadata = resolve_dynamic_teacher(sample, strict_teacher=bool(args.strict_teacher))
-            diagnostics = {}
+    written = skipped = fallback_count = strict_count = existing_reused = processed = 0
+    pending: List[Tuple[int, Path, Dict[str, Any], str, str, Optional[str], Path]] = []
+
+    def make_row(token: str, out_path: Path, scene_token: str, log_name: Optional[str]) -> Dict[str, Any]:
+        row = {"sample_token": token, "path": str(out_path.relative_to(out_dir))}
+        if scene_token:
+            row["scene_token"] = scene_token
+        if log_name:
+            row["log_name"] = str(log_name)
+        return row
+
+    def valid_existing_payload(path: Path) -> bool:
+        try:
+            payload = torch.load(path, map_location="cpu", weights_only=False)
+            tokens = payload.get("jepa_dynamic_teacher_tokens")
+            metadata = payload.get("jepa_dynamic_teacher_metadata") or {}
+            if not isinstance(tokens, torch.Tensor) or tuple(tokens.shape) != (3, 12, 1024):
+                return False
+            if bool(args.strict_teacher) and not bool(metadata.get("strict_dynamic_teacher")):
+                return False
+            return bool(torch.isfinite(tokens.float()).all())
+        except Exception:
+            return False
+
+    def write_payload(
+        token: str,
+        scene_token: str,
+        log_name: Optional[str],
+        out_path: Path,
+        tokens: torch.Tensor,
+        metadata: Dict[str, Any],
+        diagnostics: Dict[str, Any],
+    ) -> None:
+        nonlocal written, strict_count, fallback_count
         strict_count += int(bool(metadata["strict_dynamic_teacher"]))
         fallback_count += int(not bool(metadata["strict_dynamic_teacher"]))
         payload: Dict[str, Any] = {
@@ -375,15 +493,81 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
             payload["scene_token"] = scene_token
         if log_name:
             payload["log_name"] = str(log_name)
-        out_path = samples_dir / f"{token}.pt"
         atomic_torch_save(payload, out_path)
-        row = {"sample_token": token, "path": str(out_path.relative_to(out_dir))}
-        if scene_token:
-            row["scene_token"] = scene_token
-        if log_name:
-            row["log_name"] = str(log_name)
-        rows.append(row)
+        rows.append(make_row(token, out_path, scene_token, log_name))
         written += 1
+
+    def log_progress(force: bool = False) -> None:
+        total_done = written + existing_reused
+        interval = max(1, int(args.progress_interval))
+        if force or (total_done > 0 and total_done % interval == 0):
+            print(
+                json.dumps(
+                    {
+                        "status": "jepa_dynamic_shard_progress",
+                        "shard_index": int(args.shard_index),
+                        "num_shards": int(args.num_shards),
+                        "written": int(written),
+                        "existing_reused": int(existing_reused),
+                        "processed": int(processed),
+                        "rows": int(len(rows)),
+                    },
+                    sort_keys=True,
+                ),
+                flush=True,
+            )
+
+    def flush_pending() -> None:
+        nonlocal pending
+        if not pending:
+            return
+        if model is None or processor is None:
+            raise RuntimeError("flush_pending requires a loaded V-JEPA2 model and processor.")
+        current_indices = [item[0] for item in pending]
+        results = extract_vjepa2_dynamic_teacher_batch(model, processor, records, current_indices, args, image_path_index)
+        if len(results) != len(pending):
+            raise RuntimeError(f"Batch result count {len(results)} does not match pending count {len(pending)}.")
+        for item, result in zip(pending, results):
+            _, _, _, token, scene_token, log_name, out_path = item
+            tokens, metadata, diagnostics = result
+            write_payload(token, scene_token, log_name, out_path, tokens, metadata, diagnostics)
+            log_progress()
+        pending = []
+
+    for idx, (_, sample_path, record) in enumerate(records):
+        if idx % int(args.num_shards) != int(args.shard_index):
+            skipped += 1
+            continue
+        processed += 1
+        sample = {} if model is not None else load_sample(sample_path)
+        token = str(sample.get("sample_token") or record.get("sample_token") or sample_path.stem)
+        scene_token = str(sample.get("scene_token") or record.get("scene_token") or "")
+        log_name = sample.get("log_name") or record.get("log_name")
+        out_path = samples_dir / f"{token}.pt"
+        if bool(args.resume_existing) and out_path.is_file() and valid_existing_payload(out_path):
+            rows.append(make_row(token, out_path, scene_token, str(log_name) if log_name else None))
+            existing_reused += 1
+            strict_count += 1
+            log_progress()
+            continue
+        if model is not None and processor is not None:
+            pending.append((idx, sample_path, record, token, scene_token, str(log_name) if log_name else None, out_path))
+            if len(pending) >= int(args.extract_batch_size):
+                flush_pending()
+        else:
+            tokens, metadata = resolve_dynamic_teacher(sample, strict_teacher=bool(args.strict_teacher))
+            write_payload(
+                token,
+                scene_token,
+                str(log_name) if log_name else None,
+                out_path,
+                tokens,
+                metadata,
+                {},
+            )
+            log_progress()
+    flush_pending()
+    log_progress(force=True)
     with (out_dir / "index.jsonl").open("w", encoding="utf-8") as f:
         for row in rows:
             f.write(json.dumps(row, sort_keys=True) + "\n")
@@ -399,10 +583,15 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
         "tokens_per_group": 12,
         "feature_dim": 1024,
         "strict_teacher_requested": bool(args.strict_teacher),
-        "num_samples": int(written),
+        "num_samples": int(len(rows)),
+        "num_new_samples": int(written),
+        "num_existing_reused": int(existing_reused),
+        "num_rows": int(len(rows)),
         "num_strict_teacher": int(strict_count),
         "num_legacy_fallback": int(fallback_count),
         "num_skipped_by_shard": int(skipped),
+        "extract_batch_size": int(args.extract_batch_size),
+        "resume_existing": bool(args.resume_existing),
         "shard_index": int(args.shard_index),
         "num_shards": int(args.num_shards),
         "jepa_model_path": str(args.jepa_model_path) if args.jepa_model_path is not None else None,
@@ -487,6 +676,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--image-path-index-jsonl", type=Path, default=None)
     parser.add_argument("--build-image-path-index", action="store_true")
     parser.add_argument("--progress-interval", type=int, default=1000)
+    parser.add_argument("--extract-batch-size", type=int, default=1)
+    parser.add_argument("--resume-existing", action="store_true")
     return parser.parse_args()
 
 
