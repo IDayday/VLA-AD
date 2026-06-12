@@ -16,6 +16,10 @@ if str(REPO_ROOT) not in sys.path:
 
 from navsim.agents.recogdrive.expert_cache import atomic_torch_save, iter_index, load_sample, write_json  # noqa: E402
 from navsim.agents.recogdrive.two_expert_slots import TwoExpertSlotConfig, TwoExpertSoftSlots  # noqa: E402
+from scripts.last_vla_v2.two_expert_slot.two_expert_prompt_utils import (  # noqa: E402
+    TWO_EXPERT_PROMPT_VERSION,
+    build_two_expert_prompt,
+)
 from scripts.last_vla_v2.two_expert_slot.two_expert_cache_utils import (  # noqa: E402
     iter_indexed_records,
     normalize_merged_index_path,
@@ -49,33 +53,6 @@ def decode_path_tensor(path_tensor: torch.Tensor) -> str:
     return "".join(chars)
 
 
-def format_number(value: float, decimal_places: int = 2) -> str:
-    rounded = round(float(value), decimal_places)
-    return f"{rounded:+.{decimal_places}f}" if abs(rounded) > 1e-2 else "0.0"
-
-
-def build_prompt(sample: Dict[str, Any]) -> str:
-    history = sample["history_trajectory"].float()
-    command = sample["high_command_one_hot"].float()
-    command_names = ["turn left", "go straight", "turn right"]
-    command_str = command_names[int(torch.argmax(command).item())]
-    history_str = " ".join(
-        f"   - t-{3-i}: ({format_number(history[i, 0].item())}, "
-        f"{format_number(history[i, 1].item())}, {format_number(history[i, 2].item())})"
-        for i in range(history.shape[0])
-    )
-    return (
-        "<image>\nAs an autonomous driving system, predict the vehicle's trajectory based on:\n"
-        "1. Visual perception from front camera view\n"
-        f"2. Historical motion context (last 4 timesteps):{history_str}\n"
-        f"3. Active navigation command: [{command_str.upper()}]\n"
-        "Output requirements:\n- Predict 8 future trajectory points\n"
-        "- Each point format: (x:float, y:float, heading:float)\n"
-        "- Use [PT, ...] to encapsulate the trajectory\n"
-        "- Maintain numerical precision to 2 decimal places"
-    )
-
-
 def _load_checkpoint_payload(path: Path) -> Any:
     try:
         payload = torch.load(path, map_location="cpu", weights_only=False)
@@ -85,6 +62,8 @@ def _load_checkpoint_payload(path: Path) -> Any:
 
 
 def _state_dict_from_payload(payload: Any, path: Path) -> Dict[str, torch.Tensor]:
+    if isinstance(payload, dict) and "full_state_dict" in payload and isinstance(payload["full_state_dict"], dict):
+        payload = payload["full_state_dict"]
     if isinstance(payload, dict) and "state_dict" in payload and isinstance(payload["state_dict"], dict):
         payload = payload["state_dict"]
     if not isinstance(payload, dict):
@@ -107,6 +86,8 @@ def _metadata_from_payload(payload: Any) -> Dict[str, Any]:
     cfg = payload.get("config")
     if isinstance(cfg, dict):
         metadata.update({f"config_{key}": value for key, value in cfg.items() if isinstance(key, str)})
+    if "checkpoint_schema" in payload:
+        metadata["checkpoint_schema"] = payload["checkpoint_schema"]
     return metadata
 
 
@@ -126,7 +107,11 @@ def load_two_expert_slots_with_report(
     slots = TwoExpertSoftSlots(config)
     if checkpoint is None:
         return slots, {"loaded_slot_keys": [], "skipped_slot_keys": [], "source_stage1_checkpoint": None}
-    state = _load_state_dict(checkpoint)
+    payload = _load_checkpoint_payload(checkpoint)
+    if isinstance(payload, dict) and isinstance(payload.get("two_expert_slots"), dict):
+        state = {str(key): value for key, value in payload["two_expert_slots"].items() if isinstance(value, torch.Tensor)}
+    else:
+        state = _state_dict_from_payload(payload, checkpoint)
     expected = slots.state_dict()
     filtered: Dict[str, torch.Tensor] = {}
     skipped: List[str] = []
@@ -249,12 +234,19 @@ def load_stage1_state_for_hidden_cache(
     args: argparse.Namespace,
 ) -> Tuple[TwoExpertSoftSlots, Dict[str, Any]]:
     payload = _load_checkpoint_payload(checkpoint) if checkpoint is not None else {}
-    state = _state_dict_from_payload(payload, checkpoint) if checkpoint is not None else {}
+    if checkpoint is not None:
+        try:
+            state = _state_dict_from_payload(payload, checkpoint)
+        except TypeError:
+            state = {}
+    else:
+        state = {}
     payload_metadata = _metadata_from_payload(payload)
     stage1_train_mode = _resolve_stage1_train_mode(payload_metadata, args)
     slots, slot_report = load_two_expert_slots_with_report(checkpoint, config)
     report: Dict[str, Any] = {
         **slot_report,
+        "checkpoint_schema": payload_metadata.get("checkpoint_schema"),
         "stage1_train_mode": stage1_train_mode,
         "loaded_lora_adapter": False,
         "loaded_lora_keys": [],
@@ -264,8 +256,11 @@ def load_stage1_state_for_hidden_cache(
     if backbone is None:
         return slots, report
     if stage1_train_mode == "lora":
-        if args.vlm_lora_adapter_dir is not None:
-            report.update(_apply_lora_adapter_dir(backbone, args.vlm_lora_adapter_dir))
+        adapter_dir = args.vlm_lora_adapter_dir
+        if adapter_dir is None and checkpoint is not None and payload_metadata.get("vlm_lora_adapter_dir"):
+            adapter_dir = checkpoint.parent / str(payload_metadata["vlm_lora_adapter_dir"])
+        if adapter_dir is not None:
+            report.update(_apply_lora_adapter_dir(backbone, adapter_dir))
         else:
             report.update(_load_lora_from_checkpoint_state(backbone, state))
         if not report.get("loaded_lora_adapter"):
@@ -274,7 +269,17 @@ def load_stage1_state_for_hidden_cache(
                 "Pass --vlm-lora-adapter-dir or save LoRA weights inside the Stage1 checkpoint."
             )
     elif stage1_train_mode in {"top_layers", "full"}:
-        report.update(_load_compatible_backbone_state(backbone, state))
+        trainable_state_path = None
+        if checkpoint is not None and payload_metadata.get("vlm_trainable_state_path"):
+            trainable_state_path = checkpoint.parent / str(payload_metadata["vlm_trainable_state_path"])
+        if trainable_state_path is not None:
+            if not trainable_state_path.is_file():
+                raise FileNotFoundError(f"Stage1 VLM trainable state file not found: {trainable_state_path}")
+            trainable_state = _load_state_dict(trainable_state_path)
+            report["loaded_vlm_trainable_state_path"] = str(trainable_state_path)
+        else:
+            trainable_state = state
+        report.update(_load_compatible_backbone_state(backbone, trainable_state))
         if not report.get("loaded_top_layer_keys"):
             raise RuntimeError(
                 f"Stage1 checkpoint metadata says train_mode={stage1_train_mode}, "
@@ -413,6 +418,8 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
             "loaded_top_layer_key_count": len(stage1_load_report.get("loaded_top_layer_keys", [])),
             "loaded_slot_keys": list(stage1_load_report.get("loaded_slot_keys", [])),
             "source_stage1_checkpoint": stage1_load_report.get("source_stage1_checkpoint"),
+            "checkpoint_schema": stage1_load_report.get("checkpoint_schema"),
+            "prompt_version": TWO_EXPERT_PROMPT_VERSION,
             "num_dyn_groups": 3,
             "tokens_per_group": 12,
             "num_geo_tokens": 12,
@@ -469,7 +476,7 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
             if "image_path_tensor" not in sample:
                 raise KeyError("two_expert hidden cache generation requires image_path_tensor in the base chunk.")
             item["image_path"] = decode_path_tensor(sample["image_path_tensor"])
-            item["prompt"] = build_prompt(sample)
+            item["prompt"] = build_two_expert_prompt(sample, allow_minimal_prompt=bool(args.allow_minimal_prompt))
         batch.append(item)
         if len(batch) >= int(args.batch_size):
             flush_batch()
@@ -571,6 +578,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-samples", type=int, default=None)
     parser.add_argument("--merge", action="store_true")
     parser.add_argument("--synthetic-smoke", action="store_true")
+    parser.add_argument("--allow-minimal-prompt", action="store_true")
     return parser.parse_args()
 
 

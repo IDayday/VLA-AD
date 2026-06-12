@@ -21,6 +21,7 @@ if [[ -n "${IMAGE_PATH:-}" ]]; then cmd+=(--image-path "${IMAGE_PATH}"); fi
 if [[ -n "${BASE_CACHE_ROOT:-}" ]]; then cmd+=(--base-cache-root "${BASE_CACHE_ROOT}"); fi
 if [[ -n "${SAMPLE_TOKEN:-}" ]]; then cmd+=(--sample-token "${SAMPLE_TOKEN}"); fi
 if [[ -n "${MAX_RECORDS:-}" ]]; then cmd+=(--max-records "${MAX_RECORDS}"); fi
+if [[ "${ALLOW_MINIMAL_PROMPT:-0}" == "1" ]]; then cmd+=(--allow-minimal-prompt); fi
 
 printf '%q ' "${cmd[@]}" >"${REPORT_DIR}/internvl_soft_slot_smoke.command"
 printf '\n' >>"${REPORT_DIR}/internvl_soft_slot_smoke.command"

@@ -44,6 +44,7 @@ if [[ "${ALLOW_EVAL_TEACHER_TARGETS:-0}" == "1" ]]; then cmd+=(--allow-eval-teac
 if [[ "${OVERWRITE:-0}" == "1" ]]; then cmd+=(--overwrite); fi
 if [[ -n "${MAX_SAMPLES:-}" ]]; then cmd+=(--max-samples "${MAX_SAMPLES}"); fi
 if [[ "${SYNTHETIC_SMOKE:-0}" == "1" ]]; then cmd+=(--synthetic-smoke); fi
+if [[ "${ALLOW_MINIMAL_PROMPT:-0}" == "1" ]]; then cmd+=(--allow-minimal-prompt); fi
 
 printf '%q ' "${cmd[@]}" >>"${COMMANDS_LOG}"; printf '\n' >>"${COMMANDS_LOG}"
 if [[ "${RUN_CACHE:-0}" != "1" ]]; then

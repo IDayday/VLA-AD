@@ -35,4 +35,14 @@ if [[ "${RUN_TRAIN:-0}" != "1" ]]; then
   echo "RUN_TRAIN is not 1; dry-run only. Command written to ${COMMANDS_LOG}"
   exit 0
 fi
+if [[ "${ALLOW_SKIP_READINESS_GATE:-0}" != "1" ]]; then
+  if [[ -z "${READINESS_GATE_JSON:-}" ]]; then
+    echo "READINESS_GATE_JSON is required for Stage2 full training unless ALLOW_SKIP_READINESS_GATE=1." >&2
+    exit 2
+  fi
+  "${PYTHON_BIN}" -c 'import json,sys; p=sys.argv[1]; d=json.load(open(p)); ok=d.get("status")=="READY" and d.get("ok") is True; sys.exit(0 if ok else 1)' "${READINESS_GATE_JSON}" || {
+    echo "Readiness gate is not READY: ${READINESS_GATE_JSON}" >&2
+    exit 2
+  }
+fi
 "${cmd[@]}" >"${TRAIN_LOG}" 2>&1

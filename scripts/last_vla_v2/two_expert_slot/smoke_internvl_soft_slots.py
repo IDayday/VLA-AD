@@ -17,6 +17,10 @@ if str(REPO_ROOT) not in sys.path:
 from navsim.agents.recogdrive.expert_cache import load_sample, write_json  # noqa: E402
 from navsim.agents.recogdrive.recogdrive_backbone import RecogDriveBackbone  # noqa: E402
 from navsim.agents.recogdrive.two_expert_slots import TwoExpertSlotConfig, TwoExpertSoftSlots  # noqa: E402
+from scripts.last_vla_v2.two_expert_slot.two_expert_prompt_utils import (  # noqa: E402
+    build_minimal_two_expert_prompt,
+    build_two_expert_prompt,
+)
 from scripts.last_vla_v2.two_expert_slot.two_expert_cache_utils import iter_indexed_records  # noqa: E402
 
 
@@ -35,36 +39,41 @@ def decode_path_tensor(path_tensor: torch.Tensor) -> str:
     return "".join(chars)
 
 
-def resolve_sample_image(args: argparse.Namespace) -> Optional[Path]:
+def resolve_sample(args: argparse.Namespace) -> tuple[Optional[Path], Optional[Dict[str, object]]]:
     if args.image_path is not None:
-        return Path(args.image_path)
+        return Path(args.image_path), None
     if args.base_cache_root is None:
-        return None
+        return None, None
     for _, sample_path, record in iter_indexed_records(args.base_cache_root, max_records=args.max_records):
         if args.sample_token and str(record.get("sample_token") or sample_path.stem) != str(args.sample_token):
             continue
         sample = load_sample(sample_path)
         if "image_path_tensor" not in sample:
             raise KeyError(f"Base cache sample {sample_path} missing image_path_tensor.")
-        return Path(decode_path_tensor(sample["image_path_tensor"]))
+        return Path(decode_path_tensor(sample["image_path_tensor"])), sample
     raise FileNotFoundError(f"No matching sample image found under {args.base_cache_root}.")
 
 
-def load_smoke_pixels(args: argparse.Namespace, device: torch.device) -> torch.Tensor:
-    image_path = resolve_sample_image(args)
+def load_smoke_pixels_and_prompt(args: argparse.Namespace, device: torch.device) -> tuple[torch.Tensor, str]:
+    image_path, sample = resolve_sample(args)
+    prompt = (
+        build_two_expert_prompt(sample, allow_minimal_prompt=bool(args.allow_minimal_prompt))
+        if sample is not None
+        else build_minimal_two_expert_prompt()
+    )
     if image_path is None:
-        return torch.randn(1, 3, int(args.image_size), int(args.image_size), device=device, dtype=torch.float32)
+        return torch.randn(1, 3, int(args.image_size), int(args.image_size), device=device, dtype=torch.float32), prompt
     from navsim.agents.recogdrive.utils.internvl_preprocess import load_image
 
-    return load_image(str(image_path), max_num=int(args.max_image_patches)).to(device=device, dtype=torch.float32)
+    return load_image(str(image_path), max_num=int(args.max_image_patches)).to(device=device, dtype=torch.float32), prompt
 
 
 def run_smoke(args: argparse.Namespace) -> Dict[str, object]:
     device = torch.device(args.device)
     backbone = RecogDriveBackbone(model_type="internvl", checkpoint_path=str(args.vlm_path), device=str(device))
     slots = TwoExpertSoftSlots(TwoExpertSlotConfig(vlm_hidden_dim=int(args.vlm_hidden_dim))).to(device)
-    questions = ["<image>\nPredict the ego vehicle trajectory."]
-    pixel_values = load_smoke_pixels(args, device)
+    pixel_values, prompt = load_smoke_pixels_and_prompt(args, device)
+    questions = [prompt]
     zero_values = torch.zeros_like(pixel_values)
     num_patches = int(pixel_values.shape[0])
 
@@ -130,6 +139,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-image-patches", type=int, default=12)
     parser.add_argument("--threshold", type=float, default=1e-6)
     parser.add_argument("--output-json", type=Path, default=None)
+    parser.add_argument("--allow-minimal-prompt", action="store_true")
     return parser.parse_args()
 
 

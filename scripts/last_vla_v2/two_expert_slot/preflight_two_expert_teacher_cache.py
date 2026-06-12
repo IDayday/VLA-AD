@@ -78,7 +78,7 @@ def preflight(jepa_root: Path, vggt_root: Path, *, strict: bool, max_records: Op
         if fallback_vggt:
             errors.append(f"strict_mode_vggt_fallback_count:{fallback_vggt}")
 
-    teacher_status = "production_teacher_ok" if strict and not errors else "dev_fallback_not_for_final"
+    teacher_status = "strict_production_teacher" if strict and not errors else "dev_fallback_not_for_final"
     return {
         "ok": not errors,
         "teacher_status": teacher_status,

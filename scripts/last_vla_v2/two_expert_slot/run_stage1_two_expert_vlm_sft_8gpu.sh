@@ -45,10 +45,28 @@ fi
 if [[ "${ALLOW_DEV_FALLBACK_TEACHERS:-0}" == "1" ]]; then
   cmd+=(--allow-dev-fallback-teachers)
 fi
+if [[ "${ALLOW_MINIMAL_PROMPT:-0}" == "1" ]]; then
+  cmd+=(--allow-minimal-prompt)
+fi
+if [[ "${SAVE_FULL_STAGE1_STATE:-0}" == "1" ]]; then
+  cmd+=(--save-full-stage1-state)
+fi
+
+echo "two_expert prompt version: two_expert_slot_prompt_v1" >>"${COMMANDS_LOG}"
 
 printf '%q ' "${cmd[@]}" >>"${COMMANDS_LOG}"; printf '\n' >>"${COMMANDS_LOG}"
 if [[ "${RUN_TRAIN:-0}" != "1" ]]; then
   echo "RUN_TRAIN is not 1; dry-run only. Command written to ${COMMANDS_LOG}"
   exit 0
+fi
+if [[ "${ALLOW_SKIP_READINESS_GATE:-0}" != "1" ]]; then
+  if [[ -z "${READINESS_GATE_JSON:-}" ]]; then
+    echo "READINESS_GATE_JSON is required for Stage1 full training unless ALLOW_SKIP_READINESS_GATE=1." >&2
+    exit 2
+  fi
+  "${PYTHON_BIN}" -c 'import json,sys; p=sys.argv[1]; d=json.load(open(p)); ok=d.get("status")=="READY" and d.get("ok") is True; sys.exit(0 if ok else 1)' "${READINESS_GATE_JSON}" || {
+    echo "Readiness gate is not READY: ${READINESS_GATE_JSON}" >&2
+    exit 2
+  }
 fi
 "${cmd[@]}" >"${TRAIN_LOG}" 2>&1

@@ -59,7 +59,7 @@ def test_preflight_loads_relative_and_absolute_index_paths(tmp_path):
     report = preflight(jepa, vggt, strict=True)
 
     assert report["ok"] is True
-    assert report["teacher_status"] == "production_teacher_ok"
+    assert report["teacher_status"] == "strict_production_teacher"
     assert report["vggt_feature_dims"] == [768]
 
 

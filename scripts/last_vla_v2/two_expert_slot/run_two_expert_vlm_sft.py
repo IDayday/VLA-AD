@@ -25,6 +25,10 @@ from navsim.agents.recogdrive.vlm_lora_utils import (  # noqa: E402
     resolve_lora_target_modules,
     validate_lora_scope_audit,
 )
+from scripts.last_vla_v2.two_expert_slot.two_expert_prompt_utils import (  # noqa: E402
+    TWO_EXPERT_PROMPT_VERSION,
+    build_two_expert_prompt,
+)
 from scripts.last_vla_v2.two_expert_slot.two_expert_cache_utils import iter_indexed_records, load_path_index  # noqa: E402
 
 
@@ -100,16 +104,6 @@ def resolve_vggt_feature_dim(vggt_root: Path, vggt_index: Dict[str, Path], overr
     return int(next(iter(dims)))
 
 
-def build_prompt(sample: Dict[str, Any]) -> str:
-    command = sample.get("high_command_one_hot", torch.tensor([0.0, 1.0, 0.0])).float()
-    command_names = ["turn left", "go straight", "turn right"]
-    command_str = command_names[int(torch.argmax(command).item())]
-    return (
-        "<image>\nPredict the ego vehicle trajectory for the next 4 seconds. "
-        f"Navigation command: {command_str}."
-    )
-
-
 class TwoExpertStage1Dataset(Dataset):
     def __init__(
         self,
@@ -120,6 +114,7 @@ class TwoExpertStage1Dataset(Dataset):
         max_samples: Optional[int] = None,
         teacher_lru_size: int = 0,
         require_strict_teachers: bool = True,
+        allow_minimal_prompt: bool = False,
     ) -> None:
         self.items: List[Tuple[Path, str]] = []
         teacher_tokens = set(jepa_index).intersection(vggt_index)
@@ -133,6 +128,7 @@ class TwoExpertStage1Dataset(Dataset):
         self.vggt_index = vggt_index
         self.teacher_lru_size = max(0, int(teacher_lru_size))
         self.require_strict_teachers = bool(require_strict_teachers)
+        self.allow_minimal_prompt = bool(allow_minimal_prompt)
         self._teacher_cache: OrderedDict[Tuple[str, str], Dict[str, Any]] = OrderedDict()
 
     def __len__(self) -> int:
@@ -181,7 +177,7 @@ class TwoExpertStage1Dataset(Dataset):
         return {
             "sample_token": token,
             "image_path": decode_path_tensor(sample["image_path_tensor"]),
-            "prompt": build_prompt(sample),
+            "prompt": build_two_expert_prompt(sample, allow_minimal_prompt=self.allow_minimal_prompt),
             "status_feature": sample["status_feature"].float(),
             "high_command_one_hot": sample["high_command_one_hot"].float(),
             "history_trajectory": sample["history_trajectory"].float(),
@@ -259,11 +255,17 @@ def apply_lora(backbone: RecogDriveBackbone, args: argparse.Namespace) -> Dict[s
     return {"target_modules": target_modules, "intended_audit": audit, "actual_audit": actual}
 
 
-def save_stage1_outputs(module: TwoExpertVLMSFTModule, output_dir: Path, metadata: Dict[str, Any]) -> None:
+def save_stage1_outputs(
+    module: TwoExpertVLMSFTModule,
+    output_dir: Path,
+    metadata: Dict[str, Any],
+    *,
+    save_full_stage1_state: bool = False,
+) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
-    torch.save({"state_dict": module.state_dict(), "stage1_metadata": metadata}, output_dir / "stage1.ckpt")
     adapters_dir = output_dir / "adapters"
     adapters_dir.mkdir(exist_ok=True)
+    metadata["checkpoint_schema"] = "two_expert_stage1_compact_v1"
     torch.save(module.two_expert_slots.state_dict(), adapters_dir / "two_expert_slots.pt")
     torch.save(
         {
@@ -277,6 +279,7 @@ def save_stage1_outputs(module: TwoExpertVLMSFTModule, output_dir: Path, metadat
         lora_dir = adapters_dir / "vlm_lora"
         if hasattr(module.backbone.model, "save_pretrained"):
             module.backbone.model.save_pretrained(str(lora_dir))
+            metadata["vlm_lora_adapter_dir"] = str(lora_dir.relative_to(output_dir))
         else:
             raise RuntimeError("train_mode=lora but backbone.model cannot save_pretrained().")
     if metadata["train_mode"] in {"top_layers", "full"}:
@@ -287,6 +290,21 @@ def save_stage1_outputs(module: TwoExpertVLMSFTModule, output_dir: Path, metadat
         }
         torch.save(state, adapters_dir / "vlm_trainable_state.pt")
         metadata["saved_vlm_trainable_key_count"] = len(state)
+        metadata["vlm_trainable_state_path"] = str((adapters_dir / "vlm_trainable_state.pt").relative_to(output_dir))
+    checkpoint = {
+        "checkpoint_schema": metadata["checkpoint_schema"],
+        "two_expert_slots": module.two_expert_slots.state_dict(),
+        "dynamic_adapter": module.dynamic_adapter.state_dict(),
+        "geometry_adapter": module.geometry_adapter.state_dict(),
+        "trajectory_probe": module.trajectory_probe.state_dict(),
+        "stage1_metadata": metadata,
+    }
+    if save_full_stage1_state:
+        checkpoint["full_state_dict"] = module.state_dict()
+        metadata["save_full_stage1_state"] = True
+    else:
+        metadata["save_full_stage1_state"] = False
+    torch.save(checkpoint, output_dir / "stage1.ckpt")
     write_json(output_dir / "stage1_metadata.json", metadata)
     write_json(output_dir / "trainable_parameter_report.json", module.trainable_parameter_report())
 
@@ -342,6 +360,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--precision", choices=("fp32", "bf16-mixed", "16-mixed", "fp16-mixed"), default="bf16-mixed")
     parser.add_argument("--teacher-lru-size", type=int, default=0)
     parser.add_argument("--allow-dev-fallback-teachers", action="store_true")
+    parser.add_argument("--allow-minimal-prompt", action="store_true")
+    parser.add_argument("--save-full-stage1-state", action="store_true")
     parser.add_argument("--max-image-patches", type=int, default=12)
     parser.add_argument("--device", default=None)
     parser.add_argument("--lora-preset", default="attention_mlp")
@@ -364,6 +384,7 @@ def main() -> int:
             "entrypoint": "run_two_expert_vlm_sft.py",
             "train_mode": args.train_mode,
             "strict_teachers_required": not bool(args.allow_dev_fallback_teachers),
+            "prompt_version": TWO_EXPERT_PROMPT_VERSION,
             "base_chunk_root": str(args.base_chunk_root),
             "teacher_cache_root": str(args.teacher_cache_root),
             "message": "Set RUN_TRAIN=1 to start Stage1 VLM SFT.",
@@ -391,6 +412,7 @@ def main() -> int:
         max_samples=args.max_samples,
         teacher_lru_size=int(args.teacher_lru_size),
         require_strict_teachers=not bool(args.allow_dev_fallback_teachers),
+        allow_minimal_prompt=bool(args.allow_minimal_prompt),
     )
     sampler = torch.utils.data.distributed.DistributedSampler(dataset, shuffle=True) if distributed else None
     dataloader = DataLoader(
@@ -449,6 +471,7 @@ def main() -> int:
             "train_mode": args.train_mode,
             "teacher_loading": "lazy_index_paths",
             "strict_teachers_required": not bool(args.allow_dev_fallback_teachers),
+            "prompt_version": TWO_EXPERT_PROMPT_VERSION,
             "vggt_feature_dim": int(vggt_dim),
             "jepa_cache_root": str(jepa_root),
             "vggt_cache_root": str(vggt_root),
@@ -459,7 +482,12 @@ def main() -> int:
             "vlm_path": str(args.vlm_path),
             "lora_report": lora_report,
         }
-        save_stage1_outputs(train_module, args.output_dir, metadata)
+        save_stage1_outputs(
+            train_module,
+            args.output_dir,
+            metadata,
+            save_full_stage1_state=bool(args.save_full_stage1_state),
+        )
         write_json(args.output_dir / "metrics.json", metrics)
     if distributed:
         torch.distributed.destroy_process_group()
