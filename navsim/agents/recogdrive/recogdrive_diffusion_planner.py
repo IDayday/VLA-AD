@@ -985,6 +985,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
     def _init_offline_rl(self, cfg: OfflineRLConfig, stage3_cfg: GRPOConfig) -> None:
         self.offline_rl_cfg = cfg
+        self._init_stage3_runtime(stage3_cfg)
         self._init_stage3_oracle(stage3_cfg)
         if not hasattr(self, "old_policy"):
             reference_required = (
@@ -1003,8 +1004,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             self.old_policy = copy.deepcopy(self)
             self._freeze_policy(self.old_policy)
 
-    def _init_grpo(self, cfg: GRPOConfig):
-        """Initializes components and hyperparameters for GRPO training."""
+    def _init_stage3_runtime(self, cfg: GRPOConfig) -> None:
+        """Initializes Stage3 sampling/runtime hyperparameters shared by GRPO and AWAC/IQL."""
         self.denoised_clip_value = cfg.denoised_clip_value
         self.eval_randn_clip_value = cfg.eval_randn_clip_value
         self.randn_clip_value = cfg.randn_clip_value
@@ -1066,9 +1067,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         ):
             setattr(self, name, getattr(cfg, name))
         self.grpo_update_counter = 0
-        
+
+    def _init_grpo(self, cfg: GRPOConfig):
+        """Initializes components and hyperparameters for GRPO training."""
+        self._init_stage3_runtime(cfg)
+
         self._init_stage3_oracle(cfg)
-        
+
         self._safe_load_reference_policy(cfg.reference_policy_checkpoint)
 
         behavior_policy = None
