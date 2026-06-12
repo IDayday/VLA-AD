@@ -1,0 +1,282 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+PYTHON_BIN="${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}"
+TORCHRUN_BIN="${TORCHRUN_BIN:-/root/miniconda3/envs/navsim/bin/torchrun}"
+NAVSIM_DATA_ROOT="${NAVSIM_DATA_ROOT:-/mnt/navsim}"
+ARTIFACT_ROOT="${ARTIFACT_ROOT:-/mnt/project/VLA-AD}"
+RUN_NAME="${RUN_NAME:-stage3_rl_2b_safe_diffgrpo_online_$(date -u +%Y%m%dT%H%M%SZ)}"
+OUT_ROOT="${OUT_ROOT:-${ARTIFACT_ROOT}/outputs/${RUN_NAME}}"
+
+IL_CHECKPOINT="${IL_CHECKPOINT:-${RECOGDRIVE_IL_CHECKPOINT:-${ARTIFACT_ROOT}/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt}}"
+VLM_PATH="${VLM_PATH:-${RECOGDRIVE_VLM_PATH:-${ARTIFACT_ROOT}/checkpoints/recogdrive/ReCogDrive-VLM-2B}}"
+METRIC_CACHE_DIR="${METRIC_CACHE_DIR:-${RECOGDRIVE_METRIC_CACHE_DIR:-${ARTIFACT_ROOT}/cache/metric_cache_train_full}}"
+HIDDEN_CACHE_DIR="${HIDDEN_CACHE_DIR:-${RECOGDRIVE_HIDDEN_CACHE_DIR:-${ARTIFACT_ROOT}/cache/recogdrive_agent_cache_dir_train_2b}}"
+NAVSIM_LOG_PATH="${NAVSIM_LOG_PATH:-${NAVSIM_DATA_ROOT}/trainval_navsim_logs/trainval}"
+SENSOR_BLOBS_PATH="${SENSOR_BLOBS_PATH:-${NAVSIM_DATA_ROOT}/trainval_sensor_blobs/trainval}"
+
+CACHE_MODE="${CACHE_MODE:-online}"  # online or offline
+GPUS="${GPUS:-8}"
+GPUS_PER_NODE="${GPUS_PER_NODE:-8}"
+NODES="${NODES:-1}"
+NODE_RANK="${NODE_RANK:-${MLP_ROLE_INDEX:-0}}"
+MASTER_ADDR="${MASTER_ADDR:-${MLP_WORKER_0_HOST:-127.0.0.1}}"
+MASTER_PORT="${MASTER_PORT:-${MLP_WORKER_0_PORT:-63669}}"
+KILL_GPU_STRESS="${KILL_GPU_STRESS:-0}"
+DRY_RUN="${DRY_RUN:-0}"
+
+# Stage 3 RL hyperparameters for the Safe DiffGRPO continuation.
+STAGE3_LR="${LR:-2e-4}"
+STAGE3_MAX_EPOCHS="${MAX_EPOCHS:-20}"
+STAGE3_BATCH_SIZE="${BATCH_SIZE:-8}"
+STAGE3_ACCUMULATE_GRAD_BATCHES="${ACCUMULATE_GRAD_BATCHES:-1}"
+STAGE3_GRPO_SAMPLE_TIME="${GRPO_SAMPLE_TIME:-16}"
+STAGE3_BC_ANNEAL="${BC_ANNEAL:-true}"
+STAGE3_BC_COEFF_START="${BC_COEFF_START:-0.10}"
+STAGE3_BC_COEFF_END="${BC_COEFF_END:-0.05}"
+STAGE3_BC_ANNEAL_EPOCHS="${BC_ANNEAL_EPOCHS:-5}"
+STAGE3_GRPO_SCHEDULER_EPOCHS="${GRPO_SCHEDULER_EPOCHS:-${STAGE3_MAX_EPOCHS}}"
+STAGE3_GRPO_SCHEDULER_WARMUP_EPOCHS="${GRPO_SCHEDULER_WARMUP_EPOCHS:-0}"
+STAGE3_GRPO_SCHEDULER_MIN_LR="${GRPO_SCHEDULER_MIN_LR:-1e-5}"
+STAGE3_TRAIN_TEST_SPLIT="navtrain"
+STAGE3_EXPERIMENT_NAME="training_recogdrive_agent"
+
+export NUPLAN_MAP_VERSION="${NUPLAN_MAP_VERSION:-nuplan-maps-v1.0}"
+export NUPLAN_MAPS_ROOT="${NUPLAN_MAPS_ROOT:-${NAVSIM_DATA_ROOT}/maps}"
+export NAVSIM_EXP_ROOT="${NAVSIM_EXP_ROOT:-${OUT_ROOT}/hydra}"
+export NAVSIM_DEVKIT_ROOT="${NAVSIM_DEVKIT_ROOT:-${REPO_ROOT}}"
+export OPENSCENE_DATA_ROOT="${OPENSCENE_DATA_ROOT:-${NAVSIM_DATA_ROOT}}"
+export NCCL_IB_DISABLE="${NCCL_IB_DISABLE:-0}"
+export NCCL_P2P_DISABLE="${NCCL_P2P_DISABLE:-0}"
+export NCCL_SHM_DISABLE="${NCCL_SHM_DISABLE:-0}"
+export CUDA_LAUNCH_BLOCKING="${CUDA_LAUNCH_BLOCKING:-1}"
+export PYTORCH_CUDA_ALLOC_CONF="${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}"
+export PYTHONPATH="${REPO_ROOT}:${PYTHONPATH:-}"
+export PYTHONUNBUFFERED=1
+
+if [[ "${CACHE_MODE}" != "online" && "${CACHE_MODE}" != "offline" ]]; then
+  echo "CACHE_MODE must be online or offline, got: ${CACHE_MODE}" >&2
+  exit 2
+fi
+if [[ ! -x "${PYTHON_BIN}" ]]; then
+  echo "Python not found or not executable: ${PYTHON_BIN}" >&2
+  exit 2
+fi
+if [[ ! -x "${TORCHRUN_BIN}" ]]; then
+  echo "torchrun not found or not executable: ${TORCHRUN_BIN}" >&2
+  exit 2
+fi
+if [[ ! -f "${IL_CHECKPOINT}" ]]; then
+  echo "Stage 2 IL checkpoint does not exist: ${IL_CHECKPOINT}" >&2
+  exit 2
+fi
+if [[ ! -d "${VLM_PATH}" ]]; then
+  echo "VLM path does not exist: ${VLM_PATH}" >&2
+  exit 2
+fi
+if [[ ! -d "${NUPLAN_MAPS_ROOT}" ]]; then
+  echo "NUPLAN_MAPS_ROOT does not exist: ${NUPLAN_MAPS_ROOT}" >&2
+  exit 2
+fi
+
+"${PYTHON_BIN}" - <<PY
+import sys
+sys.path.insert(0, "${REPO_ROOT}")
+from pathlib import Path
+from navsim.common.dataloader import MetricCacheLoader
+
+cache_path = Path("${METRIC_CACHE_DIR}")
+try:
+    loader = MetricCacheLoader(cache_path)
+except Exception as exc:
+    raise SystemExit(f"Metric cache is not ready at {cache_path}: {exc}")
+count = len(loader)
+if count <= 0:
+    raise SystemExit(f"Metric cache is empty at {cache_path}")
+print(f"metric_cache_count={count}")
+PY
+
+"${PYTHON_BIN}" - <<PY
+import sys
+import torch
+required = int("${GPUS_PER_NODE}")
+count = torch.cuda.device_count()
+print(f"cuda_device_count={count}")
+if count < required:
+    raise SystemExit(f"Need at least {required} visible CUDA devices, got {count}")
+PY
+
+mkdir -p "${OUT_ROOT}"
+
+HYDRA_ARGS=(
+  "agent=recogdrive_agent"
+  "agent.lr=${STAGE3_LR}"
+  "agent.vlm_path=${VLM_PATH}"
+  "agent.cam_type=single"
+  "agent.grpo=True"
+  "agent.grpo_sample_time=${STAGE3_GRPO_SAMPLE_TIME}"
+  "agent.bc_anneal=${STAGE3_BC_ANNEAL}"
+  "agent.bc_coeff_start=${STAGE3_BC_COEFF_START}"
+  "agent.bc_coeff_end=${STAGE3_BC_COEFF_END}"
+  "agent.bc_anneal_epochs=${STAGE3_BC_ANNEAL_EPOCHS}"
+  "agent.grpo_scheduler_epochs=${STAGE3_GRPO_SCHEDULER_EPOCHS}"
+  "agent.grpo_scheduler_warmup_epochs=${STAGE3_GRPO_SCHEDULER_WARMUP_EPOCHS}"
+  "agent.grpo_scheduler_min_lr=${STAGE3_GRPO_SCHEDULER_MIN_LR}"
+  "agent.cache_mode=False"
+  "agent.vlm_type=internvl"
+  "agent.checkpoint_path=${IL_CHECKPOINT}"
+  "agent.dit_type=small"
+  "agent.vlm_size=small"
+  "agent.sampling_method=ddim"
+  "agent.metric_cache_path=${METRIC_CACHE_DIR}"
+  "agent.reference_policy_checkpoint=${IL_CHECKPOINT}"
+  "trainer.params.max_epochs=${STAGE3_MAX_EPOCHS}"
+  "trainer.params.num_nodes=${NODES}"
+  "trainer.params.devices=${GPUS_PER_NODE}"
+  "trainer.params.strategy=ddp_find_unused_parameters_true"
+  "trainer.params.accumulate_grad_batches=${STAGE3_ACCUMULATE_GRAD_BATCHES}"
+  "dataloader.params.batch_size=${STAGE3_BATCH_SIZE}"
+  "experiment_name=${STAGE3_EXPERIMENT_NAME}"
+  "train_test_split=${STAGE3_TRAIN_TEST_SPLIT}"
+  "force_cache_computation=False"
+)
+
+if [[ "${CACHE_MODE}" == "offline" ]]; then
+  if [[ ! -d "${HIDDEN_CACHE_DIR}" ]]; then
+    echo "HIDDEN_CACHE_DIR does not exist for offline mode: ${HIDDEN_CACHE_DIR}" >&2
+    exit 2
+  fi
+  if ! find "${HIDDEN_CACHE_DIR}" -name 'internvl_feature.gz' -print -quit | grep -q .; then
+    echo "No internvl_feature.gz files found under HIDDEN_CACHE_DIR: ${HIDDEN_CACHE_DIR}" >&2
+    exit 2
+  fi
+  HYDRA_ARGS+=(
+    "agent.cache_hidden_state=True"
+    "cache_path=${HIDDEN_CACHE_DIR}"
+    "use_cache_without_dataset=True"
+  )
+else
+  if [[ ! -d "${NAVSIM_LOG_PATH}" ]]; then
+    echo "NAVSIM_LOG_PATH does not exist for online mode: ${NAVSIM_LOG_PATH}" >&2
+    exit 2
+  fi
+  if [[ ! -d "${SENSOR_BLOBS_PATH}" ]]; then
+    echo "SENSOR_BLOBS_PATH does not exist for online mode: ${SENSOR_BLOBS_PATH}" >&2
+    exit 2
+  fi
+  HYDRA_ARGS+=(
+    "agent.cache_hidden_state=False"
+    "cache_path=null"
+    "use_cache_without_dataset=False"
+    "navsim_log_path=${NAVSIM_LOG_PATH}"
+    "sensor_blobs_path=${SENSOR_BLOBS_PATH}"
+  )
+fi
+
+if [[ -n "${MAX_SCENES:-}" ]]; then
+  HYDRA_ARGS+=("train_test_split.scene_filter.max_scenes=${MAX_SCENES}")
+fi
+
+CMD=(
+  "${TORCHRUN_BIN}"
+  "--nnodes=${NODES}"
+  "--node_rank=${NODE_RANK}"
+  "--master_addr=${MASTER_ADDR}"
+  "--nproc_per_node=${GPUS_PER_NODE}"
+  "--master_port=${MASTER_PORT}"
+  "${REPO_ROOT}/navsim/planning/script/run_training_recogdrive_rl.py"
+  "${HYDRA_ARGS[@]}"
+)
+
+{
+  echo "repo_root=${REPO_ROOT}"
+  echo "out_root=${OUT_ROOT}"
+  echo "cache_mode=${CACHE_MODE}"
+  echo "il_checkpoint=${IL_CHECKPOINT}"
+  echo "vlm_path=${VLM_PATH}"
+  echo "metric_cache_dir=${METRIC_CACHE_DIR}"
+  echo "hidden_cache_dir=${HIDDEN_CACHE_DIR}"
+  echo "navsim_log_path=${NAVSIM_LOG_PATH}"
+  echo "sensor_blobs_path=${SENSOR_BLOBS_PATH}"
+  echo "gpus_per_node=${GPUS_PER_NODE}"
+  echo "stage3_lr=${STAGE3_LR}"
+  echo "stage3_max_epochs=${STAGE3_MAX_EPOCHS}"
+  echo "stage3_batch_size=${STAGE3_BATCH_SIZE}"
+  echo "stage3_accumulate_grad_batches=${STAGE3_ACCUMULATE_GRAD_BATCHES}"
+  echo "stage3_grpo_sample_time=${STAGE3_GRPO_SAMPLE_TIME}"
+  echo "stage3_bc_anneal=${STAGE3_BC_ANNEAL}"
+  echo "stage3_bc_coeff_start=${STAGE3_BC_COEFF_START}"
+  echo "stage3_bc_coeff_end=${STAGE3_BC_COEFF_END}"
+  echo "stage3_bc_anneal_epochs=${STAGE3_BC_ANNEAL_EPOCHS}"
+  echo "stage3_grpo_scheduler_epochs=${STAGE3_GRPO_SCHEDULER_EPOCHS}"
+  echo "stage3_grpo_scheduler_warmup_epochs=${STAGE3_GRPO_SCHEDULER_WARMUP_EPOCHS}"
+  echo "stage3_grpo_scheduler_min_lr=${STAGE3_GRPO_SCHEDULER_MIN_LR}"
+  echo "max_scenes=${MAX_SCENES:-full}"
+  printf 'command='
+  printf '%q ' "${CMD[@]}"
+  printf '\n'
+} > "${OUT_ROOT}/resolved_command.txt"
+
+if [[ "${DRY_RUN}" == "1" ]]; then
+  cat "${OUT_ROOT}/resolved_command.txt"
+  exit 0
+fi
+
+if [[ "${KILL_GPU_STRESS}" == "1" ]]; then
+  STRESS_PIDS="$(pgrep -f '^python /mnt/project/gpu_stress.py$' || true)"
+  if [[ -n "${STRESS_PIDS}" ]]; then
+    echo "Killing gpu stress parent pids: ${STRESS_PIDS}"
+    kill ${STRESS_PIDS}
+    sleep 5
+  fi
+  ORPHAN_STRESS_PIDS="$(
+    "${PYTHON_BIN}" - <<'PY' || true
+import os
+import subprocess
+
+try:
+    query = subprocess.check_output(
+        [
+            "nvidia-smi",
+            "--query-compute-apps=pid,used_memory",
+            "--format=csv,noheader,nounits",
+        ],
+        text=True,
+    )
+except Exception:
+    raise SystemExit(0)
+
+pids = []
+for line in query.splitlines():
+    parts = [part.strip() for part in line.split(",")]
+    if len(parts) != 2:
+        continue
+    try:
+        pid = int(parts[0])
+        used_mib = int(parts[1])
+    except ValueError:
+        continue
+    if used_mib < 50000:
+        continue
+    try:
+        with open(f"/proc/{pid}/cmdline", "rb") as f:
+            cmdline = f.read().replace(b"\0", b" ").decode("utf-8", "ignore")
+    except OSError:
+        continue
+    if "multiprocessing.spawn" in cmdline and "--multiprocessing-fork" in cmdline:
+        pids.append(str(pid))
+
+if pids:
+    print(" ".join(sorted(set(pids))))
+PY
+  )"
+  if [[ -n "${ORPHAN_STRESS_PIDS}" ]]; then
+    echo "Killing orphan gpu stress worker pids: ${ORPHAN_STRESS_PIDS}"
+    kill ${ORPHAN_STRESS_PIDS}
+    sleep 5
+  fi
+fi
+
+exec "${CMD[@]}"

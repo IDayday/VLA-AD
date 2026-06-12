@@ -109,6 +109,11 @@ class ReCogDriveAgent(AbstractAgent):
         cache_hidden_state: bool = True, 
         lr: float = 1e-4,
         grpo: bool = False,
+        grpo_sample_time: int = 8,
+        bc_anneal: bool = False,
+        bc_coeff_start: float = 0.1,
+        bc_coeff_end: float = 0.1,
+        bc_anneal_epochs: int = 1,
         metric_cache_path: Optional[str] = '', 
         reference_policy_checkpoint: Optional[str] = '', 
         vlm_size: Optional[str] = 'small', 
@@ -256,11 +261,6 @@ class ReCogDriveAgent(AbstractAgent):
         last_vla_vlm_lora_vision_last_n: int = 0,
         last_vla_lora_allow_mixed_scope: bool = False,
         last_vla_lora_allow_all_linear_global: bool = False,
-        lr_vlm_lora: Optional[float] = 1e-5,
-        weight_decay_vlm_lora: float = 0.0,
-        lr_last_vla_cot: Optional[float] = 1e-4,
-        weight_decay_last_vla_cot: float = 1e-4,
-        last_vla_hidden_anchor_weight: float = 0.01,
         use_two_expert_slots: bool = False,
         two_expert_cache_mode: bool = True,
         two_expert_slot_mode: str = "vlm_soft_slots",
@@ -274,6 +274,11 @@ class ReCogDriveAgent(AbstractAgent):
         two_expert_num_dyn_groups: int = 3,
         two_expert_dyn_tokens_per_group: int = 12,
         two_expert_num_geo_tokens: int = 12,
+        lr_vlm_lora: Optional[float] = 1e-5,
+        weight_decay_vlm_lora: float = 0.0,
+        lr_last_vla_cot: Optional[float] = 1e-4,
+        weight_decay_last_vla_cot: float = 1e-4,
+        last_vla_hidden_anchor_weight: float = 0.01,
         last_vla_hidden_anchor_mode: str = "summary_cosine",
         last_vla_hidden_anchor_every_n_steps: int = 4,
         last_vla_log_lora_diagnostics: bool = True,
@@ -286,6 +291,9 @@ class ReCogDriveAgent(AbstractAgent):
         scheduler_epochs: int = 200,
         scheduler_warmup_epochs: int = 3,
         scheduler_min_lr: float = 1e-6,
+        grpo_scheduler_epochs: int = 10,
+        grpo_scheduler_warmup_epochs: int = 0,
+        grpo_scheduler_min_lr: float = 0.0,
     ):
         super().__init__()
         self._trajectory_sampling = trajectory_sampling
@@ -297,6 +305,17 @@ class ReCogDriveAgent(AbstractAgent):
         self.cache_hidden_state = cache_hidden_state
         self._lr = lr
         self.grpo = grpo
+        self.grpo_sample_time = int(grpo_sample_time)
+        if self.grpo_sample_time <= 0:
+            raise ValueError("grpo_sample_time must be positive.")
+        self.bc_anneal = bool(bc_anneal)
+        self.bc_coeff_start = float(bc_coeff_start)
+        self.bc_coeff_end = float(bc_coeff_end)
+        self.bc_anneal_epochs = int(bc_anneal_epochs)
+        if self.bc_coeff_start < 0.0 or self.bc_coeff_end < 0.0:
+            raise ValueError("BC coefficients must be non-negative.")
+        if self.bc_anneal_epochs <= 0:
+            raise ValueError("bc_anneal_epochs must be positive.")
         self.backbone = None
         self.metric_cache_path = metric_cache_path
         self.reference_policy_checkpoint = reference_policy_checkpoint
@@ -359,10 +378,25 @@ class ReCogDriveAgent(AbstractAgent):
         self.last_vla_stage = last_vla_stage
         if self.use_last_vla and self.use_last_rd:
             raise ValueError("use_last_vla and use_last_rd are mutually exclusive.")
+        self.use_two_expert_slots = bool(use_two_expert_slots)
+        if self.use_two_expert_slots and (self.use_last_vla or self.use_last_rd or self.use_expert_features):
+            raise ValueError("use_two_expert_slots is mutually exclusive with Last-VLA, Last-RD, and A4 direct experts.")
         if self.use_last_vla and self.last_vla_stage == "disabled":
             raise ValueError("use_last_vla=True requires last_vla_stage to be non-disabled.")
         if not self.use_last_vla and self.last_vla_stage != "disabled":
             raise ValueError("last_vla_stage must be 'disabled' when use_last_vla=False.")
+        self.two_expert_cache_mode = bool(two_expert_cache_mode)
+        self.two_expert_slot_mode = str(two_expert_slot_mode)
+        self.two_expert_condition_mode = str(two_expert_condition_mode)
+        self.two_expert_dit_condition_mode = str(two_expert_dit_condition_mode)
+        self.two_expert_planner_dim = int(two_expert_planner_dim)
+        self.two_expert_use_raw_vlm_base = bool(two_expert_use_raw_vlm_base)
+        self.two_expert_zero_init_deltas = bool(two_expert_zero_init_deltas)
+        self.two_expert_dyn_loss_floor = float(two_expert_dyn_loss_floor)
+        self.two_expert_geo_loss_floor = float(two_expert_geo_loss_floor)
+        self.two_expert_num_dyn_groups = int(two_expert_num_dyn_groups)
+        self.two_expert_dyn_tokens_per_group = int(two_expert_dyn_tokens_per_group)
+        self.two_expert_num_geo_tokens = int(two_expert_num_geo_tokens)
         self.use_future_jepa_prediction = use_future_jepa_prediction
         self.use_vggt_geometry_tokens = use_vggt_geometry_tokens
         self.use_ego_trajectory_tokens = use_ego_trajectory_tokens
@@ -378,25 +412,10 @@ class ReCogDriveAgent(AbstractAgent):
         self.allow_patch_geometry_fallback = allow_patch_geometry_fallback
         self.future_jepa_loss_weight = future_jepa_loss_weight
         self.vggt_geometry_loss_weight = vggt_geometry_loss_weight
-        self.use_two_expert_slots = bool(use_two_expert_slots)
-        if self.use_two_expert_slots and (self.use_last_vla or self.use_last_rd or self.use_expert_features):
-            raise ValueError("use_two_expert_slots is mutually exclusive with Last-VLA, Last-RD, and A4 direct experts.")
         self.coarse_traj_loss_weight = coarse_traj_loss_weight
         self.coarse_heading_loss_weight = coarse_heading_loss_weight
         self.risk_loss_weight = risk_loss_weight
         self.policy_kd_loss_weight = policy_kd_loss_weight
-        self.two_expert_cache_mode = bool(two_expert_cache_mode)
-        self.two_expert_slot_mode = str(two_expert_slot_mode)
-        self.two_expert_condition_mode = str(two_expert_condition_mode)
-        self.two_expert_dit_condition_mode = str(two_expert_dit_condition_mode)
-        self.two_expert_planner_dim = int(two_expert_planner_dim)
-        self.two_expert_use_raw_vlm_base = bool(two_expert_use_raw_vlm_base)
-        self.two_expert_zero_init_deltas = bool(two_expert_zero_init_deltas)
-        self.two_expert_dyn_loss_floor = float(two_expert_dyn_loss_floor)
-        self.two_expert_geo_loss_floor = float(two_expert_geo_loss_floor)
-        self.two_expert_num_dyn_groups = int(two_expert_num_dyn_groups)
-        self.two_expert_dyn_tokens_per_group = int(two_expert_dyn_tokens_per_group)
-        self.two_expert_num_geo_tokens = int(two_expert_num_geo_tokens)
         self.future_jepa_loss_floor = future_jepa_loss_floor
         self.vggt_geometry_loss_floor = vggt_geometry_loss_floor
         self.coarse_traj_loss_floor = coarse_traj_loss_floor
@@ -500,6 +519,17 @@ class ReCogDriveAgent(AbstractAgent):
         self.scheduler_epochs = scheduler_epochs
         self.scheduler_warmup_epochs = scheduler_warmup_epochs
         self.scheduler_min_lr = scheduler_min_lr
+        self.grpo_scheduler_epochs = int(grpo_scheduler_epochs)
+        self.grpo_scheduler_warmup_epochs = int(grpo_scheduler_warmup_epochs)
+        self.grpo_scheduler_min_lr = float(grpo_scheduler_min_lr)
+        if self.grpo_scheduler_epochs <= 0:
+            raise ValueError("grpo_scheduler_epochs must be positive.")
+        if self.grpo_scheduler_warmup_epochs < 0:
+            raise ValueError("grpo_scheduler_warmup_epochs must be non-negative.")
+        if self.grpo_scheduler_warmup_epochs >= self.grpo_scheduler_epochs:
+            raise ValueError("grpo_scheduler_warmup_epochs must be smaller than grpo_scheduler_epochs.")
+        if self.grpo_scheduler_min_lr < 0.0:
+            raise ValueError("grpo_scheduler_min_lr must be non-negative.")
         self._warned_random_init = False
         self._warned_dummy_features = False
         self._dummy_expert_backend: Optional[DummyExpertBackend] = None
@@ -681,10 +711,28 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.last_vla_vlm_lora_use_dora = self.last_vla_vlm_lora_use_dora
         cfg.last_vla_vlm_lora_init = self.last_vla_vlm_lora_init
         cfg.last_vla_vlm_lora_vision_last_n = self.last_vla_vlm_lora_vision_last_n
+        cfg.use_two_expert_slots = self.use_two_expert_slots
+        cfg.two_expert_cache_mode = self.two_expert_cache_mode
+        cfg.two_expert_slot_mode = self.two_expert_slot_mode
+        cfg.two_expert_condition_mode = self.two_expert_condition_mode
+        cfg.two_expert_dit_condition_mode = self.two_expert_dit_condition_mode
+        cfg.two_expert_planner_dim = self.two_expert_planner_dim
+        cfg.two_expert_use_raw_vlm_base = self.two_expert_use_raw_vlm_base
+        cfg.two_expert_zero_init_deltas = self.two_expert_zero_init_deltas
+        cfg.two_expert_dyn_loss_floor = self.two_expert_dyn_loss_floor
+        cfg.two_expert_geo_loss_floor = self.two_expert_geo_loss_floor
+        cfg.two_expert_num_dyn_groups = self.two_expert_num_dyn_groups
+        cfg.two_expert_dyn_tokens_per_group = self.two_expert_dyn_tokens_per_group
+        cfg.two_expert_num_geo_tokens = self.two_expert_num_geo_tokens
 
         if self.grpo:
             cfg.grpo_cfg.metric_cache_path = self.metric_cache_path
             cfg.grpo_cfg.reference_policy_checkpoint = self.reference_policy_checkpoint
+            cfg.grpo_cfg.sample_time = self.grpo_sample_time
+            cfg.grpo_cfg.bc_anneal = self.bc_anneal
+            cfg.grpo_cfg.bc_coeff_start = self.bc_coeff_start
+            cfg.grpo_cfg.bc_coeff_end = self.bc_coeff_end
+            cfg.grpo_cfg.bc_anneal_epochs = self.bc_anneal_epochs
             
         self.action_head = ReCogDriveDiffusionPlanner(cfg).to(device)
         if self.last_rd_adapter_checkpoint:
@@ -711,19 +759,6 @@ class ReCogDriveAgent(AbstractAgent):
             raise ValueError("last_vla_vlm_lora_r must be positive.")
         if self.last_vla_vlm_lora_alpha <= 0:
             raise ValueError("last_vla_vlm_lora_alpha must be positive.")
-        cfg.use_two_expert_slots = self.use_two_expert_slots
-        cfg.two_expert_cache_mode = self.two_expert_cache_mode
-        cfg.two_expert_slot_mode = self.two_expert_slot_mode
-        cfg.two_expert_condition_mode = self.two_expert_condition_mode
-        cfg.two_expert_dit_condition_mode = self.two_expert_dit_condition_mode
-        cfg.two_expert_planner_dim = self.two_expert_planner_dim
-        cfg.two_expert_use_raw_vlm_base = self.two_expert_use_raw_vlm_base
-        cfg.two_expert_zero_init_deltas = self.two_expert_zero_init_deltas
-        cfg.two_expert_dyn_loss_floor = self.two_expert_dyn_loss_floor
-        cfg.two_expert_geo_loss_floor = self.two_expert_geo_loss_floor
-        cfg.two_expert_num_dyn_groups = self.two_expert_num_dyn_groups
-        cfg.two_expert_dyn_tokens_per_group = self.two_expert_dyn_tokens_per_group
-        cfg.two_expert_num_geo_tokens = self.two_expert_num_geo_tokens
         if not (0.0 <= self.last_vla_vlm_lora_dropout < 1.0):
             raise ValueError("last_vla_vlm_lora_dropout must be in [0, 1).")
         if self.last_vla_hidden_anchor_mode not in {"none", "summary_cosine", "token_mean_cosine", "mse_mean"}:
@@ -1117,7 +1152,12 @@ class ReCogDriveAgent(AbstractAgent):
             action_inputs = BatchFeature(
                 data={**action_input_data, "action": targets["trajectory"].to(device=action_device, dtype=model_dtype)}
             )
-            return self.action_head.forward_grpo(last_hidden_state, action_inputs, tokens_list)
+            return self.action_head.forward_grpo(
+                last_hidden_state,
+                action_inputs,
+                tokens_list,
+                sample_time=self.grpo_sample_time,
+            )
         else: 
             action_inputs = BatchFeature(action_input_data)
             return self.action_head.get_action(last_hidden_state.to(model_dtype), action_inputs)
@@ -1784,7 +1824,13 @@ class ReCogDriveAgent(AbstractAgent):
             optimizer = build_from_configs(optim, optimizer_cfg, params=params)
         
         if self.grpo:
-            scheduler = WarmupCosLR(optimizer=optimizer, lr=self._lr, min_lr=0.0, epochs=10, warmup_epochs=0)
+            scheduler = WarmupCosLR(
+                optimizer=optimizer,
+                lr=self._lr,
+                min_lr=self.grpo_scheduler_min_lr,
+                epochs=self.grpo_scheduler_epochs,
+                warmup_epochs=self.grpo_scheduler_warmup_epochs,
+            )
         else:
             scheduler = WarmupCosLR(
                 optimizer=optimizer,

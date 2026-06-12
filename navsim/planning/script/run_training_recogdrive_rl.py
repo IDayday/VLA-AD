@@ -27,6 +27,14 @@ CONFIG_PATH = "config/training"
 CONFIG_NAME = "default_training"
 
 
+class ReCogDriveTrainingProgressCallback(pl.Callback):
+    """Propagates epoch progress into schedulable planner components."""
+
+    def on_train_epoch_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
+        agent = getattr(pl_module, "agent", None)
+        if agent is not None and hasattr(agent, "set_training_progress"):
+            agent.set_training_progress(int(trainer.current_epoch), int(trainer.max_epochs))
+
 
 class TokenizedDataset(torch.utils.data.Dataset):
     """Adds NAVSIM sample tokens to online Dataset items for GRPO rewards."""
@@ -236,7 +244,17 @@ def main(cfg: DictConfig) -> None:
     logger.info("Num validation samples: %d", len(val_data))
 
     logger.info("Building Trainer")
-    trainer = pl.Trainer(**cfg.trainer.params, callbacks=[pl.callbacks.ModelCheckpoint(monitor="val/loss_epoch",mode='min', save_top_k=5,every_n_epochs=1)])
+    callbacks = [
+        pl.callbacks.ModelCheckpoint(
+            filename="{epoch}-{step}",
+            save_top_k=-1,
+            every_n_epochs=1,
+            save_on_train_epoch_end=True,
+        ),
+        pl.callbacks.LearningRateMonitor(logging_interval="epoch"),
+        ReCogDriveTrainingProgressCallback(),
+    ]
+    trainer = pl.Trainer(**cfg.trainer.params, callbacks=callbacks)
 
     logger.info("Starting Training")
     trainer.fit(

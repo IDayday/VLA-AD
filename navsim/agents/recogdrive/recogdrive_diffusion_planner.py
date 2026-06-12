@@ -95,6 +95,11 @@ class GRPOConfig:
     clip_advantage_lower_quantile: float = 0.0
     clip_advantage_upper_quantile: float = 1.0
     gamma_denoising: float = 0.6
+    sample_time: int = 8
+    bc_anneal: bool = False
+    bc_coeff_start: float = 0.1
+    bc_coeff_end: float = 0.1
+    bc_anneal_epochs: int = 1
     
     metric_cache_path: str = "/path/to/metric_cache_train"
     reference_policy_checkpoint: str = "/path/to/IL_Model.ckpt"
@@ -313,11 +318,6 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     last_vla_vlm_lora_init: str = "default"
     last_vla_vlm_lora_vision_last_n: int = 0
     last_vla_lora_allow_all_linear_global: bool = False
-    
-    tune_projector: bool = True
-    tune_diffusion_model: bool = True
-    
-    flow_cfg: FlowConfig = field(default_factory=FlowConfig)
 
     use_two_expert_slots: bool = False
     two_expert_cache_mode: bool = True
@@ -332,6 +332,11 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     two_expert_num_dyn_groups: int = 3
     two_expert_dyn_tokens_per_group: int = 12
     two_expert_num_geo_tokens: int = 12
+
+    tune_projector: bool = True
+    tune_diffusion_model: bool = True
+
+    flow_cfg: FlowConfig = field(default_factory=FlowConfig)
     ddpm_cfg: DDPMConfig = field(default_factory=DDPMConfig)
     ddim_cfg: DDIMConfig = field(default_factory=DDIMConfig)
     grpo_cfg: GRPOConfig = field(default_factory=GRPOConfig)
@@ -345,13 +350,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         "vggt_geometry_target_tokens",
         "vggt_depth_target_tokens",
         "vggt_pointmap_target_tokens",
+        "jepa_dynamic_teacher_tokens",
+        "vggt_feature23_tokens",
     )
 
     def __init__(self, config: ReCogDriveDiffusionPlannerConfig):
         super().__init__()
         self.config = config
-        "jepa_dynamic_teacher_tokens",
-        "vggt_feature23_tokens",
         
         self.model = LightningDiT(**config.diffusion_model_cfg)
 
@@ -395,11 +400,6 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("last_rd_stage must be 'disabled' when use_last_rd=False.")
         if config.use_last_vla and config.use_last_rd:
             raise ValueError("use_last_vla and use_last_rd are mutually exclusive.")
-        if config.use_last_vla and config.last_vla_stage == "disabled":
-            raise ValueError("use_last_vla=True requires last_vla_stage to be non-disabled.")
-        if not config.use_last_vla and config.last_vla_stage != "disabled":
-            raise ValueError("last_vla_stage must be 'disabled' when use_last_vla=False.")
-        if (
         if config.use_two_expert_slots:
             if config.use_last_vla or config.use_last_rd or config.use_expert_features:
                 raise ValueError(
@@ -417,6 +417,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 raise ValueError("two_expert_slot Stage2 target must remain GT normalized trajectory.")
             if not config.two_expert_use_raw_vlm_base:
                 raise ValueError("two_expert_slot must preserve raw VLM context for DiT.")
+        if config.use_last_vla and config.last_vla_stage == "disabled":
+            raise ValueError("use_last_vla=True requires last_vla_stage to be non-disabled.")
+        if not config.use_last_vla and config.last_vla_stage != "disabled":
+            raise ValueError("last_vla_stage must be 'disabled' when use_last_vla=False.")
+        if (
             config.use_last_vla
             and (
                 config.last_vla_condition_mode != "decoupled_cot_residual"
@@ -460,13 +465,42 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "last_vla_progress_loss_weight",
             "last_vla_risk_loss_weight",
             "last_vla_cot_consistency_loss_weight",
+            "two_expert_dyn_loss_floor",
+            "two_expert_geo_loss_floor",
         ):
             if getattr(config, weight_name) < 0.0:
                 raise ValueError(f"{weight_name} must be non-negative.")
 
-        if config.use_expert_features:
-            "two_expert_dyn_loss_floor",
-            "two_expert_geo_loss_floor",
+        if config.use_two_expert_slots:
+            vlm_dim = 3584 if config.vlm_size == "large" else 1536
+            planner_dim = config.input_embedding_dim
+            self.two_expert_dyn_proj = nn.Sequential(
+                nn.LayerNorm(vlm_dim),
+                nn.Linear(vlm_dim, planner_dim),
+                nn.GELU(),
+                nn.Linear(planner_dim, planner_dim),
+                nn.LayerNorm(planner_dim),
+            )
+            self.two_expert_geo_proj = nn.Sequential(
+                nn.LayerNorm(vlm_dim),
+                nn.Linear(vlm_dim, planner_dim),
+                nn.GELU(),
+                nn.Linear(planner_dim, planner_dim),
+                nn.LayerNorm(planner_dim),
+            )
+            self.two_expert_horizon_queries = nn.Parameter(torch.randn(config.action_horizon, planner_dim) * 0.02)
+            heads = 8 if planner_dim % 8 == 0 else 1
+            self.two_expert_dyn_horizon_attn = nn.MultiheadAttention(planner_dim, heads, batch_first=True)
+            self.two_expert_geo_horizon_attn = nn.MultiheadAttention(planner_dim, heads, batch_first=True)
+            self.two_expert_dyn_delta_proj = nn.Linear(planner_dim, planner_dim)
+            self.two_expert_geo_delta_proj = nn.Linear(planner_dim, planner_dim)
+            if config.two_expert_zero_init_deltas:
+                nn.init.constant_(self.two_expert_dyn_delta_proj.weight, 0.0)
+                nn.init.constant_(self.two_expert_dyn_delta_proj.bias, 0.0)
+                nn.init.constant_(self.two_expert_geo_delta_proj.weight, 0.0)
+                nn.init.constant_(self.two_expert_geo_delta_proj.bias, 0.0)
+
+        elif config.use_expert_features:
             if not config.use_jepa and not config.use_vggt:
                 raise ValueError("use_expert_features=True requires use_jepa=True and/or use_vggt=True.")
             if config.expert_fusion_mode != "concat_context":
@@ -620,35 +654,6 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
             self.last_rd = LatentSpatioTemporalReasoner(
                 LastRDConfig(
-        if config.use_two_expert_slots:
-            vlm_dim = 3584 if config.vlm_size == "large" else 1536
-            planner_dim = config.input_embedding_dim
-            self.two_expert_dyn_proj = nn.Sequential(
-                nn.LayerNorm(vlm_dim),
-                nn.Linear(vlm_dim, planner_dim),
-                nn.GELU(),
-                nn.Linear(planner_dim, planner_dim),
-                nn.LayerNorm(planner_dim),
-            )
-            self.two_expert_geo_proj = nn.Sequential(
-                nn.LayerNorm(vlm_dim),
-                nn.Linear(vlm_dim, planner_dim),
-                nn.GELU(),
-                nn.Linear(planner_dim, planner_dim),
-                nn.LayerNorm(planner_dim),
-            )
-            self.two_expert_horizon_queries = nn.Parameter(torch.randn(config.action_horizon, planner_dim) * 0.02)
-            heads = 8 if planner_dim % 8 == 0 else 1
-            self.two_expert_dyn_horizon_attn = nn.MultiheadAttention(planner_dim, heads, batch_first=True)
-            self.two_expert_geo_horizon_attn = nn.MultiheadAttention(planner_dim, heads, batch_first=True)
-            self.two_expert_dyn_delta_proj = nn.Linear(planner_dim, planner_dim)
-            self.two_expert_geo_delta_proj = nn.Linear(planner_dim, planner_dim)
-            if config.two_expert_zero_init_deltas:
-                nn.init.constant_(self.two_expert_dyn_delta_proj.weight, 0.0)
-                nn.init.constant_(self.two_expert_dyn_delta_proj.bias, 0.0)
-                nn.init.constant_(self.two_expert_geo_delta_proj.weight, 0.0)
-                nn.init.constant_(self.two_expert_geo_delta_proj.bias, 0.0)
-
                     planner_dim=config.input_embedding_dim,
                     jepa_dim=config.jepa_dim,
                     vggt_dim=config.vggt_dim,
@@ -805,6 +810,17 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         self.clip_advantage_lower_quantile = cfg.clip_advantage_lower_quantile
         self.clip_advantage_upper_quantile = cfg.clip_advantage_upper_quantile
         self.gamma_denoising = cfg.gamma_denoising
+        self.grpo_sample_time = int(cfg.sample_time)
+        if self.grpo_sample_time <= 0:
+            raise ValueError("GRPO sample_time must be positive.")
+        self.bc_anneal = bool(cfg.bc_anneal)
+        self.bc_coeff_start = float(cfg.bc_coeff_start)
+        self.bc_coeff_end = float(cfg.bc_coeff_end)
+        self.bc_anneal_epochs = int(cfg.bc_anneal_epochs)
+        if self.bc_coeff_start < 0.0 or self.bc_coeff_end < 0.0:
+            raise ValueError("BC coefficients must be non-negative.")
+        if self.bc_anneal_epochs <= 0:
+            raise ValueError("bc_anneal_epochs must be positive.")
         for name in (
             "use_safety_shaped_reward",
             "hard_gate_nc",
@@ -1334,22 +1350,6 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             losses[f"{stream}_alignment_loss"] = self._alignment_loss(pred, target).to(dtype=reference.dtype)
         return losses
 
-    def _prepare_dit_context(
-        self,
-        vl_features: torch.Tensor,
-        action_input: Optional[BatchFeature],
-        training: bool,
-        noisy_actions: Optional[torch.Tensor] = None,
-        diffusion_timestep: Optional[torch.Tensor] = None,
-        target_action_norm: Optional[torch.Tensor] = None,
-        allow_target_tokens: Optional[bool] = None,
-    ) -> Dict[str, Any]:
-        vl_embeds = self._encode_vlm(vl_features)
-        zero = vl_embeds.new_zeros(())
-        base_losses = {
-            "jepa_alignment_loss": zero,
-            "vggt_alignment_loss": zero,
-            "future_jepa_loss": zero,
     @staticmethod
     def _two_expert_corruption_mode(action_input: Optional[BatchFeature]) -> str:
         if action_input is None:
@@ -1449,6 +1449,22 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "diagnostics": diagnostics,
         }
 
+    def _prepare_dit_context(
+        self,
+        vl_features: torch.Tensor,
+        action_input: Optional[BatchFeature],
+        training: bool,
+        noisy_actions: Optional[torch.Tensor] = None,
+        diffusion_timestep: Optional[torch.Tensor] = None,
+        target_action_norm: Optional[torch.Tensor] = None,
+        allow_target_tokens: Optional[bool] = None,
+    ) -> Dict[str, Any]:
+        vl_embeds = self._encode_vlm(vl_features)
+        zero = vl_embeds.new_zeros(())
+        base_losses = {
+            "jepa_alignment_loss": zero,
+            "vggt_alignment_loss": zero,
+            "future_jepa_loss": zero,
             "vggt_geometry_loss": zero,
             "coarse_traj_loss": zero,
             "coarse_heading_loss": zero,
@@ -1477,6 +1493,21 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "diagnostics": {},
             }
 
+        if self.config.use_two_expert_slots:
+            two_expert_context = self._build_two_expert_context(vl_embeds, action_input)
+            return {
+                "vl_embeds": vl_embeds,
+                "context_tokens": two_expert_context["context_tokens"],
+                "context_mean": two_expert_context["context_mean"],
+                "expert_step_condition": two_expert_context["expert_step_condition"],
+                "cot_condition_tokens": None,
+                **base_losses,
+                "diagnostics": two_expert_context["diagnostics"],
+                "two_expert_f_dyn": two_expert_context["f_dyn"],
+                "two_expert_f_geo": two_expert_context["f_geo"],
+                "selected_target_norm": target_action_norm,
+            }
+
         if self.config.use_last_vla:
             allow_targets = training if allow_target_tokens is None else bool(allow_target_tokens)
             last_vla_output = self.last_vla_cot(
@@ -1493,21 +1524,6 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             if (
                 training
                 and allow_targets
-        if self.config.use_two_expert_slots:
-            two_expert_context = self._build_two_expert_context(vl_embeds, action_input)
-            return {
-                "vl_embeds": vl_embeds,
-                "context_tokens": two_expert_context["context_tokens"],
-                "context_mean": two_expert_context["context_mean"],
-                "expert_step_condition": two_expert_context["expert_step_condition"],
-                "cot_condition_tokens": None,
-                **base_losses,
-                "diagnostics": two_expert_context["diagnostics"],
-                "two_expert_f_dyn": two_expert_context["f_dyn"],
-                "two_expert_f_geo": two_expert_context["f_geo"],
-                "selected_target_norm": target_action_norm,
-            }
-
                 and self.config.last_vla_dynamic_loss_weight > 0.0
                 and float(last_vla_output.diagnostics.get("dynamic_teacher_missing", zero).detach().float().item()) > 0.0
             ):
@@ -2514,6 +2530,17 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                             dtype=loss.dtype,
                         )
             for key in (
+                "two_expert_condition_enabled",
+                "two_expert_corruption_mode_code",
+                "two_expert_raw_vlm_context_used",
+                "two_expert_h_dyn_norm",
+                "two_expert_h_geo_norm",
+                "two_expert_f_dyn_norm",
+                "two_expert_f_geo_norm",
+                "two_expert_dyn_expert_delta_norm",
+                "two_expert_geo_expert_delta_norm",
+                "two_expert_zero_init_dyn",
+                "two_expert_zero_init_geo",
                 "teacher_traj_used_ratio",
                 "teacher_traj_mix",
                 "teacher_score_mean",
@@ -2530,17 +2557,6 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "residual_anchor_missing",
                 "residual_anchor_norm",
                 "residual_anchor_l1_to_reference",
-                "two_expert_condition_enabled",
-                "two_expert_corruption_mode_code",
-                "two_expert_raw_vlm_context_used",
-                "two_expert_h_dyn_norm",
-                "two_expert_h_geo_norm",
-                "two_expert_f_dyn_norm",
-                "two_expert_f_geo_norm",
-                "two_expert_dyn_expert_delta_norm",
-                "two_expert_geo_expert_delta_norm",
-                "two_expert_zero_init_dyn",
-                "two_expert_zero_init_geo",
                 "residual_target_norm",
                 "geometry_weight_effective",
                 "dynamic_weight_effective",
@@ -3261,20 +3277,35 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         assert traj_logp.shape == (B * G,)
         return traj_logp
 
+    def _current_bc_coeff(self, override: Optional[float] = None) -> float:
+        if override is not None:
+            return float(override)
+        if not bool(getattr(self, "bc_anneal", False)):
+            return float(getattr(self, "bc_coeff_start", 0.1))
+
+        current_epoch = max(0, int(getattr(self.config, "current_train_epoch", 0)))
+        anneal_epochs = max(1, int(getattr(self, "bc_anneal_epochs", 1)))
+        progress = min(float(current_epoch) / float(anneal_epochs), 1.0)
+        start = float(getattr(self, "bc_coeff_start", 0.1))
+        end = float(getattr(self, "bc_coeff_end", start))
+        return start + (end - start) * progress
+
     def forward_grpo(
         self,
         vl_features: torch.Tensor,
         action_input: BatchFeature,
         tokens_list,
-        sample_time: int = 8,
+        sample_time: Optional[int] = None,
         deterministic=False,
-        bc_coeff: float = 0.1,
+        bc_coeff: Optional[float] = None,
         use_bc_loss: bool = True
     ) -> BatchFeature:
         """Computes the Diffusion-GRPO loss."""
         self.set_frozen_modules_to_eval_mode()
         B = vl_features.shape[0]
-        G = sample_time 
+        G = int(sample_time if sample_time is not None else getattr(self, "grpo_sample_time", 8))
+        if G <= 0:
+            raise ValueError("GRPO sample_time must be positive.")
 
         vl_features_rep = vl_features.repeat_interleave(G, 0)
         his_traj_rep = action_input.his_traj.repeat_interleave(G, 0)
@@ -3416,6 +3447,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
         total_loss = policy_loss
 
+        effective_bc_coeff = self._current_bc_coeff(bc_coeff)
         bc_loss = policy_loss.new_zeros(())
         if use_bc_loss:
             self.old_policy.eval()
@@ -3439,7 +3471,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             K_steps = chains.shape[1] - 1
             bc_logp = bc_logp.view(-1, K_steps, chains.shape[2], chains.shape[3]).mean(dim=[1,2,3])
             bc_loss = -bc_logp.mean()
-            total_loss = total_loss + bc_coeff * bc_loss
+            total_loss = total_loss + effective_bc_coeff * bc_loss
 
         self.grpo_update_counter = int(getattr(self, "grpo_update_counter", 0)) + 1
 
@@ -3461,6 +3493,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "shaped_reward": rewards.mean(),
             "policy_loss": policy_loss,
             "bc_loss": bc_loss,
+            "bc_coeff": total_loss.new_tensor(effective_bc_coeff),
             "safe_ratio": hard_safe_ratio,
             "hard_safe_ratio": hard_safe_ratio,
             "mean_ep": reward_aux["ego_progress"].mean(),

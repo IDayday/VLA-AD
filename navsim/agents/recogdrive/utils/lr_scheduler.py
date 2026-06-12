@@ -19,14 +19,18 @@ class WarmupCosLR(_LRScheduler):
         self.__dict__.update(state_dict)
 
     def get_init_lr(self):
+        if self.warmup_epochs <= 0:
+            return self.lr
         return self.lr / self.warmup_epochs
 
     def get_lr(self):
-        if self.last_epoch < self.warmup_epochs:
+        if self.warmup_epochs > 0 and self.last_epoch < self.warmup_epochs:
             lr = self.lr * (self.last_epoch + 1) / self.warmup_epochs
         else:
+            decay_epochs = max(1, self.epochs - self.warmup_epochs)
+            decay_step = min(max(self.last_epoch - self.warmup_epochs, 0), decay_epochs)
             lr = self.min_lr + 0.5 * (self.lr - self.min_lr) * (
-                1 + math.cos(math.pi * (self.last_epoch - self.warmup_epochs) / (self.epochs - self.warmup_epochs))
+                1 + math.cos(math.pi * decay_step / decay_epochs)
             )
         if "lr_scale" in self.optimizer.param_groups[0]:
             return [lr * group["lr_scale"] for group in self.optimizer.param_groups]

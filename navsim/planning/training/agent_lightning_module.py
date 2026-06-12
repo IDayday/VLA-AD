@@ -91,6 +91,7 @@ class AgentLightningModule(pl.LightningModule):
             "trajectory_logp",
             "gspo_ratio_mean",
             "gspo_ratio_clip_frac",
+            "bc_coeff",
         ):
             value = _prediction_get(prediction, key)
             if value is not None:
