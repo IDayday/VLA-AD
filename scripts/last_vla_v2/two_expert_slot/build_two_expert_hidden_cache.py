@@ -102,16 +102,38 @@ def build_prompt(sample: Dict[str, Any]) -> str:
     )
 
 
-def _load_state_dict(path: Path) -> Dict[str, torch.Tensor]:
+def _load_checkpoint_payload(path: Path) -> Any:
     try:
         payload = torch.load(path, map_location="cpu", weights_only=False)
     except TypeError:
         payload = torch.load(path, map_location="cpu")
+    return payload
+
+
+def _state_dict_from_payload(payload: Any, path: Path) -> Dict[str, torch.Tensor]:
     if isinstance(payload, dict) and "state_dict" in payload and isinstance(payload["state_dict"], dict):
         payload = payload["state_dict"]
     if not isinstance(payload, dict):
         raise TypeError(f"Checkpoint {path} must contain a state_dict.")
     return {str(key): value for key, value in payload.items() if isinstance(value, torch.Tensor)}
+
+
+def _load_state_dict(path: Path) -> Dict[str, torch.Tensor]:
+    return _state_dict_from_payload(_load_checkpoint_payload(path), path)
+
+
+def _metadata_from_payload(payload: Any) -> Dict[str, Any]:
+    if not isinstance(payload, dict):
+        return {}
+    metadata: Dict[str, Any] = {}
+    for key in ("two_expert_metadata", "stage1_metadata", "metadata", "hyper_parameters"):
+        value = payload.get(key)
+        if isinstance(value, dict):
+            metadata.update(value)
+    cfg = payload.get("config")
+    if isinstance(cfg, dict):
+        metadata.update({f"config_{key}": value for key, value in cfg.items() if isinstance(key, str)})
+    return metadata
 
 
 def _slot_key_from_checkpoint_key(key: str) -> Optional[str]:
@@ -123,10 +145,13 @@ def _slot_key_from_checkpoint_key(key: str) -> Optional[str]:
     return key if key in {"dyn_slots", "geo_slots", "dyn_group_embeddings", "geo_type_embedding"} else None
 
 
-def load_two_expert_slots(checkpoint: Optional[Path], config: TwoExpertSlotConfig) -> TwoExpertSoftSlots:
+def load_two_expert_slots_with_report(
+    checkpoint: Optional[Path],
+    config: TwoExpertSlotConfig,
+) -> Tuple[TwoExpertSoftSlots, Dict[str, Any]]:
     slots = TwoExpertSoftSlots(config)
     if checkpoint is None:
-        return slots
+        return slots, {"loaded_slot_keys": [], "skipped_slot_keys": [], "source_stage1_checkpoint": None}
     state = _load_state_dict(checkpoint)
     expected = slots.state_dict()
     filtered: Dict[str, torch.Tensor] = {}
@@ -145,7 +170,15 @@ def load_two_expert_slots(checkpoint: Optional[Path], config: TwoExpertSlotConfi
     slots.eval()
     if skipped:
         print(f"Skipped {len(skipped)} incompatible two-expert slot tensors.", flush=True)
-    return slots
+    return slots, {
+        "loaded_slot_keys": sorted(filtered),
+        "skipped_slot_keys": skipped,
+        "source_stage1_checkpoint": str(checkpoint),
+    }
+
+
+def load_two_expert_slots(checkpoint: Optional[Path], config: TwoExpertSlotConfig) -> TwoExpertSoftSlots:
+    return load_two_expert_slots_with_report(checkpoint, config)[0]
 
 
 def load_backbone(args: argparse.Namespace):
@@ -154,6 +187,128 @@ def load_backbone(args: argparse.Namespace):
     backbone = RecogDriveBackbone(model_type=args.vlm_type, checkpoint_path=str(args.vlm_path), device=args.device)
     backbone.eval()
     return backbone
+
+
+def _resolve_stage1_train_mode(payload_metadata: Dict[str, Any], args: argparse.Namespace) -> str:
+    for key in ("stage1_train_mode", "train_mode", "two_expert_train_mode", "config_train_mode"):
+        value = payload_metadata.get(key)
+        if value in {"frozen", "lora", "top_layers", "full"}:
+            return str(value)
+    if args.stage1_train_mode:
+        return str(args.stage1_train_mode)
+    return str(args.train_vlm_mode)
+
+
+def _backbone_key_from_checkpoint_key(key: str) -> Optional[str]:
+    key = key.removeprefix("module.").removeprefix("model.").removeprefix("agent.")
+    for marker in ("backbone.", "vlm_backbone."):
+        if key.startswith(marker):
+            return key.split(marker, 1)[1]
+    if key.startswith("two_expert_slots.") or key.startswith("dynamic_adapter.") or key.startswith("geometry_adapter."):
+        return None
+    return key
+
+
+def _load_compatible_backbone_state(backbone: Any, state: Dict[str, torch.Tensor]) -> Dict[str, Any]:
+    expected = backbone.state_dict()
+    filtered: Dict[str, torch.Tensor] = {}
+    for key, value in state.items():
+        mapped = _backbone_key_from_checkpoint_key(key)
+        if mapped is None or mapped not in expected:
+            continue
+        if tuple(expected[mapped].shape) != tuple(value.shape):
+            continue
+        filtered[mapped] = value
+    if not filtered:
+        return {"loaded_top_layer_keys": [], "missing_top_layer_keys": [], "unexpected_top_layer_keys": []}
+    incompatible = backbone.load_state_dict(filtered, strict=False)
+    return {
+        "loaded_top_layer_keys": sorted(filtered),
+        "missing_top_layer_keys": sorted(getattr(incompatible, "missing_keys", [])),
+        "unexpected_top_layer_keys": sorted(getattr(incompatible, "unexpected_keys", [])),
+    }
+
+
+def _load_lora_from_checkpoint_state(backbone: Any, state: Dict[str, torch.Tensor]) -> Dict[str, Any]:
+    lora_state = {
+        key: value
+        for key, value in state.items()
+        if "lora_" in key or ".lora_A." in key or ".lora_B." in key
+    }
+    if not lora_state:
+        return {"loaded_lora_adapter": False, "loaded_lora_keys": []}
+    incompatible = backbone.load_state_dict(lora_state, strict=False)
+    loaded = [
+        key
+        for key in lora_state
+        if key not in set(getattr(incompatible, "unexpected_keys", []))
+    ]
+    return {
+        "loaded_lora_adapter": bool(loaded),
+        "loaded_lora_keys": sorted(loaded),
+        "unexpected_lora_keys": sorted(getattr(incompatible, "unexpected_keys", [])),
+    }
+
+
+def _apply_lora_adapter_dir(backbone: Any, adapter_dir: Path) -> Dict[str, Any]:
+    if not adapter_dir.exists():
+        raise FileNotFoundError(f"VLM LoRA adapter directory does not exist: {adapter_dir}")
+    if hasattr(backbone.model, "load_adapter"):
+        backbone.model.load_adapter(str(adapter_dir))
+        return {"loaded_lora_adapter": True, "loaded_lora_adapter_dir": str(adapter_dir)}
+    try:
+        from peft import PeftModel
+    except ImportError as exc:
+        raise RuntimeError(
+            "Stage1 train_mode=lora requires --vlm-lora-adapter-dir or an embedded LoRA state. "
+            "peft is not installed, so the adapter directory cannot be applied."
+        ) from exc
+    backbone.model = PeftModel.from_pretrained(backbone.model, str(adapter_dir), is_trainable=False)
+    return {"loaded_lora_adapter": True, "loaded_lora_adapter_dir": str(adapter_dir)}
+
+
+def load_stage1_state_for_hidden_cache(
+    *,
+    checkpoint: Optional[Path],
+    config: TwoExpertSlotConfig,
+    backbone: Optional[Any],
+    args: argparse.Namespace,
+) -> Tuple[TwoExpertSoftSlots, Dict[str, Any]]:
+    payload = _load_checkpoint_payload(checkpoint) if checkpoint is not None else {}
+    state = _state_dict_from_payload(payload, checkpoint) if checkpoint is not None else {}
+    payload_metadata = _metadata_from_payload(payload)
+    stage1_train_mode = _resolve_stage1_train_mode(payload_metadata, args)
+    slots, slot_report = load_two_expert_slots_with_report(checkpoint, config)
+    report: Dict[str, Any] = {
+        **slot_report,
+        "stage1_train_mode": stage1_train_mode,
+        "loaded_lora_adapter": False,
+        "loaded_lora_keys": [],
+        "loaded_top_layer_keys": [],
+        "source_stage1_checkpoint": str(checkpoint) if checkpoint else None,
+    }
+    if backbone is None:
+        return slots, report
+    if stage1_train_mode == "lora":
+        if args.vlm_lora_adapter_dir is not None:
+            report.update(_apply_lora_adapter_dir(backbone, args.vlm_lora_adapter_dir))
+        else:
+            report.update(_load_lora_from_checkpoint_state(backbone, state))
+        if not report.get("loaded_lora_adapter"):
+            raise RuntimeError(
+                "Stage1 checkpoint metadata says train_mode=lora, but no VLM LoRA adapter was loaded. "
+                "Pass --vlm-lora-adapter-dir or save LoRA weights inside the Stage1 checkpoint."
+            )
+    elif stage1_train_mode in {"top_layers", "full"}:
+        report.update(_load_compatible_backbone_state(backbone, state))
+        if not report.get("loaded_top_layer_keys"):
+            raise RuntimeError(
+                f"Stage1 checkpoint metadata says train_mode={stage1_train_mode}, "
+                "but no compatible VLM backbone keys were loaded."
+            )
+    elif stage1_train_mode != "frozen":
+        raise ValueError(f"Unsupported Stage1 train mode in checkpoint metadata: {stage1_train_mode!r}")
+    return slots, report
 
 
 def _precision_dtype(precision: str) -> torch.dtype:
@@ -251,8 +406,14 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
         num_dyn_tokens_per_group=12,
         num_geo_tokens=12,
     )
-    slots = load_two_expert_slots(None if args.synthetic_smoke else args.stage1_checkpoint, config).to(args.device)
     backbone = None if args.synthetic_smoke else load_backbone(args)
+    slots, stage1_load_report = load_stage1_state_for_hidden_cache(
+        checkpoint=None if args.synthetic_smoke else args.stage1_checkpoint,
+        config=config,
+        backbone=backbone,
+        args=args,
+    )
+    slots = slots.to(args.device)
     out_dir = output_dir_for_shard(args.output_root, args.shard_index)
     if out_dir.exists() and not args.overwrite:
         raise FileExistsError(f"Output shard exists: {out_dir}. Pass --overwrite to replace it.")
@@ -270,11 +431,13 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
         payload["two_expert_metadata"] = {
             "schema": "two_expert_slot_hidden_cache_v1",
             "train_mode": str(args.train_vlm_mode),
+            "stage1_train_mode": stage1_load_report.get("stage1_train_mode"),
             "num_dyn_groups": 3,
             "tokens_per_group": 12,
             "num_geo_tokens": 12,
             "vlm_checkpoint": str(args.vlm_path),
             "slot_checkpoint": str(args.stage1_checkpoint) if args.stage1_checkpoint else None,
+            "stage1_load_report": dict(stage1_load_report),
         }
         if args.include_teacher_targets:
             for key in TRAIN_TEACHER_KEYS:
@@ -345,6 +508,7 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
         "teacher_targets_included": bool(args.include_teacher_targets),
         "eval_teacher_targets_allowed": bool(args.allow_eval_teacher_targets),
         "synthetic_smoke": bool(args.synthetic_smoke),
+        "stage1_load_report": dict(stage1_load_report),
         "hidden_token_length": {
             "min": min(hidden_lengths) if hidden_lengths else None,
             "max": max(hidden_lengths) if hidden_lengths else None,
@@ -415,6 +579,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="bf16")
     parser.add_argument("--vlm-hidden-dim", type=int, default=1536)
     parser.add_argument("--train-vlm-mode", choices=("frozen", "lora", "top_layers"), default="frozen")
+    parser.add_argument("--stage1-train-mode", choices=("frozen", "lora", "top_layers", "full"), default=None)
+    parser.add_argument("--vlm-lora-adapter-dir", type=Path, default=None)
     parser.add_argument("--max-image-patches", type=int, default=12)
     parser.add_argument("--include-teacher-targets", action="store_true")
     parser.add_argument("--allow-eval-teacher-targets", action="store_true")

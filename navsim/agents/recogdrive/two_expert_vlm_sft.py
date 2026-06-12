@@ -7,6 +7,7 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
+from .trajectory_normalization import norm_odo
 from .two_expert_adapters import JEPADynamicAdapter, TwoExpertTrajectoryProbe, VGGTFeature23Adapter
 from .two_expert_slots import TwoExpertSlotConfig, TwoExpertSoftSlots
 
@@ -94,13 +95,21 @@ class TwoExpertVLMSFTModule(nn.Module):
                 parameter.requires_grad = True
         elif mode == "top_layers":
             self._unfreeze_top_language_layers(self.config.top_layers)
+            if self._trainable_count(self.backbone) <= 0:
+                raise RuntimeError("train_mode=top_layers did not unfreeze any VLM parameters.")
         elif mode == "lora":
             for name, parameter in self.backbone.named_parameters():
                 if "lora_" in name:
                     parameter.requires_grad = True
+            if self._trainable_count(self.backbone) <= 0:
+                raise RuntimeError("train_mode=lora requested but no LoRA parameters were found on the VLM backbone.")
         for module in (self.two_expert_slots, self.dynamic_adapter, self.geometry_adapter, self.trajectory_probe):
             for parameter in module.parameters():
                 parameter.requires_grad = True
+
+    @staticmethod
+    def _trainable_count(module: nn.Module) -> int:
+        return sum(int(parameter.numel()) for parameter in module.parameters() if parameter.requires_grad)
 
     def _unfreeze_top_language_layers(self, top_k: int) -> None:
         if top_k <= 0:
@@ -113,7 +122,7 @@ class TwoExpertVLMSFTModule(nn.Module):
             if any(marker in lowered for marker in ("layer.", "layers.", "blocks.")):
                 candidates.append((name, module))
         for _, module in candidates[-int(top_k):]:
-            for parameter in module.parameters(recurse=False):
+            for parameter in module.parameters(recurse=True):
                 parameter.requires_grad = True
 
     @staticmethod
@@ -128,6 +137,15 @@ class TwoExpertVLMSFTModule(nn.Module):
         current_mean = current.float().mean(dim=1)
         frozen_mean = frozen.detach().to(current).float().mean(dim=1)
         return (1.0 - F.cosine_similarity(current_mean, frozen_mean, dim=-1)).mean().to(dtype=current.dtype)
+
+    def _target_action_norm(self, batch: Dict[str, Any], ref: torch.Tensor) -> Optional[torch.Tensor]:
+        trajectory_norm = self._get(batch, "trajectory_norm")
+        if trajectory_norm is not None:
+            return trajectory_norm.to(device=ref.device, dtype=ref.dtype)
+        trajectory = self._get(batch, "trajectory")
+        if trajectory is None:
+            return None
+        return norm_odo(trajectory.to(device=ref.device, dtype=ref.dtype))
 
     def forward(self, batch: Dict[str, Any]) -> Dict[str, torch.Tensor]:
         images = self._get(batch, "images")
@@ -158,7 +176,7 @@ class TwoExpertVLMSFTModule(nn.Module):
             status_feature=self._get(batch, "status_feature"),
             high_command_one_hot=self._get(batch, "high_command_one_hot"),
             history_trajectory=self._get(batch, "history_trajectory"),
-            target_action_norm=self._get(batch, "trajectory"),
+            target_action_norm=self._target_action_norm(batch, vlm_out["h_dyn"]),
         )
         hidden_anchor_loss = self._hidden_anchor_loss(vlm_out["raw_vlm_hidden"], self._get(batch, "frozen_raw_vlm_hidden"))
         probe_losses = probe_out["losses"]
@@ -202,4 +220,8 @@ class TwoExpertVLMSFTModule(nn.Module):
             elif name.startswith("trajectory_probe."):
                 groups["probe"] += int(parameter.numel())
         groups["total"] = sum(groups.values())
+        groups["vlm_trainable_param_count"] = groups["vlm"]
+        groups["slots_trainable_param_count"] = groups["slots"]
+        groups["adapter_trainable_param_count"] = groups["adapters"]
+        groups["probe_trainable_param_count"] = groups["probe"]
         return groups

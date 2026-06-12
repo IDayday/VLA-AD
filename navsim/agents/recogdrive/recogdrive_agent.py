@@ -1087,6 +1087,8 @@ class ReCogDriveAgent(AbstractAgent):
         target_feature_keys = set(EXPERT_TARGET_FEATURE_KEYS)
         if self.use_last_vla:
             target_feature_keys.update(LAST_VLA_TARGET_KEYS)
+        if self.use_two_expert_slots:
+            target_feature_keys.update(TWO_EXPERT_TARGET_KEYS)
         for key in optional_feature_keys:
             if key in features and isinstance(features[key], torch.Tensor):
                 if key in target_feature_keys and not target_loss_mode:
@@ -1122,8 +1124,6 @@ class ReCogDriveAgent(AbstractAgent):
 
     @staticmethod
     def _is_expert_parameter_key(key: str) -> bool:
-        if self.use_two_expert_slots:
-            target_feature_keys.update(TWO_EXPERT_TARGET_KEYS)
         expert_markers = (
             "jepa_projector",
             "vggt_projector",
@@ -1141,6 +1141,10 @@ class ReCogDriveAgent(AbstractAgent):
             "vggt_horizon_conditioner",
             "branch_logits",
             "last_rd",
+            "two_expert_",
+            "two_expert_slots",
+            "two_expert_h_dyn",
+            "two_expert_h_geo",
         )
         return key.startswith("action_head.") and any(marker in key for marker in expert_markers)
 
