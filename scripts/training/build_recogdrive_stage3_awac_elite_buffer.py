@@ -363,6 +363,8 @@ def main(cfg: DictConfig) -> None:
     dataloader_params = dict(cfg.dataloader.params)
     dataloader_params["batch_size"] = batch_size
     dataloader_params["shuffle"] = False
+    if int(dataloader_params.get("num_workers", 0)) <= 0:
+        dataloader_params.pop("prefetch_factor", None)
     dataloader = DataLoader(dataset, collate_fn=custom_collate_fn, **dataloader_params)
 
     summary_fields = [
