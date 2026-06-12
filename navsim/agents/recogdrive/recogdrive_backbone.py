@@ -193,6 +193,18 @@ class RecogDriveBackbone(nn.Module):
         return embeddings
 
     @staticmethod
+    def _language_model(model: nn.Module) -> nn.Module:
+        language_model = getattr(model, "language_model", None)
+        if language_model is None and hasattr(model, "get_base_model"):
+            try:
+                language_model = getattr(model.get_base_model(), "language_model", None)
+            except Exception:
+                language_model = None
+        if language_model is None:
+            raise NotImplementedError("two_expert_slot soft injection requires an InternVL language_model.")
+        return language_model
+
+    @staticmethod
     def _model_accepts_inputs_embeds(model: nn.Module) -> bool:
         try:
             signature = inspect.signature(model.forward)
@@ -280,10 +292,11 @@ class RecogDriveBackbone(nn.Module):
             raise RuntimeError("Backbone model has not been initialized. Call initialize() on the agent first.")
         if self.model_type != "internvl":
             raise NotImplementedError("two_expert_slot VLM soft-slot injection is implemented for InternVL only.")
-        if not self._model_accepts_inputs_embeds(self.model):
+        use_internvl_low_level_forward = hasattr(self.model, "extract_feature") and hasattr(self.model, "language_model")
+        if not use_internvl_low_level_forward and not self._model_accepts_inputs_embeds(self.model):
             raise NotImplementedError(
-                "two_expert_slot requires a VLM wrapper that accepts inputs_embeds and forwards them through "
-                "the language/VLM transformer. The current wrapper does not expose this path."
+                "two_expert_slot requires either InternVL extract_feature()+language_model or a wrapper "
+                "that accepts inputs_embeds and forwards them through the language/VLM transformer."
             )
         if isinstance(prompt_inputs, dict):
             questions = prompt_inputs.get("questions") or prompt_inputs.get("prompts")
@@ -312,6 +325,30 @@ class RecogDriveBackbone(nn.Module):
         embeddings = self._language_embedding_layer(self.model)
         token_embeddings = embeddings(input_ids)
         batch_size, raw_len, hidden_dim = token_embeddings.shape
+        if use_internvl_low_level_forward and not hasattr(self.model, "img_context_token_id"):
+            self.model.img_context_token_id = self.img_context_token_id
+        if use_internvl_low_level_forward:
+            vit_embeds = self.model.extract_feature(images.to(device=device, dtype=model_dtype))
+            if vit_embeds.shape[-1] != hidden_dim:
+                raise ValueError(
+                    f"InternVL visual feature dim {vit_embeds.shape[-1]} does not match "
+                    f"language hidden dim {hidden_dim}."
+                )
+            flat_token_embeddings = token_embeddings.reshape(batch_size * raw_len, hidden_dim).clone()
+            flat_input_ids = input_ids.reshape(batch_size * raw_len)
+            image_selected = flat_input_ids == self.img_context_token_id
+            flat_vit_embeds = vit_embeds.reshape(-1, hidden_dim).to(dtype=flat_token_embeddings.dtype)
+            selected_count = int(image_selected.sum().item())
+            if selected_count <= 0:
+                raise ValueError("InternVL prompt contains no IMG_CONTEXT tokens for visual feature injection.")
+            if flat_vit_embeds.shape[0] < selected_count:
+                raise ValueError(
+                    f"Not enough visual tokens for IMG_CONTEXT slots: visual={flat_vit_embeds.shape[0]}, "
+                    f"selected={selected_count}."
+                )
+            flat_token_embeddings[image_selected] = flat_vit_embeds[:selected_count]
+            token_embeddings = flat_token_embeddings.reshape(batch_size, raw_len, hidden_dim)
+
         dyn_slot_embeds, geo_slot_embeds, slot_metadata = two_expert_slots.get_slots(
             batch_size,
             device=token_embeddings.device,
@@ -350,17 +387,24 @@ class RecogDriveBackbone(nn.Module):
             }
         )
 
-        num_patches = images.size(0)
-        image_flags = torch.tensor([1] * num_patches, dtype=torch.long, device=device)
-        outputs = self.model(
-            pixel_values=images.to(device=device, dtype=model_dtype),
-            inputs_embeds=full_inputs_embeds.to(device=device, dtype=token_embeddings.dtype),
-            attention_mask=full_attention_mask,
-            position_ids=full_position_ids,
-            image_flags=image_flags.squeeze(-1),
-            output_hidden_states=True,
-            return_dict=True,
-        )
+        if use_internvl_low_level_forward:
+            language_model = self._language_model(self.model)
+            outputs = language_model(
+                inputs_embeds=full_inputs_embeds.to(device=device, dtype=token_embeddings.dtype),
+                attention_mask=full_attention_mask,
+                position_ids=full_position_ids,
+                output_hidden_states=True,
+                return_dict=True,
+            )
+        else:
+            outputs = self.model(
+                pixel_values=images.to(device=device, dtype=model_dtype),
+                inputs_embeds=full_inputs_embeds.to(device=device, dtype=token_embeddings.dtype),
+                attention_mask=full_attention_mask,
+                position_ids=full_position_ids,
+                output_hidden_states=True,
+                return_dict=True,
+            )
         full_hidden_state = outputs.hidden_states[-1]
         raw_vlm_hidden = full_hidden_state[:, :raw_len]
         h_dyn, h_geo = extract_two_expert_slot_hidden(full_hidden_state, slot_metadata)
