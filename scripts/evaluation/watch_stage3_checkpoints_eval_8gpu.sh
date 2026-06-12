@@ -25,6 +25,7 @@ STATUS_FILE="${TRAIN_OUT_ROOT}/status/stage3_rl_2b.json"
 ARCHIVE_DIR="${EVAL_OUT_ROOT}/checkpoint_archive"
 STATE_DIR="${EVAL_OUT_ROOT}/state"
 SUMMARY_TSV="${EVAL_OUT_ROOT}/checkpoint_eval_summary.tsv"
+SUBMETRIC_SUMMARY_TSV="${EVAL_OUT_ROOT}/checkpoint_eval_submetrics.tsv"
 
 mkdir -p "${ARCHIVE_DIR}" "${STATE_DIR}"
 if [[ ! -f "${SUMMARY_TSV}" ]]; then
@@ -187,6 +188,11 @@ PY
 
   rm -f "${STATE_DIR}/${id}.running"
   if [[ "${rc}" -eq 0 ]]; then
+    "${PYTHON_BIN}" "${REPO_ROOT}/scripts/evaluation/summarize_recogdrive_eval_submetrics.py" \
+      --eval-dir "${eval_dir}" \
+      --checkpoint-id "${id}" \
+      --summary-tsv "${SUBMETRIC_SUMMARY_TSV}" \
+      >> "${eval_dir}/eval.log" 2>&1 || log "submetric summary failed id=${id}; see ${eval_dir}/eval.log"
     touch "${STATE_DIR}/${id}.done"
     record_summary "${id}" "done" "${checkpoint}" "${archive}" "${eval_dir}" "${rc}"
     log "eval done id=${id}"

@@ -20,12 +20,70 @@ reference_policy_checkpoint: ''
 vlm_size: 'small'
 train_backbone: false
 grpo: False
+stage3_objective: none
 lr: 1e-4
 grpo_sample_time: 8
 bc_anneal: false
 bc_coeff_start: 0.1
 bc_coeff_end: 0.1
 bc_anneal_epochs: 1
+offline_rl_enabled: false
+offline_rl_elite_buffer_path: ''
+offline_rl_missing_buffer_policy: error
+offline_rl_elite_top_m: 8
+offline_rl_elite_min_candidates: 2
+offline_rl_keep_gt_candidate: true
+offline_rl_keep_il_candidate: true
+offline_rl_build_candidates_online: false
+offline_rl_online_policy_samples: 8
+offline_rl_online_use_current_policy: true
+offline_rl_online_use_old_policy: true
+offline_rl_online_use_gt: true
+offline_rl_perturb_gt: true
+offline_rl_perturb_il: true
+offline_rl_progress_endpoint_deltas_m: [0.5, 1.0, 1.5, 2.0, 3.0]
+offline_rl_progress_speed_scales: [0.95, 1.02, 1.05, 1.08, 1.12]
+offline_rl_progress_time_gammas: [0.75, 0.85, 0.95, 1.05]
+offline_rl_lateral_offsets_m: [-0.8, -0.6, -0.4, -0.2, 0.2, 0.4, 0.6, 0.8]
+offline_rl_endpoint_lateral_offsets_m: [-0.8, -0.4, 0.4, 0.8]
+offline_rl_timing_slow_first_scales: [0.7, 0.8, 0.9]
+offline_rl_timing_delay_strengths: [0.15, 0.25, 0.35]
+offline_rl_clip_candidates_to_norm_range: true
+offline_rl_enforce_forward_monotonic_x: true
+offline_rl_max_heading_step_rad: 0.25
+offline_rl_max_final_heading_delta_rad: 0.4
+offline_rl_require_nc: true
+offline_rl_require_dac: true
+offline_rl_require_ddc_guard: true
+offline_rl_ddc_min_absolute: 0.99
+offline_rl_ddc_max_relative_drop: 0.01
+offline_rl_require_ttc_guard: false
+offline_rl_ttc_min_absolute: 0.95
+offline_rl_ttc_max_relative_drop: 0.02
+offline_rl_prior_distance_weight: 0.02
+offline_rl_jerk_penalty_weight: 0.005
+offline_rl_select_by: pdms_minus_prior
+offline_rl_baseline_mode: max_gt_il
+offline_rl_expectile_tau: 0.8
+offline_rl_expectile_iters: 20
+offline_rl_top_mean_frac: 0.2
+offline_rl_advantage_temperature: 0.03
+offline_rl_advantage_clip_min: -0.2
+offline_rl_advantage_clip_max: 0.2
+offline_rl_weight_min: 0.05
+offline_rl_weight_max: 20.0
+offline_rl_normalize_weights_per_scene: true
+offline_rl_train_only_valid_candidates: true
+offline_rl_min_reward_margin_to_gt_for_extra_weight: 0.0
+offline_rl_awac_loss_weight: 1.0
+offline_rl_bc_loss_weight: 0.05
+offline_rl_grpo_loss_weight: 0.0
+offline_rl_log_candidate_sources: true
+offline_rl_log_submetrics: true
+offline_rl_log_oracle_stats: true
+scheduler_epochs: 200
+scheduler_warmup_epochs: 3
+scheduler_min_lr: 1e-6
 grpo_scheduler_epochs: 10
 grpo_scheduler_warmup_epochs: 0
 grpo_scheduler_min_lr: 0.0

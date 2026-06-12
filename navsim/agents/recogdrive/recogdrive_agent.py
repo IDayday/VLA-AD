@@ -1,4 +1,4 @@
-from typing import Any, List, Dict, Optional, Union
+from typing import Any, List, Dict, Literal, Optional, Union
 import os
 from pathlib import Path
 import warnings
@@ -109,6 +109,7 @@ class ReCogDriveAgent(AbstractAgent):
         cache_hidden_state: bool = True, 
         lr: float = 1e-4,
         grpo: bool = False,
+        stage3_objective: Literal["none", "grpo", "awac_iql", "hybrid"] = "none",
         grpo_sample_time: int = 8,
         bc_anneal: bool = False,
         bc_coeff_start: float = 0.1,
@@ -116,6 +117,60 @@ class ReCogDriveAgent(AbstractAgent):
         bc_anneal_epochs: int = 1,
         metric_cache_path: Optional[str] = '', 
         reference_policy_checkpoint: Optional[str] = '', 
+        offline_rl_enabled: bool = False,
+        offline_rl_elite_buffer_path: str = "",
+        offline_rl_missing_buffer_policy: str = "error",
+        offline_rl_elite_top_m: int = 8,
+        offline_rl_elite_min_candidates: int = 2,
+        offline_rl_keep_gt_candidate: bool = True,
+        offline_rl_keep_il_candidate: bool = True,
+        offline_rl_build_candidates_online: bool = False,
+        offline_rl_online_policy_samples: int = 8,
+        offline_rl_online_use_current_policy: bool = True,
+        offline_rl_online_use_old_policy: bool = True,
+        offline_rl_online_use_gt: bool = True,
+        offline_rl_perturb_gt: bool = True,
+        offline_rl_perturb_il: bool = True,
+        offline_rl_progress_endpoint_deltas_m: tuple[float, ...] = (0.5, 1.0, 1.5, 2.0, 3.0),
+        offline_rl_progress_speed_scales: tuple[float, ...] = (0.95, 1.02, 1.05, 1.08, 1.12),
+        offline_rl_progress_time_gammas: tuple[float, ...] = (0.75, 0.85, 0.95, 1.05),
+        offline_rl_lateral_offsets_m: tuple[float, ...] = (-0.8, -0.6, -0.4, -0.2, 0.2, 0.4, 0.6, 0.8),
+        offline_rl_endpoint_lateral_offsets_m: tuple[float, ...] = (-0.8, -0.4, 0.4, 0.8),
+        offline_rl_timing_slow_first_scales: tuple[float, ...] = (0.7, 0.8, 0.9),
+        offline_rl_timing_delay_strengths: tuple[float, ...] = (0.15, 0.25, 0.35),
+        offline_rl_clip_candidates_to_norm_range: bool = True,
+        offline_rl_enforce_forward_monotonic_x: bool = True,
+        offline_rl_max_heading_step_rad: float = 0.25,
+        offline_rl_max_final_heading_delta_rad: float = 0.4,
+        offline_rl_require_nc: bool = True,
+        offline_rl_require_dac: bool = True,
+        offline_rl_require_ddc_guard: bool = True,
+        offline_rl_ddc_min_absolute: float = 0.99,
+        offline_rl_ddc_max_relative_drop: float = 0.01,
+        offline_rl_require_ttc_guard: bool = False,
+        offline_rl_ttc_min_absolute: float = 0.95,
+        offline_rl_ttc_max_relative_drop: float = 0.02,
+        offline_rl_prior_distance_weight: float = 0.02,
+        offline_rl_jerk_penalty_weight: float = 0.005,
+        offline_rl_select_by: str = "pdms_minus_prior",
+        offline_rl_baseline_mode: str = "max_gt_il",
+        offline_rl_expectile_tau: float = 0.8,
+        offline_rl_expectile_iters: int = 20,
+        offline_rl_top_mean_frac: float = 0.2,
+        offline_rl_advantage_temperature: float = 0.03,
+        offline_rl_advantage_clip_min: float = -0.2,
+        offline_rl_advantage_clip_max: float = 0.2,
+        offline_rl_weight_min: float = 0.05,
+        offline_rl_weight_max: float = 20.0,
+        offline_rl_normalize_weights_per_scene: bool = True,
+        offline_rl_train_only_valid_candidates: bool = True,
+        offline_rl_min_reward_margin_to_gt_for_extra_weight: float = 0.0,
+        offline_rl_awac_loss_weight: float = 1.0,
+        offline_rl_bc_loss_weight: float = 0.05,
+        offline_rl_grpo_loss_weight: float = 0.0,
+        offline_rl_log_candidate_sources: bool = True,
+        offline_rl_log_submetrics: bool = True,
+        offline_rl_log_oracle_stats: bool = True,
         vlm_size: Optional[str] = 'small', 
         train_backbone: bool = False,
         use_expert_features: bool = False,
@@ -304,7 +359,20 @@ class ReCogDriveAgent(AbstractAgent):
         self.cache_mode = cache_mode
         self.cache_hidden_state = cache_hidden_state
         self._lr = lr
-        self.grpo = grpo
+        if stage3_objective not in {"none", "grpo", "awac_iql", "hybrid"}:
+            raise ValueError("stage3_objective must be one of 'none', 'grpo', 'awac_iql', or 'hybrid'.")
+        resolved_stage3_objective = str(stage3_objective)
+        if resolved_stage3_objective == "none" and bool(grpo):
+            resolved_stage3_objective = "grpo"
+        if resolved_stage3_objective == "grpo":
+            grpo = True
+        if resolved_stage3_objective in {"awac_iql", "hybrid"}:
+            offline_rl_enabled = True
+        if resolved_stage3_objective == "hybrid" and float(offline_rl_grpo_loss_weight) > 0.0:
+            grpo = True
+        self.stage3_objective = resolved_stage3_objective
+        self.offline_rl_enabled = bool(offline_rl_enabled)
+        self.grpo = bool(grpo)
         self.grpo_sample_time = int(grpo_sample_time)
         if self.grpo_sample_time <= 0:
             raise ValueError("grpo_sample_time must be positive.")
@@ -319,6 +387,61 @@ class ReCogDriveAgent(AbstractAgent):
         self.backbone = None
         self.metric_cache_path = metric_cache_path
         self.reference_policy_checkpoint = reference_policy_checkpoint
+        self.offline_rl_elite_buffer_path = offline_rl_elite_buffer_path
+        self.offline_rl_missing_buffer_policy = offline_rl_missing_buffer_policy
+        self.offline_rl_elite_top_m = int(offline_rl_elite_top_m)
+        self.offline_rl_elite_min_candidates = int(offline_rl_elite_min_candidates)
+        self.offline_rl_keep_gt_candidate = bool(offline_rl_keep_gt_candidate)
+        self.offline_rl_keep_il_candidate = bool(offline_rl_keep_il_candidate)
+        self.offline_rl_build_candidates_online = bool(offline_rl_build_candidates_online)
+        self.offline_rl_online_policy_samples = int(offline_rl_online_policy_samples)
+        self.offline_rl_online_use_current_policy = bool(offline_rl_online_use_current_policy)
+        self.offline_rl_online_use_old_policy = bool(offline_rl_online_use_old_policy)
+        self.offline_rl_online_use_gt = bool(offline_rl_online_use_gt)
+        self.offline_rl_perturb_gt = bool(offline_rl_perturb_gt)
+        self.offline_rl_perturb_il = bool(offline_rl_perturb_il)
+        self.offline_rl_progress_endpoint_deltas_m = tuple(float(x) for x in offline_rl_progress_endpoint_deltas_m)
+        self.offline_rl_progress_speed_scales = tuple(float(x) for x in offline_rl_progress_speed_scales)
+        self.offline_rl_progress_time_gammas = tuple(float(x) for x in offline_rl_progress_time_gammas)
+        self.offline_rl_lateral_offsets_m = tuple(float(x) for x in offline_rl_lateral_offsets_m)
+        self.offline_rl_endpoint_lateral_offsets_m = tuple(float(x) for x in offline_rl_endpoint_lateral_offsets_m)
+        self.offline_rl_timing_slow_first_scales = tuple(float(x) for x in offline_rl_timing_slow_first_scales)
+        self.offline_rl_timing_delay_strengths = tuple(float(x) for x in offline_rl_timing_delay_strengths)
+        self.offline_rl_clip_candidates_to_norm_range = bool(offline_rl_clip_candidates_to_norm_range)
+        self.offline_rl_enforce_forward_monotonic_x = bool(offline_rl_enforce_forward_monotonic_x)
+        self.offline_rl_max_heading_step_rad = float(offline_rl_max_heading_step_rad)
+        self.offline_rl_max_final_heading_delta_rad = float(offline_rl_max_final_heading_delta_rad)
+        self.offline_rl_require_nc = bool(offline_rl_require_nc)
+        self.offline_rl_require_dac = bool(offline_rl_require_dac)
+        self.offline_rl_require_ddc_guard = bool(offline_rl_require_ddc_guard)
+        self.offline_rl_ddc_min_absolute = float(offline_rl_ddc_min_absolute)
+        self.offline_rl_ddc_max_relative_drop = float(offline_rl_ddc_max_relative_drop)
+        self.offline_rl_require_ttc_guard = bool(offline_rl_require_ttc_guard)
+        self.offline_rl_ttc_min_absolute = float(offline_rl_ttc_min_absolute)
+        self.offline_rl_ttc_max_relative_drop = float(offline_rl_ttc_max_relative_drop)
+        self.offline_rl_prior_distance_weight = float(offline_rl_prior_distance_weight)
+        self.offline_rl_jerk_penalty_weight = float(offline_rl_jerk_penalty_weight)
+        self.offline_rl_select_by = offline_rl_select_by
+        self.offline_rl_baseline_mode = offline_rl_baseline_mode
+        self.offline_rl_expectile_tau = float(offline_rl_expectile_tau)
+        self.offline_rl_expectile_iters = int(offline_rl_expectile_iters)
+        self.offline_rl_top_mean_frac = float(offline_rl_top_mean_frac)
+        self.offline_rl_advantage_temperature = float(offline_rl_advantage_temperature)
+        self.offline_rl_advantage_clip_min = float(offline_rl_advantage_clip_min)
+        self.offline_rl_advantage_clip_max = float(offline_rl_advantage_clip_max)
+        self.offline_rl_weight_min = float(offline_rl_weight_min)
+        self.offline_rl_weight_max = float(offline_rl_weight_max)
+        self.offline_rl_normalize_weights_per_scene = bool(offline_rl_normalize_weights_per_scene)
+        self.offline_rl_train_only_valid_candidates = bool(offline_rl_train_only_valid_candidates)
+        self.offline_rl_min_reward_margin_to_gt_for_extra_weight = float(
+            offline_rl_min_reward_margin_to_gt_for_extra_weight
+        )
+        self.offline_rl_awac_loss_weight = float(offline_rl_awac_loss_weight)
+        self.offline_rl_bc_loss_weight = float(offline_rl_bc_loss_weight)
+        self.offline_rl_grpo_loss_weight = float(offline_rl_grpo_loss_weight)
+        self.offline_rl_log_candidate_sources = bool(offline_rl_log_candidate_sources)
+        self.offline_rl_log_submetrics = bool(offline_rl_log_submetrics)
+        self.offline_rl_log_oracle_stats = bool(offline_rl_log_oracle_stats)
         self.vlm_size = vlm_size
         self.train_backbone = train_backbone
         self.use_expert_features = use_expert_features
@@ -725,7 +848,63 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.two_expert_dyn_tokens_per_group = self.two_expert_dyn_tokens_per_group
         cfg.two_expert_num_geo_tokens = self.two_expert_num_geo_tokens
 
-        if self.grpo:
+        offline_cfg = cfg.offline_rl_cfg
+        offline_cfg.enabled = self.offline_rl_enabled
+        offline_cfg.elite_buffer_path = self.offline_rl_elite_buffer_path
+        offline_cfg.missing_buffer_policy = self.offline_rl_missing_buffer_policy
+        offline_cfg.elite_top_m = self.offline_rl_elite_top_m
+        offline_cfg.elite_min_candidates = self.offline_rl_elite_min_candidates
+        offline_cfg.keep_gt_candidate = self.offline_rl_keep_gt_candidate
+        offline_cfg.keep_il_candidate = self.offline_rl_keep_il_candidate
+        offline_cfg.build_candidates_online = self.offline_rl_build_candidates_online
+        offline_cfg.online_policy_samples = self.offline_rl_online_policy_samples
+        offline_cfg.online_use_current_policy = self.offline_rl_online_use_current_policy
+        offline_cfg.online_use_old_policy = self.offline_rl_online_use_old_policy
+        offline_cfg.online_use_gt = self.offline_rl_online_use_gt
+        offline_cfg.perturb_gt = self.offline_rl_perturb_gt
+        offline_cfg.perturb_il = self.offline_rl_perturb_il
+        offline_cfg.progress_endpoint_deltas_m = self.offline_rl_progress_endpoint_deltas_m
+        offline_cfg.progress_speed_scales = self.offline_rl_progress_speed_scales
+        offline_cfg.progress_time_gammas = self.offline_rl_progress_time_gammas
+        offline_cfg.lateral_offsets_m = self.offline_rl_lateral_offsets_m
+        offline_cfg.endpoint_lateral_offsets_m = self.offline_rl_endpoint_lateral_offsets_m
+        offline_cfg.timing_slow_first_scales = self.offline_rl_timing_slow_first_scales
+        offline_cfg.timing_delay_strengths = self.offline_rl_timing_delay_strengths
+        offline_cfg.clip_candidates_to_norm_range = self.offline_rl_clip_candidates_to_norm_range
+        offline_cfg.enforce_forward_monotonic_x = self.offline_rl_enforce_forward_monotonic_x
+        offline_cfg.max_heading_step_rad = self.offline_rl_max_heading_step_rad
+        offline_cfg.max_final_heading_delta_rad = self.offline_rl_max_final_heading_delta_rad
+        offline_cfg.require_nc = self.offline_rl_require_nc
+        offline_cfg.require_dac = self.offline_rl_require_dac
+        offline_cfg.require_ddc_guard = self.offline_rl_require_ddc_guard
+        offline_cfg.ddc_min_absolute = self.offline_rl_ddc_min_absolute
+        offline_cfg.ddc_max_relative_drop = self.offline_rl_ddc_max_relative_drop
+        offline_cfg.require_ttc_guard = self.offline_rl_require_ttc_guard
+        offline_cfg.ttc_min_absolute = self.offline_rl_ttc_min_absolute
+        offline_cfg.ttc_max_relative_drop = self.offline_rl_ttc_max_relative_drop
+        offline_cfg.prior_distance_weight = self.offline_rl_prior_distance_weight
+        offline_cfg.jerk_penalty_weight = self.offline_rl_jerk_penalty_weight
+        offline_cfg.select_by = self.offline_rl_select_by
+        offline_cfg.baseline_mode = self.offline_rl_baseline_mode
+        offline_cfg.expectile_tau = self.offline_rl_expectile_tau
+        offline_cfg.expectile_iters = self.offline_rl_expectile_iters
+        offline_cfg.top_mean_frac = self.offline_rl_top_mean_frac
+        offline_cfg.advantage_temperature = self.offline_rl_advantage_temperature
+        offline_cfg.advantage_clip_min = self.offline_rl_advantage_clip_min
+        offline_cfg.advantage_clip_max = self.offline_rl_advantage_clip_max
+        offline_cfg.weight_min = self.offline_rl_weight_min
+        offline_cfg.weight_max = self.offline_rl_weight_max
+        offline_cfg.normalize_weights_per_scene = self.offline_rl_normalize_weights_per_scene
+        offline_cfg.train_only_valid_candidates = self.offline_rl_train_only_valid_candidates
+        offline_cfg.min_reward_margin_to_gt_for_extra_weight = self.offline_rl_min_reward_margin_to_gt_for_extra_weight
+        offline_cfg.awac_loss_weight = self.offline_rl_awac_loss_weight
+        offline_cfg.bc_loss_weight = self.offline_rl_bc_loss_weight
+        offline_cfg.grpo_loss_weight = self.offline_rl_grpo_loss_weight
+        offline_cfg.log_candidate_sources = self.offline_rl_log_candidate_sources
+        offline_cfg.log_submetrics = self.offline_rl_log_submetrics
+        offline_cfg.log_oracle_stats = self.offline_rl_log_oracle_stats
+
+        if self.grpo or self.offline_rl_enabled:
             cfg.grpo_cfg.metric_cache_path = self.metric_cache_path
             cfg.grpo_cfg.reference_policy_checkpoint = self.reference_policy_checkpoint
             cfg.grpo_cfg.sample_time = self.grpo_sample_time
@@ -1130,7 +1309,8 @@ class ReCogDriveAgent(AbstractAgent):
                     continue
                 action_input_data[key] = features[key].to(model_dtype)
 
-        if targets is not None and not self.grpo:
+        stage3_objective = getattr(self, "stage3_objective", "grpo" if self.grpo else "none")
+        if targets is not None and stage3_objective == "none":
             action_inputs = BatchFeature(
                 data={
                     **action_input_data,
@@ -1148,7 +1328,7 @@ class ReCogDriveAgent(AbstractAgent):
                 hidden_anchor_step_index=hidden_anchor_step_index,
             )
             return predictions
-        elif self.training and self.grpo:
+        elif self.training and stage3_objective == "grpo":
             action_inputs = BatchFeature(
                 data={**action_input_data, "action": targets["trajectory"].to(device=action_device, dtype=model_dtype)}
             )
@@ -1157,6 +1337,15 @@ class ReCogDriveAgent(AbstractAgent):
                 action_inputs,
                 tokens_list,
                 sample_time=self.grpo_sample_time,
+            )
+        elif self.training and stage3_objective in {"awac_iql", "hybrid"}:
+            action_inputs = BatchFeature(
+                data={**action_input_data, "action": targets["trajectory"].to(device=action_device, dtype=model_dtype)}
+            )
+            return self.action_head.forward_awac_iql(
+                last_hidden_state,
+                action_inputs,
+                tokens_list,
             )
         else: 
             action_inputs = BatchFeature(action_input_data)
@@ -1800,7 +1989,7 @@ class ReCogDriveAgent(AbstractAgent):
 
 
     def compute_loss(self, features: Dict[str, torch.Tensor], targets: Dict[str, torch.Tensor], predictions: Dict[str, torch.Tensor]) -> torch.Tensor:
-        if self.training and self.grpo:
+        if self.training and getattr(self, "stage3_objective", "none") in {"grpo", "awac_iql", "hybrid"}:
             return predictions
         elif isinstance(predictions, dict) and "loss" in predictions:
             return predictions["loss"]

@@ -51,6 +51,8 @@ from .blocks.encoder import (
     SwiGLUFFN,
 )
 from .recogdrive_dit import LightningDiT
+from .offline_action_explorer import build_structured_perturbations
+from .offline_rl_buffer import REQUIRED_COMPONENT_KEYS, load_elite_record
 from .expert_fusion import (
     AlignmentHead,
     ExpertAdapter768,
@@ -155,6 +157,84 @@ class GRPOConfig:
     diversity_pdms_threshold: float = 0.7
     diversity_distance_scale: float = 5.0
     diversity_metric: Literal["endpoint", "trajectory"] = "endpoint"
+
+
+@dataclass
+class OfflineRLConfig:
+    """Configuration for Stage3 offline AWAC/IQL policy improvement."""
+
+    enabled: bool = False
+
+    # elite buffer
+    elite_buffer_path: str = ""
+    missing_buffer_policy: Literal["error", "fallback_gt"] = "error"
+    elite_top_m: int = 8
+    elite_min_candidates: int = 2
+    keep_gt_candidate: bool = True
+    keep_il_candidate: bool = True
+
+    # online candidate generation fallback / optional mode
+    build_candidates_online: bool = False
+    online_policy_samples: int = 8
+    online_use_current_policy: bool = True
+    online_use_old_policy: bool = True
+    online_use_gt: bool = True
+
+    # structured perturbation
+    perturb_gt: bool = True
+    perturb_il: bool = True
+    progress_endpoint_deltas_m: tuple[float, ...] = (0.5, 1.0, 1.5, 2.0, 3.0)
+    progress_speed_scales: tuple[float, ...] = (0.95, 1.02, 1.05, 1.08, 1.12)
+    progress_time_gammas: tuple[float, ...] = (0.75, 0.85, 0.95, 1.05)
+    lateral_offsets_m: tuple[float, ...] = (-0.8, -0.6, -0.4, -0.2, 0.2, 0.4, 0.6, 0.8)
+    endpoint_lateral_offsets_m: tuple[float, ...] = (-0.8, -0.4, 0.4, 0.8)
+    timing_slow_first_scales: tuple[float, ...] = (0.7, 0.8, 0.9)
+    timing_delay_strengths: tuple[float, ...] = (0.15, 0.25, 0.35)
+
+    # candidate repair / guards
+    clip_candidates_to_norm_range: bool = True
+    enforce_forward_monotonic_x: bool = True
+    max_heading_step_rad: float = 0.25
+    max_final_heading_delta_rad: float = 0.4
+
+    # candidate selection guards
+    require_nc: bool = True
+    require_dac: bool = True
+    require_ddc_guard: bool = True
+    ddc_min_absolute: float = 0.99
+    ddc_max_relative_drop: float = 0.01
+    require_ttc_guard: bool = False
+    ttc_min_absolute: float = 0.95
+    ttc_max_relative_drop: float = 0.02
+
+    # selection score
+    prior_distance_weight: float = 0.02
+    jerk_penalty_weight: float = 0.005
+    select_by: Literal["pdms", "pdms_minus_prior"] = "pdms_minus_prior"
+
+    # AWAC/IQL weighting
+    baseline_mode: Literal["max_gt_il", "expectile", "top_mean", "mean"] = "max_gt_il"
+    expectile_tau: float = 0.8
+    expectile_iters: int = 20
+    top_mean_frac: float = 0.2
+    advantage_temperature: float = 0.03
+    advantage_clip_min: float = -0.2
+    advantage_clip_max: float = 0.2
+    weight_min: float = 0.05
+    weight_max: float = 20.0
+    normalize_weights_per_scene: bool = True
+    train_only_valid_candidates: bool = True
+    min_reward_margin_to_gt_for_extra_weight: float = 0.0
+
+    # loss weights
+    awac_loss_weight: float = 1.0
+    bc_loss_weight: float = 0.05
+    grpo_loss_weight: float = 0.0
+
+    # debugging / logging
+    log_candidate_sources: bool = True
+    log_submetrics: bool = True
+    log_oracle_stats: bool = True
 
 
 @dataclass
@@ -340,6 +420,7 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     ddpm_cfg: DDPMConfig = field(default_factory=DDPMConfig)
     ddim_cfg: DDIMConfig = field(default_factory=DDIMConfig)
     grpo_cfg: GRPOConfig = field(default_factory=GRPOConfig)
+    offline_rl_cfg: OfflineRLConfig = field(default_factory=OfflineRLConfig)
 
 
 class ReCogDriveDiffusionPlanner(nn.Module):
@@ -723,8 +804,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         elif self.config.sampling_method == 'ddim':
             self._init_ddim_sampler(config.ddim_cfg)
 
+        self.offline_rl_cfg = config.offline_rl_cfg
+        self._validate_offline_rl_config(self.offline_rl_cfg)
         if config.grpo:
             self._init_grpo(config.grpo_cfg)
+        elif self.offline_rl_cfg.enabled:
+            self._init_offline_rl(self.offline_rl_cfg, config.grpo_cfg)
 
     def _init_flow_sampler(self, cfg: FlowConfig):
         """Initializes components required for Flow Matching."""
@@ -797,6 +882,65 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         flip_buffer('ddim_sqrt_one_minus_alphas', ddim_sqrt_one_minus_alphas)
         flip_buffer('ddim_sigmas', ddim_sigmas)
 
+    @staticmethod
+    def _validate_offline_rl_config(cfg: OfflineRLConfig) -> None:
+        if int(cfg.elite_top_m) <= 0:
+            raise ValueError("offline_rl_cfg.elite_top_m must be positive.")
+        if int(cfg.elite_min_candidates) <= 0:
+            raise ValueError("offline_rl_cfg.elite_min_candidates must be positive.")
+        if int(cfg.online_policy_samples) < 0:
+            raise ValueError("offline_rl_cfg.online_policy_samples must be non-negative.")
+        if float(cfg.advantage_temperature) <= 0.0:
+            raise ValueError("offline_rl_cfg.advantage_temperature must be positive.")
+        if not (0.0 <= float(cfg.weight_min) <= float(cfg.weight_max)):
+            raise ValueError("offline_rl_cfg.weight_max must be >= weight_min >= 0.")
+        if not (0.0 < float(cfg.expectile_tau) < 1.0):
+            raise ValueError("offline_rl_cfg.expectile_tau must be in (0, 1).")
+        if int(cfg.expectile_iters) <= 0:
+            raise ValueError("offline_rl_cfg.expectile_iters must be positive.")
+        if not (0.0 < float(cfg.top_mean_frac) <= 1.0):
+            raise ValueError("offline_rl_cfg.top_mean_frac must be in (0, 1].")
+        if float(cfg.advantage_clip_min) > float(cfg.advantage_clip_max):
+            raise ValueError("offline_rl_cfg.advantage_clip_min must be <= advantage_clip_max.")
+        for name in ("awac_loss_weight", "bc_loss_weight", "grpo_loss_weight"):
+            if float(getattr(cfg, name)) < 0.0:
+                raise ValueError(f"offline_rl_cfg.{name} must be non-negative.")
+        for name in (
+            "prior_distance_weight",
+            "jerk_penalty_weight",
+            "ddc_min_absolute",
+            "ddc_max_relative_drop",
+            "ttc_min_absolute",
+            "ttc_max_relative_drop",
+            "max_heading_step_rad",
+            "max_final_heading_delta_rad",
+        ):
+            if float(getattr(cfg, name)) < 0.0:
+                raise ValueError(f"offline_rl_cfg.{name} must be non-negative.")
+
+    def _init_stage3_oracle(self, cfg: GRPOConfig) -> None:
+        if not hasattr(self, "metric_cache_loader"):
+            self.metric_cache_loader = MetricCacheLoader(Path(cfg.metric_cache_path))
+        if not hasattr(self, "simulator"):
+            proposal_sampling = TrajectorySampling(time_horizon=4, interval_length=0.1)
+            self.simulator = PDMSimulator(proposal_sampling)
+        if not hasattr(self, "train_scorer"):
+            self.train_scorer = PDMScorer(self.simulator.proposal_sampling, cfg.scorer_config)
+
+    @staticmethod
+    def _freeze_policy(policy: "ReCogDriveDiffusionPlanner") -> None:
+        policy.eval()
+        for param in policy.parameters():
+            param.requires_grad = False
+
+    def _init_offline_rl(self, cfg: OfflineRLConfig, stage3_cfg: GRPOConfig) -> None:
+        self.offline_rl_cfg = cfg
+        self._init_stage3_oracle(stage3_cfg)
+        if not hasattr(self, "old_policy"):
+            self._safe_load_reference_policy(stage3_cfg.reference_policy_checkpoint)
+            self.old_policy = copy.deepcopy(self)
+            self._freeze_policy(self.old_policy)
+
     def _init_grpo(self, cfg: GRPOConfig):
         """Initializes components and hyperparameters for GRPO training."""
         self.denoised_clip_value = cfg.denoised_clip_value
@@ -861,24 +1005,17 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             setattr(self, name, getattr(cfg, name))
         self.grpo_update_counter = 0
         
-        self.metric_cache_loader = MetricCacheLoader(Path(cfg.metric_cache_path))
-        proposal_sampling = TrajectorySampling(time_horizon=4, interval_length=0.1)
-        self.simulator = PDMSimulator(proposal_sampling)
-        self.train_scorer = PDMScorer(proposal_sampling, cfg.scorer_config)
+        self._init_stage3_oracle(cfg)
         
         self._safe_load_reference_policy(cfg.reference_policy_checkpoint)
 
         behavior_policy = None
         if self.use_gspo_ratio:
             behavior_policy = copy.deepcopy(self)
-            behavior_policy.eval()
-            for param in behavior_policy.parameters():
-                param.requires_grad = False
+            self._freeze_policy(behavior_policy)
 
         self.old_policy = copy.deepcopy(self)
-        self.old_policy.eval()
-        for param in self.old_policy.parameters():
-            param.requires_grad = False
+        self._freeze_policy(self.old_policy)
 
         if behavior_policy is not None:
             self.behavior_policy = behavior_policy
@@ -1729,6 +1866,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             not self.config.use_expert_features
             and not self.config.use_last_rd
             and not self.config.use_last_vla
+            and not self.config.use_two_expert_slots
             and not self.config.last_vla_use_residual_diffusion
         ):
             return None
@@ -2784,6 +2922,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         init_actions: Optional[torch.Tensor] = None,
         deterministic: bool = False,
         action_input: Optional[BatchFeature] = None,
+        allow_target_tokens: Optional[bool] = None,
     ):
         """
         Generates the full denoising chain and the final trajectory.
@@ -2802,9 +2941,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 - The full denoising chain as a tensor of shape (B, K+1, H, D).
                 - The final, denormalized trajectory of shape (B, H, D).
         """
-        if not self.training:
+        context_allow_target_tokens = self.training if allow_target_tokens is None else bool(allow_target_tokens)
+        if not context_allow_target_tokens:
             self._warn_if_expert_targets_present(action_input, "sample_chain")
-        dit_context = self._prepare_dit_context(vl_features, action_input, training=self.training, allow_target_tokens=self.training)
+        dit_context = self._prepare_dit_context(
+            vl_features,
+            action_input,
+            training=self.training,
+            allow_target_tokens=context_allow_target_tokens,
+        )
         context_embeds = dit_context["context_tokens"]
         context_mean = dit_context["context_mean"]
         expert_step_condition = dit_context["expert_step_condition"]
@@ -2841,7 +2986,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         training=self.training,
                         noisy_actions=current_actions,
                         diffusion_timestep=t_batch,
-                        allow_target_tokens=self.training,
+                        allow_target_tokens=context_allow_target_tokens,
                     )
                     context_embeds = dit_context["context_tokens"]
                     context_mean = dit_context["context_mean"]
@@ -3289,6 +3434,724 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         start = float(getattr(self, "bc_coeff_start", 0.1))
         end = float(getattr(self, "bc_coeff_end", start))
         return start + (end - start) * progress
+
+    def _load_metric_cache_for_tokens(self, tokens_list) -> Dict[str, Any]:
+        if not hasattr(self, "metric_cache_loader"):
+            self._init_stage3_oracle(self.config.grpo_cfg)
+        metric_cache = {}
+        for token in set(str(token) for token in tokens_list):
+            if token not in self.metric_cache_loader.metric_cache_paths:
+                raise KeyError(f"Metric cache missing token={token!r}; Stage3 training must use train metric cache.")
+            path = self.metric_cache_loader.metric_cache_paths[token]
+            with lzma.open(path, "rb") as f:
+                metric_cache[token] = pickle.load(f)
+        return metric_cache
+
+    def _score_candidate_trajectories(
+        self,
+        candidates: torch.Tensor,
+        tokens_list: list[str],
+        metric_cache: Dict[str, Any],
+    ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+        if candidates.ndim != 4 or candidates.shape[-1] != 3:
+            raise ValueError(f"candidates must have shape [B, K, H, 3], got {tuple(candidates.shape)}.")
+        if not torch.isfinite(candidates).all():
+            raise ValueError("AWAC candidates contain non-finite values before scoring.")
+        B, K, H, D = candidates.shape
+        if len(tokens_list) != B:
+            raise ValueError(f"tokens_list length {len(tokens_list)} does not match B={B}.")
+        flat = candidates.detach().float().reshape(B * K, H, D)
+        tokens_rep = [str(token) for token in tokens_list for _ in range(K)]
+        rewards, components = self.reward_fn(flat, tokens_rep, metric_cache, return_components=True)
+        rewards = rewards.reshape(B, K).float()
+        components = {key: value.reshape(B, K).float() for key, value in components.items()}
+        if not torch.isfinite(rewards).all():
+            raise ValueError("PDMS rewards contain non-finite values.")
+        return rewards, components
+
+    @staticmethod
+    def _trajectory_jerk_penalty(trajs: torch.Tensor) -> torch.Tensor:
+        if trajs.shape[-2] < 4:
+            return trajs.new_zeros(trajs.shape[:2])
+        xy = trajs[..., :2].float()
+        velocity = xy[..., 1:, :] - xy[..., :-1, :]
+        acceleration = velocity[..., 1:, :] - velocity[..., :-1, :]
+        jerk = acceleration[..., 1:, :] - acceleration[..., :-1, :]
+        return torch.linalg.norm(jerk, dim=-1).mean(dim=-1).to(dtype=trajs.dtype)
+
+    @staticmethod
+    def _source_bucket(source: str) -> str:
+        source = str(source)
+        if source == "gt":
+            return "gt"
+        if source == "il":
+            return "il"
+        if source.startswith("policy"):
+            return "policy"
+        if source.startswith("progress"):
+            return "progress"
+        if "lateral" in source:
+            return "lateral"
+        if source.startswith("timing"):
+            return "timing"
+        return "other"
+
+    @classmethod
+    def _source_code(cls, source: str) -> int:
+        return {
+            "gt": 1,
+            "il": 2,
+            "policy": 3,
+            "progress": 4,
+            "lateral": 5,
+            "timing": 6,
+        }.get(cls._source_bucket(source), 0)
+
+    def _select_elite_candidates(
+        self,
+        candidates: torch.Tensor,
+        rewards: torch.Tensor,
+        components: Dict[str, torch.Tensor],
+        sources: list[str],
+        anchor_distance: torch.Tensor,
+        gt_reward: torch.Tensor,
+        il_reward: torch.Tensor,
+        cfg: OfflineRLConfig,
+    ) -> Dict[str, torch.Tensor]:
+        if candidates.ndim != 4 or candidates.shape[-1] != 3:
+            raise ValueError(f"candidates must have shape [B, K, H, 3], got {tuple(candidates.shape)}.")
+        B, K, H, D = candidates.shape
+        if rewards.shape != (B, K):
+            raise ValueError(f"rewards must have shape [B, K], got {tuple(rewards.shape)}.")
+        if anchor_distance.shape != (B, K):
+            raise ValueError(f"anchor_distance must have shape [B, K], got {tuple(anchor_distance.shape)}.")
+        if len(sources) != K:
+            raise ValueError(f"sources length {len(sources)} does not match K={K}.")
+
+        device = candidates.device
+        valid = torch.ones((B, K), device=device, dtype=torch.bool)
+        if bool(cfg.require_nc):
+            valid &= components["no_at_fault_collisions"] >= 1.0
+        if bool(cfg.require_dac):
+            valid &= components["drivable_area_compliance"] >= 1.0
+
+        source_to_index: Dict[str, int] = {}
+        for idx, source in enumerate(sources):
+            source_to_index.setdefault(source, idx)
+        gt_idx = source_to_index.get("gt")
+        il_idx = source_to_index.get("il")
+        if bool(cfg.require_ddc_guard):
+            ddc = components["driving_direction_compliance"]
+            ddc_anchor = None
+            if gt_idx is not None:
+                ddc_anchor = ddc[:, gt_idx]
+            if il_idx is not None:
+                ddc_anchor = ddc[:, il_idx] if ddc_anchor is None else torch.maximum(ddc_anchor, ddc[:, il_idx])
+            if ddc_anchor is None:
+                valid &= ddc >= float(cfg.ddc_min_absolute)
+            else:
+                valid &= (ddc >= float(cfg.ddc_min_absolute)) | (
+                    ddc >= ddc_anchor[:, None] - float(cfg.ddc_max_relative_drop)
+                )
+        if bool(cfg.require_ttc_guard):
+            ttc = components["time_to_collision_within_bound"]
+            ttc_anchor = None
+            if gt_idx is not None:
+                ttc_anchor = ttc[:, gt_idx]
+            if il_idx is not None:
+                ttc_anchor = ttc[:, il_idx] if ttc_anchor is None else torch.maximum(ttc_anchor, ttc[:, il_idx])
+            if ttc_anchor is None:
+                valid &= ttc >= float(cfg.ttc_min_absolute)
+            else:
+                valid &= (ttc >= float(cfg.ttc_min_absolute)) | (
+                    ttc >= ttc_anchor[:, None] - float(cfg.ttc_max_relative_drop)
+                )
+
+        if str(cfg.select_by) == "pdms":
+            selection_score = rewards.float()
+        else:
+            jerk = self._trajectory_jerk_penalty(candidates).float()
+            selection_score = (
+                rewards.float()
+                - float(cfg.prior_distance_weight) * anchor_distance.float()
+                - float(cfg.jerk_penalty_weight) * jerk
+            )
+
+        selected_indices: list[torch.Tensor] = []
+        fallback_flags = []
+        min_candidates = max(1, int(cfg.elite_min_candidates))
+        top_m = max(1, int(cfg.elite_top_m))
+        for b in range(B):
+            row_valid = valid[b]
+            fallback = not bool(row_valid.any().item())
+            if fallback:
+                row_score = rewards[b].float()
+            else:
+                row_score = selection_score[b].masked_fill(~row_valid, -torch.inf)
+            n_select = min(top_m, K)
+            idx = torch.topk(row_score, k=n_select, largest=True).indices.tolist()
+            if bool(cfg.keep_gt_candidate) and gt_idx is not None:
+                idx.append(gt_idx)
+            if bool(cfg.keep_il_candidate) and il_idx is not None:
+                idx.append(il_idx)
+            if len(set(idx)) < min(min_candidates, K):
+                for extra_idx in torch.topk(rewards[b].float(), k=min(K, min_candidates), largest=True).indices.tolist():
+                    idx.append(extra_idx)
+            unique_idx = []
+            seen = set()
+            for item in idx:
+                if int(item) not in seen:
+                    unique_idx.append(int(item))
+                    seen.add(int(item))
+            selected_indices.append(torch.tensor(unique_idx, device=device, dtype=torch.long))
+            fallback_flags.append(fallback)
+
+        max_m = max(int(idx.numel()) for idx in selected_indices)
+        selected_trajs = candidates.new_zeros((B, max_m, H, D))
+        selected_rewards = rewards.new_zeros((B, max_m))
+        selected_anchor_distance = anchor_distance.new_zeros((B, max_m))
+        selected_real_mask = torch.zeros((B, max_m), device=device, dtype=torch.bool)
+        selected_valid_mask = torch.zeros((B, max_m), device=device, dtype=torch.bool)
+        selected_source_code = torch.zeros((B, max_m), device=device, dtype=torch.long)
+        selected_source_index = torch.full((B, max_m), -1, device=device, dtype=torch.long)
+        selected_components = {
+            key: value.new_zeros((B, max_m))
+            for key, value in components.items()
+        }
+        for b, idx in enumerate(selected_indices):
+            m = int(idx.numel())
+            selected_trajs[b, :m] = candidates[b, idx]
+            selected_rewards[b, :m] = rewards[b, idx]
+            selected_anchor_distance[b, :m] = anchor_distance[b, idx]
+            selected_real_mask[b, :m] = True
+            selected_valid_mask[b, :m] = valid[b, idx]
+            selected_source_index[b, :m] = idx
+            selected_source_code[b, :m] = torch.tensor(
+                [self._source_code(sources[int(i)]) for i in idx.tolist()],
+                device=device,
+                dtype=torch.long,
+            )
+            for key, value in components.items():
+                selected_components[key][b, :m] = value[b, idx]
+
+        fallback_mask = torch.tensor(fallback_flags, device=device, dtype=torch.bool)
+        best_idx = rewards.argmax(dim=1)
+        best_reward = rewards.gather(1, best_idx[:, None]).squeeze(1)
+        best_source_code = torch.tensor(
+            [self._source_code(sources[int(idx.item())]) for idx in best_idx],
+            device=device,
+            dtype=torch.long,
+        )
+        return {
+            "selected_trajs": selected_trajs,
+            "selected_rewards": selected_rewards,
+            "selected_components": selected_components,
+            "selected_anchor_distance": selected_anchor_distance,
+            "selected_valid_mask": selected_valid_mask,
+            "selected_real_mask": selected_real_mask,
+            "selected_source_code": selected_source_code,
+            "selected_source_index": selected_source_index,
+            "valid_candidate_ratio": valid.float().mean(),
+            "fallback_candidate_ratio": fallback_mask.float().mean(),
+            "gt_reward": gt_reward.float(),
+            "il_reward": il_reward.float(),
+            "best_reward": best_reward.float(),
+            "best_source_code": best_source_code,
+        }
+
+    def _compute_iql_baseline(
+        self,
+        rewards: torch.Tensor,
+        gt_reward: torch.Tensor,
+        il_reward: torch.Tensor,
+        cfg: OfflineRLConfig,
+        real_mask: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        if rewards.ndim != 2:
+            raise ValueError(f"rewards must have shape [B, M], got {tuple(rewards.shape)}.")
+        if real_mask is None:
+            real_mask = torch.ones_like(rewards, dtype=torch.bool)
+        real_f = real_mask.to(dtype=rewards.dtype)
+        mode = str(cfg.baseline_mode)
+        if mode == "max_gt_il":
+            baseline = torch.maximum(gt_reward.to(rewards), il_reward.to(rewards))
+        elif mode == "mean":
+            denom = real_f.sum(dim=1).clamp(min=1.0)
+            baseline = (rewards * real_f).sum(dim=1) / denom
+        elif mode == "top_mean":
+            masked_rewards = rewards.masked_fill(~real_mask, -torch.inf)
+            counts = real_mask.sum(dim=1).clamp(min=1)
+            top_k = max(1, int(rewards.shape[1] * float(cfg.top_mean_frac)))
+            top_k = min(top_k, rewards.shape[1])
+            values = torch.topk(masked_rewards, k=top_k, dim=1).values
+            finite = torch.isfinite(values)
+            baseline = (values.masked_fill(~finite, 0.0).sum(dim=1) / finite.sum(dim=1).clamp(min=1))
+            baseline = torch.where(counts > 0, baseline, rewards.mean(dim=1))
+        elif mode == "expectile":
+            denom = real_f.sum(dim=1, keepdim=True).clamp(min=1.0)
+            v = (rewards * real_f).sum(dim=1, keepdim=True) / denom
+            for _ in range(int(cfg.expectile_iters)):
+                diff = rewards - v
+                weights = torch.where(diff > 0, float(cfg.expectile_tau), 1.0 - float(cfg.expectile_tau))
+                weights = weights.to(rewards) * real_f
+                v = (weights * rewards).sum(dim=1, keepdim=True) / weights.sum(dim=1, keepdim=True).clamp(min=1e-6)
+            baseline = v.squeeze(1)
+        else:
+            raise ValueError(f"Unsupported offline_rl baseline_mode: {cfg.baseline_mode!r}")
+        return baseline.float()
+
+    def _compute_awac_weights(
+        self,
+        rewards: torch.Tensor,
+        baseline: torch.Tensor,
+        cfg: OfflineRLConfig,
+        valid_mask: Optional[torch.Tensor] = None,
+        real_mask: Optional[torch.Tensor] = None,
+        gt_reward: Optional[torch.Tensor] = None,
+    ) -> tuple[torch.Tensor, torch.Tensor]:
+        if rewards.ndim != 2 or baseline.shape != (rewards.shape[0],):
+            raise ValueError(
+                f"rewards must be [B, M] and baseline [B], got rewards={tuple(rewards.shape)} baseline={tuple(baseline.shape)}."
+            )
+        if real_mask is None:
+            real_mask = torch.ones_like(rewards, dtype=torch.bool)
+        if valid_mask is None:
+            valid_mask = real_mask
+        adv = rewards.float() - baseline.float()[:, None]
+        if gt_reward is not None and float(cfg.min_reward_margin_to_gt_for_extra_weight) > 0.0:
+            improved = rewards.float() > gt_reward.float()[:, None] + float(cfg.min_reward_margin_to_gt_for_extra_weight)
+            adv = torch.where(improved, adv, adv.clamp(max=0.0))
+        adv = adv.clamp(float(cfg.advantage_clip_min), float(cfg.advantage_clip_max))
+        weights = torch.exp((adv / float(cfg.advantage_temperature)).clamp(min=-60.0, max=60.0))
+        weights = weights.clamp(float(cfg.weight_min), float(cfg.weight_max))
+        weights = weights * real_mask.to(dtype=weights.dtype)
+        if bool(cfg.train_only_valid_candidates):
+            weights = weights * valid_mask.to(dtype=weights.dtype)
+        empty_rows = weights.sum(dim=1) <= 0.0
+        if bool(empty_rows.any().item()):
+            safe_rewards = rewards.masked_fill(~real_mask, -torch.inf)
+            fallback_idx = safe_rewards.argmax(dim=1)
+            row_idx = torch.arange(rewards.shape[0], device=rewards.device)
+            weights[row_idx[empty_rows], fallback_idx[empty_rows]] = 1.0
+        if bool(cfg.normalize_weights_per_scene):
+            norm_mask = (weights > 0).to(dtype=weights.dtype)
+            mean = weights.sum(dim=1, keepdim=True) / norm_mask.sum(dim=1, keepdim=True).clamp(min=1.0)
+            weights = weights / mean.clamp(min=1e-6)
+        if not torch.isfinite(weights).all():
+            raise ValueError("AWAC weights contain non-finite values after clipping.")
+        return weights.float(), adv.float()
+
+    def _repeat_action_input_for_loss(self, action_input: BatchFeature, repeat: int) -> BatchFeature:
+        repeated = self._repeat_expert_action_input(action_input, repeat)
+        data: Dict[str, Any] = dict(repeated) if repeated is not None else {}
+        for key in ("his_traj", "history_trajectory", "status_feature", "high_command_one_hot", "state"):
+            if key in action_input and isinstance(action_input[key], torch.Tensor) and key not in data:
+                data[key] = action_input[key].repeat_interleave(repeat, 0)
+        return BatchFeature(data=data)
+
+    def _weighted_diffusion_loss_on_targets(
+        self,
+        vl_features: torch.Tensor,
+        action_input: BatchFeature,
+        target_trajs: torch.Tensor,
+        weights: torch.Tensor,
+    ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+        if target_trajs.ndim != 4 or target_trajs.shape[-1] != 3:
+            raise ValueError(f"target_trajs must have shape [B, M, H, 3], got {tuple(target_trajs.shape)}.")
+        B, M, H, D = target_trajs.shape
+        if weights.shape != (B, M):
+            raise ValueError(f"weights must have shape [B, M], got {tuple(weights.shape)}.")
+        if self.config.sampling_method == "flow":
+            raise NotImplementedError("AWAC/IQL weighted diffusion loss is implemented for DDPM/DDIM, not flow.")
+        targets = target_trajs.reshape(B * M, H, D).detach()
+        flat_weights = weights.reshape(B * M).to(device=targets.device, dtype=torch.float32)
+        if not torch.isfinite(targets).all():
+            raise ValueError("AWAC target trajectories contain non-finite values.")
+        target_norm = self.norm_odo(targets).clamp(-1.0, 1.0)
+        noise = torch.randn_like(target_norm)
+        t_discrete = self.sample_time(B * M, device=target_norm.device, dtype=target_norm.dtype)
+        noisy_actions = (
+            self.extract(self.ddpm_sqrt_alphas_cumprod, t_discrete, target_norm.shape) * target_norm
+            + self.extract(self.ddpm_sqrt_one_minus_alphas_cumprod, t_discrete, target_norm.shape) * noise
+        )
+        vl_features_rep = vl_features.repeat_interleave(M, 0)
+        action_input_rep = self._repeat_action_input_for_loss(action_input, M)
+        dit_context = self._prepare_dit_context(
+            vl_features_rep,
+            action_input_rep,
+            training=self.training,
+            noisy_actions=noisy_actions,
+            diffusion_timestep=t_discrete,
+            allow_target_tokens=False,
+        )
+        pred_noise = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input_rep)
+        per_sample_loss = ((pred_noise.float() - noise.float()) ** 2).mean(dim=(1, 2))
+        if per_sample_loss.shape != (B * M,):
+            raise ValueError(f"per_sample_loss must have shape [B*M], got {tuple(per_sample_loss.shape)}.")
+        valid_weight_sum = flat_weights.sum().clamp(min=1e-6)
+        awac_loss = (flat_weights.to(per_sample_loss) * per_sample_loss).sum() / valid_weight_sum.to(per_sample_loss)
+        if not torch.isfinite(awac_loss):
+            raise ValueError("AWAC weighted diffusion loss is non-finite.")
+        diagnostics = {
+            "per_sample_loss_mean": per_sample_loss.detach().mean().to(dtype=awac_loss.dtype),
+            "target_norm_mean": target_norm.detach().float().abs().mean().to(dtype=awac_loss.dtype),
+            "effective_weight_sum": valid_weight_sum.detach().to(dtype=awac_loss.dtype),
+            "zero_weight_ratio": (flat_weights <= 0).float().mean().to(device=awac_loss.device, dtype=awac_loss.dtype),
+        }
+        return awac_loss, diagnostics
+
+    def _load_awac_buffer_candidates(
+        self,
+        action_input: BatchFeature,
+        tokens_list: list[str],
+        metric_cache: Dict[str, Any],
+        cfg: OfflineRLConfig,
+    ) -> Dict[str, Any]:
+        buffer_root = Path(cfg.elite_buffer_path)
+        if not str(buffer_root):
+            raise ValueError("offline_rl_cfg.elite_buffer_path is empty and build_candidates_online=False.")
+        device = action_input.action.device
+        dtype = action_input.action.dtype
+        records = []
+        for batch_idx, token in enumerate(tokens_list):
+            try:
+                records.append(load_elite_record(buffer_root, str(token)))
+            except FileNotFoundError:
+                if str(cfg.missing_buffer_policy) != "fallback_gt":
+                    raise
+                gt = action_input.action[batch_idx : batch_idx + 1].detach().float()
+                rewards, components = self._score_candidate_trajectories(gt[:, None], [str(token)], metric_cache)
+                record = {
+                    "token": str(token),
+                    "candidates": gt[0].cpu().numpy()[None],
+                    "rewards": rewards[0].detach().cpu().numpy(),
+                    "components": {key: value[0].detach().cpu().numpy() for key, value in components.items()},
+                    "sources": ["gt"],
+                    "anchor_distance": np.zeros((1,), dtype=np.float32),
+                    "gt_reward": float(rewards[0, 0].detach().cpu().item()),
+                    "il_reward": float(rewards[0, 0].detach().cpu().item()),
+                    "best_reward": float(rewards[0, 0].detach().cpu().item()),
+                    "best_source": "gt",
+                    "version": 1,
+                }
+                records.append(record)
+
+        B = len(records)
+        max_m = max(int(np.asarray(record["candidates"]).shape[0]) for record in records)
+        H, D = action_input.action.shape[-2], action_input.action.shape[-1]
+        selected_trajs = torch.zeros((B, max_m, H, D), device=device, dtype=dtype)
+        selected_rewards = torch.zeros((B, max_m), device=device, dtype=torch.float32)
+        selected_anchor_distance = torch.zeros((B, max_m), device=device, dtype=torch.float32)
+        selected_real_mask = torch.zeros((B, max_m), device=device, dtype=torch.bool)
+        selected_valid_mask = torch.zeros((B, max_m), device=device, dtype=torch.bool)
+        selected_source_code = torch.zeros((B, max_m), device=device, dtype=torch.long)
+        selected_components = {
+            key: torch.zeros((B, max_m), device=device, dtype=torch.float32)
+            for key in REQUIRED_COMPONENT_KEYS
+        }
+        gt_reward = torch.zeros((B,), device=device, dtype=torch.float32)
+        il_reward = torch.zeros((B,), device=device, dtype=torch.float32)
+        best_reward = torch.zeros((B,), device=device, dtype=torch.float32)
+        best_source_code = torch.zeros((B,), device=device, dtype=torch.long)
+        for b, record in enumerate(records):
+            candidates_np = np.asarray(record["candidates"], dtype=np.float32)
+            if candidates_np.ndim != 3 or candidates_np.shape[-1] != 3:
+                raise ValueError(f"Elite buffer token={record['token']!r} has invalid candidate shape {candidates_np.shape}.")
+            m = candidates_np.shape[0]
+            selected_trajs[b, :m] = torch.from_numpy(candidates_np).to(device=device, dtype=dtype)
+            selected_rewards[b, :m] = torch.as_tensor(record["rewards"], device=device, dtype=torch.float32)
+            selected_anchor_distance[b, :m] = torch.as_tensor(record["anchor_distance"], device=device, dtype=torch.float32)
+            selected_real_mask[b, :m] = True
+            selected_valid_mask[b, :m] = True
+            for key in REQUIRED_COMPONENT_KEYS:
+                selected_components[key][b, :m] = torch.as_tensor(
+                    record["components"][key],
+                    device=device,
+                    dtype=torch.float32,
+                )
+            source_codes = [self._source_code(source) for source in record["sources"]]
+            selected_source_code[b, :m] = torch.tensor(source_codes, device=device, dtype=torch.long)
+            gt_reward[b] = float(record["gt_reward"])
+            il_reward[b] = float(record["il_reward"])
+            best_reward[b] = float(record["best_reward"])
+            best_source_code[b] = self._source_code(record.get("best_source", "other"))
+        return {
+            "selected_trajs": selected_trajs,
+            "selected_rewards": selected_rewards,
+            "selected_components": selected_components,
+            "selected_anchor_distance": selected_anchor_distance,
+            "selected_valid_mask": selected_valid_mask,
+            "selected_real_mask": selected_real_mask,
+            "selected_source_code": selected_source_code,
+            "valid_candidate_ratio": selected_real_mask.float().mean(),
+            "fallback_candidate_ratio": selected_real_mask.new_zeros(()).float(),
+            "gt_reward": gt_reward,
+            "il_reward": il_reward,
+            "best_reward": best_reward,
+            "best_source_code": best_source_code,
+        }
+
+    def _build_online_awac_candidates(
+        self,
+        vl_features: torch.Tensor,
+        action_input: BatchFeature,
+        tokens_list,
+        metric_cache: Dict[str, Any],
+        cfg: OfflineRLConfig,
+    ) -> Dict[str, Any]:
+        B, H, D = action_input.action.shape
+        groups = []
+        sources: list[str] = []
+        distances = []
+        gt = action_input.action.detach()
+        if bool(cfg.online_use_gt):
+            groups.append(gt[:, None])
+            sources.append("gt")
+            distances.append(gt.new_zeros((B, 1)))
+
+        il_traj = None
+        if bool(cfg.online_use_old_policy):
+            if not hasattr(self, "old_policy"):
+                raise RuntimeError("AWAC online candidate generation requires old_policy; check reference_policy_checkpoint.")
+            self.old_policy.eval()
+            with torch.no_grad():
+                _, il_traj = self.old_policy.sample_chain(
+                    vl_features,
+                    action_input.his_traj,
+                    action_input.status_feature,
+                    deterministic=False,
+                    action_input=action_input,
+                    allow_target_tokens=False,
+                )
+            il_traj = il_traj.to(device=gt.device, dtype=gt.dtype).detach()
+            groups.append(il_traj[:, None])
+            sources.append("il")
+            distances.append(torch.linalg.norm(il_traj[..., :2] - gt[..., :2], dim=-1).mean(dim=-1, keepdim=True))
+
+        policy_samples = int(cfg.online_policy_samples) if bool(cfg.online_use_current_policy) else 0
+        if policy_samples > 0:
+            with torch.no_grad():
+                vl_features_rep = vl_features.repeat_interleave(policy_samples, 0)
+                his_traj_rep = action_input.his_traj.repeat_interleave(policy_samples, 0)
+                status_feature_rep = action_input.status_feature.repeat_interleave(policy_samples, 0)
+                action_input_rep = self._repeat_expert_action_input(action_input, policy_samples)
+                _, policy_trajs = self.sample_chain(
+                    vl_features_rep,
+                    his_traj_rep,
+                    status_feature_rep,
+                    deterministic=False,
+                    action_input=action_input_rep,
+                    allow_target_tokens=False,
+                )
+            policy_trajs = policy_trajs.to(device=gt.device, dtype=gt.dtype).reshape(B, policy_samples, H, D).detach()
+            groups.append(policy_trajs)
+            sources.extend(["policy"] * policy_samples)
+            distances.append(torch.linalg.norm(policy_trajs[..., :2] - gt[:, None, :, :2], dim=-1).mean(dim=-1))
+
+        anchors = []
+        anchor_sources = []
+        if bool(cfg.perturb_gt):
+            anchors.append(gt)
+            anchor_sources.append("gt")
+        if bool(cfg.perturb_il) and il_traj is not None:
+            anchors.append(il_traj)
+            anchor_sources.append("il")
+        if anchors:
+            anchor_tensor = torch.stack(anchors, dim=1)
+            perturbations, perturb_sources, perturb_distance = build_structured_perturbations(
+                anchor_tensor.detach(),
+                anchor_sources,
+                cfg,
+            )
+            if perturbations.shape[1] > 0:
+                groups.append(perturbations.to(device=gt.device, dtype=gt.dtype))
+                sources.extend(perturb_sources)
+                distances.append(perturb_distance.to(device=gt.device, dtype=gt.dtype))
+
+        if not groups:
+            raise RuntimeError("AWAC online candidate builder produced no candidates.")
+        candidates = torch.cat(groups, dim=1).detach()
+        anchor_distance = torch.cat(distances, dim=1).detach().to(candidates)
+        if candidates.shape[:3] != (B, len(sources), H):
+            raise ValueError(
+                f"AWAC candidate shape/source mismatch: candidates={tuple(candidates.shape)} sources={len(sources)}."
+            )
+        rewards, components = self._score_candidate_trajectories(candidates, [str(token) for token in tokens_list], metric_cache)
+        gt_idx = sources.index("gt") if "gt" in sources else None
+        il_idx = sources.index("il") if "il" in sources else None
+        gt_reward = rewards[:, gt_idx] if gt_idx is not None else rewards.max(dim=1).values
+        il_reward = rewards[:, il_idx] if il_idx is not None else gt_reward
+        selected = self._select_elite_candidates(
+            candidates,
+            rewards,
+            components,
+            sources,
+            anchor_distance,
+            gt_reward,
+            il_reward,
+            cfg,
+        )
+        selected["candidate_rewards"] = rewards
+        selected["candidate_components"] = components
+        selected["candidate_sources"] = sources
+        selected["candidate_anchor_distance"] = anchor_distance
+        return selected
+
+    def forward_awac_iql(
+        self,
+        vl_features: torch.Tensor,
+        action_input: BatchFeature,
+        tokens_list,
+        use_bc_loss: bool = True,
+    ) -> BatchFeature:
+        self.set_frozen_modules_to_eval_mode()
+        cfg = self.offline_rl_cfg
+        if not bool(cfg.enabled):
+            raise RuntimeError("forward_awac_iql requires offline_rl_cfg.enabled=True.")
+        if tokens_list is None:
+            raise ValueError("forward_awac_iql requires tokens_list for train metric-cache reward lookup.")
+        metric_cache = self._load_metric_cache_for_tokens([str(token) for token in tokens_list])
+        if str(cfg.elite_buffer_path) and not bool(cfg.build_candidates_online):
+            awac_batch = self._load_awac_buffer_candidates(action_input, [str(token) for token in tokens_list], metric_cache, cfg)
+        else:
+            awac_batch = self._build_online_awac_candidates(
+                vl_features,
+                action_input,
+                [str(token) for token in tokens_list],
+                metric_cache,
+                cfg,
+            )
+
+        selected_rewards = awac_batch["selected_rewards"]
+        selected_real_mask = awac_batch["selected_real_mask"]
+        selected_valid_mask = awac_batch["selected_valid_mask"]
+        gt_reward = awac_batch["gt_reward"]
+        il_reward = awac_batch["il_reward"]
+        baseline = self._compute_iql_baseline(selected_rewards, gt_reward, il_reward, cfg, selected_real_mask)
+        weights, advantages = self._compute_awac_weights(
+            selected_rewards,
+            baseline,
+            cfg,
+            valid_mask=selected_valid_mask,
+            real_mask=selected_real_mask,
+            gt_reward=gt_reward,
+        )
+        awac_loss, awac_diag = self._weighted_diffusion_loss_on_targets(
+            vl_features,
+            action_input,
+            awac_batch["selected_trajs"],
+            weights,
+        )
+
+        bc_loss = awac_loss.new_zeros(())
+        if use_bc_loss and float(cfg.bc_loss_weight) > 0.0:
+            gt_targets = action_input.action.detach()[:, None]
+            gt_weights = torch.ones((gt_targets.shape[0], 1), device=gt_targets.device, dtype=torch.float32)
+            bc_loss, _ = self._weighted_diffusion_loss_on_targets(vl_features, action_input, gt_targets, gt_weights)
+
+        grpo_loss = awac_loss.new_zeros(())
+        if float(cfg.grpo_loss_weight) > 0.0:
+            if not hasattr(self, "gamma_denoising"):
+                raise RuntimeError("offline_rl_grpo_loss_weight > 0 requires GRPO initialization; set agent.grpo=True.")
+            grpo_out = self.forward_grpo(
+                vl_features,
+                action_input,
+                tokens_list,
+                sample_time=min(int(getattr(self, "grpo_sample_time", 8)), 8),
+                use_bc_loss=False,
+            )
+            grpo_loss = grpo_out.loss.to(dtype=awac_loss.dtype)
+
+        total_loss = (
+            float(cfg.awac_loss_weight) * awac_loss
+            + float(cfg.bc_loss_weight) * bc_loss
+            + float(cfg.grpo_loss_weight) * grpo_loss
+        )
+        if not torch.isfinite(total_loss):
+            raise ValueError("AWAC/IQL total loss is non-finite.")
+
+        selected_components = awac_batch["selected_components"]
+        source_code = awac_batch["selected_source_code"]
+        real_f = selected_real_mask.to(dtype=total_loss.dtype)
+        valid_f = selected_valid_mask.to(dtype=total_loss.dtype)
+        denom = real_f.sum().clamp(min=1.0)
+        selected_reward_mean = (selected_rewards.to(total_loss) * real_f).sum() / denom
+        selected_reward_max = selected_rewards.masked_fill(~selected_real_mask, -torch.inf).max().to(total_loss)
+        best_reward = awac_batch["best_reward"].to(total_loss)
+        weight_real = weights[selected_real_mask]
+        adv_real = advantages[selected_real_mask]
+        if weight_real.numel() == 0:
+            weight_real = weights.reshape(-1)
+            adv_real = advantages.reshape(-1)
+
+        def comp_mean(key: str) -> torch.Tensor:
+            value = selected_components[key].to(total_loss)
+            return (value * real_f).sum() / denom
+
+        def source_ratio(code: int) -> torch.Tensor:
+            return (
+                ((source_code == code) & selected_real_mask).float().sum()
+                / selected_real_mask.float().sum().clamp(min=1.0)
+            ).to(dtype=total_loss.dtype)
+
+        pct_candidates_above_gt = ((selected_rewards > gt_reward[:, None]) & selected_real_mask).float().sum()
+        pct_candidates_above_gt = pct_candidates_above_gt / selected_real_mask.float().sum().clamp(min=1.0)
+        pct_candidates_above_il = ((selected_rewards > il_reward[:, None]) & selected_real_mask).float().sum()
+        pct_candidates_above_il = pct_candidates_above_il / selected_real_mask.float().sum().clamp(min=1.0)
+        pct_best_above_gt = (best_reward > gt_reward.to(best_reward)).float().mean()
+        pct_best_above_il = (best_reward > il_reward.to(best_reward)).float().mean()
+
+        zero = total_loss.new_zeros(())
+        return BatchFeature(data={
+            "loss": total_loss,
+            "diffusion_loss": awac_loss.detach(),
+            "jepa_alignment_loss": zero,
+            "vggt_alignment_loss": zero,
+            "reward": selected_reward_mean.detach(),
+            "policy_loss": awac_loss,
+            "awac_loss": awac_loss,
+            "bc_loss": bc_loss,
+            "grpo_loss": grpo_loss,
+            "reward_mean": selected_reward_mean.detach(),
+            "reward_max": selected_reward_max.detach(),
+            "gt_reward_mean": gt_reward.mean().to(total_loss).detach(),
+            "il_reward_mean": il_reward.mean().to(total_loss).detach(),
+            "best_reward_mean": best_reward.mean().detach(),
+            "best_minus_gt_mean": (best_reward - gt_reward.to(best_reward)).mean().detach(),
+            "best_minus_il_mean": (best_reward - il_reward.to(best_reward)).mean().detach(),
+            "pct_best_above_gt": pct_best_above_gt.to(total_loss).detach(),
+            "pct_best_above_il": pct_best_above_il.to(total_loss).detach(),
+            "pct_candidates_above_gt": pct_candidates_above_gt.to(total_loss).detach(),
+            "pct_candidates_above_il": pct_candidates_above_il.to(total_loss).detach(),
+            "selected_reward_mean": selected_reward_mean.detach(),
+            "selected_reward_max": selected_reward_max.detach(),
+            "awac_weight_mean": weight_real.mean().to(total_loss).detach(),
+            "awac_weight_max": weight_real.max().to(total_loss).detach(),
+            "awac_advantage_mean": adv_real.mean().to(total_loss).detach(),
+            "awac_advantage_max": adv_real.max().to(total_loss).detach(),
+            "valid_candidate_ratio": awac_batch["valid_candidate_ratio"].to(total_loss).detach(),
+            "selected_valid_ratio": (
+                valid_f.sum() / selected_real_mask.float().sum().clamp(min=1.0)
+            ).to(total_loss).detach(),
+            "fallback_candidate_ratio": awac_batch["fallback_candidate_ratio"].to(total_loss).detach(),
+            "selected_nc_mean": comp_mean("no_at_fault_collisions").detach(),
+            "selected_dac_mean": comp_mean("drivable_area_compliance").detach(),
+            "selected_ttc_mean": comp_mean("time_to_collision_within_bound").detach(),
+            "selected_ep_mean": comp_mean("ego_progress").detach(),
+            "selected_comfort_mean": comp_mean("history_comfort").detach(),
+            "selected_ddc_mean": comp_mean("driving_direction_compliance").detach(),
+            "selected_tlc_mean": comp_mean("traffic_light_compliance").detach(),
+            "source_gt_ratio": source_ratio(1).detach(),
+            "source_il_ratio": source_ratio(2).detach(),
+            "source_policy_ratio": source_ratio(3).detach(),
+            "source_progress_ratio": source_ratio(4).detach(),
+            "source_lateral_ratio": source_ratio(5).detach(),
+            "source_timing_ratio": source_ratio(6).detach(),
+            "awac_per_sample_loss_mean": awac_diag["per_sample_loss_mean"].detach(),
+            "awac_target_norm_mean": awac_diag["target_norm_mean"].detach(),
+            "awac_effective_weight_sum": awac_diag["effective_weight_sum"].detach(),
+            "awac_zero_weight_ratio": awac_diag["zero_weight_ratio"].detach(),
+        })
 
     def forward_grpo(
         self,

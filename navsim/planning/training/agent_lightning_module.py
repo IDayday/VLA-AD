@@ -92,6 +92,45 @@ class AgentLightningModule(pl.LightningModule):
             "gspo_ratio_mean",
             "gspo_ratio_clip_frac",
             "bc_coeff",
+            "awac_loss",
+            "grpo_loss",
+            "reward_mean",
+            "reward_max",
+            "gt_reward_mean",
+            "il_reward_mean",
+            "best_reward_mean",
+            "best_minus_gt_mean",
+            "best_minus_il_mean",
+            "pct_best_above_gt",
+            "pct_best_above_il",
+            "pct_candidates_above_gt",
+            "pct_candidates_above_il",
+            "selected_reward_mean",
+            "selected_reward_max",
+            "awac_weight_mean",
+            "awac_weight_max",
+            "awac_advantage_mean",
+            "awac_advantage_max",
+            "valid_candidate_ratio",
+            "selected_valid_ratio",
+            "fallback_candidate_ratio",
+            "selected_nc_mean",
+            "selected_dac_mean",
+            "selected_ttc_mean",
+            "selected_ep_mean",
+            "selected_comfort_mean",
+            "selected_ddc_mean",
+            "selected_tlc_mean",
+            "source_gt_ratio",
+            "source_il_ratio",
+            "source_policy_ratio",
+            "source_progress_ratio",
+            "source_lateral_ratio",
+            "source_timing_ratio",
+            "awac_per_sample_loss_mean",
+            "awac_target_norm_mean",
+            "awac_effective_weight_sum",
+            "awac_zero_weight_ratio",
         ):
             value = _prediction_get(prediction, key)
             if value is not None:
@@ -196,17 +235,28 @@ class AgentLightningDiT(pl.LightningModule):
         prediction = self.agent.forward(features,targets,tokens_list)
         if logging_prefix == 'train':
             predictions = self.agent.compute_loss(features, targets, prediction)
-
-            loss = predictions.loss
-            reward = predictions.reward
-            policy_loss = predictions.policy_loss
-            bc_loss = predictions.bc_loss
+            if isinstance(predictions, torch.Tensor):
+                loss = predictions
+                metric_source = prediction
+            else:
+                loss = _prediction_get(predictions, "loss")
+                if loss is None:
+                    raise KeyError("Training prediction object is missing a 'loss' field.")
+                metric_source = predictions
             self.log(f"{logging_prefix}/loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
             self.log(f"{logging_prefix}/total_loss", loss, on_step=True, on_epoch=True, prog_bar=False, sync_dist=True)
-            self.log(f"{logging_prefix}/reward", reward, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
-            self.log(f"{logging_prefix}/policy_loss", policy_loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
-            self.log(f"{logging_prefix}/bc_loss", bc_loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
-            self._log_optional_recogdrive_metrics(predictions, logging_prefix)
+            for key in ("reward", "policy_loss", "bc_loss"):
+                value = _prediction_get(metric_source, key)
+                if value is not None:
+                    self.log(
+                        f"{logging_prefix}/{key}",
+                        value,
+                        on_step=True,
+                        on_epoch=True,
+                        prog_bar=True,
+                        sync_dist=True,
+                    )
+            self._log_optional_recogdrive_metrics(metric_source, logging_prefix)
         else:
             prediction = self.agent.forward(features,targets)
             loss = self.agent.compute_loss(features, targets, prediction)
