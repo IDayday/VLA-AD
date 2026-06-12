@@ -176,11 +176,12 @@ def build_image_path_index(args: argparse.Namespace) -> Dict[str, Any]:
         raise ValueError("--image-path-index-jsonl is required with --build-image-path-index.")
     if args.image_path_index_jsonl.exists() and not args.overwrite:
         raise FileExistsError(f"Image path index exists: {args.image_path_index_jsonl}. Pass --overwrite to replace it.")
-    records = list(iter_indexed_records(args.input_chunk_root, pattern=args.chunk_name_pattern, max_records=args.max_samples))
     args.image_path_index_jsonl.parent.mkdir(parents=True, exist_ok=True)
     written = 0
     with args.image_path_index_jsonl.open("w", encoding="utf-8") as f:
-        for order_index, (_, sample_path, record) in enumerate(records):
+        for order_index, (_, sample_path, record) in enumerate(
+            iter_indexed_records(args.input_chunk_root, pattern=args.chunk_name_pattern, max_records=args.max_samples)
+        ):
             sample = load_sample(sample_path)
             if "image_path_tensor" not in sample:
                 raise KeyError(f"Sample {sample_path} missing image_path_tensor required for V-JEPA2 extraction.")
@@ -202,7 +203,6 @@ def build_image_path_index(args: argparse.Namespace) -> Dict[str, Any]:
                         {
                             "status": "image_path_index_progress",
                             "written": int(written),
-                            "total": int(len(records)),
                             "path": str(args.image_path_index_jsonl),
                         },
                         sort_keys=True,
