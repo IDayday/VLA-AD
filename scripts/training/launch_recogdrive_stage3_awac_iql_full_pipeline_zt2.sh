@@ -124,6 +124,7 @@ done
 if [[ "${RUN_BUFFER}" == "1" ]]; then
   declare -a PIDS=()
   launch_pos=0
+  : > "${OUT_ROOT}/buffer_launch.log"
   for shard_index in "${SHARDS[@]}"; do
     gpu="${GPUS[$((launch_pos % ${#GPUS[@]}))]}"
     launch_pos=$((launch_pos + 1))
@@ -174,8 +175,9 @@ if [[ "${RUN_BUFFER}" == "1" ]]; then
         agent.sampling_method=ddim
     ) > "${shard_out}/builder.log" 2>&1 &
     PIDS+=("$!")
-    echo "launched shard=${shard_index} gpu=${gpu} pid=${PIDS[-1]} log=${shard_out}/builder.log"
-  done | tee "${OUT_ROOT}/buffer_launch.log"
+    echo "launched shard=${shard_index} gpu=${gpu} pid=${PIDS[-1]} log=${shard_out}/builder.log" \
+      | tee -a "${OUT_ROOT}/buffer_launch.log"
+  done
 
   failed=0
   for pid in "${PIDS[@]}"; do
