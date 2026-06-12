@@ -10,7 +10,6 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import torch
 from PIL import Image
-from transformers import AutoModel, AutoVideoProcessor
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
@@ -144,6 +143,8 @@ def resolve_dynamic_teacher(sample: Dict[str, Any], *, strict_teacher: bool) -> 
 
 
 def load_vjepa2(args: argparse.Namespace):
+    from transformers import AutoModel, AutoVideoProcessor
+
     dtype = {
         "bf16": torch.bfloat16,
         "fp16": torch.float16,
@@ -194,6 +195,20 @@ def build_image_path_index(args: argparse.Namespace) -> Dict[str, Any]:
             }
             f.write(json.dumps(row, sort_keys=True) + "\n")
             written += 1
+            if written % int(args.progress_interval) == 0:
+                f.flush()
+                print(
+                    json.dumps(
+                        {
+                            "status": "image_path_index_progress",
+                            "written": int(written),
+                            "total": int(len(records)),
+                            "path": str(args.image_path_index_jsonl),
+                        },
+                        sort_keys=True,
+                    ),
+                    flush=True,
+                )
     metadata = {
         "version": "two_expert_jepa_image_path_index_v1",
         "source_chunk_root": str(args.input_chunk_root),
@@ -471,6 +486,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--skip-predictor", action="store_true")
     parser.add_argument("--image-path-index-jsonl", type=Path, default=None)
     parser.add_argument("--build-image-path-index", action="store_true")
+    parser.add_argument("--progress-interval", type=int, default=1000)
     return parser.parse_args()
 
 
