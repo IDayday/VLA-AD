@@ -68,5 +68,11 @@ if [[ "${ALLOW_SKIP_READINESS_GATE:-0}" != "1" ]]; then
     echo "Readiness gate is not READY: ${READINESS_GATE_JSON}" >&2
     exit 2
   }
+  if [[ "${ALLOW_LOW_COVERAGE:-0}" != "1" ]]; then
+    "${PYTHON_BIN}" -c 'import json,sys; p=sys.argv[1]; d=json.load(open(p)); ok=d.get("coverage_ok") is True and d.get("all_teacher_coverage") is not None; sys.exit(0 if ok else 1)' "${READINESS_GATE_JSON}" || {
+      echo "Readiness gate JSON lacks passing coverage. Run preflight_two_expert_coverage.py and rebuild the gate, or set ALLOW_LOW_COVERAGE=1 for explicit dev-only override." >&2
+      exit 2
+    }
+  fi
 fi
 "${cmd[@]}" >"${TRAIN_LOG}" 2>&1

@@ -60,6 +60,16 @@ def validate_vggt(payload: Dict[str, Any]) -> List[str]:
     return errors
 
 
+def validate_coverage(payload: Dict[str, Any], min_coverage: float) -> List[str]:
+    errors: List[str] = []
+    if payload.get("ok") is not True:
+        errors.append("coverage_preflight:not_ok")
+    coverage = float(payload.get("all_teacher_coverage", 0.0))
+    if coverage < float(min_coverage):
+        errors.append(f"coverage_preflight:low_all_teacher_coverage:{coverage:.6f}<{float(min_coverage):.6f}")
+    return errors
+
+
 def write_markdown(path: Path, report: Dict[str, Any]) -> None:
     lines = [
         "# Two-Expert Final Readiness Gate",
@@ -67,6 +77,9 @@ def write_markdown(path: Path, report: Dict[str, Any]) -> None:
         f"- Status: `{report['status']}`",
         f"- OK: `{report['ok']}`",
         f"- Threshold: `{report['threshold']}`",
+        f"- Coverage OK: `{report.get('coverage_ok')}`",
+        f"- All-teacher coverage: `{report.get('all_teacher_coverage')}`",
+        f"- Min coverage: `{report.get('min_coverage')}`",
         "",
         "Errors:",
     ]
@@ -82,8 +95,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--teacher-preflight-json", type=Path, required=True)
     parser.add_argument("--internvl-smoke-json", type=Path, required=True)
     parser.add_argument("--vggt-smoke-json", type=Path, required=True)
+    parser.add_argument("--coverage-json", type=Path, default=None)
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--threshold", type=float, default=1e-6)
+    parser.add_argument("--min-coverage", type=float, default=0.99)
     return parser.parse_args()
 
 
@@ -92,17 +107,24 @@ def main() -> int:
     teacher = load_json(args.teacher_preflight_json)
     internvl = load_json(args.internvl_smoke_json)
     vggt = load_json(args.vggt_smoke_json)
+    coverage = load_json(args.coverage_json) if args.coverage_json is not None else None
     errors = []
     errors.extend(validate_teacher(teacher))
     errors.extend(validate_internvl(internvl, float(args.threshold)))
     errors.extend(validate_vggt(vggt))
+    if coverage is not None:
+        errors.extend(validate_coverage(coverage, float(args.min_coverage)))
     report = {
         "ok": not errors,
         "status": "READY" if not errors else "NOT_READY",
         "threshold": float(args.threshold),
+        "min_coverage": float(args.min_coverage),
         "teacher_preflight_json": str(args.teacher_preflight_json),
         "internvl_smoke_json": str(args.internvl_smoke_json),
         "vggt_smoke_json": str(args.vggt_smoke_json),
+        "coverage_json": str(args.coverage_json) if args.coverage_json is not None else None,
+        "coverage_ok": bool(coverage and coverage.get("ok") is True and float(coverage.get("all_teacher_coverage", 0.0)) >= float(args.min_coverage)),
+        "all_teacher_coverage": float(coverage.get("all_teacher_coverage", 0.0)) if coverage is not None else None,
         "errors": errors,
     }
     args.output_dir.mkdir(parents=True, exist_ok=True)
