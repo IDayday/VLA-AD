@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import lzma
+import os
 import pickle
 from pathlib import Path
 from typing import Any, Dict
@@ -127,8 +128,15 @@ def save_elite_record(buffer_root: Path, token: str, record: Dict[str, Any]) -> 
     payload["has_valid_candidate"] = bool(payload["has_valid_candidate"])
     payload["version"] = 2
     _validate_record(payload)
-    with lzma.open(_record_path(buffer_root, token), "wb") as f:
-        pickle.dump(payload, f, protocol=pickle.HIGHEST_PROTOCOL)
+    path = _record_path(buffer_root, token)
+    tmp_path = path.with_name(f".{path.name}.{os.getpid()}.tmp")
+    try:
+        with lzma.open(tmp_path, "wb") as f:
+            pickle.dump(payload, f, protocol=pickle.HIGHEST_PROTOCOL)
+        os.replace(tmp_path, path)
+    finally:
+        if tmp_path.exists():
+            tmp_path.unlink()
 
 
 def load_elite_record(buffer_root: Path, token: str) -> Dict[str, Any]:
