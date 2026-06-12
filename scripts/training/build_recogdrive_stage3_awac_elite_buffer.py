@@ -16,7 +16,7 @@ from torch.utils.data import DataLoader, Subset
 from transformers.feature_extraction_utils import BatchFeature
 
 from navsim.agents.abstract_agent import AbstractAgent
-from navsim.agents.recogdrive.offline_rl_buffer import save_elite_record
+from navsim.agents.recogdrive.offline_rl_buffer import elite_record_exists, load_elite_record, save_elite_record
 from navsim.agents.recogdrive.recogdrive_agent import (
     EXPERT_FEATURE_KEYS,
     EXPERT_TARGET_FEATURE_KEYS,
@@ -120,6 +120,34 @@ def _move_features_to_device(agent: AbstractAgent, features: Dict[str, torch.Ten
         if key in features and isinstance(features[key], torch.Tensor) and key not in target_feature_keys:
             action_input_data[key] = features[key].to(model_dtype)
     return last_hidden_state, BatchFeature(data=action_input_data)
+
+
+def _filter_batch_by_indices(batch: Dict[str, Any], indices: List[int], batch_len: int) -> Dict[str, Any]:
+    index_tensor = torch.as_tensor(indices, dtype=torch.long)
+    filtered: Dict[str, Any] = {}
+    for key, value in batch.items():
+        if isinstance(value, torch.Tensor) and value.ndim > 0 and value.shape[0] == batch_len:
+            filtered[key] = value.index_select(0, index_tensor.to(value.device))
+        elif isinstance(value, list) and len(value) == batch_len:
+            filtered[key] = [value[index] for index in indices]
+        elif isinstance(value, tuple) and len(value) == batch_len:
+            filtered[key] = tuple(value[index] for index in indices)
+        else:
+            filtered[key] = value
+    return filtered
+
+
+def _existing_record_is_usable(buffer_dir: Path, token: str, validate_existing: bool) -> bool:
+    if not elite_record_exists(buffer_dir, token):
+        return False
+    if not validate_existing:
+        return True
+    try:
+        load_elite_record(buffer_dir, token)
+    except Exception as exc:  # pragma: no cover - defensive path for interrupted writes
+        logger.warning("Existing AWAC record for token=%s is invalid and will be recomputed: %s", token, exc)
+        return False
+    return True
 
 
 def _build_train_dataset(cfg: DictConfig, agent: AbstractAgent):
@@ -314,6 +342,8 @@ def main(cfg: DictConfig) -> None:
     dry_run = _env_flag("DRY_RUN", bool(cfg.get("dry_run", False)))
     max_scenes = _env_int("MAX_SCENES", int(cfg.get("max_scenes", 0)))
     batch_size = _env_int("BATCH_SIZE", int(cfg.dataloader.params.batch_size))
+    skip_existing_records = _env_flag("SKIP_EXISTING_RECORDS", False)
+    validate_existing_records = _env_flag("VALIDATE_EXISTING_RECORDS", True)
     shard_index = _env_int("SHARD_INDEX", 0)
     shard_count = _env_int("SHARD_COUNT", 1)
     if shard_count <= 0:
@@ -431,6 +461,7 @@ def main(cfg: DictConfig) -> None:
         "record_version",
     ]
     written = 0
+    skipped_existing = 0
     aggregate: Dict[str, Any] = {
         "num_scenes": 0,
         "sums": defaultdict(float),
@@ -441,6 +472,22 @@ def main(cfg: DictConfig) -> None:
         writer.writeheader()
         for features, targets, tokens in dataloader:
             tokens = [str(token) for token in tokens]
+            if skip_existing_records and not dry_run:
+                missing_indices = [
+                    index
+                    for index, token in enumerate(tokens)
+                    if not _existing_record_is_usable(buffer_dir, token, validate_existing_records)
+                ]
+                skipped_existing += len(tokens) - len(missing_indices)
+                if not missing_indices:
+                    if skipped_existing % 256 == 0:
+                        logger.info("Skipped %d existing AWAC elite records.", skipped_existing)
+                    continue
+                if len(missing_indices) != len(tokens):
+                    batch_len = len(tokens)
+                    features = _filter_batch_by_indices(features, missing_indices, batch_len)
+                    targets = _filter_batch_by_indices(targets, missing_indices, batch_len)
+                    tokens = [tokens[index] for index in missing_indices]
             last_hidden_state, action_inputs = _move_features_to_device(agent, features)
             action_device = next(agent.action_head.parameters()).device
             model_dtype = next(agent.action_head.parameters()).dtype
@@ -496,6 +543,8 @@ def main(cfg: DictConfig) -> None:
         logger.info("DRY_RUN=true; elite records were not written.")
     else:
         logger.info("AWAC elite records written under %s", buffer_dir)
+    if skip_existing_records:
+        logger.info("Skipped %d existing AWAC elite records.", skipped_existing)
 
 
 if __name__ == "__main__":

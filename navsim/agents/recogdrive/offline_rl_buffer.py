@@ -30,6 +30,10 @@ def _record_path(buffer_root: Path, token: str) -> Path:
     return Path(buffer_root) / f"{token_to_buffer_key(token)}.pkl.xz"
 
 
+def elite_record_exists(buffer_root: Path, token: str) -> bool:
+    return _record_path(Path(buffer_root), token).is_file()
+
+
 def _validate_record(record: Dict[str, Any]) -> None:
     version = int(record.get("version", 1))
     required = {
