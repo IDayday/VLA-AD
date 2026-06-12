@@ -1,0 +1,49 @@
+# @package _global_
+
+defaults:
+  - override /agent: recogdrive_agent
+
+two_expert_slot_stage: stage1_vlm_sft
+use_two_expert_slot_sft: true
+teacher_cache_root: ???
+
+agent:
+  cache_hidden_state: false
+  train_backbone: true
+  use_two_expert_slots: false
+  use_last_vla: false
+  last_vla_stage: disabled
+  use_last_rd: false
+  last_rd_stage: disabled
+  use_expert_features: false
+  last_vla_use_residual_diffusion: false
+  last_vla_teacher_traj_mode: none
+  vlm_path: ???
+  vlm_type: internvl
+
+two_expert_sft:
+  train_mode: lora
+  allow_full_vlm_sft: false
+  num_dyn_groups: 3
+  num_dyn_tokens_per_group: 12
+  num_geo_tokens: 12
+  dynamic_teacher_key: jepa_dynamic_teacher_tokens
+  geometry_teacher_key: vggt_feature23_tokens
+  dyn_loss_weight: 1.0
+  geo_loss_weight: 1.0
+  probe_traj_loss_weight: 0.1
+  probe_heading_loss_weight: 0.05
+  probe_progress_loss_weight: 0.05
+  hidden_anchor_weight: 0.05
+  random_mask_ratio: 0.3
+  adapter_dim: 384
+
+trainer:
+  params:
+    max_epochs: 2
+    gradient_clip_val: 1.0
+    precision: bf16-mixed
+
+dataloader:
+  params:
+    batch_size: 2

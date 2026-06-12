@@ -82,6 +82,17 @@ LAST_VLA_TARGET_KEYS = (
     "gt_score",
     "oracle_best_of_k_score",
 )
+TWO_EXPERT_FEATURE_KEYS = (
+    "two_expert_h_dyn",
+    "two_expert_h_geo",
+    "two_expert_corruption_mode",
+    "jepa_dynamic_teacher_tokens",
+    "vggt_feature23_tokens",
+)
+TWO_EXPERT_TARGET_KEYS = (
+    "jepa_dynamic_teacher_tokens",
+    "vggt_feature23_tokens",
+)
 
 
 class ReCogDriveAgent(AbstractAgent):
@@ -250,6 +261,19 @@ class ReCogDriveAgent(AbstractAgent):
         lr_last_vla_cot: Optional[float] = 1e-4,
         weight_decay_last_vla_cot: float = 1e-4,
         last_vla_hidden_anchor_weight: float = 0.01,
+        use_two_expert_slots: bool = False,
+        two_expert_cache_mode: bool = True,
+        two_expert_slot_mode: str = "vlm_soft_slots",
+        two_expert_condition_mode: str = "horizon_hmef_lite",
+        two_expert_dit_condition_mode: str = "horizon_hmef_lite",
+        two_expert_planner_dim: int = 384,
+        two_expert_use_raw_vlm_base: bool = True,
+        two_expert_zero_init_deltas: bool = True,
+        two_expert_dyn_loss_floor: float = 0.0,
+        two_expert_geo_loss_floor: float = 0.0,
+        two_expert_num_dyn_groups: int = 3,
+        two_expert_dyn_tokens_per_group: int = 12,
+        two_expert_num_geo_tokens: int = 12,
         last_vla_hidden_anchor_mode: str = "summary_cosine",
         last_vla_hidden_anchor_every_n_steps: int = 4,
         last_vla_log_lora_diagnostics: bool = True,
@@ -354,10 +378,25 @@ class ReCogDriveAgent(AbstractAgent):
         self.allow_patch_geometry_fallback = allow_patch_geometry_fallback
         self.future_jepa_loss_weight = future_jepa_loss_weight
         self.vggt_geometry_loss_weight = vggt_geometry_loss_weight
+        self.use_two_expert_slots = bool(use_two_expert_slots)
+        if self.use_two_expert_slots and (self.use_last_vla or self.use_last_rd or self.use_expert_features):
+            raise ValueError("use_two_expert_slots is mutually exclusive with Last-VLA, Last-RD, and A4 direct experts.")
         self.coarse_traj_loss_weight = coarse_traj_loss_weight
         self.coarse_heading_loss_weight = coarse_heading_loss_weight
         self.risk_loss_weight = risk_loss_weight
         self.policy_kd_loss_weight = policy_kd_loss_weight
+        self.two_expert_cache_mode = bool(two_expert_cache_mode)
+        self.two_expert_slot_mode = str(two_expert_slot_mode)
+        self.two_expert_condition_mode = str(two_expert_condition_mode)
+        self.two_expert_dit_condition_mode = str(two_expert_dit_condition_mode)
+        self.two_expert_planner_dim = int(two_expert_planner_dim)
+        self.two_expert_use_raw_vlm_base = bool(two_expert_use_raw_vlm_base)
+        self.two_expert_zero_init_deltas = bool(two_expert_zero_init_deltas)
+        self.two_expert_dyn_loss_floor = float(two_expert_dyn_loss_floor)
+        self.two_expert_geo_loss_floor = float(two_expert_geo_loss_floor)
+        self.two_expert_num_dyn_groups = int(two_expert_num_dyn_groups)
+        self.two_expert_dyn_tokens_per_group = int(two_expert_dyn_tokens_per_group)
+        self.two_expert_num_geo_tokens = int(two_expert_num_geo_tokens)
         self.future_jepa_loss_floor = future_jepa_loss_floor
         self.vggt_geometry_loss_floor = vggt_geometry_loss_floor
         self.coarse_traj_loss_floor = coarse_traj_loss_floor
@@ -672,6 +711,19 @@ class ReCogDriveAgent(AbstractAgent):
             raise ValueError("last_vla_vlm_lora_r must be positive.")
         if self.last_vla_vlm_lora_alpha <= 0:
             raise ValueError("last_vla_vlm_lora_alpha must be positive.")
+        cfg.use_two_expert_slots = self.use_two_expert_slots
+        cfg.two_expert_cache_mode = self.two_expert_cache_mode
+        cfg.two_expert_slot_mode = self.two_expert_slot_mode
+        cfg.two_expert_condition_mode = self.two_expert_condition_mode
+        cfg.two_expert_dit_condition_mode = self.two_expert_dit_condition_mode
+        cfg.two_expert_planner_dim = self.two_expert_planner_dim
+        cfg.two_expert_use_raw_vlm_base = self.two_expert_use_raw_vlm_base
+        cfg.two_expert_zero_init_deltas = self.two_expert_zero_init_deltas
+        cfg.two_expert_dyn_loss_floor = self.two_expert_dyn_loss_floor
+        cfg.two_expert_geo_loss_floor = self.two_expert_geo_loss_floor
+        cfg.two_expert_num_dyn_groups = self.two_expert_num_dyn_groups
+        cfg.two_expert_dyn_tokens_per_group = self.two_expert_dyn_tokens_per_group
+        cfg.two_expert_num_geo_tokens = self.two_expert_num_geo_tokens
         if not (0.0 <= self.last_vla_vlm_lora_dropout < 1.0):
             raise ValueError("last_vla_vlm_lora_dropout must be in [0, 1).")
         if self.last_vla_hidden_anchor_mode not in {"none", "summary_cosine", "token_mean_cosine", "mse_mean"}:
@@ -1023,7 +1075,15 @@ class ReCogDriveAgent(AbstractAgent):
             "high_command_one_hot": high_command_one_hot.to(model_dtype),
         }
         target_loss_mode = self.training or targets is not None
-        optional_feature_keys = tuple(dict.fromkeys((*EXPERT_FEATURE_KEYS, *(LAST_VLA_FEATURE_KEYS if self.use_last_vla else ()))))
+        optional_feature_keys = tuple(
+            dict.fromkeys(
+                (
+                    *EXPERT_FEATURE_KEYS,
+                    *(LAST_VLA_FEATURE_KEYS if self.use_last_vla else ()),
+                    *(TWO_EXPERT_FEATURE_KEYS if self.use_two_expert_slots else ()),
+                )
+            )
+        )
         target_feature_keys = set(EXPERT_TARGET_FEATURE_KEYS)
         if self.use_last_vla:
             target_feature_keys.update(LAST_VLA_TARGET_KEYS)
@@ -1062,6 +1122,8 @@ class ReCogDriveAgent(AbstractAgent):
 
     @staticmethod
     def _is_expert_parameter_key(key: str) -> bool:
+        if self.use_two_expert_slots:
+            target_feature_keys.update(TWO_EXPERT_TARGET_KEYS)
         expert_markers = (
             "jepa_projector",
             "vggt_projector",

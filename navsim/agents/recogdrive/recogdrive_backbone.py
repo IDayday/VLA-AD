@@ -1,9 +1,11 @@
-from typing import List, Optional, Tuple, Union
+import inspect
+from typing import Any, Dict, List, Optional, Tuple, Union
 import torch
 from torch import nn
 from transformers import AutoModel, AutoTokenizer
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
+from .two_expert_slots import TwoExpertSoftSlots, extract_two_expert_slot_hidden
 from .utils.conversation import get_conv_template
 
 IMG_CONTEXT_TOKEN = '<IMG_CONTEXT>'
@@ -156,19 +158,14 @@ class RecogDriveBackbone(nn.Module):
 
         model.extract_feature = extract_feature_with_language_dtype
         model._recogdrive_cast_visual_feature_dtype = True
-    
-    def forward(self, pixel_values: torch.Tensor, questions: List[str], num_patches_list: List[int]):
-        if not self.model:
-            raise RuntimeError("Backbone model has not been initialized. Call initialize() on the agent first.")
-        
-        model_dtype = self._infer_model_compute_dtype(self.model)
 
+    def _build_internvl_queries(self, pixel_values: Optional[torch.Tensor], questions: List[str], num_patches_list: List[int]) -> List[str]:
         queries = []
         for idx, num_patches in enumerate(num_patches_list):
             question = questions[idx]
             if pixel_values is not None and '<image>' not in question:
                 question = '<image>\n' + question
-            
+
             template = get_conv_template("internvl2_5")
             template.system_message = system_message
             template.append_message(template.roles[0], question)
@@ -178,6 +175,75 @@ class RecogDriveBackbone(nn.Module):
             image_tokens = IMG_START_TOKEN + IMG_CONTEXT_TOKEN * self.num_image_token * num_patches + IMG_END_TOKEN
             query = query.replace('<image>', image_tokens, 1)
             queries.append(query)
+        return queries
+
+    @staticmethod
+    def _language_embedding_layer(model: nn.Module) -> nn.Module:
+        language_model = getattr(model, "language_model", None)
+        if language_model is None and hasattr(model, "get_base_model"):
+            try:
+                language_model = getattr(model.get_base_model(), "language_model", None)
+            except Exception:
+                language_model = None
+        if language_model is None or not hasattr(language_model, "get_input_embeddings"):
+            raise NotImplementedError("two_expert_slot soft injection requires language_model.get_input_embeddings().")
+        embeddings = language_model.get_input_embeddings()
+        if embeddings is None:
+            raise NotImplementedError("language_model.get_input_embeddings() returned None.")
+        return embeddings
+
+    @staticmethod
+    def _model_accepts_inputs_embeds(model: nn.Module) -> bool:
+        try:
+            signature = inspect.signature(model.forward)
+        except (TypeError, ValueError):
+            return False
+        if "inputs_embeds" in signature.parameters:
+            return True
+        return any(param.kind == inspect.Parameter.VAR_KEYWORD for param in signature.parameters.values())
+
+    @staticmethod
+    def _gather_masked_tokens(hidden: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+        if mask.ndim != 2:
+            raise ValueError("mask must have shape [B, N].")
+        lengths = mask.long().sum(dim=1)
+        max_len = int(lengths.max().item()) if lengths.numel() else 0
+        if max_len == 0:
+            return hidden.new_zeros(hidden.shape[0], 0, hidden.shape[-1])
+        out = hidden.new_zeros(hidden.shape[0], max_len, hidden.shape[-1])
+        for index in range(hidden.shape[0]):
+            selected = hidden[index, mask[index]]
+            out[index, : selected.shape[0]] = selected
+        return out
+
+    def _apply_two_expert_train_mode(self, train_vlm_mode: str, top_layers: int = 2) -> None:
+        if train_vlm_mode not in {"frozen", "lora", "top_layers"}:
+            raise ValueError("train_vlm_mode must be 'frozen', 'lora', or 'top_layers'.")
+        for parameter in self.model.parameters():
+            parameter.requires_grad = False
+        if train_vlm_mode == "lora":
+            for name, parameter in self.model.named_parameters():
+                if "lora_" in name:
+                    parameter.requires_grad = True
+        elif train_vlm_mode == "top_layers":
+            candidates = []
+            for name, module in self.model.named_modules():
+                lowered = name.lower()
+                if "vision" in lowered or "visual" in lowered:
+                    continue
+                if any(marker in lowered for marker in ("layers.", "layer.", "blocks.")):
+                    candidates.append(module)
+            for module in candidates[-int(top_layers):]:
+                for parameter in module.parameters(recurse=False):
+                    parameter.requires_grad = True
+
+    def forward(self, pixel_values: torch.Tensor, questions: List[str], num_patches_list: List[int]):
+        if not self.model:
+            raise RuntimeError("Backbone model has not been initialized. Call initialize() on the agent first.")
+
+        model_dtype = self._infer_model_compute_dtype(self.model)
+
+        queries = self._build_internvl_queries(pixel_values, questions, num_patches_list)
         self.tokenizer.padding_side = 'left'
         model_inputs = self.tokenizer(queries, return_tensors='pt', padding='max_length', max_length=2800)
         device = torch.device(self.device)
@@ -200,5 +266,123 @@ class RecogDriveBackbone(nn.Module):
                 output_hidden_states=True,
                 return_dict=True,
         )
+
+    def forward_with_two_expert_slots(
+        self,
+        images: torch.Tensor,
+        prompt_inputs: Union[List[str], Dict[str, Any]],
+        two_expert_slots: TwoExpertSoftSlots,
+        return_image_hidden: bool = True,
+        return_raw_hidden: bool = True,
+        train_vlm_mode: str = "frozen",
+    ) -> Dict[str, Any]:
+        if not self.model:
+            raise RuntimeError("Backbone model has not been initialized. Call initialize() on the agent first.")
+        if self.model_type != "internvl":
+            raise NotImplementedError("two_expert_slot VLM soft-slot injection is implemented for InternVL only.")
+        if not self._model_accepts_inputs_embeds(self.model):
+            raise NotImplementedError(
+                "two_expert_slot requires a VLM wrapper that accepts inputs_embeds and forwards them through "
+                "the language/VLM transformer. The current wrapper does not expose this path."
+            )
+        if isinstance(prompt_inputs, dict):
+            questions = prompt_inputs.get("questions") or prompt_inputs.get("prompts")
+            num_patches_list = prompt_inputs.get("num_patches_list")
+        else:
+            questions = prompt_inputs
+            num_patches_list = None
+        if not isinstance(questions, list) or not all(isinstance(item, str) for item in questions):
+            raise TypeError("prompt_inputs must be a list[str] or a dict containing questions/prompts.")
+        if num_patches_list is None:
+            if images.shape[0] % len(questions) != 0:
+                raise ValueError("Cannot infer num_patches_list from images and questions.")
+            num_patches_list = [images.shape[0] // len(questions)] * len(questions)
+        self._apply_two_expert_train_mode(train_vlm_mode)
+
+        model_dtype = self._infer_model_compute_dtype(self.model)
+        queries = self._build_internvl_queries(images, questions, num_patches_list)
+        self.tokenizer.padding_side = 'left'
+        model_inputs = self.tokenizer(queries, return_tensors='pt', padding='max_length', max_length=2800)
+        device = torch.device(self.device)
+        input_ids = model_inputs['input_ids'].to(device)
+        attention_mask = model_inputs['attention_mask'].to(device)
+        position_ids = attention_mask.long().cumsum(-1) - 1
+        position_ids.masked_fill_(attention_mask == 0, 1)
+
+        embeddings = self._language_embedding_layer(self.model)
+        token_embeddings = embeddings(input_ids)
+        batch_size, raw_len, hidden_dim = token_embeddings.shape
+        dyn_slot_embeds, geo_slot_embeds, slot_metadata = two_expert_slots.get_slots(
+            batch_size,
+            device=token_embeddings.device,
+            dtype=token_embeddings.dtype,
+        )
+        dyn_start = raw_len
+        dyn_end = dyn_start + dyn_slot_embeds.shape[1]
+        geo_start = dyn_end
+        geo_end = geo_start + geo_slot_embeds.shape[1]
+        full_inputs_embeds = torch.cat([token_embeddings, dyn_slot_embeds, geo_slot_embeds], dim=1)
+        slot_attention = torch.ones(
+            batch_size,
+            dyn_slot_embeds.shape[1] + geo_slot_embeds.shape[1],
+            device=attention_mask.device,
+            dtype=attention_mask.dtype,
+        )
+        full_attention_mask = torch.cat([attention_mask, slot_attention], dim=1)
+        extra_offsets = torch.arange(
+            full_inputs_embeds.shape[1] - raw_len,
+            device=position_ids.device,
+            dtype=position_ids.dtype,
+        ).unsqueeze(0)
+        slot_positions = position_ids.max(dim=1, keepdim=True).values + 1 + extra_offsets
+        full_position_ids = torch.cat([position_ids, slot_positions], dim=1)
+
+        absolute_dyn_group_spans = []
+        for start, end in slot_metadata["dyn_group_spans"]:
+            absolute_dyn_group_spans.append((dyn_start + int(start), dyn_start + int(end)))
+        slot_metadata = dict(slot_metadata)
+        slot_metadata.update(
+            {
+                "raw_token_count": raw_len,
+                "absolute_dyn_group_spans": absolute_dyn_group_spans,
+                "absolute_geo_span": (geo_start, geo_end),
+                "slot_insertion": "after_prompt_tokens_before_answer_continuation",
+            }
+        )
+
+        num_patches = images.size(0)
+        image_flags = torch.tensor([1] * num_patches, dtype=torch.long, device=device)
+        outputs = self.model(
+            pixel_values=images.to(device=device, dtype=model_dtype),
+            inputs_embeds=full_inputs_embeds.to(device=device, dtype=token_embeddings.dtype),
+            attention_mask=full_attention_mask,
+            position_ids=full_position_ids,
+            image_flags=image_flags.squeeze(-1),
+            output_hidden_states=True,
+            return_dict=True,
+        )
+        full_hidden_state = outputs.hidden_states[-1]
+        raw_vlm_hidden = full_hidden_state[:, :raw_len]
+        h_dyn, h_geo = extract_two_expert_slot_hidden(full_hidden_state, slot_metadata)
+        image_mask = input_ids == self.img_context_token_id
+        image_hidden = self._gather_masked_tokens(raw_vlm_hidden, image_mask)
+        zero = full_hidden_state.new_zeros(())
+        result: Dict[str, Any] = {
+            "raw_vlm_hidden": raw_vlm_hidden if return_raw_hidden else None,
+            "image_hidden": image_hidden if return_image_hidden else None,
+            "h_dyn": h_dyn,
+            "h_geo": h_geo,
+            "full_hidden_state": full_hidden_state,
+            "slot_metadata": slot_metadata,
+            "diagnostics": {
+                "raw_vlm_hidden_norm": raw_vlm_hidden.detach().float().norm(dim=-1).mean().to(dtype=full_hidden_state.dtype),
+                "h_dyn_norm": h_dyn.detach().float().norm(dim=-1).mean().to(dtype=full_hidden_state.dtype),
+                "h_geo_norm": h_geo.detach().float().norm(dim=-1).mean().to(dtype=full_hidden_state.dtype),
+                "image_hidden_norm": image_hidden.detach().float().norm(dim=-1).mean().to(dtype=full_hidden_state.dtype) if image_hidden.numel() else zero,
+                "slot_count_dyn": full_hidden_state.new_tensor(float(h_dyn.shape[1] * h_dyn.shape[2])),
+                "slot_count_geo": full_hidden_state.new_tensor(float(h_geo.shape[1])),
+            },
+        }
+        return result
 
     

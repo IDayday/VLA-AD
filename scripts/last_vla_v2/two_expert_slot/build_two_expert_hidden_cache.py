@@ -1,0 +1,451 @@
+#!/usr/bin/env python3
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import sys
+from pathlib import Path
+from typing import Any, Dict, Iterable, List, Optional, Tuple
+
+import torch
+
+REPO_ROOT = Path(__file__).resolve().parents[3]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from navsim.agents.recogdrive.expert_cache import atomic_torch_save, iter_index, load_sample, write_json  # noqa: E402
+from navsim.agents.recogdrive.two_expert_slots import TwoExpertSlotConfig, TwoExpertSoftSlots  # noqa: E402
+
+
+PRESERVE_KEYS = (
+    "history_trajectory",
+    "high_command_one_hot",
+    "status_feature",
+    "trajectory",
+    "image_path_tensor",
+    "sample_token",
+    "scene_token",
+    "log_name",
+)
+TRAIN_TEACHER_KEYS = (
+    "jepa_dynamic_teacher_tokens",
+    "vggt_feature23_tokens",
+)
+
+
+def chunk_dirs(root: Path, pattern: str) -> List[Path]:
+    if (root / "index.jsonl").is_file():
+        return [root]
+    dirs: List[Path] = []
+    seen = set()
+    for item in str(pattern).split(","):
+        item = item.strip()
+        if not item:
+            continue
+        for path in sorted(root.glob(item)):
+            if path.is_dir() and (path / "index.jsonl").is_file() and path not in seen:
+                dirs.append(path)
+                seen.add(path)
+    if not dirs:
+        raise FileNotFoundError(f"No indexed chunk dirs matching {pattern!r} under {root}")
+    return dirs
+
+
+def iter_samples(root: Path, pattern: str, max_samples: Optional[int]) -> Iterable[Tuple[Path, Path, Dict[str, Any]]]:
+    count = 0
+    for chunk_dir in chunk_dirs(root, pattern):
+        for record in iter_index(chunk_dir):
+            sample_path = Path(record["path"])
+            yield chunk_dir, sample_path, record
+            count += 1
+            if max_samples is not None and count >= max_samples:
+                return
+
+
+def decode_path_tensor(path_tensor: torch.Tensor) -> str:
+    if not isinstance(path_tensor, torch.Tensor):
+        raise TypeError("image_path_tensor must be a torch.Tensor.")
+    chars = []
+    for item in path_tensor.detach().cpu().view(-1):
+        value = int(item.item())
+        if value == 0:
+            continue
+        chars.append(chr(value))
+    return "".join(chars)
+
+
+def format_number(value: float, decimal_places: int = 2) -> str:
+    rounded = round(float(value), decimal_places)
+    return f"{rounded:+.{decimal_places}f}" if abs(rounded) > 1e-2 else "0.0"
+
+
+def build_prompt(sample: Dict[str, Any]) -> str:
+    history = sample["history_trajectory"].float()
+    command = sample["high_command_one_hot"].float()
+    command_names = ["turn left", "go straight", "turn right"]
+    command_str = command_names[int(torch.argmax(command).item())]
+    history_str = " ".join(
+        f"   - t-{3-i}: ({format_number(history[i, 0].item())}, "
+        f"{format_number(history[i, 1].item())}, {format_number(history[i, 2].item())})"
+        for i in range(history.shape[0])
+    )
+    return (
+        "<image>\nAs an autonomous driving system, predict the vehicle's trajectory based on:\n"
+        "1. Visual perception from front camera view\n"
+        f"2. Historical motion context (last 4 timesteps):{history_str}\n"
+        f"3. Active navigation command: [{command_str.upper()}]\n"
+        "Output requirements:\n- Predict 8 future trajectory points\n"
+        "- Each point format: (x:float, y:float, heading:float)\n"
+        "- Use [PT, ...] to encapsulate the trajectory\n"
+        "- Maintain numerical precision to 2 decimal places"
+    )
+
+
+def _load_state_dict(path: Path) -> Dict[str, torch.Tensor]:
+    try:
+        payload = torch.load(path, map_location="cpu", weights_only=False)
+    except TypeError:
+        payload = torch.load(path, map_location="cpu")
+    if isinstance(payload, dict) and "state_dict" in payload and isinstance(payload["state_dict"], dict):
+        payload = payload["state_dict"]
+    if not isinstance(payload, dict):
+        raise TypeError(f"Checkpoint {path} must contain a state_dict.")
+    return {str(key): value for key, value in payload.items() if isinstance(value, torch.Tensor)}
+
+
+def _slot_key_from_checkpoint_key(key: str) -> Optional[str]:
+    key = key.removeprefix("module.").removeprefix("model.").removeprefix("agent.")
+    markers = ("two_expert_slots.", "slots.")
+    for marker in markers:
+        if marker in key:
+            return key.split(marker, 1)[1]
+    return key if key in {"dyn_slots", "geo_slots", "dyn_group_embeddings", "geo_type_embedding"} else None
+
+
+def load_two_expert_slots(checkpoint: Optional[Path], config: TwoExpertSlotConfig) -> TwoExpertSoftSlots:
+    slots = TwoExpertSoftSlots(config)
+    if checkpoint is None:
+        return slots
+    state = _load_state_dict(checkpoint)
+    expected = slots.state_dict()
+    filtered: Dict[str, torch.Tensor] = {}
+    skipped: List[str] = []
+    for key, value in state.items():
+        mapped = _slot_key_from_checkpoint_key(key)
+        if mapped is not None and mapped in expected and tuple(expected[mapped].shape) == tuple(value.shape):
+            filtered[mapped] = value
+        elif mapped is not None:
+            skipped.append(key)
+    required = {"dyn_slots", "geo_slots"}
+    missing = sorted(required.difference(filtered))
+    if missing:
+        raise RuntimeError(f"Stage1 checkpoint {checkpoint} is missing compatible two-expert slot tensors: {missing}")
+    slots.load_state_dict(filtered, strict=False)
+    slots.eval()
+    if skipped:
+        print(f"Skipped {len(skipped)} incompatible two-expert slot tensors.", flush=True)
+    return slots
+
+
+def load_backbone(args: argparse.Namespace):
+    from navsim.agents.recogdrive.recogdrive_backbone import RecogDriveBackbone
+
+    backbone = RecogDriveBackbone(model_type=args.vlm_type, checkpoint_path=str(args.vlm_path), device=args.device)
+    backbone.eval()
+    return backbone
+
+
+def _precision_dtype(precision: str) -> torch.dtype:
+    if precision == "bf16":
+        return torch.bfloat16
+    if precision == "fp16":
+        return torch.float16
+    return torch.float32
+
+
+def compute_batch(backbone: Any, slots: TwoExpertSoftSlots, batch: List[Dict[str, Any]], args: argparse.Namespace) -> List[Dict[str, torch.Tensor]]:
+    if not batch:
+        return []
+    from navsim.agents.recogdrive.utils.internvl_preprocess import load_image
+
+    pixel_values_list = [load_image(item["image_path"], max_num=args.max_image_patches) for item in batch]
+    pixel_values = torch.cat(pixel_values_list, dim=0).to(args.device)
+    prompts = [item["prompt"] for item in batch]
+    num_patches_list = [int(values.shape[0]) for values in pixel_values_list]
+    with torch.no_grad():
+        out = backbone.forward_with_two_expert_slots(
+            pixel_values,
+            {"questions": prompts, "num_patches_list": num_patches_list},
+            slots,
+            return_image_hidden=False,
+            return_raw_hidden=True,
+            train_vlm_mode=args.train_vlm_mode,
+        )
+    raw = out["raw_vlm_hidden"].detach().float().cpu()
+    h_dyn = out["h_dyn"].detach().float().cpu()
+    h_geo = out["h_geo"].detach().float().cpu()
+    results = []
+    for idx in range(len(batch)):
+        results.append(
+            {
+                "last_hidden_state": raw[idx].contiguous(),
+                "two_expert_h_dyn": h_dyn[idx].contiguous(),
+                "two_expert_h_geo": h_geo[idx].contiguous(),
+                "two_expert_slot_metadata": dict(out["slot_metadata"]),
+            }
+        )
+    return results
+
+
+def synthetic_outputs(sample: Dict[str, Any], config: TwoExpertSlotConfig) -> Dict[str, torch.Tensor]:
+    hidden_dim = int(config.vlm_hidden_dim)
+    return {
+        "last_hidden_state": sample.get("last_hidden_state", torch.zeros(16, hidden_dim)).detach().float().cpu(),
+        "two_expert_h_dyn": sample.get("two_expert_h_dyn", torch.zeros(3, 12, hidden_dim)).detach().float().cpu(),
+        "two_expert_h_geo": sample.get("two_expert_h_geo", torch.zeros(12, hidden_dim)).detach().float().cpu(),
+        "two_expert_slot_metadata": {
+            "slot_mode": "vlm_soft_slots",
+            "num_dyn_groups": 3,
+            "num_dyn_tokens_per_group": 12,
+            "num_geo_tokens": 12,
+        },
+    }
+
+
+def validate_hidden_payload(payload: Dict[str, Any], config: TwoExpertSlotConfig) -> None:
+    hidden_dim = int(config.vlm_hidden_dim)
+    last_hidden = payload["last_hidden_state"]
+    h_dyn = payload["two_expert_h_dyn"]
+    h_geo = payload["two_expert_h_geo"]
+    if not isinstance(last_hidden, torch.Tensor) or last_hidden.ndim != 2 or last_hidden.shape[-1] != hidden_dim:
+        raise ValueError(f"last_hidden_state must have shape [N,{hidden_dim}], got {tuple(last_hidden.shape)}.")
+    if tuple(h_dyn.shape) != (3, 12, hidden_dim):
+        raise ValueError(f"two_expert_h_dyn shape {tuple(h_dyn.shape)} != (3, 12, {hidden_dim}).")
+    if tuple(h_geo.shape) != (12, hidden_dim):
+        raise ValueError(f"two_expert_h_geo shape {tuple(h_geo.shape)} != (12, {hidden_dim}).")
+    for key in ("last_hidden_state", "two_expert_h_dyn", "two_expert_h_geo"):
+        if not torch.isfinite(payload[key].float()).all():
+            raise ValueError(f"{key} contains non-finite values.")
+
+
+def output_dir_for_shard(output_root: Path, shard_index: int) -> Path:
+    return output_root / "shards" / f"shard_{int(shard_index):05d}"
+
+
+def strip_eval_teacher_targets(payload: Dict[str, Any], args: argparse.Namespace) -> None:
+    if args.split in {"eval", "navtest", "val"} and not args.allow_eval_teacher_targets:
+        for key in TRAIN_TEACHER_KEYS:
+            payload.pop(key, None)
+
+
+def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
+    if args.num_shards <= 0:
+        raise ValueError("--num-shards must be positive.")
+    if not 0 <= args.shard_index < args.num_shards:
+        raise ValueError("--shard-index must be in [0, num_shards).")
+    config = TwoExpertSlotConfig(
+        vlm_hidden_dim=int(args.vlm_hidden_dim),
+        planner_dim=384,
+        num_dyn_groups=3,
+        num_dyn_tokens_per_group=12,
+        num_geo_tokens=12,
+    )
+    slots = load_two_expert_slots(None if args.synthetic_smoke else args.stage1_checkpoint, config).to(args.device)
+    backbone = None if args.synthetic_smoke else load_backbone(args)
+    out_dir = output_dir_for_shard(args.output_root, args.shard_index)
+    if out_dir.exists() and not args.overwrite:
+        raise FileExistsError(f"Output shard exists: {out_dir}. Pass --overwrite to replace it.")
+    samples_dir = out_dir / "samples"
+    samples_dir.mkdir(parents=True, exist_ok=True)
+    rows: List[Dict[str, Any]] = []
+    batch: List[Dict[str, Any]] = []
+    written = skipped = 0
+    hidden_lengths: List[int] = []
+
+    def write_item(item: Dict[str, Any], outputs: Dict[str, Any]) -> None:
+        nonlocal written
+        payload = dict(item["preserved"])
+        payload.update(outputs)
+        payload["two_expert_metadata"] = {
+            "schema": "two_expert_slot_hidden_cache_v1",
+            "train_mode": str(args.train_vlm_mode),
+            "num_dyn_groups": 3,
+            "tokens_per_group": 12,
+            "num_geo_tokens": 12,
+            "vlm_checkpoint": str(args.vlm_path),
+            "slot_checkpoint": str(args.stage1_checkpoint) if args.stage1_checkpoint else None,
+        }
+        if args.include_teacher_targets:
+            for key in TRAIN_TEACHER_KEYS:
+                if key in item["sample"]:
+                    payload[key] = item["sample"][key]
+        strip_eval_teacher_targets(payload, args)
+        validate_hidden_payload(payload, config)
+        hidden_lengths.append(int(payload["last_hidden_state"].shape[0]))
+        atomic_torch_save(payload, item["out_path"])
+        rows.append(item["row"])
+        written += 1
+
+    def flush_batch() -> None:
+        if not batch:
+            return
+        if args.synthetic_smoke:
+            outputs = [synthetic_outputs(item["sample"], config) for item in batch]
+        else:
+            outputs = compute_batch(backbone, slots, batch, args)
+        for item, out in zip(batch, outputs):
+            write_item(item, out)
+        batch.clear()
+
+    for idx, (_, sample_path, record) in enumerate(iter_samples(args.base_chunk_root, args.chunk_name_pattern, args.max_samples)):
+        if idx % int(args.num_shards) != int(args.shard_index):
+            skipped += 1
+            continue
+        sample = load_sample(sample_path)
+        token = str(sample.get("sample_token") or record.get("sample_token") or sample_path.stem)
+        scene_token = str(sample.get("scene_token") or record.get("scene_token") or "")
+        log_name = sample.get("log_name") or record.get("log_name")
+        preserved = {key: sample[key] for key in PRESERVE_KEYS if key in sample}
+        preserved["sample_token"] = token
+        if scene_token:
+            preserved["scene_token"] = scene_token
+        if log_name:
+            preserved["log_name"] = str(log_name)
+        out_path = samples_dir / f"{token}.pt"
+        row = {"sample_token": token, "path": str(out_path.relative_to(out_dir))}
+        if scene_token:
+            row["scene_token"] = scene_token
+        if log_name:
+            row["log_name"] = str(log_name)
+        item = {"sample": sample, "preserved": preserved, "out_path": out_path, "row": row}
+        if not args.synthetic_smoke:
+            if "image_path_tensor" not in sample:
+                raise KeyError("two_expert hidden cache generation requires image_path_tensor in the base chunk.")
+            item["image_path"] = decode_path_tensor(sample["image_path_tensor"])
+            item["prompt"] = build_prompt(sample)
+        batch.append(item)
+        if len(batch) >= int(args.batch_size):
+            flush_batch()
+    flush_batch()
+
+    with (out_dir / "index.jsonl").open("w", encoding="utf-8") as f:
+        for row in rows:
+            f.write(json.dumps(row, sort_keys=True) + "\n")
+    metadata = {
+        "version": "two_expert_slot_hidden_cache_v1",
+        "split": str(args.split),
+        "source_base_cache": str(args.base_chunk_root),
+        "vlm_checkpoint": str(args.vlm_path),
+        "slot_checkpoint": str(args.stage1_checkpoint) if args.stage1_checkpoint else None,
+        "num_samples": int(written),
+        "num_skipped_by_shard": int(skipped),
+        "shard_index": int(args.shard_index),
+        "num_shards": int(args.num_shards),
+        "teacher_targets_included": bool(args.include_teacher_targets),
+        "eval_teacher_targets_allowed": bool(args.allow_eval_teacher_targets),
+        "synthetic_smoke": bool(args.synthetic_smoke),
+        "hidden_token_length": {
+            "min": min(hidden_lengths) if hidden_lengths else None,
+            "max": max(hidden_lengths) if hidden_lengths else None,
+            "mean": float(sum(hidden_lengths) / len(hidden_lengths)) if hidden_lengths else None,
+        },
+    }
+    write_json(out_dir / "metadata.json", metadata)
+    return metadata
+
+
+def merge_shards(output_root: Path, *, overwrite: bool = False) -> Dict[str, Any]:
+    shards_root = output_root / "shards"
+    if not shards_root.is_dir():
+        raise FileNotFoundError(f"No shards directory found: {shards_root}")
+    index_path = output_root / "index.jsonl"
+    if index_path.exists() and not overwrite:
+        raise FileExistsError(f"Merged index exists: {index_path}. Pass --overwrite to replace it.")
+    rows: List[Dict[str, Any]] = []
+    tokens = set()
+    duplicate_tokens = []
+    metadata_items = []
+    for shard_dir in sorted(shards_root.glob("shard_*")):
+        if not (shard_dir / "index.jsonl").is_file():
+            continue
+        if (shard_dir / "metadata.json").is_file():
+            metadata_items.append(json.loads((shard_dir / "metadata.json").read_text(encoding="utf-8")))
+        for row in iter_index(shard_dir):
+            token = str(row.get("sample_token") or Path(row.get("path", "")).stem)
+            if token in tokens:
+                duplicate_tokens.append(token)
+            tokens.add(token)
+            path = Path(row["path"])
+            if path.is_absolute():
+                row["path"] = str(path.relative_to(output_root))
+            else:
+                row["path"] = str((shard_dir / path).relative_to(output_root))
+            rows.append(row)
+    if duplicate_tokens:
+        raise ValueError(f"Duplicate sample_token values across shards: {duplicate_tokens[:5]}")
+    output_root.mkdir(parents=True, exist_ok=True)
+    with index_path.open("w", encoding="utf-8") as f:
+        for row in rows:
+            f.write(json.dumps(row, sort_keys=True) + "\n")
+    metadata = {
+        "version": "two_expert_slot_hidden_cache_v1",
+        "merged": True,
+        "num_samples": len(rows),
+        "num_shards": len(metadata_items),
+        "teacher_targets_included": any(bool(item.get("teacher_targets_included", False)) for item in metadata_items),
+    }
+    write_json(output_root / "metadata.json", metadata)
+    return metadata
+
+
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Build two_expert_slot hidden cache after Stage1 VLM SFT.")
+    parser.add_argument("--base-chunk-root", type=Path, required=True)
+    parser.add_argument("--output-root", type=Path, required=True)
+    parser.add_argument("--stage1-checkpoint", type=Path, default=None)
+    parser.add_argument("--vlm-path", type=Path, required=True)
+    parser.add_argument("--vlm-type", default="internvl")
+    parser.add_argument("--split", default="navtrain")
+    parser.add_argument("--chunk-name-pattern", default="train_full_chunk_*,train_backfill_chunk_*,train_backfill_p1_chunk_*,navtest_full_chunk_*")
+    parser.add_argument("--num-shards", type=int, default=1)
+    parser.add_argument("--shard-index", type=int, default=0)
+    parser.add_argument("--batch-size", type=int, default=1)
+    parser.add_argument("--device", default="cuda")
+    parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="bf16")
+    parser.add_argument("--vlm-hidden-dim", type=int, default=1536)
+    parser.add_argument("--train-vlm-mode", choices=("frozen", "lora", "top_layers"), default="frozen")
+    parser.add_argument("--max-image-patches", type=int, default=12)
+    parser.add_argument("--include-teacher-targets", action="store_true")
+    parser.add_argument("--allow-eval-teacher-targets", action="store_true")
+    parser.add_argument("--overwrite", action="store_true")
+    parser.add_argument("--max-samples", type=int, default=None)
+    parser.add_argument("--merge", action="store_true")
+    parser.add_argument("--synthetic-smoke", action="store_true")
+    return parser.parse_args()
+
+
+def main() -> int:
+    args = parse_args()
+    if args.merge:
+        print(json.dumps(merge_shards(args.output_root, overwrite=args.overwrite), indent=2, sort_keys=True))
+        return 0
+    if args.split in {"eval", "navtest", "val"} and args.include_teacher_targets and not args.allow_eval_teacher_targets:
+        raise ValueError("Eval/navtest hidden cache must not include teacher targets unless --allow-eval-teacher-targets is set.")
+    if os.getenv("RUN_CACHE", "0") != "1":
+        payload = {
+            "status": "blocked_by_RUN_CACHE_gate",
+            "message": "Set RUN_CACHE=1 to build two-expert hidden cache.",
+            "output_root": str(args.output_root),
+            "split": str(args.split),
+        }
+        args.output_root.mkdir(parents=True, exist_ok=True)
+        write_json(args.output_root / "two_expert_hidden_cache_dry_run.json", payload)
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return 0
+    print(json.dumps(build_shard(args), indent=2, sort_keys=True))
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

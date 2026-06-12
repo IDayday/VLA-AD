@@ -318,6 +318,20 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     tune_diffusion_model: bool = True
     
     flow_cfg: FlowConfig = field(default_factory=FlowConfig)
+
+    use_two_expert_slots: bool = False
+    two_expert_cache_mode: bool = True
+    two_expert_slot_mode: Literal["vlm_soft_slots"] = "vlm_soft_slots"
+    two_expert_condition_mode: Literal["horizon_hmef_lite"] = "horizon_hmef_lite"
+    two_expert_dit_condition_mode: Literal["horizon_hmef_lite"] = "horizon_hmef_lite"
+    two_expert_planner_dim: int = 384
+    two_expert_use_raw_vlm_base: bool = True
+    two_expert_zero_init_deltas: bool = True
+    two_expert_dyn_loss_floor: float = 0.0
+    two_expert_geo_loss_floor: float = 0.0
+    two_expert_num_dyn_groups: int = 3
+    two_expert_dyn_tokens_per_group: int = 12
+    two_expert_num_geo_tokens: int = 12
     ddpm_cfg: DDPMConfig = field(default_factory=DDPMConfig)
     ddim_cfg: DDIMConfig = field(default_factory=DDIMConfig)
     grpo_cfg: GRPOConfig = field(default_factory=GRPOConfig)
@@ -336,6 +350,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
     def __init__(self, config: ReCogDriveDiffusionPlannerConfig):
         super().__init__()
         self.config = config
+        "jepa_dynamic_teacher_tokens",
+        "vggt_feature23_tokens",
         
         self.model = LightningDiT(**config.diffusion_model_cfg)
 
@@ -384,6 +400,23 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         if not config.use_last_vla and config.last_vla_stage != "disabled":
             raise ValueError("last_vla_stage must be 'disabled' when use_last_vla=False.")
         if (
+        if config.use_two_expert_slots:
+            if config.use_last_vla or config.use_last_rd or config.use_expert_features:
+                raise ValueError(
+                    "two_expert_slot is mutually exclusive with old Last-VLA, Last-RD, and A4 direct expert paths."
+                )
+            if config.two_expert_slot_mode != "vlm_soft_slots":
+                raise ValueError("two_expert_slot_mode must be 'vlm_soft_slots'.")
+            if config.two_expert_condition_mode != "horizon_hmef_lite":
+                raise ValueError("two_expert_condition_mode must be 'horizon_hmef_lite'.")
+            if config.two_expert_dit_condition_mode != "horizon_hmef_lite":
+                raise ValueError("two_expert_dit_condition_mode must be 'horizon_hmef_lite'.")
+            if config.last_vla_use_residual_diffusion:
+                raise ValueError("two_expert_slot forbids residual diffusion.")
+            if config.last_vla_teacher_traj_mode != "none":
+                raise ValueError("two_expert_slot Stage2 target must remain GT normalized trajectory.")
+            if not config.two_expert_use_raw_vlm_base:
+                raise ValueError("two_expert_slot must preserve raw VLM context for DiT.")
             config.use_last_vla
             and (
                 config.last_vla_condition_mode != "decoupled_cot_residual"
@@ -432,6 +465,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 raise ValueError(f"{weight_name} must be non-negative.")
 
         if config.use_expert_features:
+            "two_expert_dyn_loss_floor",
+            "two_expert_geo_loss_floor",
             if not config.use_jepa and not config.use_vggt:
                 raise ValueError("use_expert_features=True requires use_jepa=True and/or use_vggt=True.")
             if config.expert_fusion_mode != "concat_context":
@@ -585,6 +620,35 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
             self.last_rd = LatentSpatioTemporalReasoner(
                 LastRDConfig(
+        if config.use_two_expert_slots:
+            vlm_dim = 3584 if config.vlm_size == "large" else 1536
+            planner_dim = config.input_embedding_dim
+            self.two_expert_dyn_proj = nn.Sequential(
+                nn.LayerNorm(vlm_dim),
+                nn.Linear(vlm_dim, planner_dim),
+                nn.GELU(),
+                nn.Linear(planner_dim, planner_dim),
+                nn.LayerNorm(planner_dim),
+            )
+            self.two_expert_geo_proj = nn.Sequential(
+                nn.LayerNorm(vlm_dim),
+                nn.Linear(vlm_dim, planner_dim),
+                nn.GELU(),
+                nn.Linear(planner_dim, planner_dim),
+                nn.LayerNorm(planner_dim),
+            )
+            self.two_expert_horizon_queries = nn.Parameter(torch.randn(config.action_horizon, planner_dim) * 0.02)
+            heads = 8 if planner_dim % 8 == 0 else 1
+            self.two_expert_dyn_horizon_attn = nn.MultiheadAttention(planner_dim, heads, batch_first=True)
+            self.two_expert_geo_horizon_attn = nn.MultiheadAttention(planner_dim, heads, batch_first=True)
+            self.two_expert_dyn_delta_proj = nn.Linear(planner_dim, planner_dim)
+            self.two_expert_geo_delta_proj = nn.Linear(planner_dim, planner_dim)
+            if config.two_expert_zero_init_deltas:
+                nn.init.constant_(self.two_expert_dyn_delta_proj.weight, 0.0)
+                nn.init.constant_(self.two_expert_dyn_delta_proj.bias, 0.0)
+                nn.init.constant_(self.two_expert_geo_delta_proj.weight, 0.0)
+                nn.init.constant_(self.two_expert_geo_delta_proj.bias, 0.0)
+
                     planner_dim=config.input_embedding_dim,
                     jepa_dim=config.jepa_dim,
                     vggt_dim=config.vggt_dim,
@@ -1286,6 +1350,105 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "jepa_alignment_loss": zero,
             "vggt_alignment_loss": zero,
             "future_jepa_loss": zero,
+    @staticmethod
+    def _two_expert_corruption_mode(action_input: Optional[BatchFeature]) -> str:
+        if action_input is None:
+            return "normal"
+        value = action_input.get("two_expert_corruption_mode", "normal")
+        if isinstance(value, torch.Tensor):
+            code = int(value.detach().reshape(-1)[0].cpu().item()) if value.numel() else 0
+            return {
+                0: "normal",
+                1: "zero_h_dyn",
+                2: "zero_h_geo",
+                3: "zero_all_experts",
+                4: "raw_vlm_only",
+                5: "dyn_only",
+                6: "geo_only",
+            }.get(code, "normal")
+        return str(value)
+
+    def _build_two_expert_context(
+        self,
+        vl_embeds: torch.Tensor,
+        action_input: Optional[BatchFeature],
+    ) -> Dict[str, Any]:
+        mode = self._two_expert_corruption_mode(action_input)
+        if action_input is None:
+            raise KeyError("use_two_expert_slots=True requires action_input with two_expert_h_dyn and two_expert_h_geo.")
+        h_dyn = action_input.get("two_expert_h_dyn", None)
+        h_geo = action_input.get("two_expert_h_geo", None)
+        if not isinstance(h_dyn, torch.Tensor) or not isinstance(h_geo, torch.Tensor):
+            raise KeyError("two_expert_slot cache requires two_expert_h_dyn and two_expert_h_geo.")
+        if h_dyn.ndim != 4:
+            raise ValueError(f"two_expert_h_dyn must have shape [B,3,12,D], got {tuple(h_dyn.shape)}.")
+        if h_geo.ndim != 3:
+            raise ValueError(f"two_expert_h_geo must have shape [B,12,D], got {tuple(h_geo.shape)}.")
+        if h_dyn.shape[0] != vl_embeds.shape[0] or h_geo.shape[0] != vl_embeds.shape[0]:
+            raise ValueError("two_expert hidden batch size must match VLM batch size.")
+        if h_dyn.shape[1] != self.config.two_expert_num_dyn_groups:
+            raise ValueError(f"two_expert_h_dyn group count {h_dyn.shape[1]} does not match config.")
+        if h_dyn.shape[2] != self.config.two_expert_dyn_tokens_per_group:
+            raise ValueError(f"two_expert_h_dyn tokens/group {h_dyn.shape[2]} does not match config.")
+        if h_geo.shape[1] != self.config.two_expert_num_geo_tokens:
+            raise ValueError(f"two_expert_h_geo token count {h_geo.shape[1]} does not match config.")
+
+        h_dyn = h_dyn.to(device=vl_embeds.device, dtype=vl_embeds.dtype)
+        h_geo = h_geo.to(device=vl_embeds.device, dtype=vl_embeds.dtype)
+        if mode in {"zero_h_dyn", "zero_all_experts", "raw_vlm_only", "geo_only"}:
+            h_dyn = torch.zeros_like(h_dyn)
+        if mode in {"zero_h_geo", "zero_all_experts", "raw_vlm_only", "dyn_only"}:
+            h_geo = torch.zeros_like(h_geo)
+        if mode not in {"normal", "zero_h_dyn", "zero_h_geo", "zero_all_experts", "raw_vlm_only", "dyn_only", "geo_only"}:
+            raise ValueError(f"Unknown two_expert corruption mode: {mode!r}.")
+
+        dyn_proj = self.two_expert_dyn_proj(h_dyn.reshape(h_dyn.shape[0], -1, h_dyn.shape[-1]))
+        geo_proj = self.two_expert_geo_proj(h_geo)
+        queries = self.two_expert_horizon_queries.unsqueeze(0).expand(vl_embeds.shape[0], -1, -1).to(vl_embeds)
+        f_dyn, _ = self.two_expert_dyn_horizon_attn(queries, dyn_proj, dyn_proj, need_weights=False)
+        f_geo, _ = self.two_expert_geo_horizon_attn(queries, geo_proj, geo_proj, need_weights=False)
+        dyn_delta = self.two_expert_dyn_delta_proj(f_dyn)
+        geo_delta = self.two_expert_geo_delta_proj(f_geo)
+        if mode == "raw_vlm_only":
+            dyn_delta = torch.zeros_like(dyn_delta)
+            geo_delta = torch.zeros_like(geo_delta)
+        expert_step_condition = dyn_delta + geo_delta
+        diagnostics = {
+            "two_expert_condition_enabled": vl_embeds.new_tensor(float(mode != "raw_vlm_only")),
+            "two_expert_corruption_mode_code": vl_embeds.new_tensor(
+                {
+                    "normal": 0,
+                    "zero_h_dyn": 1,
+                    "zero_h_geo": 2,
+                    "zero_all_experts": 3,
+                    "raw_vlm_only": 4,
+                    "dyn_only": 5,
+                    "geo_only": 6,
+                }[mode]
+            ),
+            "two_expert_raw_vlm_context_used": vl_embeds.new_tensor(1.0),
+            "two_expert_h_dyn_norm": h_dyn.detach().float().norm(dim=-1).mean().to(dtype=vl_embeds.dtype),
+            "two_expert_h_geo_norm": h_geo.detach().float().norm(dim=-1).mean().to(dtype=vl_embeds.dtype),
+            "two_expert_f_dyn_norm": f_dyn.detach().float().norm(dim=-1).mean().to(dtype=vl_embeds.dtype),
+            "two_expert_f_geo_norm": f_geo.detach().float().norm(dim=-1).mean().to(dtype=vl_embeds.dtype),
+            "two_expert_dyn_expert_delta_norm": dyn_delta.detach().float().norm(dim=-1).mean().to(dtype=vl_embeds.dtype),
+            "two_expert_geo_expert_delta_norm": geo_delta.detach().float().norm(dim=-1).mean().to(dtype=vl_embeds.dtype),
+            "two_expert_zero_init_dyn": vl_embeds.new_tensor(
+                float(torch.count_nonzero(self.two_expert_dyn_delta_proj.weight.detach()).item() == 0)
+            ),
+            "two_expert_zero_init_geo": vl_embeds.new_tensor(
+                float(torch.count_nonzero(self.two_expert_geo_delta_proj.weight.detach()).item() == 0)
+            ),
+        }
+        return {
+            "context_tokens": vl_embeds,
+            "context_mean": vl_embeds.mean(1),
+            "expert_step_condition": expert_step_condition,
+            "f_dyn": f_dyn,
+            "f_geo": f_geo,
+            "diagnostics": diagnostics,
+        }
+
             "vggt_geometry_loss": zero,
             "coarse_traj_loss": zero,
             "coarse_heading_loss": zero,
@@ -1299,7 +1462,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "last_vla_risk_loss": zero,
             "last_vla_cot_consistency_loss": zero,
         }
-        if not self.config.use_expert_features and not self.config.use_last_rd and not self.config.use_last_vla:
+        if (
+            not self.config.use_expert_features
+            and not self.config.use_last_rd
+            and not self.config.use_last_vla
+            and not self.config.use_two_expert_slots
+        ):
             return {
                 "vl_embeds": vl_embeds,
                 "context_tokens": vl_embeds,
@@ -1325,6 +1493,21 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             if (
                 training
                 and allow_targets
+        if self.config.use_two_expert_slots:
+            two_expert_context = self._build_two_expert_context(vl_embeds, action_input)
+            return {
+                "vl_embeds": vl_embeds,
+                "context_tokens": two_expert_context["context_tokens"],
+                "context_mean": two_expert_context["context_mean"],
+                "expert_step_condition": two_expert_context["expert_step_condition"],
+                "cot_condition_tokens": None,
+                **base_losses,
+                "diagnostics": two_expert_context["diagnostics"],
+                "two_expert_f_dyn": two_expert_context["f_dyn"],
+                "two_expert_f_geo": two_expert_context["f_geo"],
+                "selected_target_norm": target_action_norm,
+            }
+
                 and self.config.last_vla_dynamic_loss_weight > 0.0
                 and float(last_vla_output.diagnostics.get("dynamic_teacher_missing", zero).detach().float().item()) > 0.0
             ):
@@ -2005,7 +2188,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         Calculates the mean and log variance of the reverse process p(x_{t-1} | x_t).
         Also returns the predicted x0.
         """
-        if (self.config.use_last_rd or self.config.use_last_vla) and vl_features is not None and action_input is not None:
+        if (
+            self.config.use_last_rd
+            or self.config.use_last_vla
+            or self.config.use_two_expert_slots
+        ) and vl_features is not None and action_input is not None:
             latent_context = self._prepare_dit_context(
                 vl_features,
                 action_input,
@@ -2343,6 +2530,17 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "residual_anchor_missing",
                 "residual_anchor_norm",
                 "residual_anchor_l1_to_reference",
+                "two_expert_condition_enabled",
+                "two_expert_corruption_mode_code",
+                "two_expert_raw_vlm_context_used",
+                "two_expert_h_dyn_norm",
+                "two_expert_h_geo_norm",
+                "two_expert_f_dyn_norm",
+                "two_expert_f_geo_norm",
+                "two_expert_dyn_expert_delta_norm",
+                "two_expert_geo_expert_delta_norm",
+                "two_expert_zero_init_dyn",
+                "two_expert_zero_init_geo",
                 "residual_target_norm",
                 "geometry_weight_effective",
                 "dynamic_weight_effective",
@@ -2366,7 +2564,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "last_vla_horizon_cot_residual_norm",
             ):
                 if key in diagnostics and isinstance(diagnostics[key], torch.Tensor):
-                    output_key = key if key.startswith("last_vla_") else f"last_vla_{key}"
+                    output_key = key if key.startswith(("last_vla_", "two_expert_")) else f"last_vla_{key}"
                     output[output_key] = diagnostics[key].to(device=loss.device, dtype=loss.dtype)
         return BatchFeature(data=output)
 
@@ -2424,7 +2622,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             for step in range(self.config.num_inference_steps):
                 idx = int(step / self.config.num_inference_steps * self.config.flow_cfg.num_timestep_buckets)
                 t = torch.full((B,), idx, device=device, dtype=torch.long)
-                if self.config.use_last_rd or self.config.use_last_vla:
+                if self.config.use_last_rd or self.config.use_last_vla or self.config.use_two_expert_slots:
                     dit_context = self._prepare_dit_context(
                         vl_features,
                         action_input,
@@ -2616,7 +2814,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             for step in range(self.config.num_inference_steps):
                 idx = int(step / self.config.num_inference_steps * self.config.flow_cfg.num_timestep_buckets)
                 t_batch = torch.full((B,), idx, device=device, dtype=torch.long)
-                if (self.config.use_last_rd or self.config.use_last_vla) and action_input is not None:
+                if (
+                    self.config.use_last_rd
+                    or self.config.use_last_vla
+                    or self.config.use_two_expert_slots
+                ) and action_input is not None:
                     dit_context = self._prepare_dit_context(
                         vl_features,
                         action_input,

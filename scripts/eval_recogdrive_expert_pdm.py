@@ -72,6 +72,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--online-vlm-path", type=Path, default=None)
     parser.add_argument("--online-vlm-type", default="internvl")
     parser.add_argument("--online-vlm-lora-adapter-dir", type=Path, default=None)
+    parser.add_argument(
+        "--two-expert-corruption-mode",
+        choices=("normal", "zero_h_dyn", "zero_h_geo", "zero_all_experts", "raw_vlm_only", "dyn_only", "geo_only"),
+        default="normal",
+    )
     parser.add_argument("--deterministic", action="store_true", default=True)
     return parser.parse_args()
 
@@ -359,10 +364,12 @@ def make_batch(
     dtype: torch.dtype,
     *,
     anchor_index: Optional[Dict[str, Path]] = None,
+    two_expert_corruption_mode: str = "normal",
 ) -> Tuple[torch.Tensor, BatchFeature]:
     global _WARNED_TRAIN_ONLY_TARGET_KEYS
     use_last_rd = bool(getattr(planner.config, "use_last_rd", False))
     use_last_vla = bool(getattr(planner.config, "use_last_vla", False))
+    use_two_expert_slots = bool(getattr(planner.config, "use_two_expert_slots", False))
     require_jepa = bool((planner.config.use_expert_features or use_last_rd or use_last_vla) and planner.config.use_jepa)
     require_vggt = bool((planner.config.use_expert_features or use_last_rd or use_last_vla) and planner.config.use_vggt)
     strict_last_vla_full_geometry = bool(
@@ -389,6 +396,18 @@ def make_batch(
     his = sample["history_trajectory"].float().view(1, -1).to(device=device, dtype=dtype)
     status = sample["status_feature"].float().unsqueeze(0).to(device=device, dtype=dtype)
     data = {"his_traj": his, "status_feature": status}
+    if use_two_expert_slots:
+        if "two_expert_h_dyn" not in sample or "two_expert_h_geo" not in sample:
+            raise KeyError("two_expert_slot evaluation requires two_expert_h_dyn and two_expert_h_geo in the hidden cache.")
+        h_dyn = sample["two_expert_h_dyn"]
+        h_geo = sample["two_expert_h_geo"]
+        if not isinstance(h_dyn, torch.Tensor) or tuple(h_dyn.shape[:2]) != (3, 12):
+            raise ValueError(f"two_expert_h_dyn must have shape [3,12,D], got {tuple(h_dyn.shape) if isinstance(h_dyn, torch.Tensor) else type(h_dyn).__name__}.")
+        if not isinstance(h_geo, torch.Tensor) or h_geo.ndim != 2 or h_geo.shape[0] != 12:
+            raise ValueError(f"two_expert_h_geo must have shape [12,D], got {tuple(h_geo.shape) if isinstance(h_geo, torch.Tensor) else type(h_geo).__name__}.")
+        data["two_expert_h_dyn"] = h_dyn.float().unsqueeze(0).to(device=device, dtype=dtype)
+        data["two_expert_h_geo"] = h_geo.float().unsqueeze(0).to(device=device, dtype=dtype)
+        data["two_expert_corruption_mode"] = str(two_expert_corruption_mode)
     if require_jepa:
         data["jepa_context_tokens"] = sample["jepa_context_tokens"].float().unsqueeze(0).to(device=device, dtype=dtype)
     if require_vggt:
@@ -521,7 +540,14 @@ def main() -> int:
                 sample,
                 device="cuda" if device.type == "cuda" else "cpu",
             )
-        vl_features, action_input = make_batch(sample, planner, device, dtype, anchor_index=anchor_index)
+        vl_features, action_input = make_batch(
+            sample,
+            planner,
+            device,
+            dtype,
+            anchor_index=anchor_index,
+            two_expert_corruption_mode=args.two_expert_corruption_mode,
+        )
         with torch.no_grad():
             output = planner.get_action(vl_features, action_input, deterministic=args.deterministic)
         if args.trajectory_output_key not in output:
@@ -590,6 +616,7 @@ def main() -> int:
         "checkpoint": str(args.checkpoint),
         "precision": args.precision,
         "trajectory_output_key": args.trajectory_output_key,
+        "two_expert_corruption_mode": args.two_expert_corruption_mode,
         "online_vlm_path": str(args.online_vlm_path) if args.online_vlm_path is not None else None,
         "online_vlm_lora_adapter_dir": str(args.online_vlm_lora_adapter_dir) if args.online_vlm_lora_adapter_dir is not None else None,
         "shard_index": args.shard_index,
