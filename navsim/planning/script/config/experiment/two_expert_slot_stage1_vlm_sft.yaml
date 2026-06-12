@@ -22,7 +22,7 @@ agent:
   vlm_type: internvl
 
 two_expert_sft:
-  train_mode: top_layers
+  train_mode: lora
   allow_full_vlm_sft: false
   num_dyn_groups: 3
   num_dyn_tokens_per_group: 12

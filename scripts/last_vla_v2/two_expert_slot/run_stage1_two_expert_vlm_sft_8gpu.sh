@@ -23,12 +23,16 @@ cmd=(
   --output-dir "${OUTPUT_DIR}"
   --vlm-path "${VLM_PATH}"
   --vlm-type "${VLM_TYPE:-internvl}"
-  --train-mode "${TRAIN_MODE:-top_layers}"
+  --train-mode "${TRAIN_MODE:-lora}"
   --top-layers "${TOP_LAYERS:-2}"
   --batch-size "${BATCH_SIZE_PER_GPU:-2}"
   --grad-accum "${GRAD_ACCUM:-4}"
   --max-epochs "${MAX_EPOCHS:-2}"
-  --lr "${LR:-1e-4}"
+  --lr-vlm "${LR_VLM:-1e-5}"
+  --lr-slots-adapters "${LR_SLOTS_ADAPTERS:-1e-4}"
+  --weight-decay "${WEIGHT_DECAY:-1e-4}"
+  --precision "${PRECISION:-bf16-mixed}"
+  --teacher-lru-size "${TEACHER_LRU_SIZE:-0}"
   --max-image-patches "${MAX_IMAGE_PATCHES:-12}"
 )
 
@@ -37,6 +41,9 @@ if [[ -n "${VGGT_FEATURE_DIM:-}" ]]; then
 fi
 if [[ "${ALLOW_FULL_VLM_SFT:-0}" == "1" ]]; then
   cmd+=(--allow-full-vlm-sft)
+fi
+if [[ "${ALLOW_DEV_FALLBACK_TEACHERS:-0}" == "1" ]]; then
+  cmd+=(--allow-dev-fallback-teachers)
 fi
 
 printf '%q ' "${cmd[@]}" >>"${COMMANDS_LOG}"; printf '\n' >>"${COMMANDS_LOG}"

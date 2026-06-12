@@ -6,7 +6,7 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 import torch
 
@@ -15,39 +15,14 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from navsim.agents.recogdrive.expert_cache import atomic_torch_save, iter_index, load_sample, write_json  # noqa: E402
+from scripts.last_vla_v2.two_expert_slot.two_expert_cache_utils import (  # noqa: E402
+    iter_indexed_records,
+    normalize_merged_index_path,
+)
 
 
 PACKER_VERSION = "two_expert_jepa_dynamic_packer_v1"
 PRODUCTION_EXTRACTOR_IMPLEMENTED = False
-
-
-def chunk_dirs(root: Path, pattern: str) -> List[Path]:
-    if (root / "index.jsonl").is_file():
-        return [root]
-    dirs: List[Path] = []
-    seen = set()
-    for item in str(pattern).split(","):
-        item = item.strip()
-        if not item:
-            continue
-        for path in sorted(root.glob(item)):
-            if path.is_dir() and (path / "index.jsonl").is_file() and path not in seen:
-                dirs.append(path)
-                seen.add(path)
-    if not dirs:
-        raise FileNotFoundError(f"No indexed chunk dirs matching {pattern!r} under {root}")
-    return dirs
-
-
-def iter_samples(root: Path, pattern: str, max_samples: Optional[int]) -> Iterable[Tuple[Path, Path, Dict[str, Any]]]:
-    count = 0
-    for chunk_dir in chunk_dirs(root, pattern):
-        for record in iter_index(chunk_dir):
-            sample_path = Path(record["path"])
-            yield chunk_dir, sample_path, record
-            count += 1
-            if max_samples is not None and count >= max_samples:
-                return
 
 
 def _as_feature_tensor(value: Any, key: str) -> torch.Tensor:
@@ -138,7 +113,9 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
     samples_dir.mkdir(parents=True, exist_ok=True)
     rows: List[Dict[str, Any]] = []
     written = skipped = fallback_count = strict_count = 0
-    for idx, (_, sample_path, record) in enumerate(iter_samples(args.input_chunk_root, args.chunk_name_pattern, args.max_samples)):
+    for idx, (_, sample_path, record) in enumerate(
+        iter_indexed_records(args.input_chunk_root, pattern=args.chunk_name_pattern, max_records=args.max_samples)
+    ):
         if idx % int(args.num_shards) != int(args.shard_index):
             skipped += 1
             continue
@@ -174,6 +151,7 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
         "version": "two_expert_jepa_dynamic_teacher_cache_v1",
         "builder_mode": "existing_feature_repack",
         "production_extractor_implemented": PRODUCTION_EXTRACTOR_IMPLEMENTED,
+        "route_status": "production_teacher_ok" if fallback_count == 0 else "dev_fallback_not_for_final",
         "split": str(args.split),
         "source_chunk_root": str(args.input_chunk_root),
         "teacher_type": "jepa_dynamic",
@@ -214,13 +192,7 @@ def merge_shards(output_root: Path, *, overwrite: bool = False) -> Dict[str, Any
             if token in tokens:
                 duplicate_tokens.append(token)
             tokens.add(token)
-            path = Path(row["path"])
-            rel_path = path if not path.is_absolute() else path.relative_to(output_root)
-            if path.is_absolute():
-                row["path"] = str(rel_path)
-            else:
-                row["path"] = str((shard_dir / path).relative_to(output_root))
-            rows.append(row)
+            rows.append(normalize_merged_index_path(output_root, shard_dir, row))
     if duplicate_tokens:
         raise ValueError(f"Duplicate sample_token values across shards: {duplicate_tokens[:5]}")
     output_root.mkdir(parents=True, exist_ok=True)
@@ -232,6 +204,9 @@ def merge_shards(output_root: Path, *, overwrite: bool = False) -> Dict[str, Any
         "merged": True,
         "builder_mode": "existing_feature_repack",
         "production_extractor_implemented": PRODUCTION_EXTRACTOR_IMPLEMENTED,
+        "route_status": "production_teacher_ok"
+        if sum(int(item.get("num_legacy_fallback", 0)) for item in metadata_items) == 0
+        else "dev_fallback_not_for_final",
         "num_samples": len(rows),
         "num_shards": len(metadata_items),
         "num_legacy_fallback": sum(int(item.get("num_legacy_fallback", 0)) for item in metadata_items),

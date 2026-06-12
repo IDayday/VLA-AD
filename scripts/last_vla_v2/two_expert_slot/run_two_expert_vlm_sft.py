@@ -5,8 +5,9 @@ import argparse
 import json
 import os
 import sys
+from collections import OrderedDict
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import torch
 from torch.utils.data import DataLoader, Dataset
@@ -15,7 +16,7 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from navsim.agents.recogdrive.expert_cache import iter_index, load_sample, write_json  # noqa: E402
+from navsim.agents.recogdrive.expert_cache import load_sample, write_json  # noqa: E402
 from navsim.agents.recogdrive.recogdrive_backbone import RecogDriveBackbone  # noqa: E402
 from navsim.agents.recogdrive.two_expert_vlm_sft import TwoExpertVLMSFTConfig, TwoExpertVLMSFTModule  # noqa: E402
 from navsim.agents.recogdrive.vlm_lora_utils import (  # noqa: E402
@@ -24,25 +25,7 @@ from navsim.agents.recogdrive.vlm_lora_utils import (  # noqa: E402
     resolve_lora_target_modules,
     validate_lora_scope_audit,
 )
-
-
-def chunk_dirs(root: Path) -> List[Path]:
-    if (root / "index.jsonl").is_file():
-        return [root]
-    dirs = sorted(path for path in root.glob("**") if path.is_dir() and (path / "index.jsonl").is_file())
-    if not dirs:
-        raise FileNotFoundError(f"No index.jsonl found under {root}")
-    return dirs
-
-
-def iter_records(root: Path, max_samples: Optional[int] = None) -> Iterable[Tuple[Path, Dict[str, Any]]]:
-    count = 0
-    for chunk_dir in chunk_dirs(root):
-        for record in iter_index(chunk_dir):
-            yield Path(record["path"]), record
-            count += 1
-            if max_samples is not None and count >= max_samples:
-                return
+from scripts.last_vla_v2.two_expert_slot.two_expert_cache_utils import iter_indexed_records, load_path_index  # noqa: E402
 
 
 def decode_path_tensor(path_tensor: torch.Tensor) -> str:
@@ -54,17 +37,11 @@ def decode_path_tensor(path_tensor: torch.Tensor) -> str:
     return "".join(chars)
 
 
-def load_teacher_map(root: Path, key: str, max_samples: Optional[int] = None) -> Dict[str, Dict[str, Any]]:
-    mapping: Dict[str, Dict[str, Any]] = {}
-    for path, record in iter_records(root, max_samples=max_samples):
-        payload = load_sample(path)
-        token = str(payload.get("sample_token") or record.get("sample_token") or path.stem)
-        if key not in payload:
-            raise KeyError(f"Teacher cache sample {path} missing {key}.")
-        if token in mapping:
-            raise ValueError(f"Duplicate sample_token in teacher cache {root}: {token}")
-        mapping[token] = payload
-    return mapping
+def load_teacher_index(root: Path, key: str, max_samples: Optional[int] = None) -> Dict[str, Path]:
+    index = load_path_index(root, max_records=max_samples)
+    if not index:
+        raise RuntimeError(f"Teacher cache {root} has no indexed samples for key {key}.")
+    return index
 
 
 def resolve_cache_roots(args: argparse.Namespace) -> Tuple[Path, Path]:
@@ -99,11 +76,19 @@ def _metadata_feature_dims(root: Path) -> List[int]:
     return sorted(dims)
 
 
-def resolve_vggt_feature_dim(vggt_root: Path, vggt_map: Dict[str, Dict[str, Any]], override: Optional[int]) -> int:
+def _load_teacher_payload(path: Path, key: str) -> Dict[str, Any]:
+    payload = load_sample(path)
+    if key not in payload:
+        raise KeyError(f"Teacher cache sample {path} missing {key}.")
+    return payload
+
+
+def resolve_vggt_feature_dim(vggt_root: Path, vggt_index: Dict[str, Path], override: Optional[int]) -> int:
     if override is not None:
         return int(override)
     dims = set(_metadata_feature_dims(vggt_root))
-    for payload in vggt_map.values():
+    for path in list(vggt_index.values())[:32]:
+        payload = _load_teacher_payload(path, "vggt_feature23_tokens")
         tokens = payload.get("vggt_feature23_tokens")
         if isinstance(tokens, torch.Tensor):
             dims.add(int(tokens.shape[-1]))
@@ -129,30 +114,70 @@ class TwoExpertStage1Dataset(Dataset):
     def __init__(
         self,
         base_chunk_root: Path,
-        jepa_map: Dict[str, Dict[str, Any]],
-        vggt_map: Dict[str, Dict[str, Any]],
+        jepa_index: Dict[str, Path],
+        vggt_index: Dict[str, Path],
         *,
         max_samples: Optional[int] = None,
+        teacher_lru_size: int = 0,
+        require_strict_teachers: bool = True,
     ) -> None:
         self.items: List[Tuple[Path, str]] = []
-        teacher_tokens = set(jepa_map).intersection(vggt_map)
-        for sample_path, record in iter_records(base_chunk_root, max_samples=max_samples):
+        teacher_tokens = set(jepa_index).intersection(vggt_index)
+        for _, sample_path, record in iter_indexed_records(base_chunk_root, max_records=max_samples):
             token = str(record.get("sample_token") or sample_path.stem)
             if token in teacher_tokens:
                 self.items.append((sample_path, token))
         if not self.items:
             raise RuntimeError("No base samples intersect both JEPA and VGGT teacher caches.")
-        self.jepa_map = jepa_map
-        self.vggt_map = vggt_map
+        self.jepa_index = jepa_index
+        self.vggt_index = vggt_index
+        self.teacher_lru_size = max(0, int(teacher_lru_size))
+        self.require_strict_teachers = bool(require_strict_teachers)
+        self._teacher_cache: OrderedDict[Tuple[str, str], Dict[str, Any]] = OrderedDict()
 
     def __len__(self) -> int:
         return len(self.items)
+
+    def _load_teacher(self, kind: str, token: str, key: str) -> Dict[str, Any]:
+        path = self.jepa_index[token] if kind == "jepa" else self.vggt_index[token]
+        cache_key = (kind, token)
+        if self.teacher_lru_size > 0 and cache_key in self._teacher_cache:
+            payload = self._teacher_cache.pop(cache_key)
+            self._teacher_cache[cache_key] = payload
+            return payload
+        payload = _load_teacher_payload(path, key)
+        if self.teacher_lru_size > 0:
+            self._teacher_cache[cache_key] = payload
+            while len(self._teacher_cache) > self.teacher_lru_size:
+                self._teacher_cache.popitem(last=False)
+        return payload
+
+    def _assert_strict_teacher(self, token: str, jepa_payload: Dict[str, Any], vggt_payload: Dict[str, Any]) -> None:
+        if not self.require_strict_teachers:
+            return
+        jepa_meta = jepa_payload.get("jepa_dynamic_teacher_metadata")
+        vggt_meta = vggt_payload.get("vggt_feature23_metadata")
+        if not isinstance(jepa_meta, dict) or not bool(jepa_meta.get("strict_dynamic_teacher", False)):
+            raise RuntimeError(
+                f"sample_token={token} does not have strict jepa_dynamic_teacher_tokens. "
+                "Full Stage1 training requires production [3,12,1024] JEPA dynamic teacher tokens; "
+                "use --allow-dev-fallback-teachers only for smoke/dev."
+            )
+        if not isinstance(vggt_meta, dict) or not bool(vggt_meta.get("strict_geometry_teacher", False)):
+            raise RuntimeError(
+                f"sample_token={token} does not have strict vggt_feature23_tokens. "
+                "Full Stage1 training requires production VGGT Feature(23) teachers; "
+                "use --allow-dev-fallback-teachers only for smoke/dev."
+            )
 
     def __getitem__(self, index: int) -> Dict[str, Any]:
         sample_path, token = self.items[index]
         sample = load_sample(sample_path)
         if "image_path_tensor" not in sample:
             raise KeyError(f"Base sample {sample_path} missing image_path_tensor.")
+        jepa_payload = self._load_teacher("jepa", token, "jepa_dynamic_teacher_tokens")
+        vggt_payload = self._load_teacher("vggt", token, "vggt_feature23_tokens")
+        self._assert_strict_teacher(token, jepa_payload, vggt_payload)
         return {
             "sample_token": token,
             "image_path": decode_path_tensor(sample["image_path_tensor"]),
@@ -162,8 +187,8 @@ class TwoExpertStage1Dataset(Dataset):
             "history_trajectory": sample["history_trajectory"].float(),
             "trajectory": sample.get("trajectory"),
             "trajectory_norm": sample.get("trajectory_norm"),
-            "jepa_dynamic_teacher_tokens": self.jepa_map[token]["jepa_dynamic_teacher_tokens"].float(),
-            "vggt_feature23_tokens": self.vggt_map[token]["vggt_feature23_tokens"].float(),
+            "jepa_dynamic_teacher_tokens": jepa_payload["jepa_dynamic_teacher_tokens"].float(),
+            "vggt_feature23_tokens": vggt_payload["vggt_feature23_tokens"].float(),
         }
 
 
@@ -266,6 +291,33 @@ def save_stage1_outputs(module: TwoExpertVLMSFTModule, output_dir: Path, metadat
     write_json(output_dir / "trainable_parameter_report.json", module.trainable_parameter_report())
 
 
+def build_optimizer(module: TwoExpertVLMSFTModule, args: argparse.Namespace) -> torch.optim.Optimizer:
+    vlm_params = []
+    route_params = []
+    for name, parameter in module.named_parameters():
+        if not parameter.requires_grad:
+            continue
+        if name.startswith("backbone."):
+            vlm_params.append(parameter)
+        else:
+            route_params.append(parameter)
+    if args.train_mode != "frozen" and not vlm_params:
+        raise RuntimeError(f"train_mode={args.train_mode} requires nonzero trainable VLM parameters.")
+    if not route_params:
+        raise RuntimeError("Stage1 requires trainable slots/adapters/probe parameters.")
+    groups = []
+    if vlm_params:
+        groups.append({"params": vlm_params, "lr": float(args.lr_vlm), "name": "vlm"})
+    groups.append({"params": route_params, "lr": float(args.lr_slots_adapters), "name": "slots_adapters_probe"})
+    return torch.optim.AdamW(groups, weight_decay=float(args.weight_decay))
+
+
+def autocast_context(device: torch.device, precision: str):
+    enabled = device.type == "cuda" and precision in {"bf16-mixed", "16-mixed", "fp16-mixed"}
+    dtype = torch.bfloat16 if precision == "bf16-mixed" else torch.float16
+    return torch.autocast(device_type=device.type, dtype=dtype, enabled=enabled)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train two_expert_slot Stage1 VLM SFT.")
     parser.add_argument("--base-chunk-root", type=Path, required=True)
@@ -275,7 +327,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--vlm-path", type=Path, required=True)
     parser.add_argument("--vlm-type", default="internvl")
-    parser.add_argument("--train-mode", choices=("frozen", "lora", "top_layers", "full"), default="top_layers")
+    parser.add_argument("--train-mode", choices=("frozen", "lora", "top_layers", "full"), default="lora")
     parser.add_argument("--allow-full-vlm-sft", action="store_true")
     parser.add_argument("--top-layers", type=int, default=2)
     parser.add_argument("--vggt-feature-dim", type=int, default=None)
@@ -283,7 +335,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-epochs", type=int, default=2)
     parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--grad-accum", type=int, default=4)
-    parser.add_argument("--lr", type=float, default=1e-4)
+    parser.add_argument("--lr-vlm", type=float, default=1e-5)
+    parser.add_argument("--lr-slots-adapters", type=float, default=1e-4)
+    parser.add_argument("--weight-decay", type=float, default=1e-4)
+    parser.add_argument("--warmup-steps", type=int, default=0)
+    parser.add_argument("--precision", choices=("fp32", "bf16-mixed", "16-mixed", "fp16-mixed"), default="bf16-mixed")
+    parser.add_argument("--teacher-lru-size", type=int, default=0)
+    parser.add_argument("--allow-dev-fallback-teachers", action="store_true")
     parser.add_argument("--max-image-patches", type=int, default=12)
     parser.add_argument("--device", default=None)
     parser.add_argument("--lora-preset", default="attention_mlp")
@@ -305,6 +363,7 @@ def main() -> int:
             "status": "dry_run",
             "entrypoint": "run_two_expert_vlm_sft.py",
             "train_mode": args.train_mode,
+            "strict_teachers_required": not bool(args.allow_dev_fallback_teachers),
             "base_chunk_root": str(args.base_chunk_root),
             "teacher_cache_root": str(args.teacher_cache_root),
             "message": "Set RUN_TRAIN=1 to start Stage1 VLM SFT.",
@@ -322,10 +381,17 @@ def main() -> int:
         torch.cuda.set_device(device)
 
     jepa_root, vggt_root = resolve_cache_roots(args)
-    jepa_map = load_teacher_map(jepa_root, "jepa_dynamic_teacher_tokens", max_samples=args.max_samples)
-    vggt_map = load_teacher_map(vggt_root, "vggt_feature23_tokens", max_samples=args.max_samples)
-    vggt_dim = resolve_vggt_feature_dim(vggt_root, vggt_map, args.vggt_feature_dim)
-    dataset = TwoExpertStage1Dataset(args.base_chunk_root, jepa_map, vggt_map, max_samples=args.max_samples)
+    jepa_index = load_teacher_index(jepa_root, "jepa_dynamic_teacher_tokens", max_samples=args.max_samples)
+    vggt_index = load_teacher_index(vggt_root, "vggt_feature23_tokens", max_samples=args.max_samples)
+    vggt_dim = resolve_vggt_feature_dim(vggt_root, vggt_index, args.vggt_feature_dim)
+    dataset = TwoExpertStage1Dataset(
+        args.base_chunk_root,
+        jepa_index,
+        vggt_index,
+        max_samples=args.max_samples,
+        teacher_lru_size=int(args.teacher_lru_size),
+        require_strict_teachers=not bool(args.allow_dev_fallback_teachers),
+    )
     sampler = torch.utils.data.distributed.DistributedSampler(dataset, shuffle=True) if distributed else None
     dataloader = DataLoader(
         dataset,
@@ -351,28 +417,44 @@ def main() -> int:
     if distributed:
         module = torch.nn.parallel.DistributedDataParallel(module, device_ids=[local_rank] if device.type == "cuda" else None)
     train_module = module.module if hasattr(module, "module") else module
-    optimizer = torch.optim.AdamW([p for p in train_module.parameters() if p.requires_grad], lr=float(args.lr), weight_decay=1e-4)
-    metrics = {"steps": 0, "last_loss": None}
+    optimizer = build_optimizer(train_module, args)
+    optimizer.zero_grad(set_to_none=True)
+    metrics = {"forward_steps": 0, "optimizer_steps": 0, "last_loss": None}
     for epoch in range(int(args.max_epochs)):
         if sampler is not None:
             sampler.set_epoch(epoch)
+        pending_grads = 0
         for step, batch in enumerate(dataloader):
-            out = module(move_batch(batch, device))
+            with autocast_context(device, args.precision):
+                out = module(move_batch(batch, device))
             loss = out["loss"] / int(args.grad_accum)
             loss.backward()
-            if (step + 1) % int(args.grad_accum) == 0:
+            pending_grads += 1
+            if pending_grads >= int(args.grad_accum):
                 torch.nn.utils.clip_grad_norm_(train_module.parameters(), 1.0)
                 optimizer.step()
                 optimizer.zero_grad(set_to_none=True)
-            metrics["steps"] += 1
+                metrics["optimizer_steps"] += 1
+                pending_grads = 0
+            metrics["forward_steps"] += 1
             metrics["last_loss"] = float(out["loss"].detach().cpu())
+        if pending_grads > 0:
+            torch.nn.utils.clip_grad_norm_(train_module.parameters(), 1.0)
+            optimizer.step()
+            optimizer.zero_grad(set_to_none=True)
+            metrics["optimizer_steps"] += 1
     if int(os.getenv("RANK", "0")) == 0:
         metadata = {
             "schema": "two_expert_slot_stage1_vlm_sft_v1",
             "train_mode": args.train_mode,
+            "teacher_loading": "lazy_index_paths",
+            "strict_teachers_required": not bool(args.allow_dev_fallback_teachers),
             "vggt_feature_dim": int(vggt_dim),
             "jepa_cache_root": str(jepa_root),
             "vggt_cache_root": str(vggt_root),
+            "lr_vlm": float(args.lr_vlm),
+            "lr_slots_adapters": float(args.lr_slots_adapters),
+            "weight_decay": float(args.weight_decay),
             "base_chunk_root": str(args.base_chunk_root),
             "vlm_path": str(args.vlm_path),
             "lora_report": lora_report,

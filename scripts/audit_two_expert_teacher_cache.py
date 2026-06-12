@@ -13,7 +13,8 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from navsim.agents.recogdrive.expert_cache import iter_index, load_sample, write_json  # noqa: E402
+from navsim.agents.recogdrive.expert_cache import load_sample, write_json  # noqa: E402
+from scripts.last_vla_v2.two_expert_slot.two_expert_cache_utils import iter_indexed_records  # noqa: E402
 
 
 def iter_cache_records(root: Optional[Path]) -> Iterable[Dict[str, Any]]:
@@ -21,8 +22,8 @@ def iter_cache_records(root: Optional[Path]) -> Iterable[Dict[str, Any]]:
         return
     if not root.exists():
         raise FileNotFoundError(root)
-    for row in iter_index(root):
-        yield load_sample(Path(row["path"]))
+    for _, sample_path, _ in iter_indexed_records(root):
+        yield load_sample(sample_path)
 
 
 def _finite_tensor(value: Any, key: str, errors: List[str]) -> Optional[torch.Tensor]:

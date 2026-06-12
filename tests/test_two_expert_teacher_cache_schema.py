@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import torch
+from torch import nn
 
 from scripts.audit_two_expert_teacher_cache import audit_records
 from scripts.last_vla_v2.two_expert_slot.preflight_two_expert_teacher_cache import preflight
@@ -9,6 +10,7 @@ from scripts.last_vla_v2.two_expert_slot.build_jepa_dynamic_teacher_cache import
     resolve_dynamic_teacher,
 )
 from scripts.last_vla_v2.two_expert_slot.build_vggt_feature23_cache import (
+    extract_feature23_tokens,
     pack_to_12_tokens,
     resolve_feature23_teacher,
 )
@@ -85,3 +87,29 @@ def test_teacher_preflight_rejects_fallback_in_strict_mode(tmp_path):
     assert report["ok"] is False
     assert report["vggt_feature_dims"] == [768]
     assert report["num_jepa_legacy_fallback"] == 1
+
+
+class _FakeVGGT(nn.Module):
+    def __init__(self) -> None:
+        super().__init__()
+        self.aggregator = nn.Module()
+        self.aggregator.global_blocks = nn.ModuleList([nn.Identity() for _ in range(24)])
+
+    def forward(self, images):
+        feature = torch.arange(2 * 7 * 5, dtype=images.dtype, device=images.device).view(2, 7, 5)
+        return self.aggregator.global_blocks[23](feature)
+
+
+def test_vggt_feature23_hook_packs_to_12_tokens_cpu():
+    tokens, metadata = extract_feature23_tokens(
+        _FakeVGGT(),
+        torch.zeros(3, 8, 8),
+        layer_index=23,
+        pack_tokens=12,
+        device="cpu",
+        precision="fp32",
+    )
+
+    assert tuple(tokens.shape) == (12, 5)
+    assert metadata["layer_name"] == "aggregator.global_blocks.23"
+    assert metadata["strict_geometry_teacher"] is True

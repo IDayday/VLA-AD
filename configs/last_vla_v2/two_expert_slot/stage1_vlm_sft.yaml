@@ -1,6 +1,6 @@
 use_two_expert_slot_sft: true
 route_name: two_expert_slot
-train_mode: top_layers
+train_mode: lora
 allow_full_vlm_sft: false
 
 use_two_expert_slots: true

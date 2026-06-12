@@ -27,7 +27,9 @@ cmd=(
   --shard-index "${SHARD_INDEX:-0}"
 )
 if [[ -n "${JEPA_MODEL_PATH:-}" ]]; then cmd+=(--jepa-model-path "${JEPA_MODEL_PATH}"); fi
-if [[ "${STRICT_TEACHER:-0}" == "1" ]]; then cmd+=(--strict-teacher); fi
+if [[ "${ALLOW_DEV_FALLBACK_TEACHERS:-0}" != "1" && "${STRICT_TEACHER:-1}" == "1" ]]; then
+  cmd+=(--strict-teacher)
+fi
 if [[ "${OVERWRITE:-0}" == "1" ]]; then cmd+=(--overwrite); fi
 if [[ -n "${MAX_SAMPLES:-}" ]]; then cmd+=(--max-samples "${MAX_SAMPLES}"); fi
 

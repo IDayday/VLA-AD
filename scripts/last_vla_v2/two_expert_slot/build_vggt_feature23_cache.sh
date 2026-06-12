@@ -27,6 +27,16 @@ cmd=(
   --shard-index "${SHARD_INDEX:-0}"
 )
 if [[ -n "${VGGT_MODEL_PATH:-}" ]]; then cmd+=(--vggt-model-path "${VGGT_MODEL_PATH}"); fi
+if [[ -n "${VGGT_MODEL_CLASS:-}" ]]; then cmd+=(--vggt-model-class "${VGGT_MODEL_CLASS}"); fi
+cmd+=(
+  --image-key "${IMAGE_KEY:-image_path_tensor}"
+  --camera "${CAMERA:-front}"
+  --image-size "${IMAGE_SIZE:-518}"
+  --feature-layer-index "${FEATURE_LAYER_INDEX:-23}"
+  --pack-tokens "${PACK_TOKENS:-12}"
+  --device "${DEVICE:-cuda}"
+  --precision "${PRECISION:-bf16}"
+)
 if [[ "${STRICT_TEACHER:-0}" == "1" ]]; then cmd+=(--strict-teacher); fi
 if [[ "${OVERWRITE:-0}" == "1" ]]; then cmd+=(--overwrite); fi
 if [[ -n "${MAX_SAMPLES:-}" ]]; then cmd+=(--max-samples "${MAX_SAMPLES}"); fi

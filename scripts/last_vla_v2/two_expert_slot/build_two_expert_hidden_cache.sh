@@ -8,6 +8,10 @@ for name in "${required[@]}"; do
     exit 2
   fi
 done
+if [[ "${RUN_CACHE:-0}" == "1" && -z "${STAGE1_CHECKPOINT:-}" && "${SYNTHETIC_SMOKE:-0}" != "1" ]]; then
+  echo "RUN_CACHE=1 requires STAGE1_CHECKPOINT unless SYNTHETIC_SMOKE=1." >&2
+  exit 2
+fi
 if [[ "${RUN_CACHE:-0}" == "1" && -e "${OUTPUT_ROOT}" && "${OVERWRITE:-0}" != "1" ]]; then
   echo "OUTPUT_ROOT exists: ${OUTPUT_ROOT}; set OVERWRITE=1 to replace shard outputs." >&2
   exit 2
@@ -33,10 +37,13 @@ cmd=(
   --train-vlm-mode "${TRAIN_VLM_MODE:-frozen}"
 )
 if [[ -n "${STAGE1_CHECKPOINT:-}" ]]; then cmd+=(--stage1-checkpoint "${STAGE1_CHECKPOINT}"); fi
+if [[ -n "${STAGE1_TRAIN_MODE:-}" ]]; then cmd+=(--stage1-train-mode "${STAGE1_TRAIN_MODE}"); fi
+if [[ -n "${VLM_LORA_ADAPTER_DIR:-}" ]]; then cmd+=(--vlm-lora-adapter-dir "${VLM_LORA_ADAPTER_DIR}"); fi
 if [[ "${INCLUDE_TEACHER_TARGETS:-0}" == "1" ]]; then cmd+=(--include-teacher-targets); fi
 if [[ "${ALLOW_EVAL_TEACHER_TARGETS:-0}" == "1" ]]; then cmd+=(--allow-eval-teacher-targets); fi
 if [[ "${OVERWRITE:-0}" == "1" ]]; then cmd+=(--overwrite); fi
 if [[ -n "${MAX_SAMPLES:-}" ]]; then cmd+=(--max-samples "${MAX_SAMPLES}"); fi
+if [[ "${SYNTHETIC_SMOKE:-0}" == "1" ]]; then cmd+=(--synthetic-smoke); fi
 
 printf '%q ' "${cmd[@]}" >>"${COMMANDS_LOG}"; printf '\n' >>"${COMMANDS_LOG}"
 if [[ "${RUN_CACHE:-0}" != "1" ]]; then

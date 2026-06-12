@@ -5,7 +5,7 @@ import argparse
 import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 
 import torch
 
@@ -13,31 +13,13 @@ REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from navsim.agents.recogdrive.expert_cache import iter_index, load_sample, write_json  # noqa: E402
-
-
-def chunk_dirs(root: Path) -> List[Path]:
-    if (root / "index.jsonl").is_file():
-        return [root]
-    dirs = sorted(path for path in root.glob("shards/shard_*") if path.is_dir() and (path / "index.jsonl").is_file())
-    if not dirs:
-        raise FileNotFoundError(f"No index.jsonl or shards/shard_*/index.jsonl under {root}")
-    return dirs
-
-
-def iter_records(root: Path, max_records: Optional[int] = None) -> Iterable[Tuple[Path, Dict[str, Any]]]:
-    count = 0
-    for chunk_dir in chunk_dirs(root):
-        for record in iter_index(chunk_dir):
-            yield Path(record["path"]), record
-            count += 1
-            if max_records is not None and count >= max_records:
-                return
+from navsim.agents.recogdrive.expert_cache import load_sample, write_json  # noqa: E402
+from scripts.last_vla_v2.two_expert_slot.two_expert_cache_utils import iter_indexed_records  # noqa: E402
 
 
 def load_cache(root: Path, max_records: Optional[int]) -> Dict[str, Dict[str, Any]]:
     mapping: Dict[str, Dict[str, Any]] = {}
-    for path, record in iter_records(root, max_records=max_records):
+    for _, path, record in iter_indexed_records(root, max_records=max_records):
         payload = load_sample(path)
         token = str(payload.get("sample_token") or record.get("sample_token") or path.stem)
         if token in mapping:
@@ -96,7 +78,7 @@ def preflight(jepa_root: Path, vggt_root: Path, *, strict: bool, max_records: Op
         if fallback_vggt:
             errors.append(f"strict_mode_vggt_fallback_count:{fallback_vggt}")
 
-    teacher_status = "strict_production_teacher" if strict and not errors else "fallback_or_incomplete_teacher"
+    teacher_status = "production_teacher_ok" if strict and not errors else "dev_fallback_not_for_final"
     return {
         "ok": not errors,
         "teacher_status": teacher_status,
