@@ -18,6 +18,7 @@ from navsim.agents.recogdrive.expert_cache import atomic_torch_save, iter_index,
 
 
 PACKER_VERSION = "two_expert_jepa_dynamic_packer_v1"
+PRODUCTION_EXTRACTOR_IMPLEMENTED = False
 
 
 def chunk_dirs(root: Path, pattern: str) -> List[Path]:
@@ -171,6 +172,8 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
             f.write(json.dumps(row, sort_keys=True) + "\n")
     metadata = {
         "version": "two_expert_jepa_dynamic_teacher_cache_v1",
+        "builder_mode": "existing_feature_repack",
+        "production_extractor_implemented": PRODUCTION_EXTRACTOR_IMPLEMENTED,
         "split": str(args.split),
         "source_chunk_root": str(args.input_chunk_root),
         "teacher_type": "jepa_dynamic",
@@ -227,6 +230,8 @@ def merge_shards(output_root: Path, *, overwrite: bool = False) -> Dict[str, Any
     metadata = {
         "version": "two_expert_jepa_dynamic_teacher_cache_v1",
         "merged": True,
+        "builder_mode": "existing_feature_repack",
+        "production_extractor_implemented": PRODUCTION_EXTRACTOR_IMPLEMENTED,
         "num_samples": len(rows),
         "num_shards": len(metadata_items),
         "num_legacy_fallback": sum(int(item.get("num_legacy_fallback", 0)) for item in metadata_items),
@@ -255,12 +260,20 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
+    if args.jepa_model_path is not None:
+        raise NotImplementedError(
+            "build_jepa_dynamic_teacher_cache.py does not extract JEPA features from --jepa-model-path yet. "
+            "It only repacks existing jepa_dynamic_teacher_tokens/multi_horizon_jepa_tokens or legacy "
+            "jepa_target_tokens. Use a strict cache with existing production tokens, or implement the model extractor."
+        )
     if args.merge:
         print(json.dumps(merge_shards(args.output_root, overwrite=args.overwrite), indent=2, sort_keys=True))
         return 0
     if os.getenv("RUN_CACHE", "0") != "1":
         payload = {
             "status": "blocked_by_RUN_CACHE_gate",
+            "builder_mode": "existing_feature_repack",
+            "production_extractor_implemented": PRODUCTION_EXTRACTOR_IMPLEMENTED,
             "message": "Set RUN_CACHE=1 to build JEPA dynamic teacher cache.",
             "output_root": str(args.output_root),
             "split": str(args.split),

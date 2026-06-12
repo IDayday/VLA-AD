@@ -16,7 +16,7 @@ from .two_expert_slots import TwoExpertSlotConfig, TwoExpertSoftSlots
 class TwoExpertVLMSFTConfig:
     vlm_hidden_dim: int = 1536
     adapter_dim: int = 384
-    vggt_feature_dim: int = 512
+    vggt_feature_dim: Optional[int] = None
     action_horizon: int = 8
     action_dim: int = 3
     train_mode: str = "lora"
@@ -36,6 +36,8 @@ class TwoExpertVLMSFTConfig:
             raise ValueError("train_mode must be frozen, lora, top_layers, or full.")
         if self.train_mode == "full" and not self.allow_full_vlm_sft:
             raise ValueError("Full VLM SFT requires allow_full_vlm_sft=True.")
+        if self.vggt_feature_dim is not None and int(self.vggt_feature_dim) <= 0:
+            raise ValueError("vggt_feature_dim must be positive when set.")
         for name in (
             "dyn_loss_weight",
             "geo_loss_weight",
@@ -60,6 +62,11 @@ class TwoExpertVLMSFTModule(nn.Module):
         super().__init__()
         self.backbone = backbone
         self.config = config or TwoExpertVLMSFTConfig()
+        if self.config.vggt_feature_dim is None:
+            raise ValueError(
+                "TwoExpertVLMSFTConfig.vggt_feature_dim must be resolved from "
+                "vggt_feature23 teacher metadata or passed explicitly."
+            )
         self.slot_config = slot_config or TwoExpertSlotConfig(
             vlm_hidden_dim=self.config.vlm_hidden_dim,
             planner_dim=self.config.adapter_dim,
@@ -74,7 +81,7 @@ class TwoExpertVLMSFTModule(nn.Module):
         self.geometry_adapter = VGGTFeature23Adapter(
             vlm_hidden_dim=self.config.vlm_hidden_dim,
             adapter_dim=self.config.adapter_dim,
-            vggt_feature_dim=self.config.vggt_feature_dim,
+            vggt_feature_dim=int(self.config.vggt_feature_dim),
             mask_ratio=self.config.random_mask_ratio,
             loss_type=self.config.loss_type,
         )

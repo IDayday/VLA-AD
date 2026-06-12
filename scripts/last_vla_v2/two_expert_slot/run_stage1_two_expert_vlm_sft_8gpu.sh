@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-required=(OUTPUT_DIR MASTER_PORT NAVSIM_LOG_PATH SENSOR_BLOBS_PATH VLM_PATH TEACHER_CACHE_ROOT)
+required=(OUTPUT_DIR MASTER_PORT NAVSIM_LOG_PATH SENSOR_BLOBS_PATH VLM_PATH TEACHER_CACHE_ROOT BASE_CHUNK_ROOT)
 for name in "${required[@]}"; do
   if [[ -z "${!name:-}" ]]; then
     echo "Missing required environment variable: ${name}" >&2
@@ -17,18 +17,27 @@ TRAIN_LOG="${OUTPUT_DIR}/logs/two_expert_stage1_vlm_sft.train.log"
 
 cmd=(
   "${TORCHRUN_BIN}" --nproc_per_node=8 --master_port "${MASTER_PORT}"
-  navsim/planning/script/run_training_recogdrive.py
-  +experiment=two_expert_slot_stage1_vlm_sft
-  "navsim_log_path=${NAVSIM_LOG_PATH}"
-  "sensor_blobs_path=${SENSOR_BLOBS_PATH}"
-  "train_test_split=${TRAIN_TEST_SPLIT:-navtrain}"
-  "output_dir=${OUTPUT_DIR}"
-  "agent.vlm_path=${VLM_PATH}"
-  "teacher_cache_root=${TEACHER_CACHE_ROOT}"
-  seed="${SEED:-0}"
-  trainer.params.devices=8
-  trainer.params.strategy=ddp_find_unused_parameters_true
+  scripts/last_vla_v2/two_expert_slot/run_two_expert_vlm_sft.py
+  --base-chunk-root "${BASE_CHUNK_ROOT}"
+  --teacher-cache-root "${TEACHER_CACHE_ROOT}"
+  --output-dir "${OUTPUT_DIR}"
+  --vlm-path "${VLM_PATH}"
+  --vlm-type "${VLM_TYPE:-internvl}"
+  --train-mode "${TRAIN_MODE:-top_layers}"
+  --top-layers "${TOP_LAYERS:-2}"
+  --batch-size "${BATCH_SIZE_PER_GPU:-2}"
+  --grad-accum "${GRAD_ACCUM:-4}"
+  --max-epochs "${MAX_EPOCHS:-2}"
+  --lr "${LR:-1e-4}"
+  --max-image-patches "${MAX_IMAGE_PATCHES:-12}"
 )
+
+if [[ -n "${VGGT_FEATURE_DIM:-}" ]]; then
+  cmd+=(--vggt-feature-dim "${VGGT_FEATURE_DIM}")
+fi
+if [[ "${ALLOW_FULL_VLM_SFT:-0}" == "1" ]]; then
+  cmd+=(--allow-full-vlm-sft)
+fi
 
 printf '%q ' "${cmd[@]}" >>"${COMMANDS_LOG}"; printf '\n' >>"${COMMANDS_LOG}"
 if [[ "${RUN_TRAIN:-0}" != "1" ]]; then

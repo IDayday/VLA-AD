@@ -399,6 +399,8 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
         raise ValueError("--num-shards must be positive.")
     if not 0 <= args.shard_index < args.num_shards:
         raise ValueError("--shard-index must be in [0, num_shards).")
+    if not args.synthetic_smoke and args.stage1_checkpoint is None:
+        raise ValueError("Building a two-expert hidden cache requires --stage1-checkpoint outside --synthetic-smoke.")
     config = TwoExpertSlotConfig(
         vlm_hidden_dim=int(args.vlm_hidden_dim),
         planner_dim=384,
@@ -432,6 +434,11 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
             "schema": "two_expert_slot_hidden_cache_v1",
             "train_mode": str(args.train_vlm_mode),
             "stage1_train_mode": stage1_load_report.get("stage1_train_mode"),
+            "loaded_lora_adapter": bool(stage1_load_report.get("loaded_lora_adapter", False)),
+            "loaded_lora_key_count": len(stage1_load_report.get("loaded_lora_keys", [])),
+            "loaded_top_layer_key_count": len(stage1_load_report.get("loaded_top_layer_keys", [])),
+            "loaded_slot_keys": list(stage1_load_report.get("loaded_slot_keys", [])),
+            "source_stage1_checkpoint": stage1_load_report.get("source_stage1_checkpoint"),
             "num_dyn_groups": 3,
             "tokens_per_group": 12,
             "num_geo_tokens": 12,
@@ -508,6 +515,11 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
         "teacher_targets_included": bool(args.include_teacher_targets),
         "eval_teacher_targets_allowed": bool(args.allow_eval_teacher_targets),
         "synthetic_smoke": bool(args.synthetic_smoke),
+        "loaded_lora_adapter": bool(stage1_load_report.get("loaded_lora_adapter", False)),
+        "loaded_lora_key_count": len(stage1_load_report.get("loaded_lora_keys", [])),
+        "loaded_top_layer_key_count": len(stage1_load_report.get("loaded_top_layer_keys", [])),
+        "loaded_slot_keys": list(stage1_load_report.get("loaded_slot_keys", [])),
+        "source_stage1_checkpoint": stage1_load_report.get("source_stage1_checkpoint"),
         "stage1_load_report": dict(stage1_load_report),
         "hidden_token_length": {
             "min": min(hidden_lengths) if hidden_lengths else None,

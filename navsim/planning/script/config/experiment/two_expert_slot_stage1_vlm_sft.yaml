@@ -22,11 +22,12 @@ agent:
   vlm_type: internvl
 
 two_expert_sft:
-  train_mode: lora
+  train_mode: top_layers
   allow_full_vlm_sft: false
   num_dyn_groups: 3
   num_dyn_tokens_per_group: 12
   num_geo_tokens: 12
+  vggt_feature_dim: null
   dynamic_teacher_key: jepa_dynamic_teacher_tokens
   geometry_teacher_key: vggt_feature23_tokens
   dyn_loss_weight: 1.0

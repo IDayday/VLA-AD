@@ -1,6 +1,6 @@
 use_two_expert_slot_sft: true
 route_name: two_expert_slot
-train_mode: lora
+train_mode: top_layers
 allow_full_vlm_sft: false
 
 use_two_expert_slots: true
@@ -15,6 +15,7 @@ use_expert_features: false
 num_dyn_groups: 3
 num_dyn_tokens_per_group: 12
 num_geo_tokens: 12
+vggt_feature_dim: null
 
 teacher:
   dynamic_teacher_key: jepa_dynamic_teacher_tokens
