@@ -14,6 +14,7 @@
 from __future__ import annotations
 
 import copy
+import hashlib
 import lzma
 import pickle
 import warnings
@@ -3590,15 +3591,39 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError(f"tokens_list length {len(tokens_list)} does not match B={B}.")
         flat = candidates.detach().float().reshape(B * K, H, D)
         tokens_rep = [str(token) for token in tokens_list for _ in range(K)]
+        unique_indices: list[int] = []
+        unique_tokens: list[str] = []
+        inverse_indices: list[int] = []
+        seen: Dict[bytes, int] = {}
+        flat_np = flat.detach().cpu().numpy()
+        for idx, (token, trajectory) in enumerate(zip(tokens_rep, flat_np)):
+            digest = hashlib.sha1()
+            digest.update(token.encode("utf-8"))
+            digest.update(np.ascontiguousarray(trajectory).tobytes())
+            key = digest.digest()
+            unique_idx = seen.get(key)
+            if unique_idx is None:
+                unique_idx = len(unique_indices)
+                seen[key] = unique_idx
+                unique_indices.append(idx)
+                unique_tokens.append(token)
+            inverse_indices.append(unique_idx)
+
+        score_flat = flat if len(unique_indices) == flat.shape[0] else flat[unique_indices]
+        score_tokens = tokens_rep if len(unique_indices) == flat.shape[0] else unique_tokens
         rewards, components = self.reward_fn(
-            flat,
-            tokens_rep,
+            score_flat,
+            score_tokens,
             metric_cache,
             return_components=True,
             strict_submetrics=bool(cfg.strict_reward_submetrics) if cfg is not None else False,
             required_submetrics=cfg.required_reward_submetrics if cfg is not None else None,
             missing_submetric_policy=str(cfg.missing_submetric_policy) if cfg is not None else "warn_default",
         )
+        if len(unique_indices) != flat.shape[0]:
+            inverse = torch.tensor(inverse_indices, device=rewards.device, dtype=torch.long)
+            rewards = rewards.index_select(0, inverse)
+            components = {key: value.index_select(0, inverse) for key, value in components.items()}
         rewards = rewards.reshape(B, K).float()
         components = {key: value.reshape(B, K).float() for key, value in components.items()}
         if not torch.isfinite(rewards).all():
