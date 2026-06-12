@@ -24,6 +24,7 @@ from navsim.agents.recogdrive.offline_rl_buffer import (
     token_to_buffer_key,
 )
 from navsim.agents.recogdrive.recogdrive_diffusion_planner import OfflineRLConfig, ReCogDriveDiffusionPlanner
+from scripts.training.validate_recogdrive_stage3_awac_elite_buffer import _validate_record
 
 
 def _planner_stub() -> ReCogDriveDiffusionPlanner:
@@ -47,32 +48,40 @@ def _components() -> dict[str, torch.Tensor]:
 
 def _record(token: str, valid_mask: np.ndarray, version: int = 2) -> dict:
     k, h = 2, 8
+    rewards = np.asarray([0.7, 0.8], dtype=np.float32)
+    sources = ["gt", "progress_endpoint"]
+    raw_idx = int(np.argmax(rewards))
+    if valid_mask.any():
+        valid_indices = np.flatnonzero(valid_mask)
+        valid_idx = int(valid_indices[int(np.argmax(rewards[valid_indices]))])
+    else:
+        valid_idx = raw_idx
     components = {key: np.ones((k,), dtype=np.float32) for key in REQUIRED_COMPONENT_KEYS}
-    components["pdms"] = np.asarray([0.7, 0.8], dtype=np.float32)
+    components["pdms"] = rewards.copy()
     payload = {
         "token": token,
         "candidates": np.zeros((k, h, 3), dtype=np.float32),
-        "rewards": np.asarray([0.7, 0.8], dtype=np.float32),
+        "rewards": rewards,
         "components": components,
-        "sources": ["gt", "progress_endpoint"],
+        "sources": sources,
         "anchor_distance": np.zeros((k,), dtype=np.float32),
         "gt_reward": 0.7,
         "il_reward": 0.7,
-        "best_reward": 0.8,
-        "best_source": "progress_endpoint",
+        "best_reward": float(rewards[valid_idx]),
+        "best_source": sources[valid_idx],
         "version": version,
     }
     if version >= 2:
         payload.update(
             {
                 "valid_mask": valid_mask,
-                "selection_score": np.asarray([0.7, 0.8], dtype=np.float32),
-                "best_raw_reward": 0.8,
-                "best_valid_reward": 0.8 if valid_mask.any() else 0.8,
-                "best_selected_reward": 0.8,
-                "best_raw_source": "progress_endpoint",
-                "best_valid_source": "progress_endpoint",
-                "best_selected_source": "progress_endpoint",
+                "selection_score": rewards.copy(),
+                "best_raw_reward": float(rewards[raw_idx]),
+                "best_valid_reward": float(rewards[valid_idx]),
+                "best_selected_reward": float(rewards[raw_idx]),
+                "best_raw_source": sources[raw_idx],
+                "best_valid_source": sources[valid_idx],
+                "best_selected_source": sources[raw_idx],
                 "has_valid_candidate": bool(valid_mask.any()),
             }
         )
@@ -135,6 +144,26 @@ def main() -> None:
         loaded = load_elite_record(root, token)
         assert int(loaded["version"]) == 2
         assert np.asarray(loaded["valid_mask"]).tolist() == [True, False]
+
+        row = _validate_record(loaded, strict_v2=True)
+        assert row["best_valid_source"] == "gt"
+        bad = dict(loaded)
+        bad["best_valid_reward"] = bad["best_raw_reward"]
+        try:
+            _validate_record(bad, strict_v2=True)
+            raise AssertionError("validator accepted inconsistent best_valid_reward")
+        except ValueError:
+            pass
+
+        mismatch_token = "scene-token-mismatch"
+        mismatch_path = root / f"{token_to_buffer_key(mismatch_token)}.pkl.xz"
+        with lzma.open(mismatch_path, "wb") as f:
+            pickle.dump(_record("different-token", np.asarray([True, False], dtype=np.bool_), version=1), f)
+        try:
+            load_elite_record(root, mismatch_token)
+            raise AssertionError("load_elite_record accepted mismatched record token")
+        except ValueError:
+            pass
 
         v1_token = "scene-token-v1"
         v1_path = root / f"{token_to_buffer_key(v1_token)}.pkl.xz"

@@ -321,6 +321,7 @@ class RecogDriveBackbone(nn.Module):
         attention_mask = model_inputs['attention_mask'].to(device)
         position_ids = attention_mask.long().cumsum(-1) - 1
         position_ids.masked_fill_(attention_mask == 0, 1)
+        image_flags = torch.tensor([1] * images.size(0), dtype=torch.long, device=device)
 
         embeddings = self._language_embedding_layer(self.model)
         token_embeddings = embeddings(input_ids)
@@ -341,9 +342,9 @@ class RecogDriveBackbone(nn.Module):
             selected_count = int(image_selected.sum().item())
             if selected_count <= 0:
                 raise ValueError("InternVL prompt contains no IMG_CONTEXT tokens for visual feature injection.")
-            if flat_vit_embeds.shape[0] < selected_count:
+            if flat_vit_embeds.shape[0] != selected_count:
                 raise ValueError(
-                    f"Not enough visual tokens for IMG_CONTEXT slots: visual={flat_vit_embeds.shape[0]}, "
+                    f"Visual token count must match IMG_CONTEXT slots: visual={flat_vit_embeds.shape[0]}, "
                     f"selected={selected_count}."
                 )
             flat_token_embeddings[image_selected] = flat_vit_embeds[:selected_count]
@@ -393,6 +394,7 @@ class RecogDriveBackbone(nn.Module):
                 inputs_embeds=full_inputs_embeds.to(device=device, dtype=token_embeddings.dtype),
                 attention_mask=full_attention_mask,
                 position_ids=full_position_ids,
+                image_flags=image_flags.squeeze(-1),
                 output_hidden_states=True,
                 return_dict=True,
             )

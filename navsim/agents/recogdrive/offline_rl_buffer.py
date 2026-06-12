@@ -140,4 +140,9 @@ def load_elite_record(buffer_root: Path, token: str) -> Dict[str, Any]:
     if not isinstance(record, dict):
         raise TypeError(f"Elite buffer record must be a dict, got {type(record).__name__}: {path}")
     _validate_record(record)
+    record_token = str(record["token"])
+    if record_token != str(token):
+        raise ValueError(
+            f"Elite buffer record token mismatch for {path}: requested={token!r}, record={record_token!r}."
+        )
     return record

@@ -12,6 +12,14 @@ import numpy as np
 from navsim.agents.recogdrive.offline_rl_buffer import REQUIRED_COMPONENT_KEYS
 
 
+def _assert_close(token: str, field: str, observed: Any, expected: float, *, atol: float = 1e-5) -> None:
+    observed_f = float(observed)
+    if not np.isclose(observed_f, float(expected), rtol=0.0, atol=atol):
+        raise ValueError(
+            f"token={token} {field} mismatch: record={observed_f:.8f}, expected={float(expected):.8f}."
+        )
+
+
 def _load_records(buffer_dir: Path) -> Iterable[Dict[str, Any]]:
     import lzma
     import pickle
@@ -73,18 +81,58 @@ def _validate_record(record: Dict[str, Any], *, strict_v2: bool) -> Dict[str, An
             raise ValueError(f"token={token} selection_score shape {selection_score.shape} does not match K={k}.")
         if not np.isfinite(selection_score).all():
             raise ValueError(f"token={token} selection_score contains non-finite values.")
+
+    if strict_v2:
+        required_best_fields = (
+            "best_raw_reward",
+            "best_valid_reward",
+            "has_valid_candidate",
+            "best_valid_source",
+        )
+        missing_best_fields = [field for field in required_best_fields if field not in record]
+        if missing_best_fields:
+            raise KeyError(f"token={token} is missing v2 best-consistency fields: {missing_best_fields}.")
+
+    raw_idx = int(np.argmax(rewards))
+    expected_best_raw_reward = float(rewards[raw_idx])
+    expected_has_valid_candidate = bool(valid_mask.any())
+    if expected_has_valid_candidate:
+        valid_indices = np.flatnonzero(valid_mask)
+        best_valid_idx = int(valid_indices[int(np.argmax(rewards[valid_indices]))])
+    else:
+        best_valid_idx = raw_idx
+    expected_best_valid_reward = float(rewards[best_valid_idx])
+    expected_best_valid_source = str(sources[best_valid_idx])
+
+    if "best_raw_reward" in record:
+        _assert_close(token, "best_raw_reward", record["best_raw_reward"], expected_best_raw_reward)
+    if "best_valid_reward" in record:
+        _assert_close(token, "best_valid_reward", record["best_valid_reward"], expected_best_valid_reward)
+    if "has_valid_candidate" in record and bool(record["has_valid_candidate"]) != expected_has_valid_candidate:
+        raise ValueError(
+            f"token={token} has_valid_candidate mismatch: record={bool(record['has_valid_candidate'])}, "
+            f"expected={expected_has_valid_candidate}."
+        )
+    if "best_valid_source" in record and str(record["best_valid_source"]) != expected_best_valid_source:
+        raise ValueError(
+            f"token={token} best_valid_source mismatch: record={record['best_valid_source']!r}, "
+            f"expected={expected_best_valid_source!r}."
+        )
+
     return {
         "token": token,
         "version": version,
         "num_candidates": k,
         "valid_count": int(valid_mask.sum()),
         "valid_ratio": float(valid_mask.mean()),
-        "has_valid_candidate": bool(valid_mask.any()) if "has_valid_candidate" not in record else bool(record["has_valid_candidate"]),
+        "has_valid_candidate": (
+            expected_has_valid_candidate if "has_valid_candidate" not in record else bool(record["has_valid_candidate"])
+        ),
         "gt_reward": float(record.get("gt_reward", np.nan)),
         "il_reward": float(record.get("il_reward", np.nan)),
-        "best_raw_reward": float(record.get("best_raw_reward", np.max(rewards))),
-        "best_valid_reward": float(record.get("best_valid_reward", np.max(rewards[valid_mask]) if valid_mask.any() else np.max(rewards))),
-        "best_valid_source": str(record.get("best_valid_source", record.get("best_source", "unknown"))),
+        "best_raw_reward": float(record.get("best_raw_reward", expected_best_raw_reward)),
+        "best_valid_reward": float(record.get("best_valid_reward", expected_best_valid_reward)),
+        "best_valid_source": str(record.get("best_valid_source", expected_best_valid_source)),
     }
 
 

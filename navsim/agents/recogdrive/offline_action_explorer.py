@@ -189,7 +189,7 @@ def clamp_final_heading_delta(
     max_delta = float(max_delta_rad)
     final_delta = out[:, :, -1, 2] - anchor[:, None, -1, 2]
     out[:, :, -1, 2] = anchor[:, None, -1, 2] + final_delta.clamp(-max_delta, max_delta)
-    return clamp_heading_steps(out, max_delta)
+    return out
 
 
 def clip_to_model_norm_range(traj: torch.Tensor) -> torch.Tensor:
