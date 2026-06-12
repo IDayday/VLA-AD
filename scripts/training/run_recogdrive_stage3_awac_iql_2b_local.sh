@@ -26,7 +26,7 @@ NODE_RANK="${NODE_RANK:-${MLP_ROLE_INDEX:-0}}"
 MASTER_ADDR="${MASTER_ADDR:-${MLP_WORKER_0_HOST:-127.0.0.1}}"
 MASTER_PORT="${MASTER_PORT:-${MLP_WORKER_0_PORT:-63669}}"
 KILL_GPU_STRESS="${KILL_GPU_STRESS:-0}"
-DRY_RUN="${DRY_RUN:-0}"
+DRY_RUN="${DRY_RUN:-1}"
 
 STAGE3_LR="${LR:-1e-4}"
 STAGE3_MAX_EPOCHS="${MAX_EPOCHS:-20}"
@@ -48,6 +48,15 @@ AWAC_REQUIRE_DAC="${AWAC_REQUIRE_DAC:-true}"
 AWAC_REQUIRE_DDC_GUARD="${AWAC_REQUIRE_DDC_GUARD:-true}"
 AWAC_DDC_MIN_ABSOLUTE="${AWAC_DDC_MIN_ABSOLUTE:-0.99}"
 AWAC_ONLINE_POLICY_SAMPLES="${AWAC_ONLINE_POLICY_SAMPLES:-8}"
+AWAC_STRICT_REWARD_SUBMETRICS="${AWAC_STRICT_REWARD_SUBMETRICS:-true}"
+AWAC_MISSING_SUBMETRIC_POLICY="${AWAC_MISSING_SUBMETRIC_POLICY:-error}"
+AWAC_REQUIRE_BUFFER_VALID_MASK="${AWAC_REQUIRE_BUFFER_VALID_MASK:-true}"
+AWAC_ALLOW_V1_BUFFER_RECOMPUTE_VALID_MASK="${AWAC_ALLOW_V1_BUFFER_RECOMPUTE_VALID_MASK:-true}"
+AWAC_SELECT_VALID_TOPK_ONLY="${AWAC_SELECT_VALID_TOPK_ONLY:-true}"
+AWAC_TRAIN_INVALID_FALLBACK_CANDIDATES="${AWAC_TRAIN_INVALID_FALLBACK_CANDIDATES:-false}"
+AWAC_FALLBACK_INVALID_CANDIDATE_WEIGHT="${AWAC_FALLBACK_INVALID_CANDIDATE_WEIGHT:-0.0}"
+AWAC_USE_FINAL_HEADING_GUARD="${AWAC_USE_FINAL_HEADING_GUARD:-true}"
+VALIDATE_ELITE_BUFFER="${VALIDATE_ELITE_BUFFER:-true}"
 
 export NUPLAN_MAP_VERSION="${NUPLAN_MAP_VERSION:-nuplan-maps-v1.0}"
 export NUPLAN_MAPS_ROOT="${NUPLAN_MAPS_ROOT:-${NAVSIM_DATA_ROOT}/maps}"
@@ -69,23 +78,25 @@ if [[ "${ONLINE_AWAC_CANDIDATES}" != "true" && "${ONLINE_AWAC_CANDIDATES}" != "f
   echo "ONLINE_AWAC_CANDIDATES must be true or false, got: ${ONLINE_AWAC_CANDIDATES}" >&2
   exit 2
 fi
-if [[ "${ONLINE_AWAC_CANDIDATES}" == "false" ]]; then
+if [[ "${DRY_RUN}" != "1" && "${ONLINE_AWAC_CANDIDATES}" == "false" ]]; then
   if [[ ! -d "${ELITE_BUFFER_DIR}" ]] || ! find "${ELITE_BUFFER_DIR}" -name '*.pkl.xz' -print -quit | grep -q .; then
     echo "ELITE_BUFFER_DIR must contain *.pkl.xz records unless ONLINE_AWAC_CANDIDATES=true: ${ELITE_BUFFER_DIR}" >&2
     exit 2
   fi
 fi
-if [[ ! -x "${PYTHON_BIN}" || ! -x "${TORCHRUN_BIN}" ]]; then
-  echo "Python or torchrun is not executable: ${PYTHON_BIN}, ${TORCHRUN_BIN}" >&2
-  exit 2
-fi
-if [[ ! -f "${IL_CHECKPOINT}" ]]; then
-  echo "Stage2 IL checkpoint does not exist: ${IL_CHECKPOINT}" >&2
-  exit 2
-fi
-if [[ ! -d "${METRIC_CACHE_DIR}" ]]; then
-  echo "Training metric cache directory does not exist: ${METRIC_CACHE_DIR}" >&2
-  exit 2
+if [[ "${DRY_RUN}" != "1" ]]; then
+  if [[ ! -x "${PYTHON_BIN}" || ! -x "${TORCHRUN_BIN}" ]]; then
+    echo "Python or torchrun is not executable: ${PYTHON_BIN}, ${TORCHRUN_BIN}" >&2
+    exit 2
+  fi
+  if [[ ! -f "${IL_CHECKPOINT}" ]]; then
+    echo "Stage2 IL checkpoint does not exist: ${IL_CHECKPOINT}" >&2
+    exit 2
+  fi
+  if [[ ! -d "${METRIC_CACHE_DIR}" ]]; then
+    echo "Training metric cache directory does not exist: ${METRIC_CACHE_DIR}" >&2
+    exit 2
+  fi
 fi
 
 mkdir -p "${OUT_ROOT}"
@@ -112,6 +123,14 @@ HYDRA_ARGS=(
   "agent.offline_rl_elite_buffer_path=${ELITE_BUFFER_DIR}"
   "agent.offline_rl_build_candidates_online=${ONLINE_AWAC_CANDIDATES}"
   "agent.offline_rl_online_policy_samples=${AWAC_ONLINE_POLICY_SAMPLES}"
+  "agent.offline_rl_strict_reward_submetrics=${AWAC_STRICT_REWARD_SUBMETRICS}"
+  "agent.offline_rl_missing_submetric_policy=${AWAC_MISSING_SUBMETRIC_POLICY}"
+  "agent.offline_rl_require_buffer_valid_mask=${AWAC_REQUIRE_BUFFER_VALID_MASK}"
+  "agent.offline_rl_allow_v1_buffer_recompute_valid_mask=${AWAC_ALLOW_V1_BUFFER_RECOMPUTE_VALID_MASK}"
+  "agent.offline_rl_select_valid_topk_only=${AWAC_SELECT_VALID_TOPK_ONLY}"
+  "agent.offline_rl_train_invalid_fallback_candidates=${AWAC_TRAIN_INVALID_FALLBACK_CANDIDATES}"
+  "agent.offline_rl_fallback_invalid_candidate_weight=${AWAC_FALLBACK_INVALID_CANDIDATE_WEIGHT}"
+  "agent.offline_rl_use_final_heading_guard=${AWAC_USE_FINAL_HEADING_GUARD}"
   "agent.offline_rl_awac_loss_weight=1.0"
   "agent.offline_rl_bc_loss_weight=${AWAC_BC_LOSS_WEIGHT}"
   "agent.offline_rl_grpo_loss_weight=${AWAC_GRPO_LOSS_WEIGHT}"
@@ -176,6 +195,15 @@ CMD=(
   echo "elite_buffer_dir=${ELITE_BUFFER_DIR}"
   echo "online_awac_candidates=${ONLINE_AWAC_CANDIDATES}"
   echo "metric_cache_dir=${METRIC_CACHE_DIR}"
+  echo "awac_strict_reward_submetrics=${AWAC_STRICT_REWARD_SUBMETRICS}"
+  echo "awac_missing_submetric_policy=${AWAC_MISSING_SUBMETRIC_POLICY}"
+  echo "awac_require_buffer_valid_mask=${AWAC_REQUIRE_BUFFER_VALID_MASK}"
+  echo "awac_allow_v1_buffer_recompute_valid_mask=${AWAC_ALLOW_V1_BUFFER_RECOMPUTE_VALID_MASK}"
+  echo "awac_select_valid_topk_only=${AWAC_SELECT_VALID_TOPK_ONLY}"
+  echo "awac_train_invalid_fallback_candidates=${AWAC_TRAIN_INVALID_FALLBACK_CANDIDATES}"
+  echo "awac_fallback_invalid_candidate_weight=${AWAC_FALLBACK_INVALID_CANDIDATE_WEIGHT}"
+  echo "awac_use_final_heading_guard=${AWAC_USE_FINAL_HEADING_GUARD}"
+  echo "validate_elite_buffer=${VALIDATE_ELITE_BUFFER}"
   printf 'command='
   printf '%q ' "${CMD[@]}"
   printf '\n'
@@ -184,6 +212,19 @@ CMD=(
 if [[ "${DRY_RUN}" == "1" ]]; then
   cat "${OUT_ROOT}/resolved_command.txt"
   exit 0
+fi
+
+if [[ "${RUN_STAGE3:-0}" != "1" && "${RUN_TRAIN:-0}" != "1" ]]; then
+  echo "Stage3 AWAC/IQL training is disabled by default. Set RUN_STAGE3=1 or RUN_TRAIN=1 to execute." >&2
+  exit 2
+fi
+
+if [[ "${ONLINE_AWAC_CANDIDATES}" == "false" && "${VALIDATE_ELITE_BUFFER}" == "true" ]]; then
+  "${PYTHON_BIN}" "${REPO_ROOT}/scripts/training/validate_recogdrive_stage3_awac_elite_buffer.py" \
+    --buffer-dir "${ELITE_BUFFER_DIR}" \
+    --summary-json "${OUT_ROOT}/elite_buffer_validation_summary.json" \
+    --summary-csv "${OUT_ROOT}/elite_buffer_validation_summary.csv" \
+    --strict-v2
 fi
 
 if [[ "${KILL_GPU_STRESS}" == "1" ]]; then

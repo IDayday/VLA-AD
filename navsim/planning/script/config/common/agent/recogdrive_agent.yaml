@@ -34,6 +34,9 @@ offline_rl_elite_top_m: 8
 offline_rl_elite_min_candidates: 2
 offline_rl_keep_gt_candidate: true
 offline_rl_keep_il_candidate: true
+offline_rl_elite_buffer_version: 2
+offline_rl_require_buffer_valid_mask: true
+offline_rl_allow_v1_buffer_recompute_valid_mask: true
 offline_rl_build_candidates_online: false
 offline_rl_online_policy_samples: 8
 offline_rl_online_use_current_policy: true
@@ -48,10 +51,18 @@ offline_rl_lateral_offsets_m: [-0.8, -0.6, -0.4, -0.2, 0.2, 0.4, 0.6, 0.8]
 offline_rl_endpoint_lateral_offsets_m: [-0.8, -0.4, 0.4, 0.8]
 offline_rl_timing_slow_first_scales: [0.7, 0.8, 0.9]
 offline_rl_timing_delay_strengths: [0.15, 0.25, 0.35]
+offline_rl_strict_reward_submetrics: true
+offline_rl_required_reward_submetrics:
+  - no_at_fault_collisions
+  - drivable_area_compliance
+  - time_to_collision_within_bound
+  - driving_direction_compliance
+offline_rl_missing_submetric_policy: error
 offline_rl_clip_candidates_to_norm_range: true
 offline_rl_enforce_forward_monotonic_x: true
 offline_rl_max_heading_step_rad: 0.25
 offline_rl_max_final_heading_delta_rad: 0.4
+offline_rl_use_final_heading_guard: true
 offline_rl_require_nc: true
 offline_rl_require_dac: true
 offline_rl_require_ddc_guard: true
@@ -60,6 +71,9 @@ offline_rl_ddc_max_relative_drop: 0.01
 offline_rl_require_ttc_guard: false
 offline_rl_ttc_min_absolute: 0.95
 offline_rl_ttc_max_relative_drop: 0.02
+offline_rl_select_valid_topk_only: true
+offline_rl_train_invalid_fallback_candidates: false
+offline_rl_fallback_invalid_candidate_weight: 0.0
 offline_rl_prior_distance_weight: 0.02
 offline_rl_jerk_penalty_weight: 0.005
 offline_rl_select_by: pdms_minus_prior
@@ -75,12 +89,15 @@ offline_rl_weight_max: 20.0
 offline_rl_normalize_weights_per_scene: true
 offline_rl_train_only_valid_candidates: true
 offline_rl_min_reward_margin_to_gt_for_extra_weight: 0.0
+offline_rl_allow_zero_weight_rows: true
 offline_rl_awac_loss_weight: 1.0
 offline_rl_bc_loss_weight: 0.05
 offline_rl_grpo_loss_weight: 0.0
 offline_rl_log_candidate_sources: true
 offline_rl_log_submetrics: true
 offline_rl_log_oracle_stats: true
+offline_rl_require_reference_policy_checkpoint: true
+offline_rl_report_raw_and_valid_best: true
 scheduler_epochs: 200
 scheduler_warmup_epochs: 3
 scheduler_min_lr: 1e-6

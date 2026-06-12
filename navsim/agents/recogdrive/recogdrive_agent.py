@@ -124,6 +124,9 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_elite_min_candidates: int = 2,
         offline_rl_keep_gt_candidate: bool = True,
         offline_rl_keep_il_candidate: bool = True,
+        offline_rl_elite_buffer_version: int = 2,
+        offline_rl_require_buffer_valid_mask: bool = True,
+        offline_rl_allow_v1_buffer_recompute_valid_mask: bool = True,
         offline_rl_build_candidates_online: bool = False,
         offline_rl_online_policy_samples: int = 8,
         offline_rl_online_use_current_policy: bool = True,
@@ -138,10 +141,19 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_endpoint_lateral_offsets_m: tuple[float, ...] = (-0.8, -0.4, 0.4, 0.8),
         offline_rl_timing_slow_first_scales: tuple[float, ...] = (0.7, 0.8, 0.9),
         offline_rl_timing_delay_strengths: tuple[float, ...] = (0.15, 0.25, 0.35),
+        offline_rl_strict_reward_submetrics: bool = True,
+        offline_rl_required_reward_submetrics: tuple[str, ...] = (
+            "no_at_fault_collisions",
+            "drivable_area_compliance",
+            "time_to_collision_within_bound",
+            "driving_direction_compliance",
+        ),
+        offline_rl_missing_submetric_policy: str = "error",
         offline_rl_clip_candidates_to_norm_range: bool = True,
         offline_rl_enforce_forward_monotonic_x: bool = True,
         offline_rl_max_heading_step_rad: float = 0.25,
         offline_rl_max_final_heading_delta_rad: float = 0.4,
+        offline_rl_use_final_heading_guard: bool = True,
         offline_rl_require_nc: bool = True,
         offline_rl_require_dac: bool = True,
         offline_rl_require_ddc_guard: bool = True,
@@ -150,6 +162,9 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_require_ttc_guard: bool = False,
         offline_rl_ttc_min_absolute: float = 0.95,
         offline_rl_ttc_max_relative_drop: float = 0.02,
+        offline_rl_select_valid_topk_only: bool = True,
+        offline_rl_train_invalid_fallback_candidates: bool = False,
+        offline_rl_fallback_invalid_candidate_weight: float = 0.0,
         offline_rl_prior_distance_weight: float = 0.02,
         offline_rl_jerk_penalty_weight: float = 0.005,
         offline_rl_select_by: str = "pdms_minus_prior",
@@ -165,12 +180,15 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_normalize_weights_per_scene: bool = True,
         offline_rl_train_only_valid_candidates: bool = True,
         offline_rl_min_reward_margin_to_gt_for_extra_weight: float = 0.0,
+        offline_rl_allow_zero_weight_rows: bool = True,
         offline_rl_awac_loss_weight: float = 1.0,
         offline_rl_bc_loss_weight: float = 0.05,
         offline_rl_grpo_loss_weight: float = 0.0,
         offline_rl_log_candidate_sources: bool = True,
         offline_rl_log_submetrics: bool = True,
         offline_rl_log_oracle_stats: bool = True,
+        offline_rl_require_reference_policy_checkpoint: bool = True,
+        offline_rl_report_raw_and_valid_best: bool = True,
         vlm_size: Optional[str] = 'small', 
         train_backbone: bool = False,
         use_expert_features: bool = False,
@@ -393,6 +411,9 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_elite_min_candidates = int(offline_rl_elite_min_candidates)
         self.offline_rl_keep_gt_candidate = bool(offline_rl_keep_gt_candidate)
         self.offline_rl_keep_il_candidate = bool(offline_rl_keep_il_candidate)
+        self.offline_rl_elite_buffer_version = int(offline_rl_elite_buffer_version)
+        self.offline_rl_require_buffer_valid_mask = bool(offline_rl_require_buffer_valid_mask)
+        self.offline_rl_allow_v1_buffer_recompute_valid_mask = bool(offline_rl_allow_v1_buffer_recompute_valid_mask)
         self.offline_rl_build_candidates_online = bool(offline_rl_build_candidates_online)
         self.offline_rl_online_policy_samples = int(offline_rl_online_policy_samples)
         self.offline_rl_online_use_current_policy = bool(offline_rl_online_use_current_policy)
@@ -407,10 +428,14 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_endpoint_lateral_offsets_m = tuple(float(x) for x in offline_rl_endpoint_lateral_offsets_m)
         self.offline_rl_timing_slow_first_scales = tuple(float(x) for x in offline_rl_timing_slow_first_scales)
         self.offline_rl_timing_delay_strengths = tuple(float(x) for x in offline_rl_timing_delay_strengths)
+        self.offline_rl_strict_reward_submetrics = bool(offline_rl_strict_reward_submetrics)
+        self.offline_rl_required_reward_submetrics = tuple(str(x) for x in offline_rl_required_reward_submetrics)
+        self.offline_rl_missing_submetric_policy = offline_rl_missing_submetric_policy
         self.offline_rl_clip_candidates_to_norm_range = bool(offline_rl_clip_candidates_to_norm_range)
         self.offline_rl_enforce_forward_monotonic_x = bool(offline_rl_enforce_forward_monotonic_x)
         self.offline_rl_max_heading_step_rad = float(offline_rl_max_heading_step_rad)
         self.offline_rl_max_final_heading_delta_rad = float(offline_rl_max_final_heading_delta_rad)
+        self.offline_rl_use_final_heading_guard = bool(offline_rl_use_final_heading_guard)
         self.offline_rl_require_nc = bool(offline_rl_require_nc)
         self.offline_rl_require_dac = bool(offline_rl_require_dac)
         self.offline_rl_require_ddc_guard = bool(offline_rl_require_ddc_guard)
@@ -419,6 +444,9 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_require_ttc_guard = bool(offline_rl_require_ttc_guard)
         self.offline_rl_ttc_min_absolute = float(offline_rl_ttc_min_absolute)
         self.offline_rl_ttc_max_relative_drop = float(offline_rl_ttc_max_relative_drop)
+        self.offline_rl_select_valid_topk_only = bool(offline_rl_select_valid_topk_only)
+        self.offline_rl_train_invalid_fallback_candidates = bool(offline_rl_train_invalid_fallback_candidates)
+        self.offline_rl_fallback_invalid_candidate_weight = float(offline_rl_fallback_invalid_candidate_weight)
         self.offline_rl_prior_distance_weight = float(offline_rl_prior_distance_weight)
         self.offline_rl_jerk_penalty_weight = float(offline_rl_jerk_penalty_weight)
         self.offline_rl_select_by = offline_rl_select_by
@@ -436,12 +464,15 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_min_reward_margin_to_gt_for_extra_weight = float(
             offline_rl_min_reward_margin_to_gt_for_extra_weight
         )
+        self.offline_rl_allow_zero_weight_rows = bool(offline_rl_allow_zero_weight_rows)
         self.offline_rl_awac_loss_weight = float(offline_rl_awac_loss_weight)
         self.offline_rl_bc_loss_weight = float(offline_rl_bc_loss_weight)
         self.offline_rl_grpo_loss_weight = float(offline_rl_grpo_loss_weight)
         self.offline_rl_log_candidate_sources = bool(offline_rl_log_candidate_sources)
         self.offline_rl_log_submetrics = bool(offline_rl_log_submetrics)
         self.offline_rl_log_oracle_stats = bool(offline_rl_log_oracle_stats)
+        self.offline_rl_require_reference_policy_checkpoint = bool(offline_rl_require_reference_policy_checkpoint)
+        self.offline_rl_report_raw_and_valid_best = bool(offline_rl_report_raw_and_valid_best)
         self.vlm_size = vlm_size
         self.train_backbone = train_backbone
         self.use_expert_features = use_expert_features
@@ -856,6 +887,9 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.elite_min_candidates = self.offline_rl_elite_min_candidates
         offline_cfg.keep_gt_candidate = self.offline_rl_keep_gt_candidate
         offline_cfg.keep_il_candidate = self.offline_rl_keep_il_candidate
+        offline_cfg.elite_buffer_version = self.offline_rl_elite_buffer_version
+        offline_cfg.require_buffer_valid_mask = self.offline_rl_require_buffer_valid_mask
+        offline_cfg.allow_v1_buffer_recompute_valid_mask = self.offline_rl_allow_v1_buffer_recompute_valid_mask
         offline_cfg.build_candidates_online = self.offline_rl_build_candidates_online
         offline_cfg.online_policy_samples = self.offline_rl_online_policy_samples
         offline_cfg.online_use_current_policy = self.offline_rl_online_use_current_policy
@@ -870,10 +904,14 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.endpoint_lateral_offsets_m = self.offline_rl_endpoint_lateral_offsets_m
         offline_cfg.timing_slow_first_scales = self.offline_rl_timing_slow_first_scales
         offline_cfg.timing_delay_strengths = self.offline_rl_timing_delay_strengths
+        offline_cfg.strict_reward_submetrics = self.offline_rl_strict_reward_submetrics
+        offline_cfg.required_reward_submetrics = self.offline_rl_required_reward_submetrics
+        offline_cfg.missing_submetric_policy = self.offline_rl_missing_submetric_policy
         offline_cfg.clip_candidates_to_norm_range = self.offline_rl_clip_candidates_to_norm_range
         offline_cfg.enforce_forward_monotonic_x = self.offline_rl_enforce_forward_monotonic_x
         offline_cfg.max_heading_step_rad = self.offline_rl_max_heading_step_rad
         offline_cfg.max_final_heading_delta_rad = self.offline_rl_max_final_heading_delta_rad
+        offline_cfg.use_final_heading_guard = self.offline_rl_use_final_heading_guard
         offline_cfg.require_nc = self.offline_rl_require_nc
         offline_cfg.require_dac = self.offline_rl_require_dac
         offline_cfg.require_ddc_guard = self.offline_rl_require_ddc_guard
@@ -882,6 +920,9 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.require_ttc_guard = self.offline_rl_require_ttc_guard
         offline_cfg.ttc_min_absolute = self.offline_rl_ttc_min_absolute
         offline_cfg.ttc_max_relative_drop = self.offline_rl_ttc_max_relative_drop
+        offline_cfg.select_valid_topk_only = self.offline_rl_select_valid_topk_only
+        offline_cfg.train_invalid_fallback_candidates = self.offline_rl_train_invalid_fallback_candidates
+        offline_cfg.fallback_invalid_candidate_weight = self.offline_rl_fallback_invalid_candidate_weight
         offline_cfg.prior_distance_weight = self.offline_rl_prior_distance_weight
         offline_cfg.jerk_penalty_weight = self.offline_rl_jerk_penalty_weight
         offline_cfg.select_by = self.offline_rl_select_by
@@ -897,12 +938,15 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.normalize_weights_per_scene = self.offline_rl_normalize_weights_per_scene
         offline_cfg.train_only_valid_candidates = self.offline_rl_train_only_valid_candidates
         offline_cfg.min_reward_margin_to_gt_for_extra_weight = self.offline_rl_min_reward_margin_to_gt_for_extra_weight
+        offline_cfg.allow_zero_weight_rows = self.offline_rl_allow_zero_weight_rows
         offline_cfg.awac_loss_weight = self.offline_rl_awac_loss_weight
         offline_cfg.bc_loss_weight = self.offline_rl_bc_loss_weight
         offline_cfg.grpo_loss_weight = self.offline_rl_grpo_loss_weight
         offline_cfg.log_candidate_sources = self.offline_rl_log_candidate_sources
         offline_cfg.log_submetrics = self.offline_rl_log_submetrics
         offline_cfg.log_oracle_stats = self.offline_rl_log_oracle_stats
+        offline_cfg.require_reference_policy_checkpoint = self.offline_rl_require_reference_policy_checkpoint
+        offline_cfg.report_raw_and_valid_best = self.offline_rl_report_raw_and_valid_best
 
         if self.grpo or self.offline_rl_enabled:
             cfg.grpo_cfg.metric_cache_path = self.metric_cache_path

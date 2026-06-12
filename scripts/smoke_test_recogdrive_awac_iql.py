@@ -1,0 +1,155 @@
+from __future__ import annotations
+
+import lzma
+import os
+import pickle
+import sys
+import tempfile
+from pathlib import Path
+
+os.environ.setdefault("MPLCONFIGDIR", "/tmp/matplotlib-recogdrive-awac-smoke")
+os.environ.setdefault("CUDA_VISIBLE_DEVICES", "")
+
+import numpy as np
+import torch
+from transformers.feature_extraction_utils import BatchFeature
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(REPO_ROOT))
+
+from navsim.agents.recogdrive.offline_rl_buffer import (
+    REQUIRED_COMPONENT_KEYS,
+    load_elite_record,
+    save_elite_record,
+    token_to_buffer_key,
+)
+from navsim.agents.recogdrive.recogdrive_diffusion_planner import OfflineRLConfig, ReCogDriveDiffusionPlanner
+
+
+def _planner_stub() -> ReCogDriveDiffusionPlanner:
+    return object.__new__(ReCogDriveDiffusionPlanner)
+
+
+def _components() -> dict[str, torch.Tensor]:
+    values = {
+        "pdms": torch.tensor([[0.80, 0.95, 0.90, 0.70, 0.60], [0.60, 0.75, 0.85, 0.55, 0.65]]),
+        "no_at_fault_collisions": torch.ones(2, 5),
+        "drivable_area_compliance": torch.tensor([[1.0, 0.0, 1.0, 1.0, 1.0], [0.0, 0.0, 1.0, 1.0, 1.0]]),
+        "time_to_collision_within_bound": torch.ones(2, 5),
+        "ego_progress": torch.ones(2, 5) * 0.5,
+        "history_comfort": torch.ones(2, 5),
+        "lane_keeping": torch.ones(2, 5),
+        "driving_direction_compliance": torch.tensor([[1.0, 1.0, 0.80, 1.0, 1.0], [1.0, 0.7, 0.8, 0.9, 0.95]]),
+        "traffic_light_compliance": torch.ones(2, 5),
+    }
+    return values
+
+
+def _record(token: str, valid_mask: np.ndarray, version: int = 2) -> dict:
+    k, h = 2, 8
+    components = {key: np.ones((k,), dtype=np.float32) for key in REQUIRED_COMPONENT_KEYS}
+    components["pdms"] = np.asarray([0.7, 0.8], dtype=np.float32)
+    payload = {
+        "token": token,
+        "candidates": np.zeros((k, h, 3), dtype=np.float32),
+        "rewards": np.asarray([0.7, 0.8], dtype=np.float32),
+        "components": components,
+        "sources": ["gt", "progress_endpoint"],
+        "anchor_distance": np.zeros((k,), dtype=np.float32),
+        "gt_reward": 0.7,
+        "il_reward": 0.7,
+        "best_reward": 0.8,
+        "best_source": "progress_endpoint",
+        "version": version,
+    }
+    if version >= 2:
+        payload.update(
+            {
+                "valid_mask": valid_mask,
+                "selection_score": np.asarray([0.7, 0.8], dtype=np.float32),
+                "best_raw_reward": 0.8,
+                "best_valid_reward": 0.8 if valid_mask.any() else 0.8,
+                "best_selected_reward": 0.8,
+                "best_raw_source": "progress_endpoint",
+                "best_valid_source": "progress_endpoint",
+                "best_selected_source": "progress_endpoint",
+                "has_valid_candidate": bool(valid_mask.any()),
+            }
+        )
+    return payload
+
+
+def main() -> None:
+    planner = _planner_stub()
+    cfg = OfflineRLConfig(strict_reward_submetrics=True, elite_top_m=2, elite_min_candidates=2)
+    sources = ["gt", "il", "policy", "progress_endpoint", "lateral_offset"]
+    components = _components()
+    valid_mask, valid_diag = planner._compute_awac_candidate_valid_mask(components, sources, cfg)
+    assert valid_mask.shape == (2, 5)
+    assert bool(valid_mask[0, 0])
+    assert not bool(valid_mask[0, 1])
+    assert not bool(valid_mask[0, 2])
+    assert 0.0 < float(valid_diag["valid_candidate_ratio"]) < 1.0
+
+    candidates = torch.zeros(2, 5, 8, 3)
+    rewards = components["pdms"]
+    anchor_distance = torch.zeros(2, 5)
+    selected = planner._select_elite_candidates(
+        candidates,
+        rewards,
+        components,
+        sources,
+        anchor_distance,
+        gt_reward=rewards[:, 0],
+        il_reward=rewards[:, 1],
+        cfg=cfg,
+    )
+    assert selected["selected_trajs"].shape[0] == 2
+    assert selected["selected_valid_mask"].shape == selected["selected_rewards"].shape
+    assert torch.isfinite(selected["selected_selection_score"]).all()
+    assert selected["best_reward"].shape == (2,)
+
+    baseline = planner._compute_iql_baseline(
+        selected["selected_rewards"],
+        selected["gt_reward"],
+        selected["il_reward"],
+        cfg,
+        selected["selected_real_mask"],
+    )
+    weights, advantages, weight_diag = planner._compute_awac_weights(
+        selected["selected_rewards"],
+        baseline,
+        cfg,
+        valid_mask=selected["selected_valid_mask"],
+        real_mask=selected["selected_real_mask"],
+        gt_reward=selected["gt_reward"],
+    )
+    assert weights.shape == selected["selected_rewards"].shape
+    assert advantages.shape == selected["selected_rewards"].shape
+    assert "positive_weight_row_ratio" in weight_diag
+
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        token = "scene-token"
+        save_elite_record(root, token, _record(token, np.asarray([True, False], dtype=np.bool_)))
+        loaded = load_elite_record(root, token)
+        assert int(loaded["version"]) == 2
+        assert np.asarray(loaded["valid_mask"]).tolist() == [True, False]
+
+        v1_token = "scene-token-v1"
+        v1_path = root / f"{token_to_buffer_key(v1_token)}.pkl.xz"
+        with lzma.open(v1_path, "wb") as f:
+            pickle.dump(_record(v1_token, np.asarray([True, False], dtype=np.bool_), version=1), f)
+        loaded_v1 = load_elite_record(root, v1_token)
+        assert "valid_mask" not in loaded_v1
+        cfg.elite_buffer_path = str(root)
+        action_input = BatchFeature(data={"action": torch.zeros(1, 8, 3)})
+        loaded_batch = planner._load_awac_buffer_candidates(action_input, [v1_token], {}, cfg)
+        assert loaded_batch["selected_valid_mask"].shape == (1, 2)
+        assert bool(loaded_batch["selected_valid_mask"][0].any())
+
+    print("recogdrive_awac_iql_smoke_ok")
+
+
+if __name__ == "__main__":
+    main()

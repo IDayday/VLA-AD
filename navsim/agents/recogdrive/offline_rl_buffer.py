@@ -30,6 +30,7 @@ def _record_path(buffer_root: Path, token: str) -> Path:
 
 
 def _validate_record(record: Dict[str, Any]) -> None:
+    version = int(record.get("version", 1))
     required = {
         "token",
         "candidates",
@@ -43,6 +44,20 @@ def _validate_record(record: Dict[str, Any]) -> None:
         "best_source",
         "version",
     }
+    if version >= 2:
+        required.update(
+            {
+                "valid_mask",
+                "selection_score",
+                "best_raw_reward",
+                "best_valid_reward",
+                "best_selected_reward",
+                "best_raw_source",
+                "best_valid_source",
+                "best_selected_source",
+                "has_valid_candidate",
+            }
+        )
     missing = sorted(required.difference(record))
     if missing:
         raise KeyError(f"Elite buffer record is missing keys: {missing}")
@@ -60,6 +75,18 @@ def _validate_record(record: Dict[str, Any]) -> None:
         )
     if len(record["sources"]) != candidates.shape[0]:
         raise ValueError(f"record['sources'] length {len(record['sources'])} does not match K={candidates.shape[0]}.")
+    if version < 1:
+        raise ValueError(f"record['version'] must be >= 1, got {version}.")
+    if "valid_mask" in record:
+        valid_mask = np.asarray(record["valid_mask"])
+        if valid_mask.shape != (candidates.shape[0],):
+            raise ValueError(f"record['valid_mask'] shape {valid_mask.shape} does not match K={candidates.shape[0]}.")
+    if "selection_score" in record:
+        selection_score = np.asarray(record["selection_score"])
+        if selection_score.shape != (candidates.shape[0],):
+            raise ValueError(
+                f"record['selection_score'] shape {selection_score.shape} does not match K={candidates.shape[0]}."
+            )
 
     components = record["components"]
     if not isinstance(components, dict):
@@ -81,6 +108,8 @@ def save_elite_record(buffer_root: Path, token: str, record: Dict[str, Any]) -> 
     payload["candidates"] = np.asarray(payload["candidates"], dtype=np.float32)
     payload["rewards"] = np.asarray(payload["rewards"], dtype=np.float32)
     payload["anchor_distance"] = np.asarray(payload["anchor_distance"], dtype=np.float32)
+    payload["valid_mask"] = np.asarray(payload["valid_mask"], dtype=np.bool_)
+    payload["selection_score"] = np.asarray(payload["selection_score"], dtype=np.float32)
     payload["components"] = {
         key: np.asarray(value, dtype=np.float32) for key, value in dict(payload["components"]).items()
     }
@@ -89,7 +118,14 @@ def save_elite_record(buffer_root: Path, token: str, record: Dict[str, Any]) -> 
     payload["il_reward"] = float(payload["il_reward"])
     payload["best_reward"] = float(payload["best_reward"])
     payload["best_source"] = str(payload["best_source"])
-    payload["version"] = int(payload.get("version", 1))
+    payload["best_raw_reward"] = float(payload["best_raw_reward"])
+    payload["best_valid_reward"] = float(payload["best_valid_reward"])
+    payload["best_selected_reward"] = float(payload["best_selected_reward"])
+    payload["best_raw_source"] = str(payload["best_raw_source"])
+    payload["best_valid_source"] = str(payload["best_valid_source"])
+    payload["best_selected_source"] = str(payload["best_selected_source"])
+    payload["has_valid_candidate"] = bool(payload["has_valid_candidate"])
+    payload["version"] = 2
     _validate_record(payload)
     with lzma.open(_record_path(buffer_root, token), "wb") as f:
         pickle.dump(payload, f, protocol=pickle.HIGHEST_PROTOCOL)

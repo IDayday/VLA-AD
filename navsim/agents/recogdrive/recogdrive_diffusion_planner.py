@@ -172,6 +172,9 @@ class OfflineRLConfig:
     elite_min_candidates: int = 2
     keep_gt_candidate: bool = True
     keep_il_candidate: bool = True
+    elite_buffer_version: int = 2
+    require_buffer_valid_mask: bool = True
+    allow_v1_buffer_recompute_valid_mask: bool = True
 
     # online candidate generation fallback / optional mode
     build_candidates_online: bool = False
@@ -191,11 +194,22 @@ class OfflineRLConfig:
     timing_slow_first_scales: tuple[float, ...] = (0.7, 0.8, 0.9)
     timing_delay_strengths: tuple[float, ...] = (0.15, 0.25, 0.35)
 
+    # strict reward component extraction for AWAC/IQL
+    strict_reward_submetrics: bool = True
+    required_reward_submetrics: tuple[str, ...] = (
+        "no_at_fault_collisions",
+        "drivable_area_compliance",
+        "time_to_collision_within_bound",
+        "driving_direction_compliance",
+    )
+    missing_submetric_policy: Literal["error", "unsafe_zero", "warn_default"] = "error"
+
     # candidate repair / guards
     clip_candidates_to_norm_range: bool = True
     enforce_forward_monotonic_x: bool = True
     max_heading_step_rad: float = 0.25
     max_final_heading_delta_rad: float = 0.4
+    use_final_heading_guard: bool = True
 
     # candidate selection guards
     require_nc: bool = True
@@ -206,6 +220,9 @@ class OfflineRLConfig:
     require_ttc_guard: bool = False
     ttc_min_absolute: float = 0.95
     ttc_max_relative_drop: float = 0.02
+    select_valid_topk_only: bool = True
+    train_invalid_fallback_candidates: bool = False
+    fallback_invalid_candidate_weight: float = 0.0
 
     # selection score
     prior_distance_weight: float = 0.02
@@ -225,6 +242,7 @@ class OfflineRLConfig:
     normalize_weights_per_scene: bool = True
     train_only_valid_candidates: bool = True
     min_reward_margin_to_gt_for_extra_weight: float = 0.0
+    allow_zero_weight_rows: bool = True
 
     # loss weights
     awac_loss_weight: float = 1.0
@@ -235,6 +253,8 @@ class OfflineRLConfig:
     log_candidate_sources: bool = True
     log_submetrics: bool = True
     log_oracle_stats: bool = True
+    require_reference_policy_checkpoint: bool = True
+    report_raw_and_valid_best: bool = True
 
 
 @dataclass
@@ -890,10 +910,22 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.elite_min_candidates must be positive.")
         if int(cfg.online_policy_samples) < 0:
             raise ValueError("offline_rl_cfg.online_policy_samples must be non-negative.")
+        if str(cfg.missing_submetric_policy) not in {"error", "unsafe_zero", "warn_default"}:
+            raise ValueError("offline_rl_cfg.missing_submetric_policy must be error, unsafe_zero, or warn_default.")
+        if int(cfg.elite_buffer_version) < 2:
+            raise ValueError("offline_rl_cfg.elite_buffer_version must be >= 2.")
         if float(cfg.advantage_temperature) <= 0.0:
             raise ValueError("offline_rl_cfg.advantage_temperature must be positive.")
         if not (0.0 <= float(cfg.weight_min) <= float(cfg.weight_max)):
             raise ValueError("offline_rl_cfg.weight_max must be >= weight_min >= 0.")
+        if float(cfg.fallback_invalid_candidate_weight) < 0.0:
+            raise ValueError("offline_rl_cfg.fallback_invalid_candidate_weight must be non-negative.")
+        unknown_submetrics = sorted(set(cfg.required_reward_submetrics).difference(REQUIRED_COMPONENT_KEYS))
+        if unknown_submetrics:
+            raise ValueError(
+                "offline_rl_cfg.required_reward_submetrics must be a subset of REQUIRED_COMPONENT_KEYS; "
+                f"unknown={unknown_submetrics}"
+            )
         if not (0.0 < float(cfg.expectile_tau) < 1.0):
             raise ValueError("offline_rl_cfg.expectile_tau must be in (0, 1).")
         if int(cfg.expectile_iters) <= 0:
@@ -933,11 +965,41 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         for param in policy.parameters():
             param.requires_grad = False
 
+    @staticmethod
+    def _resolve_reference_policy_checkpoint(checkpoint_path: str, *, required: bool) -> Optional[Path]:
+        path = Path(checkpoint_path) if checkpoint_path else None
+        if path is not None and path.is_file():
+            return path
+        if path is not None and path.is_dir():
+            candidates = []
+            for suffix in ("*.ckpt", "*.pth", "*.pt", "*.safetensors"):
+                candidates.extend(path.glob(suffix))
+            if candidates:
+                return max(candidates, key=lambda item: item.stat().st_mtime)
+        if required:
+            raise FileNotFoundError(
+                "AWAC/IQL requires a valid reference_policy_checkpoint when IL/reference candidates "
+                f"or max_gt_il baseline are enabled; got {checkpoint_path!r}."
+            )
+        return None
+
     def _init_offline_rl(self, cfg: OfflineRLConfig, stage3_cfg: GRPOConfig) -> None:
         self.offline_rl_cfg = cfg
         self._init_stage3_oracle(stage3_cfg)
         if not hasattr(self, "old_policy"):
-            self._safe_load_reference_policy(stage3_cfg.reference_policy_checkpoint)
+            reference_required = (
+                bool(cfg.require_reference_policy_checkpoint)
+                and (
+                    bool(cfg.online_use_old_policy)
+                    or bool(cfg.keep_il_candidate)
+                    or str(cfg.baseline_mode) == "max_gt_il"
+                )
+            )
+            checkpoint_path = self._resolve_reference_policy_checkpoint(
+                stage3_cfg.reference_policy_checkpoint,
+                required=reference_required,
+            )
+            self._safe_load_reference_policy(str(checkpoint_path) if checkpoint_path is not None else stage3_cfg.reference_policy_checkpoint)
             self.old_policy = copy.deepcopy(self)
             self._freeze_policy(self.old_policy)
 
@@ -3199,47 +3261,107 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         except (TypeError, ValueError):
             return default
 
-    def _extract_pdm_components(self, pdm_result) -> Dict[str, float]:
-        """Normalizes PDM result containers into Stage-3 reward components."""
+    @staticmethod
+    def _pdm_component_aliases() -> Dict[str, tuple[str, ...]]:
+        return {
+            "pdms": ("score", "pdm_score", "pdms"),
+            "no_at_fault_collisions": ("no_at_fault_collisions", "nc"),
+            "drivable_area_compliance": ("drivable_area_compliance", "dac"),
+            "time_to_collision_within_bound": ("time_to_collision_within_bound", "ttc"),
+            "ego_progress": ("ego_progress", "ep", "progress"),
+            "history_comfort": ("history_comfort", "comfort", "comfortable"),
+            "lane_keeping": ("lane_keeping", "lane_keeping_compliance"),
+            "driving_direction_compliance": ("driving_direction_compliance", "ddc"),
+            "traffic_light_compliance": ("traffic_light_compliance", "tlc"),
+        }
+
+    def _pdm_result_to_raw_dict(self, pdm_result) -> Dict[str, Any]:
         while isinstance(pdm_result, tuple) and len(pdm_result) > 0:
             pdm_result = pdm_result[0]
 
         if is_dataclass(pdm_result) and not isinstance(pdm_result, type):
-            raw = asdict(pdm_result)
+            return asdict(pdm_result)
         elif isinstance(pdm_result, dict):
-            raw = dict(pdm_result)
+            return dict(pdm_result)
         elif hasattr(pdm_result, "iloc") and hasattr(pdm_result, "columns"):
-            raw = pdm_result.iloc[0].to_dict() if len(pdm_result) > 0 else {}
+            return pdm_result.iloc[0].to_dict() if len(pdm_result) > 0 else {}
         elif hasattr(pdm_result, "_asdict"):
-            raw = pdm_result._asdict()
+            return pdm_result._asdict()
         elif hasattr(pdm_result, "__dict__"):
-            raw = {
+            return {
                 key: value
                 for key, value in vars(pdm_result).items()
                 if not key.startswith("_")
             }
-        else:
-            raw = {}
+        return {}
 
+    def _extract_pdm_components(
+        self,
+        pdm_result,
+        *,
+        strict_submetrics: bool = False,
+        required_submetrics: Optional[tuple[str, ...]] = None,
+        missing_policy: str = "warn_default",
+    ) -> Dict[str, float]:
+        """Normalizes PDM result containers into Stage-3 reward components."""
+        raw = self._pdm_result_to_raw_dict(pdm_result)
         raw_by_key = {str(key).lower(): value for key, value in raw.items()}
+        aliases = self._pdm_component_aliases()
+        defaults = {
+            "pdms": 0.0,
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "time_to_collision_within_bound": 1.0,
+            "ego_progress": 0.0,
+            "history_comfort": 0.0,
+            "lane_keeping": 0.0,
+            "driving_direction_compliance": 1.0,
+            "traffic_light_compliance": 1.0,
+        }
 
-        def pick(keys: tuple[str, ...], default: float) -> float:
+        if strict_submetrics:
+            if missing_policy not in {"error", "unsafe_zero", "warn_default"}:
+                raise ValueError(f"Unsupported missing_submetric_policy={missing_policy!r}.")
+            required = tuple(required_submetrics or ())
+            missing = []
+            for key in required:
+                if key not in aliases:
+                    raise KeyError(f"Unknown required PDM submetric {key!r}.")
+                if not any(alias.lower() in raw_by_key for alias in aliases[key]):
+                    missing.append(key)
+            if missing:
+                if missing_policy == "error":
+                    raise KeyError(
+                        "PDM result is missing required AWAC/IQL safety submetrics "
+                        f"{missing}; available keys={sorted(raw_by_key)}."
+                    )
+                if missing_policy == "unsafe_zero":
+                    for key in missing:
+                        defaults[key] = 0.0
+                else:
+                    warned = getattr(self, "_warned_missing_awac_submetrics", set())
+                    signature = tuple(sorted(missing))
+                    if signature not in warned:
+                        warnings.warn(
+                            "PDM result is missing required AWAC/IQL safety submetrics "
+                            f"{missing}; using backward-compatible defaults.",
+                            RuntimeWarning,
+                        )
+                        warned = set(warned)
+                        warned.add(signature)
+                        self._warned_missing_awac_submetrics = warned
+
+        def pick(component: str) -> float:
+            keys = aliases[component]
             for key in keys:
                 normalized_key = key.lower()
                 if normalized_key in raw_by_key:
-                    return self._to_python_float(raw_by_key[normalized_key], default)
-            return default
+                    return self._to_python_float(raw_by_key[normalized_key], defaults[component])
+            return defaults[component]
 
         return {
-            "pdms": pick(("score", "pdm_score", "pdms"), 0.0),
-            "no_at_fault_collisions": pick(("no_at_fault_collisions", "nc"), 1.0),
-            "drivable_area_compliance": pick(("drivable_area_compliance", "dac"), 1.0),
-            "time_to_collision_within_bound": pick(("time_to_collision_within_bound", "ttc"), 1.0),
-            "ego_progress": pick(("ego_progress", "ep", "progress"), 0.0),
-            "history_comfort": pick(("history_comfort", "comfort", "comfortable"), 0.0),
-            "lane_keeping": pick(("lane_keeping", "lane_keeping_compliance"), 0.0),
-            "driving_direction_compliance": pick(("driving_direction_compliance", "ddc"), 1.0),
-            "traffic_light_compliance": pick(("traffic_light_compliance", "tlc"), 1.0),
+            key: pick(key)
+            for key in REQUIRED_COMPONENT_KEYS
         }
 
     def _compute_hard_safety_mask(self, components: Dict[str, torch.Tensor]) -> torch.Tensor:
@@ -3452,6 +3574,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         candidates: torch.Tensor,
         tokens_list: list[str],
         metric_cache: Dict[str, Any],
+        cfg: Optional[OfflineRLConfig] = None,
     ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         if candidates.ndim != 4 or candidates.shape[-1] != 3:
             raise ValueError(f"candidates must have shape [B, K, H, 3], got {tuple(candidates.shape)}.")
@@ -3462,7 +3585,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError(f"tokens_list length {len(tokens_list)} does not match B={B}.")
         flat = candidates.detach().float().reshape(B * K, H, D)
         tokens_rep = [str(token) for token in tokens_list for _ in range(K)]
-        rewards, components = self.reward_fn(flat, tokens_rep, metric_cache, return_components=True)
+        rewards, components = self.reward_fn(
+            flat,
+            tokens_rep,
+            metric_cache,
+            return_components=True,
+            strict_submetrics=bool(cfg.strict_reward_submetrics) if cfg is not None else False,
+            required_submetrics=cfg.required_reward_submetrics if cfg is not None else None,
+            missing_submetric_policy=str(cfg.missing_submetric_policy) if cfg is not None else "warn_default",
+        )
         rewards = rewards.reshape(B, K).float()
         components = {key: value.reshape(B, K).float() for key, value in components.items()}
         if not torch.isfinite(rewards).all():
@@ -3507,6 +3638,78 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "timing": 6,
         }.get(cls._source_bucket(source), 0)
 
+    def _compute_awac_candidate_valid_mask(
+        self,
+        components: Dict[str, torch.Tensor],
+        sources: list[str],
+        cfg: OfflineRLConfig,
+    ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+        pdms = components["pdms"]
+        valid = torch.ones_like(pdms, dtype=torch.bool)
+        pass_masks: Dict[str, torch.Tensor] = {}
+
+        nc_pass = components["no_at_fault_collisions"] >= 1.0
+        dac_pass = components["drivable_area_compliance"] >= 1.0
+        if bool(cfg.require_nc):
+            valid &= nc_pass
+        if bool(cfg.require_dac):
+            valid &= dac_pass
+
+        source_to_index: Dict[str, int] = {}
+        for idx, source in enumerate(sources):
+            source_to_index.setdefault(source, idx)
+        gt_idx = source_to_index.get("gt")
+        il_idx = source_to_index.get("il")
+
+        ddc = components["driving_direction_compliance"]
+        if bool(cfg.require_ddc_guard):
+            ddc_anchor = None
+            if gt_idx is not None:
+                ddc_anchor = ddc[:, gt_idx]
+            if il_idx is not None:
+                ddc_anchor = ddc[:, il_idx] if ddc_anchor is None else torch.maximum(ddc_anchor, ddc[:, il_idx])
+            if ddc_anchor is None:
+                ddc_pass = ddc >= float(cfg.ddc_min_absolute)
+            else:
+                ddc_pass = (ddc >= float(cfg.ddc_min_absolute)) | (
+                    ddc >= ddc_anchor[:, None] - float(cfg.ddc_max_relative_drop)
+                )
+            valid &= ddc_pass
+        else:
+            ddc_pass = torch.ones_like(valid)
+
+        ttc = components["time_to_collision_within_bound"]
+        if bool(cfg.require_ttc_guard):
+            ttc_anchor = None
+            if gt_idx is not None:
+                ttc_anchor = ttc[:, gt_idx]
+            if il_idx is not None:
+                ttc_anchor = ttc[:, il_idx] if ttc_anchor is None else torch.maximum(ttc_anchor, ttc[:, il_idx])
+            if ttc_anchor is None:
+                ttc_pass = ttc >= float(cfg.ttc_min_absolute)
+            else:
+                ttc_pass = (ttc >= float(cfg.ttc_min_absolute)) | (
+                    ttc >= ttc_anchor[:, None] - float(cfg.ttc_max_relative_drop)
+                )
+            valid &= ttc_pass
+        else:
+            ttc_pass = torch.ones_like(valid)
+
+        pass_masks["nc_pass"] = nc_pass
+        pass_masks["dac_pass"] = dac_pass
+        pass_masks["ddc_pass"] = ddc_pass
+        pass_masks["ttc_pass"] = ttc_pass
+        diagnostics = {
+            "nc_pass_ratio": nc_pass.float().mean(),
+            "dac_pass_ratio": dac_pass.float().mean(),
+            "ddc_pass_ratio": ddc_pass.float().mean(),
+            "ttc_pass_ratio": ttc_pass.float().mean(),
+            "valid_candidate_ratio": valid.float().mean(),
+            "has_valid_candidate_ratio": valid.any(dim=1).float().mean(),
+            **pass_masks,
+        }
+        return valid, diagnostics
+
     def _select_elite_candidates(
         self,
         candidates: torch.Tensor,
@@ -3528,44 +3731,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         if len(sources) != K:
             raise ValueError(f"sources length {len(sources)} does not match K={K}.")
 
-        device = candidates.device
-        valid = torch.ones((B, K), device=device, dtype=torch.bool)
-        if bool(cfg.require_nc):
-            valid &= components["no_at_fault_collisions"] >= 1.0
-        if bool(cfg.require_dac):
-            valid &= components["drivable_area_compliance"] >= 1.0
-
         source_to_index: Dict[str, int] = {}
         for idx, source in enumerate(sources):
             source_to_index.setdefault(source, idx)
         gt_idx = source_to_index.get("gt")
         il_idx = source_to_index.get("il")
-        if bool(cfg.require_ddc_guard):
-            ddc = components["driving_direction_compliance"]
-            ddc_anchor = None
-            if gt_idx is not None:
-                ddc_anchor = ddc[:, gt_idx]
-            if il_idx is not None:
-                ddc_anchor = ddc[:, il_idx] if ddc_anchor is None else torch.maximum(ddc_anchor, ddc[:, il_idx])
-            if ddc_anchor is None:
-                valid &= ddc >= float(cfg.ddc_min_absolute)
-            else:
-                valid &= (ddc >= float(cfg.ddc_min_absolute)) | (
-                    ddc >= ddc_anchor[:, None] - float(cfg.ddc_max_relative_drop)
-                )
-        if bool(cfg.require_ttc_guard):
-            ttc = components["time_to_collision_within_bound"]
-            ttc_anchor = None
-            if gt_idx is not None:
-                ttc_anchor = ttc[:, gt_idx]
-            if il_idx is not None:
-                ttc_anchor = ttc[:, il_idx] if ttc_anchor is None else torch.maximum(ttc_anchor, ttc[:, il_idx])
-            if ttc_anchor is None:
-                valid &= ttc >= float(cfg.ttc_min_absolute)
-            else:
-                valid &= (ttc >= float(cfg.ttc_min_absolute)) | (
-                    ttc >= ttc_anchor[:, None] - float(cfg.ttc_max_relative_drop)
-                )
+        device = candidates.device
+        valid, valid_diag = self._compute_awac_candidate_valid_mask(components, sources, cfg)
 
         if str(cfg.select_by) == "pdms":
             selection_score = rewards.float()
@@ -3579,24 +3751,36 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
         selected_indices: list[torch.Tensor] = []
         fallback_flags = []
+        has_valid_candidate = valid.any(dim=1)
         min_candidates = max(1, int(cfg.elite_min_candidates))
         top_m = max(1, int(cfg.elite_top_m))
         for b in range(B):
             row_valid = valid[b]
-            fallback = not bool(row_valid.any().item())
-            if fallback:
-                row_score = rewards[b].float()
+            valid_idx = torch.nonzero(row_valid, as_tuple=False).flatten()
+            if int(valid_idx.numel()) > 0 and bool(cfg.select_valid_topk_only):
+                k = min(top_m, int(valid_idx.numel()))
+                valid_scores = selection_score[b, valid_idx]
+                idx = valid_idx[torch.topk(valid_scores, k=k, largest=True).indices].tolist()
+                fallback = False
+            elif int(valid_idx.numel()) > 0:
+                k = min(top_m, K)
+                idx = torch.topk(selection_score[b], k=k, largest=True).indices.tolist()
+                fallback = False
             else:
-                row_score = selection_score[b].masked_fill(~row_valid, -torch.inf)
-            n_select = min(top_m, K)
-            idx = torch.topk(row_score, k=n_select, largest=True).indices.tolist()
+                k = min(top_m, K)
+                idx = torch.topk(rewards[b].float(), k=k, largest=True).indices.tolist()
+                fallback = True
             if bool(cfg.keep_gt_candidate) and gt_idx is not None:
                 idx.append(gt_idx)
             if bool(cfg.keep_il_candidate) and il_idx is not None:
                 idx.append(il_idx)
             if len(set(idx)) < min(min_candidates, K):
-                for extra_idx in torch.topk(rewards[b].float(), k=min(K, min_candidates), largest=True).indices.tolist():
-                    idx.append(extra_idx)
+                remaining_score = rewards[b].float().clone()
+                for used_idx in set(int(item) for item in idx):
+                    remaining_score[used_idx] = -torch.inf
+                for extra_idx in torch.topk(remaining_score, k=min(K, min_candidates), largest=True).indices.tolist():
+                    if torch.isfinite(remaining_score[int(extra_idx)]):
+                        idx.append(extra_idx)
             unique_idx = []
             seen = set()
             for item in idx:
@@ -3614,6 +3798,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         selected_valid_mask = torch.zeros((B, max_m), device=device, dtype=torch.bool)
         selected_source_code = torch.zeros((B, max_m), device=device, dtype=torch.long)
         selected_source_index = torch.full((B, max_m), -1, device=device, dtype=torch.long)
+        selected_selection_score = selection_score.new_zeros((B, max_m))
         selected_components = {
             key: value.new_zeros((B, max_m))
             for key, value in components.items()
@@ -3626,6 +3811,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             selected_real_mask[b, :m] = True
             selected_valid_mask[b, :m] = valid[b, idx]
             selected_source_index[b, :m] = idx
+            selected_selection_score[b, :m] = selection_score[b, idx]
             selected_source_code[b, :m] = torch.tensor(
                 [self._source_code(sources[int(i)]) for i in idx.tolist()],
                 device=device,
@@ -3635,10 +3821,25 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 selected_components[key][b, :m] = value[b, idx]
 
         fallback_mask = torch.tensor(fallback_flags, device=device, dtype=torch.bool)
-        best_idx = rewards.argmax(dim=1)
-        best_reward = rewards.gather(1, best_idx[:, None]).squeeze(1)
-        best_source_code = torch.tensor(
-            [self._source_code(sources[int(idx.item())]) for idx in best_idx],
+        best_raw_idx = rewards.argmax(dim=1)
+        best_raw_reward = rewards.gather(1, best_raw_idx[:, None]).squeeze(1)
+        valid_rewards = rewards.masked_fill(~valid, -torch.inf)
+        best_valid_idx = valid_rewards.argmax(dim=1)
+        best_valid_reward_candidate = valid_rewards.gather(1, best_valid_idx[:, None]).squeeze(1)
+        best_valid_reward = torch.where(has_valid_candidate, best_valid_reward_candidate, best_raw_reward)
+        best_valid_idx = torch.where(has_valid_candidate, best_valid_idx, best_raw_idx)
+        selected_masked_rewards = selected_rewards.masked_fill(~selected_real_mask, -torch.inf)
+        best_selected_pos = selected_masked_rewards.argmax(dim=1)
+        best_selected_reward = selected_masked_rewards.gather(1, best_selected_pos[:, None]).squeeze(1)
+        best_selected_source_code = selected_source_code.gather(1, best_selected_pos[:, None]).squeeze(1)
+        best_selected_index = selected_source_index.gather(1, best_selected_pos[:, None]).squeeze(1)
+        best_raw_source_code = torch.tensor(
+            [self._source_code(sources[int(idx.item())]) for idx in best_raw_idx],
+            device=device,
+            dtype=torch.long,
+        )
+        best_valid_source_code = torch.tensor(
+            [self._source_code(sources[int(idx.item())]) for idx in best_valid_idx],
             device=device,
             dtype=torch.long,
         )
@@ -3647,16 +3848,34 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "selected_rewards": selected_rewards,
             "selected_components": selected_components,
             "selected_anchor_distance": selected_anchor_distance,
+            "selected_selection_score": selected_selection_score,
             "selected_valid_mask": selected_valid_mask,
             "selected_real_mask": selected_real_mask,
             "selected_source_code": selected_source_code,
             "selected_source_index": selected_source_index,
-            "valid_candidate_ratio": valid.float().mean(),
+            "candidate_valid_mask": valid,
+            "valid_candidate_ratio": valid_diag["valid_candidate_ratio"],
+            "has_valid_candidate_ratio": valid_diag["has_valid_candidate_ratio"],
+            "nc_pass_ratio": valid_diag["nc_pass_ratio"],
+            "dac_pass_ratio": valid_diag["dac_pass_ratio"],
+            "ddc_pass_ratio": valid_diag["ddc_pass_ratio"],
+            "ttc_pass_ratio": valid_diag["ttc_pass_ratio"],
             "fallback_candidate_ratio": fallback_mask.float().mean(),
+            "fallback_candidate": fallback_mask,
+            "has_valid_candidate": has_valid_candidate,
             "gt_reward": gt_reward.float(),
             "il_reward": il_reward.float(),
-            "best_reward": best_reward.float(),
-            "best_source_code": best_source_code,
+            "best_raw_reward": best_raw_reward.float(),
+            "best_valid_reward": best_valid_reward.float(),
+            "best_selected_reward": best_selected_reward.float(),
+            "best_raw_source_code": best_raw_source_code,
+            "best_valid_source_code": best_valid_source_code,
+            "best_selected_source_code": best_selected_source_code,
+            "best_raw_index": best_raw_idx,
+            "best_valid_index": best_valid_idx,
+            "best_selected_index": best_selected_index,
+            "best_reward": best_valid_reward.float(),
+            "best_source_code": best_valid_source_code,
         }
 
     def _compute_iql_baseline(
@@ -3708,7 +3927,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         valid_mask: Optional[torch.Tensor] = None,
         real_mask: Optional[torch.Tensor] = None,
         gt_reward: Optional[torch.Tensor] = None,
-    ) -> tuple[torch.Tensor, torch.Tensor]:
+    ) -> tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
         if rewards.ndim != 2 or baseline.shape != (rewards.shape[0],):
             raise ValueError(
                 f"rewards must be [B, M] and baseline [B], got rewards={tuple(rewards.shape)} baseline={tuple(baseline.shape)}."
@@ -3728,18 +3947,28 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         if bool(cfg.train_only_valid_candidates):
             weights = weights * valid_mask.to(dtype=weights.dtype)
         empty_rows = weights.sum(dim=1) <= 0.0
-        if bool(empty_rows.any().item()):
+        if bool(empty_rows.any().item()) and bool(cfg.train_invalid_fallback_candidates):
             safe_rewards = rewards.masked_fill(~real_mask, -torch.inf)
             fallback_idx = safe_rewards.argmax(dim=1)
             row_idx = torch.arange(rewards.shape[0], device=rewards.device)
-            weights[row_idx[empty_rows], fallback_idx[empty_rows]] = 1.0
+            weights[row_idx[empty_rows], fallback_idx[empty_rows]] = float(cfg.fallback_invalid_candidate_weight)
         if bool(cfg.normalize_weights_per_scene):
+            positive_rows = weights.sum(dim=1, keepdim=True) > 0.0
             norm_mask = (weights > 0).to(dtype=weights.dtype)
             mean = weights.sum(dim=1, keepdim=True) / norm_mask.sum(dim=1, keepdim=True).clamp(min=1.0)
-            weights = weights / mean.clamp(min=1e-6)
+            weights = torch.where(positive_rows, weights / mean.clamp(min=1e-6), weights)
         if not torch.isfinite(weights).all():
             raise ValueError("AWAC weights contain non-finite values after clipping.")
-        return weights.float(), adv.float()
+        positive_rows = weights.sum(dim=1) > 0.0
+        real_count = real_mask.float().sum().clamp(min=1.0)
+        diagnostics = {
+            "empty_awac_row_ratio": (~positive_rows).float().mean(),
+            "positive_weight_row_ratio": positive_rows.float().mean(),
+            "positive_weight_candidate_ratio": ((weights > 0) & real_mask).float().sum() / real_count,
+        }
+        if (not bool(cfg.allow_zero_weight_rows)) and bool((~positive_rows).any().item()):
+            raise RuntimeError("AWAC/IQL produced zero positive-weight rows and allow_zero_weight_rows=False.")
+        return weights.float(), adv.float(), diagnostics
 
     def _repeat_action_input_for_loss(self, action_input: BatchFeature, repeat: int) -> BatchFeature:
         repeated = self._repeat_expert_action_input(action_input, repeat)
@@ -3767,6 +3996,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         flat_weights = weights.reshape(B * M).to(device=targets.device, dtype=torch.float32)
         if not torch.isfinite(targets).all():
             raise ValueError("AWAC target trajectories contain non-finite values.")
+        raw_weight_sum = flat_weights.sum()
+        if float(raw_weight_sum.detach().cpu().item()) <= 0.0:
+            zero_loss = next(self.parameters()).float().sum() * 0.0
+            return zero_loss, {
+                "per_sample_loss_mean": zero_loss.detach(),
+                "target_norm_mean": zero_loss.detach(),
+                "effective_weight_sum": raw_weight_sum.detach().to(device=zero_loss.device, dtype=zero_loss.dtype),
+                "zero_weight_ratio": flat_weights.new_tensor(1.0).to(device=zero_loss.device, dtype=zero_loss.dtype),
+                "zero_weight_batch": flat_weights.new_tensor(1.0).to(device=zero_loss.device, dtype=zero_loss.dtype),
+            }
         target_norm = self.norm_odo(targets).clamp(-1.0, 1.0)
         noise = torch.randn_like(target_norm)
         t_discrete = self.sample_time(B * M, device=target_norm.device, dtype=target_norm.dtype)
@@ -3788,7 +4027,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         per_sample_loss = ((pred_noise.float() - noise.float()) ** 2).mean(dim=(1, 2))
         if per_sample_loss.shape != (B * M,):
             raise ValueError(f"per_sample_loss must have shape [B*M], got {tuple(per_sample_loss.shape)}.")
-        valid_weight_sum = flat_weights.sum().clamp(min=1e-6)
+        valid_weight_sum = raw_weight_sum.clamp(min=1e-6)
         awac_loss = (flat_weights.to(per_sample_loss) * per_sample_loss).sum() / valid_weight_sum.to(per_sample_loss)
         if not torch.isfinite(awac_loss):
             raise ValueError("AWAC weighted diffusion loss is non-finite.")
@@ -3797,6 +4036,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "target_norm_mean": target_norm.detach().float().abs().mean().to(dtype=awac_loss.dtype),
             "effective_weight_sum": valid_weight_sum.detach().to(dtype=awac_loss.dtype),
             "zero_weight_ratio": (flat_weights <= 0).float().mean().to(device=awac_loss.device, dtype=awac_loss.dtype),
+            "zero_weight_batch": awac_loss.new_zeros(()),
         }
         return awac_loss, diagnostics
 
@@ -3820,7 +4060,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 if str(cfg.missing_buffer_policy) != "fallback_gt":
                     raise
                 gt = action_input.action[batch_idx : batch_idx + 1].detach().float()
-                rewards, components = self._score_candidate_trajectories(gt[:, None], [str(token)], metric_cache)
+                rewards, components = self._score_candidate_trajectories(gt[:, None], [str(token)], metric_cache, cfg)
+                valid_mask, _ = self._compute_awac_candidate_valid_mask(components, ["gt"], cfg)
+                selection_score = rewards[0].detach().cpu().numpy().astype(np.float32)
                 record = {
                     "token": str(token),
                     "candidates": gt[0].cpu().numpy()[None],
@@ -3828,11 +4070,20 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     "components": {key: value[0].detach().cpu().numpy() for key, value in components.items()},
                     "sources": ["gt"],
                     "anchor_distance": np.zeros((1,), dtype=np.float32),
+                    "valid_mask": valid_mask[0].detach().cpu().numpy(),
+                    "selection_score": selection_score,
                     "gt_reward": float(rewards[0, 0].detach().cpu().item()),
                     "il_reward": float(rewards[0, 0].detach().cpu().item()),
                     "best_reward": float(rewards[0, 0].detach().cpu().item()),
                     "best_source": "gt",
-                    "version": 1,
+                    "best_raw_reward": float(rewards[0, 0].detach().cpu().item()),
+                    "best_valid_reward": float(rewards[0, 0].detach().cpu().item()),
+                    "best_selected_reward": float(rewards[0, 0].detach().cpu().item()),
+                    "best_raw_source": "gt",
+                    "best_valid_source": "gt",
+                    "best_selected_source": "gt",
+                    "has_valid_candidate": bool(valid_mask[0, 0].detach().cpu().item()),
+                    "version": 2,
                 }
                 records.append(record)
 
@@ -3845,50 +4096,114 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         selected_real_mask = torch.zeros((B, max_m), device=device, dtype=torch.bool)
         selected_valid_mask = torch.zeros((B, max_m), device=device, dtype=torch.bool)
         selected_source_code = torch.zeros((B, max_m), device=device, dtype=torch.long)
+        selected_source_index = torch.full((B, max_m), -1, device=device, dtype=torch.long)
+        selected_selection_score = torch.zeros((B, max_m), device=device, dtype=torch.float32)
         selected_components = {
             key: torch.zeros((B, max_m), device=device, dtype=torch.float32)
             for key in REQUIRED_COMPONENT_KEYS
         }
         gt_reward = torch.zeros((B,), device=device, dtype=torch.float32)
         il_reward = torch.zeros((B,), device=device, dtype=torch.float32)
-        best_reward = torch.zeros((B,), device=device, dtype=torch.float32)
-        best_source_code = torch.zeros((B,), device=device, dtype=torch.long)
+        best_raw_reward = torch.zeros((B,), device=device, dtype=torch.float32)
+        best_valid_reward = torch.zeros((B,), device=device, dtype=torch.float32)
+        best_selected_reward = torch.zeros((B,), device=device, dtype=torch.float32)
+        best_raw_source_code = torch.zeros((B,), device=device, dtype=torch.long)
+        best_valid_source_code = torch.zeros((B,), device=device, dtype=torch.long)
+        best_selected_source_code = torch.zeros((B,), device=device, dtype=torch.long)
+        has_valid_candidate = torch.zeros((B,), device=device, dtype=torch.bool)
+        fallback_candidate = torch.zeros((B,), device=device, dtype=torch.bool)
         for b, record in enumerate(records):
             candidates_np = np.asarray(record["candidates"], dtype=np.float32)
             if candidates_np.ndim != 3 or candidates_np.shape[-1] != 3:
                 raise ValueError(f"Elite buffer token={record['token']!r} has invalid candidate shape {candidates_np.shape}.")
             m = candidates_np.shape[0]
+            sources = [str(source) for source in record["sources"]]
             selected_trajs[b, :m] = torch.from_numpy(candidates_np).to(device=device, dtype=dtype)
             selected_rewards[b, :m] = torch.as_tensor(record["rewards"], device=device, dtype=torch.float32)
             selected_anchor_distance[b, :m] = torch.as_tensor(record["anchor_distance"], device=device, dtype=torch.float32)
             selected_real_mask[b, :m] = True
-            selected_valid_mask[b, :m] = True
             for key in REQUIRED_COMPONENT_KEYS:
                 selected_components[key][b, :m] = torch.as_tensor(
                     record["components"][key],
                     device=device,
                     dtype=torch.float32,
                 )
-            source_codes = [self._source_code(source) for source in record["sources"]]
+            if "valid_mask" in record:
+                valid_mask = torch.as_tensor(record["valid_mask"], device=device, dtype=torch.bool)
+            elif bool(cfg.allow_v1_buffer_recompute_valid_mask):
+                row_components = {
+                    key: selected_components[key][b : b + 1, :m]
+                    for key in REQUIRED_COMPONENT_KEYS
+                }
+                valid_mask = self._compute_awac_candidate_valid_mask(row_components, sources, cfg)[0][0]
+            elif bool(cfg.require_buffer_valid_mask):
+                raise KeyError(
+                    f"Elite buffer token={record['token']!r} is missing valid_mask. "
+                    "Rebuild v2 buffer or set allow_v1_buffer_recompute_valid_mask=True."
+                )
+            else:
+                valid_mask = torch.zeros((m,), device=device, dtype=torch.bool)
+            selected_valid_mask[b, :m] = valid_mask
+
+            if "selection_score" in record:
+                selection_score = torch.as_tensor(record["selection_score"], device=device, dtype=torch.float32)
+            else:
+                trajs = selected_trajs[b : b + 1, :m].float()
+                jerk = self._trajectory_jerk_penalty(trajs)[0].to(device=device, dtype=torch.float32)
+                selection_score = (
+                    selected_rewards[b, :m]
+                    - float(cfg.prior_distance_weight) * selected_anchor_distance[b, :m]
+                    - float(cfg.jerk_penalty_weight) * jerk
+                )
+            selected_selection_score[b, :m] = selection_score
+            selected_source_index[b, :m] = torch.arange(m, device=device, dtype=torch.long)
+            source_codes = [self._source_code(source) for source in sources]
             selected_source_code[b, :m] = torch.tensor(source_codes, device=device, dtype=torch.long)
             gt_reward[b] = float(record["gt_reward"])
             il_reward[b] = float(record["il_reward"])
-            best_reward[b] = float(record["best_reward"])
-            best_source_code[b] = self._source_code(record.get("best_source", "other"))
+            has_valid = bool(record.get("has_valid_candidate", bool(valid_mask.any().detach().cpu().item())))
+            has_valid_candidate[b] = has_valid
+            fallback_candidate[b] = not has_valid
+            raw_idx = int(selected_rewards[b, :m].argmax().item())
+            if bool(valid_mask.any().item()):
+                valid_rewards = selected_rewards[b, :m].masked_fill(~valid_mask, -torch.inf)
+                valid_idx = int(valid_rewards.argmax().item())
+            else:
+                valid_idx = raw_idx
+            selected_idx = raw_idx
+            best_raw_reward[b] = float(record.get("best_raw_reward", float(selected_rewards[b, raw_idx].item())))
+            best_valid_reward[b] = float(record.get("best_valid_reward", float(selected_rewards[b, valid_idx].item())))
+            best_selected_reward[b] = float(record.get("best_selected_reward", float(selected_rewards[b, selected_idx].item())))
+            best_raw_source_code[b] = self._source_code(record.get("best_raw_source", sources[raw_idx]))
+            best_valid_source_code[b] = self._source_code(record.get("best_valid_source", sources[valid_idx]))
+            best_selected_source_code[b] = self._source_code(record.get("best_selected_source", sources[selected_idx]))
+        valid_real = selected_valid_mask & selected_real_mask
+        real_count = selected_real_mask.float().sum().clamp(min=1.0)
         return {
             "selected_trajs": selected_trajs,
             "selected_rewards": selected_rewards,
             "selected_components": selected_components,
             "selected_anchor_distance": selected_anchor_distance,
+            "selected_selection_score": selected_selection_score,
             "selected_valid_mask": selected_valid_mask,
             "selected_real_mask": selected_real_mask,
             "selected_source_code": selected_source_code,
-            "valid_candidate_ratio": selected_real_mask.float().mean(),
-            "fallback_candidate_ratio": selected_real_mask.new_zeros(()).float(),
+            "selected_source_index": selected_source_index,
+            "valid_candidate_ratio": valid_real.float().sum() / real_count,
+            "has_valid_candidate_ratio": has_valid_candidate.float().mean(),
+            "fallback_candidate_ratio": fallback_candidate.float().mean(),
+            "fallback_candidate": fallback_candidate,
+            "has_valid_candidate": has_valid_candidate,
             "gt_reward": gt_reward,
             "il_reward": il_reward,
-            "best_reward": best_reward,
-            "best_source_code": best_source_code,
+            "best_raw_reward": best_raw_reward,
+            "best_valid_reward": best_valid_reward,
+            "best_selected_reward": best_selected_reward,
+            "best_raw_source_code": best_raw_source_code,
+            "best_valid_source_code": best_valid_source_code,
+            "best_selected_source_code": best_selected_source_code,
+            "best_reward": best_valid_reward,
+            "best_source_code": best_valid_source_code,
         }
 
     def _build_online_awac_candidates(
@@ -3976,7 +4291,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError(
                 f"AWAC candidate shape/source mismatch: candidates={tuple(candidates.shape)} sources={len(sources)}."
             )
-        rewards, components = self._score_candidate_trajectories(candidates, [str(token) for token in tokens_list], metric_cache)
+        rewards, components = self._score_candidate_trajectories(
+            candidates,
+            [str(token) for token in tokens_list],
+            metric_cache,
+            cfg,
+        )
         gt_idx = sources.index("gt") if "gt" in sources else None
         il_idx = sources.index("il") if "il" in sources else None
         gt_reward = rewards[:, gt_idx] if gt_idx is not None else rewards.max(dim=1).values
@@ -4028,7 +4348,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         gt_reward = awac_batch["gt_reward"]
         il_reward = awac_batch["il_reward"]
         baseline = self._compute_iql_baseline(selected_rewards, gt_reward, il_reward, cfg, selected_real_mask)
-        weights, advantages = self._compute_awac_weights(
+        weights, advantages, weight_diag = self._compute_awac_weights(
             selected_rewards,
             baseline,
             cfg,
@@ -4077,7 +4397,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         denom = real_f.sum().clamp(min=1.0)
         selected_reward_mean = (selected_rewards.to(total_loss) * real_f).sum() / denom
         selected_reward_max = selected_rewards.masked_fill(~selected_real_mask, -torch.inf).max().to(total_loss)
-        best_reward = awac_batch["best_reward"].to(total_loss)
+        best_raw_reward = awac_batch["best_raw_reward"].to(total_loss)
+        best_valid_reward = awac_batch["best_valid_reward"].to(total_loss)
+        best_selected_reward = awac_batch["best_selected_reward"].to(total_loss)
+        best_reward = best_valid_reward
         weight_real = weights[selected_real_mask]
         adv_real = advantages[selected_real_mask]
         if weight_real.numel() == 0:
@@ -4098,8 +4421,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         pct_candidates_above_gt = pct_candidates_above_gt / selected_real_mask.float().sum().clamp(min=1.0)
         pct_candidates_above_il = ((selected_rewards > il_reward[:, None]) & selected_real_mask).float().sum()
         pct_candidates_above_il = pct_candidates_above_il / selected_real_mask.float().sum().clamp(min=1.0)
-        pct_best_above_gt = (best_reward > gt_reward.to(best_reward)).float().mean()
-        pct_best_above_il = (best_reward > il_reward.to(best_reward)).float().mean()
+        pct_best_raw_above_gt = (best_raw_reward > gt_reward.to(best_raw_reward)).float().mean()
+        pct_best_valid_above_gt = (best_valid_reward > gt_reward.to(best_valid_reward)).float().mean()
+        pct_best_selected_above_gt = (best_selected_reward > gt_reward.to(best_selected_reward)).float().mean()
+        pct_best_valid_above_il = (best_valid_reward > il_reward.to(best_valid_reward)).float().mean()
+        pct_best_above_gt = pct_best_valid_above_gt
+        pct_best_above_il = pct_best_valid_above_il
+        selected_valid_ratio = (
+            ((selected_valid_mask & selected_real_mask).float().sum())
+            / selected_real_mask.float().sum().clamp(min=1.0)
+        ).to(total_loss)
 
         zero = total_loss.new_zeros(())
         return BatchFeature(data={
@@ -4116,9 +4447,22 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "reward_max": selected_reward_max.detach(),
             "gt_reward_mean": gt_reward.mean().to(total_loss).detach(),
             "il_reward_mean": il_reward.mean().to(total_loss).detach(),
+            "best_raw_reward_mean": best_raw_reward.mean().detach(),
+            "best_valid_reward_mean": best_valid_reward.mean().detach(),
+            "best_selected_reward_mean": best_selected_reward.mean().detach(),
+            "best_raw_minus_gt_mean": (best_raw_reward - gt_reward.to(best_raw_reward)).mean().detach(),
+            "best_valid_minus_gt_mean": (best_valid_reward - gt_reward.to(best_valid_reward)).mean().detach(),
+            "best_selected_minus_gt_mean": (best_selected_reward - gt_reward.to(best_selected_reward)).mean().detach(),
+            "best_raw_minus_il_mean": (best_raw_reward - il_reward.to(best_raw_reward)).mean().detach(),
+            "best_valid_minus_il_mean": (best_valid_reward - il_reward.to(best_valid_reward)).mean().detach(),
+            "best_selected_minus_il_mean": (best_selected_reward - il_reward.to(best_selected_reward)).mean().detach(),
             "best_reward_mean": best_reward.mean().detach(),
             "best_minus_gt_mean": (best_reward - gt_reward.to(best_reward)).mean().detach(),
             "best_minus_il_mean": (best_reward - il_reward.to(best_reward)).mean().detach(),
+            "pct_best_raw_above_gt": pct_best_raw_above_gt.to(total_loss).detach(),
+            "pct_best_valid_above_gt": pct_best_valid_above_gt.to(total_loss).detach(),
+            "pct_best_selected_above_gt": pct_best_selected_above_gt.to(total_loss).detach(),
+            "pct_best_valid_above_il": pct_best_valid_above_il.to(total_loss).detach(),
             "pct_best_above_gt": pct_best_above_gt.to(total_loss).detach(),
             "pct_best_above_il": pct_best_above_il.to(total_loss).detach(),
             "pct_candidates_above_gt": pct_candidates_above_gt.to(total_loss).detach(),
@@ -4129,10 +4473,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "awac_weight_max": weight_real.max().to(total_loss).detach(),
             "awac_advantage_mean": adv_real.mean().to(total_loss).detach(),
             "awac_advantage_max": adv_real.max().to(total_loss).detach(),
+            "empty_awac_row_ratio": weight_diag["empty_awac_row_ratio"].to(total_loss).detach(),
+            "positive_weight_row_ratio": weight_diag["positive_weight_row_ratio"].to(total_loss).detach(),
+            "positive_weight_candidate_ratio": weight_diag["positive_weight_candidate_ratio"].to(total_loss).detach(),
+            "has_valid_candidate_ratio": awac_batch["has_valid_candidate_ratio"].to(total_loss).detach(),
             "valid_candidate_ratio": awac_batch["valid_candidate_ratio"].to(total_loss).detach(),
-            "selected_valid_ratio": (
-                valid_f.sum() / selected_real_mask.float().sum().clamp(min=1.0)
-            ).to(total_loss).detach(),
+            "selected_valid_ratio": selected_valid_ratio.detach(),
             "fallback_candidate_ratio": awac_batch["fallback_candidate_ratio"].to(total_loss).detach(),
             "selected_nc_mean": comp_mean("no_at_fault_collisions").detach(),
             "selected_dac_mean": comp_mean("drivable_area_compliance").detach(),
@@ -4151,6 +4497,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "awac_target_norm_mean": awac_diag["target_norm_mean"].detach(),
             "awac_effective_weight_sum": awac_diag["effective_weight_sum"].detach(),
             "awac_zero_weight_ratio": awac_diag["zero_weight_ratio"].detach(),
+            "awac_zero_weight_batch": awac_diag["zero_weight_batch"].detach(),
         })
 
     def forward_grpo(
@@ -4395,6 +4742,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         tokens_list,
         cache_dict,
         return_components: bool = False,
+        strict_submetrics: bool = False,
+        required_submetrics: Optional[tuple[str, ...]] = None,
+        missing_submetric_policy: str = "warn_default",
     ) -> Union[torch.Tensor, tuple[torch.Tensor, Dict[str, torch.Tensor]]]:
         """Calculates PDM scores for a batch of predicted trajectories."""
         pred_np = pred_traj.detach().cpu().numpy()
@@ -4409,7 +4759,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 simulator=self.simulator,
                 scorer=self.train_scorer,
             )
-            component_rows.append(self._extract_pdm_components(pdm_result))
+            component_rows.append(
+                self._extract_pdm_components(
+                    pdm_result,
+                    strict_submetrics=strict_submetrics,
+                    required_submetrics=required_submetrics,
+                    missing_policy=missing_submetric_policy,
+                )
+            )
 
         component_keys = (
             "pdms",

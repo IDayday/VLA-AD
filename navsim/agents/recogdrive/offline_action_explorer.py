@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List, Sequence, Tuple
+from typing import Any, List, Optional, Sequence, Tuple
 
 import torch
 import torch.nn.functional as F
@@ -138,10 +138,20 @@ def generate_delay(anchor: torch.Tensor, strengths: Sequence[float]) -> torch.Te
 def smooth_trajectory(traj: torch.Tensor) -> torch.Tensor:
     if traj.shape[-2] < 3:
         return traj
-    flat = traj.reshape(-1, traj.shape[-2], traj.shape[-1]).transpose(1, 2)
-    padded = F.pad(flat, (1, 1), mode="replicate")
-    smoothed = F.avg_pool1d(padded, kernel_size=3, stride=1).transpose(1, 2)
-    smoothed = smoothed.reshape_as(traj)
+    xy_flat = traj[..., :2].reshape(-1, traj.shape[-2], 2).transpose(1, 2)
+    xy_padded = F.pad(xy_flat, (1, 1), mode="replicate")
+    xy_smoothed = F.avg_pool1d(xy_padded, kernel_size=3, stride=1).transpose(1, 2)
+
+    heading = traj[..., 2]
+    sin_flat = torch.sin(heading).reshape(-1, traj.shape[-2]).unsqueeze(1)
+    cos_flat = torch.cos(heading).reshape(-1, traj.shape[-2]).unsqueeze(1)
+    sin_smooth = F.avg_pool1d(F.pad(sin_flat, (1, 1), mode="replicate"), kernel_size=3, stride=1)
+    cos_smooth = F.avg_pool1d(F.pad(cos_flat, (1, 1), mode="replicate"), kernel_size=3, stride=1)
+    heading_smoothed = torch.atan2(sin_smooth.squeeze(1), cos_smooth.squeeze(1))
+
+    smoothed = traj.clone()
+    smoothed[..., :2] = xy_smoothed.reshape(*traj.shape[:-1], 2)
+    smoothed[..., 2] = heading_smoothed.reshape(*traj.shape[:-1])
     smoothed[..., 0, :] = traj[..., 0, :]
     return smoothed
 
@@ -168,6 +178,20 @@ def clamp_heading_steps(traj: torch.Tensor, max_heading_step_rad: float) -> torc
     return out
 
 
+def clamp_final_heading_delta(
+    variants: torch.Tensor,
+    anchor: torch.Tensor,
+    max_delta_rad: float,
+) -> torch.Tensor:
+    if variants.numel() == 0:
+        return variants
+    out = variants.clone()
+    max_delta = float(max_delta_rad)
+    final_delta = out[:, :, -1, 2] - anchor[:, None, -1, 2]
+    out[:, :, -1, 2] = anchor[:, None, -1, 2] + final_delta.clamp(-max_delta, max_delta)
+    return clamp_heading_steps(out, max_delta)
+
+
 def clip_to_model_norm_range(traj: torch.Tensor) -> torch.Tensor:
     out = traj.clone()
     out[..., 0].clamp_(-1.57, 65.17)
@@ -176,10 +200,16 @@ def clip_to_model_norm_range(traj: torch.Tensor) -> torch.Tensor:
     return out
 
 
-def _repair_candidates(candidates: torch.Tensor, cfg: Any) -> torch.Tensor:
+def _repair_candidates(candidates: torch.Tensor, cfg: Any, anchor: Optional[torch.Tensor] = None) -> torch.Tensor:
     if candidates.numel() == 0:
         return candidates
     out = smooth_trajectory(candidates)
+    if anchor is not None and bool(getattr(cfg, "use_final_heading_guard", True)):
+        out = clamp_final_heading_delta(
+            out,
+            anchor,
+            float(getattr(cfg, "max_final_heading_delta_rad", 0.4)),
+        )
     if bool(getattr(cfg, "enforce_forward_monotonic_x", True)):
         out = enforce_forward_monotonic_x(out)
     out = clamp_heading_steps(out, float(getattr(cfg, "max_heading_step_rad", 0.25)))
@@ -195,9 +225,11 @@ def _append_variants(
     variants: torch.Tensor,
     source: str,
     anchor: torch.Tensor,
+    cfg: Any,
 ) -> None:
     if variants.shape[1] == 0:
         return
+    variants = _repair_candidates(variants, cfg, anchor)
     groups.append(variants)
     sources.extend([source] * variants.shape[1])
     dist = torch.linalg.norm(variants[..., :2] - anchor[:, None, :, :2], dim=-1).mean(dim=-1)
@@ -228,6 +260,7 @@ def build_structured_perturbations(
                 generate_endpoint_extension(anchor, getattr(cfg, "progress_endpoint_deltas_m", ())),
                 "progress_endpoint",
                 anchor,
+                cfg,
             )
             _append_variants(
                 groups,
@@ -236,6 +269,7 @@ def build_structured_perturbations(
                 generate_speed_scale(anchor, getattr(cfg, "progress_speed_scales", ())),
                 "progress_speed",
                 anchor,
+                cfg,
             )
             _append_variants(
                 groups,
@@ -244,6 +278,7 @@ def build_structured_perturbations(
                 generate_time_gamma(anchor, getattr(cfg, "progress_time_gammas", ())),
                 "progress_gamma",
                 anchor,
+                cfg,
             )
         _append_variants(
             groups,
@@ -252,6 +287,7 @@ def build_structured_perturbations(
             generate_lateral_offsets(anchor, getattr(cfg, "lateral_offsets_m", ())),
             "lateral_offset",
             anchor,
+            cfg,
         )
         _append_variants(
             groups,
@@ -260,6 +296,7 @@ def build_structured_perturbations(
             generate_endpoint_lateral_offsets(anchor, getattr(cfg, "endpoint_lateral_offsets_m", ())),
             "endpoint_lateral",
             anchor,
+            cfg,
         )
         _append_variants(
             groups,
@@ -268,6 +305,7 @@ def build_structured_perturbations(
             generate_slow_first(anchor, getattr(cfg, "timing_slow_first_scales", ())),
             "timing_slow_first",
             anchor,
+            cfg,
         )
         _append_variants(
             groups,
@@ -276,6 +314,7 @@ def build_structured_perturbations(
             generate_delay(anchor, getattr(cfg, "timing_delay_strengths", ())),
             "timing_delay",
             anchor,
+            cfg,
         )
 
     if not groups:
@@ -283,6 +322,5 @@ def build_structured_perturbations(
         return anchors.new_empty(b, 0, h, d), [], anchors.new_empty(b, 0)
 
     candidates = torch.cat(groups, dim=1)
-    candidates = _repair_candidates(candidates, cfg)
     anchor_distance = torch.cat(distances, dim=1)
     return candidates, sources, anchor_distance
