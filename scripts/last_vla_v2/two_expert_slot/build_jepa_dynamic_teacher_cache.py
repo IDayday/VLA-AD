@@ -170,6 +170,57 @@ def load_rgb(path: Path) -> Image.Image:
     return Image.open(path).convert("RGB")
 
 
+def build_image_path_index(args: argparse.Namespace) -> Dict[str, Any]:
+    if args.image_path_index_jsonl is None:
+        raise ValueError("--image-path-index-jsonl is required with --build-image-path-index.")
+    if args.image_path_index_jsonl.exists() and not args.overwrite:
+        raise FileExistsError(f"Image path index exists: {args.image_path_index_jsonl}. Pass --overwrite to replace it.")
+    records = list(iter_indexed_records(args.input_chunk_root, pattern=args.chunk_name_pattern, max_records=args.max_samples))
+    args.image_path_index_jsonl.parent.mkdir(parents=True, exist_ok=True)
+    written = 0
+    with args.image_path_index_jsonl.open("w", encoding="utf-8") as f:
+        for order_index, (_, sample_path, record) in enumerate(records):
+            sample = load_sample(sample_path)
+            if "image_path_tensor" not in sample:
+                raise KeyError(f"Sample {sample_path} missing image_path_tensor required for V-JEPA2 extraction.")
+            token = str(sample.get("sample_token") or record.get("sample_token") or sample_path.stem)
+            row = {
+                "order_index": int(order_index),
+                "sample_token": token,
+                "sample_path": str(sample_path),
+                "image_path": decode_path_tensor(sample["image_path_tensor"]),
+                "log_name": str(sample.get("log_name") or record.get("log_name") or ""),
+                "scene_token": str(sample.get("scene_token") or record.get("scene_token") or ""),
+            }
+            f.write(json.dumps(row, sort_keys=True) + "\n")
+            written += 1
+    metadata = {
+        "version": "two_expert_jepa_image_path_index_v1",
+        "source_chunk_root": str(args.input_chunk_root),
+        "chunk_name_pattern": str(args.chunk_name_pattern),
+        "num_records": int(written),
+        "path": str(args.image_path_index_jsonl),
+    }
+    write_json(args.image_path_index_jsonl.with_suffix(".metadata.json"), metadata)
+    return metadata
+
+
+def load_image_path_index(path: Optional[Path]) -> Dict[str, str]:
+    if path is None:
+        return {}
+    mapping: Dict[str, str] = {}
+    with path.open("r", encoding="utf-8") as f:
+        for line in f:
+            if not line.strip():
+                continue
+            row = json.loads(line)
+            token = str(row.get("sample_token") or "")
+            image_path = str(row.get("image_path") or "")
+            if token and image_path:
+                mapping[token] = image_path
+    return mapping
+
+
 def _sample_sequence_indices(length: int, out_len: int) -> List[int]:
     if length <= 0:
         raise ValueError("Cannot sample an empty image sequence.")
@@ -198,7 +249,10 @@ def _future_record_indices(
     return indices
 
 
-def _sample_image_path(sample_path: Path) -> Path:
+def _sample_image_path(sample_path: Path, record: Dict[str, Any], image_path_index: Dict[str, str]) -> Path:
+    token = str(record.get("sample_token") or sample_path.stem)
+    if token in image_path_index:
+        return Path(image_path_index[token])
     sample = load_sample(sample_path)
     if "image_path_tensor" not in sample:
         raise KeyError(f"Sample {sample_path} missing image_path_tensor required for V-JEPA2 extraction.")
@@ -211,9 +265,12 @@ def extract_vjepa2_dynamic_teacher(
     records: Sequence[Tuple[Path, Path, Dict[str, Any]]],
     current_index: int,
     args: argparse.Namespace,
+    image_path_index: Dict[str, str],
 ) -> Tuple[torch.Tensor, Dict[str, Any], Dict[str, Any]]:
     source_indices = _future_record_indices(records, current_index, int(args.sequence_sample_count))
-    source_image_paths = [_sample_image_path(records[index][1]) for index in source_indices]
+    source_image_paths = [
+        _sample_image_path(records[index][1], records[index][2], image_path_index) for index in source_indices
+    ]
     frame_indices = _sample_sequence_indices(len(source_image_paths), int(args.frames_per_clip))
     frames = [load_rgb(source_image_paths[index]) for index in frame_indices]
     inputs = processor(frames, return_tensors="pt")
@@ -271,6 +328,7 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
     samples_dir = out_dir / "samples"
     samples_dir.mkdir(parents=True, exist_ok=True)
     records = list(iter_indexed_records(args.input_chunk_root, pattern=args.chunk_name_pattern, max_records=args.max_samples))
+    image_path_index = load_image_path_index(args.image_path_index_jsonl)
     model = processor = None
     if args.jepa_model_path is not None:
         model, processor = load_vjepa2(args)
@@ -280,12 +338,12 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
         if idx % int(args.num_shards) != int(args.shard_index):
             skipped += 1
             continue
-        sample = load_sample(sample_path)
+        sample = {} if model is not None else load_sample(sample_path)
         token = str(sample.get("sample_token") or record.get("sample_token") or sample_path.stem)
         scene_token = str(sample.get("scene_token") or record.get("scene_token") or "")
         log_name = sample.get("log_name") or record.get("log_name")
         if model is not None and processor is not None:
-            tokens, metadata, diagnostics = extract_vjepa2_dynamic_teacher(model, processor, records, idx, args)
+            tokens, metadata, diagnostics = extract_vjepa2_dynamic_teacher(model, processor, records, idx, args, image_path_index)
         else:
             tokens, metadata = resolve_dynamic_teacher(sample, strict_teacher=bool(args.strict_teacher))
             diagnostics = {}
@@ -411,11 +469,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--tubelet-size", type=int, default=2)
     parser.add_argument("--spatial-tokens", type=int, default=256)
     parser.add_argument("--skip-predictor", action="store_true")
+    parser.add_argument("--image-path-index-jsonl", type=Path, default=None)
+    parser.add_argument("--build-image-path-index", action="store_true")
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
+    if args.build_image_path_index:
+        print(json.dumps(build_image_path_index(args), indent=2, sort_keys=True))
+        return 0
     if args.merge:
         print(json.dumps(merge_shards(args.output_root, overwrite=args.overwrite), indent=2, sort_keys=True))
         return 0
