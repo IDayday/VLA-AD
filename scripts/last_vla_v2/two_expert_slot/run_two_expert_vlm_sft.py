@@ -112,13 +112,18 @@ class TwoExpertStage1Dataset(Dataset):
         vggt_index: Dict[str, Path],
         *,
         max_samples: Optional[int] = None,
+        chunk_name_pattern: Optional[str] = None,
         teacher_lru_size: int = 0,
         require_strict_teachers: bool = True,
         allow_minimal_prompt: bool = False,
     ) -> None:
         self.items: List[Tuple[Path, str]] = []
         teacher_tokens = set(jepa_index).intersection(vggt_index)
-        for _, sample_path, record in iter_indexed_records(base_chunk_root, max_records=max_samples):
+        for _, sample_path, record in iter_indexed_records(
+            base_chunk_root,
+            pattern=chunk_name_pattern,
+            max_records=max_samples,
+        ):
             token = str(record.get("sample_token") or sample_path.stem)
             if token in teacher_tokens:
                 self.items.append((sample_path, token))
@@ -345,6 +350,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--vlm-path", type=Path, required=True)
     parser.add_argument("--vlm-type", default="internvl")
+    parser.add_argument("--chunk-name-pattern", default=None)
     parser.add_argument("--train-mode", choices=("frozen", "lora", "top_layers", "full"), default="lora")
     parser.add_argument("--allow-full-vlm-sft", action="store_true")
     parser.add_argument("--top-layers", type=int, default=2)
@@ -410,6 +416,7 @@ def main() -> int:
         jepa_index,
         vggt_index,
         max_samples=args.max_samples,
+        chunk_name_pattern=args.chunk_name_pattern,
         teacher_lru_size=int(args.teacher_lru_size),
         require_strict_teachers=not bool(args.allow_dev_fallback_teachers),
         allow_minimal_prompt=bool(args.allow_minimal_prompt),

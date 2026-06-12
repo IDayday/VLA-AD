@@ -6,9 +6,11 @@ import json
 import os
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 import torch
+from PIL import Image
+from transformers import AutoModel, AutoVideoProcessor
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 if str(REPO_ROOT) not in sys.path:
@@ -22,7 +24,16 @@ from scripts.last_vla_v2.two_expert_slot.two_expert_cache_utils import (  # noqa
 
 
 PACKER_VERSION = "two_expert_jepa_dynamic_packer_v1"
-PRODUCTION_EXTRACTOR_IMPLEMENTED = False
+PRODUCTION_EXTRACTOR_IMPLEMENTED = True
+
+
+def decode_path_tensor(path_tensor: torch.Tensor) -> str:
+    chars = []
+    for item in path_tensor.detach().cpu().view(-1):
+        value = int(item.item())
+        if value:
+            chars.append(chr(value))
+    return "".join(chars)
 
 
 def _as_feature_tensor(value: Any, key: str) -> torch.Tensor:
@@ -45,6 +56,41 @@ def pack_legacy_jepa_tokens(tokens: torch.Tensor) -> torch.Tensor:
         raise ValueError(f"Need at least 36 legacy JEPA tokens to pack [3,12,1024], got {tokens.shape[0]}.")
     indices = torch.linspace(0, tokens.shape[0] - 1, steps=36).round().long()
     return tokens.index_select(0, indices).reshape(3, 12, 1024).contiguous()
+
+
+def pack_vjepa_hidden_to_dynamic_tokens(
+    hidden: torch.Tensor,
+    *,
+    num_dyn_groups: int = 3,
+    tokens_per_group: int = 12,
+    frames_per_clip: int = 64,
+    tubelet_size: int = 2,
+    spatial_tokens: int = 256,
+) -> torch.Tensor:
+    hidden = _as_feature_tensor(hidden, "vjepa2_last_hidden_state")
+    if hidden.ndim == 3:
+        if hidden.shape[0] != 1:
+            raise ValueError(f"Expected batch size 1 V-JEPA hidden state, got {tuple(hidden.shape)}.")
+        hidden = hidden[0]
+    if hidden.ndim != 2 or hidden.shape[-1] != 1024:
+        raise ValueError(f"V-JEPA hidden state must have shape [N,1024], got {tuple(hidden.shape)}.")
+    temporal_tokens = int(frames_per_clip) // int(tubelet_size)
+    expected_tokens = temporal_tokens * int(spatial_tokens)
+    if hidden.shape[0] < expected_tokens:
+        raise ValueError(
+            f"V-JEPA hidden state has too few tokens: {hidden.shape[0]} < expected {expected_tokens} "
+            f"({temporal_tokens} temporal x {spatial_tokens} spatial)."
+        )
+    hidden = hidden[:expected_tokens].reshape(temporal_tokens, int(spatial_tokens), 1024)
+    groups: List[torch.Tensor] = []
+    for group_idx in range(int(num_dyn_groups)):
+        t_start = int(round(group_idx * temporal_tokens / int(num_dyn_groups)))
+        t_end = int(round((group_idx + 1) * temporal_tokens / int(num_dyn_groups)))
+        t_end = max(t_start + 1, min(t_end, temporal_tokens))
+        group_tokens = hidden[t_start:t_end].reshape(-1, 1024)
+        indices = torch.linspace(0, group_tokens.shape[0] - 1, steps=int(tokens_per_group)).round().long()
+        groups.append(group_tokens.index_select(0, indices))
+    return torch.stack(groups, dim=0).contiguous()
 
 
 def resolve_dynamic_teacher(sample: Dict[str, Any], *, strict_teacher: bool) -> Tuple[torch.Tensor, Dict[str, Any]]:
@@ -97,6 +143,119 @@ def resolve_dynamic_teacher(sample: Dict[str, Any], *, strict_teacher: bool) -> 
     }
 
 
+def load_vjepa2(args: argparse.Namespace):
+    dtype = {
+        "bf16": torch.bfloat16,
+        "fp16": torch.float16,
+        "fp32": torch.float32,
+    }[str(args.precision)]
+    model = AutoModel.from_pretrained(
+        args.jepa_model_path,
+        local_files_only=True,
+        trust_remote_code=True,
+        torch_dtype=dtype,
+    ).eval()
+    model.to(torch.device(args.device))
+    processor = AutoVideoProcessor.from_pretrained(
+        args.jepa_model_path,
+        local_files_only=True,
+        trust_remote_code=True,
+    )
+    return model, processor
+
+
+def load_rgb(path: Path) -> Image.Image:
+    if not path.is_file():
+        raise FileNotFoundError(f"Image path does not exist: {path}")
+    return Image.open(path).convert("RGB")
+
+
+def _sample_sequence_indices(length: int, out_len: int) -> List[int]:
+    if length <= 0:
+        raise ValueError("Cannot sample an empty image sequence.")
+    if length == 1:
+        return [0] * int(out_len)
+    return torch.linspace(0, length - 1, steps=int(out_len)).round().long().tolist()
+
+
+def _future_record_indices(
+    records: Sequence[Tuple[Path, Path, Dict[str, Any]]],
+    current_index: int,
+    sequence_sample_count: int,
+) -> List[int]:
+    current = records[current_index][2]
+    current_log = str(current.get("log_name") or "")
+    indices = [current_index]
+    cursor = current_index + 1
+    while cursor < len(records) and len(indices) < int(sequence_sample_count):
+        record = records[cursor][2]
+        if current_log and str(record.get("log_name") or "") != current_log:
+            break
+        indices.append(cursor)
+        cursor += 1
+    while len(indices) < int(sequence_sample_count):
+        indices.append(indices[-1])
+    return indices
+
+
+def _sample_image_path(sample_path: Path) -> Path:
+    sample = load_sample(sample_path)
+    if "image_path_tensor" not in sample:
+        raise KeyError(f"Sample {sample_path} missing image_path_tensor required for V-JEPA2 extraction.")
+    return Path(decode_path_tensor(sample["image_path_tensor"]))
+
+
+def extract_vjepa2_dynamic_teacher(
+    model,
+    processor,
+    records: Sequence[Tuple[Path, Path, Dict[str, Any]]],
+    current_index: int,
+    args: argparse.Namespace,
+) -> Tuple[torch.Tensor, Dict[str, Any], Dict[str, Any]]:
+    source_indices = _future_record_indices(records, current_index, int(args.sequence_sample_count))
+    source_image_paths = [_sample_image_path(records[index][1]) for index in source_indices]
+    frame_indices = _sample_sequence_indices(len(source_image_paths), int(args.frames_per_clip))
+    frames = [load_rgb(source_image_paths[index]) for index in frame_indices]
+    inputs = processor(frames, return_tensors="pt")
+    pixel_values = inputs["pixel_values_videos"].to(device=torch.device(args.device))
+    if str(args.precision) == "bf16":
+        pixel_values = pixel_values.to(dtype=torch.bfloat16)
+    elif str(args.precision) == "fp16":
+        pixel_values = pixel_values.to(dtype=torch.float16)
+    else:
+        pixel_values = pixel_values.to(dtype=torch.float32)
+    with torch.no_grad():
+        output = model(pixel_values_videos=pixel_values, skip_predictor=bool(args.skip_predictor))
+    hidden = output.last_hidden_state.detach().float().cpu()
+    tokens = pack_vjepa_hidden_to_dynamic_tokens(
+        hidden,
+        frames_per_clip=int(args.frames_per_clip),
+        tubelet_size=int(args.tubelet_size),
+        spatial_tokens=int(args.spatial_tokens),
+    )
+    metadata = {
+        "teacher_type": "jepa_dynamic",
+        "teacher_source": "vjepa2_index_order_future_sequence",
+        "strict_dynamic_teacher": True,
+        "num_dyn_groups": 3,
+        "tokens_per_group": 12,
+        "feature_dim": 1024,
+        "horizon_definition": "short_mid_long_from_base_index_order_future_front_camera_frames",
+        "vjepa_model_path": str(args.jepa_model_path),
+        "frames_per_clip": int(args.frames_per_clip),
+        "sequence_sample_count": int(args.sequence_sample_count),
+        "tubelet_size": int(args.tubelet_size),
+        "spatial_tokens": int(args.spatial_tokens),
+        "packer_version": PACKER_VERSION,
+    }
+    diagnostics = {
+        "source_image_paths": [str(path) for path in source_image_paths],
+        "frame_indices": [int(item) for item in frame_indices],
+        "vjepa_last_hidden_shape": list(hidden.shape),
+    }
+    return tokens, metadata, diagnostics
+
+
 def output_dir_for_shard(output_root: Path, shard_index: int) -> Path:
     return output_root / "shards" / f"shard_{int(shard_index):05d}"
 
@@ -111,11 +270,13 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
         raise FileExistsError(f"Output shard exists: {out_dir}. Pass --overwrite to replace it.")
     samples_dir = out_dir / "samples"
     samples_dir.mkdir(parents=True, exist_ok=True)
+    records = list(iter_indexed_records(args.input_chunk_root, pattern=args.chunk_name_pattern, max_records=args.max_samples))
+    model = processor = None
+    if args.jepa_model_path is not None:
+        model, processor = load_vjepa2(args)
     rows: List[Dict[str, Any]] = []
     written = skipped = fallback_count = strict_count = 0
-    for idx, (_, sample_path, record) in enumerate(
-        iter_indexed_records(args.input_chunk_root, pattern=args.chunk_name_pattern, max_records=args.max_samples)
-    ):
+    for idx, (_, sample_path, record) in enumerate(records):
         if idx % int(args.num_shards) != int(args.shard_index):
             skipped += 1
             continue
@@ -123,7 +284,11 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
         token = str(sample.get("sample_token") or record.get("sample_token") or sample_path.stem)
         scene_token = str(sample.get("scene_token") or record.get("scene_token") or "")
         log_name = sample.get("log_name") or record.get("log_name")
-        tokens, metadata = resolve_dynamic_teacher(sample, strict_teacher=bool(args.strict_teacher))
+        if model is not None and processor is not None:
+            tokens, metadata, diagnostics = extract_vjepa2_dynamic_teacher(model, processor, records, idx, args)
+        else:
+            tokens, metadata = resolve_dynamic_teacher(sample, strict_teacher=bool(args.strict_teacher))
+            diagnostics = {}
         strict_count += int(bool(metadata["strict_dynamic_teacher"]))
         fallback_count += int(not bool(metadata["strict_dynamic_teacher"]))
         payload: Dict[str, Any] = {
@@ -131,6 +296,8 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
             "jepa_dynamic_teacher_tokens": tokens,
             "jepa_dynamic_teacher_metadata": metadata,
         }
+        if diagnostics:
+            payload["jepa_dynamic_teacher_diagnostics"] = diagnostics
         if scene_token:
             payload["scene_token"] = scene_token
         if log_name:
@@ -149,7 +316,7 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
             f.write(json.dumps(row, sort_keys=True) + "\n")
     metadata = {
         "version": "two_expert_jepa_dynamic_teacher_cache_v1",
-        "builder_mode": "existing_feature_repack",
+        "builder_mode": "vjepa2_model_extraction" if args.jepa_model_path is not None else "existing_feature_repack",
         "production_extractor_implemented": PRODUCTION_EXTRACTOR_IMPLEMENTED,
         "route_status": "production_teacher_ok" if fallback_count == 0 else "dev_fallback_not_for_final",
         "split": str(args.split),
@@ -165,6 +332,7 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
         "num_skipped_by_shard": int(skipped),
         "shard_index": int(args.shard_index),
         "num_shards": int(args.num_shards),
+        "jepa_model_path": str(args.jepa_model_path) if args.jepa_model_path is not None else None,
         "packer_version": PACKER_VERSION,
     }
     write_json(out_dir / "metadata.json", metadata)
@@ -199,11 +367,16 @@ def merge_shards(output_root: Path, *, overwrite: bool = False) -> Dict[str, Any
     with index_path.open("w", encoding="utf-8") as f:
         for row in rows:
             f.write(json.dumps(row, sort_keys=True) + "\n")
+    builder_modes = sorted({str(item.get("builder_mode", "unknown")) for item in metadata_items})
+    jepa_model_paths = sorted(
+        {str(item.get("jepa_model_path")) for item in metadata_items if item.get("jepa_model_path") is not None}
+    )
     metadata = {
         "version": "two_expert_jepa_dynamic_teacher_cache_v1",
         "merged": True,
-        "builder_mode": "existing_feature_repack",
-        "production_extractor_implemented": PRODUCTION_EXTRACTOR_IMPLEMENTED,
+        "builder_mode": builder_modes[0] if len(builder_modes) == 1 else "mixed",
+        "builder_modes": builder_modes,
+        "production_extractor_implemented": any(bool(item.get("production_extractor_implemented")) for item in metadata_items),
         "route_status": "production_teacher_ok"
         if sum(int(item.get("num_legacy_fallback", 0)) for item in metadata_items) == 0
         else "dev_fallback_not_for_final",
@@ -211,6 +384,7 @@ def merge_shards(output_root: Path, *, overwrite: bool = False) -> Dict[str, Any
         "num_shards": len(metadata_items),
         "num_legacy_fallback": sum(int(item.get("num_legacy_fallback", 0)) for item in metadata_items),
         "num_strict_teacher": sum(int(item.get("num_strict_teacher", 0)) for item in metadata_items),
+        "jepa_model_paths": jepa_model_paths,
         "packer_version": PACKER_VERSION,
     }
     write_json(output_root / "metadata.json", metadata)
@@ -230,17 +404,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--max-samples", type=int, default=None)
     parser.add_argument("--merge", action="store_true")
+    parser.add_argument("--device", default="cuda")
+    parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="bf16")
+    parser.add_argument("--frames-per-clip", type=int, default=64)
+    parser.add_argument("--sequence-sample-count", type=int, default=8)
+    parser.add_argument("--tubelet-size", type=int, default=2)
+    parser.add_argument("--spatial-tokens", type=int, default=256)
+    parser.add_argument("--skip-predictor", action="store_true")
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    if args.jepa_model_path is not None:
-        raise NotImplementedError(
-            "build_jepa_dynamic_teacher_cache.py does not extract JEPA features from --jepa-model-path yet. "
-            "It only repacks existing jepa_dynamic_teacher_tokens/multi_horizon_jepa_tokens or legacy "
-            "jepa_target_tokens. Use a strict cache with existing production tokens, or implement the model extractor."
-        )
     if args.merge:
         print(json.dumps(merge_shards(args.output_root, overwrite=args.overwrite), indent=2, sort_keys=True))
         return 0
