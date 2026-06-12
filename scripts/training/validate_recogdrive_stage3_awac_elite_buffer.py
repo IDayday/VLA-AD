@@ -3,11 +3,15 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import sys
 from collections import Counter
 from pathlib import Path
 from typing import Any, Dict, Iterable
 
 import numpy as np
+
+REPO_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(REPO_ROOT))
 
 from navsim.agents.recogdrive.offline_rl_buffer import REQUIRED_COMPONENT_KEYS
 
