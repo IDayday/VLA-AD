@@ -314,6 +314,12 @@ def main(cfg: DictConfig) -> None:
     dry_run = _env_flag("DRY_RUN", bool(cfg.get("dry_run", False)))
     max_scenes = _env_int("MAX_SCENES", int(cfg.get("max_scenes", 0)))
     batch_size = _env_int("BATCH_SIZE", int(cfg.dataloader.params.batch_size))
+    shard_index = _env_int("SHARD_INDEX", 0)
+    shard_count = _env_int("SHARD_COUNT", 1)
+    if shard_count <= 0:
+        raise ValueError(f"SHARD_COUNT must be positive, got {shard_count}.")
+    if shard_index < 0 or shard_index >= shard_count:
+        raise ValueError(f"SHARD_INDEX must be in [0, SHARD_COUNT), got {shard_index}/{shard_count}.")
     if not _env_flag("RUN_STAGE3", False) and not _env_flag("RUN_TRAIN", False):
         out_root.mkdir(parents=True, exist_ok=True)
         (out_root / "stage3_awac_elite_buffer_dry_run.txt").write_text(
@@ -370,6 +376,16 @@ def main(cfg: DictConfig) -> None:
     dataset = _build_train_dataset(cfg, agent)
     if max_scenes > 0:
         dataset = Subset(dataset, list(range(min(max_scenes, len(dataset)))))
+    if shard_count > 1:
+        shard_indices = list(range(shard_index, len(dataset), shard_count))
+        logger.info(
+            "Applying AWAC elite buffer shard %d/%d with %d scenes from %d input scenes.",
+            shard_index,
+            shard_count,
+            len(shard_indices),
+            len(dataset),
+        )
+        dataset = Subset(dataset, shard_indices)
     dataloader_params = dict(cfg.dataloader.params)
     dataloader_params["batch_size"] = batch_size
     dataloader_params["shuffle"] = False
