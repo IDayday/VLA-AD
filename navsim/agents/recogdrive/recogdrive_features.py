@@ -597,7 +597,7 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
                 raise RuntimeError("FeatureBuilder is in online mode, but the backbone was not initialized.")
             from .utils.internvl_preprocess import load_image
             
-            pixel_values = load_image(str(cameras[-1].cam_f0.image),max_num=12).unsqueeze(0)
+            pixel_values = load_image(cameras[-1].cam_f0.image, max_num=12).unsqueeze(0)
 
             pixel_values_squeezed = pixel_values.squeeze(1)
             num_patches_list = [pv.shape[0] for pv in pixel_values_squeezed]
