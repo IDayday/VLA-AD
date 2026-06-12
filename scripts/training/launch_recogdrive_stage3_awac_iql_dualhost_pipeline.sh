@@ -23,6 +23,9 @@ TRAIN_ACCUMULATE_GRAD_BATCHES="${TRAIN_ACCUMULATE_GRAD_BATCHES:-1}"
 TRAIN_MAX_EPOCHS="${TRAIN_MAX_EPOCHS:-20}"
 TRAIN_LR="${TRAIN_LR:-1e-4}"
 TRAIN_SCHEDULER_MIN_LR="${TRAIN_SCHEDULER_MIN_LR:-1e-5}"
+LAUNCH_REMOTE_EVAL_WATCHER="${LAUNCH_REMOTE_EVAL_WATCHER:-1}"
+EVAL_POLL_SECONDS="${EVAL_POLL_SECONDS:-300}"
+EVAL_MIN_CKPT_AGE_SECONDS="${EVAL_MIN_CKPT_AGE_SECONDS:-120}"
 
 RUN_BUFFER="${RUN_BUFFER:-1}"
 RUN_TRAIN_AFTER_BUFFER="${RUN_TRAIN_AFTER_BUFFER:-1}"
@@ -45,6 +48,7 @@ mkdir -p "${OUT_ROOT}"
   echo "train_max_epochs=${TRAIN_MAX_EPOCHS}"
   echo "train_lr=${TRAIN_LR}"
   echo "train_scheduler_min_lr=${TRAIN_SCHEDULER_MIN_LR}"
+  echo "launch_remote_eval_watcher=${LAUNCH_REMOTE_EVAL_WATCHER}"
   echo "run_buffer=${RUN_BUFFER}"
   echo "run_train_after_buffer=${RUN_TRAIN_AFTER_BUFFER}"
 } > "${OUT_ROOT}/resolved_dualhost_pipeline.txt"
@@ -132,6 +136,15 @@ fi
   --strict-v2
 
 if [[ "${RUN_TRAIN_AFTER_BUFFER}" == "1" ]]; then
+  if [[ "${LAUNCH_REMOTE_EVAL_WATCHER}" == "1" ]]; then
+    eval_out="${OUT_ROOT}/remote_ckpt_eval"
+    mkdir -p "${eval_out}"
+    ssh "${REMOTE_HOST}" "cd ${REPO_ROOT@Q} && TRAIN_OUT_ROOT=${OUT_ROOT@Q}/train CHECKPOINT_ROOT=${OUT_ROOT@Q}/train/hydra EVAL_OUT_ROOT=${eval_out@Q} EVAL_RUN_NAME=${RUN_NAME@Q}_remote_ckpt_eval POLL_SECONDS=${EVAL_POLL_SECONDS@Q} MIN_CKPT_AGE_SECONDS=${EVAL_MIN_CKPT_AGE_SECONDS@Q} WAIT_FOR_FREE_GPUS=1 GPU_MAX_MEM_USED_MB=2000 GPU_MAX_UTIL=10 EXIT_WHEN_TRAINING_DONE_AND_QUEUE_EMPTY=0 setsid bash ${REPO_ROOT@Q}/scripts/evaluation/watch_stage3_checkpoints_eval_8gpu.sh > ${eval_out@Q}/watcher.log 2>&1 < /dev/null & echo \\\$! > ${eval_out@Q}/watcher.pid" \
+      > "${OUT_ROOT}/remote_eval_watcher_launch.log" 2>&1 || {
+        echo "Failed to launch remote eval watcher; see ${OUT_ROOT}/remote_eval_watcher_launch.log" >&2
+        exit 1
+      }
+  fi
   cd "${REPO_ROOT}"
   OUT_ROOT="${OUT_ROOT}/train" \
   ELITE_BUFFER_DIR="${ELITE_BUFFER_DIR}" \
