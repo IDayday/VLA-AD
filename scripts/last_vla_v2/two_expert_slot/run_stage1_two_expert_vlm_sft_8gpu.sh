@@ -22,6 +22,7 @@ cmd=(
   --teacher-cache-root "${TEACHER_CACHE_ROOT}"
   --output-dir "${OUTPUT_DIR}"
   --vlm-path "${VLM_PATH}"
+  --chunk-name-pattern "${CHUNK_NAME_PATTERN:-train_full_chunk_*,train_backfill_chunk_*,train_backfill_p1_chunk_*}"
   --vlm-type "${VLM_TYPE:-internvl}"
   --train-mode "${TRAIN_MODE:-lora}"
   --top-layers "${TOP_LAYERS:-2}"
