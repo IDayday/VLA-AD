@@ -195,6 +195,11 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_target_filter_mode: str = "none",
         offline_rl_target_top_k: int = 1,
         offline_rl_target_min_advantage: float = 0.0,
+        offline_rl_awac_timestep_sampling: str = "uniform",
+        offline_rl_preference_dpo_timestep_sampling: str = "uniform",
+        offline_rl_low_noise_timestep_frac: float = 0.35,
+        offline_rl_mid_noise_timestep_low_frac: float = 0.15,
+        offline_rl_mid_noise_timestep_high_frac: float = 0.65,
         offline_rl_component_advantage_enabled: bool = False,
         offline_rl_component_progress_weight: float = 0.05,
         offline_rl_component_safety_penalty_weight: float = 0.20,
@@ -527,6 +532,11 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_target_filter_mode = offline_rl_target_filter_mode
         self.offline_rl_target_top_k = int(offline_rl_target_top_k)
         self.offline_rl_target_min_advantage = float(offline_rl_target_min_advantage)
+        self.offline_rl_awac_timestep_sampling = offline_rl_awac_timestep_sampling
+        self.offline_rl_preference_dpo_timestep_sampling = offline_rl_preference_dpo_timestep_sampling
+        self.offline_rl_low_noise_timestep_frac = float(offline_rl_low_noise_timestep_frac)
+        self.offline_rl_mid_noise_timestep_low_frac = float(offline_rl_mid_noise_timestep_low_frac)
+        self.offline_rl_mid_noise_timestep_high_frac = float(offline_rl_mid_noise_timestep_high_frac)
         self.offline_rl_component_advantage_enabled = bool(offline_rl_component_advantage_enabled)
         self.offline_rl_component_progress_weight = float(offline_rl_component_progress_weight)
         self.offline_rl_component_safety_penalty_weight = float(offline_rl_component_safety_penalty_weight)
@@ -1049,6 +1059,11 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.target_filter_mode = self.offline_rl_target_filter_mode
         offline_cfg.target_top_k = self.offline_rl_target_top_k
         offline_cfg.target_min_advantage = self.offline_rl_target_min_advantage
+        offline_cfg.awac_timestep_sampling = self.offline_rl_awac_timestep_sampling
+        offline_cfg.preference_dpo_timestep_sampling = self.offline_rl_preference_dpo_timestep_sampling
+        offline_cfg.low_noise_timestep_frac = self.offline_rl_low_noise_timestep_frac
+        offline_cfg.mid_noise_timestep_low_frac = self.offline_rl_mid_noise_timestep_low_frac
+        offline_cfg.mid_noise_timestep_high_frac = self.offline_rl_mid_noise_timestep_high_frac
         offline_cfg.component_advantage_enabled = self.offline_rl_component_advantage_enabled
         offline_cfg.component_progress_weight = self.offline_rl_component_progress_weight
         offline_cfg.component_safety_penalty_weight = self.offline_rl_component_safety_penalty_weight

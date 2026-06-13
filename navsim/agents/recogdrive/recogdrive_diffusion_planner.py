@@ -260,6 +260,11 @@ class OfflineRLConfig:
     target_filter_mode: Literal["none", "topk", "positive_advantage", "topk_positive"] = "none"
     target_top_k: int = 1
     target_min_advantage: float = 0.0
+    awac_timestep_sampling: Literal["uniform", "ddim", "low_noise", "mid_noise"] = "uniform"
+    preference_dpo_timestep_sampling: Literal["uniform", "ddim", "low_noise", "mid_noise"] = "uniform"
+    low_noise_timestep_frac: float = 0.35
+    mid_noise_timestep_low_frac: float = 0.15
+    mid_noise_timestep_high_frac: float = 0.65
 
     # component-aware advantage shaping
     component_advantage_enabled: bool = False
@@ -1005,6 +1010,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.target_top_k must be positive.")
         if float(cfg.target_min_advantage) < 0.0:
             raise ValueError("offline_rl_cfg.target_min_advantage must be non-negative.")
+        for name in ("awac_timestep_sampling", "preference_dpo_timestep_sampling"):
+            if str(getattr(cfg, name)) not in {"uniform", "ddim", "low_noise", "mid_noise"}:
+                raise ValueError(f"offline_rl_cfg.{name} must be uniform, ddim, low_noise, or mid_noise.")
+        if not (0.0 < float(cfg.low_noise_timestep_frac) <= 1.0):
+            raise ValueError("offline_rl_cfg.low_noise_timestep_frac must be in (0, 1].")
+        if not (0.0 <= float(cfg.mid_noise_timestep_low_frac) < float(cfg.mid_noise_timestep_high_frac) <= 1.0):
+            raise ValueError(
+                "offline_rl_cfg.mid_noise_timestep_low_frac/high_frac must satisfy 0 <= low < high <= 1."
+            )
         if float(cfg.component_advantage_clip_min) > float(cfg.component_advantage_clip_max):
             raise ValueError("offline_rl_cfg.component_advantage_clip_min must be <= component_advantage_clip_max.")
         if not (0.0 <= float(cfg.source_balance_min_factor) <= float(cfg.source_balance_max_factor)):
@@ -1437,6 +1451,34 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             return torch.randint(0, self.ddpm_num_train_timesteps, (batch_size,), device=device).long()
         else:
             raise ValueError(f"Unsupported sampling method: {self.config.sampling_method}")
+
+    def _sample_offline_rl_timesteps(
+        self,
+        batch_size: int,
+        device: torch.device,
+        dtype: torch.dtype,
+        mode: str = "uniform",
+    ) -> torch.Tensor:
+        """Sample DDPM/DDIM train timesteps for offline RL losses without changing default behavior."""
+        mode = str(mode)
+        if mode == "uniform" or self.config.sampling_method not in ["ddpm", "ddim"]:
+            return self.sample_time(batch_size, device=device, dtype=dtype)
+        if mode == "ddim" and hasattr(self, "ddim_t_schedule"):
+            idx = torch.randint(0, int(self.ddim_t_schedule.numel()), (batch_size,), device=device)
+            return self.ddim_t_schedule.to(device=device)[idx].long()
+
+        num_steps = int(self.ddpm_num_train_timesteps)
+        if mode == "low_noise":
+            high = max(1, int(round(num_steps * float(self.offline_rl_cfg.low_noise_timestep_frac))))
+            return torch.randint(0, high, (batch_size,), device=device).long()
+        if mode == "mid_noise":
+            low = int(round(num_steps * float(self.offline_rl_cfg.mid_noise_timestep_low_frac)))
+            high = max(low + 1, int(round(num_steps * float(self.offline_rl_cfg.mid_noise_timestep_high_frac))))
+            high = min(high, num_steps)
+            return torch.randint(low, high, (batch_size,), device=device).long()
+        if mode == "ddim":
+            return self.sample_time(batch_size, device=device, dtype=dtype)
+        raise ValueError(f"Unsupported offline RL timestep sampling mode: {mode!r}.")
 
     def _resolve_expert_tokens(
         self,
@@ -4391,6 +4433,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         policy: Optional["ReCogDriveDiffusionPlanner"] = None,
         noise: Optional[torch.Tensor] = None,
         t_discrete: Optional[torch.Tensor] = None,
+        timestep_sampling: str = "uniform",
     ) -> tuple[torch.Tensor, Dict[str, torch.Tensor], torch.Tensor, torch.Tensor]:
         if target_trajs.ndim != 4 or target_trajs.shape[-1] != 3:
             raise ValueError(f"target_trajs must have shape [B, M, H, 3], got {tuple(target_trajs.shape)}.")
@@ -4407,7 +4450,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         else:
             noise = noise.to(device=target_norm.device, dtype=target_norm.dtype)
         if t_discrete is None:
-            t_discrete = policy.sample_time(B * M, device=target_norm.device, dtype=target_norm.dtype)
+            t_discrete = policy._sample_offline_rl_timesteps(
+                B * M,
+                device=target_norm.device,
+                dtype=target_norm.dtype,
+                mode=timestep_sampling,
+            )
         else:
             t_discrete = t_discrete.to(device=target_norm.device)
         noisy_actions = (
@@ -4431,6 +4479,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         diagnostics = {
             "per_sample_loss_mean": per_sample_loss.detach().mean(),
             "target_norm_mean": target_norm.detach().float().abs().mean(),
+            "diffusion_timestep_mean": t_discrete.detach().float().mean(),
+            "diffusion_timestep_min": t_discrete.detach().float().min(),
+            "diffusion_timestep_max": t_discrete.detach().float().max(),
         }
         return per_sample_loss.reshape(B, M), diagnostics, noise.detach(), t_discrete.detach()
 
@@ -4441,6 +4492,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         target_trajs: torch.Tensor,
         weights: torch.Tensor,
         return_per_sample_loss: bool = False,
+        timestep_sampling: str = "uniform",
     ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         if target_trajs.ndim != 4 or target_trajs.shape[-1] != 3:
             raise ValueError(f"target_trajs must have shape [B, M, H, 3], got {tuple(target_trajs.shape)}.")
@@ -4455,6 +4507,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             return zero_loss, {
                 "per_sample_loss_mean": zero_loss.detach(),
                 "target_norm_mean": zero_loss.detach(),
+                "diffusion_timestep_mean": zero_loss.detach(),
+                "diffusion_timestep_min": zero_loss.detach(),
+                "diffusion_timestep_max": zero_loss.detach(),
                 "effective_weight_sum": raw_weight_sum.detach().to(device=zero_loss.device, dtype=zero_loss.dtype),
                 "zero_weight_ratio": flat_weights.new_tensor(1.0).to(device=zero_loss.device, dtype=zero_loss.dtype),
                 "zero_weight_batch": flat_weights.new_tensor(1.0).to(device=zero_loss.device, dtype=zero_loss.dtype),
@@ -4468,6 +4523,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             vl_features,
             action_input,
             target_trajs,
+            timestep_sampling=timestep_sampling,
         )
         per_sample_loss = per_target_loss.reshape(B * M)
         valid_weight_sum = raw_weight_sum.clamp(min=1e-6)
@@ -4477,6 +4533,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         diagnostics = {
             "per_sample_loss_mean": loss_diag["per_sample_loss_mean"].to(device=awac_loss.device, dtype=awac_loss.dtype),
             "target_norm_mean": loss_diag["target_norm_mean"].to(device=awac_loss.device, dtype=awac_loss.dtype),
+            "diffusion_timestep_mean": loss_diag["diffusion_timestep_mean"].to(device=awac_loss.device, dtype=awac_loss.dtype),
+            "diffusion_timestep_min": loss_diag["diffusion_timestep_min"].to(device=awac_loss.device, dtype=awac_loss.dtype),
+            "diffusion_timestep_max": loss_diag["diffusion_timestep_max"].to(device=awac_loss.device, dtype=awac_loss.dtype),
             "effective_weight_sum": valid_weight_sum.detach().to(dtype=awac_loss.dtype),
             "zero_weight_ratio": (flat_weights <= 0).float().mean().to(device=awac_loss.device, dtype=awac_loss.dtype),
             "zero_weight_batch": zero_weight_batch.to(device=awac_loss.device, dtype=awac_loss.dtype),
@@ -4586,16 +4645,20 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "preference_dpo_gap_weight_mean": zero.detach(),
                 "preference_dpo_current_logratio_mean": zero.detach(),
                 "preference_dpo_reference_logratio_mean": zero.detach(),
+                "preference_dpo_timestep_mean": zero.detach(),
+                "preference_dpo_timestep_min": zero.detach(),
+                "preference_dpo_timestep_max": zero.detach(),
             }
         if ordering_rewards.shape != valid_mask.shape or ordering_rewards.shape != real_mask.shape:
             raise ValueError("DPO ordering_rewards, valid_mask, and real_mask must have matching [B, M] shapes.")
         if not bool(cfg.preference_dpo_reference_free) and not hasattr(self, "old_policy"):
             raise RuntimeError("Diffusion-DPO preference loss requires old_policy unless preference_dpo_reference_free=True.")
 
-        current_loss, _, noise, t_discrete = self._diffusion_per_target_loss_on_targets(
+        current_loss, current_diag, noise, t_discrete = self._diffusion_per_target_loss_on_targets(
             vl_features,
             action_input,
             target_trajs,
+            timestep_sampling=cfg.preference_dpo_timestep_sampling,
         )
         if bool(cfg.preference_dpo_reference_free):
             reference_loss = torch.zeros_like(current_loss)
@@ -4703,6 +4766,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "preference_dpo_gap_weight_mean": zero.detach(),
                 "preference_dpo_current_logratio_mean": zero.detach(),
                 "preference_dpo_reference_logratio_mean": zero.detach(),
+                "preference_dpo_timestep_mean": current_diag["diffusion_timestep_mean"].to(zero).detach(),
+                "preference_dpo_timestep_min": current_diag["diffusion_timestep_min"].to(zero).detach(),
+                "preference_dpo_timestep_max": current_diag["diffusion_timestep_max"].to(zero).detach(),
             }
 
         dpo_loss = torch.stack(pair_terms).mean()
@@ -4713,6 +4779,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "preference_dpo_gap_weight_mean": torch.stack(gap_weights).mean().to(current_loss),
             "preference_dpo_current_logratio_mean": torch.stack(current_logratios).mean().to(current_loss),
             "preference_dpo_reference_logratio_mean": torch.stack(reference_logratios).mean().to(current_loss),
+            "preference_dpo_timestep_mean": current_diag["diffusion_timestep_mean"].to(current_loss),
+            "preference_dpo_timestep_min": current_diag["diffusion_timestep_min"].to(current_loss),
+            "preference_dpo_timestep_max": current_diag["diffusion_timestep_max"].to(current_loss),
         }
 
     def _load_awac_buffer_candidates(
@@ -5073,6 +5142,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             action_input,
             awac_batch["selected_trajs"],
             weights,
+            timestep_sampling=cfg.awac_timestep_sampling,
             return_per_sample_loss=(
                 float(cfg.pairwise_rank_loss_weight) > 0.0 or float(cfg.invalid_repulsion_loss_weight) > 0.0
             ),
@@ -5248,6 +5318,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "preference_dpo_gap_weight_mean": dpo_diag["preference_dpo_gap_weight_mean"].to(total_loss).detach(),
             "preference_dpo_current_logratio_mean": dpo_diag["preference_dpo_current_logratio_mean"].to(total_loss).detach(),
             "preference_dpo_reference_logratio_mean": dpo_diag["preference_dpo_reference_logratio_mean"].to(total_loss).detach(),
+            "preference_dpo_timestep_mean": dpo_diag["preference_dpo_timestep_mean"].to(total_loss).detach(),
+            "preference_dpo_timestep_min": dpo_diag["preference_dpo_timestep_min"].to(total_loss).detach(),
+            "preference_dpo_timestep_max": dpo_diag["preference_dpo_timestep_max"].to(total_loss).detach(),
             "empty_awac_row_ratio": weight_diag["empty_awac_row_ratio"].to(total_loss).detach(),
             "positive_weight_row_ratio": weight_diag["positive_weight_row_ratio"].to(total_loss).detach(),
             "positive_weight_candidate_ratio": weight_diag["positive_weight_candidate_ratio"].to(total_loss).detach(),
@@ -5272,6 +5345,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "source_timing_ratio": source_ratio(6).detach(),
             "awac_per_sample_loss_mean": awac_diag["per_sample_loss_mean"].detach(),
             "awac_target_norm_mean": awac_diag["target_norm_mean"].detach(),
+            "awac_timestep_mean": awac_diag["diffusion_timestep_mean"].detach(),
+            "awac_timestep_min": awac_diag["diffusion_timestep_min"].detach(),
+            "awac_timestep_max": awac_diag["diffusion_timestep_max"].detach(),
             "awac_effective_weight_sum": awac_diag["effective_weight_sum"].detach(),
             "awac_zero_weight_ratio": awac_diag["zero_weight_ratio"].detach(),
             "awac_zero_weight_batch": awac_diag["zero_weight_batch"].detach(),
