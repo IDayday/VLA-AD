@@ -34,10 +34,12 @@ from transformers.feature_extraction_utils import BatchFeature
 from navsim.common.dataclasses import Trajectory
 from navsim.common.dataloader import MetricCacheLoader
 from navsim.evaluate.pdm_score import pdm_score
+from navsim.evaluate.pdm_score_batch import pdm_score_batch_same_cache
 from navsim.planning.simulation.planner.pdm_planner.scoring.pdm_scorer import (
     PDMScorer,
     PDMScorerConfig,
 )
+from navsim.planning.simulation.planner.pdm_planner.scoring.fast_pdm_scorer import FastPDMScorer
 from navsim.planning.simulation.planner.pdm_planner.simulation.pdm_simulator import (
     PDMSimulator,
 )
@@ -204,6 +206,11 @@ class OfflineRLConfig:
         "driving_direction_compliance",
     )
     missing_submetric_policy: Literal["error", "unsafe_zero", "warn_default"] = "error"
+    use_batched_pdm_scoring: bool = True
+    use_fast_pdm_scorer: bool = True
+    pdm_shadow_check: bool = False
+    pdm_shadow_max_samples: int = 4
+    pdm_shadow_max_abs_diff: float = 0.0
 
     # candidate repair / guards
     clip_candidates_to_norm_range: bool = True
@@ -913,6 +920,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.online_policy_samples must be non-negative.")
         if str(cfg.missing_submetric_policy) not in {"error", "unsafe_zero", "warn_default"}:
             raise ValueError("offline_rl_cfg.missing_submetric_policy must be error, unsafe_zero, or warn_default.")
+        if int(cfg.pdm_shadow_max_samples) < 0:
+            raise ValueError("offline_rl_cfg.pdm_shadow_max_samples must be non-negative.")
+        if float(cfg.pdm_shadow_max_abs_diff) < 0.0:
+            raise ValueError("offline_rl_cfg.pdm_shadow_max_abs_diff must be non-negative.")
         if int(cfg.elite_buffer_version) < 2:
             raise ValueError("offline_rl_cfg.elite_buffer_version must be >= 2.")
         if float(cfg.advantage_temperature) <= 0.0:
@@ -3619,6 +3630,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             strict_submetrics=bool(cfg.strict_reward_submetrics) if cfg is not None else False,
             required_submetrics=cfg.required_reward_submetrics if cfg is not None else None,
             missing_submetric_policy=str(cfg.missing_submetric_policy) if cfg is not None else "warn_default",
+            use_batched_pdm_scoring=bool(cfg.use_batched_pdm_scoring) if cfg is not None else False,
+            use_fast_pdm_scorer=bool(cfg.use_fast_pdm_scorer) if cfg is not None else False,
+            pdm_shadow_check=bool(cfg.pdm_shadow_check) if cfg is not None else False,
+            pdm_shadow_max_samples=int(cfg.pdm_shadow_max_samples) if cfg is not None else 0,
+            pdm_shadow_max_abs_diff=float(cfg.pdm_shadow_max_abs_diff) if cfg is not None else 0.0,
         )
         if len(unique_indices) != flat.shape[0]:
             inverse = torch.tensor(inverse_indices, device=rewards.device, dtype=torch.long)
@@ -4766,6 +4782,54 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         heading = (normalized_trajectory[..., 2:3] + 1) / 2 * 3.53 - 1.67
         return torch.cat([x, y, heading], dim=-1)
 
+    def _get_pdm_scorer_for_awac(self, *, use_fast_pdm_scorer: bool):
+        if not use_fast_pdm_scorer:
+            return self.train_scorer
+        if not hasattr(self, "fast_train_scorer"):
+            self.fast_train_scorer = FastPDMScorer(
+                self.simulator.proposal_sampling,
+                self.config.grpo_cfg.scorer_config,
+            )
+        return self.fast_train_scorer
+
+    def _shadow_check_pdm_component_row(
+        self,
+        *,
+        trajectory_np: np.ndarray,
+        token: str,
+        metric_cache,
+        batch_row: Dict[str, float],
+        component_keys: tuple[str, ...],
+        strict_submetrics: bool,
+        required_submetrics: Optional[tuple[str, ...]],
+        missing_submetric_policy: str,
+        max_abs_diff: float,
+    ) -> None:
+        scalar_result = pdm_score(
+            metric_cache=metric_cache,
+            model_trajectory=Trajectory(trajectory_np),
+            future_sampling=self.simulator.proposal_sampling,
+            simulator=PDMSimulator(self.simulator.proposal_sampling),
+            scorer=PDMScorer(self.simulator.proposal_sampling, self.config.grpo_cfg.scorer_config),
+        )
+        scalar_row = self._extract_pdm_components(
+            scalar_result,
+            strict_submetrics=strict_submetrics,
+            required_submetrics=required_submetrics,
+            missing_policy=missing_submetric_policy,
+        )
+        diffs = {
+            key: abs(float(scalar_row[key]) - float(batch_row[key]))
+            for key in component_keys
+        }
+        max_key, observed = max(diffs.items(), key=lambda item: item[1])
+        if observed > max_abs_diff:
+            raise ValueError(
+                "Batched/Fast PDM scoring changed a PDM component compared with scalar pdm_score: "
+                f"token={token!r}, key={max_key}, scalar={scalar_row[max_key]}, "
+                f"batched={batch_row[max_key]}, diff={observed}, allowed={max_abs_diff}."
+            )
+
     def reward_fn(
         self,
         pred_traj: torch.Tensor,
@@ -4775,29 +4839,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         strict_submetrics: bool = False,
         required_submetrics: Optional[tuple[str, ...]] = None,
         missing_submetric_policy: str = "warn_default",
+        use_batched_pdm_scoring: bool = False,
+        use_fast_pdm_scorer: bool = False,
+        pdm_shadow_check: bool = False,
+        pdm_shadow_max_samples: int = 0,
+        pdm_shadow_max_abs_diff: float = 0.0,
     ) -> Union[torch.Tensor, tuple[torch.Tensor, Dict[str, torch.Tensor]]]:
         """Calculates PDM scores for a batch of predicted trajectories."""
         pred_np = pred_traj.detach().cpu().numpy()
-        component_rows = []
-        for i, token in enumerate(tokens_list):
-            trajectory = Trajectory(pred_np[i])
-            metric_cache = cache_dict[token]
-            pdm_result = pdm_score(
-                metric_cache=metric_cache,
-                model_trajectory=trajectory,
-                future_sampling=self.simulator.proposal_sampling,
-                simulator=self.simulator,
-                scorer=self.train_scorer,
-            )
-            component_rows.append(
-                self._extract_pdm_components(
-                    pdm_result,
-                    strict_submetrics=strict_submetrics,
-                    required_submetrics=required_submetrics,
-                    missing_policy=missing_submetric_policy,
-                )
-            )
-
         component_keys = (
             "pdms",
             "no_at_fault_collisions",
@@ -4809,6 +4858,67 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "driving_direction_compliance",
             "traffic_light_compliance",
         )
+        component_rows = [None] * len(tokens_list)
+        if use_batched_pdm_scoring:
+            token_to_indices: Dict[str, list[int]] = {}
+            for idx, token in enumerate(tokens_list):
+                token_to_indices.setdefault(str(token), []).append(idx)
+            shadow_checked = 0
+            scorer = self._get_pdm_scorer_for_awac(use_fast_pdm_scorer=use_fast_pdm_scorer)
+            for token, indices in token_to_indices.items():
+                metric_cache = cache_dict[token]
+                pdm_results = pdm_score_batch_same_cache(
+                    metric_cache=metric_cache,
+                    model_trajectories=pred_np[indices],
+                    future_sampling=self.simulator.proposal_sampling,
+                    simulator=self.simulator,
+                    scorer=scorer,
+                )
+                if len(pdm_results) != len(indices):
+                    raise RuntimeError(
+                        f"Batched PDM scorer returned {len(pdm_results)} rows for {len(indices)} trajectories."
+                    )
+                for local_idx, pdm_result in enumerate(pdm_results):
+                    row = self._extract_pdm_components(
+                        pdm_result,
+                        strict_submetrics=strict_submetrics,
+                        required_submetrics=required_submetrics,
+                        missing_policy=missing_submetric_policy,
+                    )
+                    global_idx = indices[local_idx]
+                    component_rows[global_idx] = row
+                    if pdm_shadow_check and shadow_checked < int(pdm_shadow_max_samples):
+                        self._shadow_check_pdm_component_row(
+                            trajectory_np=pred_np[global_idx],
+                            token=token,
+                            metric_cache=metric_cache,
+                            batch_row=row,
+                            component_keys=component_keys,
+                            strict_submetrics=strict_submetrics,
+                            required_submetrics=required_submetrics,
+                            missing_submetric_policy=missing_submetric_policy,
+                            max_abs_diff=float(pdm_shadow_max_abs_diff),
+                        )
+                        shadow_checked += 1
+        else:
+            for i, token in enumerate(tokens_list):
+                trajectory = Trajectory(pred_np[i])
+                metric_cache = cache_dict[token]
+                pdm_result = pdm_score(
+                    metric_cache=metric_cache,
+                    model_trajectory=trajectory,
+                    future_sampling=self.simulator.proposal_sampling,
+                    simulator=self.simulator,
+                    scorer=self.train_scorer,
+                )
+                component_rows[i] = self._extract_pdm_components(
+                    pdm_result,
+                    strict_submetrics=strict_submetrics,
+                    required_submetrics=required_submetrics,
+                    missing_policy=missing_submetric_policy,
+                )
+        if any(row is None for row in component_rows):
+            raise RuntimeError("PDM scoring did not produce a component row for every trajectory.")
         components = {
             key: torch.tensor(
                 [row[key] for row in component_rows],

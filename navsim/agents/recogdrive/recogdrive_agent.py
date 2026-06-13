@@ -149,6 +149,11 @@ class ReCogDriveAgent(AbstractAgent):
             "driving_direction_compliance",
         ),
         offline_rl_missing_submetric_policy: str = "error",
+        offline_rl_use_batched_pdm_scoring: bool = True,
+        offline_rl_use_fast_pdm_scorer: bool = True,
+        offline_rl_pdm_shadow_check: bool = False,
+        offline_rl_pdm_shadow_max_samples: int = 4,
+        offline_rl_pdm_shadow_max_abs_diff: float = 0.0,
         offline_rl_clip_candidates_to_norm_range: bool = True,
         offline_rl_enforce_forward_monotonic_x: bool = True,
         offline_rl_max_heading_step_rad: float = 0.25,
@@ -431,6 +436,11 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_strict_reward_submetrics = bool(offline_rl_strict_reward_submetrics)
         self.offline_rl_required_reward_submetrics = tuple(str(x) for x in offline_rl_required_reward_submetrics)
         self.offline_rl_missing_submetric_policy = offline_rl_missing_submetric_policy
+        self.offline_rl_use_batched_pdm_scoring = bool(offline_rl_use_batched_pdm_scoring)
+        self.offline_rl_use_fast_pdm_scorer = bool(offline_rl_use_fast_pdm_scorer)
+        self.offline_rl_pdm_shadow_check = bool(offline_rl_pdm_shadow_check)
+        self.offline_rl_pdm_shadow_max_samples = int(offline_rl_pdm_shadow_max_samples)
+        self.offline_rl_pdm_shadow_max_abs_diff = float(offline_rl_pdm_shadow_max_abs_diff)
         self.offline_rl_clip_candidates_to_norm_range = bool(offline_rl_clip_candidates_to_norm_range)
         self.offline_rl_enforce_forward_monotonic_x = bool(offline_rl_enforce_forward_monotonic_x)
         self.offline_rl_max_heading_step_rad = float(offline_rl_max_heading_step_rad)
@@ -907,6 +917,11 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.strict_reward_submetrics = self.offline_rl_strict_reward_submetrics
         offline_cfg.required_reward_submetrics = self.offline_rl_required_reward_submetrics
         offline_cfg.missing_submetric_policy = self.offline_rl_missing_submetric_policy
+        offline_cfg.use_batched_pdm_scoring = self.offline_rl_use_batched_pdm_scoring
+        offline_cfg.use_fast_pdm_scorer = self.offline_rl_use_fast_pdm_scorer
+        offline_cfg.pdm_shadow_check = self.offline_rl_pdm_shadow_check
+        offline_cfg.pdm_shadow_max_samples = self.offline_rl_pdm_shadow_max_samples
+        offline_cfg.pdm_shadow_max_abs_diff = self.offline_rl_pdm_shadow_max_abs_diff
         offline_cfg.clip_candidates_to_norm_range = self.offline_rl_clip_candidates_to_norm_range
         offline_cfg.enforce_forward_monotonic_x = self.offline_rl_enforce_forward_monotonic_x
         offline_cfg.max_heading_step_rad = self.offline_rl_max_heading_step_rad
