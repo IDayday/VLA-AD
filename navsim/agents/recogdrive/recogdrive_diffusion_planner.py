@@ -265,6 +265,8 @@ class OfflineRLConfig:
     low_noise_timestep_frac: float = 0.35
     mid_noise_timestep_low_frac: float = 0.15
     mid_noise_timestep_high_frac: float = 0.65
+    target_blend_mode: Literal["none", "towards_behavior_anchor"] = "none"
+    target_blend_alpha: float = 1.0
 
     # component-aware advantage shaping
     component_advantage_enabled: bool = False
@@ -1019,6 +1021,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError(
                 "offline_rl_cfg.mid_noise_timestep_low_frac/high_frac must satisfy 0 <= low < high <= 1."
             )
+        if str(cfg.target_blend_mode) not in {"none", "towards_behavior_anchor"}:
+            raise ValueError("offline_rl_cfg.target_blend_mode must be none or towards_behavior_anchor.")
+        if not (0.0 <= float(cfg.target_blend_alpha) <= 1.0):
+            raise ValueError("offline_rl_cfg.target_blend_alpha must be in [0, 1].")
         if float(cfg.component_advantage_clip_min) > float(cfg.component_advantage_clip_max):
             raise ValueError("offline_rl_cfg.component_advantage_clip_min must be <= component_advantage_clip_max.")
         if not (0.0 <= float(cfg.source_balance_min_factor) <= float(cfg.source_balance_max_factor)):
@@ -4416,6 +4422,66 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "source_balance_active_sources": weights.new_tensor(float(len(active_codes))),
         }
 
+    def _apply_awac_target_blend(
+        self,
+        target_trajs: torch.Tensor,
+        rewards: torch.Tensor,
+        source_code: torch.Tensor,
+        real_mask: torch.Tensor,
+        action_input: BatchFeature,
+        cfg: OfflineRLConfig,
+    ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+        zero = target_trajs.new_zeros(())
+        if str(cfg.target_blend_mode) == "none" or float(cfg.target_blend_alpha) >= 1.0:
+            return target_trajs, {
+                "target_blend_alpha_effective": target_trajs.new_tensor(1.0),
+                "target_blend_l2_to_original": zero,
+                "target_blend_anchor_gt_ratio": zero,
+                "target_blend_anchor_il_ratio": zero,
+                "target_blend_anchor_fallback_gt_ratio": zero,
+            }
+        if target_trajs.ndim != 4 or rewards.shape != target_trajs.shape[:2]:
+            raise ValueError("target_trajs must be [B, M, H, 3] and rewards/source masks must be [B, M].")
+        if not hasattr(action_input, "action"):
+            raise KeyError("AWAC target blending requires action_input.action as the GT fallback anchor.")
+
+        B, _, H, D = target_trajs.shape
+        gt_action = action_input.action.detach().to(device=target_trajs.device, dtype=target_trajs.dtype)
+        if gt_action.shape != (B, H, D):
+            raise ValueError(f"action_input.action shape {tuple(gt_action.shape)} does not match targets {(B, H, D)}.")
+
+        anchors = []
+        anchor_codes = []
+        for b in range(B):
+            anchor_mask = real_mask[b] & ((source_code[b] == 1) | (source_code[b] == 2))
+            anchor_idx = torch.nonzero(anchor_mask, as_tuple=False).flatten()
+            if anchor_idx.numel() == 0:
+                anchors.append(gt_action[b])
+                anchor_codes.append(0)
+                continue
+            row_rewards = rewards[b, anchor_idx].float()
+            best_pos = int(torch.argmax(row_rewards).item())
+            idx = anchor_idx[best_pos]
+            anchors.append(target_trajs[b, idx].detach())
+            anchor_codes.append(int(source_code[b, idx].detach().cpu().item()))
+
+        anchor = torch.stack(anchors, dim=0).to(target_trajs)
+        alpha = float(cfg.target_blend_alpha)
+        blended = anchor[:, None] + alpha * (target_trajs - anchor[:, None])
+        blended = torch.where(real_mask[:, :, None, None], blended, target_trajs)
+        if not torch.isfinite(blended).all():
+            raise ValueError("AWAC blended target trajectories contain non-finite values.")
+
+        anchor_code_tensor = torch.tensor(anchor_codes, device=target_trajs.device)
+        blend_delta = (blended - target_trajs).detach().float().norm(dim=-1).mean()
+        return blended, {
+            "target_blend_alpha_effective": target_trajs.new_tensor(alpha),
+            "target_blend_l2_to_original": blend_delta.to(target_trajs),
+            "target_blend_anchor_gt_ratio": (anchor_code_tensor == 1).float().mean().to(target_trajs),
+            "target_blend_anchor_il_ratio": (anchor_code_tensor == 2).float().mean().to(target_trajs),
+            "target_blend_anchor_fallback_gt_ratio": (anchor_code_tensor == 0).float().mean().to(target_trajs),
+        }
+
     def _repeat_action_input_for_loss(self, action_input: BatchFeature, repeat: int) -> BatchFeature:
         repeated = self._repeat_expert_action_input(action_input, repeat)
         data: Dict[str, Any] = dict(repeated) if repeated is not None else {}
@@ -5137,10 +5203,18 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             selected_real_mask,
             cfg,
         )
+        loss_target_trajs, target_blend_diag = self._apply_awac_target_blend(
+            awac_batch["selected_trajs"],
+            selected_rewards,
+            source_code,
+            selected_real_mask,
+            action_input,
+            cfg,
+        )
         awac_loss, awac_diag = self._weighted_diffusion_loss_on_targets(
             vl_features,
             action_input,
-            awac_batch["selected_trajs"],
+            loss_target_trajs,
             weights,
             timestep_sampling=cfg.awac_timestep_sampling,
             return_per_sample_loss=(
@@ -5168,7 +5242,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         dpo_loss, dpo_diag = self._compute_diffusion_dpo_preference_loss(
             vl_features,
             action_input,
-            awac_batch["selected_trajs"],
+            loss_target_trajs,
             shaped_rewards,
             selected_valid_mask,
             selected_real_mask,
@@ -5308,6 +5382,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "source_balance_factor_min": source_balance_diag["source_balance_factor_min"].to(total_loss).detach(),
             "source_balance_factor_max": source_balance_diag["source_balance_factor_max"].to(total_loss).detach(),
             "source_balance_active_sources": source_balance_diag["source_balance_active_sources"].to(total_loss).detach(),
+            "target_blend_alpha_effective": target_blend_diag["target_blend_alpha_effective"].to(total_loss).detach(),
+            "target_blend_l2_to_original": target_blend_diag["target_blend_l2_to_original"].to(total_loss).detach(),
+            "target_blend_anchor_gt_ratio": target_blend_diag["target_blend_anchor_gt_ratio"].to(total_loss).detach(),
+            "target_blend_anchor_il_ratio": target_blend_diag["target_blend_anchor_il_ratio"].to(total_loss).detach(),
+            "target_blend_anchor_fallback_gt_ratio": target_blend_diag["target_blend_anchor_fallback_gt_ratio"].to(total_loss).detach(),
             "pairwise_rank_pair_count": preference_diag["pairwise_rank_pair_count"].to(total_loss).detach(),
             "invalid_repulsion_pair_count": preference_diag["invalid_repulsion_pair_count"].to(total_loss).detach(),
             "pairwise_rank_active_row_ratio": preference_diag["pairwise_rank_active_row_ratio"].to(total_loss).detach(),

@@ -200,6 +200,8 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_low_noise_timestep_frac: float = 0.35,
         offline_rl_mid_noise_timestep_low_frac: float = 0.15,
         offline_rl_mid_noise_timestep_high_frac: float = 0.65,
+        offline_rl_target_blend_mode: str = "none",
+        offline_rl_target_blend_alpha: float = 1.0,
         offline_rl_component_advantage_enabled: bool = False,
         offline_rl_component_progress_weight: float = 0.05,
         offline_rl_component_safety_penalty_weight: float = 0.20,
@@ -537,6 +539,8 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_low_noise_timestep_frac = float(offline_rl_low_noise_timestep_frac)
         self.offline_rl_mid_noise_timestep_low_frac = float(offline_rl_mid_noise_timestep_low_frac)
         self.offline_rl_mid_noise_timestep_high_frac = float(offline_rl_mid_noise_timestep_high_frac)
+        self.offline_rl_target_blend_mode = offline_rl_target_blend_mode
+        self.offline_rl_target_blend_alpha = float(offline_rl_target_blend_alpha)
         self.offline_rl_component_advantage_enabled = bool(offline_rl_component_advantage_enabled)
         self.offline_rl_component_progress_weight = float(offline_rl_component_progress_weight)
         self.offline_rl_component_safety_penalty_weight = float(offline_rl_component_safety_penalty_weight)
@@ -1064,6 +1068,8 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.low_noise_timestep_frac = self.offline_rl_low_noise_timestep_frac
         offline_cfg.mid_noise_timestep_low_frac = self.offline_rl_mid_noise_timestep_low_frac
         offline_cfg.mid_noise_timestep_high_frac = self.offline_rl_mid_noise_timestep_high_frac
+        offline_cfg.target_blend_mode = self.offline_rl_target_blend_mode
+        offline_cfg.target_blend_alpha = self.offline_rl_target_blend_alpha
         offline_cfg.component_advantage_enabled = self.offline_rl_component_advantage_enabled
         offline_cfg.component_progress_weight = self.offline_rl_component_progress_weight
         offline_cfg.component_safety_penalty_weight = self.offline_rl_component_safety_penalty_weight

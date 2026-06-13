@@ -109,6 +109,8 @@ offline_rl_preference_dpo_timestep_sampling: uniform
 offline_rl_low_noise_timestep_frac: 0.35
 offline_rl_mid_noise_timestep_low_frac: 0.15
 offline_rl_mid_noise_timestep_high_frac: 0.65
+offline_rl_target_blend_mode: none
+offline_rl_target_blend_alpha: 1.0
 offline_rl_component_advantage_enabled: false
 offline_rl_component_progress_weight: 0.05
 offline_rl_component_safety_penalty_weight: 0.20
