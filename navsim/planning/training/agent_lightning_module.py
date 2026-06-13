@@ -7,6 +7,21 @@ import torch
 from navsim.agents.abstract_agent import AbstractAgent
 
 
+_CHECKPOINT_EXCLUDED_PREFIXES = (
+    "agent.model",
+    "agent.action_head.old_policy",
+)
+
+
+def _filter_recogdrive_checkpoint_state_dict(state_dict: Dict[str, Tensor]) -> Dict[str, Tensor]:
+    """Skip frozen backbone/reference weights before Lightning serializes checkpoints."""
+
+    def keep_key(key: str) -> bool:
+        return not any(key == prefix or key.startswith(f"{prefix}.") for prefix in _CHECKPOINT_EXCLUDED_PREFIXES)
+
+    return {key: value for key, value in state_dict.items() if keep_key(key)}
+
+
 def _prediction_get(prediction: Any, key: str) -> Any:
     if isinstance(prediction, dict) and key in prediction:
         return prediction[key]
@@ -224,12 +239,10 @@ class AgentLightningModule(pl.LightningModule):
         """
         每次保存 checkpoint 时，只保留 state_dict 中不以 'agent.model' 开头的条目。
         """
-        filtered_sd = {
-            k: v
-            for k, v in checkpoint['state_dict'].items()
-            if not k.startswith('agent.model')
-        }
-        checkpoint['state_dict'] = filtered_sd
+        checkpoint["state_dict"] = _filter_recogdrive_checkpoint_state_dict(checkpoint["state_dict"])
+
+    def state_dict(self, *args: Any, **kwargs: Any) -> Dict[str, Tensor]:
+        return _filter_recogdrive_checkpoint_state_dict(super().state_dict(*args, **kwargs))
 
     def training_step(self, batch: Tuple[Dict[str, Tensor], Dict[str, Tensor]], batch_idx: int) -> Tensor:
         """
@@ -313,12 +326,10 @@ class AgentLightningDiT(pl.LightningModule):
         """
         每次保存 checkpoint 时，只保留 state_dict 中不以 'agent.model' 开头的条目。
         """
-        filtered_sd = {
-            k: v
-            for k, v in checkpoint['state_dict'].items()
-            if not k.startswith('agent.model')
-        }
-        checkpoint['state_dict'] = filtered_sd
+        checkpoint["state_dict"] = _filter_recogdrive_checkpoint_state_dict(checkpoint["state_dict"])
+
+    def state_dict(self, *args: Any, **kwargs: Any) -> Dict[str, Tensor]:
+        return _filter_recogdrive_checkpoint_state_dict(super().state_dict(*args, **kwargs))
 
     def training_step(self, batch: Tuple[Dict[str, Tensor], Dict[str, Tensor]], batch_idx: int) -> Tensor:
         """
