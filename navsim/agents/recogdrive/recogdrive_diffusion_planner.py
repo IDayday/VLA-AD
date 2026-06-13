@@ -106,6 +106,7 @@ class GRPOConfig:
     bc_coeff_end: float = 0.1
     bc_anneal_epochs: int = 1
     reference_kl_coeff: float = 0.0
+    reference_kl_chunk_size: int = 0
     
     metric_cache_path: str = "/path/to/metric_cache_train"
     reference_policy_checkpoint: str = "/path/to/IL_Model.ckpt"
@@ -1262,6 +1263,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         self.reference_kl_coeff = float(cfg.reference_kl_coeff)
         if self.reference_kl_coeff < 0.0:
             raise ValueError("reference_kl_coeff must be non-negative.")
+        self.reference_kl_chunk_size = int(getattr(cfg, "reference_kl_chunk_size", 0))
+        if self.reference_kl_chunk_size < 0:
+            raise ValueError("reference_kl_chunk_size must be non-negative.")
         for name in (
             "use_safety_shaped_reward",
             "hard_gate_nc",
@@ -2256,6 +2260,25 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 tokens = self._resolve_expert_tokens(action_input, stream, "context", required=True)
                 assert tokens is not None
                 data[f"{stream}_context_tokens"] = tokens.repeat_interleave(repeat, 0)
+        return BatchFeature(data=data)
+
+    def _slice_action_input_batch(
+        self,
+        action_input: Optional[BatchFeature],
+        start: int,
+        end: int,
+    ) -> Optional[BatchFeature]:
+        if action_input is None:
+            return None
+        data: Dict[str, Any] = {}
+        for key, value in action_input.items():
+            if isinstance(value, torch.Tensor):
+                if value.ndim > 0 and value.shape[0] >= end:
+                    data[key] = value[start:end]
+                else:
+                    data[key] = value
+            else:
+                data[key] = value
         return BatchFeature(data=data)
 
     def _last_vla_progress(self) -> float:
@@ -3527,17 +3550,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         """Computes exact per-transition KL(current || frozen reference) on sampled chains."""
         if not hasattr(self, "old_policy"):
             raise RuntimeError("reference_kl_coeff > 0 requires a frozen old_policy reference.")
-        current_dist = self._chain_transition_distribution(
-            vl_features,
-            his_traj_features,
-            ego_status_features,
-            chains,
-            deterministic=False,
-            action_input=action_input,
-        )
-        self.old_policy.eval()
-        with torch.no_grad():
-            reference_dist = self.old_policy._chain_transition_distribution(
+        total_samples = B * G
+        if chains.shape[0] != total_samples:
+            raise ValueError(f"Expected chains batch {total_samples}, got {chains.shape[0]}.")
+
+        chunk_size = int(getattr(self, "reference_kl_chunk_size", 0))
+        if chunk_size <= 0 or chunk_size >= total_samples:
+            current_dist = self._chain_transition_distribution(
                 vl_features,
                 his_traj_features,
                 ego_status_features,
@@ -3545,17 +3564,62 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 deterministic=False,
                 action_input=action_input,
             )
-        step_kl = kl_divergence(current_dist, reference_dist).mean(dim=(1, 2))
-        step_kl = step_kl.view(B * G, num_denoising_steps)
-        if self.trajectory_logprob_reduce == "discounted_mean":
-            discount = discount.to(device=step_kl.device, dtype=step_kl.dtype)
-            discount_norm = discount / discount.sum().clamp(min=1e-8)
-            traj_kl = (step_kl * discount_norm.view(1, num_denoising_steps)).sum(dim=1)
-        elif self.trajectory_logprob_reduce == "mean":
-            traj_kl = step_kl.mean(dim=1)
-        else:
-            raise ValueError(f"Unsupported trajectory_logprob_reduce: {self.trajectory_logprob_reduce!r}")
-        return traj_kl.mean()
+            self.old_policy.eval()
+            with torch.no_grad():
+                reference_dist = self.old_policy._chain_transition_distribution(
+                    vl_features,
+                    his_traj_features,
+                    ego_status_features,
+                    chains,
+                    deterministic=False,
+                    action_input=action_input,
+                )
+            step_kl = kl_divergence(current_dist, reference_dist).mean(dim=(1, 2))
+            step_kl = step_kl.view(total_samples, num_denoising_steps)
+            if self.trajectory_logprob_reduce == "discounted_mean":
+                discount = discount.to(device=step_kl.device, dtype=step_kl.dtype)
+                discount_norm = discount / discount.sum().clamp(min=1e-8)
+                traj_kl = (step_kl * discount_norm.view(1, num_denoising_steps)).sum(dim=1)
+            elif self.trajectory_logprob_reduce == "mean":
+                traj_kl = step_kl.mean(dim=1)
+            else:
+                raise ValueError(f"Unsupported trajectory_logprob_reduce: {self.trajectory_logprob_reduce!r}")
+            return traj_kl.mean()
+
+        kl_sum = chains.new_zeros(())
+        self.old_policy.eval()
+        for start in range(0, total_samples, chunk_size):
+            end = min(start + chunk_size, total_samples)
+            action_input_chunk = self._slice_action_input_batch(action_input, start, end)
+            current_dist = self._chain_transition_distribution(
+                vl_features[start:end],
+                his_traj_features[start:end],
+                ego_status_features[start:end],
+                chains[start:end],
+                deterministic=False,
+                action_input=action_input_chunk,
+            )
+            with torch.no_grad():
+                reference_dist = self.old_policy._chain_transition_distribution(
+                    vl_features[start:end],
+                    his_traj_features[start:end],
+                    ego_status_features[start:end],
+                    chains[start:end],
+                    deterministic=False,
+                    action_input=action_input_chunk,
+                )
+            step_kl = kl_divergence(current_dist, reference_dist).mean(dim=(1, 2))
+            step_kl = step_kl.view(end - start, num_denoising_steps)
+            if self.trajectory_logprob_reduce == "discounted_mean":
+                discount_chunk = discount.to(device=step_kl.device, dtype=step_kl.dtype)
+                discount_norm = discount_chunk / discount_chunk.sum().clamp(min=1e-8)
+                traj_kl = (step_kl * discount_norm.view(1, num_denoising_steps)).sum(dim=1)
+            elif self.trajectory_logprob_reduce == "mean":
+                traj_kl = step_kl.mean(dim=1)
+            else:
+                raise ValueError(f"Unsupported trajectory_logprob_reduce: {self.trajectory_logprob_reduce!r}")
+            kl_sum = kl_sum + traj_kl.sum()
+        return kl_sum / float(total_samples)
 
     def _sync_behavior_policy(self):
         """Synchronizes the frozen GRPO behavior policy with the current policy."""
@@ -5817,6 +5881,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "bc_coeff": total_loss.new_tensor(effective_bc_coeff),
             "reference_kl_loss": reference_kl_loss,
             "reference_kl_coeff": total_loss.new_tensor(reference_kl_coeff),
+            "reference_kl_chunk_size": total_loss.new_tensor(float(getattr(self, "reference_kl_chunk_size", 0))),
             "safe_ratio": hard_safe_ratio,
             "hard_safe_ratio": hard_safe_ratio,
             "mean_ep": reward_aux["ego_progress"].mean(),
