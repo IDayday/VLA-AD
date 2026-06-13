@@ -269,6 +269,10 @@ class OfflineRLConfig:
     mid_noise_timestep_high_frac: float = 0.65
     target_blend_mode: Literal["none", "towards_behavior_anchor"] = "none"
     target_blend_alpha: float = 1.0
+    target_blend_schedule: Literal["constant", "linear_warmup"] = "constant"
+    target_blend_alpha_start: float = 0.0
+    target_blend_warmup_start_epoch: int = 0
+    target_blend_warmup_epochs: int = 1
 
     # component-aware advantage shaping
     component_advantage_enabled: bool = False
@@ -1038,6 +1042,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.target_blend_mode must be none or towards_behavior_anchor.")
         if not (0.0 <= float(cfg.target_blend_alpha) <= 1.0):
             raise ValueError("offline_rl_cfg.target_blend_alpha must be in [0, 1].")
+        if str(cfg.target_blend_schedule) not in {"constant", "linear_warmup"}:
+            raise ValueError("offline_rl_cfg.target_blend_schedule must be constant or linear_warmup.")
+        if not (0.0 <= float(cfg.target_blend_alpha_start) <= 1.0):
+            raise ValueError("offline_rl_cfg.target_blend_alpha_start must be in [0, 1].")
         if float(cfg.component_advantage_clip_min) > float(cfg.component_advantage_clip_max):
             raise ValueError("offline_rl_cfg.component_advantage_clip_min must be <= component_advantage_clip_max.")
         if not (0.0 <= float(cfg.source_balance_min_factor) <= float(cfg.source_balance_max_factor)):
@@ -3871,6 +3879,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             warmup_epochs=int(cfg.grpo_loss_warmup_epochs),
         )
 
+    def _current_awac_target_blend_alpha(self, cfg: OfflineRLConfig) -> float:
+        alpha = self._current_linear_warmup_loss_weight(
+            target=float(cfg.target_blend_alpha),
+            schedule=str(cfg.target_blend_schedule),
+            start=float(cfg.target_blend_alpha_start),
+            start_epoch=int(cfg.target_blend_warmup_start_epoch),
+            warmup_epochs=int(cfg.target_blend_warmup_epochs),
+        )
+        return min(max(float(alpha), 0.0), 1.0)
+
     def _load_metric_cache_for_tokens(self, tokens_list) -> Dict[str, Any]:
         if not hasattr(self, "metric_cache_loader"):
             self._init_stage3_oracle(self.config.grpo_cfg)
@@ -4498,7 +4516,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         cfg: OfflineRLConfig,
     ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         zero = target_trajs.new_zeros(())
-        if str(cfg.target_blend_mode) == "none" or float(cfg.target_blend_alpha) >= 1.0:
+        alpha = self._current_awac_target_blend_alpha(cfg)
+        if str(cfg.target_blend_mode) == "none" or alpha >= 1.0:
             return target_trajs, {
                 "target_blend_alpha_effective": target_trajs.new_tensor(1.0),
                 "target_blend_l2_to_original": zero,
@@ -4532,7 +4551,6 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             anchor_codes.append(int(source_code[b, idx].detach().cpu().item()))
 
         anchor = torch.stack(anchors, dim=0).to(target_trajs)
-        alpha = float(cfg.target_blend_alpha)
         blended = anchor[:, None] + alpha * (target_trajs - anchor[:, None])
         blended = torch.where(real_mask[:, :, None, None], blended, target_trajs)
         if not torch.isfinite(blended).all():
