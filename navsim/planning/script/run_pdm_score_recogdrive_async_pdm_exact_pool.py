@@ -29,7 +29,7 @@ from navsim.common.dataclasses import SensorConfig, Trajectory
 from navsim.evaluate.pdm_score import pdm_score
 from navsim.planning.metric_caching.fast_metric_cache_loader import FastMetricCacheLoader, load_metric_cache_auto
 from navsim.planning.metric_caching.metric_cache import MetricCache
-from navsim.planning.script.builders.logging_builder import build_logger
+from nuplan.planning.script.builders.logging_builder import build_logger
 from navsim.planning.simulation.planner.pdm_planner.scoring.pdm_scorer import PDMScorer, PDMScorerConfig
 from navsim.planning.simulation.planner.pdm_planner.simulation.pdm_simulator import PDMSimulator
 

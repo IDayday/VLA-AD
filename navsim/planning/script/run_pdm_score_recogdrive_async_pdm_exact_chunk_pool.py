@@ -1,14 +1,13 @@
 from __future__ import annotations
 
-from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
-from dataclasses import asdict
+from concurrent.futures import FIRST_COMPLETED, Future, ProcessPoolExecutor, ThreadPoolExecutor, wait
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional
 import logging
+import multiprocessing as mp
 import os
 import pickle
-import threading
 import traceback
 import uuid
 import warnings
@@ -22,104 +21,55 @@ from omegaconf import DictConfig
 
 from navsim.agents.abstract_agent import AbstractAgent
 from navsim.agents.recogdrive.recogdrive_features import warn_if_dummy_expert_cache
-from navsim.common.dataloader import MetricCacheLoader, SceneFilter, SceneLoader
-from navsim.common.dataclasses import SensorConfig, Trajectory
-from navsim.evaluate.pdm_score import pdm_score
-from navsim.planning.metric_caching.fast_metric_cache_loader import FastMetricCacheLoader, load_metric_cache_auto
-from navsim.planning.metric_caching.metric_cache import MetricCache
+from navsim.common.dataloader import SceneFilter, SceneLoader
+from navsim.common.dataclasses import SensorConfig
 from nuplan.planning.script.builders.logging_builder import build_logger
-from navsim.planning.simulation.planner.pdm_planner.scoring.pdm_scorer import PDMScorer
-from navsim.planning.simulation.planner.pdm_planner.simulation.pdm_simulator import PDMSimulator
+from navsim.planning.script.run_pdm_score_recogdrive_async_pdm_exact_pool import (
+    InferenceSampler,
+    _build_rank_scene_loader,
+    _cfg_int,
+    _cfg_str,
+    _init_process_pdm_tools,
+    _metric_cache_loader_from_cfg,
+    _score_one_pdm_scalar_exact,
+    _score_params_from_cfg,
+    broadcast_object,
+)
 
 logger = logging.getLogger(__name__)
 
 CONFIG_PATH = "config/pdm_scoring"
 CONFIG_NAME = "default_run_pdm_score"
 
-_PDM_THREAD_LOCAL = threading.local()
 
-
-class InferenceSampler(torch.utils.data.sampler.Sampler):
-    def __init__(self, size: int):
-        self._size = int(size)
-        assert size > 0
-        self._rank = dist.get_rank()
-        self._world_size = dist.get_world_size()
-        self._local_indices = self._get_local_indices(size, self._world_size, self._rank)
-
-    @staticmethod
-    def _get_local_indices(total_size: int, world_size: int, rank: int) -> range:
-        shard_size = total_size // world_size
-        left = total_size % world_size
-        shard_sizes = [shard_size + int(r < left) for r in range(world_size)]
-        begin = sum(shard_sizes[:rank])
-        end = min(sum(shard_sizes[: rank + 1]), total_size)
-        return range(begin, end)
-
-    def __iter__(self):
-        yield from self._local_indices
-
-    def __len__(self) -> int:
-        return len(self._local_indices)
-
-
-def _cfg_int(cfg: DictConfig, key: str, env_key: str, default: int) -> int:
-    value = cfg.get(key, None)
-    if value is None:
-        value = os.environ.get(env_key, default)
-    return int(value)
-
-
-def _metric_cache_loader_from_cfg(cfg: DictConfig):
-    fast_metric_cache_path = str(cfg.get("fast_metric_cache_path", "") or os.environ.get("RECOGDRIVE_FAST_METRIC_CACHE_PATH", ""))
-    if fast_metric_cache_path:
-        return FastMetricCacheLoader(Path(fast_metric_cache_path))
-    return MetricCacheLoader(Path(cfg.metric_cache_path))
-
-
-def _get_thread_pdm_tools(cfg: DictConfig) -> Tuple[PDMSimulator, PDMScorer]:
-    tools = getattr(_PDM_THREAD_LOCAL, "tools", None)
-    if tools is None:
-        simulator: PDMSimulator = instantiate(cfg.simulator)
-        scorer: PDMScorer = instantiate(cfg.scorer)
-        assert (
-            simulator.proposal_sampling == scorer.proposal_sampling
-        ), "Simulator and scorer proposal sampling has to be identical"
-        tools = (simulator, scorer)
-        _PDM_THREAD_LOCAL.tools = tools
-    return tools
-
-
-def _score_one_pdm_scalar(
+def _score_pdm_chunk_scalar_exact(
+    tasks: List[Dict[str, Any]],
     *,
-    cfg: DictConfig,
-    token: str,
-    metric_cache_path: Path,
-    poses: Any,
-    rank: int,
-    index: int,
-) -> Dict[str, Any]:
-    """Score one trajectory with the original scalar pdm_score implementation."""
-    score_row: Dict[str, Any] = {"token": token, "valid": True, "rank": rank, "_index": index}
-    try:
-        simulator, scorer = _get_thread_pdm_tools(cfg)
-        metric_cache: MetricCache = load_metric_cache_auto(metric_cache_path)
-        pdm_result = pdm_score(
-            metric_cache=metric_cache,
-            model_trajectory=Trajectory(poses),
-            future_sampling=simulator.proposal_sampling,
-            simulator=simulator,
-            scorer=scorer,
+    score_params: Optional[Dict[str, Any]] = None,
+) -> List[Dict[str, Any]]:
+    """
+    Score a chunk of trajectories with the exact scalar PDM path.
+
+    This is a scheduling optimization only. Each item is still scored by
+    ``_score_one_pdm_scalar_exact()``, which calls ``navsim.evaluate.pdm_score.pdm_score()``
+    once per token and preserves the official PDMS/submetric semantics.
+    """
+    rows: List[Dict[str, Any]] = []
+    for task in tasks:
+        rows.append(
+            _score_one_pdm_scalar_exact(
+                token=str(task["token"]),
+                metric_cache_path=str(task["metric_cache_path"]),
+                poses=task["poses"],
+                rank=int(task["rank"]),
+                index=int(task["index"]),
+                score_params=score_params,
+            )
         )
-        score_row.update(asdict(pdm_result))
-    except Exception:
-        logger.warning("----------- PDM scoring failed for token %s:", token)
-        traceback.print_exc()
-        score_row["valid"] = False
-    return score_row
+    return rows
 
 
-def _drain_pending(
+def _drain_chunk_pending(
     pending: List[Future],
     rows: List[Dict[str, Any]],
     *,
@@ -137,39 +87,49 @@ def _drain_pending(
         done = list(done_set)
         remaining = list(remaining_set)
     for future in done:
-        rows.append(future.result())
+        rows.extend(future.result())
     return remaining
 
 
-def _build_rank_scene_loader(cfg: DictConfig, log_names: List[str], tokens: List[str], agent: AbstractAgent) -> SceneLoader:
-    scene_filter: SceneFilter = instantiate(cfg.train_test_split.scene_filter)
-    scene_filter.log_names = log_names
-    scene_filter.tokens = tokens
-    return SceneLoader(
-        sensor_blobs_path=Path(cfg.sensor_blobs_path),
-        data_path=Path(cfg.navsim_log_path),
-        scene_filter=scene_filter,
-        sensor_config=agent.get_sensor_config(),
-        load_image_path=True,
-    )
+def _submit_score_chunk(
+    *,
+    executor: Optional[ThreadPoolExecutor | ProcessPoolExecutor],
+    backend: str,
+    chunk: List[Dict[str, Any]],
+    score_params: Dict[str, Any],
+    rows: List[Dict[str, Any]],
+    pending: List[Future],
+) -> List[Future]:
+    if not chunk:
+        return pending
+    chunk_payload = list(chunk)
+    if executor is None:
+        rows.extend(_score_pdm_chunk_scalar_exact(chunk_payload, score_params=score_params))
+    elif backend == "process":
+        pending.append(executor.submit(_score_pdm_chunk_scalar_exact, chunk_payload, score_params=None))
+    else:
+        pending.append(executor.submit(_score_pdm_chunk_scalar_exact, chunk_payload, score_params=score_params))
+    return pending
 
 
-def run_pdm_score_async(args: List[Dict[str, Any]]) -> bytes:
+def run_pdm_score_async_exact_chunk_pool(args: List[Dict[str, Any]]) -> bytes:
     """
-    Run ReCogDrive inference on this rank and score PDMS asynchronously on CPU threads.
+    Run ReCogDrive inference and score exact scalar PDMS through chunked CPU tasks.
 
-    The default PDM path is intentionally the original scalar ``pdm_score``. This script changes
-    scheduling only: GPU inference can continue while background CPU workers load metric caches and
-    compute PDMS for completed trajectories.
+    Compared with ``run_pdm_score_recogdrive_async_pdm_exact_pool.py``, this groups several
+    completed trajectories into one process-pool Future to reduce executor/pickling overhead.
+    It deliberately does not batch PDM math: every token still goes through the original scalar
+    ``pdm_score()`` call.
     """
     node_id = int(os.environ.get("NODE_RANK", 0))
     rank = dist.get_rank()
     thread_id = str(uuid.uuid4())
-    logger.info("Starting async PDM worker thread_id=%s, node_id=%s, rank=%s", thread_id, node_id, rank)
+    logger.info("Starting exact chunked async PDM worker thread_id=%s, node_id=%s, rank=%s", thread_id, node_id, rank)
 
     log_names = [a["log_file"] for a in args]
     tokens = [t for a in args for t in a["tokens"]]
     cfg: DictConfig = args[0]["cfg"]
+    score_params = _score_params_from_cfg(cfg)
 
     agent: AbstractAgent = instantiate(cfg.agent)
     agent.initialize()
@@ -182,21 +142,47 @@ def run_pdm_score_async(args: List[Dict[str, Any]]) -> bytes:
         1,
         _cfg_int(cfg, "async_pdm_queue_size", "RECOGDRIVE_ASYNC_PDM_QUEUE_SIZE", max(2 * pdm_workers, 1)),
     )
+    task_chunk_size = max(
+        1,
+        _cfg_int(cfg, "async_pdm_task_chunk_size", "RECOGDRIVE_ASYNC_PDM_TASK_CHUNK_SIZE", 4),
+    )
     progress_every = max(0, _cfg_int(cfg, "async_pdm_progress_every", "RECOGDRIVE_ASYNC_PDM_PROGRESS_EVERY", 100))
+    backend = _cfg_str(cfg, "async_pdm_backend", "RECOGDRIVE_ASYNC_PDM_BACKEND", "process").lower()
+    process_start_method = _cfg_str(
+        cfg,
+        "async_pdm_process_start_method",
+        "RECOGDRIVE_ASYNC_PDM_PROCESS_START_METHOD",
+        "spawn",
+    )
+    if backend not in {"thread", "process"}:
+        raise ValueError(f"async_pdm_backend must be 'thread' or 'process', got {backend!r}.")
 
     logger.info(
-        "Rank %s evaluating %s scenarios with async_pdm_workers=%s, queue_size=%s",
+        "Rank %s evaluating %s scenarios with async_pdm_backend=%s, workers=%s, queue_size=%s, task_chunk_size=%s",
         rank,
         len(tokens_to_evaluate),
+        backend,
         pdm_workers,
         queue_size,
+        task_chunk_size,
     )
 
     rows: List[Dict[str, Any]] = []
     pending: List[Future] = []
-    executor: Optional[ThreadPoolExecutor] = (
-        ThreadPoolExecutor(max_workers=pdm_workers, thread_name_prefix=f"pdm-r{rank}") if pdm_workers > 0 else None
-    )
+    chunk: List[Dict[str, Any]] = []
+    executor: Optional[ThreadPoolExecutor | ProcessPoolExecutor]
+    if pdm_workers <= 0:
+        executor = None
+    elif backend == "process":
+        executor = ProcessPoolExecutor(
+            max_workers=pdm_workers,
+            mp_context=mp.get_context(process_start_method),
+            initializer=_init_process_pdm_tools,
+            initargs=(score_params,),
+        )
+    else:
+        executor = ThreadPoolExecutor(max_workers=pdm_workers, thread_name_prefix=f"pdm-r{rank}")
+
     try:
         for idx, token in enumerate(tokens_to_evaluate):
             if rank == 0 and (progress_every > 0) and ((idx + 1) % progress_every == 0):
@@ -216,41 +202,43 @@ def run_pdm_score_async(args: List[Dict[str, Any]]) -> bytes:
             try:
                 agent_input = scene_loader.get_agent_input_from_token(token)
                 trajectory = agent.compute_trajectory(agent_input)
-                poses = trajectory.poses
-                metric_cache_path = Path(metric_cache_loader.metric_cache_paths[token])
-                if executor is None:
-                    rows.append(
-                        _score_one_pdm_scalar(
-                            cfg=cfg,
-                            token=token,
-                            metric_cache_path=metric_cache_path,
-                            poses=poses,
-                            rank=rank,
-                            index=idx,
-                        )
+                chunk.append(
+                    {
+                        "token": token,
+                        "metric_cache_path": str(metric_cache_loader.metric_cache_paths[token]),
+                        "poses": trajectory.poses,
+                        "rank": rank,
+                        "index": idx,
+                    }
+                )
+                if len(chunk) >= task_chunk_size:
+                    pending = _submit_score_chunk(
+                        executor=executor,
+                        backend=backend,
+                        chunk=chunk,
+                        score_params=score_params,
+                        rows=rows,
+                        pending=pending,
                     )
-                else:
-                    pending.append(
-                        executor.submit(
-                            _score_one_pdm_scalar,
-                            cfg=cfg,
-                            token=token,
-                            metric_cache_path=metric_cache_path,
-                            poses=poses,
-                            rank=rank,
-                            index=idx,
-                        )
-                    )
+                    chunk = []
                     if len(pending) >= queue_size:
-                        pending = _drain_pending(pending, rows, wait_for_one=True)
+                        pending = _drain_chunk_pending(pending, rows, wait_for_one=True)
             except Exception:
                 logger.warning("----------- Agent failed for token %s:", token)
                 traceback.print_exc()
                 rows.append({"token": token, "valid": False, "rank": rank, "_index": idx})
 
-            pending = _drain_pending(pending, rows)
+            pending = _drain_chunk_pending(pending, rows)
 
-        pending = _drain_pending(pending, rows, wait_all=True)
+        pending = _submit_score_chunk(
+            executor=executor,
+            backend=backend,
+            chunk=chunk,
+            score_params=score_params,
+            rows=rows,
+            pending=pending,
+        )
+        pending = _drain_chunk_pending(pending, rows, wait_all=True)
     finally:
         if executor is not None:
             executor.shutdown(wait=True)
@@ -259,23 +247,6 @@ def run_pdm_score_async(args: List[Dict[str, Any]]) -> bytes:
     for row in rows:
         row.pop("_index", None)
     return pickle.dumps(rows)
-
-
-def broadcast_object(obj: Any, device: torch.device, src: int = 0) -> Any:
-    if dist.get_rank() == src:
-        buffer = pickle.dumps(obj)
-        tensor = torch.ByteTensor(list(buffer)).to(device)
-        size_tensor = torch.tensor(len(tensor)).to(device)
-        dist.broadcast(size_tensor, src=src)
-        dist.broadcast(tensor, src=src)
-    else:
-        size_tensor = torch.tensor(0).to(device)
-        dist.broadcast(size_tensor, src=src)
-        tensor = torch.ByteTensor(size_tensor.item()).to(device)
-        dist.broadcast(tensor, src=src)
-        buffer = tensor.cpu().numpy().tobytes()
-        obj = pickle.loads(buffer)
-    return obj
 
 
 @hydra.main(config_path=CONFIG_PATH, config_name=CONFIG_NAME, version_base=None)
@@ -301,7 +272,7 @@ def main(cfg: DictConfig) -> None:
         warn_if_dummy_expert_cache(
             cfg.agent.get("expert_cache_dir", None),
             use_expert_features=cfg.agent.get("use_expert_features", False),
-            context="ReCogDrive evaluation",
+            context="ReCogDrive exact chunk-pool evaluation",
         )
 
     scene_loader = SceneLoader(
@@ -323,22 +294,16 @@ def main(cfg: DictConfig) -> None:
         tokens_to_evaluate = []
 
     tokens_to_evaluate = broadcast_object(tokens_to_evaluate, device=device, src=0)
-    logger.info("Starting async pdm scoring of %s scenarios...", str(len(tokens_to_evaluate)))
+    logger.info("Starting exact chunked async pdm scoring of %s scenarios...", str(len(tokens_to_evaluate)))
 
     sampler = InferenceSampler(len(tokens_to_evaluate))
     data_points = []
     for idx in sampler:
         token = tokens_to_evaluate[idx]
         log_file = scene_loader.token_to_log_file[token]
-        data_points.append(
-            {
-                "cfg": cfg,
-                "log_file": log_file,
-                "tokens": [token],
-            }
-        )
+        data_points.append({"cfg": cfg, "log_file": log_file, "tokens": [token]})
 
-    serialized_score_rows = run_pdm_score_async(data_points)
+    serialized_score_rows = run_pdm_score_async_exact_chunk_pool(data_points)
     local_rows = pickle.loads(serialized_score_rows)
     gathered_rows: List[Optional[List[Dict[str, Any]]]] = [None for _ in range(dist.get_world_size())]
     dist.all_gather_object(gathered_rows, local_rows)
@@ -366,7 +331,7 @@ def main(cfg: DictConfig) -> None:
 
         logger.info(
             """
-            Finished running async PDM evaluation.
+            Finished running exact chunked async PDM evaluation.
                 Number of successful scenarios: %s.
                 Number of failed scenarios: %s.
                 Final average score of valid results: %s.

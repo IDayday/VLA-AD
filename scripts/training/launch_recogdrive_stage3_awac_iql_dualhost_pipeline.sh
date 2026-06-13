@@ -36,6 +36,13 @@ TRAIN_SCHEDULER_MIN_LR="${TRAIN_SCHEDULER_MIN_LR:-1e-5}"
 LAUNCH_REMOTE_EVAL_WATCHER="${LAUNCH_REMOTE_EVAL_WATCHER:-1}"
 EVAL_POLL_SECONDS="${EVAL_POLL_SECONDS:-300}"
 EVAL_MIN_CKPT_AGE_SECONDS="${EVAL_MIN_CKPT_AGE_SECONDS:-120}"
+EVAL_SCRIPT="${EVAL_SCRIPT:-${REPO_ROOT}/scripts/evaluation/run_recogdrive_stage3_safe_diffgrpo_eval_8gpu_exact_pool_pdm.sh}"
+EVAL_WAIT_FOR_FREE_GPUS="${EVAL_WAIT_FOR_FREE_GPUS:-0}"
+EVAL_ASYNC_PDM_WORKERS="${EVAL_ASYNC_PDM_WORKERS:-16}"
+EVAL_ASYNC_PDM_BACKEND="${EVAL_ASYNC_PDM_BACKEND:-process}"
+EVAL_ASYNC_PDM_PROCESS_START_METHOD="${EVAL_ASYNC_PDM_PROCESS_START_METHOD:-spawn}"
+EVAL_ASYNC_PDM_QUEUE_SIZE="${EVAL_ASYNC_PDM_QUEUE_SIZE:-$((EVAL_ASYNC_PDM_WORKERS * 2))}"
+EVAL_FAST_METRIC_CACHE_DIR="${EVAL_FAST_METRIC_CACHE_DIR:-${ARTIFACT_ROOT}/cache/metric_cache_navtest_full_v1_fast_pickle}"
 
 RUN_BUFFER="${RUN_BUFFER:-1}"
 RUN_TRAIN_AFTER_BUFFER="${RUN_TRAIN_AFTER_BUFFER:-1}"
@@ -61,6 +68,13 @@ mkdir -p "${OUT_ROOT}"
   echo "train_lr=${TRAIN_LR}"
   echo "train_scheduler_min_lr=${TRAIN_SCHEDULER_MIN_LR}"
   echo "launch_remote_eval_watcher=${LAUNCH_REMOTE_EVAL_WATCHER}"
+  echo "eval_script=${EVAL_SCRIPT}"
+  echo "eval_wait_for_free_gpus=${EVAL_WAIT_FOR_FREE_GPUS}"
+  echo "eval_async_pdm_workers=${EVAL_ASYNC_PDM_WORKERS}"
+  echo "eval_async_pdm_backend=${EVAL_ASYNC_PDM_BACKEND}"
+  echo "eval_async_pdm_process_start_method=${EVAL_ASYNC_PDM_PROCESS_START_METHOD}"
+  echo "eval_async_pdm_queue_size=${EVAL_ASYNC_PDM_QUEUE_SIZE}"
+  echo "eval_fast_metric_cache_dir=${EVAL_FAST_METRIC_CACHE_DIR}"
   echo "run_buffer=${RUN_BUFFER}"
   echo "run_train_after_buffer=${RUN_TRAIN_AFTER_BUFFER}"
 } > "${OUT_ROOT}/resolved_dualhost_pipeline.txt"
@@ -161,7 +175,7 @@ if [[ "${RUN_TRAIN_AFTER_BUFFER}" == "1" ]]; then
   if [[ "${LAUNCH_REMOTE_EVAL_WATCHER}" == "1" ]]; then
     eval_out="${OUT_ROOT}/remote_ckpt_eval"
     mkdir -p "${eval_out}"
-    ssh "${REMOTE_HOST}" "cd ${REPO_ROOT@Q} && TRAIN_OUT_ROOT=${OUT_ROOT@Q}/train CHECKPOINT_ROOT=${OUT_ROOT@Q}/train/hydra EVAL_OUT_ROOT=${eval_out@Q} EVAL_RUN_NAME=${RUN_NAME@Q}_remote_ckpt_eval POLL_SECONDS=${EVAL_POLL_SECONDS@Q} MIN_CKPT_AGE_SECONDS=${EVAL_MIN_CKPT_AGE_SECONDS@Q} WAIT_FOR_FREE_GPUS=1 GPU_MAX_MEM_USED_MB=2000 GPU_MAX_UTIL=10 EXIT_WHEN_TRAINING_DONE_AND_QUEUE_EMPTY=0 setsid bash ${REPO_ROOT@Q}/scripts/evaluation/watch_stage3_checkpoints_eval_8gpu.sh > ${eval_out@Q}/watcher.log 2>&1 < /dev/null & echo \\\$! > ${eval_out@Q}/watcher.pid" \
+    ssh "${REMOTE_HOST}" "cd ${REPO_ROOT@Q} && TRAIN_OUT_ROOT=${OUT_ROOT@Q}/train CHECKPOINT_ROOT=${OUT_ROOT@Q}/train/hydra EVAL_OUT_ROOT=${eval_out@Q} EVAL_RUN_NAME=${RUN_NAME@Q}_remote_ckpt_eval POLL_SECONDS=${EVAL_POLL_SECONDS@Q} MIN_CKPT_AGE_SECONDS=${EVAL_MIN_CKPT_AGE_SECONDS@Q} WAIT_FOR_FREE_GPUS=${EVAL_WAIT_FOR_FREE_GPUS@Q} GPU_MAX_MEM_USED_MB=2000 GPU_MAX_UTIL=10 EXIT_WHEN_TRAINING_DONE_AND_QUEUE_EMPTY=0 EVAL_SCRIPT=${EVAL_SCRIPT@Q} ASYNC_PDM_BACKEND=${EVAL_ASYNC_PDM_BACKEND@Q} ASYNC_PDM_WORKERS=${EVAL_ASYNC_PDM_WORKERS@Q} ASYNC_PDM_QUEUE_SIZE=${EVAL_ASYNC_PDM_QUEUE_SIZE@Q} ASYNC_PDM_PROCESS_START_METHOD=${EVAL_ASYNC_PDM_PROCESS_START_METHOD@Q} FAST_METRIC_CACHE_DIR=${EVAL_FAST_METRIC_CACHE_DIR@Q} setsid bash ${REPO_ROOT@Q}/scripts/evaluation/watch_stage3_checkpoints_eval_8gpu.sh > ${eval_out@Q}/watcher.log 2>&1 < /dev/null & echo \\\$! > ${eval_out@Q}/watcher.pid" \
       > "${OUT_ROOT}/remote_eval_watcher_launch.log" 2>&1 || {
         echo "Failed to launch remote eval watcher; see ${OUT_ROOT}/remote_eval_watcher_launch.log" >&2
         exit 1

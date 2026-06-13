@@ -150,11 +150,25 @@ def _run_serial(tasks: List[Tuple[str, str, np.ndarray, str]]) -> List[Dict[str,
     return [_score_one((token, path, poses, "thread")) for token, path, poses, _ in tasks]
 
 
+def _score_chunk(tasks: List[Tuple[str, str, np.ndarray, str]]) -> List[Dict[str, Any]]:
+    return [_score_one(task) for task in tasks]
+
+
+def _chunk_tasks(
+    tasks: List[Tuple[str, str, np.ndarray, str]],
+    task_chunk_size: int,
+) -> List[List[Tuple[str, str, np.ndarray, str]]]:
+    if task_chunk_size <= 1:
+        return [[task] for task in tasks]
+    return [tasks[start : start + task_chunk_size] for start in range(0, len(tasks), task_chunk_size)]
+
+
 def _run_parallel(
     tasks: List[Tuple[str, str, np.ndarray, str]],
     *,
     backend: str,
     workers: int,
+    task_chunk_size: int,
     progress_every: int,
 ) -> List[Dict[str, Any]]:
     if backend == "serial" or workers <= 1:
@@ -165,15 +179,17 @@ def _run_parallel(
     if backend == "process":
         kwargs["initializer"] = _init_process_tools
 
+    task_chunks = _chunk_tasks(tasks, task_chunk_size)
     rows: List[Dict[str, Any]] = []
     with executor_cls(**kwargs) as executor:
-        futures = [executor.submit(_score_one, task) for task in tasks]
+        futures = [executor.submit(_score_chunk, chunk) for chunk in task_chunks]
         for done_count, future in enumerate(as_completed(futures), start=1):
-            rows.append(future.result())
-            if progress_every > 0 and done_count % progress_every == 0:
+            rows.extend(future.result())
+            completed = min(done_count * max(1, task_chunk_size), len(tasks))
+            if progress_every > 0 and completed % progress_every == 0:
                 print(
                     json.dumps(
-                        {"state": "progress", "completed": done_count, "total": len(tasks)},
+                        {"state": "progress", "completed": completed, "total": len(tasks)},
                         sort_keys=True,
                     ),
                     flush=True,
@@ -270,6 +286,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--loader", choices=("original", "fast"), default="original")
     parser.add_argument("--backend", choices=("serial", "thread", "process"), default="thread")
     parser.add_argument("--workers", type=int, default=4)
+    parser.add_argument(
+        "--task-chunk-size",
+        type=int,
+        default=1,
+        help=(
+            "Group this many scalar pdm_score calls into one executor Future. "
+            "This changes scheduling overhead only; every token still calls the original scalar scorer."
+        ),
+    )
     parser.add_argument("--max-tokens", type=int, default=256)
     parser.add_argument("--shuffle", action="store_true")
     parser.add_argument("--seed", type=int, default=20260613)
@@ -287,6 +312,8 @@ def main() -> int:
     args = parse_args()
     if args.workers <= 0:
         raise ValueError("--workers must be positive.")
+    if args.task_chunk_size <= 0:
+        raise ValueError("--task-chunk-size must be positive.")
     if args.max_tokens < 0:
         raise ValueError("--max-tokens must be non-negative.")
     if args.exactness_tokens < 0:
@@ -310,7 +337,13 @@ def main() -> int:
     tasks = [(token, str(path), _zero_trajectory(), tools_mode) for token, path in items]
 
     t0 = time.perf_counter()
-    rows = _run_parallel(tasks, backend=args.backend, workers=args.workers, progress_every=args.progress_every)
+    rows = _run_parallel(
+        tasks,
+        backend=args.backend,
+        workers=args.workers,
+        task_chunk_size=args.task_chunk_size,
+        progress_every=args.progress_every,
+    )
     elapsed_s = time.perf_counter() - t0
 
     rows_by_token = {str(row["token"]): row for row in rows}
@@ -320,6 +353,7 @@ def main() -> int:
         "loader": args.loader,
         "backend": args.backend,
         "workers": args.workers,
+        "task_chunk_size": args.task_chunk_size,
         "max_tokens": args.max_tokens,
         "shard_count": args.shard_count,
         "shard_index": args.shard_index,
