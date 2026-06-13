@@ -229,9 +229,11 @@ class OfflineRLConfig:
     require_nc: bool = True
     require_dac: bool = True
     require_ddc_guard: bool = True
+    ddc_guard_mode: Literal["relative_or_absolute", "absolute", "relative"] = "relative_or_absolute"
     ddc_min_absolute: float = 0.99
     ddc_max_relative_drop: float = 0.01
     require_ttc_guard: bool = False
+    ttc_guard_mode: Literal["relative_or_absolute", "absolute", "relative"] = "relative_or_absolute"
     ttc_min_absolute: float = 0.95
     ttc_max_relative_drop: float = 0.02
     select_valid_topk_only: bool = True
@@ -1020,6 +1022,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.target_top_k must be positive.")
         if float(cfg.target_min_advantage) < 0.0:
             raise ValueError("offline_rl_cfg.target_min_advantage must be non-negative.")
+        for name in ("ddc_guard_mode", "ttc_guard_mode"):
+            if str(getattr(cfg, name)) not in {"relative_or_absolute", "absolute", "relative"}:
+                raise ValueError(f"offline_rl_cfg.{name} must be relative_or_absolute, absolute, or relative.")
         for name in ("awac_timestep_sampling", "preference_dpo_timestep_sampling"):
             if str(getattr(cfg, name)) not in {"uniform", "ddim", "low_noise", "mid_noise"}:
                 raise ValueError(f"offline_rl_cfg.{name} must be uniform, ddim, low_noise, or mid_noise.")
@@ -4013,9 +4018,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             if ddc_anchor is None:
                 ddc_pass = ddc >= float(cfg.ddc_min_absolute)
             else:
-                ddc_pass = (ddc >= float(cfg.ddc_min_absolute)) | (
-                    ddc >= ddc_anchor[:, None] - float(cfg.ddc_max_relative_drop)
-                )
+                ddc_absolute_pass = ddc >= float(cfg.ddc_min_absolute)
+                ddc_relative_pass = ddc >= ddc_anchor[:, None] - float(cfg.ddc_max_relative_drop)
+                if str(cfg.ddc_guard_mode) == "absolute":
+                    ddc_pass = ddc_absolute_pass
+                elif str(cfg.ddc_guard_mode) == "relative":
+                    ddc_pass = ddc_relative_pass
+                else:
+                    ddc_pass = ddc_absolute_pass | ddc_relative_pass
             valid &= ddc_pass
         else:
             ddc_pass = torch.ones_like(valid)
@@ -4030,9 +4040,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             if ttc_anchor is None:
                 ttc_pass = ttc >= float(cfg.ttc_min_absolute)
             else:
-                ttc_pass = (ttc >= float(cfg.ttc_min_absolute)) | (
-                    ttc >= ttc_anchor[:, None] - float(cfg.ttc_max_relative_drop)
-                )
+                ttc_absolute_pass = ttc >= float(cfg.ttc_min_absolute)
+                ttc_relative_pass = ttc >= ttc_anchor[:, None] - float(cfg.ttc_max_relative_drop)
+                if str(cfg.ttc_guard_mode) == "absolute":
+                    ttc_pass = ttc_absolute_pass
+                elif str(cfg.ttc_guard_mode) == "relative":
+                    ttc_pass = ttc_relative_pass
+                else:
+                    ttc_pass = ttc_absolute_pass | ttc_relative_pass
             valid &= ttc_pass
         else:
             ttc_pass = torch.ones_like(valid)

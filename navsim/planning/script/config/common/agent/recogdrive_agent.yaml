@@ -77,9 +77,11 @@ offline_rl_use_final_heading_guard: true
 offline_rl_require_nc: true
 offline_rl_require_dac: true
 offline_rl_require_ddc_guard: true
+offline_rl_ddc_guard_mode: relative_or_absolute
 offline_rl_ddc_min_absolute: 0.99
 offline_rl_ddc_max_relative_drop: 0.01
 offline_rl_require_ttc_guard: false
+offline_rl_ttc_guard_mode: relative_or_absolute
 offline_rl_ttc_min_absolute: 0.95
 offline_rl_ttc_max_relative_drop: 0.02
 offline_rl_select_valid_topk_only: true

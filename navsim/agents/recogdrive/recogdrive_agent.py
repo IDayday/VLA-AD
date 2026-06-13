@@ -168,9 +168,11 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_require_nc: bool = True,
         offline_rl_require_dac: bool = True,
         offline_rl_require_ddc_guard: bool = True,
+        offline_rl_ddc_guard_mode: str = "relative_or_absolute",
         offline_rl_ddc_min_absolute: float = 0.99,
         offline_rl_ddc_max_relative_drop: float = 0.01,
         offline_rl_require_ttc_guard: bool = False,
+        offline_rl_ttc_guard_mode: str = "relative_or_absolute",
         offline_rl_ttc_min_absolute: float = 0.95,
         offline_rl_ttc_max_relative_drop: float = 0.02,
         offline_rl_select_valid_topk_only: bool = True,
@@ -513,9 +515,11 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_require_nc = bool(offline_rl_require_nc)
         self.offline_rl_require_dac = bool(offline_rl_require_dac)
         self.offline_rl_require_ddc_guard = bool(offline_rl_require_ddc_guard)
+        self.offline_rl_ddc_guard_mode = offline_rl_ddc_guard_mode
         self.offline_rl_ddc_min_absolute = float(offline_rl_ddc_min_absolute)
         self.offline_rl_ddc_max_relative_drop = float(offline_rl_ddc_max_relative_drop)
         self.offline_rl_require_ttc_guard = bool(offline_rl_require_ttc_guard)
+        self.offline_rl_ttc_guard_mode = offline_rl_ttc_guard_mode
         self.offline_rl_ttc_min_absolute = float(offline_rl_ttc_min_absolute)
         self.offline_rl_ttc_max_relative_drop = float(offline_rl_ttc_max_relative_drop)
         self.offline_rl_select_valid_topk_only = bool(offline_rl_select_valid_topk_only)
@@ -1054,9 +1058,11 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.require_nc = self.offline_rl_require_nc
         offline_cfg.require_dac = self.offline_rl_require_dac
         offline_cfg.require_ddc_guard = self.offline_rl_require_ddc_guard
+        offline_cfg.ddc_guard_mode = self.offline_rl_ddc_guard_mode
         offline_cfg.ddc_min_absolute = self.offline_rl_ddc_min_absolute
         offline_cfg.ddc_max_relative_drop = self.offline_rl_ddc_max_relative_drop
         offline_cfg.require_ttc_guard = self.offline_rl_require_ttc_guard
+        offline_cfg.ttc_guard_mode = self.offline_rl_ttc_guard_mode
         offline_cfg.ttc_min_absolute = self.offline_rl_ttc_min_absolute
         offline_cfg.ttc_max_relative_drop = self.offline_rl_ttc_max_relative_drop
         offline_cfg.select_valid_topk_only = self.offline_rl_select_valid_topk_only
