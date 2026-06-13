@@ -217,6 +217,10 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_preference_dpo_pair_mode: str = "best_vs_gt_il",
         offline_rl_preference_dpo_min_reward_gap: float = 0.02,
         offline_rl_preference_dpo_max_pairs_per_scene: int = 2,
+        offline_rl_preference_dpo_gap_weight_mode: str = "none",
+        offline_rl_preference_dpo_gap_weight_scale: float = 0.05,
+        offline_rl_preference_dpo_gap_weight_min: float = 0.0,
+        offline_rl_preference_dpo_gap_weight_max: float = 3.0,
         offline_rl_awac_loss_weight: float = 1.0,
         offline_rl_bc_loss_weight: float = 0.05,
         offline_rl_bc_loss_schedule: str = "constant",
@@ -545,6 +549,10 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_preference_dpo_pair_mode = offline_rl_preference_dpo_pair_mode
         self.offline_rl_preference_dpo_min_reward_gap = float(offline_rl_preference_dpo_min_reward_gap)
         self.offline_rl_preference_dpo_max_pairs_per_scene = int(offline_rl_preference_dpo_max_pairs_per_scene)
+        self.offline_rl_preference_dpo_gap_weight_mode = offline_rl_preference_dpo_gap_weight_mode
+        self.offline_rl_preference_dpo_gap_weight_scale = float(offline_rl_preference_dpo_gap_weight_scale)
+        self.offline_rl_preference_dpo_gap_weight_min = float(offline_rl_preference_dpo_gap_weight_min)
+        self.offline_rl_preference_dpo_gap_weight_max = float(offline_rl_preference_dpo_gap_weight_max)
         self.offline_rl_awac_loss_weight = float(offline_rl_awac_loss_weight)
         self.offline_rl_bc_loss_weight = float(offline_rl_bc_loss_weight)
         self.offline_rl_bc_loss_schedule = offline_rl_bc_loss_schedule
@@ -1063,6 +1071,10 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.preference_dpo_pair_mode = self.offline_rl_preference_dpo_pair_mode
         offline_cfg.preference_dpo_min_reward_gap = self.offline_rl_preference_dpo_min_reward_gap
         offline_cfg.preference_dpo_max_pairs_per_scene = self.offline_rl_preference_dpo_max_pairs_per_scene
+        offline_cfg.preference_dpo_gap_weight_mode = self.offline_rl_preference_dpo_gap_weight_mode
+        offline_cfg.preference_dpo_gap_weight_scale = self.offline_rl_preference_dpo_gap_weight_scale
+        offline_cfg.preference_dpo_gap_weight_min = self.offline_rl_preference_dpo_gap_weight_min
+        offline_cfg.preference_dpo_gap_weight_max = self.offline_rl_preference_dpo_gap_weight_max
         offline_cfg.awac_loss_weight = self.offline_rl_awac_loss_weight
         offline_cfg.bc_loss_weight = self.offline_rl_bc_loss_weight
         offline_cfg.bc_loss_schedule = self.offline_rl_bc_loss_schedule

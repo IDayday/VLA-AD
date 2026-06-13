@@ -288,6 +288,10 @@ class OfflineRLConfig:
     preference_dpo_pair_mode: Literal["best_vs_gt_il", "best_vs_low_valid", "best_vs_all"] = "best_vs_gt_il"
     preference_dpo_min_reward_gap: float = 0.02
     preference_dpo_max_pairs_per_scene: int = 2
+    preference_dpo_gap_weight_mode: Literal["none", "pair_gap", "winner_advantage"] = "none"
+    preference_dpo_gap_weight_scale: float = 0.05
+    preference_dpo_gap_weight_min: float = 0.0
+    preference_dpo_gap_weight_max: float = 3.0
 
     # loss weights
     awac_loss_weight: float = 1.0
@@ -1026,6 +1030,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "preference_dpo_loss_weight",
             "preference_dpo_beta",
             "preference_dpo_min_reward_gap",
+            "preference_dpo_gap_weight_scale",
+            "preference_dpo_gap_weight_min",
+            "preference_dpo_gap_weight_max",
         ):
             if float(getattr(cfg, name)) < 0.0:
                 raise ValueError(f"offline_rl_cfg.{name} must be non-negative.")
@@ -1033,6 +1040,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.preference_dpo_label_smoothing must be in [0, 0.5).")
         if str(cfg.preference_dpo_pair_mode) not in {"best_vs_gt_il", "best_vs_low_valid", "best_vs_all"}:
             raise ValueError("offline_rl_cfg.preference_dpo_pair_mode must be best_vs_gt_il, best_vs_low_valid, or best_vs_all.")
+        if str(cfg.preference_dpo_gap_weight_mode) not in {"none", "pair_gap", "winner_advantage"}:
+            raise ValueError(
+                "offline_rl_cfg.preference_dpo_gap_weight_mode must be none, pair_gap, or winner_advantage."
+            )
+        if float(cfg.preference_dpo_gap_weight_scale) <= 0.0:
+            raise ValueError("offline_rl_cfg.preference_dpo_gap_weight_scale must be positive.")
+        if float(cfg.preference_dpo_gap_weight_min) > float(cfg.preference_dpo_gap_weight_max):
+            raise ValueError("offline_rl_cfg.preference_dpo_gap_weight_min must be <= gap_weight_max.")
         if int(cfg.pairwise_rank_max_pairs_per_scene) < 0:
             raise ValueError("offline_rl_cfg.pairwise_rank_max_pairs_per_scene must be non-negative.")
         if int(cfg.invalid_repulsion_max_pairs_per_scene) < 0:
@@ -4568,6 +4583,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "preference_dpo_pair_count": zero.detach(),
                 "preference_dpo_active_row_ratio": zero.detach(),
                 "preference_dpo_reward_gap_mean": zero.detach(),
+                "preference_dpo_gap_weight_mean": zero.detach(),
                 "preference_dpo_current_logratio_mean": zero.detach(),
                 "preference_dpo_reference_logratio_mean": zero.detach(),
             }
@@ -4598,6 +4614,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
         pair_terms = []
         reward_gaps = []
+        gap_weights = []
         current_logratios = []
         reference_logratios = []
         active_rows = 0
@@ -4606,6 +4623,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         label_smoothing = float(cfg.preference_dpo_label_smoothing)
         beta = float(cfg.preference_dpo_beta)
         pair_mode = str(cfg.preference_dpo_pair_mode)
+        gap_weight_mode = str(cfg.preference_dpo_gap_weight_mode)
+        gap_weight_scale = float(cfg.preference_dpo_gap_weight_scale)
+        gap_weight_min = float(cfg.preference_dpo_gap_weight_min)
+        gap_weight_max = float(cfg.preference_dpo_gap_weight_max)
         B = int(ordering_rewards.shape[0])
         for b in range(B):
             row_valid = valid_mask[b] & real_mask[b]
@@ -4647,8 +4668,28 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 -(1.0 - label_smoothing) * F.logsigmoid(logits)
                 - label_smoothing * F.logsigmoid(-logits)
             )
+            if gap_weight_mode == "pair_gap":
+                pair_weight = (reward_gap.to(current_loss) / gap_weight_scale).clamp(
+                    min=gap_weight_min,
+                    max=gap_weight_max,
+                )
+            elif gap_weight_mode == "winner_advantage":
+                anchor_mask = real_mask[b] & ((source_code[b] == 1) | (source_code[b] == 2))
+                if bool(anchor_mask.any().item()):
+                    anchor_reward = ordering_rewards[b, anchor_mask].float().max()
+                else:
+                    anchor_reward = ordering_rewards[b, valid_idx].float().mean()
+                winner_advantage = (winner_reward - anchor_reward).clamp(min=0.0)
+                pair_weight = (winner_advantage.to(current_loss) / gap_weight_scale).clamp(
+                    min=gap_weight_min,
+                    max=gap_weight_max,
+                ).expand_as(loss)
+            else:
+                pair_weight = torch.ones_like(loss)
+            loss = loss * pair_weight
             pair_terms.append(loss.mean())
             reward_gaps.append(reward_gap.detach().float().mean())
+            gap_weights.append(pair_weight.detach().float().mean())
             current_logratios.append(current_logratio.detach().float().mean())
             reference_logratios.append(reference_logratio.detach().float().mean())
             pair_count += int(loser_idx.numel())
@@ -4659,6 +4700,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "preference_dpo_pair_count": zero.detach(),
                 "preference_dpo_active_row_ratio": zero.detach(),
                 "preference_dpo_reward_gap_mean": zero.detach(),
+                "preference_dpo_gap_weight_mean": zero.detach(),
                 "preference_dpo_current_logratio_mean": zero.detach(),
                 "preference_dpo_reference_logratio_mean": zero.detach(),
             }
@@ -4668,6 +4710,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "preference_dpo_pair_count": current_loss.new_tensor(float(pair_count)),
             "preference_dpo_active_row_ratio": current_loss.new_tensor(float(active_rows) / max(1, B)),
             "preference_dpo_reward_gap_mean": torch.stack(reward_gaps).mean().to(current_loss),
+            "preference_dpo_gap_weight_mean": torch.stack(gap_weights).mean().to(current_loss),
             "preference_dpo_current_logratio_mean": torch.stack(current_logratios).mean().to(current_loss),
             "preference_dpo_reference_logratio_mean": torch.stack(reference_logratios).mean().to(current_loss),
         }
@@ -5202,6 +5245,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "preference_dpo_pair_count": dpo_diag["preference_dpo_pair_count"].to(total_loss).detach(),
             "preference_dpo_active_row_ratio": dpo_diag["preference_dpo_active_row_ratio"].to(total_loss).detach(),
             "preference_dpo_reward_gap_mean": dpo_diag["preference_dpo_reward_gap_mean"].to(total_loss).detach(),
+            "preference_dpo_gap_weight_mean": dpo_diag["preference_dpo_gap_weight_mean"].to(total_loss).detach(),
             "preference_dpo_current_logratio_mean": dpo_diag["preference_dpo_current_logratio_mean"].to(total_loss).detach(),
             "preference_dpo_reference_logratio_mean": dpo_diag["preference_dpo_reference_logratio_mean"].to(total_loss).detach(),
             "empty_awac_row_ratio": weight_diag["empty_awac_row_ratio"].to(total_loss).detach(),
