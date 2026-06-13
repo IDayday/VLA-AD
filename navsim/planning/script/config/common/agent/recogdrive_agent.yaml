@@ -27,6 +27,7 @@ bc_anneal: false
 bc_coeff_start: 0.1
 bc_coeff_end: 0.1
 bc_anneal_epochs: 1
+reference_kl_coeff: 0.0
 offline_rl_enabled: false
 offline_rl_elite_buffer_path: ''
 offline_rl_missing_buffer_policy: error

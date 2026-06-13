@@ -60,6 +60,9 @@ fi
 if [[ -n "${BC_ANNEAL_EPOCHS:-}" ]]; then
   JOB_CMD+="BC_ANNEAL_EPOCHS=$(printf '%q' "${BC_ANNEAL_EPOCHS}") "
 fi
+if [[ -n "${REFERENCE_KL_COEFF:-}" ]]; then
+  JOB_CMD+="REFERENCE_KL_COEFF=$(printf '%q' "${REFERENCE_KL_COEFF}") "
+fi
 if [[ -n "${GRPO_SCHEDULER_EPOCHS:-}" ]]; then
   JOB_CMD+="GRPO_SCHEDULER_EPOCHS=$(printf '%q' "${GRPO_SCHEDULER_EPOCHS}") "
 fi

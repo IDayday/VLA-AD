@@ -115,6 +115,7 @@ class ReCogDriveAgent(AbstractAgent):
         bc_coeff_start: float = 0.1,
         bc_coeff_end: float = 0.1,
         bc_anneal_epochs: int = 1,
+        reference_kl_coeff: float = 0.0,
         metric_cache_path: Optional[str] = '', 
         reference_policy_checkpoint: Optional[str] = '', 
         offline_rl_enabled: bool = False,
@@ -467,10 +468,13 @@ class ReCogDriveAgent(AbstractAgent):
         self.bc_coeff_start = float(bc_coeff_start)
         self.bc_coeff_end = float(bc_coeff_end)
         self.bc_anneal_epochs = int(bc_anneal_epochs)
+        self.reference_kl_coeff = float(reference_kl_coeff)
         if self.bc_coeff_start < 0.0 or self.bc_coeff_end < 0.0:
             raise ValueError("BC coefficients must be non-negative.")
         if self.bc_anneal_epochs <= 0:
             raise ValueError("bc_anneal_epochs must be positive.")
+        if self.reference_kl_coeff < 0.0:
+            raise ValueError("reference_kl_coeff must be non-negative.")
         self.backbone = None
         self.metric_cache_path = metric_cache_path
         self.reference_policy_checkpoint = reference_policy_checkpoint
@@ -1165,6 +1169,7 @@ class ReCogDriveAgent(AbstractAgent):
             cfg.grpo_cfg.bc_coeff_start = self.bc_coeff_start
             cfg.grpo_cfg.bc_coeff_end = self.bc_coeff_end
             cfg.grpo_cfg.bc_anneal_epochs = self.bc_anneal_epochs
+            cfg.grpo_cfg.reference_kl_coeff = self.reference_kl_coeff
             
         self.action_head = ReCogDriveDiffusionPlanner(cfg).to(device)
         if self.last_rd_adapter_checkpoint:

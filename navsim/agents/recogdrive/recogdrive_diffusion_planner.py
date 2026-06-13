@@ -105,6 +105,7 @@ class GRPOConfig:
     bc_coeff_start: float = 0.1
     bc_coeff_end: float = 0.1
     bc_anneal_epochs: int = 1
+    reference_kl_coeff: float = 0.0
     
     metric_cache_path: str = "/path/to/metric_cache_train"
     reference_policy_checkpoint: str = "/path/to/IL_Model.ckpt"
@@ -1258,6 +1259,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("BC coefficients must be non-negative.")
         if self.bc_anneal_epochs <= 0:
             raise ValueError("bc_anneal_epochs must be positive.")
+        self.reference_kl_coeff = float(cfg.reference_kl_coeff)
+        if self.reference_kl_coeff < 0.0:
+            raise ValueError("reference_kl_coeff must be non-negative.")
         for name in (
             "use_safety_shaped_reward",
             "hard_gate_nc",
@@ -3408,7 +3412,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         
         return chain_tensor.detach(), final_actions.detach()
 
-    def get_logprobs(
+    def _chain_transition_distribution(
         self,
         vl_features: torch.Tensor,
         his_traj_features: torch.Tensor,
@@ -3416,10 +3420,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         chains: torch.Tensor,
         deterministic: bool = False,
         action_input: Optional[BatchFeature] = None,
-    ) -> torch.Tensor:
-        """Calculates the log probability of a full denoising chain."""
+    ) -> Normal:
+        """Returns reverse-process transition distributions for a denoising chain."""
         if not self.training:
-            self._warn_if_expert_targets_present(action_input, "get_logprobs")
+            self._warn_if_expert_targets_present(action_input, "_chain_transition_distribution")
         B, K1, H, D = chains.shape
         num_denoising_steps = K1 - 1
         
@@ -3483,10 +3487,75 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         )
 
         std = torch.exp(0.5 * logvar).clamp(min=self.min_logprob_denoising_std)
-        dist = Normal(mean, std)
+        return Normal(mean, std)
+
+    def get_logprobs(
+        self,
+        vl_features: torch.Tensor,
+        his_traj_features: torch.Tensor,
+        ego_status_features: torch.Tensor,
+        chains: torch.Tensor,
+        deterministic: bool = False,
+        action_input: Optional[BatchFeature] = None,
+    ) -> torch.Tensor:
+        """Calculates the log probability of a full denoising chain."""
+        dist = self._chain_transition_distribution(
+            vl_features,
+            his_traj_features,
+            ego_status_features,
+            chains,
+            deterministic=deterministic,
+            action_input=action_input,
+        )
+        x_t_minus_1 = chains[:, 1:].reshape(-1, chains.shape[2], chains.shape[3])
         log_prob = dist.log_prob(x_t_minus_1)
         
         return log_prob
+
+    def _chain_transition_reference_kl(
+        self,
+        vl_features: torch.Tensor,
+        his_traj_features: torch.Tensor,
+        ego_status_features: torch.Tensor,
+        chains: torch.Tensor,
+        action_input: Optional[BatchFeature],
+        B: int,
+        G: int,
+        num_denoising_steps: int,
+        discount: torch.Tensor,
+    ) -> torch.Tensor:
+        """Computes exact per-transition KL(current || frozen reference) on sampled chains."""
+        if not hasattr(self, "old_policy"):
+            raise RuntimeError("reference_kl_coeff > 0 requires a frozen old_policy reference.")
+        current_dist = self._chain_transition_distribution(
+            vl_features,
+            his_traj_features,
+            ego_status_features,
+            chains,
+            deterministic=False,
+            action_input=action_input,
+        )
+        self.old_policy.eval()
+        with torch.no_grad():
+            reference_dist = self.old_policy._chain_transition_distribution(
+                vl_features,
+                his_traj_features,
+                ego_status_features,
+                chains,
+                deterministic=False,
+                action_input=action_input,
+            )
+        step_kl = kl_divergence(current_dist, reference_dist).mean(dim=(1, 2))
+        step_kl = step_kl.view(B * G, num_denoising_steps)
+        if self.trajectory_logprob_reduce == "discounted_mean":
+            discount = discount.to(device=step_kl.device, dtype=step_kl.dtype)
+            discount_norm = discount / discount.sum().clamp(min=1e-8)
+            traj_kl = (step_kl * discount_norm.view(1, num_denoising_steps)).sum(dim=1)
+        elif self.trajectory_logprob_reduce == "mean":
+            traj_kl = step_kl.mean(dim=1)
+        else:
+            raise ValueError(f"Unsupported trajectory_logprob_reduce: {self.trajectory_logprob_reduce!r}")
+        return traj_kl.mean()
 
     def _sync_behavior_policy(self):
         """Synchronizes the frozen GRPO behavior policy with the current policy."""
@@ -5683,6 +5752,22 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
         total_loss = policy_loss
 
+        reference_kl_coeff = float(getattr(self, "reference_kl_coeff", 0.0))
+        reference_kl_loss = policy_loss.new_zeros(())
+        if reference_kl_coeff > 0.0:
+            reference_kl_loss = self._chain_transition_reference_kl(
+                vl_features_rep,
+                his_traj_rep,
+                status_feature_rep,
+                chains,
+                expert_action_input_rep,
+                B,
+                G,
+                num_denoising_steps,
+                discount,
+            ).to(dtype=policy_loss.dtype)
+            total_loss = total_loss + reference_kl_coeff * reference_kl_loss
+
         effective_bc_coeff = self._current_bc_coeff(bc_coeff)
         bc_loss = policy_loss.new_zeros(())
         if use_bc_loss:
@@ -5730,6 +5815,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "policy_loss": policy_loss,
             "bc_loss": bc_loss,
             "bc_coeff": total_loss.new_tensor(effective_bc_coeff),
+            "reference_kl_loss": reference_kl_loss,
+            "reference_kl_coeff": total_loss.new_tensor(reference_kl_coeff),
             "safe_ratio": hard_safe_ratio,
             "hard_safe_ratio": hard_safe_ratio,
             "mean_ep": reward_aux["ego_progress"].mean(),
