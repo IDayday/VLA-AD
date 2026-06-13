@@ -28,6 +28,12 @@ SUMMARY_TSV="${EVAL_OUT_ROOT}/checkpoint_eval_summary.tsv"
 SUBMETRIC_SUMMARY_TSV="${EVAL_OUT_ROOT}/checkpoint_eval_submetrics.tsv"
 
 mkdir -p "${ARCHIVE_DIR}" "${STATE_DIR}"
+exec 9>"${EVAL_OUT_ROOT}/watcher.lock"
+if ! flock -n 9; then
+  echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) another eval watcher already holds ${EVAL_OUT_ROOT}/watcher.lock; exiting"
+  exit 0
+fi
+
 if [[ ! -f "${SUMMARY_TSV}" ]]; then
   printf 'timestamp\tcheckpoint_id\tstate\tcheckpoint\tarchive\teval_dir\trc\n' > "${SUMMARY_TSV}"
 fi
@@ -155,6 +161,9 @@ evaluate_archive() {
   if [[ -f "${STATE_DIR}/${id}.done" ]]; then
     return 0
   fi
+  if [[ -f "${STATE_DIR}/${id}.running" ]]; then
+    return 0
+  fi
   if [[ -f "${STATE_DIR}/${id}.failed" && "${RETRY_FAILED}" != "1" ]]; then
     return 0
   fi
@@ -220,6 +229,9 @@ while true; do
     [[ -n "${archive}" ]] || continue
     id="$(checkpoint_id "${archive}")"
     if [[ -f "${STATE_DIR}/${id}.done" ]]; then
+      continue
+    fi
+    if [[ -f "${STATE_DIR}/${id}.running" ]]; then
       continue
     fi
     if [[ -f "${STATE_DIR}/${id}.failed" && "${RETRY_FAILED}" != "1" ]]; then
