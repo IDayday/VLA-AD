@@ -150,6 +150,39 @@ def _existing_record_is_usable(buffer_dir: Path, token: str, validate_existing: 
     return True
 
 
+def _dataset_token_at(dataset: torch.utils.data.Dataset, index: int) -> str:
+    if isinstance(dataset, Subset):
+        return _dataset_token_at(dataset.dataset, int(dataset.indices[index]))
+    tokens = getattr(dataset, "_tokens", None)
+    if tokens is None:
+        tokens = getattr(dataset, "tokens", None)
+    if tokens is None:
+        wrapped = getattr(dataset, "_dataset", None)
+        if wrapped is not None:
+            return _dataset_token_at(wrapped, index)
+    if tokens is None:
+        raise AttributeError(f"Dataset {type(dataset).__name__} does not expose token metadata.")
+    return str(tokens[index])
+
+
+def _prefilter_missing_existing_records(
+    dataset: torch.utils.data.Dataset,
+    buffer_dir: Path,
+    validate_existing: bool,
+) -> tuple[torch.utils.data.Dataset, int]:
+    missing_indices: List[int] = []
+    skipped = 0
+    for index in range(len(dataset)):
+        token = _dataset_token_at(dataset, index)
+        if _existing_record_is_usable(buffer_dir, token, validate_existing):
+            skipped += 1
+        else:
+            missing_indices.append(index)
+    if skipped == 0:
+        return dataset, 0
+    return Subset(dataset, missing_indices), skipped
+
+
 def _build_train_dataset(cfg: DictConfig, agent: AbstractAgent):
     if cfg.use_cache_without_dataset:
         dataset = CacheOnlyDataset(
@@ -344,6 +377,7 @@ def main(cfg: DictConfig) -> None:
     batch_size = _env_int("BATCH_SIZE", int(cfg.dataloader.params.batch_size))
     skip_existing_records = _env_flag("SKIP_EXISTING_RECORDS", False)
     validate_existing_records = _env_flag("VALIDATE_EXISTING_RECORDS", True)
+    prefilter_existing_records = _env_flag("PREFILTER_EXISTING_RECORDS", True)
     shard_index = _env_int("SHARD_INDEX", 0)
     shard_count = _env_int("SHARD_COUNT", 1)
     if shard_count <= 0:
@@ -427,6 +461,25 @@ def main(cfg: DictConfig) -> None:
             len(dataset),
         )
         dataset = Subset(dataset, shard_indices)
+    prefiltered_existing = 0
+    if skip_existing_records and prefilter_existing_records and not dry_run:
+        try:
+            dataset, prefiltered_existing = _prefilter_missing_existing_records(
+                dataset,
+                buffer_dir,
+                validate_existing_records,
+            )
+            logger.info(
+                "Prefiltered %d existing AWAC elite records before DataLoader; %d scenes remain.",
+                prefiltered_existing,
+                len(dataset),
+            )
+        except AttributeError as exc:
+            logger.warning(
+                "Could not prefilter existing AWAC records before DataLoader (%s); "
+                "falling back to per-batch filtering.",
+                exc,
+            )
     dataloader_params = dict(cfg.dataloader.params)
     dataloader_params["batch_size"] = batch_size
     dataloader_params["shuffle"] = False
@@ -472,7 +525,7 @@ def main(cfg: DictConfig) -> None:
         "record_version",
     ]
     written = 0
-    skipped_existing = 0
+    skipped_existing = int(prefiltered_existing)
     aggregate: Dict[str, Any] = {
         "num_scenes": 0,
         "sums": defaultdict(float),
