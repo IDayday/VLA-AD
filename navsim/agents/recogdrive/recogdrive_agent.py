@@ -190,6 +190,10 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_allow_zero_weight_rows: bool = True,
         offline_rl_awac_loss_weight: float = 1.0,
         offline_rl_bc_loss_weight: float = 0.05,
+        offline_rl_bc_loss_schedule: str = "constant",
+        offline_rl_bc_loss_weight_start: float = 0.05,
+        offline_rl_bc_loss_weight_end: float = 0.05,
+        offline_rl_bc_loss_schedule_epochs: int = 1,
         offline_rl_grpo_loss_weight: float = 0.0,
         offline_rl_log_candidate_sources: bool = True,
         offline_rl_log_submetrics: bool = True,
@@ -481,6 +485,10 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_allow_zero_weight_rows = bool(offline_rl_allow_zero_weight_rows)
         self.offline_rl_awac_loss_weight = float(offline_rl_awac_loss_weight)
         self.offline_rl_bc_loss_weight = float(offline_rl_bc_loss_weight)
+        self.offline_rl_bc_loss_schedule = offline_rl_bc_loss_schedule
+        self.offline_rl_bc_loss_weight_start = float(offline_rl_bc_loss_weight_start)
+        self.offline_rl_bc_loss_weight_end = float(offline_rl_bc_loss_weight_end)
+        self.offline_rl_bc_loss_schedule_epochs = int(offline_rl_bc_loss_schedule_epochs)
         self.offline_rl_grpo_loss_weight = float(offline_rl_grpo_loss_weight)
         self.offline_rl_log_candidate_sources = bool(offline_rl_log_candidate_sources)
         self.offline_rl_log_submetrics = bool(offline_rl_log_submetrics)
@@ -962,6 +970,10 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.allow_zero_weight_rows = self.offline_rl_allow_zero_weight_rows
         offline_cfg.awac_loss_weight = self.offline_rl_awac_loss_weight
         offline_cfg.bc_loss_weight = self.offline_rl_bc_loss_weight
+        offline_cfg.bc_loss_schedule = self.offline_rl_bc_loss_schedule
+        offline_cfg.bc_loss_weight_start = self.offline_rl_bc_loss_weight_start
+        offline_cfg.bc_loss_weight_end = self.offline_rl_bc_loss_weight_end
+        offline_cfg.bc_loss_schedule_epochs = self.offline_rl_bc_loss_schedule_epochs
         offline_cfg.grpo_loss_weight = self.offline_rl_grpo_loss_weight
         offline_cfg.log_candidate_sources = self.offline_rl_log_candidate_sources
         offline_cfg.log_submetrics = self.offline_rl_log_submetrics

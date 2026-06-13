@@ -257,6 +257,10 @@ class OfflineRLConfig:
     # loss weights
     awac_loss_weight: float = 1.0
     bc_loss_weight: float = 0.05
+    bc_loss_schedule: Literal["constant", "linear"] = "constant"
+    bc_loss_weight_start: float = 0.05
+    bc_loss_weight_end: float = 0.05
+    bc_loss_schedule_epochs: int = 1
     grpo_loss_weight: float = 0.0
 
     # debugging / logging
@@ -950,9 +954,19 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.top_mean_frac must be in (0, 1].")
         if float(cfg.advantage_clip_min) > float(cfg.advantage_clip_max):
             raise ValueError("offline_rl_cfg.advantage_clip_min must be <= advantage_clip_max.")
-        for name in ("awac_loss_weight", "bc_loss_weight", "grpo_loss_weight"):
+        if str(cfg.bc_loss_schedule) not in {"constant", "linear"}:
+            raise ValueError("offline_rl_cfg.bc_loss_schedule must be constant or linear.")
+        for name in (
+            "awac_loss_weight",
+            "bc_loss_weight",
+            "bc_loss_weight_start",
+            "bc_loss_weight_end",
+            "grpo_loss_weight",
+        ):
             if float(getattr(cfg, name)) < 0.0:
                 raise ValueError(f"offline_rl_cfg.{name} must be non-negative.")
+        if int(cfg.bc_loss_schedule_epochs) <= 0:
+            raise ValueError("offline_rl_cfg.bc_loss_schedule_epochs must be positive.")
         for name in (
             "prior_distance_weight",
             "jerk_penalty_weight",
@@ -3578,6 +3592,17 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         end = float(getattr(self, "bc_coeff_end", start))
         return start + (end - start) * progress
 
+    def _current_awac_bc_loss_weight(self, cfg: OfflineRLConfig) -> float:
+        if str(cfg.bc_loss_schedule) == "constant":
+            return float(cfg.bc_loss_weight)
+
+        current_epoch = max(0, int(getattr(self.config, "current_train_epoch", 0)))
+        schedule_epochs = max(1, int(cfg.bc_loss_schedule_epochs))
+        progress = min(float(current_epoch) / float(schedule_epochs), 1.0)
+        start = float(cfg.bc_loss_weight_start)
+        end = float(cfg.bc_loss_weight_end)
+        return start + (end - start) * progress
+
     def _load_metric_cache_for_tokens(self, tokens_list) -> Dict[str, Any]:
         if not hasattr(self, "metric_cache_loader"):
             self._init_stage3_oracle(self.config.grpo_cfg)
@@ -4421,8 +4446,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             weights,
         )
 
+        bc_loss_weight_effective = self._current_awac_bc_loss_weight(cfg)
         bc_loss = awac_loss.new_zeros(())
-        if use_bc_loss and float(cfg.bc_loss_weight) > 0.0:
+        if use_bc_loss and bc_loss_weight_effective > 0.0:
             gt_targets = action_input.action.detach()[:, None]
             gt_weights = torch.ones((gt_targets.shape[0], 1), device=gt_targets.device, dtype=torch.float32)
             bc_loss, _ = self._weighted_diffusion_loss_on_targets(vl_features, action_input, gt_targets, gt_weights)
@@ -4442,7 +4468,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
         total_loss = (
             float(cfg.awac_loss_weight) * awac_loss
-            + float(cfg.bc_loss_weight) * bc_loss
+            + float(bc_loss_weight_effective) * bc_loss
             + float(cfg.grpo_loss_weight) * grpo_loss
         )
         if not torch.isfinite(total_loss):
@@ -4500,6 +4526,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "policy_loss": awac_loss,
             "awac_loss": awac_loss,
             "bc_loss": bc_loss,
+            "bc_loss_weight_effective": total_loss.new_tensor(float(bc_loss_weight_effective)).detach(),
             "grpo_loss": grpo_loss,
             "reward_mean": selected_reward_mean.detach(),
             "reward_max": selected_reward_max.detach(),
