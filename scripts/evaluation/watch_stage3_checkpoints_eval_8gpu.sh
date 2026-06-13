@@ -24,6 +24,20 @@ EXTERNAL_SUMMARY_TSV="${EXTERNAL_SUMMARY_TSV:-}"
 EXTERNAL_SUMMARY_SKIP_STATES="${EXTERNAL_SUMMARY_SKIP_STATES:-started,done}"
 GLOBAL_EVAL_LOCK_DIR="${GLOBAL_EVAL_LOCK_DIR:-}"
 
+ASYNC_PDM_WORKERS="${ASYNC_PDM_WORKERS:-2}"
+ASYNC_PDM_BACKEND="${ASYNC_PDM_BACKEND:-process}"
+ASYNC_PDM_PROCESS_START_METHOD="${ASYNC_PDM_PROCESS_START_METHOD:-spawn}"
+ASYNC_PDM_QUEUE_SIZE="${ASYNC_PDM_QUEUE_SIZE:-$((ASYNC_PDM_WORKERS * 2))}"
+ASYNC_PDM_PROGRESS_EVERY="${ASYNC_PDM_PROGRESS_EVERY:-100}"
+ASYNC_PDM_PROFILE="${ASYNC_PDM_PROFILE:-0}"
+ASYNC_PDM_TASK_CHUNK_SIZE="${ASYNC_PDM_TASK_CHUNK_SIZE:-1}"
+EVAL_TOKEN_SHARD_COUNT="${EVAL_TOKEN_SHARD_COUNT:-1}"
+EVAL_TOKEN_SHARD_INDEX="${EVAL_TOKEN_SHARD_INDEX:-0}"
+PDM_EVAL_RUNNER="${PDM_EVAL_RUNNER:-exact_pool}"
+FAST_METRIC_CACHE_DIR="${FAST_METRIC_CACHE_DIR:-}"
+DISABLE_TQDM="${DISABLE_TQDM:-1}"
+MAX_SCENES="${MAX_SCENES:-0}"
+
 STATUS_FILE="${STATUS_FILE:-${TRAIN_OUT_ROOT}/status/stage3_rl_2b.json}"
 ARCHIVE_DIR="${EVAL_OUT_ROOT}/checkpoint_archive"
 STATE_DIR="${EVAL_OUT_ROOT}/state"
@@ -43,6 +57,33 @@ fi
 if [[ ! -f "${SUMMARY_TSV}" ]]; then
   printf 'timestamp\tcheckpoint_id\tstate\tcheckpoint\tarchive\teval_dir\trc\n' > "${SUMMARY_TSV}"
 fi
+
+{
+  echo "train_out_root=${TRAIN_OUT_ROOT}"
+  echo "checkpoint_root=${CHECKPOINT_ROOT}"
+  echo "eval_out_root=${EVAL_OUT_ROOT}"
+  echo "eval_script=${EVAL_SCRIPT}"
+  echo "gpu_list=${GPU_LIST}"
+  echo "gpus_per_node=${GPUS_PER_NODE}"
+  echo "wait_for_free_gpus=${WAIT_FOR_FREE_GPUS}"
+  echo "gpu_max_mem_used_mb=${GPU_MAX_MEM_USED_MB}"
+  echo "gpu_max_util=${GPU_MAX_UTIL}"
+  echo "async_pdm_workers=${ASYNC_PDM_WORKERS}"
+  echo "async_pdm_backend=${ASYNC_PDM_BACKEND}"
+  echo "async_pdm_process_start_method=${ASYNC_PDM_PROCESS_START_METHOD}"
+  echo "async_pdm_queue_size=${ASYNC_PDM_QUEUE_SIZE}"
+  echo "async_pdm_progress_every=${ASYNC_PDM_PROGRESS_EVERY}"
+  echo "async_pdm_profile=${ASYNC_PDM_PROFILE}"
+  echo "async_pdm_task_chunk_size=${ASYNC_PDM_TASK_CHUNK_SIZE}"
+  echo "eval_token_shard_count=${EVAL_TOKEN_SHARD_COUNT}"
+  echo "eval_token_shard_index=${EVAL_TOKEN_SHARD_INDEX}"
+  echo "pdm_eval_runner=${PDM_EVAL_RUNNER}"
+  echo "fast_metric_cache_dir=${FAST_METRIC_CACHE_DIR}"
+  echo "disable_tqdm=${DISABLE_TQDM}"
+  echo "max_scenes=${MAX_SCENES}"
+  echo "external_summary_tsv=${EXTERNAL_SUMMARY_TSV}"
+  echo "global_eval_lock_dir=${GLOBAL_EVAL_LOCK_DIR}"
+} > "${EVAL_OUT_ROOT}/watcher_resolved_config.txt"
 
 log() {
   echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) $*"
@@ -255,6 +296,19 @@ PY
     OUT_ROOT="${eval_dir}" \
     GPUS_PER_NODE="${GPUS_PER_NODE}" \
     MASTER_PORT="${master_port}" \
+    ASYNC_PDM_WORKERS="${ASYNC_PDM_WORKERS}" \
+    ASYNC_PDM_BACKEND="${ASYNC_PDM_BACKEND}" \
+    ASYNC_PDM_PROCESS_START_METHOD="${ASYNC_PDM_PROCESS_START_METHOD}" \
+    ASYNC_PDM_QUEUE_SIZE="${ASYNC_PDM_QUEUE_SIZE}" \
+    ASYNC_PDM_PROGRESS_EVERY="${ASYNC_PDM_PROGRESS_EVERY}" \
+    ASYNC_PDM_PROFILE="${ASYNC_PDM_PROFILE}" \
+    ASYNC_PDM_TASK_CHUNK_SIZE="${ASYNC_PDM_TASK_CHUNK_SIZE}" \
+    EVAL_TOKEN_SHARD_COUNT="${EVAL_TOKEN_SHARD_COUNT}" \
+    EVAL_TOKEN_SHARD_INDEX="${EVAL_TOKEN_SHARD_INDEX}" \
+    PDM_EVAL_RUNNER="${PDM_EVAL_RUNNER}" \
+    FAST_METRIC_CACHE_DIR="${FAST_METRIC_CACHE_DIR}" \
+    DISABLE_TQDM="${DISABLE_TQDM}" \
+    MAX_SCENES="${MAX_SCENES}" \
     bash "${EVAL_SCRIPT}" > "${eval_dir}/eval.log" 2>&1
   rc=$?
   set -e

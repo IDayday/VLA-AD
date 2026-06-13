@@ -59,8 +59,14 @@ EVAL_ASYNC_PDM_WORKERS="${EVAL_ASYNC_PDM_WORKERS:-2}"
 EVAL_ASYNC_PDM_BACKEND="${EVAL_ASYNC_PDM_BACKEND:-process}"
 EVAL_ASYNC_PDM_PROCESS_START_METHOD="${EVAL_ASYNC_PDM_PROCESS_START_METHOD:-spawn}"
 EVAL_ASYNC_PDM_QUEUE_SIZE="${EVAL_ASYNC_PDM_QUEUE_SIZE:-$((EVAL_ASYNC_PDM_WORKERS * 2))}"
+EVAL_ASYNC_PDM_PROGRESS_EVERY="${EVAL_ASYNC_PDM_PROGRESS_EVERY:-100}"
+EVAL_ASYNC_PDM_PROFILE="${EVAL_ASYNC_PDM_PROFILE:-0}"
+EVAL_ASYNC_PDM_TASK_CHUNK_SIZE="${EVAL_ASYNC_PDM_TASK_CHUNK_SIZE:-1}"
 EVAL_TOKEN_SHARD_COUNT="${EVAL_TOKEN_SHARD_COUNT:-1}"
 EVAL_TOKEN_SHARD_INDEX="${EVAL_TOKEN_SHARD_INDEX:-0}"
+EVAL_PDM_RUNNER="${EVAL_PDM_RUNNER:-exact_pool}"
+EVAL_DISABLE_TQDM="${EVAL_DISABLE_TQDM:-1}"
+EVAL_MAX_SCENES="${EVAL_MAX_SCENES:-0}"
 
 mkdir -p "${OUT_ROOT}"
 
@@ -103,6 +109,18 @@ write_launch_summary() {
     echo "eval_gpu_max_util=${EVAL_GPU_MAX_UTIL}"
     echo "eval_script=${EVAL_SCRIPT}"
     echo "eval_fast_metric_cache_dir=${EVAL_FAST_METRIC_CACHE_DIR}"
+    echo "eval_async_pdm_workers=${EVAL_ASYNC_PDM_WORKERS}"
+    echo "eval_async_pdm_backend=${EVAL_ASYNC_PDM_BACKEND}"
+    echo "eval_async_pdm_process_start_method=${EVAL_ASYNC_PDM_PROCESS_START_METHOD}"
+    echo "eval_async_pdm_queue_size=${EVAL_ASYNC_PDM_QUEUE_SIZE}"
+    echo "eval_async_pdm_progress_every=${EVAL_ASYNC_PDM_PROGRESS_EVERY}"
+    echo "eval_async_pdm_profile=${EVAL_ASYNC_PDM_PROFILE}"
+    echo "eval_async_pdm_task_chunk_size=${EVAL_ASYNC_PDM_TASK_CHUNK_SIZE}"
+    echo "eval_token_shard_count=${EVAL_TOKEN_SHARD_COUNT}"
+    echo "eval_token_shard_index=${EVAL_TOKEN_SHARD_INDEX}"
+    echo "eval_pdm_runner=${EVAL_PDM_RUNNER}"
+    echo "eval_disable_tqdm=${EVAL_DISABLE_TQDM}"
+    echo "eval_max_scenes=${EVAL_MAX_SCENES}"
   } > "${OUT_ROOT}/strict_gspo_launch_config.txt"
 }
 
@@ -141,9 +159,15 @@ nohup env \
   ASYNC_PDM_WORKERS=$(printf '%q' "${EVAL_ASYNC_PDM_WORKERS}") \
   ASYNC_PDM_QUEUE_SIZE=$(printf '%q' "${EVAL_ASYNC_PDM_QUEUE_SIZE}") \
   ASYNC_PDM_PROCESS_START_METHOD=$(printf '%q' "${EVAL_ASYNC_PDM_PROCESS_START_METHOD}") \
+  ASYNC_PDM_PROGRESS_EVERY=$(printf '%q' "${EVAL_ASYNC_PDM_PROGRESS_EVERY}") \
+  ASYNC_PDM_PROFILE=$(printf '%q' "${EVAL_ASYNC_PDM_PROFILE}") \
+  ASYNC_PDM_TASK_CHUNK_SIZE=$(printf '%q' "${EVAL_ASYNC_PDM_TASK_CHUNK_SIZE}") \
   EVAL_TOKEN_SHARD_COUNT=$(printf '%q' "${EVAL_TOKEN_SHARD_COUNT}") \
   EVAL_TOKEN_SHARD_INDEX=$(printf '%q' "${EVAL_TOKEN_SHARD_INDEX}") \
+  PDM_EVAL_RUNNER=$(printf '%q' "${EVAL_PDM_RUNNER}") \
   FAST_METRIC_CACHE_DIR=$(printf '%q' "${EVAL_FAST_METRIC_CACHE_DIR}") \
+  DISABLE_TQDM=$(printf '%q' "${EVAL_DISABLE_TQDM}") \
+  MAX_SCENES=$(printf '%q' "${EVAL_MAX_SCENES}") \
   EXTERNAL_SUMMARY_TSV=$(printf '%q' "${external_summary_tsv}") \
   EXTERNAL_SUMMARY_SKIP_STATES=started,done \
   GLOBAL_EVAL_LOCK_DIR=$(printf '%q' "${GLOBAL_EVAL_LOCK_DIR}") \
