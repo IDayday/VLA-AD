@@ -63,6 +63,24 @@ fi
 if [[ -n "${REFERENCE_KL_COEFF:-}" ]]; then
   JOB_CMD+="REFERENCE_KL_COEFF=$(printf '%q' "${REFERENCE_KL_COEFF}") "
 fi
+if [[ -n "${REFERENCE_KL_CHUNK_SIZE:-}" ]]; then
+  JOB_CMD+="REFERENCE_KL_CHUNK_SIZE=$(printf '%q' "${REFERENCE_KL_CHUNK_SIZE}") "
+fi
+if [[ -n "${GRPO_USE_GSPO_RATIO:-}" ]]; then
+  JOB_CMD+="GRPO_USE_GSPO_RATIO=$(printf '%q' "${GRPO_USE_GSPO_RATIO}") "
+fi
+if [[ -n "${GRPO_GSPO_CLIP_LOW:-}" ]]; then
+  JOB_CMD+="GRPO_GSPO_CLIP_LOW=$(printf '%q' "${GRPO_GSPO_CLIP_LOW}") "
+fi
+if [[ -n "${GRPO_GSPO_CLIP_HIGH:-}" ]]; then
+  JOB_CMD+="GRPO_GSPO_CLIP_HIGH=$(printf '%q' "${GRPO_GSPO_CLIP_HIGH}") "
+fi
+if [[ -n "${GRPO_BEHAVIOR_POLICY_SYNC_INTERVAL:-}" ]]; then
+  JOB_CMD+="GRPO_BEHAVIOR_POLICY_SYNC_INTERVAL=$(printf '%q' "${GRPO_BEHAVIOR_POLICY_SYNC_INTERVAL}") "
+fi
+if [[ -n "${GRPO_BEHAVIOR_POLICY_SAMPLE:-}" ]]; then
+  JOB_CMD+="GRPO_BEHAVIOR_POLICY_SAMPLE=$(printf '%q' "${GRPO_BEHAVIOR_POLICY_SAMPLE}") "
+fi
 if [[ -n "${GRPO_SCHEDULER_EPOCHS:-}" ]]; then
   JOB_CMD+="GRPO_SCHEDULER_EPOCHS=$(printf '%q' "${GRPO_SCHEDULER_EPOCHS}") "
 fi
