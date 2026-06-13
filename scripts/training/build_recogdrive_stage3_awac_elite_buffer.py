@@ -408,7 +408,7 @@ def main(cfg: DictConfig) -> None:
         )
         cfg.agent.offline_rl_use_fast_pdm_scorer = _env_flag("AWAC_USE_FAST_PDM_SCORER", True)
         cfg.agent.offline_rl_pdm_batch_chunk_size = int(os.getenv("AWAC_PDM_BATCH_CHUNK_SIZE", "0"))
-        cfg.agent.offline_rl_pdm_shadow_check = _env_flag("AWAC_PDM_SHADOW_CHECK", False)
+        cfg.agent.offline_rl_pdm_shadow_check = _env_flag("AWAC_PDM_SHADOW_CHECK", True)
         cfg.agent.offline_rl_pdm_shadow_max_samples = int(os.getenv("AWAC_PDM_SHADOW_MAX_SAMPLES", "4"))
         cfg.agent.offline_rl_pdm_shadow_max_abs_diff = float(os.getenv("AWAC_PDM_SHADOW_MAX_ABS_DIFF", "0.0"))
         cfg.agent.offline_rl_require_buffer_valid_mask = _env_flag("AWAC_REQUIRE_BUFFER_VALID_MASK", True)
