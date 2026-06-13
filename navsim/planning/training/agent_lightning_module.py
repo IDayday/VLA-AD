@@ -93,6 +93,7 @@ class AgentLightningModule(pl.LightningModule):
             "gspo_ratio_clip_frac",
             "bc_coeff",
             "awac_loss",
+            "bc_loss_weight_effective",
             "grpo_loss",
             "reward_mean",
             "reward_max",
