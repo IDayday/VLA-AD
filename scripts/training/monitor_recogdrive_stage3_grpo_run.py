@@ -6,6 +6,8 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import shutil
+import subprocess
 import time
 from pathlib import Path
 from typing import Iterable
@@ -123,6 +125,113 @@ def _read_tsv(path: Path) -> list[dict[str, str]]:
         return list(csv.DictReader(f, delimiter="\t"))
 
 
+def _run_capture(cmd: list[str], timeout: float = 10.0) -> tuple[int, str, str]:
+    try:
+        result = subprocess.run(cmd, check=False, capture_output=True, text=True, timeout=timeout)
+    except Exception as exc:
+        return 127, "", f"{type(exc).__name__}: {exc}"
+    return result.returncode, result.stdout, result.stderr
+
+
+def _parse_gpu_query(stdout: str) -> list[dict[str, str]]:
+    rows = []
+    for line in stdout.splitlines():
+        fields = [part.strip() for part in line.split(",")]
+        if len(fields) < 5:
+            continue
+        rows.append(
+            {
+                "index": fields[0],
+                "memory_used_mb": fields[1],
+                "memory_total_mb": fields[2],
+                "gpu_util_pct": fields[3],
+                "mem_util_pct": fields[4],
+            }
+        )
+    return rows
+
+
+def _parse_pmon(stdout: str) -> list[dict[str, str]]:
+    rows = []
+    for line in stdout.splitlines():
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        fields = line.split()
+        if len(fields) < 6 or fields[1] == "-":
+            continue
+        rows.append(
+            {
+                "gpu": fields[0],
+                "pid": fields[1],
+                "type": fields[2],
+                "sm_pct": fields[3],
+                "mem_pct": fields[4],
+                "command": fields[-1],
+            }
+        )
+    return rows
+
+
+def _print_gpu_snapshot(host_label: str = "local", remote_host: str | None = None) -> None:
+    if remote_host is None and shutil.which("nvidia-smi") is None:
+        print(f"\ngpu_snapshot[{host_label}]: nvidia-smi not found")
+        return
+
+    query_cmd = [
+        "nvidia-smi",
+        "--query-gpu=index,memory.used,memory.total,utilization.gpu,utilization.memory",
+        "--format=csv,noheader,nounits",
+    ]
+    pmon_cmd = ["nvidia-smi", "pmon", "-c", "1"]
+    if remote_host is not None:
+        query_cmd = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", remote_host, " ".join(query_cmd)]
+        pmon_cmd = ["ssh", "-o", "BatchMode=yes", "-o", "ConnectTimeout=10", remote_host, " ".join(pmon_cmd)]
+
+    print(f"\ngpu_snapshot[{host_label}]:")
+    query_rc, query_out, query_err = _run_capture(query_cmd, timeout=15.0)
+    if query_rc == 0:
+        query_rows = _parse_gpu_query(query_out)
+        for row in query_rows:
+            print(
+                "  gpu: "
+                f"idx={row['index']} mem={row['memory_used_mb']}/{row['memory_total_mb']}MB "
+                f"gpu_util={row['gpu_util_pct']}% mem_util={row['mem_util_pct']}%"
+            )
+    else:
+        print(f"  query_error: rc={query_rc} {query_err.strip() or query_out.strip()}")
+        query_rows = []
+
+    pmon_rc, pmon_out, pmon_err = _run_capture(pmon_cmd, timeout=20.0)
+    if pmon_rc != 0:
+        print(f"  pmon_error: rc={pmon_rc} {pmon_err.strip() or pmon_out.strip()}")
+        return
+
+    pmon_rows = _parse_pmon(pmon_out)
+    if not pmon_rows:
+        print("  pmon_active_processes: none")
+        return
+
+    def _num(value: str) -> int:
+        try:
+            return int(value)
+        except ValueError:
+            return -1
+
+    for row in sorted(pmon_rows, key=lambda item: (_num(item["gpu"]), -_num(item["sm_pct"]), item["pid"])):
+        print(
+            "  pmon: "
+            f"gpu={row['gpu']} pid={row['pid']} type={row['type']} "
+            f"sm={row['sm_pct']}% mem={row['mem_pct']}% cmd={row['command']}"
+        )
+
+    if query_rows:
+        zero_query = all(_num(row["gpu_util_pct"]) == 0 for row in query_rows)
+        active_pmon = any(_num(row["sm_pct"]) > 0 for row in pmon_rows)
+        if zero_query and active_pmon:
+            print("  note: query-gpu sampled 0%, but pmon shows active SM usage by CUDA processes.")
+
+
 def _print_status(run_root: Path, epoch_step_target: int) -> None:
     print(f"now: {_utc()}")
     print(f"run_root: {run_root}")
@@ -229,6 +338,19 @@ def main() -> None:
     parser.add_argument("--epoch-step-target", type=int, default=1330)
     parser.add_argument("--watcher", action="append", default=None)
     parser.add_argument("--watcher-log-lines", type=int, default=8)
+    parser.add_argument(
+        "--no-gpu-snapshot",
+        action="store_false",
+        dest="gpu_snapshot",
+        default=True,
+        help="Disable local nvidia-smi query/pmon diagnostics.",
+    )
+    parser.add_argument(
+        "--remote-gpu-host",
+        action="append",
+        default=None,
+        help="SSH host to sample with nvidia-smi query and pmon. Can be passed multiple times.",
+    )
     args = parser.parse_args()
 
     run_root = args.run_root if args.run_root is not None else args.outputs_root / args.run_name
@@ -239,6 +361,10 @@ def main() -> None:
     watcher_names = args.watcher if args.watcher is not None else list(DEFAULT_WATCHERS)
     for watcher_name in watcher_names:
         _print_watcher(run_root, watcher_name, args.watcher_log_lines)
+    if args.gpu_snapshot:
+        _print_gpu_snapshot("local")
+    for remote_host in args.remote_gpu_host or []:
+        _print_gpu_snapshot(remote_host, remote_host=remote_host)
 
 
 if __name__ == "__main__":
