@@ -106,6 +106,14 @@ def _refresh_once(args: argparse.Namespace) -> dict:
         str(args.min_eval_rows),
         "--launch-running-policy",
         args.launch_running_policy,
+        "--launch-resource-policy",
+        args.launch_resource_policy,
+        "--launch-gpu-list",
+        args.launch_gpu_list,
+        "--launch-gpu-max-mem-used-mb",
+        str(args.launch_gpu_max_mem_used_mb),
+        "--launch-gpu-max-util",
+        str(args.launch_gpu_max_util),
         "--output-json",
         str(args.decision_json),
         "--command-file",
@@ -171,6 +179,14 @@ def main() -> None:
         choices=("wait_until_finished", "allow_after_eval"),
         default="wait_until_finished",
     )
+    parser.add_argument(
+        "--launch-resource-policy",
+        choices=("local_gpu_free", "none"),
+        default="local_gpu_free",
+    )
+    parser.add_argument("--launch-gpu-list", default="0,1,2,3,4,5,6,7")
+    parser.add_argument("--launch-gpu-max-mem-used-mb", type=int, default=2000)
+    parser.add_argument("--launch-gpu-max-util", type=int, default=5)
     parser.add_argument("--active-event-age-sec", type=float, default=1800.0)
     parser.add_argument("--max-runs", type=int, default=100)
     parser.add_argument("--print-limit", type=int, default=12)
