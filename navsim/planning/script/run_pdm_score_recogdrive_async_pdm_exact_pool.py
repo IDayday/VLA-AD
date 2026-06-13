@@ -98,6 +98,36 @@ def _metric_cache_loader_from_cfg(cfg: DictConfig):
     return MetricCacheLoader(Path(cfg.metric_cache_path))
 
 
+def _apply_eval_token_shard(tokens: List[str], cfg: DictConfig, *, rank: int) -> List[str]:
+    shard_count = _cfg_int(cfg, "eval_token_shard_count", "RECOGDRIVE_EVAL_TOKEN_SHARD_COUNT", 1)
+    shard_index = _cfg_int(cfg, "eval_token_shard_index", "RECOGDRIVE_EVAL_TOKEN_SHARD_INDEX", 0)
+    if shard_count <= 0:
+        raise ValueError(f"eval_token_shard_count must be positive, got {shard_count}.")
+    if not (0 <= shard_index < shard_count):
+        raise ValueError(
+            f"eval_token_shard_index must be in [0, eval_token_shard_count), "
+            f"got index={shard_index}, count={shard_count}."
+        )
+    if shard_count == 1:
+        return tokens
+
+    sharded_tokens = [token for idx, token in enumerate(tokens) if idx % shard_count == shard_index]
+    if rank == 0:
+        logger.info(
+            "Applied exact eval token shard index=%s/count=%s: %s -> %s tokens",
+            shard_index,
+            shard_count,
+            len(tokens),
+            len(sharded_tokens),
+        )
+    if not sharded_tokens:
+        raise ValueError(
+            f"Exact eval token shard index={shard_index}/count={shard_count} selected no tokens "
+            f"from {len(tokens)} available tokens."
+        )
+    return sharded_tokens
+
+
 def _score_params_from_cfg(cfg: DictConfig) -> Dict[str, Any]:
     scorer_config = cfg.scorer.get("config", {})
     return {
@@ -505,6 +535,7 @@ def main(cfg: DictConfig) -> None:
             logger.warning("Missing metric cache for %s tokens. Skipping these tokens.", num_missing_metric_cache_tokens)
         if num_unused_metric_cache_tokens > 0:
             logger.warning("Unused metric cache for %s tokens. Skipping these tokens.", num_unused_metric_cache_tokens)
+        tokens_to_evaluate = _apply_eval_token_shard(tokens_to_evaluate, cfg, rank=rank)
     else:
         tokens_to_evaluate = []
 

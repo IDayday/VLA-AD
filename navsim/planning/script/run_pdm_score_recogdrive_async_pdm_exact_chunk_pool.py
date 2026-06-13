@@ -29,6 +29,7 @@ from navsim.planning.script.run_pdm_score_recogdrive_async_pdm_exact_pool import
     _build_rank_scene_loader,
     _cfg_int,
     _cfg_str,
+    _apply_eval_token_shard,
     _init_process_pdm_tools,
     _metric_cache_loader_from_cfg,
     _score_one_pdm_scalar_exact,
@@ -290,6 +291,7 @@ def main(cfg: DictConfig) -> None:
             logger.warning("Missing metric cache for %s tokens. Skipping these tokens.", num_missing_metric_cache_tokens)
         if num_unused_metric_cache_tokens > 0:
             logger.warning("Unused metric cache for %s tokens. Skipping these tokens.", num_unused_metric_cache_tokens)
+        tokens_to_evaluate = _apply_eval_token_shard(tokens_to_evaluate, cfg, rank=rank)
     else:
         tokens_to_evaluate = []
 

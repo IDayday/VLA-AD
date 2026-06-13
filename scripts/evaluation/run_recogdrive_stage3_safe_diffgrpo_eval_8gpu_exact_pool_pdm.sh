@@ -21,13 +21,15 @@ NODES="${NODES:-1}"
 NODE_RANK="${NODE_RANK:-${MLP_ROLE_INDEX:-0}}"
 MASTER_ADDR="${MASTER_ADDR:-${MLP_WORKER_0_HOST:-127.0.0.1}}"
 MASTER_PORT="${MASTER_PORT:-${MLP_WORKER_0_PORT:-63691}}"
-ASYNC_PDM_WORKERS="${ASYNC_PDM_WORKERS:-16}"
+ASYNC_PDM_WORKERS="${ASYNC_PDM_WORKERS:-2}"
 ASYNC_PDM_BACKEND="${ASYNC_PDM_BACKEND:-process}"
 ASYNC_PDM_PROCESS_START_METHOD="${ASYNC_PDM_PROCESS_START_METHOD:-spawn}"
 ASYNC_PDM_QUEUE_SIZE="${ASYNC_PDM_QUEUE_SIZE:-$((ASYNC_PDM_WORKERS * 2))}"
 ASYNC_PDM_PROGRESS_EVERY="${ASYNC_PDM_PROGRESS_EVERY:-100}"
 ASYNC_PDM_PROFILE="${ASYNC_PDM_PROFILE:-0}"
 ASYNC_PDM_TASK_CHUNK_SIZE="${ASYNC_PDM_TASK_CHUNK_SIZE:-1}"
+EVAL_TOKEN_SHARD_COUNT="${EVAL_TOKEN_SHARD_COUNT:-1}"
+EVAL_TOKEN_SHARD_INDEX="${EVAL_TOKEN_SHARD_INDEX:-0}"
 PDM_EVAL_RUNNER="${PDM_EVAL_RUNNER:-exact_pool}"
 DISABLE_TQDM="${DISABLE_TQDM:-1}"
 FAST_METRIC_CACHE_DIR="${FAST_METRIC_CACHE_DIR:-}"
@@ -51,6 +53,8 @@ export RECOGDRIVE_ASYNC_PDM_PROCESS_START_METHOD="${ASYNC_PDM_PROCESS_START_METH
 export RECOGDRIVE_ASYNC_PDM_QUEUE_SIZE="${ASYNC_PDM_QUEUE_SIZE}"
 export RECOGDRIVE_ASYNC_PDM_PROGRESS_EVERY="${ASYNC_PDM_PROGRESS_EVERY}"
 export RECOGDRIVE_ASYNC_PDM_PROFILE="${ASYNC_PDM_PROFILE}"
+export RECOGDRIVE_EVAL_TOKEN_SHARD_COUNT="${EVAL_TOKEN_SHARD_COUNT}"
+export RECOGDRIVE_EVAL_TOKEN_SHARD_INDEX="${EVAL_TOKEN_SHARD_INDEX}"
 export RECOGDRIVE_FAST_METRIC_CACHE_PATH="${FAST_METRIC_CACHE_DIR}"
 
 if [[ ! -x "${PYTHON_BIN}" ]]; then
@@ -99,6 +103,18 @@ if [[ "${PDM_EVAL_RUNNER}" != "exact_pool" && "${PDM_EVAL_RUNNER}" != "exact_chu
 fi
 if ! [[ "${ASYNC_PDM_TASK_CHUNK_SIZE}" =~ ^[1-9][0-9]*$ ]]; then
   echo "ASYNC_PDM_TASK_CHUNK_SIZE must be a positive integer, got: ${ASYNC_PDM_TASK_CHUNK_SIZE}" >&2
+  exit 2
+fi
+if ! [[ "${EVAL_TOKEN_SHARD_COUNT}" =~ ^[1-9][0-9]*$ ]]; then
+  echo "EVAL_TOKEN_SHARD_COUNT must be a positive integer, got: ${EVAL_TOKEN_SHARD_COUNT}" >&2
+  exit 2
+fi
+if ! [[ "${EVAL_TOKEN_SHARD_INDEX}" =~ ^[0-9]+$ ]]; then
+  echo "EVAL_TOKEN_SHARD_INDEX must be a non-negative integer, got: ${EVAL_TOKEN_SHARD_INDEX}" >&2
+  exit 2
+fi
+if (( EVAL_TOKEN_SHARD_INDEX >= EVAL_TOKEN_SHARD_COUNT )); then
+  echo "EVAL_TOKEN_SHARD_INDEX must be smaller than EVAL_TOKEN_SHARD_COUNT." >&2
   exit 2
 fi
 
@@ -167,6 +183,8 @@ CMD=(
   "+async_pdm_queue_size=${ASYNC_PDM_QUEUE_SIZE}"
   "+async_pdm_progress_every=${ASYNC_PDM_PROGRESS_EVERY}"
   "+async_pdm_profile=${ASYNC_PDM_PROFILE}"
+  "+eval_token_shard_count=${EVAL_TOKEN_SHARD_COUNT}"
+  "+eval_token_shard_index=${EVAL_TOKEN_SHARD_INDEX}"
 )
 if [[ "${PDM_EVAL_RUNNER}" == "exact_chunk_pool" ]]; then
   CMD+=("+async_pdm_task_chunk_size=${ASYNC_PDM_TASK_CHUNK_SIZE}")
@@ -193,6 +211,8 @@ fi
   echo "async_pdm_queue_size=${ASYNC_PDM_QUEUE_SIZE}"
   echo "async_pdm_profile=${ASYNC_PDM_PROFILE}"
   echo "async_pdm_task_chunk_size=${ASYNC_PDM_TASK_CHUNK_SIZE}"
+  echo "eval_token_shard_count=${EVAL_TOKEN_SHARD_COUNT}"
+  echo "eval_token_shard_index=${EVAL_TOKEN_SHARD_INDEX}"
   echo "pdm_eval_runner=${PDM_EVAL_RUNNER}"
   echo "pdm_score_script=${PDM_SCORE_SCRIPT}"
   echo "disable_tqdm=${DISABLE_TQDM}"

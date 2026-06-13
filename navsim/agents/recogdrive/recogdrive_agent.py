@@ -1892,26 +1892,39 @@ class ReCogDriveAgent(AbstractAgent):
         missing_keys = list(incompatible.missing_keys)
         missing_expert = [key for key in missing_keys if self._is_expert_parameter_key(key) or self._is_last_vla_parameter_key(key)]
         missing_other = [key for key in missing_keys if key not in missing_expert]
+        verbose_key_log = os.environ.get("RECOGDRIVE_CHECKPOINT_LOAD_VERBOSE", "0").strip().lower() in {
+            "1",
+            "true",
+            "yes",
+            "on",
+        }
+        try:
+            key_print_limit = int(os.environ.get("RECOGDRIVE_CHECKPOINT_LOAD_KEY_PRINT_LIMIT", "40"))
+        except ValueError:
+            key_print_limit = 40
+        key_print_limit = max(0, key_print_limit)
+
+        def _print_key_summary(title: str, keys: List[str]) -> None:
+            if not keys:
+                return
+            print(f"  {title}: {len(keys)}")
+            shown_keys = keys if verbose_key_log else keys[:key_print_limit]
+            for key in shown_keys:
+                print(f"    - {key}")
+            omitted = len(keys) - len(shown_keys)
+            if omitted > 0:
+                print(
+                    f"    ... omitted {omitted} keys; set RECOGDRIVE_CHECKPOINT_LOAD_VERBOSE=1 "
+                    "to print the full list"
+                )
 
         print(f"Loaded checkpoint from {path} with strict=False.")
         print(f"  loaded keys: {len(filtered_state)}")
         print(f"  missing keys: {len(missing_keys)}")
-        if missing_expert:
-            print("  expected missing expert keys:")
-            for key in missing_expert:
-                print(f"    - {key}")
-        if missing_other:
-            print("  missing non-expert keys:")
-            for key in missing_other:
-                print(f"    - {key}")
-        if unexpected_keys or incompatible.unexpected_keys:
-            print("  unexpected keys:")
-            for key in [*unexpected_keys, *incompatible.unexpected_keys]:
-                print(f"    - {key}")
-        if skipped_expert_shape:
-            print("  skipped expert shape mismatches:")
-            for item in skipped_expert_shape:
-                print(f"    - {item}")
+        _print_key_summary("expected missing expert keys", missing_expert)
+        _print_key_summary("missing non-expert keys", missing_other)
+        _print_key_summary("unexpected keys", [*unexpected_keys, *incompatible.unexpected_keys])
+        _print_key_summary("skipped expert shape mismatches", skipped_expert_shape)
 
     def _safe_load_last_rd_adapter(self, checkpoint_path: str) -> None:
         path = self._resolve_checkpoint_path(checkpoint_path)
