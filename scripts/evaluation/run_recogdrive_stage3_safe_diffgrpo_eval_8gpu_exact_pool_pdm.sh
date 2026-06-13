@@ -27,6 +27,8 @@ ASYNC_PDM_PROCESS_START_METHOD="${ASYNC_PDM_PROCESS_START_METHOD:-spawn}"
 ASYNC_PDM_QUEUE_SIZE="${ASYNC_PDM_QUEUE_SIZE:-$((ASYNC_PDM_WORKERS * 2))}"
 ASYNC_PDM_PROGRESS_EVERY="${ASYNC_PDM_PROGRESS_EVERY:-100}"
 ASYNC_PDM_PROFILE="${ASYNC_PDM_PROFILE:-0}"
+ASYNC_PDM_TASK_CHUNK_SIZE="${ASYNC_PDM_TASK_CHUNK_SIZE:-1}"
+PDM_EVAL_RUNNER="${PDM_EVAL_RUNNER:-exact_pool}"
 FAST_METRIC_CACHE_DIR="${FAST_METRIC_CACHE_DIR:-}"
 MAX_SCENES="${MAX_SCENES:-0}"
 DRY_RUN="${DRY_RUN:-0}"
@@ -89,6 +91,14 @@ if [[ "${ASYNC_PDM_BACKEND}" != "thread" && "${ASYNC_PDM_BACKEND}" != "process" 
   echo "ASYNC_PDM_BACKEND must be thread or process, got: ${ASYNC_PDM_BACKEND}" >&2
   exit 2
 fi
+if [[ "${PDM_EVAL_RUNNER}" != "exact_pool" && "${PDM_EVAL_RUNNER}" != "exact_chunk_pool" ]]; then
+  echo "PDM_EVAL_RUNNER must be exact_pool or exact_chunk_pool, got: ${PDM_EVAL_RUNNER}" >&2
+  exit 2
+fi
+if ! [[ "${ASYNC_PDM_TASK_CHUNK_SIZE}" =~ ^[1-9][0-9]*$ ]]; then
+  echo "ASYNC_PDM_TASK_CHUNK_SIZE must be a positive integer, got: ${ASYNC_PDM_TASK_CHUNK_SIZE}" >&2
+  exit 2
+fi
 
 "${PYTHON_BIN}" - <<PY
 import sys
@@ -121,6 +131,11 @@ PY
 
 mkdir -p "${OUT_ROOT}"
 
+PDM_SCORE_SCRIPT="${REPO_ROOT}/navsim/planning/script/run_pdm_score_recogdrive_async_pdm_exact_pool.py"
+if [[ "${PDM_EVAL_RUNNER}" == "exact_chunk_pool" ]]; then
+  PDM_SCORE_SCRIPT="${REPO_ROOT}/navsim/planning/script/run_pdm_score_recogdrive_async_pdm_exact_chunk_pool.py"
+fi
+
 CMD=(
   "${TORCHRUN_BIN}"
   "--nnodes=${NODES}"
@@ -128,7 +143,7 @@ CMD=(
   "--master_addr=${MASTER_ADDR}"
   "--nproc_per_node=${GPUS_PER_NODE}"
   "--master_port=${MASTER_PORT}"
-  "${REPO_ROOT}/navsim/planning/script/run_pdm_score_recogdrive_async_pdm_exact_pool.py"
+  "${PDM_SCORE_SCRIPT}"
   "train_test_split=navtest"
   "agent=recogdrive_agent"
   "agent.checkpoint_path='${CHECKPOINT}'"
@@ -151,6 +166,9 @@ CMD=(
   "+async_pdm_progress_every=${ASYNC_PDM_PROGRESS_EVERY}"
   "+async_pdm_profile=${ASYNC_PDM_PROFILE}"
 )
+if [[ "${PDM_EVAL_RUNNER}" == "exact_chunk_pool" ]]; then
+  CMD+=("+async_pdm_task_chunk_size=${ASYNC_PDM_TASK_CHUNK_SIZE}")
+fi
 if [[ -n "${FAST_METRIC_CACHE_DIR}" ]]; then
   CMD+=("+fast_metric_cache_path=${FAST_METRIC_CACHE_DIR}")
 fi
@@ -172,6 +190,9 @@ fi
   echo "async_pdm_process_start_method=${ASYNC_PDM_PROCESS_START_METHOD}"
   echo "async_pdm_queue_size=${ASYNC_PDM_QUEUE_SIZE}"
   echo "async_pdm_profile=${ASYNC_PDM_PROFILE}"
+  echo "async_pdm_task_chunk_size=${ASYNC_PDM_TASK_CHUNK_SIZE}"
+  echo "pdm_eval_runner=${PDM_EVAL_RUNNER}"
+  echo "pdm_score_script=${PDM_SCORE_SCRIPT}"
   echo "fast_metric_cache_dir=${FAST_METRIC_CACHE_DIR}"
   echo "max_scenes=${MAX_SCENES}"
   printf 'command='
