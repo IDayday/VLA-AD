@@ -299,9 +299,17 @@ class OfflineRLConfig:
     preference_dpo_gap_weight_scale: float = 0.05
     preference_dpo_gap_weight_min: float = 0.0
     preference_dpo_gap_weight_max: float = 3.0
+    preference_dpo_loss_schedule: Literal["constant", "linear_warmup"] = "constant"
+    preference_dpo_loss_weight_start: float = 0.0
+    preference_dpo_loss_warmup_start_epoch: int = 0
+    preference_dpo_loss_warmup_epochs: int = 1
 
     # loss weights
     awac_loss_weight: float = 1.0
+    awac_loss_schedule: Literal["constant", "linear_warmup"] = "constant"
+    awac_loss_weight_start: float = 0.0
+    awac_loss_warmup_start_epoch: int = 0
+    awac_loss_warmup_epochs: int = 1
     bc_loss_weight: float = 0.05
     bc_loss_schedule: Literal["constant", "linear"] = "constant"
     bc_loss_weight_start: float = 0.05
@@ -1029,12 +1037,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.component_advantage_clip_min must be <= component_advantage_clip_max.")
         if not (0.0 <= float(cfg.source_balance_min_factor) <= float(cfg.source_balance_max_factor)):
             raise ValueError("offline_rl_cfg.source_balance_max_factor must be >= source_balance_min_factor >= 0.")
+        for name in ("awac_loss_schedule", "preference_dpo_loss_schedule", "grpo_loss_schedule"):
+            if str(getattr(cfg, name)) not in {"constant", "linear_warmup"}:
+                raise ValueError(f"offline_rl_cfg.{name} must be constant or linear_warmup.")
         if str(cfg.bc_loss_schedule) not in {"constant", "linear"}:
             raise ValueError("offline_rl_cfg.bc_loss_schedule must be constant or linear.")
-        if str(cfg.grpo_loss_schedule) not in {"constant", "linear_warmup"}:
-            raise ValueError("offline_rl_cfg.grpo_loss_schedule must be constant or linear_warmup.")
         for name in (
             "awac_loss_weight",
+            "awac_loss_weight_start",
             "bc_loss_weight",
             "bc_loss_weight_start",
             "bc_loss_weight_end",
@@ -1048,6 +1058,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "invalid_repulsion_loss_weight",
             "invalid_repulsion_margin",
             "preference_dpo_loss_weight",
+            "preference_dpo_loss_weight_start",
             "preference_dpo_beta",
             "preference_dpo_min_reward_gap",
             "preference_dpo_gap_weight_scale",
@@ -1076,6 +1087,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.preference_dpo_max_pairs_per_scene must be non-negative.")
         if int(cfg.bc_loss_schedule_epochs) <= 0:
             raise ValueError("offline_rl_cfg.bc_loss_schedule_epochs must be positive.")
+        if int(cfg.awac_loss_warmup_start_epoch) < 0:
+            raise ValueError("offline_rl_cfg.awac_loss_warmup_start_epoch must be non-negative.")
+        if int(cfg.awac_loss_warmup_epochs) <= 0:
+            raise ValueError("offline_rl_cfg.awac_loss_warmup_epochs must be positive.")
+        if int(cfg.preference_dpo_loss_warmup_start_epoch) < 0:
+            raise ValueError("offline_rl_cfg.preference_dpo_loss_warmup_start_epoch must be non-negative.")
+        if int(cfg.preference_dpo_loss_warmup_epochs) <= 0:
+            raise ValueError("offline_rl_cfg.preference_dpo_loss_warmup_epochs must be positive.")
         if int(cfg.grpo_loss_warmup_start_epoch) < 0:
             raise ValueError("offline_rl_cfg.grpo_loss_warmup_start_epoch must be non-negative.")
         if int(cfg.grpo_loss_warmup_epochs) <= 0:
@@ -3799,21 +3818,53 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         end = float(cfg.bc_loss_weight_end)
         return start + (end - start) * progress
 
-    def _current_awac_grpo_loss_weight(self, cfg: OfflineRLConfig) -> float:
-        target = float(cfg.grpo_loss_weight)
+    def _current_linear_warmup_loss_weight(
+        self,
+        *,
+        target: float,
+        schedule: str,
+        start: float,
+        start_epoch: int,
+        warmup_epochs: int,
+    ) -> float:
         if target <= 0.0:
             return 0.0
-        if str(cfg.grpo_loss_schedule) == "constant":
+        if str(schedule) == "constant":
             return target
 
         current_epoch = max(0, int(getattr(self.config, "current_train_epoch", 0)))
-        start_epoch = int(cfg.grpo_loss_warmup_start_epoch)
         if current_epoch < start_epoch:
-            return float(cfg.grpo_loss_weight_start)
-        warmup_epochs = max(1, int(cfg.grpo_loss_warmup_epochs))
+            return float(start)
+        warmup_epochs = max(1, int(warmup_epochs))
         progress = min(float(current_epoch - start_epoch + 1) / float(warmup_epochs), 1.0)
-        start = float(cfg.grpo_loss_weight_start)
         return start + (target - start) * progress
+
+    def _current_awac_loss_weight(self, cfg: OfflineRLConfig) -> float:
+        return self._current_linear_warmup_loss_weight(
+            target=float(cfg.awac_loss_weight),
+            schedule=str(cfg.awac_loss_schedule),
+            start=float(cfg.awac_loss_weight_start),
+            start_epoch=int(cfg.awac_loss_warmup_start_epoch),
+            warmup_epochs=int(cfg.awac_loss_warmup_epochs),
+        )
+
+    def _current_awac_preference_dpo_loss_weight(self, cfg: OfflineRLConfig) -> float:
+        return self._current_linear_warmup_loss_weight(
+            target=float(cfg.preference_dpo_loss_weight),
+            schedule=str(cfg.preference_dpo_loss_schedule),
+            start=float(cfg.preference_dpo_loss_weight_start),
+            start_epoch=int(cfg.preference_dpo_loss_warmup_start_epoch),
+            warmup_epochs=int(cfg.preference_dpo_loss_warmup_epochs),
+        )
+
+    def _current_awac_grpo_loss_weight(self, cfg: OfflineRLConfig) -> float:
+        return self._current_linear_warmup_loss_weight(
+            target=float(cfg.grpo_loss_weight),
+            schedule=str(cfg.grpo_loss_schedule),
+            start=float(cfg.grpo_loss_weight_start),
+            start_epoch=int(cfg.grpo_loss_warmup_start_epoch),
+            warmup_epochs=int(cfg.grpo_loss_warmup_epochs),
+        )
 
     def _load_metric_cache_for_tokens(self, tokens_list) -> Dict[str, Any]:
         if not hasattr(self, "metric_cache_loader"):
@@ -5239,6 +5290,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 selected_real_mask,
                 cfg,
             )
+        preference_dpo_loss_weight_effective = self._current_awac_preference_dpo_loss_weight(cfg)
+        dpo_cfg = cfg
+        if float(preference_dpo_loss_weight_effective) != float(cfg.preference_dpo_loss_weight):
+            dpo_cfg = copy.copy(cfg)
+            dpo_cfg.preference_dpo_loss_weight = float(preference_dpo_loss_weight_effective)
         dpo_loss, dpo_diag = self._compute_diffusion_dpo_preference_loss(
             vl_features,
             action_input,
@@ -5247,9 +5303,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             selected_valid_mask,
             selected_real_mask,
             source_code,
-            cfg,
+            dpo_cfg,
         )
 
+        awac_loss_weight_effective = self._current_awac_loss_weight(cfg)
         bc_loss_weight_effective = self._current_awac_bc_loss_weight(cfg)
         bc_loss = awac_loss.new_zeros(())
         if use_bc_loss and bc_loss_weight_effective > 0.0:
@@ -5272,10 +5329,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             grpo_loss = grpo_out.loss.to(dtype=awac_loss.dtype)
 
         total_loss = (
-            float(cfg.awac_loss_weight) * awac_loss
+            float(awac_loss_weight_effective) * awac_loss
             + float(cfg.pairwise_rank_loss_weight) * rank_loss
             + float(cfg.invalid_repulsion_loss_weight) * invalid_repulsion_loss
-            + float(cfg.preference_dpo_loss_weight) * dpo_loss
+            + float(preference_dpo_loss_weight_effective) * dpo_loss
             + float(bc_loss_weight_effective) * bc_loss
             + float(grpo_loss_weight_effective) * grpo_loss
         )
@@ -5335,6 +5392,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "awac_invalid_repulsion_loss": invalid_repulsion_loss,
             "awac_dpo_loss": dpo_loss,
             "bc_loss": bc_loss,
+            "awac_loss_weight_effective": total_loss.new_tensor(float(awac_loss_weight_effective)).detach(),
+            "preference_dpo_loss_weight_effective": total_loss.new_tensor(
+                float(preference_dpo_loss_weight_effective)
+            ).detach(),
             "bc_loss_weight_effective": total_loss.new_tensor(float(bc_loss_weight_effective)).detach(),
             "grpo_loss": grpo_loss,
             "grpo_loss_weight_effective": total_loss.new_tensor(float(grpo_loss_weight_effective)).detach(),

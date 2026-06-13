@@ -229,6 +229,14 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_preference_dpo_gap_weight_min: float = 0.0,
         offline_rl_preference_dpo_gap_weight_max: float = 3.0,
         offline_rl_awac_loss_weight: float = 1.0,
+        offline_rl_awac_loss_schedule: str = "constant",
+        offline_rl_awac_loss_weight_start: float = 0.0,
+        offline_rl_awac_loss_warmup_start_epoch: int = 0,
+        offline_rl_awac_loss_warmup_epochs: int = 1,
+        offline_rl_preference_dpo_loss_schedule: str = "constant",
+        offline_rl_preference_dpo_loss_weight_start: float = 0.0,
+        offline_rl_preference_dpo_loss_warmup_start_epoch: int = 0,
+        offline_rl_preference_dpo_loss_warmup_epochs: int = 1,
         offline_rl_bc_loss_weight: float = 0.05,
         offline_rl_bc_loss_schedule: str = "constant",
         offline_rl_bc_loss_weight_start: float = 0.05,
@@ -568,6 +576,16 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_preference_dpo_gap_weight_min = float(offline_rl_preference_dpo_gap_weight_min)
         self.offline_rl_preference_dpo_gap_weight_max = float(offline_rl_preference_dpo_gap_weight_max)
         self.offline_rl_awac_loss_weight = float(offline_rl_awac_loss_weight)
+        self.offline_rl_awac_loss_schedule = offline_rl_awac_loss_schedule
+        self.offline_rl_awac_loss_weight_start = float(offline_rl_awac_loss_weight_start)
+        self.offline_rl_awac_loss_warmup_start_epoch = int(offline_rl_awac_loss_warmup_start_epoch)
+        self.offline_rl_awac_loss_warmup_epochs = int(offline_rl_awac_loss_warmup_epochs)
+        self.offline_rl_preference_dpo_loss_schedule = offline_rl_preference_dpo_loss_schedule
+        self.offline_rl_preference_dpo_loss_weight_start = float(offline_rl_preference_dpo_loss_weight_start)
+        self.offline_rl_preference_dpo_loss_warmup_start_epoch = int(
+            offline_rl_preference_dpo_loss_warmup_start_epoch
+        )
+        self.offline_rl_preference_dpo_loss_warmup_epochs = int(offline_rl_preference_dpo_loss_warmup_epochs)
         self.offline_rl_bc_loss_weight = float(offline_rl_bc_loss_weight)
         self.offline_rl_bc_loss_schedule = offline_rl_bc_loss_schedule
         self.offline_rl_bc_loss_weight_start = float(offline_rl_bc_loss_weight_start)
@@ -1097,6 +1115,14 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.preference_dpo_gap_weight_min = self.offline_rl_preference_dpo_gap_weight_min
         offline_cfg.preference_dpo_gap_weight_max = self.offline_rl_preference_dpo_gap_weight_max
         offline_cfg.awac_loss_weight = self.offline_rl_awac_loss_weight
+        offline_cfg.awac_loss_schedule = self.offline_rl_awac_loss_schedule
+        offline_cfg.awac_loss_weight_start = self.offline_rl_awac_loss_weight_start
+        offline_cfg.awac_loss_warmup_start_epoch = self.offline_rl_awac_loss_warmup_start_epoch
+        offline_cfg.awac_loss_warmup_epochs = self.offline_rl_awac_loss_warmup_epochs
+        offline_cfg.preference_dpo_loss_schedule = self.offline_rl_preference_dpo_loss_schedule
+        offline_cfg.preference_dpo_loss_weight_start = self.offline_rl_preference_dpo_loss_weight_start
+        offline_cfg.preference_dpo_loss_warmup_start_epoch = self.offline_rl_preference_dpo_loss_warmup_start_epoch
+        offline_cfg.preference_dpo_loss_warmup_epochs = self.offline_rl_preference_dpo_loss_warmup_epochs
         offline_cfg.bc_loss_weight = self.offline_rl_bc_loss_weight
         offline_cfg.bc_loss_schedule = self.offline_rl_bc_loss_schedule
         offline_cfg.bc_loss_weight_start = self.offline_rl_bc_loss_weight_start

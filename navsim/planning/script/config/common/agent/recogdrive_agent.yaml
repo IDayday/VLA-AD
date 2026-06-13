@@ -137,7 +137,15 @@ offline_rl_preference_dpo_gap_weight_mode: none
 offline_rl_preference_dpo_gap_weight_scale: 0.05
 offline_rl_preference_dpo_gap_weight_min: 0.0
 offline_rl_preference_dpo_gap_weight_max: 3.0
+offline_rl_preference_dpo_loss_schedule: constant
+offline_rl_preference_dpo_loss_weight_start: 0.0
+offline_rl_preference_dpo_loss_warmup_start_epoch: 0
+offline_rl_preference_dpo_loss_warmup_epochs: 1
 offline_rl_awac_loss_weight: 1.0
+offline_rl_awac_loss_schedule: constant
+offline_rl_awac_loss_weight_start: 0.0
+offline_rl_awac_loss_warmup_start_epoch: 0
+offline_rl_awac_loss_warmup_epochs: 1
 offline_rl_bc_loss_weight: 0.05
 offline_rl_bc_loss_schedule: constant
 offline_rl_bc_loss_weight_start: 0.05
