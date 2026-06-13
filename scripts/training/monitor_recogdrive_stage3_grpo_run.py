@@ -44,6 +44,10 @@ SCALAR_TAGS = (
     "train/mean_abs_advantage_step",
     "train/gspo_ratio_mean_step",
     "train/gspo_ratio_clip_frac_step",
+    "train/use_gspo_ratio_step",
+    "train/sampled_from_behavior_policy_step",
+    "train/gspo_clip_low_step",
+    "train/gspo_clip_high_step",
     "lr-AdamW",
 )
 

@@ -29,6 +29,11 @@ bc_coeff_end: 0.1
 bc_anneal_epochs: 1
 reference_kl_coeff: 0.0
 reference_kl_chunk_size: 0
+grpo_use_gspo_ratio: false
+grpo_gspo_clip_low: 0.05
+grpo_gspo_clip_high: 0.05
+grpo_behavior_policy_sync_interval: 4
+grpo_behavior_policy_sample: true
 offline_rl_enabled: false
 offline_rl_elite_buffer_path: ''
 offline_rl_missing_buffer_policy: error

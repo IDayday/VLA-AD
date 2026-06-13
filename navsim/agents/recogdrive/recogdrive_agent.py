@@ -117,6 +117,11 @@ class ReCogDriveAgent(AbstractAgent):
         bc_anneal_epochs: int = 1,
         reference_kl_coeff: float = 0.0,
         reference_kl_chunk_size: int = 0,
+        grpo_use_gspo_ratio: bool = False,
+        grpo_gspo_clip_low: float = 0.05,
+        grpo_gspo_clip_high: float = 0.05,
+        grpo_behavior_policy_sync_interval: int = 4,
+        grpo_behavior_policy_sample: bool = True,
         metric_cache_path: Optional[str] = '', 
         reference_policy_checkpoint: Optional[str] = '', 
         offline_rl_enabled: bool = False,
@@ -471,6 +476,11 @@ class ReCogDriveAgent(AbstractAgent):
         self.bc_anneal_epochs = int(bc_anneal_epochs)
         self.reference_kl_coeff = float(reference_kl_coeff)
         self.reference_kl_chunk_size = int(reference_kl_chunk_size)
+        self.grpo_use_gspo_ratio = bool(grpo_use_gspo_ratio)
+        self.grpo_gspo_clip_low = float(grpo_gspo_clip_low)
+        self.grpo_gspo_clip_high = float(grpo_gspo_clip_high)
+        self.grpo_behavior_policy_sync_interval = int(grpo_behavior_policy_sync_interval)
+        self.grpo_behavior_policy_sample = bool(grpo_behavior_policy_sample)
         if self.bc_coeff_start < 0.0 or self.bc_coeff_end < 0.0:
             raise ValueError("BC coefficients must be non-negative.")
         if self.bc_anneal_epochs <= 0:
@@ -479,6 +489,12 @@ class ReCogDriveAgent(AbstractAgent):
             raise ValueError("reference_kl_coeff must be non-negative.")
         if self.reference_kl_chunk_size < 0:
             raise ValueError("reference_kl_chunk_size must be non-negative.")
+        if not (0.0 <= self.grpo_gspo_clip_low < 1.0):
+            raise ValueError("grpo_gspo_clip_low must be in [0, 1).")
+        if self.grpo_gspo_clip_high < 0.0:
+            raise ValueError("grpo_gspo_clip_high must be non-negative.")
+        if self.grpo_behavior_policy_sync_interval <= 0:
+            raise ValueError("grpo_behavior_policy_sync_interval must be positive.")
         self.backbone = None
         self.metric_cache_path = metric_cache_path
         self.reference_policy_checkpoint = reference_policy_checkpoint
@@ -1175,6 +1191,11 @@ class ReCogDriveAgent(AbstractAgent):
             cfg.grpo_cfg.bc_anneal_epochs = self.bc_anneal_epochs
             cfg.grpo_cfg.reference_kl_coeff = self.reference_kl_coeff
             cfg.grpo_cfg.reference_kl_chunk_size = self.reference_kl_chunk_size
+            cfg.grpo_cfg.use_gspo_ratio = self.grpo_use_gspo_ratio
+            cfg.grpo_cfg.gspo_clip_low = self.grpo_gspo_clip_low
+            cfg.grpo_cfg.gspo_clip_high = self.grpo_gspo_clip_high
+            cfg.grpo_cfg.behavior_policy_sync_interval = self.grpo_behavior_policy_sync_interval
+            cfg.grpo_cfg.behavior_policy_sample = self.grpo_behavior_policy_sample
             
         self.action_head = ReCogDriveDiffusionPlanner(cfg).to(device)
         if self.last_rd_adapter_checkpoint:

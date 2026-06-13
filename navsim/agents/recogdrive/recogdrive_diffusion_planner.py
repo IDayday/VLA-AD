@@ -5898,6 +5898,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "trajectory_logp": trajectory_logp.mean(),
             "gspo_ratio_mean": gspo_ratio_mean.to(dtype=total_loss.dtype),
             "gspo_ratio_clip_frac": gspo_ratio_clip_frac.to(dtype=total_loss.dtype),
+            "use_gspo_ratio": total_loss.new_tensor(float(bool(self.use_gspo_ratio))),
+            "sampled_from_behavior_policy": total_loss.new_tensor(float(bool(sampled_from_behavior_policy))),
+            "gspo_clip_low": total_loss.new_tensor(float(self.gspo_clip_low)),
+            "gspo_clip_high": total_loss.new_tensor(float(self.gspo_clip_high)),
         })
 
     def norm_odo(self, trajectory: torch.Tensor) -> torch.Tensor:
