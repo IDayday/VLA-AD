@@ -56,6 +56,7 @@ def decide_next_action(
     switch_margin: float,
     min_safe_ratio: float,
     min_eval_rows: int,
+    launch_running_policy: str,
 ) -> dict[str, object]:
     state = row.get("training_state", "")
     ckpts = int(row.get("checkpoint_count") or 0)
@@ -75,6 +76,7 @@ def decide_next_action(
         "safe_ratio": safe_ratio,
         "baseline_pdms": baseline_pdms,
         "strict_gspo_command": STRICT_GSPO_COMMAND,
+        "launch_running_policy": launch_running_policy,
         "should_launch_now": False,
         "action": "monitor",
         "reason": "",
@@ -111,16 +113,24 @@ def decide_next_action(
         result["reason"] = "PDMS 已接近或达到历史强基线；继续当前 run 并观察后续 epoch。"
         return result
 
+    allow_running_launch = state == "running" and launch_running_policy == "allow_after_eval"
+
     if safe_ratio is not None and safe_ratio < min_safe_ratio:
         result["action"] = "launch_strict_gspo_after_current_checkpoint"
-        result["should_launch_now"] = state != "running"
-        result["reason"] = "训练安全比例偏低，下一轮需要更强 trust region 与行为策略 ratio 控制。"
+        result["should_launch_now"] = state != "running" or allow_running_launch
+        if allow_running_launch:
+            result["reason"] = "训练安全比例偏低；已允许并行启动 strict GSPO 以充分利用资源。"
+        else:
+            result["reason"] = "训练安全比例偏低，下一轮需要更强 trust region 与行为策略 ratio 控制。"
         return result
 
     if delta <= -switch_margin:
         result["action"] = "launch_strict_gspo_after_current_checkpoint"
-        result["should_launch_now"] = state != "running"
-        result["reason"] = "PDMS 明显低于历史强基线；不要继续离线 AWAC 调参，切 strict GSPO。"
+        result["should_launch_now"] = state != "running" or allow_running_launch
+        if allow_running_launch:
+            result["reason"] = "PDMS 明显低于历史强基线；已允许并行启动 strict GSPO。"
+        else:
+            result["reason"] = "PDMS 明显低于历史强基线；下一轮切 strict GSPO。"
         return result
 
     result["action"] = "continue_one_more_epoch_then_compare"
@@ -137,6 +147,12 @@ def main() -> None:
     parser.add_argument("--switch-margin", type=float, default=0.015)
     parser.add_argument("--min-safe-ratio", type=float, default=0.88)
     parser.add_argument("--min-eval-rows", type=int, default=1)
+    parser.add_argument(
+        "--launch-running-policy",
+        choices=("wait_until_finished", "allow_after_eval"),
+        default="wait_until_finished",
+        help="Whether a poor evaluated checkpoint may trigger a parallel strict-GSPO launch while the current run is still running.",
+    )
     parser.add_argument("--output-json", type=Path, default=DEFAULT_OUTPUT_JSON)
     parser.add_argument("--command-file", type=Path, default=DEFAULT_COMMAND_FILE)
     args = parser.parse_args()
@@ -153,6 +169,7 @@ def main() -> None:
         switch_margin=args.switch_margin,
         min_safe_ratio=args.min_safe_ratio,
         min_eval_rows=args.min_eval_rows,
+        launch_running_policy=args.launch_running_policy,
     )
 
     args.output_json.parent.mkdir(parents=True, exist_ok=True)

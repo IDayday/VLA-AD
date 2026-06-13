@@ -104,6 +104,8 @@ def _refresh_once(args: argparse.Namespace) -> dict:
         str(args.min_safe_ratio),
         "--min-eval-rows",
         str(args.min_eval_rows),
+        "--launch-running-policy",
+        args.launch_running_policy,
         "--output-json",
         str(args.decision_json),
         "--command-file",
@@ -164,6 +166,11 @@ def main() -> None:
     parser.add_argument("--switch-margin", type=float, default=0.015)
     parser.add_argument("--min-safe-ratio", type=float, default=0.88)
     parser.add_argument("--min-eval-rows", type=int, default=1)
+    parser.add_argument(
+        "--launch-running-policy",
+        choices=("wait_until_finished", "allow_after_eval"),
+        default="wait_until_finished",
+    )
     parser.add_argument("--active-event-age-sec", type=float, default=1800.0)
     parser.add_argument("--max-runs", type=int, default=100)
     parser.add_argument("--print-limit", type=int, default=12)
