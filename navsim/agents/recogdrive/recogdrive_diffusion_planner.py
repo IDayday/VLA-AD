@@ -297,6 +297,10 @@ class OfflineRLConfig:
     bc_loss_weight_end: float = 0.05
     bc_loss_schedule_epochs: int = 1
     grpo_loss_weight: float = 0.0
+    grpo_loss_schedule: Literal["constant", "linear_warmup"] = "constant"
+    grpo_loss_weight_start: float = 0.0
+    grpo_loss_warmup_start_epoch: int = 0
+    grpo_loss_warmup_epochs: int = 1
 
     # debugging / logging
     log_candidate_sources: bool = True
@@ -1003,12 +1007,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.source_balance_max_factor must be >= source_balance_min_factor >= 0.")
         if str(cfg.bc_loss_schedule) not in {"constant", "linear"}:
             raise ValueError("offline_rl_cfg.bc_loss_schedule must be constant or linear.")
+        if str(cfg.grpo_loss_schedule) not in {"constant", "linear_warmup"}:
+            raise ValueError("offline_rl_cfg.grpo_loss_schedule must be constant or linear_warmup.")
         for name in (
             "awac_loss_weight",
             "bc_loss_weight",
             "bc_loss_weight_start",
             "bc_loss_weight_end",
             "grpo_loss_weight",
+            "grpo_loss_weight_start",
             "component_progress_weight",
             "component_safety_penalty_weight",
             "pairwise_rank_loss_weight",
@@ -1034,6 +1041,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.preference_dpo_max_pairs_per_scene must be non-negative.")
         if int(cfg.bc_loss_schedule_epochs) <= 0:
             raise ValueError("offline_rl_cfg.bc_loss_schedule_epochs must be positive.")
+        if int(cfg.grpo_loss_warmup_start_epoch) < 0:
+            raise ValueError("offline_rl_cfg.grpo_loss_warmup_start_epoch must be non-negative.")
+        if int(cfg.grpo_loss_warmup_epochs) <= 0:
+            raise ValueError("offline_rl_cfg.grpo_loss_warmup_epochs must be positive.")
         for name in (
             "prior_distance_weight",
             "jerk_penalty_weight",
@@ -3725,6 +3736,22 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         end = float(cfg.bc_loss_weight_end)
         return start + (end - start) * progress
 
+    def _current_awac_grpo_loss_weight(self, cfg: OfflineRLConfig) -> float:
+        target = float(cfg.grpo_loss_weight)
+        if target <= 0.0:
+            return 0.0
+        if str(cfg.grpo_loss_schedule) == "constant":
+            return target
+
+        current_epoch = max(0, int(getattr(self.config, "current_train_epoch", 0)))
+        start_epoch = int(cfg.grpo_loss_warmup_start_epoch)
+        if current_epoch < start_epoch:
+            return float(cfg.grpo_loss_weight_start)
+        warmup_epochs = max(1, int(cfg.grpo_loss_warmup_epochs))
+        progress = min(float(current_epoch - start_epoch + 1) / float(warmup_epochs), 1.0)
+        start = float(cfg.grpo_loss_weight_start)
+        return start + (target - start) * progress
+
     def _load_metric_cache_for_tokens(self, tokens_list) -> Dict[str, Any]:
         if not hasattr(self, "metric_cache_loader"):
             self._init_stage3_oracle(self.config.grpo_cfg)
@@ -5044,7 +5071,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             bc_loss, _ = self._weighted_diffusion_loss_on_targets(vl_features, action_input, gt_targets, gt_weights)
 
         grpo_loss = awac_loss.new_zeros(())
-        if float(cfg.grpo_loss_weight) > 0.0:
+        grpo_loss_weight_effective = self._current_awac_grpo_loss_weight(cfg)
+        if grpo_loss_weight_effective > 0.0:
             if not hasattr(self, "gamma_denoising"):
                 raise RuntimeError("offline_rl_grpo_loss_weight > 0 requires GRPO initialization; set agent.grpo=True.")
             grpo_out = self.forward_grpo(
@@ -5062,7 +5090,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             + float(cfg.invalid_repulsion_loss_weight) * invalid_repulsion_loss
             + float(cfg.preference_dpo_loss_weight) * dpo_loss
             + float(bc_loss_weight_effective) * bc_loss
-            + float(cfg.grpo_loss_weight) * grpo_loss
+            + float(grpo_loss_weight_effective) * grpo_loss
         )
         if not torch.isfinite(total_loss):
             raise ValueError("AWAC/IQL total loss is non-finite.")
@@ -5122,6 +5150,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "bc_loss": bc_loss,
             "bc_loss_weight_effective": total_loss.new_tensor(float(bc_loss_weight_effective)).detach(),
             "grpo_loss": grpo_loss,
+            "grpo_loss_weight_effective": total_loss.new_tensor(float(grpo_loss_weight_effective)).detach(),
             "reward_mean": selected_reward_mean.detach(),
             "reward_max": selected_reward_max.detach(),
             "shaped_reward_mean": ((shaped_rewards.to(total_loss) * real_f).sum() / denom).detach(),
