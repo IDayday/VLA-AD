@@ -114,6 +114,8 @@ def _refresh_once(args: argparse.Namespace) -> dict:
         str(args.launch_gpu_max_mem_used_mb),
         "--launch-gpu-max-util",
         str(args.launch_gpu_max_util),
+        "--launch-lock-file",
+        str(args.launch_lock_file),
         "--output-json",
         str(args.decision_json),
         "--command-file",
@@ -187,6 +189,7 @@ def main() -> None:
     parser.add_argument("--launch-gpu-list", default="0,1,2,3,4,5,6,7")
     parser.add_argument("--launch-gpu-max-mem-used-mb", type=int, default=2000)
     parser.add_argument("--launch-gpu-max-util", type=int, default=5)
+    parser.add_argument("--launch-lock-file", type=Path, default=DEFAULT_OUTPUTS_ROOT / "stage3_next_action_launch.lock")
     parser.add_argument("--active-event-age-sec", type=float, default=1800.0)
     parser.add_argument("--max-runs", type=int, default=100)
     parser.add_argument("--print-limit", type=int, default=12)
