@@ -26,6 +26,7 @@ ASYNC_PDM_BACKEND="${ASYNC_PDM_BACKEND:-process}"
 ASYNC_PDM_PROCESS_START_METHOD="${ASYNC_PDM_PROCESS_START_METHOD:-spawn}"
 ASYNC_PDM_QUEUE_SIZE="${ASYNC_PDM_QUEUE_SIZE:-$((ASYNC_PDM_WORKERS * 2))}"
 ASYNC_PDM_PROGRESS_EVERY="${ASYNC_PDM_PROGRESS_EVERY:-100}"
+ASYNC_PDM_PROFILE="${ASYNC_PDM_PROFILE:-0}"
 FAST_METRIC_CACHE_DIR="${FAST_METRIC_CACHE_DIR:-}"
 DRY_RUN="${DRY_RUN:-0}"
 
@@ -44,6 +45,7 @@ export RECOGDRIVE_ASYNC_PDM_BACKEND="${ASYNC_PDM_BACKEND}"
 export RECOGDRIVE_ASYNC_PDM_PROCESS_START_METHOD="${ASYNC_PDM_PROCESS_START_METHOD}"
 export RECOGDRIVE_ASYNC_PDM_QUEUE_SIZE="${ASYNC_PDM_QUEUE_SIZE}"
 export RECOGDRIVE_ASYNC_PDM_PROGRESS_EVERY="${ASYNC_PDM_PROGRESS_EVERY}"
+export RECOGDRIVE_ASYNC_PDM_PROFILE="${ASYNC_PDM_PROFILE}"
 export RECOGDRIVE_FAST_METRIC_CACHE_PATH="${FAST_METRIC_CACHE_DIR}"
 
 if [[ ! -x "${PYTHON_BIN}" ]]; then
@@ -142,6 +144,7 @@ CMD=(
   "+async_pdm_process_start_method=${ASYNC_PDM_PROCESS_START_METHOD}"
   "+async_pdm_queue_size=${ASYNC_PDM_QUEUE_SIZE}"
   "+async_pdm_progress_every=${ASYNC_PDM_PROGRESS_EVERY}"
+  "+async_pdm_profile=${ASYNC_PDM_PROFILE}"
 )
 if [[ -n "${FAST_METRIC_CACHE_DIR}" ]]; then
   CMD+=("+fast_metric_cache_path=${FAST_METRIC_CACHE_DIR}")
@@ -160,6 +163,7 @@ fi
   echo "async_pdm_backend=${ASYNC_PDM_BACKEND}"
   echo "async_pdm_process_start_method=${ASYNC_PDM_PROCESS_START_METHOD}"
   echo "async_pdm_queue_size=${ASYNC_PDM_QUEUE_SIZE}"
+  echo "async_pdm_profile=${ASYNC_PDM_PROFILE}"
   echo "fast_metric_cache_dir=${FAST_METRIC_CACHE_DIR}"
   printf 'command='
   printf '%q ' "${CMD[@]}"

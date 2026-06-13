@@ -13,6 +13,7 @@ import threading
 import traceback
 import uuid
 import warnings
+import time
 
 import hydra
 import pandas as pd
@@ -79,6 +80,15 @@ def _cfg_str(cfg: DictConfig, key: str, env_key: str, default: str) -> str:
     if value is None:
         value = os.environ.get(env_key, default)
     return str(value)
+
+
+def _cfg_bool(cfg: DictConfig, key: str, env_key: str, default: bool) -> bool:
+    value = cfg.get(key, None)
+    if value is None:
+        value = os.environ.get(env_key, "1" if default else "0")
+    if isinstance(value, bool):
+        return value
+    return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
 
 
 def _metric_cache_loader_from_cfg(cfg: DictConfig):
@@ -151,15 +161,25 @@ def _score_one_pdm_scalar_exact(
     rank: int,
     index: int,
     score_params: Optional[Dict[str, Any]] = None,
+    profile: bool = False,
+    local_timing: Optional[Dict[str, float]] = None,
 ) -> Dict[str, Any]:
     """Score one trajectory with the original scalar pdm_score implementation."""
     score_row: Dict[str, Any] = {"token": token, "valid": True, "rank": rank, "_index": index}
+    if profile and local_timing:
+        score_row.update(local_timing)
+    total_start = time.perf_counter()
+    metric_cache_load_s = float("nan")
+    pdm_score_s = float("nan")
     try:
         if score_params is None:
             future_sampling, simulator, scorer = _get_process_pdm_tools()
         else:
             future_sampling, simulator, scorer = _get_thread_pdm_tools(score_params)
+        load_start = time.perf_counter()
         metric_cache: MetricCache = load_metric_cache_auto(Path(metric_cache_path))
+        metric_cache_load_s = time.perf_counter() - load_start
+        score_start = time.perf_counter()
         pdm_result = pdm_score(
             metric_cache=metric_cache,
             model_trajectory=Trajectory(poses),
@@ -167,11 +187,16 @@ def _score_one_pdm_scalar_exact(
             simulator=simulator,
             scorer=scorer,
         )
+        pdm_score_s = time.perf_counter() - score_start
         score_row.update(asdict(pdm_result))
     except Exception:
         logger.warning("----------- exact PDM scoring failed for token %s:", token)
         traceback.print_exc()
         score_row["valid"] = False
+    if profile:
+        score_row["_timing_metric_cache_load_s"] = metric_cache_load_s
+        score_row["_timing_pdm_score_s"] = pdm_score_s
+        score_row["_timing_pdm_total_s"] = time.perf_counter() - total_start
     return score_row
 
 
@@ -195,6 +220,58 @@ def _drain_pending(
     for future in done:
         rows.append(future.result())
     return remaining
+
+
+def _mean_timing(rows: List[Dict[str, Any]], key: str) -> float:
+    values: List[float] = []
+    for row in rows:
+        value = row.get(key)
+        if value is None:
+            continue
+        try:
+            value_f = float(value)
+        except (TypeError, ValueError):
+            continue
+        if value_f == value_f:
+            values.append(value_f)
+    if not values:
+        return float("nan")
+    return sum(values) / len(values)
+
+
+def _sum_timing(rows: List[Dict[str, Any]], key: str) -> float:
+    total = 0.0
+    any_value = False
+    for row in rows:
+        value = row.get(key)
+        if value is None:
+            continue
+        try:
+            value_f = float(value)
+        except (TypeError, ValueError):
+            continue
+        if value_f == value_f:
+            total += value_f
+            any_value = True
+    return total if any_value else float("nan")
+
+
+def _log_profile_summary(rows: List[Dict[str, Any]], *, rank: int) -> None:
+    timing_keys = (
+        "_timing_scene_load_s",
+        "_timing_agent_compute_s",
+        "_timing_metric_cache_load_s",
+        "_timing_pdm_score_s",
+        "_timing_pdm_total_s",
+    )
+    summary = {
+        key: {
+            "mean_s": _mean_timing(rows, key),
+            "sum_s": _sum_timing(rows, key),
+        }
+        for key in timing_keys
+    }
+    logger.info("Rank %s exact eval timing profile: %s", rank, summary)
 
 
 def _build_rank_scene_loader(cfg: DictConfig, log_names: List[str], tokens: List[str], agent: AbstractAgent) -> SceneLoader:
@@ -241,6 +318,7 @@ def run_pdm_score_async_exact_pool(args: List[Dict[str, Any]]) -> bytes:
         _cfg_int(cfg, "async_pdm_queue_size", "RECOGDRIVE_ASYNC_PDM_QUEUE_SIZE", max(2 * pdm_workers, 1)),
     )
     progress_every = max(0, _cfg_int(cfg, "async_pdm_progress_every", "RECOGDRIVE_ASYNC_PDM_PROGRESS_EVERY", 100))
+    profile = _cfg_bool(cfg, "async_pdm_profile", "RECOGDRIVE_ASYNC_PDM_PROFILE", False)
     backend = _cfg_str(cfg, "async_pdm_backend", "RECOGDRIVE_ASYNC_PDM_BACKEND", "thread").lower()
     process_start_method = _cfg_str(
         cfg,
@@ -291,9 +369,16 @@ def run_pdm_score_async_exact_pool(args: List[Dict[str, Any]]) -> bytes:
                 rows.append({"token": token, "valid": False, "rank": rank, "_index": idx})
                 continue
 
+            local_timing: Dict[str, float] = {}
             try:
+                scene_start = time.perf_counter()
                 agent_input = scene_loader.get_agent_input_from_token(token)
+                if profile:
+                    local_timing["_timing_scene_load_s"] = time.perf_counter() - scene_start
+                agent_start = time.perf_counter()
                 trajectory = agent.compute_trajectory(agent_input)
+                if profile:
+                    local_timing["_timing_agent_compute_s"] = time.perf_counter() - agent_start
                 poses = trajectory.poses
                 metric_cache_path = str(metric_cache_loader.metric_cache_paths[token])
                 if executor is None:
@@ -305,6 +390,8 @@ def run_pdm_score_async_exact_pool(args: List[Dict[str, Any]]) -> bytes:
                             rank=rank,
                             index=idx,
                             score_params=score_params,
+                            profile=profile,
+                            local_timing=local_timing,
                         )
                     )
                 elif backend == "process":
@@ -317,6 +404,8 @@ def run_pdm_score_async_exact_pool(args: List[Dict[str, Any]]) -> bytes:
                             rank=rank,
                             index=idx,
                             score_params=None,
+                            profile=profile,
+                            local_timing=local_timing,
                         )
                     )
                 else:
@@ -329,6 +418,8 @@ def run_pdm_score_async_exact_pool(args: List[Dict[str, Any]]) -> bytes:
                             rank=rank,
                             index=idx,
                             score_params=score_params,
+                            profile=profile,
+                            local_timing=local_timing,
                         )
                     )
                 if len(pending) >= queue_size:
@@ -336,7 +427,10 @@ def run_pdm_score_async_exact_pool(args: List[Dict[str, Any]]) -> bytes:
             except Exception:
                 logger.warning("----------- Agent failed for token %s:", token)
                 traceback.print_exc()
-                rows.append({"token": token, "valid": False, "rank": rank, "_index": idx})
+                failed_row = {"token": token, "valid": False, "rank": rank, "_index": idx}
+                if profile:
+                    failed_row.update(local_timing)
+                rows.append(failed_row)
 
             pending = _drain_pending(pending, rows)
 
@@ -346,6 +440,8 @@ def run_pdm_score_async_exact_pool(args: List[Dict[str, Any]]) -> bytes:
             executor.shutdown(wait=True)
 
     rows.sort(key=lambda row: int(row.get("_index", 0)))
+    if profile:
+        _log_profile_summary(rows, rank=rank)
     for row in rows:
         row.pop("_index", None)
     return pickle.dumps(rows)
