@@ -21,7 +21,7 @@ GPU_MAX_UTIL="${GPU_MAX_UTIL:-10}"
 RETRY_FAILED="${RETRY_FAILED:-0}"
 EXIT_WHEN_TRAINING_DONE_AND_QUEUE_EMPTY="${EXIT_WHEN_TRAINING_DONE_AND_QUEUE_EMPTY:-1}"
 
-STATUS_FILE="${TRAIN_OUT_ROOT}/status/stage3_rl_2b.json"
+STATUS_FILE="${STATUS_FILE:-${TRAIN_OUT_ROOT}/status/stage3_rl_2b.json}"
 ARCHIVE_DIR="${EVAL_OUT_ROOT}/checkpoint_archive"
 STATE_DIR="${EVAL_OUT_ROOT}/state"
 SUMMARY_TSV="${EVAL_OUT_ROOT}/checkpoint_eval_summary.tsv"
@@ -49,7 +49,11 @@ checkpoint_id() {
 }
 
 training_state() {
-  if [[ ! -f "${STATUS_FILE}" ]]; then
+  local status_file="${STATUS_FILE}"
+  if [[ ! -f "${status_file}" ]]; then
+    status_file="$(find "${TRAIN_OUT_ROOT}/status" -maxdepth 1 -type f -name '*.json' -printf '%T@ %p\n' 2>/dev/null | sort -nr | head -n 1 | cut -d' ' -f2- || true)"
+  fi
+  if [[ -z "${status_file}" || ! -f "${status_file}" ]]; then
     echo "unknown"
     return
   fi
@@ -58,7 +62,7 @@ import json
 from pathlib import Path
 
 try:
-    payload = json.loads(Path("${STATUS_FILE}").read_text())
+    payload = json.loads(Path("${status_file}").read_text())
 except Exception:
     print("unknown")
 else:
