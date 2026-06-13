@@ -55,7 +55,7 @@ from .blocks.encoder import (
 )
 from .recogdrive_dit import LightningDiT
 from .offline_action_explorer import build_structured_perturbations
-from .offline_rl_buffer import REQUIRED_COMPONENT_KEYS, load_elite_record
+from .offline_rl_buffer import REQUIRED_COMPONENT_KEYS, load_elite_record, load_elite_record_path
 from .expert_fusion import (
     AlignmentHead,
     ExpertAdapter768,
@@ -179,6 +179,9 @@ class OfflineRLConfig:
     require_buffer_valid_mask: bool = True
     allow_v1_buffer_recompute_valid_mask: bool = True
     recompute_buffer_valid_mask_on_load: bool = False
+    cache_elite_records_in_memory: bool = False
+    preload_elite_buffer: bool = False
+    elite_buffer_preload_max_records: int = 0
 
     # online candidate generation fallback / optional mode
     build_candidates_online: bool = False
@@ -254,6 +257,27 @@ class OfflineRLConfig:
     train_only_valid_candidates: bool = True
     min_reward_margin_to_gt_for_extra_weight: float = 0.0
     allow_zero_weight_rows: bool = True
+
+    # component-aware advantage shaping
+    component_advantage_enabled: bool = False
+    component_progress_weight: float = 0.05
+    component_safety_penalty_weight: float = 0.20
+    component_advantage_clip_min: float = -0.10
+    component_advantage_clip_max: float = 0.05
+
+    # source balancing across GT/IL/policy/structured perturbation targets
+    source_balance_enabled: bool = False
+    source_balance_min_factor: float = 0.50
+    source_balance_max_factor: float = 2.00
+
+    # same-scene preference losses on diffusion target likelihood
+    pairwise_rank_loss_weight: float = 0.0
+    pairwise_rank_margin: float = 0.02
+    pairwise_rank_min_reward_gap: float = 0.02
+    pairwise_rank_max_pairs_per_scene: int = 2
+    invalid_repulsion_loss_weight: float = 0.0
+    invalid_repulsion_margin: float = 0.05
+    invalid_repulsion_max_pairs_per_scene: int = 2
 
     # loss weights
     awac_loss_weight: float = 1.0
@@ -933,6 +957,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.pdm_shadow_max_samples must be non-negative.")
         if float(cfg.pdm_shadow_max_abs_diff) < 0.0:
             raise ValueError("offline_rl_cfg.pdm_shadow_max_abs_diff must be non-negative.")
+        if int(cfg.elite_buffer_preload_max_records) < 0:
+            raise ValueError("offline_rl_cfg.elite_buffer_preload_max_records must be non-negative.")
         if int(cfg.elite_buffer_version) < 2:
             raise ValueError("offline_rl_cfg.elite_buffer_version must be >= 2.")
         if float(cfg.advantage_temperature) <= 0.0:
@@ -955,6 +981,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.top_mean_frac must be in (0, 1].")
         if float(cfg.advantage_clip_min) > float(cfg.advantage_clip_max):
             raise ValueError("offline_rl_cfg.advantage_clip_min must be <= advantage_clip_max.")
+        if float(cfg.component_advantage_clip_min) > float(cfg.component_advantage_clip_max):
+            raise ValueError("offline_rl_cfg.component_advantage_clip_min must be <= component_advantage_clip_max.")
+        if not (0.0 <= float(cfg.source_balance_min_factor) <= float(cfg.source_balance_max_factor)):
+            raise ValueError("offline_rl_cfg.source_balance_max_factor must be >= source_balance_min_factor >= 0.")
         if str(cfg.bc_loss_schedule) not in {"constant", "linear"}:
             raise ValueError("offline_rl_cfg.bc_loss_schedule must be constant or linear.")
         for name in (
@@ -963,9 +993,20 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "bc_loss_weight_start",
             "bc_loss_weight_end",
             "grpo_loss_weight",
+            "component_progress_weight",
+            "component_safety_penalty_weight",
+            "pairwise_rank_loss_weight",
+            "pairwise_rank_margin",
+            "pairwise_rank_min_reward_gap",
+            "invalid_repulsion_loss_weight",
+            "invalid_repulsion_margin",
         ):
             if float(getattr(cfg, name)) < 0.0:
                 raise ValueError(f"offline_rl_cfg.{name} must be non-negative.")
+        if int(cfg.pairwise_rank_max_pairs_per_scene) < 0:
+            raise ValueError("offline_rl_cfg.pairwise_rank_max_pairs_per_scene must be non-negative.")
+        if int(cfg.invalid_repulsion_max_pairs_per_scene) < 0:
+            raise ValueError("offline_rl_cfg.invalid_repulsion_max_pairs_per_scene must be non-negative.")
         if int(cfg.bc_loss_schedule_epochs) <= 0:
             raise ValueError("offline_rl_cfg.bc_loss_schedule_epochs must be positive.")
         for name in (
@@ -1034,6 +1075,57 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             self._safe_load_reference_policy(str(checkpoint_path) if checkpoint_path is not None else stage3_cfg.reference_policy_checkpoint)
             self.old_policy = copy.deepcopy(self)
             self._freeze_policy(self.old_policy)
+        self._awac_elite_record_cache: Dict[str, Dict[str, Any]] = {}
+        self._awac_elite_record_cache_root = ""
+        if (
+            bool(cfg.preload_elite_buffer)
+            and bool(str(cfg.elite_buffer_path))
+            and not bool(cfg.build_candidates_online)
+        ):
+            self._preload_awac_elite_buffer(cfg)
+
+    def _reset_awac_elite_record_cache_if_needed(self, buffer_root: Path) -> None:
+        root_key = str(Path(buffer_root).resolve())
+        if getattr(self, "_awac_elite_record_cache_root", "") != root_key:
+            self._awac_elite_record_cache = {}
+            self._awac_elite_record_cache_root = root_key
+
+    def _preload_awac_elite_buffer(self, cfg: OfflineRLConfig) -> None:
+        buffer_root = Path(cfg.elite_buffer_path)
+        if not buffer_root.is_dir():
+            raise FileNotFoundError(f"AWAC elite buffer path does not exist: {buffer_root}")
+        self._reset_awac_elite_record_cache_if_needed(buffer_root)
+        paths = sorted(buffer_root.glob("*.pkl.xz"))
+        max_records = int(cfg.elite_buffer_preload_max_records)
+        if max_records > 0:
+            paths = paths[:max_records]
+        if not paths:
+            raise FileNotFoundError(f"AWAC elite buffer path has no *.pkl.xz records: {buffer_root}")
+        cache = self._awac_elite_record_cache
+        for path in paths:
+            record = load_elite_record_path(path)
+            cache[str(record["token"])] = record
+
+    def _load_elite_record_cached(
+        self,
+        buffer_root: Path,
+        token: str,
+        cfg: OfflineRLConfig,
+    ) -> Dict[str, Any]:
+        if not (bool(cfg.cache_elite_records_in_memory) or bool(cfg.preload_elite_buffer)):
+            return load_elite_record(buffer_root, token)
+        self._reset_awac_elite_record_cache_if_needed(buffer_root)
+        cache = self._awac_elite_record_cache
+        token = str(token)
+        record = cache.get(token)
+        if record is None:
+            record = load_elite_record(buffer_root, token)
+            cache[token] = record
+        elif str(record.get("token", "")) != token:
+            raise ValueError(
+                f"AWAC elite buffer cache token mismatch: requested={token!r}, record={record.get('token')!r}."
+            )
+        return record
 
     def _init_stage3_runtime(self, cfg: GRPOConfig) -> None:
         """Initializes Stage3 sampling/runtime hyperparameters shared by GRPO and AWAC/IQL."""
@@ -3999,6 +4091,82 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError(f"Unsupported offline_rl baseline_mode: {cfg.baseline_mode!r}")
         return baseline.float()
 
+    @staticmethod
+    def _component_anchor_value(
+        values: torch.Tensor,
+        source_code: torch.Tensor,
+        real_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        anchor_mask = ((source_code == 1) | (source_code == 2)) & real_mask
+        anchor_values = values.float().masked_fill(~anchor_mask, -torch.inf)
+        anchor = anchor_values.max(dim=1).values
+        fallback_values = values.float().masked_fill(~real_mask, -torch.inf)
+        fallback = fallback_values.max(dim=1).values
+        fallback = torch.where(torch.isfinite(fallback), fallback, torch.zeros_like(fallback))
+        return torch.where(torch.isfinite(anchor), anchor, fallback)
+
+    def _compute_component_aware_rewards(
+        self,
+        rewards: torch.Tensor,
+        components: Dict[str, torch.Tensor],
+        source_code: torch.Tensor,
+        real_mask: torch.Tensor,
+        valid_mask: torch.Tensor,
+        cfg: OfflineRLConfig,
+    ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+        zero = rewards.new_zeros(())
+        if not bool(cfg.component_advantage_enabled):
+            return rewards.float(), {
+                "component_reward_delta_mean": zero,
+                "component_reward_delta_min": zero,
+                "component_reward_delta_max": zero,
+                "component_progress_bonus_mean": zero,
+                "component_safety_penalty_mean": zero,
+            }
+
+        ep = components["ego_progress"].float()
+        ep_anchor = self._component_anchor_value(ep, source_code, real_mask)
+        progress_bonus = (ep - ep_anchor[:, None]).clamp(min=0.0) * float(cfg.component_progress_weight)
+
+        safety_penalty = torch.zeros_like(rewards, dtype=torch.float32)
+        for key in (
+            "no_at_fault_collisions",
+            "drivable_area_compliance",
+            "time_to_collision_within_bound",
+            "driving_direction_compliance",
+        ):
+            value = components[key].float()
+            anchor = self._component_anchor_value(value, source_code, real_mask)
+            safety_penalty = safety_penalty + (anchor[:, None] - value).clamp(min=0.0)
+        safety_penalty = safety_penalty * float(cfg.component_safety_penalty_weight)
+
+        delta = (progress_bonus - safety_penalty).clamp(
+            float(cfg.component_advantage_clip_min),
+            float(cfg.component_advantage_clip_max),
+        )
+        delta = delta * real_mask.to(delta)
+        shaped_rewards = rewards.float() + delta
+        active = real_mask
+        if bool(active.any().item()):
+            delta_active = delta[active]
+            progress_active = progress_bonus[active]
+            penalty_active = safety_penalty[active]
+        else:
+            delta_active = delta.reshape(-1)
+            progress_active = progress_bonus.reshape(-1)
+            penalty_active = safety_penalty.reshape(-1)
+        valid_active = valid_mask & real_mask
+        return shaped_rewards, {
+            "component_reward_delta_mean": delta_active.mean().to(rewards),
+            "component_reward_delta_min": delta_active.min().to(rewards),
+            "component_reward_delta_max": delta_active.max().to(rewards),
+            "component_progress_bonus_mean": progress_active.mean().to(rewards),
+            "component_safety_penalty_mean": penalty_active.mean().to(rewards),
+            "component_valid_reward_delta_mean": (
+                delta[valid_active].mean().to(rewards) if bool(valid_active.any().item()) else zero
+            ),
+        }
+
     def _compute_awac_weights(
         self,
         rewards: torch.Tensor,
@@ -4050,6 +4218,67 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise RuntimeError("AWAC/IQL produced zero positive-weight rows and allow_zero_weight_rows=False.")
         return weights.float(), adv.float(), diagnostics
 
+    def _apply_awac_source_balance(
+        self,
+        weights: torch.Tensor,
+        source_code: torch.Tensor,
+        real_mask: torch.Tensor,
+        cfg: OfflineRLConfig,
+    ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+        zero = weights.new_zeros(())
+        if not bool(cfg.source_balance_enabled):
+            return weights, {
+                "source_balance_factor_mean": weights.new_tensor(1.0),
+                "source_balance_factor_min": weights.new_tensor(1.0),
+                "source_balance_factor_max": weights.new_tensor(1.0),
+                "source_balance_active_sources": zero,
+            }
+
+        balanced = weights.float().clone()
+        active_mask = (balanced > 0.0) & real_mask
+        if not bool(active_mask.any().item()):
+            return balanced, {
+                "source_balance_factor_mean": weights.new_tensor(1.0),
+                "source_balance_factor_min": weights.new_tensor(1.0),
+                "source_balance_factor_max": weights.new_tensor(1.0),
+                "source_balance_active_sources": zero,
+            }
+
+        factors = []
+        source_sums = []
+        active_codes = []
+        for code in range(1, 7):
+            mask = active_mask & (source_code == code)
+            source_sum = balanced[mask].sum()
+            if float(source_sum.detach().cpu().item()) > 0.0:
+                active_codes.append(code)
+                source_sums.append(source_sum)
+        if not source_sums:
+            return balanced, {
+                "source_balance_factor_mean": weights.new_tensor(1.0),
+                "source_balance_factor_min": weights.new_tensor(1.0),
+                "source_balance_factor_max": weights.new_tensor(1.0),
+                "source_balance_active_sources": zero,
+            }
+
+        total = torch.stack(source_sums).sum()
+        target_per_source = total / max(1, len(source_sums))
+        for code, source_sum in zip(active_codes, source_sums):
+            factor = (target_per_source / source_sum.clamp(min=1e-6)).clamp(
+                float(cfg.source_balance_min_factor),
+                float(cfg.source_balance_max_factor),
+            )
+            balanced = torch.where((source_code == code) & active_mask, balanced * factor, balanced)
+            factors.append(factor)
+
+        factor_tensor = torch.stack(factors) if factors else weights.new_ones((1,))
+        return balanced.to(weights), {
+            "source_balance_factor_mean": factor_tensor.mean().to(weights),
+            "source_balance_factor_min": factor_tensor.min().to(weights),
+            "source_balance_factor_max": factor_tensor.max().to(weights),
+            "source_balance_active_sources": weights.new_tensor(float(len(active_codes))),
+        }
+
     def _repeat_action_input_for_loss(self, action_input: BatchFeature, repeat: int) -> BatchFeature:
         repeated = self._repeat_expert_action_input(action_input, repeat)
         data: Dict[str, Any] = dict(repeated) if repeated is not None else {}
@@ -4064,6 +4293,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         action_input: BatchFeature,
         target_trajs: torch.Tensor,
         weights: torch.Tensor,
+        return_per_sample_loss: bool = False,
     ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         if target_trajs.ndim != 4 or target_trajs.shape[-1] != 3:
             raise ValueError(f"target_trajs must have shape [B, M, H, 3], got {tuple(target_trajs.shape)}.")
@@ -4077,7 +4307,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         if not torch.isfinite(targets).all():
             raise ValueError("AWAC target trajectories contain non-finite values.")
         raw_weight_sum = flat_weights.sum()
-        if float(raw_weight_sum.detach().cpu().item()) <= 0.0:
+        zero_weight_batch = raw_weight_sum.detach() <= 0.0
+        if bool(zero_weight_batch.cpu().item()) and not return_per_sample_loss:
             zero_loss = next(self.parameters()).float().sum() * 0.0
             return zero_loss, {
                 "per_sample_loss_mean": zero_loss.detach(),
@@ -4085,6 +4316,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "effective_weight_sum": raw_weight_sum.detach().to(device=zero_loss.device, dtype=zero_loss.dtype),
                 "zero_weight_ratio": flat_weights.new_tensor(1.0).to(device=zero_loss.device, dtype=zero_loss.dtype),
                 "zero_weight_batch": flat_weights.new_tensor(1.0).to(device=zero_loss.device, dtype=zero_loss.dtype),
+                **(
+                    {"per_sample_loss_matrix": target_trajs.new_zeros((B, M), dtype=torch.float32)}
+                    if return_per_sample_loss
+                    else {}
+                ),
             }
         target_norm = self.norm_odo(targets).clamp(-1.0, 1.0)
         noise = torch.randn_like(target_norm)
@@ -4116,9 +4352,90 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "target_norm_mean": target_norm.detach().float().abs().mean().to(dtype=awac_loss.dtype),
             "effective_weight_sum": valid_weight_sum.detach().to(dtype=awac_loss.dtype),
             "zero_weight_ratio": (flat_weights <= 0).float().mean().to(device=awac_loss.device, dtype=awac_loss.dtype),
-            "zero_weight_batch": awac_loss.new_zeros(()),
+            "zero_weight_batch": zero_weight_batch.to(device=awac_loss.device, dtype=awac_loss.dtype),
         }
+        if return_per_sample_loss:
+            diagnostics["per_sample_loss_matrix"] = per_sample_loss.reshape(B, M)
         return awac_loss, diagnostics
+
+    def _compute_awac_preference_losses(
+        self,
+        per_target_loss: torch.Tensor,
+        ordering_rewards: torch.Tensor,
+        valid_mask: torch.Tensor,
+        real_mask: torch.Tensor,
+        cfg: OfflineRLConfig,
+    ) -> tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
+        if per_target_loss.shape != ordering_rewards.shape:
+            raise ValueError(
+                "per_target_loss and ordering_rewards must have the same shape, got "
+                f"{tuple(per_target_loss.shape)} and {tuple(ordering_rewards.shape)}."
+            )
+        zero = per_target_loss.sum() * 0.0
+        rank_terms = []
+        invalid_terms = []
+        rank_pair_count = 0
+        invalid_pair_count = 0
+        max_rank_pairs = int(cfg.pairwise_rank_max_pairs_per_scene)
+        max_invalid_pairs = int(cfg.invalid_repulsion_max_pairs_per_scene)
+        rank_enabled = float(cfg.pairwise_rank_loss_weight) > 0.0 and max_rank_pairs > 0
+        invalid_enabled = float(cfg.invalid_repulsion_loss_weight) > 0.0 and max_invalid_pairs > 0
+        if not rank_enabled and not invalid_enabled:
+            return zero, zero, {
+                "pairwise_rank_pair_count": per_target_loss.new_zeros(()),
+                "invalid_repulsion_pair_count": per_target_loss.new_zeros(()),
+                "pairwise_rank_active_row_ratio": per_target_loss.new_zeros(()),
+                "invalid_repulsion_active_row_ratio": per_target_loss.new_zeros(()),
+            }
+
+        rank_rows = 0
+        invalid_rows = 0
+        B = int(per_target_loss.shape[0])
+        for b in range(B):
+            row_real = real_mask[b]
+            row_valid = valid_mask[b] & row_real
+            valid_idx = torch.nonzero(row_valid, as_tuple=False).flatten()
+            if valid_idx.numel() == 0:
+                continue
+            valid_rewards = ordering_rewards[b, valid_idx].float()
+            high_pos = int(torch.argmax(valid_rewards).item())
+            high_idx = valid_idx[high_pos]
+            high_reward = ordering_rewards[b, high_idx].float()
+            high_loss = per_target_loss[b, high_idx]
+
+            if rank_enabled and valid_idx.numel() > 1:
+                reward_gap = high_reward - ordering_rewards[b, valid_idx].float()
+                low_mask = reward_gap >= float(cfg.pairwise_rank_min_reward_gap)
+                low_mask[high_pos] = False
+                low_idx = valid_idx[low_mask]
+                if low_idx.numel() > 0:
+                    low_rewards = ordering_rewards[b, low_idx].float()
+                    order = torch.argsort(low_rewards, descending=False)
+                    low_idx = low_idx[order[:max_rank_pairs]]
+                    terms = F.relu(float(cfg.pairwise_rank_margin) + high_loss - per_target_loss[b, low_idx])
+                    rank_terms.append(terms.mean())
+                    rank_pair_count += int(low_idx.numel())
+                    rank_rows += 1
+
+            if invalid_enabled:
+                invalid_idx = torch.nonzero((~valid_mask[b]) & row_real, as_tuple=False).flatten()
+                if invalid_idx.numel() > 0:
+                    invalid_rewards = ordering_rewards[b, invalid_idx].float()
+                    order = torch.argsort(invalid_rewards, descending=True)
+                    invalid_idx = invalid_idx[order[:max_invalid_pairs]]
+                    terms = F.relu(float(cfg.invalid_repulsion_margin) + high_loss - per_target_loss[b, invalid_idx])
+                    invalid_terms.append(terms.mean())
+                    invalid_pair_count += int(invalid_idx.numel())
+                    invalid_rows += 1
+
+        rank_loss = torch.stack(rank_terms).mean() if rank_terms else zero
+        invalid_loss = torch.stack(invalid_terms).mean() if invalid_terms else zero
+        return rank_loss, invalid_loss, {
+            "pairwise_rank_pair_count": per_target_loss.new_tensor(float(rank_pair_count)),
+            "invalid_repulsion_pair_count": per_target_loss.new_tensor(float(invalid_pair_count)),
+            "pairwise_rank_active_row_ratio": per_target_loss.new_tensor(float(rank_rows) / max(1, B)),
+            "invalid_repulsion_active_row_ratio": per_target_loss.new_tensor(float(invalid_rows) / max(1, B)),
+        }
 
     def _load_awac_buffer_candidates(
         self,
@@ -4135,7 +4452,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         records = []
         for batch_idx, token in enumerate(tokens_list):
             try:
-                records.append(load_elite_record(buffer_root, str(token)))
+                records.append(self._load_elite_record_cached(buffer_root, str(token), cfg))
             except FileNotFoundError:
                 if str(cfg.missing_buffer_policy) != "fallback_gt":
                     raise
@@ -4446,21 +4763,60 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         selected_valid_mask = awac_batch["selected_valid_mask"]
         gt_reward = awac_batch["gt_reward"]
         il_reward = awac_batch["il_reward"]
-        baseline = self._compute_iql_baseline(selected_rewards, gt_reward, il_reward, cfg, selected_real_mask)
-        weights, advantages, weight_diag = self._compute_awac_weights(
+        selected_components = awac_batch["selected_components"]
+        source_code = awac_batch["selected_source_code"]
+        shaped_rewards, component_diag = self._compute_component_aware_rewards(
             selected_rewards,
+            selected_components,
+            source_code,
+            selected_real_mask,
+            selected_valid_mask,
+            cfg,
+        )
+        shaped_gt_reward = gt_reward
+        shaped_il_reward = il_reward
+        baseline = self._compute_iql_baseline(shaped_rewards, shaped_gt_reward, shaped_il_reward, cfg, selected_real_mask)
+        weights, advantages, weight_diag = self._compute_awac_weights(
+            shaped_rewards,
             baseline,
             cfg,
             valid_mask=selected_valid_mask,
             real_mask=selected_real_mask,
-            gt_reward=gt_reward,
+            gt_reward=shaped_gt_reward,
+        )
+        weights, source_balance_diag = self._apply_awac_source_balance(
+            weights,
+            source_code,
+            selected_real_mask,
+            cfg,
         )
         awac_loss, awac_diag = self._weighted_diffusion_loss_on_targets(
             vl_features,
             action_input,
             awac_batch["selected_trajs"],
             weights,
+            return_per_sample_loss=(
+                float(cfg.pairwise_rank_loss_weight) > 0.0 or float(cfg.invalid_repulsion_loss_weight) > 0.0
+            ),
         )
+        per_target_loss = awac_diag.pop("per_sample_loss_matrix", None)
+        if per_target_loss is None:
+            rank_loss = awac_loss.new_zeros(())
+            invalid_repulsion_loss = awac_loss.new_zeros(())
+            preference_diag = {
+                "pairwise_rank_pair_count": awac_loss.new_zeros(()),
+                "invalid_repulsion_pair_count": awac_loss.new_zeros(()),
+                "pairwise_rank_active_row_ratio": awac_loss.new_zeros(()),
+                "invalid_repulsion_active_row_ratio": awac_loss.new_zeros(()),
+            }
+        else:
+            rank_loss, invalid_repulsion_loss, preference_diag = self._compute_awac_preference_losses(
+                per_target_loss,
+                shaped_rewards,
+                selected_valid_mask,
+                selected_real_mask,
+                cfg,
+            )
 
         bc_loss_weight_effective = self._current_awac_bc_loss_weight(cfg)
         bc_loss = awac_loss.new_zeros(())
@@ -4484,14 +4840,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
         total_loss = (
             float(cfg.awac_loss_weight) * awac_loss
+            + float(cfg.pairwise_rank_loss_weight) * rank_loss
+            + float(cfg.invalid_repulsion_loss_weight) * invalid_repulsion_loss
             + float(bc_loss_weight_effective) * bc_loss
             + float(cfg.grpo_loss_weight) * grpo_loss
         )
         if not torch.isfinite(total_loss):
             raise ValueError("AWAC/IQL total loss is non-finite.")
 
-        selected_components = awac_batch["selected_components"]
-        source_code = awac_batch["selected_source_code"]
         real_f = selected_real_mask.to(dtype=total_loss.dtype)
         valid_f = selected_valid_mask.to(dtype=total_loss.dtype)
         denom = real_f.sum().clamp(min=1.0)
@@ -4541,11 +4897,23 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "reward": selected_reward_mean.detach(),
             "policy_loss": awac_loss,
             "awac_loss": awac_loss,
+            "awac_pairwise_rank_loss": rank_loss,
+            "awac_invalid_repulsion_loss": invalid_repulsion_loss,
             "bc_loss": bc_loss,
             "bc_loss_weight_effective": total_loss.new_tensor(float(bc_loss_weight_effective)).detach(),
             "grpo_loss": grpo_loss,
             "reward_mean": selected_reward_mean.detach(),
             "reward_max": selected_reward_max.detach(),
+            "shaped_reward_mean": ((shaped_rewards.to(total_loss) * real_f).sum() / denom).detach(),
+            "shaped_reward_delta_mean": component_diag["component_reward_delta_mean"].to(total_loss).detach(),
+            "shaped_reward_delta_min": component_diag["component_reward_delta_min"].to(total_loss).detach(),
+            "shaped_reward_delta_max": component_diag["component_reward_delta_max"].to(total_loss).detach(),
+            "component_progress_bonus_mean": component_diag["component_progress_bonus_mean"].to(total_loss).detach(),
+            "component_safety_penalty_mean": component_diag["component_safety_penalty_mean"].to(total_loss).detach(),
+            "component_valid_reward_delta_mean": component_diag.get(
+                "component_valid_reward_delta_mean",
+                total_loss.new_zeros(()),
+            ).to(total_loss).detach(),
             "gt_reward_mean": gt_reward.mean().to(total_loss).detach(),
             "il_reward_mean": il_reward.mean().to(total_loss).detach(),
             "best_raw_reward_mean": best_raw_reward.mean().detach(),
@@ -4574,6 +4942,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "awac_weight_max": weight_real.max().to(total_loss).detach(),
             "awac_advantage_mean": adv_real.mean().to(total_loss).detach(),
             "awac_advantage_max": adv_real.max().to(total_loss).detach(),
+            "source_balance_factor_mean": source_balance_diag["source_balance_factor_mean"].to(total_loss).detach(),
+            "source_balance_factor_min": source_balance_diag["source_balance_factor_min"].to(total_loss).detach(),
+            "source_balance_factor_max": source_balance_diag["source_balance_factor_max"].to(total_loss).detach(),
+            "source_balance_active_sources": source_balance_diag["source_balance_active_sources"].to(total_loss).detach(),
+            "pairwise_rank_pair_count": preference_diag["pairwise_rank_pair_count"].to(total_loss).detach(),
+            "invalid_repulsion_pair_count": preference_diag["invalid_repulsion_pair_count"].to(total_loss).detach(),
+            "pairwise_rank_active_row_ratio": preference_diag["pairwise_rank_active_row_ratio"].to(total_loss).detach(),
+            "invalid_repulsion_active_row_ratio": preference_diag["invalid_repulsion_active_row_ratio"].to(total_loss).detach(),
             "empty_awac_row_ratio": weight_diag["empty_awac_row_ratio"].to(total_loss).detach(),
             "positive_weight_row_ratio": weight_diag["positive_weight_row_ratio"].to(total_loss).detach(),
             "positive_weight_candidate_ratio": weight_diag["positive_weight_candidate_ratio"].to(total_loss).detach(),

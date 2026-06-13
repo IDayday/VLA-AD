@@ -143,15 +143,21 @@ def save_elite_record(buffer_root: Path, token: str, record: Dict[str, Any]) -> 
             tmp_path.unlink()
 
 
-def load_elite_record(buffer_root: Path, token: str) -> Dict[str, Any]:
-    path = _record_path(Path(buffer_root), token)
+def load_elite_record_path(path: Path) -> Dict[str, Any]:
+    path = Path(path)
     if not path.is_file():
-        raise FileNotFoundError(f"Elite buffer record not found for token={token!r}: {path}")
+        raise FileNotFoundError(f"Elite buffer record not found: {path}")
     with lzma.open(path, "rb") as f:
         record = pickle.load(f)
     if not isinstance(record, dict):
         raise TypeError(f"Elite buffer record must be a dict, got {type(record).__name__}: {path}")
     _validate_record(record)
+    return record
+
+
+def load_elite_record(buffer_root: Path, token: str) -> Dict[str, Any]:
+    path = _record_path(Path(buffer_root), token)
+    record = load_elite_record_path(path)
     record_token = str(record["token"])
     if record_token != str(token):
         raise ValueError(
