@@ -61,6 +61,7 @@ offline_rl_missing_submetric_policy: error
 offline_rl_use_batched_pdm_scoring: true
 offline_rl_use_exact_array_pdm_state_conversion: true
 offline_rl_use_fast_pdm_scorer: true
+offline_rl_pdm_batch_chunk_size: 0
 offline_rl_pdm_shadow_check: false
 offline_rl_pdm_shadow_max_samples: 4
 offline_rl_pdm_shadow_max_abs_diff: 0.0

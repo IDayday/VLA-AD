@@ -209,6 +209,7 @@ class OfflineRLConfig:
     use_batched_pdm_scoring: bool = True
     use_exact_array_pdm_state_conversion: bool = True
     use_fast_pdm_scorer: bool = True
+    pdm_batch_chunk_size: int = 0
     pdm_shadow_check: bool = False
     pdm_shadow_max_samples: int = 4
     pdm_shadow_max_abs_diff: float = 0.0
@@ -921,6 +922,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.online_policy_samples must be non-negative.")
         if str(cfg.missing_submetric_policy) not in {"error", "unsafe_zero", "warn_default"}:
             raise ValueError("offline_rl_cfg.missing_submetric_policy must be error, unsafe_zero, or warn_default.")
+        if int(cfg.pdm_batch_chunk_size) < 0:
+            raise ValueError("offline_rl_cfg.pdm_batch_chunk_size must be non-negative.")
         if int(cfg.pdm_shadow_max_samples) < 0:
             raise ValueError("offline_rl_cfg.pdm_shadow_max_samples must be non-negative.")
         if float(cfg.pdm_shadow_max_abs_diff) < 0.0:
@@ -3636,6 +3639,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 bool(cfg.use_exact_array_pdm_state_conversion) if cfg is not None else False
             ),
             use_fast_pdm_scorer=bool(cfg.use_fast_pdm_scorer) if cfg is not None else False,
+            pdm_batch_chunk_size=int(cfg.pdm_batch_chunk_size) if cfg is not None else 0,
             pdm_shadow_check=bool(cfg.pdm_shadow_check) if cfg is not None else False,
             pdm_shadow_max_samples=int(cfg.pdm_shadow_max_samples) if cfg is not None else 0,
             pdm_shadow_max_abs_diff=float(cfg.pdm_shadow_max_abs_diff) if cfg is not None else 0.0,
@@ -4380,14 +4384,18 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise RuntimeError("forward_awac_iql requires offline_rl_cfg.enabled=True.")
         if tokens_list is None:
             raise ValueError("forward_awac_iql requires tokens_list for train metric-cache reward lookup.")
-        metric_cache = self._load_metric_cache_for_tokens([str(token) for token in tokens_list])
-        if str(cfg.elite_buffer_path) and not bool(cfg.build_candidates_online):
-            awac_batch = self._load_awac_buffer_candidates(action_input, [str(token) for token in tokens_list], metric_cache, cfg)
+        token_strs = [str(token) for token in tokens_list]
+        use_offline_buffer = bool(str(cfg.elite_buffer_path)) and not bool(cfg.build_candidates_online)
+        metric_cache: Dict[str, Any] = {}
+        if not use_offline_buffer or str(cfg.missing_buffer_policy) == "fallback_gt":
+            metric_cache = self._load_metric_cache_for_tokens(token_strs)
+        if use_offline_buffer:
+            awac_batch = self._load_awac_buffer_candidates(action_input, token_strs, metric_cache, cfg)
         else:
             awac_batch = self._build_online_awac_candidates(
                 vl_features,
                 action_input,
-                [str(token) for token in tokens_list],
+                token_strs,
                 metric_cache,
                 cfg,
             )
@@ -4846,6 +4854,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         use_batched_pdm_scoring: bool = False,
         use_exact_array_pdm_state_conversion: bool = False,
         use_fast_pdm_scorer: bool = False,
+        pdm_batch_chunk_size: int = 0,
         pdm_shadow_check: bool = False,
         pdm_shadow_max_samples: int = 0,
         pdm_shadow_max_abs_diff: float = 0.0,
@@ -4872,40 +4881,45 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             scorer = self._get_pdm_scorer_for_awac(use_fast_pdm_scorer=use_fast_pdm_scorer)
             for token, indices in token_to_indices.items():
                 metric_cache = cache_dict[token]
-                pdm_results = pdm_score_batch_same_cache(
-                    metric_cache=metric_cache,
-                    model_trajectories=pred_np[indices],
-                    future_sampling=self.simulator.proposal_sampling,
-                    simulator=self.simulator,
-                    scorer=scorer,
-                    use_exact_array_conversion=bool(use_exact_array_pdm_state_conversion),
-                )
-                if len(pdm_results) != len(indices):
-                    raise RuntimeError(
-                        f"Batched PDM scorer returned {len(pdm_results)} rows for {len(indices)} trajectories."
+                chunk_size = int(pdm_batch_chunk_size)
+                if chunk_size <= 0:
+                    chunk_size = len(indices)
+                for chunk_start in range(0, len(indices), chunk_size):
+                    chunk_indices = indices[chunk_start : chunk_start + chunk_size]
+                    pdm_results = pdm_score_batch_same_cache(
+                        metric_cache=metric_cache,
+                        model_trajectories=pred_np[chunk_indices],
+                        future_sampling=self.simulator.proposal_sampling,
+                        simulator=self.simulator,
+                        scorer=scorer,
+                        use_exact_array_conversion=bool(use_exact_array_pdm_state_conversion),
                     )
-                for local_idx, pdm_result in enumerate(pdm_results):
-                    row = self._extract_pdm_components(
-                        pdm_result,
-                        strict_submetrics=strict_submetrics,
-                        required_submetrics=required_submetrics,
-                        missing_policy=missing_submetric_policy,
-                    )
-                    global_idx = indices[local_idx]
-                    component_rows[global_idx] = row
-                    if pdm_shadow_check and shadow_checked < int(pdm_shadow_max_samples):
-                        self._shadow_check_pdm_component_row(
-                            trajectory_np=pred_np[global_idx],
-                            token=token,
-                            metric_cache=metric_cache,
-                            batch_row=row,
-                            component_keys=component_keys,
+                    if len(pdm_results) != len(chunk_indices):
+                        raise RuntimeError(
+                            f"Batched PDM scorer returned {len(pdm_results)} rows for {len(chunk_indices)} trajectories."
+                        )
+                    for local_idx, pdm_result in enumerate(pdm_results):
+                        row = self._extract_pdm_components(
+                            pdm_result,
                             strict_submetrics=strict_submetrics,
                             required_submetrics=required_submetrics,
-                            missing_submetric_policy=missing_submetric_policy,
-                            max_abs_diff=float(pdm_shadow_max_abs_diff),
+                            missing_policy=missing_submetric_policy,
                         )
-                        shadow_checked += 1
+                        global_idx = chunk_indices[local_idx]
+                        component_rows[global_idx] = row
+                        if pdm_shadow_check and shadow_checked < int(pdm_shadow_max_samples):
+                            self._shadow_check_pdm_component_row(
+                                trajectory_np=pred_np[global_idx],
+                                token=token,
+                                metric_cache=metric_cache,
+                                batch_row=row,
+                                component_keys=component_keys,
+                                strict_submetrics=strict_submetrics,
+                                required_submetrics=required_submetrics,
+                                missing_submetric_policy=missing_submetric_policy,
+                                max_abs_diff=float(pdm_shadow_max_abs_diff),
+                            )
+                            shadow_checked += 1
         else:
             for i, token in enumerate(tokens_list):
                 trajectory = Trajectory(pred_np[i])
