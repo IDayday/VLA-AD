@@ -127,6 +127,7 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_elite_buffer_version: int = 2,
         offline_rl_require_buffer_valid_mask: bool = True,
         offline_rl_allow_v1_buffer_recompute_valid_mask: bool = True,
+        offline_rl_recompute_buffer_valid_mask_on_load: bool = False,
         offline_rl_build_candidates_online: bool = False,
         offline_rl_online_policy_samples: int = 8,
         offline_rl_online_use_current_policy: bool = True,
@@ -425,6 +426,7 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_elite_buffer_version = int(offline_rl_elite_buffer_version)
         self.offline_rl_require_buffer_valid_mask = bool(offline_rl_require_buffer_valid_mask)
         self.offline_rl_allow_v1_buffer_recompute_valid_mask = bool(offline_rl_allow_v1_buffer_recompute_valid_mask)
+        self.offline_rl_recompute_buffer_valid_mask_on_load = bool(offline_rl_recompute_buffer_valid_mask_on_load)
         self.offline_rl_build_candidates_online = bool(offline_rl_build_candidates_online)
         self.offline_rl_online_policy_samples = int(offline_rl_online_policy_samples)
         self.offline_rl_online_use_current_policy = bool(offline_rl_online_use_current_policy)
@@ -912,6 +914,7 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.elite_buffer_version = self.offline_rl_elite_buffer_version
         offline_cfg.require_buffer_valid_mask = self.offline_rl_require_buffer_valid_mask
         offline_cfg.allow_v1_buffer_recompute_valid_mask = self.offline_rl_allow_v1_buffer_recompute_valid_mask
+        offline_cfg.recompute_buffer_valid_mask_on_load = self.offline_rl_recompute_buffer_valid_mask_on_load
         offline_cfg.build_candidates_online = self.offline_rl_build_candidates_online
         offline_cfg.online_policy_samples = self.offline_rl_online_policy_samples
         offline_cfg.online_use_current_policy = self.offline_rl_online_use_current_policy

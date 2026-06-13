@@ -178,6 +178,7 @@ class OfflineRLConfig:
     elite_buffer_version: int = 2
     require_buffer_valid_mask: bool = True
     allow_v1_buffer_recompute_valid_mask: bool = True
+    recompute_buffer_valid_mask_on_load: bool = False
 
     # online candidate generation fallback / optional mode
     build_candidates_online: bool = False
@@ -4207,7 +4208,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     device=device,
                     dtype=torch.float32,
                 )
-            if "valid_mask" in record:
+            valid_mask_recomputed = False
+            if bool(cfg.recompute_buffer_valid_mask_on_load):
+                row_components = {
+                    key: selected_components[key][b : b + 1, :m]
+                    for key in REQUIRED_COMPONENT_KEYS
+                }
+                valid_mask = self._compute_awac_candidate_valid_mask(row_components, sources, cfg)[0][0]
+                valid_mask_recomputed = True
+            elif "valid_mask" in record:
                 valid_mask = torch.as_tensor(record["valid_mask"], device=device, dtype=torch.bool)
             elif bool(cfg.allow_v1_buffer_recompute_valid_mask):
                 row_components = {
@@ -4215,6 +4224,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     for key in REQUIRED_COMPONENT_KEYS
                 }
                 valid_mask = self._compute_awac_candidate_valid_mask(row_components, sources, cfg)[0][0]
+                valid_mask_recomputed = True
             elif bool(cfg.require_buffer_valid_mask):
                 raise KeyError(
                     f"Elite buffer token={record['token']!r} is missing valid_mask. "
@@ -4240,7 +4250,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             selected_source_code[b, :m] = torch.tensor(source_codes, device=device, dtype=torch.long)
             gt_reward[b] = float(record["gt_reward"])
             il_reward[b] = float(record["il_reward"])
-            has_valid = bool(record.get("has_valid_candidate", bool(valid_mask.any().detach().cpu().item())))
+            has_valid = bool(valid_mask.any().detach().cpu().item()) if valid_mask_recomputed else bool(
+                record.get("has_valid_candidate", bool(valid_mask.any().detach().cpu().item()))
+            )
             has_valid_candidate[b] = has_valid
             fallback_candidate[b] = not has_valid
             raw_idx = int(selected_rewards[b, :m].argmax().item())
@@ -4251,10 +4263,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 valid_idx = raw_idx
             selected_idx = raw_idx
             best_raw_reward[b] = float(record.get("best_raw_reward", float(selected_rewards[b, raw_idx].item())))
-            best_valid_reward[b] = float(record.get("best_valid_reward", float(selected_rewards[b, valid_idx].item())))
+            best_valid_reward[b] = float(selected_rewards[b, valid_idx].item()) if valid_mask_recomputed else float(
+                record.get("best_valid_reward", float(selected_rewards[b, valid_idx].item()))
+            )
             best_selected_reward[b] = float(record.get("best_selected_reward", float(selected_rewards[b, selected_idx].item())))
             best_raw_source_code[b] = self._source_code(record.get("best_raw_source", sources[raw_idx]))
-            best_valid_source_code[b] = self._source_code(record.get("best_valid_source", sources[valid_idx]))
+            best_valid_source_code[b] = self._source_code(sources[valid_idx]) if valid_mask_recomputed else self._source_code(
+                record.get("best_valid_source", sources[valid_idx])
+            )
             best_selected_source_code[b] = self._source_code(record.get("best_selected_source", sources[selected_idx]))
         valid_real = selected_valid_mask & selected_real_mask
         real_count = selected_real_mask.float().sum().clamp(min=1.0)

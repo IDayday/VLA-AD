@@ -37,6 +37,7 @@ offline_rl_keep_il_candidate: true
 offline_rl_elite_buffer_version: 2
 offline_rl_require_buffer_valid_mask: true
 offline_rl_allow_v1_buffer_recompute_valid_mask: true
+offline_rl_recompute_buffer_valid_mask_on_load: false
 offline_rl_build_candidates_online: false
 offline_rl_online_policy_samples: 8
 offline_rl_online_use_current_policy: true
