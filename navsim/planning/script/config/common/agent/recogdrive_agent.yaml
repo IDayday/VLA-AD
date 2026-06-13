@@ -101,6 +101,9 @@ offline_rl_normalize_weights_per_scene: true
 offline_rl_train_only_valid_candidates: true
 offline_rl_min_reward_margin_to_gt_for_extra_weight: 0.0
 offline_rl_allow_zero_weight_rows: true
+offline_rl_target_filter_mode: none
+offline_rl_target_top_k: 1
+offline_rl_target_min_advantage: 0.0
 offline_rl_component_advantage_enabled: false
 offline_rl_component_progress_weight: 0.05
 offline_rl_component_safety_penalty_weight: 0.20
@@ -116,6 +119,13 @@ offline_rl_pairwise_rank_max_pairs_per_scene: 2
 offline_rl_invalid_repulsion_loss_weight: 0.0
 offline_rl_invalid_repulsion_margin: 0.05
 offline_rl_invalid_repulsion_max_pairs_per_scene: 2
+offline_rl_preference_dpo_loss_weight: 0.0
+offline_rl_preference_dpo_beta: 8.0
+offline_rl_preference_dpo_label_smoothing: 0.0
+offline_rl_preference_dpo_reference_free: false
+offline_rl_preference_dpo_pair_mode: best_vs_gt_il
+offline_rl_preference_dpo_min_reward_gap: 0.02
+offline_rl_preference_dpo_max_pairs_per_scene: 2
 offline_rl_awac_loss_weight: 1.0
 offline_rl_bc_loss_weight: 0.05
 offline_rl_bc_loss_schedule: constant

@@ -192,6 +192,9 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_train_only_valid_candidates: bool = True,
         offline_rl_min_reward_margin_to_gt_for_extra_weight: float = 0.0,
         offline_rl_allow_zero_weight_rows: bool = True,
+        offline_rl_target_filter_mode: str = "none",
+        offline_rl_target_top_k: int = 1,
+        offline_rl_target_min_advantage: float = 0.0,
         offline_rl_component_advantage_enabled: bool = False,
         offline_rl_component_progress_weight: float = 0.05,
         offline_rl_component_safety_penalty_weight: float = 0.20,
@@ -207,6 +210,13 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_invalid_repulsion_loss_weight: float = 0.0,
         offline_rl_invalid_repulsion_margin: float = 0.05,
         offline_rl_invalid_repulsion_max_pairs_per_scene: int = 2,
+        offline_rl_preference_dpo_loss_weight: float = 0.0,
+        offline_rl_preference_dpo_beta: float = 8.0,
+        offline_rl_preference_dpo_label_smoothing: float = 0.0,
+        offline_rl_preference_dpo_reference_free: bool = False,
+        offline_rl_preference_dpo_pair_mode: str = "best_vs_gt_il",
+        offline_rl_preference_dpo_min_reward_gap: float = 0.02,
+        offline_rl_preference_dpo_max_pairs_per_scene: int = 2,
         offline_rl_awac_loss_weight: float = 1.0,
         offline_rl_bc_loss_weight: float = 0.05,
         offline_rl_bc_loss_schedule: str = "constant",
@@ -506,6 +516,9 @@ class ReCogDriveAgent(AbstractAgent):
             offline_rl_min_reward_margin_to_gt_for_extra_weight
         )
         self.offline_rl_allow_zero_weight_rows = bool(offline_rl_allow_zero_weight_rows)
+        self.offline_rl_target_filter_mode = offline_rl_target_filter_mode
+        self.offline_rl_target_top_k = int(offline_rl_target_top_k)
+        self.offline_rl_target_min_advantage = float(offline_rl_target_min_advantage)
         self.offline_rl_component_advantage_enabled = bool(offline_rl_component_advantage_enabled)
         self.offline_rl_component_progress_weight = float(offline_rl_component_progress_weight)
         self.offline_rl_component_safety_penalty_weight = float(offline_rl_component_safety_penalty_weight)
@@ -521,6 +534,13 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_invalid_repulsion_loss_weight = float(offline_rl_invalid_repulsion_loss_weight)
         self.offline_rl_invalid_repulsion_margin = float(offline_rl_invalid_repulsion_margin)
         self.offline_rl_invalid_repulsion_max_pairs_per_scene = int(offline_rl_invalid_repulsion_max_pairs_per_scene)
+        self.offline_rl_preference_dpo_loss_weight = float(offline_rl_preference_dpo_loss_weight)
+        self.offline_rl_preference_dpo_beta = float(offline_rl_preference_dpo_beta)
+        self.offline_rl_preference_dpo_label_smoothing = float(offline_rl_preference_dpo_label_smoothing)
+        self.offline_rl_preference_dpo_reference_free = bool(offline_rl_preference_dpo_reference_free)
+        self.offline_rl_preference_dpo_pair_mode = offline_rl_preference_dpo_pair_mode
+        self.offline_rl_preference_dpo_min_reward_gap = float(offline_rl_preference_dpo_min_reward_gap)
+        self.offline_rl_preference_dpo_max_pairs_per_scene = int(offline_rl_preference_dpo_max_pairs_per_scene)
         self.offline_rl_awac_loss_weight = float(offline_rl_awac_loss_weight)
         self.offline_rl_bc_loss_weight = float(offline_rl_bc_loss_weight)
         self.offline_rl_bc_loss_schedule = offline_rl_bc_loss_schedule
@@ -1010,6 +1030,9 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.train_only_valid_candidates = self.offline_rl_train_only_valid_candidates
         offline_cfg.min_reward_margin_to_gt_for_extra_weight = self.offline_rl_min_reward_margin_to_gt_for_extra_weight
         offline_cfg.allow_zero_weight_rows = self.offline_rl_allow_zero_weight_rows
+        offline_cfg.target_filter_mode = self.offline_rl_target_filter_mode
+        offline_cfg.target_top_k = self.offline_rl_target_top_k
+        offline_cfg.target_min_advantage = self.offline_rl_target_min_advantage
         offline_cfg.component_advantage_enabled = self.offline_rl_component_advantage_enabled
         offline_cfg.component_progress_weight = self.offline_rl_component_progress_weight
         offline_cfg.component_safety_penalty_weight = self.offline_rl_component_safety_penalty_weight
@@ -1025,6 +1048,13 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.invalid_repulsion_loss_weight = self.offline_rl_invalid_repulsion_loss_weight
         offline_cfg.invalid_repulsion_margin = self.offline_rl_invalid_repulsion_margin
         offline_cfg.invalid_repulsion_max_pairs_per_scene = self.offline_rl_invalid_repulsion_max_pairs_per_scene
+        offline_cfg.preference_dpo_loss_weight = self.offline_rl_preference_dpo_loss_weight
+        offline_cfg.preference_dpo_beta = self.offline_rl_preference_dpo_beta
+        offline_cfg.preference_dpo_label_smoothing = self.offline_rl_preference_dpo_label_smoothing
+        offline_cfg.preference_dpo_reference_free = self.offline_rl_preference_dpo_reference_free
+        offline_cfg.preference_dpo_pair_mode = self.offline_rl_preference_dpo_pair_mode
+        offline_cfg.preference_dpo_min_reward_gap = self.offline_rl_preference_dpo_min_reward_gap
+        offline_cfg.preference_dpo_max_pairs_per_scene = self.offline_rl_preference_dpo_max_pairs_per_scene
         offline_cfg.awac_loss_weight = self.offline_rl_awac_loss_weight
         offline_cfg.bc_loss_weight = self.offline_rl_bc_loss_weight
         offline_cfg.bc_loss_schedule = self.offline_rl_bc_loss_schedule

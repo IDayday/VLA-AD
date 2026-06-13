@@ -257,6 +257,9 @@ class OfflineRLConfig:
     train_only_valid_candidates: bool = True
     min_reward_margin_to_gt_for_extra_weight: float = 0.0
     allow_zero_weight_rows: bool = True
+    target_filter_mode: Literal["none", "topk", "positive_advantage", "topk_positive"] = "none"
+    target_top_k: int = 1
+    target_min_advantage: float = 0.0
 
     # component-aware advantage shaping
     component_advantage_enabled: bool = False
@@ -278,6 +281,13 @@ class OfflineRLConfig:
     invalid_repulsion_loss_weight: float = 0.0
     invalid_repulsion_margin: float = 0.05
     invalid_repulsion_max_pairs_per_scene: int = 2
+    preference_dpo_loss_weight: float = 0.0
+    preference_dpo_beta: float = 8.0
+    preference_dpo_label_smoothing: float = 0.0
+    preference_dpo_reference_free: bool = False
+    preference_dpo_pair_mode: Literal["best_vs_gt_il", "best_vs_low_valid", "best_vs_all"] = "best_vs_gt_il"
+    preference_dpo_min_reward_gap: float = 0.02
+    preference_dpo_max_pairs_per_scene: int = 2
 
     # loss weights
     awac_loss_weight: float = 1.0
@@ -981,6 +991,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.top_mean_frac must be in (0, 1].")
         if float(cfg.advantage_clip_min) > float(cfg.advantage_clip_max):
             raise ValueError("offline_rl_cfg.advantage_clip_min must be <= advantage_clip_max.")
+        if str(cfg.target_filter_mode) not in {"none", "topk", "positive_advantage", "topk_positive"}:
+            raise ValueError("offline_rl_cfg.target_filter_mode must be none, topk, positive_advantage, or topk_positive.")
+        if int(cfg.target_top_k) <= 0:
+            raise ValueError("offline_rl_cfg.target_top_k must be positive.")
+        if float(cfg.target_min_advantage) < 0.0:
+            raise ValueError("offline_rl_cfg.target_min_advantage must be non-negative.")
         if float(cfg.component_advantage_clip_min) > float(cfg.component_advantage_clip_max):
             raise ValueError("offline_rl_cfg.component_advantage_clip_min must be <= component_advantage_clip_max.")
         if not (0.0 <= float(cfg.source_balance_min_factor) <= float(cfg.source_balance_max_factor)):
@@ -1000,13 +1016,22 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "pairwise_rank_min_reward_gap",
             "invalid_repulsion_loss_weight",
             "invalid_repulsion_margin",
+            "preference_dpo_loss_weight",
+            "preference_dpo_beta",
+            "preference_dpo_min_reward_gap",
         ):
             if float(getattr(cfg, name)) < 0.0:
                 raise ValueError(f"offline_rl_cfg.{name} must be non-negative.")
+        if not (0.0 <= float(cfg.preference_dpo_label_smoothing) < 0.5):
+            raise ValueError("offline_rl_cfg.preference_dpo_label_smoothing must be in [0, 0.5).")
+        if str(cfg.preference_dpo_pair_mode) not in {"best_vs_gt_il", "best_vs_low_valid", "best_vs_all"}:
+            raise ValueError("offline_rl_cfg.preference_dpo_pair_mode must be best_vs_gt_il, best_vs_low_valid, or best_vs_all.")
         if int(cfg.pairwise_rank_max_pairs_per_scene) < 0:
             raise ValueError("offline_rl_cfg.pairwise_rank_max_pairs_per_scene must be non-negative.")
         if int(cfg.invalid_repulsion_max_pairs_per_scene) < 0:
             raise ValueError("offline_rl_cfg.invalid_repulsion_max_pairs_per_scene must be non-negative.")
+        if int(cfg.preference_dpo_max_pairs_per_scene) < 0:
+            raise ValueError("offline_rl_cfg.preference_dpo_max_pairs_per_scene must be non-negative.")
         if int(cfg.bc_loss_schedule_epochs) <= 0:
             raise ValueError("offline_rl_cfg.bc_loss_schedule_epochs must be positive.")
         for name in (
@@ -1066,6 +1091,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     bool(cfg.online_use_old_policy)
                     or bool(cfg.keep_il_candidate)
                     or str(cfg.baseline_mode) == "max_gt_il"
+                    or (
+                        float(cfg.preference_dpo_loss_weight) > 0.0
+                        and not bool(cfg.preference_dpo_reference_free)
+                    )
                 )
             )
             checkpoint_path = self._resolve_reference_policy_checkpoint(
@@ -4194,6 +4223,28 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         weights = weights * real_mask.to(dtype=weights.dtype)
         if bool(cfg.train_only_valid_candidates):
             weights = weights * valid_mask.to(dtype=weights.dtype)
+        filter_mode = str(cfg.target_filter_mode)
+        filter_mask = real_mask.clone()
+        if bool(cfg.train_only_valid_candidates):
+            filter_mask = filter_mask & valid_mask
+        if filter_mode != "none":
+            eligible_mask = filter_mask.clone()
+            if filter_mode in {"positive_advantage", "topk_positive"}:
+                filter_mask = filter_mask & (adv > float(cfg.target_min_advantage))
+            if filter_mode in {"topk", "topk_positive"}:
+                topk_mask = torch.zeros_like(filter_mask)
+                ranking_mask = filter_mask if filter_mode == "topk_positive" else eligible_mask
+                top_k = max(1, int(cfg.target_top_k))
+                for row in range(rewards.shape[0]):
+                    row_idx = torch.nonzero(ranking_mask[row], as_tuple=False).flatten()
+                    if row_idx.numel() == 0:
+                        continue
+                    k = min(top_k, int(row_idx.numel()))
+                    row_score = rewards[row, row_idx].float()
+                    keep = row_idx[torch.topk(row_score, k=k, largest=True).indices]
+                    topk_mask[row, keep] = True
+                filter_mask = topk_mask
+            weights = weights * filter_mask.to(dtype=weights.dtype)
         empty_rows = weights.sum(dim=1) <= 0.0
         if bool(empty_rows.any().item()) and bool(cfg.train_invalid_fallback_candidates):
             safe_rewards = rewards.masked_fill(~real_mask, -torch.inf)
@@ -4213,6 +4264,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "empty_awac_row_ratio": (~positive_rows).float().mean(),
             "positive_weight_row_ratio": positive_rows.float().mean(),
             "positive_weight_candidate_ratio": ((weights > 0) & real_mask).float().sum() / real_count,
+            "target_filter_row_ratio": (filter_mask & real_mask).any(dim=1).float().mean(),
+            "target_filter_candidate_ratio": (filter_mask & real_mask).float().sum() / real_count,
         }
         if (not bool(cfg.allow_zero_weight_rows)) and bool((~positive_rows).any().item()):
             raise RuntimeError("AWAC/IQL produced zero positive-weight rows and allow_zero_weight_rows=False.")
@@ -4287,6 +4340,58 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 data[key] = action_input[key].repeat_interleave(repeat, 0)
         return BatchFeature(data=data)
 
+    def _diffusion_per_target_loss_on_targets(
+        self,
+        vl_features: torch.Tensor,
+        action_input: BatchFeature,
+        target_trajs: torch.Tensor,
+        *,
+        policy: Optional["ReCogDriveDiffusionPlanner"] = None,
+        noise: Optional[torch.Tensor] = None,
+        t_discrete: Optional[torch.Tensor] = None,
+    ) -> tuple[torch.Tensor, Dict[str, torch.Tensor], torch.Tensor, torch.Tensor]:
+        if target_trajs.ndim != 4 or target_trajs.shape[-1] != 3:
+            raise ValueError(f"target_trajs must have shape [B, M, H, 3], got {tuple(target_trajs.shape)}.")
+        if self.config.sampling_method == "flow":
+            raise NotImplementedError("Offline preference diffusion losses are implemented for DDPM/DDIM, not flow.")
+        policy = self if policy is None else policy
+        B, M, H, D = target_trajs.shape
+        targets = target_trajs.reshape(B * M, H, D).detach()
+        if not torch.isfinite(targets).all():
+            raise ValueError("AWAC target trajectories contain non-finite values.")
+        target_norm = policy.norm_odo(targets).clamp(-1.0, 1.0)
+        if noise is None:
+            noise = torch.randn_like(target_norm)
+        else:
+            noise = noise.to(device=target_norm.device, dtype=target_norm.dtype)
+        if t_discrete is None:
+            t_discrete = policy.sample_time(B * M, device=target_norm.device, dtype=target_norm.dtype)
+        else:
+            t_discrete = t_discrete.to(device=target_norm.device)
+        noisy_actions = (
+            policy.extract(policy.ddpm_sqrt_alphas_cumprod, t_discrete, target_norm.shape) * target_norm
+            + policy.extract(policy.ddpm_sqrt_one_minus_alphas_cumprod, t_discrete, target_norm.shape) * noise
+        )
+        vl_features_rep = vl_features.repeat_interleave(M, 0)
+        action_input_rep = policy._repeat_action_input_for_loss(action_input, M)
+        dit_context = policy._prepare_dit_context(
+            vl_features_rep,
+            action_input_rep,
+            training=policy.training,
+            noisy_actions=noisy_actions,
+            diffusion_timestep=t_discrete,
+            allow_target_tokens=False,
+        )
+        pred_noise = policy._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input_rep)
+        per_sample_loss = ((pred_noise.float() - noise.float()) ** 2).mean(dim=(1, 2))
+        if per_sample_loss.shape != (B * M,):
+            raise ValueError(f"per_sample_loss must have shape [B*M], got {tuple(per_sample_loss.shape)}.")
+        diagnostics = {
+            "per_sample_loss_mean": per_sample_loss.detach().mean(),
+            "target_norm_mean": target_norm.detach().float().abs().mean(),
+        }
+        return per_sample_loss.reshape(B, M), diagnostics, noise.detach(), t_discrete.detach()
+
     def _weighted_diffusion_loss_on_targets(
         self,
         vl_features: torch.Tensor,
@@ -4300,12 +4405,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         B, M, H, D = target_trajs.shape
         if weights.shape != (B, M):
             raise ValueError(f"weights must have shape [B, M], got {tuple(weights.shape)}.")
-        if self.config.sampling_method == "flow":
-            raise NotImplementedError("AWAC/IQL weighted diffusion loss is implemented for DDPM/DDIM, not flow.")
-        targets = target_trajs.reshape(B * M, H, D).detach()
-        flat_weights = weights.reshape(B * M).to(device=targets.device, dtype=torch.float32)
-        if not torch.isfinite(targets).all():
-            raise ValueError("AWAC target trajectories contain non-finite values.")
+        flat_weights = weights.reshape(B * M).to(device=target_trajs.device, dtype=torch.float32)
         raw_weight_sum = flat_weights.sum()
         zero_weight_batch = raw_weight_sum.detach() <= 0.0
         if bool(zero_weight_batch.cpu().item()) and not return_per_sample_loss:
@@ -4322,40 +4422,25 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     else {}
                 ),
             }
-        target_norm = self.norm_odo(targets).clamp(-1.0, 1.0)
-        noise = torch.randn_like(target_norm)
-        t_discrete = self.sample_time(B * M, device=target_norm.device, dtype=target_norm.dtype)
-        noisy_actions = (
-            self.extract(self.ddpm_sqrt_alphas_cumprod, t_discrete, target_norm.shape) * target_norm
-            + self.extract(self.ddpm_sqrt_one_minus_alphas_cumprod, t_discrete, target_norm.shape) * noise
+        per_target_loss, loss_diag, _, _ = self._diffusion_per_target_loss_on_targets(
+            vl_features,
+            action_input,
+            target_trajs,
         )
-        vl_features_rep = vl_features.repeat_interleave(M, 0)
-        action_input_rep = self._repeat_action_input_for_loss(action_input, M)
-        dit_context = self._prepare_dit_context(
-            vl_features_rep,
-            action_input_rep,
-            training=self.training,
-            noisy_actions=noisy_actions,
-            diffusion_timestep=t_discrete,
-            allow_target_tokens=False,
-        )
-        pred_noise = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input_rep)
-        per_sample_loss = ((pred_noise.float() - noise.float()) ** 2).mean(dim=(1, 2))
-        if per_sample_loss.shape != (B * M,):
-            raise ValueError(f"per_sample_loss must have shape [B*M], got {tuple(per_sample_loss.shape)}.")
+        per_sample_loss = per_target_loss.reshape(B * M)
         valid_weight_sum = raw_weight_sum.clamp(min=1e-6)
         awac_loss = (flat_weights.to(per_sample_loss) * per_sample_loss).sum() / valid_weight_sum.to(per_sample_loss)
         if not torch.isfinite(awac_loss):
             raise ValueError("AWAC weighted diffusion loss is non-finite.")
         diagnostics = {
-            "per_sample_loss_mean": per_sample_loss.detach().mean().to(dtype=awac_loss.dtype),
-            "target_norm_mean": target_norm.detach().float().abs().mean().to(dtype=awac_loss.dtype),
+            "per_sample_loss_mean": loss_diag["per_sample_loss_mean"].to(device=awac_loss.device, dtype=awac_loss.dtype),
+            "target_norm_mean": loss_diag["target_norm_mean"].to(device=awac_loss.device, dtype=awac_loss.dtype),
             "effective_weight_sum": valid_weight_sum.detach().to(dtype=awac_loss.dtype),
             "zero_weight_ratio": (flat_weights <= 0).float().mean().to(device=awac_loss.device, dtype=awac_loss.dtype),
             "zero_weight_batch": zero_weight_batch.to(device=awac_loss.device, dtype=awac_loss.dtype),
         }
         if return_per_sample_loss:
-            diagnostics["per_sample_loss_matrix"] = per_sample_loss.reshape(B, M)
+            diagnostics["per_sample_loss_matrix"] = per_target_loss
         return awac_loss, diagnostics
 
     def _compute_awac_preference_losses(
@@ -4435,6 +4520,129 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "invalid_repulsion_pair_count": per_target_loss.new_tensor(float(invalid_pair_count)),
             "pairwise_rank_active_row_ratio": per_target_loss.new_tensor(float(rank_rows) / max(1, B)),
             "invalid_repulsion_active_row_ratio": per_target_loss.new_tensor(float(invalid_rows) / max(1, B)),
+        }
+
+    def _compute_diffusion_dpo_preference_loss(
+        self,
+        vl_features: torch.Tensor,
+        action_input: BatchFeature,
+        target_trajs: torch.Tensor,
+        ordering_rewards: torch.Tensor,
+        valid_mask: torch.Tensor,
+        real_mask: torch.Tensor,
+        source_code: torch.Tensor,
+        cfg: OfflineRLConfig,
+    ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+        zero = target_trajs.sum() * 0.0
+        max_pairs = int(cfg.preference_dpo_max_pairs_per_scene)
+        enabled = float(cfg.preference_dpo_loss_weight) > 0.0 and max_pairs > 0
+        if not enabled:
+            return zero, {
+                "preference_dpo_pair_count": zero.detach(),
+                "preference_dpo_active_row_ratio": zero.detach(),
+                "preference_dpo_reward_gap_mean": zero.detach(),
+                "preference_dpo_current_logratio_mean": zero.detach(),
+                "preference_dpo_reference_logratio_mean": zero.detach(),
+            }
+        if ordering_rewards.shape != valid_mask.shape or ordering_rewards.shape != real_mask.shape:
+            raise ValueError("DPO ordering_rewards, valid_mask, and real_mask must have matching [B, M] shapes.")
+        if not bool(cfg.preference_dpo_reference_free) and not hasattr(self, "old_policy"):
+            raise RuntimeError("Diffusion-DPO preference loss requires old_policy unless preference_dpo_reference_free=True.")
+
+        current_loss, _, noise, t_discrete = self._diffusion_per_target_loss_on_targets(
+            vl_features,
+            action_input,
+            target_trajs,
+        )
+        if bool(cfg.preference_dpo_reference_free):
+            reference_loss = torch.zeros_like(current_loss)
+        else:
+            self.old_policy.eval()
+            with torch.no_grad():
+                reference_loss, _, _, _ = self._diffusion_per_target_loss_on_targets(
+                    vl_features,
+                    action_input,
+                    target_trajs,
+                    policy=self.old_policy,
+                    noise=noise,
+                    t_discrete=t_discrete,
+                )
+            reference_loss = reference_loss.detach().to(current_loss)
+
+        pair_terms = []
+        reward_gaps = []
+        current_logratios = []
+        reference_logratios = []
+        active_rows = 0
+        pair_count = 0
+        min_gap = float(cfg.preference_dpo_min_reward_gap)
+        label_smoothing = float(cfg.preference_dpo_label_smoothing)
+        beta = float(cfg.preference_dpo_beta)
+        pair_mode = str(cfg.preference_dpo_pair_mode)
+        B = int(ordering_rewards.shape[0])
+        for b in range(B):
+            row_valid = valid_mask[b] & real_mask[b]
+            valid_idx = torch.nonzero(row_valid, as_tuple=False).flatten()
+            if valid_idx.numel() == 0:
+                continue
+            valid_rewards = ordering_rewards[b, valid_idx].float()
+            winner_pos = int(torch.argmax(valid_rewards).item())
+            winner_idx = valid_idx[winner_pos]
+            winner_reward = ordering_rewards[b, winner_idx].float()
+
+            if pair_mode == "best_vs_gt_il":
+                loser_mask = real_mask[b] & ((source_code[b] == 1) | (source_code[b] == 2))
+            elif pair_mode == "best_vs_low_valid":
+                loser_mask = row_valid.clone()
+            else:
+                loser_mask = real_mask[b].clone()
+            loser_mask[winner_idx] = False
+            loser_idx = torch.nonzero(loser_mask, as_tuple=False).flatten()
+            if loser_idx.numel() == 0:
+                continue
+            reward_gap = winner_reward - ordering_rewards[b, loser_idx].float()
+            loser_idx = loser_idx[reward_gap >= min_gap]
+            reward_gap = winner_reward - ordering_rewards[b, loser_idx].float()
+            if loser_idx.numel() == 0:
+                continue
+            if pair_mode == "best_vs_gt_il":
+                order = torch.argsort(reward_gap, descending=True)
+            else:
+                loser_rewards = ordering_rewards[b, loser_idx].float()
+                order = torch.argsort(loser_rewards, descending=False)
+            loser_idx = loser_idx[order[:max_pairs]]
+            reward_gap = winner_reward - ordering_rewards[b, loser_idx].float()
+
+            current_logratio = current_loss[b, loser_idx] - current_loss[b, winner_idx]
+            reference_logratio = reference_loss[b, loser_idx] - reference_loss[b, winner_idx]
+            logits = beta * (current_logratio - reference_logratio)
+            loss = (
+                -(1.0 - label_smoothing) * F.logsigmoid(logits)
+                - label_smoothing * F.logsigmoid(-logits)
+            )
+            pair_terms.append(loss.mean())
+            reward_gaps.append(reward_gap.detach().float().mean())
+            current_logratios.append(current_logratio.detach().float().mean())
+            reference_logratios.append(reference_logratio.detach().float().mean())
+            pair_count += int(loser_idx.numel())
+            active_rows += 1
+
+        if not pair_terms:
+            return zero, {
+                "preference_dpo_pair_count": zero.detach(),
+                "preference_dpo_active_row_ratio": zero.detach(),
+                "preference_dpo_reward_gap_mean": zero.detach(),
+                "preference_dpo_current_logratio_mean": zero.detach(),
+                "preference_dpo_reference_logratio_mean": zero.detach(),
+            }
+
+        dpo_loss = torch.stack(pair_terms).mean()
+        return dpo_loss, {
+            "preference_dpo_pair_count": current_loss.new_tensor(float(pair_count)),
+            "preference_dpo_active_row_ratio": current_loss.new_tensor(float(active_rows) / max(1, B)),
+            "preference_dpo_reward_gap_mean": torch.stack(reward_gaps).mean().to(current_loss),
+            "preference_dpo_current_logratio_mean": torch.stack(current_logratios).mean().to(current_loss),
+            "preference_dpo_reference_logratio_mean": torch.stack(reference_logratios).mean().to(current_loss),
         }
 
     def _load_awac_buffer_candidates(
@@ -4817,6 +5025,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 selected_real_mask,
                 cfg,
             )
+        dpo_loss, dpo_diag = self._compute_diffusion_dpo_preference_loss(
+            vl_features,
+            action_input,
+            awac_batch["selected_trajs"],
+            shaped_rewards,
+            selected_valid_mask,
+            selected_real_mask,
+            source_code,
+            cfg,
+        )
 
         bc_loss_weight_effective = self._current_awac_bc_loss_weight(cfg)
         bc_loss = awac_loss.new_zeros(())
@@ -4842,6 +5060,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             float(cfg.awac_loss_weight) * awac_loss
             + float(cfg.pairwise_rank_loss_weight) * rank_loss
             + float(cfg.invalid_repulsion_loss_weight) * invalid_repulsion_loss
+            + float(cfg.preference_dpo_loss_weight) * dpo_loss
             + float(bc_loss_weight_effective) * bc_loss
             + float(cfg.grpo_loss_weight) * grpo_loss
         )
@@ -4899,6 +5118,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "awac_loss": awac_loss,
             "awac_pairwise_rank_loss": rank_loss,
             "awac_invalid_repulsion_loss": invalid_repulsion_loss,
+            "awac_dpo_loss": dpo_loss,
             "bc_loss": bc_loss,
             "bc_loss_weight_effective": total_loss.new_tensor(float(bc_loss_weight_effective)).detach(),
             "grpo_loss": grpo_loss,
@@ -4950,9 +5170,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "invalid_repulsion_pair_count": preference_diag["invalid_repulsion_pair_count"].to(total_loss).detach(),
             "pairwise_rank_active_row_ratio": preference_diag["pairwise_rank_active_row_ratio"].to(total_loss).detach(),
             "invalid_repulsion_active_row_ratio": preference_diag["invalid_repulsion_active_row_ratio"].to(total_loss).detach(),
+            "preference_dpo_pair_count": dpo_diag["preference_dpo_pair_count"].to(total_loss).detach(),
+            "preference_dpo_active_row_ratio": dpo_diag["preference_dpo_active_row_ratio"].to(total_loss).detach(),
+            "preference_dpo_reward_gap_mean": dpo_diag["preference_dpo_reward_gap_mean"].to(total_loss).detach(),
+            "preference_dpo_current_logratio_mean": dpo_diag["preference_dpo_current_logratio_mean"].to(total_loss).detach(),
+            "preference_dpo_reference_logratio_mean": dpo_diag["preference_dpo_reference_logratio_mean"].to(total_loss).detach(),
             "empty_awac_row_ratio": weight_diag["empty_awac_row_ratio"].to(total_loss).detach(),
             "positive_weight_row_ratio": weight_diag["positive_weight_row_ratio"].to(total_loss).detach(),
             "positive_weight_candidate_ratio": weight_diag["positive_weight_candidate_ratio"].to(total_loss).detach(),
+            "target_filter_row_ratio": weight_diag["target_filter_row_ratio"].to(total_loss).detach(),
+            "target_filter_candidate_ratio": weight_diag["target_filter_candidate_ratio"].to(total_loss).detach(),
             "has_valid_candidate_ratio": awac_batch["has_valid_candidate_ratio"].to(total_loss).detach(),
             "valid_candidate_ratio": awac_batch["valid_candidate_ratio"].to(total_loss).detach(),
             "selected_valid_ratio": selected_valid_ratio.detach(),
