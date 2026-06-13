@@ -1312,7 +1312,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
         self._init_stage3_oracle(cfg)
 
-        self._safe_load_reference_policy(cfg.reference_policy_checkpoint)
+        reference_checkpoint = self._resolve_reference_policy_checkpoint(
+            cfg.reference_policy_checkpoint,
+            required=True,
+        )
+        self._safe_load_reference_policy(str(reference_checkpoint))
 
         behavior_policy = None
         if self.use_gspo_ratio:
@@ -5682,12 +5686,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         expert_action_input_rep = self._repeat_expert_action_input(action_input, G)
 
         sampled_from_behavior_policy = False
+        behavior_policy_synced = False
         if self.use_trajectory_level_objective and self.use_gspo_ratio and self.behavior_policy_sample:
             if not hasattr(self, "behavior_policy"):
                 raise RuntimeError("use_gspo_ratio=True requires a frozen behavior_policy initialized in _init_grpo.")
             sync_interval = max(1, int(self.behavior_policy_sync_interval))
             if int(getattr(self, "grpo_update_counter", 0)) % sync_interval == 0:
                 self._sync_behavior_policy()
+                behavior_policy_synced = True
             sampled_from_behavior_policy = True
             self.behavior_policy.eval()
             with torch.no_grad():
@@ -5757,6 +5763,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
         gspo_ratio_mean = new_log_probs.new_tensor(1.0)
         gspo_ratio_clip_frac = new_log_probs.new_tensor(0.0)
+        gspo_log_ratio_mean = new_log_probs.new_zeros(())
+        gspo_log_ratio_std = new_log_probs.new_zeros(())
+        gspo_log_ratio_min = new_log_probs.new_zeros(())
+        gspo_log_ratio_max = new_log_probs.new_zeros(())
 
         use_strict_gspo = (
             self.use_trajectory_level_objective
@@ -5797,6 +5807,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 gspo_ratio_clip_frac = (
                     ((ratio < ratio_clip_low) | (ratio > ratio_clip_high)).detach().float().mean().to(ratio)
                 )
+                log_ratio_detached = log_ratio.detach().float()
+                gspo_log_ratio_mean = log_ratio_detached.mean().to(ratio)
+                gspo_log_ratio_std = log_ratio_detached.std(unbiased=False).to(ratio)
+                gspo_log_ratio_min = log_ratio_detached.min().to(ratio)
+                gspo_log_ratio_max = log_ratio_detached.max().to(ratio)
             else:
                 policy_loss = -torch.mean(new_traj_logp * adv)
             trajectory_logp = new_traj_logp.detach()
@@ -5898,8 +5913,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "trajectory_logp": trajectory_logp.mean(),
             "gspo_ratio_mean": gspo_ratio_mean.to(dtype=total_loss.dtype),
             "gspo_ratio_clip_frac": gspo_ratio_clip_frac.to(dtype=total_loss.dtype),
+            "gspo_log_ratio_mean": gspo_log_ratio_mean.to(dtype=total_loss.dtype),
+            "gspo_log_ratio_std": gspo_log_ratio_std.to(dtype=total_loss.dtype),
+            "gspo_log_ratio_min": gspo_log_ratio_min.to(dtype=total_loss.dtype),
+            "gspo_log_ratio_max": gspo_log_ratio_max.to(dtype=total_loss.dtype),
             "use_gspo_ratio": total_loss.new_tensor(float(bool(self.use_gspo_ratio))),
             "sampled_from_behavior_policy": total_loss.new_tensor(float(bool(sampled_from_behavior_policy))),
+            "behavior_policy_synced": total_loss.new_tensor(float(bool(behavior_policy_synced))),
+            "behavior_policy_sync_interval": total_loss.new_tensor(float(getattr(self, "behavior_policy_sync_interval", 0))),
             "gspo_clip_low": total_loss.new_tensor(float(self.gspo_clip_low)),
             "gspo_clip_high": total_loss.new_tensor(float(self.gspo_clip_high)),
         })
