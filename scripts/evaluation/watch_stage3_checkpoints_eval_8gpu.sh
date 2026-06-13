@@ -20,6 +20,9 @@ GPU_MAX_MEM_USED_MB="${GPU_MAX_MEM_USED_MB:-2000}"
 GPU_MAX_UTIL="${GPU_MAX_UTIL:-10}"
 RETRY_FAILED="${RETRY_FAILED:-0}"
 EXIT_WHEN_TRAINING_DONE_AND_QUEUE_EMPTY="${EXIT_WHEN_TRAINING_DONE_AND_QUEUE_EMPTY:-1}"
+EXTERNAL_SUMMARY_TSV="${EXTERNAL_SUMMARY_TSV:-}"
+EXTERNAL_SUMMARY_SKIP_STATES="${EXTERNAL_SUMMARY_SKIP_STATES:-started,done}"
+GLOBAL_EVAL_LOCK_DIR="${GLOBAL_EVAL_LOCK_DIR:-}"
 
 STATUS_FILE="${STATUS_FILE:-${TRAIN_OUT_ROOT}/status/stage3_rl_2b.json}"
 ARCHIVE_DIR="${EVAL_OUT_ROOT}/checkpoint_archive"
@@ -28,6 +31,9 @@ SUMMARY_TSV="${EVAL_OUT_ROOT}/checkpoint_eval_summary.tsv"
 SUBMETRIC_SUMMARY_TSV="${EVAL_OUT_ROOT}/checkpoint_eval_submetrics.tsv"
 
 mkdir -p "${ARCHIVE_DIR}" "${STATE_DIR}"
+if [[ -n "${GLOBAL_EVAL_LOCK_DIR}" ]]; then
+  mkdir -p "${GLOBAL_EVAL_LOCK_DIR}"
+fi
 exec 9>"${EVAL_OUT_ROOT}/watcher.lock"
 if ! flock -n 9; then
   echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) another eval watcher already holds ${EVAL_OUT_ROOT}/watcher.lock; exiting"
@@ -156,9 +162,40 @@ record_summary() {
     "${rc}" >> "${SUMMARY_TSV}"
 }
 
+external_summary_has_checkpoint() {
+  local id="$1"
+  if [[ -z "${EXTERNAL_SUMMARY_TSV}" || ! -f "${EXTERNAL_SUMMARY_TSV}" ]]; then
+    return 1
+  fi
+
+  awk -F '\t' -v id="${id}" -v states="${EXTERNAL_SUMMARY_SKIP_STATES}" '
+    BEGIN {
+      n = split(states, arr, ",")
+      for (i = 1; i <= n; i++) {
+        wanted[arr[i]] = 1
+      }
+    }
+    $2 == id && wanted[$3] {
+      found = 1
+      exit
+    }
+    END {
+      exit found ? 0 : 1
+    }
+  ' "${EXTERNAL_SUMMARY_TSV}"
+}
+
+eval_lock_path() {
+  local id="$1"
+  if [[ -z "${GLOBAL_EVAL_LOCK_DIR}" ]]; then
+    return 1
+  fi
+  printf '%s/%s.lock\n' "${GLOBAL_EVAL_LOCK_DIR}" "${id}"
+}
+
 evaluate_archive() {
   local archive="$1"
-  local id eval_dir checkpoint rc master_port
+  local id eval_dir checkpoint rc master_port lock_path eval_lock_fd
   id="$(checkpoint_id "${archive}")"
   eval_dir="${EVAL_OUT_ROOT}/eval_${id}"
 
@@ -171,6 +208,11 @@ evaluate_archive() {
   if [[ -f "${STATE_DIR}/${id}.failed" && "${RETRY_FAILED}" != "1" ]]; then
     return 0
   fi
+  if external_summary_has_checkpoint "${id}"; then
+    log "external summary already has checkpoint id=${id}; skipping"
+    touch "${STATE_DIR}/${id}.external_skipped"
+    return 0
+  fi
 
   checkpoint="${archive}"
   if [[ -f "${STATE_DIR}/${id}.paths" ]]; then
@@ -178,6 +220,24 @@ evaluate_archive() {
   fi
 
   mkdir -p "${eval_dir}"
+  if lock_path="$(eval_lock_path "${id}")"; then
+    exec {eval_lock_fd}>"${lock_path}"
+    if ! flock -n "${eval_lock_fd}"; then
+      log "another watcher holds global checkpoint lock id=${id} lock=${lock_path}; skipping"
+      eval "exec ${eval_lock_fd}>&-"
+      return 0
+    fi
+  fi
+  if external_summary_has_checkpoint "${id}"; then
+    log "external summary claimed checkpoint after lock id=${id}; skipping"
+    touch "${STATE_DIR}/${id}.external_skipped"
+    if [[ -n "${eval_lock_fd:-}" ]]; then
+      flock -u "${eval_lock_fd}" || true
+      eval "exec ${eval_lock_fd}>&-"
+    fi
+    return 0
+  fi
+
   rm -f "${STATE_DIR}/${id}.failed"
   printf '%s\n' "${archive}" > "${STATE_DIR}/${id}.running"
   record_summary "${id}" "started" "${checkpoint}" "${archive}" "${eval_dir}" "-"
@@ -214,6 +274,10 @@ PY
     record_summary "${id}" "failed" "${checkpoint}" "${archive}" "${eval_dir}" "${rc}"
     log "eval failed id=${id} rc=${rc} log=${eval_dir}/eval.log"
   fi
+  if [[ -n "${eval_lock_fd:-}" ]]; then
+    flock -u "${eval_lock_fd}" || true
+    eval "exec ${eval_lock_fd}>&-"
+  fi
 }
 
 while true; do
@@ -239,6 +303,14 @@ while true; do
       continue
     fi
     if [[ -f "${STATE_DIR}/${id}.failed" && "${RETRY_FAILED}" != "1" ]]; then
+      continue
+    fi
+    if [[ -f "${STATE_DIR}/${id}.external_skipped" ]]; then
+      continue
+    fi
+    if external_summary_has_checkpoint "${id}"; then
+      log "external summary already has checkpoint id=${id}; skipping pending archive"
+      touch "${STATE_DIR}/${id}.external_skipped"
       continue
     fi
     pending+=("${archive}")
