@@ -5,6 +5,7 @@ from typing import List, Sequence, Union
 
 import numpy as np
 import numpy.typing as npt
+from scipy.interpolate import interp1d
 
 from navsim.common.dataclasses import PDMResults, Trajectory
 from navsim.evaluate.pdm_score import get_trajectory_as_array, transform_trajectory
@@ -14,6 +15,8 @@ from navsim.planning.simulation.planner.pdm_planner.simulation.pdm_simulator imp
 from navsim.planning.simulation.planner.pdm_planner.utils.pdm_array_representation import ego_state_to_state_array
 from navsim.planning.simulation.planner.pdm_planner.utils.pdm_enums import MultiMetricIndex, WeightedMetricIndex
 from navsim.planning.simulation.planner.pdm_planner.utils.pdm_enums import StateIndex
+from nuplan.common.geometry.compute import principal_value
+from nuplan.common.geometry.convert import matrix_from_pose
 from nuplan.planning.simulation.trajectory.trajectory_sampling import TrajectorySampling
 
 
@@ -36,6 +39,27 @@ def _as_trajectory_list(model_trajectories: Union[TrajectoryLike, Sequence[Traje
             return [_coerce_trajectory(trajectory) for trajectory in model_trajectories]
         raise ValueError(f"Expected trajectory array with shape [H, 3] or [N, H, 3], got {model_trajectories.shape}.")
     return [_coerce_trajectory(trajectory) for trajectory in model_trajectories]
+
+
+def _as_trajectory_array(model_trajectories: Union[TrajectoryLike, Sequence[TrajectoryLike]]) -> npt.NDArray[np.float64]:
+    if isinstance(model_trajectories, Trajectory):
+        return np.asarray(model_trajectories.poses, dtype=np.float64)[None]
+    if isinstance(model_trajectories, np.ndarray):
+        trajectories = np.asarray(model_trajectories, dtype=np.float64)
+        if trajectories.ndim == 2:
+            trajectories = trajectories[None]
+        if trajectories.ndim != 3:
+            raise ValueError(
+                f"Expected trajectory array with shape [H, 3] or [N, H, 3], got {trajectories.shape}."
+            )
+        return trajectories
+    trajectories_seq = list(model_trajectories)
+    if not trajectories_seq:
+        return np.zeros((0, 0, 3), dtype=np.float64)
+    return np.asarray(
+        [trajectory.poses if isinstance(trajectory, Trajectory) else trajectory for trajectory in trajectories_seq],
+        dtype=np.float64,
+    )
 
 
 def _principal_value(angle: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
@@ -101,6 +125,98 @@ def _trajectory_arrays_to_state_array_fast(
     states[:, :, StateIndex.POINT] = interp_xy
     states[:, :, StateIndex.HEADING] = interp_heading
     states[:, 0, :] = initial_state
+    return states
+
+
+def _trajectory_arrays_to_state_array_interpolated_exact(
+    metric_cache: MetricCache,
+    model_trajectories: npt.NDArray[np.floating],
+    future_sampling: TrajectorySampling,
+    source_sampling: TrajectorySampling = Trajectory.trajectory_sampling,
+) -> npt.NDArray[np.float64]:
+    """
+    Vectorized equivalent of transform_trajectory() + get_trajectory_as_array().
+
+    This keeps NuPlan InterpolatedTrajectory semantics intact: linear split-state interpolation,
+    AngularInterpolator's unwrap/principal-value handling, integer microsecond timestamps, and
+    default-zero angular velocity/acceleration/steering-rate after EgoState.from_split_state().
+    """
+    rel = np.asarray(model_trajectories, dtype=np.float64)
+    if rel.ndim == 2:
+        rel = rel[None]
+    if rel.ndim != 3 or rel.shape[-1] != 3:
+        raise ValueError(f"Expected trajectories with shape [N, H, 3], got {rel.shape}.")
+
+    num_trajectories, horizon, _ = rel.shape
+    initial_ego_state = metric_cache.ego_state
+
+    source_times_s = (
+        np.arange(0.0, source_sampling.time_horizon, source_sampling.interval_length, dtype=np.float64)
+        + source_sampling.interval_length
+        + initial_ego_state.time_point.time_s
+    )
+    if source_times_s.shape[0] != horizon:
+        raise ValueError(
+            f"Trajectory horizon H={horizon} does not match source sampling poses={source_times_s.shape[0]}."
+        )
+    source_times_us = np.asarray([int(time_s * 1e6) for time_s in source_times_s], dtype=np.float64)
+    key_times_us = np.concatenate([[float(initial_ego_state.time_us)], source_times_us])
+
+    rel_mats = np.zeros((num_trajectories, horizon, 3, 3), dtype=np.float64)
+    cos_h = np.cos(rel[..., 2])
+    sin_h = np.sin(rel[..., 2])
+    rel_mats[..., 0, 0] = cos_h
+    rel_mats[..., 0, 1] = -sin_h
+    rel_mats[..., 0, 2] = rel[..., 0]
+    rel_mats[..., 1, 0] = sin_h
+    rel_mats[..., 1, 1] = cos_h
+    rel_mats[..., 1, 2] = rel[..., 1]
+    rel_mats[..., 2, 2] = 1.0
+
+    absolute_mats = matrix_from_pose(initial_ego_state.rear_axle) @ rel_mats
+    absolute_x = absolute_mats[..., 0, 2]
+    absolute_y = absolute_mats[..., 1, 2]
+    absolute_heading = np.arctan2(absolute_mats[..., 1, 0], absolute_mats[..., 0, 0])
+
+    initial_split = initial_ego_state.to_split_state()
+    initial_linear = np.asarray(initial_split.linear_states, dtype=np.float64)
+    initial_heading = float(initial_split.angular_states[0])
+
+    linear_states = np.zeros((num_trajectories, horizon + 1, 8), dtype=np.float64)
+    linear_states[:, 0, :] = initial_linear
+    linear_states[:, 1:, 0] = source_times_us[None, :]
+    linear_states[:, 1:, 1] = absolute_x
+    linear_states[:, 1:, 2] = absolute_y
+
+    angular_states = np.zeros((num_trajectories, horizon + 1, 1), dtype=np.float64)
+    angular_states[:, 0, 0] = initial_heading
+    angular_states[:, 1:, 0] = absolute_heading
+    angular_states = np.unwrap(angular_states, axis=1)
+
+    query_times_s = (
+        np.arange(
+            0.0,
+            future_sampling.time_horizon + future_sampling.interval_length,
+            future_sampling.interval_length,
+            dtype=np.float64,
+        )
+        + initial_ego_state.time_point.time_s
+    )
+    query_times_us = np.asarray([int(time_s * 1e6) for time_s in query_times_s], dtype=np.float64)
+    query_times_us = np.clip(query_times_us, key_times_us[0], key_times_us[-1])
+
+    linear_out = interp1d(key_times_us, linear_states, axis=1)(query_times_us)
+    angular_out = principal_value(interp1d(key_times_us, angular_states, axis=1)(query_times_us))[..., 0]
+
+    states = np.zeros((num_trajectories, len(query_times_us), StateIndex.size()), dtype=np.float64)
+    states[..., StateIndex.X] = linear_out[..., 1]
+    states[..., StateIndex.Y] = linear_out[..., 2]
+    states[..., StateIndex.HEADING] = angular_out
+    states[..., StateIndex.VELOCITY_X] = linear_out[..., 3]
+    states[..., StateIndex.VELOCITY_Y] = linear_out[..., 4]
+    states[..., StateIndex.ACCELERATION_X] = linear_out[..., 5]
+    states[..., StateIndex.ACCELERATION_Y] = linear_out[..., 6]
+    states[..., StateIndex.STEERING_ANGLE] = linear_out[..., 7]
     return states
 
 
@@ -202,6 +318,7 @@ def pdm_score_batch_same_cache(
     future_sampling: TrajectorySampling,
     simulator: PDMSimulator,
     scorer: PDMScorer,
+    use_exact_array_conversion: bool = False,
 ) -> List[PDMResults]:
     """
     Score multiple candidate trajectories for one token/metric_cache in one simulator/scorer pass.
@@ -210,19 +327,30 @@ def pdm_score_batch_same_cache(
     aggregated as if it were scored against only the PDM baseline trajectory. This matters because the
     original scorer normalizes progress by the max progress among proposals in the current call.
     """
-    trajectories = _as_trajectory_list(model_trajectories)
-    if not trajectories:
-        return []
-
     initial_ego_state = metric_cache.ego_state
     pdm_states = get_trajectory_as_array(metric_cache.trajectory, future_sampling, initial_ego_state.time_point)
 
-    pred_states = []
-    for trajectory in trajectories:
-        pred_trajectory = transform_trajectory(trajectory, initial_ego_state)
-        pred_states.append(get_trajectory_as_array(pred_trajectory, future_sampling, initial_ego_state.time_point))
+    if use_exact_array_conversion:
+        trajectories_array = _as_trajectory_array(model_trajectories)
+        if trajectories_array.shape[0] == 0:
+            return []
+        pred_states = _trajectory_arrays_to_state_array_interpolated_exact(
+            metric_cache,
+            trajectories_array,
+            future_sampling,
+        )
+    else:
+        trajectories = _as_trajectory_list(model_trajectories)
+        if not trajectories:
+            return []
 
-    trajectory_states = np.concatenate([pdm_states[None, ...], np.stack(pred_states, axis=0)], axis=0)
+        pred_states = []
+        for trajectory in trajectories:
+            pred_trajectory = transform_trajectory(trajectory, initial_ego_state)
+            pred_states.append(get_trajectory_as_array(pred_trajectory, future_sampling, initial_ego_state.time_point))
+        pred_states = np.stack(pred_states, axis=0)
+
+    trajectory_states = np.concatenate([pdm_states[None, ...], pred_states], axis=0)
     simulated_states = simulator.simulate_proposals(trajectory_states, initial_ego_state)
     scorer.score_proposals(
         simulated_states,

@@ -150,6 +150,7 @@ class ReCogDriveAgent(AbstractAgent):
         ),
         offline_rl_missing_submetric_policy: str = "error",
         offline_rl_use_batched_pdm_scoring: bool = True,
+        offline_rl_use_exact_array_pdm_state_conversion: bool = True,
         offline_rl_use_fast_pdm_scorer: bool = True,
         offline_rl_pdm_shadow_check: bool = False,
         offline_rl_pdm_shadow_max_samples: int = 4,
@@ -437,6 +438,7 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_required_reward_submetrics = tuple(str(x) for x in offline_rl_required_reward_submetrics)
         self.offline_rl_missing_submetric_policy = offline_rl_missing_submetric_policy
         self.offline_rl_use_batched_pdm_scoring = bool(offline_rl_use_batched_pdm_scoring)
+        self.offline_rl_use_exact_array_pdm_state_conversion = bool(offline_rl_use_exact_array_pdm_state_conversion)
         self.offline_rl_use_fast_pdm_scorer = bool(offline_rl_use_fast_pdm_scorer)
         self.offline_rl_pdm_shadow_check = bool(offline_rl_pdm_shadow_check)
         self.offline_rl_pdm_shadow_max_samples = int(offline_rl_pdm_shadow_max_samples)
@@ -918,6 +920,7 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.required_reward_submetrics = self.offline_rl_required_reward_submetrics
         offline_cfg.missing_submetric_policy = self.offline_rl_missing_submetric_policy
         offline_cfg.use_batched_pdm_scoring = self.offline_rl_use_batched_pdm_scoring
+        offline_cfg.use_exact_array_pdm_state_conversion = self.offline_rl_use_exact_array_pdm_state_conversion
         offline_cfg.use_fast_pdm_scorer = self.offline_rl_use_fast_pdm_scorer
         offline_cfg.pdm_shadow_check = self.offline_rl_pdm_shadow_check
         offline_cfg.pdm_shadow_max_samples = self.offline_rl_pdm_shadow_max_samples

@@ -207,6 +207,7 @@ class OfflineRLConfig:
     )
     missing_submetric_policy: Literal["error", "unsafe_zero", "warn_default"] = "error"
     use_batched_pdm_scoring: bool = True
+    use_exact_array_pdm_state_conversion: bool = True
     use_fast_pdm_scorer: bool = True
     pdm_shadow_check: bool = False
     pdm_shadow_max_samples: int = 4
@@ -3631,6 +3632,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             required_submetrics=cfg.required_reward_submetrics if cfg is not None else None,
             missing_submetric_policy=str(cfg.missing_submetric_policy) if cfg is not None else "warn_default",
             use_batched_pdm_scoring=bool(cfg.use_batched_pdm_scoring) if cfg is not None else False,
+            use_exact_array_pdm_state_conversion=(
+                bool(cfg.use_exact_array_pdm_state_conversion) if cfg is not None else False
+            ),
             use_fast_pdm_scorer=bool(cfg.use_fast_pdm_scorer) if cfg is not None else False,
             pdm_shadow_check=bool(cfg.pdm_shadow_check) if cfg is not None else False,
             pdm_shadow_max_samples=int(cfg.pdm_shadow_max_samples) if cfg is not None else 0,
@@ -4840,6 +4844,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         required_submetrics: Optional[tuple[str, ...]] = None,
         missing_submetric_policy: str = "warn_default",
         use_batched_pdm_scoring: bool = False,
+        use_exact_array_pdm_state_conversion: bool = False,
         use_fast_pdm_scorer: bool = False,
         pdm_shadow_check: bool = False,
         pdm_shadow_max_samples: int = 0,
@@ -4873,6 +4878,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     future_sampling=self.simulator.proposal_sampling,
                     simulator=self.simulator,
                     scorer=scorer,
+                    use_exact_array_conversion=bool(use_exact_array_pdm_state_conversion),
                 )
                 if len(pdm_results) != len(indices):
                     raise RuntimeError(

@@ -368,6 +368,10 @@ def main(cfg: DictConfig) -> None:
         cfg.agent.offline_rl_strict_reward_submetrics = _env_flag("AWAC_STRICT_REWARD_SUBMETRICS", True)
         cfg.agent.offline_rl_missing_submetric_policy = os.getenv("AWAC_MISSING_SUBMETRIC_POLICY", "error")
         cfg.agent.offline_rl_use_batched_pdm_scoring = _env_flag("AWAC_USE_BATCHED_PDM_SCORING", True)
+        cfg.agent.offline_rl_use_exact_array_pdm_state_conversion = _env_flag(
+            "AWAC_USE_EXACT_ARRAY_PDM_STATE_CONVERSION",
+            True,
+        )
         cfg.agent.offline_rl_use_fast_pdm_scorer = _env_flag("AWAC_USE_FAST_PDM_SCORER", True)
         cfg.agent.offline_rl_pdm_shadow_check = _env_flag("AWAC_PDM_SHADOW_CHECK", False)
         cfg.agent.offline_rl_pdm_shadow_max_samples = int(os.getenv("AWAC_PDM_SHADOW_MAX_SAMPLES", "4"))
