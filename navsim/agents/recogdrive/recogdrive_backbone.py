@@ -1,5 +1,8 @@
 import inspect
 from typing import Any, Dict, List, Optional, Tuple, Union
+import contextlib
+import io
+import os
 import torch
 from torch import nn
 from transformers import AutoModel, AutoTokenizer
@@ -94,6 +97,15 @@ class RecogDriveBackbone(nn.Module):
         self.model.img_context_token_id = self.img_context_token_id
         self._patch_internvl_visual_feature_dtype(self.model)
         print("InternVL model configured.")
+
+    @staticmethod
+    def _verbose_forward_enabled() -> bool:
+        return os.environ.get("INTERNVL_VERBOSE_FORWARD", "0").strip().lower() in {"1", "true", "yes", "on"}
+
+    def _forward_log_context(self):
+        if self._verbose_forward_enabled():
+            return contextlib.nullcontext()
+        return contextlib.redirect_stdout(io.StringIO())
 
     @staticmethod
     def _infer_model_compute_dtype(model: nn.Module) -> torch.dtype:
@@ -268,8 +280,8 @@ class RecogDriveBackbone(nn.Module):
         num_patches = pixel_values.size(0)
         image_flags = torch.tensor([1] * num_patches, dtype=torch.long, device=device)
 
-
-        return self.model(
+        with self._forward_log_context():
+            return self.model(
                 pixel_values=pixel_values.to(device=device, dtype=model_dtype),
                 input_ids=input_ids,
                 attention_mask=attention_mask,
@@ -277,7 +289,7 @@ class RecogDriveBackbone(nn.Module):
                 image_flags=image_flags.squeeze(-1),
                 output_hidden_states=True,
                 return_dict=True,
-        )
+            )
 
     def forward_with_two_expert_slots(
         self,
