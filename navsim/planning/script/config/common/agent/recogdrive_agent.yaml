@@ -58,6 +58,11 @@ offline_rl_required_reward_submetrics:
   - time_to_collision_within_bound
   - driving_direction_compliance
 offline_rl_missing_submetric_policy: error
+offline_rl_use_batched_pdm_scoring: true
+offline_rl_use_fast_pdm_scorer: true
+offline_rl_pdm_shadow_check: false
+offline_rl_pdm_shadow_max_samples: 4
+offline_rl_pdm_shadow_max_abs_diff: 0.0
 offline_rl_clip_candidates_to_norm_range: true
 offline_rl_enforce_forward_monotonic_x: true
 offline_rl_max_heading_step_rad: 0.25

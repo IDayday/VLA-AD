@@ -11,7 +11,7 @@ from typing import Any, Dict, Iterable, List, Tuple
 import hydra
 import torch
 from hydra.utils import instantiate
-from omegaconf import DictConfig
+from omegaconf import DictConfig, open_dict
 from torch.utils.data import DataLoader, Subset
 from transformers.feature_extraction_utils import BatchFeature
 
@@ -360,44 +360,45 @@ def main(cfg: DictConfig) -> None:
         logger.info("Stage3 AWAC/IQL buffer generation is dry-run only; no model or dataset was loaded.")
         return
 
-    cfg.agent.stage3_objective = "none"
-    cfg.agent.offline_rl_enabled = True
-    cfg.agent.offline_rl_build_candidates_online = True
-    cfg.agent.offline_rl_elite_buffer_path = str(buffer_dir)
-    cfg.agent.offline_rl_strict_reward_submetrics = _env_flag("AWAC_STRICT_REWARD_SUBMETRICS", True)
-    cfg.agent.offline_rl_missing_submetric_policy = os.getenv("AWAC_MISSING_SUBMETRIC_POLICY", "error")
-    cfg.agent.offline_rl_use_batched_pdm_scoring = _env_flag("AWAC_USE_BATCHED_PDM_SCORING", True)
-    cfg.agent.offline_rl_use_fast_pdm_scorer = _env_flag("AWAC_USE_FAST_PDM_SCORER", True)
-    cfg.agent.offline_rl_pdm_shadow_check = _env_flag("AWAC_PDM_SHADOW_CHECK", False)
-    cfg.agent.offline_rl_pdm_shadow_max_samples = int(os.getenv("AWAC_PDM_SHADOW_MAX_SAMPLES", "4"))
-    cfg.agent.offline_rl_pdm_shadow_max_abs_diff = float(os.getenv("AWAC_PDM_SHADOW_MAX_ABS_DIFF", "0.0"))
-    cfg.agent.offline_rl_require_buffer_valid_mask = _env_flag("AWAC_REQUIRE_BUFFER_VALID_MASK", True)
-    cfg.agent.offline_rl_allow_v1_buffer_recompute_valid_mask = _env_flag(
-        "AWAC_ALLOW_V1_BUFFER_RECOMPUTE_VALID_MASK",
-        True,
-    )
-    cfg.agent.offline_rl_select_valid_topk_only = _env_flag("AWAC_SELECT_VALID_TOPK_ONLY", True)
-    cfg.agent.offline_rl_train_invalid_fallback_candidates = _env_flag(
-        "AWAC_TRAIN_INVALID_FALLBACK_CANDIDATES",
-        False,
-    )
-    cfg.agent.offline_rl_fallback_invalid_candidate_weight = float(
-        os.getenv("AWAC_FALLBACK_INVALID_CANDIDATE_WEIGHT", "0.0")
-    )
-    cfg.agent.offline_rl_use_final_heading_guard = _env_flag("AWAC_USE_FINAL_HEADING_GUARD", True)
-    if os.getenv("ONLINE_POLICY_SAMPLES"):
-        cfg.agent.offline_rl_online_policy_samples = int(os.environ["ONLINE_POLICY_SAMPLES"])
-    if os.getenv("ELITE_TOP_M"):
-        cfg.agent.offline_rl_elite_top_m = int(os.environ["ELITE_TOP_M"])
-    if os.getenv("IL_CHECKPOINT"):
-        cfg.agent.checkpoint_path = os.environ["IL_CHECKPOINT"]
-        cfg.agent.reference_policy_checkpoint = os.environ["IL_CHECKPOINT"]
-    if os.getenv("VLM_PATH"):
-        cfg.agent.vlm_path = os.environ["VLM_PATH"]
-    if os.getenv("METRIC_CACHE_DIR"):
-        cfg.agent.metric_cache_path = os.environ["METRIC_CACHE_DIR"]
-    if os.getenv("CACHE_MODE"):
-        cfg.agent.cache_mode = _env_flag("CACHE_MODE", bool(cfg.agent.get("cache_mode", False)))
+    with open_dict(cfg.agent):
+        cfg.agent.stage3_objective = "none"
+        cfg.agent.offline_rl_enabled = True
+        cfg.agent.offline_rl_build_candidates_online = True
+        cfg.agent.offline_rl_elite_buffer_path = str(buffer_dir)
+        cfg.agent.offline_rl_strict_reward_submetrics = _env_flag("AWAC_STRICT_REWARD_SUBMETRICS", True)
+        cfg.agent.offline_rl_missing_submetric_policy = os.getenv("AWAC_MISSING_SUBMETRIC_POLICY", "error")
+        cfg.agent.offline_rl_use_batched_pdm_scoring = _env_flag("AWAC_USE_BATCHED_PDM_SCORING", True)
+        cfg.agent.offline_rl_use_fast_pdm_scorer = _env_flag("AWAC_USE_FAST_PDM_SCORER", True)
+        cfg.agent.offline_rl_pdm_shadow_check = _env_flag("AWAC_PDM_SHADOW_CHECK", False)
+        cfg.agent.offline_rl_pdm_shadow_max_samples = int(os.getenv("AWAC_PDM_SHADOW_MAX_SAMPLES", "4"))
+        cfg.agent.offline_rl_pdm_shadow_max_abs_diff = float(os.getenv("AWAC_PDM_SHADOW_MAX_ABS_DIFF", "0.0"))
+        cfg.agent.offline_rl_require_buffer_valid_mask = _env_flag("AWAC_REQUIRE_BUFFER_VALID_MASK", True)
+        cfg.agent.offline_rl_allow_v1_buffer_recompute_valid_mask = _env_flag(
+            "AWAC_ALLOW_V1_BUFFER_RECOMPUTE_VALID_MASK",
+            True,
+        )
+        cfg.agent.offline_rl_select_valid_topk_only = _env_flag("AWAC_SELECT_VALID_TOPK_ONLY", True)
+        cfg.agent.offline_rl_train_invalid_fallback_candidates = _env_flag(
+            "AWAC_TRAIN_INVALID_FALLBACK_CANDIDATES",
+            False,
+        )
+        cfg.agent.offline_rl_fallback_invalid_candidate_weight = float(
+            os.getenv("AWAC_FALLBACK_INVALID_CANDIDATE_WEIGHT", "0.0")
+        )
+        cfg.agent.offline_rl_use_final_heading_guard = _env_flag("AWAC_USE_FINAL_HEADING_GUARD", True)
+        if os.getenv("ONLINE_POLICY_SAMPLES"):
+            cfg.agent.offline_rl_online_policy_samples = int(os.environ["ONLINE_POLICY_SAMPLES"])
+        if os.getenv("ELITE_TOP_M"):
+            cfg.agent.offline_rl_elite_top_m = int(os.environ["ELITE_TOP_M"])
+        if os.getenv("IL_CHECKPOINT"):
+            cfg.agent.checkpoint_path = os.environ["IL_CHECKPOINT"]
+            cfg.agent.reference_policy_checkpoint = os.environ["IL_CHECKPOINT"]
+        if os.getenv("VLM_PATH"):
+            cfg.agent.vlm_path = os.environ["VLM_PATH"]
+        if os.getenv("METRIC_CACHE_DIR"):
+            cfg.agent.metric_cache_path = os.environ["METRIC_CACHE_DIR"]
+        if os.getenv("CACHE_MODE"):
+            cfg.agent.cache_mode = _env_flag("CACHE_MODE", bool(cfg.agent.get("cache_mode", False)))
 
     out_root.mkdir(parents=True, exist_ok=True)
     if not dry_run:
