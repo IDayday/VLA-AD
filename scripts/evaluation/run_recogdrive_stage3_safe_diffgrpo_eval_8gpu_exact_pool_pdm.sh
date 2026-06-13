@@ -28,6 +28,7 @@ ASYNC_PDM_QUEUE_SIZE="${ASYNC_PDM_QUEUE_SIZE:-$((ASYNC_PDM_WORKERS * 2))}"
 ASYNC_PDM_PROGRESS_EVERY="${ASYNC_PDM_PROGRESS_EVERY:-100}"
 ASYNC_PDM_PROFILE="${ASYNC_PDM_PROFILE:-0}"
 FAST_METRIC_CACHE_DIR="${FAST_METRIC_CACHE_DIR:-}"
+MAX_SCENES="${MAX_SCENES:-0}"
 DRY_RUN="${DRY_RUN:-0}"
 
 export NUPLAN_MAP_VERSION="${NUPLAN_MAP_VERSION:-nuplan-maps-v1.0}"
@@ -78,6 +79,10 @@ if [[ ! -d "${SENSOR_BLOBS_PATH}" ]]; then
 fi
 if [[ -n "${FAST_METRIC_CACHE_DIR}" && ! -d "${FAST_METRIC_CACHE_DIR}" ]]; then
   echo "FAST_METRIC_CACHE_DIR does not exist: ${FAST_METRIC_CACHE_DIR}" >&2
+  exit 2
+fi
+if ! [[ "${MAX_SCENES}" =~ ^[0-9]+$ ]]; then
+  echo "MAX_SCENES must be a non-negative integer, got: ${MAX_SCENES}" >&2
   exit 2
 fi
 if [[ "${ASYNC_PDM_BACKEND}" != "thread" && "${ASYNC_PDM_BACKEND}" != "process" ]]; then
@@ -149,6 +154,9 @@ CMD=(
 if [[ -n "${FAST_METRIC_CACHE_DIR}" ]]; then
   CMD+=("+fast_metric_cache_path=${FAST_METRIC_CACHE_DIR}")
 fi
+if [[ "${MAX_SCENES}" -gt 0 ]]; then
+  CMD+=("train_test_split.scene_filter.max_scenes=${MAX_SCENES}")
+fi
 
 {
   echo "repo_root=${REPO_ROOT}"
@@ -165,6 +173,7 @@ fi
   echo "async_pdm_queue_size=${ASYNC_PDM_QUEUE_SIZE}"
   echo "async_pdm_profile=${ASYNC_PDM_PROFILE}"
   echo "fast_metric_cache_dir=${FAST_METRIC_CACHE_DIR}"
+  echo "max_scenes=${MAX_SCENES}"
   printf 'command='
   printf '%q ' "${CMD[@]}"
   printf '\n'
