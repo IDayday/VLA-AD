@@ -131,7 +131,7 @@ CMD=(
   "${REPO_ROOT}/navsim/planning/script/run_pdm_score_recogdrive_async_pdm_exact_pool.py"
   "train_test_split=navtest"
   "agent=recogdrive_agent"
-  "agent.checkpoint_path=${CHECKPOINT}"
+  "agent.checkpoint_path='${CHECKPOINT}'"
   "agent.vlm_path=${VLM_PATH}"
   "agent.cam_type=single"
   "agent.grpo=False"
