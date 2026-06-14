@@ -174,6 +174,22 @@ def _read_json(path: Path) -> dict:
         return {"state": "unreadable", "error": f"{type(exc).__name__}: {exc}"}
 
 
+def _read_key_value_file(path: Path) -> dict[str, str]:
+    if not path.exists():
+        return {}
+    values: dict[str, str] = {}
+    try:
+        for line in path.read_text(errors="replace").splitlines():
+            line = line.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            key, value = line.split("=", 1)
+            values[key.strip()] = value.strip()
+    except Exception as exc:
+        return {"state": "unreadable", "error": f"{type(exc).__name__}: {exc}"}
+    return values
+
+
 def _read_tsv(path: Path) -> list[dict[str, str]]:
     if not path.exists() or path.stat().st_size == 0:
         return []
@@ -208,7 +224,23 @@ def _load_status(run_root: Path) -> dict:
     if status.exists():
         return _read_json(status)
     latest = _latest_file((run_root / "status").glob("*.json"))
-    return _read_json(latest) if latest is not None else {}
+    if latest is not None:
+        return _read_json(latest)
+    queued = _read_key_value_file(run_root / "queued_status.txt")
+    if queued:
+        wait_log = run_root / "train_gpu_wait.log"
+        queued_state = queued.get("status") or "waiting_for_free_gpus"
+        if not queued_state.startswith("queued"):
+            queued_state = f"queued_{queued_state}"
+        status: dict[str, object] = {
+            "state": queued_state,
+            "alive": "unknown",
+            "pid": queued.get("launcher_pid") or queued.get("wrapper_pid") or "",
+        }
+        if wait_log.exists():
+            status["event_age_sec"] = f"{time.time() - wait_log.stat().st_mtime:.1f}"
+        return status
+    return {}
 
 
 def _load_train_scalars(run_root: Path) -> tuple[Path | None, dict[str, tuple[int, float]]]:
@@ -357,6 +389,8 @@ def _recommend(row: dict[str, object], target_pdms: float) -> str:
     group_std = _float_or_none(row.get("group_reward_std"))
     event_age = _float_or_none(row.get("event_age_sec"))
 
+    if state.startswith("queued"):
+        return "wait_for_free_gpus"
     if state == "running" and checkpoint_count == 0:
         return "wait_for_first_checkpoint"
     if state == "running" and eval_rows == 0:
@@ -402,7 +436,11 @@ def summarize_run(run_root: Path, target_pdms: float) -> dict[str, object]:
         "latest_checkpoint": str(ckpts[-1]) if ckpts else "",
         "latest_checkpoint_utc": _utc(ckpts[-1].stat().st_mtime) if ckpts else "",
         "event_file": str(event_file) if event_file is not None else "",
-        "event_age_sec": f"{time.time() - event_file.stat().st_mtime:.1f}" if event_file is not None else "",
+        "event_age_sec": (
+            f"{time.time() - event_file.stat().st_mtime:.1f}"
+            if event_file is not None
+            else status.get("event_age_sec", "")
+        ),
         "latest_step": latest_step,
         "eval_rows": len(eval_rows),
         "best_pdms": best_pdms if best_pdms is not None else "",

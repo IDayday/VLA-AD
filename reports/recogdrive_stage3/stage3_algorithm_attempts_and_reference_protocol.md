@@ -265,6 +265,10 @@ Update on 2026-06-14 21:33 UTC:
   - `num_records=85109`, `valid_candidate_ratio=0.982654`, `has_valid_candidate_ratio=1.0`.
   - `mean_best_valid_reward=0.974021`, `pct_best_valid_above_gt=0.582594`, `pct_best_valid_above_il=0.793641`.
   - Saved under the run root as `buffer_validate_before_launch.json` and `.csv`.
+- Monitoring/gate scripts were patched after the queue launch:
+  - `summarize_recogdrive_stage3_runs.py` now reads `queued_status.txt` and reports queued runs as `queued_*` with recommendation `wait_for_free_gpus`.
+  - `decide_recogdrive_stage3_next_action.py` now detects queued/running Buffer-DPO runs and returns `wait_for_buffer_dpo_queue` instead of generating another duplicate launch command.
+  - Current gate output: active Buffer-DPO run is `stage3_grpo_buffer_dpo_refctrl_s16_lr1e4_b2acc4_zt2wait_8gpu_20260614T213001Z`.
 
 Train-only keep-best elite buffer status on 2026-06-14 19:23 UTC:
 - Buffer path: `/mnt/project/VLA-AD/cache/recogdrive_stage3_awac_elite_buffer_train_v2_stage3_awac_iql_dualhost_20260612T182947Z`.
@@ -452,6 +456,9 @@ Launch status on 2026-06-14 21:33 UTC:
 - The run should be judged first by whether DPO diagnostics become active after training starts:
   `grpo_buffer_preference_dpo_pair_count`, `active_row_ratio`, `reward_gap_mean`,
   `logit_mean`, and `implicit_accuracy`. Do not judge it only from final PDMS.
+- Follow-up guard on 2026-06-14 21:38 UTC:
+  - Summary now reports this run as `queued_waiting_for_free_zt2_gpus` with train pid `2647912`.
+  - Next-action gate now returns `wait_for_buffer_dpo_queue`, so operators should not launch another Buffer-DPO copy while this queued run is alive.
 
 ## Planned Attempt: Safety-Filtered GRPO Self-Imitation Targets
 

@@ -14,6 +14,7 @@ DEFAULT_OUTPUT_JSON = Path("/mnt/project/VLA-AD/outputs/stage3_next_action_lates
 DEFAULT_COMMAND_FILE = Path("/mnt/project/VLA-AD/outputs/stage3_next_action_command.sh")
 DEFAULT_CURRENT_RUN = "stage3_grpo_refkl_s16_lr1e4_b2acc4_currentrepo_8gpu_20260614T191227Z"
 DEFAULT_LAUNCH_LOCK_FILE = Path("/mnt/project/VLA-AD/outputs/stage3_buffer_dpo_next_action_launch.lock")
+DEFAULT_BUFFER_DPO_RUN_PREFIX = "stage3_grpo_buffer_dpo_refctrl"
 NEXT_EXPERIMENT_COMMAND = (
     "cd /mnt/project/VLA-AD_last_vla_dev && "
     "RUN_TRAIN=1 LAUNCH_EVAL_WATCHERS=1 "
@@ -85,6 +86,22 @@ def _read_tsv(path: Path) -> list[dict[str, str]]:
 def _find_run(rows: list[dict[str, str]], run_name: str) -> dict[str, str] | None:
     for row in rows:
         if row.get("run_name") == run_name:
+            return row
+    return None
+
+
+def _find_active_buffer_dpo_run(
+    rows: list[dict[str, str]],
+    *,
+    run_prefix: str,
+    current_run: str,
+) -> dict[str, str] | None:
+    for row in rows:
+        run_name = row.get("run_name", "")
+        if run_name == current_run or not run_name.startswith(run_prefix):
+            continue
+        state = row.get("training_state", "")
+        if state.startswith("queued") or "waiting_for_free" in state or state == "running":
             return row
     return None
 
@@ -218,6 +235,7 @@ def main() -> None:
     parser.add_argument("--launch-gpu-max-mem-used-mb", type=int, default=2000)
     parser.add_argument("--launch-gpu-max-util", type=int, default=5)
     parser.add_argument("--launch-lock-file", type=Path, default=DEFAULT_LAUNCH_LOCK_FILE)
+    parser.add_argument("--buffer-dpo-run-prefix", default=DEFAULT_BUFFER_DPO_RUN_PREFIX)
     parser.add_argument("--output-json", type=Path, default=DEFAULT_OUTPUT_JSON)
     parser.add_argument("--command-file", type=Path, default=DEFAULT_COMMAND_FILE)
     args = parser.parse_args()
@@ -226,6 +244,54 @@ def main() -> None:
     row = _find_run(rows, args.current_run)
     if row is None:
         raise SystemExit(f"Run not found in summary: {args.current_run}")
+
+    active_buffer_dpo = _find_active_buffer_dpo_run(
+        rows,
+        run_prefix=args.buffer_dpo_run_prefix,
+        current_run=args.current_run,
+    )
+    if active_buffer_dpo is not None:
+        decision: dict[str, object] = {
+            "run_name": args.current_run,
+            "state": row.get("training_state", ""),
+            "checkpoint_count": int(row.get("checkpoint_count") or 0),
+            "eval_rows": int(row.get("eval_rows") or 0),
+            "best_pdms": _metric(row, "best_pdms"),
+            "baseline_pdms": args.baseline_pdms,
+            "next_experiment_command": NEXT_EXPERIMENT_COMMAND,
+            "launch_running_policy": args.launch_running_policy,
+            "launch_resource_policy": args.launch_resource_policy,
+            "launch_gpu_list": args.launch_gpu_list,
+            "launch_gpu_max_mem_used_mb": args.launch_gpu_max_mem_used_mb,
+            "launch_gpu_max_util": args.launch_gpu_max_util,
+            "launch_lock_file": str(args.launch_lock_file),
+            "should_launch_now": False,
+            "action": "wait_for_buffer_dpo_queue",
+            "reason": "Buffer-DPO 已经排队或运行；不要重复启动，等待其进入训练并观察 DPO 诊断。",
+            "active_buffer_dpo_run": active_buffer_dpo.get("run_name", ""),
+            "active_buffer_dpo_state": active_buffer_dpo.get("training_state", ""),
+            "active_buffer_dpo_pid": active_buffer_dpo.get("train_pid", ""),
+        }
+        args.output_json.parent.mkdir(parents=True, exist_ok=True)
+        args.output_json.write_text(json.dumps(decision, indent=2, sort_keys=True), encoding="utf-8")
+        args.command_file.parent.mkdir(parents=True, exist_ok=True)
+        command_text = (
+            "#!/usr/bin/env bash\n"
+            "set -euo pipefail\n"
+            f"echo 'Stage3 next-action gate: {decision['action']}'\n"
+            f"echo 'Reason: {decision['reason']}'\n"
+            f"echo 'Active Buffer-DPO run: {decision['active_buffer_dpo_run']} ({decision['active_buffer_dpo_state']})'\n"
+            "exit 2\n"
+        )
+        args.command_file.write_text(command_text, encoding="utf-8")
+        args.command_file.chmod(0o755)
+        print(f"action={decision['action']}")
+        print(f"should_launch_now={decision['should_launch_now']}")
+        print(f"reason={decision['reason']}")
+        print(f"active_buffer_dpo_run={decision['active_buffer_dpo_run']}")
+        print(f"json={args.output_json}")
+        print(f"command_file={args.command_file}")
+        return
 
     decision = decide_next_action(
         row,
