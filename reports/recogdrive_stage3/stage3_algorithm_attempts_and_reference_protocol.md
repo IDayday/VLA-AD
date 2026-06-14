@@ -122,7 +122,10 @@ Live full-run status:
 - Second logged train scalar at `step=99`:
   - `reward=0.731460`, `base_reward=0.750897`, `safe_ratio=0.890625`, `mean_ep=0.768155`, `mean_ttc=0.820312`.
   - `grpo_self_imitation_candidate_ratio=0.378906`, `target_ratio=0.875000`, `target_reward_mean=0.969151`.
-- Interpretation: the self-imitation path is active and is selecting very high train-reward sampled trajectories rather than imitating low-quality rollouts. However `target_ratio=0.875` on the first two logged batches is not sparse; if this remains high while train reward/safety underperform the original-LR control, the auxiliary self-imitation gate may be too broad. This is still only an internal train diagnostic; promotion requires exact navtest PDMS at `epoch0` near or above the original Stage3 early `0.88+` band.
+- Third logged train scalar at `step=149`:
+  - `reward=0.762590`, `base_reward=0.770046`, `safe_ratio=0.906250`.
+  - `grpo_self_imitation_target_ratio=0.937500`, `target_reward_mean=0.977498`.
+- Interpretation: the self-imitation path is active and is selecting very high train-reward sampled trajectories rather than imitating low-quality rollouts. However `target_ratio` is `0.875`, `0.875`, then `0.9375` on the first three logged batches, so the auxiliary selection is not sparse. If this run fails navtest despite high target rewards, the first algorithmic fix should be a stricter self-imitation gate or rank/quantile cap, not another LR-only change. This is still only an internal train diagnostic; promotion requires exact navtest PDMS at `epoch0` near or above the original Stage3 early `0.88+` band.
 
 Expected diagnostics:
 - `grpo_self_imitation_target_ratio` should be non-zero but sparse; a zero ratio for many steps means the gate is too strict.
