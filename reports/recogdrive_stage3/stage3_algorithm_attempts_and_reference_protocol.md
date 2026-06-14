@@ -129,6 +129,17 @@ Seventh cleanup on 2026-06-14 UTC:
 - Deleted the failed old Safe DiffGRPO relaunch residue `stage3_rl_2b_safe_diffgrpo_online_relaunch_20260609T1944Z` and stale local supervisor latest log/status files. Preserved the actual Safe DiffGRPO historical-best directory `stage3_safe_diffgrpo_ckpt_stream_eval_live_20260610T030355Z`.
 - Preserved active training, zt2/zt3 watcher directories, successful foreground eval outputs, the train-only elite buffer, and all strong baseline summaries. No remote task was killed.
 
+Eighth cleanup on 2026-06-14 UTC:
+- User approved deleting outdated results/logs and keeping only the summary evidence for failed attempts.
+- Deleted small, no-dependency residues:
+  - `/mnt/project/VLA-AD/outputs/last_vla_v2/vqa_smoke_20260608T142011Z`
+  - `/mnt/project/VLA-AD/outputs/stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z_navtest_exact_eval`
+- Did not delete `stage3_grpo_rloo_selfimit_cap05_step300_s16_lr1e4_b2acc4_8gpu_20260614T111511Z`, even though broad cap05 self-imitation is not a default route, because the active zt3 keep-best train-only buffer generator still references its `step_checkpoints` directory as `AUTO_POLICY_CHECKPOINT_DIR`.
+- Did not delete current-repo GRPO control archives. The apparent duplicate `step-step_300` and `step-step_600` checkpoint files under the train dir, zt2 watcher archive, and zt3 watcher archive share the same inodes, so removing watcher hardlinks would not materially free space and could confuse active checkpoint watchers.
+- Did not delete Safe DiffGRPO historical-best artifacts. The archive contains only the retained `epoch_12-step_17290.ckpt` best checkpoint plus compact eval summaries.
+- Current cleanup conclusion: there is no large Stage3 artifact that is both obsolete and safely deletable without breaking an active dependency or a decision-critical baseline. Future cleanup should target completed Buffer-DPO/control runs after their PDMS/submetric evidence is recorded here.
+- Do not repeat the deleted VQA smoke / empty zt3 wrapper paths as evaluation routes. They contain no Stage3 algorithm evidence beyond what is already summarized in this document.
+
 ## Navtest Diagnostic: Cap05 Self-Imitation Step300 To Step600
 
 Run:
