@@ -300,6 +300,14 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_grpo_self_imitation_batch_cap_score: str = "reward",
         offline_rl_grpo_self_imitation_baseline_mode: str = "buffer_or_group_mean",
         offline_rl_grpo_self_imitation_timestep_sampling: str = "low_noise",
+        offline_rl_grpo_self_imitation_require_nc: bool = True,
+        offline_rl_grpo_self_imitation_require_dac: bool = True,
+        offline_rl_grpo_self_imitation_require_ttc: bool = True,
+        offline_rl_grpo_self_imitation_require_ddc: bool = True,
+        offline_rl_grpo_self_imitation_nc_min_absolute: float = 1.0,
+        offline_rl_grpo_self_imitation_dac_min_absolute: float = 1.0,
+        offline_rl_grpo_self_imitation_ttc_min_absolute: float = 0.95,
+        offline_rl_grpo_self_imitation_ddc_min_absolute: float = 0.99,
         offline_rl_log_candidate_sources: bool = True,
         offline_rl_log_submetrics: bool = True,
         offline_rl_log_oracle_stats: bool = True,
@@ -757,6 +765,22 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_grpo_self_imitation_batch_cap_score = offline_rl_grpo_self_imitation_batch_cap_score
         self.offline_rl_grpo_self_imitation_baseline_mode = offline_rl_grpo_self_imitation_baseline_mode
         self.offline_rl_grpo_self_imitation_timestep_sampling = offline_rl_grpo_self_imitation_timestep_sampling
+        self.offline_rl_grpo_self_imitation_require_nc = bool(offline_rl_grpo_self_imitation_require_nc)
+        self.offline_rl_grpo_self_imitation_require_dac = bool(offline_rl_grpo_self_imitation_require_dac)
+        self.offline_rl_grpo_self_imitation_require_ttc = bool(offline_rl_grpo_self_imitation_require_ttc)
+        self.offline_rl_grpo_self_imitation_require_ddc = bool(offline_rl_grpo_self_imitation_require_ddc)
+        self.offline_rl_grpo_self_imitation_nc_min_absolute = float(
+            offline_rl_grpo_self_imitation_nc_min_absolute
+        )
+        self.offline_rl_grpo_self_imitation_dac_min_absolute = float(
+            offline_rl_grpo_self_imitation_dac_min_absolute
+        )
+        self.offline_rl_grpo_self_imitation_ttc_min_absolute = float(
+            offline_rl_grpo_self_imitation_ttc_min_absolute
+        )
+        self.offline_rl_grpo_self_imitation_ddc_min_absolute = float(
+            offline_rl_grpo_self_imitation_ddc_min_absolute
+        )
         self.offline_rl_log_candidate_sources = bool(offline_rl_log_candidate_sources)
         self.offline_rl_log_submetrics = bool(offline_rl_log_submetrics)
         self.offline_rl_log_oracle_stats = bool(offline_rl_log_oracle_stats)
@@ -1340,6 +1364,22 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.grpo_self_imitation_batch_cap_score = self.offline_rl_grpo_self_imitation_batch_cap_score
         offline_cfg.grpo_self_imitation_baseline_mode = self.offline_rl_grpo_self_imitation_baseline_mode
         offline_cfg.grpo_self_imitation_timestep_sampling = self.offline_rl_grpo_self_imitation_timestep_sampling
+        offline_cfg.grpo_self_imitation_require_nc = self.offline_rl_grpo_self_imitation_require_nc
+        offline_cfg.grpo_self_imitation_require_dac = self.offline_rl_grpo_self_imitation_require_dac
+        offline_cfg.grpo_self_imitation_require_ttc = self.offline_rl_grpo_self_imitation_require_ttc
+        offline_cfg.grpo_self_imitation_require_ddc = self.offline_rl_grpo_self_imitation_require_ddc
+        offline_cfg.grpo_self_imitation_nc_min_absolute = (
+            self.offline_rl_grpo_self_imitation_nc_min_absolute
+        )
+        offline_cfg.grpo_self_imitation_dac_min_absolute = (
+            self.offline_rl_grpo_self_imitation_dac_min_absolute
+        )
+        offline_cfg.grpo_self_imitation_ttc_min_absolute = (
+            self.offline_rl_grpo_self_imitation_ttc_min_absolute
+        )
+        offline_cfg.grpo_self_imitation_ddc_min_absolute = (
+            self.offline_rl_grpo_self_imitation_ddc_min_absolute
+        )
         offline_cfg.log_candidate_sources = self.offline_rl_log_candidate_sources
         offline_cfg.log_submetrics = self.offline_rl_log_submetrics
         offline_cfg.log_oracle_stats = self.offline_rl_log_oracle_stats

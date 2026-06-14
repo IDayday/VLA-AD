@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import hashlib
 import json
 import logging
 import os
@@ -9,6 +10,7 @@ from pathlib import Path
 from typing import Any, Dict, Iterable, List, Tuple
 
 import hydra
+import numpy as np
 import torch
 from hydra.utils import instantiate
 from omegaconf import DictConfig, open_dict
@@ -16,7 +18,12 @@ from torch.utils.data import DataLoader, Subset
 from transformers.feature_extraction_utils import BatchFeature
 
 from navsim.agents.abstract_agent import AbstractAgent
-from navsim.agents.recogdrive.offline_rl_buffer import elite_record_exists, load_elite_record, save_elite_record
+from navsim.agents.recogdrive.offline_rl_buffer import (
+    REQUIRED_COMPONENT_KEYS,
+    elite_record_exists,
+    load_elite_record,
+    save_elite_record,
+)
 from navsim.agents.recogdrive.recogdrive_agent import (
     EXPERT_FEATURE_KEYS,
     EXPERT_TARGET_FEATURE_KEYS,
@@ -221,6 +228,180 @@ def _masked_mean(values: torch.Tensor, mask: torch.Tensor) -> float:
     return float(((values * mask_f).sum() / mask_f.sum().clamp(min=1.0)).detach().cpu().item())
 
 
+def _record_best_valid_reward(record: Dict[str, Any]) -> float:
+    if "best_valid_reward" in record:
+        return float(record["best_valid_reward"])
+    rewards = np.asarray(record["rewards"], dtype=np.float32)
+    valid_mask = np.asarray(record.get("valid_mask", np.zeros_like(rewards, dtype=np.bool_)), dtype=np.bool_)
+    if rewards.size == 0:
+        return 0.0
+    if bool(valid_mask.any()):
+        return float(rewards[valid_mask].max())
+    return float(rewards.max())
+
+
+def _candidate_digest(candidate: np.ndarray) -> str:
+    rounded = np.round(np.asarray(candidate, dtype=np.float32), decimals=3)
+    return hashlib.sha1(rounded.tobytes()).hexdigest()
+
+
+def _merge_elite_records(
+    existing: Dict[str, Any],
+    new_record: Dict[str, Any],
+    *,
+    keep_top_k: int,
+    keep_support: bool,
+) -> Dict[str, Any]:
+    """Merge two v2 selected-elite records without letting a weaker pass overwrite a stronger one."""
+    if str(existing.get("token", "")) != str(new_record["token"]):
+        raise ValueError(
+            f"Cannot merge AWAC elite records with different tokens: "
+            f"{existing.get('token')!r} vs {new_record['token']!r}."
+        )
+    if int(existing.get("version", 1)) < 2 or "valid_mask" not in existing:
+        return new_record
+
+    keep_top_k = max(1, int(keep_top_k))
+    candidates = np.concatenate(
+        [
+            np.asarray(existing["candidates"], dtype=np.float32),
+            np.asarray(new_record["candidates"], dtype=np.float32),
+        ],
+        axis=0,
+    )
+    rewards = np.concatenate(
+        [
+            np.asarray(existing["rewards"], dtype=np.float32),
+            np.asarray(new_record["rewards"], dtype=np.float32),
+        ],
+        axis=0,
+    )
+    anchor_distance = np.concatenate(
+        [
+            np.asarray(existing["anchor_distance"], dtype=np.float32),
+            np.asarray(new_record["anchor_distance"], dtype=np.float32),
+        ],
+        axis=0,
+    )
+    valid_mask = np.concatenate(
+        [
+            np.asarray(existing["valid_mask"], dtype=np.bool_),
+            np.asarray(new_record["valid_mask"], dtype=np.bool_),
+        ],
+        axis=0,
+    )
+    selection_score = np.concatenate(
+        [
+            np.asarray(existing.get("selection_score", existing["rewards"]), dtype=np.float32),
+            np.asarray(new_record.get("selection_score", new_record["rewards"]), dtype=np.float32),
+        ],
+        axis=0,
+    )
+    sources = [str(source) for source in existing["sources"]] + [str(source) for source in new_record["sources"]]
+    components = {
+        key: np.concatenate(
+            [
+                np.asarray(existing["components"][key], dtype=np.float32),
+                np.asarray(new_record["components"][key], dtype=np.float32),
+            ],
+            axis=0,
+        )
+        for key in REQUIRED_COMPONENT_KEYS
+    }
+
+    best_by_digest: Dict[str, int] = {}
+    for idx in range(candidates.shape[0]):
+        digest = _candidate_digest(candidates[idx])
+        if sources[idx] in {"gt", "il"}:
+            digest = f"{sources[idx]}:{digest}"
+        prev = best_by_digest.get(digest)
+        if prev is None:
+            best_by_digest[digest] = idx
+            continue
+        current_valid = bool(valid_mask[idx])
+        previous_valid = bool(valid_mask[prev])
+        if current_valid and not previous_valid:
+            best_by_digest[digest] = idx
+        elif current_valid == previous_valid and float(selection_score[idx]) > float(selection_score[prev]):
+            best_by_digest[digest] = idx
+    unique_idx = np.asarray(sorted(best_by_digest.values()), dtype=np.int64)
+
+    candidates = candidates[unique_idx]
+    rewards = rewards[unique_idx]
+    anchor_distance = anchor_distance[unique_idx]
+    valid_mask = valid_mask[unique_idx]
+    selection_score = selection_score[unique_idx]
+    sources = [sources[int(idx)] for idx in unique_idx.tolist()]
+    components = {key: value[unique_idx] for key, value in components.items()}
+
+    selected_indices: List[int] = []
+    valid_idx = np.flatnonzero(valid_mask)
+    if valid_idx.size > 0:
+        score = np.where(np.isfinite(selection_score[valid_idx]), selection_score[valid_idx], rewards[valid_idx])
+        order = valid_idx[np.argsort(score)[::-1]]
+        selected_indices.extend(int(idx) for idx in order[:keep_top_k])
+    else:
+        order = np.argsort(rewards)[::-1]
+        selected_indices.extend(int(idx) for idx in order[:keep_top_k])
+
+    if keep_support:
+        for support_source in ("gt", "il"):
+            support_idx = [idx for idx, source in enumerate(sources) if source == support_source]
+            if support_idx:
+                best_support = max(support_idx, key=lambda idx: float(rewards[idx]))
+                selected_indices.append(int(best_support))
+
+    if len(selected_indices) < keep_top_k:
+        for idx in np.argsort(rewards)[::-1]:
+            selected_indices.append(int(idx))
+            if len(set(selected_indices)) >= keep_top_k:
+                break
+
+    deduped_indices: List[int] = []
+    seen: set[int] = set()
+    for idx in selected_indices:
+        if idx not in seen:
+            deduped_indices.append(idx)
+            seen.add(idx)
+    selected = np.asarray(deduped_indices, dtype=np.int64)
+
+    rewards_sel = rewards[selected]
+    valid_sel = valid_mask[selected]
+    raw_pos = int(np.argmax(rewards_sel)) if rewards_sel.size > 0 else 0
+    has_valid = bool(valid_sel.any())
+    if has_valid:
+        valid_positions = np.flatnonzero(valid_sel)
+        valid_pos = int(valid_positions[int(np.argmax(rewards_sel[valid_positions]))])
+    else:
+        valid_pos = raw_pos
+    selected_pos = raw_pos
+    selected_sources = [sources[int(idx)] for idx in selected.tolist()]
+
+    merged = {
+        "token": str(new_record["token"]),
+        "candidates": candidates[selected],
+        "rewards": rewards_sel,
+        "components": {key: value[selected] for key, value in components.items()},
+        "sources": selected_sources,
+        "anchor_distance": anchor_distance[selected],
+        "valid_mask": valid_sel,
+        "selection_score": selection_score[selected],
+        "gt_reward": float(new_record.get("gt_reward", existing.get("gt_reward", 0.0))),
+        "il_reward": float(new_record.get("il_reward", existing.get("il_reward", 0.0))),
+        "best_reward": float(rewards_sel[valid_pos]) if rewards_sel.size > 0 else 0.0,
+        "best_source": selected_sources[valid_pos] if selected_sources else "unknown",
+        "best_raw_reward": float(rewards_sel[raw_pos]) if rewards_sel.size > 0 else 0.0,
+        "best_valid_reward": float(rewards_sel[valid_pos]) if rewards_sel.size > 0 else 0.0,
+        "best_selected_reward": float(rewards_sel[selected_pos]) if rewards_sel.size > 0 else 0.0,
+        "best_raw_source": selected_sources[raw_pos] if selected_sources else "unknown",
+        "best_valid_source": selected_sources[valid_pos] if selected_sources else "unknown",
+        "best_selected_source": selected_sources[selected_pos] if selected_sources else "unknown",
+        "has_valid_candidate": has_valid,
+        "version": 2,
+    }
+    return merged
+
+
 def _iter_summary_rows(
     tokens: List[str],
     awac_batch: Dict[str, Any],
@@ -298,6 +479,9 @@ def _save_records(
     tokens: List[str],
     awac_batch: Dict[str, Any],
     dry_run: bool,
+    merge_existing_records: bool,
+    merge_keep_top_k: int,
+    merge_keep_support: bool,
 ) -> None:
     selected_trajs = awac_batch["selected_trajs"].detach().cpu().float().numpy()
     selected_rewards = awac_batch["selected_rewards"].detach().cpu().float().numpy()
@@ -360,6 +544,21 @@ def _save_records(
             "version": 2,
         }
         if not dry_run:
+            if merge_existing_records and elite_record_exists(buffer_dir, token):
+                try:
+                    existing = load_elite_record(buffer_dir, token)
+                    record = _merge_elite_records(
+                        existing,
+                        record,
+                        keep_top_k=merge_keep_top_k,
+                        keep_support=merge_keep_support,
+                    )
+                except Exception as exc:
+                    logger.warning(
+                        "Could not merge existing AWAC elite record for token=%s; writing new record: %s",
+                        token,
+                        exc,
+                    )
             save_elite_record(buffer_dir, token, record)
 
 
@@ -378,6 +577,9 @@ def main(cfg: DictConfig) -> None:
     skip_existing_records = _env_flag("SKIP_EXISTING_RECORDS", False)
     validate_existing_records = _env_flag("VALIDATE_EXISTING_RECORDS", True)
     prefilter_existing_records = _env_flag("PREFILTER_EXISTING_RECORDS", True)
+    merge_existing_records = _env_flag("MERGE_EXISTING_RECORDS", False)
+    merge_keep_top_k = _env_int("MERGE_KEEP_TOP_K", _env_int("ELITE_TOP_M", 8))
+    merge_keep_support = _env_flag("MERGE_KEEP_SUPPORT", True)
     shard_index = _env_int("SHARD_INDEX", 0)
     shard_count = _env_int("SHARD_COUNT", 1)
     if shard_count <= 0:
@@ -566,7 +768,15 @@ def main(cfg: DictConfig) -> None:
                 metric_cache,
                 agent.action_head.offline_rl_cfg,
             )
-            _save_records(buffer_dir, tokens, awac_batch, dry_run)
+            _save_records(
+                buffer_dir,
+                tokens,
+                awac_batch,
+                dry_run,
+                merge_existing_records=merge_existing_records,
+                merge_keep_top_k=merge_keep_top_k,
+                merge_keep_support=merge_keep_support,
+            )
             for row in _iter_summary_rows(tokens, awac_batch):
                 writer.writerow(row)
                 aggregate["num_scenes"] += 1
@@ -611,6 +821,12 @@ def main(cfg: DictConfig) -> None:
         logger.info("AWAC elite records written under %s", buffer_dir)
     if skip_existing_records:
         logger.info("Skipped %d existing AWAC elite records.", skipped_existing)
+    if merge_existing_records:
+        logger.info(
+            "Merged existing AWAC elite records with keep_top_k=%d keep_support=%s.",
+            merge_keep_top_k,
+            merge_keep_support,
+        )
 
 
 if __name__ == "__main__":

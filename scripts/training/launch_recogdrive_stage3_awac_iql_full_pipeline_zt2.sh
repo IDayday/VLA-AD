@@ -11,6 +11,7 @@ OUT_ROOT="${OUT_ROOT:-${ARTIFACT_ROOT}/outputs/${RUN_NAME}}"
 ELITE_BUFFER_DIR="${ELITE_BUFFER_DIR:-${ARTIFACT_ROOT}/cache/recogdrive_stage3_awac_elite_buffer_train_v2_${RUN_NAME}}"
 
 IL_CHECKPOINT="${IL_CHECKPOINT:-${ARTIFACT_ROOT}/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt}"
+POLICY_CHECKPOINT="${POLICY_CHECKPOINT:-}"
 VLM_PATH="${VLM_PATH:-${ARTIFACT_ROOT}/checkpoints/recogdrive/ReCogDrive-VLM-2B}"
 METRIC_CACHE_DIR="${METRIC_CACHE_DIR:-${ARTIFACT_ROOT}/cache/metric_cache_train_full}"
 NAVSIM_LOG_PATH="${NAVSIM_LOG_PATH:-${NAVSIM_DATA_ROOT}/trainval_navsim_logs/trainval}"
@@ -25,6 +26,9 @@ ELITE_TOP_M="${ELITE_TOP_M:-8}"
 SKIP_EXISTING_RECORDS="${SKIP_EXISTING_RECORDS:-0}"
 VALIDATE_EXISTING_RECORDS="${VALIDATE_EXISTING_RECORDS:-1}"
 PREFILTER_EXISTING_RECORDS="${PREFILTER_EXISTING_RECORDS:-1}"
+MERGE_EXISTING_RECORDS="${MERGE_EXISTING_RECORDS:-0}"
+MERGE_KEEP_TOP_K="${MERGE_KEEP_TOP_K:-${ELITE_TOP_M}}"
+MERGE_KEEP_SUPPORT="${MERGE_KEEP_SUPPORT:-1}"
 AWAC_USE_BATCHED_PDM_SCORING="${AWAC_USE_BATCHED_PDM_SCORING:-true}"
 AWAC_USE_EXACT_ARRAY_PDM_STATE_CONVERSION="${AWAC_USE_EXACT_ARRAY_PDM_STATE_CONVERSION:-true}"
 AWAC_USE_FAST_PDM_SCORER="${AWAC_USE_FAST_PDM_SCORER:-true}"
@@ -86,6 +90,10 @@ if [[ "${DRY_RUN}" != "1" ]]; then
       exit 2
     fi
   done
+  if [[ -n "${POLICY_CHECKPOINT}" && ! -f "${POLICY_CHECKPOINT}" ]]; then
+    echo "POLICY_CHECKPOINT does not exist: ${POLICY_CHECKPOINT}" >&2
+    exit 2
+  fi
 fi
 
 mkdir -p "${OUT_ROOT}" "${ELITE_BUFFER_DIR}"
@@ -102,6 +110,10 @@ mkdir -p "${OUT_ROOT}" "${ELITE_BUFFER_DIR}"
   echo "elite_top_m=${ELITE_TOP_M}"
   echo "skip_existing_records=${SKIP_EXISTING_RECORDS}"
   echo "validate_existing_records=${VALIDATE_EXISTING_RECORDS}"
+  echo "merge_existing_records=${MERGE_EXISTING_RECORDS}"
+  echo "merge_keep_top_k=${MERGE_KEEP_TOP_K}"
+  echo "merge_keep_support=${MERGE_KEEP_SUPPORT}"
+  echo "policy_checkpoint=${POLICY_CHECKPOINT}"
   echo "train_batch_size=${TRAIN_BATCH_SIZE}"
   echo "train_lr=${TRAIN_LR}"
   echo "train_max_epochs=${TRAIN_MAX_EPOCHS}"
@@ -179,6 +191,7 @@ if [[ "${RUN_BUFFER}" == "1" ]]; then
       export OUT_ROOT="${shard_out}"
       export ELITE_BUFFER_DIR="${ELITE_BUFFER_DIR}"
       export IL_CHECKPOINT="${IL_CHECKPOINT}"
+      export POLICY_CHECKPOINT="${POLICY_CHECKPOINT}"
       export VLM_PATH="${VLM_PATH}"
       export METRIC_CACHE_DIR="${METRIC_CACHE_DIR}"
       export CACHE_MODE=true
@@ -188,6 +201,9 @@ if [[ "${RUN_BUFFER}" == "1" ]]; then
       export SKIP_EXISTING_RECORDS="${SKIP_EXISTING_RECORDS}"
       export VALIDATE_EXISTING_RECORDS="${VALIDATE_EXISTING_RECORDS}"
       export PREFILTER_EXISTING_RECORDS="${PREFILTER_EXISTING_RECORDS}"
+      export MERGE_EXISTING_RECORDS="${MERGE_EXISTING_RECORDS}"
+      export MERGE_KEEP_TOP_K="${MERGE_KEEP_TOP_K}"
+      export MERGE_KEEP_SUPPORT="${MERGE_KEEP_SUPPORT}"
       export SHARD_INDEX="${shard_index}"
       export SHARD_COUNT="${SHARD_COUNT}"
       export AWAC_STRICT_REWARD_SUBMETRICS="${AWAC_STRICT_REWARD_SUBMETRICS}"

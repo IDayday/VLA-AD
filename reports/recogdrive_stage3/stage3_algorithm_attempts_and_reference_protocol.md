@@ -58,8 +58,9 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 | `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z` | running | Controlled zt2 ablation. Same as i2 but `ppo_replay_inner_epochs=1`; currently cleaner ratio/clip/KL behavior and no hard stop signal. |
 | `stage3_grpo_dppo_transition_s16_i1_lr1e4_zt2_2gpu_20260614T083005Z` | failed promotion gate | DPPO-style transition replay improved from step300 to epoch0 but stayed far below the original Stage3 `epoch0-1 ~= 0.88+` early gate: step300 `0.744740`, step600 `0.801195`, epoch0-step800 `0.831015`. Do not continue this transition replay implementation without a method-level redesign. |
 | `stage3_grpo_rloo_selfimit_s16_lr1e4_b2acc4_8gpu_20260614T101257Z` | stopped on 2026-06-14 | This no-cap run was launched before the self-imitation scene-cap patch and had `checkpoint.every_n_train_steps=0`; given the original Stage3 `epoch0-1 ~= 0.88+` early gate, continuing it would delay a meaningful PDMS decision. |
-| `stage3_grpo_rloo_selfimit_cap05_step300_s16_lr1e4_b2acc4_8gpu_20260614T111511Z` | running/watch | Latest RLOO self-imitation run: original LR `1e-4`, sample_time `16`, scene cap `0.5`, and step checkpoints every `300` train steps. `step-step_300` exact navtest PDMS is `0.885557`, passing the original Stage3 early `0.88+` gate but not yet a final success. Continue watching step600/epoch0. |
+| `stage3_grpo_rloo_selfimit_cap05_step300_s16_lr1e4_b2acc4_8gpu_20260614T111511Z` | running/watch | Latest RLOO self-imitation run: original LR `1e-4`, sample_time `16`, scene cap `0.5`, and step checkpoints every `300` train steps. `step-step_300` exact navtest PDMS is `0.885557`, passing the original Stage3 early `0.88+` gate but not yet a final success. `step-step_600` is `0.885212`: EP improved, but NC/TTC/DDC declined, so the next implementation fix is safety-filtered self-imitation target selection rather than LR tuning. Continue watching epoch0. |
 | Stage3 exact eval infrastructure | patched | Distributed eval timeout is now configurable and defaults to `3600s` for async/exact PDM runners and watcher launchers. This only changes process-group wait tolerance around final result gathering; it does not change trajectory inference, PDM scoring, or submetric calculation. |
+| Train-only elite buffer exploration | keep running in background | Continue improving the navtrain-only oracle buffer, but write it in keep-best merge mode so new exploration cannot overwrite a stronger existing record. Use navtest only for checkpoint diagnosis, never for buffer generation or training reward. |
 
 ## Current Baselines And Controls
 
@@ -70,7 +71,7 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 | `stage3_safe_diffgrpo_ckpt_stream_eval_live_20260610T030355Z` | completed | Safe DiffGRPO | `0.906184` at `epoch_12-step_17290` | Strongest confirmed Stage3 result so far. Compare against it only at comparable training length, or label the comparison as short-run diagnostic only. |
 | `stage3_grpo_refkl_s16_lr2e4_b4acc2_chunk32_fast_8gpu_20260613T213145Z` | stopped/evaluated | LR `2e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, effective batch about `64` | `0.872059` at `epoch_0-step_1330` | Exact 8-shard navtest eval: NC `0.9750`, DAC `0.9619`, TTC `0.9371`, EP `0.8159`, comfort `1.0000`, DDC `0.9459`. This is well below `0.9055/0.906184`, so the higher LR was harmful or at least not sufficient. |
 | `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z` | running | LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, effective batch about `66` | pending | zt3 original-LR control. |
-| `stage3_grpo_rloo_selfimit_cap05_step300_s16_lr1e4_b2acc4_8gpu_20260614T111511Z` | running | LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, GSPO ratio, RLOO self-imitation, max target scene ratio `0.5`, step ckpt every `300` | `0.885557` at `step-step_300` | Exact zt2 4GPU navtest eval: NC `0.981134`, DAC `0.969352`, TTC `0.947273`, EP `0.826626`, comfort `1.000000`, DDC `0.968941`. This passes the early `0.88+` gate, so continue to step600/epoch0; it is still below the best known final Stage3 band. |
+| `stage3_grpo_rloo_selfimit_cap05_step300_s16_lr1e4_b2acc4_8gpu_20260614T111511Z` | running | LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, GSPO ratio, RLOO self-imitation, max target scene ratio `0.5`, step ckpt every `300` | `0.885557` at `step-step_300` | Exact zt2 4GPU navtest eval at step300: NC `0.981134`, DAC `0.969352`, TTC `0.947273`, EP `0.826626`, comfort `1.000000`, DDC `0.968941`. Exact zt3 eval at step600: PDMS `0.885212`, NC `0.975449`, DAC `0.968941`, TTC `0.940105`, EP `0.835322`, comfort `1.000000`, DDC `0.958807`. This passes the early `0.88+` gate, but the step300->600 trend shows progress gain paid for by safety/DDC regression. |
 | `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_zt2_4gpu_20260614T012106Z` | stopped before eval | LR `2e-4`, GSPO ratio, elite-buffer reward bonus/distill/self-imitation | invalid run | Stopped because key diagnostics were not logged, so the run could not validate buffer absorption. |
 | `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_diagfix_zt2_4gpu_20260614T020706Z` | stopped before eval | LR `2e-4`, GSPO ratio, elite-buffer reward bonus/distill/self-imitation | invalid run | Stopped because it was launched before the full PPO/advantage diagnostics patch. |
 | `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_diag_zt2_4gpu_20260614T023758Z` | failed before training | LR `1e-4`, GSPO ratio, batch advantage normalize, fixed advantage clip `3.0`, no buffer | none | Failed at Hydra config parsing because `grpo_normalize_advantage_batch` was missing from `recogdrive_agent.yaml`. |
@@ -153,6 +154,66 @@ Follow-up implementation after live diagnostics:
   - `step-step_300` reached PDMS `0.885557`, passing the original Stage3 early `0.88+` sanity gate.
   - Submetrics: NC `0.981134`, DAC `0.969352`, TTC `0.947273`, EP `0.826626`, comfort `1.000000`, DDC `0.968941`.
   - Interpretation: this is the first recent non-original variant to clear the early gate. Continue the run and evaluate `step-step_600`/epoch0 before judging whether the self-imitation cap improves the trend beyond the original Stage3 baseline.
+- Exact navtest step600 result on 2026-06-14:
+  - `step-step_600` reached PDMS `0.885212`, essentially flat from step300 and still only in the original early-training band.
+  - Submetrics: NC `0.975449`, DAC `0.968941`, TTC `0.940105`, EP `0.835322`, comfort `1.000000`, DDC `0.958807`.
+  - Delta from step300: EP improved by about `+0.0087`, but NC fell by about `-0.0057`, TTC by about `-0.0072`, and DDC by about `-0.0101`.
+  - Interpretation: the auxiliary self-imitation path is likely absorbing higher-progress on-policy samples, but target selection does not explicitly protect TTC/DDC. A further run without fixing target validity would be low-information.
+
+## Planned Attempt: Safety-Filtered GRPO Self-Imitation Targets
+
+Motivation:
+- The cap05 RLOO self-imitation run passed the original Stage3 early `0.88+` gate, but step600 showed EP gains coupled with NC/TTC/DDC degradation.
+- Code inspection confirmed that self-imitation target selection used `hard_safe_mask + reward + margin`, while `hard_gate_ttc=False` and `hard_gate_ddc=False` by default. Therefore high-PDMS/high-progress samples with weaker TTC/DDC could become diffusion regression targets.
+
+Reference audit:
+- RIPT-VLA / Interactive Post-Training for VLA models: https://arxiv.org/abs/2505.17016 and https://github.com/Ariostgx/ript-vla. Relevant mechanism: K-rollout policy improvement with leave-one-out advantage and PPO-style policy updates, not pure offline weighted regression.
+- DPPO: https://arxiv.org/abs/2409.00588 and https://github.com/irom-princeton/dppo. Relevant mechanism: keep direct policy-gradient optimization of sampled diffusion actions as the main objective; auxiliary regression should not replace on-policy improvement.
+- The resulting design keeps GRPO as the main update and only filters the auxiliary self-imitation targets more strictly.
+
+Implementation:
+- Add explicit GRPO self-imitation target gates:
+  - `offline_rl_grpo_self_imitation_require_nc=true`
+  - `offline_rl_grpo_self_imitation_require_dac=true`
+  - `offline_rl_grpo_self_imitation_require_ttc=true`, threshold `0.95`
+  - `offline_rl_grpo_self_imitation_require_ddc=true`, threshold `0.99`
+- Add logs:
+  - `grpo_self_imitation_safety_candidate_ratio`
+  - `grpo_self_imitation_nc/dac/ttc/ddc_pass_ratio`
+  - `grpo_self_imitation_target_nc/dac/ttc/ep/comfort/ddc/tlc_mean`
+- Keep the main GRPO reward and PDMS scorer unchanged.
+- Keep original LR `1e-4`, sample_time `16`, BC `0.10->0.05`, reference KL `0.02`, GSPO ratio, RLOO baseline, and scene cap `0.5` so the algorithmic change is isolated.
+
+Expected diagnostics:
+- `grpo_self_imitation_safety_candidate_ratio` should be lower than the current broad candidate ratio, but not zero for long stretches.
+- Target TTC/DDC means should stay near the configured thresholds or above.
+- If early PDMS stays around `0.885` but DDC/TTC no longer decline, the safety filter is doing its intended job; a later run can then test stronger buffer absorption.
+
+Failure criteria:
+- If `step-step_300` or epoch0 drops materially below the original early `0.88+` band, do not promote.
+- If target ratio collapses to zero for most logged batches, loosen the target safety gate or switch the auxiliary off rather than continuing a no-op run.
+- If EP improves but DDC/TTC still decline, the issue is not just target filtering and the next fix should be reward/advantage shaping in the GRPO path or preference ranking, not another self-imitation gate.
+
+## Background Task: Keep-Best Train-Only Buffer Exploration
+
+Motivation:
+- The full v2 navtrain buffer already has `mean_best_valid_reward=0.971664` and can still provide a useful oracle for discovering better-than-GT trajectories.
+- The pure AWAC training path did not transfer well, but the buffer remains useful for diagnostics, future safety-constrained self-imitation, and preference pairs.
+
+Implementation:
+- Added `MERGE_EXISTING_RECORDS=1` support to `build_recogdrive_stage3_awac_elite_buffer.py`.
+- New records are merged with existing v2 records per token, deduplicated, and retained by valid top-k selection plus GT/IL support candidates.
+- Existing high-quality records are not blindly overwritten by a lower-quality exploration pass.
+- Added `scripts/training/launch_recogdrive_stage3_awac_buffer_keepbest_background.sh`:
+  - waits for target GPUs instead of killing or preempting existing tasks;
+  - loops over navtrain shards;
+  - supports `AUTO_POLICY_CHECKPOINT_DIR` so the latest Stage3 policy checkpoint can provide additional sampled candidates;
+  - uses only `metric_cache_train_full` for scoring.
+
+Navtest analysis rule:
+- Added `scripts/evaluation/analyze_recogdrive_stage3_navtest_pdms.py`.
+- It reads existing `checkpoint_eval_submetrics.tsv` files and reports best/latest checkpoint, step deltas, submetric deltas, and deltas to `0.88`, `0.9055`, and `0.906184`.
+- This is diagnostic only. Navtest summaries must not be used to choose buffer records or train rewards.
 
 Promotion / failure criteria:
 - At matched early epoch, exact navtest PDMS must be near or above the original Stage3 early `0.88+` band. If epoch0 is materially below `0.88`, do not run 20 epochs unless diagnostics show the self-imitation path was inactive and the run is effectively a control.

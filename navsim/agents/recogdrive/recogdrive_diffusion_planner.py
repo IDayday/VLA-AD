@@ -377,6 +377,14 @@ class OfflineRLConfig:
         "buffer_or_group_mean",
     ] = "buffer_or_group_mean"
     grpo_self_imitation_timestep_sampling: Literal["uniform", "ddim", "low_noise", "mid_noise"] = "low_noise"
+    grpo_self_imitation_require_nc: bool = True
+    grpo_self_imitation_require_dac: bool = True
+    grpo_self_imitation_require_ttc: bool = True
+    grpo_self_imitation_require_ddc: bool = True
+    grpo_self_imitation_nc_min_absolute: float = 1.0
+    grpo_self_imitation_dac_min_absolute: float = 1.0
+    grpo_self_imitation_ttc_min_absolute: float = 0.95
+    grpo_self_imitation_ddc_min_absolute: float = 0.99
 
     # debugging / logging
     log_candidate_sources: bool = True
@@ -1130,6 +1138,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.grpo_self_imitation_max_target_scene_ratio must be in (0, 1].")
         if str(cfg.grpo_self_imitation_batch_cap_score) not in {"reward", "margin"}:
             raise ValueError("offline_rl_cfg.grpo_self_imitation_batch_cap_score must be reward or margin.")
+        for name in (
+            "grpo_self_imitation_nc_min_absolute",
+            "grpo_self_imitation_dac_min_absolute",
+            "grpo_self_imitation_ttc_min_absolute",
+            "grpo_self_imitation_ddc_min_absolute",
+        ):
+            if float(getattr(cfg, name)) < 0.0:
+                raise ValueError(f"offline_rl_cfg.{name} must be non-negative.")
         if not (0.0 < float(cfg.low_noise_timestep_frac) <= 1.0):
             raise ValueError("offline_rl_cfg.low_noise_timestep_frac must be in (0, 1].")
         if not (0.0 <= float(cfg.mid_noise_timestep_low_frac) < float(cfg.mid_noise_timestep_high_frac) <= 1.0):
@@ -5936,6 +5952,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         trajs: torch.Tensor,
         base_rewards: torch.Tensor,
         hard_safe_mask: torch.Tensor,
+        components: Optional[Dict[str, torch.Tensor]],
         B: int,
         G: int,
         guidance: Dict[str, Any],
@@ -5950,6 +5967,58 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         reward_matrix = base_rewards.detach().reshape(B, G).float()
         safe_matrix = hard_safe_mask.detach().reshape(B, G).bool()
         finite_reward = torch.isfinite(reward_matrix)
+        target_safe_matrix = safe_matrix & finite_reward
+
+        component_matrices: Dict[str, torch.Tensor] = {}
+
+        def _component_matrix(name: str) -> torch.Tensor:
+            if name not in component_matrices:
+                if components is None or name not in components:
+                    raise KeyError(
+                        f"GRPO self-imitation target filtering requires PDM component '{name}'."
+                    )
+                value = components[name].detach()
+                if value.shape != (B * G,):
+                    raise ValueError(
+                        f"GRPO self-imitation component '{name}' must have shape {(B * G,)}, "
+                        f"got {tuple(value.shape)}."
+                    )
+                component_matrices[name] = value.reshape(B, G).to(
+                    device=reward_matrix.device,
+                    dtype=reward_matrix.dtype,
+                )
+            return component_matrices[name]
+
+        pass_ratios: Dict[str, torch.Tensor] = {
+            "nc": trajs.new_ones(()),
+            "dac": trajs.new_ones(()),
+            "ttc": trajs.new_ones(()),
+            "ddc": trajs.new_ones(()),
+        }
+        if bool(cfg.grpo_self_imitation_require_nc):
+            nc_pass = _component_matrix("no_at_fault_collisions") >= float(
+                cfg.grpo_self_imitation_nc_min_absolute
+            )
+            target_safe_matrix &= nc_pass
+            pass_ratios["nc"] = nc_pass.float().mean().detach()
+        if bool(cfg.grpo_self_imitation_require_dac):
+            dac_pass = _component_matrix("drivable_area_compliance") >= float(
+                cfg.grpo_self_imitation_dac_min_absolute
+            )
+            target_safe_matrix &= dac_pass
+            pass_ratios["dac"] = dac_pass.float().mean().detach()
+        if bool(cfg.grpo_self_imitation_require_ttc):
+            ttc_pass = _component_matrix("time_to_collision_within_bound") >= float(
+                cfg.grpo_self_imitation_ttc_min_absolute
+            )
+            target_safe_matrix &= ttc_pass
+            pass_ratios["ttc"] = ttc_pass.float().mean().detach()
+        if bool(cfg.grpo_self_imitation_require_ddc):
+            ddc_pass = _component_matrix("driving_direction_compliance") >= float(
+                cfg.grpo_self_imitation_ddc_min_absolute
+            )
+            target_safe_matrix &= ddc_pass
+            pass_ratios["ddc"] = ddc_pass.float().mean().detach()
 
         mode = str(cfg.grpo_self_imitation_baseline_mode)
         has_buffer_baseline = bool(guidance) and "gt_reward" in guidance and "il_reward" in guidance
@@ -6005,8 +6074,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
         margins = reward_matrix - baseline_matrix
         eligible = (
-            safe_matrix
-            & finite_reward
+            target_safe_matrix
             & (reward_matrix >= float(cfg.grpo_self_imitation_min_reward))
             & (margins > float(cfg.grpo_self_imitation_min_reward_margin))
         )
@@ -6018,6 +6086,20 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         target_rewards = reward_matrix.new_zeros((B, top_k))
         target_margin = reward_matrix.new_zeros((B, top_k))
         target_mask = torch.zeros((B, top_k), device=trajs.device, dtype=torch.bool)
+        target_component_keys = (
+            "no_at_fault_collisions",
+            "drivable_area_compliance",
+            "time_to_collision_within_bound",
+            "ego_progress",
+            "history_comfort",
+            "driving_direction_compliance",
+            "traffic_light_compliance",
+        )
+        target_components = {
+            key: reward_matrix.new_zeros((B, top_k))
+            for key in target_component_keys
+            if components is not None and key in components
+        }
 
         for b in range(B):
             idx = torch.nonzero(eligible[b], as_tuple=False).flatten()
@@ -6029,6 +6111,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             target_trajs[b, :m] = sample_trajs[b, keep]
             target_rewards[b, :m] = reward_matrix[b, keep]
             target_margin[b, :m] = margins[b, keep].clamp(min=0.0)
+            for key in target_components:
+                target_components[key][b, :m] = _component_matrix(key)[b, keep]
             weight = target_margin[b, :m].clamp(min=0.0)
             if not bool((weight > 0).any().item()):
                 weight = torch.ones_like(weight)
@@ -6059,6 +6143,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
         active_rewards = target_rewards[target_mask]
         active_margin = target_margin[target_mask]
+        active_component_means: Dict[str, torch.Tensor] = {}
+        for key, value in target_components.items():
+            active_values = value[target_mask]
+            active_component_means[key] = (
+                active_values.mean().detach() if active_values.numel() > 0 else zero.detach()
+            )
         return {
             "target_trajs": target_trajs.detach(),
             "target_weights": target_weights.detach(),
@@ -6066,6 +6156,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "target_margin": target_margin.detach(),
             "target_mask": target_mask.detach(),
             "candidate_ratio": eligible.float().mean().detach(),
+            "safety_candidate_ratio": target_safe_matrix.float().mean().detach(),
+            "nc_pass_ratio": pass_ratios["nc"].to(device=trajs.device, dtype=trajs.dtype),
+            "dac_pass_ratio": pass_ratios["dac"].to(device=trajs.device, dtype=trajs.dtype),
+            "ttc_pass_ratio": pass_ratios["ttc"].to(device=trajs.device, dtype=trajs.dtype),
+            "ddc_pass_ratio": pass_ratios["ddc"].to(device=trajs.device, dtype=trajs.dtype),
             "pre_cap_target_ratio": pre_cap_target_ratio,
             "target_ratio": target_mask.any(dim=1).float().mean().detach(),
             "target_scene_cap_ratio": trajs.new_tensor(max_scene_ratio),
@@ -6081,6 +6176,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             ),
             "baseline_mean": baseline.mean().detach(),
             "baseline_from_buffer": trajs.new_tensor(float(baseline_from_buffer)),
+            "target_nc_mean": active_component_means.get("no_at_fault_collisions", zero.detach()),
+            "target_dac_mean": active_component_means.get("drivable_area_compliance", zero.detach()),
+            "target_ttc_mean": active_component_means.get("time_to_collision_within_bound", zero.detach()),
+            "target_ep_mean": active_component_means.get("ego_progress", zero.detach()),
+            "target_comfort_mean": active_component_means.get("history_comfort", zero.detach()),
+            "target_ddc_mean": active_component_means.get("driving_direction_compliance", zero.detach()),
+            "target_tlc_mean": active_component_means.get("traffic_light_compliance", zero.detach()),
         }
 
     def forward_awac_iql(
@@ -7239,6 +7341,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     trajs,
                     base_rewards,
                     hard_safe_mask,
+                    components,
                     B,
                     G,
                     grpo_buffer_guidance,
@@ -7319,6 +7422,26 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 grpo_self_imitation_targets.get("candidate_ratio", total_loss.new_zeros(()))
                 if grpo_self_imitation_targets else total_loss.new_zeros(())
             ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_safety_candidate_ratio": (
+                grpo_self_imitation_targets.get("safety_candidate_ratio", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_nc_pass_ratio": (
+                grpo_self_imitation_targets.get("nc_pass_ratio", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_dac_pass_ratio": (
+                grpo_self_imitation_targets.get("dac_pass_ratio", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_ttc_pass_ratio": (
+                grpo_self_imitation_targets.get("ttc_pass_ratio", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_ddc_pass_ratio": (
+                grpo_self_imitation_targets.get("ddc_pass_ratio", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
             "grpo_self_imitation_target_ratio": (
                 grpo_self_imitation_targets.get("target_ratio", total_loss.new_zeros(()))
                 if grpo_self_imitation_targets else total_loss.new_zeros(())
@@ -7353,6 +7476,34 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             ).to(dtype=total_loss.dtype),
             "grpo_self_imitation_baseline_from_buffer": (
                 grpo_self_imitation_targets.get("baseline_from_buffer", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_target_nc_mean": (
+                grpo_self_imitation_targets.get("target_nc_mean", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_target_dac_mean": (
+                grpo_self_imitation_targets.get("target_dac_mean", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_target_ttc_mean": (
+                grpo_self_imitation_targets.get("target_ttc_mean", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_target_ep_mean": (
+                grpo_self_imitation_targets.get("target_ep_mean", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_target_comfort_mean": (
+                grpo_self_imitation_targets.get("target_comfort_mean", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_target_ddc_mean": (
+                grpo_self_imitation_targets.get("target_ddc_mean", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_target_tlc_mean": (
+                grpo_self_imitation_targets.get("target_tlc_mean", total_loss.new_zeros(()))
                 if grpo_self_imitation_targets else total_loss.new_zeros(())
             ).to(dtype=total_loss.dtype),
             "grpo_self_imitation_weight_sum": grpo_self_imitation_diag["effective_weight_sum"].to(dtype=total_loss.dtype),
