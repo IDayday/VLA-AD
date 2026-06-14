@@ -4,11 +4,13 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 ARTIFACT_ROOT="${ARTIFACT_ROOT:-/mnt/project/VLA-AD}"
 
-export RUN_NAME="${RUN_NAME:-stage3_grpo_buffer_dpo_mainhardgate_step300_s16_lr1e4_b2acc4_8gpu_$(date -u +%Y%m%dT%H%M%SZ)}"
+export RUN_NAME="${RUN_NAME:-stage3_grpo_buffer_dpo_refctrl_step300_s16_lr1e4_b2acc4_8gpu_$(date -u +%Y%m%dT%H%M%SZ)}"
 export OUT_ROOT="${OUT_ROOT:-${ARTIFACT_ROOT}/outputs/${RUN_NAME}}"
 
-# Keep this launcher explicit: it should be started after the active v3 step300
-# gate is known, not accidentally during import/smoke checks.
+# Keep this launcher explicit: it should be started only after the current-repo
+# original-LR GRPO control has an early exact navtest row. The defaults below
+# isolate the buffer-DPO auxiliary on top of that control shape; they do not
+# inherit the failed v3 main TTC/DDC hard-gate setup.
 export RUN_TRAIN="${RUN_TRAIN:-0}"
 export LAUNCH_EVAL_WATCHERS="${LAUNCH_EVAL_WATCHERS:-0}"
 
@@ -24,15 +26,15 @@ export BC_ANNEAL_EPOCHS="${BC_ANNEAL_EPOCHS:-5}"
 export REFERENCE_KL_COEFF="${REFERENCE_KL_COEFF:-0.02}"
 export REFERENCE_KL_CHUNK_SIZE="${REFERENCE_KL_CHUNK_SIZE:-0}"
 
-export GRPO_USE_GSPO_RATIO="${GRPO_USE_GSPO_RATIO:-true}"
+export GRPO_USE_GSPO_RATIO="${GRPO_USE_GSPO_RATIO:-false}"
 export GRPO_GSPO_CLIP_LOW="${GRPO_GSPO_CLIP_LOW:-0.05}"
 export GRPO_GSPO_CLIP_HIGH="${GRPO_GSPO_CLIP_HIGH:-0.05}"
 export GRPO_BEHAVIOR_POLICY_SYNC_INTERVAL="${GRPO_BEHAVIOR_POLICY_SYNC_INTERVAL:-4}"
 export GRPO_BEHAVIOR_POLICY_SAMPLE="${GRPO_BEHAVIOR_POLICY_SAMPLE:-true}"
-export GRPO_HARD_GATE_TTC="${GRPO_HARD_GATE_TTC:-true}"
-export GRPO_HARD_GATE_DDC="${GRPO_HARD_GATE_DDC:-true}"
-export GRPO_TTC_SAFE_THRESHOLD="${GRPO_TTC_SAFE_THRESHOLD:-0.95}"
-export GRPO_DDC_SAFE_THRESHOLD="${GRPO_DDC_SAFE_THRESHOLD:-0.99}"
+export GRPO_HARD_GATE_TTC="${GRPO_HARD_GATE_TTC:-false}"
+export GRPO_HARD_GATE_DDC="${GRPO_HARD_GATE_DDC:-false}"
+export GRPO_TTC_SAFE_THRESHOLD="${GRPO_TTC_SAFE_THRESHOLD:-1.0}"
+export GRPO_DDC_SAFE_THRESHOLD="${GRPO_DDC_SAFE_THRESHOLD:-1.0}"
 
 export CHECKPOINT_EVERY_N_EPOCHS="${CHECKPOINT_EVERY_N_EPOCHS:-1}"
 export CHECKPOINT_EVERY_N_TRAIN_STEPS="${CHECKPOINT_EVERY_N_TRAIN_STEPS:-300}"

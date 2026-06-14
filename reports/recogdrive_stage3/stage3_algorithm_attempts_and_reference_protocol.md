@@ -195,6 +195,18 @@ Current-repo original-LR control status on 2026-06-14 19:23 UTC:
 - TensorBoard had only `lr-AdamW` at step `0` at this timestamp; no reward/loss scalar and no checkpoint yet. This is expected before the first GRPO/PDM training log window completes.
 - zt2 and zt3 checkpoint watchers are attached but only waiting for checkpoint files; they are configured to wait for free GPUs and not preempt existing remote tasks.
 
+Update on 2026-06-14 19:34 UTC:
+- The same current-repo control has entered normal training and logged step `49`:
+  - `train/reward_step=0.785141`
+  - `train/base_reward_step=0.789642`
+  - `train/safe_ratio_step=0.914062`
+  - `train/mean_ep_step=0.769345`
+  - `train/mean_ttc_step=0.898438`
+  - `train/mean_ddc_step=0.939453`
+  - `train/reference_kl_loss_step=0.007989`
+  - `train/bc_coeff_step=0.1`
+- No checkpoint or navtest eval row exists yet for this run. Keep it running as the current-code control before launching the buffer-DPO diagnostic.
+
 Train-only keep-best elite buffer status on 2026-06-14 19:23 UTC:
 - Buffer path: `/mnt/project/VLA-AD/cache/recogdrive_stage3_awac_elite_buffer_train_v2_stage3_awac_iql_dualhost_20260612T182947Z`.
 - Full train-token coverage exists: `85109` `*.pkl.xz` records, about `342 MB`.
@@ -340,6 +352,10 @@ Implementation:
   Its defaults isolate buffer-DPO by setting buffer reward bonus/distill to `0.0`
   and self-imitation to `0.0`; set `GRPO_SELF_IMITATION_LOSS_WEIGHT=0.01`
   only for an explicit v3-plus-buffer-DPO comparison.
+- Launcher correction on 2026-06-14 UTC:
+  - The buffer-DPO launcher previously still defaulted to a `mainhardgate` run name plus `GRPO_HARD_GATE_TTC=true` and `GRPO_HARD_GATE_DDC=true`, contradicting the post-v3 rule above.
+  - It was corrected to default to `stage3_grpo_buffer_dpo_refctrl...`, `GRPO_USE_GSPO_RATIO=false`, `GRPO_HARD_GATE_TTC=false`, `GRPO_HARD_GATE_DDC=false`, and TTC/DDC thresholds `1.0`, matching the active current-repo original-LR GRPO control shape.
+  - A `RUN_TRAIN=0` preflight confirmed: `offline_rl_enabled=true`, train-only elite buffer path set, `grpo_buffer_guidance_enabled=true`, `grpo_buffer_preference_dpo_loss_weight=0.02`, and buffer reward bonus/distill/self-imitation weights all `0.0`. The temporary preflight directory was deleted after inspection.
 
 First experiment rule after v3 result:
 - Do not launch a buffer-DPO run on top of the failed v3 main-hardgate configuration by default. That would confound buffer absorption with a known EP-suppressing safety gate.
