@@ -1,0 +1,57 @@
+# @package _global_
+
+defaults:
+  - override /agent: recogdrive_agent
+
+agent:
+  use_two_expert_slots: true
+  two_expert_cache_mode: true
+  two_expert_slot_mode: vlm_soft_slots
+  two_expert_condition_mode: denoise_hmef_v2
+  two_expert_dit_condition_mode: denoise_hmef_v2
+  two_expert_planner_dim: 384
+  two_expert_use_raw_vlm_base: true
+  two_expert_zero_init_deltas: false
+  two_expert_memory_tokens_to_dit: true
+  two_expert_denoise_gate_hidden_dim: 384
+  two_expert_denoise_gate_temperature: 1.0
+  two_expert_denoise_condition_scale_init: 1.0
+  two_expert_memory_scale_init: 1.0
+  two_expert_dyn_loss_floor: 0.0
+  two_expert_geo_loss_floor: 0.0
+  two_expert_num_dyn_groups: 3
+  two_expert_dyn_tokens_per_group: 12
+  two_expert_num_geo_tokens: 12
+  cache_hidden_state: true
+  train_backbone: false
+  use_last_vla: false
+  last_vla_stage: disabled
+  use_last_rd: false
+  last_rd_stage: disabled
+  use_expert_features: false
+  diffusion_loss_weight: 1.0
+  last_vla_use_residual_diffusion: false
+  last_vla_teacher_traj_mode: none
+  last_vla_residual_anchor_source: none
+  # Formal random-init Stage2. The DiT/action head and the two-expert
+  # denoising condition branch train from scratch on Stage1-LoRA hidden cache.
+  train_expert_only: false
+  freeze_base_action_head: false
+  freeze_expert: false
+  lr: 1e-4
+  lr_expert: 1e-4
+  lr_action_head: 1e-4
+  lr_expert_gate: 1e-4
+  scheduler_epochs: 200
+  scheduler_warmup_epochs: 5
+  scheduler_min_lr: 1e-6
+
+trainer:
+  params:
+    max_epochs: 200
+    gradient_clip_val: 1.0
+    precision: bf16-mixed
+
+dataloader:
+  params:
+    batch_size: 16

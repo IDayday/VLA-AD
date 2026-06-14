@@ -13,6 +13,7 @@ PYTHON_BIN="${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}"
 TORCHRUN_BIN="${TORCHRUN_BIN:-$(dirname "${PYTHON_BIN}")/torchrun}"
 NPROC_PER_NODE="${NPROC_PER_NODE:-8}"
 TRAINER_DEVICES="${TRAINER_DEVICES:-${NPROC_PER_NODE}}"
+HYDRA_EXPERIMENT="${HYDRA_EXPERIMENT:-two_expert_slot_stage2_dit_sft}"
 mkdir -p "${OUTPUT_DIR}/logs"
 COMMANDS_LOG="${OUTPUT_DIR}/commands.log"
 TRAIN_LOG="${OUTPUT_DIR}/logs/two_expert_stage2_dit_sft.train.log"
@@ -20,7 +21,7 @@ TRAIN_LOG="${OUTPUT_DIR}/logs/two_expert_stage2_dit_sft.train.log"
 cmd=(
   "${TORCHRUN_BIN}" --nproc_per_node="${NPROC_PER_NODE}" --master_port "${MASTER_PORT}"
   navsim/planning/script/run_training_recogdrive.py
-  +experiment=two_expert_slot_stage2_dit_sft
+  "+experiment=${HYDRA_EXPERIMENT}"
   "cache_path=${TRAIN_CHUNK_CACHE_ROOT}"
   use_cache_without_dataset=true
   force_cache_computation=false

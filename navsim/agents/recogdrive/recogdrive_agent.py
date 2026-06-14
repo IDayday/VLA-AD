@@ -461,6 +461,11 @@ class ReCogDriveAgent(AbstractAgent):
         two_expert_num_dyn_groups: int = 3,
         two_expert_dyn_tokens_per_group: int = 12,
         two_expert_num_geo_tokens: int = 12,
+        two_expert_memory_tokens_to_dit: bool = False,
+        two_expert_denoise_gate_hidden_dim: int = 384,
+        two_expert_denoise_gate_temperature: float = 1.0,
+        two_expert_denoise_condition_scale_init: float = 1.0,
+        two_expert_memory_scale_init: float = 1.0,
         lr_vlm_lora: Optional[float] = 1e-5,
         weight_decay_vlm_lora: float = 0.0,
         lr_last_vla_cot: Optional[float] = 1e-4,
@@ -829,6 +834,11 @@ class ReCogDriveAgent(AbstractAgent):
         self.two_expert_num_dyn_groups = int(two_expert_num_dyn_groups)
         self.two_expert_dyn_tokens_per_group = int(two_expert_dyn_tokens_per_group)
         self.two_expert_num_geo_tokens = int(two_expert_num_geo_tokens)
+        self.two_expert_memory_tokens_to_dit = bool(two_expert_memory_tokens_to_dit)
+        self.two_expert_denoise_gate_hidden_dim = int(two_expert_denoise_gate_hidden_dim)
+        self.two_expert_denoise_gate_temperature = float(two_expert_denoise_gate_temperature)
+        self.two_expert_denoise_condition_scale_init = float(two_expert_denoise_condition_scale_init)
+        self.two_expert_memory_scale_init = float(two_expert_memory_scale_init)
         self.use_future_jepa_prediction = use_future_jepa_prediction
         self.use_vggt_geometry_tokens = use_vggt_geometry_tokens
         self.use_ego_trajectory_tokens = use_ego_trajectory_tokens
@@ -1156,6 +1166,11 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.two_expert_num_dyn_groups = self.two_expert_num_dyn_groups
         cfg.two_expert_dyn_tokens_per_group = self.two_expert_dyn_tokens_per_group
         cfg.two_expert_num_geo_tokens = self.two_expert_num_geo_tokens
+        cfg.two_expert_memory_tokens_to_dit = self.two_expert_memory_tokens_to_dit
+        cfg.two_expert_denoise_gate_hidden_dim = self.two_expert_denoise_gate_hidden_dim
+        cfg.two_expert_denoise_gate_temperature = self.two_expert_denoise_gate_temperature
+        cfg.two_expert_denoise_condition_scale_init = self.two_expert_denoise_condition_scale_init
+        cfg.two_expert_memory_scale_init = self.two_expert_memory_scale_init
 
         offline_cfg = cfg.offline_rl_cfg
         offline_cfg.enabled = self.offline_rl_enabled
@@ -1849,7 +1864,7 @@ class ReCogDriveAgent(AbstractAgent):
 
     @staticmethod
     def _is_gate_parameter_key(key: str) -> bool:
-        gate_markers = ("jepa_gate", "vggt_gate", "branch_logits", "scene_gate", "timestep_gate")
+        gate_markers = ("jepa_gate", "vggt_gate", "branch_logits", "scene_gate", "timestep_gate", "two_expert_denoise_gate")
         return key.startswith("action_head.") and any(marker in key for marker in gate_markers)
 
     @staticmethod

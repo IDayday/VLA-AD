@@ -549,8 +549,8 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     use_two_expert_slots: bool = False
     two_expert_cache_mode: bool = True
     two_expert_slot_mode: Literal["vlm_soft_slots"] = "vlm_soft_slots"
-    two_expert_condition_mode: Literal["horizon_hmef_lite"] = "horizon_hmef_lite"
-    two_expert_dit_condition_mode: Literal["horizon_hmef_lite"] = "horizon_hmef_lite"
+    two_expert_condition_mode: Literal["horizon_hmef_lite", "denoise_hmef_v2"] = "horizon_hmef_lite"
+    two_expert_dit_condition_mode: Literal["horizon_hmef_lite", "denoise_hmef_v2"] = "horizon_hmef_lite"
     two_expert_planner_dim: int = 384
     two_expert_use_raw_vlm_base: bool = True
     two_expert_zero_init_deltas: bool = True
@@ -559,6 +559,11 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     two_expert_num_dyn_groups: int = 3
     two_expert_dyn_tokens_per_group: int = 12
     two_expert_num_geo_tokens: int = 12
+    two_expert_memory_tokens_to_dit: bool = False
+    two_expert_denoise_gate_hidden_dim: int = 384
+    two_expert_denoise_gate_temperature: float = 1.0
+    two_expert_denoise_condition_scale_init: float = 1.0
+    two_expert_memory_scale_init: float = 1.0
 
     tune_projector: bool = True
     tune_diffusion_model: bool = True
@@ -629,16 +634,21 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         if config.use_last_vla and config.use_last_rd:
             raise ValueError("use_last_vla and use_last_rd are mutually exclusive.")
         if config.use_two_expert_slots:
+            allowed_two_expert_modes = {"horizon_hmef_lite", "denoise_hmef_v2"}
             if config.use_last_vla or config.use_last_rd or config.use_expert_features:
                 raise ValueError(
                     "two_expert_slot is mutually exclusive with old Last-VLA, Last-RD, and A4 direct expert paths."
                 )
             if config.two_expert_slot_mode != "vlm_soft_slots":
                 raise ValueError("two_expert_slot_mode must be 'vlm_soft_slots'.")
-            if config.two_expert_condition_mode != "horizon_hmef_lite":
-                raise ValueError("two_expert_condition_mode must be 'horizon_hmef_lite'.")
-            if config.two_expert_dit_condition_mode != "horizon_hmef_lite":
-                raise ValueError("two_expert_dit_condition_mode must be 'horizon_hmef_lite'.")
+            if config.two_expert_condition_mode not in allowed_two_expert_modes:
+                raise ValueError(f"two_expert_condition_mode must be one of {sorted(allowed_two_expert_modes)}.")
+            if config.two_expert_dit_condition_mode not in allowed_two_expert_modes:
+                raise ValueError(f"two_expert_dit_condition_mode must be one of {sorted(allowed_two_expert_modes)}.")
+            if config.two_expert_denoise_gate_hidden_dim <= 0:
+                raise ValueError("two_expert_denoise_gate_hidden_dim must be positive.")
+            if config.two_expert_denoise_gate_temperature <= 0.0:
+                raise ValueError("two_expert_denoise_gate_temperature must be positive.")
             if config.last_vla_use_residual_diffusion:
                 raise ValueError("two_expert_slot forbids residual diffusion.")
             if config.last_vla_teacher_traj_mode != "none":
@@ -722,6 +732,22 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             self.two_expert_geo_horizon_attn = nn.MultiheadAttention(planner_dim, heads, batch_first=True)
             self.two_expert_dyn_delta_proj = nn.Linear(planner_dim, planner_dim)
             self.two_expert_geo_delta_proj = nn.Linear(planner_dim, planner_dim)
+            self.two_expert_memory_type_embedding = nn.Parameter(torch.zeros(2, planner_dim))
+            self.two_expert_memory_scale = nn.Parameter(
+                torch.tensor(float(config.two_expert_memory_scale_init), dtype=torch.float32)
+            )
+            self.two_expert_denoise_condition_scale = nn.Parameter(
+                torch.tensor(float(config.two_expert_denoise_condition_scale_init), dtype=torch.float32)
+            )
+            gate_hidden_dim = int(config.two_expert_denoise_gate_hidden_dim)
+            self.two_expert_denoise_gate = nn.Sequential(
+                nn.LayerNorm(planner_dim * 4),
+                nn.Linear(planner_dim * 4, gate_hidden_dim),
+                nn.GELU(),
+                nn.Linear(gate_hidden_dim, 2),
+            )
+            nn.init.constant_(self.two_expert_denoise_gate[-1].weight, 0.0)
+            nn.init.constant_(self.two_expert_denoise_gate[-1].bias, 0.0)
             if config.two_expert_zero_init_deltas:
                 nn.init.constant_(self.two_expert_dyn_delta_proj.weight, 0.0)
                 nn.init.constant_(self.two_expert_dyn_delta_proj.bias, 0.0)
@@ -1975,6 +2001,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             }.get(code, "normal")
         return str(value)
 
+    def _two_expert_denoise_v2_enabled(self) -> bool:
+        return bool(
+            self.config.use_two_expert_slots
+            and self.config.two_expert_dit_condition_mode == "denoise_hmef_v2"
+        )
+
     def _build_two_expert_context(
         self,
         vl_embeds: torch.Tensor,
@@ -2008,18 +2040,42 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             h_geo = torch.zeros_like(h_geo)
         if mode not in {"normal", "zero_h_dyn", "zero_h_geo", "zero_all_experts", "raw_vlm_only", "dyn_only", "geo_only"}:
             raise ValueError(f"Unknown two_expert corruption mode: {mode!r}.")
+        dyn_enabled = mode not in {"zero_h_dyn", "zero_all_experts", "raw_vlm_only", "geo_only"}
+        geo_enabled = mode not in {"zero_h_geo", "zero_all_experts", "raw_vlm_only", "dyn_only"}
 
         dyn_proj = self.two_expert_dyn_proj(h_dyn.reshape(h_dyn.shape[0], -1, h_dyn.shape[-1]))
         geo_proj = self.two_expert_geo_proj(h_geo)
+        if not dyn_enabled:
+            dyn_proj = torch.zeros_like(dyn_proj)
+        if not geo_enabled:
+            geo_proj = torch.zeros_like(geo_proj)
         queries = self.two_expert_horizon_queries.unsqueeze(0).expand(vl_embeds.shape[0], -1, -1).to(vl_embeds)
         f_dyn, _ = self.two_expert_dyn_horizon_attn(queries, dyn_proj, dyn_proj, need_weights=False)
         f_geo, _ = self.two_expert_geo_horizon_attn(queries, geo_proj, geo_proj, need_weights=False)
+        if not dyn_enabled:
+            f_dyn = torch.zeros_like(f_dyn)
+        if not geo_enabled:
+            f_geo = torch.zeros_like(f_geo)
         dyn_delta = self.two_expert_dyn_delta_proj(f_dyn)
         geo_delta = self.two_expert_geo_delta_proj(f_geo)
-        if mode == "raw_vlm_only":
+        if not dyn_enabled:
             dyn_delta = torch.zeros_like(dyn_delta)
+        if not geo_enabled:
             geo_delta = torch.zeros_like(geo_delta)
         expert_step_condition = dyn_delta + geo_delta
+        expert_memory_tokens = None
+        context_tokens = vl_embeds
+        if self._two_expert_denoise_v2_enabled() and self.config.two_expert_memory_tokens_to_dit:
+            type_embedding = self.two_expert_memory_type_embedding.to(device=vl_embeds.device, dtype=vl_embeds.dtype)
+            memory_scale = self.two_expert_memory_scale.to(device=vl_embeds.device, dtype=vl_embeds.dtype)
+            dyn_memory = (dyn_proj + type_embedding[0].view(1, 1, -1)) * memory_scale
+            geo_memory = (geo_proj + type_embedding[1].view(1, 1, -1)) * memory_scale
+            if not dyn_enabled:
+                dyn_memory = torch.zeros_like(dyn_memory)
+            if not geo_enabled:
+                geo_memory = torch.zeros_like(geo_memory)
+            expert_memory_tokens = torch.cat((dyn_memory, geo_memory), dim=1)
+            context_tokens = torch.cat((vl_embeds, expert_memory_tokens), dim=1)
         diagnostics = {
             "two_expert_condition_enabled": vl_embeds.new_tensor(float(mode != "raw_vlm_only")),
             "two_expert_corruption_mode_code": vl_embeds.new_tensor(
@@ -2034,6 +2090,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 }[mode]
             ),
             "two_expert_raw_vlm_context_used": vl_embeds.new_tensor(1.0),
+            "two_expert_denoise_v2_enabled": vl_embeds.new_tensor(float(self._two_expert_denoise_v2_enabled())),
+            "two_expert_memory_token_count": vl_embeds.new_tensor(float(0 if expert_memory_tokens is None else expert_memory_tokens.shape[1])),
+            "two_expert_context_token_count": vl_embeds.new_tensor(float(context_tokens.shape[1])),
+            "two_expert_memory_scale": self.two_expert_memory_scale.detach().to(device=vl_embeds.device, dtype=vl_embeds.dtype),
+            "two_expert_denoise_condition_scale": self.two_expert_denoise_condition_scale.detach().to(
+                device=vl_embeds.device,
+                dtype=vl_embeds.dtype,
+            ),
             "two_expert_h_dyn_norm": h_dyn.detach().float().norm(dim=-1).mean().to(dtype=vl_embeds.dtype),
             "two_expert_h_geo_norm": h_geo.detach().float().norm(dim=-1).mean().to(dtype=vl_embeds.dtype),
             "two_expert_f_dyn_norm": f_dyn.detach().float().norm(dim=-1).mean().to(dtype=vl_embeds.dtype),
@@ -2048,11 +2112,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             ),
         }
         return {
-            "context_tokens": vl_embeds,
+            "context_tokens": context_tokens,
             "context_mean": vl_embeds.mean(1),
             "expert_step_condition": expert_step_condition,
             "f_dyn": f_dyn,
             "f_geo": f_geo,
+            "dyn_delta": dyn_delta,
+            "geo_delta": geo_delta,
+            "expert_memory_tokens": expert_memory_tokens,
             "diagnostics": diagnostics,
         }
 
@@ -2112,6 +2179,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "diagnostics": two_expert_context["diagnostics"],
                 "two_expert_f_dyn": two_expert_context["f_dyn"],
                 "two_expert_f_geo": two_expert_context["f_geo"],
+                "two_expert_dyn_delta": two_expert_context["dyn_delta"],
+                "two_expert_geo_delta": two_expert_context["geo_delta"],
+                "two_expert_memory_tokens": two_expert_context["expert_memory_tokens"],
                 "selected_target_norm": target_action_norm,
             }
 
@@ -2725,6 +2795,80 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         safe_keys = ("his_traj", "history_trajectory", "status_feature", "high_command_one_hot", "action", "state")
         return BatchFeature(data={key: action_input[key] for key in safe_keys if key in action_input})
 
+    def _two_expert_denoise_step_condition(
+        self,
+        action_features: torch.Tensor,
+        timesteps: torch.Tensor,
+        dit_context: Dict[str, Any],
+    ) -> Optional[torch.Tensor]:
+        base_condition = dit_context.get("expert_step_condition")
+        if not self._two_expert_denoise_v2_enabled():
+            return base_condition
+
+        f_dyn = dit_context.get("two_expert_f_dyn")
+        f_geo = dit_context.get("two_expert_f_geo")
+        dyn_delta = dit_context.get("two_expert_dyn_delta")
+        geo_delta = dit_context.get("two_expert_geo_delta")
+        if not all(isinstance(value, torch.Tensor) for value in (f_dyn, f_geo, dyn_delta, geo_delta)):
+            return base_condition
+
+        f_dyn = f_dyn.to(device=action_features.device, dtype=action_features.dtype)
+        f_geo = f_geo.to(device=action_features.device, dtype=action_features.dtype)
+        dyn_delta = dyn_delta.to(device=action_features.device, dtype=action_features.dtype)
+        geo_delta = geo_delta.to(device=action_features.device, dtype=action_features.dtype)
+        timestep_features = self.model.timestep_encoder(timesteps.to(device=action_features.device))
+        timestep_features = timestep_features.to(device=action_features.device, dtype=action_features.dtype)
+        timestep_features = timestep_features.unsqueeze(1).expand(-1, action_features.shape[1], -1)
+
+        gate_input = torch.cat((action_features, timestep_features, f_dyn, f_geo), dim=-1)
+        gate_logits = self.two_expert_denoise_gate(gate_input)
+        gate_logits = gate_logits / float(self.config.two_expert_denoise_gate_temperature)
+        gate = F.softmax(gate_logits, dim=-1)
+
+        scale = self.two_expert_denoise_condition_scale.to(device=action_features.device, dtype=action_features.dtype)
+        expert_condition = (gate[..., :1] * dyn_delta + gate[..., 1:2] * geo_delta) * scale
+        diagnostics = dit_context.setdefault("diagnostics", {})
+        gate_float = gate.detach().float().clamp_min(1e-6)
+        entropy = -(gate_float * gate_float.log()).sum(dim=-1).mean()
+        diagnostics["two_expert_gate_dyn_mean"] = gate[..., 0].detach().float().mean().to(
+            device=action_features.device,
+            dtype=action_features.dtype,
+        )
+        diagnostics["two_expert_gate_geo_mean"] = gate[..., 1].detach().float().mean().to(
+            device=action_features.device,
+            dtype=action_features.dtype,
+        )
+        diagnostics["two_expert_gate_confidence"] = gate.detach().float().max(dim=-1).values.mean().to(
+            device=action_features.device,
+            dtype=action_features.dtype,
+        )
+        diagnostics["two_expert_gate_entropy"] = entropy.to(device=action_features.device, dtype=action_features.dtype)
+        diagnostics["two_expert_denoise_condition_norm"] = expert_condition.detach().float().norm(dim=-1).mean().to(
+            device=action_features.device,
+            dtype=action_features.dtype,
+        )
+        diagnostics["two_expert_denoise_action_feature_norm"] = action_features.detach().float().norm(dim=-1).mean().to(
+            device=action_features.device,
+            dtype=action_features.dtype,
+        )
+        diagnostics["two_expert_denoise_timestep_feature_norm"] = timestep_features.detach().float().norm(dim=-1).mean().to(
+            device=action_features.device,
+            dtype=action_features.dtype,
+        )
+        return expert_condition
+
+    def _apply_two_expert_denoise_condition(
+        self,
+        fused_input: torch.Tensor,
+        action_features: torch.Tensor,
+        timesteps: torch.Tensor,
+        dit_context: Dict[str, Any],
+    ) -> torch.Tensor:
+        expert_step_condition = self._two_expert_denoise_step_condition(action_features, timesteps, dit_context)
+        if expert_step_condition is None:
+            return fused_input
+        return fused_input + expert_step_condition.to(device=fused_input.device, dtype=fused_input.dtype)
+
     def _denoise_model_output(
         self,
         noisy_actions: torch.Tensor,
@@ -2750,7 +2894,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             torch.cat((his_traj_features, context_mean_features, action_features), dim=2)
         )
         if expert_step_condition is not None:
-            fused_input = fused_input + expert_step_condition.to(device=fused_input.device, dtype=fused_input.dtype)
+            fused_input = self._apply_two_expert_denoise_condition(
+                fused_input,
+                action_features,
+                timesteps,
+                dit_context,
+            )
         model_output = self.model(
             hidden_states=fused_input,
             encoder_hidden_states=context_embeds,
@@ -2829,6 +2978,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         context_mean: Optional[torch.Tensor] = None,
         expert_step_condition: Optional[torch.Tensor] = None,
         cot_condition_tokens: Optional[torch.Tensor] = None,
+        two_expert_f_dyn: Optional[torch.Tensor] = None,
+        two_expert_f_geo: Optional[torch.Tensor] = None,
+        two_expert_dyn_delta: Optional[torch.Tensor] = None,
+        two_expert_geo_delta: Optional[torch.Tensor] = None,
         vl_features: Optional[torch.Tensor] = None,
         action_input: Optional[BatchFeature] = None,
     ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
@@ -2853,6 +3006,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             context_mean = latent_context["context_mean"]
             expert_step_condition = latent_context["expert_step_condition"]
             cot_condition_tokens = latent_context.get("cot_condition_tokens")
+            two_expert_f_dyn = latent_context.get("two_expert_f_dyn")
+            two_expert_f_geo = latent_context.get("two_expert_f_geo")
+            two_expert_dyn_delta = latent_context.get("two_expert_dyn_delta")
+            two_expert_geo_delta = latent_context.get("two_expert_geo_delta")
         model_dtype = next(self.model.parameters()).dtype
         x = x.to(model_dtype)
         action_features = self.action_encoder(x, t)
@@ -2866,7 +3023,20 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             torch.cat((his_traj_features, context_mean_features, action_features), dim=2)
         )
         if expert_step_condition is not None:
-            fused_input = fused_input + expert_step_condition.to(device=fused_input.device, dtype=fused_input.dtype)
+            step_context = {
+                "expert_step_condition": expert_step_condition,
+                "two_expert_f_dyn": two_expert_f_dyn,
+                "two_expert_f_geo": two_expert_f_geo,
+                "two_expert_dyn_delta": two_expert_dyn_delta,
+                "two_expert_geo_delta": two_expert_geo_delta,
+                "diagnostics": {},
+            }
+            fused_input = self._apply_two_expert_denoise_condition(
+                fused_input,
+                action_features,
+                t,
+                step_context,
+            )
 
         model_output = self.model(
             hidden_states=fused_input,
@@ -3165,12 +3335,24 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "two_expert_condition_enabled",
                 "two_expert_corruption_mode_code",
                 "two_expert_raw_vlm_context_used",
+                "two_expert_denoise_v2_enabled",
+                "two_expert_memory_token_count",
+                "two_expert_context_token_count",
+                "two_expert_memory_scale",
+                "two_expert_denoise_condition_scale",
                 "two_expert_h_dyn_norm",
                 "two_expert_h_geo_norm",
                 "two_expert_f_dyn_norm",
                 "two_expert_f_geo_norm",
                 "two_expert_dyn_expert_delta_norm",
                 "two_expert_geo_expert_delta_norm",
+                "two_expert_gate_dyn_mean",
+                "two_expert_gate_geo_mean",
+                "two_expert_gate_confidence",
+                "two_expert_gate_entropy",
+                "two_expert_denoise_condition_norm",
+                "two_expert_denoise_action_feature_norm",
+                "two_expert_denoise_timestep_feature_norm",
                 "two_expert_zero_init_dyn",
                 "two_expert_zero_init_geo",
                 "teacher_traj_used_ratio",
@@ -3293,7 +3475,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     torch.cat((history_embeds, context_mean_features, action_features), dim=2)
                 )
                 if expert_step_condition is not None:
-                    fused_input = fused_input + expert_step_condition.to(device=fused_input.device, dtype=fused_input.dtype)
+                    fused_input = self._apply_two_expert_denoise_condition(
+                        fused_input,
+                        action_features,
+                        t,
+                        dit_context,
+                    )
                 
                 model_output = self.model(
                     fused_input,
@@ -3496,7 +3683,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     torch.cat((his_traj_features, context_mean_features, action_features), dim=2)
                 )
                 if expert_step_condition is not None:
-                    fused_input = fused_input + expert_step_condition.to(device=fused_input.device, dtype=fused_input.dtype)
+                    fused_input = self._apply_two_expert_denoise_condition(
+                        fused_input,
+                        action_features,
+                        t_batch,
+                        dit_context,
+                    )
                 
                 model_output = self.model(
                     fused_input,
@@ -3616,6 +3808,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             conditioning_embeds['expert_step_condition'] = expert_step_condition
         if cot_condition_tokens is not None:
             conditioning_embeds['cot_condition_tokens'] = cot_condition_tokens
+        for key in ("two_expert_f_dyn", "two_expert_f_geo", "two_expert_dyn_delta", "two_expert_geo_delta"):
+            value = dit_context.get(key)
+            if isinstance(value, torch.Tensor):
+                conditioning_embeds[key] = value
         
         batched_conditioning = {}
         for key, value in conditioning_embeds.items():
@@ -3649,6 +3845,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             context_mean=batched_conditioning['context_mean'],
             expert_step_condition=batched_conditioning.get('expert_step_condition'),
             cot_condition_tokens=batched_conditioning.get('cot_condition_tokens'),
+            two_expert_f_dyn=batched_conditioning.get('two_expert_f_dyn'),
+            two_expert_f_geo=batched_conditioning.get('two_expert_f_geo'),
+            two_expert_dyn_delta=batched_conditioning.get('two_expert_dyn_delta'),
+            two_expert_geo_delta=batched_conditioning.get('two_expert_geo_delta'),
         )
 
         std = torch.exp(0.5 * logvar).clamp(min=self.min_logprob_denoising_std)

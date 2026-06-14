@@ -346,6 +346,11 @@ two_expert_geo_loss_floor: 0.0
 two_expert_num_dyn_groups: 3
 two_expert_dyn_tokens_per_group: 12
 two_expert_num_geo_tokens: 12
+two_expert_memory_tokens_to_dit: false
+two_expert_denoise_gate_hidden_dim: 384
+two_expert_denoise_gate_temperature: 1.0
+two_expert_denoise_condition_scale_init: 1.0
+two_expert_memory_scale_init: 1.0
 lr_vlm_lora: 1e-5
 weight_decay_vlm_lora: 0.0
 lr_last_vla_cot: 1e-4
