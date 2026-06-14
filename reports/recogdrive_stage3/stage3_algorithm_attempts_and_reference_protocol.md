@@ -896,12 +896,15 @@ Current status:
 - zt3 step-checkpoint replay diagnostic `stage3_grpo_replay_stepckpt_s16_i1_lr1e4_zt3_2gpu_20260614T0610Z`:
   - `step-step=300.ckpt` was written at `2026-06-14T06:20:12Z`.
   - Watcher archived it as `step-step_300.ckpt` at `2026-06-14T06:22:59Z`.
-  - Eval is pending because GPUs `6,7` are still busy with the diagnostic training.
+  - Training completed successfully with return code `0` at `2026-06-14T06:24:39Z`.
+  - Additional checkpoints were produced: `step-step=600.ckpt` and `epoch=0-step=600.ckpt`.
+  - Eval of `step-step_300` started at `2026-06-14T06:24:59Z`; latest eval log shows progress through roughly `100 / 6069` navtest scenarios.
   - Latest logged step `79`: reward `0.22160`, base reward `0.44747`, safe ratio `0.5`, NC `0.95312`, DAC `0.5`, TTC `0.875`, DDC `0.76562`, replay valid ratio `0.5`.
 
 Decision:
 - Do not stop the full replay i1/i2 jobs before their first checkpoint.
 - Do not judge the step diagnostic from its noisy training scalar windows; wait for exact navtest PDMS on `step-step_300.ckpt`.
+- Let the watcher evaluate queued checkpoints in order; do not start duplicate evals for the same ckpts.
 - If `step-step_300` is far below the original early `0.88+` PDMS band, replay needs method changes before promotion.
 
 ## 2026-06-14 Attempt: Step-Level PPO Replay Implementation
