@@ -109,6 +109,17 @@ Smoke status:
 - Logged `grpo_self_imitation_enabled=1.0`, `baseline_from_buffer=0.0`, `use_gspo_ratio=1.0`.
 - This smoke batch had `base_reward=0.625077`, below the `0.88` imitation threshold, so `target_ratio=0.0` and `zero_weight_batch=1.0`; this is expected for a low-reward smoke batch and confirms that low-quality samples are not imitated.
 
+Live full-run status:
+- Run root: `/mnt/project/VLA-AD/outputs/stage3_grpo_rloo_selfimit_s16_lr1e4_b2acc4_8gpu_20260614T101257Z`.
+- Training host/GPU: local `training-vla-zt`, GPUs `0-7`.
+- Eval watchers: two `training-vla-zt2` watcher processes are active and waiting for epoch checkpoints.
+- Config keeps original-LR GRPO/Safe DiffGRPO defaults: `LR=1e-4`, `sample_time=16`, effective batch about `64`, BC `0.10 -> 0.05`, reference KL `0.02`, GSPO ratio on.
+- First logged train scalar at `step=49`:
+  - `reward=0.797566`, `base_reward=0.792112`, `safe_ratio=0.933594`, `mean_ep=0.773152`, `mean_ttc=0.902344`.
+  - `grpo_self_imitation_enabled=1.0`, `weight=0.005` during warmup.
+  - `grpo_self_imitation_candidate_ratio=0.429688`, `target_ratio=0.875000`, `target_reward_mean=0.976924`.
+- Interpretation: the self-imitation path is active and is selecting very high train-reward sampled trajectories rather than imitating low-quality rollouts. This is only an internal train diagnostic; promotion still requires exact navtest PDMS at `epoch0` near or above the original Stage3 early `0.88+` band.
+
 Expected diagnostics:
 - `grpo_self_imitation_target_ratio` should be non-zero but sparse; a zero ratio for many steps means the gate is too strict.
 - `grpo_self_imitation_target_reward_mean` should be above `0.88`.
