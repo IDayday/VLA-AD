@@ -88,6 +88,49 @@ def _record(token: str, valid_mask: np.ndarray, version: int = 2) -> dict:
     return payload
 
 
+def _test_grpo_buffer_dpo_targets_do_not_fallback_il(planner: ReCogDriveDiffusionPlanner) -> None:
+    cfg = OfflineRLConfig(grpo_buffer_preference_dpo_include_il=True)
+    b, k, h, d = 2, 2, 8, 3
+    gt_code = planner._source_code("gt")
+    il_code = planner._source_code("il")
+    progress_code = planner._source_code("progress_endpoint")
+    guidance = {
+        "target_trajs": torch.ones(b, 1, h, d),
+        "target_rewards": torch.tensor([[0.95], [0.96]], dtype=torch.float32),
+        "target_mask": torch.ones(b, 1, dtype=torch.bool),
+        "gt_reward": torch.tensor([0.80, 0.81], dtype=torch.float32),
+        "il_reward": torch.tensor([0.70, 0.71], dtype=torch.float32),
+        "selected_trajs": torch.arange(b * k * h * d, dtype=torch.float32).reshape(b, k, h, d),
+        "selected_real_mask": torch.ones(b, k, dtype=torch.bool),
+        "selected_source_code": torch.tensor(
+            [
+                [il_code, progress_code],
+                [progress_code, progress_code],
+            ],
+            dtype=torch.long,
+        ),
+    }
+    action_input = BatchFeature(
+        data={
+            "action": torch.zeros(b, h, d),
+            "his_traj": torch.zeros(b, 4, 3),
+            "status_feature": torch.zeros(b, 8),
+        }
+    )
+    out = planner._build_grpo_buffer_preference_dpo_targets(
+        torch.zeros(b, 1, 4),
+        action_input,
+        guidance,
+        cfg,
+    )
+    assert out["target_trajs"].shape == (b, 3, h, d)
+    assert torch.equal(out["source_code"][:, 1], torch.tensor([gt_code, gt_code]))
+    assert torch.equal(out["source_code"][:, 2], torch.tensor([il_code, il_code]))
+    assert bool(out["real_mask"][0, 2])
+    assert not bool(out["real_mask"][1, 2])
+    assert torch.equal(out["target_trajs"][0, 2], guidance["selected_trajs"][0, 0])
+
+
 def main() -> None:
     planner = _planner_stub()
     cfg = OfflineRLConfig(strict_reward_submetrics=True, elite_top_m=2, elite_min_candidates=2)
@@ -176,6 +219,8 @@ def main() -> None:
         loaded_batch = planner._load_awac_buffer_candidates(action_input, [v1_token], {}, cfg)
         assert loaded_batch["selected_valid_mask"].shape == (1, 2)
         assert bool(loaded_batch["selected_valid_mask"][0].any())
+
+    _test_grpo_buffer_dpo_targets_do_not_fallback_il(planner)
 
     print("recogdrive_awac_iql_smoke_ok")
 

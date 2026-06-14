@@ -338,6 +338,7 @@ Implementation:
   - IL/reference trajectory is loaded from the same buffer when present;
   - GT/IL rows are real loser rows but are not marked valid winners.
 - Implementation hardening on 2026-06-14 UTC: old-policy fallback for missing IL losers was removed from the GRPO buffer-DPO path. A sampled fallback IL trajectory would not have a reward recomputed for the exact sampled trajectory and would instead inherit `guidance["il_reward"]` from the buffer record, so it could create mismatched preference pairs. If a future buffer record lacks IL support, that IL loser row is simply not marked real; GT remains available as the behavior loser.
+- Smoke coverage added: `scripts/smoke_test_recogdrive_awac_iql.py` now checks a two-row GRPO buffer-DPO target batch where one scene has stored IL support and one scene does not. The missing-IL row must keep the IL column `real_mask=False`, proving the code does not synthesize an unmatched IL loser.
 - The existing diffusion-DPO loss is reused, including shared noise/timestep and reference-policy loss gap. Candidate trajectories are denoising targets only; `_prepare_dit_context(..., allow_target_tokens=False)` remains enforced through `_diffusion_per_target_loss_on_targets`.
 - Added training logs:
   - `grpo_buffer_preference_dpo_loss`
