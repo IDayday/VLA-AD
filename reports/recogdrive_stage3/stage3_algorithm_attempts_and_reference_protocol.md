@@ -821,20 +821,20 @@ Do not continue the existing AWAC/IQL line as-is. A future AWAC/IQL revisit must
 
 Until then, AWAC results are evidence of a policy-absorption failure in our implementation, not evidence that offline RL or preference learning is inherently unsuitable.
 
-## 2026-06-14 05:44 UTC Active Run Snapshot
+## 2026-06-14 06:09 UTC Active Run Snapshot
 
 No active run has produced a checkpoint yet, so there is no new PDMS result and no basis to claim a better method.
 
 Current diagnostics:
 - Local replay i2 `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z`:
   - Still running, no checkpoint.
-  - Latest logged step `659`: reward `0.51078`, base reward `0.61609`, safe ratio `0.72656`, NC `0.89844`, DAC `0.80859`, TTC `0.71094`, DDC `0.93750`.
-  - Replay mechanics remain active: `ppo_replay_valid_ratio=1.0`, `optimizer_steps=9`, ratio mean `0.96996`, clip fraction `0.15625`, approx KL `6.44e-4`.
+  - Latest logged step `799`: reward `0.59714`, base reward `0.67684`, safe ratio `0.78516`, NC `0.84180`, DAC `0.95703`, TTC `0.67578`, DDC `0.95898`.
+  - Replay mechanics remain active: `ppo_replay_valid_ratio=1.0`, `optimizer_steps=9`, ratio mean `0.96882`, clip fraction `0.04688`, approx KL `6.05e-4`.
   - Decision: keep running but do not promote i2 until epoch eval. Recent low reward/safety windows make it a watched diagnostic.
 - zt2 replay i1 `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z`:
   - Still running, no checkpoint.
-  - Latest logged step `579`: reward `0.80436`, base reward `0.80905`, safe ratio `0.92188`, NC `0.99219`, DAC `0.93750`, TTC `0.94141`, DDC `0.98828`.
-  - Conservative replay remains very stable: `ppo_replay_valid_ratio=1.0`, `optimizer_steps=5`, ratio mean `0.99852`, clip fraction `0.0`, approx KL `3.76e-6`.
+  - Latest logged step `759`: reward `0.87667`, base reward `0.85840`, safe ratio `0.94922`, NC `0.98828`, DAC `0.96094`, TTC `0.92188`, DDC `0.95508`.
+  - Conservative replay remains very stable: `ppo_replay_valid_ratio=1.0`, `optimizer_steps=5`, ratio mean `0.99749`, clip fraction `0.0`, approx KL `7.51e-6`.
   - Decision: keep running. This remains the cleaner replay-strength ablation.
 - zt3 original-LR GRPO control `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z`:
   - Still running, no checkpoint.
