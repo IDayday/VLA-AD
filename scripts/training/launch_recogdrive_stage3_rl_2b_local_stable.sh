@@ -100,6 +100,11 @@ fi
 if [[ -n "${GRPO_ADVANTAGE_CLIP_ABS:-}" ]]; then
   JOB_CMD+="GRPO_ADVANTAGE_CLIP_ABS=$(printf '%q' "${GRPO_ADVANTAGE_CLIP_ABS}") "
 fi
+for name in GRPO_HARD_GATE_TTC GRPO_HARD_GATE_DDC GRPO_TTC_SAFE_THRESHOLD GRPO_DDC_SAFE_THRESHOLD; do
+  if [[ -n "${!name:-}" ]]; then
+    JOB_CMD+="${name}=$(printf '%q' "${!name}") "
+  fi
+done
 if [[ -n "${GRPO_SCHEDULER_EPOCHS:-}" ]]; then
   JOB_CMD+="GRPO_SCHEDULER_EPOCHS=$(printf '%q' "${GRPO_SCHEDULER_EPOCHS}") "
 fi

@@ -124,6 +124,10 @@ class ReCogDriveAgent(AbstractAgent):
         grpo_behavior_policy_sample: bool = True,
         grpo_normalize_advantage_batch: bool = False,
         grpo_advantage_clip_abs: float = 0.0,
+        grpo_hard_gate_ttc: bool = False,
+        grpo_hard_gate_ddc: bool = False,
+        grpo_ttc_safe_threshold: float = 1.0,
+        grpo_ddc_safe_threshold: float = 1.0,
         grpo_ppo_replay_inner_epochs: int = 1,
         grpo_ppo_replay_minibatch_size: int = 0,
         grpo_ppo_replay_max_grad_norm: float = 1.0,
@@ -538,6 +542,10 @@ class ReCogDriveAgent(AbstractAgent):
         self.grpo_behavior_policy_sample = bool(grpo_behavior_policy_sample)
         self.grpo_normalize_advantage_batch = bool(grpo_normalize_advantage_batch)
         self.grpo_advantage_clip_abs = float(grpo_advantage_clip_abs)
+        self.grpo_hard_gate_ttc = bool(grpo_hard_gate_ttc)
+        self.grpo_hard_gate_ddc = bool(grpo_hard_gate_ddc)
+        self.grpo_ttc_safe_threshold = float(grpo_ttc_safe_threshold)
+        self.grpo_ddc_safe_threshold = float(grpo_ddc_safe_threshold)
         self.grpo_ppo_replay_inner_epochs = int(grpo_ppo_replay_inner_epochs)
         self.grpo_ppo_replay_minibatch_size = int(grpo_ppo_replay_minibatch_size)
         self.grpo_ppo_replay_max_grad_norm = float(grpo_ppo_replay_max_grad_norm)
@@ -568,6 +576,10 @@ class ReCogDriveAgent(AbstractAgent):
             raise ValueError("grpo_behavior_policy_sync_interval must be positive.")
         if self.grpo_advantage_clip_abs < 0.0:
             raise ValueError("grpo_advantage_clip_abs must be non-negative.")
+        if not (0.0 <= self.grpo_ttc_safe_threshold <= 1.0):
+            raise ValueError("grpo_ttc_safe_threshold must be in [0, 1].")
+        if not (0.0 <= self.grpo_ddc_safe_threshold <= 1.0):
+            raise ValueError("grpo_ddc_safe_threshold must be in [0, 1].")
         if self.grpo_ppo_replay_inner_epochs <= 0:
             raise ValueError("grpo_ppo_replay_inner_epochs must be positive.")
         if self.grpo_ppo_replay_minibatch_size < 0:
@@ -1403,6 +1415,10 @@ class ReCogDriveAgent(AbstractAgent):
             cfg.grpo_cfg.behavior_policy_sample = self.grpo_behavior_policy_sample
             cfg.grpo_cfg.normalize_advantage_batch = self.grpo_normalize_advantage_batch
             cfg.grpo_cfg.advantage_clip_abs = self.grpo_advantage_clip_abs
+            cfg.grpo_cfg.hard_gate_ttc = self.grpo_hard_gate_ttc
+            cfg.grpo_cfg.hard_gate_ddc = self.grpo_hard_gate_ddc
+            cfg.grpo_cfg.ttc_safe_threshold = self.grpo_ttc_safe_threshold
+            cfg.grpo_cfg.ddc_safe_threshold = self.grpo_ddc_safe_threshold
             cfg.grpo_cfg.ppo_replay_inner_epochs = self.grpo_ppo_replay_inner_epochs
             cfg.grpo_cfg.ppo_replay_minibatch_size = self.grpo_ppo_replay_minibatch_size
             cfg.grpo_cfg.ppo_replay_max_grad_norm = self.grpo_ppo_replay_max_grad_norm
