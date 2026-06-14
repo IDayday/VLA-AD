@@ -1638,6 +1638,51 @@ Actionable next algorithm directions after v3 early gate:
   - Add denoising-step clip schedule, target KL, advantage normalization, and diagnostics.
   - Validate on a small run with matched update steps before full training.
 
+### 2026-06-14 Cleanup: Remove Obsolete Stage3 Artifacts
+
+Reason:
+- `/mnt/project/VLA-AD/outputs` had grown to roughly `252G`.
+- The user explicitly allowed outdated failed results/logs to be deleted after recording the failed attempt in this summary.
+- The cleanup must not affect active training/evaluation, train-only elite buffers, or the strongest retained checkpoints.
+
+Kept:
+- Current active v3 run:
+  - `stage3_grpo_rloo_selfimit_mainhardgate_v3_bufferpath_step300_s16_lr1e4_b2acc4_8gpu_20260614T161426Z`
+- Active zt3 original-LR control:
+  - `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z`
+- Active keep-best buffer generation:
+  - `stage3_awac_keepbest_buffer_zt3_wait_20260614T142658Z`
+- Train-only AWAC elite buffer cache:
+  - `recogdrive_stage3_awac_elite_buffer_train_v2_stage3_awac_iql_dualhost_20260612T182947Z`
+- Safe DiffGRPO best checkpoint only:
+  - `stage3_safe_diffgrpo_ckpt_stream_eval_live_20260610T030355Z/checkpoint_archive/epoch_12-step_17290.ckpt`
+- Best cap05 checkpoint only:
+  - `stage3_grpo_rloo_selfimit_cap05_step300_s16_lr1e4_b2acc4_8gpu_20260614T111511Z/train/hydra/training_recogdrive_agent/2026.06.14.11.15.51/step_checkpoints/step-step=900.ckpt`
+
+Deleted or pruned:
+- Dry-run/smoke/debug/preflight/probe directories, including AWAC preflights, GRPO launcher dry-runs, replay smoke tests, DPPO smoke tests, and evaluation launcher dry-runs.
+- Failed or rejected runs whose conclusions are already recorded above:
+  - trajectory-level replay one-epoch runs and their empty navtest watcher directories;
+  - stopped `2e-4` buffer-guided GRPO variants;
+  - no-cap self-imitation run;
+  - stale queued self-imitation wait directories.
+- Repeated historical checkpoints:
+  - Safe DiffGRPO archive checkpoints except `epoch_12-step_17290.ckpt`;
+  - cap05 duplicate watcher archive checkpoints and train checkpoints except `step-step=900.ckpt`;
+  - old Safe DiffGRPO relaunch checkpoint directory;
+  - old lrfix/bcanneal train checkpoint directory;
+  - old lrfix/bcanneal eval checkpoint archive.
+
+Result:
+- Deleted `69` dry-run/smoke/debug/preflight/probe directories.
+- Reduced `/mnt/project/VLA-AD/outputs` from roughly `252G` to roughly `170G`.
+- Did not kill active local or remote tasks.
+
+Do not repeat:
+- Do not resume the deleted dry-run/preflight directories.
+- Do not rerun the rejected trajectory-level replay or simplified step-level replay path as a full experiment without a mature DPPO-style implementation.
+- Do not treat AWAC weighted regression failures as proof that buffer/preference learning is useless; use mature Diffusion-DPO or DPPO-style mechanics if revisiting buffer absorption.
+
 ## Update Template
 
 Append a new section for every algorithm run:
