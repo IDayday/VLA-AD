@@ -87,6 +87,12 @@ Second cleanup on 2026-06-14 UTC:
 - Preserved active or decision-critical artifacts: the current main hard-gate v3 GRPO run, the zt3 original-LR GRPO control, the zt3 keep-best train-only elite-buffer generator, the Safe DiffGRPO best-result directory, and the cap05 run summaries/checkpoints used for diagnosis.
 - Do not repeat the deleted attempts as default routes. Re-opening any of them requires a fresh planned-attempt entry with a reference audit, a mature implementation checklist, matched-step controls, and explicit NC/DAC/TTC/DDC diagnostics.
 
+Third cleanup on 2026-06-14 UTC:
+- User approved deleting obsolete failed-attempt results/logs after recording the conclusion in this ledger.
+- Deleted redundant cap05 navtest watcher artifacts, including `stage3_grpo_rloo_selfimit_cap05_step300_s16_lr1e4_b2acc4_8gpu_20260614T111511Z/manual_retry_step300_zt3_2gpu_20260614T130727Z`, `secondary_watch_on_rl_zt3_memfit_4gpu`, and `unique_lock_watch_on_vla_zt2_4gpu`. Their step300/600/900 PDMS and submetric conclusions are preserved in this document and in the compact top-level cap05 analysis files.
+- Preserved the cap05 training `step_checkpoints` directory because the zt3 keep-best train-only buffer generator currently references it as an automatic policy-checkpoint source.
+- Do not repeat the cap05 broad self-imitation configuration as a default route. Its failure mode is already diagnosed: it can increase EP/high-score bins, but it does not reliably improve mean PDMS because NC/TTC/DDC regressions offset the progress gain. Any future self-imitation run must include main-objective safety gating or a stronger preference objective, and must be judged at matched step/epoch against original Stage3 early PDMS.
+
 ## Navtest Diagnostic: Cap05 Self-Imitation Step300 To Step600
 
 Run:
