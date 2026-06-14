@@ -153,6 +153,18 @@ class AgentLightningModule(pl.LightningModule):
             "ppo_replay_loss_active",
             "ppo_replay_optimizer_steps",
             "ppo_replay_step_logprob_mode",
+            "ppo_replay_step_minibatch_mode",
+            "ppo_replay_transition_mode",
+            "ppo_replay_selected_transition_count",
+            "ppo_replay_selected_denoising_step_mean",
+            "ppo_replay_selected_denoising_step_min",
+            "ppo_replay_selected_denoising_step_max",
+            "ppo_replay_step_clip_mean",
+            "ppo_replay_step_clip_min",
+            "ppo_replay_step_clip_max",
+            "ppo_replay_logprob_clamped_frac",
+            "ppo_replay_new_logprob_clamped_frac",
+            "ppo_replay_old_logprob_clamped_frac",
             "bc_coeff",
             "reference_kl_loss",
             "reference_kl_coeff",
@@ -456,20 +468,36 @@ class AgentLightningDiT(pl.LightningModule):
 
         num_samples = int(rollout["num_samples"])
         minibatch_size = int(getattr(action_head, "ppo_replay_minibatch_size", 0))
-        if minibatch_size <= 0 or minibatch_size > num_samples:
-            minibatch_size = num_samples
         inner_epochs = max(1, int(getattr(action_head, "ppo_replay_inner_epochs", 1)))
         max_grad_norm = float(getattr(action_head, "ppo_replay_max_grad_norm", 0.0))
+        transition_replay = (
+            str(getattr(action_head, "ppo_replay_logprob_mode", "trajectory")) == "step"
+            and str(getattr(action_head, "ppo_replay_step_minibatch_mode", "trajectory_all_steps")) == "transition"
+        )
+        num_denoising_steps = int(rollout["num_denoising_steps"])
+        replay_items = num_samples * num_denoising_steps if transition_replay else num_samples
+        if minibatch_size <= 0 or minibatch_size > replay_items:
+            minibatch_size = replay_items
 
         last_metrics = None
         loss_accum = rollout["loss"].new_zeros(())
         update_count = 0
         for _ in range(inner_epochs):
-            perm = torch.randperm(num_samples, device=rollout["chains"].device)
-            for start in range(0, num_samples, minibatch_size):
-                indices = perm[start:start + minibatch_size]
+            perm = torch.randperm(replay_items, device=rollout["chains"].device)
+            for start in range(0, replay_items, minibatch_size):
+                replay_indices = perm[start:start + minibatch_size]
+                denoising_step_indices = None
+                if transition_replay:
+                    indices = torch.div(replay_indices, num_denoising_steps, rounding_mode="floor")
+                    denoising_step_indices = replay_indices.remainder(num_denoising_steps)
+                else:
+                    indices = replay_indices
                 opt.zero_grad(set_to_none=True)
-                metrics = action_head.compute_grpo_replay_loss(rollout, indices)
+                metrics = action_head.compute_grpo_replay_loss(
+                    rollout,
+                    indices,
+                    denoising_step_indices=denoising_step_indices,
+                )
                 loss = metrics["loss"]
                 self.manual_backward(loss)
                 if max_grad_norm > 0.0:

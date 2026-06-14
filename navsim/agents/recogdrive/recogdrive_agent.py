@@ -132,6 +132,12 @@ class ReCogDriveAgent(AbstractAgent):
         grpo_ppo_replay_sync_behavior_each_batch: bool = True,
         grpo_ppo_replay_bc_update: bool = True,
         grpo_ppo_replay_logprob_mode: Literal["trajectory", "step"] = "trajectory",
+        grpo_ppo_replay_step_minibatch_mode: Literal["trajectory_all_steps", "transition"] = "trajectory_all_steps",
+        grpo_ppo_replay_logprob_clamp_min: float = -5.0,
+        grpo_ppo_replay_logprob_clamp_max: float = 2.0,
+        grpo_ppo_replay_step_clip_schedule: Literal["constant", "dppo_exp"] = "constant",
+        grpo_ppo_replay_step_clip_base: float = 0.001,
+        grpo_ppo_replay_step_clip_rate: float = 3.0,
         metric_cache_path: Optional[str] = '', 
         reference_policy_checkpoint: Optional[str] = '', 
         offline_rl_enabled: bool = False,
@@ -525,6 +531,12 @@ class ReCogDriveAgent(AbstractAgent):
         self.grpo_ppo_replay_sync_behavior_each_batch = bool(grpo_ppo_replay_sync_behavior_each_batch)
         self.grpo_ppo_replay_bc_update = bool(grpo_ppo_replay_bc_update)
         self.grpo_ppo_replay_logprob_mode = str(grpo_ppo_replay_logprob_mode)
+        self.grpo_ppo_replay_step_minibatch_mode = str(grpo_ppo_replay_step_minibatch_mode)
+        self.grpo_ppo_replay_logprob_clamp_min = float(grpo_ppo_replay_logprob_clamp_min)
+        self.grpo_ppo_replay_logprob_clamp_max = float(grpo_ppo_replay_logprob_clamp_max)
+        self.grpo_ppo_replay_step_clip_schedule = str(grpo_ppo_replay_step_clip_schedule)
+        self.grpo_ppo_replay_step_clip_base = float(grpo_ppo_replay_step_clip_base)
+        self.grpo_ppo_replay_step_clip_rate = float(grpo_ppo_replay_step_clip_rate)
         if self.bc_coeff_start < 0.0 or self.bc_coeff_end < 0.0:
             raise ValueError("BC coefficients must be non-negative.")
         if self.bc_anneal_epochs <= 0:
@@ -551,6 +563,18 @@ class ReCogDriveAgent(AbstractAgent):
             raise ValueError("grpo_ppo_replay_min_abs_advantage must be non-negative.")
         if self.grpo_ppo_replay_logprob_mode not in {"trajectory", "step"}:
             raise ValueError("grpo_ppo_replay_logprob_mode must be either 'trajectory' or 'step'.")
+        if self.grpo_ppo_replay_step_minibatch_mode not in {"trajectory_all_steps", "transition"}:
+            raise ValueError(
+                "grpo_ppo_replay_step_minibatch_mode must be 'trajectory_all_steps' or 'transition'."
+            )
+        if self.grpo_ppo_replay_logprob_clamp_max < self.grpo_ppo_replay_logprob_clamp_min:
+            raise ValueError("grpo_ppo_replay_logprob_clamp_max must be >= grpo_ppo_replay_logprob_clamp_min.")
+        if self.grpo_ppo_replay_step_clip_schedule not in {"constant", "dppo_exp"}:
+            raise ValueError("grpo_ppo_replay_step_clip_schedule must be 'constant' or 'dppo_exp'.")
+        if self.grpo_ppo_replay_step_clip_base < 0.0:
+            raise ValueError("grpo_ppo_replay_step_clip_base must be non-negative.")
+        if self.grpo_ppo_replay_step_clip_rate < 0.0:
+            raise ValueError("grpo_ppo_replay_step_clip_rate must be non-negative.")
         self.backbone = None
         self.metric_cache_path = metric_cache_path
         self.reference_policy_checkpoint = reference_policy_checkpoint
@@ -1322,6 +1346,12 @@ class ReCogDriveAgent(AbstractAgent):
             cfg.grpo_cfg.ppo_replay_sync_behavior_each_batch = self.grpo_ppo_replay_sync_behavior_each_batch
             cfg.grpo_cfg.ppo_replay_bc_update = self.grpo_ppo_replay_bc_update
             cfg.grpo_cfg.ppo_replay_logprob_mode = self.grpo_ppo_replay_logprob_mode
+            cfg.grpo_cfg.ppo_replay_step_minibatch_mode = self.grpo_ppo_replay_step_minibatch_mode
+            cfg.grpo_cfg.ppo_replay_logprob_clamp_min = self.grpo_ppo_replay_logprob_clamp_min
+            cfg.grpo_cfg.ppo_replay_logprob_clamp_max = self.grpo_ppo_replay_logprob_clamp_max
+            cfg.grpo_cfg.ppo_replay_step_clip_schedule = self.grpo_ppo_replay_step_clip_schedule
+            cfg.grpo_cfg.ppo_replay_step_clip_base = self.grpo_ppo_replay_step_clip_base
+            cfg.grpo_cfg.ppo_replay_step_clip_rate = self.grpo_ppo_replay_step_clip_rate
             
         self.action_head = ReCogDriveDiffusionPlanner(cfg).to(device)
         if self.last_rd_adapter_checkpoint:

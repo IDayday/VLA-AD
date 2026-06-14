@@ -1075,6 +1075,57 @@ Implementation audit while evals are running:
 - Our `step` mode is therefore a meaningful improvement over trajectory-level replay, but it is still not a complete DPPO/RIPT-VLA-equivalent implementation.
 - Since `step600` remains below the `0.88+` early gate, the next implementation target should be mature DPPO-style transition sampling and step-dependent clipping before any new LR or buffer-tuning run.
 
+### 2026-06-14 Attempt: DPPO-Style Transition Replay Implementation
+
+Motivation:
+- The failed trajectory-level replay (`step300` PDMS `0.816440`) and simplified all-step replay (`step600` PDMS `0.824322`) both underperform the original Stage3 early `0.88+` PDMS band.
+- The failure pattern suggests the issue is not just LR or epoch count: diffusion policy improvement needs to optimize denoising transitions in a way closer to DDPO/DPPO/RIPT-VLA instead of treating the whole sampled trajectory as one coarse action.
+
+Reference sources:
+- DDPO optimizes diffusion sampling trajectories using PPO-style likelihood ratios over denoising steps.
+- DPPO samples replay minibatches over diffusion transitions, clips old/new logprobs, applies denoising-step discounting, and uses step-dependent PPO clipping.
+- RIPT-VLA applies RL post-training to VLA/action-generation policies with PPO-style rollout replay rather than plain behavior cloning onto discovered trajectories.
+
+Implementation completeness:
+- Added `GRPO_PPO_REPLAY_STEP_MINIBATCH_MODE=transition`, which changes the manual PPO replay minibatch unit from sampled trajectory rows to `(sample, denoising_step)` transitions when `GRPO_PPO_REPLAY_LOGPROB_MODE=step`.
+- Added configurable step logprob clamp:
+  - `GRPO_PPO_REPLAY_LOGPROB_CLAMP_MIN=-5.0`
+  - `GRPO_PPO_REPLAY_LOGPROB_CLAMP_MAX=2.0`
+- Added DPPO-style denoising-step clip schedule:
+  - `GRPO_PPO_REPLAY_STEP_CLIP_SCHEDULE=dppo_exp`
+  - `GRPO_PPO_REPLAY_STEP_CLIP_BASE=0.001`
+  - `GRPO_PPO_REPLAY_STEP_CLIP_RATE=3.0`
+- Kept backward compatibility:
+  - default `GRPO_PPO_REPLAY_STEP_MINIBATCH_MODE=trajectory_all_steps`
+  - default `GRPO_PPO_REPLAY_STEP_CLIP_SCHEDULE=constant`
+  - old trajectory and all-step replay behavior remain available.
+
+Known simplifications:
+- No critic/value head has been added.
+- Reference KL still computes on selected rollout rows rather than only selected denoising transitions.
+- This implementation is closer to DPPO than the previous replay, but still not a full DPPO reproduction.
+
+Smoke test:
+- Run root: `/mnt/project/VLA-AD/outputs/stage3_dppo_transition_smoke2_20260614T082252Z`.
+- Config: `MAX_SCENES=8`, `LIMIT_TRAIN_BATCHES=1`, `sample_time=2`, `BATCH_SIZE=1`, `LR=1e-4`, `REFERENCE_KL_COEFF=0`, transition minibatch size `4`.
+- Result: completed one training batch without NaN/OOM/autograd error.
+- Key TensorBoard scalars:
+  - `train/ppo_replay_step_logprob_mode_step = 1.0`
+  - `train/ppo_replay_step_minibatch_mode_step = 1.0`
+  - `train/ppo_replay_transition_mode_step = 1.0`
+  - `train/ppo_replay_optimizer_steps_step = 4.0`
+  - `train/ppo_replay_step_clip_min_step = 0.003868`
+  - `train/ppo_replay_step_clip_mean_step = 0.013330`
+  - `train/ppo_replay_step_clip_max_step = 0.022791`
+  - `train/ppo_replay_logprob_clamped_frac_step = 0.0`
+
+Next diagnostic:
+- Run a short 2-GPU transition replay diagnostic only after the smoke-tested code is committed.
+- Use the original Stage3 `epoch0-1 ~= 0.88+` as the short-run gate.
+- If the new transition replay still scores far below `0.88`, do not proceed to full training. Next step should be either:
+  - complete DPPO with critic/value or stronger KL/ratio controls, or
+  - revert to original GRPO baseline and add buffer-derived preference/self-imitation only after verifying the policy can absorb the signal.
+
 ## Update Template
 
 Append a new section for every algorithm run:
