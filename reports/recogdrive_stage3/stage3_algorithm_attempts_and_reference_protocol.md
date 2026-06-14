@@ -1797,6 +1797,37 @@ Do not repeat as default routes:
 - Do not restart stale two-expert Stage2 intermediate jobs; the current tracked two-expert work is the random-HMEF val6000/navtest run.
 - Do not rerun auxiliary-target-only safetygate self-imitation. If GRPO safety gating is tested, TTC/DDC must be in the main GRPO hard-safe mask and reported at matched checkpoints.
 
+### 2026-06-14 Eval Scheduling Update: relaxed checkpoint watchers
+
+Reason:
+- The v3 main hard-gate run had already produced `step-step_300.ckpt`, but both strict remote watchers were blocked by a conservative `GPU_MAX_MEM_USED_MB=2000` threshold.
+- zt2 GPUs had enough remaining 80GB-card memory for exact navtest eval while existing remote tasks continued. The user explicitly allowed using remote resources, with the constraint that existing remote tasks must not be killed.
+- The zt3 original-LR control also had an `epoch_0-step_1290.ckpt` waiting for eval. Its old watcher config pointed to `/mnt/project/VLA-AD_stage3_algo_clean_4f3eb73`, so a current-repo relaxed watcher was launched to avoid stale script risk.
+
+Actions:
+- Launched v3 relaxed zt2 watcher without killing any remote process:
+  - Host: `training-vla-zt2`
+  - Dir: `/mnt/project/VLA-AD/outputs/stage3_grpo_rloo_selfimit_mainhardgate_v3_bufferpath_step300_s16_lr1e4_b2acc4_8gpu_20260614T161426Z/relaxed_watch_on_vla_zt2_4gpu`
+  - PID: `2494061`
+  - GPU list: `4,5,6,7`
+  - `GPUS_PER_NODE=4`, `GPU_MAX_MEM_USED_MB=10000`, `GPU_MAX_UTIL=100`
+  - Eval script remains `run_recogdrive_stage3_safe_diffgrpo_eval_8gpu_exact_pool_pdm.sh`.
+  - PDM runner remains `exact_pool`; navtest full metric cache remains unchanged.
+  - Started evaluating `step-step_300` at `2026-06-14T17:37:17Z`.
+- Launched original-LR control relaxed zt3 watcher without killing any remote process:
+  - Host: `training-rl-zt3`
+  - Dir: `/mnt/project/VLA-AD/outputs/stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z/relaxed_watch_on_rl_zt3_2gpu`
+  - PID: `1043991`
+  - GPU list: `6,7`
+  - `GPUS_PER_NODE=2`, `GPU_MAX_MEM_USED_MB=20000`, `GPU_MAX_UTIL=100`
+  - Eval script uses the current repo path under `/mnt/project/VLA-AD_last_vla_dev`.
+  - Started evaluating `epoch_0-step_1290` at `2026-06-14T17:42:54Z`.
+
+Interpretation rules:
+- These relaxed watchers only change scheduling thresholds. They do not change inference, PDM scorer, metric cache, or submetric calculation.
+- Use their `checkpoint_eval_submetrics.tsv` rows as authoritative navtest results once completed.
+- If the strict original watchers later wake up, avoid duplicate conclusions by preferring the first completed exact full-navtest row and checking checkpoint ids.
+
 ## Update Template
 
 Append a new section for every algorithm run:
