@@ -1546,6 +1546,14 @@ Startup verification:
 - Local GPU utilization after entering training: roughly `56-95%`.
 - Dataset sizes: train `85109`, validation `18179`.
 - First checkpoint and navtest PDMS are pending.
+- First available training scalar at step `49`:
+  - `reward_step=0.645440`
+  - `base_reward_step=0.790706`
+  - `hard_safe_ratio_step=0.816406`
+  - `mean_ttc_step=0.902344`
+  - self-imitation target ratio `0.4375`
+  - self-imitation target reward mean `0.867652`
+- Diagnostic gap found: main GRPO logging had `mean_ttc` but not main `mean_ddc`/NC/DAC/TLC pass-ratio fields. A follow-up logging-only patch adds those fields for future runs; it does not affect this already-running v3 process.
 
 Expected early gate:
 - Stop if the first evaluated early checkpoint is below `0.875` PDMS.
@@ -1557,6 +1565,78 @@ Artifact cleanup:
   - `stage3_grpo_rloo_selfimit_safetygate_step300_s16_lr1e4_b2acc4_8gpu_20260614T145712Z`
   - `stage3_grpo_rloo_selfimit_mainhardgate_step300_s16_lr1e4_b2acc4_8gpu_20260614T160328Z`
   - `stage3_grpo_rloo_selfimit_mainhardgate_v2_step300_s16_lr1e4_b2acc4_8gpu_20260614T161141Z`
+
+### 2026-06-14 Reference audit: diffusion RL and preference training
+
+Purpose:
+- Do not keep iterating only by local hyperparameter tweaks.
+- Before another algorithmic change, compare our implementation against mature diffusion-policy and diffusion-preference implementations.
+
+References inspected:
+- DPPO: Diffusion Policy Policy Optimization.
+  - Paper/project/code: `https://diffusion-ppo.github.io/`, `https://github.com/irom-princeton/dppo`.
+  - Local audit clone: `/tmp/dppo_ref`.
+  - Key files inspected:
+    - `/tmp/dppo_ref/model/diffusion/diffusion_ppo.py`
+    - `/tmp/dppo_ref/agent/finetune/train_ppo_diffusion_agent.py`
+    - `/tmp/dppo_ref/README.md`
+- Diffusion-DPO.
+  - Paper/code: `https://arxiv.org/abs/2311.12908`, `https://github.com/SalesforceAIResearch/DiffusionDPO`.
+  - Local audit clone: `/tmp/DiffusionDPO_ref`.
+  - Key files inspected:
+    - `/tmp/DiffusionDPO_ref/train.py`
+    - `/tmp/DiffusionDPO_ref/README.md`
+- SimpleVLA-RL repository existence confirmed:
+  - `https://github.com/PRIME-RL/SimpleVLA-RL`
+  - A shallow clone was attempted but cancelled because the transfer was slow. Do a focused follow-up audit before implementing a VLA-specific PPO/DPO variant.
+
+DPPO implementation takeaways:
+- It treats each denoising transition as a PPO sample:
+  - stores `chains_prev`, `chains_next`, old logprobs, values, returns, and advantages.
+  - samples minibatches over `(environment step, denoising step)`.
+- It uses true PPO clipping against old logprobs:
+  - `ratio = exp(newlogprob - oldlogprob)`.
+  - `max(-A * ratio, -A * clipped_ratio)`.
+- It schedules clipping by denoising step:
+  - small base clip at early denoising steps, larger clip later.
+- It has advantage normalization and quantile clipping.
+- It supports KL diagnostics and early stop when approximate KL exceeds `target_kl`.
+- It uses reward scaling / GAE / critic in online environments.
+- It keeps a BC regularizer to the base policy as a trust region.
+
+Diffusion-DPO implementation takeaways:
+- Preference learning is not plain regression to the preferred sample.
+- The chosen/rejected pair shares the same diffusion timestep and noise.
+- Loss is based on the difference between current-model diffusion MSE gap and reference-model diffusion MSE gap:
+  - `model_diff = loss_w - loss_l`
+  - `ref_diff = ref_loss_w - ref_loss_l`
+  - `loss = -logsigmoid(-0.5 * beta * (model_diff - ref_diff))`
+- This is important for our buffer setting: if we use high-PDMS buffer trajectories for preference learning, the preferred and rejected trajectories should be compared under matched diffusion noise/timestep and against the IL/reference policy, not just distilled with MSE.
+
+Gap versus current ReCogDrive implementation:
+- Current v3 run is a trajectory-level GRPO/GSPO variant with online PDM rewards and hard safety masks.
+- We have GSPO ratio, reference KL, BC anneal, safety-shaped reward, and self-imitation.
+- We do not yet have a full DPPO-style transition replay path where every denoising transition from sampled chains becomes a PPO sample with old logprob, denoising-step clip schedule, KL early stop, and multiple minibatch epochs.
+- The earlier DPPO-style smoke in this repo was intentionally simplified and did not clear the early Stage3 gate; it should not be treated as a decisive test of mature DPPO.
+- The earlier AWAC/IQL path was also not a decisive test of preference-style learning, because it mainly used weighted diffusion regression. Diffusion-DPO suggests a more appropriate pairwise diffusion objective for buffer knowledge absorption.
+
+Actionable next algorithm directions after v3 early gate:
+- If v3 clears early PDMS and improves safety submetrics:
+  - Continue to step600/900 and compare against cap05.
+  - Consider adding a mature DPPO transition replay branch only after confirming the hard safety gate helps.
+- If v3 fails early PDMS because reward drops too much:
+  - Try a less restrictive main mask or soft penalty schedule for TTC/DDC, but keep self-imitation target gates strict.
+  - Do not remove DDC/TTC diagnostics.
+- If buffer knowledge still needs absorption:
+  - Implement a diffusion-DPO style pairwise loss over high-PDMS buffer candidate vs GT/IL/rejected candidate.
+  - Pair samples must share the same diffusion timestep and noise.
+  - Use IL/reference model losses as the DPO reference term.
+  - Keep BC/reference KL small but present.
+- If adopting DPPO:
+  - Implement old-logprob storage for denoising transitions.
+  - Minibatch over `(scene, sample, denoising step)`, not only final trajectory.
+  - Add denoising-step clip schedule, target KL, advantage normalization, and diagnostics.
+  - Validate on a small run with matched update steps before full training.
 
 ## Update Template
 

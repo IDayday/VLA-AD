@@ -7512,8 +7512,27 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "safe_ratio": hard_safe_ratio,
             "hard_safe_ratio": hard_safe_ratio,
             "mean_ep": reward_aux["ego_progress"].mean(),
+            "mean_nc": reward_aux["no_at_fault_collisions"].mean(),
+            "mean_dac": reward_aux["drivable_area_compliance"].mean(),
             "mean_ttc": reward_aux["time_to_collision_within_bound"].mean(),
             "mean_comfort": reward_aux["history_comfort"].mean(),
+            "mean_ddc": reward_aux["driving_direction_compliance"].mean(),
+            "mean_tlc": reward_aux["traffic_light_compliance"].mean(),
+            "nc_pass_ratio": (
+                reward_aux["no_at_fault_collisions"] >= float(self.nc_safe_threshold)
+            ).detach().float().mean().to(dtype=total_loss.dtype),
+            "dac_pass_ratio": (
+                reward_aux["drivable_area_compliance"] >= float(self.dac_safe_threshold)
+            ).detach().float().mean().to(dtype=total_loss.dtype),
+            "ttc_pass_ratio": (
+                reward_aux["time_to_collision_within_bound"] >= float(self.ttc_safe_threshold)
+            ).detach().float().mean().to(dtype=total_loss.dtype),
+            "ddc_pass_ratio": (
+                reward_aux["driving_direction_compliance"] >= float(self.ddc_safe_threshold)
+            ).detach().float().mean().to(dtype=total_loss.dtype),
+            "tlc_pass_ratio": (
+                reward_aux["traffic_light_compliance"] >= float(self.tlc_safe_threshold)
+            ).detach().float().mean().to(dtype=total_loss.dtype),
             "diversity_bonus": diversity_bonus.mean(),
             "safe_diversity": safe_diversity,
             "group_reward_std": advantage_aux["reward_std"].mean(),
