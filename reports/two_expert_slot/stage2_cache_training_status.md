@@ -269,3 +269,17 @@ Validation:
 Baseline:
 
 - A0 official-aligned Stage2 full navtest PDMS: `0.864891`
+
+## Cleanup Note 2026-06-14
+
+The following stale intermediate output roots were deleted to free space after
+their status/results had been recorded in this report family:
+
+- `/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_full_dit_sft_A0init_clonefix_20260613T133206Z`
+- `/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_full_dit_sft_A0init_indexfix_20260613T195319Z`
+- `/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_full_dit_sft_A0init_indexfix_4gpu_eqbs128_20260613T205724Z`
+- `/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_full_dit_sft_A0init_collatefix_4gpu_eqbs128_20260613T210233Z`
+
+Do not restart these exact stale jobs. Current two-expert work should use the
+newer tracked random-HMEF val6000/navtest run and the retained A0 checkpoint
+under `/mnt/project/VLA-AD/outputs/a0_stage2_repro_20260531_003029`.

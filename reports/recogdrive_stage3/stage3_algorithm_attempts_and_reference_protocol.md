@@ -59,8 +59,8 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 | `stage3_grpo_dppo_transition_s16_i1_lr1e4_zt2_2gpu_20260614T083005Z` | failed promotion gate | DPPO-style transition replay improved from step300 to epoch0 but stayed far below the original Stage3 `epoch0-1 ~= 0.88+` early gate: step300 `0.744740`, step600 `0.801195`, epoch0-step800 `0.831015`. Do not continue this transition replay implementation without a method-level redesign. |
 | `stage3_grpo_rloo_selfimit_s16_lr1e4_b2acc4_8gpu_20260614T101257Z` | stopped on 2026-06-14 | This no-cap run was launched before the self-imitation scene-cap patch and had `checkpoint.every_n_train_steps=0`; given the original Stage3 `epoch0-1 ~= 0.88+` early gate, continuing it would delay a meaningful PDMS decision. |
 | `stage3_grpo_rloo_selfimit_cap05_step300_s16_lr1e4_b2acc4_8gpu_20260614T111511Z` | stopped after `step-step_900` checkpoint | Original LR `1e-4`, sample_time `16`, scene cap `0.5`, and step checkpoints every `300` train steps. `step-step_300` exact navtest PDMS is `0.885557`, passing the original Stage3 early `0.88+` gate but not yet a final success. `step-step_600` is `0.885212`: EP improved, but NC/TTC/DDC declined. `step-step_900` later reached `0.887107` by recovering NC/TTC/DDC while EP fell back. This is still far below original 10-epoch `0.9055` / Safe DiffGRPO `0.906184`, so the replacement safety-gated run remains justified. |
-| `stage3_grpo_rloo_selfimit_safetygate_step300_s16_lr1e4_b2acc4_8gpu_20260614T145712Z` | running/watch | Replacement for the cap05 run after navtest pairwise diagnosis. Same LR/sample_time/effective batch/BC/ref-KL/checkpoint cadence, but self-imitation targets now require NC `1.0`, DAC `1.0`, TTC `0.95`, and DDC `0.99`. Remote eval watchers are attached with strict free-GPU waits so they do not preempt existing zt2/zt3 tasks. |
-| GRPO main safety hard-gate overrides | exposed, next-run only | Cap05 navtest diagnosis showed the main failure is an EP vs TTC/DDC/NC tradeoff. Code inspection showed the main GRPO hard-safe mask still had `hard_gate_ttc=false` and `hard_gate_ddc=false`; the current safetygate run only filters auxiliary self-imitation targets. Launchers now expose `GRPO_HARD_GATE_TTC`, `GRPO_HARD_GATE_DDC`, `GRPO_TTC_SAFE_THRESHOLD`, and `GRPO_DDC_SAFE_THRESHOLD`. The next GRPO run should enable TTC `0.95` and DDC `0.99` in the main advantage mask, then judge by matched step300/600 navtest submetrics. |
+| `stage3_grpo_rloo_selfimit_safetygate_step300_s16_lr1e4_b2acc4_8gpu_20260614T145712Z` | stopped/deleted | This auxiliary-target-only safetygate run was stopped before checkpoint because the main GRPO update still allowed TTC/DDC-regressing positive-advantage samples. Do not repeat this exact configuration. |
+| `stage3_grpo_rloo_selfimit_mainhardgate_v3_bufferpath_step300_s16_lr1e4_b2acc4_8gpu_20260614T161426Z` | running/watch | Current main GRPO run. It enables TTC `0.95` and DDC `0.99` in the main hard-safe mask, keeps strict self-imitation target gates, and uses the train-only elite buffer path only to satisfy the offline-config contract while buffer guidance/distill/reward bonus stay disabled. Judge by matched step300/600 navtest submetrics. |
 | Stage3 exact eval infrastructure | patched | Distributed eval timeout is now configurable and defaults to `3600s` for async/exact PDM runners and watcher launchers. This only changes process-group wait tolerance around final result gathering; it does not change trajectory inference, PDM scoring, or submetric calculation. |
 | Train-only elite buffer exploration | keep running in background | Continue improving the navtrain-only oracle buffer, but write it in keep-best merge mode so new exploration cannot overwrite a stronger existing record. Use navtest only for checkpoint diagnosis, never for buffer generation or training reward. |
 
@@ -76,7 +76,7 @@ Cleanup on 2026-06-14 UTC:
 - Freed about `300+ GB` under `/mnt/project/VLA-AD/outputs`, increasing available `/mnt/project` space from about `93 GB` to over `400 GB`.
 - Removed obsolete AWAC/IQL outputs whose results are already listed in the completed AWAC ledger: `stage3_awac_iql_dualhost_20260612T182947Z`, `stage3_awac_iql_bc015_20260613T0648Z`, `stage3_awac_iql_pref_rank_ttc_20260613T112709Z`, `stage3_awac_warmup_absddc_blend025_lownoise_online_20260613T183113Z`, `stage3_awac_lownoise_dpo3gpu_20260613T163215Z`, `stage3_awac_blend035_lownoise_dpo8gpu_20260613T164458Z`, `stage3_awac_gapdpo_hybrid4gpu_v2_20260613T155350Z`, and `stage3_awac_gapdpo_lowvalid_2gpu_20260613T155703Z`.
 - Removed obsolete DPPO/replay/high-LR diagnostic outputs whose conclusions are already recorded: `stage3_grpo_dppo_transition_s16_i1_lr1e4_zt2_2gpu_20260614T083005Z`, `stage3_dppo_transition_smoke2_20260614T082252Z`, `stage3_grpo_replay_stepmode_stepckpt_s16_i1_lr1e4_zt3_2gpu_20260614T0727Z`, `stage3_grpo_replay_stepckpt_s16_i1_lr1e4_zt3_2gpu_20260614T0610Z`, `stage3_grpo_replay_diag_s4_i2_lr1e4_4gpu_20260614T042519Z`, `stage3_grpo_replay_diag_s16_i2_lr1e4_8gpu_20260614T043345Z`, `stage3_grpo_replay_stepmode_smoke_1gpu_20260614T0530`, `stage3_grpo_replay_smoke_1gpu_nullclip_20260614T041722Z`, `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_diag_zt2_4gpu_20260614T024536Z`, `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_log1_diag_zt2_4gpu_20260614T0300Z`, `stage3_grpo_rloo_selfimit_smoke_20260614T_check`, and `stage3_grpo_refkl_s16_lr2e4_b4acc2_chunk32_fast_8gpu_20260613T213145Z`.
-- Preserved the currently running safetygate run, the zt3 original-LR GRPO control, the zt3 keep-best train-only buffer builder, and the cap05 summaries/checkpoints referenced by the keep-best buffer process.
+- Preserved the then-current safetygate/main-GRPO successor chain, the zt3 original-LR GRPO control, the zt3 keep-best train-only buffer builder, and the cap05 summaries/checkpoints referenced by the keep-best buffer process.
 
 Second cleanup on 2026-06-14 UTC:
 - User approved deleting obsolete results/logs once the failed attempt is recorded here.
@@ -157,7 +157,8 @@ Artifacts:
 | `stage3_grpo_refkl_s16_lr2e4_b4acc2_chunk32_fast_8gpu_20260613T213145Z` | stopped/evaluated | LR `2e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, effective batch about `64` | `0.872059` at `epoch_0-step_1330` | Exact 8-shard navtest eval: NC `0.9750`, DAC `0.9619`, TTC `0.9371`, EP `0.8159`, comfort `1.0000`, DDC `0.9459`. This is well below `0.9055/0.906184`, so the higher LR was harmful or at least not sufficient. |
 | `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z` | running | LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, effective batch about `66` | pending | zt3 original-LR control. |
 | `stage3_grpo_rloo_selfimit_cap05_step300_s16_lr1e4_b2acc4_8gpu_20260614T111511Z` | stopped | LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, GSPO ratio, RLOO self-imitation, max target scene ratio `0.5`, step ckpt every `300` | `0.887107` at `step-step_900` | Step300 passed the early gate (`0.885557`). Step600 was flat and traded EP for safety loss. Step900 recovered NC/TTC/DDC and reached `0.887107`, but EP fell to `0.823058`; this is still `-0.018393` below original 10-epoch `0.9055`. |
-| `stage3_grpo_rloo_selfimit_safetygate_step300_s16_lr1e4_b2acc4_8gpu_20260614T145712Z` | running | Same as cap05, with explicit self-imitation target gates NC `1.0`, DAC `1.0`, TTC `0.95`, DDC `0.99` | pending | This isolates the algorithmic change suggested by navtest pairwise analysis. Early success means matching or exceeding the cap05 step300/600 band while preventing TTC/DDC/NC decay. |
+| `stage3_grpo_rloo_selfimit_safetygate_step300_s16_lr1e4_b2acc4_8gpu_20260614T145712Z` | stopped/deleted | Same as cap05, with explicit self-imitation target gates NC `1.0`, DAC `1.0`, TTC `0.95`, DDC `0.99`, but no main TTC/DDC hard gate | none | Stopped before checkpoint. This was lower-information than the main hard-gate test because it only filtered auxiliary targets. |
+| `stage3_grpo_rloo_selfimit_mainhardgate_v3_bufferpath_step300_s16_lr1e4_b2acc4_8gpu_20260614T161426Z` | running | Same LR/sample/effective batch as cap05, with main TTC `0.95` and DDC `0.99` hard gates plus strict self-imitation targets | pending | Current live GRPO improvement candidate. Continue only if matched early checkpoints clear the original Stage3 early gate and improve the cap05 safety tradeoff. |
 | `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_zt2_4gpu_20260614T012106Z` | stopped before eval | LR `2e-4`, GSPO ratio, elite-buffer reward bonus/distill/self-imitation | invalid run | Stopped because key diagnostics were not logged, so the run could not validate buffer absorption. |
 | `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_diagfix_zt2_4gpu_20260614T020706Z` | stopped before eval | LR `2e-4`, GSPO ratio, elite-buffer reward bonus/distill/self-imitation | invalid run | Stopped because it was launched before the full PPO/advantage diagnostics patch. |
 | `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_diag_zt2_4gpu_20260614T023758Z` | failed before training | LR `1e-4`, GSPO ratio, batch advantage normalize, fixed advantage clip `3.0`, no buffer | none | Failed at Hydra config parsing because `grpo_normalize_advantage_batch` was missing from `recogdrive_agent.yaml`. |
@@ -1747,6 +1748,54 @@ Do not repeat:
 - Do not resume the deleted dry-run/preflight directories.
 - Do not rerun the rejected trajectory-level replay or simplified step-level replay path as a full experiment without a mature DPPO-style implementation.
 - Do not treat AWAC weighted regression failures as proof that buffer/preference learning is useless; use mature Diffusion-DPO or DPPO-style mechanics if revisiting buffer absorption.
+
+### 2026-06-14 Cleanup: Remove Remaining Obsolete Logs And Probe Caches
+
+Reason:
+- The user approved deleting outdated results/logs after the failed attempts are recorded in this ledger.
+- The cleanup target is stale artifacts that can confuse future experiment selection or waste space, not active training/evaluation state.
+
+Deleted on 2026-06-14 UTC:
+- Stale Stage3 metric-cache launcher/watcher wrappers:
+  - `stage3_rl_after_metric_cache_watch_20260608T145806Z`
+  - `metric_cache_navtrain_full_20260608T145628Z`
+  - `metric_cache_navtrain_full_safe_diffgrpo_20260609T175818Z`
+- Obsolete non-best Safe DiffGRPO / lrfix outputs:
+  - `stage3_rl_2b_safe_diffgrpo_online_20260609T175818Z`
+  - `stage3_safe_diffgrpo_navtest_eval_after_relaunch_20260609T1944Z`
+  - `stage3_rl_2b_safe_diffgrpo_lrfix_g16_20260612T082041Z`
+  - `stage3_safe_diffgrpo_lrfix_g16_ckpt_stream_eval_20260612T082041Z`
+  - `stage3_rl_2b_safe_diffgrpo_lrfix_g16_bcanneal_20260612T082634Z`
+  - `stage3_safe_diffgrpo_lrfix_g16_bcanneal_ckpt_stream_eval_20260612T082634Z`
+  - `stage3_rl_2b_safe_diffgrpo_lrfix_g16_bcanneal_b4a2_20260612T084307Z`
+  - `stage3_safe_diffgrpo_lrfix_g16_bcanneal_b4a2_ckpt_stream_eval_20260612T084307Z`
+- Stale metric-cache smoke/probe artifacts:
+  - `fast_metric_cache_navtest_mirror_20260613T011857Z`
+  - `metric_cache_navtest_first1024`
+  - `metric_cache_navtest_smoke16`
+  - `metric_cache_train_smoke_stage3_rl`
+- Early AWAC elite-buffer probe caches, superseded by the full train-only v2 elite buffer:
+  - `stage3_awac_iql_builder_b32_probe_20260612T191838Z_elite_buffer`
+  - `stage3_awac_iql_builder_b4_probe_20260612T184659Z_elite_buffer`
+  - `stage3_awac_iql_builder_b4_probe_fg_20260612T184819Z_elite_buffer`
+  - `stage3_awac_iql_builder_b8_probe_fg_20260612T185232Z_elite_buffer`
+- Stale two-expert Stage2 intermediate output dirs whose conclusions are already in `reports/two_expert_slot/` and which have no live pid:
+  - `two_expert_slot_stage2_full_dit_sft_A0init_clonefix_20260613T133206Z`
+  - `two_expert_slot_stage2_full_dit_sft_A0init_indexfix_20260613T195319Z`
+  - `two_expert_slot_stage2_full_dit_sft_A0init_indexfix_4gpu_eqbs128_20260613T205724Z`
+  - `two_expert_slot_stage2_full_dit_sft_A0init_collatefix_4gpu_eqbs128_20260613T210233Z`
+
+Explicitly kept:
+- `a0_stage2_repro_20260531_003029`, because highcap/two-expert scripts still use its A0 checkpoint path as a default.
+- `recogdrive_stage2_residual_anchor_base2b_20260610T034055Z_setsid_freezecot`, because residual-anchor scripts still reference it by default; delete only after updating or retiring those scripts.
+- `stage3_grpo_rloo_selfimit_cap05_step300_s16_lr1e4_b2acc4_8gpu_20260614T111511Z`, because the zt3 keep-best train-only buffer generator still points at its `step_checkpoints` directory.
+- Current active v3 run, zt3 original-LR control, active keep-best buffer generator, full train-only elite buffer, and Safe DiffGRPO best checkpoint.
+
+Do not repeat as default routes:
+- Do not relaunch old lrfix/bcanneal Safe DiffGRPO outputs. The retained baseline is the already-evaluated Safe DiffGRPO best checkpoint, not every intermediate rerun.
+- Do not use the tiny AWAC probe buffers as training inputs. Use the full train-only v2 elite buffer or rebuild a new validated full buffer.
+- Do not restart stale two-expert Stage2 intermediate jobs; the current tracked two-expert work is the random-HMEF val6000/navtest run.
+- Do not rerun auxiliary-target-only safetygate self-imitation. If GRPO safety gating is tested, TTC/DDC must be in the main GRPO hard-safe mask and reported at matched checkpoints.
 
 ## Update Template
 
