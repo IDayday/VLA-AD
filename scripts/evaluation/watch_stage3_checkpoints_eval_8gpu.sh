@@ -323,6 +323,11 @@ PY
       --checkpoint-id "${id}" \
       --summary-tsv "${SUBMETRIC_SUMMARY_TSV}" \
       >> "${eval_dir}/eval.log" 2>&1 || log "submetric summary failed id=${id}; see ${eval_dir}/eval.log"
+    "${PYTHON_BIN}" "${REPO_ROOT}/scripts/evaluation/analyze_recogdrive_stage3_navtest_pdms.py" \
+      --run-root "${TRAIN_OUT_ROOT}" \
+      --output-tsv "${TRAIN_OUT_ROOT}/navtest_pdms_analysis.tsv" \
+      --output-md "${TRAIN_OUT_ROOT}/navtest_pdms_analysis.md" \
+      >> "${eval_dir}/eval.log" 2>&1 || log "navtest PDMS analysis refresh failed id=${id}; see ${eval_dir}/eval.log"
     touch "${STATE_DIR}/${id}.done"
     record_summary "${id}" "done" "${checkpoint}" "${archive}" "${eval_dir}" "${rc}"
     log "eval done id=${id}"

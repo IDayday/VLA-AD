@@ -298,6 +298,8 @@ Implementation:
 Navtest analysis rule:
 - Added `scripts/evaluation/analyze_recogdrive_stage3_navtest_pdms.py`.
 - It reads existing `checkpoint_eval_submetrics.tsv` files and reports best/latest checkpoint, step deltas, submetric deltas, and deltas to `0.88`, `0.9055`, and `0.906184`.
+- `scripts/evaluation/watch_stage3_checkpoints_eval_8gpu.sh` now refreshes `navtest_pdms_analysis.md` and `navtest_pdms_analysis.tsv` under the run root after each successful checkpoint evaluation.
+- `AgentLightningModule` now logs the GRPO self-imitation safety-candidate pass ratios and selected-target NC/DAC/TTC/EP/comfort/DDC/TLC means when the planner returns them. This is required to connect navtest regressions back to train-time target selection.
 - This is diagnostic only. Navtest summaries must not be used to choose buffer records or train rewards.
 
 Promotion / failure criteria:
