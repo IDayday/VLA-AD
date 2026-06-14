@@ -1068,6 +1068,10 @@ Launch status:
   - PDMS `0.824322`, NC `0.975943`, DAC `0.913330`, TTC `0.927748`, EP `0.770388`, comfort `0.999753`, DDC `0.979980`, valid rows `12138`.
   - This is still far below the original Stage3 `epoch0-1` sanity gate of `0.88+`, so the current simplified step-level replay implementation fails the promotion gate.
   - zt2 then started the duplicate `epoch_0-step_600` eval automatically; it was stopped intentionally because the same update point was already evaluated.
+- Local `step-step_300` exact navtest completed at `2026-06-14T08:27:05Z`, return code `0`.
+  - PDMS `0.787823`, NC `0.958436`, DAC `0.900066`, TTC `0.893557`, EP `0.742667`, comfort `1.000000`, DDC `0.947067`, valid rows `12138`.
+  - This is worse than both the failed trajectory-level replay and the later all-step `step600` checkpoint, so the simplified step-level replay is rejected.
+  - The local watcher then started a duplicate `step-step_600` eval; it was stopped because zt2 had already completed `step-step_600`.
 
 Implementation audit while evals are running:
 - DPPO official PPO diffusion code clamps both old/new logprobs, normalizes/clips advantages, discounts by denoising step, and samples PPO minibatches across `(environment step, denoising step)` rather than only across trajectory rows.
@@ -1125,6 +1129,26 @@ Next diagnostic:
 - If the new transition replay still scores far below `0.88`, do not proceed to full training. Next step should be either:
   - complete DPPO with critic/value or stronger KL/ratio controls, or
   - revert to original GRPO baseline and add buffer-derived preference/self-imitation only after verifying the policy can absorb the signal.
+
+Launch status:
+- Code committed and pushed as `06c79ad Add DPPO-style transition replay for Stage3 GRPO`.
+- Run name: `stage3_grpo_dppo_transition_s16_i1_lr1e4_zt2_2gpu_20260614T083005Z`.
+- Training host/GPU: `training-vla-zt2`, GPUs `0,1`.
+- Eval watcher: local 8-GPU watcher at `/mnt/project/VLA-AD/outputs/stage3_grpo_dppo_transition_s16_i1_lr1e4_zt2_2gpu_20260614T083005Z_navtest_eval`.
+- Config:
+  - `MAX_EPOCHS=1`, `LIMIT_TRAIN_BATCHES=200`
+  - `LR=1e-4`, `sample_time=16`
+  - `GRPO_PPO_REPLAY_LOGPROB_MODE=step`
+  - `GRPO_PPO_REPLAY_STEP_MINIBATCH_MODE=transition`
+  - `GRPO_PPO_REPLAY_MINIBATCH_SIZE=32`
+  - `GRPO_PPO_REPLAY_STEP_CLIP_SCHEDULE=dppo_exp`
+  - `REFERENCE_KL_COEFF=0.02`, `REFERENCE_KL_CHUNK_SIZE=16`
+  - `GRPO_USE_GSPO_RATIO=true`
+  - `GRPO_NORMALIZE_ADVANTAGE_BATCH=true`
+  - `GRPO_ADVANTAGE_CLIP_ABS=3.0`
+  - step checkpoints every `300` train steps.
+- Fairness note:
+  - `num_denoising_steps` is `4` in the smoke run. With `sample_time=16` and transition minibatch `32`, PPO replay should perform about two transition minibatches plus one BC update per train batch, matching the previous simplified step replay's optimizer-step cadence more closely than a smaller transition minibatch would.
 
 ## Update Template
 
