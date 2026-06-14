@@ -58,7 +58,7 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 | `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z` | running | Controlled zt2 ablation. Same as i2 but `ppo_replay_inner_epochs=1`; currently cleaner ratio/clip/KL behavior and no hard stop signal. |
 | `stage3_grpo_dppo_transition_s16_i1_lr1e4_zt2_2gpu_20260614T083005Z` | failed promotion gate | DPPO-style transition replay improved from step300 to epoch0 but stayed far below the original Stage3 `epoch0-1 ~= 0.88+` early gate: step300 `0.744740`, step600 `0.801195`, epoch0-step800 `0.831015`. Do not continue this transition replay implementation without a method-level redesign. |
 | `stage3_grpo_rloo_selfimit_s16_lr1e4_b2acc4_8gpu_20260614T101257Z` | stopped on 2026-06-14 | This no-cap run was launched before the self-imitation scene-cap patch and had `checkpoint.every_n_train_steps=0`; given the original Stage3 `epoch0-1 ~= 0.88+` early gate, continuing it would delay a meaningful PDMS decision. |
-| `stage3_grpo_rloo_selfimit_cap05_step300_s16_lr1e4_b2acc4_8gpu_20260614T111511Z` | stopped after `step-step_900` checkpoint | Original LR `1e-4`, sample_time `16`, scene cap `0.5`, and step checkpoints every `300` train steps. `step-step_300` exact navtest PDMS is `0.885557`, passing the original Stage3 early `0.88+` gate but not yet a final success. `step-step_600` is `0.885212`: EP improved, but NC/TTC/DDC declined. Paired navtest analysis confirmed the mean was held back by new safety failures, so local training was stopped and replaced by safety-filtered self-imitation. Remote `step-step_900` eval tasks were left running. |
+| `stage3_grpo_rloo_selfimit_cap05_step300_s16_lr1e4_b2acc4_8gpu_20260614T111511Z` | stopped after `step-step_900` checkpoint | Original LR `1e-4`, sample_time `16`, scene cap `0.5`, and step checkpoints every `300` train steps. `step-step_300` exact navtest PDMS is `0.885557`, passing the original Stage3 early `0.88+` gate but not yet a final success. `step-step_600` is `0.885212`: EP improved, but NC/TTC/DDC declined. `step-step_900` later reached `0.887107` by recovering NC/TTC/DDC while EP fell back. This is still far below original 10-epoch `0.9055` / Safe DiffGRPO `0.906184`, so the replacement safety-gated run remains justified. |
 | `stage3_grpo_rloo_selfimit_safetygate_step300_s16_lr1e4_b2acc4_8gpu_20260614T145712Z` | running/watch | Replacement for the cap05 run after navtest pairwise diagnosis. Same LR/sample_time/effective batch/BC/ref-KL/checkpoint cadence, but self-imitation targets now require NC `1.0`, DAC `1.0`, TTC `0.95`, and DDC `0.99`. Remote eval watchers are attached with strict free-GPU waits so they do not preempt existing zt2/zt3 tasks. |
 | Stage3 exact eval infrastructure | patched | Distributed eval timeout is now configurable and defaults to `3600s` for async/exact PDM runners and watcher launchers. This only changes process-group wait tolerance around final result gathering; it does not change trajectory inference, PDM scoring, or submetric calculation. |
 | Train-only elite buffer exploration | keep running in background | Continue improving the navtrain-only oracle buffer, but write it in keep-best merge mode so new exploration cannot overwrite a stronger existing record. Use navtest only for checkpoint diagnosis, never for buffer generation or training reward. |
@@ -77,7 +77,8 @@ Grouped checkpoint summary:
 | Checkpoint | Evals | PDMS | NC | DAC | TTC | EP | Comfort | DDC |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|
 | `step-step_300` | 2 | `0.885432` | `0.981237` | `0.969435` | `0.946326` | `0.826787` | `1.000000` | `0.969023` |
-| `step-step_600` | 2 | `0.885434` | `0.975923` | `0.968858` | `0.939899` | `0.835806` | `1.000000` | `0.959075` |
+| `step-step_600` | 3 | `0.885497` | `0.976039` | `0.968831` | `0.939941` | `0.835866` | `1.000000` | `0.959068` |
+| `step-step_900` | 1 | `0.887107` | `0.984264` | `0.967210` | `0.955841` | `0.823058` | `1.000000` | `0.971742` |
 
 Paired token-level analysis on the zt3 step300 and step600 CSVs:
 
@@ -110,6 +111,11 @@ Interpretation:
 - Next runs must treat NC/DAC/TTC/DDC as target-validity gates for auxiliary
   diffusion regression. Otherwise the auxiliary path can absorb high-progress
   trajectories that hurt the same safety submetrics which dominate navtest PDMS.
+- `step-step_900` partially recovered NC/TTC/DDC and improved PDMS to `0.887107`,
+  but this came with EP dropping from about `0.8359` to `0.8231`. This indicates
+  the run is oscillating between progress and safety rather than producing a
+  stable Pareto improvement. It remains only `+0.007107` over the early gate and
+  is still `-0.018393` below the original 10-epoch `0.9055` reference.
 
 Artifacts:
 
@@ -126,7 +132,7 @@ Artifacts:
 | `stage3_safe_diffgrpo_ckpt_stream_eval_live_20260610T030355Z` | completed | Safe DiffGRPO | `0.906184` at `epoch_12-step_17290` | Strongest confirmed Stage3 result so far. Compare against it only at comparable training length, or label the comparison as short-run diagnostic only. |
 | `stage3_grpo_refkl_s16_lr2e4_b4acc2_chunk32_fast_8gpu_20260613T213145Z` | stopped/evaluated | LR `2e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, effective batch about `64` | `0.872059` at `epoch_0-step_1330` | Exact 8-shard navtest eval: NC `0.9750`, DAC `0.9619`, TTC `0.9371`, EP `0.8159`, comfort `1.0000`, DDC `0.9459`. This is well below `0.9055/0.906184`, so the higher LR was harmful or at least not sufficient. |
 | `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z` | running | LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, effective batch about `66` | pending | zt3 original-LR control. |
-| `stage3_grpo_rloo_selfimit_cap05_step300_s16_lr1e4_b2acc4_8gpu_20260614T111511Z` | stopped | LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, GSPO ratio, RLOO self-imitation, max target scene ratio `0.5`, step ckpt every `300` | `0.885557` at `step-step_300` | Exact zt2 4GPU navtest eval at step300: NC `0.981134`, DAC `0.969352`, TTC `0.947273`, EP `0.826626`, comfort `1.000000`, DDC `0.968941`. Exact zt3 eval at step600: PDMS `0.885212`, NC `0.975449`, DAC `0.968941`, TTC `0.940105`, EP `0.835322`, comfort `1.000000`, DDC `0.958807`. This passes the early `0.88+` gate, but the step300->600 trend shows progress gain paid for by safety/DDC regression. |
+| `stage3_grpo_rloo_selfimit_cap05_step300_s16_lr1e4_b2acc4_8gpu_20260614T111511Z` | stopped | LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, GSPO ratio, RLOO self-imitation, max target scene ratio `0.5`, step ckpt every `300` | `0.887107` at `step-step_900` | Step300 passed the early gate (`0.885557`). Step600 was flat and traded EP for safety loss. Step900 recovered NC/TTC/DDC and reached `0.887107`, but EP fell to `0.823058`; this is still `-0.018393` below original 10-epoch `0.9055`. |
 | `stage3_grpo_rloo_selfimit_safetygate_step300_s16_lr1e4_b2acc4_8gpu_20260614T145712Z` | running | Same as cap05, with explicit self-imitation target gates NC `1.0`, DAC `1.0`, TTC `0.95`, DDC `0.99` | pending | This isolates the algorithmic change suggested by navtest pairwise analysis. Early success means matching or exceeding the cap05 step300/600 band while preventing TTC/DDC/NC decay. |
 | `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_zt2_4gpu_20260614T012106Z` | stopped before eval | LR `2e-4`, GSPO ratio, elite-buffer reward bonus/distill/self-imitation | invalid run | Stopped because key diagnostics were not logged, so the run could not validate buffer absorption. |
 | `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_diagfix_zt2_4gpu_20260614T020706Z` | stopped before eval | LR `2e-4`, GSPO ratio, elite-buffer reward bonus/distill/self-imitation | invalid run | Stopped because it was launched before the full PPO/advantage diagnostics patch. |
@@ -259,7 +265,9 @@ Launch record:
   - zt2: `/mnt/project/VLA-AD/outputs/stage3_grpo_rloo_selfimit_safetygate_step300_s16_lr1e4_b2acc4_8gpu_20260614T145712Z/unique_lock_watch_on_vla_zt2_4gpu`
   - zt3: `/mnt/project/VLA-AD/outputs/stage3_grpo_rloo_selfimit_safetygate_step300_s16_lr1e4_b2acc4_8gpu_20260614T145712Z/secondary_watch_on_rl_zt3_memfit_4gpu`
   - Both watchers use strict free-GPU gates (`EVAL_GPU_MAX_MEM_USED_MB=2000`, `EVAL_GPU_MAX_UTIL=5`) because zt2/zt3 already had existing evaluation/buffer tasks.
-- The old cap05 local training was stopped after step900 checkpoint creation; remote step900 evaluations were not killed and are left to finish naturally.
+- The old cap05 local training was stopped after step900 checkpoint creation.
+  One remote step900 eval later completed with PDMS `0.887107`; another duplicate
+  eval, if still running, is left to finish naturally.
 
 Expected diagnostics:
 - `grpo_self_imitation_safety_candidate_ratio` should be lower than the current broad candidate ratio, but not zero for long stretches.
