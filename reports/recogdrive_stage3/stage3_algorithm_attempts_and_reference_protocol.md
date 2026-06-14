@@ -209,7 +209,7 @@ Artifacts:
 | `stage3_safe_diffgrpo_ckpt_stream_eval_live_20260610T030355Z` | completed | Safe DiffGRPO | `0.906184` at `epoch_12-step_17290` | Strongest confirmed Stage3 result so far. Compare against it only at comparable training length, or label the comparison as short-run diagnostic only. |
 | `stage3_grpo_refkl_s16_lr2e4_b4acc2_chunk32_fast_8gpu_20260613T213145Z` | stopped/evaluated | LR `2e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, effective batch about `64` | `0.872059` at `epoch_0-step_1330` | Exact 8-shard navtest eval: NC `0.9750`, DAC `0.9619`, TTC `0.9371`, EP `0.8159`, comfort `1.0000`, DDC `0.9459`. This is well below `0.9055/0.906184`, so the higher LR was harmful or at least not sufficient. |
 | `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z` | evaluated | LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, effective batch about `66` | `0.896794` at `epoch_0-step_1290` | zt3 original-LR control. Submetrics: NC `0.987189`, DAC `0.975861`, TTC `0.962597`, EP `0.826516`, comfort `1.000000`, DDC `0.974378`. This is the strongest recent early checkpoint and argues against aggressive safety/self-imitation changes that suppress progress. |
-| `stage3_grpo_refkl_s16_lr1e4_b2acc4_currentrepo_8gpu_20260614T191227Z` | running/evaluated step300 | LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, effective batch `64`, `GRPO_USE_GSPO_RATIO=false`, no buffer/self-imitation/hard gates | `0.881910` at `step-step_300` | Purpose: reproduce the strong original-LR GRPO path on the current repository before launching another algorithmic variant. Step300 is in the original early-training band but below the zt3 original-LR control step1290 `0.896794`; do not over-interpret this as an algorithmic improvement. |
+| `stage3_grpo_refkl_s16_lr1e4_b2acc4_currentrepo_8gpu_20260614T191227Z` | running/evaluated step600 | LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, effective batch `64`, `GRPO_USE_GSPO_RATIO=false`, no buffer/self-imitation/hard gates | `0.886777` at `step-step_600` | Purpose: reproduce the strong original-LR GRPO path on the current repository before judging algorithmic variants. Step600 improved over step300 mainly through EP, but NC/DAC/TTC/DDC declined; it remains below the stronger zt3 original-LR control step1290 `0.896794`. |
 | `stage3_grpo_rloo_selfimit_cap05_step300_s16_lr1e4_b2acc4_8gpu_20260614T111511Z` | stopped | LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, GSPO ratio, RLOO self-imitation, max target scene ratio `0.5`, step ckpt every `300` | `0.887107` at `step-step_900` | Step300 passed the early gate (`0.885557`). Step600 was flat and traded EP for safety loss. Step900 recovered NC/TTC/DDC and reached `0.887107`, but EP fell to `0.823058`; this is still `-0.018393` below original 10-epoch `0.9055`. |
 | `stage3_grpo_rloo_selfimit_safetygate_step300_s16_lr1e4_b2acc4_8gpu_20260614T145712Z` | stopped/deleted | Same as cap05, with explicit self-imitation target gates NC `1.0`, DAC `1.0`, TTC `0.95`, DDC `0.99`, but no main TTC/DDC hard gate | none | Stopped before checkpoint. This was lower-information than the main hard-gate test because it only filtered auxiliary targets. |
 | `stage3_grpo_rloo_selfimit_mainhardgate_v3_bufferpath_step300_s16_lr1e4_b2acc4_8gpu_20260614T161426Z` | stopped/delete artifacts | Same LR/sample/effective batch as cap05, with main TTC `0.95` and DDC `0.99` hard gates plus strict self-imitation targets | `0.882934` at `step-step_600` | Failed matched early comparison. Step600 improved safety over cap05 but EP fell to `0.792348`; PDMS stayed below cap05 step900 and below the zt3 original-LR control. |
@@ -287,6 +287,18 @@ Update on 2026-06-14 21:44 UTC:
   - zt2 archive: `unique_lock_watch_on_vla_zt2_4gpu/checkpoint_archive/step-step_600.ckpt`
   - zt3 archive: `secondary_watch_on_rl_zt3_memfit_4gpu/checkpoint_archive/step-step_600.ckpt`
 - No step600 PDMS result yet. Both watchers are in `pending_evals=1` and waiting for free GPUs; no remote task was killed or preempted.
+
+Update on 2026-06-14 22:29 UTC:
+- `step-step_600` exact navtest eval completed through the local foreground exact-pool path while holding the global `step-step_600.lock`; a `step-step_600.done` marker was written so remote watchers skip duplicates.
+- Result:
+  - PDMS `0.886777`
+  - NC `0.983276`, DAC `0.968364`, TTC `0.948262`, EP `0.829079`, comfort `1.000000`, DDC `0.963585`
+  - CSV: `/mnt/project/VLA-AD/outputs/stage3_grpo_refkl_s16_lr1e4_b2acc4_currentrepo_8gpu_20260614T191227Z/local_foreground_eval_step600_4gpu/eval_step-step_600/hydra/stage3_safe_diffgrpo_eval_exact_pool_pdm/2026.06.14.21.57.57/2026.06.14.22.29.02.csv`
+- Step300 to step600 delta:
+  - PDMS `+0.004866`
+  - EP `+0.023848`
+  - NC `-0.001524`, DAC `-0.001318`, TTC `-0.009310`, DDC `-0.001730`
+- Interpretation: current-repo original-LR GRPO is improving early PDMS, but the improvement is mostly progress-driven and costs TTC/DDC/NC/DAC. This matches the earlier cap05 self-imitation failure mode and supports the next controlled Buffer-DPO/preference test: absorb train-only high-PDMS buffer trajectories while explicitly preventing safety-submetric regression.
 
 Train-only keep-best elite buffer status on 2026-06-14 19:23 UTC:
 - Buffer path: `/mnt/project/VLA-AD/cache/recogdrive_stage3_awac_elite_buffer_train_v2_stage3_awac_iql_dualhost_20260612T182947Z`.
