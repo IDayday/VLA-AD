@@ -17,7 +17,7 @@ DEFAULT_LAUNCH_LOCK_FILE = Path("/mnt/project/VLA-AD/outputs/stage3_next_action_
 STRICT_GSPO_COMMAND = (
     "cd /mnt/project/VLA-AD_stage3_algo_clean_4f3eb73 && "
     "RUN_TRAIN=1 LAUNCH_EVAL_WATCHERS=1 "
-    "bash scripts/training/launch_recogdrive_stage3_grpo_gspo_2b_local_stable.sh"
+    "bash scripts/training/launch_recogdrive_stage3_grpo_buffer_guided_2b_local_stable.sh"
 )
 
 
@@ -42,7 +42,7 @@ blocked="$(nvidia-smi --query-gpu=index,memory.used,utilization.gpu --format=csv
       }}
     }}')"
 if [[ -n "${{blocked}}" ]]; then
-  echo 'Refusing strict GSPO launch because target GPUs are busy:' >&2
+  echo 'Refusing buffer-guided strict GSPO launch because target GPUs are busy:' >&2
   echo "${{blocked}}" >&2
   exit 3
 fi
@@ -55,7 +55,7 @@ mkdir -p $(dirname {str(lock_file)!r})
 exec 9>{str(lock_file)!r}
 if command -v flock >/dev/null 2>&1; then
   if ! flock -n 9; then
-    echo 'Refusing strict GSPO launch because another gated launch holds the lock: {lock_file}' >&2
+    echo 'Refusing buffer-guided strict GSPO launch because another gated launch holds the lock: {lock_file}' >&2
     exit 4
   fi
 else
@@ -151,7 +151,7 @@ def decide_next_action(
         if state in {"failed", "done", "stopped_for_fast_refkl_relaunch"}:
             result["action"] = "launch_strict_gspo"
             result["should_launch_now"] = True
-            result["reason"] = "当前路线没有可用 PDMS 且已结束/失败；下一步应切 strict GSPO。"
+            result["reason"] = "当前路线没有可用 PDMS 且已结束/失败；下一步应切 buffer-guided strict GSPO。"
             return result
         result["action"] = "wait_for_pdms"
         result["reason"] = "缺少可比较 PDMS；先补齐评估。"
@@ -174,18 +174,18 @@ def decide_next_action(
         result["action"] = "launch_strict_gspo_after_current_checkpoint"
         result["should_launch_now"] = state != "running" or allow_running_launch
         if allow_running_launch:
-            result["reason"] = "训练安全比例偏低；已允许并行启动 strict GSPO 以充分利用资源。"
+            result["reason"] = "训练安全比例偏低；已允许并行启动 buffer-guided strict GSPO 以充分利用资源。"
         else:
-            result["reason"] = "训练安全比例偏低，下一轮需要更强 trust region 与行为策略 ratio 控制。"
+            result["reason"] = "训练安全比例偏低，下一轮需要更强 trust region、行为策略 ratio 控制和 elite buffer 吸收。"
         return result
 
     if delta <= -switch_margin:
         result["action"] = "launch_strict_gspo_after_current_checkpoint"
         result["should_launch_now"] = state != "running" or allow_running_launch
         if allow_running_launch:
-            result["reason"] = "PDMS 明显低于历史强基线；已允许并行启动 strict GSPO。"
+            result["reason"] = "PDMS 明显低于历史强基线；已允许并行启动 buffer-guided strict GSPO。"
         else:
-            result["reason"] = "PDMS 明显低于历史强基线；下一轮切 strict GSPO。"
+            result["reason"] = "PDMS 明显低于历史强基线；下一轮切 buffer-guided strict GSPO。"
         return result
 
     result["action"] = "continue_one_more_epoch_then_compare"
@@ -260,7 +260,7 @@ def main() -> None:
             "set -euo pipefail\n"
             f"echo 'Stage3 next-action gate: {decision['action']}'\n"
             f"echo 'Reason: {decision['reason']}'\n"
-            "echo 'Strict GSPO command is intentionally gated until should_launch_now=true.'\n"
+            "echo 'Buffer-guided strict GSPO command is intentionally gated until should_launch_now=true.'\n"
             f"# {STRICT_GSPO_COMMAND}\n"
             "exit 2\n"
         )

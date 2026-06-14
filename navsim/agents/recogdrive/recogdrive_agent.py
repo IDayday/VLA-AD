@@ -260,6 +260,18 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_grpo_loss_weight_start: float = 0.0,
         offline_rl_grpo_loss_warmup_start_epoch: int = 0,
         offline_rl_grpo_loss_warmup_epochs: int = 1,
+        offline_rl_grpo_buffer_guidance_enabled: bool = False,
+        offline_rl_grpo_buffer_reward_bonus_weight: float = 0.0,
+        offline_rl_grpo_buffer_reward_bonus_scale_m: float = 4.0,
+        offline_rl_grpo_buffer_reward_bonus_use_margin: bool = True,
+        offline_rl_grpo_buffer_distill_loss_weight: float = 0.0,
+        offline_rl_grpo_buffer_distill_loss_schedule: str = "linear_warmup",
+        offline_rl_grpo_buffer_distill_loss_weight_start: float = 0.0,
+        offline_rl_grpo_buffer_distill_warmup_start_epoch: int = 0,
+        offline_rl_grpo_buffer_distill_warmup_epochs: int = 3,
+        offline_rl_grpo_buffer_distill_top_k: int = 1,
+        offline_rl_grpo_buffer_distill_min_reward_margin: float = 0.0,
+        offline_rl_grpo_buffer_distill_timestep_sampling: str = "low_noise",
         offline_rl_log_candidate_sources: bool = True,
         offline_rl_log_submetrics: bool = True,
         offline_rl_log_oracle_stats: bool = True,
@@ -632,6 +644,24 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_grpo_loss_weight_start = float(offline_rl_grpo_loss_weight_start)
         self.offline_rl_grpo_loss_warmup_start_epoch = int(offline_rl_grpo_loss_warmup_start_epoch)
         self.offline_rl_grpo_loss_warmup_epochs = int(offline_rl_grpo_loss_warmup_epochs)
+        self.offline_rl_grpo_buffer_guidance_enabled = bool(offline_rl_grpo_buffer_guidance_enabled)
+        self.offline_rl_grpo_buffer_reward_bonus_weight = float(offline_rl_grpo_buffer_reward_bonus_weight)
+        self.offline_rl_grpo_buffer_reward_bonus_scale_m = float(offline_rl_grpo_buffer_reward_bonus_scale_m)
+        self.offline_rl_grpo_buffer_reward_bonus_use_margin = bool(offline_rl_grpo_buffer_reward_bonus_use_margin)
+        self.offline_rl_grpo_buffer_distill_loss_weight = float(offline_rl_grpo_buffer_distill_loss_weight)
+        self.offline_rl_grpo_buffer_distill_loss_schedule = offline_rl_grpo_buffer_distill_loss_schedule
+        self.offline_rl_grpo_buffer_distill_loss_weight_start = float(
+            offline_rl_grpo_buffer_distill_loss_weight_start
+        )
+        self.offline_rl_grpo_buffer_distill_warmup_start_epoch = int(
+            offline_rl_grpo_buffer_distill_warmup_start_epoch
+        )
+        self.offline_rl_grpo_buffer_distill_warmup_epochs = int(offline_rl_grpo_buffer_distill_warmup_epochs)
+        self.offline_rl_grpo_buffer_distill_top_k = int(offline_rl_grpo_buffer_distill_top_k)
+        self.offline_rl_grpo_buffer_distill_min_reward_margin = float(
+            offline_rl_grpo_buffer_distill_min_reward_margin
+        )
+        self.offline_rl_grpo_buffer_distill_timestep_sampling = offline_rl_grpo_buffer_distill_timestep_sampling
         self.offline_rl_log_candidate_sources = bool(offline_rl_log_candidate_sources)
         self.offline_rl_log_submetrics = bool(offline_rl_log_submetrics)
         self.offline_rl_log_oracle_stats = bool(offline_rl_log_oracle_stats)
@@ -1175,6 +1205,18 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.grpo_loss_weight_start = self.offline_rl_grpo_loss_weight_start
         offline_cfg.grpo_loss_warmup_start_epoch = self.offline_rl_grpo_loss_warmup_start_epoch
         offline_cfg.grpo_loss_warmup_epochs = self.offline_rl_grpo_loss_warmup_epochs
+        offline_cfg.grpo_buffer_guidance_enabled = self.offline_rl_grpo_buffer_guidance_enabled
+        offline_cfg.grpo_buffer_reward_bonus_weight = self.offline_rl_grpo_buffer_reward_bonus_weight
+        offline_cfg.grpo_buffer_reward_bonus_scale_m = self.offline_rl_grpo_buffer_reward_bonus_scale_m
+        offline_cfg.grpo_buffer_reward_bonus_use_margin = self.offline_rl_grpo_buffer_reward_bonus_use_margin
+        offline_cfg.grpo_buffer_distill_loss_weight = self.offline_rl_grpo_buffer_distill_loss_weight
+        offline_cfg.grpo_buffer_distill_loss_schedule = self.offline_rl_grpo_buffer_distill_loss_schedule
+        offline_cfg.grpo_buffer_distill_loss_weight_start = self.offline_rl_grpo_buffer_distill_loss_weight_start
+        offline_cfg.grpo_buffer_distill_warmup_start_epoch = self.offline_rl_grpo_buffer_distill_warmup_start_epoch
+        offline_cfg.grpo_buffer_distill_warmup_epochs = self.offline_rl_grpo_buffer_distill_warmup_epochs
+        offline_cfg.grpo_buffer_distill_top_k = self.offline_rl_grpo_buffer_distill_top_k
+        offline_cfg.grpo_buffer_distill_min_reward_margin = self.offline_rl_grpo_buffer_distill_min_reward_margin
+        offline_cfg.grpo_buffer_distill_timestep_sampling = self.offline_rl_grpo_buffer_distill_timestep_sampling
         offline_cfg.log_candidate_sources = self.offline_rl_log_candidate_sources
         offline_cfg.log_submetrics = self.offline_rl_log_submetrics
         offline_cfg.log_oracle_stats = self.offline_rl_log_oracle_stats

@@ -328,6 +328,18 @@ class OfflineRLConfig:
     grpo_loss_weight_start: float = 0.0
     grpo_loss_warmup_start_epoch: int = 0
     grpo_loss_warmup_epochs: int = 1
+    grpo_buffer_guidance_enabled: bool = False
+    grpo_buffer_reward_bonus_weight: float = 0.0
+    grpo_buffer_reward_bonus_scale_m: float = 4.0
+    grpo_buffer_reward_bonus_use_margin: bool = True
+    grpo_buffer_distill_loss_weight: float = 0.0
+    grpo_buffer_distill_loss_schedule: Literal["constant", "linear_warmup"] = "linear_warmup"
+    grpo_buffer_distill_loss_weight_start: float = 0.0
+    grpo_buffer_distill_warmup_start_epoch: int = 0
+    grpo_buffer_distill_warmup_epochs: int = 3
+    grpo_buffer_distill_top_k: int = 1
+    grpo_buffer_distill_min_reward_margin: float = 0.0
+    grpo_buffer_distill_timestep_sampling: Literal["uniform", "ddim", "low_noise", "mid_noise"] = "low_noise"
 
     # debugging / logging
     log_candidate_sources: bool = True
@@ -908,6 +920,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         self._validate_offline_rl_config(self.offline_rl_cfg)
         if config.grpo:
             self._init_grpo(config.grpo_cfg)
+            if self.offline_rl_cfg.enabled:
+                self._init_offline_rl(self.offline_rl_cfg, config.grpo_cfg)
         elif self.offline_rl_cfg.enabled:
             self._init_offline_rl(self.offline_rl_cfg, config.grpo_cfg)
 
@@ -1031,7 +1045,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         for name in ("ddc_guard_mode", "ttc_guard_mode"):
             if str(getattr(cfg, name)) not in {"relative_or_absolute", "absolute", "relative"}:
                 raise ValueError(f"offline_rl_cfg.{name} must be relative_or_absolute, absolute, or relative.")
-        for name in ("awac_timestep_sampling", "preference_dpo_timestep_sampling"):
+        for name in ("awac_timestep_sampling", "preference_dpo_timestep_sampling", "grpo_buffer_distill_timestep_sampling"):
             if str(getattr(cfg, name)) not in {"uniform", "ddim", "low_noise", "mid_noise"}:
                 raise ValueError(f"offline_rl_cfg.{name} must be uniform, ddim, low_noise, or mid_noise.")
         if not (0.0 < float(cfg.low_noise_timestep_frac) <= 1.0):
@@ -1052,7 +1066,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.component_advantage_clip_min must be <= component_advantage_clip_max.")
         if not (0.0 <= float(cfg.source_balance_min_factor) <= float(cfg.source_balance_max_factor)):
             raise ValueError("offline_rl_cfg.source_balance_max_factor must be >= source_balance_min_factor >= 0.")
-        for name in ("awac_loss_schedule", "preference_dpo_loss_schedule", "grpo_loss_schedule"):
+        for name in (
+            "awac_loss_schedule",
+            "preference_dpo_loss_schedule",
+            "grpo_loss_schedule",
+            "grpo_buffer_distill_loss_schedule",
+        ):
             if str(getattr(cfg, name)) not in {"constant", "linear_warmup"}:
                 raise ValueError(f"offline_rl_cfg.{name} must be constant or linear_warmup.")
         if str(cfg.bc_loss_schedule) not in {"constant", "linear"}:
@@ -1065,6 +1084,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "bc_loss_weight_end",
             "grpo_loss_weight",
             "grpo_loss_weight_start",
+            "grpo_buffer_reward_bonus_weight",
+            "grpo_buffer_distill_loss_weight",
+            "grpo_buffer_distill_loss_weight_start",
+            "grpo_buffer_distill_min_reward_margin",
             "component_progress_weight",
             "component_safety_penalty_weight",
             "pairwise_rank_loss_weight",
@@ -1114,6 +1137,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.grpo_loss_warmup_start_epoch must be non-negative.")
         if int(cfg.grpo_loss_warmup_epochs) <= 0:
             raise ValueError("offline_rl_cfg.grpo_loss_warmup_epochs must be positive.")
+        if int(cfg.grpo_buffer_distill_warmup_start_epoch) < 0:
+            raise ValueError("offline_rl_cfg.grpo_buffer_distill_warmup_start_epoch must be non-negative.")
+        if int(cfg.grpo_buffer_distill_warmup_epochs) <= 0:
+            raise ValueError("offline_rl_cfg.grpo_buffer_distill_warmup_epochs must be positive.")
+        if int(cfg.grpo_buffer_distill_top_k) <= 0:
+            raise ValueError("offline_rl_cfg.grpo_buffer_distill_top_k must be positive.")
+        if float(cfg.grpo_buffer_reward_bonus_scale_m) <= 0.0:
+            raise ValueError("offline_rl_cfg.grpo_buffer_reward_bonus_scale_m must be positive.")
         for name in (
             "prior_distance_weight",
             "jerk_penalty_weight",
@@ -4016,6 +4047,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             warmup_epochs=int(cfg.grpo_loss_warmup_epochs),
         )
 
+    def _current_grpo_buffer_distill_loss_weight(self, cfg: OfflineRLConfig) -> float:
+        return self._current_linear_warmup_loss_weight(
+            target=float(cfg.grpo_buffer_distill_loss_weight),
+            schedule=str(cfg.grpo_buffer_distill_loss_schedule),
+            start=float(cfg.grpo_buffer_distill_loss_weight_start),
+            start_epoch=int(cfg.grpo_buffer_distill_warmup_start_epoch),
+            warmup_epochs=int(cfg.grpo_buffer_distill_warmup_epochs),
+        )
+
     def _current_awac_target_blend_alpha(self, cfg: OfflineRLConfig) -> float:
         alpha = self._current_linear_warmup_loss_weight(
             target=float(cfg.target_blend_alpha),
@@ -5363,6 +5403,122 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         selected["candidate_anchor_distance"] = anchor_distance
         return selected
 
+    def _load_grpo_buffer_guidance_batch(
+        self,
+        action_input: BatchFeature,
+        tokens_list: list[str],
+        cfg: OfflineRLConfig,
+    ) -> Dict[str, Any]:
+        if not bool(cfg.enabled) or not bool(cfg.grpo_buffer_guidance_enabled):
+            return {}
+        if not str(cfg.elite_buffer_path):
+            raise ValueError("GRPO buffer guidance requires agent.offline_rl_elite_buffer_path.")
+        if bool(cfg.build_candidates_online):
+            raise ValueError("GRPO buffer guidance currently expects a prebuilt offline elite buffer.")
+        metric_cache: Dict[str, Any] = {}
+        if str(cfg.missing_buffer_policy) == "fallback_gt":
+            metric_cache = self._load_metric_cache_for_tokens(tokens_list)
+        awac_batch = self._load_awac_buffer_candidates(action_input, tokens_list, metric_cache, cfg)
+        selected_rewards = awac_batch["selected_rewards"].float()
+        selected_real_mask = awac_batch["selected_real_mask"]
+        selected_valid_mask = awac_batch["selected_valid_mask"]
+        gt_reward = awac_batch["gt_reward"].to(selected_rewards)
+        il_reward = awac_batch["il_reward"].to(selected_rewards)
+        baseline = torch.maximum(gt_reward, il_reward)
+        eligible = selected_real_mask & selected_valid_mask
+        margin = selected_rewards - baseline[:, None]
+        eligible &= margin > float(cfg.grpo_buffer_distill_min_reward_margin)
+
+        B, _, H, D = awac_batch["selected_trajs"].shape
+        top_k = max(1, int(cfg.grpo_buffer_distill_top_k))
+        target_trajs = awac_batch["selected_trajs"].new_zeros((B, top_k, H, D))
+        target_weights = selected_rewards.new_zeros((B, top_k))
+        target_rewards = selected_rewards.new_zeros((B, top_k))
+        target_margin = selected_rewards.new_zeros((B, top_k))
+        target_mask = torch.zeros((B, top_k), device=selected_rewards.device, dtype=torch.bool)
+        for b in range(B):
+            idx = torch.nonzero(eligible[b], as_tuple=False).flatten()
+            if idx.numel() == 0:
+                continue
+            row_score = selected_rewards[b, idx].float()
+            keep = idx[torch.topk(row_score, k=min(top_k, int(idx.numel())), largest=True).indices]
+            m = int(keep.numel())
+            target_trajs[b, :m] = awac_batch["selected_trajs"][b, keep]
+            target_rewards[b, :m] = selected_rewards[b, keep]
+            target_margin[b, :m] = margin[b, keep].clamp(min=0.0)
+            weight = target_margin[b, :m].clamp(min=0.0)
+            if not bool((weight > 0).any().item()):
+                weight = torch.ones_like(weight)
+            target_weights[b, :m] = weight / weight.mean().clamp(min=1e-6)
+            target_mask[b, :m] = True
+
+        return {
+            "target_trajs": target_trajs.detach(),
+            "target_weights": target_weights.detach(),
+            "target_rewards": target_rewards.detach(),
+            "target_margin": target_margin.detach(),
+            "target_mask": target_mask.detach(),
+            "gt_reward": gt_reward.detach(),
+            "il_reward": il_reward.detach(),
+            "best_valid_reward": awac_batch["best_valid_reward"].detach(),
+            "has_target_ratio": target_mask.any(dim=1).float().mean(),
+            "selected_valid_ratio": (
+                ((selected_valid_mask & selected_real_mask).float().sum())
+                / selected_real_mask.float().sum().clamp(min=1.0)
+            ).detach(),
+            "best_valid_minus_gt_mean": (awac_batch["best_valid_reward"].to(gt_reward) - gt_reward).mean().detach(),
+            "best_valid_minus_il_mean": (awac_batch["best_valid_reward"].to(il_reward) - il_reward).mean().detach(),
+        }
+
+    def _compute_grpo_buffer_reward_bonus(
+        self,
+        trajs: torch.Tensor,
+        B: int,
+        G: int,
+        guidance: Dict[str, Any],
+        cfg: OfflineRLConfig,
+    ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+        zero = trajs.new_zeros(())
+        if not guidance or "target_trajs" not in guidance:
+            return trajs.new_zeros((B * G,)), {
+                "grpo_buffer_reward_bonus_mean": zero,
+                "grpo_buffer_reward_bonus_max": zero,
+                "grpo_buffer_target_distance_mean": zero,
+                "grpo_buffer_guidance_target_ratio": zero,
+            }
+        target_trajs = guidance["target_trajs"].to(device=trajs.device, dtype=trajs.dtype)
+        target_mask = guidance["target_mask"].to(device=trajs.device)
+        target_margin = guidance["target_margin"].to(device=trajs.device, dtype=trajs.dtype)
+        if target_trajs.ndim != 4 or target_trajs.shape[0] != B:
+            raise ValueError("GRPO buffer guidance targets must have shape [B, M, H, 3].")
+        if not bool(target_mask.any().item()):
+            return trajs.new_zeros((B * G,)), {
+                "grpo_buffer_reward_bonus_mean": zero,
+                "grpo_buffer_reward_bonus_max": zero,
+                "grpo_buffer_target_distance_mean": zero,
+                "grpo_buffer_guidance_target_ratio": zero,
+            }
+
+        generated = trajs.reshape(B, G, trajs.shape[-2], trajs.shape[-1])[..., :2].float()
+        targets = target_trajs[..., :2].float()
+        distances = torch.linalg.norm(generated[:, :, None] - targets[:, None], dim=-1).mean(dim=-1)
+        valid_distances = distances.masked_fill(~target_mask[:, None, :], torch.inf)
+        scale = max(float(cfg.grpo_buffer_reward_bonus_scale_m), 1e-6)
+        closeness = torch.exp(-(valid_distances / scale).clamp(min=0.0, max=50.0))
+        if bool(cfg.grpo_buffer_reward_bonus_use_margin):
+            margin_factor = (target_margin / 0.2).clamp(min=0.0, max=1.0)
+            closeness = closeness * margin_factor[:, None, :]
+        bonus = closeness.max(dim=2).values
+        bonus = torch.where(torch.isfinite(valid_distances).any(dim=2), bonus, torch.zeros_like(bonus))
+        finite_dist = valid_distances[torch.isfinite(valid_distances)]
+        distance_mean = finite_dist.mean().to(trajs) if finite_dist.numel() > 0 else zero
+        return bonus.reshape(B * G).to(trajs), {
+            "grpo_buffer_reward_bonus_mean": bonus.mean().to(trajs),
+            "grpo_buffer_reward_bonus_max": bonus.max().to(trajs),
+            "grpo_buffer_target_distance_mean": distance_mean,
+            "grpo_buffer_guidance_target_ratio": target_mask.any(dim=1).float().mean().to(trajs),
+        }
+
     def forward_awac_iql(
         self,
         vl_features: torch.Tensor,
@@ -5721,7 +5877,41 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             path = self.metric_cache_loader.metric_cache_paths[token]
             with lzma.open(path, 'rb') as f:
                 metric_cache[token] = pickle.load(f)
-        base_rewards, components = self.reward_fn(trajs, tokens_rep, metric_cache, return_components=True)
+        offline_cfg = getattr(self, "offline_rl_cfg", None)
+        use_grpo_buffer_guidance = (
+            offline_cfg is not None
+            and bool(offline_cfg.enabled)
+            and bool(offline_cfg.grpo_buffer_guidance_enabled)
+        )
+        grpo_buffer_guidance: Dict[str, Any] = {}
+        if use_grpo_buffer_guidance:
+            grpo_buffer_guidance = self._load_grpo_buffer_guidance_batch(
+                action_input,
+                [str(token) for token in tokens_list],
+                offline_cfg,
+            )
+
+        reward_kwargs: Dict[str, Any] = {}
+        if offline_cfg is not None and bool(offline_cfg.enabled):
+            reward_kwargs = {
+                "strict_submetrics": bool(offline_cfg.strict_reward_submetrics),
+                "required_submetrics": offline_cfg.required_reward_submetrics,
+                "missing_submetric_policy": str(offline_cfg.missing_submetric_policy),
+                "use_batched_pdm_scoring": bool(offline_cfg.use_batched_pdm_scoring),
+                "use_exact_array_pdm_state_conversion": bool(offline_cfg.use_exact_array_pdm_state_conversion),
+                "use_fast_pdm_scorer": bool(offline_cfg.use_fast_pdm_scorer),
+                "pdm_batch_chunk_size": int(offline_cfg.pdm_batch_chunk_size),
+                "pdm_shadow_check": bool(offline_cfg.pdm_shadow_check),
+                "pdm_shadow_max_samples": int(offline_cfg.pdm_shadow_max_samples),
+                "pdm_shadow_max_abs_diff": float(offline_cfg.pdm_shadow_max_abs_diff),
+            }
+        base_rewards, components = self.reward_fn(
+            trajs,
+            tokens_rep,
+            metric_cache,
+            return_components=True,
+            **reward_kwargs,
+        )
         # rewards: [B * G]
         assert base_rewards.shape == (B * G,)
         rewards, hard_safe_mask, reward_aux = self._compose_stage3_reward(
@@ -5731,6 +5921,29 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             B,
             G,
         )
+        grpo_buffer_reward_bonus = rewards.new_zeros((B * G,))
+        grpo_buffer_diag = {
+            "grpo_buffer_reward_bonus_mean": rewards.new_zeros(()),
+            "grpo_buffer_reward_bonus_max": rewards.new_zeros(()),
+            "grpo_buffer_target_distance_mean": rewards.new_zeros(()),
+            "grpo_buffer_guidance_target_ratio": rewards.new_zeros(()),
+        }
+        grpo_buffer_bonus_weight = 0.0
+        if use_grpo_buffer_guidance:
+            grpo_buffer_reward_bonus, grpo_buffer_diag = self._compute_grpo_buffer_reward_bonus(
+                trajs,
+                B,
+                G,
+                grpo_buffer_guidance,
+                offline_cfg,
+            )
+            grpo_buffer_bonus_weight = float(offline_cfg.grpo_buffer_reward_bonus_weight)
+            if grpo_buffer_bonus_weight > 0.0:
+                rewards = rewards + torch.where(
+                    hard_safe_mask,
+                    grpo_buffer_bonus_weight * grpo_buffer_reward_bonus.to(rewards),
+                    torch.zeros_like(rewards),
+                )
         assert rewards.shape == (B * G,)
         assert hard_safe_mask.shape == (B * G,)
 
@@ -5873,6 +6086,34 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             bc_loss = -bc_logp.mean()
             total_loss = total_loss + effective_bc_coeff * bc_loss
 
+        grpo_buffer_distill_loss = total_loss.new_zeros(())
+        grpo_buffer_distill_weight = 0.0
+        grpo_buffer_distill_diag = {
+            "per_sample_loss_mean": total_loss.new_zeros(()),
+            "target_norm_mean": total_loss.new_zeros(()),
+            "diffusion_timestep_mean": total_loss.new_zeros(()),
+            "diffusion_timestep_min": total_loss.new_zeros(()),
+            "diffusion_timestep_max": total_loss.new_zeros(()),
+            "effective_weight_sum": total_loss.new_zeros(()),
+            "zero_weight_ratio": total_loss.new_zeros(()),
+            "zero_weight_batch": total_loss.new_zeros(()),
+        }
+        if use_grpo_buffer_guidance:
+            grpo_buffer_distill_weight = self._current_grpo_buffer_distill_loss_weight(offline_cfg)
+            if grpo_buffer_distill_weight > 0.0:
+                distill_weights = (
+                    grpo_buffer_guidance["target_weights"].to(device=total_loss.device, dtype=torch.float32)
+                    * grpo_buffer_guidance["target_mask"].to(device=total_loss.device, dtype=torch.float32)
+                )
+                grpo_buffer_distill_loss, grpo_buffer_distill_diag = self._weighted_diffusion_loss_on_targets(
+                    vl_features,
+                    action_input,
+                    grpo_buffer_guidance["target_trajs"].to(device=total_loss.device, dtype=action_input.action.dtype),
+                    distill_weights,
+                    timestep_sampling=str(offline_cfg.grpo_buffer_distill_timestep_sampling),
+                )
+                total_loss = total_loss + float(grpo_buffer_distill_weight) * grpo_buffer_distill_loss
+
         self.grpo_update_counter = int(getattr(self, "grpo_update_counter", 0)) + 1
 
         zero_loss = total_loss.new_zeros(())
@@ -5897,6 +6138,28 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "reference_kl_loss": reference_kl_loss,
             "reference_kl_coeff": total_loss.new_tensor(reference_kl_coeff),
             "reference_kl_chunk_size": total_loss.new_tensor(float(getattr(self, "reference_kl_chunk_size", 0))),
+            "grpo_buffer_guidance_enabled": total_loss.new_tensor(float(bool(use_grpo_buffer_guidance))),
+            "grpo_buffer_reward_bonus": grpo_buffer_reward_bonus.mean().to(dtype=total_loss.dtype),
+            "grpo_buffer_reward_bonus_weight": total_loss.new_tensor(float(grpo_buffer_bonus_weight)),
+            "grpo_buffer_reward_bonus_max": grpo_buffer_diag["grpo_buffer_reward_bonus_max"].to(dtype=total_loss.dtype),
+            "grpo_buffer_target_distance_mean": grpo_buffer_diag["grpo_buffer_target_distance_mean"].to(dtype=total_loss.dtype),
+            "grpo_buffer_guidance_target_ratio": grpo_buffer_diag["grpo_buffer_guidance_target_ratio"].to(dtype=total_loss.dtype),
+            "grpo_buffer_selected_valid_ratio": (
+                grpo_buffer_guidance.get("selected_valid_ratio", total_loss.new_zeros(()))
+                if use_grpo_buffer_guidance else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_buffer_best_valid_minus_gt": (
+                grpo_buffer_guidance.get("best_valid_minus_gt_mean", total_loss.new_zeros(()))
+                if use_grpo_buffer_guidance else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_buffer_best_valid_minus_il": (
+                grpo_buffer_guidance.get("best_valid_minus_il_mean", total_loss.new_zeros(()))
+                if use_grpo_buffer_guidance else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_buffer_distill_loss": grpo_buffer_distill_loss,
+            "grpo_buffer_distill_weight": total_loss.new_tensor(float(grpo_buffer_distill_weight)),
+            "grpo_buffer_distill_weight_sum": grpo_buffer_distill_diag["effective_weight_sum"].to(dtype=total_loss.dtype),
+            "grpo_buffer_distill_zero_weight_batch": grpo_buffer_distill_diag["zero_weight_batch"].to(dtype=total_loss.dtype),
             "safe_ratio": hard_safe_ratio,
             "hard_safe_ratio": hard_safe_ratio,
             "mean_ep": reward_aux["ego_progress"].mean(),

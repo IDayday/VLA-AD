@@ -432,6 +432,8 @@ def main(cfg: DictConfig) -> None:
         if os.getenv("IL_CHECKPOINT"):
             cfg.agent.checkpoint_path = os.environ["IL_CHECKPOINT"]
             cfg.agent.reference_policy_checkpoint = os.environ["IL_CHECKPOINT"]
+        if os.getenv("POLICY_CHECKPOINT"):
+            cfg.agent.checkpoint_path = os.environ["POLICY_CHECKPOINT"]
         if os.getenv("VLM_PATH"):
             cfg.agent.vlm_path = os.environ["VLM_PATH"]
         if os.getenv("METRIC_CACHE_DIR"):
