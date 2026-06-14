@@ -1489,6 +1489,75 @@ Decision:
 - This is a configuration-wiring failure, not an algorithm result.
 - Fix by adding the four default fields to `navsim/planning/script/config/common/agent/recogdrive_agent.yaml`, then relaunch under a new run name.
 
+### 2026-06-14 Attempt: main GRPO hard gate v2 launch wiring
+
+Launch issue:
+- Run name: `stage3_grpo_rloo_selfimit_mainhardgate_v2_step300_s16_lr1e4_b2acc4_8gpu_20260614T161141Z`.
+- Hydra parsing succeeded after adding the YAML defaults.
+- The shell preflight failed before training:
+  - `ELITE_BUFFER_DIR must exist when OFFLINE_RL_ENABLED/GRPO_BUFFER_GUIDANCE_ENABLED is true`.
+
+Root cause:
+- Self-imitation in `forward_grpo` is gated by `offline_cfg.enabled`.
+- Therefore `OFFLINE_RL_ENABLED=true` is needed for this specific self-imitation variant, even when buffer guidance and buffer distillation are disabled.
+- The launcher safety check still requires a real train-only `ELITE_BUFFER_DIR` whenever offline RL is enabled.
+
+Decision:
+- This is a launch-contract error, not an algorithm result.
+- Do not repeat this exact startup command.
+- Correct startup for self-imitation GRPO hard-gate runs:
+  - `OFFLINE_RL_ENABLED=true`
+  - pass a real train-only elite buffer directory
+  - keep `GRPO_BUFFER_GUIDANCE_ENABLED=false`, `GRPO_BUFFER_DISTILL_LOSS_WEIGHT=0.0`, and `GRPO_BUFFER_REWARD_BONUS_WEIGHT=0.0` if the experiment should isolate online GRPO + self-imitation.
+
+### 2026-06-14 Attempt: main GRPO TTC/DDC hard gate v3 running
+
+Motivation:
+- Preserve the cap05 run's EP upside while preventing positive policy-gradient updates from TTC/DDC-regressing samples.
+- Keep the online self-imitation auxiliary loss, but gate targets by NC/DAC/TTC/DDC and cap target scenes at `0.5`.
+
+Config:
+- Run name: `stage3_grpo_rloo_selfimit_mainhardgate_v3_bufferpath_step300_s16_lr1e4_b2acc4_8gpu_20260614T161426Z`.
+- LR: `1e-4`, scheduler epochs `20`, min LR `1e-5`.
+- `sample_time=16`, batch size `2`, accumulation `4`, 8 local GPUs.
+- Checkpoint every `300` train steps and every epoch.
+- Main GRPO hard gates:
+  - NC/DAC existing hard safe mask.
+  - TTC threshold `0.95`.
+  - DDC threshold `0.99`.
+- Self-imitation:
+  - weight `0.01`, linear warmup over 2 epochs.
+  - top-k `1`, min reward `0.88`, min reward margin `0.01`.
+  - target scene cap `0.5`.
+  - baseline mode `group_leave_one_out`.
+  - low-noise diffusion timestep regression.
+  - target gates NC `1.0`, DAC `1.0`, TTC `0.95`, DDC `0.99`.
+- Offline buffer path passed only to satisfy `offline_cfg.enabled` safety contract:
+  - `/mnt/project/VLA-AD/cache/recogdrive_stage3_awac_elite_buffer_train_v2_stage3_awac_iql_dualhost_20260612T182947Z`
+  - buffer guidance disabled.
+  - buffer distillation disabled.
+  - buffer reward bonus disabled.
+- Eval watchers:
+  - zt2: `unique_lock_watch_on_vla_zt2_4gpu`, pid `2446350`, GPU list `4,5,6,7`, strict wait `GPU_MAX_MEM_USED_MB=2000`, `GPU_MAX_UTIL=5`.
+  - zt3: `secondary_watch_on_rl_zt3_memfit_4gpu`, pid `1015107`, GPU list `0,1,2,4`, strict wait `GPU_MAX_MEM_USED_MB=2000`, `GPU_MAX_UTIL=5`.
+
+Startup verification:
+- Training entered Lightning train loop at `2026-06-14 16:17:48`.
+- Local GPU utilization after entering training: roughly `56-95%`.
+- Dataset sizes: train `85109`, validation `18179`.
+- First checkpoint and navtest PDMS are pending.
+
+Expected early gate:
+- Stop if the first evaluated early checkpoint is below `0.875` PDMS.
+- Watch for one more early checkpoint if within `[0.875, 0.88)`.
+- Continue only if the run clears `0.88` early PDMS, then compare against cap05 `0.887107`, Safe DiffGRPO `0.906184`, and original Stage3 `0.9055`.
+
+Artifact cleanup:
+- Deleted no-checkpoint failure directories after recording the causes:
+  - `stage3_grpo_rloo_selfimit_safetygate_step300_s16_lr1e4_b2acc4_8gpu_20260614T145712Z`
+  - `stage3_grpo_rloo_selfimit_mainhardgate_step300_s16_lr1e4_b2acc4_8gpu_20260614T160328Z`
+  - `stage3_grpo_rloo_selfimit_mainhardgate_v2_step300_s16_lr1e4_b2acc4_8gpu_20260614T161141Z`
+
 ## Update Template
 
 Append a new section for every algorithm run:
