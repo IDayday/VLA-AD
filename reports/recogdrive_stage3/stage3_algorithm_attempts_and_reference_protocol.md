@@ -1267,6 +1267,8 @@ Automation:
 - With `STOP_ON_FAIL=1`, it only terminates the local training process group recorded by the gate JSON. It does not terminate remote evaluation watchers or unrelated remote tasks.
 - For new stable launches, set `START_EARLY_GATE_WATCHER=1 EARLY_GATE_THRESHOLD=0.88 EARLY_GATE_MARGIN=0.005`.
 - Use `EARLY_GATE_STOP_ON_FAIL=1` only when the run root is local and the training status JSON records the correct process group.
+- The GRPO/GSPO launcher now defaults to `CHECKPOINT_EVERY_N_TRAIN_STEPS=300` and starts the early gate watcher.
+- The buffer-guided GRPO wrapper defaults to `CHECKPOINT_EVERY_N_TRAIN_STEPS=300`, `START_EARLY_GATE_WATCHER=1`, and `EARLY_GATE_STOP_ON_FAIL=1`, so any future buffer-absorption run must clear the original early Stage3 gate before becoming a long run.
 
 ## Update Template
 
