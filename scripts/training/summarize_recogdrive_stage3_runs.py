@@ -358,7 +358,7 @@ def _recommend(row: dict[str, object], target_pdms: float) -> str:
     event_age = _float_or_none(row.get("event_age_sec"))
 
     if state == "running" and checkpoint_count == 0:
-        return "wait_for_first_epoch_checkpoint"
+        return "wait_for_first_checkpoint"
     if state == "running" and eval_rows == 0:
         return "wait_for_checkpoint_eval"
     if event_age is not None and event_age > 1800 and state == "running":
