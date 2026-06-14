@@ -284,6 +284,11 @@ Implementation:
   - `grpo_buffer_preference_dpo_logit_mean`
   - `grpo_buffer_preference_dpo_implicit_accuracy`
   - `grpo_buffer_preference_dpo_timestep_mean/min/max`
+- Added dedicated launcher:
+  `scripts/training/launch_recogdrive_stage3_grpo_buffer_dpo_2b_local_stable.sh`.
+  Its defaults isolate buffer-DPO by setting buffer reward bonus/distill to `0.0`
+  and self-imitation to `0.0`; set `GRPO_SELF_IMITATION_LOSS_WEIGHT=0.01`
+  only for an explicit v3-plus-buffer-DPO comparison.
 
 First experiment rule:
 - Do not interrupt the active v3 hard-gate GRPO run before its step300 exact navtest gate unless it crashes.
