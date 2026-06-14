@@ -62,6 +62,7 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 | `stage3_grpo_rloo_selfimit_safetygate_step300_s16_lr1e4_b2acc4_8gpu_20260614T145712Z` | stopped/deleted | This auxiliary-target-only safetygate run was stopped before checkpoint because the main GRPO update still allowed TTC/DDC-regressing positive-advantage samples. Do not repeat this exact configuration. |
 | `stage3_grpo_rloo_selfimit_mainhardgate_v3_bufferpath_step300_s16_lr1e4_b2acc4_8gpu_20260614T161426Z` | stopped/delete artifacts | Main TTC `0.95` and DDC `0.99` hard gates improved safety but suppressed EP/DAC. Step300 PDMS `0.879395`; step600 PDMS `0.882934`, still below cap05 step900 `0.887107` and far below the zt3 original-LR control step1290 `0.896794`. Do not repeat this main-hardgate + strict self-imitation configuration as a default route. |
 | `stage3_grpo_refkl_s16_lr1e4_b2acc4_currentrepo_8gpu_20260614T191227Z` | running/evaluated step300 | This is not a new algorithm. It is a matched original-LR GRPO control on the current repository after AWAC/GRPO code changes: LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, no GSPO ratio, no hard gates, no buffer, no self-imitation. Step300 exact navtest PDMS is `0.881910`, below the stronger zt3 original-LR control step1290 `0.896794`, so keep running as a control but do not treat this checkpoint as a success. |
+| `stage3_grpo_buffer_dpo_refctrl_s16_lr1e4_b2acc4_zt2wait_8gpu_20260614T213001Z` | queued on zt2 | Control-aligned Buffer-DPO run launched on `training-vla-zt2` with strict GPU wait instead of preempting the existing zt2 two-expert job. Config matches the current-repo GRPO control shape plus only small train-buffer DPO: LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, no GSPO ratio, no main TTC/DDC hard gate, no reward bonus, no distill, no self-imitation, DPO weight `0.02`. |
 | Stage3 next-action gate | patched | `scripts/training/decide_recogdrive_stage3_next_action.py` now tracks the current-repo original-LR control run instead of the stopped `2e-4` run, and its gated next experiment is the control-aligned Buffer-DPO launcher in this repository. After the step300 eval, dry-run result on 2026-06-14 UTC is `launch_buffer_dpo_after_current_checkpoint`, but default policy waits while the current control is still running. |
 | Stage3 exact eval infrastructure | patched | Distributed eval timeout is now configurable and defaults to `3600s` for async/exact PDM runners and watcher launchers. Watchers also write global per-checkpoint done markers under `GLOBAL_EVAL_LOCK_DIR` after successful eval so relaxed/strict watchers do not repeat the same checkpoint. These changes only affect orchestration; they do not change trajectory inference, PDM scoring, or submetric calculation. |
 | Train-only elite buffer exploration | keep running in background | Continue improving the navtrain-only oracle buffer, but write it in keep-best merge mode so new exploration cannot overwrite a stronger existing record. Use navtest only for checkpoint diagnosis, never for buffer generation or training reward. |
@@ -252,6 +253,19 @@ Update on 2026-06-14 21:20 UTC:
 - zt2/zt3 watchers saw the global `step-step_300.done` marker and skipped duplicate evaluation. Keep them attached for future checkpoints, but do not repeat the failed local background wrapper attempts listed in the cleanup section.
 - Decision gate now recommends the control-aligned Buffer-DPO attempt as the next algorithmic run. The reason is not that the buffer is bad: strict train-only buffer validation is strong. The reason is that the current GRPO-control step300 is below the stronger zt3 original-LR control, so any buffer absorption experiment must be isolated and compared against this control shape.
 
+Update on 2026-06-14 21:33 UTC:
+- Current-repo GRPO control is still running locally on GPUs `0-7`; latest summary step is `549` with train reward `0.840181` and safe ratio `0.929688`. No new checkpoint beyond `step-step_300` exists yet.
+- zt2 currently has all 8 GPUs occupied by an existing two-expert training job. A Buffer-DPO training launcher was therefore queued with strict wait thresholds rather than starting on top of that job:
+  - Run root: `/mnt/project/VLA-AD/outputs/stage3_grpo_buffer_dpo_refctrl_s16_lr1e4_b2acc4_zt2wait_8gpu_20260614T213001Z`.
+  - Remote waiting process on `training-vla-zt2`: shell PID `2647910`, launcher PID `2647912`.
+  - Training wait gate: target GPUs `0,1,2,3,4,5,6,7`, `TRAIN_GPU_MAX_MEM_USED_MB=2000`, `TRAIN_GPU_MAX_UTIL=5`.
+  - Eval watcher wait gate is also strict: `EVAL_GPU_MAX_MEM_USED_MB=2000`, `EVAL_GPU_MAX_UTIL=5`, so navtest eval will not start on busy remote GPUs.
+  - Config file: `strict_gspo_launch_config.txt`.
+- Immediate strict-v2 buffer validation before launch still passed:
+  - `num_records=85109`, `valid_candidate_ratio=0.982654`, `has_valid_candidate_ratio=1.0`.
+  - `mean_best_valid_reward=0.974021`, `pct_best_valid_above_gt=0.582594`, `pct_best_valid_above_il=0.793641`.
+  - Saved under the run root as `buffer_validate_before_launch.json` and `.csv`.
+
 Train-only keep-best elite buffer status on 2026-06-14 19:23 UTC:
 - Buffer path: `/mnt/project/VLA-AD/cache/recogdrive_stage3_awac_elite_buffer_train_v2_stage3_awac_iql_dualhost_20260612T182947Z`.
 - Full train-token coverage exists: `85109` `*.pkl.xz` records, about `342 MB`.
@@ -423,6 +437,21 @@ First experiment rule after v3 result:
   - `GRPO_BUFFER_PREFERENCE_DPO_WARMUP_EPOCHS=2`
   - keep `GRPO_SELF_IMITATION_LOSS_WEIGHT=0.0` for the first isolated buffer-DPO diagnostic.
 - Success at the diagnostic level requires active nonzero DPO pairs and no deterioration in matched step300/600 exact navtest NC/TTC/DDC/EP compared with the zt3 original-LR control. Final success still requires comparable-length PDMS above the original 10-epoch `0.9055` and Safe DiffGRPO `0.906184` references.
+
+Launch status on 2026-06-14 21:33 UTC:
+- The first isolated Buffer-DPO diagnostic is queued on `training-vla-zt2` as
+  `stage3_grpo_buffer_dpo_refctrl_s16_lr1e4_b2acc4_zt2wait_8gpu_20260614T213001Z`.
+- It is intentionally waiting for all 8 zt2 GPUs to become free; no existing remote task was killed.
+- The launch config confirms the intended isolation:
+  - `grpo_buffer_preference_dpo_loss_weight=0.02`
+  - `grpo_buffer_reward_bonus_weight=0.0`
+  - `grpo_buffer_distill_loss_weight=0.0`
+  - `grpo_self_imitation_loss_weight=0.0`
+  - `grpo_hard_gate_ttc=false`, `grpo_hard_gate_ddc=false`
+  - `grpo_use_gspo_ratio=false`, matching the current-repo control.
+- The run should be judged first by whether DPO diagnostics become active after training starts:
+  `grpo_buffer_preference_dpo_pair_count`, `active_row_ratio`, `reward_gap_mean`,
+  `logit_mean`, and `implicit_accuracy`. Do not judge it only from final PDMS.
 
 ## Planned Attempt: Safety-Filtered GRPO Self-Imitation Targets
 
