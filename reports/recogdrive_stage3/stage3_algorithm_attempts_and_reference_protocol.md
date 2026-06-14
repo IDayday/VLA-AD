@@ -183,6 +183,28 @@ Artifacts:
 | `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z` | running | LR `1e-4`, `stage3_objective=grpo_replay`, `sample_time=16`, inner PPO epochs `2`, replay minibatch `8`, 8 GPUs, full navtrain, no buffer | pending | Latest logged step `339`: `valid_ratio=1.0`, ratio mean `0.9694`, clip fraction `0.2031`, KL `7.87e-4`; latest rollout safety was weak (`safe_ratio=0.6133`), so this remains a watched diagnostic. |
 | `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z` | running | LR `1e-4`, `stage3_objective=grpo_replay`, `sample_time=16`, inner PPO epochs `1`, replay minibatch `8`, 8 zt2 GPUs, full navtrain, no buffer | pending | Motivation: update-strength ablation from i2. Latest logged step `179`: `valid_ratio=1.0`, ratio mean `0.9992`, clip fraction `0`, KL `2.30e-6`, safe ratio `0.8281`. |
 
+Current-repo original-LR control status on 2026-06-14 19:23 UTC:
+- Run root: `/mnt/project/VLA-AD/outputs/stage3_grpo_refkl_s16_lr1e4_b2acc4_currentrepo_8gpu_20260614T191227Z`.
+- Training is running on local GPUs `0-7`; monitor reported about `40.9 GB` per GPU and high SM utilization after SceneLoader finished.
+- The resolved command confirms no buffer, no DPO, no self-imitation, no hard TTC/DDC gate, and `GRPO_USE_GSPO_RATIO=false`.
+- TensorBoard had only `lr-AdamW` at step `0` at this timestamp; no reward/loss scalar and no checkpoint yet. This is expected before the first GRPO/PDM training log window completes.
+- zt2 and zt3 checkpoint watchers are attached but only waiting for checkpoint files; they are configured to wait for free GPUs and not preempt existing remote tasks.
+
+Train-only keep-best elite buffer status on 2026-06-14 19:23 UTC:
+- Buffer path: `/mnt/project/VLA-AD/cache/recogdrive_stage3_awac_elite_buffer_train_v2_stage3_awac_iql_dualhost_20260612T182947Z`.
+- Full train-token coverage exists: `85109` `*.pkl.xz` records, about `342 MB`.
+- The keep-best zt3 builder is still running and updating records; the latest file mtimes were current at 19:21 UTC.
+- A read-only random sample of `5000` records showed:
+  - schema version: all v2; missing required fields: `0`; load/shape errors: `0`.
+  - mean selected candidates per record: `9.2222`.
+  - mean selected valid ratio: `0.980509`; has-valid-candidate ratio: `1.0`.
+  - mean GT reward: `0.931496`; mean IL reward: `0.700525`.
+  - mean raw best reward: `0.973363`; mean valid best reward: `0.973272`.
+  - mean valid best minus GT: `+0.041776`; mean valid best minus IL: `+0.272747`.
+  - `pct_best_valid_above_gt=0.587`; `pct_best_valid_above_il=0.802`.
+  - valid sources are dominated by structured perturbations: `progress_endpoint`, `progress_speed`, `progress_gamma`, plus policy/lateral/timing candidates.
+- Interpretation: the oracle/buffer side is not the main current bottleneck. The buffer contains many valid trajectories that beat GT, so the next algorithmic question remains policy absorption into the diffusion sampler. Any buffer-DPO/preference run must be isolated on top of the original-LR GRPO control shape, not on top of the failed v3 hard-gate configuration.
+
 ## Planned Attempt: Original-LR GRPO With RLOO Self-Imitation
 
 Motivation:
