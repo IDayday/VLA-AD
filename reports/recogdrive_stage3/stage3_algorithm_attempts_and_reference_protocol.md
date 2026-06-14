@@ -877,6 +877,33 @@ Expected use:
 - If the step checkpoint is catastrophically below the original early `0.88+` band, do not promote replay i1/i2 without fixing the method.
 - If it is plausible, wait for the full one-epoch replay/control checkpoints for the real gate.
 
+## 2026-06-14 06:24 UTC Active Run Snapshot
+
+No PDMS result is available yet.
+
+Current status:
+- Local replay i2 `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z`:
+  - Still running, no checkpoint.
+  - Latest logged step `1079`: reward `0.70439`, base reward `0.72044`, safe ratio `0.89844`, NC `0.91406`, DAC `0.98438`, TTC `0.82422`, DDC `0.85938`.
+  - Replay diagnostics: valid ratio `1.0`, optimizer steps `9`, ratio clip fraction `0.15625`, approx KL `7.33e-4`.
+- zt2 replay i1 `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z`:
+  - Still running, no checkpoint.
+  - Latest logged step `1119`: reward `0.80203`, base reward `0.80814`, safe ratio `0.90625`, NC `0.96680`, DAC `0.94141`, TTC `0.89062`, DDC `1.0`.
+  - Replay diagnostics: valid ratio `1.0`, optimizer steps `5`, ratio clip fraction `0.0`, approx KL `8.13e-6`.
+- zt3 original-LR GRPO control `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z`:
+  - Still running, no checkpoint.
+  - Latest logged step `449`: reward `0.89311`, base reward `0.86898`, safe ratio `0.95833`, TTC `0.93750`.
+- zt3 step-checkpoint replay diagnostic `stage3_grpo_replay_stepckpt_s16_i1_lr1e4_zt3_2gpu_20260614T0610Z`:
+  - `step-step=300.ckpt` was written at `2026-06-14T06:20:12Z`.
+  - Watcher archived it as `step-step_300.ckpt` at `2026-06-14T06:22:59Z`.
+  - Eval is pending because GPUs `6,7` are still busy with the diagnostic training.
+  - Latest logged step `79`: reward `0.22160`, base reward `0.44747`, safe ratio `0.5`, NC `0.95312`, DAC `0.5`, TTC `0.875`, DDC `0.76562`, replay valid ratio `0.5`.
+
+Decision:
+- Do not stop the full replay i1/i2 jobs before their first checkpoint.
+- Do not judge the step diagnostic from its noisy training scalar windows; wait for exact navtest PDMS on `step-step_300.ckpt`.
+- If `step-step_300` is far below the original early `0.88+` PDMS band, replay needs method changes before promotion.
+
 ## 2026-06-14 Attempt: Step-Level PPO Replay Implementation
 
 Motivation:
