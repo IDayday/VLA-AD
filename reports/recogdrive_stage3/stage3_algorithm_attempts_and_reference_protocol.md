@@ -909,6 +909,36 @@ Decision:
 - Let the watcher evaluate queued checkpoints in order; do not start duplicate evals for the same ckpts.
 - If `step-step_300` is far below the original early `0.88+` PDMS band, replay needs method changes before promotion.
 
+## 2026-06-14 06:46 UTC Active Run Snapshot
+
+No new PDMS result is available yet.
+
+Current status:
+- Local replay i2 `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z`:
+  - Still running, no checkpoint.
+  - Latest TensorBoard scalar step `1379`: reward `0.69689`, base reward `0.74012`, safe ratio `0.83984`, NC `0.97070`, DAC `0.86719`, TTC `0.91016`, DDC `0.98047`.
+  - Replay diagnostics: valid ratio `1.0`, optimizer steps `9`, ratio clip fraction `0.0`, approx KL `1.54e-4`, reference KL loss `0.03040`, BC coeff `0.10`.
+- zt2 replay i1 `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z`:
+  - Still running, no checkpoint.
+  - Latest TensorBoard scalar step `1519`: reward `0.68934`, base reward `0.73539`, safe ratio `0.87109`, NC `0.94141`, DAC `0.95312`, TTC `0.90234`, DDC `0.90234`.
+  - Replay diagnostics: valid ratio `1.0`, optimizer steps `5`, ratio clip fraction `0.0`, approx KL `1.20e-5`, reference KL loss `0.04611`, BC coeff `0.10`.
+- zt3 original-LR GRPO control `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z`:
+  - Still running, no checkpoint.
+  - Latest TensorBoard scalar step `499`: reward `0.85184`, base reward `0.83066`, safe ratio `0.95833`, TTC `0.84375`, reference KL loss `0.00900`, BC coeff `0.10`.
+- zt3 step-checkpoint replay diagnostic `stage3_grpo_replay_stepckpt_s16_i1_lr1e4_zt3_2gpu_20260614T0610Z`:
+  - `step-step_300` exact navtest eval is still running.
+  - Latest eval log around `2026-06-14T06:43Z` shows progress through roughly `2067 / 6069` navtest scenarios.
+  - `step-step_600` remains queued by the watcher.
+
+Resource state:
+- Local 8 A800 GPUs are occupied by replay i2 training.
+- zt2 8 A800 GPUs are occupied by replay i1 training.
+- zt3 is running the original-LR control plus the step-checkpoint eval; do not start duplicate evals or kill existing remote tasks.
+
+Decision:
+- Continue waiting for exact navtest PDMS. The replay training diagnostics show the objective is active and numerically stable, but recent safety/reward batches are not strong enough to promote without exact evaluation.
+- Apply the `0.88+` original Stage3 `epoch0-1` sanity gate to the first comparable replay checkpoints.
+
 ## 2026-06-14 Attempt: Step-Level PPO Replay Implementation
 
 Motivation:
