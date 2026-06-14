@@ -51,6 +51,8 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 | `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_diag_zt2_4gpu_20260614T024536Z` | stop and replace | It entered training and wrote only `lr-AdamW`; with default `log_every_n_steps=50`, it is too low-information for a limited diagnostic. Replace with a shorter `log_every_n_steps=1` diagnostic and a long behavior-policy sync interval. |
 | Local queued `stage3_grpo_buffer_guided_selfimit_s16_lr2e4_b2acc4_wait2_20260614T003614Z` launcher | stopped | It was a stale queued run from before this protocol and duplicates the zt2 buffer-guided experiment. |
 | `supervise_recogdrive_stage3_experiment.py` auto-supervisor | stopped | It can auto-launch stale next actions without the new reference-audit protocol. Future launches should be manual after updating this file. |
+| `stage3_grpo_replay_diag_s4_i2_lr1e4_4gpu_20260614T042519Z` | completed smoke | New PPO replay path completed 40 train batches and wrote `epoch=0-step=200.ckpt`. This validates plumbing and diagnostics only; it is not a PDMS result and not a full algorithm verdict. |
+| `stage3_grpo_replay_diag_s16_i2_lr1e4_8gpu_20260614T043345Z` | completed diagnostic | Near-full sampling diagnostic passed the replay gates at `sample_time=16`: valid ratio stayed `1.0`, PPO clip fraction became active, KL stayed finite, and safety submetrics were logged. Promote to controlled 1-epoch training, not full 20-epoch training yet. |
 
 ## Current Baselines And Controls
 
@@ -65,6 +67,8 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 | `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_diag_zt2_4gpu_20260614T023758Z` | failed before training | LR `1e-4`, GSPO ratio, batch advantage normalize, fixed advantage clip `3.0`, no buffer | none | Failed at Hydra config parsing because `grpo_normalize_advantage_batch` was missing from `recogdrive_agent.yaml`. |
 | `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_diag_zt2_4gpu_20260614T024536Z` | stopped/replaced | LR `1e-4`, GSPO ratio, batch advantage normalize, fixed advantage clip `3.0`, no buffer, `limit_train_batches=80`, `limit_val_batches=0`, default logging | none | Wrote only `lr-AdamW`; insufficient diagnostic density. |
 | `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_log1_diag_zt2_4gpu_20260614T0300Z` | completed diagnostic | LR `1e-4`, GSPO ratio, batch advantage normalize, fixed advantage clip `3.0`, no buffer, `limit_train_batches=40`, `limit_val_batches=0`, `log_every_n_steps=1`, behavior sync interval `100000` | no eval | Ratio/KL/clip diagnostics moved after optimizer updates; this validates instrumentation and short-run GSPO activity only. |
+| `stage3_grpo_replay_diag_s4_i2_lr1e4_4gpu_20260614T042519Z` | completed smoke | LR `1e-4`, `stage3_objective=grpo_replay`, `sample_time=4`, inner PPO epochs `2`, replay minibatch `4`, 4 GPUs, 40 train batches, no buffer | no eval | End-to-end PPO replay path is active: fixed old logprob replay, manual optimization, PPO ratio diagnostics, reference KL, and BC update ran without NaNs. Too small/conservative to evaluate as a main result. |
+| `stage3_grpo_replay_diag_s16_i2_lr1e4_8gpu_20260614T043345Z` | completed diagnostic | LR `1e-4`, `stage3_objective=grpo_replay`, `sample_time=16`, inner PPO epochs `2`, replay minibatch `8`, 8 GPUs, 40 train batches, no buffer | no eval | Near-full sample-time diagnostic passed. Checkpoint `epoch=0-step=360.ckpt`; keep as implementation evidence only, not as a final PDMS result. |
 
 ## Completed Attempt Ledger
 
@@ -200,6 +204,52 @@ Decision:
 - Keep these code/logging changes. They prove the GSPO ratio path and advantage transform are active.
 - Do not claim this is SOTA PPO yet. It is still a single-pass Lightning training loop, not DDPO/DPPO/RIPT-VLA-style rollout replay with fixed old logprobs over multiple inner epochs.
 - The next full run may use these controls as a clean GSPO baseline only if we explicitly label it as "GSPO single-pass", not as full DPPO.
+
+### 3.2 GRPO PPO Replay Smoke Diagnostic
+
+Run:
+- `stage3_grpo_replay_diag_s4_i2_lr1e4_4gpu_20260614T042519Z`
+
+Reference alignment:
+- DDPO, DPPO, and RIPT-VLA all use collected rollouts or old log-probabilities with PPO-style clipped updates instead of one immediate reward-weighted regression step.
+- This run is the first local path that performs fixed-rollout replay in the Lightning training loop with manual optimizer steps.
+
+Config:
+- LR `1e-4`
+- `stage3_objective=grpo_replay`
+- `sample_time=4`
+- `batch_size=2`, `accumulate_grad_batches=1`, 4 GPUs
+- `limit_train_batches=40`, `limit_val_batches=0`, `log_every_n_steps=1`
+- `grpo_use_gspo_ratio=true`
+- `grpo_normalize_advantage_batch=true`
+- `grpo_advantage_clip_abs=3.0`
+- `ppo_replay_inner_epochs=2`
+- `ppo_replay_minibatch_size=4`
+- `ppo_replay_sync_behavior_each_batch=true`
+- `ppo_replay_bc_update=true`
+
+Observed diagnostics:
+- Checkpoint written: `epoch=0-step=200.ckpt`.
+- `ppo_replay_optimizer_steps`: `5` per batch, matching `2` inner epochs over `8` rollout rows with minibatch `4`, plus one BC trust-region update.
+- `ppo_replay_valid_ratio`: epoch mean `0.9852`, last step `0.8750`.
+- `ppo_replay_loss_active`: `1.0` for all 40 logged batches.
+- `gspo_ratio_mean`: epoch mean `0.9908`, last step `0.9886`.
+- `gspo_ratio_min/max`: epoch min/max around `0.9823 / 0.9981`; last step `0.9731 / 0.9985`.
+- `gspo_ratio_clip_frac`: `0.0` throughout.
+- `gspo_approx_kl`: epoch mean `8.66e-5`, last step `1.13e-4`.
+- `grpo_advantage_std_after_transform`: `1.0`, confirming batch advantage normalization.
+- `grpo_advantage_zero_ratio`: epoch mean `0.00625`.
+- Rollout component means were finite; last-step `mean_nc=0.8438`, `mean_dac=0.8125`, `mean_ttc=0.7188`, `mean_ddc=0.9844`, `safe_ratio=0.6875`.
+
+Decision:
+- Keep the implementation. It passes the minimal maturity smoke for PPO replay plumbing.
+- Do not evaluate this checkpoint as an algorithm result; `sample_time=4` and 40 batches are intentionally too small.
+- Do not launch full training directly. The next meaningful experiment is a controlled 1-epoch PPO replay diagnostic with `sample_time=16`, original LR `1e-4`, and the same safety/BC/reference-KL settings as the GRPO control.
+
+Failure criteria for the next replay run:
+- If `ppo_replay_valid_ratio` falls below `0.8` for sustained windows, stop and inspect group sampling.
+- If `gspo_ratio_clip_frac` remains exactly `0` while reward does not move, the replay update may be too weak; increase inner epochs or replay minibatch exposure before full training.
+- If `gspo_approx_kl` spikes or DDC/TTC means regress, reduce inner epochs or tighten reference/BC before continuing.
 
 ### 4. GRPO Buffer-Guided Self-Imitation
 
@@ -366,6 +416,7 @@ Required outputs:
 - Full or shard-aggregated navtest eval for local `2e-4` `epoch_0-step_1330`: completed, PDMS `0.872059`.
 - First checkpoint/eval for zt3 `1e-4` GRPO.
 - Store zt2 diagnostic scalars in this ledger and compare with any future GSPO run.
+- Store local PPO replay smoke scalars in this ledger: completed.
 
 Go/no-go:
 - Local `2e-4` is below Safe DiffGRPO by about `0.0341` PDMS at epoch0; do not revisit `2e-4` as a default LR.
@@ -396,15 +447,25 @@ Interpretation limit:
 - This run can validate whether single-pass GSPO improves over current GRPO.
 - It cannot validate full DPPO/DDPO/RIPT-VLA until rollout replay exists.
 
-### Phase 3: Build Full PPO Replay Before Heavy Buffer Absorption
+### Phase 3: Prove PPO Replay At Near-Full GRPO Sampling Before Heavy Buffer Absorption
+
+Status:
+- A trajectory-level PPO replay path now exists and passed a `sample_time=4` smoke test.
+- It stores sampled trajectories, denoising chains, old reduced logprobs, rewards, components, safety masks, group ids, group advantages, and optional old-policy BC chains.
+- It replays fixed rollouts for multiple inner epochs/minibatches with PPO clipping, reference KL, and manual optimizer steps.
 
 Required before the next main full-training launch:
-- Implement a real rollout replay buffer before another expensive full run.
-- Store sampled denoising chains or sufficient denoising state, old logprobs, rewards, components, safety masks, group ids, and advantages.
-- Replay fixed rollouts for multiple inner epochs/minibatches with PPO clipping.
-- Add per-denoising-step or chain-level KL/ratio diagnostics depending on what the model exposes safely.
-- Add dynamic group filtering or resampling for zero-advantage / all-safe / all-unsafe groups, following the RIPT-VLA lesson that uninformative groups weaken the gradient signal.
-- Add an explicit resource-efficient diagnostic mode that collects a small rollout buffer and runs a few replay updates with `LOG_EVERY_N_STEPS=1` before any full 20-epoch launch.
+- Run a near-full-sampling diagnostic with `sample_time=16`, LR `1e-4`, short duration, and `LOG_EVERY_N_STEPS=1`.
+- Compare replay diagnostics against zt3 original-LR GRPO control:
+  - reward/base_reward trend,
+  - valid rollout ratio,
+  - mixed/all-safe/all-unsafe group ratios,
+  - ratio mean/min/max,
+  - clip fraction,
+  - approximate KL,
+  - NC/DAC/TTC/DDC means.
+- Add dynamic group filtering or resampling only if the diagnostic shows too many all-safe/all-unsafe or near-zero-advantage groups.
+- Add per-denoising-step PPO only if trajectory-level replay shows a useful signal but insufficient policy absorption; do not add it preemptively because it increases memory and implementation risk.
 
 This is the first implementation level that can reasonably be compared to DDPO/DPPO/RIPT-VLA.
 
@@ -416,16 +477,62 @@ Implementation shape in this codebase:
 - Start with trajectory-level reduced logprob replay, because current code already supports chain logprob reduction. Only add per-step denoising PPO if the trajectory-level replay diagnostic is stable and if memory allows storing enough denoising-chain state.
 
 PPO replay smoke-test acceptance before a full run:
-- Can collect a rollout mini-buffer with shapes `[B, G, K, H, D]` or an explicitly documented equivalent.
-- Old logprob stays fixed across replay epochs; new logprob changes after optimizer steps.
-- Ratio mean begins near `1.0`, clip fraction becomes non-zero only after updates, and approximate KL remains finite.
-- Advantage rows with no useful group signal are filtered or down-weighted and logged.
-- NC/DAC/TTC/DDC component means are logged for rollout and replay batches.
-- A diagnostic run with `limit_train_batches<=40` logs all replay diagnostics at `LOG_EVERY_N_STEPS=1`.
+- Can collect a rollout mini-buffer with shapes `[B, G, K, H, D]` or an explicitly documented equivalent: passed for trajectory-level replay.
+- Old logprob stays fixed across replay epochs; new logprob changes after optimizer steps: passed by finite ratio/KL movement.
+- Ratio mean begins near `1.0`, clip fraction becomes non-zero only after updates, and approximate KL remains finite: partially passed. KL is finite, but clip fraction stayed `0.0`, so the first full-sampling diagnostic should test whether the update is too conservative.
+- Advantage rows with no useful group signal are filtered or down-weighted and logged: partially passed. Zero-advantage ratio is logged and low in the smoke, but dynamic resampling is not implemented.
+- NC/DAC/TTC/DDC component means are logged for rollout and replay batches: passed for rollout components.
+- A diagnostic run with `limit_train_batches<=40` logs all replay diagnostics at `LOG_EVERY_N_STEPS=1`: passed.
 
 Only after this smoke test passes:
 - Launch a limited 1-epoch replay run with checkpoint eval.
 - Launch full 20-epoch replay only if the 1-epoch eval is not below the `1e-4` control by more than normal eval noise and does not degrade DDC/TTC.
+
+Planned near-full diagnostic:
+- Run name pattern: `stage3_grpo_replay_diag_s16_i2_lr1e4_8gpu_*`.
+- Purpose: test the PPO replay implementation under the same group sampling scale as the historical GRPO runs before committing to full training.
+- Config:
+  - LR `1e-4`
+  - `stage3_objective=grpo_replay`
+  - `sample_time=16`
+  - `batch_size=2`
+  - 8 local GPUs
+  - `max_epochs=1`
+  - `limit_train_batches=40`
+  - `limit_val_batches=0`
+  - `log_every_n_steps=1`
+  - BC anneal `0.10 -> 0.05`
+  - reference KL `0.02`
+  - scheduler horizon `20` epochs, min LR `1e-5`
+  - PPO replay inner epochs `2`
+  - PPO replay minibatch size `8`
+  - max grad norm `1.0`
+  - no elite buffer, no AWAC, no DPO
+- Expected signs:
+  - `ppo_replay_valid_ratio >= 0.8`.
+  - `gspo_approx_kl` finite and small.
+  - `gspo_ratio_mean` near `1.0` but not exactly constant.
+  - `gspo_ratio_clip_frac` may become non-zero after several replay updates; if it stays zero, the update is conservative and should be tuned before full training.
+  - NC/DAC/TTC/DDC component means must remain comparable to the GRPO control windows.
+- Stop criteria:
+  - NaN/inf in loss, ratio, KL, or reward.
+  - Sustained `ppo_replay_loss_active=0`.
+  - Severe DDC/TTC regression in rollout components.
+  - Out-of-memory at `sample_time=16`; retry with the same algorithm and smaller per-GPU batch rather than changing the objective.
+
+Near-full diagnostic result:
+- Run: `stage3_grpo_replay_diag_s16_i2_lr1e4_8gpu_20260614T043345Z`.
+- Status: completed 40/40 train batches in about 3 minutes and wrote `epoch=0-step=360.ckpt`.
+- `ppo_replay_optimizer_steps`: `9` per batch, matching `2` inner epochs over 32 rollout rows with minibatch `8`, plus one BC update.
+- `ppo_replay_valid_ratio`: `1.0` for all logged batches.
+- `ppo_replay_loss_active`: `1.0` for all logged batches.
+- `gspo_ratio_mean`: epoch `0.9746`; step range `0.9436 - 0.9890`.
+- `gspo_ratio_clip_frac`: epoch `0.1020`; step range `0.0 - 0.5`.
+- `gspo_approx_kl`: epoch `5.38e-4`; step max `0.00223`.
+- Advantage normalization/clipping was active: epoch `grpo_advantage_std_after_transform=0.9494`, `grpo_advantage_clip_frac=0.0135`, `zero_ratio=0.0`.
+- Group composition was informative: epoch `mixed_group_ratio=0.6469`, `all_safe_group_ratio=0.3438`, `all_unsafe_group_ratio=0.0094`.
+- Safety/submetric rollout means: `NC=0.9312`, `DAC=0.8471`, `TTC=0.8032`, `DDC=0.9555`, `safe_ratio=0.7863`.
+- Decision: launch a controlled 1-epoch PPO replay training run with the same algorithm settings and epoch-end PDMS evaluation. Do not launch full 20-epoch replay until the 1-epoch checkpoint evaluation is competitive and does not regress DDC/TTC.
 
 Buffer absorption should then be added as a controlled auxiliary:
 1. reward-neighborhood bonus only
@@ -508,11 +615,15 @@ Do not prioritize this over GRPO until:
 
 ## Current Run Decisions
 
-As of 2026-06-14 04:20 UTC:
+As of 2026-06-14 04:35 UTC:
 
 - Keep running: `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z`.
   - Reason: this is the needed original-LR GRPO control. It isolates algorithm effects from the failed/weak `2e-4` route.
   - Do not kill it unless it crashes, produces invalid logs, or the user explicitly cancels it.
+- Completed and keep as smoke evidence: `stage3_grpo_replay_diag_s4_i2_lr1e4_4gpu_20260614T042519Z`.
+  - Reason: it validates the new PPO replay implementation path, but is intentionally too small for PDMS conclusions.
+- Completed and promote to controlled 1-epoch training: `stage3_grpo_replay_diag_s16_i2_lr1e4_8gpu_20260614T043345Z`.
+  - Reason: the near-full sample-time diagnostic passed replay, ratio/KL, and safety logging gates.
 - Do not resume: pure AWAC/IQL and AWAC+DPO variants listed above.
   - Reason: buffer quality is good, but policy absorption failed; current variants are not mature enough to justify more full-scale compute.
 - Do not resume: `2e-4` GRPO/buffer-guided variants as main evidence.
