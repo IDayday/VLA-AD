@@ -55,6 +55,7 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 | `stage3_grpo_replay_diag_s16_i2_lr1e4_8gpu_20260614T043345Z` | completed diagnostic | Near-full sampling diagnostic passed the replay gates at `sample_time=16`: valid ratio stayed `1.0`, PPO clip fraction became active, KL stayed finite, and safety submetrics were logged. Promote to controlled 1-epoch training, not full 20-epoch training yet. |
 | `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z` | running/watch | Controlled full-navtrain 1-epoch PPO replay run. Replay validity is `1.0` and KL is small; one weak safety/reward batch appeared, so keep but do not promote until epoch eval. |
 | `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z` | running | Controlled zt2 ablation. Same as i2 but `ppo_replay_inner_epochs=1`; currently cleaner ratio/clip/KL behavior and no hard stop signal. |
+| `stage3_grpo_dppo_transition_s16_i1_lr1e4_zt2_2gpu_20260614T083005Z` | failed promotion gate | DPPO-style transition replay improved from step300 to epoch0 but stayed far below the original Stage3 `epoch0-1 ~= 0.88+` early gate: step300 `0.744740`, step600 `0.801195`, epoch0-step800 `0.831015`. Do not continue this transition replay implementation without a method-level redesign. |
 
 ## Current Baselines And Controls
 
@@ -1149,6 +1150,25 @@ Launch status:
   - step checkpoints every `300` train steps.
 - Fairness note:
   - `num_denoising_steps` is `4` in the smoke run. With `sample_time=16` and transition minibatch `32`, PPO replay should perform about two transition minibatches plus one BC update per train batch, matching the previous simplified step replay's optimizer-step cadence more closely than a smaller transition minibatch would.
+
+Evaluation result:
+- The original torchrun watcher launched for `step-step_300` lost its parent and left orphan ranks before scoring. The final reported numbers below use independent exact-PDMS token shards with no scoring formula changes:
+  - `step-step_300`: local 8 independent 1GPU shards.
+  - `step-step_600`: zt3 2 independent 1GPU shards on idle GPUs 6 and 7.
+  - `epoch=0-step=800`: local 8 independent 1GPU shards.
+- Full navtest exact PDMS results:
+
+| Checkpoint | Eval root | PDMS | NC | DAC | TTC | EP | Comfort | DDC | TLC |
+|---|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| `step-step_300` | `/mnt/project/VLA-AD/outputs/stage3_grpo_dppo_transition_s16_i1_lr1e4_zt2_2gpu_20260614T083005Z_navtest_exact_shards_step300_20260614T0900Z` | `0.744740` | `0.954894` | `0.848163` | `0.878234` | `0.719376` | `0.996375` | `0.942289` |  |
+| `step-step_600` | `/mnt/project/VLA-AD/outputs/stage3_grpo_dppo_transition_s16_i1_lr1e4_zt2_2gpu_20260614T083005Z_navtest_exact_shards_step600_zt3_2gpu_20260614T0858Z` | `0.801195` | `0.972524` | `0.891251` | `0.923875` | `0.752611` | `0.999423` | `0.947767` |  |
+| `epoch=0-step=800` | `/mnt/project/VLA-AD/outputs/stage3_grpo_dppo_transition_s16_i1_lr1e4_zt2_2gpu_20260614T083005Z_navtest_exact_shards_epoch0_step800_20260614T0912Z` | `0.831015` | `0.978003` | `0.912836` | `0.927583` | `0.786319` | `0.999423` | `0.961691` |  |
+
+Conclusion:
+- This run fails the user-reported original Stage3 early gate of `0.88+` at the matched epoch0 point.
+- The trajectory quality recovers over the limited 1-epoch run, but the recovery is not close enough; the gap at epoch0 is about `-0.049` PDMS versus the early gate.
+- Main regressions versus the expected early Stage3 band are DAC and EP, with TTC/DDC also below a healthy original Stage3 trajectory distribution.
+- Do not promote this DPPO-style transition replay variant to full training. Any next GRPO redesign should revisit the objective itself, not only tune LR or minibatch count.
 
 ## Update Template
 
