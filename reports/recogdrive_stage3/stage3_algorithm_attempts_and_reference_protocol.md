@@ -1265,6 +1265,8 @@ Automation:
 - `scripts/training/watch_recogdrive_stage3_early_gate.sh` polls the gate output for a run.
 - With `STOP_ON_FAIL=0`, it reports the decision and leaves training untouched.
 - With `STOP_ON_FAIL=1`, it only terminates the local training process group recorded by the gate JSON. It does not terminate remote evaluation watchers or unrelated remote tasks.
+- For new stable launches, set `START_EARLY_GATE_WATCHER=1 EARLY_GATE_THRESHOLD=0.88 EARLY_GATE_MARGIN=0.005`.
+- Use `EARLY_GATE_STOP_ON_FAIL=1` only when the run root is local and the training status JSON records the correct process group.
 
 ## Update Template
 

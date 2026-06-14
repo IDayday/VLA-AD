@@ -11,6 +11,11 @@ STABLE_LAUNCHER="${STABLE_LAUNCHER:-/mnt/project/skill/stable-gpu-job-launch/scr
 GPU_LIST="${GPU_LIST:-0,1,2,3,4,5,6,7}"
 CACHE_MODE="${CACHE_MODE:-online}"
 KILL_GPU_STRESS="${KILL_GPU_STRESS:-1}"
+START_EARLY_GATE_WATCHER="${START_EARLY_GATE_WATCHER:-0}"
+EARLY_GATE_THRESHOLD="${EARLY_GATE_THRESHOLD:-0.88}"
+EARLY_GATE_MARGIN="${EARLY_GATE_MARGIN:-0.005}"
+EARLY_GATE_POLL_SECONDS="${EARLY_GATE_POLL_SECONDS:-300}"
+EARLY_GATE_STOP_ON_FAIL="${EARLY_GATE_STOP_ON_FAIL:-0}"
 
 mkdir -p "${OUT_ROOT}"
 
@@ -153,6 +158,16 @@ JOB_CMD+="bash $(printf '%q' "${REPO_ROOT}/scripts/training/run_recogdrive_stage
   printf 'stage3_rl_2b\t%s\t%s\n' "${GPU_LIST}" "${JOB_CMD}"
 } > "${OUT_ROOT}/jobs.tsv"
 
+{
+  echo "run_root=${OUT_ROOT}"
+  echo "start_early_gate_watcher=${START_EARLY_GATE_WATCHER}"
+  echo "early_gate_threshold=${EARLY_GATE_THRESHOLD}"
+  echo "early_gate_margin=${EARLY_GATE_MARGIN}"
+  echo "early_gate_poll_seconds=${EARLY_GATE_POLL_SECONDS}"
+  echo "early_gate_stop_on_fail=${EARLY_GATE_STOP_ON_FAIL}"
+  echo "early_gate_rule=stop if PDMS < threshold - margin; watch if within margin; continue if PDMS >= threshold"
+} > "${OUT_ROOT}/early_gate_config.txt"
+
 setsid "${PYTHON_BIN}" "${STABLE_LAUNCHER}" \
   --jobs-tsv "${OUT_ROOT}/jobs.tsv" \
   --out-root "${OUT_ROOT}" \
@@ -160,4 +175,15 @@ setsid "${PYTHON_BIN}" "${STABLE_LAUNCHER}" \
   > "${OUT_ROOT}/launcher.log" 2>&1 < /dev/null &
 
 echo "$!" > "${OUT_ROOT}/launcher.pid"
+if [[ "${START_EARLY_GATE_WATCHER}" == "1" && "${DRY_RUN:-0}" != "1" ]]; then
+  setsid env \
+    RUN_ROOT="${OUT_ROOT}" \
+    THRESHOLD="${EARLY_GATE_THRESHOLD}" \
+    MARGIN="${EARLY_GATE_MARGIN}" \
+    POLL_SECONDS="${EARLY_GATE_POLL_SECONDS}" \
+    STOP_ON_FAIL="${EARLY_GATE_STOP_ON_FAIL}" \
+    bash "${REPO_ROOT}/scripts/training/watch_recogdrive_stage3_early_gate.sh" \
+    > "${OUT_ROOT}/early_gate_watch.nohup.log" 2>&1 < /dev/null &
+  echo "$!" > "${OUT_ROOT}/early_gate_watch.pid"
+fi
 echo "launched ${OUT_ROOT}"
