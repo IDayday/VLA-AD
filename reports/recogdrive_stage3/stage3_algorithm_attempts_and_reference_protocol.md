@@ -939,6 +939,37 @@ Decision:
 - Continue waiting for exact navtest PDMS. The replay training diagnostics show the objective is active and numerically stable, but recent safety/reward batches are not strong enough to promote without exact evaluation.
 - Apply the `0.88+` original Stage3 `epoch0-1` sanity gate to the first comparable replay checkpoints.
 
+## 2026-06-14 07:18 UTC Trajectory-Level Replay Gate Result
+
+Exact navtest result:
+- Run: `stage3_grpo_replay_stepckpt_s16_i1_lr1e4_zt3_2gpu_20260614T0610Z`.
+- Checkpoint: `step-step_300`.
+- Eval completed at `2026-06-14T07:16:11Z` with return code `0`.
+- Valid rows: `12138`.
+- PDMS: `0.816440`.
+- Submetrics: NC `0.966263`, DAC `0.914483`, TTC `0.908304`, EP `0.775452`, comfort `0.998517`, DDC `0.951598`, TLC not reported by this summary.
+
+Interpretation:
+- This is materially below the user-reported original Stage3 early `epoch0-1` sanity band of `0.88+`.
+- It is also below the stopped high-LR `2e-4` epoch0 result `0.872059`.
+- The limited-batch step checkpoint is not a final same-epoch comparison, but the gap is too large to justify promoting the trajectory-level replay implementation.
+
+Action taken:
+- Stopped the trajectory-level replay long jobs:
+  - local i2 `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z`.
+  - zt2 i1 `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z`.
+- Stopped the failed replay checkpoint watcher/eval streams:
+  - local i2 watcher.
+  - zt2 i1 watcher.
+  - zt3 replay step-checkpoint watcher and the queued `step-step_600` eval.
+- Kept the zt3 original-LR GRPO control and its zt2/zt3 watchers running.
+
+Decision:
+- Do not run or promote more trajectory-level PPO replay as-is.
+- Treat the failure as a method/objective issue, not a simple LR or epoch-count issue.
+- Next diagnostic should use the already implemented denoising-step-level PPO replay mode, because DDPO/DPPO operate on denoising transitions rather than one reduced trajectory logprob.
+- The next run must be an isolated same-scale diagnostic against the failed trajectory-level setup: same LR `1e-4`, `sample_time=16`, `LIMIT_TRAIN_BATCHES=200`, 2 GPUs, but `GRPO_PPO_REPLAY_LOGPROB_MODE=step`.
+
 ## 2026-06-14 Attempt: Step-Level PPO Replay Implementation
 
 Motivation:
@@ -977,6 +1008,44 @@ Decision:
 - First wait for the current trajectory-level replay i1/i2 one-epoch PDMS results and zt3 original-GRPO control.
 - If trajectory-level replay is promising but not clearly better, run a short step-level diagnostic before any 20-epoch full run.
 - If trajectory-level replay is already worse than the control, step-level PPO becomes the next implementation-focused diagnostic rather than another hyperparameter tweak.
+
+### 2026-06-14 07:27 UTC Step-Level PPO Diagnostic Launch Plan
+
+Reason:
+- The trajectory-level replay gate failed with PDMS `0.816440` at `step-step_300`, which is far below the original Stage3 early `0.88+` band.
+- This points to a coarse-objective absorption issue: reducing a diffusion rollout to one trajectory logprob is not aligned with DDPO/DPPO, which optimize denoising transitions.
+
+Implementation fix before launch:
+- `scripts/training/launch_recogdrive_stage3_rl_2b_local_stable.sh` now forwards:
+  - `GRPO_PPO_REPLAY_LOGPROB_MODE`
+  - `GPUS`, `GPUS_PER_NODE`
+  - `CHECKPOINT_EVERY_N_EPOCHS`, `CHECKPOINT_EVERY_N_TRAIN_STEPS`
+  - `TRAINER_GRADIENT_CLIP_VAL`
+- Dry-run verified that `agent.grpo_ppo_replay_logprob_mode=step`, `trainer.params.devices=2`, and `checkpoint.every_n_train_steps=300` reach the final Hydra command.
+
+Planned isolated diagnostic:
+- Run name: `stage3_grpo_replay_stepmode_stepckpt_s16_i1_lr1e4_zt3_2gpu_20260614T0727Z`.
+- Training host/GPU: zt3 GPUs `6,7`.
+- Eval watcher: local 2 GPUs watching the shared output directory.
+- Config held equal to the failed trajectory-level diagnostic where possible:
+  - LR `1e-4`
+  - `stage3_objective=grpo_replay`
+  - `sample_time=16`
+  - `GRPO_PPO_REPLAY_INNER_EPOCHS=1`
+  - `GRPO_PPO_REPLAY_MINIBATCH_SIZE=8`
+  - `GRPO_USE_GSPO_RATIO=true`
+  - `GRPO_NORMALIZE_ADVANTAGE_BATCH=true`
+  - `GRPO_ADVANTAGE_CLIP_ABS=3.0`
+  - `REFERENCE_KL_COEFF=0.02`
+  - `REFERENCE_KL_CHUNK_SIZE=16`
+  - `BATCH_SIZE=1`, `GPUS_PER_NODE=2`
+  - `LIMIT_TRAIN_BATCHES=200`, `LIMIT_VAL_BATCHES=0`
+  - step checkpoints every `300` train steps.
+- Single intended variable: `GRPO_PPO_REPLAY_LOGPROB_MODE=step` instead of `trajectory`.
+
+Promotion gate:
+- If `step-step_300` remains far below `0.88`, step-level replay alone is not enough and we should inspect reward/action-distribution mismatch or return to original GRPO with better reward shaping.
+- If `step-step_300` materially improves over `0.816440`, continue evaluating queued `step-step_600` / epoch checkpoint and consider a larger run.
 
 ## Update Template
 
