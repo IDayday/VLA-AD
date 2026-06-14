@@ -35,6 +35,7 @@ cmd=(
   --precision "${PRECISION:-bf16-mixed}"
   --teacher-lru-size "${TEACHER_LRU_SIZE:-0}"
   --max-image-patches "${MAX_IMAGE_PATCHES:-12}"
+  --log-every-steps "${LOG_EVERY_STEPS:-50}"
 )
 
 if [[ -n "${VGGT_FEATURE_DIM:-}" ]]; then

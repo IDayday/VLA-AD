@@ -34,6 +34,7 @@ cmd=(
   --batch-size "${BATCH_SIZE:-1}"
   --device "${DEVICE:-cuda}"
   --precision "${PRECISION:-bf16}"
+  --output-dtype "${OUTPUT_DTYPE:-fp32}"
   --train-vlm-mode "${TRAIN_VLM_MODE:-frozen}"
 )
 if [[ -n "${STAGE1_CHECKPOINT:-}" ]]; then cmd+=(--stage1-checkpoint "${STAGE1_CHECKPOINT}"); fi
@@ -43,6 +44,7 @@ if [[ "${INCLUDE_TEACHER_TARGETS:-0}" == "1" ]]; then cmd+=(--include-teacher-ta
 if [[ "${ALLOW_EVAL_TEACHER_TARGETS:-0}" == "1" ]]; then cmd+=(--allow-eval-teacher-targets); fi
 if [[ "${OVERWRITE:-0}" == "1" ]]; then cmd+=(--overwrite); fi
 if [[ -n "${MAX_SAMPLES:-}" ]]; then cmd+=(--max-samples "${MAX_SAMPLES}"); fi
+if [[ -n "${PROGRESS_INTERVAL:-}" ]]; then cmd+=(--progress-interval "${PROGRESS_INTERVAL}"); fi
 if [[ "${SYNTHETIC_SMOKE:-0}" == "1" ]]; then cmd+=(--synthetic-smoke); fi
 if [[ "${ALLOW_MINIMAL_PROMPT:-0}" == "1" ]]; then cmd+=(--allow-minimal-prompt); fi
 

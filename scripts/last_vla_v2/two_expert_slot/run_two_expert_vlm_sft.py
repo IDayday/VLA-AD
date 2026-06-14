@@ -5,6 +5,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from collections import OrderedDict
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
@@ -335,6 +336,27 @@ def build_optimizer(module: TwoExpertVLMSFTModule, args: argparse.Namespace) -> 
     return torch.optim.AdamW(groups, weight_decay=float(args.weight_decay))
 
 
+def _metric_float(value: Any) -> Optional[float]:
+    if value is None:
+        return None
+    if isinstance(value, torch.Tensor):
+        value = value.detach().float()
+        if value.numel() != 1:
+            value = value.mean()
+        return float(value.cpu().item())
+    try:
+        return float(value)
+    except (TypeError, ValueError):
+        return None
+
+
+def append_progress_jsonl(path: Path, payload: Dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as f:
+        f.write(json.dumps(payload, sort_keys=True) + "\n")
+        f.flush()
+
+
 def autocast_context(device: torch.device, precision: str):
     enabled = device.type == "cuda" and precision in {"bf16-mixed", "16-mixed", "fp16-mixed"}
     dtype = torch.bfloat16 if precision == "bf16-mixed" else torch.float16
@@ -378,6 +400,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--lora-alpha", type=int, default=64)
     parser.add_argument("--lora-dropout", type=float, default=0.05)
     parser.add_argument("--lora-allow-mixed-scope", action="store_true")
+    parser.add_argument("--log-every-steps", type=int, default=50)
     return parser.parse_args()
 
 
@@ -448,7 +471,34 @@ def main() -> int:
     train_module = module.module if hasattr(module, "module") else module
     optimizer = build_optimizer(train_module, args)
     optimizer.zero_grad(set_to_none=True)
-    metrics = {"forward_steps": 0, "optimizer_steps": 0, "last_loss": None}
+    rank = int(os.getenv("RANK", "0"))
+    world_size = int(os.getenv("WORLD_SIZE", "1"))
+    is_rank0 = rank == 0
+    progress_path = args.output_dir / "train_progress.jsonl"
+    total_forward_steps_per_rank = len(dataloader) * int(args.max_epochs)
+    metrics = {
+        "forward_steps": 0,
+        "optimizer_steps": 0,
+        "last_loss": None,
+        "total_forward_steps_per_rank": int(total_forward_steps_per_rank),
+    }
+    if is_rank0:
+        append_progress_jsonl(
+            progress_path,
+            {
+                "event": "stage1_start",
+                "time": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                "batch_size_per_gpu": int(args.batch_size),
+                "effective_batch_size": int(args.batch_size) * int(world_size) * int(args.grad_accum),
+                "grad_accum": int(args.grad_accum),
+                "log_every_steps": int(args.log_every_steps),
+                "max_epochs": int(args.max_epochs),
+                "precision": str(args.precision),
+                "train_mode": str(args.train_mode),
+                "total_forward_steps_per_rank": int(total_forward_steps_per_rank),
+                "world_size": int(world_size),
+            },
+        )
     for epoch in range(int(args.max_epochs)):
         if sampler is not None:
             sampler.set_epoch(epoch)
@@ -467,11 +517,51 @@ def main() -> int:
                 pending_grads = 0
             metrics["forward_steps"] += 1
             metrics["last_loss"] = float(out["loss"].detach().cpu())
+            log_every = max(1, int(args.log_every_steps))
+            should_log = is_rank0 and (
+                metrics["forward_steps"] == 1
+                or metrics["forward_steps"] % log_every == 0
+                or step + 1 == len(dataloader)
+            )
+            if should_log:
+                progress = {
+                    "event": "train_step",
+                    "time": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                    "epoch": int(epoch),
+                    "step_in_epoch": int(step),
+                    "forward_steps": int(metrics["forward_steps"]),
+                    "optimizer_steps": int(metrics["optimizer_steps"]),
+                    "pending_grads": int(pending_grads),
+                    "progress_fraction": float(metrics["forward_steps"]) / float(total_forward_steps_per_rank)
+                    if total_forward_steps_per_rank
+                    else None,
+                    "loss": _metric_float(out.get("loss")),
+                    "dyn_loss": _metric_float(out.get("dyn_loss")),
+                    "geo_loss": _metric_float(out.get("geo_loss")),
+                    "probe_loss": _metric_float(out.get("probe_loss")),
+                    "probe_heading_loss": _metric_float(out.get("probe_heading_loss")),
+                    "probe_progress_loss": _metric_float(out.get("probe_progress_loss")),
+                    "hidden_anchor_loss": _metric_float(out.get("hidden_anchor_loss")),
+                    "h_dyn_norm": _metric_float(out.get("h_dyn_norm")),
+                    "h_geo_norm": _metric_float(out.get("h_geo_norm")),
+                }
+                append_progress_jsonl(progress_path, progress)
         if pending_grads > 0:
             torch.nn.utils.clip_grad_norm_(train_module.parameters(), 1.0)
             optimizer.step()
             optimizer.zero_grad(set_to_none=True)
             metrics["optimizer_steps"] += 1
+            if is_rank0:
+                append_progress_jsonl(
+                    progress_path,
+                    {
+                        "event": "optimizer_flush",
+                        "time": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                        "epoch": int(epoch),
+                        "forward_steps": int(metrics["forward_steps"]),
+                        "optimizer_steps": int(metrics["optimizer_steps"]),
+                    },
+                )
     if int(os.getenv("RANK", "0")) == 0:
         metadata = {
             "schema": "two_expert_slot_stage1_vlm_sft_v1",
@@ -496,6 +586,14 @@ def main() -> int:
             save_full_stage1_state=bool(args.save_full_stage1_state),
         )
         write_json(args.output_dir / "metrics.json", metrics)
+        append_progress_jsonl(
+            progress_path,
+            {
+                "event": "stage1_complete",
+                "time": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+                **metrics,
+            },
+        )
     if distributed:
         torch.distributed.destroy_process_group()
     return 0

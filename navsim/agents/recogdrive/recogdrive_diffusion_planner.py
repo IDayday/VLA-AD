@@ -2355,10 +2355,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "last_vla_corrupt_ego_cot",
             "last_vla_corrupt_action_refine_cot",
             "last_vla_zero_coarse_prior",
+            "two_expert_h_dyn",
+            "two_expert_h_geo",
+            "two_expert_corruption_mode",
         ):
             if key in action_input and isinstance(action_input[key], torch.Tensor):
                 data[key] = action_input[key].repeat_interleave(repeat, 0)
             elif key in action_input and isinstance(action_input[key], bool):
+                data[key] = action_input[key]
+            elif key in action_input and isinstance(action_input[key], str):
                 data[key] = action_input[key]
         if self.config.use_expert_features:
             for stream, enabled in (("jepa", self.config.use_jepa), ("vggt", self.config.use_vggt)):

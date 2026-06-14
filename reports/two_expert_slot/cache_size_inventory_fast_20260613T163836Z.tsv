@@ -1,0 +1,5 @@
+status	size_bytes	size_human	path	note
+OK	239206400	229MB	/mnt/project/VLA-AD/cache/metric_cache_navtest_first1024	
+TIMEOUT			/mnt/project/VLA-AD/cache/metric_cache_navtest_full_v1	du produced no output within 90s
+TIMEOUT			/mnt/project/VLA-AD/cache/metric_cache_navtest_full_v1_fast_pickle	du produced no output within 90s
+OK	3256320	3.2MB	/mnt/project/VLA-AD/cache/metric_cache_navtest_smoke16	

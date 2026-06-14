@@ -236,6 +236,7 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         "vlm_text_trajectory_norm",
         "vlm_text_parse_ok",
     )
+    TWO_EXPERT_HIDDEN_KEYS = ("two_expert_h_dyn", "two_expert_h_geo")
 
     def __init__(
         self,
@@ -268,6 +269,11 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         last_vla_allow_patch_geometry_fallback: bool = False,
         last_vla_geometry_teacher_dim: int = 512,
         last_vla_geometry_loss_weight: float = 0.0,
+        use_two_expert_slots: bool = False,
+        two_expert_num_dyn_groups: int = 3,
+        two_expert_dyn_tokens_per_group: int = 12,
+        two_expert_num_geo_tokens: int = 12,
+        two_expert_vlm_hidden_dim: int = 1536,
     ) -> None:
         super().__init__()
         self.cache_path = Path(cache_path)
@@ -300,6 +306,11 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         self.last_vla_allow_patch_geometry_fallback = bool(last_vla_allow_patch_geometry_fallback)
         self.last_vla_geometry_teacher_dim = int(last_vla_geometry_teacher_dim)
         self.last_vla_geometry_loss_weight = float(last_vla_geometry_loss_weight)
+        self.use_two_expert_slots = bool(use_two_expert_slots)
+        self.two_expert_num_dyn_groups = int(two_expert_num_dyn_groups)
+        self.two_expert_dyn_tokens_per_group = int(two_expert_dyn_tokens_per_group)
+        self.two_expert_num_geo_tokens = int(two_expert_num_geo_tokens)
+        self.two_expert_vlm_hidden_dim = int(two_expert_vlm_hidden_dim)
         if self.include_expert_targets and not self.include_expert_features:
             raise ValueError("include_expert_targets=True requires include_expert_features=True.")
         self.log_name_filter: Optional[Set[str]] = set(str(item) for item in log_names) if log_names is not None else None
@@ -340,12 +351,31 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         path = Path(cache_path)
         if not path.is_dir():
             return False
-        if (path / "index.jsonl").is_file() and (path / "samples").is_dir():
+
+        def indexed_samples_exist(index_dir: Path) -> bool:
+            index_path = index_dir / "index.jsonl"
+            if not index_path.is_file():
+                return False
+            if (index_dir / "samples").is_dir():
+                return True
+            try:
+                with index_path.open("r", encoding="utf-8") as f:
+                    for line in f:
+                        if not line.strip():
+                            continue
+                        record = json.loads(line)
+                        sample_path = Path(str(record.get("path", "")))
+                        if not str(sample_path):
+                            return False
+                        sample_path = sample_path if sample_path.is_absolute() else index_dir / sample_path
+                        return sample_path.is_file()
+            except (OSError, json.JSONDecodeError, TypeError):
+                return False
+            return False
+
+        if indexed_samples_exist(path):
             return True
-        return any(
-            child.is_dir() and (child / "index.jsonl").is_file() and (child / "samples").is_dir()
-            for child in path.iterdir()
-        )
+        return any(child.is_dir() and indexed_samples_exist(child) for child in path.iterdir())
 
     @staticmethod
     def _load_residual_anchor_index(cache_dir: Path) -> Dict[str, Path]:
@@ -443,6 +473,9 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             return []
         return ["vlm_text_trajectory_norm_or_vlm_text_trajectory"]
 
+    def _required_two_expert_hidden_keys(self) -> List[str]:
+        return list(self.TWO_EXPERT_HIDDEN_KEYS) if self.use_two_expert_slots else []
+
     def _has_vlm_text_anchor(self, sample: Dict[str, Any], token: Optional[str] = None) -> bool:
         if token is not None and token in self.last_vla_residual_anchor_index:
             return True
@@ -525,6 +558,14 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             "vlm_text_trajectory": (8, 3),
             "vlm_text_trajectory_norm": (8, 3),
         }.get(key)
+        if key == "two_expert_h_dyn":
+            return (
+                self.two_expert_num_dyn_groups,
+                self.two_expert_dyn_tokens_per_group,
+                self.two_expert_vlm_hidden_dim,
+            )
+        if key == "two_expert_h_geo":
+            return (self.two_expert_num_geo_tokens, self.two_expert_vlm_hidden_dim)
         return expected
 
     def _check_shape(self, tensor: torch.Tensor, key: str, sample_path: Path) -> None:
@@ -605,6 +646,12 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             "allow_patch_geometry_fallback": self.allow_patch_geometry_fallback,
             "future_jepa_loss_weight": self.future_jepa_loss_weight,
             "vggt_geometry_loss_weight": self.vggt_geometry_loss_weight,
+            "use_two_expert_slots": self.use_two_expert_slots,
+            "two_expert_num_dyn_groups": self.two_expert_num_dyn_groups,
+            "two_expert_dyn_tokens_per_group": self.two_expert_dyn_tokens_per_group,
+            "two_expert_num_geo_tokens": self.two_expert_num_geo_tokens,
+            "two_expert_vlm_hidden_dim": self.two_expert_vlm_hidden_dim,
+            "required_two_expert_hidden_keys": self._required_two_expert_hidden_keys(),
             "shape_distribution_sample_count": report_sample_count,
             "shape_distribution_sample_limit": int(os.getenv("LAST_RD_DATA_REPORT_MAX_SAMPLES", "256")),
             "high_command_one_hot_shape_distribution": high_command_shape_distribution,
@@ -683,12 +730,17 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         for key in optional_expert_keys:
             value = self._require_tensor(sample, key, sample_path)
             self._check_shape(value, key, sample_path)
+        two_expert_hidden_keys = self._required_two_expert_hidden_keys()
+        for key in two_expert_hidden_keys:
+            self._check_shape(self._require_tensor(sample, key, sample_path), key, sample_path)
         features = {
             "history_trajectory": required_values["history_trajectory"].float(),
             "high_command_one_hot": required_values["high_command_one_hot"].float(),
             "last_hidden_state": required_values["last_hidden_state"].float(),
             "status_feature": required_values["status_feature"].float(),
         }
+        for key in two_expert_hidden_keys:
+            features[key] = self._require_tensor(sample, key, sample_path).float()
         for key in [*expert_keys, *optional_expert_keys]:
             if key == "teacher_trajectory_norm_or_teacher_trajectory":
                 for teacher_key in ("teacher_trajectory_norm", "teacher_trajectory"):
@@ -921,6 +973,12 @@ def custom_collate_fn(
             "features must contain either 'last_hidden_state' or 'image_path_tensor'. "
             f"Got keys: {list(first_features.keys())}"
         )
+    for key in ("two_expert_h_dyn", "two_expert_h_geo"):
+        if key in first_features:
+            features[key] = torch.stack(
+                [sample_features[key].detach() for sample_features in features_list],
+                dim=0,
+            ).detach()
     stack_optional_expert_features(features, list(features_list))
 
     targets = {
@@ -1137,6 +1195,7 @@ def main(cfg: DictConfig) -> None:
             include_expert_targets = bool(cfg.agent.get("allow_expert_target_features", False) or use_last_rd or use_last_vla)
             use_jepa = bool(cfg.agent.get("use_jepa", True))
             use_vggt = bool(cfg.agent.get("use_vggt", True))
+            use_two_expert_slots = bool(cfg.agent.get("use_two_expert_slots", False))
             train_data = ChunkCacheDataset(
                 cfg.cache_path,
                 log_names=list(cfg.train_logs),
@@ -1166,6 +1225,11 @@ def main(cfg: DictConfig) -> None:
                 last_vla_allow_patch_geometry_fallback=bool(cfg.agent.get("last_vla_allow_patch_geometry_fallback", False)),
                 last_vla_geometry_teacher_dim=int(cfg.agent.get("last_vla_geometry_teacher_dim", 512)),
                 last_vla_geometry_loss_weight=float(cfg.agent.get("last_vla_geometry_loss_weight", 0.0)),
+                use_two_expert_slots=use_two_expert_slots,
+                two_expert_num_dyn_groups=int(cfg.agent.get("two_expert_num_dyn_groups", 3)),
+                two_expert_dyn_tokens_per_group=int(cfg.agent.get("two_expert_dyn_tokens_per_group", 12)),
+                two_expert_num_geo_tokens=int(cfg.agent.get("two_expert_num_geo_tokens", 12)),
+                two_expert_vlm_hidden_dim=int(cfg.agent.get("two_expert_vlm_hidden_dim", cfg.agent.get("vlm_hidden_dim", 1536))),
             )
             val_data = ChunkCacheDataset(
                 cfg.cache_path,
@@ -1196,6 +1260,11 @@ def main(cfg: DictConfig) -> None:
                 last_vla_allow_patch_geometry_fallback=bool(cfg.agent.get("last_vla_allow_patch_geometry_fallback", False)),
                 last_vla_geometry_teacher_dim=int(cfg.agent.get("last_vla_geometry_teacher_dim", 512)),
                 last_vla_geometry_loss_weight=float(cfg.agent.get("last_vla_geometry_loss_weight", 0.0)),
+                use_two_expert_slots=use_two_expert_slots,
+                two_expert_num_dyn_groups=int(cfg.agent.get("two_expert_num_dyn_groups", 3)),
+                two_expert_dyn_tokens_per_group=int(cfg.agent.get("two_expert_dyn_tokens_per_group", 12)),
+                two_expert_num_geo_tokens=int(cfg.agent.get("two_expert_num_geo_tokens", 12)),
+                two_expert_vlm_hidden_dim=int(cfg.agent.get("two_expert_vlm_hidden_dim", cfg.agent.get("vlm_hidden_dim", 1536))),
             )
             train_tokens = set(train_data.sample_tokens())
             val_tokens = set(val_data.sample_tokens())

@@ -11,12 +11,14 @@ done
 
 PYTHON_BIN="${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}"
 TORCHRUN_BIN="${TORCHRUN_BIN:-$(dirname "${PYTHON_BIN}")/torchrun}"
+NPROC_PER_NODE="${NPROC_PER_NODE:-8}"
+TRAINER_DEVICES="${TRAINER_DEVICES:-${NPROC_PER_NODE}}"
 mkdir -p "${OUTPUT_DIR}/logs"
 COMMANDS_LOG="${OUTPUT_DIR}/commands.log"
 TRAIN_LOG="${OUTPUT_DIR}/logs/two_expert_stage2_dit_sft.train.log"
 
 cmd=(
-  "${TORCHRUN_BIN}" --nproc_per_node=8 --master_port "${MASTER_PORT}"
+  "${TORCHRUN_BIN}" --nproc_per_node="${NPROC_PER_NODE}" --master_port "${MASTER_PORT}"
   navsim/planning/script/run_training_recogdrive.py
   +experiment=two_expert_slot_stage2_dit_sft
   "cache_path=${TRAIN_CHUNK_CACHE_ROOT}"
@@ -25,10 +27,15 @@ cmd=(
   "train_test_split=${TRAIN_TEST_SPLIT:-navtrain}"
   "output_dir=${OUTPUT_DIR}"
   seed="${SEED:-0}"
-  trainer.params.devices=8
+  "trainer.params.devices=${TRAINER_DEVICES}"
   trainer.params.strategy=ddp_find_unused_parameters_true
 )
 if [[ -n "${A0_INIT_CHECKPOINT:-}" ]]; then cmd+=(agent.checkpoint_path="${A0_INIT_CHECKPOINT}"); fi
+if [[ -n "${ACCUMULATE_GRAD_BATCHES:-}" ]]; then cmd+=("trainer.params.accumulate_grad_batches=${ACCUMULATE_GRAD_BATCHES}"); fi
+if [[ -n "${EXTRA_HYDRA_OVERRIDES:-}" ]]; then
+  read -r -a extra_overrides <<<"${EXTRA_HYDRA_OVERRIDES}"
+  cmd+=("${extra_overrides[@]}")
+fi
 
 printf '%q ' "${cmd[@]}" >>"${COMMANDS_LOG}"; printf '\n' >>"${COMMANDS_LOG}"
 if [[ "${RUN_TRAIN:-0}" != "1" ]]; then

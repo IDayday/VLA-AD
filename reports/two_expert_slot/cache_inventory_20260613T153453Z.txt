@@ -1,0 +1,8 @@
+# VLA-AD cache inventory
+timestamp_utc=20260613T153453Z
+active_two_expert_hidden_cache=/mnt/project/VLA-AD/cache/two_expert_slot/real_20260612_172446/hidden_navtrain_stage1_lora_bf16
+
+## Filesystem
+100.97.192.3@tcp:100.97.192.4@tcp:/hbTcp001/78ebbad2386e922193d44ac249bbb12e_kl4gv5vivlcf06o2  310T  309T  1.6T 100% /mnt/project
+
+## Top-level /mnt/project/VLA-AD/cache

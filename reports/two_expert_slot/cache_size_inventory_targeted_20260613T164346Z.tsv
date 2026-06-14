@@ -1,0 +1,17 @@
+status	size_bytes	size_human	path	note
+OK	231341801472	216GB	/mnt/project/VLA-AD/cache/last_vla_v2/decoupled_highcap_no_risk/navtest_full_highcap_chunks	
+TIMEOUT			/mnt/project/VLA-AD/cache/last_vla_v2/decoupled_highcap_no_risk/train_full_highcap_chunks	du produced no output within 300s
+OK	15971962880	15GB	/mnt/project/VLA-AD/cache/last_vla_v2/decoupled_highcap_no_risk/navtest_geometry192_overlay	
+OK	15972188160	15GB	/mnt/project/VLA-AD/cache/last_vla_v2/decoupled_highcap_no_risk/navtest_geometry192_overlay_raw	
+OK	6420615168	6.0GB	/mnt/project/VLA-AD/cache/last_vla_v2/decoupled_highcap_no_risk/navtest_jepa128_overlay	
+OK	6420852736	6.0GB	/mnt/project/VLA-AD/cache/last_vla_v2/decoupled_highcap_no_risk/navtest_jepa128_overlay_raw	
+OK	52518912	51MB	/mnt/project/VLA-AD/cache/last_vla_v2/decoupled_highcap_no_risk/vlm_text_anchor_2bbase_navtest_20260610T051017Z	
+OK	52985856	51MB	/mnt/project/VLA-AD/cache/last_vla_v2/decoupled_highcap_no_risk/vlm_text_anchor_2bbase_navtest_20260610T051017Z_raw	
+TIMEOUT			/mnt/project/VLA-AD/cache/last_vla_v2/decoupled_highcap_no_risk/vlm_text_anchor_2bbase_train_20260609T052233Z	du produced no output within 300s
+TIMEOUT			/mnt/project/VLA-AD/cache/last_vla_v2/decoupled_highcap_no_risk/vlm_text_anchor_2bbase_train_20260609T052233Z_raw	du timed out after 300s
+OK	210844778496	197GB	/mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1	
+OK	4096	4.0KB	/mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1_trainval_all	
+OK	38219776	37MB	/mnt/project/VLA-AD/outputs/last_vla_v2/tmp_b_lora_cache_batch2_smoke	
+OK	4096	4.0KB	/mnt/project/VLA-AD/outputs/last_vla_v2/decoupled_highcap_no_risk_navtest_cot_lora_eval_20260607T142428Z/cache	
+OK	4842438656	4.6GB	/mnt/project/VLA-AD/outputs/hidden_cache_equiv_navtest2	
+OK	36864	36KB	/mnt/project/VLA-AD/outputs/fast_metric_cache_navtest_mirror_20260613T011857Z	

@@ -5,6 +5,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -298,6 +299,20 @@ def _precision_dtype(precision: str) -> torch.dtype:
     return torch.float32
 
 
+def _output_dtype(output_dtype: str) -> torch.dtype:
+    if output_dtype == "bf16":
+        return torch.bfloat16
+    if output_dtype == "fp16":
+        return torch.float16
+    if output_dtype == "fp32":
+        return torch.float32
+    raise ValueError(f"Unsupported output dtype: {output_dtype!r}")
+
+
+def _to_cache_tensor(tensor: torch.Tensor, output_dtype: str) -> torch.Tensor:
+    return tensor.detach().to(dtype=_output_dtype(output_dtype)).cpu()
+
+
 def compute_batch(backbone: Any, slots: TwoExpertSoftSlots, batch: List[Dict[str, Any]], args: argparse.Namespace) -> List[Dict[str, torch.Tensor]]:
     if not batch:
         return []
@@ -316,16 +331,16 @@ def compute_batch(backbone: Any, slots: TwoExpertSoftSlots, batch: List[Dict[str
             return_raw_hidden=True,
             train_vlm_mode=args.train_vlm_mode,
         )
-    raw = out["raw_vlm_hidden"].detach().float().cpu()
-    h_dyn = out["h_dyn"].detach().float().cpu()
-    h_geo = out["h_geo"].detach().float().cpu()
+    raw = _to_cache_tensor(out["raw_vlm_hidden"], args.output_dtype)
+    h_dyn = _to_cache_tensor(out["h_dyn"], args.output_dtype)
+    h_geo = _to_cache_tensor(out["h_geo"], args.output_dtype)
     results = []
     for idx in range(len(batch)):
         results.append(
             {
-                "last_hidden_state": raw[idx].contiguous(),
-                "two_expert_h_dyn": h_dyn[idx].contiguous(),
-                "two_expert_h_geo": h_geo[idx].contiguous(),
+                "last_hidden_state": raw[idx].clone().contiguous(),
+                "two_expert_h_dyn": h_dyn[idx].clone().contiguous(),
+                "two_expert_h_geo": h_geo[idx].clone().contiguous(),
                 "two_expert_slot_metadata": dict(out["slot_metadata"]),
             }
         )
@@ -335,9 +350,9 @@ def compute_batch(backbone: Any, slots: TwoExpertSoftSlots, batch: List[Dict[str
 def synthetic_outputs(sample: Dict[str, Any], config: TwoExpertSlotConfig) -> Dict[str, torch.Tensor]:
     hidden_dim = int(config.vlm_hidden_dim)
     return {
-        "last_hidden_state": sample.get("last_hidden_state", torch.zeros(16, hidden_dim)).detach().float().cpu(),
-        "two_expert_h_dyn": sample.get("two_expert_h_dyn", torch.zeros(3, 12, hidden_dim)).detach().float().cpu(),
-        "two_expert_h_geo": sample.get("two_expert_h_geo", torch.zeros(12, hidden_dim)).detach().float().cpu(),
+        "last_hidden_state": sample.get("last_hidden_state", torch.zeros(16, hidden_dim)).detach().cpu(),
+        "two_expert_h_dyn": sample.get("two_expert_h_dyn", torch.zeros(3, 12, hidden_dim)).detach().cpu(),
+        "two_expert_h_geo": sample.get("two_expert_h_geo", torch.zeros(12, hidden_dim)).detach().cpu(),
         "two_expert_slot_metadata": {
             "slot_mode": "vlm_soft_slots",
             "num_dyn_groups": 3,
@@ -404,6 +419,7 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
     batch: List[Dict[str, Any]] = []
     written = skipped = 0
     hidden_lengths: List[int] = []
+    start_time = time.time()
 
     def write_item(item: Dict[str, Any], outputs: Dict[str, Any]) -> None:
         nonlocal written
@@ -420,6 +436,7 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
             "source_stage1_checkpoint": stage1_load_report.get("source_stage1_checkpoint"),
             "checkpoint_schema": stage1_load_report.get("checkpoint_schema"),
             "prompt_version": TWO_EXPERT_PROMPT_VERSION,
+            "hidden_cache_output_dtype": str(args.output_dtype),
             "num_dyn_groups": 3,
             "tokens_per_group": 12,
             "num_geo_tokens": 12,
@@ -437,6 +454,23 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
         atomic_torch_save(payload, item["out_path"])
         rows.append(item["row"])
         written += 1
+        if args.progress_interval > 0 and written % int(args.progress_interval) == 0:
+            elapsed = max(time.time() - start_time, 1e-6)
+            rate = float(written) / elapsed
+            print(
+                json.dumps(
+                    {
+                        "event": "two_expert_hidden_cache_progress",
+                        "shard_index": int(args.shard_index),
+                        "written": int(written),
+                        "skipped_by_shard": int(skipped),
+                        "rate_samples_per_sec": rate,
+                        "elapsed_sec": elapsed,
+                    },
+                    sort_keys=True,
+                ),
+                flush=True,
+            )
 
     def flush_batch() -> None:
         if not batch:
@@ -498,6 +532,7 @@ def build_shard(args: argparse.Namespace) -> Dict[str, Any]:
         "teacher_targets_included": bool(args.include_teacher_targets),
         "eval_teacher_targets_allowed": bool(args.allow_eval_teacher_targets),
         "synthetic_smoke": bool(args.synthetic_smoke),
+        "output_dtype": str(args.output_dtype),
         "loaded_lora_adapter": bool(stage1_load_report.get("loaded_lora_adapter", False)),
         "loaded_lora_key_count": len(stage1_load_report.get("loaded_lora_keys", [])),
         "loaded_top_layer_key_count": len(stage1_load_report.get("loaded_top_layer_keys", [])),
@@ -548,6 +583,7 @@ def merge_shards(output_root: Path, *, overwrite: bool = False) -> Dict[str, Any
         "num_samples": len(rows),
         "num_shards": len(metadata_items),
         "teacher_targets_included": any(bool(item.get("teacher_targets_included", False)) for item in metadata_items),
+        "output_dtypes": sorted({str(item.get("output_dtype")) for item in metadata_items if item.get("output_dtype")}),
     }
     write_json(output_root / "metadata.json", metadata)
     return metadata
@@ -567,6 +603,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=1)
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="bf16")
+    parser.add_argument(
+        "--output-dtype",
+        choices=("bf16", "fp16", "fp32"),
+        default="fp32",
+        help="Tensor dtype written to disk. Use bf16/fp16 for full caches to reduce shared-disk usage.",
+    )
     parser.add_argument("--vlm-hidden-dim", type=int, default=1536)
     parser.add_argument("--train-vlm-mode", choices=("frozen", "lora", "top_layers"), default="frozen")
     parser.add_argument("--stage1-train-mode", choices=("frozen", "lora", "top_layers", "full"), default=None)
@@ -576,6 +618,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--allow-eval-teacher-targets", action="store_true")
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--max-samples", type=int, default=None)
+    parser.add_argument("--progress-interval", type=int, default=500)
     parser.add_argument("--merge", action="store_true")
     parser.add_argument("--synthetic-smoke", action="store_true")
     parser.add_argument("--allow-minimal-prompt", action="store_true")

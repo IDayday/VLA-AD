@@ -39,11 +39,22 @@ stage2_target:
   vlm_text_residual_anchor: false
 
 optimization:
-  lr: 1e-4
+  init_checkpoint: A0 official-aligned step_00100000
+  mode: grouped_full_dit_sft
+  lr: 3e-5
+  lr_action_head: 3e-5
+  lr_two_expert_branch: 1e-4
   batch_size_per_gpu: 16
-  max_epochs: 200
+  max_epochs: 20
   scheduler: WarmupCosLR
-  warmup_epochs: 3
+  warmup_epochs: 2
   min_lr: 1e-6
   gradient_clip_val: 1.0
   precision: bf16-mixed
+
+ablation:
+  expert_only_warmup:
+    hydra_experiment: two_expert_slot_stage2_expert_only_warmup
+    max_epochs: 40
+    lr_two_expert_branch: 1e-4
+    purpose: diagnostic only; formal run uses grouped_full_dit_sft
