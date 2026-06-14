@@ -1249,6 +1249,23 @@ Conclusion:
 - Main regressions versus the expected early Stage3 band are DAC and EP, with TTC/DDC also below a healthy original Stage3 trajectory distribution.
 - Do not promote this DPPO-style transition replay variant to full training. Any next GRPO redesign should revisit the objective itself, not only tune LR or minibatch count.
 
+### 2026-06-14 Protocol Update: early Stage3 gate
+
+Baseline:
+- The original ReCogDrive Stage3 run is reported to reach roughly `0.88+` navtest PDMS by epoch0-1.
+- Therefore new Stage3 variants must be compared at matched early checkpoints, not only at epoch10 or later.
+
+Operational rule:
+- Use `scripts/training/gate_recogdrive_stage3_early_pdms.py` with `--threshold 0.88 --margin 0.005`.
+- Treat `PDMS < 0.875` at the selected early checkpoint as a stop signal.
+- Treat `0.875 <= PDMS < 0.88` as a watch zone: allow at most the next early checkpoint, but do not promote to full training.
+- Treat `PDMS >= 0.88` as the minimum condition to continue; it is not success by itself because the final target remains beating the original Stage3/Safe DiffGRPO best band.
+
+Automation:
+- `scripts/training/watch_recogdrive_stage3_early_gate.sh` polls the gate output for a run.
+- With `STOP_ON_FAIL=0`, it reports the decision and leaves training untouched.
+- With `STOP_ON_FAIL=1`, it only terminates the local training process group recorded by the gate JSON. It does not terminate remote evaluation watchers or unrelated remote tasks.
+
 ## Update Template
 
 Append a new section for every algorithm run:
