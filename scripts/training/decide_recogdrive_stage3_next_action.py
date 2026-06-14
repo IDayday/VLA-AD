@@ -12,12 +12,12 @@ from pathlib import Path
 DEFAULT_SUMMARY_TSV = Path("/mnt/project/VLA-AD/outputs/stage3_runs_summary_latest.tsv")
 DEFAULT_OUTPUT_JSON = Path("/mnt/project/VLA-AD/outputs/stage3_next_action_latest.json")
 DEFAULT_COMMAND_FILE = Path("/mnt/project/VLA-AD/outputs/stage3_next_action_command.sh")
-DEFAULT_CURRENT_RUN = "stage3_grpo_refkl_s16_lr2e4_b4acc2_chunk32_fast_8gpu_20260613T213145Z"
-DEFAULT_LAUNCH_LOCK_FILE = Path("/mnt/project/VLA-AD/outputs/stage3_next_action_launch.lock")
-STRICT_GSPO_COMMAND = (
-    "cd /mnt/project/VLA-AD_stage3_algo_clean_4f3eb73 && "
+DEFAULT_CURRENT_RUN = "stage3_grpo_refkl_s16_lr1e4_b2acc4_currentrepo_8gpu_20260614T191227Z"
+DEFAULT_LAUNCH_LOCK_FILE = Path("/mnt/project/VLA-AD/outputs/stage3_buffer_dpo_next_action_launch.lock")
+NEXT_EXPERIMENT_COMMAND = (
+    "cd /mnt/project/VLA-AD_last_vla_dev && "
     "RUN_TRAIN=1 LAUNCH_EVAL_WATCHERS=1 "
-    "bash scripts/training/launch_recogdrive_stage3_grpo_buffer_guided_2b_local_stable.sh"
+    "bash scripts/training/launch_recogdrive_stage3_grpo_buffer_dpo_2b_local_stable.sh"
 )
 
 
@@ -125,7 +125,7 @@ def decide_next_action(
         "best_pdms": pdms,
         "safe_ratio": safe_ratio,
         "baseline_pdms": baseline_pdms,
-        "strict_gspo_command": STRICT_GSPO_COMMAND,
+        "next_experiment_command": NEXT_EXPERIMENT_COMMAND,
         "launch_running_policy": launch_running_policy,
         "launch_resource_policy": launch_resource_policy,
         "launch_gpu_list": launch_gpu_list,
@@ -139,7 +139,7 @@ def decide_next_action(
 
     if state == "running" and ckpts == 0:
         result["action"] = "wait_for_first_checkpoint"
-        result["reason"] = "当前 run 还没有 epoch checkpoint；训练标量不能替代 navtest PDMS。"
+        result["reason"] = "当前 run 还没有可评估 checkpoint；训练标量不能替代 navtest PDMS。"
         return result
 
     if ckpts > 0 and eval_rows < min_eval_rows:
@@ -149,9 +149,9 @@ def decide_next_action(
 
     if pdms is None:
         if state in {"failed", "done", "stopped_for_fast_refkl_relaunch"}:
-            result["action"] = "launch_strict_gspo"
+            result["action"] = "launch_buffer_dpo"
             result["should_launch_now"] = True
-            result["reason"] = "当前路线没有可用 PDMS 且已结束/失败；下一步应切 buffer-guided strict GSPO。"
+            result["reason"] = "当前路线没有可用 PDMS 且已结束/失败；下一步应切 current-repo control-aligned buffer-DPO。"
             return result
         result["action"] = "wait_for_pdms"
         result["reason"] = "缺少可比较 PDMS；先补齐评估。"
@@ -171,21 +171,21 @@ def decide_next_action(
     allow_running_launch = state == "running" and launch_running_policy == "allow_after_eval"
 
     if safe_ratio is not None and safe_ratio < min_safe_ratio:
-        result["action"] = "launch_strict_gspo_after_current_checkpoint"
+        result["action"] = "launch_buffer_dpo_after_current_checkpoint"
         result["should_launch_now"] = state != "running" or allow_running_launch
         if allow_running_launch:
-            result["reason"] = "训练安全比例偏低；已允许并行启动 buffer-guided strict GSPO 以充分利用资源。"
+            result["reason"] = "训练安全比例偏低；已允许并行启动 current-repo control-aligned buffer-DPO 以充分利用资源。"
         else:
-            result["reason"] = "训练安全比例偏低，下一轮需要更强 trust region、行为策略 ratio 控制和 elite buffer 吸收。"
+            result["reason"] = "训练安全比例偏低，下一轮需要在 current-repo control 形状上验证 train-buffer preference absorption。"
         return result
 
     if delta <= -switch_margin:
-        result["action"] = "launch_strict_gspo_after_current_checkpoint"
+        result["action"] = "launch_buffer_dpo_after_current_checkpoint"
         result["should_launch_now"] = state != "running" or allow_running_launch
         if allow_running_launch:
-            result["reason"] = "PDMS 明显低于历史强基线；已允许并行启动 buffer-guided strict GSPO。"
+            result["reason"] = "PDMS 明显低于历史强基线；已允许并行启动 current-repo control-aligned buffer-DPO。"
         else:
-            result["reason"] = "PDMS 明显低于历史强基线；下一轮切 buffer-guided strict GSPO。"
+            result["reason"] = "PDMS 明显低于历史强基线；下一轮切 current-repo control-aligned buffer-DPO。"
         return result
 
     result["action"] = "continue_one_more_epoch_then_compare"
@@ -253,15 +253,15 @@ def main() -> None:
                 max_mem_used_mb=args.launch_gpu_max_mem_used_mb,
                 max_util_pct=args.launch_gpu_max_util,
             )
-        command_text = f"#!/usr/bin/env bash\nset -euo pipefail\n{guard}{STRICT_GSPO_COMMAND}\n"
+        command_text = f"#!/usr/bin/env bash\nset -euo pipefail\n{guard}{NEXT_EXPERIMENT_COMMAND}\n"
     else:
         command_text = (
             "#!/usr/bin/env bash\n"
             "set -euo pipefail\n"
             f"echo 'Stage3 next-action gate: {decision['action']}'\n"
             f"echo 'Reason: {decision['reason']}'\n"
-            "echo 'Buffer-guided strict GSPO command is intentionally gated until should_launch_now=true.'\n"
-            f"# {STRICT_GSPO_COMMAND}\n"
+            "echo 'Buffer-DPO command is intentionally gated until should_launch_now=true.'\n"
+            f"# {NEXT_EXPERIMENT_COMMAND}\n"
             "exit 2\n"
         )
     args.command_file.write_text(command_text, encoding="utf-8")
@@ -270,8 +270,8 @@ def main() -> None:
     print(f"action={decision['action']}")
     print(f"should_launch_now={decision['should_launch_now']}")
     print(f"reason={decision['reason']}")
-    if decision["action"].startswith("launch_strict_gspo"):
-        print(f"command={STRICT_GSPO_COMMAND}")
+    if decision["action"].startswith("launch_buffer_dpo"):
+        print(f"command={NEXT_EXPERIMENT_COMMAND}")
     print(f"json={args.output_json}")
     print(f"command_file={args.command_file}")
 
