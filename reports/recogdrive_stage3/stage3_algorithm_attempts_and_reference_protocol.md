@@ -60,7 +60,7 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 | `stage3_grpo_rloo_selfimit_s16_lr1e4_b2acc4_8gpu_20260614T101257Z` | stopped on 2026-06-14 | This no-cap run was launched before the self-imitation scene-cap patch and had `checkpoint.every_n_train_steps=0`; given the original Stage3 `epoch0-1 ~= 0.88+` early gate, continuing it would delay a meaningful PDMS decision. |
 | `stage3_grpo_rloo_selfimit_cap05_step300_s16_lr1e4_b2acc4_8gpu_20260614T111511Z` | stopped after `step-step_900` checkpoint | Original LR `1e-4`, sample_time `16`, scene cap `0.5`, and step checkpoints every `300` train steps. `step-step_300` exact navtest PDMS is `0.885557`, passing the original Stage3 early `0.88+` gate but not yet a final success. `step-step_600` is `0.885212`: EP improved, but NC/TTC/DDC declined. `step-step_900` later reached `0.887107` by recovering NC/TTC/DDC while EP fell back. This is still far below original 10-epoch `0.9055` / Safe DiffGRPO `0.906184`, so the replacement safety-gated run remains justified. |
 | `stage3_grpo_rloo_selfimit_safetygate_step300_s16_lr1e4_b2acc4_8gpu_20260614T145712Z` | stopped/deleted | This auxiliary-target-only safetygate run was stopped before checkpoint because the main GRPO update still allowed TTC/DDC-regressing positive-advantage samples. Do not repeat this exact configuration. |
-| `stage3_grpo_rloo_selfimit_mainhardgate_v3_bufferpath_step300_s16_lr1e4_b2acc4_8gpu_20260614T161426Z` | running/watch | Current main GRPO run. It enables TTC `0.95` and DDC `0.99` in the main hard-safe mask, keeps strict self-imitation target gates, and uses the train-only elite buffer path only to satisfy the offline-config contract while buffer guidance/distill/reward bonus stay disabled. Step300 exact navtest PDMS is `0.879395`, below the `0.88` early gate but within the `0.005` watch margin; wait for step600 before stopping. Safety improved relative to cap05 step300, but EP/DAC dropped, so this is not a promoted result yet. |
+| `stage3_grpo_rloo_selfimit_mainhardgate_v3_bufferpath_step300_s16_lr1e4_b2acc4_8gpu_20260614T161426Z` | stopped/delete artifacts | Main TTC `0.95` and DDC `0.99` hard gates improved safety but suppressed EP/DAC. Step300 PDMS `0.879395`; step600 PDMS `0.882934`, still below cap05 step900 `0.887107` and far below the zt3 original-LR control step1290 `0.896794`. Do not repeat this main-hardgate + strict self-imitation configuration as a default route. |
 | Stage3 exact eval infrastructure | patched | Distributed eval timeout is now configurable and defaults to `3600s` for async/exact PDM runners and watcher launchers. Watchers also write global per-checkpoint done markers under `GLOBAL_EVAL_LOCK_DIR` after successful eval so relaxed/strict watchers do not repeat the same checkpoint. These changes only affect orchestration; they do not change trajectory inference, PDM scoring, or submetric calculation. |
 | Train-only elite buffer exploration | keep running in background | Continue improving the navtrain-only oracle buffer, but write it in keep-best merge mode so new exploration cannot overwrite a stronger existing record. Use navtest only for checkpoint diagnosis, never for buffer generation or training reward. |
 
@@ -92,6 +92,12 @@ Third cleanup on 2026-06-14 UTC:
 - Deleted redundant cap05 navtest watcher artifacts, including `stage3_grpo_rloo_selfimit_cap05_step300_s16_lr1e4_b2acc4_8gpu_20260614T111511Z/manual_retry_step300_zt3_2gpu_20260614T130727Z`, `secondary_watch_on_rl_zt3_memfit_4gpu`, and `unique_lock_watch_on_vla_zt2_4gpu`. Their step300/600/900 PDMS and submetric conclusions are preserved in this document and in the compact top-level cap05 analysis files.
 - Preserved the cap05 training `step_checkpoints` directory because the zt3 keep-best train-only buffer generator currently references it as an automatic policy-checkpoint source.
 - Do not repeat the cap05 broad self-imitation configuration as a default route. Its failure mode is already diagnosed: it can increase EP/high-score bins, but it does not reliably improve mean PDMS because NC/TTC/DDC regressions offset the progress gain. Any future self-imitation run must include main-objective safety gating or a stronger preference objective, and must be judged at matched step/epoch against original Stage3 early PDMS.
+
+Fourth cleanup on 2026-06-14 UTC:
+- Stopped the local orphaned v3 `torchrun`/worker process tree after the stable launcher exited but the workers kept 8 GPUs allocated. Confirmed local GPU memory returned to `0 MB` on all 8 cards.
+- Deleted the failed v3 run directory `stage3_grpo_rloo_selfimit_mainhardgate_v3_bufferpath_step300_s16_lr1e4_b2acc4_8gpu_20260614T161426Z` after verifying no corresponding watcher was still active on `training-vla-zt2` or `training-rl-zt3`.
+- The retained evidence for this failed direction is the row/result summary in this ledger: step300 PDMS `0.879395`, step600 PDMS `0.882934`, and the failure mode that main TTC/DDC hard gates improved safety but suppressed EP/DAC enough to underperform cap05 and original-LR GRPO.
+- Do not repeat the v3 main TTC/DDC hard-gate plus strict self-imitation setup as a default route. Any future safety/progress method must preserve progress pressure and be compared against the zt3 original-LR control at matched step/epoch.
 
 ## Navtest Diagnostic: Cap05 Self-Imitation Step300 To Step600
 
@@ -164,7 +170,7 @@ Artifacts:
 | `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z` | evaluated | LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, effective batch about `66` | `0.896794` at `epoch_0-step_1290` | zt3 original-LR control. Submetrics: NC `0.987189`, DAC `0.975861`, TTC `0.962597`, EP `0.826516`, comfort `1.000000`, DDC `0.974378`. This is the strongest recent early checkpoint and argues against aggressive safety/self-imitation changes that suppress progress. |
 | `stage3_grpo_rloo_selfimit_cap05_step300_s16_lr1e4_b2acc4_8gpu_20260614T111511Z` | stopped | LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, GSPO ratio, RLOO self-imitation, max target scene ratio `0.5`, step ckpt every `300` | `0.887107` at `step-step_900` | Step300 passed the early gate (`0.885557`). Step600 was flat and traded EP for safety loss. Step900 recovered NC/TTC/DDC and reached `0.887107`, but EP fell to `0.823058`; this is still `-0.018393` below original 10-epoch `0.9055`. |
 | `stage3_grpo_rloo_selfimit_safetygate_step300_s16_lr1e4_b2acc4_8gpu_20260614T145712Z` | stopped/deleted | Same as cap05, with explicit self-imitation target gates NC `1.0`, DAC `1.0`, TTC `0.95`, DDC `0.99`, but no main TTC/DDC hard gate | none | Stopped before checkpoint. This was lower-information than the main hard-gate test because it only filtered auxiliary targets. |
-| `stage3_grpo_rloo_selfimit_mainhardgate_v3_bufferpath_step300_s16_lr1e4_b2acc4_8gpu_20260614T161426Z` | running | Same LR/sample/effective batch as cap05, with main TTC `0.95` and DDC `0.99` hard gates plus strict self-imitation targets | pending | Current live GRPO improvement candidate. Continue only if matched early checkpoints clear the original Stage3 early gate and improve the cap05 safety tradeoff. |
+| `stage3_grpo_rloo_selfimit_mainhardgate_v3_bufferpath_step300_s16_lr1e4_b2acc4_8gpu_20260614T161426Z` | stopped/delete artifacts | Same LR/sample/effective batch as cap05, with main TTC `0.95` and DDC `0.99` hard gates plus strict self-imitation targets | `0.882934` at `step-step_600` | Failed matched early comparison. Step600 improved safety over cap05 but EP fell to `0.792348`; PDMS stayed below cap05 step900 and below the zt3 original-LR control. |
 | `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_zt2_4gpu_20260614T012106Z` | stopped before eval | LR `2e-4`, GSPO ratio, elite-buffer reward bonus/distill/self-imitation | invalid run | Stopped because key diagnostics were not logged, so the run could not validate buffer absorption. |
 | `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_diagfix_zt2_4gpu_20260614T020706Z` | stopped before eval | LR `2e-4`, GSPO ratio, elite-buffer reward bonus/distill/self-imitation | invalid run | Stopped because it was launched before the full PPO/advantage diagnostics patch. |
 | `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_diag_zt2_4gpu_20260614T023758Z` | failed before training | LR `1e-4`, GSPO ratio, batch advantage normalize, fixed advantage clip `3.0`, no buffer | none | Failed at Hydra config parsing because `grpo_normalize_advantage_batch` was missing from `recogdrive_agent.yaml`. |
@@ -257,13 +263,16 @@ Main hard-gate v3 early result on 2026-06-14:
 - Run root: `/mnt/project/VLA-AD/outputs/stage3_grpo_rloo_selfimit_mainhardgate_v3_bufferpath_step300_s16_lr1e4_b2acc4_8gpu_20260614T161426Z`.
 - `step-step_300` exact navtest PDMS is `0.879395`, below the `0.88` original early gate but within the configured `0.005` watch margin.
 - Submetrics: NC `0.985335`, DAC `0.962679`, TTC `0.961855`, EP `0.803776`, comfort `0.999835`, DDC `0.982699`.
-- Interpretation: main TTC/DDC hard gating did move safety in the intended direction versus cap05 step300, but it gave up too much EP and DAC. This does not yet validate the method; wait for step600, and stop if it remains below the early gate or fails to recover progress without losing safety.
+- `step-step_600` exact navtest PDMS is `0.882934`.
+- Step600 submetrics: NC `0.990649`, DAC `0.968776`, TTC `0.972730`, EP `0.792348`, comfort `0.999835`, DDC `0.979609`.
+- Delta from step300 to step600: NC/TTC/DAC improved, but EP fell by about `-0.0114`, and DDC stayed below the strict target threshold.
+- Interpretation: the hard safety gate did what it was asked to do locally, but the objective over-corrected toward safety and did not learn a better progress/safety Pareto point. It underperforms both cap05 step900 (`0.887107`) and the original-LR control at a similar early horizon (`0.896794`), so the run should be stopped and its artifacts deleted after this record. Do not repeat main TTC/DDC hard gating plus strict self-imitation as the default GRPO route.
 
 ## Planned Attempt: GRPO With Train-Buffer Diffusion-DPO Absorption
 
 Motivation:
 - Past AWAC/IQL attempts show that the train-only elite buffer can discover high-PDMS trajectories, but weighted denoising regression alone did not make the sampler reliably output better trajectories.
-- The current main hard-gate v3 GRPO run has active on-policy self-imitation, but early train diagnostics still show unstable high-quality target availability across batches. At step `199`, strict self-imitation target reward mean dropped to about `0.863`, while earlier step `149` had about `0.986`.
+- The main hard-gate v3 GRPO run showed that strict hard safety gates can raise NC/TTC while lowering EP enough to reduce PDMS. Therefore buffer preference should not inherit the v3 hard gates by default.
 - The next buffer use should therefore not replace GRPO. It should add a small preference signal that tells the diffusion planner: for the same scene/context/noise level, assign lower denoising loss to valid train-buffer winners than to GT/IL behavior losers.
 
 Reference audit:
@@ -303,17 +312,17 @@ Implementation:
   and self-imitation to `0.0`; set `GRPO_SELF_IMITATION_LOSS_WEIGHT=0.01`
   only for an explicit v3-plus-buffer-DPO comparison.
 
-First experiment rule:
-- Do not interrupt the active v3 hard-gate GRPO run before its step300 exact navtest gate unless it crashes.
-- After v3 step300 result, run a matched short diagnostic with the same LR/effective batch/sample_time/hard gates and enable only a small buffer-DPO auxiliary:
+First experiment rule after v3 result:
+- Do not launch a buffer-DPO run on top of the failed v3 main-hardgate configuration by default. That would confound buffer absorption with a known EP-suppressing safety gate.
+- If buffer-DPO is tested next, match the stronger original-LR control shape instead: LR `1e-4`, `sample_time=16`, BC `0.10->0.05`, reference KL `0.02`, no main TTC/DDC hard gate, no broad self-imitation. Enable only a small train-buffer DPO auxiliary:
   - `GRPO_BUFFER_GUIDANCE_ENABLED=true`
   - `GRPO_BUFFER_REWARD_BONUS_WEIGHT=0.0`
   - `GRPO_BUFFER_DISTILL_LOSS_WEIGHT=0.0`
   - `GRPO_BUFFER_PREFERENCE_DPO_LOSS_WEIGHT=0.02`
   - `GRPO_BUFFER_PREFERENCE_DPO_LOSS_SCHEDULE=linear_warmup`
   - `GRPO_BUFFER_PREFERENCE_DPO_WARMUP_EPOCHS=2`
-  - keep `GRPO_SELF_IMITATION_LOSS_WEIGHT=0.01` only if the v3 step300 gate is not already failing for target-quality reasons; otherwise isolate buffer-DPO with self-imitation off.
-- Success at the diagnostic level requires active nonzero DPO pairs and no deterioration in matched step300/600 exact navtest NC/TTC/DDC compared with cap05/v3. Final success still requires comparable-length PDMS above the original 10-epoch `0.9055` and Safe DiffGRPO `0.906184` references.
+  - keep `GRPO_SELF_IMITATION_LOSS_WEIGHT=0.0` for the first isolated buffer-DPO diagnostic.
+- Success at the diagnostic level requires active nonzero DPO pairs and no deterioration in matched step300/600 exact navtest NC/TTC/DDC/EP compared with the zt3 original-LR control. Final success still requires comparable-length PDMS above the original 10-epoch `0.9055` and Safe DiffGRPO `0.906184` references.
 
 ## Planned Attempt: Safety-Filtered GRPO Self-Imitation Targets
 
