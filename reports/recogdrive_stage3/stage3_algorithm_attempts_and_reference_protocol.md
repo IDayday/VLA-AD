@@ -1060,6 +1060,10 @@ Launch status:
   - `step-step=600.ckpt` at `2026-06-14T07:39:29Z`
   - `epoch=0-step=600.ckpt` at `2026-06-14T07:39:42Z`
 - The local watcher archived `step-step=300` and started exact navtest evaluation at `2026-06-14T07:39:45Z`; PDMS is pending.
+- A second watcher was launched on `training-vla-zt2` at `2026-06-14T07:45:23Z` using GPUs `0-7`.
+  - Eval root: `/mnt/project/VLA-AD/outputs/stage3_grpo_replay_stepmode_stepckpt_s16_i1_lr1e4_zt3_2gpu_20260614T0727Z_zt2_8gpu_step600_eval`.
+  - It uses the local watcher summary as `EXTERNAL_SUMMARY_TSV`, so `step-step_300` is skipped there and `step-step_600` is evaluated first.
+  - This keeps the early gate aligned: local `step300` checks the first update point; zt2 `step600` checks whether the method recovers by the end of the limited diagnostic.
 
 ## Update Template
 
