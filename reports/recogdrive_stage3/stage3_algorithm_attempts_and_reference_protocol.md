@@ -1438,6 +1438,57 @@ Automation:
 - The GRPO/GSPO launcher now defaults to `CHECKPOINT_EVERY_N_TRAIN_STEPS=300` and starts the early gate watcher.
 - The buffer-guided GRPO wrapper defaults to `CHECKPOINT_EVERY_N_TRAIN_STEPS=300`, `START_EARLY_GATE_WATCHER=1`, and `EARLY_GATE_STOP_ON_FAIL=1`, so any future buffer-absorption run must clear the original early Stage3 gate before becoming a long run.
 
+### 2026-06-14 Attempt: GRPO self-imitation safetygate stopped before checkpoint
+
+Motivation:
+- The previous cap05 run reached `0.887107` at step 900 but improved EP while regressing NC/TTC/DDC.
+- The next test added stricter self-imitation target gates so only high-reward, NC/DAC/TTC/DDC-safe generated samples could become distillation targets.
+
+Config:
+- Run name: `stage3_grpo_rloo_selfimit_safetygate_step300_s16_lr1e4_b2acc4_8gpu_20260614T145712Z`
+- LR: `1e-4`.
+- `sample_time=16`, batch size `2`, accumulation `4`, 8 local GPUs.
+- Self-imitation target gates: NC `1.0`, DAC `1.0`, TTC `0.95`, DDC `0.99`.
+- Main GRPO group filtering still only hard-gated NC/DAC, not TTC/DDC.
+
+Observed training diagnostics before stopping:
+- Last logged step: `249`.
+- `train/reward_step`: `0.766856`.
+- `train/base_reward_step`: `0.778479`.
+- `train/safe_ratio_step` / `hard_safe_ratio`: `0.898438`.
+- `train/mean_ep_step`: `0.783179`.
+- `train/mean_ttc_step`: `0.886719`.
+- Self-imitation was active: target scene ratio `0.5`, target reward mean `0.987467`.
+
+Decision:
+- Stop before the first checkpoint and navtest evaluation.
+- Reason: this run only constrained auxiliary self-imitation targets, while the primary GRPO update could still accept TTC/DDC-regressing positive-advantage samples. That makes it a lower-information variant than a main-objective hard-gate run.
+- Do not repeat this exact configuration.
+
+### 2026-06-14 Attempt: main GRPO TTC/DDC hard gate first launch
+
+Motivation:
+- Step300 to step900 diagnostics from the best cap05 run indicate PDMS gains were dominated by EP, while TTC/DDC and NC regressed.
+- The targeted next change is to hard-mask the main GRPO advantage for samples that fail TTC/DDC, so progress-improving but direction/timing-unsafe samples do not contribute positive policy gradient.
+
+Implementation:
+- Added agent-level controls:
+  - `grpo_hard_gate_ttc`
+  - `grpo_hard_gate_ddc`
+  - `grpo_ttc_safe_threshold`
+  - `grpo_ddc_safe_threshold`
+- Wired launcher env/Hydra passthrough and `GRPOConfig` assignment.
+
+Launch issue:
+- First launch name: `stage3_grpo_rloo_selfimit_mainhardgate_step300_s16_lr1e4_b2acc4_8gpu_20260614T160328Z`.
+- Hydra failed before training:
+  - `Could not override 'agent.grpo_hard_gate_ttc'`
+  - Root cause: the Python constructor and scripts were patched, but the structured agent YAML lacked default keys.
+
+Decision:
+- This is a configuration-wiring failure, not an algorithm result.
+- Fix by adding the four default fields to `navsim/planning/script/config/common/agent/recogdrive_agent.yaml`, then relaunch under a new run name.
+
 ## Update Template
 
 Append a new section for every algorithm run:

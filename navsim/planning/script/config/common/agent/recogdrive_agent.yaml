@@ -36,6 +36,10 @@ grpo_behavior_policy_sync_interval: 4
 grpo_behavior_policy_sample: true
 grpo_normalize_advantage_batch: false
 grpo_advantage_clip_abs: 0.0
+grpo_hard_gate_ttc: false
+grpo_hard_gate_ddc: false
+grpo_ttc_safe_threshold: 1.0
+grpo_ddc_safe_threshold: 1.0
 grpo_ppo_replay_inner_epochs: 1
 grpo_ppo_replay_minibatch_size: 0
 grpo_ppo_replay_max_grad_norm: 1.0
