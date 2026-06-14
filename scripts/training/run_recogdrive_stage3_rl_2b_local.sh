@@ -23,7 +23,18 @@ GPUS_PER_NODE="${GPUS_PER_NODE:-8}"
 NODES="${NODES:-1}"
 NODE_RANK="${NODE_RANK:-${MLP_ROLE_INDEX:-0}}"
 MASTER_ADDR="${MASTER_ADDR:-${MLP_WORKER_0_HOST:-127.0.0.1}}"
-MASTER_PORT="${MASTER_PORT:-${MLP_WORKER_0_PORT:-63669}}"
+if [[ -z "${MASTER_PORT:-}" && -z "${MLP_WORKER_0_PORT:-}" ]]; then
+  MASTER_PORT="$("${PYTHON_BIN}" - <<'PY'
+import socket
+
+with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+    sock.bind(("", 0))
+    print(sock.getsockname()[1])
+PY
+)"
+else
+  MASTER_PORT="${MASTER_PORT:-${MLP_WORKER_0_PORT:-63669}}"
+fi
 DDP_STRATEGY="${DDP_STRATEGY:-ddp}"
 KILL_GPU_STRESS="${KILL_GPU_STRESS:-0}"
 DRY_RUN="${DRY_RUN:-0}"

@@ -60,6 +60,10 @@ export GRPO_SELF_IMITATION_MIN_REWARD="${GRPO_SELF_IMITATION_MIN_REWARD:-0.85}"
 export GRPO_SELF_IMITATION_MIN_REWARD_MARGIN="${GRPO_SELF_IMITATION_MIN_REWARD_MARGIN:-0.01}"
 export GRPO_SELF_IMITATION_BASELINE_MODE="${GRPO_SELF_IMITATION_BASELINE_MODE:-buffer_or_group_mean}"
 export GRPO_SELF_IMITATION_TIMESTEP_SAMPLING="${GRPO_SELF_IMITATION_TIMESTEP_SAMPLING:-low_noise}"
+export TRAIN_WAIT_FOR_FREE_GPUS="${TRAIN_WAIT_FOR_FREE_GPUS:-0}"
+export TRAIN_GPU_MAX_MEM_USED_MB="${TRAIN_GPU_MAX_MEM_USED_MB:-2000}"
+export TRAIN_GPU_MAX_UTIL="${TRAIN_GPU_MAX_UTIL:-5}"
+export TRAIN_GPU_WAIT_POLL_SECONDS="${TRAIN_GPU_WAIT_POLL_SECONDS:-120}"
 
 RUN_TRAIN="${RUN_TRAIN:-0}"
 LAUNCH_EVAL_WATCHERS="${LAUNCH_EVAL_WATCHERS:-0}"
@@ -148,6 +152,10 @@ write_launch_summary() {
     echo "grpo_self_imitation_min_reward_margin=${GRPO_SELF_IMITATION_MIN_REWARD_MARGIN}"
     echo "grpo_self_imitation_baseline_mode=${GRPO_SELF_IMITATION_BASELINE_MODE}"
     echo "grpo_self_imitation_timestep_sampling=${GRPO_SELF_IMITATION_TIMESTEP_SAMPLING}"
+    echo "train_wait_for_free_gpus=${TRAIN_WAIT_FOR_FREE_GPUS}"
+    echo "train_gpu_max_mem_used_mb=${TRAIN_GPU_MAX_MEM_USED_MB}"
+    echo "train_gpu_max_util=${TRAIN_GPU_MAX_UTIL}"
+    echo "train_gpu_wait_poll_seconds=${TRAIN_GPU_WAIT_POLL_SECONDS}"
     echo "primary_eval_host=${PRIMARY_EVAL_HOST}"
     echo "secondary_eval_host=${SECONDARY_EVAL_HOST}"
     echo "primary_eval_gpu_list=${PRIMARY_EVAL_GPU_LIST}"
@@ -229,6 +237,48 @@ EOF
 
 write_launch_summary
 
+gpu_busy_report() {
+  nvidia-smi --query-gpu=index,memory.used,utilization.gpu --format=csv,noheader,nounits | \
+    awk -F, -v gpu_list="${GPU_LIST}" -v max_mem="${TRAIN_GPU_MAX_MEM_USED_MB}" -v max_util="${TRAIN_GPU_MAX_UTIL}" '
+      BEGIN {
+        n = split(gpu_list, wanted, ",");
+        for (i = 1; i <= n; ++i) allow[wanted[i] + 0] = 1;
+      }
+      {
+        idx = $1 + 0;
+        mem = $2 + 0;
+        util = $3 + 0;
+        if (idx in allow && (mem > max_mem || util > max_util)) {
+          printf("gpu=%d mem=%dMB util=%d%%\n", idx, mem, util);
+        }
+      }'
+}
+
+wait_for_train_gpus() {
+  if [[ "${TRAIN_WAIT_FOR_FREE_GPUS}" != "1" ]]; then
+    return 0
+  fi
+  if ! command -v nvidia-smi >/dev/null 2>&1; then
+    echo "nvidia-smi not found; cannot wait for training GPUs." >&2
+    exit 3
+  fi
+  mkdir -p "${OUT_ROOT}"
+  local wait_log="${OUT_ROOT}/train_gpu_wait.log"
+  while true; do
+    local blocked
+    blocked="$(gpu_busy_report || true)"
+    if [[ -z "${blocked}" ]]; then
+      echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) target GPUs free; launching training." | tee -a "${wait_log}"
+      return 0
+    fi
+    {
+      echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) waiting for target GPUs: ${GPU_LIST}"
+      echo "${blocked}"
+    } | tee -a "${wait_log}"
+    sleep "${TRAIN_GPU_WAIT_POLL_SECONDS}"
+  done
+}
+
 if [[ "${RUN_TRAIN}" != "1" ]]; then
   echo "Strict GSPO launch config written to ${OUT_ROOT}/strict_gspo_launch_config.txt"
   echo "Dry run. Start with:"
@@ -236,6 +286,8 @@ if [[ "${RUN_TRAIN}" != "1" ]]; then
     "${RUN_NAME}" "${REPO_ROOT}/scripts/training/launch_recogdrive_stage3_grpo_gspo_2b_local_stable.sh"
   exit 0
 fi
+
+wait_for_train_gpus
 
 RUN_NAME="${RUN_NAME}" \
 OUT_ROOT="${OUT_ROOT}" \
