@@ -100,6 +100,11 @@ Fourth cleanup on 2026-06-14 UTC:
 - The retained evidence for this failed direction is the row/result summary in this ledger: step300 PDMS `0.879395`, step600 PDMS `0.882934`, and the failure mode that main TTC/DDC hard gates improved safety but suppressed EP/DAC enough to underperform cap05 and original-LR GRPO.
 - Do not repeat the v3 main TTC/DDC hard-gate plus strict self-imitation setup as a default route. Any future safety/progress method must preserve progress pressure and be compared against the zt3 original-LR control at matched step/epoch.
 
+Fifth cleanup on 2026-06-14 UTC:
+- Removed the final failed-v3 residue after it was recreated by a stale local `watch_recogdrive_stage3_early_gate.sh` process. The stale watcher PID `3706056` had `RUN_ROOT` set to `stage3_grpo_rloo_selfimit_mainhardgate_v3_bufferpath_step300_s16_lr1e4_b2acc4_8gpu_20260614T161426Z` and only wrote `early_gate_latest.json` / `early_gate_watch.log`; it was stopped and the regenerated 12 KB directory was deleted.
+- No remote `training-vla-zt2` or `training-rl-zt3` tasks were killed during this cleanup. The only remaining local early-gate watcher is attached to the active current-repo original-LR GRPO control run.
+- Keep only this ledger entry as evidence for the failed v3 attempt. Do not restore or re-evaluate deleted v3 logs unless a new planned-attempt entry justifies a different safety/progress design.
+
 ## Navtest Diagnostic: Cap05 Self-Imitation Step300 To Step600
 
 Run:
