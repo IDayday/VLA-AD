@@ -61,6 +61,7 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 | Run / Reference | Status | Key Config | Best Known PDMS | Notes |
 |---|---:|---|---:|---|
 | User-reported original local Stage3 RL | historical | original LR `1e-4`, 10 epochs | `0.9055` | Treat this as a same-length/final-training reference, not a 1-epoch diagnostic reference. |
+| User-reported original Stage3 early training | historical | original Stage3, `epoch0-1` | `0.88+` | Treat this as the short-run sanity gate. A new Stage3 method that is already clearly below this range at matched early epoch/step should not be promoted without a method-level fix. |
 | `stage3_safe_diffgrpo_ckpt_stream_eval_live_20260610T030355Z` | completed | Safe DiffGRPO | `0.906184` at `epoch_12-step_17290` | Strongest confirmed Stage3 result so far. Compare against it only at comparable training length, or label the comparison as short-run diagnostic only. |
 | `stage3_grpo_refkl_s16_lr2e4_b4acc2_chunk32_fast_8gpu_20260613T213145Z` | stopped/evaluated | LR `2e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, effective batch about `64` | `0.872059` at `epoch_0-step_1330` | Exact 8-shard navtest eval: NC `0.9750`, DAC `0.9619`, TTC `0.9371`, EP `0.8159`, comfort `1.0000`, DDC `0.9459`. This is well below `0.9055/0.906184`, so the higher LR was harmful or at least not sufficient. |
 | `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z` | running | LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, effective batch about `66` | pending | zt3 original-LR control. |
@@ -712,7 +713,8 @@ Rules:
 - Short-run replay checkpoints, such as a 1-epoch run, may only be compared against same-epoch or same-step controls.
 - The historical `0.9055` original Stage3 result was trained for 10 epochs. It is a final-training target, not a fair comparator for a 1-epoch replay diagnostic.
 - The confirmed `0.906184` Safe DiffGRPO result is `epoch_12-step_17290`; it is also a long-run target, not a short-run comparator.
-- The user-reported original Stage3 early-training reference is already around `0.88+` PDMS at `epoch0-1`; use that as the first short-run sanity band until a locally aligned checkpoint/control is available.
+- The user-reported original Stage3 early-training reference is already around `0.88+` PDMS at `epoch0-1`; use that as the short-run sanity gate until a locally aligned checkpoint/control is available.
+- If an early replay/preference/offline-RL checkpoint is materially below `0.88` PDMS at a comparable epoch or step, treat it as a failed promotion gate unless another diagnostic proves the method needs more burn-in for a principled reason.
 - A 1-epoch replay run can pass the promotion gate if it is competitive with the zt3 original-LR GRPO control at the same completed epoch and does not regress DDC/TTC.
 - A method can only claim "better than original/Safe DiffGRPO" after running for comparable epochs/steps with the same navtest evaluation protocol.
 - Because `run_training_recogdrive_rl.py` saves checkpoints every epoch via `ModelCheckpoint(save_top_k=-1, every_n_epochs=1, save_on_train_epoch_end=True)`, current active runs can be aligned by completed epoch once their first checkpoints appear.
@@ -874,7 +876,7 @@ Launched on zt3:
 Expected use:
 - Use the first step checkpoint as a quick PDMS sanity check only.
 - Do not compare this limited-batch diagnostic as final evidence against original `epoch10` or Safe DiffGRPO `epoch12`.
-- If the step checkpoint is catastrophically below the original early `0.88+` band, do not promote replay i1/i2 without fixing the method.
+- If the step checkpoint is materially below the original early `0.88+` band, do not promote replay i1/i2 without fixing the method.
 - If it is plausible, wait for the full one-epoch replay/control checkpoints for the real gate.
 
 ## 2026-06-14 06:24 UTC Active Run Snapshot
