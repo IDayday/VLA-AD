@@ -207,6 +207,20 @@ Update on 2026-06-14 19:34 UTC:
   - `train/bc_coeff_step=0.1`
 - No checkpoint or navtest eval row exists yet for this run. Keep it running as the current-code control before launching the buffer-DPO diagnostic.
 
+Update on 2026-06-14 19:51 UTC:
+- The run is still alive on local GPUs `0-7`; GPU memory is about `41 GB/card` and utilization is active.
+- Latest TensorBoard train scalar is step `99`:
+  - `train/reward_step=0.694921`
+  - `train/base_reward_step=0.722842`
+  - `train/safe_ratio_step=0.875000`
+  - `train/mean_ep_step=0.745482`
+  - `train/mean_nc_step=0.945312`
+  - `train/mean_dac_step=0.937500`
+  - `train/mean_ttc_step=0.820312`
+  - `train/mean_ddc_step=0.994141`
+- Still no `step300` checkpoint and no navtest `checkpoint_eval_submetrics.tsv` row. The zt2/zt3 checkpoint watchers are healthy and repeatedly report `no pending checkpoint evals; training_state=running`.
+- Decision unchanged: do not start buffer-DPO until this current-code control has an early exact navtest row.
+
 Train-only keep-best elite buffer status on 2026-06-14 19:23 UTC:
 - Buffer path: `/mnt/project/VLA-AD/cache/recogdrive_stage3_awac_elite_buffer_train_v2_stage3_awac_iql_dualhost_20260612T182947Z`.
 - Full train-token coverage exists: `85109` `*.pkl.xz` records, about `342 MB`.
@@ -221,6 +235,10 @@ Train-only keep-best elite buffer status on 2026-06-14 19:23 UTC:
   - `pct_best_valid_above_gt=0.587`; `pct_best_valid_above_il=0.802`.
   - valid sources are dominated by structured perturbations: `progress_endpoint`, `progress_speed`, `progress_gamma`, plus policy/lateral/timing candidates.
 - Interpretation: the oracle/buffer side is not the main current bottleneck. The buffer contains many valid trajectories that beat GT, so the next algorithmic question remains policy absorption into the diffusion sampler. Any buffer-DPO/preference run must be isolated on top of the original-LR GRPO control shape, not on top of the failed v3 hard-gate configuration.
+
+Update on 2026-06-14 19:51 UTC:
+- The keep-best builder is still active on `training-rl-zt3`; shard logs updated at 19:38 and 19:41 UTC.
+- Buffer coverage remains `85109` records, about `342 MB`, with latest record mtimes around 19:44 UTC. This means the full train-only buffer is available and still being refreshed; no intervention is needed.
 
 ## Planned Attempt: Original-LR GRPO With RLOO Self-Imitation
 
