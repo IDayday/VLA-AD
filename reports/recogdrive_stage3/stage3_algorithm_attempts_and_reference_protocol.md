@@ -1044,8 +1044,22 @@ Planned isolated diagnostic:
 - Single intended variable: `GRPO_PPO_REPLAY_LOGPROB_MODE=step` instead of `trajectory`.
 
 Promotion gate:
+- User clarification on `2026-06-14`: original Stage3 is already around `0.88+` PDMS at `epoch0-1`; use that as the short-run comparator, not the 10-epoch `0.9055` result.
 - If `step-step_300` remains far below `0.88`, step-level replay alone is not enough and we should inspect reward/action-distribution mismatch or return to original GRPO with better reward shaping.
 - If `step-step_300` materially improves over `0.816440`, continue evaluating queued `step-step_600` / epoch checkpoint and consider a larger run.
+
+Launch status:
+- Training launched on zt3 at `2026-06-14T07:29Z`.
+- Output root: `/mnt/project/VLA-AD/outputs/stage3_grpo_replay_stepmode_stepckpt_s16_i1_lr1e4_zt3_2gpu_20260614T0727Z`.
+- Verified resolved command contains `agent.grpo_ppo_replay_logprob_mode=step`, `trainer.params.devices=2`, and `checkpoint.every_n_train_steps=300`.
+- Local watcher launched with output root `/mnt/project/VLA-AD/outputs/stage3_grpo_replay_stepmode_stepckpt_s16_i1_lr1e4_zt3_2gpu_20260614T0727Z_navtest_step_eval`.
+- Initial watcher state: no pending checkpoint, training state running.
+- Training finished cleanly at `2026-06-14T07:40:13Z` with return code `0`.
+- Produced checkpoints:
+  - `step-step=300.ckpt` at `2026-06-14T07:35:47Z`
+  - `step-step=600.ckpt` at `2026-06-14T07:39:29Z`
+  - `epoch=0-step=600.ckpt` at `2026-06-14T07:39:42Z`
+- The local watcher archived `step-step=300` and started exact navtest evaluation at `2026-06-14T07:39:45Z`; PDMS is pending.
 
 ## Update Template
 
