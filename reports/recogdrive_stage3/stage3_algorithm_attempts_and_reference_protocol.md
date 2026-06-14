@@ -624,6 +624,9 @@ As of 2026-06-14 05:18 UTC:
 - Keep running: `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z`.
   - Reason: this is the needed original-LR GRPO control. It isolates algorithm effects from the failed/weak `2e-4` route.
   - Latest status: still running, no checkpoint yet.
+  - Evaluation watchers already exist; do not start another duplicate watcher:
+    - primary zt3 2GPU watcher: `/mnt/project/VLA-AD/outputs/stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z/primary_watch_on_rl_zt3_2gpu`
+    - secondary zt2 4GPU watcher: `/mnt/project/VLA-AD/outputs/stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z/secondary_watch_on_vla_zt2_4gpu`
   - Latest logged scalar window: step `49 -> 349`, reward `0.50699 -> 0.88152`, base reward `0.61353 -> 0.84410`, TTC `0.80208 -> 0.88542`, safe ratio `0.72917 -> 0.98958`, GSPO ratio stays `1.0` because this is the non-replay control path.
   - Decision: keep it. It is a meaningful control, not a stale or weakly configured experiment.
 - Completed and keep as smoke evidence: `stage3_grpo_replay_diag_s4_i2_lr1e4_4gpu_20260614T042519Z`.
@@ -707,6 +710,7 @@ Current keep list:
 - zt3 original-LR GRPO control: `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z`.
 - local PPO replay i2 one-epoch run: `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z`.
 - zt2 PPO replay i1 one-epoch run: `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z`.
+- Existing zt3 control eval watchers: keep the already-running primary/secondary watchers; do not launch a third watcher for the same checkpoint stream.
 
 Current stop/avoid list:
 - Pure AWAC/IQL, AWAC+DPO, and simplified preference variants until implementation is upgraded to a mature offline/preference diffusion policy method.
