@@ -270,6 +270,13 @@ Update on 2026-06-14 21:33 UTC:
   - `decide_recogdrive_stage3_next_action.py` now detects queued/running Buffer-DPO runs and returns `wait_for_buffer_dpo_queue` instead of generating another duplicate launch command.
   - Current gate output: active Buffer-DPO run is `stage3_grpo_buffer_dpo_refctrl_s16_lr1e4_b2acc4_zt2wait_8gpu_20260614T213001Z`.
 
+Update on 2026-06-14 21:44 UTC:
+- Current-repo GRPO control wrote `step-step=600.ckpt` at `2026-06-14T21:40:46Z`.
+- Both attached exact-navtest watchers saw it after the 120 second age guard and archived it by hardlink:
+  - zt2 archive: `unique_lock_watch_on_vla_zt2_4gpu/checkpoint_archive/step-step_600.ckpt`
+  - zt3 archive: `secondary_watch_on_rl_zt3_memfit_4gpu/checkpoint_archive/step-step_600.ckpt`
+- No step600 PDMS result yet. Both watchers are in `pending_evals=1` and waiting for free GPUs; no remote task was killed or preempted.
+
 Train-only keep-best elite buffer status on 2026-06-14 19:23 UTC:
 - Buffer path: `/mnt/project/VLA-AD/cache/recogdrive_stage3_awac_elite_buffer_train_v2_stage3_awac_iql_dualhost_20260612T182947Z`.
 - Full train-token coverage exists: `85109` `*.pkl.xz` records, about `342 MB`.
