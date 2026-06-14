@@ -42,7 +42,9 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 | `stage3_grpo_refkl_s16_lr2e4_b4acc2_chunk32_fast_8gpu_20260613T213145Z` | keep until first epoch eval | It answers the LR-change question for the current modified `2e-4` GRPO run. It is not an original-LR baseline and must be interpreted with that caveat. |
 | `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z` | keep | Original-LR `1e-4` control with similar effective batch scale. Needed to separate algorithm effect from LR effect. |
 | `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_zt2_4gpu_20260614T012106Z` | stopped | It tested buffer absorption, but Lightning did not log the returned buffer/self-imitation diagnostics. Continuing would not prove whether the auxiliary path was active. |
-| `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_diagfix_zt2_4gpu_20260614T020706Z` | diagnostic run | Same buffer-guided GSPO idea after logging fix. Let it run only past the first 50-100 steps if buffer/self-imitation/GSPO diagnostics appear and are non-degenerate. |
+| `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_diagfix_zt2_4gpu_20260614T020706Z` | stopped | It was launched before the PPO/advantage diagnostics patch. It could not report `gspo_approx_kl` or the full advantage-transform diagnostics, so it was stopped before becoming a full run. |
+| `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_diag_zt2_4gpu_20260614T023758Z` | failed before training | Hydra struct rejected the new override before the agent YAML was updated. No training occurred. |
+| `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_diag_zt2_4gpu_20260614T024536Z` | diagnostic window | New post-patch diagnostic on zt2 0-3 GPUs. Purpose: verify GSPO ratio/KL/clip and advantage normalize/clip logging at original LR `1e-4` without buffer guidance. Limit train batches to keep this from becoming a full run. |
 | Local queued `stage3_grpo_buffer_guided_selfimit_s16_lr2e4_b2acc4_wait2_20260614T003614Z` launcher | stopped | It was a stale queued run from before this protocol and duplicates the zt2 buffer-guided experiment. |
 | `supervise_recogdrive_stage3_experiment.py` auto-supervisor | stopped | It can auto-launch stale next actions without the new reference-audit protocol. Future launches should be manual after updating this file. |
 
@@ -55,7 +57,9 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 | `stage3_grpo_refkl_s16_lr2e4_b4acc2_chunk32_fast_8gpu_20260613T213145Z` | running | LR `2e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, effective batch about `64` | pending | Modified-LR run. At 2026-06-14 01:51 UTC it was at step `1249`, no checkpoint yet. |
 | `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z` | running | LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, effective batch about `66` | pending | zt3 original-LR control. |
 | `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_zt2_4gpu_20260614T012106Z` | stopped before eval | LR `2e-4`, GSPO ratio, elite-buffer reward bonus/distill/self-imitation | invalid run | Stopped because key diagnostics were not logged, so the run could not validate buffer absorption. |
-| `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_diagfix_zt2_4gpu_20260614T020706Z` | running diagnostic | LR `2e-4`, GSPO ratio, elite-buffer reward bonus/distill/self-imitation, diagnostics fixed | pending | zt2 0-3 GPUs, eval watchers intentionally disabled until early training diagnostics prove the absorption path is active. |
+| `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_diagfix_zt2_4gpu_20260614T020706Z` | stopped before eval | LR `2e-4`, GSPO ratio, elite-buffer reward bonus/distill/self-imitation | invalid run | Stopped because it was launched before the full PPO/advantage diagnostics patch. |
+| `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_diag_zt2_4gpu_20260614T023758Z` | failed before training | LR `1e-4`, GSPO ratio, batch advantage normalize, fixed advantage clip `3.0`, no buffer | none | Failed at Hydra config parsing because `grpo_normalize_advantage_batch` was missing from `recogdrive_agent.yaml`. |
+| `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_diag_zt2_4gpu_20260614T024536Z` | launching diagnostic | LR `1e-4`, GSPO ratio, batch advantage normalize, fixed advantage clip `3.0`, no buffer, `limit_train_batches=80`, `limit_val_batches=0` | pending | Diagnostic only. Eval watchers disabled. Stop after confirming first train-scalar window unless explicitly promoted. |
 
 ## Completed Attempt Ledger
 
@@ -267,6 +271,99 @@ Must include:
 
 Do not launch if:
 - It only toggles `use_gspo_ratio` without rollout replay and diagnostics.
+
+Implementation hardening completed on 2026-06-14:
+- Added GRPO/GSPO diagnostics required by mature PPO-style methods:
+  - `gspo_ratio_min/max`
+  - `gspo_abs_log_ratio_mean`
+  - `gspo_approx_kl`
+  - `gspo_reverse_approx_kl`
+  - group-weight and safe-count statistics
+  - advantage mean/std/min/max before and after optional transforms
+  - advantage positive/zero/clip ratios
+- Added optional `grpo_normalize_advantage_batch` and `grpo_advantage_clip_abs`.
+- Defaults preserve existing behavior; these controls are for the next controlled run after the current diagnostics are read.
+
+Remaining gap before claiming a SOTA-level PPO implementation:
+- The current Lightning path still does not store rollout batches and replay them for multiple PPO epochs/minibatches.
+- A full DPPO/DDPO/RIPT-VLA-aligned implementation needs a rollout buffer containing trajectories, denoising chains, old logprobs, rewards, components, masks, and advantages, followed by replay updates with fixed old logprobs.
+
+## Revised Experiment Plan 2026-06-14
+
+### Phase 0: Do Not Start New Full Runs Until Diagnostics Are Valid
+
+Keep only experiments that answer a specific question:
+- Local `2e-4` GRPO: keep as the high-LR run, but do not treat it as an algorithm improvement until compared against the `1e-4` control.
+- zt3 `1e-4` GRPO: keep as the original-LR control.
+- zt2 `1e-4` GSPO/advantage-control diagnostic: keep only as a limited-batch logging check. It must prove ratio/KL/clip/advantage diagnostics work before any full GSPO run.
+
+Stop or avoid:
+- Pure AWAC/IQL full training.
+- Any preference/DPO run without pair count, active row ratio, logit scale, implicit accuracy, and current/reference winner-loser losses.
+- Any GRPO variant that lacks ratio/KL/clip/advantage diagnostics.
+- Any launch where LR, effective batch, sample_time, or checkpoint cadence differs from the control without being the explicit variable under test.
+
+### Phase 1: Read Current Running Experiments
+
+Required outputs:
+- First checkpoint/eval for local `2e-4` GRPO.
+- First checkpoint/eval for zt3 `1e-4` GRPO.
+- First train-scalar window for zt2 `1e-4` GSPO/advantage diagnostic, including:
+  - `gspo_ratio_mean/min/max`
+  - `gspo_ratio_clip_frac`
+  - `gspo_approx_kl`
+  - `gspo_abs_log_ratio_mean`
+  - `grpo_advantage_mean_before_transform`
+  - `grpo_advantage_std_after_transform`
+  - `grpo_advantage_clip_frac`
+
+Go/no-go:
+- If zt2 has no training scalars after startup completes, stop it and inspect the failure.
+- If GSPO ratio stays exactly `1.0` with zero log-ratio variance beyond the sync step, it is not testing PPO-style updates; stop or relaunch with corrected behavior-policy timing.
+- If `gspo_approx_kl` or clip fraction explodes early, stop and reduce LR or clip range.
+
+### Phase 2: Next Allowed Algorithm Run
+
+Only launch after Phase 1 results are read.
+
+Preferred next run:
+- GSPO/GRPO with original LR `1e-4`, `sample_time=16`, same effective batch as the control.
+- Enable batch advantage normalization and conservative fixed clipping:
+  - `GRPO_NORMALIZE_ADVANTAGE_BATCH=true`
+  - `GRPO_ADVANTAGE_CLIP_ABS=3.0`
+- Keep BC anneal `0.10 -> 0.05`, reference KL `0.02`, scheduler `20` epochs to `1e-5`.
+- Do not add buffer guidance in this run. This isolates the PPO/advantage-control effect.
+
+Rationale:
+- DDPO/DPPO/RIPT-VLA-style methods all rely on stable old-policy ratio updates and controlled advantages.
+- Before adding buffer absorption again, we need a clean PPO-control run that separates LR and advantage-scale effects.
+
+### Phase 3: Buffer Absorption, Only After PPO Control
+
+If Phase 2 is stable and competitive:
+- Relaunch buffer-guided GSPO at the better LR.
+- Use the same PPO diagnostics.
+- Keep buffer distill/self-imitation weights small and warm-started.
+- Add one variable at a time:
+  1. reward-neighborhood bonus only
+  2. buffer distill only
+  3. self-imitation only
+  4. combined, only if individual terms are active and non-regressive
+
+Buffer absorption success criteria:
+- `grpo_buffer_target_distance_mean` decreases or remains low while reward improves.
+- self-imitation target reward is above group/buffer baseline.
+- NC/DAC/TTC/DDC do not regress.
+- Evaluation PDMS improves over both `1e-4` GRPO control and Safe DiffGRPO `0.906184`.
+
+### Phase 4: Full PPO Replay Implementation
+
+If GSPO diagnostics show promise but eval does not improve:
+- Implement a real rollout replay buffer before the next expensive full run.
+- Store sampled denoising chains and old logprobs.
+- Run multiple replay epochs/minibatches with fixed old logprobs.
+- Match DPPO/DDPO diagnostics: approximate KL, clip fraction, ratio distribution, advantage normalization, reward distribution, safety masks.
+- Treat this as the first SOTA-aligned implementation rather than another tuning variant.
 
 ### Direction B: GRPO + Buffer Absorption With Proof Of Activity
 

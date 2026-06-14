@@ -81,6 +81,12 @@ fi
 if [[ -n "${GRPO_BEHAVIOR_POLICY_SAMPLE:-}" ]]; then
   JOB_CMD+="GRPO_BEHAVIOR_POLICY_SAMPLE=$(printf '%q' "${GRPO_BEHAVIOR_POLICY_SAMPLE}") "
 fi
+if [[ -n "${GRPO_NORMALIZE_ADVANTAGE_BATCH:-}" ]]; then
+  JOB_CMD+="GRPO_NORMALIZE_ADVANTAGE_BATCH=$(printf '%q' "${GRPO_NORMALIZE_ADVANTAGE_BATCH}") "
+fi
+if [[ -n "${GRPO_ADVANTAGE_CLIP_ABS:-}" ]]; then
+  JOB_CMD+="GRPO_ADVANTAGE_CLIP_ABS=$(printf '%q' "${GRPO_ADVANTAGE_CLIP_ABS}") "
+fi
 if [[ -n "${GRPO_SCHEDULER_EPOCHS:-}" ]]; then
   JOB_CMD+="GRPO_SCHEDULER_EPOCHS=$(printf '%q' "${GRPO_SCHEDULER_EPOCHS}") "
 fi
@@ -89,6 +95,12 @@ if [[ -n "${GRPO_SCHEDULER_WARMUP_EPOCHS:-}" ]]; then
 fi
 if [[ -n "${GRPO_SCHEDULER_MIN_LR:-}" ]]; then
   JOB_CMD+="GRPO_SCHEDULER_MIN_LR=$(printf '%q' "${GRPO_SCHEDULER_MIN_LR}") "
+fi
+if [[ -n "${LIMIT_TRAIN_BATCHES:-}" ]]; then
+  JOB_CMD+="LIMIT_TRAIN_BATCHES=$(printf '%q' "${LIMIT_TRAIN_BATCHES}") "
+fi
+if [[ -n "${LIMIT_VAL_BATCHES:-}" ]]; then
+  JOB_CMD+="LIMIT_VAL_BATCHES=$(printf '%q' "${LIMIT_VAL_BATCHES}") "
 fi
 for name in \
   OFFLINE_RL_ENABLED ELITE_BUFFER_DIR OFFLINE_RL_MISSING_BUFFER_POLICY \

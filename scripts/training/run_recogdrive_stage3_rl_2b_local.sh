@@ -56,9 +56,13 @@ STAGE3_GRPO_GSPO_CLIP_LOW="${GRPO_GSPO_CLIP_LOW:-0.05}"
 STAGE3_GRPO_GSPO_CLIP_HIGH="${GRPO_GSPO_CLIP_HIGH:-0.05}"
 STAGE3_GRPO_BEHAVIOR_POLICY_SYNC_INTERVAL="${GRPO_BEHAVIOR_POLICY_SYNC_INTERVAL:-4}"
 STAGE3_GRPO_BEHAVIOR_POLICY_SAMPLE="${GRPO_BEHAVIOR_POLICY_SAMPLE:-true}"
+STAGE3_GRPO_NORMALIZE_ADVANTAGE_BATCH="${GRPO_NORMALIZE_ADVANTAGE_BATCH:-false}"
+STAGE3_GRPO_ADVANTAGE_CLIP_ABS="${GRPO_ADVANTAGE_CLIP_ABS:-0.0}"
 STAGE3_GRPO_SCHEDULER_EPOCHS="${GRPO_SCHEDULER_EPOCHS:-${STAGE3_MAX_EPOCHS}}"
 STAGE3_GRPO_SCHEDULER_WARMUP_EPOCHS="${GRPO_SCHEDULER_WARMUP_EPOCHS:-0}"
 STAGE3_GRPO_SCHEDULER_MIN_LR="${GRPO_SCHEDULER_MIN_LR:-1e-5}"
+STAGE3_LIMIT_TRAIN_BATCHES="${LIMIT_TRAIN_BATCHES:-}"
+STAGE3_LIMIT_VAL_BATCHES="${LIMIT_VAL_BATCHES:-}"
 STAGE3_OFFLINE_RL_ENABLED="${OFFLINE_RL_ENABLED:-false}"
 STAGE3_ELITE_BUFFER_DIR="${ELITE_BUFFER_DIR:-}"
 STAGE3_OFFLINE_RL_MISSING_BUFFER_POLICY="${OFFLINE_RL_MISSING_BUFFER_POLICY:-error}"
@@ -188,6 +192,8 @@ HYDRA_ARGS=(
   "agent.grpo_gspo_clip_high=${STAGE3_GRPO_GSPO_CLIP_HIGH}"
   "agent.grpo_behavior_policy_sync_interval=${STAGE3_GRPO_BEHAVIOR_POLICY_SYNC_INTERVAL}"
   "agent.grpo_behavior_policy_sample=${STAGE3_GRPO_BEHAVIOR_POLICY_SAMPLE}"
+  "agent.grpo_normalize_advantage_batch=${STAGE3_GRPO_NORMALIZE_ADVANTAGE_BATCH}"
+  "agent.grpo_advantage_clip_abs=${STAGE3_GRPO_ADVANTAGE_CLIP_ABS}"
   "agent.grpo_scheduler_epochs=${STAGE3_GRPO_SCHEDULER_EPOCHS}"
   "agent.grpo_scheduler_warmup_epochs=${STAGE3_GRPO_SCHEDULER_WARMUP_EPOCHS}"
   "agent.grpo_scheduler_min_lr=${STAGE3_GRPO_SCHEDULER_MIN_LR}"
@@ -244,6 +250,12 @@ HYDRA_ARGS=(
   "train_test_split=${STAGE3_TRAIN_TEST_SPLIT}"
   "force_cache_computation=False"
 )
+if [[ -n "${STAGE3_LIMIT_TRAIN_BATCHES}" ]]; then
+  HYDRA_ARGS+=("trainer.params.limit_train_batches=${STAGE3_LIMIT_TRAIN_BATCHES}")
+fi
+if [[ -n "${STAGE3_LIMIT_VAL_BATCHES}" ]]; then
+  HYDRA_ARGS+=("trainer.params.limit_val_batches=${STAGE3_LIMIT_VAL_BATCHES}")
+fi
 
 if [[ "${CACHE_MODE}" == "offline" ]]; then
   if [[ ! -d "${HIDDEN_CACHE_DIR}" ]]; then
@@ -320,9 +332,13 @@ CMD=(
   echo "stage3_grpo_gspo_clip_high=${STAGE3_GRPO_GSPO_CLIP_HIGH}"
   echo "stage3_grpo_behavior_policy_sync_interval=${STAGE3_GRPO_BEHAVIOR_POLICY_SYNC_INTERVAL}"
   echo "stage3_grpo_behavior_policy_sample=${STAGE3_GRPO_BEHAVIOR_POLICY_SAMPLE}"
+  echo "stage3_grpo_normalize_advantage_batch=${STAGE3_GRPO_NORMALIZE_ADVANTAGE_BATCH}"
+  echo "stage3_grpo_advantage_clip_abs=${STAGE3_GRPO_ADVANTAGE_CLIP_ABS}"
   echo "stage3_grpo_scheduler_epochs=${STAGE3_GRPO_SCHEDULER_EPOCHS}"
   echo "stage3_grpo_scheduler_warmup_epochs=${STAGE3_GRPO_SCHEDULER_WARMUP_EPOCHS}"
   echo "stage3_grpo_scheduler_min_lr=${STAGE3_GRPO_SCHEDULER_MIN_LR}"
+  echo "stage3_limit_train_batches=${STAGE3_LIMIT_TRAIN_BATCHES}"
+  echo "stage3_limit_val_batches=${STAGE3_LIMIT_VAL_BATCHES}"
   echo "stage3_offline_rl_enabled=${STAGE3_OFFLINE_RL_ENABLED}"
   echo "stage3_elite_buffer_dir=${STAGE3_ELITE_BUFFER_DIR}"
   echo "stage3_offline_rl_cache_elite_records_in_memory=${STAGE3_OFFLINE_RL_CACHE_ELITE_RECORDS_IN_MEMORY}"

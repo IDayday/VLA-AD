@@ -122,6 +122,8 @@ class ReCogDriveAgent(AbstractAgent):
         grpo_gspo_clip_high: float = 0.05,
         grpo_behavior_policy_sync_interval: int = 4,
         grpo_behavior_policy_sample: bool = True,
+        grpo_normalize_advantage_batch: bool = False,
+        grpo_advantage_clip_abs: float = 0.0,
         metric_cache_path: Optional[str] = '', 
         reference_policy_checkpoint: Optional[str] = '', 
         offline_rl_enabled: bool = False,
@@ -503,6 +505,8 @@ class ReCogDriveAgent(AbstractAgent):
         self.grpo_gspo_clip_high = float(grpo_gspo_clip_high)
         self.grpo_behavior_policy_sync_interval = int(grpo_behavior_policy_sync_interval)
         self.grpo_behavior_policy_sample = bool(grpo_behavior_policy_sample)
+        self.grpo_normalize_advantage_batch = bool(grpo_normalize_advantage_batch)
+        self.grpo_advantage_clip_abs = float(grpo_advantage_clip_abs)
         if self.bc_coeff_start < 0.0 or self.bc_coeff_end < 0.0:
             raise ValueError("BC coefficients must be non-negative.")
         if self.bc_anneal_epochs <= 0:
@@ -517,6 +521,8 @@ class ReCogDriveAgent(AbstractAgent):
             raise ValueError("grpo_gspo_clip_high must be non-negative.")
         if self.grpo_behavior_policy_sync_interval <= 0:
             raise ValueError("grpo_behavior_policy_sync_interval must be positive.")
+        if self.grpo_advantage_clip_abs < 0.0:
+            raise ValueError("grpo_advantage_clip_abs must be non-negative.")
         self.backbone = None
         self.metric_cache_path = metric_cache_path
         self.reference_policy_checkpoint = reference_policy_checkpoint
@@ -1278,6 +1284,8 @@ class ReCogDriveAgent(AbstractAgent):
             cfg.grpo_cfg.gspo_clip_high = self.grpo_gspo_clip_high
             cfg.grpo_cfg.behavior_policy_sync_interval = self.grpo_behavior_policy_sync_interval
             cfg.grpo_cfg.behavior_policy_sample = self.grpo_behavior_policy_sample
+            cfg.grpo_cfg.normalize_advantage_batch = self.grpo_normalize_advantage_batch
+            cfg.grpo_cfg.advantage_clip_abs = self.grpo_advantage_clip_abs
             
         self.action_head = ReCogDriveDiffusionPlanner(cfg).to(device)
         if self.last_rd_adapter_checkpoint:

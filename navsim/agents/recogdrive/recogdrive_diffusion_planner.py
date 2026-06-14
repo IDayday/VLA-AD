@@ -148,6 +148,8 @@ class GRPOConfig:
     gspo_clip_high: float = 0.05
     behavior_policy_sync_interval: int = 4
     behavior_policy_sample: bool = True
+    normalize_advantage_batch: bool = False
+    advantage_clip_abs: float = 0.0
 
     # dynamic group weighting
     use_dynamic_group_weight: bool = True
@@ -1362,6 +1364,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "gspo_clip_high",
             "behavior_policy_sync_interval",
             "behavior_policy_sample",
+            "normalize_advantage_batch",
+            "advantage_clip_abs",
             "use_dynamic_group_weight",
             "min_group_reward_std",
             "all_safe_low_std_group_weight",
@@ -6183,6 +6187,27 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         )
 
         adv = advantages * group_weight.repeat_interleave(G)
+        adv_before = adv.detach().float()
+        grpo_advantage_mean_before = adv_before.mean().to(adv)
+        grpo_advantage_std_before = adv_before.std(unbiased=False).to(adv)
+        grpo_advantage_clip_frac = adv.new_zeros(())
+        if bool(getattr(self, "normalize_advantage_batch", False)):
+            adv_mean = adv.mean()
+            adv_std = adv.std(unbiased=False).clamp(min=1e-6)
+            adv = (adv - adv_mean) / adv_std
+        advantage_clip_abs = float(getattr(self, "advantage_clip_abs", 0.0))
+        if advantage_clip_abs > 0.0:
+            clip_mask = adv.detach().abs() > advantage_clip_abs
+            grpo_advantage_clip_frac = clip_mask.float().mean().to(adv)
+            adv = adv.clamp(min=-advantage_clip_abs, max=advantage_clip_abs)
+        adv_after = adv.detach().float()
+        grpo_advantage_mean_after = adv_after.mean().to(adv)
+        grpo_advantage_std_after = adv_after.std(unbiased=False).to(adv)
+        grpo_advantage_min = adv_after.min().to(adv)
+        grpo_advantage_max = adv_after.max().to(adv)
+        grpo_advantage_positive_ratio = (adv_after > 0.0).float().mean().to(adv)
+        grpo_advantage_zero_ratio = (adv_after.abs() <= 1e-8).float().mean().to(adv)
+
         new_log_probs = self.get_logprobs(
             vl_features_rep,
             his_traj_rep,
@@ -6200,6 +6225,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         gspo_log_ratio_std = new_log_probs.new_zeros(())
         gspo_log_ratio_min = new_log_probs.new_zeros(())
         gspo_log_ratio_max = new_log_probs.new_zeros(())
+        gspo_abs_log_ratio_mean = new_log_probs.new_zeros(())
+        gspo_ratio_min = new_log_probs.new_tensor(1.0)
+        gspo_ratio_max = new_log_probs.new_tensor(1.0)
+        gspo_approx_kl = new_log_probs.new_zeros(())
+        gspo_reverse_approx_kl = new_log_probs.new_zeros(())
 
         use_strict_gspo = (
             self.use_trajectory_level_objective
@@ -6240,11 +6270,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 gspo_ratio_clip_frac = (
                     ((ratio < ratio_clip_low) | (ratio > ratio_clip_high)).detach().float().mean().to(ratio)
                 )
+                gspo_ratio_min = ratio.detach().min()
+                gspo_ratio_max = ratio.detach().max()
+                gspo_approx_kl = (((ratio - 1.0) - log_ratio).detach().float().mean()).to(ratio)
+                gspo_reverse_approx_kl = ((old_traj_logp - new_traj_logp).detach().float().mean()).to(ratio)
                 log_ratio_detached = log_ratio.detach().float()
                 gspo_log_ratio_mean = log_ratio_detached.mean().to(ratio)
                 gspo_log_ratio_std = log_ratio_detached.std(unbiased=False).to(ratio)
                 gspo_log_ratio_min = log_ratio_detached.min().to(ratio)
                 gspo_log_ratio_max = log_ratio_detached.max().to(ratio)
+                gspo_abs_log_ratio_mean = log_ratio_detached.abs().mean().to(ratio)
             else:
                 policy_loss = -torch.mean(new_traj_logp * adv)
             trajectory_logp = new_traj_logp.detach()
@@ -6469,18 +6504,40 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "diversity_bonus": diversity_bonus.mean(),
             "safe_diversity": safe_diversity,
             "group_reward_std": advantage_aux["reward_std"].mean(),
+            "safe_count_mean": advantage_aux["safe_count"].mean(),
+            "group_weight_mean": group_weight.mean(),
+            "group_weight_min": group_weight.min(),
+            "group_weight_max": group_weight.max(),
             "mixed_group_ratio": advantage_aux["mixed_group_ratio"],
             "all_safe_group_ratio": advantage_aux["all_safe_group_ratio"],
             "all_unsafe_group_ratio": advantage_aux["all_unsafe_group_ratio"],
             "mean_advantage": advantages.mean(),
             "mean_abs_advantage": advantages.abs().mean(),
+            "grpo_advantage_mean_before_transform": grpo_advantage_mean_before.to(dtype=total_loss.dtype),
+            "grpo_advantage_std_before_transform": grpo_advantage_std_before.to(dtype=total_loss.dtype),
+            "grpo_advantage_mean_after_transform": grpo_advantage_mean_after.to(dtype=total_loss.dtype),
+            "grpo_advantage_std_after_transform": grpo_advantage_std_after.to(dtype=total_loss.dtype),
+            "grpo_advantage_min": grpo_advantage_min.to(dtype=total_loss.dtype),
+            "grpo_advantage_max": grpo_advantage_max.to(dtype=total_loss.dtype),
+            "grpo_advantage_positive_ratio": grpo_advantage_positive_ratio.to(dtype=total_loss.dtype),
+            "grpo_advantage_zero_ratio": grpo_advantage_zero_ratio.to(dtype=total_loss.dtype),
+            "grpo_advantage_clip_frac": grpo_advantage_clip_frac.to(dtype=total_loss.dtype),
+            "grpo_advantage_batch_normalized": total_loss.new_tensor(
+                float(bool(getattr(self, "normalize_advantage_batch", False)))
+            ),
+            "grpo_advantage_clip_abs": total_loss.new_tensor(float(advantage_clip_abs)),
             "trajectory_logp": trajectory_logp.mean(),
             "gspo_ratio_mean": gspo_ratio_mean.to(dtype=total_loss.dtype),
+            "gspo_ratio_min": gspo_ratio_min.to(dtype=total_loss.dtype),
+            "gspo_ratio_max": gspo_ratio_max.to(dtype=total_loss.dtype),
             "gspo_ratio_clip_frac": gspo_ratio_clip_frac.to(dtype=total_loss.dtype),
             "gspo_log_ratio_mean": gspo_log_ratio_mean.to(dtype=total_loss.dtype),
             "gspo_log_ratio_std": gspo_log_ratio_std.to(dtype=total_loss.dtype),
             "gspo_log_ratio_min": gspo_log_ratio_min.to(dtype=total_loss.dtype),
             "gspo_log_ratio_max": gspo_log_ratio_max.to(dtype=total_loss.dtype),
+            "gspo_abs_log_ratio_mean": gspo_abs_log_ratio_mean.to(dtype=total_loss.dtype),
+            "gspo_approx_kl": gspo_approx_kl.to(dtype=total_loss.dtype),
+            "gspo_reverse_approx_kl": gspo_reverse_approx_kl.to(dtype=total_loss.dtype),
             "use_gspo_ratio": total_loss.new_tensor(float(bool(self.use_gspo_ratio))),
             "sampled_from_behavior_policy": total_loss.new_tensor(float(bool(sampled_from_behavior_policy))),
             "behavior_policy_synced": total_loss.new_tensor(float(bool(behavior_policy_synced))),

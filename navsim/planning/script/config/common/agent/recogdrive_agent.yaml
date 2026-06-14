@@ -34,6 +34,8 @@ grpo_gspo_clip_low: 0.05
 grpo_gspo_clip_high: 0.05
 grpo_behavior_policy_sync_interval: 4
 grpo_behavior_policy_sample: true
+grpo_normalize_advantage_batch: false
+grpo_advantage_clip_abs: 0.0
 offline_rl_enabled: false
 offline_rl_elite_buffer_path: ''
 offline_rl_missing_buffer_policy: error
