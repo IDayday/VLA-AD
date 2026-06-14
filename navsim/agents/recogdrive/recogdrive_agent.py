@@ -109,7 +109,7 @@ class ReCogDriveAgent(AbstractAgent):
         cache_hidden_state: bool = True, 
         lr: float = 1e-4,
         grpo: bool = False,
-        stage3_objective: Literal["none", "grpo", "awac_iql", "hybrid"] = "none",
+        stage3_objective: Literal["none", "grpo", "grpo_replay", "awac_iql", "hybrid"] = "none",
         grpo_sample_time: int = 8,
         bc_anneal: bool = False,
         bc_coeff_start: float = 0.1,
@@ -124,6 +124,13 @@ class ReCogDriveAgent(AbstractAgent):
         grpo_behavior_policy_sample: bool = True,
         grpo_normalize_advantage_batch: bool = False,
         grpo_advantage_clip_abs: float = 0.0,
+        grpo_ppo_replay_inner_epochs: int = 1,
+        grpo_ppo_replay_minibatch_size: int = 0,
+        grpo_ppo_replay_max_grad_norm: float = 1.0,
+        grpo_ppo_replay_min_abs_advantage: float = 1e-6,
+        grpo_ppo_replay_filter_zero_advantage: bool = True,
+        grpo_ppo_replay_sync_behavior_each_batch: bool = True,
+        grpo_ppo_replay_bc_update: bool = True,
         metric_cache_path: Optional[str] = '', 
         reference_policy_checkpoint: Optional[str] = '', 
         offline_rl_enabled: bool = False,
@@ -477,12 +484,14 @@ class ReCogDriveAgent(AbstractAgent):
         self.cache_mode = cache_mode
         self.cache_hidden_state = cache_hidden_state
         self._lr = lr
-        if stage3_objective not in {"none", "grpo", "awac_iql", "hybrid"}:
-            raise ValueError("stage3_objective must be one of 'none', 'grpo', 'awac_iql', or 'hybrid'.")
+        if stage3_objective not in {"none", "grpo", "grpo_replay", "awac_iql", "hybrid"}:
+            raise ValueError(
+                "stage3_objective must be one of 'none', 'grpo', 'grpo_replay', 'awac_iql', or 'hybrid'."
+            )
         resolved_stage3_objective = str(stage3_objective)
         if resolved_stage3_objective == "none" and bool(grpo):
             resolved_stage3_objective = "grpo"
-        if resolved_stage3_objective == "grpo":
+        if resolved_stage3_objective in {"grpo", "grpo_replay"}:
             grpo = True
         if resolved_stage3_objective in {"awac_iql", "hybrid"}:
             offline_rl_enabled = True
@@ -507,6 +516,13 @@ class ReCogDriveAgent(AbstractAgent):
         self.grpo_behavior_policy_sample = bool(grpo_behavior_policy_sample)
         self.grpo_normalize_advantage_batch = bool(grpo_normalize_advantage_batch)
         self.grpo_advantage_clip_abs = float(grpo_advantage_clip_abs)
+        self.grpo_ppo_replay_inner_epochs = int(grpo_ppo_replay_inner_epochs)
+        self.grpo_ppo_replay_minibatch_size = int(grpo_ppo_replay_minibatch_size)
+        self.grpo_ppo_replay_max_grad_norm = float(grpo_ppo_replay_max_grad_norm)
+        self.grpo_ppo_replay_min_abs_advantage = float(grpo_ppo_replay_min_abs_advantage)
+        self.grpo_ppo_replay_filter_zero_advantage = bool(grpo_ppo_replay_filter_zero_advantage)
+        self.grpo_ppo_replay_sync_behavior_each_batch = bool(grpo_ppo_replay_sync_behavior_each_batch)
+        self.grpo_ppo_replay_bc_update = bool(grpo_ppo_replay_bc_update)
         if self.bc_coeff_start < 0.0 or self.bc_coeff_end < 0.0:
             raise ValueError("BC coefficients must be non-negative.")
         if self.bc_anneal_epochs <= 0:
@@ -523,6 +539,14 @@ class ReCogDriveAgent(AbstractAgent):
             raise ValueError("grpo_behavior_policy_sync_interval must be positive.")
         if self.grpo_advantage_clip_abs < 0.0:
             raise ValueError("grpo_advantage_clip_abs must be non-negative.")
+        if self.grpo_ppo_replay_inner_epochs <= 0:
+            raise ValueError("grpo_ppo_replay_inner_epochs must be positive.")
+        if self.grpo_ppo_replay_minibatch_size < 0:
+            raise ValueError("grpo_ppo_replay_minibatch_size must be non-negative.")
+        if self.grpo_ppo_replay_max_grad_norm < 0.0:
+            raise ValueError("grpo_ppo_replay_max_grad_norm must be non-negative.")
+        if self.grpo_ppo_replay_min_abs_advantage < 0.0:
+            raise ValueError("grpo_ppo_replay_min_abs_advantage must be non-negative.")
         self.backbone = None
         self.metric_cache_path = metric_cache_path
         self.reference_policy_checkpoint = reference_policy_checkpoint
@@ -1286,6 +1310,13 @@ class ReCogDriveAgent(AbstractAgent):
             cfg.grpo_cfg.behavior_policy_sample = self.grpo_behavior_policy_sample
             cfg.grpo_cfg.normalize_advantage_batch = self.grpo_normalize_advantage_batch
             cfg.grpo_cfg.advantage_clip_abs = self.grpo_advantage_clip_abs
+            cfg.grpo_cfg.ppo_replay_inner_epochs = self.grpo_ppo_replay_inner_epochs
+            cfg.grpo_cfg.ppo_replay_minibatch_size = self.grpo_ppo_replay_minibatch_size
+            cfg.grpo_cfg.ppo_replay_max_grad_norm = self.grpo_ppo_replay_max_grad_norm
+            cfg.grpo_cfg.ppo_replay_min_abs_advantage = self.grpo_ppo_replay_min_abs_advantage
+            cfg.grpo_cfg.ppo_replay_filter_zero_advantage = self.grpo_ppo_replay_filter_zero_advantage
+            cfg.grpo_cfg.ppo_replay_sync_behavior_each_batch = self.grpo_ppo_replay_sync_behavior_each_batch
+            cfg.grpo_cfg.ppo_replay_bc_update = self.grpo_ppo_replay_bc_update
             
         self.action_head = ReCogDriveDiffusionPlanner(cfg).to(device)
         if self.last_rd_adapter_checkpoint:
@@ -1707,6 +1738,16 @@ class ReCogDriveAgent(AbstractAgent):
                 data={**action_input_data, "action": targets["trajectory"].to(device=action_device, dtype=model_dtype)}
             )
             return self.action_head.forward_grpo(
+                last_hidden_state,
+                action_inputs,
+                tokens_list,
+                sample_time=self.grpo_sample_time,
+            )
+        elif self.training and stage3_objective == "grpo_replay":
+            action_inputs = BatchFeature(
+                data={**action_input_data, "action": targets["trajectory"].to(device=action_device, dtype=model_dtype)}
+            )
+            return self.action_head.collect_grpo_replay_rollout(
                 last_hidden_state,
                 action_inputs,
                 tokens_list,
@@ -2376,7 +2417,7 @@ class ReCogDriveAgent(AbstractAgent):
 
 
     def compute_loss(self, features: Dict[str, torch.Tensor], targets: Dict[str, torch.Tensor], predictions: Dict[str, torch.Tensor]) -> torch.Tensor:
-        if self.training and getattr(self, "stage3_objective", "none") in {"grpo", "awac_iql", "hybrid"}:
+        if self.training and getattr(self, "stage3_objective", "none") in {"grpo", "grpo_replay", "awac_iql", "hybrid"}:
             return predictions
         elif isinstance(predictions, dict) and "loss" in predictions:
             return predictions["loss"]

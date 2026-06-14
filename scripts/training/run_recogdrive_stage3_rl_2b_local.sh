@@ -41,6 +41,7 @@ DRY_RUN="${DRY_RUN:-0}"
 
 # Stage 3 RL hyperparameters for the Safe DiffGRPO continuation.
 STAGE3_LR="${LR:-2e-4}"
+STAGE3_OBJECTIVE="${STAGE3_OBJECTIVE:-none}"
 STAGE3_MAX_EPOCHS="${MAX_EPOCHS:-20}"
 STAGE3_BATCH_SIZE="${BATCH_SIZE:-8}"
 STAGE3_ACCUMULATE_GRAD_BATCHES="${ACCUMULATE_GRAD_BATCHES:-1}"
@@ -58,6 +59,14 @@ STAGE3_GRPO_BEHAVIOR_POLICY_SYNC_INTERVAL="${GRPO_BEHAVIOR_POLICY_SYNC_INTERVAL:
 STAGE3_GRPO_BEHAVIOR_POLICY_SAMPLE="${GRPO_BEHAVIOR_POLICY_SAMPLE:-true}"
 STAGE3_GRPO_NORMALIZE_ADVANTAGE_BATCH="${GRPO_NORMALIZE_ADVANTAGE_BATCH:-false}"
 STAGE3_GRPO_ADVANTAGE_CLIP_ABS="${GRPO_ADVANTAGE_CLIP_ABS:-0.0}"
+STAGE3_GRPO_PPO_REPLAY_INNER_EPOCHS="${GRPO_PPO_REPLAY_INNER_EPOCHS:-1}"
+STAGE3_GRPO_PPO_REPLAY_MINIBATCH_SIZE="${GRPO_PPO_REPLAY_MINIBATCH_SIZE:-0}"
+STAGE3_GRPO_PPO_REPLAY_MAX_GRAD_NORM="${GRPO_PPO_REPLAY_MAX_GRAD_NORM:-1.0}"
+STAGE3_GRPO_PPO_REPLAY_MIN_ABS_ADVANTAGE="${GRPO_PPO_REPLAY_MIN_ABS_ADVANTAGE:-1e-6}"
+STAGE3_GRPO_PPO_REPLAY_FILTER_ZERO_ADVANTAGE="${GRPO_PPO_REPLAY_FILTER_ZERO_ADVANTAGE:-true}"
+STAGE3_GRPO_PPO_REPLAY_SYNC_BEHAVIOR_EACH_BATCH="${GRPO_PPO_REPLAY_SYNC_BEHAVIOR_EACH_BATCH:-true}"
+STAGE3_GRPO_PPO_REPLAY_BC_UPDATE="${GRPO_PPO_REPLAY_BC_UPDATE:-true}"
+STAGE3_TRAINER_GRADIENT_CLIP_VAL="${TRAINER_GRADIENT_CLIP_VAL:-}"
 STAGE3_GRPO_SCHEDULER_EPOCHS="${GRPO_SCHEDULER_EPOCHS:-${STAGE3_MAX_EPOCHS}}"
 STAGE3_GRPO_SCHEDULER_WARMUP_EPOCHS="${GRPO_SCHEDULER_WARMUP_EPOCHS:-0}"
 STAGE3_GRPO_SCHEDULER_MIN_LR="${GRPO_SCHEDULER_MIN_LR:-1e-5}"
@@ -178,6 +187,7 @@ mkdir -p "${OUT_ROOT}"
 HYDRA_ARGS=(
   "agent=recogdrive_agent"
   "agent.lr=${STAGE3_LR}"
+  "agent.stage3_objective=${STAGE3_OBJECTIVE}"
   "agent.vlm_path=${VLM_PATH}"
   "agent.cam_type=single"
   "agent.grpo=True"
@@ -195,6 +205,13 @@ HYDRA_ARGS=(
   "agent.grpo_behavior_policy_sample=${STAGE3_GRPO_BEHAVIOR_POLICY_SAMPLE}"
   "agent.grpo_normalize_advantage_batch=${STAGE3_GRPO_NORMALIZE_ADVANTAGE_BATCH}"
   "agent.grpo_advantage_clip_abs=${STAGE3_GRPO_ADVANTAGE_CLIP_ABS}"
+  "agent.grpo_ppo_replay_inner_epochs=${STAGE3_GRPO_PPO_REPLAY_INNER_EPOCHS}"
+  "agent.grpo_ppo_replay_minibatch_size=${STAGE3_GRPO_PPO_REPLAY_MINIBATCH_SIZE}"
+  "agent.grpo_ppo_replay_max_grad_norm=${STAGE3_GRPO_PPO_REPLAY_MAX_GRAD_NORM}"
+  "agent.grpo_ppo_replay_min_abs_advantage=${STAGE3_GRPO_PPO_REPLAY_MIN_ABS_ADVANTAGE}"
+  "agent.grpo_ppo_replay_filter_zero_advantage=${STAGE3_GRPO_PPO_REPLAY_FILTER_ZERO_ADVANTAGE}"
+  "agent.grpo_ppo_replay_sync_behavior_each_batch=${STAGE3_GRPO_PPO_REPLAY_SYNC_BEHAVIOR_EACH_BATCH}"
+  "agent.grpo_ppo_replay_bc_update=${STAGE3_GRPO_PPO_REPLAY_BC_UPDATE}"
   "agent.grpo_scheduler_epochs=${STAGE3_GRPO_SCHEDULER_EPOCHS}"
   "agent.grpo_scheduler_warmup_epochs=${STAGE3_GRPO_SCHEDULER_WARMUP_EPOCHS}"
   "agent.grpo_scheduler_min_lr=${STAGE3_GRPO_SCHEDULER_MIN_LR}"
@@ -251,6 +268,11 @@ HYDRA_ARGS=(
   "train_test_split=${STAGE3_TRAIN_TEST_SPLIT}"
   "force_cache_computation=False"
 )
+if [[ -n "${STAGE3_TRAINER_GRADIENT_CLIP_VAL}" ]]; then
+  HYDRA_ARGS+=("trainer.params.gradient_clip_val=${STAGE3_TRAINER_GRADIENT_CLIP_VAL}")
+elif [[ "${STAGE3_OBJECTIVE}" == "grpo_replay" ]]; then
+  HYDRA_ARGS+=("trainer.params.gradient_clip_val=null")
+fi
 if [[ -n "${STAGE3_LIMIT_TRAIN_BATCHES}" ]]; then
   HYDRA_ARGS+=("trainer.params.limit_train_batches=${STAGE3_LIMIT_TRAIN_BATCHES}")
 fi
@@ -321,6 +343,7 @@ CMD=(
   echo "gpus_per_node=${GPUS_PER_NODE}"
   echo "ddp_strategy=${DDP_STRATEGY}"
   echo "stage3_lr=${STAGE3_LR}"
+  echo "stage3_objective=${STAGE3_OBJECTIVE}"
   echo "stage3_max_epochs=${STAGE3_MAX_EPOCHS}"
   echo "stage3_batch_size=${STAGE3_BATCH_SIZE}"
   echo "stage3_accumulate_grad_batches=${STAGE3_ACCUMULATE_GRAD_BATCHES}"
@@ -338,6 +361,20 @@ CMD=(
   echo "stage3_grpo_behavior_policy_sample=${STAGE3_GRPO_BEHAVIOR_POLICY_SAMPLE}"
   echo "stage3_grpo_normalize_advantage_batch=${STAGE3_GRPO_NORMALIZE_ADVANTAGE_BATCH}"
   echo "stage3_grpo_advantage_clip_abs=${STAGE3_GRPO_ADVANTAGE_CLIP_ABS}"
+  echo "stage3_grpo_ppo_replay_inner_epochs=${STAGE3_GRPO_PPO_REPLAY_INNER_EPOCHS}"
+  echo "stage3_grpo_ppo_replay_minibatch_size=${STAGE3_GRPO_PPO_REPLAY_MINIBATCH_SIZE}"
+  echo "stage3_grpo_ppo_replay_max_grad_norm=${STAGE3_GRPO_PPO_REPLAY_MAX_GRAD_NORM}"
+  echo "stage3_grpo_ppo_replay_min_abs_advantage=${STAGE3_GRPO_PPO_REPLAY_MIN_ABS_ADVANTAGE}"
+  echo "stage3_grpo_ppo_replay_filter_zero_advantage=${STAGE3_GRPO_PPO_REPLAY_FILTER_ZERO_ADVANTAGE}"
+  echo "stage3_grpo_ppo_replay_sync_behavior_each_batch=${STAGE3_GRPO_PPO_REPLAY_SYNC_BEHAVIOR_EACH_BATCH}"
+  echo "stage3_grpo_ppo_replay_bc_update=${STAGE3_GRPO_PPO_REPLAY_BC_UPDATE}"
+  if [[ -n "${STAGE3_TRAINER_GRADIENT_CLIP_VAL}" ]]; then
+    echo "stage3_trainer_gradient_clip_val=${STAGE3_TRAINER_GRADIENT_CLIP_VAL}"
+  elif [[ "${STAGE3_OBJECTIVE}" == "grpo_replay" ]]; then
+    echo "stage3_trainer_gradient_clip_val=null"
+  else
+    echo "stage3_trainer_gradient_clip_val=config_default"
+  fi
   echo "stage3_grpo_scheduler_epochs=${STAGE3_GRPO_SCHEDULER_EPOCHS}"
   echo "stage3_grpo_scheduler_warmup_epochs=${STAGE3_GRPO_SCHEDULER_WARMUP_EPOCHS}"
   echo "stage3_grpo_scheduler_min_lr=${STAGE3_GRPO_SCHEDULER_MIN_LR}"

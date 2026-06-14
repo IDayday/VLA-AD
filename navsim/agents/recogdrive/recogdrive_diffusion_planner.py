@@ -151,6 +151,16 @@ class GRPOConfig:
     normalize_advantage_batch: bool = False
     advantage_clip_abs: float = 0.0
 
+    # PPO-style replay over a fixed rollout. This is disabled unless the
+    # Lightning wrapper selects the grpo_replay objective.
+    ppo_replay_inner_epochs: int = 1
+    ppo_replay_minibatch_size: int = 0
+    ppo_replay_max_grad_norm: float = 1.0
+    ppo_replay_min_abs_advantage: float = 1e-6
+    ppo_replay_filter_zero_advantage: bool = True
+    ppo_replay_sync_behavior_each_batch: bool = True
+    ppo_replay_bc_update: bool = True
+
     # dynamic group weighting
     use_dynamic_group_weight: bool = True
     min_group_reward_std: float = 0.02
@@ -1338,6 +1348,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         self.reference_kl_chunk_size = int(getattr(cfg, "reference_kl_chunk_size", 0))
         if self.reference_kl_chunk_size < 0:
             raise ValueError("reference_kl_chunk_size must be non-negative.")
+        if int(getattr(cfg, "ppo_replay_inner_epochs", 1)) <= 0:
+            raise ValueError("ppo_replay_inner_epochs must be positive.")
+        if int(getattr(cfg, "ppo_replay_minibatch_size", 0)) < 0:
+            raise ValueError("ppo_replay_minibatch_size must be non-negative.")
+        if float(getattr(cfg, "ppo_replay_max_grad_norm", 1.0)) < 0.0:
+            raise ValueError("ppo_replay_max_grad_norm must be non-negative.")
+        if float(getattr(cfg, "ppo_replay_min_abs_advantage", 0.0)) < 0.0:
+            raise ValueError("ppo_replay_min_abs_advantage must be non-negative.")
         for name in (
             "use_safety_shaped_reward",
             "hard_gate_nc",
@@ -1366,6 +1384,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "behavior_policy_sample",
             "normalize_advantage_batch",
             "advantage_clip_abs",
+            "ppo_replay_inner_epochs",
+            "ppo_replay_minibatch_size",
+            "ppo_replay_max_grad_norm",
+            "ppo_replay_min_abs_advantage",
+            "ppo_replay_filter_zero_advantage",
+            "ppo_replay_sync_behavior_each_batch",
+            "ppo_replay_bc_update",
             "use_dynamic_group_weight",
             "min_group_reward_std",
             "all_safe_low_std_group_weight",
@@ -4031,6 +4056,39 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         end = float(getattr(self, "bc_coeff_end", start))
         return start + (end - start) * progress
 
+    @staticmethod
+    def _detach_action_input(action_input: Optional[BatchFeature]) -> Optional[BatchFeature]:
+        if action_input is None:
+            return None
+        data: Dict[str, Any] = {}
+        for key, value in action_input.items():
+            data[key] = value.detach() if isinstance(value, torch.Tensor) else value
+        return BatchFeature(data=data)
+
+    def _stage3_discount(self, num_denoising_steps: int, *, device: torch.device, dtype: torch.dtype) -> torch.Tensor:
+        denoising_indices = torch.arange(num_denoising_steps, device=device)
+        return (float(self.gamma_denoising) ** (num_denoising_steps - denoising_indices - 1)).to(
+            device=device,
+            dtype=dtype,
+        )
+
+    def _stage3_reward_kwargs(self) -> Dict[str, Any]:
+        offline_cfg = getattr(self, "offline_rl_cfg", None)
+        if offline_cfg is None or not bool(offline_cfg.enabled):
+            return {}
+        return {
+            "strict_submetrics": bool(offline_cfg.strict_reward_submetrics),
+            "required_submetrics": offline_cfg.required_reward_submetrics,
+            "missing_submetric_policy": str(offline_cfg.missing_submetric_policy),
+            "use_batched_pdm_scoring": bool(offline_cfg.use_batched_pdm_scoring),
+            "use_exact_array_pdm_state_conversion": bool(offline_cfg.use_exact_array_pdm_state_conversion),
+            "use_fast_pdm_scorer": bool(offline_cfg.use_fast_pdm_scorer),
+            "pdm_batch_chunk_size": int(offline_cfg.pdm_batch_chunk_size),
+            "pdm_shadow_check": bool(offline_cfg.pdm_shadow_check),
+            "pdm_shadow_max_samples": int(offline_cfg.pdm_shadow_max_samples),
+            "pdm_shadow_max_abs_diff": float(offline_cfg.pdm_shadow_max_abs_diff),
+        }
+
     def _current_awac_bc_loss_weight(self, cfg: OfflineRLConfig) -> float:
         if str(cfg.bc_loss_schedule) == "constant":
             return float(cfg.bc_loss_weight)
@@ -6041,6 +6099,335 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "awac_effective_weight_sum": awac_diag["effective_weight_sum"].detach(),
             "awac_zero_weight_ratio": awac_diag["zero_weight_ratio"].detach(),
             "awac_zero_weight_batch": awac_diag["zero_weight_batch"].detach(),
+        })
+
+    def _action_input_index_select(
+        self,
+        action_input: Optional[BatchFeature],
+        indices: torch.Tensor,
+        expected_batch: int,
+    ) -> Optional[BatchFeature]:
+        if action_input is None:
+            return None
+        data: Dict[str, Any] = {}
+        for key, value in action_input.items():
+            if isinstance(value, torch.Tensor) and value.ndim > 0 and value.shape[0] == expected_batch:
+                data[key] = value.index_select(0, indices.to(device=value.device))
+            else:
+                data[key] = value
+        return BatchFeature(data=data)
+
+    def collect_grpo_replay_rollout(
+        self,
+        vl_features: torch.Tensor,
+        action_input: BatchFeature,
+        tokens_list,
+        sample_time: Optional[int] = None,
+    ) -> BatchFeature:
+        """Collects a fixed rollout for PPO-style Stage3 replay updates."""
+        self.set_frozen_modules_to_eval_mode()
+        B = vl_features.shape[0]
+        G = int(sample_time if sample_time is not None else getattr(self, "grpo_sample_time", 8))
+        if G <= 0:
+            raise ValueError("GRPO replay sample_time must be positive.")
+
+        vl_features_rep = vl_features.detach().repeat_interleave(G, 0)
+        his_traj_rep = action_input.his_traj.detach().repeat_interleave(G, 0)
+        status_feature_rep = action_input.status_feature.detach().repeat_interleave(G, 0)
+        expert_action_input_rep = self._detach_action_input(self._repeat_expert_action_input(action_input, G))
+
+        rollout_policy = self
+        sampled_from_behavior_policy = False
+        behavior_policy_synced = False
+        if bool(getattr(self, "use_gspo_ratio", False)) and bool(getattr(self, "behavior_policy_sample", True)):
+            if not hasattr(self, "behavior_policy"):
+                raise RuntimeError("grpo_replay with use_gspo_ratio=True requires an initialized behavior_policy.")
+            if bool(getattr(self, "ppo_replay_sync_behavior_each_batch", True)):
+                self._sync_behavior_policy()
+                behavior_policy_synced = True
+            rollout_policy = self.behavior_policy
+            rollout_policy.eval()
+            sampled_from_behavior_policy = True
+
+        with torch.no_grad():
+            chains, trajs = rollout_policy.sample_chain(
+                vl_features_rep,
+                his_traj_rep,
+                status_feature_rep,
+                deterministic=False,
+                action_input=expert_action_input_rep,
+            )
+            num_denoising_steps = chains.shape[1] - 1
+            discount = self._stage3_discount(
+                num_denoising_steps,
+                device=chains.device,
+                dtype=chains.dtype,
+            )
+            old_log_probs = rollout_policy.get_logprobs(
+                vl_features_rep,
+                his_traj_rep,
+                status_feature_rep,
+                chains,
+                deterministic=False,
+                action_input=expert_action_input_rep,
+            )
+            old_traj_logp = rollout_policy._reduce_chain_logprobs(
+                old_log_probs,
+                B,
+                G,
+                num_denoising_steps,
+                discount,
+            )
+
+        tokens_rep = [tok for tok in tokens_list for _ in range(G)]
+        metric_cache = {}
+        for token in set(tokens_list):
+            path = self.metric_cache_loader.metric_cache_paths[token]
+            with lzma.open(path, 'rb') as f:
+                metric_cache[token] = pickle.load(f)
+
+        base_rewards, components = self.reward_fn(
+            trajs,
+            tokens_rep,
+            metric_cache,
+            return_components=True,
+            **self._stage3_reward_kwargs(),
+        )
+        assert base_rewards.shape == (B * G,)
+        rewards, hard_safe_mask, reward_aux = self._compose_stage3_reward(
+            base_rewards,
+            components,
+            trajs,
+            B,
+            G,
+        )
+        rewards_matrix = rewards.view(B, G)
+        hard_safe_matrix = hard_safe_mask.view(B, G)
+        advantages, group_weight, advantage_aux = self._compute_stage3_advantages(rewards_matrix, hard_safe_matrix)
+
+        adv = advantages * group_weight.repeat_interleave(G)
+        adv_before = adv.detach().float()
+        if bool(getattr(self, "normalize_advantage_batch", False)):
+            adv = (adv - adv.mean()) / adv.std(unbiased=False).clamp(min=1e-6)
+        advantage_clip_abs = float(getattr(self, "advantage_clip_abs", 0.0))
+        advantage_clip_frac = adv.new_zeros(())
+        if advantage_clip_abs > 0.0:
+            clip_mask = adv.detach().abs() > advantage_clip_abs
+            advantage_clip_frac = clip_mask.float().mean().to(adv)
+            adv = adv.clamp(min=-advantage_clip_abs, max=advantage_clip_abs)
+        adv_after = adv.detach().float()
+
+        replay_mask = torch.ones_like(adv, dtype=torch.bool)
+        if bool(getattr(self, "ppo_replay_filter_zero_advantage", True)):
+            replay_mask &= adv_after.abs() > float(getattr(self, "ppo_replay_min_abs_advantage", 1e-6))
+
+        bc_chains = None
+        if bool(getattr(self, "ppo_replay_bc_update", True)):
+            self.old_policy.eval()
+            with torch.no_grad():
+                bc_chains, _ = self.old_policy.sample_chain(
+                    vl_features.detach(),
+                    action_input.his_traj.detach(),
+                    action_input.status_feature.detach(),
+                    deterministic=False,
+                    action_input=self._detach_action_input(action_input),
+                )
+
+        zero = rewards.new_zeros(())
+
+        def aux_mean(name: str) -> torch.Tensor:
+            value = reward_aux.get(name)
+            return value.mean() if isinstance(value, torch.Tensor) else zero
+
+        return BatchFeature(data={
+            "replay_rollout": True,
+            "B": B,
+            "G": G,
+            "num_samples": B * G,
+            "num_denoising_steps": num_denoising_steps,
+            "vl_features": vl_features_rep.detach(),
+            "his_traj": his_traj_rep.detach(),
+            "status_feature": status_feature_rep.detach(),
+            "action_input": expert_action_input_rep,
+            "chains": chains.detach(),
+            "trajs": trajs.detach(),
+            "old_traj_logp": old_traj_logp.detach(),
+            "advantages": adv.detach(),
+            "raw_advantages": advantages.detach(),
+            "replay_mask": replay_mask.detach(),
+            "rewards": rewards.detach(),
+            "base_rewards": base_rewards.detach(),
+            "hard_safe_mask": hard_safe_mask.detach(),
+            "group_weight": group_weight.detach(),
+            "discount": discount.detach(),
+            "bc_vl_features": vl_features.detach(),
+            "bc_his_traj": action_input.his_traj.detach(),
+            "bc_status_feature": action_input.status_feature.detach(),
+            "bc_action_input": self._detach_action_input(action_input),
+            "bc_chains": bc_chains.detach() if isinstance(bc_chains, torch.Tensor) else None,
+            "loss": zero,
+            "reward": rewards.mean().detach(),
+            "base_reward": base_rewards.mean().detach(),
+            "shaped_reward": rewards.mean().detach(),
+            "safe_ratio": hard_safe_mask.detach().float().mean().to(dtype=rewards.dtype),
+            "hard_safe_ratio": hard_safe_mask.detach().float().mean().to(dtype=rewards.dtype),
+            "mean_ep": aux_mean("ego_progress").detach(),
+            "mean_nc": aux_mean("no_at_fault_collisions").detach(),
+            "mean_dac": aux_mean("drivable_area_compliance").detach(),
+            "mean_ttc": aux_mean("time_to_collision_within_bound").detach(),
+            "mean_comfort": aux_mean("history_comfort").detach(),
+            "mean_ddc": aux_mean("driving_direction_compliance").detach(),
+            "mean_tlc": aux_mean("traffic_light_compliance").detach(),
+            "group_reward_std": advantage_aux["reward_std"].mean().detach(),
+            "safe_count_mean": advantage_aux["safe_count"].mean().detach(),
+            "group_weight_mean": group_weight.mean().detach(),
+            "group_weight_min": group_weight.min().detach(),
+            "group_weight_max": group_weight.max().detach(),
+            "mixed_group_ratio": advantage_aux["mixed_group_ratio"].detach(),
+            "all_safe_group_ratio": advantage_aux["all_safe_group_ratio"].detach(),
+            "all_unsafe_group_ratio": advantage_aux["all_unsafe_group_ratio"].detach(),
+            "mean_advantage": advantages.mean().detach(),
+            "mean_abs_advantage": advantages.abs().mean().detach(),
+            "grpo_advantage_mean_before_transform": adv_before.mean().detach(),
+            "grpo_advantage_std_before_transform": adv_before.std(unbiased=False).detach(),
+            "grpo_advantage_mean_after_transform": adv_after.mean().detach(),
+            "grpo_advantage_std_after_transform": adv_after.std(unbiased=False).detach(),
+            "grpo_advantage_min": adv_after.min().detach(),
+            "grpo_advantage_max": adv_after.max().detach(),
+            "grpo_advantage_positive_ratio": (adv_after > 0.0).float().mean().detach(),
+            "grpo_advantage_zero_ratio": (adv_after.abs() <= 1e-8).float().mean().detach(),
+            "grpo_advantage_clip_frac": advantage_clip_frac.detach(),
+            "grpo_advantage_batch_normalized": rewards.new_tensor(
+                float(bool(getattr(self, "normalize_advantage_batch", False)))
+            ),
+            "grpo_advantage_clip_abs": rewards.new_tensor(float(advantage_clip_abs)),
+            "ppo_replay_valid_ratio": replay_mask.detach().float().mean().to(dtype=rewards.dtype),
+            "ppo_replay_valid_count": rewards.new_tensor(float(replay_mask.detach().sum().item())),
+            "ppo_replay_inner_epochs": rewards.new_tensor(float(getattr(self, "ppo_replay_inner_epochs", 1))),
+            "ppo_replay_minibatch_size": rewards.new_tensor(float(getattr(self, "ppo_replay_minibatch_size", 0))),
+            "use_gspo_ratio": rewards.new_tensor(float(bool(getattr(self, "use_gspo_ratio", False)))),
+            "sampled_from_behavior_policy": rewards.new_tensor(float(bool(sampled_from_behavior_policy))),
+            "behavior_policy_synced": rewards.new_tensor(float(bool(behavior_policy_synced))),
+            "behavior_policy_sync_interval": rewards.new_tensor(float(getattr(self, "behavior_policy_sync_interval", 0))),
+        })
+
+    def compute_grpo_replay_loss(
+        self,
+        rollout: BatchFeature,
+        indices: torch.Tensor,
+    ) -> BatchFeature:
+        """Computes clipped PPO loss on fixed rollout rows."""
+        full_n = int(rollout["num_samples"])
+        indices = indices.to(device=rollout["chains"].device, dtype=torch.long)
+        chains = rollout["chains"].index_select(0, indices)
+        vl_features = rollout["vl_features"].index_select(0, indices)
+        his_traj = rollout["his_traj"].index_select(0, indices)
+        status_feature = rollout["status_feature"].index_select(0, indices)
+        action_input = self._action_input_index_select(rollout.get("action_input"), indices, full_n)
+
+        num_denoising_steps = int(rollout["num_denoising_steps"])
+        discount = rollout["discount"].to(device=chains.device, dtype=chains.dtype)
+        new_log_probs = self.get_logprobs(
+            vl_features,
+            his_traj,
+            status_feature,
+            chains,
+            deterministic=False,
+            action_input=action_input,
+        )
+        new_traj_logp = self._reduce_chain_logprobs(
+            new_log_probs,
+            indices.numel(),
+            1,
+            num_denoising_steps,
+            discount,
+        )
+        old_traj_logp = rollout["old_traj_logp"].index_select(0, indices).to(new_traj_logp)
+        advantages = rollout["advantages"].index_select(0, indices).to(new_traj_logp)
+        replay_mask = rollout["replay_mask"].index_select(0, indices).to(device=new_traj_logp.device)
+
+        log_ratio = new_traj_logp - old_traj_logp
+        ratio = torch.exp(log_ratio.clamp(min=-20.0, max=20.0))
+        ratio_clip_low = 1.0 - float(self.gspo_clip_low)
+        ratio_clip_high = 1.0 + float(self.gspo_clip_high)
+        clipped_ratio = ratio.clamp(ratio_clip_low, ratio_clip_high)
+        surrogate = torch.minimum(ratio * advantages, clipped_ratio * advantages)
+        valid_f = replay_mask.to(dtype=surrogate.dtype)
+        valid_count = valid_f.sum()
+        if valid_count.detach().item() > 0:
+            policy_loss = -(surrogate * valid_f).sum() / valid_count.clamp(min=1.0)
+        else:
+            policy_loss = (new_traj_logp * 0.0).sum()
+
+        reference_kl_coeff = float(getattr(self, "reference_kl_coeff", 0.0))
+        reference_kl_loss = policy_loss.new_zeros(())
+        total_loss = policy_loss
+        if reference_kl_coeff > 0.0:
+            reference_kl_loss = self._chain_transition_reference_kl(
+                vl_features,
+                his_traj,
+                status_feature,
+                chains,
+                action_input,
+                indices.numel(),
+                1,
+                num_denoising_steps,
+                discount,
+            ).to(dtype=policy_loss.dtype)
+            total_loss = total_loss + reference_kl_coeff * reference_kl_loss
+
+        ratio_detached = ratio.detach().float()
+        log_ratio_detached = log_ratio.detach().float()
+        approx_kl = (((ratio - 1.0) - log_ratio).detach().float().mean()).to(total_loss)
+        return BatchFeature(data={
+            "loss": total_loss,
+            "policy_loss": policy_loss.detach(),
+            "reference_kl_loss": reference_kl_loss.detach(),
+            "reference_kl_coeff": total_loss.new_tensor(reference_kl_coeff),
+            "bc_loss": total_loss.new_zeros(()),
+            "bc_coeff": total_loss.new_tensor(self._current_bc_coeff()),
+            "reward": rollout["reward"].to(total_loss),
+            "ppo_replay_minibatch_valid_ratio": replay_mask.float().mean().to(total_loss),
+            "ppo_replay_minibatch_valid_count": total_loss.new_tensor(float(valid_count.detach().item())),
+            "ppo_replay_loss_active": total_loss.new_tensor(float(valid_count.detach().item() > 0)),
+            "gspo_ratio_mean": ratio_detached.mean().to(total_loss),
+            "gspo_ratio_min": ratio_detached.min().to(total_loss),
+            "gspo_ratio_max": ratio_detached.max().to(total_loss),
+            "gspo_ratio_clip_frac": (
+                ((ratio < ratio_clip_low) | (ratio > ratio_clip_high)).detach().float().mean().to(total_loss)
+            ),
+            "gspo_log_ratio_mean": log_ratio_detached.mean().to(total_loss),
+            "gspo_log_ratio_std": log_ratio_detached.std(unbiased=False).to(total_loss),
+            "gspo_log_ratio_min": log_ratio_detached.min().to(total_loss),
+            "gspo_log_ratio_max": log_ratio_detached.max().to(total_loss),
+            "gspo_abs_log_ratio_mean": log_ratio_detached.abs().mean().to(total_loss),
+            "gspo_approx_kl": approx_kl,
+            "gspo_reverse_approx_kl": (old_traj_logp - new_traj_logp).detach().float().mean().to(total_loss),
+            "trajectory_logp": new_traj_logp.detach().mean().to(total_loss),
+        })
+
+    def compute_grpo_replay_bc_loss(self, rollout: BatchFeature) -> BatchFeature:
+        bc_chains = rollout.get("bc_chains")
+        if not isinstance(bc_chains, torch.Tensor):
+            zero = rollout["reward"].new_zeros(())
+            return BatchFeature(data={"loss": zero, "bc_loss": zero, "bc_coeff": zero})
+        bc_logp = self.get_logprobs(
+            rollout["bc_vl_features"],
+            rollout["bc_his_traj"],
+            rollout["bc_status_feature"],
+            bc_chains,
+            deterministic=False,
+            action_input=rollout.get("bc_action_input"),
+        )
+        K_steps = bc_chains.shape[1] - 1
+        bc_logp = bc_logp.clamp(min=-5, max=2)
+        bc_logp = bc_logp.view(-1, K_steps, bc_chains.shape[2], bc_chains.shape[3]).mean(dim=[1, 2, 3])
+        bc_loss = -bc_logp.mean()
+        bc_coeff = self._current_bc_coeff()
+        return BatchFeature(data={
+            "loss": bc_loss * float(bc_coeff),
+            "bc_loss": bc_loss.detach(),
+            "bc_coeff": bc_loss.new_tensor(float(bc_coeff)),
         })
 
     def forward_grpo(

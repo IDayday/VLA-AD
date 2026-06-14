@@ -36,6 +36,13 @@ grpo_behavior_policy_sync_interval: 4
 grpo_behavior_policy_sample: true
 grpo_normalize_advantage_batch: false
 grpo_advantage_clip_abs: 0.0
+grpo_ppo_replay_inner_epochs: 1
+grpo_ppo_replay_minibatch_size: 0
+grpo_ppo_replay_max_grad_norm: 1.0
+grpo_ppo_replay_min_abs_advantage: 1e-6
+grpo_ppo_replay_filter_zero_advantage: true
+grpo_ppo_replay_sync_behavior_each_batch: true
+grpo_ppo_replay_bc_update: true
 offline_rl_enabled: false
 offline_rl_elite_buffer_path: ''
 offline_rl_missing_buffer_policy: error

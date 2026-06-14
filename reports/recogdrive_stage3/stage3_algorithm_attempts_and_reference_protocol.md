@@ -506,6 +506,102 @@ Do not prioritize this over GRPO until:
 - Does the model's denoising likelihood on elite targets improve without navtest PDMS improving? If yes, the issue is sampler distribution or target mismatch.
 - Are DDC/TTC protected during progress improvements, or are gains coming from reward-hacking side effects?
 
+## Current Run Decisions
+
+As of 2026-06-14 04:20 UTC:
+
+- Keep running: `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z`.
+  - Reason: this is the needed original-LR GRPO control. It isolates algorithm effects from the failed/weak `2e-4` route.
+  - Do not kill it unless it crashes, produces invalid logs, or the user explicitly cancels it.
+- Do not resume: pure AWAC/IQL and AWAC+DPO variants listed above.
+  - Reason: buffer quality is good, but policy absorption failed; current variants are not mature enough to justify more full-scale compute.
+- Do not resume: `2e-4` GRPO/buffer-guided variants as main evidence.
+  - Reason: the exact epoch-0 evaluation from the `2e-4` path was low (`PDMS 0.872059`), and the LR confound is already known.
+- Treat any new GRPO replay run as diagnostic until it has passed smoke, short-run training diagnostics, and at least one controlled checkpoint evaluation.
+
+## 2026-06-14 Attempt: Stage3 GRPO PPO Replay Diagnostic
+
+Motivation:
+- Previous evidence: original/Safe DiffGRPO is the strongest confirmed family (`0.9055` historical, `0.906184` confirmed), while AWAC/IQL discovered better train candidates but did not make the diffusion sampler emit better trajectories.
+- Failure mode targeted: weak policy absorption and single-update GRPO instability.
+- Reference sources checked:
+  - DDPO paper/code: https://arxiv.org/abs/2305.13301 and https://github.com/kvablack/ddpo-pytorch
+  - DPPO paper/code: https://arxiv.org/abs/2409.00588 and https://github.com/irom-princeton/dppo
+  - RIPT-VLA code: https://github.com/Ariostgx/ript-vla
+  - Diffusion-DPO code for preference mechanics, not used as the main path here: https://github.com/SalesforceAIResearch/DiffusionDPO
+- Mechanism copied: collect a fixed rollout, store old trajectory logprob, compute group/leave-one-out style advantages, then replay the fixed rollout with clipped PPO ratios over multiple inner minibatch updates.
+
+Implementation completeness:
+- Required pieces present:
+  - `stage3_objective=grpo_replay` objective switch.
+  - Fixed rollout collection with sampled chains, trajectories, rewards, PDM submetrics, old trajectory logprob, and transformed advantages.
+  - PPO clipped ratio loss against old logprob.
+  - Multi-inner-epoch/minibatch manual optimization in Lightning.
+  - Manual AMP-aware gradient clipping through `self.clip_gradients`; launcher sets `trainer.params.gradient_clip_val=null` for replay.
+  - BC trust-region update after replay when `grpo_ppo_replay_bc_update=true`.
+  - Logs for `ppo_replay_*`, `gspo_ratio_*`, `gspo_approx_kl`, NC/DAC/TTC/DDC/TLC, and advantage statistics.
+- Known simplifications:
+  - Uses trajectory-level reduced diffusion logprob, not per-denoising-step PPO yet.
+  - No critic/value function.
+  - No dynamic re-sampling for all-success/all-failure groups yet; current implementation filters near-zero advantages.
+- Why acceptable now:
+  - This is the minimum diagnostic needed before a full DPPO-style implementation. A bad result here cannot rule out DPPO/RIPT-VLA, but it can tell whether replay and old-logprob ratio mechanics are active in this codebase.
+
+Smoke result:
+- Command family: `STAGE3_OBJECTIVE=grpo_replay`, `LR=1e-4`, `GRPO_SAMPLE_TIME=2`, `GRPO_USE_GSPO_RATIO=true`, `GRPO_NORMALIZE_ADVANTAGE_BATCH=true`, `GRPO_ADVANTAGE_CLIP_ABS=3.0`, `GRPO_PPO_REPLAY_INNER_EPOCHS=2`, `GRPO_PPO_REPLAY_MINIBATCH_SIZE=1`, `MAX_SCENES=8`, `LIMIT_TRAIN_BATCHES=1`.
+- Output root: `/mnt/project/VLA-AD/outputs/stage3_grpo_replay_smoke_1gpu_nullclip_20260614T041722Z`.
+- Result: passed one real training batch and saved `epoch=0-step=5.ckpt`.
+- Key diagnostics:
+  - `train/ppo_replay_optimizer_steps_step = 5.0` (2 samples x 2 inner epochs + 1 BC update)
+  - `train/ppo_replay_valid_ratio_step = 1.0`
+  - `train/ppo_replay_valid_count_step = 2.0`
+  - `train/ppo_replay_minibatch_valid_ratio_step = 1.0`
+  - `train/ppo_replay_loss_active_step = 1.0`
+  - `train/gspo_ratio_mean_step = 0.979439`
+  - `train/gspo_ratio_clip_frac_step = 0.0`
+  - `train/gspo_approx_kl_step = 0.000214`
+  - `train/grpo_advantage_std_after_transform_step = 1.0`
+  - `train/mean_nc_step = 1.0`, `train/mean_dac_step = 1.0`, `train/mean_ttc_step = 1.0`
+- Decision:
+  - Implementation smoke is now meaningful enough for a short diagnostic run.
+  - Do not launch full training yet. First run a short 1-epoch/limited-batch diagnostic and inspect replay ratio, KL, advantage activity, safe submetrics, and optimizer-step count.
+
+## Revised Experiment Plan
+
+Phase 0: keep controls clean.
+- Keep the zt3 original-LR GRPO control alive.
+- Do not restart AWAC/IQL or `2e-4` buffer-guided runs.
+- Do not use navtest reward/cache for training; navtest remains evaluation only.
+
+Phase 1: PPO replay short diagnostic.
+- Use `stage3_objective=grpo_replay`.
+- Start from original LR `1e-4`; no `2e-4` until the original-LR control is understood.
+- Use small but non-toy rollout settings first: `GRPO_SAMPLE_TIME=4` or `8`, `GRPO_PPO_REPLAY_INNER_EPOCHS=2`, minibatch equal to a small divisor of `B * G`.
+- Effective optimizer steps must be logged and compared against standard GRPO.
+- Stop if `ppo_replay_loss_active` is frequently 0, `gspo_ratio_clip_frac` saturates, `gspo_approx_kl` explodes, or NC/DAC/TTC/DDC regress in train diagnostics.
+
+Phase 2: controlled checkpoint evaluation.
+- Only after Phase 1 logs are sane, run a limited checkpoint-producing diagnostic.
+- Evaluate every produced checkpoint with exact PDMS using the existing async/exact pool scripts.
+- Compare against:
+  - Stage2 IL
+  - historical original Stage3 `0.9055`
+  - Safe DiffGRPO `0.906184`
+  - zt3 `1e-4` control when its checkpoints are available
+
+Phase 3: mature GRPO-buffer absorption only after replay is stable.
+- Add elite-buffer knowledge to GRPO only as an auxiliary after proving replay works.
+- Required before launch:
+  - target coverage and target-distance logs are active;
+  - self-imitation candidate/target ratios are nonzero;
+  - DDC/TTC protection is explicit;
+  - same LR/effective-step ablation exists.
+
+Phase 4: full DPPO/RIPT-VLA alignment if Phase 1 helps.
+- Move from trajectory-level ratio to denoising-step-level PPO replay.
+- Consider dynamic sampling for uninformative groups.
+- Add value/critic only if trajectory-level replay shows a clear variance problem that advantage normalization cannot handle.
+
 ## Update Template
 
 Append a new section for every algorithm run:

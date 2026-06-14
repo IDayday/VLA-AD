@@ -10,6 +10,7 @@ from navsim.agents.abstract_agent import AbstractAgent
 _CHECKPOINT_EXCLUDED_PREFIXES = (
     "agent.model",
     "agent.action_head.old_policy",
+    "agent.action_head.behavior_policy",
 )
 
 
@@ -38,6 +39,9 @@ class AgentLightningModule(pl.LightningModule):
         """
         super().__init__()
         self.agent = agent
+        self._manual_grpo_replay = getattr(agent, "stage3_objective", "none") == "grpo_replay"
+        if self._manual_grpo_replay:
+            self.automatic_optimization = False
 
     def _log_optional_recogdrive_metrics(self, prediction: Any, logging_prefix: str) -> None:
         for key in (
@@ -93,8 +97,12 @@ class AgentLightningModule(pl.LightningModule):
             "safe_ratio",
             "hard_safe_ratio",
             "mean_ep",
+            "mean_nc",
+            "mean_dac",
             "mean_ttc",
             "mean_comfort",
+            "mean_ddc",
+            "mean_tlc",
             "diversity_bonus",
             "safe_diversity",
             "group_reward_std",
@@ -136,6 +144,14 @@ class AgentLightningModule(pl.LightningModule):
             "behavior_policy_sync_interval",
             "gspo_clip_low",
             "gspo_clip_high",
+            "ppo_replay_valid_ratio",
+            "ppo_replay_valid_count",
+            "ppo_replay_inner_epochs",
+            "ppo_replay_minibatch_size",
+            "ppo_replay_minibatch_valid_ratio",
+            "ppo_replay_minibatch_valid_count",
+            "ppo_replay_loss_active",
+            "ppo_replay_optimizer_steps",
             "bc_coeff",
             "reference_kl_loss",
             "reference_kl_coeff",
@@ -360,6 +376,9 @@ class AgentLightningDiT(pl.LightningModule):
         """
         super().__init__()
         self.agent = agent
+        self._manual_grpo_replay = getattr(agent, "stage3_objective", "none") == "grpo_replay"
+        if self._manual_grpo_replay:
+            self.automatic_optimization = False
 
     def _log_optional_recogdrive_metrics(self, prediction: Any, logging_prefix: str) -> None:
         AgentLightningModule._log_optional_recogdrive_metrics(self, prediction, logging_prefix)
@@ -422,7 +441,90 @@ class AgentLightningDiT(pl.LightningModule):
         :return: scalar loss
         """
         #print(batch_idx)
+        if self._manual_grpo_replay:
+            return self._training_step_grpo_replay(batch, batch_idx)
         return self._step(batch, "train")
+
+    def _training_step_grpo_replay(self, batch: Tuple[Dict[str, Tensor], Dict[str, Tensor]], batch_idx: int) -> Tensor:
+        features, targets, tokens_list = batch
+        rollout = self.agent.forward(features, targets, tokens_list)
+        action_head = getattr(self.agent, "action_head")
+        opt = self.optimizers()
+        if isinstance(opt, (list, tuple)):
+            opt = opt[0]
+
+        num_samples = int(rollout["num_samples"])
+        minibatch_size = int(getattr(action_head, "ppo_replay_minibatch_size", 0))
+        if minibatch_size <= 0 or minibatch_size > num_samples:
+            minibatch_size = num_samples
+        inner_epochs = max(1, int(getattr(action_head, "ppo_replay_inner_epochs", 1)))
+        max_grad_norm = float(getattr(action_head, "ppo_replay_max_grad_norm", 0.0))
+
+        last_metrics = None
+        loss_accum = rollout["loss"].new_zeros(())
+        update_count = 0
+        for _ in range(inner_epochs):
+            perm = torch.randperm(num_samples, device=rollout["chains"].device)
+            for start in range(0, num_samples, minibatch_size):
+                indices = perm[start:start + minibatch_size]
+                opt.zero_grad(set_to_none=True)
+                metrics = action_head.compute_grpo_replay_loss(rollout, indices)
+                loss = metrics["loss"]
+                self.manual_backward(loss)
+                if max_grad_norm > 0.0:
+                    self.clip_gradients(opt, gradient_clip_val=max_grad_norm, gradient_clip_algorithm="norm")
+                opt.step()
+                last_metrics = metrics
+                loss_accum = loss_accum + loss.detach()
+                update_count += 1
+
+        bc_metrics = None
+        if bool(getattr(action_head, "ppo_replay_bc_update", True)) and float(action_head._current_bc_coeff()) > 0.0:
+            opt.zero_grad(set_to_none=True)
+            bc_metrics = action_head.compute_grpo_replay_bc_loss(rollout)
+            bc_loss = bc_metrics["loss"]
+            self.manual_backward(bc_loss)
+            if max_grad_norm > 0.0:
+                self.clip_gradients(opt, gradient_clip_val=max_grad_norm, gradient_clip_algorithm="norm")
+            opt.step()
+            loss_accum = loss_accum + bc_loss.detach()
+            update_count += 1
+
+        if last_metrics is None:
+            raise RuntimeError("GRPO replay produced no optimizer updates.")
+
+        mean_loss = loss_accum / max(1, update_count)
+        log_source = dict(rollout)
+        log_source.update(dict(last_metrics))
+        if bc_metrics is not None:
+            log_source.update({"bc_loss": bc_metrics["bc_loss"], "bc_coeff": bc_metrics["bc_coeff"]})
+        log_source["loss"] = mean_loss
+        log_source["total_loss"] = mean_loss
+        log_source["ppo_replay_optimizer_steps"] = mean_loss.new_tensor(float(update_count))
+
+        self.log("train/loss", mean_loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
+        self.log("train/total_loss", mean_loss, on_step=True, on_epoch=True, prog_bar=False, sync_dist=True)
+        for key in ("reward", "policy_loss", "bc_loss"):
+            value = _prediction_get(log_source, key)
+            if value is not None:
+                self.log(
+                    f"train/{key}",
+                    value,
+                    on_step=True,
+                    on_epoch=True,
+                    prog_bar=True,
+                    sync_dist=True,
+                )
+        self.log(
+            "train/ppo_replay_optimizer_steps",
+            log_source["ppo_replay_optimizer_steps"],
+            on_step=True,
+            on_epoch=True,
+            prog_bar=False,
+            sync_dist=True,
+        )
+        self._log_optional_recogdrive_metrics(log_source, "train")
+        return mean_loss
 
     def validation_step(self, batch: Tuple[Dict[str, Tensor], Dict[str, Tensor]], batch_idx: int):
         """
@@ -436,3 +538,15 @@ class AgentLightningDiT(pl.LightningModule):
     def configure_optimizers(self):
         """Inherited, see superclass."""
         return self.agent.get_optimizers()
+
+    def on_train_epoch_end(self) -> None:
+        if not self._manual_grpo_replay:
+            return
+        scheduler = self.lr_schedulers()
+        if scheduler is not None:
+            if isinstance(scheduler, (list, tuple)):
+                for item in scheduler:
+                    if item is not None:
+                        item.step()
+            else:
+                scheduler.step()
