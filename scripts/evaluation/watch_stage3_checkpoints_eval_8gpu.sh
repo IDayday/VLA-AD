@@ -236,6 +236,43 @@ eval_lock_path() {
   printf '%s/%s.lock\n' "${GLOBAL_EVAL_LOCK_DIR}" "${id}"
 }
 
+global_done_path() {
+  local id="$1"
+  if [[ -z "${GLOBAL_EVAL_LOCK_DIR}" ]]; then
+    return 1
+  fi
+  printf '%s/%s.done\n' "${GLOBAL_EVAL_LOCK_DIR}" "${id}"
+}
+
+global_done_has_checkpoint() {
+  local id="$1" done_path
+  if ! done_path="$(global_done_path "${id}")"; then
+    return 1
+  fi
+  [[ -f "${done_path}" ]]
+}
+
+record_global_done() {
+  local id="$1"
+  local checkpoint="$2"
+  local archive="$3"
+  local eval_dir="$4"
+  local done_path tmp_path
+  if ! done_path="$(global_done_path "${id}")"; then
+    return 0
+  fi
+  tmp_path="${done_path}.tmp.$$"
+  {
+    printf 'timestamp=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    printf 'checkpoint_id=%s\n' "${id}"
+    printf 'checkpoint=%s\n' "${checkpoint}"
+    printf 'archive=%s\n' "${archive}"
+    printf 'eval_out_root=%s\n' "${EVAL_OUT_ROOT}"
+    printf 'eval_dir=%s\n' "${eval_dir}"
+  } > "${tmp_path}"
+  mv "${tmp_path}" "${done_path}"
+}
+
 evaluate_archive() {
   local archive="$1"
   local id eval_dir checkpoint rc master_port lock_path eval_lock_fd
@@ -256,6 +293,11 @@ evaluate_archive() {
     touch "${STATE_DIR}/${id}.external_skipped"
     return 0
   fi
+  if global_done_has_checkpoint "${id}"; then
+    log "global done marker already has checkpoint id=${id}; skipping"
+    touch "${STATE_DIR}/${id}.global_done_skipped"
+    return 0
+  fi
 
   checkpoint="${archive}"
   if [[ -f "${STATE_DIR}/${id}.paths" ]]; then
@@ -270,6 +312,15 @@ evaluate_archive() {
       eval "exec ${eval_lock_fd}>&-"
       return 0
     fi
+  fi
+  if global_done_has_checkpoint "${id}"; then
+    log "global done marker appeared after lock id=${id}; skipping"
+    touch "${STATE_DIR}/${id}.global_done_skipped"
+    if [[ -n "${eval_lock_fd:-}" ]]; then
+      flock -u "${eval_lock_fd}" || true
+      eval "exec ${eval_lock_fd}>&-"
+    fi
+    return 0
   fi
   if external_summary_has_checkpoint "${id}"; then
     log "external summary claimed checkpoint after lock id=${id}; skipping"
@@ -328,6 +379,7 @@ PY
       --output-tsv "${TRAIN_OUT_ROOT}/navtest_pdms_analysis.tsv" \
       --output-md "${TRAIN_OUT_ROOT}/navtest_pdms_analysis.md" \
       >> "${eval_dir}/eval.log" 2>&1 || log "navtest PDMS analysis refresh failed id=${id}; see ${eval_dir}/eval.log"
+    record_global_done "${id}" "${checkpoint}" "${archive}" "${eval_dir}"
     touch "${STATE_DIR}/${id}.done"
     record_summary "${id}" "done" "${checkpoint}" "${archive}" "${eval_dir}" "${rc}"
     log "eval done id=${id}"
@@ -368,6 +420,14 @@ while true; do
       continue
     fi
     if [[ -f "${STATE_DIR}/${id}.external_skipped" ]]; then
+      continue
+    fi
+    if [[ -f "${STATE_DIR}/${id}.global_done_skipped" ]]; then
+      continue
+    fi
+    if global_done_has_checkpoint "${id}"; then
+      log "global done marker already has checkpoint id=${id}; skipping pending archive"
+      touch "${STATE_DIR}/${id}.global_done_skipped"
       continue
     fi
     if external_summary_has_checkpoint "${id}"; then
