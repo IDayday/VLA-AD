@@ -152,6 +152,7 @@ class AgentLightningModule(pl.LightningModule):
             "ppo_replay_minibatch_valid_count",
             "ppo_replay_loss_active",
             "ppo_replay_optimizer_steps",
+            "ppo_replay_step_logprob_mode",
             "bc_coeff",
             "reference_kl_loss",
             "reference_kl_coeff",

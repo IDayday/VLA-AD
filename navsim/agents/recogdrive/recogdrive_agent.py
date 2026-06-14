@@ -131,6 +131,7 @@ class ReCogDriveAgent(AbstractAgent):
         grpo_ppo_replay_filter_zero_advantage: bool = True,
         grpo_ppo_replay_sync_behavior_each_batch: bool = True,
         grpo_ppo_replay_bc_update: bool = True,
+        grpo_ppo_replay_logprob_mode: Literal["trajectory", "step"] = "trajectory",
         metric_cache_path: Optional[str] = '', 
         reference_policy_checkpoint: Optional[str] = '', 
         offline_rl_enabled: bool = False,
@@ -523,6 +524,7 @@ class ReCogDriveAgent(AbstractAgent):
         self.grpo_ppo_replay_filter_zero_advantage = bool(grpo_ppo_replay_filter_zero_advantage)
         self.grpo_ppo_replay_sync_behavior_each_batch = bool(grpo_ppo_replay_sync_behavior_each_batch)
         self.grpo_ppo_replay_bc_update = bool(grpo_ppo_replay_bc_update)
+        self.grpo_ppo_replay_logprob_mode = str(grpo_ppo_replay_logprob_mode)
         if self.bc_coeff_start < 0.0 or self.bc_coeff_end < 0.0:
             raise ValueError("BC coefficients must be non-negative.")
         if self.bc_anneal_epochs <= 0:
@@ -547,6 +549,8 @@ class ReCogDriveAgent(AbstractAgent):
             raise ValueError("grpo_ppo_replay_max_grad_norm must be non-negative.")
         if self.grpo_ppo_replay_min_abs_advantage < 0.0:
             raise ValueError("grpo_ppo_replay_min_abs_advantage must be non-negative.")
+        if self.grpo_ppo_replay_logprob_mode not in {"trajectory", "step"}:
+            raise ValueError("grpo_ppo_replay_logprob_mode must be either 'trajectory' or 'step'.")
         self.backbone = None
         self.metric_cache_path = metric_cache_path
         self.reference_policy_checkpoint = reference_policy_checkpoint
@@ -1317,6 +1321,7 @@ class ReCogDriveAgent(AbstractAgent):
             cfg.grpo_cfg.ppo_replay_filter_zero_advantage = self.grpo_ppo_replay_filter_zero_advantage
             cfg.grpo_cfg.ppo_replay_sync_behavior_each_batch = self.grpo_ppo_replay_sync_behavior_each_batch
             cfg.grpo_cfg.ppo_replay_bc_update = self.grpo_ppo_replay_bc_update
+            cfg.grpo_cfg.ppo_replay_logprob_mode = self.grpo_ppo_replay_logprob_mode
             
         self.action_head = ReCogDriveDiffusionPlanner(cfg).to(device)
         if self.last_rd_adapter_checkpoint:

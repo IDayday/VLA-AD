@@ -809,6 +809,45 @@ Do not continue the existing AWAC/IQL line as-is. A future AWAC/IQL revisit must
 
 Until then, AWAC results are evidence of a policy-absorption failure in our implementation, not evidence that offline RL or preference learning is inherently unsuitable.
 
+## 2026-06-14 Attempt: Step-Level PPO Replay Implementation
+
+Motivation:
+- Previous evidence: AWAC/IQL found high-PDMS train candidates but did not make the diffusion sampler output better trajectories. Trajectory-level PPO replay is now running, but it still reduces the full denoising chain into one scalar logprob.
+- Targeted failure mode: weak policy absorption caused by a coarse trajectory-level objective. DDPO/DPPO treat denoising transitions as the RL action sequence, so the PPO ratio should be able to operate at the denoising-step level.
+- Reference sources:
+  - DDPO paper/code: https://arxiv.org/abs/2305.13301 and https://github.com/kvablack/ddpo-pytorch
+  - DPPO paper/code: https://arxiv.org/abs/2409.00588 and https://github.com/irom-princeton/dppo
+  - RIPT-VLA code: https://github.com/Ariostgx/ript-vla
+
+Implementation completed:
+- Added optional `grpo_ppo_replay_logprob_mode` / `ppo_replay_logprob_mode`.
+- Default is `trajectory`, preserving existing replay experiments.
+- New `step` mode stores old per-denoising-step logprobs in the rollout and computes PPO ratios per denoising transition.
+- Step-level surrogate is weighted by the existing normalized `gamma_denoising` discount.
+- Logs `ppo_replay_step_logprob_mode` so runs can prove which path was active.
+- No VLM, DiT architecture, trainable module, reward, or navtest-training path change.
+
+Smoke test:
+- Run: `stage3_grpo_replay_stepmode_smoke_1gpu_20260614T0530`
+- Host/GPU: `training-rl-zt3`, `CUDA_VISIBLE_DEVICES=6`.
+- Config: `MAX_SCENES=8`, `LIMIT_TRAIN_BATCHES=1`, `sample_time=2`, `BATCH_SIZE=1`, `GRPO_PPO_REPLAY_LOGPROB_MODE=step`, `GRPO_PPO_REPLAY_INNER_EPOCHS=1`, `GRPO_PPO_REPLAY_MINIBATCH_SIZE=2`.
+- Result: completed one training batch without NaN/OOM.
+- Key scalars:
+  - `train/ppo_replay_step_logprob_mode_step = 1.0`
+  - `train/ppo_replay_valid_ratio_step = 1.0`
+  - `train/ppo_replay_optimizer_steps_step = 2.0`
+  - `train/gspo_ratio_mean_step = 1.0`
+  - `train/gspo_approx_kl_step = 0.0`
+  - `train/reward_step = 0.91329`
+  - `train/safe_ratio_step = 1.0`
+
+Decision:
+- This is an implementation maturity improvement, not a better-PDMS result yet.
+- Do not launch a full step-level run immediately.
+- First wait for the current trajectory-level replay i1/i2 one-epoch PDMS results and zt3 original-GRPO control.
+- If trajectory-level replay is promising but not clearly better, run a short step-level diagnostic before any 20-epoch full run.
+- If trajectory-level replay is already worse than the control, step-level PPO becomes the next implementation-focused diagnostic rather than another hyperparameter tweak.
+
 ## Update Template
 
 Append a new section for every algorithm run:

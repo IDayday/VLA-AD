@@ -43,6 +43,7 @@ grpo_ppo_replay_min_abs_advantage: 1e-6
 grpo_ppo_replay_filter_zero_advantage: true
 grpo_ppo_replay_sync_behavior_each_batch: true
 grpo_ppo_replay_bc_update: true
+grpo_ppo_replay_logprob_mode: trajectory
 offline_rl_enabled: false
 offline_rl_elite_buffer_path: ''
 offline_rl_missing_buffer_policy: error

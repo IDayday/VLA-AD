@@ -160,6 +160,7 @@ class GRPOConfig:
     ppo_replay_filter_zero_advantage: bool = True
     ppo_replay_sync_behavior_each_batch: bool = True
     ppo_replay_bc_update: bool = True
+    ppo_replay_logprob_mode: Literal["trajectory", "step"] = "trajectory"
 
     # dynamic group weighting
     use_dynamic_group_weight: bool = True
@@ -1356,6 +1357,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("ppo_replay_max_grad_norm must be non-negative.")
         if float(getattr(cfg, "ppo_replay_min_abs_advantage", 0.0)) < 0.0:
             raise ValueError("ppo_replay_min_abs_advantage must be non-negative.")
+        if str(getattr(cfg, "ppo_replay_logprob_mode", "trajectory")) not in {"trajectory", "step"}:
+            raise ValueError("ppo_replay_logprob_mode must be either 'trajectory' or 'step'.")
         for name in (
             "use_safety_shaped_reward",
             "hard_gate_nc",
@@ -1391,6 +1394,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "ppo_replay_filter_zero_advantage",
             "ppo_replay_sync_behavior_each_batch",
             "ppo_replay_bc_update",
+            "ppo_replay_logprob_mode",
             "use_dynamic_group_weight",
             "min_group_reward_std",
             "all_safe_low_std_group_weight",
@@ -4017,6 +4021,18 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         }
         return advantages.reshape(B * G).detach(), group_weight.detach(), aux
 
+    def _chain_step_logprobs(
+        self,
+        log_probs: torch.Tensor,
+        B: int,
+        G: int,
+        K: int,
+    ) -> torch.Tensor:
+        # raw log_probs: [B * G * K, H, D]
+        assert log_probs.shape[0] == B * G * K
+        step_logp = log_probs.clamp(min=-5, max=2).mean(dim=[1, 2])
+        return step_logp.view(B * G, K)
+
     def _reduce_chain_logprobs(
         self,
         log_probs: torch.Tensor,
@@ -4025,10 +4041,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         K: int,
         discount: torch.Tensor,
     ) -> torch.Tensor:
-        # raw log_probs: [B * G * K, H, D]
-        assert log_probs.shape[0] == B * G * K
-        step_logp = log_probs.clamp(min=-5, max=2).mean(dim=[1, 2])
-        step_logp = step_logp.view(B * G, K)
+        step_logp = self._chain_step_logprobs(log_probs, B, G, K)
 
         if self.trajectory_logprob_reduce == "discounted_mean":
             discount = discount.to(device=step_logp.device, dtype=step_logp.dtype)
@@ -6178,6 +6191,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 num_denoising_steps,
                 discount,
             )
+            old_step_logp = rollout_policy._chain_step_logprobs(
+                old_log_probs,
+                B,
+                G,
+                num_denoising_steps,
+            )
 
         tokens_rep = [tok for tok in tokens_list for _ in range(G)]
         metric_cache = {}
@@ -6252,6 +6271,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "chains": chains.detach(),
             "trajs": trajs.detach(),
             "old_traj_logp": old_traj_logp.detach(),
+            "old_step_logp": old_step_logp.detach(),
             "advantages": adv.detach(),
             "raw_advantages": advantages.detach(),
             "replay_mask": replay_mask.detach(),
@@ -6305,6 +6325,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "ppo_replay_valid_count": rewards.new_tensor(float(replay_mask.detach().sum().item())),
             "ppo_replay_inner_epochs": rewards.new_tensor(float(getattr(self, "ppo_replay_inner_epochs", 1))),
             "ppo_replay_minibatch_size": rewards.new_tensor(float(getattr(self, "ppo_replay_minibatch_size", 0))),
+            "ppo_replay_step_logprob_mode": rewards.new_tensor(
+                float(str(getattr(self, "ppo_replay_logprob_mode", "trajectory")) == "step")
+            ),
             "use_gspo_ratio": rewards.new_tensor(float(bool(getattr(self, "use_gspo_ratio", False)))),
             "sampled_from_behavior_policy": rewards.new_tensor(float(bool(sampled_from_behavior_policy))),
             "behavior_policy_synced": rewards.new_tensor(float(bool(behavior_policy_synced))),
@@ -6335,29 +6358,50 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             deterministic=False,
             action_input=action_input,
         )
-        new_traj_logp = self._reduce_chain_logprobs(
-            new_log_probs,
-            indices.numel(),
-            1,
-            num_denoising_steps,
-            discount,
-        )
-        old_traj_logp = rollout["old_traj_logp"].index_select(0, indices).to(new_traj_logp)
-        advantages = rollout["advantages"].index_select(0, indices).to(new_traj_logp)
-        replay_mask = rollout["replay_mask"].index_select(0, indices).to(device=new_traj_logp.device)
+        logprob_mode = str(getattr(self, "ppo_replay_logprob_mode", "trajectory"))
+        if logprob_mode == "step":
+            new_step_logp = self._chain_step_logprobs(new_log_probs, indices.numel(), 1, num_denoising_steps)
+            old_step_logp = rollout["old_step_logp"].index_select(0, indices).to(new_step_logp)
+            advantages = rollout["advantages"].index_select(0, indices).to(new_step_logp)
+            replay_mask = rollout["replay_mask"].index_select(0, indices).to(device=new_step_logp.device)
+            discount_norm = discount.to(device=new_step_logp.device, dtype=new_step_logp.dtype)
+            discount_norm = discount_norm / discount_norm.sum().clamp(min=1e-8)
+            log_ratio = new_step_logp - old_step_logp
+            advantage_term = advantages.view(-1, 1)
+            valid_f = replay_mask.to(dtype=log_ratio.dtype).view(-1, 1)
+            step_weight = discount_norm.view(1, num_denoising_steps)
+            trajectory_logp_for_logging = (new_step_logp * step_weight).sum(dim=1)
+        elif logprob_mode == "trajectory":
+            new_traj_logp = self._reduce_chain_logprobs(
+                new_log_probs,
+                indices.numel(),
+                1,
+                num_denoising_steps,
+                discount,
+            )
+            old_traj_logp = rollout["old_traj_logp"].index_select(0, indices).to(new_traj_logp)
+            advantages = rollout["advantages"].index_select(0, indices).to(new_traj_logp)
+            replay_mask = rollout["replay_mask"].index_select(0, indices).to(device=new_traj_logp.device)
+            log_ratio = new_traj_logp - old_traj_logp
+            advantage_term = advantages
+            valid_f = replay_mask.to(dtype=log_ratio.dtype)
+            step_weight = None
+            trajectory_logp_for_logging = new_traj_logp
+        else:
+            raise ValueError(f"Unsupported ppo_replay_logprob_mode: {logprob_mode!r}")
 
-        log_ratio = new_traj_logp - old_traj_logp
         ratio = torch.exp(log_ratio.clamp(min=-20.0, max=20.0))
         ratio_clip_low = 1.0 - float(self.gspo_clip_low)
         ratio_clip_high = 1.0 + float(self.gspo_clip_high)
         clipped_ratio = ratio.clamp(ratio_clip_low, ratio_clip_high)
-        surrogate = torch.minimum(ratio * advantages, clipped_ratio * advantages)
-        valid_f = replay_mask.to(dtype=surrogate.dtype)
+        surrogate = torch.minimum(ratio * advantage_term, clipped_ratio * advantage_term)
+        if step_weight is not None:
+            surrogate = surrogate * step_weight
         valid_count = valid_f.sum()
         if valid_count.detach().item() > 0:
             policy_loss = -(surrogate * valid_f).sum() / valid_count.clamp(min=1.0)
         else:
-            policy_loss = (new_traj_logp * 0.0).sum()
+            policy_loss = (log_ratio * 0.0).sum()
 
         reference_kl_coeff = float(getattr(self, "reference_kl_coeff", 0.0))
         reference_kl_loss = policy_loss.new_zeros(())
@@ -6378,7 +6422,17 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
         ratio_detached = ratio.detach().float()
         log_ratio_detached = log_ratio.detach().float()
-        approx_kl = (((ratio - 1.0) - log_ratio).detach().float().mean()).to(total_loss)
+        approx_kl_values = ((ratio - 1.0) - log_ratio).detach().float()
+        if step_weight is not None:
+            valid_float = valid_f.detach().float()
+            approx_kl = (approx_kl_values * step_weight.float() * valid_float).sum()
+            approx_kl = approx_kl / valid_count.detach().float().clamp(min=1.0)
+            reverse_approx_kl = (-log_ratio_detached * step_weight.float() * valid_float).sum()
+            reverse_approx_kl = reverse_approx_kl / valid_count.detach().float().clamp(min=1.0)
+        else:
+            approx_kl = approx_kl_values.mean()
+            reverse_approx_kl = (-log_ratio_detached).mean()
+        approx_kl = approx_kl.to(total_loss)
         return BatchFeature(data={
             "loss": total_loss,
             "policy_loss": policy_loss.detach(),
@@ -6402,8 +6456,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "gspo_log_ratio_max": log_ratio_detached.max().to(total_loss),
             "gspo_abs_log_ratio_mean": log_ratio_detached.abs().mean().to(total_loss),
             "gspo_approx_kl": approx_kl,
-            "gspo_reverse_approx_kl": (old_traj_logp - new_traj_logp).detach().float().mean().to(total_loss),
-            "trajectory_logp": new_traj_logp.detach().mean().to(total_loss),
+            "gspo_reverse_approx_kl": reverse_approx_kl.to(total_loss),
+            "trajectory_logp": trajectory_logp_for_logging.detach().mean().to(total_loss),
+            "ppo_replay_step_logprob_mode": total_loss.new_tensor(float(logprob_mode == "step")),
         })
 
     def compute_grpo_replay_bc_loss(self, rollout: BatchFeature) -> BatchFeature:
