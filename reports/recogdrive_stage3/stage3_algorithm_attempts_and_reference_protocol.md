@@ -809,6 +809,31 @@ Do not continue the existing AWAC/IQL line as-is. A future AWAC/IQL revisit must
 
 Until then, AWAC results are evidence of a policy-absorption failure in our implementation, not evidence that offline RL or preference learning is inherently unsuitable.
 
+## 2026-06-14 05:44 UTC Active Run Snapshot
+
+No active run has produced a checkpoint yet, so there is no new PDMS result and no basis to claim a better method.
+
+Current diagnostics:
+- Local replay i2 `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z`:
+  - Still running, no checkpoint.
+  - Latest logged step `659`: reward `0.51078`, base reward `0.61609`, safe ratio `0.72656`, NC `0.89844`, DAC `0.80859`, TTC `0.71094`, DDC `0.93750`.
+  - Replay mechanics remain active: `ppo_replay_valid_ratio=1.0`, `optimizer_steps=9`, ratio mean `0.96996`, clip fraction `0.15625`, approx KL `6.44e-4`.
+  - Decision: keep running but do not promote i2 until epoch eval. Recent low reward/safety windows make it a watched diagnostic.
+- zt2 replay i1 `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z`:
+  - Still running, no checkpoint.
+  - Latest logged step `579`: reward `0.80436`, base reward `0.80905`, safe ratio `0.92188`, NC `0.99219`, DAC `0.93750`, TTC `0.94141`, DDC `0.98828`.
+  - Conservative replay remains very stable: `ppo_replay_valid_ratio=1.0`, `optimizer_steps=5`, ratio mean `0.99852`, clip fraction `0.0`, approx KL `3.76e-6`.
+  - Decision: keep running. This remains the cleaner replay-strength ablation.
+- zt3 original-LR GRPO control `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z`:
+  - Still running, no checkpoint.
+  - Latest logged step `399`: reward `0.83706`, base reward `0.83057`, TTC `0.84375`, safe ratio `0.92708`.
+  - Decision: keep running. It is slow but progressing and is still the necessary LR/control baseline.
+
+Decision:
+- Do not stop any of these three runs.
+- Do not launch a new full training run yet.
+- The step-level PPO replay implementation is ready for a short diagnostic, but it should wait until at least one current one-epoch replay checkpoint has exact PDMS unless an active run fails.
+
 ## 2026-06-14 Attempt: Step-Level PPO Replay Implementation
 
 Motivation:
