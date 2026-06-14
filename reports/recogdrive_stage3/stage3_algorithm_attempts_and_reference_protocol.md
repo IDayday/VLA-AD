@@ -335,8 +335,9 @@ Implementation:
 - The DPO batch is constructed as:
   - valid buffer target(s) selected from train-only elite buffer are winners;
   - GT trajectory from `action_input.action` is a behavior loser;
-  - IL/reference trajectory is loaded from the same buffer when present, with old-policy fallback only if buffer IL support is absent;
+  - IL/reference trajectory is loaded from the same buffer when present;
   - GT/IL rows are real loser rows but are not marked valid winners.
+- Implementation hardening on 2026-06-14 UTC: old-policy fallback for missing IL losers was removed from the GRPO buffer-DPO path. A sampled fallback IL trajectory would not have a reward recomputed for the exact sampled trajectory and would instead inherit `guidance["il_reward"]` from the buffer record, so it could create mismatched preference pairs. If a future buffer record lacks IL support, that IL loser row is simply not marked real; GT remains available as the behavior loser.
 - The existing diffusion-DPO loss is reused, including shared noise/timestep and reference-policy loss gap. Candidate trajectories are denoising targets only; `_prepare_dit_context(..., allow_target_tokens=False)` remains enforced through `_diffusion_per_target_loss_on_targets`.
 - Added training logs:
   - `grpo_buffer_preference_dpo_loss`

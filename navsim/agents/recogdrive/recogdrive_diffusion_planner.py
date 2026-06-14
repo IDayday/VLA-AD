@@ -6098,34 +6098,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     if row_il.numel() > 0:
                         il_traj[b] = selected_trajs[b, row_il[0]]
                         il_loser_mask[b] = True
-            if not bool(il_loser_mask.all().item()):
-                if not hasattr(self, "old_policy"):
-                    raise RuntimeError(
-                        "GRPO buffer preference DPO include_il=True requires IL support in the buffer "
-                        "or an initialized old_policy."
-                    )
-                self.old_policy.eval()
-                missing = ~il_loser_mask
-                with torch.no_grad():
-                    _, sampled_il = self.old_policy.sample_chain(
-                        vl_features[missing],
-                        action_input.his_traj[missing],
-                        action_input.status_feature[missing],
-                        deterministic=False,
-                        action_input=BatchFeature(
-                            data={
-                                key: (
-                                    value[missing]
-                                    if isinstance(value, torch.Tensor) and value.shape[:1] == (B,)
-                                    else value
-                                )
-                                for key, value in action_input.items()
-                            }
-                        ),
-                        allow_target_tokens=False,
-                    )
-                il_traj[missing] = sampled_il.to(device=buffer_targets.device, dtype=buffer_targets.dtype)
-                il_loser_mask[missing] = True
+            # Do not synthesize a fallback IL trajectory here: guidance["il_reward"]
+            # belongs to the buffer record, so sampled IL would not have a matched reward.
             dpo_trajs[:, il_col] = il_traj.detach()
             ordering_rewards[:, il_col] = guidance["il_reward"].to(device=buffer_targets.device, dtype=torch.float32)
             real_mask[:, il_col] = il_loser_mask
