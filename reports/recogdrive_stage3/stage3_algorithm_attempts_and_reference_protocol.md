@@ -356,6 +356,10 @@ Implementation:
   - The buffer-DPO launcher previously still defaulted to a `mainhardgate` run name plus `GRPO_HARD_GATE_TTC=true` and `GRPO_HARD_GATE_DDC=true`, contradicting the post-v3 rule above.
   - It was corrected to default to `stage3_grpo_buffer_dpo_refctrl...`, `GRPO_USE_GSPO_RATIO=false`, `GRPO_HARD_GATE_TTC=false`, `GRPO_HARD_GATE_DDC=false`, and TTC/DDC thresholds `1.0`, matching the active current-repo original-LR GRPO control shape.
   - A `RUN_TRAIN=0` preflight confirmed: `offline_rl_enabled=true`, train-only elite buffer path set, `grpo_buffer_guidance_enabled=true`, `grpo_buffer_preference_dpo_loss_weight=0.02`, and buffer reward bonus/distill/self-imitation weights all `0.0`. The temporary preflight directory was deleted after inspection.
+- Buffer-DPO data-path audit on 2026-06-14 UTC:
+  - A deterministic random sample of `5000 / 85109` v2 train-only elite-buffer records showed `gt_present_ratio=1.0` and `il_present_ratio=1.0`.
+  - `gt_valid_ratio=0.9992`; `il_valid_ratio=0.8314`. The DPO builder can therefore use stored GT/IL support for the intended behavior-loser pairs in normal cases, rather than relying on old-policy IL fallback with potentially mismatched stored `il_reward`.
+  - In the same sample, `best_valid_source` was dominated by `gt`, `progress_endpoint`, and `policy`; this keeps the first buffer-DPO run focused on absorbing valid progress/policy improvements rather than the failed AWAC weighted-regression path.
 
 First experiment rule after v3 result:
 - Do not launch a buffer-DPO run on top of the failed v3 main-hardgate configuration by default. That would confound buffer absorption with a known EP-suppressing safety gate.
