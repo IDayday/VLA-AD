@@ -732,6 +732,7 @@ Current keep list:
 - zt3 original-LR GRPO control: `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z`.
 - local PPO replay i2 one-epoch run: `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z`.
 - zt2 PPO replay i1 one-epoch run: `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z`.
+- zt3 PPO replay i1 step-checkpoint diagnostic: `stage3_grpo_replay_stepckpt_s16_i1_lr1e4_zt3_2gpu_20260614T0610Z`.
 - Existing zt3 control eval watchers: keep the already-running primary/secondary watchers; do not launch a third watcher for the same checkpoint stream.
 
 Current stop/avoid list:
@@ -855,6 +856,26 @@ Decision:
 - Do not stop any of these three runs.
 - Do not launch a new full training run yet.
 - The step-level PPO replay implementation is ready for a short diagnostic, but it should wait until at least one current one-epoch replay checkpoint has exact PDMS unless an active run fails.
+
+## 2026-06-14 06:14 UTC Step-Checkpoint Diagnostic Launch
+
+Reason:
+- Existing replay i1/i2 jobs were launched before step checkpoint support. They are healthy but will only produce checkpoints at epoch end.
+- Replay objectives increment Lightning `global_step` by inner PPO/BC optimizer updates, so waiting for epoch-only checkpoints delays same-step diagnostics.
+- The original Stage3 early reference is already around `0.88+` PDMS at `epoch0-1`; replay should be screened earlier before committing to long multi-epoch runs.
+
+Launched on zt3:
+- Run: `stage3_grpo_replay_stepckpt_s16_i1_lr1e4_zt3_2gpu_20260614T0610Z`.
+- GPUs: `6,7`; existing zt3 tasks were not stopped.
+- Config: LR `1e-4`, `stage3_objective=grpo_replay`, `sample_time=16`, inner PPO replay epochs `1`, replay minibatch `8`, batch size `1`, 2 GPUs, `LIMIT_TRAIN_BATCHES=200`, `LIMIT_VAL_BATCHES=0`.
+- Checkpointing: `CHECKPOINT_EVERY_N_TRAIN_STEPS=300`, `CHECKPOINT_EVERY_N_EPOCHS=1`.
+- Eval watcher: `/mnt/project/VLA-AD/outputs/stage3_grpo_replay_stepckpt_s16_i1_lr1e4_zt3_2gpu_20260614T0610Z_navtest_step_eval`, configured for recursive checkpoint discovery under the training Hydra root.
+
+Expected use:
+- Use the first step checkpoint as a quick PDMS sanity check only.
+- Do not compare this limited-batch diagnostic as final evidence against original `epoch10` or Safe DiffGRPO `epoch12`.
+- If the step checkpoint is catastrophically below the original early `0.88+` band, do not promote replay i1/i2 without fixing the method.
+- If it is plausible, wait for the full one-epoch replay/control checkpoints for the real gate.
 
 ## 2026-06-14 Attempt: Step-Level PPO Replay Implementation
 
