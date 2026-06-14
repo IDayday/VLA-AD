@@ -43,6 +43,7 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 | `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z` | keep | Original-LR `1e-4` control with similar effective batch scale. Latest logged window is healthy; no checkpoint yet. |
 | `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_log1_diag_zt2_4gpu_20260614T0300Z` | completed diagnostic | Good limited diagnostic. Ratio/KL/clip/advantage logs are active, but this still does not validate a full PPO replay implementation. |
 | `stage3_grpo_refkl_s16_lr2e4_b4acc2_chunk32_fast_8gpu_20260613T213145Z/local_eval_epoch0_exact_pool_8x1gpu_shards_20260614T031521Z` | completed eval | Local 8-way independent 1GPU exact navtest shards for the stopped `2e-4` epoch0 checkpoint. PDMS `0.872059`, clearly below the historical strong Stage3 baselines, so do not continue `2e-4` GRPO as a default route. |
+| GRPO stable launcher defaults | changed | User clarified that original Stage3 used LR `1e-4`, and original `epoch0-1` PDMS is already around `0.88+`. Stable GRPO launchers now default to `1e-4`; `2e-4` should be treated as an explicit ablation only. |
 | zt2 stale checkpoint watchers for old AWAC / old `2e-4` GRPO runs | stopped on 2026-06-14 | These watchers pointed to runs that no longer satisfy the protocol and could auto-consume GPUs when resources become free. |
 | zt3 stale checkpoint watchers for stopped buffer-guided `2e-4` and stopped `2e-4` GRPO | stopped on 2026-06-14 | Exact eval of the stopped `2e-4` epoch0 checkpoint is handled by the local shard run; the stale remote watchers were redundant or invalid. |
 | `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_zt2_4gpu_20260614T012106Z` | stopped | It tested buffer absorption, but Lightning did not log the returned buffer/self-imitation diagnostics. Continuing would not prove whether the auxiliary path was active. |
@@ -56,6 +57,7 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 | `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z` | running/watch | Controlled full-navtrain 1-epoch PPO replay run. Replay validity is `1.0` and KL is small; one weak safety/reward batch appeared, so keep but do not promote until epoch eval. |
 | `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z` | running | Controlled zt2 ablation. Same as i2 but `ppo_replay_inner_epochs=1`; currently cleaner ratio/clip/KL behavior and no hard stop signal. |
 | `stage3_grpo_dppo_transition_s16_i1_lr1e4_zt2_2gpu_20260614T083005Z` | failed promotion gate | DPPO-style transition replay improved from step300 to epoch0 but stayed far below the original Stage3 `epoch0-1 ~= 0.88+` early gate: step300 `0.744740`, step600 `0.801195`, epoch0-step800 `0.831015`. Do not continue this transition replay implementation without a method-level redesign. |
+| `stage3_grpo_rloo_selfimit_s16_lr1e4_b2acc4_*` | planned | Return to original-LR on-policy GRPO/GSPO and add only a small low-noise self-imitation term for safe on-policy samples above a leave-one-out same-token baseline. This targets policy absorption without replacing the proven GRPO objective. |
 
 ## Current Baselines And Controls
 
@@ -75,6 +77,47 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 | `stage3_grpo_replay_diag_s16_i2_lr1e4_8gpu_20260614T043345Z` | completed diagnostic | LR `1e-4`, `stage3_objective=grpo_replay`, `sample_time=16`, inner PPO epochs `2`, replay minibatch `8`, 8 GPUs, 40 train batches, no buffer | no eval | Near-full sample-time diagnostic passed. Checkpoint `epoch=0-step=360.ckpt`; keep as implementation evidence only, not as a final PDMS result. |
 | `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z` | running | LR `1e-4`, `stage3_objective=grpo_replay`, `sample_time=16`, inner PPO epochs `2`, replay minibatch `8`, 8 GPUs, full navtrain, no buffer | pending | Latest logged step `339`: `valid_ratio=1.0`, ratio mean `0.9694`, clip fraction `0.2031`, KL `7.87e-4`; latest rollout safety was weak (`safe_ratio=0.6133`), so this remains a watched diagnostic. |
 | `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z` | running | LR `1e-4`, `stage3_objective=grpo_replay`, `sample_time=16`, inner PPO epochs `1`, replay minibatch `8`, 8 zt2 GPUs, full navtrain, no buffer | pending | Motivation: update-strength ablation from i2. Latest logged step `179`: `valid_ratio=1.0`, ratio mean `0.9992`, clip fraction `0`, KL `2.30e-6`, safe ratio `0.8281`. |
+
+## Planned Attempt: Original-LR GRPO With RLOO Self-Imitation
+
+Motivation:
+- User correction: original Stage3 `epoch0-1` is already around `0.88+` PDMS, so the transition replay `epoch0=0.831015` is a failed early gate, not a training-length issue.
+- The AWAC elite buffer is good as an oracle (`mean_best_valid_reward=0.971664`, `pct_best_valid_above_gt=0.581537`), but pure weighted denoising did not transfer to sampled trajectories.
+- The strongest confirmed family remains on-policy GRPO/Safe DiffGRPO, so the next change must preserve the original GRPO objective and `1e-4` LR.
+
+Reference audit:
+- DPPO paper/code: https://arxiv.org/abs/2409.00588 and https://github.com/irom-princeton/dppo. Mechanism checked: diffusion-policy PG should optimize sampled actions with old-policy logprobs/ratio clipping; reward-weighted regression is not enough by itself.
+- DDPO paper: https://arxiv.org/abs/2305.13301. Mechanism checked: denoising can be treated as a multi-step decision process, which supports direct policy-gradient optimization over diffusion samples.
+- RIPT-VLA code: https://github.com/Ariostgx/ript-vla. Mechanism checked: K-rollout, leave-one-out advantage, dynamic sampling, and no value net are used for VLA post-training.
+
+Implementation:
+- Add `group_leave_one_out` to `offline_rl_grpo_self_imitation_baseline_mode`.
+- Keep `stage3_objective=grpo`, `LR=1e-4`, `sample_time=16`, BC anneal `0.10 -> 0.05`, reference KL `0.02`, GSPO ratio on.
+- Add only a small auxiliary self-imitation loss:
+  - `GRPO_SELF_IMITATION_LOSS_WEIGHT=0.01`
+  - `GRPO_SELF_IMITATION_LOSS_SCHEDULE=linear_warmup`
+  - `GRPO_SELF_IMITATION_WARMUP_EPOCHS=2`
+  - `GRPO_SELF_IMITATION_MIN_REWARD=0.88`
+  - `GRPO_SELF_IMITATION_MIN_REWARD_MARGIN=0.01`
+  - `GRPO_SELF_IMITATION_BASELINE_MODE=group_leave_one_out`
+  - `GRPO_SELF_IMITATION_TIMESTEP_SAMPLING=low_noise`
+- Do not enable buffer reward bonus or buffer distill in this first run. The offline buffer can remain available for diagnostics, but it must not dominate the update.
+
+Smoke status:
+- `stage3_grpo_rloo_selfimit_smoke_20260614T_check` completed 1 train batch on 1 GPU with `sample_time=2`.
+- Hydra accepted `offline_rl_grpo_self_imitation_baseline_mode=group_leave_one_out`.
+- Logged `grpo_self_imitation_enabled=1.0`, `baseline_from_buffer=0.0`, `use_gspo_ratio=1.0`.
+- This smoke batch had `base_reward=0.625077`, below the `0.88` imitation threshold, so `target_ratio=0.0` and `zero_weight_batch=1.0`; this is expected for a low-reward smoke batch and confirms that low-quality samples are not imitated.
+
+Expected diagnostics:
+- `grpo_self_imitation_target_ratio` should be non-zero but sparse; a zero ratio for many steps means the gate is too strict.
+- `grpo_self_imitation_target_reward_mean` should be above `0.88`.
+- `grpo_self_imitation_zero_weight_batch` should not stay at `1.0` after warmup if the policy finds good samples.
+- Main GRPO diagnostics must remain healthy: `gspo_ratio_mean` near `1`, finite small `gspo_approx_kl`, no explosion in `safe_ratio` or hard safety metrics.
+
+Promotion / failure criteria:
+- At matched early epoch, exact navtest PDMS must be near or above the original Stage3 early `0.88+` band. If epoch0 is materially below `0.88`, do not run 20 epochs unless diagnostics show the self-imitation path was inactive and the run is effectively a control.
+- Compare final training only against the 10-epoch original `0.9055` and Safe DiffGRPO `0.906184` when training length/steps are comparable.
 
 ## Completed Attempt Ledger
 

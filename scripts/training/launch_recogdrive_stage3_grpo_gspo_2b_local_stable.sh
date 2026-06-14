@@ -5,7 +5,7 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 PYTHON_BIN="${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}"
 ARTIFACT_ROOT="${ARTIFACT_ROOT:-/mnt/project/VLA-AD}"
-RUN_NAME="${RUN_NAME:-stage3_grpo_gspo_refkl_s16_lr2e4_b2acc4_chunk16_$(date -u +%Y%m%dT%H%M%SZ)}"
+RUN_NAME="${RUN_NAME:-stage3_grpo_gspo_refkl_s16_lr1e4_b2acc4_chunk16_$(date -u +%Y%m%dT%H%M%SZ)}"
 OUT_ROOT="${OUT_ROOT:-${ARTIFACT_ROOT}/outputs/${RUN_NAME}}"
 
 # Conservative strict-GSPO defaults. Effective optimizer batch matches b4/acc2:
@@ -16,7 +16,7 @@ export GPU_LIST="${GPU_LIST:-0,1,2,3,4,5,6,7}"
 export GPUS_PER_NODE="${GPUS_PER_NODE:-8}"
 export DDP_STRATEGY="${DDP_STRATEGY:-ddp}"
 export CUDA_LAUNCH_BLOCKING="${CUDA_LAUNCH_BLOCKING:-0}"
-export LR="${LR:-2e-4}"
+export LR="${LR:-1e-4}"
 export STAGE3_OBJECTIVE="${STAGE3_OBJECTIVE:-none}"
 export MAX_EPOCHS="${MAX_EPOCHS:-20}"
 export BATCH_SIZE="${BATCH_SIZE:-2}"

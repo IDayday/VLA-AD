@@ -371,6 +371,7 @@ class OfflineRLConfig:
     grpo_self_imitation_baseline_mode: Literal[
         "buffer_gt_il",
         "group_mean",
+        "group_leave_one_out",
         "buffer_or_group_mean",
     ] = "buffer_or_group_mean"
     grpo_self_imitation_timestep_sampling: Literal["uniform", "ddim", "low_noise", "mid_noise"] = "low_noise"
@@ -1090,11 +1091,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         if str(cfg.grpo_self_imitation_baseline_mode) not in {
             "buffer_gt_il",
             "group_mean",
+            "group_leave_one_out",
             "buffer_or_group_mean",
         }:
             raise ValueError(
                 "offline_rl_cfg.grpo_self_imitation_baseline_mode must be "
-                "buffer_gt_il, group_mean, or buffer_or_group_mean."
+                "buffer_gt_il, group_mean, group_leave_one_out, or buffer_or_group_mean."
             )
         if not (0.0 < float(cfg.low_noise_timestep_frac) <= 1.0):
             raise ValueError("offline_rl_cfg.low_noise_timestep_frac must be in (0, 1].")
@@ -5744,6 +5746,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
         mode = str(cfg.grpo_self_imitation_baseline_mode)
         has_buffer_baseline = bool(guidance) and "gt_reward" in guidance and "il_reward" in guidance
+        baseline_from_buffer = False
+        baseline: Optional[torch.Tensor] = None
+        baseline_matrix: Optional[torch.Tensor] = None
         if mode == "buffer_gt_il":
             if not has_buffer_baseline:
                 raise RuntimeError(
@@ -5760,6 +5765,19 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             count = finite_reward.float().sum(dim=1).clamp(min=1.0)
             baseline = baseline / count
             baseline_from_buffer = False
+        elif mode == "group_leave_one_out":
+            reward_finite_zero = reward_matrix.masked_fill(~finite_reward, 0.0)
+            count = finite_reward.float().sum(dim=1, keepdim=True)
+            group_mean = reward_finite_zero.sum(dim=1, keepdim=True) / count.clamp(min=1.0)
+            loo_count = (count - finite_reward.float()).clamp(min=1.0)
+            loo_sum = reward_finite_zero.sum(dim=1, keepdim=True) - reward_finite_zero
+            baseline_matrix = torch.where(
+                (count > 1.0) & finite_reward,
+                loo_sum / loo_count,
+                group_mean.expand_as(reward_matrix),
+            )
+            baseline = group_mean.squeeze(1)
+            baseline_from_buffer = False
         else:
             if has_buffer_baseline:
                 baseline = torch.maximum(
@@ -5773,7 +5791,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 baseline = baseline / count
                 baseline_from_buffer = False
 
-        margins = reward_matrix - baseline[:, None]
+        if baseline_matrix is None:
+            if baseline is None:
+                raise RuntimeError("GRPO self-imitation baseline was not initialized.")
+            baseline_matrix = baseline[:, None].expand_as(reward_matrix)
+
+        margins = reward_matrix - baseline_matrix
         eligible = (
             safe_matrix
             & finite_reward
