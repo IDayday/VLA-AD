@@ -144,6 +144,10 @@ Follow-up implementation after live diagnostics:
   - Logs `grpo_self_imitation_pre_cap_target_ratio`, `grpo_self_imitation_target_scene_cap_ratio`, and `grpo_self_imitation_target_scene_cap_active`.
 - The RLOO launcher default for the next run is `GRPO_SELF_IMITATION_MAX_TARGET_SCENE_RATIO=0.5`; the base GSPO launcher remains `1.0`.
 - Synthetic CPU check confirmed a cap of `0.5` reduces `pre_cap_target_ratio=1.0` to `target_ratio=0.5` and keeps the highest-reward scenes.
+- Live cap05 run first logged batch on 2026-06-14:
+  - `step=49`, reward `0.785556`, base reward `0.784031`, safe ratio `0.925781`, EP `0.772696`, TTC `0.882812`.
+  - `grpo_self_imitation_candidate_ratio=0.429688`, `target_ratio=0.500000`, `target_reward_mean=0.983409`, `target_margin_mean=0.162914`.
+  - This confirms the scene cap is active and avoids the earlier no-cap target ratios around `0.75-0.94`; promotion still requires step/epoch PDMS.
 
 Promotion / failure criteria:
 - At matched early epoch, exact navtest PDMS must be near or above the original Stage3 early `0.88+` band. If epoch0 is materially below `0.88`, do not run 20 epochs unless diagnostics show the self-imitation path was inactive and the run is effectively a control.
