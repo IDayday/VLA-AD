@@ -39,12 +39,14 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 
 | Run / Process | Decision | Reason |
 |---|---|---|
-| `stage3_grpo_refkl_s16_lr2e4_b4acc2_chunk32_fast_8gpu_20260613T213145Z` | keep until first epoch eval | It answers the LR-change question for the current modified `2e-4` GRPO run. It is not an original-LR baseline and must be interpreted with that caveat. |
+| `stage3_grpo_refkl_s16_lr2e4_b4acc2_chunk32_fast_8gpu_20260613T213145Z` | stopped after epoch0 ckpt | High-LR `2e-4` GRPO is not a new mature algorithm mechanism and train reward regressed after epoch0. Keep `epoch_0-step_1330` only as an LR/eval data point. |
 | `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z` | keep | Original-LR `1e-4` control with similar effective batch scale. Needed to separate algorithm effect from LR effect. |
+| `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_log1_diag_zt2_4gpu_20260614T0300Z` | completed diagnostic | Good limited diagnostic. Ratio/KL/clip/advantage logs are active, but this still does not validate a full PPO replay implementation. |
+| `stage3_grpo_refkl_s16_lr2e4_b4acc2_chunk32_fast_8gpu_20260613T213145Z/local_eval_epoch0_exact_pool_8x1gpu_shards_20260614T031521Z` | running eval | Local 8-way independent 1GPU exact navtest shards for the stopped `2e-4` epoch0 checkpoint. This avoids the fragile 8GPU DDP broadcast path while preserving exact scalar PDMS per token. |
 | `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_zt2_4gpu_20260614T012106Z` | stopped | It tested buffer absorption, but Lightning did not log the returned buffer/self-imitation diagnostics. Continuing would not prove whether the auxiliary path was active. |
 | `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_diagfix_zt2_4gpu_20260614T020706Z` | stopped | It was launched before the PPO/advantage diagnostics patch. It could not report `gspo_approx_kl` or the full advantage-transform diagnostics, so it was stopped before becoming a full run. |
 | `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_diag_zt2_4gpu_20260614T023758Z` | failed before training | Hydra struct rejected the new override before the agent YAML was updated. No training occurred. |
-| `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_diag_zt2_4gpu_20260614T024536Z` | diagnostic window | New post-patch diagnostic on zt2 0-3 GPUs. Purpose: verify GSPO ratio/KL/clip and advantage normalize/clip logging at original LR `1e-4` without buffer guidance. Limit train batches to keep this from becoming a full run. |
+| `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_diag_zt2_4gpu_20260614T024536Z` | stop and replace | It entered training and wrote only `lr-AdamW`; with default `log_every_n_steps=50`, it is too low-information for a limited diagnostic. Replace with a shorter `log_every_n_steps=1` diagnostic and a long behavior-policy sync interval. |
 | Local queued `stage3_grpo_buffer_guided_selfimit_s16_lr2e4_b2acc4_wait2_20260614T003614Z` launcher | stopped | It was a stale queued run from before this protocol and duplicates the zt2 buffer-guided experiment. |
 | `supervise_recogdrive_stage3_experiment.py` auto-supervisor | stopped | It can auto-launch stale next actions without the new reference-audit protocol. Future launches should be manual after updating this file. |
 
@@ -54,12 +56,13 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 |---|---:|---|---:|---|
 | User-reported original local Stage3 RL | historical | original LR `1e-4`, 10 epochs | `0.9055` | Treat this as the original GRPO/Stage3 reference. Do not compare new `2e-4` runs to it without LR caveat. |
 | `stage3_safe_diffgrpo_ckpt_stream_eval_live_20260610T030355Z` | completed | Safe DiffGRPO | `0.906184` at `epoch_12-step_17290` | Strongest confirmed Stage3 result so far. |
-| `stage3_grpo_refkl_s16_lr2e4_b4acc2_chunk32_fast_8gpu_20260613T213145Z` | running | LR `2e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, effective batch about `64` | pending | Modified-LR run. At 2026-06-14 01:51 UTC it was at step `1249`, no checkpoint yet. |
+| `stage3_grpo_refkl_s16_lr2e4_b4acc2_chunk32_fast_8gpu_20260613T213145Z` | stopped | LR `2e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, effective batch about `64` | pending eval for `epoch_0-step_1330` | Stopped at 2026-06-14 03:10 UTC after epoch0 checkpoint. Last read train reward at step `1499` was `0.7552`, below earlier windows, so do not continue full training. |
 | `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z` | running | LR `1e-4`, sample_time `16`, BC `0.10->0.05`, ref KL `0.02`, effective batch about `66` | pending | zt3 original-LR control. |
 | `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_zt2_4gpu_20260614T012106Z` | stopped before eval | LR `2e-4`, GSPO ratio, elite-buffer reward bonus/distill/self-imitation | invalid run | Stopped because key diagnostics were not logged, so the run could not validate buffer absorption. |
 | `stage3_grpo_buffer_guided_gspo_s16_lr2e4_b2acc8_diagfix_zt2_4gpu_20260614T020706Z` | stopped before eval | LR `2e-4`, GSPO ratio, elite-buffer reward bonus/distill/self-imitation | invalid run | Stopped because it was launched before the full PPO/advantage diagnostics patch. |
 | `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_diag_zt2_4gpu_20260614T023758Z` | failed before training | LR `1e-4`, GSPO ratio, batch advantage normalize, fixed advantage clip `3.0`, no buffer | none | Failed at Hydra config parsing because `grpo_normalize_advantage_batch` was missing from `recogdrive_agent.yaml`. |
-| `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_diag_zt2_4gpu_20260614T024536Z` | launching diagnostic | LR `1e-4`, GSPO ratio, batch advantage normalize, fixed advantage clip `3.0`, no buffer, `limit_train_batches=80`, `limit_val_batches=0` | pending | Diagnostic only. Eval watchers disabled. Stop after confirming first train-scalar window unless explicitly promoted. |
+| `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_diag_zt2_4gpu_20260614T024536Z` | stopped/replaced | LR `1e-4`, GSPO ratio, batch advantage normalize, fixed advantage clip `3.0`, no buffer, `limit_train_batches=80`, `limit_val_batches=0`, default logging | none | Wrote only `lr-AdamW`; insufficient diagnostic density. |
+| `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_log1_diag_zt2_4gpu_20260614T0300Z` | completed diagnostic | LR `1e-4`, GSPO ratio, batch advantage normalize, fixed advantage clip `3.0`, no buffer, `limit_train_batches=40`, `limit_val_batches=0`, `log_every_n_steps=1`, behavior sync interval `100000` | no eval | Ratio/KL/clip diagnostics moved after optimizer updates; this validates instrumentation and short-run GSPO activity only. |
 
 ## Completed Attempt Ledger
 
@@ -159,6 +162,42 @@ Reference gap:
 - DDPO, DPPO, and RIPT-VLA all emphasize storing old logprobs/rollouts and applying PPO-style clipped updates over collected samples.
 - Our current non-GSPO path does not replay a sampled batch for multiple PPO epochs/minibatches.
 - The GSPO variant is closer because it can sample from a behavior policy and use a ratio, but it still needs diagnostics to confirm ratio/clip behavior and policy absorption.
+
+### 3.1 GSPO Advantage-Control Diagnostic
+
+Run:
+- `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_log1_diag_zt2_4gpu_20260614T0300Z`
+
+Config:
+- LR `1e-4`
+- `sample_time=16`
+- `batch_size=2`, `accumulate_grad_batches=8`, 4 GPUs
+- `limit_train_batches=40`, `limit_val_batches=0`
+- `log_every_n_steps=1`
+- `grpo_use_gspo_ratio=true`
+- `grpo_behavior_policy_sample=true`
+- `grpo_behavior_policy_sync_interval=100000`
+- `grpo_normalize_advantage_batch=true`
+- `grpo_advantage_clip_abs=3.0`
+- no buffer guidance, no AWAC, no DPO
+
+Observed step diagnostics over 5 optimizer steps:
+- `gspo_ratio_mean`: `1.0000 -> 0.9844`
+- `gspo_ratio_min/max` at last step: `0.9649 / 1.0017`
+- `gspo_ratio_clip_frac`: max observed `0.2266`, last `0.0156`
+- `gspo_log_ratio_std`: last `0.00875`
+- `gspo_abs_log_ratio_mean`: last `0.01625`
+- `gspo_approx_kl`: last `0.000203`
+- `grpo_advantage_batch_normalized`: `1.0`
+- `grpo_advantage_std_after_transform`: near `0.96-1.00`
+- `grpo_advantage_clip_frac`: `0.0-0.0234`
+- `sampled_from_behavior_policy`: `1.0`
+- `behavior_policy_synced`: `0.0` after launch, as intended for the long sync interval
+
+Decision:
+- Keep these code/logging changes. They prove the GSPO ratio path and advantage transform are active.
+- Do not claim this is SOTA PPO yet. It is still a single-pass Lightning training loop, not DDPO/DPPO/RIPT-VLA-style rollout replay with fixed old logprobs over multiple inner epochs.
+- The next full run may use these controls as a clean GSPO baseline only if we explicitly label it as "GSPO single-pass", not as full DPPO.
 
 ### 4. GRPO Buffer-Guided Self-Imitation
 
@@ -290,12 +329,12 @@ Remaining gap before claiming a SOTA-level PPO implementation:
 
 ## Revised Experiment Plan 2026-06-14
 
-### Phase 0: Do Not Start New Full Runs Until Diagnostics Are Valid
+### Phase 0: Stop Low-Value Runs And Preserve Evidence
 
 Keep only experiments that answer a specific question:
-- Local `2e-4` GRPO: keep as the high-LR run, but do not treat it as an algorithm improvement until compared against the `1e-4` control.
+- Local `2e-4` GRPO: stopped after `epoch_0-step_1330`. Evaluate the checkpoint, but do not continue training.
 - zt3 `1e-4` GRPO: keep as the original-LR control.
-- zt2 `1e-4` GSPO/advantage-control diagnostic: keep only as a limited-batch logging check. It must prove ratio/KL/clip/advantage diagnostics work before any full GSPO run.
+- zt2 `1e-4` GSPO/advantage-control diagnostic: completed. Use it only as evidence that instrumentation and single-pass GSPO ratio are active.
 
 Stop or avoid:
 - Pure AWAC/IQL full training.
@@ -303,26 +342,24 @@ Stop or avoid:
 - Any GRPO variant that lacks ratio/KL/clip/advantage diagnostics.
 - Any launch where LR, effective batch, sample_time, or checkpoint cadence differs from the control without being the explicit variable under test.
 
-### Phase 1: Read Current Running Experiments
+### Phase 1: Finish Evidence Collection
 
 Required outputs:
-- First checkpoint/eval for local `2e-4` GRPO.
+- Full or shard-aggregated navtest eval for local `2e-4` `epoch_0-step_1330`.
 - First checkpoint/eval for zt3 `1e-4` GRPO.
-- First train-scalar window for zt2 `1e-4` GSPO/advantage diagnostic, including:
-  - `gspo_ratio_mean/min/max`
-  - `gspo_ratio_clip_frac`
-  - `gspo_approx_kl`
-  - `gspo_abs_log_ratio_mean`
-  - `grpo_advantage_mean_before_transform`
-  - `grpo_advantage_std_after_transform`
-  - `grpo_advantage_clip_frac`
+- Store zt2 diagnostic scalars in this ledger and compare with any future GSPO run.
 
 Go/no-go:
-- If zt2 has no training scalars after startup completes, stop it and inspect the failure.
-- If GSPO ratio stays exactly `1.0` with zero log-ratio variance beyond the sync step, it is not testing PPO-style updates; stop or relaunch with corrected behavior-policy timing.
-- If `gspo_approx_kl` or clip fraction explodes early, stop and reduce LR or clip range.
+- If the local `2e-4` checkpoint is below the `1e-4` control or Safe DiffGRPO, do not revisit `2e-4` as a default LR.
+- If the zt3 `1e-4` control is competitive with Safe DiffGRPO, use `1e-4` as the default for algorithm tests.
+- If zt3 `1e-4` is also weak, inspect data/eval parity before modifying algorithms.
 
-### Phase 2: Next Allowed Algorithm Run
+Diagnostic launch rule:
+- Limited diagnostics must set `LOG_EVERY_N_STEPS=1`.
+- If testing GSPO ratio behavior, use a behavior-policy sync interval larger than the diagnostic window, e.g. `GRPO_BEHAVIOR_POLICY_SYNC_INTERVAL=100000`, because the first forward syncs the behavior policy and ratio is expected to be near `1.0` before the first optimizer update.
+- Use at least `2 * accumulate_grad_batches` train batches so there are logged batches after one optimizer step.
+
+### Phase 2: Next Allowed Algorithm Run: Clean Single-Pass GSPO
 
 Only launch after Phase 1 results are read.
 
@@ -338,17 +375,25 @@ Rationale:
 - DDPO/DPPO/RIPT-VLA-style methods all rely on stable old-policy ratio updates and controlled advantages.
 - Before adding buffer absorption again, we need a clean PPO-control run that separates LR and advantage-scale effects.
 
-### Phase 3: Buffer Absorption, Only After PPO Control
+Interpretation limit:
+- This run can validate whether single-pass GSPO improves over current GRPO.
+- It cannot validate full DPPO/DDPO/RIPT-VLA until rollout replay exists.
 
-If Phase 2 is stable and competitive:
-- Relaunch buffer-guided GSPO at the better LR.
-- Use the same PPO diagnostics.
-- Keep buffer distill/self-imitation weights small and warm-started.
-- Add one variable at a time:
-  1. reward-neighborhood bonus only
-  2. buffer distill only
-  3. self-imitation only
-  4. combined, only if individual terms are active and non-regressive
+### Phase 3: Full PPO Replay Before Heavy Buffer Absorption
+
+If Phase 2 is stable but does not improve eval:
+- Implement a real rollout replay buffer before another expensive full run.
+- Store sampled denoising chains or sufficient denoising state, old logprobs, rewards, components, safety masks, group ids, and advantages.
+- Replay fixed rollouts for multiple inner epochs/minibatches with PPO clipping.
+- Add per-denoising-step KL/ratio diagnostics if chain-level data is available.
+- This is the first implementation level that can reasonably be compared to DDPO/DPPO/RIPT-VLA.
+
+Buffer absorption should then be added as a controlled auxiliary:
+1. reward-neighborhood bonus only
+2. buffer low-noise distillation only
+3. self-imitation from high-reward sampled trajectories only
+4. preference/DPO auxiliary only after active-pair diagnostics pass
+5. combined, only if individual terms are active and non-regressive
 
 Buffer absorption success criteria:
 - `grpo_buffer_target_distance_mean` decreases or remains low while reward improves.
@@ -356,14 +401,19 @@ Buffer absorption success criteria:
 - NC/DAC/TTC/DDC do not regress.
 - Evaluation PDMS improves over both `1e-4` GRPO control and Safe DiffGRPO `0.906184`.
 
-### Phase 4: Full PPO Replay Implementation
+### Phase 4: Preference/DPO Only As A Mature Auxiliary
 
-If GSPO diagnostics show promise but eval does not improve:
-- Implement a real rollout replay buffer before the next expensive full run.
-- Store sampled denoising chains and old logprobs.
-- Run multiple replay epochs/minibatches with fixed old logprobs.
-- Match DPPO/DDPO diagnostics: approximate KL, clip fraction, ratio distribution, advantage normalization, reward distribution, safety masks.
-- Treat this as the first SOTA-aligned implementation rather than another tuning variant.
+Do not run preference/DPO as a standalone replacement again until:
+- winner/loser active pair ratio is high enough,
+- reward-gap distribution is logged,
+- current/reference winner-loser MSE margins are logged,
+- implicit accuracy is not saturated or random,
+- beta/logit scale is calibrated from observed logratio magnitude,
+- shared timestep/noise and reference model parity are verified.
+
+Preferred use:
+- Add small preference auxiliary to a stable GRPO/GSPO run, not to pure AWAC.
+- Pair buffer valid-best against GT/IL/current low-reward samples only when DDC/TTC/NC/DAC guards pass.
 
 ### Direction B: GRPO + Buffer Absorption With Proof Of Activity
 

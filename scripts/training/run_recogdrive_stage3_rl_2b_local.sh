@@ -63,6 +63,7 @@ STAGE3_GRPO_SCHEDULER_WARMUP_EPOCHS="${GRPO_SCHEDULER_WARMUP_EPOCHS:-0}"
 STAGE3_GRPO_SCHEDULER_MIN_LR="${GRPO_SCHEDULER_MIN_LR:-1e-5}"
 STAGE3_LIMIT_TRAIN_BATCHES="${LIMIT_TRAIN_BATCHES:-}"
 STAGE3_LIMIT_VAL_BATCHES="${LIMIT_VAL_BATCHES:-}"
+STAGE3_LOG_EVERY_N_STEPS="${LOG_EVERY_N_STEPS:-}"
 STAGE3_OFFLINE_RL_ENABLED="${OFFLINE_RL_ENABLED:-false}"
 STAGE3_ELITE_BUFFER_DIR="${ELITE_BUFFER_DIR:-}"
 STAGE3_OFFLINE_RL_MISSING_BUFFER_POLICY="${OFFLINE_RL_MISSING_BUFFER_POLICY:-error}"
@@ -256,6 +257,9 @@ fi
 if [[ -n "${STAGE3_LIMIT_VAL_BATCHES}" ]]; then
   HYDRA_ARGS+=("trainer.params.limit_val_batches=${STAGE3_LIMIT_VAL_BATCHES}")
 fi
+if [[ -n "${STAGE3_LOG_EVERY_N_STEPS}" ]]; then
+  HYDRA_ARGS+=("trainer.params.log_every_n_steps=${STAGE3_LOG_EVERY_N_STEPS}")
+fi
 
 if [[ "${CACHE_MODE}" == "offline" ]]; then
   if [[ ! -d "${HIDDEN_CACHE_DIR}" ]]; then
@@ -339,6 +343,7 @@ CMD=(
   echo "stage3_grpo_scheduler_min_lr=${STAGE3_GRPO_SCHEDULER_MIN_LR}"
   echo "stage3_limit_train_batches=${STAGE3_LIMIT_TRAIN_BATCHES}"
   echo "stage3_limit_val_batches=${STAGE3_LIMIT_VAL_BATCHES}"
+  echo "stage3_log_every_n_steps=${STAGE3_LOG_EVERY_N_STEPS}"
   echo "stage3_offline_rl_enabled=${STAGE3_OFFLINE_RL_ENABLED}"
   echo "stage3_elite_buffer_dir=${STAGE3_ELITE_BUFFER_DIR}"
   echo "stage3_offline_rl_cache_elite_records_in_memory=${STAGE3_OFFLINE_RL_CACHE_ELITE_RECORDS_IN_MEMORY}"
