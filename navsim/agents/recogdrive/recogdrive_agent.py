@@ -292,6 +292,23 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_grpo_buffer_distill_top_k: int = 1,
         offline_rl_grpo_buffer_distill_min_reward_margin: float = 0.0,
         offline_rl_grpo_buffer_distill_timestep_sampling: str = "low_noise",
+        offline_rl_grpo_buffer_preference_dpo_loss_weight: float = 0.0,
+        offline_rl_grpo_buffer_preference_dpo_loss_schedule: str = "linear_warmup",
+        offline_rl_grpo_buffer_preference_dpo_loss_weight_start: float = 0.0,
+        offline_rl_grpo_buffer_preference_dpo_warmup_start_epoch: int = 0,
+        offline_rl_grpo_buffer_preference_dpo_warmup_epochs: int = 2,
+        offline_rl_grpo_buffer_preference_dpo_timestep_sampling: str = "uniform",
+        offline_rl_grpo_buffer_preference_dpo_beta: float = 8.0,
+        offline_rl_grpo_buffer_preference_dpo_label_smoothing: float = 0.0,
+        offline_rl_grpo_buffer_preference_dpo_reference_free: bool = False,
+        offline_rl_grpo_buffer_preference_dpo_pair_mode: str = "best_vs_gt_il",
+        offline_rl_grpo_buffer_preference_dpo_min_reward_gap: float = 0.02,
+        offline_rl_grpo_buffer_preference_dpo_max_pairs_per_scene: int = 2,
+        offline_rl_grpo_buffer_preference_dpo_gap_weight_mode: str = "none",
+        offline_rl_grpo_buffer_preference_dpo_gap_weight_scale: float = 0.05,
+        offline_rl_grpo_buffer_preference_dpo_gap_weight_min: float = 0.0,
+        offline_rl_grpo_buffer_preference_dpo_gap_weight_max: float = 3.0,
+        offline_rl_grpo_buffer_preference_dpo_include_il: bool = True,
         offline_rl_grpo_self_imitation_loss_weight: float = 0.0,
         offline_rl_grpo_self_imitation_loss_schedule: str = "linear_warmup",
         offline_rl_grpo_self_imitation_loss_weight_start: float = 0.0,
@@ -757,6 +774,55 @@ class ReCogDriveAgent(AbstractAgent):
             offline_rl_grpo_buffer_distill_min_reward_margin
         )
         self.offline_rl_grpo_buffer_distill_timestep_sampling = offline_rl_grpo_buffer_distill_timestep_sampling
+        self.offline_rl_grpo_buffer_preference_dpo_loss_weight = float(
+            offline_rl_grpo_buffer_preference_dpo_loss_weight
+        )
+        self.offline_rl_grpo_buffer_preference_dpo_loss_schedule = (
+            offline_rl_grpo_buffer_preference_dpo_loss_schedule
+        )
+        self.offline_rl_grpo_buffer_preference_dpo_loss_weight_start = float(
+            offline_rl_grpo_buffer_preference_dpo_loss_weight_start
+        )
+        self.offline_rl_grpo_buffer_preference_dpo_warmup_start_epoch = int(
+            offline_rl_grpo_buffer_preference_dpo_warmup_start_epoch
+        )
+        self.offline_rl_grpo_buffer_preference_dpo_warmup_epochs = int(
+            offline_rl_grpo_buffer_preference_dpo_warmup_epochs
+        )
+        self.offline_rl_grpo_buffer_preference_dpo_timestep_sampling = (
+            offline_rl_grpo_buffer_preference_dpo_timestep_sampling
+        )
+        self.offline_rl_grpo_buffer_preference_dpo_beta = float(
+            offline_rl_grpo_buffer_preference_dpo_beta
+        )
+        self.offline_rl_grpo_buffer_preference_dpo_label_smoothing = float(
+            offline_rl_grpo_buffer_preference_dpo_label_smoothing
+        )
+        self.offline_rl_grpo_buffer_preference_dpo_reference_free = bool(
+            offline_rl_grpo_buffer_preference_dpo_reference_free
+        )
+        self.offline_rl_grpo_buffer_preference_dpo_pair_mode = offline_rl_grpo_buffer_preference_dpo_pair_mode
+        self.offline_rl_grpo_buffer_preference_dpo_min_reward_gap = float(
+            offline_rl_grpo_buffer_preference_dpo_min_reward_gap
+        )
+        self.offline_rl_grpo_buffer_preference_dpo_max_pairs_per_scene = int(
+            offline_rl_grpo_buffer_preference_dpo_max_pairs_per_scene
+        )
+        self.offline_rl_grpo_buffer_preference_dpo_gap_weight_mode = (
+            offline_rl_grpo_buffer_preference_dpo_gap_weight_mode
+        )
+        self.offline_rl_grpo_buffer_preference_dpo_gap_weight_scale = float(
+            offline_rl_grpo_buffer_preference_dpo_gap_weight_scale
+        )
+        self.offline_rl_grpo_buffer_preference_dpo_gap_weight_min = float(
+            offline_rl_grpo_buffer_preference_dpo_gap_weight_min
+        )
+        self.offline_rl_grpo_buffer_preference_dpo_gap_weight_max = float(
+            offline_rl_grpo_buffer_preference_dpo_gap_weight_max
+        )
+        self.offline_rl_grpo_buffer_preference_dpo_include_il = bool(
+            offline_rl_grpo_buffer_preference_dpo_include_il
+        )
         self.offline_rl_grpo_self_imitation_loss_weight = float(offline_rl_grpo_self_imitation_loss_weight)
         self.offline_rl_grpo_self_imitation_loss_schedule = offline_rl_grpo_self_imitation_loss_schedule
         self.offline_rl_grpo_self_imitation_loss_weight_start = float(
@@ -1358,6 +1424,53 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.grpo_buffer_distill_top_k = self.offline_rl_grpo_buffer_distill_top_k
         offline_cfg.grpo_buffer_distill_min_reward_margin = self.offline_rl_grpo_buffer_distill_min_reward_margin
         offline_cfg.grpo_buffer_distill_timestep_sampling = self.offline_rl_grpo_buffer_distill_timestep_sampling
+        offline_cfg.grpo_buffer_preference_dpo_loss_weight = (
+            self.offline_rl_grpo_buffer_preference_dpo_loss_weight
+        )
+        offline_cfg.grpo_buffer_preference_dpo_loss_schedule = (
+            self.offline_rl_grpo_buffer_preference_dpo_loss_schedule
+        )
+        offline_cfg.grpo_buffer_preference_dpo_loss_weight_start = (
+            self.offline_rl_grpo_buffer_preference_dpo_loss_weight_start
+        )
+        offline_cfg.grpo_buffer_preference_dpo_warmup_start_epoch = (
+            self.offline_rl_grpo_buffer_preference_dpo_warmup_start_epoch
+        )
+        offline_cfg.grpo_buffer_preference_dpo_warmup_epochs = (
+            self.offline_rl_grpo_buffer_preference_dpo_warmup_epochs
+        )
+        offline_cfg.grpo_buffer_preference_dpo_timestep_sampling = (
+            self.offline_rl_grpo_buffer_preference_dpo_timestep_sampling
+        )
+        offline_cfg.grpo_buffer_preference_dpo_beta = self.offline_rl_grpo_buffer_preference_dpo_beta
+        offline_cfg.grpo_buffer_preference_dpo_label_smoothing = (
+            self.offline_rl_grpo_buffer_preference_dpo_label_smoothing
+        )
+        offline_cfg.grpo_buffer_preference_dpo_reference_free = (
+            self.offline_rl_grpo_buffer_preference_dpo_reference_free
+        )
+        offline_cfg.grpo_buffer_preference_dpo_pair_mode = self.offline_rl_grpo_buffer_preference_dpo_pair_mode
+        offline_cfg.grpo_buffer_preference_dpo_min_reward_gap = (
+            self.offline_rl_grpo_buffer_preference_dpo_min_reward_gap
+        )
+        offline_cfg.grpo_buffer_preference_dpo_max_pairs_per_scene = (
+            self.offline_rl_grpo_buffer_preference_dpo_max_pairs_per_scene
+        )
+        offline_cfg.grpo_buffer_preference_dpo_gap_weight_mode = (
+            self.offline_rl_grpo_buffer_preference_dpo_gap_weight_mode
+        )
+        offline_cfg.grpo_buffer_preference_dpo_gap_weight_scale = (
+            self.offline_rl_grpo_buffer_preference_dpo_gap_weight_scale
+        )
+        offline_cfg.grpo_buffer_preference_dpo_gap_weight_min = (
+            self.offline_rl_grpo_buffer_preference_dpo_gap_weight_min
+        )
+        offline_cfg.grpo_buffer_preference_dpo_gap_weight_max = (
+            self.offline_rl_grpo_buffer_preference_dpo_gap_weight_max
+        )
+        offline_cfg.grpo_buffer_preference_dpo_include_il = (
+            self.offline_rl_grpo_buffer_preference_dpo_include_il
+        )
         offline_cfg.grpo_self_imitation_loss_weight = self.offline_rl_grpo_self_imitation_loss_weight
         offline_cfg.grpo_self_imitation_loss_schedule = self.offline_rl_grpo_self_imitation_loss_schedule
         offline_cfg.grpo_self_imitation_loss_weight_start = self.offline_rl_grpo_self_imitation_loss_weight_start

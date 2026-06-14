@@ -246,6 +246,57 @@ Follow-up implementation after live diagnostics:
   - Delta from step300: EP improved by about `+0.0087`, but NC fell by about `-0.0057`, TTC by about `-0.0072`, and DDC by about `-0.0101`.
   - Interpretation: the auxiliary self-imitation path is likely absorbing higher-progress on-policy samples, but target selection does not explicitly protect TTC/DDC. A further run without fixing target validity would be low-information.
 
+## Planned Attempt: GRPO With Train-Buffer Diffusion-DPO Absorption
+
+Motivation:
+- Past AWAC/IQL attempts show that the train-only elite buffer can discover high-PDMS trajectories, but weighted denoising regression alone did not make the sampler reliably output better trajectories.
+- The current main hard-gate v3 GRPO run has active on-policy self-imitation, but early train diagnostics still show unstable high-quality target availability across batches. At step `199`, strict self-imitation target reward mean dropped to about `0.863`, while earlier step `149` had about `0.986`.
+- The next buffer use should therefore not replace GRPO. It should add a small preference signal that tells the diffusion planner: for the same scene/context/noise level, assign lower denoising loss to valid train-buffer winners than to GT/IL behavior losers.
+
+Reference audit:
+- Diffusion-DPO paper and official code: https://arxiv.org/abs/2311.12908 and https://github.com/SalesforceAIResearch/DiffusionDPO. Mechanism copied: chosen/rejected samples share the same diffusion timestep and noise; the objective compares current-model loss gap against reference-model loss gap with a sigmoid/DPO classification loss.
+- DPPO paper/code: https://arxiv.org/abs/2409.00588 and https://github.com/irom-princeton/dppo. Mechanism retained from the GRPO backbone: keep policy-gradient style optimization over sampled diffusion trajectories rather than relying only on offline regression.
+- DGPO code: https://github.com/Luo-Yihong/DGPO. Mechanism borrowed conceptually: group/reward ordering information can be used as direct preference supervision for diffusion models, not only as scalar reward-weighted regression.
+- SIPO / SDPO: https://arxiv.org/abs/2505.21893. Caution borrowed: diffusion preference optimization is timestep-sensitive and off-policy biased. The implementation keeps timestep sampling configurable and starts with a small warmup-controlled weight.
+
+Implementation:
+- Added GRPO-specific buffer preference-DPO fields under `OfflineRLConfig`, all defaulting to disabled:
+  - `grpo_buffer_preference_dpo_loss_weight=0.0`
+  - `grpo_buffer_preference_dpo_loss_schedule=linear_warmup`
+  - `grpo_buffer_preference_dpo_timestep_sampling=uniform`
+  - `grpo_buffer_preference_dpo_beta=8.0`
+  - `grpo_buffer_preference_dpo_pair_mode=best_vs_gt_il`
+  - `grpo_buffer_preference_dpo_min_reward_gap=0.02`
+  - `grpo_buffer_preference_dpo_max_pairs_per_scene=2`
+- GRPO buffer guidance now keeps the loaded selected candidates/source codes in memory for the current batch.
+- The DPO batch is constructed as:
+  - valid buffer target(s) selected from train-only elite buffer are winners;
+  - GT trajectory from `action_input.action` is a behavior loser;
+  - IL/reference trajectory is loaded from the same buffer when present, with old-policy fallback only if buffer IL support is absent;
+  - GT/IL rows are real loser rows but are not marked valid winners.
+- The existing diffusion-DPO loss is reused, including shared noise/timestep and reference-policy loss gap. Candidate trajectories are denoising targets only; `_prepare_dit_context(..., allow_target_tokens=False)` remains enforced through `_diffusion_per_target_loss_on_targets`.
+- Added training logs:
+  - `grpo_buffer_preference_dpo_loss`
+  - `grpo_buffer_preference_dpo_weight`
+  - `grpo_buffer_preference_dpo_pair_count`
+  - `grpo_buffer_preference_dpo_active_row_ratio`
+  - `grpo_buffer_preference_dpo_reward_gap_mean`
+  - `grpo_buffer_preference_dpo_logit_mean`
+  - `grpo_buffer_preference_dpo_implicit_accuracy`
+  - `grpo_buffer_preference_dpo_timestep_mean/min/max`
+
+First experiment rule:
+- Do not interrupt the active v3 hard-gate GRPO run before its step300 exact navtest gate unless it crashes.
+- After v3 step300 result, run a matched short diagnostic with the same LR/effective batch/sample_time/hard gates and enable only a small buffer-DPO auxiliary:
+  - `GRPO_BUFFER_GUIDANCE_ENABLED=true`
+  - `GRPO_BUFFER_REWARD_BONUS_WEIGHT=0.0`
+  - `GRPO_BUFFER_DISTILL_LOSS_WEIGHT=0.0`
+  - `GRPO_BUFFER_PREFERENCE_DPO_LOSS_WEIGHT=0.02`
+  - `GRPO_BUFFER_PREFERENCE_DPO_LOSS_SCHEDULE=linear_warmup`
+  - `GRPO_BUFFER_PREFERENCE_DPO_WARMUP_EPOCHS=2`
+  - keep `GRPO_SELF_IMITATION_LOSS_WEIGHT=0.01` only if the v3 step300 gate is not already failing for target-quality reasons; otherwise isolate buffer-DPO with self-imitation off.
+- Success at the diagnostic level requires active nonzero DPO pairs and no deterioration in matched step300/600 exact navtest NC/TTC/DDC compared with cap05/v3. Final success still requires comparable-length PDMS above the original 10-epoch `0.9055` and Safe DiffGRPO `0.906184` references.
+
 ## Planned Attempt: Safety-Filtered GRPO Self-Imitation Targets
 
 Motivation:

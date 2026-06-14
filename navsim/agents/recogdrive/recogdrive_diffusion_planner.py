@@ -360,6 +360,23 @@ class OfflineRLConfig:
     grpo_buffer_distill_top_k: int = 1
     grpo_buffer_distill_min_reward_margin: float = 0.0
     grpo_buffer_distill_timestep_sampling: Literal["uniform", "ddim", "low_noise", "mid_noise"] = "low_noise"
+    grpo_buffer_preference_dpo_loss_weight: float = 0.0
+    grpo_buffer_preference_dpo_loss_schedule: Literal["constant", "linear_warmup"] = "linear_warmup"
+    grpo_buffer_preference_dpo_loss_weight_start: float = 0.0
+    grpo_buffer_preference_dpo_warmup_start_epoch: int = 0
+    grpo_buffer_preference_dpo_warmup_epochs: int = 2
+    grpo_buffer_preference_dpo_timestep_sampling: Literal["uniform", "ddim", "low_noise", "mid_noise"] = "uniform"
+    grpo_buffer_preference_dpo_beta: float = 8.0
+    grpo_buffer_preference_dpo_label_smoothing: float = 0.0
+    grpo_buffer_preference_dpo_reference_free: bool = False
+    grpo_buffer_preference_dpo_pair_mode: Literal["best_vs_gt_il", "best_vs_low_valid", "best_vs_all"] = "best_vs_gt_il"
+    grpo_buffer_preference_dpo_min_reward_gap: float = 0.02
+    grpo_buffer_preference_dpo_max_pairs_per_scene: int = 2
+    grpo_buffer_preference_dpo_gap_weight_mode: Literal["none", "pair_gap", "winner_advantage"] = "none"
+    grpo_buffer_preference_dpo_gap_weight_scale: float = 0.05
+    grpo_buffer_preference_dpo_gap_weight_min: float = 0.0
+    grpo_buffer_preference_dpo_gap_weight_max: float = 3.0
+    grpo_buffer_preference_dpo_include_il: bool = True
     grpo_self_imitation_loss_weight: float = 0.0
     grpo_self_imitation_loss_schedule: Literal["constant", "linear_warmup"] = "linear_warmup"
     grpo_self_imitation_loss_weight_start: float = 0.0
@@ -1120,6 +1137,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "awac_timestep_sampling",
             "preference_dpo_timestep_sampling",
             "grpo_buffer_distill_timestep_sampling",
+            "grpo_buffer_preference_dpo_timestep_sampling",
             "grpo_self_imitation_timestep_sampling",
         ):
             if str(getattr(cfg, name)) not in {"uniform", "ddim", "low_noise", "mid_noise"}:
@@ -1169,6 +1187,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "preference_dpo_loss_schedule",
             "grpo_loss_schedule",
             "grpo_buffer_distill_loss_schedule",
+            "grpo_buffer_preference_dpo_loss_schedule",
             "grpo_self_imitation_loss_schedule",
         ):
             if str(getattr(cfg, name)) not in {"constant", "linear_warmup"}:
@@ -1187,6 +1206,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "grpo_buffer_distill_loss_weight",
             "grpo_buffer_distill_loss_weight_start",
             "grpo_buffer_distill_min_reward_margin",
+            "grpo_buffer_preference_dpo_loss_weight",
+            "grpo_buffer_preference_dpo_loss_weight_start",
+            "grpo_buffer_preference_dpo_beta",
+            "grpo_buffer_preference_dpo_min_reward_gap",
+            "grpo_buffer_preference_dpo_gap_weight_scale",
+            "grpo_buffer_preference_dpo_gap_weight_min",
+            "grpo_buffer_preference_dpo_gap_weight_max",
             "grpo_self_imitation_loss_weight",
             "grpo_self_imitation_loss_weight_start",
             "grpo_self_imitation_min_reward",
@@ -1221,12 +1247,31 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.preference_dpo_gap_weight_scale must be positive.")
         if float(cfg.preference_dpo_gap_weight_min) > float(cfg.preference_dpo_gap_weight_max):
             raise ValueError("offline_rl_cfg.preference_dpo_gap_weight_min must be <= gap_weight_max.")
+        if not (0.0 <= float(cfg.grpo_buffer_preference_dpo_label_smoothing) < 0.5):
+            raise ValueError("offline_rl_cfg.grpo_buffer_preference_dpo_label_smoothing must be in [0, 0.5).")
+        if str(cfg.grpo_buffer_preference_dpo_pair_mode) not in {"best_vs_gt_il", "best_vs_low_valid", "best_vs_all"}:
+            raise ValueError(
+                "offline_rl_cfg.grpo_buffer_preference_dpo_pair_mode must be best_vs_gt_il, "
+                "best_vs_low_valid, or best_vs_all."
+            )
+        if str(cfg.grpo_buffer_preference_dpo_gap_weight_mode) not in {"none", "pair_gap", "winner_advantage"}:
+            raise ValueError(
+                "offline_rl_cfg.grpo_buffer_preference_dpo_gap_weight_mode must be none, pair_gap, or winner_advantage."
+            )
+        if float(cfg.grpo_buffer_preference_dpo_gap_weight_scale) <= 0.0:
+            raise ValueError("offline_rl_cfg.grpo_buffer_preference_dpo_gap_weight_scale must be positive.")
+        if float(cfg.grpo_buffer_preference_dpo_gap_weight_min) > float(cfg.grpo_buffer_preference_dpo_gap_weight_max):
+            raise ValueError(
+                "offline_rl_cfg.grpo_buffer_preference_dpo_gap_weight_min must be <= gap_weight_max."
+            )
         if int(cfg.pairwise_rank_max_pairs_per_scene) < 0:
             raise ValueError("offline_rl_cfg.pairwise_rank_max_pairs_per_scene must be non-negative.")
         if int(cfg.invalid_repulsion_max_pairs_per_scene) < 0:
             raise ValueError("offline_rl_cfg.invalid_repulsion_max_pairs_per_scene must be non-negative.")
         if int(cfg.preference_dpo_max_pairs_per_scene) < 0:
             raise ValueError("offline_rl_cfg.preference_dpo_max_pairs_per_scene must be non-negative.")
+        if int(cfg.grpo_buffer_preference_dpo_max_pairs_per_scene) < 0:
+            raise ValueError("offline_rl_cfg.grpo_buffer_preference_dpo_max_pairs_per_scene must be non-negative.")
         if int(cfg.bc_loss_schedule_epochs) <= 0:
             raise ValueError("offline_rl_cfg.bc_loss_schedule_epochs must be positive.")
         if int(cfg.awac_loss_warmup_start_epoch) < 0:
@@ -1247,6 +1292,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.grpo_buffer_distill_warmup_epochs must be positive.")
         if int(cfg.grpo_buffer_distill_top_k) <= 0:
             raise ValueError("offline_rl_cfg.grpo_buffer_distill_top_k must be positive.")
+        if int(cfg.grpo_buffer_preference_dpo_warmup_start_epoch) < 0:
+            raise ValueError("offline_rl_cfg.grpo_buffer_preference_dpo_warmup_start_epoch must be non-negative.")
+        if int(cfg.grpo_buffer_preference_dpo_warmup_epochs) <= 0:
+            raise ValueError("offline_rl_cfg.grpo_buffer_preference_dpo_warmup_epochs must be positive.")
         if float(cfg.grpo_buffer_reward_bonus_scale_m) <= 0.0:
             raise ValueError("offline_rl_cfg.grpo_buffer_reward_bonus_scale_m must be positive.")
         if int(cfg.grpo_self_imitation_warmup_start_epoch) < 0:
@@ -4428,6 +4477,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             warmup_epochs=int(cfg.grpo_buffer_distill_warmup_epochs),
         )
 
+    def _current_grpo_buffer_preference_dpo_loss_weight(self, cfg: OfflineRLConfig) -> float:
+        return self._current_linear_warmup_loss_weight(
+            target=float(cfg.grpo_buffer_preference_dpo_loss_weight),
+            schedule=str(cfg.grpo_buffer_preference_dpo_loss_schedule),
+            start=float(cfg.grpo_buffer_preference_dpo_loss_weight_start),
+            start_epoch=int(cfg.grpo_buffer_preference_dpo_warmup_start_epoch),
+            warmup_epochs=int(cfg.grpo_buffer_preference_dpo_warmup_epochs),
+        )
+
     def _current_grpo_self_imitation_loss_weight(self, cfg: OfflineRLConfig) -> float:
         return self._current_linear_warmup_loss_weight(
             target=float(cfg.grpo_self_imitation_loss_weight),
@@ -5886,6 +5944,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "target_rewards": target_rewards.detach(),
             "target_margin": target_margin.detach(),
             "target_mask": target_mask.detach(),
+            "selected_trajs": awac_batch["selected_trajs"].detach(),
+            "selected_rewards": selected_rewards.detach(),
+            "selected_real_mask": selected_real_mask.detach(),
+            "selected_valid_mask": selected_valid_mask.detach(),
+            "selected_source_code": awac_batch["selected_source_code"].detach(),
             "gt_reward": gt_reward.detach(),
             "il_reward": il_reward.detach(),
             "best_valid_reward": awac_batch["best_valid_reward"].detach(),
@@ -5945,6 +6008,137 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "grpo_buffer_reward_bonus_max": bonus.max().to(trajs),
             "grpo_buffer_target_distance_mean": distance_mean,
             "grpo_buffer_guidance_target_ratio": target_mask.any(dim=1).float().mean().to(trajs),
+        }
+
+    @staticmethod
+    def _zero_diffusion_dpo_diag(zero: torch.Tensor) -> Dict[str, torch.Tensor]:
+        return {
+            "preference_dpo_pair_count": zero.detach(),
+            "preference_dpo_active_row_ratio": zero.detach(),
+            "preference_dpo_reward_gap_mean": zero.detach(),
+            "preference_dpo_gap_weight_mean": zero.detach(),
+            "preference_dpo_current_logratio_mean": zero.detach(),
+            "preference_dpo_reference_logratio_mean": zero.detach(),
+            "preference_dpo_logit_mean": zero.detach(),
+            "preference_dpo_logit_abs_mean": zero.detach(),
+            "preference_dpo_implicit_accuracy": zero.detach(),
+            "preference_dpo_current_winner_loss_mean": zero.detach(),
+            "preference_dpo_current_loser_loss_mean": zero.detach(),
+            "preference_dpo_reference_winner_loss_mean": zero.detach(),
+            "preference_dpo_reference_loser_loss_mean": zero.detach(),
+            "preference_dpo_current_margin_mean": zero.detach(),
+            "preference_dpo_reference_margin_mean": zero.detach(),
+            "preference_dpo_timestep_mean": zero.detach(),
+            "preference_dpo_timestep_min": zero.detach(),
+            "preference_dpo_timestep_max": zero.detach(),
+        }
+
+    def _build_grpo_buffer_preference_dpo_targets(
+        self,
+        vl_features: torch.Tensor,
+        action_input: BatchFeature,
+        guidance: Dict[str, Any],
+        cfg: OfflineRLConfig,
+    ) -> Dict[str, torch.Tensor]:
+        if not guidance or "target_trajs" not in guidance:
+            zero = vl_features.new_zeros(())
+            return {
+                "target_trajs": vl_features.new_zeros((vl_features.shape[0], 0, self.config.action_horizon, 3)),
+                "ordering_rewards": vl_features.new_zeros((vl_features.shape[0], 0)),
+                "valid_mask": torch.zeros((vl_features.shape[0], 0), device=vl_features.device, dtype=torch.bool),
+                "real_mask": torch.zeros((vl_features.shape[0], 0), device=vl_features.device, dtype=torch.bool),
+                "source_code": torch.zeros((vl_features.shape[0], 0), device=vl_features.device, dtype=torch.long),
+                "target_ratio": zero,
+                "il_loser_ratio": zero,
+            }
+
+        buffer_targets = guidance["target_trajs"].to(device=action_input.action.device, dtype=action_input.action.dtype)
+        buffer_rewards = guidance["target_rewards"].to(device=action_input.action.device, dtype=torch.float32)
+        buffer_mask = guidance["target_mask"].to(device=action_input.action.device, dtype=torch.bool)
+        if buffer_targets.ndim != 4 or buffer_targets.shape[-1] != 3:
+            raise ValueError("GRPO buffer DPO target_trajs must have shape [B, K, H, 3].")
+        B, K, H, D = buffer_targets.shape
+        if action_input.action.shape != (B, H, D):
+            raise ValueError(
+                f"action_input.action must have shape {(B, H, D)} for GRPO buffer DPO, "
+                f"got {tuple(action_input.action.shape)}."
+            )
+        include_il = bool(cfg.grpo_buffer_preference_dpo_include_il)
+        M = K + 1 + int(include_il)
+        dpo_trajs = buffer_targets.new_zeros((B, M, H, D))
+        ordering_rewards = buffer_rewards.new_zeros((B, M))
+        valid_mask = torch.zeros((B, M), device=buffer_targets.device, dtype=torch.bool)
+        real_mask = torch.zeros((B, M), device=buffer_targets.device, dtype=torch.bool)
+        source_code = torch.zeros((B, M), device=buffer_targets.device, dtype=torch.long)
+
+        dpo_trajs[:, :K] = buffer_targets.detach()
+        ordering_rewards[:, :K] = buffer_rewards.detach()
+        valid_mask[:, :K] = buffer_mask
+        real_mask[:, :K] = buffer_mask
+
+        gt_col = K
+        dpo_trajs[:, gt_col] = action_input.action.detach()
+        ordering_rewards[:, gt_col] = guidance["gt_reward"].to(device=buffer_targets.device, dtype=torch.float32)
+        real_mask[:, gt_col] = True
+        source_code[:, gt_col] = self._source_code("gt")
+
+        il_loser_mask = torch.zeros((B,), device=buffer_targets.device, dtype=torch.bool)
+        if include_il:
+            il_col = K + 1
+            il_traj = buffer_targets.new_zeros((B, H, D))
+            if all(key in guidance for key in ("selected_trajs", "selected_real_mask", "selected_source_code")):
+                selected_trajs = guidance["selected_trajs"].to(device=buffer_targets.device, dtype=buffer_targets.dtype)
+                selected_real_mask = guidance["selected_real_mask"].to(device=buffer_targets.device, dtype=torch.bool)
+                selected_source_code = guidance["selected_source_code"].to(device=buffer_targets.device, dtype=torch.long)
+                for b in range(B):
+                    row_il = torch.nonzero(
+                        selected_real_mask[b] & (selected_source_code[b] == self._source_code("il")),
+                        as_tuple=False,
+                    ).flatten()
+                    if row_il.numel() > 0:
+                        il_traj[b] = selected_trajs[b, row_il[0]]
+                        il_loser_mask[b] = True
+            if not bool(il_loser_mask.all().item()):
+                if not hasattr(self, "old_policy"):
+                    raise RuntimeError(
+                        "GRPO buffer preference DPO include_il=True requires IL support in the buffer "
+                        "or an initialized old_policy."
+                    )
+                self.old_policy.eval()
+                missing = ~il_loser_mask
+                with torch.no_grad():
+                    _, sampled_il = self.old_policy.sample_chain(
+                        vl_features[missing],
+                        action_input.his_traj[missing],
+                        action_input.status_feature[missing],
+                        deterministic=False,
+                        action_input=BatchFeature(
+                            data={
+                                key: (
+                                    value[missing]
+                                    if isinstance(value, torch.Tensor) and value.shape[:1] == (B,)
+                                    else value
+                                )
+                                for key, value in action_input.items()
+                            }
+                        ),
+                        allow_target_tokens=False,
+                    )
+                il_traj[missing] = sampled_il.to(device=buffer_targets.device, dtype=buffer_targets.dtype)
+                il_loser_mask[missing] = True
+            dpo_trajs[:, il_col] = il_traj.detach()
+            ordering_rewards[:, il_col] = guidance["il_reward"].to(device=buffer_targets.device, dtype=torch.float32)
+            real_mask[:, il_col] = il_loser_mask
+            source_code[:, il_col] = self._source_code("il")
+
+        return {
+            "target_trajs": dpo_trajs.detach(),
+            "ordering_rewards": ordering_rewards.detach(),
+            "valid_mask": valid_mask.detach(),
+            "real_mask": real_mask.detach(),
+            "source_code": source_code.detach(),
+            "target_ratio": buffer_mask.any(dim=1).float().mean().detach(),
+            "il_loser_ratio": il_loser_mask.float().mean().detach(),
         }
 
     def _build_grpo_self_imitation_targets(
@@ -7321,6 +7515,76 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 )
                 total_loss = total_loss + float(grpo_buffer_distill_weight) * grpo_buffer_distill_loss
 
+        grpo_buffer_preference_dpo_loss = total_loss.new_zeros(())
+        grpo_buffer_preference_dpo_weight = 0.0
+        grpo_buffer_preference_targets: Dict[str, torch.Tensor] = {
+            "target_ratio": total_loss.new_zeros(()),
+            "il_loser_ratio": total_loss.new_zeros(()),
+        }
+        grpo_buffer_preference_dpo_diag = self._zero_diffusion_dpo_diag(total_loss.new_zeros(()))
+        if use_grpo_buffer_guidance:
+            grpo_buffer_preference_dpo_weight = self._current_grpo_buffer_preference_dpo_loss_weight(offline_cfg)
+            if grpo_buffer_preference_dpo_weight > 0.0:
+                grpo_buffer_preference_targets = self._build_grpo_buffer_preference_dpo_targets(
+                    vl_features,
+                    action_input,
+                    grpo_buffer_guidance,
+                    offline_cfg,
+                )
+                dpo_cfg = copy.copy(offline_cfg)
+                dpo_cfg.preference_dpo_loss_weight = float(grpo_buffer_preference_dpo_weight)
+                dpo_cfg.preference_dpo_timestep_sampling = str(
+                    offline_cfg.grpo_buffer_preference_dpo_timestep_sampling
+                )
+                dpo_cfg.preference_dpo_beta = float(offline_cfg.grpo_buffer_preference_dpo_beta)
+                dpo_cfg.preference_dpo_label_smoothing = float(
+                    offline_cfg.grpo_buffer_preference_dpo_label_smoothing
+                )
+                dpo_cfg.preference_dpo_reference_free = bool(
+                    offline_cfg.grpo_buffer_preference_dpo_reference_free
+                )
+                dpo_cfg.preference_dpo_pair_mode = str(offline_cfg.grpo_buffer_preference_dpo_pair_mode)
+                dpo_cfg.preference_dpo_min_reward_gap = float(
+                    offline_cfg.grpo_buffer_preference_dpo_min_reward_gap
+                )
+                dpo_cfg.preference_dpo_max_pairs_per_scene = int(
+                    offline_cfg.grpo_buffer_preference_dpo_max_pairs_per_scene
+                )
+                dpo_cfg.preference_dpo_gap_weight_mode = str(
+                    offline_cfg.grpo_buffer_preference_dpo_gap_weight_mode
+                )
+                dpo_cfg.preference_dpo_gap_weight_scale = float(
+                    offline_cfg.grpo_buffer_preference_dpo_gap_weight_scale
+                )
+                dpo_cfg.preference_dpo_gap_weight_min = float(
+                    offline_cfg.grpo_buffer_preference_dpo_gap_weight_min
+                )
+                dpo_cfg.preference_dpo_gap_weight_max = float(
+                    offline_cfg.grpo_buffer_preference_dpo_gap_weight_max
+                )
+                grpo_buffer_preference_dpo_loss, grpo_buffer_preference_dpo_diag = (
+                    self._compute_diffusion_dpo_preference_loss(
+                        vl_features,
+                        action_input,
+                        grpo_buffer_preference_targets["target_trajs"].to(
+                            device=total_loss.device,
+                            dtype=action_input.action.dtype,
+                        ),
+                        grpo_buffer_preference_targets["ordering_rewards"].to(
+                            device=total_loss.device,
+                            dtype=torch.float32,
+                        ),
+                        grpo_buffer_preference_targets["valid_mask"].to(device=total_loss.device),
+                        grpo_buffer_preference_targets["real_mask"].to(device=total_loss.device),
+                        grpo_buffer_preference_targets["source_code"].to(device=total_loss.device),
+                        dpo_cfg,
+                    )
+                )
+                total_loss = (
+                    total_loss
+                    + float(grpo_buffer_preference_dpo_weight) * grpo_buffer_preference_dpo_loss
+                )
+
         grpo_self_imitation_loss = total_loss.new_zeros(())
         grpo_self_imitation_weight = 0.0
         grpo_self_imitation_targets: Dict[str, Any] = {}
@@ -7409,6 +7673,50 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "grpo_buffer_distill_weight": total_loss.new_tensor(float(grpo_buffer_distill_weight)),
             "grpo_buffer_distill_weight_sum": grpo_buffer_distill_diag["effective_weight_sum"].to(dtype=total_loss.dtype),
             "grpo_buffer_distill_zero_weight_batch": grpo_buffer_distill_diag["zero_weight_batch"].to(dtype=total_loss.dtype),
+            "grpo_buffer_preference_dpo_loss": grpo_buffer_preference_dpo_loss,
+            "grpo_buffer_preference_dpo_weight": total_loss.new_tensor(float(grpo_buffer_preference_dpo_weight)),
+            "grpo_buffer_preference_dpo_target_ratio": (
+                grpo_buffer_preference_targets.get("target_ratio", total_loss.new_zeros(()))
+            ).to(dtype=total_loss.dtype),
+            "grpo_buffer_preference_dpo_il_loser_ratio": (
+                grpo_buffer_preference_targets.get("il_loser_ratio", total_loss.new_zeros(()))
+            ).to(dtype=total_loss.dtype),
+            "grpo_buffer_preference_dpo_pair_count": (
+                grpo_buffer_preference_dpo_diag["preference_dpo_pair_count"].to(total_loss).detach()
+            ),
+            "grpo_buffer_preference_dpo_active_row_ratio": (
+                grpo_buffer_preference_dpo_diag["preference_dpo_active_row_ratio"].to(total_loss).detach()
+            ),
+            "grpo_buffer_preference_dpo_reward_gap_mean": (
+                grpo_buffer_preference_dpo_diag["preference_dpo_reward_gap_mean"].to(total_loss).detach()
+            ),
+            "grpo_buffer_preference_dpo_gap_weight_mean": (
+                grpo_buffer_preference_dpo_diag["preference_dpo_gap_weight_mean"].to(total_loss).detach()
+            ),
+            "grpo_buffer_preference_dpo_logit_mean": (
+                grpo_buffer_preference_dpo_diag["preference_dpo_logit_mean"].to(total_loss).detach()
+            ),
+            "grpo_buffer_preference_dpo_logit_abs_mean": (
+                grpo_buffer_preference_dpo_diag["preference_dpo_logit_abs_mean"].to(total_loss).detach()
+            ),
+            "grpo_buffer_preference_dpo_implicit_accuracy": (
+                grpo_buffer_preference_dpo_diag["preference_dpo_implicit_accuracy"].to(total_loss).detach()
+            ),
+            "grpo_buffer_preference_dpo_current_margin_mean": (
+                grpo_buffer_preference_dpo_diag["preference_dpo_current_margin_mean"].to(total_loss).detach()
+            ),
+            "grpo_buffer_preference_dpo_reference_margin_mean": (
+                grpo_buffer_preference_dpo_diag["preference_dpo_reference_margin_mean"].to(total_loss).detach()
+            ),
+            "grpo_buffer_preference_dpo_timestep_mean": (
+                grpo_buffer_preference_dpo_diag["preference_dpo_timestep_mean"].to(total_loss).detach()
+            ),
+            "grpo_buffer_preference_dpo_timestep_min": (
+                grpo_buffer_preference_dpo_diag["preference_dpo_timestep_min"].to(total_loss).detach()
+            ),
+            "grpo_buffer_preference_dpo_timestep_max": (
+                grpo_buffer_preference_dpo_diag["preference_dpo_timestep_max"].to(total_loss).detach()
+            ),
             "grpo_self_imitation_enabled": total_loss.new_tensor(
                 float(
                     offline_cfg is not None
