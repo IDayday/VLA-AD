@@ -1065,6 +1065,12 @@ Launch status:
   - It uses the local watcher summary as `EXTERNAL_SUMMARY_TSV`, so `step-step_300` is skipped there and `step-step_600` is evaluated first.
   - This keeps the early gate aligned: local `step300` checks the first update point; zt2 `step600` checks whether the method recovers by the end of the limited diagnostic.
 
+Implementation audit while evals are running:
+- DPPO official PPO diffusion code clamps both old/new logprobs, normalizes/clips advantages, discounts by denoising step, and samples PPO minibatches across `(environment step, denoising step)` rather than only across trajectory rows.
+- DPPO also uses step-dependent PPO clipping and an optional value/critic loss. We currently use a fixed clip range and no critic.
+- Our `step` mode is therefore a meaningful improvement over trajectory-level replay, but it is still not a complete DPPO/RIPT-VLA-equivalent implementation.
+- If `step300/step600` remain below the `0.88+` early gate, the next implementation target should be mature DPPO-style transition sampling and step-dependent clipping before any new LR or buffer-tuning run.
+
 ## Update Template
 
 Append a new section for every algorithm run:
