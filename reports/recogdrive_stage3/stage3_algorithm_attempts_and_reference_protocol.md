@@ -133,6 +133,16 @@ Expected diagnostics:
 - `grpo_self_imitation_zero_weight_batch` should not stay at `1.0` after warmup if the policy finds good samples.
 - Main GRPO diagnostics must remain healthy: `gspo_ratio_mean` near `1`, finite small `gspo_approx_kl`, no explosion in `safe_ratio` or hard safety metrics.
 
+Follow-up implementation after live diagnostics:
+- Evidence from the first logged full-run batches showed `grpo_self_imitation_target_ratio` was `0.875`, `0.875`, then `0.9375`, while `target_reward_mean` stayed high around `0.969-0.977`.
+- This means the on-policy target quality is good, but the self-imitation gate is too broad to behave like sparse elite imitation. It risks turning the auxiliary loss into a broad reward-weighted BC signal, which is exactly the failure mode observed in earlier offline AWAC-style attempts.
+- Added configurable batch-level scene cap:
+  - `offline_rl_grpo_self_imitation_max_target_scene_ratio` default `1.0` for backward compatibility.
+  - `offline_rl_grpo_self_imitation_batch_cap_score` in `{reward, margin}`, default `reward`.
+  - Logs `grpo_self_imitation_pre_cap_target_ratio`, `grpo_self_imitation_target_scene_cap_ratio`, and `grpo_self_imitation_target_scene_cap_active`.
+- The RLOO launcher default for the next run is `GRPO_SELF_IMITATION_MAX_TARGET_SCENE_RATIO=0.5`; the base GSPO launcher remains `1.0`.
+- Synthetic CPU check confirmed a cap of `0.5` reduces `pre_cap_target_ratio=1.0` to `target_ratio=0.5` and keeps the highest-reward scenes.
+
 Promotion / failure criteria:
 - At matched early epoch, exact navtest PDMS must be near or above the original Stage3 early `0.88+` band. If epoch0 is materially below `0.88`, do not run 20 epochs unless diagnostics show the self-imitation path was inactive and the run is effectively a control.
 - Compare final training only against the 10-epoch original `0.9055` and Safe DiffGRPO `0.906184` when training length/steps are comparable.

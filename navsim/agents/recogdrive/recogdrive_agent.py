@@ -296,6 +296,8 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_grpo_self_imitation_top_k: int = 1,
         offline_rl_grpo_self_imitation_min_reward: float = 0.85,
         offline_rl_grpo_self_imitation_min_reward_margin: float = 0.01,
+        offline_rl_grpo_self_imitation_max_target_scene_ratio: float = 1.0,
+        offline_rl_grpo_self_imitation_batch_cap_score: str = "reward",
         offline_rl_grpo_self_imitation_baseline_mode: str = "buffer_or_group_mean",
         offline_rl_grpo_self_imitation_timestep_sampling: str = "low_noise",
         offline_rl_log_candidate_sources: bool = True,
@@ -749,6 +751,10 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_grpo_self_imitation_min_reward_margin = float(
             offline_rl_grpo_self_imitation_min_reward_margin
         )
+        self.offline_rl_grpo_self_imitation_max_target_scene_ratio = float(
+            offline_rl_grpo_self_imitation_max_target_scene_ratio
+        )
+        self.offline_rl_grpo_self_imitation_batch_cap_score = offline_rl_grpo_self_imitation_batch_cap_score
         self.offline_rl_grpo_self_imitation_baseline_mode = offline_rl_grpo_self_imitation_baseline_mode
         self.offline_rl_grpo_self_imitation_timestep_sampling = offline_rl_grpo_self_imitation_timestep_sampling
         self.offline_rl_log_candidate_sources = bool(offline_rl_log_candidate_sources)
@@ -1328,6 +1334,10 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.grpo_self_imitation_min_reward_margin = (
             self.offline_rl_grpo_self_imitation_min_reward_margin
         )
+        offline_cfg.grpo_self_imitation_max_target_scene_ratio = (
+            self.offline_rl_grpo_self_imitation_max_target_scene_ratio
+        )
+        offline_cfg.grpo_self_imitation_batch_cap_score = self.offline_rl_grpo_self_imitation_batch_cap_score
         offline_cfg.grpo_self_imitation_baseline_mode = self.offline_rl_grpo_self_imitation_baseline_mode
         offline_cfg.grpo_self_imitation_timestep_sampling = self.offline_rl_grpo_self_imitation_timestep_sampling
         offline_cfg.log_candidate_sources = self.offline_rl_log_candidate_sources

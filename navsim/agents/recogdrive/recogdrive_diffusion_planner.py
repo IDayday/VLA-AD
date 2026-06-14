@@ -368,6 +368,8 @@ class OfflineRLConfig:
     grpo_self_imitation_top_k: int = 1
     grpo_self_imitation_min_reward: float = 0.85
     grpo_self_imitation_min_reward_margin: float = 0.01
+    grpo_self_imitation_max_target_scene_ratio: float = 1.0
+    grpo_self_imitation_batch_cap_score: Literal["reward", "margin"] = "reward"
     grpo_self_imitation_baseline_mode: Literal[
         "buffer_gt_il",
         "group_mean",
@@ -1124,6 +1126,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "offline_rl_cfg.grpo_self_imitation_baseline_mode must be "
                 "buffer_gt_il, group_mean, group_leave_one_out, or buffer_or_group_mean."
             )
+        if not (0.0 < float(cfg.grpo_self_imitation_max_target_scene_ratio) <= 1.0):
+            raise ValueError("offline_rl_cfg.grpo_self_imitation_max_target_scene_ratio must be in (0, 1].")
+        if str(cfg.grpo_self_imitation_batch_cap_score) not in {"reward", "margin"}:
+            raise ValueError("offline_rl_cfg.grpo_self_imitation_batch_cap_score must be reward or margin.")
         if not (0.0 < float(cfg.low_noise_timestep_frac) <= 1.0):
             raise ValueError("offline_rl_cfg.low_noise_timestep_frac must be in (0, 1].")
         if not (0.0 <= float(cfg.mid_noise_timestep_low_frac) < float(cfg.mid_noise_timestep_high_frac) <= 1.0):
@@ -1169,6 +1175,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "grpo_self_imitation_loss_weight_start",
             "grpo_self_imitation_min_reward",
             "grpo_self_imitation_min_reward_margin",
+            "grpo_self_imitation_max_target_scene_ratio",
             "component_progress_weight",
             "component_safety_penalty_weight",
             "pairwise_rank_loss_weight",
@@ -6028,6 +6035,28 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             target_weights[b, :m] = weight / weight.mean().clamp(min=1e-6)
             target_mask[b, :m] = True
 
+        pre_cap_target_ratio = target_mask.any(dim=1).float().mean().detach()
+        cap_active = False
+        max_scene_ratio = float(cfg.grpo_self_imitation_max_target_scene_ratio)
+        if max_scene_ratio < 1.0 and bool(target_mask.any().item()):
+            scene_has_target = target_mask.any(dim=1)
+            active_scene_idx = torch.nonzero(scene_has_target, as_tuple=False).flatten()
+            max_keep = max(1, int(math.ceil(float(B) * max_scene_ratio)))
+            if int(active_scene_idx.numel()) > max_keep:
+                cap_active = True
+                if str(cfg.grpo_self_imitation_batch_cap_score) == "margin":
+                    scene_score_source = target_margin
+                else:
+                    scene_score_source = target_rewards
+                scene_scores = scene_score_source.masked_fill(~target_mask, -float("inf")).max(dim=1).values
+                keep_rel = torch.topk(scene_scores[active_scene_idx], k=max_keep, largest=True).indices
+                keep_scene_idx = active_scene_idx[keep_rel]
+                keep_scene_mask = torch.zeros((B,), device=target_mask.device, dtype=torch.bool)
+                keep_scene_mask[keep_scene_idx] = True
+                drop_scene_mask = scene_has_target & ~keep_scene_mask
+                target_mask[drop_scene_mask] = False
+                target_weights[drop_scene_mask] = 0.0
+
         active_rewards = target_rewards[target_mask]
         active_margin = target_margin[target_mask]
         return {
@@ -6037,7 +6066,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "target_margin": target_margin.detach(),
             "target_mask": target_mask.detach(),
             "candidate_ratio": eligible.float().mean().detach(),
+            "pre_cap_target_ratio": pre_cap_target_ratio,
             "target_ratio": target_mask.any(dim=1).float().mean().detach(),
+            "target_scene_cap_ratio": trajs.new_tensor(max_scene_ratio),
+            "target_scene_cap_active": trajs.new_tensor(float(cap_active)),
             "target_reward_mean": (
                 active_rewards.mean().detach() if active_rewards.numel() > 0 else zero.detach()
             ),
@@ -7289,6 +7321,18 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             ).to(dtype=total_loss.dtype),
             "grpo_self_imitation_target_ratio": (
                 grpo_self_imitation_targets.get("target_ratio", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_pre_cap_target_ratio": (
+                grpo_self_imitation_targets.get("pre_cap_target_ratio", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_target_scene_cap_ratio": (
+                grpo_self_imitation_targets.get("target_scene_cap_ratio", total_loss.new_ones(()))
+                if grpo_self_imitation_targets else total_loss.new_ones(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_target_scene_cap_active": (
+                grpo_self_imitation_targets.get("target_scene_cap_active", total_loss.new_zeros(()))
                 if grpo_self_imitation_targets else total_loss.new_zeros(())
             ).to(dtype=total_loss.dtype),
             "grpo_self_imitation_target_reward_mean": (
