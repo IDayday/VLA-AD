@@ -35,11 +35,11 @@ The second commit fixes two operational issues:
 ## Queued Experiment
 
 - run name:
-  `stage3_grpo_buffer_guided_selfimit_s16_lr2e4_b2acc4_wait_20260614T003355Z`
+  `stage3_grpo_buffer_guided_selfimit_s16_lr2e4_b2acc4_wait2_20260614T003614Z`
 - output root:
-  `/mnt/project/VLA-AD/outputs/stage3_grpo_buffer_guided_selfimit_s16_lr2e4_b2acc4_wait_20260614T003355Z`
+  `/mnt/project/VLA-AD/outputs/stage3_grpo_buffer_guided_selfimit_s16_lr2e4_b2acc4_wait2_20260614T003614Z`
 - queued launcher pid:
-  `3395964`
+  `3396360`
 - state at launch:
   waiting for local GPUs `0,1,2,3,4,5,6,7`
 
@@ -82,13 +82,13 @@ python scripts/training/monitor_recogdrive_stage3_grpo_run.py \
 Queued run:
 
 ```bash
-tail -f /mnt/project/VLA-AD/outputs/stage3_grpo_buffer_guided_selfimit_s16_lr2e4_b2acc4_wait_20260614T003355Z/train_gpu_wait.log
+tail -f /mnt/project/VLA-AD/outputs/stage3_grpo_buffer_guided_selfimit_s16_lr2e4_b2acc4_wait2_20260614T003614Z/train_gpu_wait.log
 ```
 
 After the queued run starts:
 
 ```bash
 python scripts/training/monitor_recogdrive_stage3_grpo_run.py \
-  --run-name stage3_grpo_buffer_guided_selfimit_s16_lr2e4_b2acc4_wait_20260614T003355Z \
+  --run-name stage3_grpo_buffer_guided_selfimit_s16_lr2e4_b2acc4_wait2_20260614T003614Z \
   --watcher-log-lines 8
 ```
