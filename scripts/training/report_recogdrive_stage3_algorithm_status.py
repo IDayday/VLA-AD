@@ -40,6 +40,10 @@ def _read_tsv(path: Path) -> list[dict[str, str]]:
 
 def _method_family(run_name: str) -> str:
     name = run_name.lower()
+    if "rloo" in name or "selfimit" in name or "self_imitation" in name:
+        return "GRPO RLOO self-imitation"
+    if "replay" in name or "dppo" in name:
+        return "GRPO replay"
     if "gspo" in name:
         return "Strict GSPO"
     if "grpo_refkl" in name:
@@ -193,12 +197,12 @@ def write_markdown(path: Path, report: dict, top_rows: list[dict[str, str]], bas
 
     lines.append("## Current Running Runs")
     lines.append("")
-    lines.append(_table_row(["run", "step", "ckpts", "reward", "safe", "eval rows", "best PDMS", "decision"]))
-    lines.append(_table_row(["---", "---:", "---:", "---:", "---:", "---:", "---:", "---"]))
+    lines.append(_table_row(["run", "step", "ckpts", "reward", "safe", "SI target", "SI cap", "eval rows", "best PDMS", "decision"]))
+    lines.append(_table_row(["---", "---:", "---:", "---:", "---:", "---:", "---:", "---:", "---:", "---"]))
     current = report.get("current_runs") or []
     decisions = {item["run_name"]: item["decision"] for item in report.get("current_decisions", [])}
     if not current:
-        lines.append(_table_row(["", "", "", "", "", "", "", "no running Stage3 run found"]))
+        lines.append(_table_row(["", "", "", "", "", "", "", "", "", "no running Stage3 run found"]))
     for row in current:
         lines.append(
             _table_row(
@@ -208,6 +212,8 @@ def write_markdown(path: Path, report: dict, top_rows: list[dict[str, str]], bas
                     row.get("checkpoint_count", ""),
                     _format_float(row.get("train_reward")),
                     _format_float(row.get("safe_ratio")),
+                    _format_float(row.get("grpo_self_imitation_target_ratio")),
+                    _format_float(row.get("grpo_self_imitation_target_scene_cap_active")),
                     row.get("eval_rows", ""),
                     _format_float(row.get("best_pdms")),
                     decisions.get(row.get("run_name", ""), ""),
