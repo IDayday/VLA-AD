@@ -22,6 +22,11 @@ force_cache_computation: true
 seed: 0
 allow_dummy_expert_cache: false
 
+checkpoint:
+  every_n_epochs: 1
+  every_n_train_steps: 0
+  save_on_train_epoch_end: true
+
 use_deepspeed: True
 
 deepspeed:

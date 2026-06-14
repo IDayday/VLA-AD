@@ -712,9 +712,19 @@ Rules:
 - Short-run replay checkpoints, such as a 1-epoch run, may only be compared against same-epoch or same-step controls.
 - The historical `0.9055` original Stage3 result was trained for 10 epochs. It is a final-training target, not a fair comparator for a 1-epoch replay diagnostic.
 - The confirmed `0.906184` Safe DiffGRPO result is `epoch_12-step_17290`; it is also a long-run target, not a short-run comparator.
+- The user-reported original Stage3 early-training reference is already around `0.88+` PDMS at `epoch0-1`; use that as the first short-run sanity band until a locally aligned checkpoint/control is available.
 - A 1-epoch replay run can pass the promotion gate if it is competitive with the zt3 original-LR GRPO control at the same completed epoch and does not regress DDC/TTC.
 - A method can only claim "better than original/Safe DiffGRPO" after running for comparable epochs/steps with the same navtest evaluation protocol.
 - Because `run_training_recogdrive_rl.py` saves checkpoints every epoch via `ModelCheckpoint(save_top_k=-1, every_n_epochs=1, save_on_train_epoch_end=True)`, current active runs can be aligned by completed epoch once their first checkpoints appear.
+- For replay objectives, same epoch is not always the same optimizer-step budget because inner PPO replay and BC updates increase Lightning `global_step`. Future replay/control launches should enable optional train-step checkpoints and compare both epoch-aligned and step-aligned PDMS.
+
+### Checkpointing For Step-Aligned Comparisons
+
+Patch added on 2026-06-14:
+- `navsim/planning/script/run_training_recogdrive_rl.py` now supports optional extra step checkpoints through `checkpoint.every_n_train_steps`.
+- `scripts/training/run_recogdrive_stage3_rl_2b_local.sh` exposes this as `CHECKPOINT_EVERY_N_TRAIN_STEPS`, while preserving the default epoch checkpoint path with `CHECKPOINT_EVERY_N_EPOCHS=1`.
+- Step checkpoints are written under `step_checkpoints/` so existing epoch checkpoint watchers remain compatible.
+- Default behavior is unchanged: no step checkpoints unless `CHECKPOINT_EVERY_N_TRAIN_STEPS > 0`.
 
 ### Phase 0: Keep Only Clean Controls And Mature Diagnostics
 

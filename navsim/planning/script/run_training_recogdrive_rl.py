@@ -244,16 +244,36 @@ def main(cfg: DictConfig) -> None:
     logger.info("Num validation samples: %d", len(val_data))
 
     logger.info("Building Trainer")
-    callbacks = [
-        pl.callbacks.ModelCheckpoint(
-            filename="{epoch}-{step}",
-            save_top_k=-1,
-            every_n_epochs=1,
-            save_on_train_epoch_end=True,
-        ),
-        pl.callbacks.LearningRateMonitor(logging_interval="epoch"),
-        ReCogDriveTrainingProgressCallback(),
-    ]
+    checkpoint_cfg = cfg.get("checkpoint", {})
+    checkpoint_every_n_epochs = int(checkpoint_cfg.get("every_n_epochs", 1) or 0)
+    checkpoint_every_n_train_steps = int(checkpoint_cfg.get("every_n_train_steps", 0) or 0)
+    checkpoint_save_on_train_epoch_end = checkpoint_cfg.get("save_on_train_epoch_end", True)
+    callbacks = []
+    if checkpoint_every_n_epochs > 0:
+        callbacks.append(
+            pl.callbacks.ModelCheckpoint(
+                filename="{epoch}-{step}",
+                save_top_k=-1,
+                every_n_epochs=checkpoint_every_n_epochs,
+                save_on_train_epoch_end=checkpoint_save_on_train_epoch_end,
+            )
+        )
+    if checkpoint_every_n_train_steps > 0:
+        callbacks.append(
+            pl.callbacks.ModelCheckpoint(
+                dirpath=Path(cfg.output_dir) / "step_checkpoints",
+                filename="step-{step}",
+                save_top_k=-1,
+                every_n_train_steps=checkpoint_every_n_train_steps,
+                every_n_epochs=0,
+            )
+        )
+    callbacks.extend(
+        [
+            pl.callbacks.LearningRateMonitor(logging_interval="epoch"),
+            ReCogDriveTrainingProgressCallback(),
+        ]
+    )
     trainer = pl.Trainer(**cfg.trainer.params, callbacks=callbacks)
 
     logger.info("Starting Training")
