@@ -272,6 +272,16 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_grpo_buffer_distill_top_k: int = 1,
         offline_rl_grpo_buffer_distill_min_reward_margin: float = 0.0,
         offline_rl_grpo_buffer_distill_timestep_sampling: str = "low_noise",
+        offline_rl_grpo_self_imitation_loss_weight: float = 0.0,
+        offline_rl_grpo_self_imitation_loss_schedule: str = "linear_warmup",
+        offline_rl_grpo_self_imitation_loss_weight_start: float = 0.0,
+        offline_rl_grpo_self_imitation_warmup_start_epoch: int = 0,
+        offline_rl_grpo_self_imitation_warmup_epochs: int = 3,
+        offline_rl_grpo_self_imitation_top_k: int = 1,
+        offline_rl_grpo_self_imitation_min_reward: float = 0.85,
+        offline_rl_grpo_self_imitation_min_reward_margin: float = 0.01,
+        offline_rl_grpo_self_imitation_baseline_mode: str = "buffer_or_group_mean",
+        offline_rl_grpo_self_imitation_timestep_sampling: str = "low_noise",
         offline_rl_log_candidate_sources: bool = True,
         offline_rl_log_submetrics: bool = True,
         offline_rl_log_oracle_stats: bool = True,
@@ -662,6 +672,22 @@ class ReCogDriveAgent(AbstractAgent):
             offline_rl_grpo_buffer_distill_min_reward_margin
         )
         self.offline_rl_grpo_buffer_distill_timestep_sampling = offline_rl_grpo_buffer_distill_timestep_sampling
+        self.offline_rl_grpo_self_imitation_loss_weight = float(offline_rl_grpo_self_imitation_loss_weight)
+        self.offline_rl_grpo_self_imitation_loss_schedule = offline_rl_grpo_self_imitation_loss_schedule
+        self.offline_rl_grpo_self_imitation_loss_weight_start = float(
+            offline_rl_grpo_self_imitation_loss_weight_start
+        )
+        self.offline_rl_grpo_self_imitation_warmup_start_epoch = int(
+            offline_rl_grpo_self_imitation_warmup_start_epoch
+        )
+        self.offline_rl_grpo_self_imitation_warmup_epochs = int(offline_rl_grpo_self_imitation_warmup_epochs)
+        self.offline_rl_grpo_self_imitation_top_k = int(offline_rl_grpo_self_imitation_top_k)
+        self.offline_rl_grpo_self_imitation_min_reward = float(offline_rl_grpo_self_imitation_min_reward)
+        self.offline_rl_grpo_self_imitation_min_reward_margin = float(
+            offline_rl_grpo_self_imitation_min_reward_margin
+        )
+        self.offline_rl_grpo_self_imitation_baseline_mode = offline_rl_grpo_self_imitation_baseline_mode
+        self.offline_rl_grpo_self_imitation_timestep_sampling = offline_rl_grpo_self_imitation_timestep_sampling
         self.offline_rl_log_candidate_sources = bool(offline_rl_log_candidate_sources)
         self.offline_rl_log_submetrics = bool(offline_rl_log_submetrics)
         self.offline_rl_log_oracle_stats = bool(offline_rl_log_oracle_stats)
@@ -1217,6 +1243,20 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.grpo_buffer_distill_top_k = self.offline_rl_grpo_buffer_distill_top_k
         offline_cfg.grpo_buffer_distill_min_reward_margin = self.offline_rl_grpo_buffer_distill_min_reward_margin
         offline_cfg.grpo_buffer_distill_timestep_sampling = self.offline_rl_grpo_buffer_distill_timestep_sampling
+        offline_cfg.grpo_self_imitation_loss_weight = self.offline_rl_grpo_self_imitation_loss_weight
+        offline_cfg.grpo_self_imitation_loss_schedule = self.offline_rl_grpo_self_imitation_loss_schedule
+        offline_cfg.grpo_self_imitation_loss_weight_start = self.offline_rl_grpo_self_imitation_loss_weight_start
+        offline_cfg.grpo_self_imitation_warmup_start_epoch = (
+            self.offline_rl_grpo_self_imitation_warmup_start_epoch
+        )
+        offline_cfg.grpo_self_imitation_warmup_epochs = self.offline_rl_grpo_self_imitation_warmup_epochs
+        offline_cfg.grpo_self_imitation_top_k = self.offline_rl_grpo_self_imitation_top_k
+        offline_cfg.grpo_self_imitation_min_reward = self.offline_rl_grpo_self_imitation_min_reward
+        offline_cfg.grpo_self_imitation_min_reward_margin = (
+            self.offline_rl_grpo_self_imitation_min_reward_margin
+        )
+        offline_cfg.grpo_self_imitation_baseline_mode = self.offline_rl_grpo_self_imitation_baseline_mode
+        offline_cfg.grpo_self_imitation_timestep_sampling = self.offline_rl_grpo_self_imitation_timestep_sampling
         offline_cfg.log_candidate_sources = self.offline_rl_log_candidate_sources
         offline_cfg.log_submetrics = self.offline_rl_log_submetrics
         offline_cfg.log_oracle_stats = self.offline_rl_log_oracle_stats

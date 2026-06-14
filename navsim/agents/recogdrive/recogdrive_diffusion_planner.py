@@ -340,6 +340,20 @@ class OfflineRLConfig:
     grpo_buffer_distill_top_k: int = 1
     grpo_buffer_distill_min_reward_margin: float = 0.0
     grpo_buffer_distill_timestep_sampling: Literal["uniform", "ddim", "low_noise", "mid_noise"] = "low_noise"
+    grpo_self_imitation_loss_weight: float = 0.0
+    grpo_self_imitation_loss_schedule: Literal["constant", "linear_warmup"] = "linear_warmup"
+    grpo_self_imitation_loss_weight_start: float = 0.0
+    grpo_self_imitation_warmup_start_epoch: int = 0
+    grpo_self_imitation_warmup_epochs: int = 3
+    grpo_self_imitation_top_k: int = 1
+    grpo_self_imitation_min_reward: float = 0.85
+    grpo_self_imitation_min_reward_margin: float = 0.01
+    grpo_self_imitation_baseline_mode: Literal[
+        "buffer_gt_il",
+        "group_mean",
+        "buffer_or_group_mean",
+    ] = "buffer_or_group_mean"
+    grpo_self_imitation_timestep_sampling: Literal["uniform", "ddim", "low_noise", "mid_noise"] = "low_noise"
 
     # debugging / logging
     log_candidate_sources: bool = True
@@ -1045,9 +1059,23 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         for name in ("ddc_guard_mode", "ttc_guard_mode"):
             if str(getattr(cfg, name)) not in {"relative_or_absolute", "absolute", "relative"}:
                 raise ValueError(f"offline_rl_cfg.{name} must be relative_or_absolute, absolute, or relative.")
-        for name in ("awac_timestep_sampling", "preference_dpo_timestep_sampling", "grpo_buffer_distill_timestep_sampling"):
+        for name in (
+            "awac_timestep_sampling",
+            "preference_dpo_timestep_sampling",
+            "grpo_buffer_distill_timestep_sampling",
+            "grpo_self_imitation_timestep_sampling",
+        ):
             if str(getattr(cfg, name)) not in {"uniform", "ddim", "low_noise", "mid_noise"}:
                 raise ValueError(f"offline_rl_cfg.{name} must be uniform, ddim, low_noise, or mid_noise.")
+        if str(cfg.grpo_self_imitation_baseline_mode) not in {
+            "buffer_gt_il",
+            "group_mean",
+            "buffer_or_group_mean",
+        }:
+            raise ValueError(
+                "offline_rl_cfg.grpo_self_imitation_baseline_mode must be "
+                "buffer_gt_il, group_mean, or buffer_or_group_mean."
+            )
         if not (0.0 < float(cfg.low_noise_timestep_frac) <= 1.0):
             raise ValueError("offline_rl_cfg.low_noise_timestep_frac must be in (0, 1].")
         if not (0.0 <= float(cfg.mid_noise_timestep_low_frac) < float(cfg.mid_noise_timestep_high_frac) <= 1.0):
@@ -1071,6 +1099,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "preference_dpo_loss_schedule",
             "grpo_loss_schedule",
             "grpo_buffer_distill_loss_schedule",
+            "grpo_self_imitation_loss_schedule",
         ):
             if str(getattr(cfg, name)) not in {"constant", "linear_warmup"}:
                 raise ValueError(f"offline_rl_cfg.{name} must be constant or linear_warmup.")
@@ -1088,6 +1117,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "grpo_buffer_distill_loss_weight",
             "grpo_buffer_distill_loss_weight_start",
             "grpo_buffer_distill_min_reward_margin",
+            "grpo_self_imitation_loss_weight",
+            "grpo_self_imitation_loss_weight_start",
+            "grpo_self_imitation_min_reward",
+            "grpo_self_imitation_min_reward_margin",
             "component_progress_weight",
             "component_safety_penalty_weight",
             "pairwise_rank_loss_weight",
@@ -1145,6 +1178,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.grpo_buffer_distill_top_k must be positive.")
         if float(cfg.grpo_buffer_reward_bonus_scale_m) <= 0.0:
             raise ValueError("offline_rl_cfg.grpo_buffer_reward_bonus_scale_m must be positive.")
+        if int(cfg.grpo_self_imitation_warmup_start_epoch) < 0:
+            raise ValueError("offline_rl_cfg.grpo_self_imitation_warmup_start_epoch must be non-negative.")
+        if int(cfg.grpo_self_imitation_warmup_epochs) <= 0:
+            raise ValueError("offline_rl_cfg.grpo_self_imitation_warmup_epochs must be positive.")
+        if int(cfg.grpo_self_imitation_top_k) <= 0:
+            raise ValueError("offline_rl_cfg.grpo_self_imitation_top_k must be positive.")
         for name in (
             "prior_distance_weight",
             "jerk_penalty_weight",
@@ -4056,6 +4095,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             warmup_epochs=int(cfg.grpo_buffer_distill_warmup_epochs),
         )
 
+    def _current_grpo_self_imitation_loss_weight(self, cfg: OfflineRLConfig) -> float:
+        return self._current_linear_warmup_loss_weight(
+            target=float(cfg.grpo_self_imitation_loss_weight),
+            schedule=str(cfg.grpo_self_imitation_loss_schedule),
+            start=float(cfg.grpo_self_imitation_loss_weight_start),
+            start_epoch=int(cfg.grpo_self_imitation_warmup_start_epoch),
+            warmup_epochs=int(cfg.grpo_self_imitation_warmup_epochs),
+        )
+
     def _current_awac_target_blend_alpha(self, cfg: OfflineRLConfig) -> float:
         alpha = self._current_linear_warmup_loss_weight(
             target=float(cfg.target_blend_alpha),
@@ -5519,6 +5567,112 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "grpo_buffer_guidance_target_ratio": target_mask.any(dim=1).float().mean().to(trajs),
         }
 
+    def _build_grpo_self_imitation_targets(
+        self,
+        trajs: torch.Tensor,
+        base_rewards: torch.Tensor,
+        hard_safe_mask: torch.Tensor,
+        B: int,
+        G: int,
+        guidance: Dict[str, Any],
+        cfg: OfflineRLConfig,
+    ) -> Dict[str, Any]:
+        """Select high-reward on-policy samples as detached diffusion targets."""
+        zero = trajs.new_zeros(())
+        if trajs.shape[0] != B * G or base_rewards.shape != (B * G,) or hard_safe_mask.shape != (B * G,):
+            raise ValueError("GRPO self-imitation expects flattened [B*G] trajectories/rewards/safety masks.")
+
+        sample_trajs = trajs.detach().reshape(B, G, trajs.shape[-2], trajs.shape[-1])
+        reward_matrix = base_rewards.detach().reshape(B, G).float()
+        safe_matrix = hard_safe_mask.detach().reshape(B, G).bool()
+        finite_reward = torch.isfinite(reward_matrix)
+
+        mode = str(cfg.grpo_self_imitation_baseline_mode)
+        has_buffer_baseline = bool(guidance) and "gt_reward" in guidance and "il_reward" in guidance
+        if mode == "buffer_gt_il":
+            if not has_buffer_baseline:
+                raise RuntimeError(
+                    "grpo_self_imitation_baseline_mode=buffer_gt_il requires GRPO buffer guidance "
+                    "with gt_reward and il_reward."
+                )
+            baseline = torch.maximum(
+                guidance["gt_reward"].to(device=reward_matrix.device, dtype=reward_matrix.dtype),
+                guidance["il_reward"].to(device=reward_matrix.device, dtype=reward_matrix.dtype),
+            )
+            baseline_from_buffer = True
+        elif mode == "group_mean":
+            baseline = reward_matrix.masked_fill(~finite_reward, 0.0).sum(dim=1)
+            count = finite_reward.float().sum(dim=1).clamp(min=1.0)
+            baseline = baseline / count
+            baseline_from_buffer = False
+        else:
+            if has_buffer_baseline:
+                baseline = torch.maximum(
+                    guidance["gt_reward"].to(device=reward_matrix.device, dtype=reward_matrix.dtype),
+                    guidance["il_reward"].to(device=reward_matrix.device, dtype=reward_matrix.dtype),
+                )
+                baseline_from_buffer = True
+            else:
+                baseline = reward_matrix.masked_fill(~finite_reward, 0.0).sum(dim=1)
+                count = finite_reward.float().sum(dim=1).clamp(min=1.0)
+                baseline = baseline / count
+                baseline_from_buffer = False
+
+        margins = reward_matrix - baseline[:, None]
+        eligible = (
+            safe_matrix
+            & finite_reward
+            & (reward_matrix >= float(cfg.grpo_self_imitation_min_reward))
+            & (margins > float(cfg.grpo_self_imitation_min_reward_margin))
+        )
+
+        top_k = max(1, int(cfg.grpo_self_imitation_top_k))
+        _, _, H, D = sample_trajs.shape
+        target_trajs = sample_trajs.new_zeros((B, top_k, H, D))
+        target_weights = reward_matrix.new_zeros((B, top_k))
+        target_rewards = reward_matrix.new_zeros((B, top_k))
+        target_margin = reward_matrix.new_zeros((B, top_k))
+        target_mask = torch.zeros((B, top_k), device=trajs.device, dtype=torch.bool)
+
+        for b in range(B):
+            idx = torch.nonzero(eligible[b], as_tuple=False).flatten()
+            if idx.numel() == 0:
+                continue
+            row_score = reward_matrix[b, idx]
+            keep = idx[torch.topk(row_score, k=min(top_k, int(idx.numel())), largest=True).indices]
+            m = int(keep.numel())
+            target_trajs[b, :m] = sample_trajs[b, keep]
+            target_rewards[b, :m] = reward_matrix[b, keep]
+            target_margin[b, :m] = margins[b, keep].clamp(min=0.0)
+            weight = target_margin[b, :m].clamp(min=0.0)
+            if not bool((weight > 0).any().item()):
+                weight = torch.ones_like(weight)
+            target_weights[b, :m] = weight / weight.mean().clamp(min=1e-6)
+            target_mask[b, :m] = True
+
+        active_rewards = target_rewards[target_mask]
+        active_margin = target_margin[target_mask]
+        return {
+            "target_trajs": target_trajs.detach(),
+            "target_weights": target_weights.detach(),
+            "target_rewards": target_rewards.detach(),
+            "target_margin": target_margin.detach(),
+            "target_mask": target_mask.detach(),
+            "candidate_ratio": eligible.float().mean().detach(),
+            "target_ratio": target_mask.any(dim=1).float().mean().detach(),
+            "target_reward_mean": (
+                active_rewards.mean().detach() if active_rewards.numel() > 0 else zero.detach()
+            ),
+            "target_reward_max": (
+                active_rewards.max().detach() if active_rewards.numel() > 0 else zero.detach()
+            ),
+            "target_margin_mean": (
+                active_margin.mean().detach() if active_margin.numel() > 0 else zero.detach()
+            ),
+            "baseline_mean": baseline.mean().detach(),
+            "baseline_from_buffer": trajs.new_tensor(float(baseline_from_buffer)),
+        }
+
     def forward_awac_iql(
         self,
         vl_features: torch.Tensor,
@@ -6114,6 +6268,47 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 )
                 total_loss = total_loss + float(grpo_buffer_distill_weight) * grpo_buffer_distill_loss
 
+        grpo_self_imitation_loss = total_loss.new_zeros(())
+        grpo_self_imitation_weight = 0.0
+        grpo_self_imitation_targets: Dict[str, Any] = {}
+        grpo_self_imitation_diag = {
+            "per_sample_loss_mean": total_loss.new_zeros(()),
+            "target_norm_mean": total_loss.new_zeros(()),
+            "diffusion_timestep_mean": total_loss.new_zeros(()),
+            "diffusion_timestep_min": total_loss.new_zeros(()),
+            "diffusion_timestep_max": total_loss.new_zeros(()),
+            "effective_weight_sum": total_loss.new_zeros(()),
+            "zero_weight_ratio": total_loss.new_zeros(()),
+            "zero_weight_batch": total_loss.new_zeros(()),
+        }
+        if offline_cfg is not None and bool(offline_cfg.enabled):
+            grpo_self_imitation_weight = self._current_grpo_self_imitation_loss_weight(offline_cfg)
+            if grpo_self_imitation_weight > 0.0:
+                grpo_self_imitation_targets = self._build_grpo_self_imitation_targets(
+                    trajs,
+                    base_rewards,
+                    hard_safe_mask,
+                    B,
+                    G,
+                    grpo_buffer_guidance,
+                    offline_cfg,
+                )
+                self_imitation_weights = (
+                    grpo_self_imitation_targets["target_weights"].to(device=total_loss.device, dtype=torch.float32)
+                    * grpo_self_imitation_targets["target_mask"].to(device=total_loss.device, dtype=torch.float32)
+                )
+                grpo_self_imitation_loss, grpo_self_imitation_diag = self._weighted_diffusion_loss_on_targets(
+                    vl_features,
+                    action_input,
+                    grpo_self_imitation_targets["target_trajs"].to(
+                        device=total_loss.device,
+                        dtype=action_input.action.dtype,
+                    ),
+                    self_imitation_weights,
+                    timestep_sampling=str(offline_cfg.grpo_self_imitation_timestep_sampling),
+                )
+                total_loss = total_loss + float(grpo_self_imitation_weight) * grpo_self_imitation_loss
+
         self.grpo_update_counter = int(getattr(self, "grpo_update_counter", 0)) + 1
 
         zero_loss = total_loss.new_zeros(())
@@ -6160,6 +6355,46 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "grpo_buffer_distill_weight": total_loss.new_tensor(float(grpo_buffer_distill_weight)),
             "grpo_buffer_distill_weight_sum": grpo_buffer_distill_diag["effective_weight_sum"].to(dtype=total_loss.dtype),
             "grpo_buffer_distill_zero_weight_batch": grpo_buffer_distill_diag["zero_weight_batch"].to(dtype=total_loss.dtype),
+            "grpo_self_imitation_enabled": total_loss.new_tensor(
+                float(
+                    offline_cfg is not None
+                    and bool(offline_cfg.enabled)
+                    and float(offline_cfg.grpo_self_imitation_loss_weight) > 0.0
+                )
+            ),
+            "grpo_self_imitation_loss": grpo_self_imitation_loss,
+            "grpo_self_imitation_weight": total_loss.new_tensor(float(grpo_self_imitation_weight)),
+            "grpo_self_imitation_candidate_ratio": (
+                grpo_self_imitation_targets.get("candidate_ratio", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_target_ratio": (
+                grpo_self_imitation_targets.get("target_ratio", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_target_reward_mean": (
+                grpo_self_imitation_targets.get("target_reward_mean", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_target_reward_max": (
+                grpo_self_imitation_targets.get("target_reward_max", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_target_margin_mean": (
+                grpo_self_imitation_targets.get("target_margin_mean", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_baseline_mean": (
+                grpo_self_imitation_targets.get("baseline_mean", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_baseline_from_buffer": (
+                grpo_self_imitation_targets.get("baseline_from_buffer", total_loss.new_zeros(()))
+                if grpo_self_imitation_targets else total_loss.new_zeros(())
+            ).to(dtype=total_loss.dtype),
+            "grpo_self_imitation_weight_sum": grpo_self_imitation_diag["effective_weight_sum"].to(dtype=total_loss.dtype),
+            "grpo_self_imitation_zero_weight_batch": grpo_self_imitation_diag["zero_weight_batch"].to(dtype=total_loss.dtype),
+            "grpo_self_imitation_timestep_mean": grpo_self_imitation_diag["diffusion_timestep_mean"].to(dtype=total_loss.dtype),
             "safe_ratio": hard_safe_ratio,
             "hard_safe_ratio": hard_safe_ratio,
             "mean_ep": reward_aux["ego_progress"].mean(),
