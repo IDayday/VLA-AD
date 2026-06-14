@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from concurrent.futures import FIRST_COMPLETED, Future, ThreadPoolExecutor, wait
 from dataclasses import asdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 import logging
@@ -68,6 +68,18 @@ def _cfg_int(cfg: DictConfig, key: str, env_key: str, default: int) -> int:
     if value is None:
         value = os.environ.get(env_key, default)
     return int(value)
+
+
+def _distributed_timeout() -> timedelta:
+    raw_value = (
+        os.environ.get("RECOGDRIVE_EVAL_DISTRIBUTED_TIMEOUT_SECONDS")
+        or os.environ.get("TORCH_DISTRIBUTED_TIMEOUT_SECONDS")
+        or "3600"
+    )
+    timeout_seconds = int(raw_value)
+    if timeout_seconds <= 0:
+        raise ValueError(f"Distributed timeout must be positive, got {timeout_seconds}.")
+    return timedelta(seconds=timeout_seconds)
 
 
 def _metric_cache_loader_from_cfg(cfg: DictConfig):
@@ -284,7 +296,7 @@ def main(cfg: DictConfig) -> None:
     world_size = int(os.getenv("WORLD_SIZE", 1))
     rank = int(os.getenv("RANK", 0))
 
-    dist.init_process_group(backend="nccl", world_size=world_size, rank=rank)
+    dist.init_process_group(backend="nccl", world_size=world_size, rank=rank, timeout=_distributed_timeout())
     torch.cuda.set_device(local_rank)
     device = torch.device(f"cuda:{local_rank}")
 

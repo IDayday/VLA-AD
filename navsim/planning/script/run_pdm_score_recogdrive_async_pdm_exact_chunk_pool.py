@@ -30,6 +30,7 @@ from navsim.planning.script.run_pdm_score_recogdrive_async_pdm_exact_pool import
     _cfg_int,
     _cfg_str,
     _apply_eval_token_shard,
+    _distributed_timeout,
     _init_process_pdm_tools,
     _metric_cache_loader_from_cfg,
     _score_one_pdm_scalar_exact,
@@ -256,7 +257,7 @@ def main(cfg: DictConfig) -> None:
     world_size = int(os.getenv("WORLD_SIZE", 1))
     rank = int(os.getenv("RANK", 0))
 
-    dist.init_process_group(backend="nccl", world_size=world_size, rank=rank)
+    dist.init_process_group(backend="nccl", world_size=world_size, rank=rank, timeout=_distributed_timeout())
     torch.cuda.set_device(local_rank)
     device = torch.device(f"cuda:{local_rank}")
 

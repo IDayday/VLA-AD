@@ -37,6 +37,7 @@ PDM_EVAL_RUNNER="${PDM_EVAL_RUNNER:-exact_pool}"
 FAST_METRIC_CACHE_DIR="${FAST_METRIC_CACHE_DIR:-}"
 DISABLE_TQDM="${DISABLE_TQDM:-1}"
 MAX_SCENES="${MAX_SCENES:-0}"
+DISTRIBUTED_TIMEOUT_SECONDS="${DISTRIBUTED_TIMEOUT_SECONDS:-3600}"
 
 STATUS_FILE="${STATUS_FILE:-${TRAIN_OUT_ROOT}/status/stage3_rl_2b.json}"
 ARCHIVE_DIR="${EVAL_OUT_ROOT}/checkpoint_archive"
@@ -81,6 +82,7 @@ fi
   echo "fast_metric_cache_dir=${FAST_METRIC_CACHE_DIR}"
   echo "disable_tqdm=${DISABLE_TQDM}"
   echo "max_scenes=${MAX_SCENES}"
+  echo "distributed_timeout_seconds=${DISTRIBUTED_TIMEOUT_SECONDS}"
   echo "external_summary_tsv=${EXTERNAL_SUMMARY_TSV}"
   echo "global_eval_lock_dir=${GLOBAL_EVAL_LOCK_DIR}"
 } > "${EVAL_OUT_ROOT}/watcher_resolved_config.txt"
@@ -309,6 +311,7 @@ PY
     FAST_METRIC_CACHE_DIR="${FAST_METRIC_CACHE_DIR}" \
     DISABLE_TQDM="${DISABLE_TQDM}" \
     MAX_SCENES="${MAX_SCENES}" \
+    DISTRIBUTED_TIMEOUT_SECONDS="${DISTRIBUTED_TIMEOUT_SECONDS}" \
     bash "${EVAL_SCRIPT}" > "${eval_dir}/eval.log" 2>&1
   rc=$?
   set -e
