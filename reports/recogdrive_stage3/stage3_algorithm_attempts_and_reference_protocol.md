@@ -40,7 +40,7 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 | Run / Process | Decision | Reason |
 |---|---|---|
 | `stage3_grpo_refkl_s16_lr2e4_b4acc2_chunk32_fast_8gpu_20260613T213145Z` | stopped after epoch0 ckpt | High-LR `2e-4` GRPO is not a new mature algorithm mechanism and train reward regressed after epoch0. Keep `epoch_0-step_1330` only as an LR/eval data point. |
-| `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z` | keep | Original-LR `1e-4` control with similar effective batch scale. Needed to separate algorithm effect from LR effect. |
+| `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z` | keep | Original-LR `1e-4` control with similar effective batch scale. Latest logged window is healthy; no checkpoint yet. |
 | `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_log1_diag_zt2_4gpu_20260614T0300Z` | completed diagnostic | Good limited diagnostic. Ratio/KL/clip/advantage logs are active, but this still does not validate a full PPO replay implementation. |
 | `stage3_grpo_refkl_s16_lr2e4_b4acc2_chunk32_fast_8gpu_20260613T213145Z/local_eval_epoch0_exact_pool_8x1gpu_shards_20260614T031521Z` | completed eval | Local 8-way independent 1GPU exact navtest shards for the stopped `2e-4` epoch0 checkpoint. PDMS `0.872059`, clearly below the historical strong Stage3 baselines, so do not continue `2e-4` GRPO as a default route. |
 | zt2 stale checkpoint watchers for old AWAC / old `2e-4` GRPO runs | stopped on 2026-06-14 | These watchers pointed to runs that no longer satisfy the protocol and could auto-consume GPUs when resources become free. |
@@ -53,8 +53,8 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 | `supervise_recogdrive_stage3_experiment.py` auto-supervisor | stopped | It can auto-launch stale next actions without the new reference-audit protocol. Future launches should be manual after updating this file. |
 | `stage3_grpo_replay_diag_s4_i2_lr1e4_4gpu_20260614T042519Z` | completed smoke | New PPO replay path completed 40 train batches and wrote `epoch=0-step=200.ckpt`. This validates plumbing and diagnostics only; it is not a PDMS result and not a full algorithm verdict. |
 | `stage3_grpo_replay_diag_s16_i2_lr1e4_8gpu_20260614T043345Z` | completed diagnostic | Near-full sampling diagnostic passed the replay gates at `sample_time=16`: valid ratio stayed `1.0`, PPO clip fraction became active, KL stayed finite, and safety submetrics were logged. Promote to controlled 1-epoch training, not full 20-epoch training yet. |
-| `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z` | running | Controlled full-navtrain 1-epoch PPO replay run. First logged replay batch is healthy. Epoch-end checkpoint will be evaluated by `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z_navtest_exact_eval`. |
-| `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z` | running | Controlled zt2 ablation. Same as the i2 replay run, but `ppo_replay_inner_epochs=1` to test whether reducing replay update strength improves ratio/clip stability and PDMS. First metrics are healthy and more conservative than i2. |
+| `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z` | running/watch | Controlled full-navtrain 1-epoch PPO replay run. Replay validity is `1.0` and KL is small; one weak safety/reward batch appeared, so keep but do not promote until epoch eval. |
+| `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z` | running | Controlled zt2 ablation. Same as i2 but `ppo_replay_inner_epochs=1`; currently cleaner ratio/clip/KL behavior and no hard stop signal. |
 
 ## Current Baselines And Controls
 
@@ -71,8 +71,8 @@ Every new Stage3 algorithm change must satisfy this checklist before launch:
 | `stage3_grpo_gspo_advnorm_lr1e4_b2acc8_log1_diag_zt2_4gpu_20260614T0300Z` | completed diagnostic | LR `1e-4`, GSPO ratio, batch advantage normalize, fixed advantage clip `3.0`, no buffer, `limit_train_batches=40`, `limit_val_batches=0`, `log_every_n_steps=1`, behavior sync interval `100000` | no eval | Ratio/KL/clip diagnostics moved after optimizer updates; this validates instrumentation and short-run GSPO activity only. |
 | `stage3_grpo_replay_diag_s4_i2_lr1e4_4gpu_20260614T042519Z` | completed smoke | LR `1e-4`, `stage3_objective=grpo_replay`, `sample_time=4`, inner PPO epochs `2`, replay minibatch `4`, 4 GPUs, 40 train batches, no buffer | no eval | End-to-end PPO replay path is active: fixed old logprob replay, manual optimization, PPO ratio diagnostics, reference KL, and BC update ran without NaNs. Too small/conservative to evaluate as a main result. |
 | `stage3_grpo_replay_diag_s16_i2_lr1e4_8gpu_20260614T043345Z` | completed diagnostic | LR `1e-4`, `stage3_objective=grpo_replay`, `sample_time=16`, inner PPO epochs `2`, replay minibatch `8`, 8 GPUs, 40 train batches, no buffer | no eval | Near-full sample-time diagnostic passed. Checkpoint `epoch=0-step=360.ckpt`; keep as implementation evidence only, not as a final PDMS result. |
-| `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z` | running | LR `1e-4`, `stage3_objective=grpo_replay`, `sample_time=16`, inner PPO epochs `2`, replay minibatch `8`, 8 GPUs, full navtrain, no buffer | pending | First logged batch at step 19 was healthy. A step-59 clip spike (`clip_frac=0.734`, `ratio_mean=0.928`, `KL=0.00336`) did not persist; by step 239, `clip_frac=0`, `ratio_mean=0.9945`, `KL=4.04e-5`, `safe_ratio=0.8672`. |
-| `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z` | running | LR `1e-4`, `stage3_objective=grpo_replay`, `sample_time=16`, inner PPO epochs `1`, replay minibatch `8`, 8 zt2 GPUs, full navtrain, no buffer | pending | Motivation: update-strength ablation from the i2 clip spike. First three logged batches: `optimizer_steps=5`, `valid_ratio=1.0`, `ratio_mean≈0.997`, `clip_frac=0`, `KL≈1e-5`, `safe_ratio=0.746-0.867`. |
+| `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z` | running | LR `1e-4`, `stage3_objective=grpo_replay`, `sample_time=16`, inner PPO epochs `2`, replay minibatch `8`, 8 GPUs, full navtrain, no buffer | pending | Latest logged step `339`: `valid_ratio=1.0`, ratio mean `0.9694`, clip fraction `0.2031`, KL `7.87e-4`; latest rollout safety was weak (`safe_ratio=0.6133`), so this remains a watched diagnostic. |
+| `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z` | running | LR `1e-4`, `stage3_objective=grpo_replay`, `sample_time=16`, inner PPO epochs `1`, replay minibatch `8`, 8 zt2 GPUs, full navtrain, no buffer | pending | Motivation: update-strength ablation from i2. Latest logged step `179`: `valid_ratio=1.0`, ratio mean `0.9992`, clip fraction `0`, KL `2.30e-6`, safe ratio `0.8281`. |
 
 ## Completed Attempt Ledger
 
@@ -619,23 +619,30 @@ Do not prioritize this over GRPO until:
 
 ## Current Run Decisions
 
-As of 2026-06-14 04:35 UTC:
+As of 2026-06-14 05:18 UTC:
 
 - Keep running: `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z`.
   - Reason: this is the needed original-LR GRPO control. It isolates algorithm effects from the failed/weak `2e-4` route.
-  - Do not kill it unless it crashes, produces invalid logs, or the user explicitly cancels it.
+  - Latest status: still running, no checkpoint yet.
+  - Latest logged scalar window: step `49 -> 349`, reward `0.50699 -> 0.88152`, base reward `0.61353 -> 0.84410`, TTC `0.80208 -> 0.88542`, safe ratio `0.72917 -> 0.98958`, GSPO ratio stays `1.0` because this is the non-replay control path.
+  - Decision: keep it. It is a meaningful control, not a stale or weakly configured experiment.
 - Completed and keep as smoke evidence: `stage3_grpo_replay_diag_s4_i2_lr1e4_4gpu_20260614T042519Z`.
   - Reason: it validates the new PPO replay implementation path, but is intentionally too small for PDMS conclusions.
 - Completed and promote to controlled 1-epoch training: `stage3_grpo_replay_diag_s16_i2_lr1e4_8gpu_20260614T043345Z`.
   - Reason: the near-full sample-time diagnostic passed replay, ratio/KL, and safety logging gates.
 - Running: `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z`.
   - Reason: this is the first controlled full-navtrain 1-epoch PPO replay run. It keeps LR, `sample_time`, BC, reference KL, and scheduler semantics aligned with the GRPO control, and changes only the replay update path.
-  - First logged replay metrics are healthy. Let it run to epoch end unless replay validity drops, KL/ratio becomes unstable, or safety submetrics collapse.
+  - Latest status: still running, no checkpoint yet.
+  - Latest logged scalar window: step `19 -> 339`, `ppo_replay_valid_ratio=1.0` throughout, ratio mean `0.9282 - 0.9951`, latest ratio mean `0.96936`, latest clip fraction `0.2031`, max clip fraction `0.7344`, latest approx KL `7.87e-4`, max approx KL `0.00336`.
+  - Latest rollout reward/submetrics include one weak batch: reward `0.34987`, base reward `0.52296`, NC `0.73438`, TTC `0.625`, DDC `0.77148`, safe ratio `0.61328`.
+  - Decision: keep for now, but watch closely. The PPO ratio/KL are still within a small range, so this is not an implementation failure. If weak safety batches persist rather than fluctuate, stop before promoting this setting to a 20-epoch run.
   - Evaluation watcher: `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z_navtest_exact_eval`.
 - Running on zt2: `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z`.
   - Reason: same algorithm and data path as the i2 run, but half the replay inner epochs. This isolates whether replay update strength is too aggressive.
   - zt2 GPUs were free; existing zt2 watchers/supervisors were not stopped.
-  - First logs pass the keep gate: `valid_ratio=1.0`, KL finite and very small, clip fraction lower than i2, no safety regression in the logged rollout components.
+  - Latest status: still running, no checkpoint yet.
+  - Latest logged scalar window: step `19 -> 179`, `ppo_replay_valid_ratio=1.0` throughout, latest ratio mean `0.99916`, clip fraction `0.0`, approx KL `2.30e-6`, reward `0.63984`, base reward `0.69427`, safe ratio `0.82813`, DDC `0.91992`.
+  - Decision: keep. This is the cleaner conservative replay-strength ablation and may be preferable if i2 continues to show weak safety windows.
   - Evaluation watcher: `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z_navtest_exact_eval`.
 - Do not resume: pure AWAC/IQL and AWAC+DPO variants listed above.
   - Reason: buffer quality is good, but policy absorption failed; current variants are not mature enough to justify more full-scale compute.
@@ -692,39 +699,111 @@ Smoke result:
 
 ## Revised Experiment Plan
 
-Phase 0: keep controls clean.
-- Keep the zt3 original-LR GRPO control alive.
-- Do not restart AWAC/IQL or `2e-4` buffer-guided runs.
-- Do not use navtest reward/cache for training; navtest remains evaluation only.
+This plan replaces "try another variant" with gated experiments. A run is meaningful only if it isolates one variable, has mature implementation pieces for the method family, and can be stopped on objective diagnostics before spending a full training cycle.
 
-Phase 1: PPO replay short diagnostic.
-- Use `stage3_objective=grpo_replay`.
-- Start from original LR `1e-4`; no `2e-4` until the original-LR control is understood.
-- Use small but non-toy rollout settings first: `GRPO_SAMPLE_TIME=4` or `8`, `GRPO_PPO_REPLAY_INNER_EPOCHS=2`, minibatch equal to a small divisor of `B * G`.
-- Effective optimizer steps must be logged and compared against standard GRPO.
-- Stop if `ppo_replay_loss_active` is frequently 0, `gspo_ratio_clip_frac` saturates, `gspo_approx_kl` explodes, or NC/DAC/TTC/DDC regress in train diagnostics.
+### Phase 0: Keep Only Clean Controls And Mature Diagnostics
 
-Phase 2: controlled checkpoint evaluation.
-- Only after Phase 1 logs are sane, run a limited checkpoint-producing diagnostic.
-- Evaluate every produced checkpoint with exact PDMS using the existing async/exact pool scripts.
-- Compare against:
-  - Stage2 IL
-  - historical original Stage3 `0.9055`
-  - Safe DiffGRPO `0.906184`
-  - zt3 `1e-4` control when its checkpoints are available
+Current keep list:
+- zt3 original-LR GRPO control: `stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z`.
+- local PPO replay i2 one-epoch run: `stage3_grpo_replay_1epoch_s16_i2_lr1e4_8gpu_20260614T044444Z`.
+- zt2 PPO replay i1 one-epoch run: `stage3_grpo_replay_1epoch_s16_i1_lr1e4_zt2_8gpu_20260614T050122Z`.
 
-Phase 3: mature GRPO-buffer absorption only after replay is stable.
-- Add elite-buffer knowledge to GRPO only as an auxiliary after proving replay works.
-- Required before launch:
-  - target coverage and target-distance logs are active;
-  - self-imitation candidate/target ratios are nonzero;
-  - DDC/TTC protection is explicit;
-  - same LR/effective-step ablation exists.
+Current stop/avoid list:
+- Pure AWAC/IQL, AWAC+DPO, and simplified preference variants until implementation is upgraded to a mature offline/preference diffusion policy method.
+- `2e-4` GRPO and buffer-guided variants as a default route, because the exact epoch-0 eval was `PDMS 0.872059`, far below the known Stage3/Safe DiffGRPO level.
+- Any run without ratio/KL/clip/advantage/safety diagnostics.
 
-Phase 4: full DPPO/RIPT-VLA alignment if Phase 1 helps.
-- Move from trajectory-level ratio to denoising-step-level PPO replay.
-- Consider dynamic sampling for uninformative groups.
-- Add value/critic only if trajectory-level replay shows a clear variance problem that advantage normalization cannot handle.
+No new full training should start until at least one of the current one-epoch replay runs has an exact navtest checkpoint evaluation.
+
+### Phase 1: Finish The Three Active Evidence Runs
+
+Expected outputs:
+- zt3 original-LR GRPO control checkpoint and exact PDMS/submetrics.
+- local replay i2 epoch checkpoint and exact PDMS/submetrics.
+- zt2 replay i1 epoch checkpoint and exact PDMS/submetrics.
+
+Interpretation:
+- If zt3 `1e-4` is near the historical `0.9055` / Safe DiffGRPO `0.906184`, use it as the primary control for all future algorithm comparisons.
+- If replay i1/i2 beats or matches zt3 while preserving DDC/TTC, promote replay to the next multi-epoch candidate.
+- If replay i2 is worse but i1 is stable, reduce replay update strength rather than abandoning PPO replay.
+- If both replay variants are clearly below the original-LR GRPO control, do not launch 20-epoch replay. Inspect whether trajectory-level reduced logprob is too coarse and move to denoising-step-level PPO before spending more full-run compute.
+
+Hard stop criteria before epoch end:
+- NaN/inf in loss, reward, logprob ratio, or KL.
+- Sustained `ppo_replay_valid_ratio < 0.8`.
+- Sustained high clip saturation, not just isolated windows.
+- Repeated rollout safety collapse: NC/DAC/TTC/DDC or safe ratio stays far below control windows across several logs.
+
+Current read:
+- None of the three active runs meets a hard stop criterion.
+- i2 is higher-update-strength and should be treated as riskier.
+- i1 is the cleaner conservative ablation and should remain running even if i2 later looks weak.
+
+### Phase 2: Decide Whether PPO Replay Merits Multi-Epoch Training
+
+Only launch a 20-epoch PPO replay run if a one-epoch replay checkpoint is competitive enough to be informative:
+- Not more than normal eval noise below zt3 original-LR GRPO.
+- Does not regress DDC/TTC relative to the GRPO control.
+- Replay diagnostics show active but controlled ratio movement: finite small KL, non-saturated clip fraction, and nonzero useful advantage coverage.
+
+Default candidate if Phase 1 passes:
+- LR `1e-4`, scheduler horizon `20` epochs down to `1e-5`.
+- `sample_time=16`.
+- BC anneal `0.10 -> 0.05`.
+- reference KL `0.02`.
+- `stage3_objective=grpo_replay`.
+- Start from the better of i1 vs i2:
+  - i1 if i2 has unstable safety/clip windows;
+  - i2 only if it improves PDMS without DDC/TTC regression.
+
+Do not change LR, sample_time, buffer loss, and replay strength simultaneously. One new variable per experiment.
+
+### Phase 3: Upgrade Replay Toward Full DPPO/RIPT-VLA Before Calling It SOTA-Level
+
+Trajectory-level replay is a necessary intermediate, not the final mature implementation. If Phase 1 shows promise but not enough PDMS:
+- Add denoising-step-level old logprobs and PPO ratios instead of only reduced trajectory logprob.
+- Add dynamic group filtering/resampling for all-success/all-failure or near-zero-advantage groups, matching the RIPT-VLA style failure mode.
+- Consider a value/critic baseline only after advantage-normalized PPO replay still shows high variance.
+
+This phase is implementation work first, not a blind full run. It needs smoke tests proving:
+- old per-step logprobs stay fixed across replay epochs;
+- current per-step logprobs change after optimizer steps;
+- KL/clip are computed over the same denoising timesteps;
+- memory fits at `sample_time=16` or a documented equivalent.
+
+### Phase 4: Add Buffer Knowledge Only Through Proven Absorption Channels
+
+The elite buffer is useful, but previous AWAC showed that good targets alone do not guarantee good sampled trajectories. Buffer work resumes only after the base replay path is stable.
+
+Allowed buffer auxiliaries, one at a time:
+- Reward-neighborhood bonus for sampled trajectories close to high-PDMS valid buffer targets.
+- Low-noise denoising distillation toward valid elite targets.
+- Self-imitation on current sampled trajectories that are hard-safe and above baseline.
+- Preference/DPO auxiliary using shared noise/timestep and a frozen reference, only when active-pair diagnostics pass.
+
+Required diagnostics:
+- target coverage and target distance;
+- distill/self-imitation weight sums;
+- winner/loser active-pair ratio for DPO;
+- current/reference winner-loser loss margins and implicit accuracy;
+- DDC/TTC/NC/DAC protection.
+
+Stop buffer variants if:
+- target ratios are near zero;
+- target distance does not improve;
+- DDC/TTC regress;
+- PDMS gains come only from EP while safety declines.
+
+### Phase 5: Revisit AWAC/IQL Only As A Mature Offline Diffusion RL Method
+
+Do not continue the existing AWAC/IQL line as-is. A future AWAC/IQL revisit must include:
+- matched LR/effective optimizer steps against GRPO;
+- diagnostics proving elite-target likelihood increases under the sampler;
+- behavior-support/trust-region checks;
+- strict valid-mask persistence and no invalid candidate training by default;
+- preference or Q/value structure aligned with a reference implementation, not only weighted denoising regression.
+
+Until then, AWAC results are evidence of a policy-absorption failure in our implementation, not evidence that offline RL or preference learning is inherently unsuitable.
 
 ## Update Template
 
