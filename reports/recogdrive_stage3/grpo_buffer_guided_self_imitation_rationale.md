@@ -87,3 +87,31 @@ channels:
   or a stronger but still warm-started distillation weight.
 - If safety submetrics degrade, reduce or disable reward bonus/self-imitation and
   tighten hard-safe eligibility instead of chasing raw PDMS.
+
+## Change Admission Rule
+
+Every later Stage3 algorithm change should be admitted only after recording:
+
+1. Empirical lesson:
+   - Which previous run/checkpoint/buffer statistic motivates the change.
+   - Which failure mode it targets, such as weak policy absorption, unsafe
+     candidate leakage, poor exploration, low valid-candidate coverage, or
+     degraded DDC/TTC.
+2. Literature basis:
+   - Relevant papers or technical reports checked online before the change.
+   - The specific mechanism being borrowed, not just the paper title.
+3. Testable hypothesis:
+   - Expected movement in PDMS and submetrics.
+   - Expected movement in training diagnostics.
+4. Risk guard:
+   - What would count as regression, especially for NC, DAC, TTC, DDC, and
+     target leakage.
+5. Minimal implementation and validation:
+   - Keep the first patch scoped.
+   - Compile/smoke-test the code path.
+   - Evaluate checkpoint PDMS and submetrics before treating the change as
+     successful.
+
+This rule is meant to prevent blind parameter search. A single navtest score is
+not enough evidence for a new algorithm direction unless it is supported by the
+corresponding training diagnostics and submetric behavior.
