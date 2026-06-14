@@ -802,6 +802,7 @@ Patch added on 2026-06-14:
 - Step checkpoints are written under `step_checkpoints/` so existing epoch checkpoint watchers remain compatible.
 - Default behavior is unchanged for the base launcher: no step checkpoints unless `CHECKPOINT_EVERY_N_TRAIN_STEPS > 0`.
 - RLOO self-imitation launches now default to `CHECKPOINT_EVERY_N_TRAIN_STEPS=300` so new algorithm attempts can be screened before epoch0 when the original Stage3 early reference is already `0.88+` PDMS.
+- `scripts/training/gate_recogdrive_stage3_early_pdms.py` reads watcher `checkpoint_eval_submetrics.tsv` files and returns a read-only `wait/continue/watch/stop` decision. Use it after the first step checkpoint eval; it does not kill processes automatically.
 
 ### Phase 0: Keep Only Clean Controls And Mature Diagnostics
 
