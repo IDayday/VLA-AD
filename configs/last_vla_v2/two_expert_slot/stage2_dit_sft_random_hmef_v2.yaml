@@ -1,0 +1,58 @@
+use_two_expert_slots: true
+two_expert_cache_mode: true
+two_expert_slot_mode: vlm_soft_slots
+two_expert_condition_mode: denoise_hmef_v2
+two_expert_dit_condition_mode: denoise_hmef_v2
+
+cache_hidden_state: true
+train_backbone: false
+use_last_vla: false
+last_vla_stage: disabled
+use_last_rd: false
+last_rd_stage: disabled
+use_expert_features: false
+raw_vlm_context_to_dit: true
+raw_vlm_context_used: true
+use_summary: false
+
+diffusion_loss_weight: 1.0
+last_vla_use_residual_diffusion: false
+last_vla_teacher_traj_mode: none
+last_vla_residual_anchor_source: none
+two_expert_dyn_loss_floor: 0.0
+two_expert_geo_loss_floor: 0.0
+
+two_expert_planner_dim: 384
+two_expert_use_raw_vlm_base: true
+two_expert_zero_init_deltas: false
+two_expert_num_dyn_groups: 3
+two_expert_dyn_tokens_per_group: 12
+two_expert_num_geo_tokens: 12
+two_expert_memory_tokens_to_dit: true
+two_expert_denoise_gate_hidden_dim: 384
+two_expert_denoise_gate_temperature: 1.0
+two_expert_denoise_condition_scale_init: 1.0
+two_expert_memory_scale_init: 1.0
+planner_dim: 384
+sampling_method: ddim
+num_inference_steps: 5
+
+stage2_target:
+  type: gt_normalized_trajectory
+  residual_diffusion: false
+  coarse_plus_residual: false
+  vlm_text_residual_anchor: false
+
+optimization:
+  init_checkpoint: random
+  mode: denoise_hmef_v2_full_dit_sft
+  lr: 1e-4
+  lr_action_head: 1e-4
+  lr_two_expert_branch: 1e-4
+  batch_size_per_gpu: 16
+  max_epochs: 200
+  scheduler: WarmupCosLR
+  warmup_epochs: 5
+  min_lr: 1e-6
+  gradient_clip_val: 1.0
+  precision: bf16-mixed
