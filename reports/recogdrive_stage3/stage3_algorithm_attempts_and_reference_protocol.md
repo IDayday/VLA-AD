@@ -798,7 +798,8 @@ Patch added on 2026-06-14:
 - `navsim/planning/script/run_training_recogdrive_rl.py` now supports optional extra step checkpoints through `checkpoint.every_n_train_steps`.
 - `scripts/training/run_recogdrive_stage3_rl_2b_local.sh` exposes this as `CHECKPOINT_EVERY_N_TRAIN_STEPS`, while preserving the default epoch checkpoint path with `CHECKPOINT_EVERY_N_EPOCHS=1`.
 - Step checkpoints are written under `step_checkpoints/` so existing epoch checkpoint watchers remain compatible.
-- Default behavior is unchanged: no step checkpoints unless `CHECKPOINT_EVERY_N_TRAIN_STEPS > 0`.
+- Default behavior is unchanged for the base launcher: no step checkpoints unless `CHECKPOINT_EVERY_N_TRAIN_STEPS > 0`.
+- RLOO self-imitation launches now default to `CHECKPOINT_EVERY_N_TRAIN_STEPS=300` so new algorithm attempts can be screened before epoch0 when the original Stage3 early reference is already `0.88+` PDMS.
 
 ### Phase 0: Keep Only Clean Controls And Mature Diagnostics
 
