@@ -5020,6 +5020,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "preference_dpo_gap_weight_mean": zero.detach(),
                 "preference_dpo_current_logratio_mean": zero.detach(),
                 "preference_dpo_reference_logratio_mean": zero.detach(),
+                "preference_dpo_logit_mean": zero.detach(),
+                "preference_dpo_logit_abs_mean": zero.detach(),
+                "preference_dpo_implicit_accuracy": zero.detach(),
+                "preference_dpo_current_winner_loss_mean": zero.detach(),
+                "preference_dpo_current_loser_loss_mean": zero.detach(),
+                "preference_dpo_reference_winner_loss_mean": zero.detach(),
+                "preference_dpo_reference_loser_loss_mean": zero.detach(),
+                "preference_dpo_current_margin_mean": zero.detach(),
+                "preference_dpo_reference_margin_mean": zero.detach(),
                 "preference_dpo_timestep_mean": zero.detach(),
                 "preference_dpo_timestep_min": zero.detach(),
                 "preference_dpo_timestep_max": zero.detach(),
@@ -5055,6 +5064,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         gap_weights = []
         current_logratios = []
         reference_logratios = []
+        dpo_logits = []
+        dpo_logit_abs = []
+        implicit_accuracies = []
+        current_winner_losses = []
+        current_loser_losses = []
+        reference_winner_losses = []
+        reference_loser_losses = []
+        current_margins = []
+        reference_margins = []
         active_rows = 0
         pair_count = 0
         min_gap = float(cfg.preference_dpo_min_reward_gap)
@@ -5102,6 +5120,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             current_logratio = current_loss[b, loser_idx] - current_loss[b, winner_idx]
             reference_logratio = reference_loss[b, loser_idx] - reference_loss[b, winner_idx]
             logits = beta * (current_logratio - reference_logratio)
+            current_winner_loss = current_loss[b, winner_idx].expand_as(current_logratio)
+            reference_winner_loss = reference_loss[b, winner_idx].expand_as(reference_logratio)
             loss = (
                 -(1.0 - label_smoothing) * F.logsigmoid(logits)
                 - label_smoothing * F.logsigmoid(-logits)
@@ -5130,6 +5150,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             gap_weights.append(pair_weight.detach().float().mean())
             current_logratios.append(current_logratio.detach().float().mean())
             reference_logratios.append(reference_logratio.detach().float().mean())
+            dpo_logits.append(logits.detach().float().mean())
+            dpo_logit_abs.append(logits.detach().float().abs().mean())
+            implicit_accuracies.append((logits.detach() > 0).float().mean())
+            current_winner_losses.append(current_winner_loss.detach().float().mean())
+            current_loser_losses.append(current_loss[b, loser_idx].detach().float().mean())
+            reference_winner_losses.append(reference_winner_loss.detach().float().mean())
+            reference_loser_losses.append(reference_loss[b, loser_idx].detach().float().mean())
+            current_margins.append(current_logratio.detach().float().mean())
+            reference_margins.append(reference_logratio.detach().float().mean())
             pair_count += int(loser_idx.numel())
             active_rows += 1
 
@@ -5141,6 +5170,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "preference_dpo_gap_weight_mean": zero.detach(),
                 "preference_dpo_current_logratio_mean": zero.detach(),
                 "preference_dpo_reference_logratio_mean": zero.detach(),
+                "preference_dpo_logit_mean": zero.detach(),
+                "preference_dpo_logit_abs_mean": zero.detach(),
+                "preference_dpo_implicit_accuracy": zero.detach(),
+                "preference_dpo_current_winner_loss_mean": zero.detach(),
+                "preference_dpo_current_loser_loss_mean": zero.detach(),
+                "preference_dpo_reference_winner_loss_mean": zero.detach(),
+                "preference_dpo_reference_loser_loss_mean": zero.detach(),
+                "preference_dpo_current_margin_mean": zero.detach(),
+                "preference_dpo_reference_margin_mean": zero.detach(),
                 "preference_dpo_timestep_mean": current_diag["diffusion_timestep_mean"].to(zero).detach(),
                 "preference_dpo_timestep_min": current_diag["diffusion_timestep_min"].to(zero).detach(),
                 "preference_dpo_timestep_max": current_diag["diffusion_timestep_max"].to(zero).detach(),
@@ -5154,6 +5192,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "preference_dpo_gap_weight_mean": torch.stack(gap_weights).mean().to(current_loss),
             "preference_dpo_current_logratio_mean": torch.stack(current_logratios).mean().to(current_loss),
             "preference_dpo_reference_logratio_mean": torch.stack(reference_logratios).mean().to(current_loss),
+            "preference_dpo_logit_mean": torch.stack(dpo_logits).mean().to(current_loss),
+            "preference_dpo_logit_abs_mean": torch.stack(dpo_logit_abs).mean().to(current_loss),
+            "preference_dpo_implicit_accuracy": torch.stack(implicit_accuracies).mean().to(current_loss),
+            "preference_dpo_current_winner_loss_mean": torch.stack(current_winner_losses).mean().to(current_loss),
+            "preference_dpo_current_loser_loss_mean": torch.stack(current_loser_losses).mean().to(current_loss),
+            "preference_dpo_reference_winner_loss_mean": torch.stack(reference_winner_losses).mean().to(current_loss),
+            "preference_dpo_reference_loser_loss_mean": torch.stack(reference_loser_losses).mean().to(current_loss),
+            "preference_dpo_current_margin_mean": torch.stack(current_margins).mean().to(current_loss),
+            "preference_dpo_reference_margin_mean": torch.stack(reference_margins).mean().to(current_loss),
             "preference_dpo_timestep_mean": current_diag["diffusion_timestep_mean"].to(current_loss),
             "preference_dpo_timestep_min": current_diag["diffusion_timestep_min"].to(current_loss),
             "preference_dpo_timestep_max": current_diag["diffusion_timestep_max"].to(current_loss),
@@ -5938,6 +5985,25 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "preference_dpo_gap_weight_mean": dpo_diag["preference_dpo_gap_weight_mean"].to(total_loss).detach(),
             "preference_dpo_current_logratio_mean": dpo_diag["preference_dpo_current_logratio_mean"].to(total_loss).detach(),
             "preference_dpo_reference_logratio_mean": dpo_diag["preference_dpo_reference_logratio_mean"].to(total_loss).detach(),
+            "preference_dpo_logit_mean": dpo_diag["preference_dpo_logit_mean"].to(total_loss).detach(),
+            "preference_dpo_logit_abs_mean": dpo_diag["preference_dpo_logit_abs_mean"].to(total_loss).detach(),
+            "preference_dpo_implicit_accuracy": dpo_diag["preference_dpo_implicit_accuracy"].to(total_loss).detach(),
+            "preference_dpo_current_winner_loss_mean": dpo_diag[
+                "preference_dpo_current_winner_loss_mean"
+            ].to(total_loss).detach(),
+            "preference_dpo_current_loser_loss_mean": dpo_diag[
+                "preference_dpo_current_loser_loss_mean"
+            ].to(total_loss).detach(),
+            "preference_dpo_reference_winner_loss_mean": dpo_diag[
+                "preference_dpo_reference_winner_loss_mean"
+            ].to(total_loss).detach(),
+            "preference_dpo_reference_loser_loss_mean": dpo_diag[
+                "preference_dpo_reference_loser_loss_mean"
+            ].to(total_loss).detach(),
+            "preference_dpo_current_margin_mean": dpo_diag["preference_dpo_current_margin_mean"].to(total_loss).detach(),
+            "preference_dpo_reference_margin_mean": dpo_diag[
+                "preference_dpo_reference_margin_mean"
+            ].to(total_loss).detach(),
             "preference_dpo_timestep_mean": dpo_diag["preference_dpo_timestep_mean"].to(total_loss).detach(),
             "preference_dpo_timestep_min": dpo_diag["preference_dpo_timestep_min"].to(total_loss).detach(),
             "preference_dpo_timestep_max": dpo_diag["preference_dpo_timestep_max"].to(total_loss).detach(),
