@@ -2048,6 +2048,37 @@ Interpretation rules:
 - Use their `checkpoint_eval_submetrics.tsv` rows as authoritative navtest results once completed.
 - If the strict original watchers later wake up, avoid duplicate conclusions by preferring the first completed exact full-navtest row and checking checkpoint ids.
 
+### 2026-06-15 Live Status: GRPO control, zt3 control, and Buffer-DPO queue
+
+Reason:
+- The zt3 run name looks like a Stage3 GRPO baseline, but it was launched from the current code tree after several Stage3 implementation changes. It must not be mislabeled as a bit-exact historical original ReCogDrive Stage3 reproduction.
+- The next absorption experiment is Buffer-DPO over the train-only v2 elite buffer, but it is queued behind existing zt2 work. Existing remote jobs must not be killed.
+
+Current-code original-LR GRPO control on zt3:
+- Run: `/mnt/project/VLA-AD/outputs/stage3_grpo_refkl_s16_lr1e4_b2acc11_zt3_3gpu_20260614T013856Z`
+- Code dir: `/mnt/project/VLA-AD_stage3_algo_clean_4f3eb73`
+- Config identity: current-code original-LR GRPO control, not AWAC/IQL, not Buffer-DPO, not self-imitation, not GSPO-ratio.
+- Key config: `agent.grpo=True`, `agent.lr=1e-4`, `agent.grpo_sample_time=16`, `agent.bc_anneal=true`, `agent.bc_coeff_start=0.10`, `agent.bc_coeff_end=0.05`, `agent.reference_kl_coeff=0.02`, `trainer.params.max_epochs=20`, `trainer.params.devices=3`, `trainer.params.accumulate_grad_batches=11`.
+- Disabled controls: `offline_rl_enabled=false`, `offline_rl_grpo_buffer_guidance_enabled=false`, buffer reward bonus/distill/self-imitation weights all `0.0`, `agent.grpo_use_gspo_ratio=false`.
+- Status at `2026-06-15T02:44Z`: training alive, TensorBoard reached step `2349` in epoch `1`; only saved/evaluated checkpoint remains `epoch_0-step_1290`.
+- Navtest result at epoch0-step1290: PDMS `0.8967935081`, NC `0.9871889932`, DAC `0.9758609326`, TTC `0.9625968034`, EP `0.8265160702`, comfort `1.0`, DDC `0.9743779865`.
+
+Local current-repo original-LR GRPO control:
+- Run: `/mnt/project/VLA-AD/outputs/stage3_grpo_refkl_s16_lr1e4_b2acc4_currentrepo_8gpu_20260614T191227Z`
+- Status at `2026-06-15T02:41Z`: training alive, TensorBoard reached step `1649` in epoch `1`; local watcher `local_auto_watch_shared_4gpu_v3` is alive and waiting for the next checkpoint.
+- Latest evaluated checkpoint: `step-step_1500`, PDMS `0.8916996087`; current best in this run remains `epoch_0-step_1330`, PDMS `0.8936864074`.
+
+Buffer-DPO absorption experiment:
+- Run queued on zt2: `/mnt/project/VLA-AD/outputs/stage3_grpo_buffer_dpo_refctrl_s16_lr1e4_b2acc4_zt2wait_8gpu_20260614T213001Z`
+- Status at `2026-06-15T02:42Z`: launcher alive but still waiting for GPUs `0-7` under the configured free-GPU gate; no training checkpoint yet.
+- Config identity: GRPO plus diffusion-DPO preference absorption from the train-only v2 elite buffer; not AWAC/IQL weighted regression.
+- Key settings: LR `1e-4`, `sample_time=16`, BC `0.10 -> 0.05`, ref KL `0.02`, `offline_rl_enabled=true`, `grpo_buffer_preference_dpo_loss_weight=0.02`, reward bonus/distill/self-imitation weights `0.0`, `grpo_use_gspo_ratio=false`.
+
+Current decision:
+- Keep local and zt3 GRPO control runs alive for matched-epoch evidence.
+- Keep the zt2 Buffer-DPO queue alive; do not start a duplicate absorption run unless a cross-host start lock is added or the zt2 queue is deliberately retired.
+- Do not claim buffer/preference improvement until Buffer-DPO actually starts and reaches matched checkpoint evaluation.
+
 ## Update Template
 
 Append a new section for every algorithm run:
