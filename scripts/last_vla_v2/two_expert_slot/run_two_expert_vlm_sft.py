@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 import time
 from collections import OrderedDict
@@ -20,6 +21,7 @@ if str(REPO_ROOT) not in sys.path:
 from navsim.agents.recogdrive.expert_cache import load_sample, write_json  # noqa: E402
 from navsim.agents.recogdrive.recogdrive_backbone import RecogDriveBackbone  # noqa: E402
 from navsim.agents.recogdrive.two_expert_vlm_sft import TwoExpertVLMSFTConfig, TwoExpertVLMSFTModule  # noqa: E402
+from navsim.agents.recogdrive.trajectory_text_replay import parse_trajectory_answer  # noqa: E402
 from navsim.agents.recogdrive.vlm_lora_utils import (  # noqa: E402
     audit_actual_trainable_lora_modules,
     audit_lora_target_modules,
@@ -46,6 +48,15 @@ def load_teacher_index(root: Path, key: str, max_samples: Optional[int] = None) 
     index = load_path_index(root, max_records=max_samples)
     if not index:
         raise RuntimeError(f"Teacher cache {root} has no indexed samples for key {key}.")
+    return index
+
+
+def load_replay_index(root: Optional[Path], max_samples: Optional[int] = None) -> Dict[str, Path]:
+    if root is None:
+        return {}
+    index = load_path_index(root, max_records=max_samples)
+    if not index:
+        raise RuntimeError(f"Replay cache {root} has no indexed samples.")
     return index
 
 
@@ -117,19 +128,34 @@ class TwoExpertStage1Dataset(Dataset):
         teacher_lru_size: int = 0,
         require_strict_teachers: bool = True,
         allow_minimal_prompt: bool = False,
+        replay_index: Optional[Dict[str, Path]] = None,
+        require_replay: bool = False,
+        allow_replay_only_base: bool = False,
     ) -> None:
-        self.items: List[Tuple[Path, str]] = []
+        self.items: List[Tuple[Optional[Path], str]] = []
         teacher_tokens = set(jepa_index).intersection(vggt_index)
-        for _, sample_path, record in iter_indexed_records(
-            base_chunk_root,
-            pattern=chunk_name_pattern,
-            max_records=max_samples,
-        ):
-            token = str(record.get("sample_token") or sample_path.stem)
-            if token in teacher_tokens:
-                self.items.append((sample_path, token))
+        self.replay_index = replay_index or {}
+        if self.replay_index:
+            teacher_tokens = teacher_tokens.intersection(self.replay_index)
+        self.allow_replay_only_base = bool(allow_replay_only_base)
+        if base_chunk_root is not None and Path(base_chunk_root).exists():
+            for _, sample_path, record in iter_indexed_records(
+                base_chunk_root,
+                pattern=chunk_name_pattern,
+                max_records=max_samples,
+            ):
+                token = str(record.get("sample_token") or sample_path.stem)
+                if token in teacher_tokens:
+                    self.items.append((sample_path, token))
+        if not self.items and self.allow_replay_only_base and self.replay_index:
+            tokens = sorted(teacher_tokens)
+            if max_samples is not None:
+                tokens = tokens[: int(max_samples)]
+            self.items = [(None, token) for token in tokens]
         if not self.items:
             raise RuntimeError("No base samples intersect both JEPA and VGGT teacher caches.")
+        if require_replay and not self.replay_index:
+            raise RuntimeError("Stage1 replay CE requires a non-empty replay cache index.")
         self.jepa_index = jepa_index
         self.vggt_index = vggt_index
         self.teacher_lru_size = max(0, int(teacher_lru_size))
@@ -174,24 +200,169 @@ class TwoExpertStage1Dataset(Dataset):
 
     def __getitem__(self, index: int) -> Dict[str, Any]:
         sample_path, token = self.items[index]
-        sample = load_sample(sample_path)
-        if "image_path_tensor" not in sample:
-            raise KeyError(f"Base sample {sample_path} missing image_path_tensor.")
+        replay_fields = self._load_replay_fields(token)
+        replay_payload = self._load_replay_payload(token) if token in self.replay_index else {}
+        if sample_path is not None:
+            sample = load_sample(sample_path)
+            if "image_path_tensor" not in sample:
+                raise KeyError(f"Base sample {sample_path} missing image_path_tensor.")
+            image_path = decode_path_tensor(sample["image_path_tensor"])
+            prompt = build_two_expert_prompt(sample, allow_minimal_prompt=self.allow_minimal_prompt)
+            status_feature = sample["status_feature"].float()
+            high_command_one_hot = sample["high_command_one_hot"].float()
+            history_trajectory = sample["history_trajectory"].float()
+            trajectory = sample.get("trajectory")
+            trajectory_norm = sample.get("trajectory_norm")
+        elif replay_payload:
+            if replay_payload.get("image_path_tensor") is not None:
+                image_path = decode_path_tensor(torch.as_tensor(replay_payload["image_path_tensor"]))
+            else:
+                image_path = str(replay_payload["image_path"])
+            prompt = str(replay_payload["prompt"])
+            history_trajectory = _tensor_or_prompt_history(replay_payload.get("history_trajectory"), prompt)
+            high_command_one_hot = _tensor_or_prompt_command(replay_payload.get("high_command_one_hot"), prompt)
+            status_feature = _tensor_or_status_feature(
+                replay_payload.get("status_feature"),
+                history_trajectory=history_trajectory,
+                high_command_one_hot=high_command_one_hot,
+            )
+            trajectory = replay_payload.get("trajectory")
+            if not isinstance(trajectory, torch.Tensor):
+                trajectory = parse_trajectory_answer(str(replay_payload["answer_text"]))
+            trajectory_norm = None
+        else:
+            raise RuntimeError(f"Replay-only base requested but no replay payload for token={token}.")
         jepa_payload = self._load_teacher("jepa", token, "jepa_dynamic_teacher_tokens")
         vggt_payload = self._load_teacher("vggt", token, "vggt_feature23_tokens")
         self._assert_strict_teacher(token, jepa_payload, vggt_payload)
         return {
+            **replay_fields,
             "sample_token": token,
-            "image_path": decode_path_tensor(sample["image_path_tensor"]),
-            "prompt": build_two_expert_prompt(sample, allow_minimal_prompt=self.allow_minimal_prompt),
-            "status_feature": sample["status_feature"].float(),
-            "high_command_one_hot": sample["high_command_one_hot"].float(),
-            "history_trajectory": sample["history_trajectory"].float(),
-            "trajectory": sample.get("trajectory"),
-            "trajectory_norm": sample.get("trajectory_norm"),
+            "image_path": image_path,
+            "prompt": prompt,
+            "status_feature": status_feature,
+            "high_command_one_hot": high_command_one_hot,
+            "history_trajectory": history_trajectory,
+            "trajectory": trajectory,
+            "trajectory_norm": trajectory_norm,
             "jepa_dynamic_teacher_tokens": jepa_payload["jepa_dynamic_teacher_tokens"].float(),
             "vggt_feature23_tokens": vggt_payload["vggt_feature23_tokens"].float(),
         }
+
+    def _load_replay_payload(self, token: str) -> Dict[str, Any]:
+        if token not in self.replay_index:
+            return {}
+        return load_sample(self.replay_index[token])
+
+    def _load_replay_fields(self, token: str) -> Dict[str, Any]:
+        payload = self._load_replay_payload(token)
+        if not payload:
+            return {}
+        prompt = payload.get("prompt")
+        answer_text = payload.get("answer_text")
+        if not isinstance(prompt, str) or not prompt.strip():
+            raise ValueError(f"Replay sample for {token} has empty prompt.")
+        if not isinstance(answer_text, str) or not answer_text.strip():
+            raise ValueError(f"Replay sample for {token} has empty answer_text.")
+        return {
+            "replay_prompt": prompt,
+            "replay_answer_text": answer_text,
+            "replay_source": str(payload.get("replay_source", "unknown")),
+            "replay_official_recogdrive_stage1": bool(payload.get("official_recogdrive_stage1", False)),
+            "replay_parse_ok": bool(payload.get("parse_ok", True)),
+        }
+
+
+_FLOAT_RE = r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?"
+_TRIPLE_RE = re.compile(rf"\(\s*({_FLOAT_RE})\s*,\s*({_FLOAT_RE})\s*,\s*({_FLOAT_RE})\s*\)")
+
+
+def _history_from_prompt(prompt: str) -> torch.Tensor:
+    triples = [(float(x), float(y), float(h)) for x, y, h in _TRIPLE_RE.findall(prompt)]
+    if len(triples) >= 4:
+        return torch.tensor(triples[-4:], dtype=torch.float32)
+    return torch.zeros(4, 3, dtype=torch.float32)
+
+
+def _command_from_prompt(prompt: str) -> torch.Tensor:
+    upper = str(prompt).upper()
+    out = torch.zeros(3, dtype=torch.float32)
+    if "TURN LEFT" in upper:
+        out[0] = 1.0
+    elif "TURN RIGHT" in upper:
+        out[2] = 1.0
+    else:
+        out[1] = 1.0
+    return out
+
+
+def _float_tensor_or_none(value: Any, *, shape: Tuple[int, ...]) -> Optional[torch.Tensor]:
+    if value is None:
+        return None
+    try:
+        tensor = torch.as_tensor(value, dtype=torch.float32)
+    except (TypeError, ValueError):
+        return None
+    if tensor.numel() != int(torch.tensor(shape).prod().item()):
+        return None
+    tensor = tensor.reshape(shape)
+    if not torch.isfinite(tensor).all():
+        return None
+    return tensor
+
+
+def _tensor_or_prompt_history(value: Any, prompt: str) -> torch.Tensor:
+    tensor = _float_tensor_or_none(value, shape=(4, 3))
+    if tensor is not None:
+        return tensor
+    tensor = _history_from_prompt(prompt)
+    return torch.nan_to_num(tensor.float(), nan=0.0, posinf=0.0, neginf=0.0)
+
+
+def _tensor_or_prompt_command(value: Any, prompt: str) -> torch.Tensor:
+    tensor = _float_tensor_or_none(value, shape=(3,))
+    if tensor is not None and float(tensor.abs().sum().item()) > 0.0:
+        out = torch.zeros(3, dtype=torch.float32)
+        out[int(torch.argmax(tensor).item())] = 1.0
+        return out
+    return _command_from_prompt(prompt)
+
+
+def _status_from_replay_context(history_trajectory: torch.Tensor, high_command_one_hot: torch.Tensor) -> torch.Tensor:
+    history = torch.as_tensor(history_trajectory, dtype=torch.float32).reshape(-1, 3)
+    command = torch.as_tensor(high_command_one_hot, dtype=torch.float32).reshape(-1)[:3]
+    if command.numel() < 3:
+        command = torch.nn.functional.pad(command, (0, 3 - command.numel()))
+    if float(command.abs().sum().item()) <= 0.0:
+        command = torch.tensor([0.0, 1.0, 0.0], dtype=torch.float32)
+    else:
+        one_hot = torch.zeros(3, dtype=torch.float32)
+        one_hot[int(torch.argmax(command).item())] = 1.0
+        command = one_hot
+    if history.shape[0] >= 2:
+        velocity_xy = history[-1, :2] - history[-2, :2]
+    else:
+        velocity_xy = torch.zeros(2, dtype=torch.float32)
+    if history.shape[0] >= 3:
+        last_delta = history[-1] - history[-2]
+        prev_delta = history[-2] - history[-3]
+        acceleration = last_delta - prev_delta
+    else:
+        acceleration = torch.zeros(3, dtype=torch.float32)
+    status = torch.cat([command, velocity_xy, acceleration[:3]], dim=0)
+    return torch.nan_to_num(status.float(), nan=0.0, posinf=0.0, neginf=0.0)
+
+
+def _tensor_or_status_feature(
+    value: Any,
+    *,
+    history_trajectory: torch.Tensor,
+    high_command_one_hot: torch.Tensor,
+) -> torch.Tensor:
+    tensor = _float_tensor_or_none(value, shape=(8,))
+    if tensor is not None:
+        return tensor
+    return _status_from_replay_context(history_trajectory, high_command_one_hot)
 
 
 def make_collate(max_image_patches: int):
@@ -218,6 +389,17 @@ def make_collate(max_image_patches: int):
             batch["trajectory"] = torch.stack([item["trajectory"].float() for item in items])
         else:
             raise KeyError("Stage1 samples require trajectory or trajectory_norm.")
+        if all(isinstance(item.get("replay_prompt"), str) and isinstance(item.get("replay_answer_text"), str) for item in items):
+            batch["replay_prompt_inputs"] = {
+                "prompts": [item["replay_prompt"] for item in items],
+                "answers": [item["replay_answer_text"] for item in items],
+                "num_patches_list": [int(values.shape[0]) for values in pixel_values_list],
+            }
+            batch["replay_parse_ok"] = torch.tensor([bool(item.get("replay_parse_ok", False)) for item in items], dtype=torch.float32)
+            batch["replay_official_recogdrive_stage1"] = torch.tensor(
+                [bool(item.get("replay_official_recogdrive_stage1", False)) for item in items],
+                dtype=torch.float32,
+            )
         return batch
 
     return collate
@@ -259,6 +441,83 @@ def apply_lora(backbone: RecogDriveBackbone, args: argparse.Namespace) -> Dict[s
     if int(actual.get("actual_trainable_lora_param_count", 0)) <= 0:
         raise RuntimeError("PEFT LoRA injection produced zero trainable parameters.")
     return {"target_modules": target_modules, "intended_audit": audit, "actual_audit": actual}
+
+
+def _load_checkpoint_payload(path: Path) -> Dict[str, Any]:
+    try:
+        payload = torch.load(path, map_location="cpu", weights_only=False)
+    except TypeError:
+        payload = torch.load(path, map_location="cpu")
+    if not isinstance(payload, dict):
+        raise TypeError(f"Stage1 checkpoint must be a dict: {path}")
+    return payload
+
+
+def _stage1_metadata(payload: Dict[str, Any]) -> Dict[str, Any]:
+    metadata = payload.get("stage1_metadata")
+    return metadata if isinstance(metadata, dict) else {}
+
+
+def _resolve_init_lora_adapter_dir(args: argparse.Namespace, payload: Optional[Dict[str, Any]]) -> Optional[Path]:
+    if args.init_vlm_lora_adapter_dir is not None:
+        return args.init_vlm_lora_adapter_dir
+    if args.init_stage1_checkpoint is None or payload is None:
+        return None
+    metadata = _stage1_metadata(payload)
+    rel = metadata.get("vlm_lora_adapter_dir")
+    if rel:
+        return args.init_stage1_checkpoint.parent / str(rel)
+    return None
+
+
+def apply_lora_adapter_dir_for_training(backbone: RecogDriveBackbone, adapter_dir: Path) -> Dict[str, Any]:
+    if not adapter_dir.exists():
+        raise FileNotFoundError(f"Initial VLM LoRA adapter dir does not exist: {adapter_dir}")
+    try:
+        from peft import PeftModel
+    except ImportError as exc:
+        raise RuntimeError("Continuing Stage1 LoRA requires peft.") from exc
+    backbone.model = PeftModel.from_pretrained(backbone.model, str(adapter_dir), is_trainable=True)
+    actual = audit_actual_trainable_lora_modules(backbone.model, scope="llm")
+    if int(actual.get("actual_trainable_lora_param_count", 0)) <= 0:
+        for name, parameter in backbone.model.named_parameters():
+            if "lora_" in name:
+                parameter.requires_grad = True
+        actual = audit_actual_trainable_lora_modules(backbone.model, scope="llm")
+    if int(actual.get("actual_trainable_lora_param_count", 0)) <= 0:
+        raise RuntimeError(f"Loaded LoRA adapter but no trainable LoRA parameters were found: {adapter_dir}")
+    return {"loaded_initial_lora_adapter_dir": str(adapter_dir), "actual_audit": actual}
+
+
+def _compat_probe_state(state: Dict[str, torch.Tensor]) -> Dict[str, torch.Tensor]:
+    mapped = dict(state)
+    for key, value in list(state.items()):
+        if key.startswith("head."):
+            mapped.setdefault("fused_head." + key[len("head.") :], value)
+    return mapped
+
+
+def load_stage1_initial_state(module: TwoExpertVLMSFTModule, checkpoint: Path) -> Dict[str, Any]:
+    payload = _load_checkpoint_payload(checkpoint)
+    report: Dict[str, Any] = {"init_stage1_checkpoint": str(checkpoint)}
+    if isinstance(payload.get("two_expert_slots"), dict):
+        incompatible = module.two_expert_slots.load_state_dict(payload["two_expert_slots"], strict=False)
+        report["slots_missing"] = sorted(getattr(incompatible, "missing_keys", []))
+        report["slots_unexpected"] = sorted(getattr(incompatible, "unexpected_keys", []))
+    for attr, key in (
+        ("dynamic_adapter", "dynamic_adapter"),
+        ("geometry_adapter", "geometry_adapter"),
+        ("trajectory_probe", "trajectory_probe"),
+    ):
+        state = payload.get(key)
+        if not isinstance(state, dict):
+            continue
+        if key == "trajectory_probe":
+            state = _compat_probe_state(state)
+        incompatible = getattr(module, attr).load_state_dict(state, strict=False)
+        report[f"{key}_missing"] = sorted(getattr(incompatible, "missing_keys", []))
+        report[f"{key}_unexpected"] = sorted(getattr(incompatible, "unexpected_keys", []))
+    return report
 
 
 def save_stage1_outputs(
@@ -365,7 +624,7 @@ def autocast_context(device: torch.device, precision: str):
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train two_expert_slot Stage1 VLM SFT.")
-    parser.add_argument("--base-chunk-root", type=Path, required=True)
+    parser.add_argument("--base-chunk-root", type=Path, default=None)
     parser.add_argument("--teacher-cache-root", type=Path, default=None)
     parser.add_argument("--jepa-cache-root", type=Path, default=None)
     parser.add_argument("--vggt-cache-root", type=Path, default=None)
@@ -387,8 +646,41 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--warmup-steps", type=int, default=0)
     parser.add_argument("--precision", choices=("fp32", "bf16-mixed", "16-mixed", "fp16-mixed"), default="bf16-mixed")
     parser.add_argument("--teacher-lru-size", type=int, default=0)
+    parser.add_argument("--recogdrive-replay-cache-root", type=Path, default=None)
+    parser.add_argument("--recogdrive-replay-ce-loss-weight", type=float, default=0.0)
+    parser.add_argument("--recogdrive-replay-every-n-steps", type=int, default=1)
+    parser.add_argument("--recogdrive-replay-source", choices=("official", "navsim_generated", "mixed"), default="official")
+    parser.add_argument("--recogdrive-replay-max-answer-tokens", type=int, default=256)
+    parser.add_argument("--recogdrive-replay-train-lora-only", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--recogdrive-replay-train-slots", action="store_true")
+    parser.add_argument("--stage1-image-mask-ratio", type=float, default=None)
+    parser.add_argument("--stage1-image-mask-ratio-start", type=float, default=None)
+    parser.add_argument("--stage1-image-mask-warmup-fraction", type=float, default=0.25)
+    parser.add_argument("--stage1-image-dropout-prob", type=float, default=0.0)
+    parser.add_argument("--stage1-image-dropout-prob-start", type=float, default=0.0)
+    parser.add_argument("--stage1-image-dropout-warmup-fraction", type=float, default=0.25)
+    parser.add_argument("--slot-only-use-image-memory", action=argparse.BooleanOptionalAction, default=False)
+    parser.add_argument("--slot-only-dyn-loss-weight", type=float, default=0.0)
+    parser.add_argument("--slot-only-geo-loss-weight", type=float, default=0.0)
+    parser.add_argument("--contrastive-dyn-loss-weight", type=float, default=0.0)
+    parser.add_argument("--contrastive-geo-loss-weight", type=float, default=0.0)
+    parser.add_argument("--contrastive-loss-warmup-fraction", type=float, default=0.30)
+    parser.add_argument("--contrastive-temperature", type=float, default=0.07)
+    parser.add_argument("--probe-fused-loss-weight", type=float, default=None)
+    parser.add_argument("--probe-dyn-loss-weight", type=float, default=0.0)
+    parser.add_argument("--probe-geo-loss-weight", type=float, default=0.0)
+    parser.add_argument("--probe-heading-loss-weight", type=float, default=0.05)
+    parser.add_argument("--probe-progress-loss-weight", type=float, default=0.05)
+    parser.add_argument("--geo-lateral-profile-loss-weight", type=float, default=0.0)
+    parser.add_argument("--geo-heading-profile-loss-weight", type=float, default=0.0)
+    parser.add_argument("--hidden-anchor-weight", type=float, default=0.05)
+    parser.add_argument("--hidden-anchor-every-n-steps", type=int, default=1)
+    parser.add_argument("--replay-ce-loss-warmup-fraction", type=float, default=0.30)
+    parser.add_argument("--init-stage1-checkpoint", type=Path, default=None)
+    parser.add_argument("--init-vlm-lora-adapter-dir", type=Path, default=None)
     parser.add_argument("--allow-dev-fallback-teachers", action="store_true")
     parser.add_argument("--allow-minimal-prompt", action="store_true")
+    parser.add_argument("--allow-replay-only-base", action="store_true")
     parser.add_argument("--save-full-stage1-state", action="store_true")
     parser.add_argument("--max-image-patches", type=int, default=12)
     parser.add_argument("--device", default=None)
@@ -433,6 +725,9 @@ def main() -> int:
     jepa_root, vggt_root = resolve_cache_roots(args)
     jepa_index = load_teacher_index(jepa_root, "jepa_dynamic_teacher_tokens", max_samples=args.max_samples)
     vggt_index = load_teacher_index(vggt_root, "vggt_feature23_tokens", max_samples=args.max_samples)
+    replay_index = load_replay_index(args.recogdrive_replay_cache_root, max_samples=args.max_samples)
+    if float(args.recogdrive_replay_ce_loss_weight) > 0.0 and not replay_index:
+        raise ValueError("--recogdrive-replay-ce-loss-weight > 0 requires --recogdrive-replay-cache-root.")
     vggt_dim = resolve_vggt_feature_dim(vggt_root, vggt_index, args.vggt_feature_dim)
     dataset = TwoExpertStage1Dataset(
         args.base_chunk_root,
@@ -443,6 +738,9 @@ def main() -> int:
         teacher_lru_size=int(args.teacher_lru_size),
         require_strict_teachers=not bool(args.allow_dev_fallback_teachers),
         allow_minimal_prompt=bool(args.allow_minimal_prompt),
+        replay_index=replay_index,
+        require_replay=float(args.recogdrive_replay_ce_loss_weight) > 0.0,
+        allow_replay_only_base=bool(args.allow_replay_only_base),
     )
     sampler = torch.utils.data.distributed.DistributedSampler(dataset, shuffle=True) if distributed else None
     dataloader = DataLoader(
@@ -455,8 +753,13 @@ def main() -> int:
     )
     backbone = RecogDriveBackbone(model_type=args.vlm_type, checkpoint_path=str(args.vlm_path), device=str(device))
     lora_report: Dict[str, Any] = {}
+    init_payload = _load_checkpoint_payload(args.init_stage1_checkpoint) if args.init_stage1_checkpoint is not None else None
     if args.train_mode == "lora":
-        lora_report = apply_lora(backbone, args)
+        init_lora_dir = _resolve_init_lora_adapter_dir(args, init_payload)
+        if init_lora_dir is not None:
+            lora_report = apply_lora_adapter_dir_for_training(backbone, init_lora_dir)
+        else:
+            lora_report = apply_lora(backbone, args)
     module = TwoExpertVLMSFTModule(
         backbone,
         TwoExpertVLMSFTConfig(
@@ -464,8 +767,40 @@ def main() -> int:
             allow_full_vlm_sft=bool(args.allow_full_vlm_sft),
             top_layers=int(args.top_layers),
             vggt_feature_dim=vggt_dim,
+            slot_only_dyn_loss_weight=float(args.slot_only_dyn_loss_weight),
+            slot_only_geo_loss_weight=float(args.slot_only_geo_loss_weight),
+            contrastive_dyn_loss_weight=float(args.contrastive_dyn_loss_weight),
+            contrastive_geo_loss_weight=float(args.contrastive_geo_loss_weight),
+            contrastive_temperature=float(args.contrastive_temperature),
+            probe_fused_loss_weight=args.probe_fused_loss_weight,
+            probe_dyn_loss_weight=float(args.probe_dyn_loss_weight),
+            probe_geo_loss_weight=float(args.probe_geo_loss_weight),
+            probe_heading_loss_weight=float(args.probe_heading_loss_weight),
+            probe_progress_loss_weight=float(args.probe_progress_loss_weight),
+            geo_lateral_profile_loss_weight=float(args.geo_lateral_profile_loss_weight),
+            geo_heading_profile_loss_weight=float(args.geo_heading_profile_loss_weight),
+            hidden_anchor_weight=float(args.hidden_anchor_weight),
+            hidden_anchor_every_n_steps=int(args.hidden_anchor_every_n_steps),
+            stage1_image_mask_ratio=args.stage1_image_mask_ratio,
+            stage1_image_mask_ratio_start=args.stage1_image_mask_ratio_start,
+            stage1_image_mask_warmup_fraction=float(args.stage1_image_mask_warmup_fraction),
+            stage1_image_dropout_prob=float(args.stage1_image_dropout_prob),
+            stage1_image_dropout_prob_start=float(args.stage1_image_dropout_prob_start),
+            stage1_image_dropout_warmup_fraction=float(args.stage1_image_dropout_warmup_fraction),
+            slot_only_use_image_memory=bool(args.slot_only_use_image_memory),
+            recogdrive_replay_ce_loss_weight=float(args.recogdrive_replay_ce_loss_weight),
+            recogdrive_replay_every_n_steps=int(args.recogdrive_replay_every_n_steps),
+            recogdrive_replay_source=str(args.recogdrive_replay_source),
+            recogdrive_replay_max_answer_tokens=int(args.recogdrive_replay_max_answer_tokens),
+            recogdrive_replay_train_lora_only=bool(args.recogdrive_replay_train_lora_only),
+            recogdrive_replay_train_slots=bool(args.recogdrive_replay_train_slots),
+            contrastive_loss_warmup_fraction=float(args.contrastive_loss_warmup_fraction),
+            replay_ce_loss_warmup_fraction=float(args.replay_ce_loss_warmup_fraction),
         ),
     ).to(device)
+    init_report: Dict[str, Any] = {}
+    if args.init_stage1_checkpoint is not None:
+        init_report = load_stage1_initial_state(module, args.init_stage1_checkpoint)
     if distributed:
         module = torch.nn.parallel.DistributedDataParallel(module, device_ids=[local_rank] if device.type == "cuda" else None)
     train_module = module.module if hasattr(module, "module") else module
@@ -504,6 +839,14 @@ def main() -> int:
             sampler.set_epoch(epoch)
         pending_grads = 0
         for step, batch in enumerate(dataloader):
+            batch["global_step"] = torch.tensor(metrics["forward_steps"], dtype=torch.long)
+            batch["total_forward_steps"] = torch.tensor(total_forward_steps_per_rank, dtype=torch.long)
+            batch["train_progress_fraction"] = torch.tensor(
+                float(metrics["forward_steps"]) / float(total_forward_steps_per_rank)
+                if total_forward_steps_per_rank
+                else 0.0,
+                dtype=torch.float32,
+            )
             with autocast_context(device, args.precision):
                 out = module(move_batch(batch, device))
             loss = out["loss"] / int(args.grad_accum)
@@ -539,9 +882,24 @@ def main() -> int:
                     "dyn_loss": _metric_float(out.get("dyn_loss")),
                     "geo_loss": _metric_float(out.get("geo_loss")),
                     "probe_loss": _metric_float(out.get("probe_loss")),
+                    "probe_dyn_loss": _metric_float(out.get("probe_dyn_loss")),
+                    "probe_geo_loss": _metric_float(out.get("probe_geo_loss")),
                     "probe_heading_loss": _metric_float(out.get("probe_heading_loss")),
                     "probe_progress_loss": _metric_float(out.get("probe_progress_loss")),
+                    "slot_only_dyn_loss": _metric_float(out.get("slot_only_dyn_loss")),
+                    "slot_only_geo_loss": _metric_float(out.get("slot_only_geo_loss")),
+                    "contrastive_dyn_loss": _metric_float(out.get("contrastive_dyn_loss")),
+                    "contrastive_geo_loss": _metric_float(out.get("contrastive_geo_loss")),
+                    "recogdrive_replay_ce_loss": _metric_float(out.get("recogdrive_replay_ce_loss")),
+                    "recogdrive_replay_token_count": _metric_float(out.get("recogdrive_replay_token_count")),
+                    "recogdrive_replay_ce_loss_weight_effective": _metric_float(
+                        out.get("recogdrive_replay_ce_loss_weight_effective")
+                    ),
                     "hidden_anchor_loss": _metric_float(out.get("hidden_anchor_loss")),
+                    "stage1_effective_image_mask_ratio": _metric_float(out.get("stage1_effective_image_mask_ratio")),
+                    "stage1_effective_image_dropout_prob": _metric_float(out.get("stage1_effective_image_dropout_prob")),
+                    "contrastive_dyn_loss_weight_effective": _metric_float(out.get("contrastive_dyn_loss_weight_effective")),
+                    "contrastive_geo_loss_weight_effective": _metric_float(out.get("contrastive_geo_loss_weight_effective")),
                     "h_dyn_norm": _metric_float(out.get("h_dyn_norm")),
                     "h_geo_norm": _metric_float(out.get("h_geo_norm")),
                 }
@@ -576,8 +934,29 @@ def main() -> int:
             "lr_slots_adapters": float(args.lr_slots_adapters),
             "weight_decay": float(args.weight_decay),
             "base_chunk_root": str(args.base_chunk_root),
+            "allow_replay_only_base": bool(args.allow_replay_only_base),
             "vlm_path": str(args.vlm_path),
             "lora_report": lora_report,
+            "init_report": init_report,
+            "recogdrive_replay_cache_root": str(args.recogdrive_replay_cache_root) if args.recogdrive_replay_cache_root else None,
+            "recogdrive_replay_ce_loss_weight": float(args.recogdrive_replay_ce_loss_weight),
+            "recogdrive_replay_every_n_steps": int(args.recogdrive_replay_every_n_steps),
+            "replay_ce_loss_warmup_fraction": float(args.replay_ce_loss_warmup_fraction),
+            "stage1_image_mask_ratio": args.stage1_image_mask_ratio,
+            "stage1_image_mask_ratio_start": args.stage1_image_mask_ratio_start,
+            "stage1_image_mask_warmup_fraction": float(args.stage1_image_mask_warmup_fraction),
+            "stage1_image_dropout_prob": float(args.stage1_image_dropout_prob),
+            "stage1_image_dropout_prob_start": float(args.stage1_image_dropout_prob_start),
+            "stage1_image_dropout_warmup_fraction": float(args.stage1_image_dropout_warmup_fraction),
+            "slot_only_use_image_memory": bool(args.slot_only_use_image_memory),
+            "slot_only_dyn_loss_weight": float(args.slot_only_dyn_loss_weight),
+            "slot_only_geo_loss_weight": float(args.slot_only_geo_loss_weight),
+            "contrastive_dyn_loss_weight": float(args.contrastive_dyn_loss_weight),
+            "contrastive_geo_loss_weight": float(args.contrastive_geo_loss_weight),
+            "contrastive_loss_warmup_fraction": float(args.contrastive_loss_warmup_fraction),
+            "probe_fused_loss_weight": args.probe_fused_loss_weight,
+            "probe_dyn_loss_weight": float(args.probe_dyn_loss_weight),
+            "probe_geo_loss_weight": float(args.probe_geo_loss_weight),
         }
         save_stage1_outputs(
             train_module,

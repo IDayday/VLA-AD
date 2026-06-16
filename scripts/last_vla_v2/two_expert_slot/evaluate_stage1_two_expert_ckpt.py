@@ -158,6 +158,8 @@ def _adapter_probe_from_vlm(
         float(module.config.dyn_loss_weight) * dyn_out["loss"]
         + float(module.config.geo_loss_weight) * geo_out["loss"]
         + float(module.config.probe_traj_loss_weight) * probe_losses["probe_loss"]
+        + float(module.config.probe_dyn_loss_weight) * probe_losses.get("probe_dyn_loss", hidden_anchor)
+        + float(module.config.probe_geo_loss_weight) * probe_losses.get("probe_geo_loss", hidden_anchor)
         + float(module.config.probe_heading_loss_weight) * probe_losses["probe_heading_loss"]
         + float(module.config.probe_progress_loss_weight) * probe_losses["probe_progress_loss"]
         + float(module.config.hidden_anchor_weight) * hidden_anchor
@@ -167,6 +169,8 @@ def _adapter_probe_from_vlm(
         "dyn_loss": dyn_out["loss"],
         "geo_loss": geo_out["loss"],
         "probe_loss": probe_losses["probe_loss"],
+        "probe_dyn_loss": probe_losses.get("probe_dyn_loss", hidden_anchor),
+        "probe_geo_loss": probe_losses.get("probe_geo_loss", hidden_anchor),
         "probe_heading_loss": probe_losses["probe_heading_loss"],
         "probe_progress_loss": probe_losses["probe_progress_loss"],
         "h_dyn_norm": h_dyn.detach().float().norm(dim=-1).mean().to(dtype=total.dtype),
