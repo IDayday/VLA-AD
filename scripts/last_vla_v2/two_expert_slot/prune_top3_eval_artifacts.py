@@ -60,6 +60,31 @@ def read_val_rows(val_roots: Sequence[Path]) -> List[Dict[str, object]]:
     return sorted(by_name.values(), key=lambda row: float(row["PDMS_float"]), reverse=True)
 
 
+def read_navtest_rows(navtest_out_root: Path) -> List[Dict[str, object]]:
+    by_name: Dict[str, Dict[str, object]] = {}
+    path = navtest_out_root / "summary" / "navtest_summary.csv"
+    if not path.is_file():
+        return []
+    with path.open("r", encoding="utf-8", newline="") as f:
+        for row in csv.DictReader(f):
+            name = row.get("checkpoint_name") or normalize_ckpt_name(row.get("checkpoint") or "")
+            if not name:
+                continue
+            try:
+                pdms = float(row.get("PDMS") or "nan")
+            except ValueError:
+                continue
+            if pdms != pdms:
+                continue
+            payload = dict(row)
+            payload["checkpoint_name"] = name
+            payload["PDMS_float"] = pdms
+            current = by_name.get(name)
+            if current is None or pdms > float(current["PDMS_float"]):
+                by_name[name] = payload
+    return sorted(by_name.values(), key=lambda row: float(row["PDMS_float"]), reverse=True)
+
+
 def host_ps(host: str) -> List[Tuple[int, str]]:
     command = "ps -eo pid=,cmd= | grep -E 'eval_recogdrive_expert_pdm|stable_gpu_launcher' | grep -v grep || true"
     if host == "local":
@@ -125,6 +150,18 @@ def append_eliminated(path: Path, names: Iterable[str]) -> None:
     path.write_text("\n".join(merged) + ("\n" if merged else ""), encoding="utf-8")
 
 
+def read_protected_names(path: Path | None) -> Set[str]:
+    if path is None or not path.is_file():
+        return set()
+    names: Set[str] = set()
+    for line in path.read_text(encoding="utf-8").splitlines():
+        text = line.strip()
+        if not text or text.startswith("#"):
+            continue
+        names.add(normalize_ckpt_name(text) or text)
+    return names
+
+
 def remove_path(path: Path, removed: List[str]) -> None:
     if path.is_dir():
         shutil.rmtree(path, ignore_errors=True)
@@ -134,9 +171,11 @@ def remove_path(path: Path, removed: List[str]) -> None:
         removed.append(str(path))
 
 
-def prune_artifacts(args: argparse.Namespace, eliminated: Set[str]) -> List[str]:
+def prune_artifacts(args: argparse.Namespace, eliminated: Set[str], protected: Set[str]) -> List[str]:
     removed: List[str] = []
     for name in sorted(eliminated):
+        if name in protected:
+            continue
         key = safe_name(name)
         if args.ckpt_mirror_root is not None:
             remove_path(args.ckpt_mirror_root / name, removed)
@@ -162,10 +201,16 @@ def log(args: argparse.Namespace, message: str) -> None:
 
 def run_once(args: argparse.Namespace) -> None:
     ranked = read_val_rows(args.val_roots)
+    navtest_ranked = read_navtest_rows(args.navtest_out_root)
     top = {str(row["checkpoint_name"]) for row in ranked[: args.top_k]}
+    protected_navtest = {
+        str(row["checkpoint_name"])
+        for row in navtest_ranked[: max(args.protect_navtest_top_k, 0)]
+    }
+    protected = top | protected_navtest | read_protected_names(args.protect_names_file)
     completed = {str(row["checkpoint_name"]) for row in ranked}
     active_val, active_navtest, navtest_pids = active_by_split(args)
-    eliminated = completed - top - active_val
+    eliminated = completed - protected - active_val
     append_eliminated(args.eliminated_file, eliminated)
 
     killed: List[str] = []
@@ -175,12 +220,18 @@ def run_once(args: argparse.Namespace) -> None:
             kill_pids(host, pids)
             killed.append(f"{host}:{name}:{','.join(str(pid) for pid in sorted(set(pids)))}")
 
-    removed = prune_artifacts(args, eliminated)
+    removed = prune_artifacts(args, eliminated, protected)
     top_text = ", ".join(f"{row['checkpoint_name']}={float(row['PDMS_float']):.6f}" for row in ranked[: args.top_k])
+    navtest_top_text = ", ".join(
+        f"{row['checkpoint_name']}={float(row['PDMS_float']):.6f}"
+        for row in navtest_ranked[: args.protect_navtest_top_k]
+    )
     log(
         args,
         "top="
         + (top_text or "none")
+        + " protected_navtest="
+        + (navtest_top_text or "none")
         + f" completed={len(completed)} active_val={sorted(active_val)} active_navtest={sorted(active_navtest)}"
         + f" eliminated={sorted(eliminated)} killed={killed} removed={len(removed)}",
     )
@@ -194,6 +245,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--eliminated-file", type=Path, required=True)
     parser.add_argument("--remote-hosts", nargs="+", default=["local"])
     parser.add_argument("--top-k", type=int, default=3)
+    parser.add_argument("--protect-navtest-top-k", type=int, default=3)
+    parser.add_argument("--protect-names-file", type=Path, default=None)
     parser.add_argument("--poll-seconds", type=float, default=120.0)
     parser.add_argument("--log-file", type=Path, required=True)
     parser.add_argument("--once", action="store_true")
