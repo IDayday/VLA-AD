@@ -1,0 +1,1175 @@
+{
+  "gt_val": {
+    "path": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/summary/val6000_summary.csv",
+    "count": 17,
+    "top20": [
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "step_00120000.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_step_00120000.ckpt/step_00120000.ckpt",
+        "epoch": "",
+        "step": "120000",
+        "PDMS": "0.9230521948576987",
+        "trajectory_l1": "0.12422088992316276",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T01:47:03+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_step_00120000.ckpt",
+        "_pdms": 0.9230521948576987,
+        "_trajectory_l1": 0.12422088992316276,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "step_00100000.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_step_00100000.ckpt/step_00100000.ckpt",
+        "epoch": "",
+        "step": "100000",
+        "PDMS": "0.9221540065882705",
+        "trajectory_l1": "0.13280208171748867",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-17T19:56:26+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_step_00100000.ckpt",
+        "_pdms": 0.9221540065882705,
+        "_trajectory_l1": 0.13280208171748867,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=82-step=55112.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_82-step_55112.ckpt/epoch=82-step=55112.ckpt",
+        "epoch": "83",
+        "step": "",
+        "PDMS": "0.9172511800101916",
+        "trajectory_l1": "0.17302318890703222",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-17T12:06:19+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_82-step_55112.ckpt",
+        "_pdms": 0.9172511800101916,
+        "_trajectory_l1": 0.17302318890703222,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "last.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_last.ckpt/last.ckpt",
+        "epoch": "",
+        "step": "",
+        "PDMS": "0.9156906600388738",
+        "trajectory_l1": "0.17349097251643736",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-17T17:16:59+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_last.ckpt",
+        "_pdms": 0.9156906600388738,
+        "_trajectory_l1": 0.17349097251643736,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=102-step=68392.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_102-step_68392.ckpt/epoch=102-step=68392.ckpt",
+        "epoch": "103",
+        "step": "68392",
+        "PDMS": "0.9151602363392998",
+        "trajectory_l1": "0.1731341624284784",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-17T16:31:56+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_102-step_68392.ckpt",
+        "_pdms": 0.9151602363392998,
+        "_trajectory_l1": 0.1731341624284784,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "step_00080000.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_step_00080000.ckpt/step_00080000.ckpt",
+        "epoch": "",
+        "step": "80000",
+        "PDMS": "0.9138024972975977",
+        "trajectory_l1": "0.16294822892453523",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-17T17:16:59+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_step_00080000.ckpt",
+        "_pdms": 0.9138024972975977,
+        "_trajectory_l1": 0.16294822892453523,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=84-step=56440.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_84-step_56440.ckpt/epoch=84-step=56440.ckpt",
+        "epoch": "85",
+        "step": "",
+        "PDMS": "0.912658701093798",
+        "trajectory_l1": "0.19545765114358316",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-17T12:55:31+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_84-step_56440.ckpt",
+        "_pdms": 0.912658701093798,
+        "_trajectory_l1": 0.19545765114358316,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "step_00060000.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_step_00060000.ckpt/step_00060000.ckpt",
+        "epoch": "",
+        "step": "60000",
+        "PDMS": "0.9117302083798464",
+        "trajectory_l1": "0.17373089872145406",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-17T17:16:59+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_step_00060000.ckpt",
+        "_pdms": 0.9117302083798464,
+        "_trajectory_l1": 0.17373089872145406,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=63-step=42496.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_63-step_42496.ckpt/epoch=63-step=42496.ckpt",
+        "epoch": "64",
+        "step": "",
+        "PDMS": "0.9108955126557768",
+        "trajectory_l1": "0.23545479970301192",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-17T10:22:24+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_63-step_42496.ckpt",
+        "_pdms": 0.9108955126557768,
+        "_trajectory_l1": 0.23545479970301192,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=62-step=41832.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_62-step_41832.ckpt/epoch=62-step=41832.ckpt",
+        "epoch": "63",
+        "step": "",
+        "PDMS": "0.9064500895282382",
+        "trajectory_l1": "0.2042369698000451",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-17T09:33:41+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_62-step_41832.ckpt",
+        "_pdms": 0.9064500895282382,
+        "_trajectory_l1": 0.2042369698000451,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=64-step=43160.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_64-step_43160.ckpt/epoch=64-step=43160.ckpt",
+        "epoch": "65",
+        "step": "",
+        "PDMS": "0.9046624095643345",
+        "trajectory_l1": "0.2276287784796829",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-17T11:10:06+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_64-step_43160.ckpt",
+        "_pdms": 0.9046624095643345,
+        "_trajectory_l1": 0.2276287784796829,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=51-step=34528.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_51-step_34528.ckpt/epoch=51-step=34528.ckpt",
+        "epoch": "52",
+        "step": "",
+        "PDMS": "0.8978652658953706",
+        "trajectory_l1": "0.23190900468143325",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-17T07:43:15+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_51-step_34528.ckpt",
+        "_pdms": 0.8978652658953706,
+        "_trajectory_l1": 0.23190900468143325,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "step_00050000.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_step_00050000.ckpt/step_00050000.ckpt",
+        "epoch": "",
+        "step": "50000",
+        "PDMS": "0.8951494333630092",
+        "trajectory_l1": "0.19064657339112212",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-17T17:16:59+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_step_00050000.ckpt",
+        "_pdms": 0.8951494333630092,
+        "_trajectory_l1": 0.19064657339112212,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=21-step=14608.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_21-step_14608.ckpt/epoch=21-step=14608.ckpt",
+        "epoch": "22",
+        "step": "",
+        "PDMS": "0.8932249306606886",
+        "trajectory_l1": "0.27885078518558293",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-17T03:49:25+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_21-step_14608.ckpt",
+        "_pdms": 0.8932249306606886,
+        "_trajectory_l1": 0.27885078518558293,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=55-step=37184.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_55-step_37184.ckpt/epoch=55-step=37184.ckpt",
+        "epoch": "56",
+        "step": "",
+        "PDMS": "0.8903334590481637",
+        "trajectory_l1": "0.23864013843455661",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-17T08:36:13+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_55-step_37184.ckpt",
+        "_pdms": 0.8903334590481637,
+        "_trajectory_l1": 0.23864013843455661,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=34-step=23240.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_34-step_23240.ckpt/epoch=34-step=23240.ckpt",
+        "epoch": "35",
+        "step": "",
+        "PDMS": "0.8829922709355145",
+        "trajectory_l1": "0.2623999713684122",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-17T05:07:41+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_34-step_23240.ckpt",
+        "_pdms": 0.8829922709355145,
+        "_trajectory_l1": 0.2623999713684122,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=36-step=24568.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_36-step_24568.ckpt/epoch=36-step=24568.ckpt",
+        "epoch": "37",
+        "step": "",
+        "PDMS": "0.8826527594492667",
+        "trajectory_l1": "0.2563524244958535",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-17T06:31:13+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_gt_prefuse/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_random_8gpu_minlr5e6_20260616T164153Z_stage2_train_lightning_logs_version_0_checkpoints_epoch_36-step_24568.ckpt",
+        "_pdms": 0.8826527594492667,
+        "_trajectory_l1": 0.2563524244958535,
+        "_source_val_PDMS": NaN
+      }
+    ]
+  },
+  "gt_nav": {
+    "path": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/summary/navtest_summary.csv",
+    "count": 10,
+    "top20": [
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "step_00120000.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/checkpoint_snapshots/step_00120000.ckpt/step_00120000.ckpt",
+        "PDMS": "0.8635978951237702",
+        "trajectory_l1": "0.2618116679920809",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9230521948576987",
+        "source_val_epoch": "",
+        "completed_at": "2026-06-18T03:15:51+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/navtest/step_00120000.ckpt",
+        "_pdms": 0.8635978951237702,
+        "_trajectory_l1": 0.2618116679920809,
+        "_source_val_PDMS": 0.9230521948576987
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "step_00100000.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/checkpoint_snapshots/step_00100000.ckpt/step_00100000.ckpt",
+        "PDMS": "0.8626145561057216",
+        "trajectory_l1": "0.26220326793097753",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9221540065882705",
+        "source_val_epoch": "",
+        "completed_at": "2026-06-17T20:13:40+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/navtest/step_00100000.ckpt",
+        "_pdms": 0.8626145561057216,
+        "_trajectory_l1": 0.26220326793097753,
+        "_source_val_PDMS": 0.9221540065882705
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=102-step=68392.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/checkpoint_snapshots/epoch_102-step_68392.ckpt/epoch=102-step=68392.ckpt",
+        "PDMS": "0.8590001893201156",
+        "trajectory_l1": "0.27266698546671436",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9151602363392998",
+        "source_val_epoch": "103",
+        "completed_at": "2026-06-17T18:02:49+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/navtest/epoch_102-step_68392.ckpt",
+        "_pdms": 0.8590001893201156,
+        "_trajectory_l1": 0.27266698546671436,
+        "_source_val_PDMS": 0.9151602363392998
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "last.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/checkpoint_snapshots/last.ckpt/last.ckpt",
+        "PDMS": "0.8581440144053913",
+        "trajectory_l1": "0.27282614245361786",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9156906600388738",
+        "source_val_epoch": "",
+        "completed_at": "2026-06-17T18:02:49+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/navtest/last.ckpt",
+        "_pdms": 0.8581440144053913,
+        "_trajectory_l1": 0.27282614245361786,
+        "_source_val_PDMS": 0.9156906600388738
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=82-step=55112.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/checkpoint_snapshots/epoch_82-step_55112.ckpt/epoch=82-step=55112.ckpt",
+        "PDMS": "0.8566013631571462",
+        "trajectory_l1": "0.2631117551275139",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9172511800101916",
+        "source_val_epoch": "83",
+        "completed_at": "2026-06-17T13:32:57+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/navtest/epoch_82-step_55112.ckpt",
+        "_pdms": 0.8566013631571462,
+        "_trajectory_l1": 0.2631117551275139,
+        "_source_val_PDMS": 0.9172511800101916
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=63-step=42496.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/checkpoint_snapshots/epoch_63-step_42496.ckpt/epoch=63-step=42496.ckpt",
+        "PDMS": "0.852901032409611",
+        "trajectory_l1": "0.3023011346816742",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9108955126557768",
+        "source_val_epoch": "64",
+        "completed_at": "2026-06-17T12:16:58+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/navtest/epoch_63-step_42496.ckpt",
+        "_pdms": 0.852901032409611,
+        "_trajectory_l1": 0.3023011346816742,
+        "_source_val_PDMS": 0.9108955126557768
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=84-step=56440.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/checkpoint_snapshots/epoch_84-step_56440.ckpt/epoch=84-step=56440.ckpt",
+        "PDMS": "0.8503568380841703",
+        "trajectory_l1": "0.2836380908572419",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.912658701093798",
+        "source_val_epoch": "85",
+        "completed_at": "2026-06-17T13:10:46+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/navtest/epoch_84-step_56440.ckpt",
+        "_pdms": 0.8503568380841703,
+        "_trajectory_l1": 0.2836380908572419,
+        "_source_val_PDMS": 0.912658701093798
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=62-step=41832.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/checkpoint_snapshots/epoch_62-step_41832.ckpt/epoch=62-step=41832.ckpt",
+        "PDMS": "0.849150104913265",
+        "trajectory_l1": "0.28729828225092024",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9064500895282382",
+        "source_val_epoch": "63",
+        "completed_at": "2026-06-17T10:53:43+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/navtest/epoch_62-step_41832.ckpt",
+        "_pdms": 0.849150104913265,
+        "_trajectory_l1": 0.28729828225092024,
+        "_source_val_PDMS": 0.9064500895282382
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=51-step=34528.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/checkpoint_snapshots/epoch_51-step_34528.ckpt/epoch=51-step=34528.ckpt",
+        "PDMS": "0.8450782066241981",
+        "trajectory_l1": "0.3017187587177375",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.8978652658953706",
+        "source_val_epoch": "52",
+        "completed_at": "2026-06-17T09:33:14+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/navtest/epoch_51-step_34528.ckpt",
+        "_pdms": 0.8450782066241981,
+        "_trajectory_l1": 0.3017187587177375,
+        "_source_val_PDMS": 0.8978652658953706
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=21-step=14608.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/checkpoint_snapshots/epoch_21-step_14608.ckpt/epoch=21-step=14608.ckpt",
+        "PDMS": "0.8348071927656979",
+        "trajectory_l1": "0.3293938311692539",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.8932249306606886",
+        "source_val_epoch": "22",
+        "completed_at": "2026-06-17T08:04:57+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_gt_prefuse_top3/navtest/epoch_21-step_14608.ckpt",
+        "_pdms": 0.8348071927656979,
+        "_trajectory_l1": 0.3293938311692539,
+        "_source_val_PDMS": 0.8932249306606886
+      }
+    ]
+  },
+  "elite_val": {
+    "path": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/summary/val6000_summary.csv",
+    "count": 61,
+    "top20": [
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "step_00160000.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_step_00160000.ckpt/step_00160000.ckpt",
+        "epoch": "",
+        "step": "160000",
+        "PDMS": "0.9526587992493918",
+        "trajectory_l1": "0.2362774878538524",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T08:09:45+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_step_00160000.ckpt",
+        "_pdms": 0.9526587992493918,
+        "_trajectory_l1": 0.2362774878538524,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=196-step=158585.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_196-step_158585.ckpt/epoch=196-step=158585.ckpt",
+        "epoch": "197",
+        "step": "158585",
+        "PDMS": "0.9519695616816006",
+        "trajectory_l1": "0.2414827383388765",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T08:09:44+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_196-step_158585.ckpt",
+        "_pdms": 0.9519695616816006,
+        "_trajectory_l1": 0.2414827383388765,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=199-step=161000.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_199-step_161000.ckpt/epoch=199-step=161000.ckpt",
+        "epoch": "200",
+        "step": "161000",
+        "PDMS": "0.9519368952614611",
+        "trajectory_l1": "0.2342201621023317",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T08:09:45+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_199-step_161000.ckpt",
+        "_pdms": 0.9519368952614611,
+        "_trajectory_l1": 0.2342201621023317,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=194-step=156975.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_194-step_156975.ckpt/epoch=194-step=156975.ckpt",
+        "epoch": "195",
+        "step": "156975",
+        "PDMS": "0.9514986876572791",
+        "trajectory_l1": "0.23693002944719047",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T08:09:44+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_194-step_156975.ckpt",
+        "_pdms": 0.9514986876572791,
+        "_trajectory_l1": 0.23693002944719047,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=164-step=132825.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_164-step_132825.ckpt/epoch=164-step=132825.ckpt",
+        "epoch": "165",
+        "step": "132825",
+        "PDMS": "0.9505879118751807",
+        "trajectory_l1": "0.2443584991392369",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T03:50:48+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_164-step_132825.ckpt",
+        "_pdms": 0.9505879118751807,
+        "_trajectory_l1": 0.2443584991392369,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=142-step=115115.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_142-step_115115.ckpt/epoch=142-step=115115.ckpt",
+        "epoch": "143",
+        "step": "115115",
+        "PDMS": "0.9505426283834653",
+        "trajectory_l1": "0.2612865829638516",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T01:47:04+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_142-step_115115.ckpt",
+        "_pdms": 0.9505426283834653,
+        "_trajectory_l1": 0.2612865829638516,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=178-step=144095.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_178-step_144095.ckpt/epoch=178-step=144095.ckpt",
+        "epoch": "179",
+        "step": "144095",
+        "PDMS": "0.9501386203685084",
+        "trajectory_l1": "0.24961022751607623",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T06:51:26+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_178-step_144095.ckpt",
+        "_pdms": 0.9501386203685084,
+        "_trajectory_l1": 0.24961022751607623,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=155-step=125580.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_155-step_125580.ckpt/epoch=155-step=125580.ckpt",
+        "epoch": "156",
+        "step": "125580",
+        "PDMS": "0.9495405468187781",
+        "trajectory_l1": "0.23479139275227984",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T03:50:48+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_155-step_125580.ckpt",
+        "_pdms": 0.9495405468187781,
+        "_trajectory_l1": 0.23479139275227984,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=167-step=135240.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_167-step_135240.ckpt/epoch=167-step=135240.ckpt",
+        "epoch": "168",
+        "step": "135240",
+        "PDMS": "0.9489691567780301",
+        "trajectory_l1": "0.23047080181414883",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T04:45:47+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_167-step_135240.ckpt",
+        "_pdms": 0.9489691567780301,
+        "_trajectory_l1": 0.23047080181414883,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=161-step=130410.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_161-step_130410.ckpt/epoch=161-step=130410.ckpt",
+        "epoch": "162",
+        "step": "130410",
+        "PDMS": "0.9488949239536305",
+        "trajectory_l1": "0.2378246476420512",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T03:50:48+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_161-step_130410.ckpt",
+        "_pdms": 0.9488949239536305,
+        "_trajectory_l1": 0.2378246476420512,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "step_00140000.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_step_00140000.ckpt/step_00140000.ckpt",
+        "epoch": "",
+        "step": "140000",
+        "PDMS": "0.9486625565113376",
+        "trajectory_l1": "0.23225203114980833",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T08:09:45+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_step_00140000.ckpt",
+        "_pdms": 0.9486625565113376,
+        "_trajectory_l1": 0.23225203114980833,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=176-step=142485.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_176-step_142485.ckpt/epoch=176-step=142485.ckpt",
+        "epoch": "177",
+        "step": "142485",
+        "PDMS": "0.9485373512418002",
+        "trajectory_l1": "0.2432360395155847",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T06:13:31+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_176-step_142485.ckpt",
+        "_pdms": 0.9485373512418002,
+        "_trajectory_l1": 0.2432360395155847,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=158-step=127995.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_158-step_127995.ckpt/epoch=158-step=127995.ckpt",
+        "epoch": "159",
+        "step": "127995",
+        "PDMS": "0.9479672040500877",
+        "trajectory_l1": "0.2514161323858425",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T03:38:53+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_158-step_127995.ckpt",
+        "_pdms": 0.9479672040500877,
+        "_trajectory_l1": 0.2514161323858425,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=173-step=140070.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_173-step_140070.ckpt/epoch=173-step=140070.ckpt",
+        "epoch": "174",
+        "step": "140070",
+        "PDMS": "0.9478246471408939",
+        "trajectory_l1": "0.24594590970268473",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T05:37:46+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_173-step_140070.ckpt",
+        "_pdms": 0.9478246471408939,
+        "_trajectory_l1": 0.24594590970268473,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=149-step=120750.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_149-step_120750.ckpt/epoch=149-step=120750.ckpt",
+        "epoch": "150",
+        "step": "120750",
+        "PDMS": "0.9473008671884553",
+        "trajectory_l1": "0.23842072646040469",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T02:13:09+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_149-step_120750.ckpt",
+        "_pdms": 0.9473008671884553,
+        "_trajectory_l1": 0.23842072646040469,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=140-step=113505.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_140-step_113505.ckpt/epoch=140-step=113505.ckpt",
+        "epoch": "141",
+        "step": "113505",
+        "PDMS": "0.947215323818277",
+        "trajectory_l1": "0.25266802243810765",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T01:47:03+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_140-step_113505.ckpt",
+        "_pdms": 0.947215323818277,
+        "_trajectory_l1": 0.25266802243810765,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=132-step=107065.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_132-step_107065.ckpt/epoch=132-step=107065.ckpt",
+        "epoch": "133",
+        "step": "107065",
+        "PDMS": "0.9470223146936065",
+        "trajectory_l1": "0.2492927987789735",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-17T23:44:59+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_132-step_107065.ckpt",
+        "_pdms": 0.9470223146936065,
+        "_trajectory_l1": 0.2492927987789735,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=147-step=119140.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_147-step_119140.ckpt/epoch=147-step=119140.ckpt",
+        "epoch": "148",
+        "step": "119140",
+        "PDMS": "0.9465296447048072",
+        "trajectory_l1": "0.24208124731387942",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T02:13:08+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_147-step_119140.ckpt",
+        "_pdms": 0.9465296447048072,
+        "_trajectory_l1": 0.24208124731387942,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=144-step=116725.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_144-step_116725.ckpt/epoch=144-step=116725.ckpt",
+        "epoch": "145",
+        "step": "116725",
+        "PDMS": "0.9464950274213385",
+        "trajectory_l1": "0.2518016753873477",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T01:38:01+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_144-step_116725.ckpt",
+        "_pdms": 0.9464950274213385,
+        "_trajectory_l1": 0.2518016753873477,
+        "_source_val_PDMS": NaN
+      },
+      {
+        "split_name": "val6000",
+        "checkpoint_name": "epoch=154-step=124775.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/checkpoint_snapshots/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_154-step_124775.ckpt/epoch=154-step=124775.ckpt",
+        "epoch": "155",
+        "step": "124775",
+        "PDMS": "0.9461510791301212",
+        "trajectory_l1": "0.23873447402877113",
+        "num_pdm_valid": "6000",
+        "completed_at": "2026-06-18T02:47:55+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/val6000_elite_full103k/val6000/mnt_project_VLA-AD_outputs_two_expert_slot_stage2_prefuse_v2_elite_full103k_random_8gpu_minlr5e6_20260616T230916Z_jsonfix_stage2_train_lightning_logs_version_0_checkpoints_epoch_154-step_124775.ckpt",
+        "_pdms": 0.9461510791301212,
+        "_trajectory_l1": 0.23873447402877113,
+        "_source_val_PDMS": NaN
+      }
+    ]
+  },
+  "elite_nav": {
+    "path": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/summary/navtest_summary.csv",
+    "count": 27,
+    "top20": [
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=142-step=115115.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/epoch_142-step_115115.ckpt/epoch=142-step=115115.ckpt",
+        "PDMS": "0.8728629594201617",
+        "trajectory_l1": "0.35099197744252153",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9505426283834653",
+        "source_val_epoch": "143",
+        "completed_at": "2026-06-18T03:15:51+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/epoch_142-step_115115.ckpt",
+        "_pdms": 0.8728629594201617,
+        "_trajectory_l1": 0.35099197744252153,
+        "_source_val_PDMS": 0.9505426283834653
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=199-step=161000.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/epoch_199-step_161000.ckpt/epoch=199-step=161000.ckpt",
+        "PDMS": "0.8686851121462762",
+        "trajectory_l1": "0.3351587185663153",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9519368952614611",
+        "source_val_epoch": "200",
+        "completed_at": "2026-06-18T08:35:27+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/epoch_199-step_161000.ckpt",
+        "_pdms": 0.8686851121462762,
+        "_trajectory_l1": 0.3351587185663153,
+        "_source_val_PDMS": 0.9519368952614611
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=149-step=120750.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/epoch_149-step_120750.ckpt/epoch=149-step=120750.ckpt",
+        "PDMS": "0.8682683455443351",
+        "trajectory_l1": "0.3333653349632717",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9473008671884553",
+        "source_val_epoch": "150",
+        "completed_at": "2026-06-18T03:15:51+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/epoch_149-step_120750.ckpt",
+        "_pdms": 0.8682683455443351,
+        "_trajectory_l1": 0.3333653349632717,
+        "_source_val_PDMS": 0.9473008671884553
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=132-step=107065.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/epoch_132-step_107065.ckpt/epoch=132-step=107065.ckpt",
+        "PDMS": "0.8676401595071735",
+        "trajectory_l1": "0.341882621216921",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9470223146936065",
+        "source_val_epoch": "133",
+        "completed_at": "2026-06-18T00:33:09+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/epoch_132-step_107065.ckpt",
+        "_pdms": 0.8676401595071735,
+        "_trajectory_l1": 0.341882621216921,
+        "_source_val_PDMS": 0.9470223146936065
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=117-step=94990.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/epoch_117-step_94990.ckpt/epoch=117-step=94990.ckpt",
+        "PDMS": "0.8675907687924546",
+        "trajectory_l1": "0.3222015835610095",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9410173212375761",
+        "source_val_epoch": "118",
+        "completed_at": "2026-06-17T20:53:40+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/epoch_117-step_94990.ckpt",
+        "_pdms": 0.8675907687924546,
+        "_trajectory_l1": 0.3222015835610095,
+        "_source_val_PDMS": 0.9410173212375761
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=196-step=158585.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/epoch_196-step_158585.ckpt/epoch=196-step=158585.ckpt",
+        "PDMS": "0.867316531947819",
+        "trajectory_l1": "0.3422284269486578",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9519695616816006",
+        "source_val_epoch": "197",
+        "completed_at": "2026-06-18T08:24:25+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/epoch_196-step_158585.ckpt",
+        "_pdms": 0.867316531947819,
+        "_trajectory_l1": 0.3422284269486578,
+        "_source_val_PDMS": 0.9519695616816006
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=164-step=132825.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/epoch_164-step_132825.ckpt/epoch=164-step=132825.ckpt",
+        "PDMS": "0.8669250663911666",
+        "trajectory_l1": "0.3443911720702764",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9505879118751807",
+        "source_val_epoch": "165",
+        "completed_at": "2026-06-18T05:05:50+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/epoch_164-step_132825.ckpt",
+        "_pdms": 0.8669250663911666,
+        "_trajectory_l1": 0.3443911720702764,
+        "_source_val_PDMS": 0.9505879118751807
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=155-step=125580.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/epoch_155-step_125580.ckpt/epoch=155-step=125580.ckpt",
+        "PDMS": "0.8667213540745805",
+        "trajectory_l1": "0.3317842370950553",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9495405468187781",
+        "source_val_epoch": "156",
+        "completed_at": "2026-06-18T04:16:12+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/epoch_155-step_125580.ckpt",
+        "_pdms": 0.8667213540745805,
+        "_trajectory_l1": 0.3317842370950553,
+        "_source_val_PDMS": 0.9495405468187781
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=52-step=42665.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/epoch_52-step_42665.ckpt/epoch=52-step=42665.ckpt",
+        "PDMS": "0.8664701544572844",
+        "trajectory_l1": "0.33231077267989706",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9322611581132204",
+        "source_val_epoch": "53",
+        "completed_at": "2026-06-17T12:52:40+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/epoch_52-step_42665.ckpt",
+        "_pdms": 0.8664701544572844,
+        "_trajectory_l1": 0.33231077267989706,
+        "_source_val_PDMS": 0.9322611581132204
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "step_00160000.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/step_00160000.ckpt/step_00160000.ckpt",
+        "PDMS": "0.8662816851411413",
+        "trajectory_l1": "0.33724304544758593",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9526587992493918",
+        "source_val_epoch": "",
+        "completed_at": "2026-06-18T08:24:25+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/step_00160000.ckpt",
+        "_pdms": 0.8662816851411413,
+        "_trajectory_l1": 0.33724304544758593,
+        "_source_val_PDMS": 0.9526587992493918
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=128-step=103845.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/epoch_128-step_103845.ckpt/epoch=128-step=103845.ckpt",
+        "PDMS": "0.865892938509269",
+        "trajectory_l1": "0.33795863002932497",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9445631125601661",
+        "source_val_epoch": "129",
+        "completed_at": "2026-06-17T22:57:14+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/epoch_128-step_103845.ckpt",
+        "_pdms": 0.865892938509269,
+        "_trajectory_l1": 0.33795863002932497,
+        "_source_val_PDMS": 0.9445631125601661
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=104-step=84525.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/epoch_104-step_84525.ckpt/epoch=104-step=84525.ckpt",
+        "PDMS": "0.865332516438718",
+        "trajectory_l1": "0.3442160470651028",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9390539533038458",
+        "source_val_epoch": "105",
+        "completed_at": "2026-06-17T19:07:11+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/epoch_104-step_84525.ckpt",
+        "_pdms": 0.865332516438718,
+        "_trajectory_l1": 0.3442160470651028,
+        "_source_val_PDMS": 0.9390539533038458
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=129-step=104650.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/epoch_129-step_104650.ckpt/epoch=129-step=104650.ckpt",
+        "PDMS": "0.8652950780081099",
+        "trajectory_l1": "0.33999975463036536",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9435250564005646",
+        "source_val_epoch": "130",
+        "completed_at": "2026-06-17T22:57:14+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/epoch_129-step_104650.ckpt",
+        "_pdms": 0.8652950780081099,
+        "_trajectory_l1": 0.33999975463036536,
+        "_source_val_PDMS": 0.9435250564005646
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "step_00100000.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/step_00100000.ckpt/step_00100000.ckpt",
+        "PDMS": "0.8651237197632411",
+        "trajectory_l1": "0.33298565349582243",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9435367255444947",
+        "source_val_epoch": "",
+        "completed_at": "2026-06-17T21:57:49+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/step_00100000.ckpt",
+        "_pdms": 0.8651237197632411,
+        "_trajectory_l1": 0.33298565349582243,
+        "_source_val_PDMS": 0.9435367255444947
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=134-step=108675.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/epoch_134-step_108675.ckpt/epoch=134-step=108675.ckpt",
+        "PDMS": "0.864335986422284",
+        "trajectory_l1": "0.3557501054575482",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9454742768691432",
+        "source_val_epoch": "135",
+        "completed_at": "2026-06-18T00:33:09+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/epoch_134-step_108675.ckpt",
+        "_pdms": 0.864335986422284,
+        "_trajectory_l1": 0.3557501054575482,
+        "_source_val_PDMS": 0.9454742768691432
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=140-step=113505.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/epoch_140-step_113505.ckpt/epoch=140-step=113505.ckpt",
+        "PDMS": "0.8636719820658748",
+        "trajectory_l1": "0.34542605605543214",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.947215323818277",
+        "source_val_epoch": "141",
+        "completed_at": "2026-06-18T03:15:51+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/epoch_140-step_113505.ckpt",
+        "_pdms": 0.8636719820658748,
+        "_trajectory_l1": 0.34542605605543214,
+        "_source_val_PDMS": 0.947215323818277
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "step_00080000.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/step_00080000.ckpt/step_00080000.ckpt",
+        "PDMS": "0.8634615618265824",
+        "trajectory_l1": "0.3317012168050227",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.940706199235821",
+        "source_val_epoch": "",
+        "completed_at": "2026-06-17T19:07:11+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/step_00080000.ckpt",
+        "_pdms": 0.8634615618265824,
+        "_trajectory_l1": 0.3317012168050227,
+        "_source_val_PDMS": 0.940706199235821
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=103-step=83720.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/epoch_103-step_83720.ckpt/epoch=103-step=83720.ckpt",
+        "PDMS": "0.8626134136273639",
+        "trajectory_l1": "0.3862579990828264",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9402174221704582",
+        "source_val_epoch": "104",
+        "completed_at": "2026-06-17T19:07:11+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/epoch_103-step_83720.ckpt",
+        "_pdms": 0.8626134136273639,
+        "_trajectory_l1": 0.3862579990828264,
+        "_source_val_PDMS": 0.9402174221704582
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=89-step=72450.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/epoch_89-step_72450.ckpt/epoch=89-step=72450.ckpt",
+        "PDMS": "0.8606108159836788",
+        "trajectory_l1": "0.3418808113890946",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9362188438476099",
+        "source_val_epoch": "90",
+        "completed_at": "2026-06-17T18:02:49+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/epoch_89-step_72450.ckpt",
+        "_pdms": 0.8606108159836788,
+        "_trajectory_l1": 0.3418808113890946,
+        "_source_val_PDMS": 0.9362188438476099
+      },
+      {
+        "split_name": "navtest",
+        "checkpoint_name": "epoch=123-step=99820.ckpt",
+        "checkpoint": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/checkpoint_snapshots/epoch_123-step_99820.ckpt/epoch=123-step=99820.ckpt",
+        "PDMS": "0.8600983987235964",
+        "trajectory_l1": "0.33384552066518486",
+        "num_pdm_valid": "12138",
+        "source_val_PDMS": "0.9412728613985327",
+        "source_val_epoch": "124",
+        "completed_at": "2026-06-17T21:57:49+00:00",
+        "eval_dir": "/mnt/project/VLA-AD/outputs/two_expert_slot_stage2_prefuse_v2_dual_val6000_navtest_watch_20260617T020404Z/navtest_elite_full103k_top3/navtest/epoch_123-step_99820.ckpt",
+        "_pdms": 0.8600983987235964,
+        "_trajectory_l1": 0.33384552066518486,
+        "_source_val_PDMS": 0.9412728613985327
+      }
+    ]
+  },
+  "fanout_recent": [
+    {
+      "name": "local_claim_eval_8gpu_2proc_navtest_2026-06-18T08_25_26_00_00",
+      "states": {
+        "done": 2
+      },
+      "mtime": "2026-06-18T08:25:26+00:00"
+    },
+    {
+      "name": "local_claim_eval_8gpu_2proc_navtest_2026-06-18T08_09_45_00_00",
+      "states": {
+        "done": 16
+      },
+      "mtime": "2026-06-18T08:09:45+00:00"
+    },
+    {
+      "name": "zt3_claim_eval_g23_navtest_2026-06-18T07_55_16_00_00",
+      "states": {
+        "failed": 4
+      },
+      "mtime": "2026-06-18T07:55:16+00:00"
+    },
+    {
+      "name": "local_claim_eval_8gpu_2proc_val6000_2026-06-18T07_53_35_00_00",
+      "states": {
+        "done": 16
+      },
+      "mtime": "2026-06-18T07:53:36+00:00"
+    },
+    {
+      "name": "zt3_claim_eval_g23_val6000_2026-06-18T07_20_11_00_00",
+      "states": {
+        "done": 4
+      },
+      "mtime": "2026-06-18T07:20:12+00:00"
+    },
+    {
+      "name": "zt3_claim_eval_g23_navtest_2026-06-18T06_51_26_00_00",
+      "states": {
+        "done": 4
+      },
+      "mtime": "2026-06-18T06:51:26+00:00"
+    },
+    {
+      "name": "zt3_claim_eval_g23_val6000_2026-06-18T06_14_32_00_00",
+      "states": {
+        "done": 4
+      },
+      "mtime": "2026-06-18T06:14:32+00:00"
+    },
+    {
+      "name": "zt3_claim_eval_g23_val6000_2026-06-18T05_38_47_00_00",
+      "states": {
+        "done": 4
+      },
+      "mtime": "2026-06-18T05:38:47+00:00"
+    },
+    {
+      "name": "zt3_claim_eval_g23_val6000_2026-06-18T05_06_50_00_00",
+      "states": {
+        "done": 4
+      },
+      "mtime": "2026-06-18T05:06:51+00:00"
+    },
+    {
+      "name": "zt3_claim_eval_g23_navtest_2026-06-18T04_45_48_00_00",
+      "states": {
+        "done": 2
+      },
+      "mtime": "2026-06-18T04:45:48+00:00"
+    },
+    {
+      "name": "zt3_claim_eval_g23_val6000_2026-06-18T04_17_13_00_00",
+      "states": {
+        "done": 4
+      },
+      "mtime": "2026-06-18T04:17:13+00:00"
+    },
+    {
+      "name": "zt3_claim_eval_g23_navtest_2026-06-18T03_50_49_00_00",
+      "states": {
+        "done": 4
+      },
+      "mtime": "2026-06-18T03:50:49+00:00"
+    },
+    {
+      "name": "local_claim_eval_8gpu_2proc_navtest_2026-06-18T03_38_54_00_00",
+      "states": {
+        "done": 6,
+        "failed": 6
+      },
+      "mtime": "2026-06-18T03:38:54+00:00"
+    },
+    {
+      "name": "zt3_claim_eval_g23_val6000_2026-06-18T03_16_53_00_00",
+      "states": {
+        "done": 4
+      },
+      "mtime": "2026-06-18T03:16:54+00:00"
+    },
+    {
+      "name": "local_claim_eval_8gpu_2proc_val6000_2026-06-18T03_00_52_00_00",
+      "states": {
+        "done": 16
+      },
+      "mtime": "2026-06-18T03:00:52+00:00"
+    },
+    {
+      "name": "zt3_claim_eval_g23_navtest_2026-06-18T02_47_57_00_00",
+      "states": {
+        "done": 4
+      },
+      "mtime": "2026-06-18T02:47:57+00:00"
+    },
+    {
+      "name": "local_claim_eval_8gpu_2proc_navtest_2026-06-18T02_13_09_00_00",
+      "states": {
+        "done": 16
+      },
+      "mtime": "2026-06-18T02:13:09+00:00"
+    },
+    {
+      "name": "zt3_claim_eval_g23_val6000_2026-06-18T02_12_29_00_00",
+      "states": {
+        "done": 4
+      },
+      "mtime": "2026-06-18T02:12:30+00:00"
+    },
+    {
+      "name": "zt3_claim_eval_g23_navtest_2026-06-18T01_47_04_00_00",
+      "states": {
+        "done": 4
+      },
+      "mtime": "2026-06-18T01:47:04+00:00"
+    },
+    {
+      "name": "local_claim_eval_8gpu_2proc_val6000_2026-06-18T01_24_38_00_00",
+      "states": {
+        "done": 12
+      },
+      "mtime": "2026-06-18T01:24:38+00:00"
+    }
+  ],
+  "partials": []
+}

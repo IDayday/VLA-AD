@@ -116,12 +116,14 @@ class GRPOConfig:
     ))
 
     # reward extraction and shaping
+    reward_mode: Literal["safe_diffgrpo", "core_pareto"] = "safe_diffgrpo"
     use_safety_shaped_reward: bool = True
     hard_gate_nc: bool = True
     hard_gate_dac: bool = True
     hard_gate_ttc: bool = False
     hard_gate_ddc: bool = False
     hard_gate_tlc: bool = False
+    safety_advantage_mode: Literal["hard", "soft_penalty"] = "hard"
 
     nc_safe_threshold: float = 1.0
     dac_safe_threshold: float = 1.0
@@ -132,6 +134,114 @@ class GRPOConfig:
     progress_bonus_weight: float = 0.05
     unsafe_reward_floor: float = -0.5
     unsafe_pdms_scale: float = 0.05
+    soft_safety_penalty_weight: float = 0.50
+    soft_safety_penalty_clip: float = 0.50
+    soft_safety_min_reward: float = 0.0
+
+    # Core-Pareto GRPO v2. This aligns the policy-gradient reward with the
+    # navtest PDMS formula inside the NC/DAC-feasible set:
+    # core = (5*EP + 5*TTC + 2*comfort) / 12. DDC is a guard only.
+    use_core_pareto_grpo: bool = False
+    core_ep_weight: float = 5.0
+    core_ttc_weight: float = 5.0
+    core_comfort_weight: float = 2.0
+    core_normalizer: float = 12.0
+    core_pareto_reference_mode: Literal["gt", "il", "max_gt_il"] = "max_gt_il"
+    core_pareto_reference_sample_deterministic: bool = False
+    core_pareto_use_reference_margin: bool = True
+    core_pareto_reference_margin_weight: float = 0.3
+    core_pareto_reference_margin_clip: float = 1.0
+    core_pareto_reference_margin_scale: float = 0.05
+    core_pareto_require_nc: bool = True
+    core_pareto_require_dac: bool = True
+    core_pareto_ddc_reference_mode: Literal["gt", "il", "max_gt_il"] = "max_gt_il"
+    core_pareto_ddc_drop_tolerance: float = 0.01
+    core_pareto_ddc_min_absolute: float = 0.95
+    core_pareto_use_ep_floor: bool = True
+    core_pareto_ep_reference_mode: Literal["gt", "il", "max_gt_il"] = "max_gt_il"
+    core_pareto_ep_floor_tolerance: float = 0.02
+    core_pareto_slow_penalty_weight: float = 0.5
+    core_pareto_slow_invalid_advantage: float = -0.3
+    core_pareto_use_ttc_tradeoff_penalty: bool = True
+    core_pareto_ttc_reference_mode: Literal["gt", "il", "max_gt_il"] = "max_gt_il"
+    core_pareto_tradeoff_tolerance: float = 0.01
+    core_pareto_tradeoff_penalty_weight: float = 0.2
+    core_pareto_ttc_floor_tolerance: float = 0.03
+    core_pareto_use_ttc_floor_penalty: bool = False
+    core_pareto_ttc_floor_penalty_weight: float = 0.1
+    core_pareto_score_mode: Literal[
+        "pdms_minus_slow",
+        "pdms_plus_core_margin_minus_slow",
+        "core_minus_slow",
+    ] = "pdms_plus_core_margin_minus_slow"
+    core_pareto_core_margin_weight: float = 0.3
+    core_pareto_normalize_score_per_group: bool = True
+    core_pareto_use_pareto_front: bool = True
+    core_pareto_pareto_front_bonus: float = 0.2
+    core_pareto_dominated_positive_adv_cap: float = 0.0
+    core_pareto_pareto_objectives: tuple[str, ...] = (
+        "ego_progress",
+        "time_to_collision_within_bound",
+        "history_comfort",
+    )
+    core_pareto_all_valid_objective: Literal["core", "score", "pdms"] = "core"
+    core_pareto_all_safe_low_std_group_weight: float = 0.5
+    core_pareto_min_group_reward_std: float = 0.005
+    core_pareto_all_slow_group_weight: float = 0.25
+    core_pareto_use_all_unsafe_rescue_advantage: bool = True
+    core_pareto_all_unsafe_base_offset: float = 0.7
+    core_pareto_all_unsafe_rescue_weight: float = 0.4
+    core_pareto_all_unsafe_adv_min: float = -1.5
+    core_pareto_all_unsafe_adv_max: float = 0.0
+    core_pareto_unsafe_advantage_offset: float = 1.0
+    core_pareto_advantage_clip_abs: float = 5.0
+    core_pareto_positive_slow_fail_cap: float = 0.0
+    core_pareto_use_phenotype_bucket_grpo: bool = False
+    core_pareto_bucket_by_progress: bool = True
+    core_pareto_bucket_by_lateral_endpoint: bool = True
+    core_pareto_progress_fast_margin: float = 0.02
+    core_pareto_progress_slow_margin: float = 0.02
+    core_pareto_lateral_bucket_threshold_m: float = 0.5
+    core_pareto_intra_bucket_weight: float = 1.0
+    core_pareto_inter_bucket_weight: float = 0.3
+    core_pareto_inter_bucket_clip: float = 0.5
+    core_pareto_use_adaptive_dual: bool = False
+    core_pareto_dual_ema: float = 0.95
+    core_pareto_dual_lr: float = 0.02
+    core_pareto_target_slow_rate: float = 0.10
+    core_pareto_target_unsafe_rate: float = 0.05
+    core_pareto_target_ddc_drop_rate: float = 0.05
+    core_pareto_lambda_slow_init: float = 0.5
+    core_pareto_lambda_slow_min: float = 0.1
+    core_pareto_lambda_slow_max: float = 1.5
+    core_pareto_lambda_safety_init: float = 1.0
+    core_pareto_lambda_safety_min: float = 0.5
+    core_pareto_lambda_safety_max: float = 2.0
+    core_pareto_buffer_bonus_enabled: bool = False
+    core_pareto_buffer_bonus_weight: float = 0.0
+    core_pareto_buffer_bonus_scale_m: float = 3.0
+    core_pareto_buffer_min_reward_margin: float = 0.02
+    core_pareto_buffer_require_ep_floor: bool = True
+    core_pareto_buffer_require_ddc_guard: bool = True
+    core_pareto_buffer_max_targets_per_scene: int = 1
+
+    # Legacy prototype fields kept for backward-compatible dry runs.
+    core_pareto_ep_floor: float = 0.75
+    core_pareto_ep_floor_penalty_weight: float = 0.40
+    core_pareto_use_ddc_guard: bool = True
+    core_pareto_ddc_guard_threshold: float = 0.95
+    core_pareto_ddc_penalty_weight: float = 0.25
+    core_pareto_ddc_penalty_clip: float = 1.0
+    core_pareto_pareto_bonus: float = 0.15
+    core_pareto_low_ep_adv_scale: float = 0.25
+    core_pareto_infeasible_advantage_offset: float = 1.0
+    core_pareto_min_core_std: float = 0.03
+    core_pareto_advantage_mode: Literal["group_zscore", "loo_zscore"] = "group_zscore"
+    core_pareto_use_phenotype_buckets: bool = True
+    core_pareto_ep_ttc_balance_margin: float = 0.05
+    core_pareto_target_nc: float = 1.0
+    core_pareto_target_dac: float = 1.0
+    core_pareto_target_ddc: float = 0.95
 
     # asymmetric safe advantage
     use_asymmetric_safe_advantage: bool = True
@@ -353,10 +463,18 @@ class OfflineRLConfig:
     grpo_buffer_reward_bonus_scale_m: float = 4.0
     grpo_buffer_reward_bonus_use_margin: bool = True
     grpo_buffer_distill_loss_weight: float = 0.0
-    grpo_buffer_distill_loss_schedule: Literal["constant", "linear_warmup"] = "linear_warmup"
+    grpo_buffer_distill_loss_schedule: Literal[
+        "constant",
+        "linear_warmup",
+        "linear_warmup_linear_decay",
+        "linear_warmup_cosine_decay",
+    ] = "linear_warmup"
     grpo_buffer_distill_loss_weight_start: float = 0.0
+    grpo_buffer_distill_loss_weight_end: float = 0.0
     grpo_buffer_distill_warmup_start_epoch: int = 0
     grpo_buffer_distill_warmup_epochs: int = 3
+    grpo_buffer_distill_decay_start_step: int = -1
+    grpo_buffer_distill_decay_end_step: int = -1
     grpo_buffer_distill_top_k: int = 1
     grpo_buffer_distill_min_reward_margin: float = 0.0
     grpo_buffer_distill_timestep_sampling: Literal["uniform", "ddim", "low_noise", "mid_noise"] = "low_noise"
@@ -378,10 +496,18 @@ class OfflineRLConfig:
     grpo_buffer_preference_dpo_gap_weight_max: float = 3.0
     grpo_buffer_preference_dpo_include_il: bool = True
     grpo_self_imitation_loss_weight: float = 0.0
-    grpo_self_imitation_loss_schedule: Literal["constant", "linear_warmup"] = "linear_warmup"
+    grpo_self_imitation_loss_schedule: Literal[
+        "constant",
+        "linear_warmup",
+        "linear_warmup_linear_decay",
+        "linear_warmup_cosine_decay",
+    ] = "linear_warmup"
     grpo_self_imitation_loss_weight_start: float = 0.0
+    grpo_self_imitation_loss_weight_end: float = 0.0
     grpo_self_imitation_warmup_start_epoch: int = 0
     grpo_self_imitation_warmup_epochs: int = 3
+    grpo_self_imitation_decay_start_step: int = -1
+    grpo_self_imitation_decay_end_step: int = -1
     grpo_self_imitation_top_k: int = 1
     grpo_self_imitation_min_reward: float = 0.85
     grpo_self_imitation_min_reward_margin: float = 0.01
@@ -497,6 +623,7 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     policy_kd_mode: Literal["none", "noise", "x0"] = "none"
     current_train_epoch: int = 0
     total_train_epochs: int = 200
+    current_train_step: int = 0
 
     use_last_vla: bool = False
     last_vla_stage: Literal[
@@ -576,8 +703,18 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     use_two_expert_slots: bool = False
     two_expert_cache_mode: bool = True
     two_expert_slot_mode: Literal["vlm_soft_slots"] = "vlm_soft_slots"
-    two_expert_condition_mode: Literal["horizon_hmef_lite", "denoise_hmef_v2"] = "horizon_hmef_lite"
-    two_expert_dit_condition_mode: Literal["horizon_hmef_lite", "denoise_hmef_v2"] = "horizon_hmef_lite"
+    two_expert_condition_mode: Literal[
+        "horizon_hmef_lite",
+        "denoise_hmef_v2",
+        "flat_context",
+        "prefuse_cross_attention",
+    ] = "horizon_hmef_lite"
+    two_expert_dit_condition_mode: Literal[
+        "horizon_hmef_lite",
+        "denoise_hmef_v2",
+        "flat_context",
+        "prefuse_cross_attention",
+    ] = "horizon_hmef_lite"
     two_expert_planner_dim: int = 384
     two_expert_use_raw_vlm_base: bool = True
     two_expert_zero_init_deltas: bool = True
@@ -591,6 +728,12 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     two_expert_denoise_gate_temperature: float = 1.0
     two_expert_denoise_condition_scale_init: float = 1.0
     two_expert_memory_scale_init: float = 1.0
+    two_expert_prefusion_heads: int = 8
+    two_expert_prefusion_dropout: float = 0.10
+    two_expert_prefusion_token_dropout: float = 0.05
+    two_expert_prefusion_condition_dropout: float = 0.10
+    two_expert_prefusion_scale_init: float = 1.0
+    two_expert_prefusion_zero_init: bool = True
 
     tune_projector: bool = True
     tune_diffusion_model: bool = True
@@ -661,7 +804,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         if config.use_last_vla and config.use_last_rd:
             raise ValueError("use_last_vla and use_last_rd are mutually exclusive.")
         if config.use_two_expert_slots:
-            allowed_two_expert_modes = {"horizon_hmef_lite", "denoise_hmef_v2"}
+            allowed_two_expert_modes = {
+                "horizon_hmef_lite",
+                "denoise_hmef_v2",
+                "flat_context",
+                "prefuse_cross_attention",
+            }
             if config.use_last_vla or config.use_last_rd or config.use_expert_features:
                 raise ValueError(
                     "two_expert_slot is mutually exclusive with old Last-VLA, Last-RD, and A4 direct expert paths."
@@ -676,6 +824,19 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 raise ValueError("two_expert_denoise_gate_hidden_dim must be positive.")
             if config.two_expert_denoise_gate_temperature <= 0.0:
                 raise ValueError("two_expert_denoise_gate_temperature must be positive.")
+            if int(config.two_expert_prefusion_heads) <= 0:
+                raise ValueError("two_expert_prefusion_heads must be positive.")
+            if config.input_embedding_dim % int(config.two_expert_prefusion_heads) != 0:
+                raise ValueError("two_expert_prefusion_heads must divide input_embedding_dim.")
+            for dropout_name in (
+                "two_expert_prefusion_dropout",
+                "two_expert_prefusion_token_dropout",
+                "two_expert_prefusion_condition_dropout",
+            ):
+                if not 0.0 <= float(getattr(config, dropout_name)) < 1.0:
+                    raise ValueError(f"{dropout_name} must be in [0.0, 1.0).")
+            if float(config.two_expert_prefusion_scale_init) < 0.0:
+                raise ValueError("two_expert_prefusion_scale_init must be non-negative.")
             if config.last_vla_use_residual_diffusion:
                 raise ValueError("two_expert_slot forbids residual diffusion.")
             if config.last_vla_teacher_traj_mode != "none":
@@ -763,6 +924,18 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             self.two_expert_memory_scale = nn.Parameter(
                 torch.tensor(float(config.two_expert_memory_scale_init), dtype=torch.float32)
             )
+            self.two_expert_prefusion_q_norm = nn.LayerNorm(planner_dim)
+            self.two_expert_prefusion_memory_norm = nn.LayerNorm(planner_dim)
+            self.two_expert_prefusion_attn = nn.MultiheadAttention(
+                planner_dim,
+                int(config.two_expert_prefusion_heads),
+                dropout=float(config.two_expert_prefusion_dropout),
+                batch_first=True,
+            )
+            self.two_expert_prefusion_out_proj = nn.Linear(planner_dim, planner_dim)
+            self.two_expert_prefusion_scale = nn.Parameter(
+                torch.tensor(float(config.two_expert_prefusion_scale_init), dtype=torch.float32)
+            )
             self.two_expert_denoise_condition_scale = nn.Parameter(
                 torch.tensor(float(config.two_expert_denoise_condition_scale_init), dtype=torch.float32)
             )
@@ -780,6 +953,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 nn.init.constant_(self.two_expert_dyn_delta_proj.bias, 0.0)
                 nn.init.constant_(self.two_expert_geo_delta_proj.weight, 0.0)
                 nn.init.constant_(self.two_expert_geo_delta_proj.bias, 0.0)
+            if config.two_expert_prefusion_zero_init:
+                nn.init.constant_(self.two_expert_prefusion_out_proj.weight, 0.0)
+                nn.init.constant_(self.two_expert_prefusion_out_proj.bias, 0.0)
 
         elif config.use_expert_features:
             if not config.use_jepa and not config.use_vggt:
@@ -1182,6 +1358,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("offline_rl_cfg.component_advantage_clip_min must be <= component_advantage_clip_max.")
         if not (0.0 <= float(cfg.source_balance_min_factor) <= float(cfg.source_balance_max_factor)):
             raise ValueError("offline_rl_cfg.source_balance_max_factor must be >= source_balance_min_factor >= 0.")
+        base_loss_schedules = {"constant", "linear_warmup"}
+        decay_loss_schedules = {
+            "constant",
+            "linear_warmup",
+            "linear_warmup_linear_decay",
+            "linear_warmup_cosine_decay",
+        }
         for name in (
             "awac_loss_schedule",
             "preference_dpo_loss_schedule",
@@ -1190,8 +1373,35 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "grpo_buffer_preference_dpo_loss_schedule",
             "grpo_self_imitation_loss_schedule",
         ):
-            if str(getattr(cfg, name)) not in {"constant", "linear_warmup"}:
-                raise ValueError(f"offline_rl_cfg.{name} must be constant or linear_warmup.")
+            supported_loss_schedules = (
+                decay_loss_schedules
+                if name in {"grpo_buffer_distill_loss_schedule", "grpo_self_imitation_loss_schedule"}
+                else base_loss_schedules
+            )
+            if str(getattr(cfg, name)) not in supported_loss_schedules:
+                raise ValueError(
+                    f"offline_rl_cfg.{name} must be one of {sorted(supported_loss_schedules)}."
+                )
+        for name in (
+            "grpo_buffer_distill_loss_weight_end",
+            "grpo_self_imitation_loss_weight_end",
+        ):
+            if float(getattr(cfg, name)) < 0.0:
+                raise ValueError(f"offline_rl_cfg.{name} must be non-negative.")
+        for prefix in ("grpo_buffer_distill", "grpo_self_imitation"):
+            start_step = int(getattr(cfg, f"{prefix}_decay_start_step"))
+            end_step = int(getattr(cfg, f"{prefix}_decay_end_step"))
+            schedule = str(getattr(cfg, f"{prefix}_loss_schedule"))
+            if start_step < -1 or end_step < -1:
+                raise ValueError(f"offline_rl_cfg.{prefix}_decay_*_step must be -1 or non-negative.")
+            if schedule in {"linear_warmup_linear_decay", "linear_warmup_cosine_decay"}:
+                if start_step < 0 or end_step < 0:
+                    raise ValueError(
+                        f"offline_rl_cfg.{prefix}_loss_schedule={schedule} requires decay_start_step "
+                        "and decay_end_step to be set."
+                    )
+                if end_step <= start_step:
+                    raise ValueError(f"offline_rl_cfg.{prefix}_decay_end_step must be > decay_start_step.")
         if str(cfg.bc_loss_schedule) not in {"constant", "linear"}:
             raise ValueError("offline_rl_cfg.bc_loss_schedule must be constant or linear.")
         for name in (
@@ -1482,12 +1692,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         if float(getattr(cfg, "ppo_replay_step_clip_rate", 3.0)) < 0.0:
             raise ValueError("ppo_replay_step_clip_rate must be non-negative.")
         for name in (
+            "reward_mode",
             "use_safety_shaped_reward",
             "hard_gate_nc",
             "hard_gate_dac",
             "hard_gate_ttc",
             "hard_gate_ddc",
             "hard_gate_tlc",
+            "safety_advantage_mode",
             "nc_safe_threshold",
             "dac_safe_threshold",
             "ttc_safe_threshold",
@@ -1496,6 +1708,101 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "progress_bonus_weight",
             "unsafe_reward_floor",
             "unsafe_pdms_scale",
+            "soft_safety_penalty_weight",
+            "soft_safety_penalty_clip",
+            "soft_safety_min_reward",
+            "use_core_pareto_grpo",
+            "core_ep_weight",
+            "core_ttc_weight",
+            "core_comfort_weight",
+            "core_normalizer",
+            "core_pareto_reference_mode",
+            "core_pareto_reference_sample_deterministic",
+            "core_pareto_use_reference_margin",
+            "core_pareto_reference_margin_weight",
+            "core_pareto_reference_margin_clip",
+            "core_pareto_reference_margin_scale",
+            "core_pareto_require_nc",
+            "core_pareto_require_dac",
+            "core_pareto_ddc_reference_mode",
+            "core_pareto_ddc_drop_tolerance",
+            "core_pareto_ddc_min_absolute",
+            "core_pareto_use_ep_floor",
+            "core_pareto_ep_reference_mode",
+            "core_pareto_ep_floor_tolerance",
+            "core_pareto_slow_penalty_weight",
+            "core_pareto_slow_invalid_advantage",
+            "core_pareto_use_ttc_tradeoff_penalty",
+            "core_pareto_ttc_reference_mode",
+            "core_pareto_tradeoff_tolerance",
+            "core_pareto_tradeoff_penalty_weight",
+            "core_pareto_ttc_floor_tolerance",
+            "core_pareto_use_ttc_floor_penalty",
+            "core_pareto_ttc_floor_penalty_weight",
+            "core_pareto_score_mode",
+            "core_pareto_core_margin_weight",
+            "core_pareto_normalize_score_per_group",
+            "core_pareto_use_pareto_front",
+            "core_pareto_pareto_front_bonus",
+            "core_pareto_dominated_positive_adv_cap",
+            "core_pareto_pareto_objectives",
+            "core_pareto_all_valid_objective",
+            "core_pareto_all_safe_low_std_group_weight",
+            "core_pareto_min_group_reward_std",
+            "core_pareto_all_slow_group_weight",
+            "core_pareto_use_all_unsafe_rescue_advantage",
+            "core_pareto_all_unsafe_base_offset",
+            "core_pareto_all_unsafe_rescue_weight",
+            "core_pareto_all_unsafe_adv_min",
+            "core_pareto_all_unsafe_adv_max",
+            "core_pareto_unsafe_advantage_offset",
+            "core_pareto_advantage_clip_abs",
+            "core_pareto_positive_slow_fail_cap",
+            "core_pareto_use_phenotype_bucket_grpo",
+            "core_pareto_bucket_by_progress",
+            "core_pareto_bucket_by_lateral_endpoint",
+            "core_pareto_progress_fast_margin",
+            "core_pareto_progress_slow_margin",
+            "core_pareto_lateral_bucket_threshold_m",
+            "core_pareto_intra_bucket_weight",
+            "core_pareto_inter_bucket_weight",
+            "core_pareto_inter_bucket_clip",
+            "core_pareto_dual_ema",
+            "core_pareto_dual_lr",
+            "core_pareto_target_slow_rate",
+            "core_pareto_target_unsafe_rate",
+            "core_pareto_target_ddc_drop_rate",
+            "core_pareto_lambda_slow_init",
+            "core_pareto_lambda_slow_min",
+            "core_pareto_lambda_slow_max",
+            "core_pareto_lambda_safety_init",
+            "core_pareto_lambda_safety_min",
+            "core_pareto_lambda_safety_max",
+            "core_pareto_buffer_bonus_enabled",
+            "core_pareto_buffer_bonus_weight",
+            "core_pareto_buffer_bonus_scale_m",
+            "core_pareto_buffer_min_reward_margin",
+            "core_pareto_buffer_require_ep_floor",
+            "core_pareto_buffer_require_ddc_guard",
+            "core_pareto_buffer_max_targets_per_scene",
+            "core_pareto_ep_floor",
+            "core_pareto_ep_floor_penalty_weight",
+            "core_pareto_use_ddc_guard",
+            "core_pareto_ddc_guard_threshold",
+            "core_pareto_ddc_penalty_weight",
+            "core_pareto_ddc_penalty_clip",
+            "core_pareto_pareto_bonus",
+            "core_pareto_low_ep_adv_scale",
+            "core_pareto_infeasible_advantage_offset",
+            "core_pareto_min_core_std",
+            "core_pareto_advantage_mode",
+            "core_pareto_use_phenotype_buckets",
+            "core_pareto_ep_ttc_balance_margin",
+            "core_pareto_use_adaptive_dual",
+            "core_pareto_dual_lr",
+            "core_pareto_target_nc",
+            "core_pareto_target_dac",
+            "core_pareto_target_ddc",
             "use_asymmetric_safe_advantage",
             "advantage_std_floor",
             "safe_negative_adv_scale",
@@ -1535,7 +1842,126 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "diversity_metric",
         ):
             setattr(self, name, getattr(cfg, name))
+        if str(self.safety_advantage_mode) not in {"hard", "soft_penalty"}:
+            raise ValueError("GRPO safety_advantage_mode must be 'hard' or 'soft_penalty'.")
+        if str(self.reward_mode) not in {"safe_diffgrpo", "core_pareto"}:
+            raise ValueError("GRPO reward_mode must be 'safe_diffgrpo' or 'core_pareto'.")
+        for name in (
+            "core_pareto_reference_mode",
+            "core_pareto_ddc_reference_mode",
+            "core_pareto_ep_reference_mode",
+            "core_pareto_ttc_reference_mode",
+        ):
+            if str(getattr(self, name)) not in {"gt", "il", "max_gt_il"}:
+                raise ValueError(f"{name} must be one of 'gt', 'il', or 'max_gt_il'.")
+        if str(self.core_pareto_score_mode) not in {
+            "pdms_minus_slow",
+            "pdms_plus_core_margin_minus_slow",
+            "core_minus_slow",
+        }:
+            raise ValueError("core_pareto_score_mode has an unsupported value.")
+        if str(self.core_pareto_all_valid_objective) not in {"core", "score", "pdms"}:
+            raise ValueError("core_pareto_all_valid_objective must be 'core', 'score', or 'pdms'.")
+        if float(self.core_normalizer) <= 0.0:
+            raise ValueError("core_normalizer must be positive.")
+        if float(self.core_pareto_reference_margin_scale) <= 0.0:
+            raise ValueError("core_pareto_reference_margin_scale must be positive.")
+        invalid_objectives = set(self.core_pareto_pareto_objectives) - set(REQUIRED_COMPONENT_KEYS)
+        if invalid_objectives:
+            raise ValueError(f"Unsupported core_pareto_pareto_objectives: {sorted(invalid_objectives)}")
+        if int(self.core_pareto_buffer_max_targets_per_scene) <= 0:
+            raise ValueError("core_pareto_buffer_max_targets_per_scene must be positive.")
+        if bool(self.core_pareto_buffer_bonus_enabled):
+            offline_cfg = getattr(self, "offline_rl_cfg", None)
+            buffer_path = "" if offline_cfg is None else str(getattr(offline_cfg, "elite_buffer_path", ""))
+            if not buffer_path:
+                raise ValueError("core_pareto_buffer_bonus_enabled=True requires an offline RL elite buffer path.")
+        if str(self.core_pareto_advantage_mode) not in {"group_zscore", "loo_zscore"}:
+            raise ValueError("core_pareto_advantage_mode must be 'group_zscore' or 'loo_zscore'.")
+        if float(self.soft_safety_penalty_weight) < 0.0:
+            raise ValueError("GRPO soft_safety_penalty_weight must be non-negative.")
+        if float(self.soft_safety_penalty_clip) < 0.0:
+            raise ValueError("GRPO soft_safety_penalty_clip must be non-negative.")
+        for name in (
+            "core_pareto_ep_floor",
+            "core_pareto_ddc_guard_threshold",
+            "core_pareto_target_nc",
+            "core_pareto_target_dac",
+            "core_pareto_target_ddc",
+        ):
+            value = float(getattr(self, name))
+            if value < 0.0 or value > 1.0:
+                raise ValueError(f"{name} must be in [0, 1].")
+        for name in (
+            "core_pareto_ep_floor_penalty_weight",
+            "core_pareto_ddc_penalty_weight",
+            "core_pareto_ddc_penalty_clip",
+            "core_pareto_pareto_bonus",
+            "core_pareto_low_ep_adv_scale",
+            "core_pareto_infeasible_advantage_offset",
+            "core_pareto_min_core_std",
+            "core_pareto_ep_ttc_balance_margin",
+            "core_pareto_dual_lr",
+            "core_ep_weight",
+            "core_ttc_weight",
+            "core_comfort_weight",
+            "core_pareto_reference_margin_weight",
+            "core_pareto_reference_margin_clip",
+            "core_pareto_reference_margin_scale",
+            "core_pareto_ddc_drop_tolerance",
+            "core_pareto_ddc_min_absolute",
+            "core_pareto_ep_floor_tolerance",
+            "core_pareto_slow_penalty_weight",
+            "core_pareto_tradeoff_tolerance",
+            "core_pareto_tradeoff_penalty_weight",
+            "core_pareto_ttc_floor_tolerance",
+            "core_pareto_ttc_floor_penalty_weight",
+            "core_pareto_core_margin_weight",
+            "core_pareto_pareto_front_bonus",
+            "core_pareto_all_safe_low_std_group_weight",
+            "core_pareto_min_group_reward_std",
+            "core_pareto_all_slow_group_weight",
+            "core_pareto_all_unsafe_base_offset",
+            "core_pareto_all_unsafe_rescue_weight",
+            "core_pareto_unsafe_advantage_offset",
+            "core_pareto_advantage_clip_abs",
+            "core_pareto_progress_fast_margin",
+            "core_pareto_progress_slow_margin",
+            "core_pareto_lateral_bucket_threshold_m",
+            "core_pareto_intra_bucket_weight",
+            "core_pareto_inter_bucket_weight",
+            "core_pareto_inter_bucket_clip",
+            "core_pareto_dual_ema",
+            "core_pareto_target_slow_rate",
+            "core_pareto_target_unsafe_rate",
+            "core_pareto_target_ddc_drop_rate",
+            "core_pareto_lambda_slow_init",
+            "core_pareto_lambda_slow_min",
+            "core_pareto_lambda_slow_max",
+            "core_pareto_lambda_safety_init",
+            "core_pareto_lambda_safety_min",
+            "core_pareto_lambda_safety_max",
+            "core_pareto_buffer_bonus_weight",
+            "core_pareto_buffer_bonus_scale_m",
+            "core_pareto_buffer_min_reward_margin",
+        ):
+            if float(getattr(self, name)) < 0.0:
+                raise ValueError(f"{name} must be non-negative.")
+        if not (0.0 < float(self.core_pareto_dual_ema) < 1.0):
+            raise ValueError("core_pareto_dual_ema must be in (0, 1).")
+        if float(self.core_pareto_lambda_slow_max) < float(self.core_pareto_lambda_slow_min):
+            raise ValueError("core_pareto_lambda_slow_max must be >= core_pareto_lambda_slow_min.")
+        if float(self.core_pareto_lambda_safety_max) < float(self.core_pareto_lambda_safety_min):
+            raise ValueError("core_pareto_lambda_safety_max must be >= core_pareto_lambda_safety_min.")
         self.grpo_update_counter = 0
+        self.core_pareto_dual_nc = 0.0
+        self.core_pareto_dual_dac = 0.0
+        self.core_pareto_dual_ddc = 0.0
+        self.core_pareto_lambda_slow = float(self.core_pareto_lambda_slow_init)
+        self.core_pareto_lambda_safety = float(self.core_pareto_lambda_safety_init)
+        self.core_pareto_slow_rate_ema = 0.0
+        self.core_pareto_unsafe_rate_ema = 0.0
+        self.core_pareto_ddc_drop_rate_ema = 0.0
 
     def _init_grpo(self, cfg: GRPOConfig):
         """Initializes components and hyperparameters for GRPO training."""
@@ -1681,9 +2107,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         t = torch.full((batch_size,), i, device=device, dtype=torch.long)
         return t
 
-    def set_training_progress(self, epoch: int, total_epochs: int):
+    def set_training_progress(self, epoch: int, total_epochs: int, global_step: Optional[int] = None):
         self.config.current_train_epoch = int(epoch)
         self.config.total_train_epochs = max(1, int(total_epochs))
+        if global_step is not None:
+            self.config.current_train_step = max(0, int(global_step))
         if hasattr(self, "last_rd"):
             self.last_rd.set_training_progress(epoch, total_epochs)
         if hasattr(self, "last_vla_cot"):
@@ -2070,6 +2498,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 4: "raw_vlm_only",
                 5: "dyn_only",
                 6: "geo_only",
+                7: "random_slots",
             }.get(code, "normal")
         return str(value)
 
@@ -2078,6 +2507,40 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             self.config.use_two_expert_slots
             and self.config.two_expert_dit_condition_mode == "denoise_hmef_v2"
         )
+
+    def _two_expert_flat_context_enabled(self) -> bool:
+        return bool(
+            self.config.use_two_expert_slots
+            and self.config.two_expert_dit_condition_mode == "flat_context"
+        )
+
+    def _two_expert_prefusion_enabled(self) -> bool:
+        return bool(
+            self.config.use_two_expert_slots
+            and self.config.two_expert_dit_condition_mode == "prefuse_cross_attention"
+        )
+
+    def _apply_two_expert_prefusion_dropout(
+        self,
+        expert_memory: torch.Tensor,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor]:
+        dropped = expert_memory.new_zeros(())
+        token_keep_ratio = expert_memory.new_ones(())
+        condition_keep = expert_memory.new_ones(expert_memory.shape[0], 1, 1)
+        if not self.training:
+            return expert_memory, dropped, token_keep_ratio, condition_keep
+        condition_dropout = float(self.config.two_expert_prefusion_condition_dropout)
+        if condition_dropout > 0.0:
+            keep = torch.rand(expert_memory.shape[0], 1, 1, device=expert_memory.device) >= condition_dropout
+            condition_keep = keep.to(dtype=expert_memory.dtype)
+            dropped = (~keep).to(dtype=expert_memory.dtype).mean()
+            expert_memory = expert_memory * condition_keep
+        token_dropout = float(self.config.two_expert_prefusion_token_dropout)
+        if token_dropout > 0.0:
+            keep = torch.rand(expert_memory.shape[0], expert_memory.shape[1], 1, device=expert_memory.device) >= token_dropout
+            token_keep_ratio = keep.to(dtype=expert_memory.dtype).mean()
+            expert_memory = expert_memory * keep.to(dtype=expert_memory.dtype) / max(1.0 - token_dropout, 1e-6)
+        return expert_memory, dropped, token_keep_ratio, condition_keep
 
     def _build_two_expert_context(
         self,
@@ -2110,7 +2573,24 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             h_dyn = torch.zeros_like(h_dyn)
         if mode in {"zero_h_geo", "zero_all_experts", "raw_vlm_only", "dyn_only"}:
             h_geo = torch.zeros_like(h_geo)
-        if mode not in {"normal", "zero_h_dyn", "zero_h_geo", "zero_all_experts", "raw_vlm_only", "dyn_only", "geo_only"}:
+        if mode == "random_slots":
+            if h_dyn.shape[0] > 1:
+                order = torch.roll(torch.arange(h_dyn.shape[0], device=h_dyn.device), shifts=1)
+                h_dyn = h_dyn[order]
+                h_geo = h_geo[order]
+            else:
+                h_dyn = torch.randn_like(h_dyn) * h_dyn.detach().float().std().clamp_min(1e-6).to(h_dyn)
+                h_geo = torch.randn_like(h_geo) * h_geo.detach().float().std().clamp_min(1e-6).to(h_geo)
+        if mode not in {
+            "normal",
+            "zero_h_dyn",
+            "zero_h_geo",
+            "zero_all_experts",
+            "raw_vlm_only",
+            "dyn_only",
+            "geo_only",
+            "random_slots",
+        }:
             raise ValueError(f"Unknown two_expert corruption mode: {mode!r}.")
         dyn_enabled = mode not in {"zero_h_dyn", "zero_all_experts", "raw_vlm_only", "geo_only"}
         geo_enabled = mode not in {"zero_h_geo", "zero_all_experts", "raw_vlm_only", "dyn_only"}
@@ -2121,23 +2601,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             dyn_proj = torch.zeros_like(dyn_proj)
         if not geo_enabled:
             geo_proj = torch.zeros_like(geo_proj)
-        queries = self.two_expert_horizon_queries.unsqueeze(0).expand(vl_embeds.shape[0], -1, -1).to(vl_embeds)
-        f_dyn, _ = self.two_expert_dyn_horizon_attn(queries, dyn_proj, dyn_proj, need_weights=False)
-        f_geo, _ = self.two_expert_geo_horizon_attn(queries, geo_proj, geo_proj, need_weights=False)
-        if not dyn_enabled:
-            f_dyn = torch.zeros_like(f_dyn)
-        if not geo_enabled:
-            f_geo = torch.zeros_like(f_geo)
-        dyn_delta = self.two_expert_dyn_delta_proj(f_dyn)
-        geo_delta = self.two_expert_geo_delta_proj(f_geo)
-        if not dyn_enabled:
-            dyn_delta = torch.zeros_like(dyn_delta)
-        if not geo_enabled:
-            geo_delta = torch.zeros_like(geo_delta)
-        expert_step_condition = dyn_delta + geo_delta
+
         expert_memory_tokens = None
         context_tokens = vl_embeds
-        if self._two_expert_denoise_v2_enabled() and self.config.two_expert_memory_tokens_to_dit:
+        flat_context_enabled = self._two_expert_flat_context_enabled()
+        prefusion_enabled = self._two_expert_prefusion_enabled()
+        prefusion_delta = vl_embeds.new_zeros(vl_embeds.shape)
+        prefusion_condition_dropped = vl_embeds.new_zeros(())
+        prefusion_token_keep_ratio = vl_embeds.new_ones(())
+        if prefusion_enabled:
             type_embedding = self.two_expert_memory_type_embedding.to(device=vl_embeds.device, dtype=vl_embeds.dtype)
             memory_scale = self.two_expert_memory_scale.to(device=vl_embeds.device, dtype=vl_embeds.dtype)
             dyn_memory = (dyn_proj + type_embedding[0].view(1, 1, -1)) * memory_scale
@@ -2146,8 +2618,75 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 dyn_memory = torch.zeros_like(dyn_memory)
             if not geo_enabled:
                 geo_memory = torch.zeros_like(geo_memory)
-            expert_memory_tokens = torch.cat((dyn_memory, geo_memory), dim=1)
-            context_tokens = torch.cat((vl_embeds, expert_memory_tokens), dim=1)
+            f_dyn = dyn_proj.new_zeros(vl_embeds.shape[0], self.config.action_horizon, dyn_proj.shape[-1])
+            f_geo = geo_proj.new_zeros(vl_embeds.shape[0], self.config.action_horizon, geo_proj.shape[-1])
+            dyn_delta = f_dyn.new_zeros(f_dyn.shape)
+            geo_delta = f_geo.new_zeros(f_geo.shape)
+            expert_step_condition = None
+            if mode == "raw_vlm_only":
+                expert_memory_tokens = None
+                context_tokens = vl_embeds
+            else:
+                expert_memory_tokens = torch.cat((dyn_memory, geo_memory), dim=1)
+                expert_memory_for_attn, prefusion_condition_dropped, prefusion_token_keep_ratio, condition_keep = (
+                    self._apply_two_expert_prefusion_dropout(expert_memory_tokens)
+                )
+                q = self.two_expert_prefusion_q_norm(vl_embeds)
+                kv = self.two_expert_prefusion_memory_norm(expert_memory_for_attn)
+                prefusion_attn, _ = self.two_expert_prefusion_attn(q, kv, kv, need_weights=False)
+                prefusion_delta = self.two_expert_prefusion_out_proj(prefusion_attn)
+                prefusion_delta = prefusion_delta * condition_keep.to(dtype=prefusion_delta.dtype)
+                prefusion_scale = self.two_expert_prefusion_scale.to(device=vl_embeds.device, dtype=vl_embeds.dtype)
+                context_tokens = vl_embeds + prefusion_delta * prefusion_scale
+            context_mean = context_tokens.mean(1)
+        elif flat_context_enabled:
+            type_embedding = self.two_expert_memory_type_embedding.to(device=vl_embeds.device, dtype=vl_embeds.dtype)
+            memory_scale = self.two_expert_memory_scale.to(device=vl_embeds.device, dtype=vl_embeds.dtype)
+            dyn_memory = (dyn_proj + type_embedding[0].view(1, 1, -1)) * memory_scale
+            geo_memory = (geo_proj + type_embedding[1].view(1, 1, -1)) * memory_scale
+            if not dyn_enabled:
+                dyn_memory = torch.zeros_like(dyn_memory)
+            if not geo_enabled:
+                geo_memory = torch.zeros_like(geo_memory)
+            if mode == "raw_vlm_only":
+                expert_memory_tokens = None
+                context_tokens = vl_embeds
+            else:
+                expert_memory_tokens = torch.cat((dyn_memory, geo_memory), dim=1)
+                context_tokens = torch.cat((vl_embeds, expert_memory_tokens), dim=1)
+            f_dyn = dyn_proj.new_zeros(vl_embeds.shape[0], self.config.action_horizon, dyn_proj.shape[-1])
+            f_geo = geo_proj.new_zeros(vl_embeds.shape[0], self.config.action_horizon, geo_proj.shape[-1])
+            dyn_delta = f_dyn.new_zeros(f_dyn.shape)
+            geo_delta = f_geo.new_zeros(f_geo.shape)
+            expert_step_condition = None
+            context_mean = context_tokens.mean(1)
+        else:
+            queries = self.two_expert_horizon_queries.unsqueeze(0).expand(vl_embeds.shape[0], -1, -1).to(vl_embeds)
+            f_dyn, _ = self.two_expert_dyn_horizon_attn(queries, dyn_proj, dyn_proj, need_weights=False)
+            f_geo, _ = self.two_expert_geo_horizon_attn(queries, geo_proj, geo_proj, need_weights=False)
+            if not dyn_enabled:
+                f_dyn = torch.zeros_like(f_dyn)
+            if not geo_enabled:
+                f_geo = torch.zeros_like(f_geo)
+            dyn_delta = self.two_expert_dyn_delta_proj(f_dyn)
+            geo_delta = self.two_expert_geo_delta_proj(f_geo)
+            if not dyn_enabled:
+                dyn_delta = torch.zeros_like(dyn_delta)
+            if not geo_enabled:
+                geo_delta = torch.zeros_like(geo_delta)
+            expert_step_condition = dyn_delta + geo_delta
+            context_mean = vl_embeds.mean(1)
+            if self._two_expert_denoise_v2_enabled() and self.config.two_expert_memory_tokens_to_dit:
+                type_embedding = self.two_expert_memory_type_embedding.to(device=vl_embeds.device, dtype=vl_embeds.dtype)
+                memory_scale = self.two_expert_memory_scale.to(device=vl_embeds.device, dtype=vl_embeds.dtype)
+                dyn_memory = (dyn_proj + type_embedding[0].view(1, 1, -1)) * memory_scale
+                geo_memory = (geo_proj + type_embedding[1].view(1, 1, -1)) * memory_scale
+                if not dyn_enabled:
+                    dyn_memory = torch.zeros_like(dyn_memory)
+                if not geo_enabled:
+                    geo_memory = torch.zeros_like(geo_memory)
+                expert_memory_tokens = torch.cat((dyn_memory, geo_memory), dim=1)
+                context_tokens = torch.cat((vl_embeds, expert_memory_tokens), dim=1)
         diagnostics = {
             "two_expert_condition_enabled": vl_embeds.new_tensor(float(mode != "raw_vlm_only")),
             "two_expert_corruption_mode_code": vl_embeds.new_tensor(
@@ -2159,13 +2698,26 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     "raw_vlm_only": 4,
                     "dyn_only": 5,
                     "geo_only": 6,
+                    "random_slots": 7,
                 }[mode]
             ),
             "two_expert_raw_vlm_context_used": vl_embeds.new_tensor(1.0),
             "two_expert_denoise_v2_enabled": vl_embeds.new_tensor(float(self._two_expert_denoise_v2_enabled())),
+            "two_expert_flat_context_enabled": vl_embeds.new_tensor(float(flat_context_enabled)),
+            "two_expert_prefusion_enabled": vl_embeds.new_tensor(float(prefusion_enabled)),
             "two_expert_memory_token_count": vl_embeds.new_tensor(float(0 if expert_memory_tokens is None else expert_memory_tokens.shape[1])),
             "two_expert_context_token_count": vl_embeds.new_tensor(float(context_tokens.shape[1])),
             "two_expert_memory_scale": self.two_expert_memory_scale.detach().to(device=vl_embeds.device, dtype=vl_embeds.dtype),
+            "two_expert_prefusion_scale": self.two_expert_prefusion_scale.detach().to(device=vl_embeds.device, dtype=vl_embeds.dtype),
+            "two_expert_prefusion_delta_norm": prefusion_delta.detach().float().norm(dim=-1).mean().to(dtype=vl_embeds.dtype),
+            "two_expert_prefusion_condition_dropped": prefusion_condition_dropped.to(dtype=vl_embeds.dtype),
+            "two_expert_prefusion_token_keep_ratio": prefusion_token_keep_ratio.to(dtype=vl_embeds.dtype),
+            "two_expert_prefusion_zero_init": vl_embeds.new_tensor(
+                float(
+                    torch.count_nonzero(self.two_expert_prefusion_out_proj.weight.detach()).item() == 0
+                    and torch.count_nonzero(self.two_expert_prefusion_out_proj.bias.detach()).item() == 0
+                )
+            ),
             "two_expert_denoise_condition_scale": self.two_expert_denoise_condition_scale.detach().to(
                 device=vl_embeds.device,
                 dtype=vl_embeds.dtype,
@@ -2185,7 +2737,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         }
         return {
             "context_tokens": context_tokens,
-            "context_mean": vl_embeds.mean(1),
+            "context_mean": context_mean,
             "expert_step_condition": expert_step_condition,
             "f_dyn": f_dyn,
             "f_geo": f_geo,
@@ -3408,9 +3960,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "two_expert_corruption_mode_code",
                 "two_expert_raw_vlm_context_used",
                 "two_expert_denoise_v2_enabled",
+                "two_expert_flat_context_enabled",
+                "two_expert_prefusion_enabled",
                 "two_expert_memory_token_count",
                 "two_expert_context_token_count",
                 "two_expert_memory_scale",
+                "two_expert_prefusion_scale",
+                "two_expert_prefusion_delta_norm",
+                "two_expert_prefusion_condition_dropped",
+                "two_expert_prefusion_token_keep_ratio",
+                "two_expert_prefusion_zero_init",
                 "two_expert_denoise_condition_scale",
                 "two_expert_h_dyn_norm",
                 "two_expert_h_geo_norm",
@@ -4224,6 +4783,204 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         bonus = torch.where(valid & (pair_count > 0), bonus, torch.zeros_like(bonus))
         return bonus.reshape(B * G)
 
+    def _compute_soft_safety_penalty(self, components: Dict[str, torch.Tensor]) -> torch.Tensor:
+        """Continuous TTC/DDC penalty used to avoid over-hard progress suppression."""
+        pdms = components["pdms"]
+        penalty = torch.zeros_like(pdms)
+        ttc_threshold = float(self.ttc_safe_threshold)
+        if ttc_threshold > 0.0:
+            ttc = components["time_to_collision_within_bound"]
+            penalty = penalty + (ttc_threshold - ttc).clamp(min=0.0) / max(ttc_threshold, 1e-6)
+        ddc_threshold = float(self.ddc_safe_threshold)
+        if ddc_threshold > 0.0:
+            ddc = components["driving_direction_compliance"]
+            penalty = penalty + (ddc_threshold - ddc).clamp(min=0.0) / max(ddc_threshold, 1e-6)
+        clip = float(self.soft_safety_penalty_clip)
+        if clip > 0.0:
+            penalty = penalty.clamp(max=clip)
+        return penalty
+
+    def _compute_pdms_core_components(
+        self,
+        components: Dict[str, torch.Tensor],
+    ) -> Dict[str, torch.Tensor]:
+        ep = components["ego_progress"].float()
+        ttc = components["time_to_collision_within_bound"].float()
+        comfort = components["history_comfort"].float()
+        nc = components["no_at_fault_collisions"].float()
+        dac = components["drivable_area_compliance"].float()
+        ddc = components["driving_direction_compliance"].float()
+        core = ((5.0 * ep) + (5.0 * ttc) + (2.0 * comfort)) / 12.0
+        core = core.clamp(min=0.0, max=1.0)
+        pdms_formula = (nc * dac * core).clamp(min=0.0, max=1.0)
+        nc_dac_feasible = (
+            (nc >= float(self.nc_safe_threshold))
+            & (dac >= float(self.dac_safe_threshold))
+        )
+        if bool(getattr(self, "core_pareto_use_ddc_guard", True)):
+            ddc_guard = ddc >= float(self.core_pareto_ddc_guard_threshold)
+        else:
+            ddc_guard = torch.ones_like(nc_dac_feasible, dtype=torch.bool)
+        guard_mask = nc_dac_feasible & ddc_guard
+
+        ep_floor = float(self.core_pareto_ep_floor)
+        ep_floor_gap = (ep_floor - ep).clamp(min=0.0) / max(ep_floor, 1e-6)
+        ep_floor_penalty = float(self.core_pareto_ep_floor_penalty_weight) * ep_floor_gap
+
+        ddc_threshold = float(self.core_pareto_ddc_guard_threshold)
+        ddc_gap = (ddc_threshold - ddc).clamp(min=0.0) / max(ddc_threshold, 1e-6)
+        ddc_gap = ddc_gap.clamp(max=float(self.core_pareto_ddc_penalty_clip))
+        ddc_penalty = float(self.core_pareto_ddc_penalty_weight) * ddc_gap
+
+        dual_penalty = torch.zeros_like(core)
+        if bool(getattr(self, "core_pareto_use_adaptive_dual", False)):
+            dual_lr = float(getattr(self, "core_pareto_dual_lr", 0.0))
+            if self.training and dual_lr > 0.0:
+                self.core_pareto_dual_nc = max(
+                    0.0,
+                    float(getattr(self, "core_pareto_dual_nc", 0.0))
+                    + dual_lr * (float(self.core_pareto_target_nc) - float(nc.mean().detach().cpu())),
+                )
+                self.core_pareto_dual_dac = max(
+                    0.0,
+                    float(getattr(self, "core_pareto_dual_dac", 0.0))
+                    + dual_lr * (float(self.core_pareto_target_dac) - float(dac.mean().detach().cpu())),
+                )
+                self.core_pareto_dual_ddc = max(
+                    0.0,
+                    float(getattr(self, "core_pareto_dual_ddc", 0.0))
+                    + dual_lr * (float(self.core_pareto_target_ddc) - float(ddc.mean().detach().cpu())),
+                )
+            dual_penalty = (
+                float(getattr(self, "core_pareto_dual_nc", 0.0))
+                * (float(self.core_pareto_target_nc) - nc).clamp(min=0.0)
+                + float(getattr(self, "core_pareto_dual_dac", 0.0))
+                * (float(self.core_pareto_target_dac) - dac).clamp(min=0.0)
+                + float(getattr(self, "core_pareto_dual_ddc", 0.0))
+                * (float(self.core_pareto_target_ddc) - ddc).clamp(min=0.0)
+            )
+
+        adjusted_core = (core - ep_floor_penalty - ddc_penalty - dual_penalty).clamp(min=0.0, max=1.0)
+        return {
+            "core": core.to(components["pdms"]),
+            "pdms_formula": pdms_formula.to(components["pdms"]),
+            "nc_dac_feasible": nc_dac_feasible,
+            "ddc_guard": ddc_guard,
+            "guard_mask": guard_mask,
+            "ep_floor_gap": ep_floor_gap.to(components["pdms"]),
+            "ep_floor_penalty": ep_floor_penalty.to(components["pdms"]),
+            "ddc_penalty": ddc_penalty.to(components["pdms"]),
+            "dual_penalty": dual_penalty.to(components["pdms"]),
+            "adjusted_core": adjusted_core.to(components["pdms"]),
+        }
+
+    def _compute_core_pareto_front_mask(
+        self,
+        ep: torch.Tensor,
+        ttc: torch.Tensor,
+        comfort: torch.Tensor,
+        valid_mask: torch.Tensor,
+    ) -> torch.Tensor:
+        values = torch.stack([ep.float(), ttc.float(), comfort.float()], dim=-1)
+        vi = values[:, :, None, :]
+        vj = values[:, None, :, :]
+        dominates = ((vj >= vi - 1e-6).all(dim=-1) & (vj > vi + 1e-6).any(dim=-1))
+        pair_valid = valid_mask[:, :, None] & valid_mask[:, None, :]
+        dominated = (dominates & pair_valid).any(dim=2)
+        return valid_mask & ~dominated
+
+    def _compute_legacy_core_pareto_advantages(
+        self,
+        rewards_matrix: torch.Tensor,
+        hard_safe_matrix: torch.Tensor,
+        reward_aux: Dict[str, torch.Tensor],
+    ) -> tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
+        B, G = rewards_matrix.shape
+        ep = reward_aux["ego_progress"].reshape(B, G).float()
+        ttc = reward_aux["time_to_collision_within_bound"].reshape(B, G).float()
+        comfort = reward_aux["history_comfort"].reshape(B, G).float()
+        nc = reward_aux["no_at_fault_collisions"].reshape(B, G).float()
+        dac = reward_aux["drivable_area_compliance"].reshape(B, G).float()
+        ddc = reward_aux["driving_direction_compliance"].reshape(B, G).float()
+        core = reward_aux["core_pareto_core"].reshape(B, G).float()
+        adjusted_core = reward_aux["core_pareto_adjusted_core"].reshape(B, G).float()
+        ep_floor_gap = reward_aux["core_pareto_ep_floor_gap"].reshape(B, G).float()
+        valid = hard_safe_matrix.bool()
+
+        valid_f = valid.to(dtype=adjusted_core.dtype)
+        valid_count = valid_f.sum(dim=1, keepdim=True)
+        fallback_mean = adjusted_core.mean(dim=1, keepdim=True)
+        masked_sum = (adjusted_core * valid_f).sum(dim=1, keepdim=True)
+        group_mean = torch.where(valid_count > 0, masked_sum / valid_count.clamp(min=1.0), fallback_mean)
+        centered = torch.where(valid, adjusted_core - group_mean, torch.zeros_like(adjusted_core))
+        var = (centered.square() * valid_f).sum(dim=1, keepdim=True) / valid_count.clamp(min=1.0)
+        std = var.sqrt().clamp(min=max(float(self.core_pareto_min_core_std), float(self.advantage_std_floor)))
+
+        if str(getattr(self, "core_pareto_advantage_mode", "group_zscore")) == "loo_zscore" and G > 1:
+            loo_count = (valid_count - valid_f).clamp(min=1.0)
+            loo_sum = masked_sum - adjusted_core * valid_f
+            loo_mean = torch.where(valid_count > 1.0, loo_sum / loo_count, group_mean)
+            z = (adjusted_core - loo_mean) / std
+        else:
+            z = (adjusted_core - group_mean) / std
+
+        pareto_front = self._compute_core_pareto_front_mask(ep, ttc, comfort, valid)
+        valid_adv = z + float(self.core_pareto_pareto_bonus) * pareto_front.to(dtype=z.dtype)
+
+        ep_low = ep_floor_gap > 0.0
+        low_ep_scale = float(self.core_pareto_low_ep_adv_scale)
+        valid_adv = torch.where(ep_low & (valid_adv > 0.0), valid_adv * low_ep_scale, valid_adv)
+
+        invalid_adv = -float(self.core_pareto_infeasible_advantage_offset) + torch.clamp(z, max=0.0)
+        advantages = torch.where(valid, valid_adv, invalid_adv)
+
+        flat_advantages = advantages.flatten()
+        adv_min = torch.quantile(flat_advantages.float(), float(self.clip_advantage_lower_quantile)).to(advantages)
+        adv_max = torch.quantile(flat_advantages.float(), float(self.clip_advantage_upper_quantile)).to(advantages)
+        advantages = advantages.clamp(min=adv_min, max=adv_max)
+
+        safe_count = valid.sum(dim=1)
+        mixed = (safe_count > 0) & (safe_count < G)
+        all_safe = safe_count == G
+        all_unsafe = safe_count == 0
+        reward_std = std.squeeze(1).to(dtype=rewards_matrix.dtype)
+
+        if self.use_dynamic_group_weight:
+            group_weight = torch.ones(B, device=rewards_matrix.device, dtype=rewards_matrix.dtype)
+            group_weight[all_safe & (reward_std <= float(self.min_group_reward_std))] = float(
+                self.all_safe_low_std_group_weight
+            )
+            group_weight[all_unsafe] = float(self.all_unsafe_group_weight)
+        else:
+            group_weight = torch.ones(B, device=rewards_matrix.device, dtype=rewards_matrix.dtype)
+
+        nc_dac_feasible = (nc >= float(self.nc_safe_threshold)) & (dac >= float(self.dac_safe_threshold))
+        ddc_guard = ddc >= float(self.core_pareto_ddc_guard_threshold)
+        margin = float(self.core_pareto_ep_ttc_balance_margin)
+        progress_bucket = valid & (ep >= ttc + margin)
+        ttc_bucket = valid & (ttc >= ep + margin)
+        balanced_bucket = valid & ((ep - ttc).abs() < margin)
+
+        aux = {
+            "reward_std": reward_std.detach(),
+            "safe_count": safe_count.detach().to(dtype=rewards_matrix.dtype),
+            "mixed_group_ratio": mixed.float().mean().to(dtype=rewards_matrix.dtype),
+            "all_safe_group_ratio": all_safe.float().mean().to(dtype=rewards_matrix.dtype),
+            "all_unsafe_group_ratio": all_unsafe.float().mean().to(dtype=rewards_matrix.dtype),
+            "core_pareto_front_ratio": pareto_front.float().mean().to(dtype=rewards_matrix.dtype),
+            "core_pareto_valid_front_ratio": (
+                (pareto_front & valid).float().sum() / valid.float().sum().clamp(min=1.0)
+            ).to(dtype=rewards_matrix.dtype),
+            "core_pareto_ep_low_ratio": ep_low.float().mean().to(dtype=rewards_matrix.dtype),
+            "core_pareto_nc_dac_feasible_ratio": nc_dac_feasible.float().mean().to(dtype=rewards_matrix.dtype),
+            "core_pareto_ddc_guard_pass_ratio": ddc_guard.float().mean().to(dtype=rewards_matrix.dtype),
+            "core_pareto_progress_bucket_ratio": progress_bucket.float().mean().to(dtype=rewards_matrix.dtype),
+            "core_pareto_ttc_bucket_ratio": ttc_bucket.float().mean().to(dtype=rewards_matrix.dtype),
+            "core_pareto_balanced_bucket_ratio": balanced_bucket.float().mean().to(dtype=rewards_matrix.dtype),
+            "core_pareto_core_std": core.std(dim=1, unbiased=False).mean().to(dtype=rewards_matrix.dtype),
+        }
+        return advantages.reshape(B * G).detach(), group_weight.detach(), aux
+
     def _compose_stage3_reward(
         self,
         base_rewards: torch.Tensor,
@@ -4239,10 +4996,26 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         assert hard_safe_mask.shape == (B * G,)
 
         ego_progress = components["ego_progress"]
-        if self.use_safety_shaped_reward:
+        soft_safety_penalty = torch.zeros_like(pdms)
+        core_aux: Dict[str, torch.Tensor] = {}
+        if str(getattr(self, "reward_mode", "safe_diffgrpo")) == "core_pareto":
+            core_aux = self._compute_pdms_core_components(components)
+            hard_safe_mask = core_aux["guard_mask"]
+            unsafe_reward = float(self.unsafe_reward_floor) + float(self.unsafe_pdms_scale) * core_aux["pdms_formula"]
+            reward = torch.where(hard_safe_mask, core_aux["adjusted_core"], unsafe_reward.to(pdms))
+        elif self.use_safety_shaped_reward:
             safe_reward = pdms + float(self.progress_bonus_weight) * ego_progress
-            unsafe_reward = float(self.unsafe_reward_floor) + float(self.unsafe_pdms_scale) * pdms
-            reward = torch.where(hard_safe_mask, safe_reward, unsafe_reward)
+            if str(self.safety_advantage_mode) == "soft_penalty":
+                soft_safety_penalty = self._compute_soft_safety_penalty(components)
+                soft_reward = (
+                    safe_reward
+                    - float(self.soft_safety_penalty_weight) * soft_safety_penalty
+                ).clamp(min=float(self.soft_safety_min_reward))
+                unsafe_reward = float(self.unsafe_reward_floor) + float(self.unsafe_pdms_scale) * pdms
+                reward = torch.where(hard_safe_mask, soft_reward, unsafe_reward)
+            else:
+                unsafe_reward = float(self.unsafe_reward_floor) + float(self.unsafe_pdms_scale) * pdms
+                reward = torch.where(hard_safe_mask, safe_reward, unsafe_reward)
         else:
             reward = pdms
 
@@ -4263,7 +5036,40 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "pdms": pdms,
             "ego_progress": ego_progress,
             "diversity_bonus": diversity_bonus,
+            "soft_safety_penalty": soft_safety_penalty,
+            "core_pareto_mode_enabled": pdms.new_tensor(
+                float(str(getattr(self, "reward_mode", "safe_diffgrpo")) == "core_pareto")
+            ),
         }
+        if core_aux:
+            aux.update(
+                {
+                    "core_pareto_core": core_aux["core"],
+                    "core_pareto_pdms_formula": core_aux["pdms_formula"],
+                    "core_pareto_adjusted_core": core_aux["adjusted_core"],
+                    "core_pareto_ep_floor_gap": core_aux["ep_floor_gap"],
+                    "core_pareto_ep_floor_penalty": core_aux["ep_floor_penalty"],
+                    "core_pareto_ddc_penalty": core_aux["ddc_penalty"],
+                    "core_pareto_dual_penalty": core_aux["dual_penalty"],
+                    "core_pareto_nc_dac_feasible_mask": core_aux["nc_dac_feasible"].to(dtype=pdms.dtype),
+                    "core_pareto_ddc_guard_mask": core_aux["ddc_guard"].to(dtype=pdms.dtype),
+                }
+            )
+        else:
+            zero = torch.zeros_like(pdms)
+            aux.update(
+                {
+                    "core_pareto_core": zero,
+                    "core_pareto_pdms_formula": zero,
+                    "core_pareto_adjusted_core": zero,
+                    "core_pareto_ep_floor_gap": zero,
+                    "core_pareto_ep_floor_penalty": zero,
+                    "core_pareto_ddc_penalty": zero,
+                    "core_pareto_dual_penalty": zero,
+                    "core_pareto_nc_dac_feasible_mask": zero,
+                    "core_pareto_ddc_guard_mask": zero,
+                }
+            )
         for key in (
             "no_at_fault_collisions",
             "drivable_area_compliance",
@@ -4281,10 +5087,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         self,
         rewards_matrix: torch.Tensor,
         hard_safe_matrix: torch.Tensor,
+        reward_aux: Optional[Dict[str, torch.Tensor]] = None,
     ) -> tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
         # rewards_matrix/hard_safe_matrix: [B, G]
         assert rewards_matrix.shape == hard_safe_matrix.shape
         B, G = rewards_matrix.shape
+
+        if str(getattr(self, "reward_mode", "safe_diffgrpo")) == "core_pareto" and reward_aux is not None:
+            return self._compute_legacy_core_pareto_advantages(rewards_matrix, hard_safe_matrix, reward_aux)
 
         mean_r = rewards_matrix.mean(dim=1, keepdim=True)
         if G > 1:
@@ -4327,6 +5137,656 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "all_unsafe_group_ratio": all_unsafe.float().mean().to(dtype=rewards_matrix.dtype),
         }
         return advantages.reshape(B * G).detach(), group_weight.detach(), aux
+
+    def _compute_pdms_core(
+        self,
+        components: Dict[str, torch.Tensor],
+        *,
+        ep_weight: Optional[float] = None,
+        ttc_weight: Optional[float] = None,
+        comfort_weight: Optional[float] = None,
+        normalizer: Optional[float] = None,
+    ) -> torch.Tensor:
+        ep = components["ego_progress"].float()
+        ttc = components["time_to_collision_within_bound"].float()
+        comfort = components["history_comfort"].float()
+        ep_w = float(self.core_ep_weight if ep_weight is None else ep_weight)
+        ttc_w = float(self.core_ttc_weight if ttc_weight is None else ttc_weight)
+        comfort_w = float(self.core_comfort_weight if comfort_weight is None else comfort_weight)
+        denom = float(self.core_normalizer if normalizer is None else normalizer)
+        if denom <= 0.0:
+            raise ValueError("PDMS core normalizer must be positive.")
+        return (ep_w * ep + ttc_w * ttc + comfort_w * comfort) / denom
+
+    def _reshape_components_for_group(
+        self,
+        components: Dict[str, torch.Tensor],
+        B: int,
+        G: int,
+    ) -> Dict[str, torch.Tensor]:
+        grouped: Dict[str, torch.Tensor] = {}
+        for key, value in components.items():
+            if not isinstance(value, torch.Tensor) or value.numel() != B * G:
+                continue
+            grouped[key] = value.reshape(B, G)
+        return grouped
+
+    def _select_core_pareto_reference_value(
+        self,
+        gt_value: torch.Tensor,
+        il_value: torch.Tensor,
+        mode: str,
+    ) -> torch.Tensor:
+        if mode == "gt":
+            return gt_value
+        if mode == "il":
+            return il_value
+        if mode == "max_gt_il":
+            return torch.maximum(gt_value, il_value)
+        raise ValueError(f"Unsupported Core-Pareto reference mode: {mode!r}")
+
+    def _core_pareto_reward_kwargs(self) -> Dict[str, Any]:
+        offline_cfg = getattr(self, "offline_rl_cfg", None)
+        if offline_cfg is None or not bool(getattr(offline_cfg, "enabled", False)):
+            return {}
+        return {
+            "strict_submetrics": bool(offline_cfg.strict_reward_submetrics),
+            "required_submetrics": offline_cfg.required_reward_submetrics,
+            "missing_submetric_policy": str(offline_cfg.missing_submetric_policy),
+            "use_batched_pdm_scoring": bool(offline_cfg.use_batched_pdm_scoring),
+            "use_exact_array_pdm_state_conversion": bool(offline_cfg.use_exact_array_pdm_state_conversion),
+            "use_fast_pdm_scorer": bool(offline_cfg.use_fast_pdm_scorer),
+            "pdm_batch_chunk_size": int(offline_cfg.pdm_batch_chunk_size),
+            "pdm_shadow_check": bool(offline_cfg.pdm_shadow_check),
+            "pdm_shadow_max_samples": int(offline_cfg.pdm_shadow_max_samples),
+            "pdm_shadow_max_abs_diff": float(offline_cfg.pdm_shadow_max_abs_diff),
+        }
+
+    def _compute_core_pareto_reference_components(
+        self,
+        vl_features: torch.Tensor,
+        action_input: BatchFeature,
+        tokens_list: list[str],
+        metric_cache: Dict[str, Any],
+    ) -> Dict[str, torch.Tensor]:
+        gt_traj = action_input.action.detach()
+        reward_kwargs = self._core_pareto_reward_kwargs()
+        gt_pdms, gt_components = self.reward_fn(
+            gt_traj,
+            tokens_list,
+            metric_cache,
+            return_components=True,
+            **reward_kwargs,
+        )
+        gt_components = dict(gt_components)
+        gt_components["pdms"] = gt_pdms
+
+        if hasattr(self, "old_policy") and self.old_policy is not None:
+            self.old_policy.eval()
+            with torch.no_grad():
+                _, il_traj = self.old_policy.sample_chain(
+                    vl_features,
+                    action_input.his_traj,
+                    action_input.status_feature,
+                    deterministic=bool(self.core_pareto_reference_sample_deterministic),
+                    action_input=action_input,
+                    allow_target_tokens=False,
+                )
+            il_pdms, il_components = self.reward_fn(
+                il_traj.detach(),
+                tokens_list,
+                metric_cache,
+                return_components=True,
+                **reward_kwargs,
+            )
+            il_components = dict(il_components)
+            il_components["pdms"] = il_pdms
+        else:
+            il_pdms = gt_pdms
+            il_components = dict(gt_components)
+
+        gt_core = self._compute_pdms_core(gt_components)
+        il_core = self._compute_pdms_core(il_components)
+        ref_components: Dict[str, torch.Tensor] = {}
+        for key in REQUIRED_COMPONENT_KEYS:
+            if key in gt_components and key in il_components:
+                ref_components[key] = self._select_core_pareto_reference_value(
+                    gt_components[key].float(),
+                    il_components[key].float(),
+                    str(self.core_pareto_reference_mode),
+                )
+        ref_pdms = self._select_core_pareto_reference_value(
+            gt_pdms.float(),
+            il_pdms.float(),
+            str(self.core_pareto_reference_mode),
+        )
+        ref_core = self._select_core_pareto_reference_value(
+            gt_core.float(),
+            il_core.float(),
+            str(self.core_pareto_reference_mode),
+        )
+        ref_ep = self._select_core_pareto_reference_value(
+            gt_components["ego_progress"].float(),
+            il_components["ego_progress"].float(),
+            str(self.core_pareto_ep_reference_mode),
+        )
+        ref_ttc = self._select_core_pareto_reference_value(
+            gt_components["time_to_collision_within_bound"].float(),
+            il_components["time_to_collision_within_bound"].float(),
+            str(self.core_pareto_ttc_reference_mode),
+        )
+        ref_ddc = self._select_core_pareto_reference_value(
+            gt_components["driving_direction_compliance"].float(),
+            il_components["driving_direction_compliance"].float(),
+            str(self.core_pareto_ddc_reference_mode),
+        )
+        ref_comfort = self._select_core_pareto_reference_value(
+            gt_components["history_comfort"].float(),
+            il_components["history_comfort"].float(),
+            str(self.core_pareto_reference_mode),
+        )
+        ref_nc = self._select_core_pareto_reference_value(
+            gt_components["no_at_fault_collisions"].float(),
+            il_components["no_at_fault_collisions"].float(),
+            str(self.core_pareto_reference_mode),
+        )
+        ref_dac = self._select_core_pareto_reference_value(
+            gt_components["drivable_area_compliance"].float(),
+            il_components["drivable_area_compliance"].float(),
+            str(self.core_pareto_reference_mode),
+        )
+        return {
+            "gt_components": gt_components,
+            "il_components": il_components,
+            "ref_components": ref_components,
+            "gt_pdms": gt_pdms.float(),
+            "il_pdms": il_pdms.float(),
+            "ref_pdms": ref_pdms.float(),
+            "gt_core": gt_core.float(),
+            "il_core": il_core.float(),
+            "ref_core": ref_core.float(),
+            "ref_ep": ref_ep.float(),
+            "ref_ttc": ref_ttc.float(),
+            "ref_comfort": ref_comfort.float(),
+            "ref_ddc": ref_ddc.float(),
+            "ref_nc": ref_nc.float(),
+            "ref_dac": ref_dac.float(),
+        }
+
+    def _compute_pareto_front_mask(
+        self,
+        objective_components: Dict[str, torch.Tensor],
+        valid_mask: torch.Tensor,
+        objectives: tuple[str, ...],
+    ) -> torch.Tensor:
+        if valid_mask.ndim != 2:
+            raise ValueError("valid_mask must be [B, G].")
+        values = []
+        for key in objectives:
+            if key not in objective_components:
+                raise KeyError(f"Missing Pareto objective component: {key}")
+            values.append(torch.nan_to_num(objective_components[key].float(), nan=-1e6))
+        if not values:
+            return torch.zeros_like(valid_mask, dtype=torch.bool)
+        stacked = torch.stack(values, dim=-1)
+        vi = stacked[:, :, None, :]
+        vj = stacked[:, None, :, :]
+        dominates = ((vj >= vi - 1e-6).all(dim=-1) & (vj > vi + 1e-6).any(dim=-1))
+        pair_valid = valid_mask[:, :, None] & valid_mask[:, None, :]
+        dominated = (dominates & pair_valid).any(dim=2)
+        return valid_mask & ~dominated
+
+    def _compute_phenotype_buckets(
+        self,
+        trajs_matrix: torch.Tensor,
+        components: Dict[str, torch.Tensor],
+        ref_ep: torch.Tensor,
+    ) -> torch.Tensor:
+        B, G = trajs_matrix.shape[:2]
+        device = trajs_matrix.device
+        if not bool(getattr(self, "core_pareto_use_phenotype_bucket_grpo", False)):
+            return torch.zeros((B, G), device=device, dtype=torch.long)
+
+        progress_bucket = torch.ones((B, G), device=device, dtype=torch.long)
+        if bool(getattr(self, "core_pareto_bucket_by_progress", True)):
+            ep = components["ego_progress"].float()
+            progress_bucket = torch.where(
+                ep >= ref_ep[:, None] + float(self.core_pareto_progress_fast_margin),
+                torch.full_like(progress_bucket, 2),
+                progress_bucket,
+            )
+            progress_bucket = torch.where(
+                ep <= ref_ep[:, None] - float(self.core_pareto_progress_slow_margin),
+                torch.zeros_like(progress_bucket),
+                progress_bucket,
+            )
+
+        lateral_bucket = torch.ones((B, G), device=device, dtype=torch.long)
+        if bool(getattr(self, "core_pareto_bucket_by_lateral_endpoint", True)):
+            final_y = trajs_matrix[:, :, -1, 1]
+            threshold = float(self.core_pareto_lateral_bucket_threshold_m)
+            lateral_bucket = torch.where(final_y > threshold, torch.full_like(lateral_bucket, 2), lateral_bucket)
+            lateral_bucket = torch.where(final_y < -threshold, torch.zeros_like(lateral_bucket), lateral_bucket)
+        return progress_bucket * 3 + lateral_bucket
+
+    def _masked_zscore(
+        self,
+        values: torch.Tensor,
+        mask: torch.Tensor,
+        std_floor: float = 0.05,
+    ) -> torch.Tensor:
+        mask = mask.bool()
+        values_f = torch.nan_to_num(values.float(), nan=0.0, posinf=0.0, neginf=0.0)
+        mask_f = mask.to(dtype=values_f.dtype)
+        count = mask_f.sum(dim=1, keepdim=True)
+        mean = (values_f * mask_f).sum(dim=1, keepdim=True) / count.clamp(min=1.0)
+        centered = torch.where(mask, values_f - mean, torch.zeros_like(values_f))
+        var = (centered.square() * mask_f).sum(dim=1, keepdim=True) / count.clamp(min=1.0)
+        std = var.sqrt().clamp(min=float(std_floor))
+        z = torch.where(mask, centered / std, torch.zeros_like(values_f))
+        z = torch.where(count >= 2.0, z, torch.zeros_like(z))
+        return torch.nan_to_num(z, nan=0.0, posinf=0.0, neginf=0.0).to(values)
+
+    def _update_core_pareto_dual(
+        self,
+        slow_violation_mask: torch.Tensor,
+        unsafe_mask: torch.Tensor,
+        ddc_drop_mask: torch.Tensor,
+    ) -> Dict[str, torch.Tensor]:
+        device = slow_violation_mask.device
+        dtype = torch.float32
+        if not bool(getattr(self, "core_pareto_use_adaptive_dual", False)):
+            return {
+                "lambda_slow": torch.tensor(float(self.core_pareto_lambda_slow), device=device, dtype=dtype),
+                "lambda_safety": torch.tensor(float(self.core_pareto_lambda_safety), device=device, dtype=dtype),
+                "slow_rate_ema": torch.tensor(float(self.core_pareto_slow_rate_ema), device=device, dtype=dtype),
+                "unsafe_rate_ema": torch.tensor(float(self.core_pareto_unsafe_rate_ema), device=device, dtype=dtype),
+                "ddc_drop_rate_ema": torch.tensor(float(self.core_pareto_ddc_drop_rate_ema), device=device, dtype=dtype),
+            }
+
+        with torch.no_grad():
+            ema = float(self.core_pareto_dual_ema)
+            slow_rate = float(slow_violation_mask.float().mean().detach().cpu())
+            unsafe_rate = float(unsafe_mask.float().mean().detach().cpu())
+            ddc_drop_rate = float(ddc_drop_mask.float().mean().detach().cpu())
+            self.core_pareto_slow_rate_ema = ema * float(self.core_pareto_slow_rate_ema) + (1.0 - ema) * slow_rate
+            self.core_pareto_unsafe_rate_ema = ema * float(self.core_pareto_unsafe_rate_ema) + (1.0 - ema) * unsafe_rate
+            self.core_pareto_ddc_drop_rate_ema = (
+                ema * float(self.core_pareto_ddc_drop_rate_ema) + (1.0 - ema) * ddc_drop_rate
+            )
+            dual_lr = float(self.core_pareto_dual_lr)
+            self.core_pareto_lambda_slow = min(
+                float(self.core_pareto_lambda_slow_max),
+                max(
+                    float(self.core_pareto_lambda_slow_min),
+                    float(self.core_pareto_lambda_slow)
+                    + dual_lr * (float(self.core_pareto_slow_rate_ema) - float(self.core_pareto_target_slow_rate)),
+                ),
+            )
+            self.core_pareto_lambda_safety = min(
+                float(self.core_pareto_lambda_safety_max),
+                max(
+                    float(self.core_pareto_lambda_safety_min),
+                    float(self.core_pareto_lambda_safety)
+                    + dual_lr * (float(self.core_pareto_unsafe_rate_ema) - float(self.core_pareto_target_unsafe_rate)),
+                ),
+            )
+        return {
+            "lambda_slow": torch.tensor(float(self.core_pareto_lambda_slow), device=device, dtype=dtype),
+            "lambda_safety": torch.tensor(float(self.core_pareto_lambda_safety), device=device, dtype=dtype),
+            "slow_rate_ema": torch.tensor(float(self.core_pareto_slow_rate_ema), device=device, dtype=dtype),
+            "unsafe_rate_ema": torch.tensor(float(self.core_pareto_unsafe_rate_ema), device=device, dtype=dtype),
+            "ddc_drop_rate_ema": torch.tensor(float(self.core_pareto_ddc_drop_rate_ema), device=device, dtype=dtype),
+        }
+
+    def _compute_core_pareto_advantages(
+        self,
+        rewards_matrix: torch.Tensor,
+        components_matrix: Dict[str, torch.Tensor],
+        trajs_matrix: torch.Tensor,
+        ref: Dict[str, torch.Tensor],
+    ) -> tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
+        B, G = rewards_matrix.shape
+        pdms = components_matrix.get("pdms", rewards_matrix).float()
+        ep = components_matrix["ego_progress"].float()
+        ttc = components_matrix["time_to_collision_within_bound"].float()
+        comfort = components_matrix["history_comfort"].float()
+        nc = components_matrix["no_at_fault_collisions"].float()
+        dac = components_matrix["drivable_area_compliance"].float()
+        ddc = components_matrix["driving_direction_compliance"].float()
+        core = self._compute_pdms_core(components_matrix).float()
+
+        ref_pdms = ref["ref_pdms"].to(device=rewards_matrix.device, dtype=torch.float32)
+        ref_core = ref["ref_core"].to(device=rewards_matrix.device, dtype=torch.float32)
+        ref_ep = ref["ref_ep"].to(device=rewards_matrix.device, dtype=torch.float32)
+        ref_ttc = ref["ref_ttc"].to(device=rewards_matrix.device, dtype=torch.float32)
+        ref_ddc = ref["ref_ddc"].to(device=rewards_matrix.device, dtype=torch.float32)
+
+        delta_pdms = pdms - ref_pdms[:, None]
+        delta_core = core - ref_core[:, None]
+        delta_ep = ep - ref_ep[:, None]
+        delta_ttc = ttc - ref_ttc[:, None]
+        delta_ddc = ddc - ref_ddc[:, None]
+
+        nc_ok = nc >= 1.0 if bool(self.core_pareto_require_nc) else torch.ones_like(nc, dtype=torch.bool)
+        dac_ok = dac >= 1.0 if bool(self.core_pareto_require_dac) else torch.ones_like(dac, dtype=torch.bool)
+        if bool(self.core_pareto_use_ddc_guard):
+            ddc_ok = (
+                (ddc >= float(self.core_pareto_ddc_min_absolute))
+                | (ddc >= ref_ddc[:, None] - float(self.core_pareto_ddc_drop_tolerance))
+            )
+        else:
+            ddc_ok = torch.ones_like(ddc, dtype=torch.bool)
+        valid = nc_ok & dac_ok & ddc_ok
+
+        if bool(self.core_pareto_use_ep_floor):
+            ep_floor_ok = ep >= ref_ep[:, None] - float(self.core_pareto_ep_floor_tolerance)
+        else:
+            ep_floor_ok = torch.ones_like(ep, dtype=torch.bool)
+        slow_violation = (ref_ep[:, None] - ep - float(self.core_pareto_ep_floor_tolerance)).clamp(min=0.0)
+
+        tradeoff = delta_ep + delta_ttc
+        if bool(self.core_pareto_use_ttc_tradeoff_penalty):
+            tradeoff_bad = (-tradeoff - float(self.core_pareto_tradeoff_tolerance)).clamp(min=0.0)
+        else:
+            tradeoff_bad = torch.zeros_like(ep)
+        if bool(self.core_pareto_use_ttc_floor_penalty):
+            ttc_violation = (ref_ttc[:, None] - ttc - float(self.core_pareto_ttc_floor_tolerance)).clamp(min=0.0)
+        else:
+            ttc_violation = torch.zeros_like(ep)
+
+        dual_logs = self._update_core_pareto_dual(
+            slow_violation > 0.0,
+            ~valid,
+            delta_ddc < -float(self.core_pareto_ddc_drop_tolerance),
+        )
+        lambda_slow = float(dual_logs["lambda_slow"].detach().cpu())
+        score_mode = str(self.core_pareto_score_mode)
+        if score_mode == "pdms_minus_slow":
+            score = pdms - lambda_slow * slow_violation - float(self.core_pareto_tradeoff_penalty_weight) * tradeoff_bad
+        elif score_mode == "pdms_plus_core_margin_minus_slow":
+            score = (
+                pdms
+                + float(self.core_pareto_core_margin_weight) * delta_core
+                - lambda_slow * slow_violation
+                - float(self.core_pareto_tradeoff_penalty_weight) * tradeoff_bad
+                - float(self.core_pareto_ttc_floor_penalty_weight) * ttc_violation
+            )
+        elif score_mode == "core_minus_slow":
+            score = (
+                core
+                - lambda_slow * slow_violation
+                - float(self.core_pareto_tradeoff_penalty_weight) * tradeoff_bad
+                - float(self.core_pareto_ttc_floor_penalty_weight) * ttc_violation
+            )
+        else:
+            raise ValueError(f"Unsupported core_pareto_score_mode: {score_mode!r}")
+
+        pareto_front = self._compute_pareto_front_mask(
+            components_matrix,
+            valid & ep_floor_ok,
+            tuple(self.core_pareto_pareto_objectives),
+        )
+        if bool(self.core_pareto_use_pareto_front):
+            score = score + float(self.core_pareto_pareto_front_bonus) * pareto_front.float()
+
+        valid_count = valid.sum(dim=1)
+        valid_progress = valid & ep_floor_ok
+        valid_progress_count = valid_progress.sum(dim=1)
+        all_valid = valid_count == G
+        mixed = (valid_count > 0) & (valid_count < G)
+        all_invalid = valid_count == 0
+        all_slow = (valid_count > 0) & (valid_progress_count == 0)
+
+        all_mask = torch.ones_like(valid, dtype=torch.bool)
+        std_floor = float(self.core_pareto_min_group_reward_std)
+        if bool(self.core_pareto_use_phenotype_bucket_grpo):
+            bucket_id = self._compute_phenotype_buckets(trajs_matrix, components_matrix, ref_ep)
+            z = torch.zeros_like(score)
+            bucket_count_values = []
+            for b in range(B):
+                unique_buckets = torch.unique(bucket_id[b])
+                bucket_count_values.append(float(unique_buckets.numel()))
+                bucket_rep_scores = []
+                bucket_values = []
+                for bucket in unique_buckets:
+                    bucket_mask = (bucket_id[b : b + 1] == bucket)
+                    bucket_z = self._masked_zscore(score[b : b + 1], bucket_mask, std_floor=std_floor)
+                    z[b : b + 1] = torch.where(bucket_mask, bucket_z, z[b : b + 1])
+                    rep_mask = bucket_mask & valid_progress[b : b + 1]
+                    if bool(rep_mask.any().item()):
+                        bucket_rep_scores.append(score[b : b + 1][rep_mask].mean())
+                    else:
+                        bucket_rep_scores.append(score[b : b + 1][bucket_mask].mean())
+                    bucket_values.append(int(bucket.item()))
+                if bucket_rep_scores:
+                    reps = torch.stack(bucket_rep_scores).view(1, -1)
+                    rep_z = self._masked_zscore(reps, torch.ones_like(reps, dtype=torch.bool), std_floor=std_floor)
+                    rep_z = rep_z.clamp(
+                        min=-float(self.core_pareto_inter_bucket_clip),
+                        max=float(self.core_pareto_inter_bucket_clip),
+                    )
+                    for idx, bucket_value in enumerate(bucket_values):
+                        mask_b = bucket_id[b] == bucket_value
+                        z[b, mask_b] = (
+                            float(self.core_pareto_intra_bucket_weight) * z[b, mask_b]
+                            + float(self.core_pareto_inter_bucket_weight) * rep_z[0, idx].to(z)
+                        )
+            phenotype_bucket_count_mean = score.new_tensor(
+                float(sum(bucket_count_values) / max(len(bucket_count_values), 1))
+            )
+        else:
+            score_z = self._masked_zscore(score, all_mask, std_floor=std_floor)
+            all_valid_objective = str(self.core_pareto_all_valid_objective)
+            if all_valid_objective == "core":
+                all_valid_values = core
+            elif all_valid_objective == "pdms":
+                all_valid_values = pdms
+            else:
+                all_valid_values = score
+            all_valid_z = self._masked_zscore(all_valid_values, all_mask, std_floor=std_floor)
+            z = torch.where(all_valid[:, None], all_valid_z, score_z)
+            phenotype_bucket_count_mean = score.new_zeros(())
+
+        if score_mode == "core_minus_slow":
+            ref_score = ref_core
+        else:
+            ref_score = ref_pdms
+        if bool(self.core_pareto_use_reference_margin):
+            reference_margin = (
+                (score - ref_score[:, None]) / float(self.core_pareto_reference_margin_scale)
+            ).clamp(
+                min=-float(self.core_pareto_reference_margin_clip),
+                max=float(self.core_pareto_reference_margin_clip),
+            )
+            reference_margin = float(self.core_pareto_reference_margin_weight) * reference_margin
+        else:
+            reference_margin = torch.zeros_like(score)
+
+        rescue_z = self._masked_zscore(score, all_mask, std_floor=std_floor)
+        all_invalid_adv = (
+            -float(self.core_pareto_all_unsafe_base_offset)
+            + float(self.core_pareto_all_unsafe_rescue_weight) * rescue_z
+        ).clamp(
+            min=float(self.core_pareto_all_unsafe_adv_min),
+            max=float(self.core_pareto_all_unsafe_adv_max),
+        )
+        unsafe_adv = -float(self.core_pareto_unsafe_advantage_offset) + torch.clamp(z, max=0.0)
+        slow_adv = torch.minimum(
+            torch.clamp(z, max=0.0),
+            score.new_full(score.shape, float(self.core_pareto_slow_invalid_advantage)),
+        )
+        positive_adv = z + reference_margin
+        adv = torch.where(valid_progress, positive_adv, torch.where(valid, slow_adv, unsafe_adv))
+        if bool(self.core_pareto_use_all_unsafe_rescue_advantage):
+            adv = torch.where(all_invalid[:, None], all_invalid_adv, adv)
+        else:
+            adv = torch.where(all_invalid[:, None], unsafe_adv, adv)
+
+        if bool(self.core_pareto_use_pareto_front):
+            dominated_valid = valid_progress & (~pareto_front)
+            adv = torch.where(
+                dominated_valid & (adv > float(self.core_pareto_dominated_positive_adv_cap)),
+                score.new_full(score.shape, float(self.core_pareto_dominated_positive_adv_cap)),
+                adv,
+            )
+        slow_fail = valid & (~ep_floor_ok)
+        adv = torch.where(
+            slow_fail & (adv > float(self.core_pareto_positive_slow_fail_cap)),
+            score.new_full(score.shape, float(self.core_pareto_positive_slow_fail_cap)),
+            adv,
+        )
+
+        advantage_clip = float(self.core_pareto_advantage_clip_abs)
+        if advantage_clip > 0.0:
+            adv = adv.clamp(min=-advantage_clip, max=advantage_clip)
+
+        group_weight = torch.ones(B, device=rewards_matrix.device, dtype=rewards_matrix.dtype)
+        group_weight[all_invalid] = float(getattr(self, "all_unsafe_group_weight", 0.25))
+        group_weight[all_slow] = float(self.core_pareto_all_slow_group_weight)
+        low_std_values = core if str(self.core_pareto_all_valid_objective) == "core" else score
+        low_std = low_std_values.std(dim=1, unbiased=False) < float(self.core_pareto_min_group_reward_std)
+        group_weight[all_valid & low_std] = float(self.core_pareto_all_safe_low_std_group_weight)
+
+        positive_advantage = adv > 0.0
+        aux = {
+            "reward_std": score.std(dim=1, unbiased=False).detach().to(dtype=rewards_matrix.dtype),
+            "safe_count": valid_count.detach().to(dtype=rewards_matrix.dtype),
+            "mixed_group_ratio": mixed.float().mean().to(dtype=rewards_matrix.dtype),
+            "all_safe_group_ratio": all_valid.float().mean().to(dtype=rewards_matrix.dtype),
+            "all_unsafe_group_ratio": all_invalid.float().mean().to(dtype=rewards_matrix.dtype),
+            "core_pareto_score": score.detach(),
+            "core_pareto_valid_mask": valid.detach(),
+            "core_pareto_ep_floor_ok_mask": ep_floor_ok.detach(),
+            "core_pareto_pareto_front_mask": pareto_front.detach(),
+            "core_mean": core.mean().detach().to(dtype=rewards_matrix.dtype),
+            "core_ref_mean": ref_core.mean().detach().to(dtype=rewards_matrix.dtype),
+            "delta_core_mean": delta_core.mean().detach().to(dtype=rewards_matrix.dtype),
+            "delta_pdms_mean": delta_pdms.mean().detach().to(dtype=rewards_matrix.dtype),
+            "delta_ep_mean": delta_ep.mean().detach().to(dtype=rewards_matrix.dtype),
+            "delta_ttc_mean": delta_ttc.mean().detach().to(dtype=rewards_matrix.dtype),
+            "delta_ddc_mean": delta_ddc.mean().detach().to(dtype=rewards_matrix.dtype),
+            "ep_floor_pass_ratio": ep_floor_ok.float().mean().detach().to(dtype=rewards_matrix.dtype),
+            "ddc_guard_pass_ratio": ddc_ok.float().mean().detach().to(dtype=rewards_matrix.dtype),
+            "nc_pass_ratio": nc_ok.float().mean().detach().to(dtype=rewards_matrix.dtype),
+            "dac_pass_ratio": dac_ok.float().mean().detach().to(dtype=rewards_matrix.dtype),
+            "valid_ratio": valid.float().mean().detach().to(dtype=rewards_matrix.dtype),
+            "valid_progress_ratio": valid_progress.float().mean().detach().to(dtype=rewards_matrix.dtype),
+            "pareto_front_ratio": pareto_front.float().mean().detach().to(dtype=rewards_matrix.dtype),
+            "dominated_ratio": ((valid_progress & (~pareto_front)).float().mean()).detach().to(dtype=rewards_matrix.dtype),
+            "positive_advantage_ratio": positive_advantage.float().mean().detach().to(dtype=rewards_matrix.dtype),
+            "positive_advantage_slow_fail_ratio": (
+                (positive_advantage & slow_fail).float().sum() / slow_fail.float().sum().clamp(min=1.0)
+            ).detach().to(dtype=rewards_matrix.dtype),
+            "pareto_positive_advantage_ratio": (
+                (positive_advantage & pareto_front).float().sum() / pareto_front.float().sum().clamp(min=1.0)
+            ).detach().to(dtype=rewards_matrix.dtype),
+            "all_valid_group_ratio": all_valid.float().mean().detach().to(dtype=rewards_matrix.dtype),
+            "all_invalid_group_ratio": all_invalid.float().mean().detach().to(dtype=rewards_matrix.dtype),
+            "all_slow_group_ratio": all_slow.float().mean().detach().to(dtype=rewards_matrix.dtype),
+            "effective_group_weight_mean": group_weight.mean().detach().to(dtype=rewards_matrix.dtype),
+            "score_mean": score.mean().detach().to(dtype=rewards_matrix.dtype),
+            "score_std": score.std(unbiased=False).detach().to(dtype=rewards_matrix.dtype),
+            "slow_violation_mean": slow_violation.mean().detach().to(dtype=rewards_matrix.dtype),
+            "tradeoff_bad_mean": tradeoff_bad.mean().detach().to(dtype=rewards_matrix.dtype),
+            "ttc_violation_mean": ttc_violation.mean().detach().to(dtype=rewards_matrix.dtype),
+            "phenotype_bucket_count_mean": phenotype_bucket_count_mean.detach().to(dtype=rewards_matrix.dtype),
+            "lambda_slow": dual_logs["lambda_slow"].detach().to(dtype=rewards_matrix.dtype),
+            "lambda_safety": dual_logs["lambda_safety"].detach().to(dtype=rewards_matrix.dtype),
+            "slow_rate_ema": dual_logs["slow_rate_ema"].detach().to(dtype=rewards_matrix.dtype),
+            "unsafe_rate_ema": dual_logs["unsafe_rate_ema"].detach().to(dtype=rewards_matrix.dtype),
+            "ddc_drop_rate_ema": dual_logs["ddc_drop_rate_ema"].detach().to(dtype=rewards_matrix.dtype),
+            "ref_gt_pdms": ref["gt_pdms"].mean().detach().to(device=rewards_matrix.device, dtype=rewards_matrix.dtype),
+            "ref_il_pdms": ref["il_pdms"].mean().detach().to(device=rewards_matrix.device, dtype=rewards_matrix.dtype),
+            "ref_gt_core": ref["gt_core"].mean().detach().to(device=rewards_matrix.device, dtype=rewards_matrix.dtype),
+            "ref_il_core": ref["il_core"].mean().detach().to(device=rewards_matrix.device, dtype=rewards_matrix.dtype),
+        }
+        return adv.reshape(B * G).detach(), group_weight.detach(), aux
+
+    def _stage3_core_pareto_log_metrics(
+        self,
+        ref: torch.Tensor,
+        reward_aux: Dict[str, torch.Tensor],
+        advantage_aux: Dict[str, torch.Tensor],
+    ) -> Dict[str, torch.Tensor]:
+        zero = ref.new_zeros(())
+
+        def reward_mean(name: str) -> torch.Tensor:
+            value = reward_aux.get(name)
+            if isinstance(value, torch.Tensor):
+                return value.detach().float().mean().to(device=ref.device, dtype=ref.dtype)
+            return zero
+
+        def aux_value(name: str) -> torch.Tensor:
+            value = advantage_aux.get(name)
+            if isinstance(value, torch.Tensor):
+                return value.detach().float().mean().to(device=ref.device, dtype=ref.dtype)
+            return zero
+
+        return {
+            "core_pareto_enabled": reward_mean("core_pareto_mode_enabled"),
+            "pdms_core": aux_value("core_mean"),
+            "pdms_core_ref": aux_value("core_ref_mean"),
+            "delta_core_vs_ref": aux_value("delta_core_mean"),
+            "delta_pdms_vs_ref": aux_value("delta_pdms_mean"),
+            "delta_ep_vs_ref": aux_value("delta_ep_mean"),
+            "delta_ttc_vs_ref": aux_value("delta_ttc_mean"),
+            "delta_ddc_vs_ref": aux_value("delta_ddc_mean"),
+            "ep_floor_pass_ratio": aux_value("ep_floor_pass_ratio"),
+            "ddc_guard_pass_ratio": aux_value("ddc_guard_pass_ratio"),
+            "core_pareto_valid_ratio": aux_value("valid_ratio"),
+            "core_pareto_valid_progress_ratio": aux_value("valid_progress_ratio"),
+            "pareto_front_ratio": aux_value("pareto_front_ratio"),
+            "dominated_ratio": aux_value("dominated_ratio"),
+            "positive_advantage_slow_fail_ratio": aux_value("positive_advantage_slow_fail_ratio"),
+            "pareto_positive_advantage_ratio": aux_value("pareto_positive_advantage_ratio"),
+            "core_pareto_mixed_group_ratio": aux_value("mixed_group_ratio"),
+            "core_pareto_all_valid_group_ratio": aux_value("all_valid_group_ratio"),
+            "core_pareto_all_invalid_group_ratio": aux_value("all_invalid_group_ratio"),
+            "core_pareto_all_slow_group_ratio": aux_value("all_slow_group_ratio"),
+            "core_pareto_effective_group_weight_mean": aux_value("effective_group_weight_mean"),
+            "core_pareto_score_mean": aux_value("score_mean"),
+            "core_pareto_score_std": aux_value("score_std"),
+            "core_pareto_slow_violation_mean": aux_value("slow_violation_mean"),
+            "core_pareto_tradeoff_bad_mean": aux_value("tradeoff_bad_mean"),
+            "core_pareto_ttc_violation_mean": aux_value("ttc_violation_mean"),
+            "core_pareto_lambda_slow": aux_value("lambda_slow"),
+            "core_pareto_lambda_safety": aux_value("lambda_safety"),
+            "core_pareto_slow_rate_ema": aux_value("slow_rate_ema"),
+            "core_pareto_unsafe_rate_ema": aux_value("unsafe_rate_ema"),
+            "core_pareto_ddc_drop_rate_ema": aux_value("ddc_drop_rate_ema"),
+            "core_pareto_ref_gt_pdms": aux_value("ref_gt_pdms"),
+            "core_pareto_ref_il_pdms": aux_value("ref_il_pdms"),
+            "core_pareto_ref_gt_core": aux_value("ref_gt_core"),
+            "core_pareto_ref_il_core": aux_value("ref_il_core"),
+            "phenotype_bucket_count_mean": aux_value("phenotype_bucket_count_mean"),
+            "buffer_bonus_mean": aux_value("buffer_bonus_mean"),
+            "buffer_bonus_max": aux_value("buffer_bonus_max"),
+            "buffer_bonus_target_ratio": aux_value("buffer_bonus_target_ratio"),
+            "buffer_bonus_distance_mean": aux_value("buffer_bonus_distance_mean"),
+            "core_pareto_mode_enabled": reward_mean("core_pareto_mode_enabled"),
+            "core_pareto_core_mean": reward_mean("core_pareto_core"),
+            "core_pareto_adjusted_core_mean": reward_mean("core_pareto_adjusted_core"),
+            "core_pareto_pdms_formula_mean": reward_mean("core_pareto_pdms_formula"),
+            "core_pareto_ep_floor_gap_mean": reward_mean("core_pareto_ep_floor_gap"),
+            "core_pareto_ep_floor_penalty_mean": reward_mean("core_pareto_ep_floor_penalty"),
+            "core_pareto_ddc_penalty_mean": reward_mean("core_pareto_ddc_penalty"),
+            "core_pareto_dual_penalty_mean": reward_mean("core_pareto_dual_penalty"),
+            "core_pareto_nc_dac_feasible_ratio": aux_value("core_pareto_nc_dac_feasible_ratio"),
+            "core_pareto_ddc_guard_pass_ratio": (
+                aux_value("core_pareto_ddc_guard_pass_ratio") + aux_value("ddc_guard_pass_ratio")
+            ),
+            "core_pareto_front_ratio": aux_value("core_pareto_front_ratio") + aux_value("pareto_front_ratio"),
+            "core_pareto_valid_front_ratio": aux_value("core_pareto_valid_front_ratio"),
+            "core_pareto_ep_low_ratio": aux_value("core_pareto_ep_low_ratio"),
+            "core_pareto_progress_bucket_ratio": aux_value("core_pareto_progress_bucket_ratio"),
+            "core_pareto_ttc_bucket_ratio": aux_value("core_pareto_ttc_bucket_ratio"),
+            "core_pareto_balanced_bucket_ratio": aux_value("core_pareto_balanced_bucket_ratio"),
+            "core_pareto_core_std": aux_value("core_pareto_core_std"),
+            "core_pareto_ep_floor": ref.new_tensor(float(self.core_pareto_ep_floor)),
+            "core_pareto_ddc_guard_threshold": ref.new_tensor(float(self.core_pareto_ddc_guard_threshold)),
+            "core_pareto_pareto_bonus": ref.new_tensor(float(self.core_pareto_pareto_bonus)),
+        }
 
     def _chain_step_logprobs(
         self,
@@ -4428,10 +5888,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         start: float,
         start_epoch: int,
         warmup_epochs: int,
+        end: Optional[float] = None,
+        decay_start_step: int = -1,
+        decay_end_step: int = -1,
     ) -> float:
         if target <= 0.0:
             return 0.0
-        if str(schedule) == "constant":
+        schedule = str(schedule)
+        if schedule == "constant":
             return target
 
         current_epoch = max(0, int(getattr(self.config, "current_train_epoch", 0)))
@@ -4439,7 +5903,27 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             return float(start)
         warmup_epochs = max(1, int(warmup_epochs))
         progress = min(float(current_epoch - start_epoch + 1) / float(warmup_epochs), 1.0)
-        return start + (target - start) * progress
+        weight = start + (target - start) * progress
+        if schedule == "linear_warmup":
+            return float(weight)
+
+        if schedule not in {"linear_warmup_linear_decay", "linear_warmup_cosine_decay"}:
+            raise ValueError(f"Unsupported loss schedule: {schedule!r}")
+        decay_start_step = int(decay_start_step)
+        decay_end_step = int(decay_end_step)
+        if decay_start_step < 0 or decay_end_step <= decay_start_step:
+            return float(weight)
+        current_step = max(0, int(getattr(self.config, "current_train_step", 0)))
+        if current_step < decay_start_step:
+            return float(weight)
+        end_weight = float(target if end is None else end)
+        if current_step >= decay_end_step:
+            return end_weight
+        decay_progress = float(current_step - decay_start_step) / float(decay_end_step - decay_start_step)
+        decay_progress = min(max(decay_progress, 0.0), 1.0)
+        if schedule == "linear_warmup_cosine_decay":
+            decay_progress = 0.5 - 0.5 * math.cos(math.pi * decay_progress)
+        return float(weight + (end_weight - weight) * decay_progress)
 
     def _current_awac_loss_weight(self, cfg: OfflineRLConfig) -> float:
         return self._current_linear_warmup_loss_weight(
@@ -4475,6 +5959,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             start=float(cfg.grpo_buffer_distill_loss_weight_start),
             start_epoch=int(cfg.grpo_buffer_distill_warmup_start_epoch),
             warmup_epochs=int(cfg.grpo_buffer_distill_warmup_epochs),
+            end=float(cfg.grpo_buffer_distill_loss_weight_end),
+            decay_start_step=int(cfg.grpo_buffer_distill_decay_start_step),
+            decay_end_step=int(cfg.grpo_buffer_distill_decay_end_step),
         )
 
     def _current_grpo_buffer_preference_dpo_loss_weight(self, cfg: OfflineRLConfig) -> float:
@@ -4493,6 +5980,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             start=float(cfg.grpo_self_imitation_loss_weight_start),
             start_epoch=int(cfg.grpo_self_imitation_warmup_start_epoch),
             warmup_epochs=int(cfg.grpo_self_imitation_warmup_epochs),
+            end=float(cfg.grpo_self_imitation_loss_weight_end),
+            decay_start_step=int(cfg.grpo_self_imitation_decay_start_step),
+            decay_end_step=int(cfg.grpo_self_imitation_decay_end_step),
         )
 
     def _current_awac_target_blend_alpha(self, cfg: OfflineRLConfig) -> float:
@@ -6780,7 +8270,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         )
         rewards_matrix = rewards.view(B, G)
         hard_safe_matrix = hard_safe_mask.view(B, G)
-        advantages, group_weight, advantage_aux = self._compute_stage3_advantages(rewards_matrix, hard_safe_matrix)
+        advantages, group_weight, advantage_aux = self._compute_stage3_advantages(
+            rewards_matrix,
+            hard_safe_matrix,
+            reward_aux,
+        )
 
         adv = advantages * group_weight.repeat_interleave(G)
         adv_before = adv.detach().float()
@@ -6856,6 +8350,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "mean_comfort": aux_mean("history_comfort").detach(),
             "mean_ddc": aux_mean("driving_direction_compliance").detach(),
             "mean_tlc": aux_mean("traffic_light_compliance").detach(),
+            "soft_safety_penalty_mean": aux_mean("soft_safety_penalty").detach(),
+            "soft_safety_penalty_max": reward_aux["soft_safety_penalty"].detach().max(),
+            "soft_safety_penalty_weight": rewards.new_tensor(float(self.soft_safety_penalty_weight)).detach(),
+            "soft_safety_mode_enabled": rewards.new_tensor(
+                float(str(self.safety_advantage_mode) == "soft_penalty")
+            ).detach(),
             "group_reward_std": advantage_aux["reward_std"].mean().detach(),
             "safe_count_mean": advantage_aux["safe_count"].mean().detach(),
             "group_weight_mean": group_weight.mean().detach(),
@@ -6879,6 +8379,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 float(bool(getattr(self, "normalize_advantage_batch", False)))
             ),
             "grpo_advantage_clip_abs": rewards.new_tensor(float(advantage_clip_abs)),
+            **self._stage3_core_pareto_log_metrics(rewards, reward_aux, advantage_aux),
             "ppo_replay_valid_ratio": replay_mask.detach().float().mean().to(dtype=rewards.dtype),
             "ppo_replay_valid_count": rewards.new_tensor(float(replay_mask.detach().sum().item())),
             "ppo_replay_inner_epochs": rewards.new_tensor(float(getattr(self, "ppo_replay_inner_epochs", 1))),
@@ -7258,43 +8759,122 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         )
         # rewards: [B * G]
         assert base_rewards.shape == (B * G,)
-        rewards, hard_safe_mask, reward_aux = self._compose_stage3_reward(
-            base_rewards,
-            components,
-            trajs,
-            B,
-            G,
-        )
-        grpo_buffer_reward_bonus = rewards.new_zeros((B * G,))
+        components = dict(components)
+        components["pdms"] = base_rewards
+        grpo_buffer_reward_bonus = base_rewards.new_zeros((B * G,))
         grpo_buffer_diag = {
-            "grpo_buffer_reward_bonus_mean": rewards.new_zeros(()),
-            "grpo_buffer_reward_bonus_max": rewards.new_zeros(()),
-            "grpo_buffer_target_distance_mean": rewards.new_zeros(()),
-            "grpo_buffer_guidance_target_ratio": rewards.new_zeros(()),
+            "grpo_buffer_reward_bonus_mean": base_rewards.new_zeros(()),
+            "grpo_buffer_reward_bonus_max": base_rewards.new_zeros(()),
+            "grpo_buffer_target_distance_mean": base_rewards.new_zeros(()),
+            "grpo_buffer_guidance_target_ratio": base_rewards.new_zeros(()),
         }
         grpo_buffer_bonus_weight = 0.0
-        if use_grpo_buffer_guidance:
-            grpo_buffer_reward_bonus, grpo_buffer_diag = self._compute_grpo_buffer_reward_bonus(
+        use_core_pareto = bool(getattr(self, "use_core_pareto_grpo", False))
+        if use_core_pareto:
+            ref = self._compute_core_pareto_reference_components(
+                vl_features,
+                action_input,
+                [str(token) for token in tokens_list],
+                metric_cache,
+            )
+            components_matrix = self._reshape_components_for_group(components, B, G)
+            trajs_matrix = trajs.reshape(B, G, trajs.shape[1], trajs.shape[2])
+            rewards_matrix = base_rewards.view(B, G)
+            advantages, group_weight, advantage_aux = self._compute_core_pareto_advantages(
+                rewards_matrix,
+                components_matrix,
+                trajs_matrix,
+                ref,
+            )
+            hard_safe_matrix = advantage_aux["core_pareto_valid_mask"].to(device=base_rewards.device).bool()
+            hard_safe_mask = hard_safe_matrix.reshape(B * G)
+            rewards_matrix = advantage_aux["core_pareto_score"].to(device=base_rewards.device, dtype=base_rewards.dtype)
+            rewards = rewards_matrix.reshape(B * G)
+            if self.log_safe_diversity or self.use_diversity_reward:
+                diversity_bonus = self._compute_safe_diversity_bonus(trajs, hard_safe_mask, base_rewards, B, G)
+            else:
+                diversity_bonus = torch.zeros_like(base_rewards)
+            ep_floor_gap = (
+                ref["ref_ep"].to(device=base_rewards.device, dtype=base_rewards.dtype)[:, None]
+                - components_matrix["ego_progress"].to(base_rewards)
+                - float(self.core_pareto_ep_floor_tolerance)
+            ).clamp(min=0.0)
+            zero = torch.zeros_like(base_rewards)
+            reward_aux = {
+                "pdms": base_rewards,
+                "ego_progress": components["ego_progress"],
+                "diversity_bonus": diversity_bonus,
+                "soft_safety_penalty": zero,
+                "core_pareto_mode_enabled": base_rewards.new_tensor(1.0),
+                "core_pareto_core": self._compute_pdms_core(components_matrix).reshape(B * G).to(base_rewards),
+                "core_pareto_pdms_formula": base_rewards,
+                "core_pareto_adjusted_core": rewards,
+                "core_pareto_ep_floor_gap": ep_floor_gap.reshape(B * G),
+                "core_pareto_ep_floor_penalty": (
+                    float(self.core_pareto_slow_penalty_weight) * ep_floor_gap
+                ).reshape(B * G),
+                "core_pareto_ddc_penalty": zero,
+                "core_pareto_dual_penalty": zero,
+                "core_pareto_nc_dac_feasible_mask": (
+                    (
+                        components_matrix["no_at_fault_collisions"] >= 1.0
+                    )
+                    & (components_matrix["drivable_area_compliance"] >= 1.0)
+                ).reshape(B * G).to(dtype=base_rewards.dtype),
+                "core_pareto_ddc_guard_mask": (
+                    (
+                        components_matrix["driving_direction_compliance"] >= float(self.core_pareto_ddc_min_absolute)
+                    )
+                    | (
+                        components_matrix["driving_direction_compliance"]
+                        >= ref["ref_ddc"].to(device=base_rewards.device)[:, None]
+                        - float(self.core_pareto_ddc_drop_tolerance)
+                    )
+                ).reshape(B * G).to(dtype=base_rewards.dtype),
+            }
+            for key in (
+                "no_at_fault_collisions",
+                "drivable_area_compliance",
+                "time_to_collision_within_bound",
+                "history_comfort",
+                "lane_keeping",
+                "driving_direction_compliance",
+                "traffic_light_compliance",
+            ):
+                if key in components:
+                    reward_aux[key] = components[key]
+        else:
+            rewards, hard_safe_mask, reward_aux = self._compose_stage3_reward(
+                base_rewards,
+                components,
                 trajs,
                 B,
                 G,
-                grpo_buffer_guidance,
-                offline_cfg,
             )
-            grpo_buffer_bonus_weight = float(offline_cfg.grpo_buffer_reward_bonus_weight)
-            if grpo_buffer_bonus_weight > 0.0:
-                rewards = rewards + torch.where(
-                    hard_safe_mask,
-                    grpo_buffer_bonus_weight * grpo_buffer_reward_bonus.to(rewards),
-                    torch.zeros_like(rewards),
+            if use_grpo_buffer_guidance:
+                grpo_buffer_reward_bonus, grpo_buffer_diag = self._compute_grpo_buffer_reward_bonus(
+                    trajs,
+                    B,
+                    G,
+                    grpo_buffer_guidance,
+                    offline_cfg,
                 )
+                grpo_buffer_bonus_weight = float(offline_cfg.grpo_buffer_reward_bonus_weight)
+                if grpo_buffer_bonus_weight > 0.0:
+                    rewards = rewards + torch.where(
+                        hard_safe_mask,
+                        grpo_buffer_bonus_weight * grpo_buffer_reward_bonus.to(rewards),
+                        torch.zeros_like(rewards),
+                    )
+            rewards_matrix = rewards.view(B, G)
+            hard_safe_matrix = hard_safe_mask.view(B, G)
+            advantages, group_weight, advantage_aux = self._compute_stage3_advantages(
+                rewards_matrix,
+                hard_safe_matrix,
+                reward_aux,
+            )
         assert rewards.shape == (B * G,)
         assert hard_safe_mask.shape == (B * G,)
-
-        # rewards_matrix: [B, G], hard_safe_matrix: [B, G]
-        rewards_matrix = rewards.view(B, G)
-        hard_safe_matrix = hard_safe_mask.view(B, G)
-        advantages, group_weight, advantage_aux = self._compute_stage3_advantages(rewards_matrix, hard_safe_matrix)
         # advantages: [B * G], group_weight: [B]
         assert advantages.shape == (B * G,)
         assert group_weight.shape == (B,)
@@ -7800,6 +9380,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "mean_comfort": reward_aux["history_comfort"].mean(),
             "mean_ddc": reward_aux["driving_direction_compliance"].mean(),
             "mean_tlc": reward_aux["traffic_light_compliance"].mean(),
+            "soft_safety_penalty_mean": reward_aux["soft_safety_penalty"].mean(),
+            "soft_safety_penalty_max": reward_aux["soft_safety_penalty"].max(),
+            "soft_safety_penalty_weight": total_loss.new_tensor(float(self.soft_safety_penalty_weight)),
+            "soft_safety_mode_enabled": total_loss.new_tensor(
+                float(str(self.safety_advantage_mode) == "soft_penalty")
+            ),
             "nc_pass_ratio": (
                 reward_aux["no_at_fault_collisions"] >= float(self.nc_safe_threshold)
             ).detach().float().mean().to(dtype=total_loss.dtype),
@@ -7840,6 +9426,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 float(bool(getattr(self, "normalize_advantage_batch", False)))
             ),
             "grpo_advantage_clip_abs": total_loss.new_tensor(float(advantage_clip_abs)),
+            **self._stage3_core_pareto_log_metrics(total_loss, reward_aux, advantage_aux),
             "trajectory_logp": trajectory_logp.mean(),
             "gspo_ratio_mean": gspo_ratio_mean.to(dtype=total_loss.dtype),
             "gspo_ratio_min": gspo_ratio_min.to(dtype=total_loss.dtype),

@@ -5,6 +5,7 @@ import io
 import os
 import torch
 from torch import nn
+import torch.nn.functional as F
 from transformers import AutoModel, AutoTokenizer
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
@@ -171,23 +172,31 @@ class RecogDriveBackbone(nn.Module):
         model.extract_feature = extract_feature_with_language_dtype
         model._recogdrive_cast_visual_feature_dtype = True
 
+    def _build_internvl_query(
+        self,
+        pixel_values: Optional[torch.Tensor],
+        question: str,
+        num_patches: int,
+        *,
+        answer_text: Optional[str] = None,
+    ) -> str:
+        if pixel_values is not None and '<image>' not in question:
+            question = '<image>\n' + question
+
+        template = get_conv_template("internvl2_5")
+        template.system_message = system_message
+        template.append_message(template.roles[0], question)
+        template.append_message(template.roles[1], answer_text)
+        query = template.get_prompt()
+
+        image_tokens = IMG_START_TOKEN + IMG_CONTEXT_TOKEN * self.num_image_token * int(num_patches) + IMG_END_TOKEN
+        return query.replace('<image>', image_tokens, 1)
+
     def _build_internvl_queries(self, pixel_values: Optional[torch.Tensor], questions: List[str], num_patches_list: List[int]) -> List[str]:
-        queries = []
-        for idx, num_patches in enumerate(num_patches_list):
-            question = questions[idx]
-            if pixel_values is not None and '<image>' not in question:
-                question = '<image>\n' + question
-
-            template = get_conv_template("internvl2_5")
-            template.system_message = system_message
-            template.append_message(template.roles[0], question)
-            template.append_message(template.roles[1], None)
-            query = template.get_prompt()
-
-            image_tokens = IMG_START_TOKEN + IMG_CONTEXT_TOKEN * self.num_image_token * num_patches + IMG_END_TOKEN
-            query = query.replace('<image>', image_tokens, 1)
-            queries.append(query)
-        return queries
+        return [
+            self._build_internvl_query(pixel_values, questions[idx], int(num_patches), answer_text=None)
+            for idx, num_patches in enumerate(num_patches_list)
+        ]
 
     @staticmethod
     def _language_embedding_layer(model: nn.Module) -> nn.Module:
@@ -241,10 +250,13 @@ class RecogDriveBackbone(nn.Module):
         return out
 
     def _apply_two_expert_train_mode(self, train_vlm_mode: str, top_layers: int = 2) -> None:
-        if train_vlm_mode not in {"frozen", "lora", "top_layers"}:
-            raise ValueError("train_vlm_mode must be 'frozen', 'lora', or 'top_layers'.")
+        if train_vlm_mode not in {"frozen", "lora", "top_layers", "full"}:
+            raise ValueError("train_vlm_mode must be 'frozen', 'lora', 'top_layers', or 'full'.")
         for parameter in self.model.parameters():
             parameter.requires_grad = False
+        if train_vlm_mode == "full":
+            for parameter in self.model.parameters():
+                parameter.requires_grad = True
         if train_vlm_mode == "lora":
             for name, parameter in self.model.named_parameters():
                 if "lora_" in name:
@@ -290,6 +302,145 @@ class RecogDriveBackbone(nn.Module):
                 output_hidden_states=True,
                 return_dict=True,
             )
+
+    def _tokenizer_call(self, queries: List[str], *, max_length: int) -> Dict[str, torch.Tensor]:
+        try:
+            return self.tokenizer(
+                queries,
+                return_tensors='pt',
+                padding='max_length',
+                max_length=int(max_length),
+                truncation=True,
+            )
+        except TypeError:
+            return self.tokenizer(queries, return_tensors='pt', padding='max_length', max_length=int(max_length))
+
+    @staticmethod
+    def _loss_from_logits(logits: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+        if logits.ndim != 3 or labels.ndim != 2:
+            raise ValueError("logits must be [B,N,V] and labels must be [B,N].")
+        shift_logits = logits[:, :-1, :].contiguous()
+        shift_labels = labels[:, 1:].contiguous()
+        return F.cross_entropy(
+            shift_logits.view(-1, shift_logits.shape[-1]).float(),
+            shift_labels.view(-1),
+            ignore_index=-100,
+        ).to(dtype=logits.dtype)
+
+    def forward_replay_ce(
+        self,
+        images: torch.Tensor,
+        replay_inputs: Dict[str, Any],
+        *,
+        train_vlm_mode: str = "lora",
+        max_length: int = 2800,
+    ) -> Dict[str, torch.Tensor]:
+        if not self.model:
+            raise RuntimeError("Backbone model has not been initialized. Call initialize() on the agent first.")
+        if self.model_type != "internvl":
+            raise NotImplementedError("ReCogDrive replay CE is implemented for InternVL only.")
+        prompts = replay_inputs.get("prompts") or replay_inputs.get("questions")
+        answers = replay_inputs.get("answers") or replay_inputs.get("answer_texts")
+        num_patches_list = replay_inputs.get("num_patches_list")
+        if not isinstance(prompts, list) or not isinstance(answers, list) or len(prompts) != len(answers):
+            raise TypeError("replay_inputs must contain equal-length prompts/questions and answers/answer_texts lists.")
+        if num_patches_list is None:
+            if images.shape[0] % len(prompts) != 0:
+                raise ValueError("Cannot infer num_patches_list from images and replay prompts.")
+            num_patches_list = [images.shape[0] // len(prompts)] * len(prompts)
+        self._apply_two_expert_train_mode(train_vlm_mode)
+        model_dtype = self._infer_model_compute_dtype(self.model)
+        prompt_queries = [
+            self._build_internvl_query(images, prompts[idx], int(num_patches), answer_text=None)
+            for idx, num_patches in enumerate(num_patches_list)
+        ]
+        full_queries = [
+            self._build_internvl_query(images, prompts[idx], int(num_patches), answer_text=str(answers[idx]))
+            for idx, num_patches in enumerate(num_patches_list)
+        ]
+        image_context_tokens = int(self.num_image_token) * max(int(item) for item in num_patches_list)
+        effective_max_length = max(int(max_length), image_context_tokens + 1024)
+        old_padding_side = getattr(self.tokenizer, "padding_side", None)
+        self.tokenizer.padding_side = 'right'
+        try:
+            prompt_model_inputs = self._tokenizer_call(prompt_queries, max_length=effective_max_length)
+            model_inputs = self._tokenizer_call(full_queries, max_length=effective_max_length)
+        finally:
+            if old_padding_side is not None:
+                self.tokenizer.padding_side = old_padding_side
+        device = torch.device(self.device)
+        input_ids = model_inputs['input_ids'].to(device)
+        attention_mask = model_inputs['attention_mask'].to(device)
+        prompt_attention_mask = prompt_model_inputs['attention_mask'].to(device)
+        labels = input_ids.clone()
+        labels[attention_mask == 0] = -100
+        for row in range(labels.shape[0]):
+            prompt_len = int(prompt_attention_mask[row].long().sum().item())
+            labels[row, : min(prompt_len, labels.shape[1])] = -100
+        token_count = (labels != -100).long().sum()
+        if int(token_count.detach().cpu().item()) <= 0:
+            raise ValueError(
+                "Replay CE has zero answer tokens after tokenization/truncation; "
+                f"effective_max_length={effective_max_length}, image_context_tokens={image_context_tokens}."
+            )
+
+        position_ids = attention_mask.long().cumsum(-1) - 1
+        position_ids.masked_fill_(attention_mask == 0, 1)
+        image_flags = torch.tensor([1] * images.size(0), dtype=torch.long, device=device)
+        embeddings = self._language_embedding_layer(self.model)
+        token_embeddings = embeddings(input_ids)
+        batch_size, raw_len, hidden_dim = token_embeddings.shape
+        if not hasattr(self.model, "extract_feature") or not hasattr(self.model, "language_model"):
+            outputs = self.model(
+                pixel_values=images.to(device=device, dtype=model_dtype),
+                input_ids=input_ids,
+                attention_mask=attention_mask,
+                position_ids=position_ids,
+                labels=labels,
+                output_hidden_states=False,
+                return_dict=True,
+            )
+        else:
+            vit_embeds = self.model.extract_feature(images.to(device=device, dtype=model_dtype))
+            flat_token_embeddings = token_embeddings.reshape(batch_size * raw_len, hidden_dim).clone()
+            flat_input_ids = input_ids.reshape(batch_size * raw_len)
+            image_selected = flat_input_ids == self.img_context_token_id
+            flat_vit_embeds = vit_embeds.reshape(-1, hidden_dim).to(dtype=flat_token_embeddings.dtype)
+            selected_count = int(image_selected.sum().item())
+            if selected_count <= 0:
+                raise ValueError("InternVL replay prompt contains no IMG_CONTEXT tokens for visual feature injection.")
+            if flat_vit_embeds.shape[0] != selected_count:
+                raise ValueError(
+                    f"Visual token count must match IMG_CONTEXT slots: visual={flat_vit_embeds.shape[0]}, "
+                    f"selected={selected_count}."
+                )
+            flat_token_embeddings[image_selected] = flat_vit_embeds[:selected_count]
+            token_embeddings = flat_token_embeddings.reshape(batch_size, raw_len, hidden_dim)
+            language_model = self._language_model(self.model)
+            kwargs = dict(
+                inputs_embeds=token_embeddings.to(device=device, dtype=token_embeddings.dtype),
+                attention_mask=attention_mask,
+                position_ids=position_ids,
+                labels=labels,
+                output_hidden_states=False,
+                return_dict=True,
+            )
+            try:
+                outputs = language_model(image_flags=image_flags.squeeze(-1), **kwargs)
+            except TypeError:
+                outputs = language_model(**kwargs)
+        loss = getattr(outputs, "loss", None)
+        if loss is None:
+            logits = getattr(outputs, "logits", None)
+            if logits is None:
+                raise RuntimeError("Replay CE forward expected outputs.loss or outputs.logits.")
+            loss = self._loss_from_logits(logits, labels)
+        answer_lengths = torch.tensor([len(str(answer)) for answer in answers], device=device, dtype=loss.dtype)
+        return {
+            "loss": loss,
+            "token_count": token_count.to(dtype=loss.dtype),
+            "answer_length_mean": answer_lengths.mean() if answer_lengths.numel() else loss.new_zeros(()),
+        }
 
     def forward_with_two_expert_slots(
         self,

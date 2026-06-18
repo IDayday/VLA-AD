@@ -35,3 +35,12 @@ def test_raw_vlm_only_keeps_raw_context_and_removes_experts():
     assert diag["two_expert_condition_enabled"].item() == 0.0
     assert diag["two_expert_raw_vlm_context_used"].item() == 1.0
     assert torch.allclose(context["expert_step_condition"], torch.zeros_like(context["expert_step_condition"]))
+
+
+def test_random_slots_corruption_keeps_expert_path_with_mismatched_slots():
+    context = _context_for_mode("random_slots")
+    diag = context["diagnostics"]
+    assert diag["two_expert_corruption_mode_code"].item() == 7.0
+    assert diag["two_expert_condition_enabled"].item() == 1.0
+    assert diag["two_expert_h_dyn_norm"].item() > 0.0
+    assert diag["two_expert_h_geo_norm"].item() > 0.0

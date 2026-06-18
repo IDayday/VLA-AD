@@ -79,12 +79,20 @@ def host_ps(host: str) -> List[Tuple[int, str]]:
     return rows
 
 
-def active_by_split(hosts: Sequence[str]) -> Tuple[Set[str], Set[str], Dict[str, List[int]]]:
+def _command_in_scope(args: argparse.Namespace, cmd: str) -> bool:
+    roots = [str(root) for root in args.val_roots]
+    roots.append(str(args.navtest_out_root))
+    return any(root in cmd for root in roots)
+
+
+def active_by_split(args: argparse.Namespace) -> Tuple[Set[str], Set[str], Dict[str, List[int]]]:
     active_val: Set[str] = set()
     active_navtest: Set[str] = set()
     navtest_pids_by_name: Dict[str, List[int]] = {}
-    for host in hosts:
+    for host in args.remote_hosts:
         for pid, cmd in host_ps(host):
+            if not _command_in_scope(args, cmd):
+                continue
             name = normalize_ckpt_name(cmd)
             if not name:
                 continue
@@ -156,7 +164,7 @@ def run_once(args: argparse.Namespace) -> None:
     ranked = read_val_rows(args.val_roots)
     top = {str(row["checkpoint_name"]) for row in ranked[: args.top_k]}
     completed = {str(row["checkpoint_name"]) for row in ranked}
-    active_val, active_navtest, navtest_pids = active_by_split(args.remote_hosts)
+    active_val, active_navtest, navtest_pids = active_by_split(args)
     eliminated = completed - top - active_val
     append_eliminated(args.eliminated_file, eliminated)
 

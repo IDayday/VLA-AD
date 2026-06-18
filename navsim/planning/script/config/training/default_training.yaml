@@ -19,6 +19,9 @@ split: trainval
 cache_path: ${oc.env:NAVSIM_EXP_ROOT}/training_cache_transfuser
 use_cache_without_dataset: false # load the training samples from the cache. scene-filter will be ignored
 force_cache_computation: true
+cache_train_all_records: false
+stage2_target_source: gt
+stage2_elite_target_index_path: ''
 seed: 0
 allow_dummy_expert_cache: false
 

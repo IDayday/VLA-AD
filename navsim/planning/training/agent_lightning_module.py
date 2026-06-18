@@ -103,6 +103,10 @@ class AgentLightningModule(pl.LightningModule):
             "mean_comfort",
             "mean_ddc",
             "mean_tlc",
+            "soft_safety_penalty_mean",
+            "soft_safety_penalty_max",
+            "soft_safety_penalty_weight",
+            "soft_safety_mode_enabled",
             "diversity_bonus",
             "safe_diversity",
             "group_reward_std",
@@ -126,6 +130,66 @@ class AgentLightningModule(pl.LightningModule):
             "grpo_advantage_clip_frac",
             "grpo_advantage_batch_normalized",
             "grpo_advantage_clip_abs",
+            "core_pareto_enabled",
+            "pdms_core",
+            "pdms_core_ref",
+            "delta_core_vs_ref",
+            "delta_pdms_vs_ref",
+            "delta_ep_vs_ref",
+            "delta_ttc_vs_ref",
+            "delta_ddc_vs_ref",
+            "ep_floor_pass_ratio",
+            "ddc_guard_pass_ratio",
+            "core_pareto_valid_ratio",
+            "core_pareto_valid_progress_ratio",
+            "pareto_front_ratio",
+            "dominated_ratio",
+            "positive_advantage_slow_fail_ratio",
+            "pareto_positive_advantage_ratio",
+            "core_pareto_mixed_group_ratio",
+            "core_pareto_all_valid_group_ratio",
+            "core_pareto_all_invalid_group_ratio",
+            "core_pareto_all_slow_group_ratio",
+            "core_pareto_effective_group_weight_mean",
+            "core_pareto_score_mean",
+            "core_pareto_score_std",
+            "core_pareto_slow_violation_mean",
+            "core_pareto_tradeoff_bad_mean",
+            "core_pareto_ttc_violation_mean",
+            "core_pareto_lambda_slow",
+            "core_pareto_lambda_safety",
+            "core_pareto_slow_rate_ema",
+            "core_pareto_unsafe_rate_ema",
+            "core_pareto_ddc_drop_rate_ema",
+            "core_pareto_ref_gt_pdms",
+            "core_pareto_ref_il_pdms",
+            "core_pareto_ref_gt_core",
+            "core_pareto_ref_il_core",
+            "phenotype_bucket_count_mean",
+            "buffer_bonus_mean",
+            "buffer_bonus_max",
+            "buffer_bonus_target_ratio",
+            "buffer_bonus_distance_mean",
+            "core_pareto_mode_enabled",
+            "core_pareto_core_mean",
+            "core_pareto_adjusted_core_mean",
+            "core_pareto_pdms_formula_mean",
+            "core_pareto_ep_floor_gap_mean",
+            "core_pareto_ep_floor_penalty_mean",
+            "core_pareto_ddc_penalty_mean",
+            "core_pareto_dual_penalty_mean",
+            "core_pareto_nc_dac_feasible_ratio",
+            "core_pareto_ddc_guard_pass_ratio",
+            "core_pareto_front_ratio",
+            "core_pareto_valid_front_ratio",
+            "core_pareto_ep_low_ratio",
+            "core_pareto_progress_bucket_ratio",
+            "core_pareto_ttc_bucket_ratio",
+            "core_pareto_balanced_bucket_ratio",
+            "core_pareto_core_std",
+            "core_pareto_ep_floor",
+            "core_pareto_ddc_guard_threshold",
+            "core_pareto_pareto_bonus",
             "trajectory_logp",
             "gspo_ratio_mean",
             "gspo_ratio_min",
@@ -182,6 +246,22 @@ class AgentLightningModule(pl.LightningModule):
             "grpo_buffer_distill_weight",
             "grpo_buffer_distill_weight_sum",
             "grpo_buffer_distill_zero_weight_batch",
+            "grpo_buffer_preference_dpo_loss",
+            "grpo_buffer_preference_dpo_weight",
+            "grpo_buffer_preference_dpo_target_ratio",
+            "grpo_buffer_preference_dpo_il_loser_ratio",
+            "grpo_buffer_preference_dpo_pair_count",
+            "grpo_buffer_preference_dpo_active_row_ratio",
+            "grpo_buffer_preference_dpo_reward_gap_mean",
+            "grpo_buffer_preference_dpo_gap_weight_mean",
+            "grpo_buffer_preference_dpo_logit_mean",
+            "grpo_buffer_preference_dpo_logit_abs_mean",
+            "grpo_buffer_preference_dpo_implicit_accuracy",
+            "grpo_buffer_preference_dpo_current_margin_mean",
+            "grpo_buffer_preference_dpo_reference_margin_mean",
+            "grpo_buffer_preference_dpo_timestep_mean",
+            "grpo_buffer_preference_dpo_timestep_min",
+            "grpo_buffer_preference_dpo_timestep_max",
             "grpo_self_imitation_enabled",
             "grpo_self_imitation_loss",
             "grpo_self_imitation_weight",
@@ -345,6 +425,17 @@ class AgentLightningModule(pl.LightningModule):
                         sync_dist=True,
                     )
 
+    def _propagate_training_progress(self, logging_prefix: str) -> None:
+        if logging_prefix != "train":
+            return
+        if not hasattr(self.agent, "set_training_progress"):
+            return
+        trainer = getattr(self, "trainer", None)
+        current_epoch = int(getattr(trainer, "current_epoch", 0)) if trainer is not None else int(self.current_epoch)
+        max_epochs = int(getattr(trainer, "max_epochs", 1)) if trainer is not None else 1
+        global_step = int(getattr(trainer, "global_step", self.global_step)) if trainer is not None else int(self.global_step)
+        self.agent.set_training_progress(current_epoch, max_epochs, global_step)
+
     def _step(self, batch: Tuple[Dict[str, Tensor], Dict[str, Tensor]], logging_prefix: str) -> Tensor:
         """
         Propagates the model forward and backwards and computes/logs losses and metrics.
@@ -353,6 +444,7 @@ class AgentLightningModule(pl.LightningModule):
         :return: scalar loss
         """
         features, targets, tokens_list = batch
+        self._propagate_training_progress(logging_prefix)
         prediction = self.agent.forward(features,targets,tokens_list)
         #prediction = self.agent.forward(features,targets)
         loss = self.agent.compute_loss(features, targets, prediction)
@@ -411,6 +503,9 @@ class AgentLightningDiT(pl.LightningModule):
     def _log_optional_recogdrive_metrics(self, prediction: Any, logging_prefix: str) -> None:
         AgentLightningModule._log_optional_recogdrive_metrics(self, prediction, logging_prefix)
 
+    def _propagate_training_progress(self, logging_prefix: str) -> None:
+        AgentLightningModule._propagate_training_progress(self, logging_prefix)
+
     def _step(self, batch: Tuple[Dict[str, Tensor], Dict[str, Tensor]], logging_prefix: str) -> Tensor:
         """
         Propagates the model forward and backwards and computes/logs losses and metrics.
@@ -419,6 +514,7 @@ class AgentLightningDiT(pl.LightningModule):
         :return: scalar loss
         """
         features, targets, tokens_list = batch
+        self._propagate_training_progress(logging_prefix)
         prediction = self.agent.forward(features,targets,tokens_list)
         if logging_prefix == 'train':
             predictions = self.agent.compute_loss(features, targets, prediction)
@@ -475,6 +571,7 @@ class AgentLightningDiT(pl.LightningModule):
 
     def _training_step_grpo_replay(self, batch: Tuple[Dict[str, Tensor], Dict[str, Tensor]], batch_idx: int) -> Tensor:
         features, targets, tokens_list = batch
+        self._propagate_training_progress("train")
         rollout = self.agent.forward(features, targets, tokens_list)
         action_head = getattr(self.agent, "action_head")
         opt = self.optimizers()

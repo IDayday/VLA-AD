@@ -274,6 +274,8 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         two_expert_dyn_tokens_per_group: int = 12,
         two_expert_num_geo_tokens: int = 12,
         two_expert_vlm_hidden_dim: int = 1536,
+        stage2_target_source: str = "gt",
+        stage2_elite_target_index_path: Optional[str] = None,
     ) -> None:
         super().__init__()
         self.cache_path = Path(cache_path)
@@ -311,6 +313,20 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         self.two_expert_dyn_tokens_per_group = int(two_expert_dyn_tokens_per_group)
         self.two_expert_num_geo_tokens = int(two_expert_num_geo_tokens)
         self.two_expert_vlm_hidden_dim = int(two_expert_vlm_hidden_dim)
+        self.stage2_target_source = str(stage2_target_source or "gt")
+        self.stage2_elite_target_index_path = (
+            Path(stage2_elite_target_index_path) if stage2_elite_target_index_path else None
+        )
+        self.stage2_elite_target_index: Optional[Dict[str, int]] = None
+        self.stage2_elite_target_trajectories: Optional[torch.Tensor] = None
+        self.stage2_elite_target_metadata: Dict[str, Any] = {}
+        if self.stage2_target_source not in {"gt", "awac_elite_best_valid_above_gt_or_gt"}:
+            raise ValueError(
+                "stage2_target_source must be one of {'gt', 'awac_elite_best_valid_above_gt_or_gt'}, "
+                f"got {self.stage2_target_source!r}."
+            )
+        if self.stage2_target_source != "gt":
+            self._load_stage2_elite_target_index()
         if self.include_expert_targets and not self.include_expert_features:
             raise ValueError("include_expert_targets=True requires include_expert_features=True.")
         self.log_name_filter: Optional[Set[str]] = set(str(item) for item in log_names) if log_names is not None else None
@@ -334,6 +350,59 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
                 f"No chunk cache records found for split={self.split_name} under {self.cache_path}. "
                 f"Skipped by log filter: {self.skipped_by_log_name}."
             )
+
+    def _load_stage2_elite_target_index(self) -> None:
+        if self.stage2_elite_target_index_path is None:
+            raise FileNotFoundError(
+                "stage2_target_source='awac_elite_best_valid_above_gt_or_gt' requires "
+                "stage2_elite_target_index_path. Build it with "
+                "scripts/last_vla_v2/two_expert_slot/build_stage2_elite_target_index.py."
+            )
+        if not self.stage2_elite_target_index_path.is_file():
+            raise FileNotFoundError(f"Stage2 elite target index not found: {self.stage2_elite_target_index_path}")
+        payload = torch.load(self.stage2_elite_target_index_path, map_location="cpu")
+        if not isinstance(payload, dict):
+            raise TypeError(
+                f"Stage2 elite target index must be a dict, got {type(payload).__name__}: "
+                f"{self.stage2_elite_target_index_path}"
+            )
+        tokens = payload.get("tokens")
+        trajectories = payload.get("trajectories")
+        if not isinstance(tokens, list) or not all(isinstance(token, str) for token in tokens):
+            raise TypeError("Stage2 elite target index field 'tokens' must be a list[str].")
+        if not isinstance(trajectories, torch.Tensor) or trajectories.ndim != 3 or tuple(trajectories.shape[1:]) != (8, 3):
+            raise ValueError(
+                "Stage2 elite target index field 'trajectories' must be a tensor with shape [N, 8, 3]."
+            )
+        if len(tokens) != int(trajectories.shape[0]):
+            raise ValueError(
+                f"Stage2 elite target index token count {len(tokens)} != trajectories count {trajectories.shape[0]}."
+            )
+        self.stage2_elite_target_index = {str(token): idx for idx, token in enumerate(tokens)}
+        if len(self.stage2_elite_target_index) != len(tokens):
+            raise ValueError("Stage2 elite target index contains duplicate tokens.")
+        self.stage2_elite_target_trajectories = trajectories.detach().float().contiguous()
+        summary = payload.get("summary", {})
+        self.stage2_elite_target_metadata = {
+            "summary": summary if isinstance(summary, dict) else {},
+            "selected_target_count": len(tokens),
+        }
+
+    def _stage2_training_target(self, token: str, gt_trajectory: torch.Tensor) -> torch.Tensor:
+        if self.stage2_target_source == "gt":
+            return gt_trajectory
+        if self.stage2_elite_target_index is None or self.stage2_elite_target_trajectories is None:
+            raise RuntimeError("Stage2 elite target index was not loaded.")
+        idx = self.stage2_elite_target_index.get(str(token))
+        if idx is None:
+            return gt_trajectory
+        target = self.stage2_elite_target_trajectories[idx].to(device=gt_trajectory.device, dtype=gt_trajectory.dtype)
+        if tuple(target.shape) != tuple(gt_trajectory.shape):
+            raise ValueError(
+                f"Stage2 elite target for token={token!r} has shape {tuple(target.shape)}, "
+                f"expected {tuple(gt_trajectory.shape)}."
+            )
+        return target
 
     @staticmethod
     def _chunk_dirs(cache_path: Path) -> List[Path]:
@@ -652,6 +721,14 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             "two_expert_num_geo_tokens": self.two_expert_num_geo_tokens,
             "two_expert_vlm_hidden_dim": self.two_expert_vlm_hidden_dim,
             "required_two_expert_hidden_keys": self._required_two_expert_hidden_keys(),
+            "stage2_target_source": self.stage2_target_source,
+            "stage2_elite_target_index_path": (
+                str(self.stage2_elite_target_index_path) if self.stage2_elite_target_index_path else None
+            ),
+            "stage2_elite_target_index_records": (
+                len(self.stage2_elite_target_index) if self.stage2_elite_target_index is not None else 0
+            ),
+            "stage2_elite_target_metadata": self.stage2_elite_target_metadata,
             "shape_distribution_sample_count": report_sample_count,
             "shape_distribution_sample_limit": int(os.getenv("LAST_RD_DATA_REPORT_MAX_SAMPLES", "256")),
             "high_command_one_hot_shape_distribution": high_command_shape_distribution,
@@ -754,7 +831,8 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
                 continue
             value = self._require_tensor(sample, key, sample_path)
             features[key] = value.long() if key == "vggt_geometry_mode_code" else value.float()
-        targets = {"trajectory": required_values["trajectory"].float()}
+        trajectory = self._stage2_training_target(token, required_values["trajectory"].float())
+        targets = {"trajectory": trajectory.float()}
         return features, targets, token
 
     def _geometry_mode_code_from_sample(self, sample: Dict[str, Any], sample_path: Path) -> Optional[torch.Tensor]:
@@ -1196,10 +1274,16 @@ def main(cfg: DictConfig) -> None:
             use_jepa = bool(cfg.agent.get("use_jepa", True))
             use_vggt = bool(cfg.agent.get("use_vggt", True))
             use_two_expert_slots = bool(cfg.agent.get("use_two_expert_slots", False))
+            cache_train_all_records = bool(
+                cfg.get("cache_train_all_records", cfg.get("train_all_cache_records", False))
+            )
+            train_log_names = None if cache_train_all_records else list(cfg.train_logs)
+            stage2_target_source = str(cfg.get("stage2_target_source", "gt"))
+            stage2_elite_target_index_path = cfg.get("stage2_elite_target_index_path", None)
             train_data = ChunkCacheDataset(
                 cfg.cache_path,
-                log_names=list(cfg.train_logs),
-                split_name="train",
+                log_names=train_log_names,
+                split_name="train_all_cache" if cache_train_all_records else "train",
                 include_expert_features=include_expert_features,
                 include_expert_targets=include_expert_targets,
                 use_jepa=use_jepa,
@@ -1230,6 +1314,8 @@ def main(cfg: DictConfig) -> None:
                 two_expert_dyn_tokens_per_group=int(cfg.agent.get("two_expert_dyn_tokens_per_group", 12)),
                 two_expert_num_geo_tokens=int(cfg.agent.get("two_expert_num_geo_tokens", 12)),
                 two_expert_vlm_hidden_dim=int(cfg.agent.get("two_expert_vlm_hidden_dim", cfg.agent.get("vlm_hidden_dim", 1536))),
+                stage2_target_source=stage2_target_source,
+                stage2_elite_target_index_path=stage2_elite_target_index_path,
             )
             val_data = ChunkCacheDataset(
                 cfg.cache_path,
@@ -1265,16 +1351,23 @@ def main(cfg: DictConfig) -> None:
                 two_expert_dyn_tokens_per_group=int(cfg.agent.get("two_expert_dyn_tokens_per_group", 12)),
                 two_expert_num_geo_tokens=int(cfg.agent.get("two_expert_num_geo_tokens", 12)),
                 two_expert_vlm_hidden_dim=int(cfg.agent.get("two_expert_vlm_hidden_dim", cfg.agent.get("vlm_hidden_dim", 1536))),
+                stage2_target_source=stage2_target_source,
+                stage2_elite_target_index_path=stage2_elite_target_index_path,
             )
             train_tokens = set(train_data.sample_tokens())
             val_tokens = set(val_data.sample_tokens())
             overlap_count = len(train_tokens & val_tokens)
-            if overlap_count:
+            if overlap_count and not cache_train_all_records:
                 raise RuntimeError(f"Local chunk train/val split overlap is not allowed; overlap_count={overlap_count}")
-            loader_mode = "official-aligned-local-loader-log-split"
+            loader_mode = (
+                "official-aligned-local-loader-all-cache-train-log-val"
+                if cache_train_all_records
+                else "official-aligned-local-loader-log-split"
+            )
             if int(os.getenv("RANK", "0")) == 0:
                 data_report = {
                     "loader_mode": loader_mode,
+                    "cache_train_all_records": cache_train_all_records,
                     "train": train_data.report(),
                     "val": val_data.report(),
                     "train_val_overlap_count": overlap_count,

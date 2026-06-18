@@ -15,7 +15,7 @@ CORR_ROOT="${OUT_ROOT}/two_expert_slot_corruption"
 COMMANDS_LOG="${CORR_ROOT}/commands.log"
 mkdir -p "${CORR_ROOT}"
 
-modes=(normal zero_h_dyn zero_h_geo zero_all_experts raw_vlm_only dyn_only geo_only)
+modes=(normal zero_h_dyn zero_h_geo zero_all_experts raw_vlm_only dyn_only geo_only random_slots)
 for mode in "${modes[@]}"; do
   out_dir="${CORR_ROOT}/${mode}"
   mkdir -p "${out_dir}"

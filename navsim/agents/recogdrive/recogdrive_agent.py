@@ -104,6 +104,7 @@ class ReCogDriveAgent(AbstractAgent):
         cam_type: Optional[str] = 'single', 
         vlm_type: Optional[str] = 'internvl', 
         dit_type: Optional[str] = 'small', 
+        dit_dropout: float = 0.0,
         sampling_method: Optional[str] = 'ddim', 
         cache_mode: bool = False, 
         cache_hidden_state: bool = True, 
@@ -126,8 +127,62 @@ class ReCogDriveAgent(AbstractAgent):
         grpo_advantage_clip_abs: float = 0.0,
         grpo_hard_gate_ttc: bool = False,
         grpo_hard_gate_ddc: bool = False,
+        grpo_reward_mode: Literal["safe_diffgrpo", "core_pareto"] = "safe_diffgrpo",
+        grpo_safety_advantage_mode: Literal["hard", "soft_penalty"] = "hard",
         grpo_ttc_safe_threshold: float = 1.0,
         grpo_ddc_safe_threshold: float = 1.0,
+        grpo_soft_safety_penalty_weight: float = 0.50,
+        grpo_soft_safety_penalty_clip: float = 0.50,
+        grpo_soft_safety_min_reward: float = 0.0,
+        grpo_use_core_pareto: bool = False,
+        grpo_core_ep_weight: float = 5.0,
+        grpo_core_ttc_weight: float = 5.0,
+        grpo_core_comfort_weight: float = 2.0,
+        grpo_core_pareto_reference_mode: str = "max_gt_il",
+        grpo_core_pareto_reference_margin_weight: float = 0.3,
+        grpo_core_pareto_reference_margin_scale: float = 0.05,
+        grpo_core_pareto_require_nc: bool = True,
+        grpo_core_pareto_require_dac: bool = True,
+        grpo_core_pareto_ep_floor: float = 0.75,
+        grpo_core_pareto_ep_floor_penalty_weight: float = 0.40,
+        grpo_core_pareto_use_ddc_guard: bool = True,
+        grpo_core_pareto_ddc_guard_threshold: float = 0.95,
+        grpo_core_pareto_ddc_drop_tolerance: float = 0.01,
+        grpo_core_pareto_ddc_min_absolute: float = 0.95,
+        grpo_core_pareto_use_ep_floor: bool = True,
+        grpo_core_pareto_ep_floor_tolerance: float = 0.02,
+        grpo_core_pareto_slow_penalty_weight: float = 0.5,
+        grpo_core_pareto_use_ttc_tradeoff_penalty: bool = True,
+        grpo_core_pareto_tradeoff_tolerance: float = 0.01,
+        grpo_core_pareto_tradeoff_penalty_weight: float = 0.2,
+        grpo_core_pareto_score_mode: str = "pdms_plus_core_margin_minus_slow",
+        grpo_core_pareto_core_margin_weight: float = 0.3,
+        grpo_core_pareto_use_pareto_front: bool = True,
+        grpo_core_pareto_pareto_front_bonus: float = 0.2,
+        grpo_core_pareto_dominated_positive_adv_cap: float = 0.0,
+        grpo_core_pareto_all_valid_objective: str = "core",
+        grpo_core_pareto_all_safe_low_std_group_weight: float = 0.5,
+        grpo_core_pareto_min_group_reward_std: float = 0.005,
+        grpo_core_pareto_use_all_unsafe_rescue_advantage: bool = True,
+        grpo_core_pareto_all_unsafe_adv_max: float = 0.0,
+        grpo_core_pareto_all_slow_group_weight: float = 0.25,
+        grpo_core_pareto_ddc_penalty_weight: float = 0.25,
+        grpo_core_pareto_ddc_penalty_clip: float = 1.0,
+        grpo_core_pareto_pareto_bonus: float = 0.15,
+        grpo_core_pareto_low_ep_adv_scale: float = 0.25,
+        grpo_core_pareto_infeasible_advantage_offset: float = 1.0,
+        grpo_core_pareto_min_core_std: float = 0.03,
+        grpo_core_pareto_advantage_mode: Literal["group_zscore", "loo_zscore"] = "group_zscore",
+        grpo_core_pareto_use_phenotype_buckets: bool = True,
+        grpo_core_pareto_ep_ttc_balance_margin: float = 0.05,
+        grpo_core_pareto_use_adaptive_dual: bool = False,
+        grpo_core_pareto_dual_lr: float = 0.02,
+        grpo_core_pareto_target_nc: float = 1.0,
+        grpo_core_pareto_target_dac: float = 1.0,
+        grpo_core_pareto_target_ddc: float = 0.95,
+        grpo_core_pareto_use_phenotype_bucket_grpo: bool = False,
+        grpo_core_pareto_buffer_bonus_enabled: bool = False,
+        grpo_core_pareto_buffer_bonus_weight: float = 0.0,
         grpo_ppo_replay_inner_epochs: int = 1,
         grpo_ppo_replay_minibatch_size: int = 0,
         grpo_ppo_replay_max_grad_norm: float = 1.0,
@@ -287,8 +342,11 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_grpo_buffer_distill_loss_weight: float = 0.0,
         offline_rl_grpo_buffer_distill_loss_schedule: str = "linear_warmup",
         offline_rl_grpo_buffer_distill_loss_weight_start: float = 0.0,
+        offline_rl_grpo_buffer_distill_loss_weight_end: float = 0.0,
         offline_rl_grpo_buffer_distill_warmup_start_epoch: int = 0,
         offline_rl_grpo_buffer_distill_warmup_epochs: int = 3,
+        offline_rl_grpo_buffer_distill_decay_start_step: int = -1,
+        offline_rl_grpo_buffer_distill_decay_end_step: int = -1,
         offline_rl_grpo_buffer_distill_top_k: int = 1,
         offline_rl_grpo_buffer_distill_min_reward_margin: float = 0.0,
         offline_rl_grpo_buffer_distill_timestep_sampling: str = "low_noise",
@@ -312,8 +370,11 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_grpo_self_imitation_loss_weight: float = 0.0,
         offline_rl_grpo_self_imitation_loss_schedule: str = "linear_warmup",
         offline_rl_grpo_self_imitation_loss_weight_start: float = 0.0,
+        offline_rl_grpo_self_imitation_loss_weight_end: float = 0.0,
         offline_rl_grpo_self_imitation_warmup_start_epoch: int = 0,
         offline_rl_grpo_self_imitation_warmup_epochs: int = 3,
+        offline_rl_grpo_self_imitation_decay_start_step: int = -1,
+        offline_rl_grpo_self_imitation_decay_end_step: int = -1,
         offline_rl_grpo_self_imitation_top_k: int = 1,
         offline_rl_grpo_self_imitation_min_reward: float = 0.85,
         offline_rl_grpo_self_imitation_min_reward_margin: float = 0.01,
@@ -407,6 +468,7 @@ class ReCogDriveAgent(AbstractAgent):
         last_rd_adapter_checkpoint: Optional[str] = None,
         policy_kd_mode: str = "none",
         current_train_epoch: int = 0,
+        current_train_step: int = 0,
         total_train_epochs: int = 200,
         use_last_vla: bool = False,
         last_vla_stage: str = "disabled",
@@ -497,6 +559,12 @@ class ReCogDriveAgent(AbstractAgent):
         two_expert_denoise_gate_temperature: float = 1.0,
         two_expert_denoise_condition_scale_init: float = 1.0,
         two_expert_memory_scale_init: float = 1.0,
+        two_expert_prefusion_heads: int = 8,
+        two_expert_prefusion_dropout: float = 0.10,
+        two_expert_prefusion_token_dropout: float = 0.05,
+        two_expert_prefusion_condition_dropout: float = 0.10,
+        two_expert_prefusion_scale_init: float = 1.0,
+        two_expert_prefusion_zero_init: bool = True,
         lr_vlm_lora: Optional[float] = 1e-5,
         weight_decay_vlm_lora: float = 0.0,
         lr_last_vla_cot: Optional[float] = 1e-4,
@@ -514,9 +582,9 @@ class ReCogDriveAgent(AbstractAgent):
         scheduler_epochs: int = 200,
         scheduler_warmup_epochs: int = 3,
         scheduler_min_lr: float = 1e-6,
-        grpo_scheduler_epochs: int = 10,
+        grpo_scheduler_epochs: int = 20,
         grpo_scheduler_warmup_epochs: int = 0,
-        grpo_scheduler_min_lr: float = 0.0,
+        grpo_scheduler_min_lr: float = 1e-5,
     ):
         super().__init__()
         self._trajectory_sampling = trajectory_sampling
@@ -524,6 +592,9 @@ class ReCogDriveAgent(AbstractAgent):
         self.checkpoint_path = checkpoint_path
         self.vlm_type = vlm_type
         self.dit_type = dit_type
+        self.dit_dropout = float(dit_dropout)
+        if not 0.0 <= self.dit_dropout < 1.0:
+            raise ValueError("dit_dropout must be in [0.0, 1.0).")
         self.cache_mode = cache_mode
         self.cache_hidden_state = cache_hidden_state
         self._lr = lr
@@ -561,8 +632,66 @@ class ReCogDriveAgent(AbstractAgent):
         self.grpo_advantage_clip_abs = float(grpo_advantage_clip_abs)
         self.grpo_hard_gate_ttc = bool(grpo_hard_gate_ttc)
         self.grpo_hard_gate_ddc = bool(grpo_hard_gate_ddc)
+        self.grpo_reward_mode = str(grpo_reward_mode)
+        self.grpo_safety_advantage_mode = str(grpo_safety_advantage_mode)
         self.grpo_ttc_safe_threshold = float(grpo_ttc_safe_threshold)
         self.grpo_ddc_safe_threshold = float(grpo_ddc_safe_threshold)
+        self.grpo_soft_safety_penalty_weight = float(grpo_soft_safety_penalty_weight)
+        self.grpo_soft_safety_penalty_clip = float(grpo_soft_safety_penalty_clip)
+        self.grpo_soft_safety_min_reward = float(grpo_soft_safety_min_reward)
+        self.grpo_use_core_pareto = bool(grpo_use_core_pareto)
+        self.grpo_core_ep_weight = float(grpo_core_ep_weight)
+        self.grpo_core_ttc_weight = float(grpo_core_ttc_weight)
+        self.grpo_core_comfort_weight = float(grpo_core_comfort_weight)
+        self.grpo_core_pareto_reference_mode = str(grpo_core_pareto_reference_mode)
+        self.grpo_core_pareto_reference_margin_weight = float(grpo_core_pareto_reference_margin_weight)
+        self.grpo_core_pareto_reference_margin_scale = float(grpo_core_pareto_reference_margin_scale)
+        self.grpo_core_pareto_require_nc = bool(grpo_core_pareto_require_nc)
+        self.grpo_core_pareto_require_dac = bool(grpo_core_pareto_require_dac)
+        self.grpo_core_pareto_ep_floor = float(grpo_core_pareto_ep_floor)
+        self.grpo_core_pareto_ep_floor_penalty_weight = float(grpo_core_pareto_ep_floor_penalty_weight)
+        self.grpo_core_pareto_use_ddc_guard = bool(grpo_core_pareto_use_ddc_guard)
+        self.grpo_core_pareto_ddc_guard_threshold = float(grpo_core_pareto_ddc_guard_threshold)
+        self.grpo_core_pareto_ddc_drop_tolerance = float(grpo_core_pareto_ddc_drop_tolerance)
+        self.grpo_core_pareto_ddc_min_absolute = float(grpo_core_pareto_ddc_min_absolute)
+        self.grpo_core_pareto_use_ep_floor = bool(grpo_core_pareto_use_ep_floor)
+        self.grpo_core_pareto_ep_floor_tolerance = float(grpo_core_pareto_ep_floor_tolerance)
+        self.grpo_core_pareto_slow_penalty_weight = float(grpo_core_pareto_slow_penalty_weight)
+        self.grpo_core_pareto_use_ttc_tradeoff_penalty = bool(grpo_core_pareto_use_ttc_tradeoff_penalty)
+        self.grpo_core_pareto_tradeoff_tolerance = float(grpo_core_pareto_tradeoff_tolerance)
+        self.grpo_core_pareto_tradeoff_penalty_weight = float(grpo_core_pareto_tradeoff_penalty_weight)
+        self.grpo_core_pareto_score_mode = str(grpo_core_pareto_score_mode)
+        self.grpo_core_pareto_core_margin_weight = float(grpo_core_pareto_core_margin_weight)
+        self.grpo_core_pareto_use_pareto_front = bool(grpo_core_pareto_use_pareto_front)
+        self.grpo_core_pareto_pareto_front_bonus = float(grpo_core_pareto_pareto_front_bonus)
+        self.grpo_core_pareto_dominated_positive_adv_cap = float(grpo_core_pareto_dominated_positive_adv_cap)
+        self.grpo_core_pareto_all_valid_objective = str(grpo_core_pareto_all_valid_objective)
+        self.grpo_core_pareto_all_safe_low_std_group_weight = float(
+            grpo_core_pareto_all_safe_low_std_group_weight
+        )
+        self.grpo_core_pareto_min_group_reward_std = float(grpo_core_pareto_min_group_reward_std)
+        self.grpo_core_pareto_use_all_unsafe_rescue_advantage = bool(
+            grpo_core_pareto_use_all_unsafe_rescue_advantage
+        )
+        self.grpo_core_pareto_all_unsafe_adv_max = float(grpo_core_pareto_all_unsafe_adv_max)
+        self.grpo_core_pareto_all_slow_group_weight = float(grpo_core_pareto_all_slow_group_weight)
+        self.grpo_core_pareto_ddc_penalty_weight = float(grpo_core_pareto_ddc_penalty_weight)
+        self.grpo_core_pareto_ddc_penalty_clip = float(grpo_core_pareto_ddc_penalty_clip)
+        self.grpo_core_pareto_pareto_bonus = float(grpo_core_pareto_pareto_bonus)
+        self.grpo_core_pareto_low_ep_adv_scale = float(grpo_core_pareto_low_ep_adv_scale)
+        self.grpo_core_pareto_infeasible_advantage_offset = float(grpo_core_pareto_infeasible_advantage_offset)
+        self.grpo_core_pareto_min_core_std = float(grpo_core_pareto_min_core_std)
+        self.grpo_core_pareto_advantage_mode = str(grpo_core_pareto_advantage_mode)
+        self.grpo_core_pareto_use_phenotype_buckets = bool(grpo_core_pareto_use_phenotype_buckets)
+        self.grpo_core_pareto_ep_ttc_balance_margin = float(grpo_core_pareto_ep_ttc_balance_margin)
+        self.grpo_core_pareto_use_adaptive_dual = bool(grpo_core_pareto_use_adaptive_dual)
+        self.grpo_core_pareto_dual_lr = float(grpo_core_pareto_dual_lr)
+        self.grpo_core_pareto_target_nc = float(grpo_core_pareto_target_nc)
+        self.grpo_core_pareto_target_dac = float(grpo_core_pareto_target_dac)
+        self.grpo_core_pareto_target_ddc = float(grpo_core_pareto_target_ddc)
+        self.grpo_core_pareto_use_phenotype_bucket_grpo = bool(grpo_core_pareto_use_phenotype_bucket_grpo)
+        self.grpo_core_pareto_buffer_bonus_enabled = bool(grpo_core_pareto_buffer_bonus_enabled)
+        self.grpo_core_pareto_buffer_bonus_weight = float(grpo_core_pareto_buffer_bonus_weight)
         self.grpo_ppo_replay_inner_epochs = int(grpo_ppo_replay_inner_epochs)
         self.grpo_ppo_replay_minibatch_size = int(grpo_ppo_replay_minibatch_size)
         self.grpo_ppo_replay_max_grad_norm = float(grpo_ppo_replay_max_grad_norm)
@@ -593,10 +722,72 @@ class ReCogDriveAgent(AbstractAgent):
             raise ValueError("grpo_behavior_policy_sync_interval must be positive.")
         if self.grpo_advantage_clip_abs < 0.0:
             raise ValueError("grpo_advantage_clip_abs must be non-negative.")
+        if self.grpo_reward_mode not in {"safe_diffgrpo", "core_pareto"}:
+            raise ValueError("grpo_reward_mode must be 'safe_diffgrpo' or 'core_pareto'.")
+        if self.grpo_safety_advantage_mode not in {"hard", "soft_penalty"}:
+            raise ValueError("grpo_safety_advantage_mode must be 'hard' or 'soft_penalty'.")
         if not (0.0 <= self.grpo_ttc_safe_threshold <= 1.0):
             raise ValueError("grpo_ttc_safe_threshold must be in [0, 1].")
         if not (0.0 <= self.grpo_ddc_safe_threshold <= 1.0):
             raise ValueError("grpo_ddc_safe_threshold must be in [0, 1].")
+        if self.grpo_soft_safety_penalty_weight < 0.0:
+            raise ValueError("grpo_soft_safety_penalty_weight must be non-negative.")
+        if self.grpo_soft_safety_penalty_clip < 0.0:
+            raise ValueError("grpo_soft_safety_penalty_clip must be non-negative.")
+        if self.grpo_core_pareto_reference_mode not in {"gt", "il", "max_gt_il"}:
+            raise ValueError("grpo_core_pareto_reference_mode must be 'gt', 'il', or 'max_gt_il'.")
+        if self.grpo_core_pareto_score_mode not in {
+            "pdms_minus_slow",
+            "pdms_plus_core_margin_minus_slow",
+            "core_minus_slow",
+        }:
+            raise ValueError("grpo_core_pareto_score_mode has an unsupported value.")
+        if self.grpo_core_pareto_all_valid_objective not in {"core", "score", "pdms"}:
+            raise ValueError("grpo_core_pareto_all_valid_objective must be 'core', 'score', or 'pdms'.")
+        if self.grpo_core_pareto_reference_margin_scale <= 0.0:
+            raise ValueError("grpo_core_pareto_reference_margin_scale must be positive.")
+        if self.grpo_core_pareto_advantage_mode not in {"group_zscore", "loo_zscore"}:
+            raise ValueError("grpo_core_pareto_advantage_mode must be 'group_zscore' or 'loo_zscore'.")
+        for name in (
+            "grpo_core_pareto_ep_floor",
+            "grpo_core_pareto_ddc_guard_threshold",
+            "grpo_core_pareto_target_nc",
+            "grpo_core_pareto_target_dac",
+            "grpo_core_pareto_target_ddc",
+            "grpo_core_pareto_ddc_min_absolute",
+        ):
+            value = float(getattr(self, name))
+            if value < 0.0 or value > 1.0:
+                raise ValueError(f"{name} must be in [0, 1].")
+        for name in (
+            "grpo_core_ep_weight",
+            "grpo_core_ttc_weight",
+            "grpo_core_comfort_weight",
+            "grpo_core_pareto_reference_margin_weight",
+            "grpo_core_pareto_reference_margin_scale",
+            "grpo_core_pareto_ddc_drop_tolerance",
+            "grpo_core_pareto_ep_floor_tolerance",
+            "grpo_core_pareto_slow_penalty_weight",
+            "grpo_core_pareto_tradeoff_tolerance",
+            "grpo_core_pareto_tradeoff_penalty_weight",
+            "grpo_core_pareto_core_margin_weight",
+            "grpo_core_pareto_pareto_front_bonus",
+            "grpo_core_pareto_all_safe_low_std_group_weight",
+            "grpo_core_pareto_min_group_reward_std",
+            "grpo_core_pareto_all_slow_group_weight",
+            "grpo_core_pareto_buffer_bonus_weight",
+            "grpo_core_pareto_ep_floor_penalty_weight",
+            "grpo_core_pareto_ddc_penalty_weight",
+            "grpo_core_pareto_ddc_penalty_clip",
+            "grpo_core_pareto_pareto_bonus",
+            "grpo_core_pareto_low_ep_adv_scale",
+            "grpo_core_pareto_infeasible_advantage_offset",
+            "grpo_core_pareto_min_core_std",
+            "grpo_core_pareto_ep_ttc_balance_margin",
+            "grpo_core_pareto_dual_lr",
+        ):
+            if float(getattr(self, name)) < 0.0:
+                raise ValueError(f"{name} must be non-negative.")
         if self.grpo_ppo_replay_inner_epochs <= 0:
             raise ValueError("grpo_ppo_replay_inner_epochs must be positive.")
         if self.grpo_ppo_replay_minibatch_size < 0:
@@ -765,10 +956,19 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_grpo_buffer_distill_loss_weight_start = float(
             offline_rl_grpo_buffer_distill_loss_weight_start
         )
+        self.offline_rl_grpo_buffer_distill_loss_weight_end = float(
+            offline_rl_grpo_buffer_distill_loss_weight_end
+        )
         self.offline_rl_grpo_buffer_distill_warmup_start_epoch = int(
             offline_rl_grpo_buffer_distill_warmup_start_epoch
         )
         self.offline_rl_grpo_buffer_distill_warmup_epochs = int(offline_rl_grpo_buffer_distill_warmup_epochs)
+        self.offline_rl_grpo_buffer_distill_decay_start_step = int(
+            offline_rl_grpo_buffer_distill_decay_start_step
+        )
+        self.offline_rl_grpo_buffer_distill_decay_end_step = int(
+            offline_rl_grpo_buffer_distill_decay_end_step
+        )
         self.offline_rl_grpo_buffer_distill_top_k = int(offline_rl_grpo_buffer_distill_top_k)
         self.offline_rl_grpo_buffer_distill_min_reward_margin = float(
             offline_rl_grpo_buffer_distill_min_reward_margin
@@ -828,10 +1028,19 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_grpo_self_imitation_loss_weight_start = float(
             offline_rl_grpo_self_imitation_loss_weight_start
         )
+        self.offline_rl_grpo_self_imitation_loss_weight_end = float(
+            offline_rl_grpo_self_imitation_loss_weight_end
+        )
         self.offline_rl_grpo_self_imitation_warmup_start_epoch = int(
             offline_rl_grpo_self_imitation_warmup_start_epoch
         )
         self.offline_rl_grpo_self_imitation_warmup_epochs = int(offline_rl_grpo_self_imitation_warmup_epochs)
+        self.offline_rl_grpo_self_imitation_decay_start_step = int(
+            offline_rl_grpo_self_imitation_decay_start_step
+        )
+        self.offline_rl_grpo_self_imitation_decay_end_step = int(
+            offline_rl_grpo_self_imitation_decay_end_step
+        )
         self.offline_rl_grpo_self_imitation_top_k = int(offline_rl_grpo_self_imitation_top_k)
         self.offline_rl_grpo_self_imitation_min_reward = float(offline_rl_grpo_self_imitation_min_reward)
         self.offline_rl_grpo_self_imitation_min_reward_margin = float(
@@ -947,6 +1156,12 @@ class ReCogDriveAgent(AbstractAgent):
         self.two_expert_denoise_gate_temperature = float(two_expert_denoise_gate_temperature)
         self.two_expert_denoise_condition_scale_init = float(two_expert_denoise_condition_scale_init)
         self.two_expert_memory_scale_init = float(two_expert_memory_scale_init)
+        self.two_expert_prefusion_heads = int(two_expert_prefusion_heads)
+        self.two_expert_prefusion_dropout = float(two_expert_prefusion_dropout)
+        self.two_expert_prefusion_token_dropout = float(two_expert_prefusion_token_dropout)
+        self.two_expert_prefusion_condition_dropout = float(two_expert_prefusion_condition_dropout)
+        self.two_expert_prefusion_scale_init = float(two_expert_prefusion_scale_init)
+        self.two_expert_prefusion_zero_init = bool(two_expert_prefusion_zero_init)
         self.use_future_jepa_prediction = use_future_jepa_prediction
         self.use_vggt_geometry_tokens = use_vggt_geometry_tokens
         self.use_ego_trajectory_tokens = use_ego_trajectory_tokens
@@ -978,6 +1193,7 @@ class ReCogDriveAgent(AbstractAgent):
         self.last_rd_adapter_checkpoint = last_rd_adapter_checkpoint
         self.policy_kd_mode = policy_kd_mode
         self.current_train_epoch = current_train_epoch
+        self.current_train_step = int(current_train_step)
         self.total_train_epochs = total_train_epochs
         self.last_vla_cot_num_tokens = last_vla_cot_num_tokens
         self.last_vla_cot_num_steps = last_vla_cot_num_steps
@@ -1078,8 +1294,8 @@ class ReCogDriveAgent(AbstractAgent):
             raise ValueError("grpo_scheduler_warmup_epochs must be non-negative.")
         if self.grpo_scheduler_warmup_epochs >= self.grpo_scheduler_epochs:
             raise ValueError("grpo_scheduler_warmup_epochs must be smaller than grpo_scheduler_epochs.")
-        if self.grpo_scheduler_min_lr < 0.0:
-            raise ValueError("grpo_scheduler_min_lr must be non-negative.")
+        if self.grpo_scheduler_min_lr <= 0.0:
+            raise ValueError("grpo_scheduler_min_lr must be positive.")
         self._warned_random_init = False
         self._warned_dummy_features = False
         self._dummy_expert_backend: Optional[DummyExpertBackend] = None
@@ -1122,9 +1338,25 @@ class ReCogDriveAgent(AbstractAgent):
                 self._enable_last_vla_vlm_lora()
 
         if self.dit_type == "large":
-            cfg = make_recogdrive_config(self.dit_type, action_dim=3, action_horizon=8, grpo=self.grpo, input_embedding_dim=1536,sampling_method=sampling_method)
+            cfg = make_recogdrive_config(
+                self.dit_type,
+                action_dim=3,
+                action_horizon=8,
+                grpo=self.grpo,
+                input_embedding_dim=1536,
+                sampling_method=sampling_method,
+                dit_dropout=self.dit_dropout,
+            )
         elif self.dit_type == "small":
-            cfg = make_recogdrive_config(self.dit_type, action_dim=3, action_horizon=8, grpo=self.grpo, input_embedding_dim=384,sampling_method=sampling_method)
+            cfg = make_recogdrive_config(
+                self.dit_type,
+                action_dim=3,
+                action_horizon=8,
+                grpo=self.grpo,
+                input_embedding_dim=384,
+                sampling_method=sampling_method,
+                dit_dropout=self.dit_dropout,
+            )
 
         cfg.vlm_size = self.vlm_size
         cfg.planner_dim = cfg.input_embedding_dim
@@ -1193,6 +1425,7 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.reference_a0_checkpoint = self.reference_a0_checkpoint
         cfg.policy_kd_mode = self.policy_kd_mode
         cfg.current_train_epoch = self.current_train_epoch
+        cfg.current_train_step = self.current_train_step
         cfg.total_train_epochs = self.total_train_epochs
         cfg.use_last_vla = self.use_last_vla
         cfg.last_vla_stage = self.last_vla_stage
@@ -1279,6 +1512,12 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.two_expert_denoise_gate_temperature = self.two_expert_denoise_gate_temperature
         cfg.two_expert_denoise_condition_scale_init = self.two_expert_denoise_condition_scale_init
         cfg.two_expert_memory_scale_init = self.two_expert_memory_scale_init
+        cfg.two_expert_prefusion_heads = self.two_expert_prefusion_heads
+        cfg.two_expert_prefusion_dropout = self.two_expert_prefusion_dropout
+        cfg.two_expert_prefusion_token_dropout = self.two_expert_prefusion_token_dropout
+        cfg.two_expert_prefusion_condition_dropout = self.two_expert_prefusion_condition_dropout
+        cfg.two_expert_prefusion_scale_init = self.two_expert_prefusion_scale_init
+        cfg.two_expert_prefusion_zero_init = self.two_expert_prefusion_zero_init
 
         offline_cfg = cfg.offline_rl_cfg
         offline_cfg.enabled = self.offline_rl_enabled
@@ -1419,8 +1658,11 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.grpo_buffer_distill_loss_weight = self.offline_rl_grpo_buffer_distill_loss_weight
         offline_cfg.grpo_buffer_distill_loss_schedule = self.offline_rl_grpo_buffer_distill_loss_schedule
         offline_cfg.grpo_buffer_distill_loss_weight_start = self.offline_rl_grpo_buffer_distill_loss_weight_start
+        offline_cfg.grpo_buffer_distill_loss_weight_end = self.offline_rl_grpo_buffer_distill_loss_weight_end
         offline_cfg.grpo_buffer_distill_warmup_start_epoch = self.offline_rl_grpo_buffer_distill_warmup_start_epoch
         offline_cfg.grpo_buffer_distill_warmup_epochs = self.offline_rl_grpo_buffer_distill_warmup_epochs
+        offline_cfg.grpo_buffer_distill_decay_start_step = self.offline_rl_grpo_buffer_distill_decay_start_step
+        offline_cfg.grpo_buffer_distill_decay_end_step = self.offline_rl_grpo_buffer_distill_decay_end_step
         offline_cfg.grpo_buffer_distill_top_k = self.offline_rl_grpo_buffer_distill_top_k
         offline_cfg.grpo_buffer_distill_min_reward_margin = self.offline_rl_grpo_buffer_distill_min_reward_margin
         offline_cfg.grpo_buffer_distill_timestep_sampling = self.offline_rl_grpo_buffer_distill_timestep_sampling
@@ -1474,10 +1716,13 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.grpo_self_imitation_loss_weight = self.offline_rl_grpo_self_imitation_loss_weight
         offline_cfg.grpo_self_imitation_loss_schedule = self.offline_rl_grpo_self_imitation_loss_schedule
         offline_cfg.grpo_self_imitation_loss_weight_start = self.offline_rl_grpo_self_imitation_loss_weight_start
+        offline_cfg.grpo_self_imitation_loss_weight_end = self.offline_rl_grpo_self_imitation_loss_weight_end
         offline_cfg.grpo_self_imitation_warmup_start_epoch = (
             self.offline_rl_grpo_self_imitation_warmup_start_epoch
         )
         offline_cfg.grpo_self_imitation_warmup_epochs = self.offline_rl_grpo_self_imitation_warmup_epochs
+        offline_cfg.grpo_self_imitation_decay_start_step = self.offline_rl_grpo_self_imitation_decay_start_step
+        offline_cfg.grpo_self_imitation_decay_end_step = self.offline_rl_grpo_self_imitation_decay_end_step
         offline_cfg.grpo_self_imitation_top_k = self.offline_rl_grpo_self_imitation_top_k
         offline_cfg.grpo_self_imitation_min_reward = self.offline_rl_grpo_self_imitation_min_reward
         offline_cfg.grpo_self_imitation_min_reward_margin = (
@@ -1530,8 +1775,80 @@ class ReCogDriveAgent(AbstractAgent):
             cfg.grpo_cfg.advantage_clip_abs = self.grpo_advantage_clip_abs
             cfg.grpo_cfg.hard_gate_ttc = self.grpo_hard_gate_ttc
             cfg.grpo_cfg.hard_gate_ddc = self.grpo_hard_gate_ddc
+            cfg.grpo_cfg.reward_mode = self.grpo_reward_mode
+            cfg.grpo_cfg.safety_advantage_mode = self.grpo_safety_advantage_mode
             cfg.grpo_cfg.ttc_safe_threshold = self.grpo_ttc_safe_threshold
             cfg.grpo_cfg.ddc_safe_threshold = self.grpo_ddc_safe_threshold
+            cfg.grpo_cfg.soft_safety_penalty_weight = self.grpo_soft_safety_penalty_weight
+            cfg.grpo_cfg.soft_safety_penalty_clip = self.grpo_soft_safety_penalty_clip
+            cfg.grpo_cfg.soft_safety_min_reward = self.grpo_soft_safety_min_reward
+            cfg.grpo_cfg.use_core_pareto_grpo = self.grpo_use_core_pareto
+            cfg.grpo_cfg.core_ep_weight = self.grpo_core_ep_weight
+            cfg.grpo_cfg.core_ttc_weight = self.grpo_core_ttc_weight
+            cfg.grpo_cfg.core_comfort_weight = self.grpo_core_comfort_weight
+            cfg.grpo_cfg.core_pareto_reference_mode = self.grpo_core_pareto_reference_mode
+            cfg.grpo_cfg.core_pareto_reference_margin_weight = (
+                self.grpo_core_pareto_reference_margin_weight
+            )
+            cfg.grpo_cfg.core_pareto_reference_margin_scale = self.grpo_core_pareto_reference_margin_scale
+            cfg.grpo_cfg.core_pareto_require_nc = self.grpo_core_pareto_require_nc
+            cfg.grpo_cfg.core_pareto_require_dac = self.grpo_core_pareto_require_dac
+            cfg.grpo_cfg.core_pareto_ddc_drop_tolerance = self.grpo_core_pareto_ddc_drop_tolerance
+            cfg.grpo_cfg.core_pareto_ddc_min_absolute = self.grpo_core_pareto_ddc_min_absolute
+            cfg.grpo_cfg.core_pareto_use_ep_floor = self.grpo_core_pareto_use_ep_floor
+            cfg.grpo_cfg.core_pareto_ep_floor_tolerance = self.grpo_core_pareto_ep_floor_tolerance
+            cfg.grpo_cfg.core_pareto_slow_penalty_weight = self.grpo_core_pareto_slow_penalty_weight
+            cfg.grpo_cfg.core_pareto_use_ttc_tradeoff_penalty = (
+                self.grpo_core_pareto_use_ttc_tradeoff_penalty
+            )
+            cfg.grpo_cfg.core_pareto_tradeoff_tolerance = self.grpo_core_pareto_tradeoff_tolerance
+            cfg.grpo_cfg.core_pareto_tradeoff_penalty_weight = (
+                self.grpo_core_pareto_tradeoff_penalty_weight
+            )
+            cfg.grpo_cfg.core_pareto_score_mode = self.grpo_core_pareto_score_mode
+            cfg.grpo_cfg.core_pareto_core_margin_weight = self.grpo_core_pareto_core_margin_weight
+            cfg.grpo_cfg.core_pareto_use_pareto_front = self.grpo_core_pareto_use_pareto_front
+            cfg.grpo_cfg.core_pareto_pareto_front_bonus = self.grpo_core_pareto_pareto_front_bonus
+            cfg.grpo_cfg.core_pareto_dominated_positive_adv_cap = (
+                self.grpo_core_pareto_dominated_positive_adv_cap
+            )
+            cfg.grpo_cfg.core_pareto_all_valid_objective = self.grpo_core_pareto_all_valid_objective
+            cfg.grpo_cfg.core_pareto_all_safe_low_std_group_weight = (
+                self.grpo_core_pareto_all_safe_low_std_group_weight
+            )
+            cfg.grpo_cfg.core_pareto_min_group_reward_std = self.grpo_core_pareto_min_group_reward_std
+            cfg.grpo_cfg.core_pareto_use_all_unsafe_rescue_advantage = (
+                self.grpo_core_pareto_use_all_unsafe_rescue_advantage
+            )
+            cfg.grpo_cfg.core_pareto_all_unsafe_adv_max = self.grpo_core_pareto_all_unsafe_adv_max
+            cfg.grpo_cfg.core_pareto_all_slow_group_weight = self.grpo_core_pareto_all_slow_group_weight
+            cfg.grpo_cfg.core_pareto_ep_floor = self.grpo_core_pareto_ep_floor
+            cfg.grpo_cfg.core_pareto_ep_floor_penalty_weight = (
+                self.grpo_core_pareto_ep_floor_penalty_weight
+            )
+            cfg.grpo_cfg.core_pareto_use_ddc_guard = self.grpo_core_pareto_use_ddc_guard
+            cfg.grpo_cfg.core_pareto_ddc_guard_threshold = self.grpo_core_pareto_ddc_guard_threshold
+            cfg.grpo_cfg.core_pareto_ddc_penalty_weight = self.grpo_core_pareto_ddc_penalty_weight
+            cfg.grpo_cfg.core_pareto_ddc_penalty_clip = self.grpo_core_pareto_ddc_penalty_clip
+            cfg.grpo_cfg.core_pareto_pareto_bonus = self.grpo_core_pareto_pareto_bonus
+            cfg.grpo_cfg.core_pareto_low_ep_adv_scale = self.grpo_core_pareto_low_ep_adv_scale
+            cfg.grpo_cfg.core_pareto_infeasible_advantage_offset = (
+                self.grpo_core_pareto_infeasible_advantage_offset
+            )
+            cfg.grpo_cfg.core_pareto_min_core_std = self.grpo_core_pareto_min_core_std
+            cfg.grpo_cfg.core_pareto_advantage_mode = self.grpo_core_pareto_advantage_mode
+            cfg.grpo_cfg.core_pareto_use_phenotype_buckets = self.grpo_core_pareto_use_phenotype_buckets
+            cfg.grpo_cfg.core_pareto_ep_ttc_balance_margin = self.grpo_core_pareto_ep_ttc_balance_margin
+            cfg.grpo_cfg.core_pareto_use_adaptive_dual = self.grpo_core_pareto_use_adaptive_dual
+            cfg.grpo_cfg.core_pareto_dual_lr = self.grpo_core_pareto_dual_lr
+            cfg.grpo_cfg.core_pareto_target_nc = self.grpo_core_pareto_target_nc
+            cfg.grpo_cfg.core_pareto_target_dac = self.grpo_core_pareto_target_dac
+            cfg.grpo_cfg.core_pareto_target_ddc = self.grpo_core_pareto_target_ddc
+            cfg.grpo_cfg.core_pareto_use_phenotype_bucket_grpo = (
+                self.grpo_core_pareto_use_phenotype_bucket_grpo
+            )
+            cfg.grpo_cfg.core_pareto_buffer_bonus_enabled = self.grpo_core_pareto_buffer_bonus_enabled
+            cfg.grpo_cfg.core_pareto_buffer_bonus_weight = self.grpo_core_pareto_buffer_bonus_weight
             cfg.grpo_cfg.ppo_replay_inner_epochs = self.grpo_ppo_replay_inner_epochs
             cfg.grpo_cfg.ppo_replay_minibatch_size = self.grpo_ppo_replay_minibatch_size
             cfg.grpo_cfg.ppo_replay_max_grad_norm = self.grpo_ppo_replay_max_grad_norm
@@ -1559,9 +1876,13 @@ class ReCogDriveAgent(AbstractAgent):
     def name(self) -> str:
         return self.__class__.__name__
 
-    def set_training_progress(self, epoch: int, total_epochs: int) -> None:
+    def set_training_progress(self, epoch: int, total_epochs: int, global_step: Optional[int] = None) -> None:
+        self.current_train_epoch = int(epoch)
+        self.total_train_epochs = max(1, int(total_epochs))
+        if global_step is not None:
+            self.current_train_step = max(0, int(global_step))
         if hasattr(self.action_head, "set_training_progress"):
-            self.action_head.set_training_progress(epoch, total_epochs)
+            self.action_head.set_training_progress(epoch, total_epochs, global_step)
 
     def _validate_last_vla_lora_config(self) -> None:
         if self.last_vla_vlm_lora_preset not in {"attention_only", "attention_mlp", "all_linear", "vision_last_n", "custom"}:
@@ -2721,6 +3042,7 @@ def make_recogdrive_config(
     num_inference_steps: int = 5,
     grpo: bool = False,
     model_dtype: str = "float16",
+    dit_dropout: float = 0.0,
 ) -> ReCogDriveDiffusionPlannerConfig:
     """
     A factory function to create a ReCogDriveDiffusionPlannerConfig object.
@@ -2751,7 +3073,7 @@ def make_recogdrive_config(
         raise ValueError(f"Unknown model size: {size!r}")
 
     common_params: Dict[str, any] = {
-        "dropout": 0.0,
+        "dropout": float(dit_dropout),
         "attention_bias": True,
         "norm_eps": 1e-5,
         "interleave_attention": True,
