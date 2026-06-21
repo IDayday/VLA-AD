@@ -18,7 +18,6 @@ from tensorboard.backend.event_processing.event_accumulator import EventAccumula
 DEFAULT_OUTPUTS_ROOT = Path("/mnt/project/VLA-AD/outputs")
 DEFAULT_WATCHERS = (
     "unique_lock_watch_on_vla_zt2_4gpu",
-    "secondary_watch_on_rl_zt3_memfit_4gpu",
 )
 
 SCALAR_TAGS = (

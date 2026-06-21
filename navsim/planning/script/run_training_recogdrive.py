@@ -408,12 +408,21 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
     def _chunk_dirs(cache_path: Path) -> List[Path]:
         if (cache_path / "index.jsonl").is_file():
             return [cache_path]
-        return sorted(
+        chunk_dirs = [
             child for child in cache_path.iterdir()
             if child.is_dir()
             and (child / "index.jsonl").is_file()
             and not child.name.startswith("navtest")
-        )
+        ]
+        shard_root = cache_path / "shards"
+        if shard_root.is_dir():
+            chunk_dirs.extend(
+                child for child in shard_root.iterdir()
+                if child.is_dir()
+                and (child / "index.jsonl").is_file()
+                and not child.name.startswith("navtest")
+            )
+        return sorted(chunk_dirs)
 
     @staticmethod
     def looks_like(cache_path: str) -> bool:
@@ -444,7 +453,12 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
 
         if indexed_samples_exist(path):
             return True
-        return any(child.is_dir() and indexed_samples_exist(child) for child in path.iterdir())
+        if any(child.is_dir() and indexed_samples_exist(child) for child in path.iterdir()):
+            return True
+        shard_root = path / "shards"
+        return shard_root.is_dir() and any(
+            child.is_dir() and indexed_samples_exist(child) for child in shard_root.iterdir()
+        )
 
     @staticmethod
     def _load_residual_anchor_index(cache_dir: Path) -> Dict[str, Path]:

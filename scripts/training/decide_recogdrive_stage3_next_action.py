@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 from pathlib import Path
 
 
@@ -110,6 +111,21 @@ def _metric(row: dict[str, str], field: str) -> float | None:
     return _float_or_none(row.get(field))
 
 
+def _int_metric(row: dict[str, str], field: str) -> int | None:
+    value = _float_or_none(row.get(field))
+    return int(value) if value is not None else None
+
+
+def _checkpoint_step(checkpoint_id: str) -> int | None:
+    matches = [int(match) for match in re.findall(r"step[_=-]?(\d+)", str(checkpoint_id))]
+    return matches[-1] if matches else None
+
+
+def _checkpoint_epoch(checkpoint_id: str) -> int | None:
+    matches = [int(match) for match in re.findall(r"epoch[_=-]?(\d+)", str(checkpoint_id))]
+    return matches[-1] if matches else None
+
+
 def decide_next_action(
     row: dict[str, str],
     *,
@@ -118,6 +134,10 @@ def decide_next_action(
     switch_margin: float,
     min_safe_ratio: float,
     min_eval_rows: int,
+    early_pdms_threshold: float,
+    early_margin: float,
+    full_comparison_min_step: int,
+    full_comparison_min_seen_scenes: int,
     launch_running_policy: str,
     launch_resource_policy: str,
     launch_gpu_list: str,
@@ -133,6 +153,20 @@ def decide_next_action(
     ddc = _metric(row, "best_ddc")
     ttc = _metric(row, "best_ttc")
     ep = _metric(row, "best_ep")
+    best_checkpoint_id = str(row.get("best_checkpoint_id") or "")
+    best_step = _int_metric(row, "best_checkpoint_step")
+    if best_step is None:
+        best_step = _checkpoint_step(best_checkpoint_id)
+    best_epoch = _int_metric(row, "best_checkpoint_epoch")
+    if best_epoch is None:
+        best_epoch = _checkpoint_epoch(best_checkpoint_id)
+    best_seen_scenes = _int_metric(row, "best_seen_scenes")
+    effective_batch_size = _int_metric(row, "effective_batch_size")
+    is_epoch_aligned = best_epoch is not None or (
+        best_seen_scenes is not None and best_seen_scenes >= int(full_comparison_min_seen_scenes)
+    ) or (
+        best_seen_scenes is None and best_step is not None and best_step >= int(full_comparison_min_step)
+    )
 
     result: dict[str, object] = {
         "run_name": row.get("run_name", ""),
@@ -140,8 +174,18 @@ def decide_next_action(
         "checkpoint_count": ckpts,
         "eval_rows": eval_rows,
         "best_pdms": pdms,
+        "best_checkpoint_id": best_checkpoint_id,
+        "best_step": best_step,
+        "best_epoch": best_epoch,
+        "best_seen_scenes": best_seen_scenes,
+        "effective_batch_size": effective_batch_size,
+        "comparison_stage": "epoch_or_late_step" if is_epoch_aligned else "early_step",
         "safe_ratio": safe_ratio,
         "baseline_pdms": baseline_pdms,
+        "early_pdms_threshold": early_pdms_threshold,
+        "early_margin": early_margin,
+        "full_comparison_min_step": full_comparison_min_step,
+        "full_comparison_min_seen_scenes": full_comparison_min_seen_scenes,
         "next_experiment_command": NEXT_EXPERIMENT_COMMAND,
         "launch_running_policy": launch_running_policy,
         "launch_resource_policy": launch_resource_policy,
@@ -180,6 +224,34 @@ def decide_next_action(
     result["best_ttc"] = ttc
     result["best_ep"] = ep
 
+    if not is_epoch_aligned:
+        early_delta = pdms - early_pdms_threshold
+        result["delta_vs_early_gate"] = early_delta
+        if pdms >= early_pdms_threshold:
+            result["action"] = "continue_until_matched_epoch"
+            result["should_launch_now"] = False
+            result["reason"] = (
+                "当前 best checkpoint 仍是 step-only 早期点；它只通过 early sanity gate，"
+                "不能拿来和 0.906 长程强基线比较。继续到 matched epoch/late-step 后再判断算法优劣。"
+            )
+            return result
+        if pdms >= early_pdms_threshold - early_margin:
+            result["action"] = "watch_next_early_checkpoint"
+            result["should_launch_now"] = False
+            result["reason"] = (
+                "当前 best checkpoint 是 step-only 早期点，PDMS 低于 early gate 但在观察区间内；"
+                "等待下一早期 checkpoint，不做长程基线结论。"
+            )
+            return result
+        allow_running_launch = state == "running" and launch_running_policy == "allow_after_eval"
+        result["action"] = "early_health_fail_wait_or_fix"
+        result["should_launch_now"] = state != "running" or allow_running_launch
+        result["reason"] = (
+            "当前 best checkpoint 是 step-only 早期点，且明显低于 early sanity gate；"
+            "这只说明早期健康度不足，不能说明相对 0.906 长程基线已经失败。"
+        )
+        return result
+
     if delta >= -continue_margin:
         result["action"] = "continue_current"
         result["reason"] = "PDMS 已接近或达到历史强基线；继续当前 run 并观察后续 epoch。"
@@ -217,6 +289,26 @@ def main() -> None:
     parser.add_argument("--baseline-pdms", type=float, default=0.9061843202874436)
     parser.add_argument("--continue-margin", type=float, default=0.003)
     parser.add_argument("--switch-margin", type=float, default=0.015)
+    parser.add_argument("--early-pdms-threshold", type=float, default=0.88)
+    parser.add_argument("--early-margin", type=float, default=0.005)
+    parser.add_argument(
+        "--full-comparison-min-step",
+        type=int,
+        default=1200,
+        help=(
+            "Fallback threshold used only when effective batch / seen-scenes is unavailable. "
+            "Checkpoints with an epoch id are always treated as epoch-aligned."
+        ),
+    )
+    parser.add_argument(
+        "--full-comparison-min-seen-scenes",
+        type=int,
+        default=80000,
+        help=(
+            "Step-only checkpoints below this estimated train-scene exposure are early health checks only. "
+            "This keeps multi-GPU and few-GPU runs comparable when effective batch differs."
+        ),
+    )
     parser.add_argument("--min-safe-ratio", type=float, default=0.88)
     parser.add_argument("--min-eval-rows", type=int, default=1)
     parser.add_argument(
@@ -251,13 +343,29 @@ def main() -> None:
         current_run=args.current_run,
     )
     if active_buffer_dpo is not None:
+        active_best_step = _int_metric(row, "best_checkpoint_step")
+        if active_best_step is None:
+            active_best_step = _checkpoint_step(row.get("best_checkpoint_id", ""))
+        active_best_epoch = _int_metric(row, "best_checkpoint_epoch")
+        if active_best_epoch is None:
+            active_best_epoch = _checkpoint_epoch(row.get("best_checkpoint_id", ""))
         decision: dict[str, object] = {
             "run_name": args.current_run,
             "state": row.get("training_state", ""),
             "checkpoint_count": int(row.get("checkpoint_count") or 0),
             "eval_rows": int(row.get("eval_rows") or 0),
             "best_pdms": _metric(row, "best_pdms"),
+            "best_checkpoint_id": row.get("best_checkpoint_id", ""),
+            "best_step": active_best_step,
+            "best_epoch": active_best_epoch,
+            "best_seen_scenes": _int_metric(row, "best_seen_scenes"),
+            "effective_batch_size": _int_metric(row, "effective_batch_size"),
+            "comparison_stage": "blocked_by_active_buffer_dpo",
             "baseline_pdms": args.baseline_pdms,
+            "early_pdms_threshold": args.early_pdms_threshold,
+            "early_margin": args.early_margin,
+            "full_comparison_min_step": args.full_comparison_min_step,
+            "full_comparison_min_seen_scenes": args.full_comparison_min_seen_scenes,
             "next_experiment_command": NEXT_EXPERIMENT_COMMAND,
             "launch_running_policy": args.launch_running_policy,
             "launch_resource_policy": args.launch_resource_policy,
@@ -300,6 +408,10 @@ def main() -> None:
         switch_margin=args.switch_margin,
         min_safe_ratio=args.min_safe_ratio,
         min_eval_rows=args.min_eval_rows,
+        early_pdms_threshold=args.early_pdms_threshold,
+        early_margin=args.early_margin,
+        full_comparison_min_step=args.full_comparison_min_step,
+        full_comparison_min_seen_scenes=args.full_comparison_min_seen_scenes,
         launch_running_policy=args.launch_running_policy,
         launch_resource_policy=args.launch_resource_policy,
         launch_gpu_list=args.launch_gpu_list,

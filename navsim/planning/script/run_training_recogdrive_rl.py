@@ -1,5 +1,6 @@
-from typing import Any, Tuple
+from typing import Any, Optional, Tuple
 from pathlib import Path
+import json
 import logging
 import os
 import hydra
@@ -33,7 +34,11 @@ class ReCogDriveTrainingProgressCallback(pl.Callback):
     def on_train_epoch_start(self, trainer: pl.Trainer, pl_module: pl.LightningModule) -> None:
         agent = getattr(pl_module, "agent", None)
         if agent is not None and hasattr(agent, "set_training_progress"):
-            agent.set_training_progress(int(trainer.current_epoch), int(trainer.max_epochs))
+            agent.set_training_progress(
+                int(trainer.current_epoch),
+                int(trainer.max_epochs),
+                int(getattr(trainer, "global_step", 0)),
+            )
 
 
 class TokenizedDataset(torch.utils.data.Dataset):
@@ -56,6 +61,91 @@ class TokenizedDataset(torch.utils.data.Dataset):
             return sample
         features, targets = sample
         return features, targets, self._tokens[idx]
+
+
+class IndexedPtCacheDataset(torch.utils.data.Dataset):
+    """Reads merged chunk-cache samples written as indexed .pt payloads."""
+
+    FEATURE_KEYS = (
+        "history_trajectory",
+        "high_command_one_hot",
+        "status_feature",
+        "last_hidden_state",
+        "image_path_tensor",
+        "two_expert_h_dyn",
+        "two_expert_h_geo",
+    )
+
+    def __init__(self, cache_path: str, log_names: Optional[List[str]] = None) -> None:
+        super().__init__()
+        self.cache_path = Path(cache_path)
+        if not self.cache_path.is_dir():
+            raise FileNotFoundError(f"Indexed cache path does not exist: {self.cache_path}")
+        self.log_name_filter = set(str(log_name) for log_name in log_names) if log_names else None
+        self.records: List[tuple[Path, Dict[str, Any]]] = []
+        for index_dir in self._index_dirs(self.cache_path):
+            with (index_dir / "index.jsonl").open("r", encoding="utf-8") as f:
+                for line in f:
+                    if not line.strip():
+                        continue
+                    record = json.loads(line)
+                    log_name = record.get("log_name")
+                    if self.log_name_filter is not None and str(log_name) not in self.log_name_filter:
+                        continue
+                    sample_path = Path(str(record.get("path", "")))
+                    if not str(sample_path):
+                        continue
+                    sample_path = sample_path if sample_path.is_absolute() else index_dir / sample_path
+                    if sample_path.is_file():
+                        self.records.append((sample_path, record))
+        if not self.records:
+            raise FileNotFoundError(f"No indexed .pt cache records found under {self.cache_path}.")
+        self.tokens = [
+            str(record.get("sample_token") or sample_path.stem)
+            for sample_path, record in self.records
+        ]
+
+    @staticmethod
+    def _index_dirs(cache_path: Path) -> List[Path]:
+        if (cache_path / "index.jsonl").is_file():
+            return [cache_path]
+        index_dirs = [
+            child for child in cache_path.iterdir()
+            if child.is_dir() and (child / "index.jsonl").is_file()
+        ]
+        shard_root = cache_path / "shards"
+        if shard_root.is_dir():
+            index_dirs.extend(
+                child for child in shard_root.iterdir()
+                if child.is_dir() and (child / "index.jsonl").is_file()
+            )
+        return sorted(index_dirs)
+
+    @classmethod
+    def looks_like(cls, cache_path: str) -> bool:
+        path = Path(cache_path)
+        if not path.is_dir():
+            return False
+        return bool(cls._index_dirs(path))
+
+    def __len__(self) -> int:
+        return len(self.records)
+
+    def __getitem__(self, idx: int) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor], str]:
+        sample_path, record = self.records[idx]
+        payload = torch.load(sample_path, map_location="cpu")
+        if not isinstance(payload, dict):
+            raise TypeError(f"Indexed cache payload must be a dict: {sample_path}")
+        features: Dict[str, torch.Tensor] = {}
+        for key in self.FEATURE_KEYS:
+            value = payload.get(key)
+            if isinstance(value, torch.Tensor):
+                features[key] = value.long() if key == "image_path_tensor" else value.float()
+        if "trajectory" not in payload or not isinstance(payload["trajectory"], torch.Tensor):
+            raise KeyError(f"Indexed cache payload missing tensor trajectory: {sample_path}")
+        targets = {"trajectory": payload["trajectory"].float()}
+        token = str(payload.get("sample_token") or record.get("sample_token") or sample_path.stem)
+        return features, targets, token
 
 
 def custom_collate_fn(
@@ -103,6 +193,12 @@ def custom_collate_fn(
             "features must contain either 'last_hidden_state' or 'image_path_tensor'. "
             f"Got keys: {list(first_features.keys())}"
         )
+    for key in ("two_expert_h_dyn", "two_expert_h_geo"):
+        if key in first_features:
+            features[key] = torch.stack(
+                [sample_features[key].detach() for sample_features in features_list],
+                dim=0,
+            ).detach()
     stack_optional_expert_features(features, list(features_list))
     targets = {
         'trajectory': trajectory
@@ -219,18 +315,23 @@ def main(cfg: DictConfig) -> None:
         assert (
             cfg.cache_path is not None
         ), "cache_path must be provided when using cached data without building SceneLoader"
-        train_data = CacheOnlyDataset(
-            cache_path=cfg.cache_path,
-            feature_builders=agent.get_feature_builders(),
-            target_builders=agent.get_target_builders(),
-            log_names=cfg.train_logs,
-        )
-        val_data = CacheOnlyDataset(
-            cache_path=cfg.cache_path,
-            feature_builders=agent.get_feature_builders(),
-            target_builders=agent.get_target_builders(),
-            log_names=cfg.val_logs,
-        )
+        if IndexedPtCacheDataset.looks_like(cfg.cache_path):
+            logger.info("Using indexed .pt chunk cache dataset")
+            train_data = IndexedPtCacheDataset(cache_path=cfg.cache_path, log_names=cfg.train_logs)
+            val_data = IndexedPtCacheDataset(cache_path=cfg.cache_path, log_names=cfg.val_logs)
+        else:
+            train_data = CacheOnlyDataset(
+                cache_path=cfg.cache_path,
+                feature_builders=agent.get_feature_builders(),
+                target_builders=agent.get_target_builders(),
+                log_names=cfg.train_logs,
+            )
+            val_data = CacheOnlyDataset(
+                cache_path=cfg.cache_path,
+                feature_builders=agent.get_feature_builders(),
+                target_builders=agent.get_target_builders(),
+                log_names=cfg.val_logs,
+            )
     else:
         logger.info("Building SceneLoader")
         train_data, val_data = build_datasets(cfg, agent)

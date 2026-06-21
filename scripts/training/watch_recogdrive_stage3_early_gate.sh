@@ -8,6 +8,7 @@ THRESHOLD="${THRESHOLD:-0.88}"
 MARGIN="${MARGIN:-0.005}"
 POLL_SECONDS="${POLL_SECONDS:-300}"
 STOP_ON_FAIL="${STOP_ON_FAIL:-0}"
+MIN_STOP_STEP="${MIN_STOP_STEP:-3000}"
 OUTPUT_JSON="${OUTPUT_JSON:-${RUN_ROOT}/early_gate_latest.json}"
 LOG_FILE="${LOG_FILE:-${RUN_ROOT}/early_gate_watch.log}"
 
@@ -29,7 +30,7 @@ print("" if value is None else value)
 PY
 }
 
-log "starting early gate watcher run_root=${RUN_ROOT} threshold=${THRESHOLD} margin=${MARGIN} stop_on_fail=${STOP_ON_FAIL}"
+log "starting early gate watcher run_root=${RUN_ROOT} threshold=${THRESHOLD} margin=${MARGIN} stop_on_fail=${STOP_ON_FAIL} min_stop_step=${MIN_STOP_STEP}"
 
 while true; do
   set +e
@@ -38,6 +39,7 @@ while true; do
       --run-root "${RUN_ROOT}" \
       --threshold "${THRESHOLD}" \
       --margin "${MARGIN}" \
+      --min-stop-step "${MIN_STOP_STEP}" \
       --output-json "${OUTPUT_JSON}" 2>&1
   )"
   rc=$?

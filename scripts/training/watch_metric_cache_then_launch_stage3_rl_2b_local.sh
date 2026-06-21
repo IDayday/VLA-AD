@@ -47,7 +47,7 @@ PY
       OUT_ROOT="${TRAIN_OUT_ROOT}" \
       CACHE_MODE="${CACHE_MODE}" \
       MAX_EPOCHS="${MAX_EPOCHS:-20}" \
-      LR="${LR:-2e-4}" \
+      LR="${LR:-1e-4}" \
       BATCH_SIZE="${BATCH_SIZE:-4}" \
       ACCUMULATE_GRAD_BATCHES="${ACCUMULATE_GRAD_BATCHES:-2}" \
       GRPO_SAMPLE_TIME="${GRPO_SAMPLE_TIME:-16}" \

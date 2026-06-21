@@ -259,6 +259,7 @@ class GRPOConfig:
     gspo_clip_high: float = 0.05
     behavior_policy_sync_interval: int = 4
     behavior_policy_sample: bool = True
+    advantage_mode: Literal["safe_zscore", "safe_rpp"] = "safe_zscore"
     normalize_advantage_batch: bool = False
     advantage_clip_abs: float = 0.0
 
@@ -1814,6 +1815,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "gspo_clip_high",
             "behavior_policy_sync_interval",
             "behavior_policy_sample",
+            "advantage_mode",
             "normalize_advantage_batch",
             "advantage_clip_abs",
             "ppo_replay_inner_epochs",
@@ -1846,6 +1848,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("GRPO safety_advantage_mode must be 'hard' or 'soft_penalty'.")
         if str(self.reward_mode) not in {"safe_diffgrpo", "core_pareto"}:
             raise ValueError("GRPO reward_mode must be 'safe_diffgrpo' or 'core_pareto'.")
+        if str(self.advantage_mode) not in {"safe_zscore", "safe_rpp"}:
+            raise ValueError("GRPO advantage_mode must be 'safe_zscore' or 'safe_rpp'.")
         for name in (
             "core_pareto_reference_mode",
             "core_pareto_ddc_reference_mode",
@@ -5096,6 +5100,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         if str(getattr(self, "reward_mode", "safe_diffgrpo")) == "core_pareto" and reward_aux is not None:
             return self._compute_legacy_core_pareto_advantages(rewards_matrix, hard_safe_matrix, reward_aux)
 
+        advantage_mode = str(getattr(self, "advantage_mode", "safe_zscore"))
         mean_r = rewards_matrix.mean(dim=1, keepdim=True)
         if G > 1:
             std_r = rewards_matrix.std(dim=1, keepdim=True).clamp(min=float(self.advantage_std_floor))
@@ -5103,14 +5108,21 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         else:
             std_r = rewards_matrix.new_full((B, 1), float(self.advantage_std_floor))
             reward_std = rewards_matrix.new_zeros(B)
-        z = (rewards_matrix - mean_r) / std_r
+        centered = rewards_matrix - mean_r
+        if advantage_mode == "safe_rpp":
+            flat_centered = centered.reshape(-1)
+            batch_mean = flat_centered.mean()
+            batch_std = flat_centered.std(unbiased=False).clamp(min=1e-6)
+            base_adv = ((centered - batch_mean) / batch_std).to(dtype=rewards_matrix.dtype)
+        else:
+            base_adv = centered / std_r
 
         if self.use_asymmetric_safe_advantage:
-            safe_adv = torch.clamp(z, min=0.0) + float(self.safe_negative_adv_scale) * torch.clamp(z, max=0.0)
-            unsafe_adv = -float(self.unsafe_advantage_offset) + torch.clamp(z, max=0.0)
+            safe_adv = torch.clamp(base_adv, min=0.0) + float(self.safe_negative_adv_scale) * torch.clamp(base_adv, max=0.0)
+            unsafe_adv = -float(self.unsafe_advantage_offset) + torch.clamp(base_adv, max=0.0)
             advantages = torch.where(hard_safe_matrix, safe_adv, unsafe_adv)
         else:
-            advantages = z
+            advantages = base_adv
 
         flat_advantages = advantages.flatten()
         adv_min = torch.quantile(flat_advantages.float(), float(self.clip_advantage_lower_quantile)).to(advantages)
@@ -5135,6 +5147,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "mixed_group_ratio": mixed.float().mean().to(dtype=rewards_matrix.dtype),
             "all_safe_group_ratio": all_safe.float().mean().to(dtype=rewards_matrix.dtype),
             "all_unsafe_group_ratio": all_unsafe.float().mean().to(dtype=rewards_matrix.dtype),
+            "safe_rpp_advantage_enabled": rewards_matrix.new_tensor(float(advantage_mode == "safe_rpp")),
+            "safe_rpp_centered_batch_std": centered.reshape(-1).detach().float().std(unbiased=False).to(dtype=rewards_matrix.dtype),
         }
         return advantages.reshape(B * G).detach(), group_weight.detach(), aux
 
@@ -8364,6 +8378,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "mixed_group_ratio": advantage_aux["mixed_group_ratio"].detach(),
             "all_safe_group_ratio": advantage_aux["all_safe_group_ratio"].detach(),
             "all_unsafe_group_ratio": advantage_aux["all_unsafe_group_ratio"].detach(),
+            "safe_rpp_advantage_enabled": advantage_aux.get(
+                "safe_rpp_advantage_enabled",
+                rewards.new_tensor(0.0),
+            ).detach(),
+            "safe_rpp_centered_batch_std": advantage_aux.get(
+                "safe_rpp_centered_batch_std",
+                rewards.new_tensor(0.0),
+            ).detach(),
             "mean_advantage": advantages.mean().detach(),
             "mean_abs_advantage": advantages.abs().mean().detach(),
             "grpo_advantage_mean_before_transform": adv_before.mean().detach(),
@@ -9411,6 +9433,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "mixed_group_ratio": advantage_aux["mixed_group_ratio"],
             "all_safe_group_ratio": advantage_aux["all_safe_group_ratio"],
             "all_unsafe_group_ratio": advantage_aux["all_unsafe_group_ratio"],
+            "safe_rpp_advantage_enabled": advantage_aux.get(
+                "safe_rpp_advantage_enabled",
+                total_loss.new_tensor(0.0),
+            ),
+            "safe_rpp_centered_batch_std": advantage_aux.get(
+                "safe_rpp_centered_batch_std",
+                total_loss.new_tensor(0.0),
+            ),
             "mean_advantage": advantages.mean(),
             "mean_abs_advantage": advantages.abs().mean(),
             "grpo_advantage_mean_before_transform": grpo_advantage_mean_before.to(dtype=total_loss.dtype),

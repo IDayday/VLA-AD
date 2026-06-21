@@ -204,7 +204,7 @@ def build_jobs(args: argparse.Namespace, checkpoint: Path, run_dir: Path, split_
             ]
             if sample_token_file is not None:
                 command.extend(["--sample-token-file", str(sample_token_file)])
-            if anchor_root is not None:
+            if anchor_root is not None and anchor_root.exists():
                 command.extend(["--vlm-text-anchor-cache-root", str(anchor_root)])
             f.write(f"{split_name}_{safe_name(checkpoint.stem)}_shard_{shard:02d}\t{gpus[shard % len(gpus)]}\t{command_string(command)}\n")
     return jobs_tsv
@@ -235,7 +235,8 @@ def run_eval(args: argparse.Namespace, checkpoint: Path, split_name: str) -> Dic
     proc = subprocess.run(command, cwd=args.project_root)
     if proc.returncode != 0:
         raise RuntimeError(f"{split_name} launcher failed with returncode={proc.returncode}")
-    metrics = aggregate(run_dir, args.num_shards, checkpoint, split_name)
+    metrics = aggregate(run_dir, args.num_shards, snapshot, split_name)
+    metrics["source_checkpoint"] = str(checkpoint)
     log(args, f"done {split_name} checkpoint={checkpoint.name} PDMS={metrics.get('PDMS')}")
     return metrics
 

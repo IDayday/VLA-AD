@@ -126,7 +126,23 @@ def _training_alive_from_status(status: dict[str, Any]) -> bool | None:
     return None
 
 
-def decide(rows: list[dict[str, Any]], threshold: float, margin: float, use_best: bool) -> dict[str, Any]:
+def _row_step(row: dict[str, Any]) -> int | None:
+    sort_key = row.get("sort_key")
+    if not isinstance(sort_key, tuple) or not sort_key:
+        return None
+    step = sort_key[0]
+    if not isinstance(step, int) or step >= 10**12:
+        return None
+    return step
+
+
+def decide(
+    rows: list[dict[str, Any]],
+    threshold: float,
+    margin: float,
+    use_best: bool,
+    min_stop_step: int = 0,
+) -> dict[str, Any]:
     if not rows:
         return {
             "action": "wait",
@@ -139,11 +155,21 @@ def decide(rows: list[dict[str, Any]], threshold: float, margin: float, use_best
         action = "continue"
         reason = f"Selected checkpoint PDMS {pdms:.6f} is at or above threshold {threshold:.6f}."
     elif pdms < threshold - margin:
-        action = "stop"
-        reason = (
-            f"Selected checkpoint PDMS {pdms:.6f} is below threshold {threshold:.6f} "
-            f"by more than margin {margin:.6f}."
-        )
+        selected_step = _row_step(selected)
+        if min_stop_step > 0 and (selected_step is None or selected_step < min_stop_step):
+            action = "watch"
+            step_text = "unknown" if selected_step is None else str(selected_step)
+            reason = (
+                f"Selected checkpoint PDMS {pdms:.6f} is below threshold {threshold:.6f} "
+                f"by more than margin {margin:.6f}, but checkpoint step {step_text} is "
+                f"below min_stop_step {min_stop_step}; report only and wait for a later checkpoint."
+            )
+        else:
+            action = "stop"
+            reason = (
+                f"Selected checkpoint PDMS {pdms:.6f} is below threshold {threshold:.6f} "
+                f"by more than margin {margin:.6f}."
+            )
     else:
         action = "watch"
         reason = (
@@ -155,8 +181,11 @@ def decide(rows: list[dict[str, Any]], threshold: float, margin: float, use_best
         "reason": reason,
         "evaluated_checkpoints": len(rows),
         "selected_checkpoint": selected,
+        "selected_checkpoint_step": _row_step(selected),
         "best_checkpoint": max(rows, key=lambda row: row["pdms"]),
+        "best_checkpoint_step": _row_step(max(rows, key=lambda row: row["pdms"])),
         "latest_checkpoint": rows[-1],
+        "latest_checkpoint_step": _row_step(rows[-1]),
     }
 
 
@@ -172,11 +201,23 @@ def main() -> None:
         action="store_true",
         help="Gate on best evaluated checkpoint instead of the earliest evaluated checkpoint.",
     )
+    parser.add_argument(
+        "--min-stop-step",
+        type=int,
+        default=0,
+        help="Do not return action=stop for evaluated step checkpoints below this step. Use 0 to disable.",
+    )
     parser.add_argument("--output-json", type=Path)
     args = parser.parse_args()
 
     rows = _load_eval_rows(args.run_root, args.summary_tsv)
-    result = decide(rows, threshold=args.threshold, margin=args.margin, use_best=args.use_best)
+    result = decide(
+        rows,
+        threshold=args.threshold,
+        margin=args.margin,
+        use_best=args.use_best,
+        min_stop_step=max(0, args.min_stop_step),
+    )
     status = _load_status(args.run_root, args.status_file)
     pid = int(status.get("pid") or 0) if str(status.get("pid") or "").isdigit() else None
     pgid = _pgid_for_pid(pid)
@@ -186,6 +227,7 @@ def main() -> None:
             "run_root": str(args.run_root),
             "threshold": args.threshold,
             "margin": args.margin,
+            "min_stop_step": max(0, args.min_stop_step),
             "gate_mode": "best" if args.use_best else "earliest",
             "training_state": status.get("state", ""),
             "training_alive": _training_alive_from_status(status),

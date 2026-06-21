@@ -77,7 +77,10 @@ def _write_markdown(
     lines.append(f"- Best checkpoint: `{best['checkpoint_id']}` PDMS `{_format_float(best['pdms_mean'])}`")
     lines.append(f"- Latest checkpoint: `{latest['checkpoint_id']}` PDMS `{_format_float(latest['pdms_mean'])}`")
     lines.append(f"- Early gate delta (`{early_gate:.4f}`): `{_format_float(latest['pdms_mean'] - early_gate)}`")
-    lines.append(f"- Original 10-epoch delta (`{original_final:.4f}`): `{_format_float(latest['pdms_mean'] - original_final)}`")
+    lines.append(
+        f"- Original Stage3 epoch9-step13300 long-horizon target delta "
+        f"(`{original_final:.4f}`): `{_format_float(latest['pdms_mean'] - original_final)}`"
+    )
     lines.append(
         f"- Safe DiffGRPO best delta (`{safe_diffgrpo_best:.6f}`): "
         f"`{_format_float(latest['pdms_mean'] - safe_diffgrpo_best)}`"
@@ -209,8 +212,18 @@ def main() -> None:
     parser.add_argument("--output-tsv", required=True, type=Path)
     parser.add_argument("--output-md", required=True, type=Path)
     parser.add_argument("--early-gate", type=float, default=0.88)
-    parser.add_argument("--original-final", type=float, default=0.9055)
-    parser.add_argument("--safe-diffgrpo-best", type=float, default=0.906184)
+    parser.add_argument(
+        "--original-final",
+        type=float,
+        default=0.9055,
+        help="Long-horizon original Stage3 reference, obtained at epoch9-step13300.",
+    )
+    parser.add_argument(
+        "--safe-diffgrpo-best",
+        type=float,
+        default=0.906184,
+        help="Long-horizon Safe DiffGRPO reference, obtained at epoch_12-step_17290.",
+    )
     args = parser.parse_args()
 
     files = _summary_files(args.run_root)

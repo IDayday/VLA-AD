@@ -112,6 +112,16 @@ class ReCogDriveAgent(AbstractAgent):
         grpo: bool = False,
         stage3_objective: Literal["none", "grpo", "grpo_replay", "awac_iql", "hybrid"] = "none",
         grpo_sample_time: int = 8,
+        grpo_denoised_clip_value: float = 1.0,
+        grpo_eval_randn_clip_value: float = 1.0,
+        grpo_randn_clip_value: float = 5.0,
+        grpo_final_action_clip_value: float = 1.0,
+        grpo_eval_min_sampling_denoising_std: float = 0.0001,
+        grpo_min_sampling_denoising_std: float = 0.04,
+        grpo_min_logprob_denoising_std: float = 0.1,
+        grpo_clip_advantage_lower_quantile: float = 0.0,
+        grpo_clip_advantage_upper_quantile: float = 1.0,
+        grpo_gamma_denoising: float = 0.6,
         bc_anneal: bool = False,
         bc_coeff_start: float = 0.1,
         bc_coeff_end: float = 0.1,
@@ -123,6 +133,7 @@ class ReCogDriveAgent(AbstractAgent):
         grpo_gspo_clip_high: float = 0.05,
         grpo_behavior_policy_sync_interval: int = 4,
         grpo_behavior_policy_sample: bool = True,
+        grpo_advantage_mode: Literal["safe_zscore", "safe_rpp"] = "safe_zscore",
         grpo_normalize_advantage_batch: bool = False,
         grpo_advantage_clip_abs: float = 0.0,
         grpo_hard_gate_ttc: bool = False,
@@ -617,6 +628,16 @@ class ReCogDriveAgent(AbstractAgent):
         self.grpo_sample_time = int(grpo_sample_time)
         if self.grpo_sample_time <= 0:
             raise ValueError("grpo_sample_time must be positive.")
+        self.grpo_denoised_clip_value = float(grpo_denoised_clip_value)
+        self.grpo_eval_randn_clip_value = float(grpo_eval_randn_clip_value)
+        self.grpo_randn_clip_value = float(grpo_randn_clip_value)
+        self.grpo_final_action_clip_value = float(grpo_final_action_clip_value)
+        self.grpo_eval_min_sampling_denoising_std = float(grpo_eval_min_sampling_denoising_std)
+        self.grpo_min_sampling_denoising_std = float(grpo_min_sampling_denoising_std)
+        self.grpo_min_logprob_denoising_std = float(grpo_min_logprob_denoising_std)
+        self.grpo_clip_advantage_lower_quantile = float(grpo_clip_advantage_lower_quantile)
+        self.grpo_clip_advantage_upper_quantile = float(grpo_clip_advantage_upper_quantile)
+        self.grpo_gamma_denoising = float(grpo_gamma_denoising)
         self.bc_anneal = bool(bc_anneal)
         self.bc_coeff_start = float(bc_coeff_start)
         self.bc_coeff_end = float(bc_coeff_end)
@@ -628,6 +649,7 @@ class ReCogDriveAgent(AbstractAgent):
         self.grpo_gspo_clip_high = float(grpo_gspo_clip_high)
         self.grpo_behavior_policy_sync_interval = int(grpo_behavior_policy_sync_interval)
         self.grpo_behavior_policy_sample = bool(grpo_behavior_policy_sample)
+        self.grpo_advantage_mode = str(grpo_advantage_mode)
         self.grpo_normalize_advantage_batch = bool(grpo_normalize_advantage_batch)
         self.grpo_advantage_clip_abs = float(grpo_advantage_clip_abs)
         self.grpo_hard_gate_ttc = bool(grpo_hard_gate_ttc)
@@ -720,8 +742,32 @@ class ReCogDriveAgent(AbstractAgent):
             raise ValueError("grpo_gspo_clip_high must be non-negative.")
         if self.grpo_behavior_policy_sync_interval <= 0:
             raise ValueError("grpo_behavior_policy_sync_interval must be positive.")
+        if self.grpo_advantage_mode not in {"safe_zscore", "safe_rpp"}:
+            raise ValueError("grpo_advantage_mode must be 'safe_zscore' or 'safe_rpp'.")
         if self.grpo_advantage_clip_abs < 0.0:
             raise ValueError("grpo_advantage_clip_abs must be non-negative.")
+        if self.grpo_denoised_clip_value < 0.0:
+            raise ValueError("grpo_denoised_clip_value must be non-negative.")
+        if self.grpo_eval_randn_clip_value < 0.0:
+            raise ValueError("grpo_eval_randn_clip_value must be non-negative.")
+        if self.grpo_randn_clip_value < 0.0:
+            raise ValueError("grpo_randn_clip_value must be non-negative.")
+        if self.grpo_final_action_clip_value < 0.0:
+            raise ValueError("grpo_final_action_clip_value must be non-negative.")
+        if self.grpo_eval_min_sampling_denoising_std < 0.0:
+            raise ValueError("grpo_eval_min_sampling_denoising_std must be non-negative.")
+        if self.grpo_min_sampling_denoising_std < 0.0:
+            raise ValueError("grpo_min_sampling_denoising_std must be non-negative.")
+        if self.grpo_min_logprob_denoising_std < 0.0:
+            raise ValueError("grpo_min_logprob_denoising_std must be non-negative.")
+        if not 0.0 <= self.grpo_clip_advantage_lower_quantile <= 1.0:
+            raise ValueError("grpo_clip_advantage_lower_quantile must be in [0, 1].")
+        if not 0.0 <= self.grpo_clip_advantage_upper_quantile <= 1.0:
+            raise ValueError("grpo_clip_advantage_upper_quantile must be in [0, 1].")
+        if self.grpo_clip_advantage_lower_quantile > self.grpo_clip_advantage_upper_quantile:
+            raise ValueError("grpo_clip_advantage_lower_quantile must be <= upper quantile.")
+        if self.grpo_gamma_denoising < 0.0:
+            raise ValueError("grpo_gamma_denoising must be non-negative.")
         if self.grpo_reward_mode not in {"safe_diffgrpo", "core_pareto"}:
             raise ValueError("grpo_reward_mode must be 'safe_diffgrpo' or 'core_pareto'.")
         if self.grpo_safety_advantage_mode not in {"hard", "soft_penalty"}:
@@ -1760,6 +1806,22 @@ class ReCogDriveAgent(AbstractAgent):
             cfg.grpo_cfg.metric_cache_path = self.metric_cache_path
             cfg.grpo_cfg.reference_policy_checkpoint = self.reference_policy_checkpoint
             cfg.grpo_cfg.sample_time = self.grpo_sample_time
+            cfg.grpo_cfg.denoised_clip_value = self.grpo_denoised_clip_value
+            cfg.grpo_cfg.eval_randn_clip_value = self.grpo_eval_randn_clip_value
+            cfg.grpo_cfg.randn_clip_value = self.grpo_randn_clip_value
+            cfg.grpo_cfg.final_action_clip_value = self.grpo_final_action_clip_value
+            cfg.grpo_cfg.eval_min_sampling_denoising_std = (
+                self.grpo_eval_min_sampling_denoising_std
+            )
+            cfg.grpo_cfg.min_sampling_denoising_std = self.grpo_min_sampling_denoising_std
+            cfg.grpo_cfg.min_logprob_denoising_std = self.grpo_min_logprob_denoising_std
+            cfg.grpo_cfg.clip_advantage_lower_quantile = (
+                self.grpo_clip_advantage_lower_quantile
+            )
+            cfg.grpo_cfg.clip_advantage_upper_quantile = (
+                self.grpo_clip_advantage_upper_quantile
+            )
+            cfg.grpo_cfg.gamma_denoising = self.grpo_gamma_denoising
             cfg.grpo_cfg.bc_anneal = self.bc_anneal
             cfg.grpo_cfg.bc_coeff_start = self.bc_coeff_start
             cfg.grpo_cfg.bc_coeff_end = self.bc_coeff_end
@@ -1771,6 +1833,7 @@ class ReCogDriveAgent(AbstractAgent):
             cfg.grpo_cfg.gspo_clip_high = self.grpo_gspo_clip_high
             cfg.grpo_cfg.behavior_policy_sync_interval = self.grpo_behavior_policy_sync_interval
             cfg.grpo_cfg.behavior_policy_sample = self.grpo_behavior_policy_sample
+            cfg.grpo_cfg.advantage_mode = self.grpo_advantage_mode
             cfg.grpo_cfg.normalize_advantage_batch = self.grpo_normalize_advantage_batch
             cfg.grpo_cfg.advantage_clip_abs = self.grpo_advantage_clip_abs
             cfg.grpo_cfg.hard_gate_ttc = self.grpo_hard_gate_ttc

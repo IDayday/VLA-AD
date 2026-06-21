@@ -24,6 +24,16 @@ grpo: False
 stage3_objective: none
 lr: 1e-4
 grpo_sample_time: 8
+grpo_denoised_clip_value: 1.0
+grpo_eval_randn_clip_value: 1.0
+grpo_randn_clip_value: 5.0
+grpo_final_action_clip_value: 1.0
+grpo_eval_min_sampling_denoising_std: 0.0001
+grpo_min_sampling_denoising_std: 0.04
+grpo_min_logprob_denoising_std: 0.1
+grpo_clip_advantage_lower_quantile: 0.0
+grpo_clip_advantage_upper_quantile: 1.0
+grpo_gamma_denoising: 0.6
 bc_anneal: false
 bc_coeff_start: 0.1
 bc_coeff_end: 0.1
@@ -35,6 +45,7 @@ grpo_gspo_clip_low: 0.05
 grpo_gspo_clip_high: 0.05
 grpo_behavior_policy_sync_interval: 4
 grpo_behavior_policy_sample: true
+grpo_advantage_mode: safe_zscore
 grpo_normalize_advantage_batch: false
 grpo_advantage_clip_abs: 0.0
 grpo_hard_gate_ttc: false

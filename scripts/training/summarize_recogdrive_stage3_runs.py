@@ -6,6 +6,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 import time
 from pathlib import Path
 from typing import Iterable
@@ -91,12 +92,20 @@ OUTPUT_FIELDS = (
     "training_state",
     "training_alive",
     "train_pid",
+    "devices",
+    "batch_size",
+    "accumulate_grad_batches",
+    "effective_batch_size",
+    "baseline_effective_batch",
     "checkpoint_count",
     "latest_checkpoint",
     "latest_checkpoint_utc",
     "event_file",
     "event_age_sec",
     "latest_step",
+    "latest_seen_scenes",
+    "latest_equivalent_step",
+    "latest_exposure_band",
     "train_reward",
     "base_reward",
     "shaped_reward",
@@ -135,6 +144,12 @@ OUTPUT_FIELDS = (
     "eval_rows",
     "best_pdms",
     "best_checkpoint_id",
+    "best_checkpoint_step",
+    "best_checkpoint_epoch",
+    "best_seen_scenes",
+    "best_equivalent_step",
+    "best_exposure_band",
+    "best_low_exposure",
     "best_watcher",
     "best_eval_dir",
     "best_csv_path",
@@ -188,6 +203,79 @@ def _read_key_value_file(path: Path) -> dict[str, str]:
     except Exception as exc:
         return {"state": "unreadable", "error": f"{type(exc).__name__}: {exc}"}
     return values
+
+
+def _load_run_config(run_root: Path) -> dict[str, str]:
+    config: dict[str, str] = {}
+    for rel in (
+        "strict_gspo_launch_config.txt",
+        "early_gate_config.txt",
+        "train/resolved_command.txt",
+        "resolved_command.txt",
+    ):
+        values = _read_key_value_file(run_root / rel)
+        for key, value in values.items():
+            config.setdefault(key, value)
+    return config
+
+
+def _first_int_from_config(config: dict[str, str], keys: Iterable[str], regexes: Iterable[str] = ()) -> int | None:
+    for key in keys:
+        value = config.get(key)
+        if value is None:
+            continue
+        text = str(value).strip()
+        if re.fullmatch(r"-?\d+", text):
+            return int(text)
+    command = config.get("command", "")
+    for pattern in regexes:
+        match = re.search(pattern, command)
+        if match:
+            return int(match.group(1))
+    return None
+
+
+def _checkpoint_step(checkpoint_id: str) -> int | None:
+    matches = [int(match) for match in re.findall(r"step[_=-]?(\d+)", str(checkpoint_id))]
+    return matches[-1] if matches else None
+
+
+def _equivalent_step(seen_scenes: object, baseline_effective_batch: int) -> float | None:
+    seen = _float_or_none(seen_scenes)
+    if seen is None or baseline_effective_batch <= 0:
+        return None
+    return seen / float(baseline_effective_batch)
+
+
+def _exposure_band(
+    equivalent_step: float | None,
+    *,
+    fair_min_equivalent_step: int,
+    preferred_equivalent_step: int,
+    long_horizon_min_seen_scenes: int,
+    baseline_effective_batch: int,
+) -> str:
+    if equivalent_step is None:
+        return "unknown"
+    long_horizon_equiv = (
+        float(long_horizon_min_seen_scenes) / float(baseline_effective_batch)
+        if baseline_effective_batch > 0
+        else float("inf")
+    )
+    if equivalent_step >= long_horizon_equiv:
+        return "long_horizon"
+    if equivalent_step >= float(preferred_equivalent_step):
+        return "preferred_fair_window"
+    if equivalent_step >= float(fair_min_equivalent_step):
+        return "fair_window"
+    if equivalent_step >= 600.0:
+        return "early_diagnostic"
+    return "launch_health"
+
+
+def _checkpoint_epoch(checkpoint_id: str) -> int | None:
+    matches = [int(match) for match in re.findall(r"epoch[_=-]?(\d+)", str(checkpoint_id))]
+    return matches[-1] if matches else None
 
 
 def _read_tsv(path: Path) -> list[dict[str, str]]:
@@ -379,7 +467,12 @@ def _collect_checkpoints(run_root: Path) -> list[Path]:
     return sorted(run_root.glob("train/**/*.ckpt"), key=lambda p: p.stat().st_mtime)
 
 
-def _recommend(row: dict[str, object], target_pdms: float) -> str:
+def _recommend(
+    row: dict[str, object],
+    target_pdms: float,
+    long_horizon_min_seen_scenes: int,
+    fair_min_equivalent_step: int,
+) -> str:
     eval_rows = int(row.get("eval_rows") or 0)
     state = str(row.get("training_state") or "")
     best_pdms = _float_or_none(row.get("best_pdms"))
@@ -388,6 +481,8 @@ def _recommend(row: dict[str, object], target_pdms: float) -> str:
     all_unsafe = _float_or_none(row.get("all_unsafe_group_ratio"))
     group_std = _float_or_none(row.get("group_reward_std"))
     event_age = _float_or_none(row.get("event_age_sec"))
+    best_seen = _float_or_none(row.get("best_seen_scenes"))
+    best_equivalent_step = _float_or_none(row.get("best_equivalent_step"))
 
     if state.startswith("queued"):
         return "wait_for_free_gpus"
@@ -402,6 +497,8 @@ def _recommend(row: dict[str, object], target_pdms: float) -> str:
     if best_pdms is not None and best_pdms >= target_pdms:
         return "use_as_historical_baseline"
     if best_pdms is not None and state == "running":
+        if best_equivalent_step is not None and best_equivalent_step < fair_min_equivalent_step:
+            return "continue_until_fair_exposure_then_compare"
         return "continue_until_next_epoch_then_compare"
     if reward is not None and reward < 0.70:
         return "review_reward_signal_or_exploration"
@@ -410,12 +507,63 @@ def _recommend(row: dict[str, object], target_pdms: float) -> str:
     if group_std is not None and group_std < 0.05:
         return "increase_exploration_or_group_diversity"
     if eval_rows > 0 and best_pdms is not None and best_pdms < target_pdms:
-        return "below_target_try_next_algorithm_variant"
+        if best_seen is None or best_seen < long_horizon_min_seen_scenes:
+            return "short_run_compare_matched_controls_not_long_horizon_target"
+        return "below_long_horizon_target_try_next_algorithm_variant"
     return "monitor"
 
 
-def summarize_run(run_root: Path, target_pdms: float) -> dict[str, object]:
+def summarize_run(
+    run_root: Path,
+    target_pdms: float,
+    long_horizon_min_seen_scenes: int = 800000,
+) -> dict[str, object]:
+    return summarize_run_with_exposure(
+        run_root,
+        target_pdms,
+        long_horizon_min_seen_scenes,
+        baseline_effective_batch=64,
+        fair_min_equivalent_step=3000,
+        preferred_equivalent_step=5000,
+    )
+
+
+def summarize_run_with_exposure(
+    run_root: Path,
+    target_pdms: float,
+    long_horizon_min_seen_scenes: int,
+    *,
+    baseline_effective_batch: int,
+    fair_min_equivalent_step: int,
+    preferred_equivalent_step: int,
+) -> dict[str, object]:
     status = _load_status(run_root)
+    run_config = _load_run_config(run_root)
+    devices = _first_int_from_config(
+        run_config,
+        ("gpus_per_node", "GPUS_PER_NODE", "devices", "trainer.params.devices"),
+        (r"(?:--nproc_per_node|trainer\.params\.devices)=(\d+)",),
+    )
+    batch_size = _first_int_from_config(
+        run_config,
+        ("batch_size", "stage3_batch_size", "STAGE3_BATCH_SIZE", "dataloader.params.batch_size"),
+        (r"dataloader\.params\.batch_size=(\d+)",),
+    )
+    accumulate_grad_batches = _first_int_from_config(
+        run_config,
+        (
+            "accumulate_grad_batches",
+            "stage3_accumulate_grad_batches",
+            "STAGE3_ACCUMULATE_GRAD_BATCHES",
+            "trainer.params.accumulate_grad_batches",
+        ),
+        (r"trainer\.params\.accumulate_grad_batches=(\d+)",),
+    )
+    effective_batch_size = (
+        int(devices) * int(batch_size) * int(accumulate_grad_batches)
+        if devices is not None and batch_size is not None and accumulate_grad_batches is not None
+        else None
+    )
     ckpts = _collect_checkpoints(run_root)
     event_file, scalars = _load_train_scalars(run_root)
     eval_rows = _collect_eval_rows(run_root)
@@ -424,6 +572,25 @@ def summarize_run(run_root: Path, target_pdms: float) -> dict[str, object]:
     latest_step = ""
     for _, (step, _) in scalars.items():
         latest_step = max(int(latest_step or 0), step)
+    if latest_step == "" and ckpts:
+        latest_checkpoint_step = _checkpoint_step(ckpts[-1].name)
+        if latest_checkpoint_step is None:
+            latest_checkpoint_step = _checkpoint_step(str(ckpts[-1]))
+        if latest_checkpoint_step is not None:
+            latest_step = latest_checkpoint_step
+    latest_seen_scenes = (
+        int(latest_step) * int(effective_batch_size)
+        if latest_step != "" and effective_batch_size is not None
+        else ""
+    )
+    latest_equivalent_step = _equivalent_step(latest_seen_scenes, baseline_effective_batch)
+    latest_exposure_band = _exposure_band(
+        latest_equivalent_step,
+        fair_min_equivalent_step=fair_min_equivalent_step,
+        preferred_equivalent_step=preferred_equivalent_step,
+        long_horizon_min_seen_scenes=long_horizon_min_seen_scenes,
+        baseline_effective_batch=baseline_effective_batch,
+    )
 
     row: dict[str, object] = {
         "run_name": run_root.name,
@@ -432,6 +599,11 @@ def summarize_run(run_root: Path, target_pdms: float) -> dict[str, object]:
         "training_state": status.get("state", ""),
         "training_alive": status.get("alive", ""),
         "train_pid": status.get("pid", ""),
+        "devices": devices if devices is not None else "",
+        "batch_size": batch_size if batch_size is not None else "",
+        "accumulate_grad_batches": accumulate_grad_batches if accumulate_grad_batches is not None else "",
+        "effective_batch_size": effective_batch_size if effective_batch_size is not None else "",
+        "baseline_effective_batch": baseline_effective_batch,
         "checkpoint_count": len(ckpts),
         "latest_checkpoint": str(ckpts[-1]) if ckpts else "",
         "latest_checkpoint_utc": _utc(ckpts[-1].stat().st_mtime) if ckpts else "",
@@ -442,9 +614,20 @@ def summarize_run(run_root: Path, target_pdms: float) -> dict[str, object]:
             else status.get("event_age_sec", "")
         ),
         "latest_step": latest_step,
+        "latest_seen_scenes": latest_seen_scenes,
+        "latest_equivalent_step": (
+            f"{latest_equivalent_step:.1f}" if latest_equivalent_step is not None else ""
+        ),
+        "latest_exposure_band": latest_exposure_band,
         "eval_rows": len(eval_rows),
         "best_pdms": best_pdms if best_pdms is not None else "",
         "best_checkpoint_id": "",
+        "best_checkpoint_step": "",
+        "best_checkpoint_epoch": "",
+        "best_seen_scenes": "",
+        "best_equivalent_step": "",
+        "best_exposure_band": "unknown",
+        "best_low_exposure": "",
         "best_watcher": "",
         "best_eval_dir": "",
         "best_csv_path": "",
@@ -491,14 +674,43 @@ def summarize_run(run_root: Path, target_pdms: float) -> dict[str, object]:
         row[output_field] = scalars.get(tag, ("", ""))[1]
 
     if best_eval is not None:
-        row["best_checkpoint_id"] = best_eval.get("checkpoint_id") or best_eval.get("checkpoint") or ""
+        best_checkpoint_id = best_eval.get("checkpoint_id") or best_eval.get("checkpoint") or ""
+        row["best_checkpoint_id"] = best_checkpoint_id
+        best_step = _checkpoint_step(best_checkpoint_id)
+        best_epoch = _checkpoint_epoch(best_checkpoint_id)
+        row["best_checkpoint_step"] = best_step if best_step is not None else ""
+        row["best_checkpoint_epoch"] = best_epoch if best_epoch is not None else ""
+        row["best_seen_scenes"] = (
+            int(best_step) * int(effective_batch_size)
+            if best_step is not None and effective_batch_size is not None
+            else ""
+        )
+        best_equivalent_step = _equivalent_step(row["best_seen_scenes"], baseline_effective_batch)
+        row["best_equivalent_step"] = (
+            f"{best_equivalent_step:.1f}" if best_equivalent_step is not None else ""
+        )
+        row["best_exposure_band"] = _exposure_band(
+            best_equivalent_step,
+            fair_min_equivalent_step=fair_min_equivalent_step,
+            preferred_equivalent_step=preferred_equivalent_step,
+            long_horizon_min_seen_scenes=long_horizon_min_seen_scenes,
+            baseline_effective_batch=baseline_effective_batch,
+        )
+        row["best_low_exposure"] = (
+            bool(best_equivalent_step is not None and best_equivalent_step < float(fair_min_equivalent_step))
+        )
         row["best_watcher"] = best_eval.get("_watcher", "")
         row["best_eval_dir"] = best_eval.get("eval_dir", "")
         row["best_csv_path"] = best_eval.get("csv_path") or best_eval.get("csv") or ""
         for metric in SUBMETRIC_FIELDS:
             row[f"best_{metric.removesuffix('_mean')}"] = best_eval.get(metric, "")
 
-    row["recommendation"] = _recommend(row, target_pdms)
+    row["recommendation"] = _recommend(
+        row,
+        target_pdms,
+        long_horizon_min_seen_scenes,
+        fair_min_equivalent_step,
+    )
     return row
 
 
@@ -531,7 +743,36 @@ def main() -> None:
     parser.add_argument("--outputs-root", type=Path, default=DEFAULT_OUTPUTS_ROOT)
     parser.add_argument("--run-glob", action="append", default=None)
     parser.add_argument("--max-runs", type=int, default=40)
-    parser.add_argument("--target-pdms", type=float, default=0.9055)
+    parser.add_argument(
+        "--target-pdms",
+        type=float,
+        default=0.9055,
+        help="Long-horizon target PDMS. Default is original Stage3 epoch9-step13300.",
+    )
+    parser.add_argument(
+        "--long-horizon-min-seen-scenes",
+        type=int,
+        default=800000,
+        help="Minimum train-scene exposure before comparing directly to --target-pdms.",
+    )
+    parser.add_argument(
+        "--baseline-effective-batch",
+        type=int,
+        default=64,
+        help="Reference effective batch used to report exposure-normalized equivalent steps.",
+    )
+    parser.add_argument(
+        "--fair-min-equivalent-step",
+        type=int,
+        default=3000,
+        help="Minimum baseline-equivalent step before low PDMS can be treated as a fair negative signal.",
+    )
+    parser.add_argument(
+        "--preferred-equivalent-step",
+        type=int,
+        default=5000,
+        help="Preferred baseline-equivalent step for GRPO-family method comparison.",
+    )
     parser.add_argument("--include-dryruns", action="store_true")
     parser.add_argument("--include-empty", action="store_true")
     parser.add_argument("--output-tsv", type=Path, default=None)
@@ -545,7 +786,14 @@ def main() -> None:
     for run in runs:
         if not args.include_dryruns and "dryrun" in run.name.lower():
             continue
-        row = summarize_run(run, args.target_pdms)
+        row = summarize_run_with_exposure(
+            run,
+            args.target_pdms,
+            args.long_horizon_min_seen_scenes,
+            baseline_effective_batch=args.baseline_effective_batch,
+            fair_min_equivalent_step=args.fair_min_equivalent_step,
+            preferred_equivalent_step=args.preferred_equivalent_step,
+        )
         has_evidence = bool(
             row.get("training_state")
             or row.get("event_file")
@@ -568,11 +816,15 @@ def main() -> None:
                 "state",
                 "ckpts",
                 "step",
+                "eq_step",
+                "exposure",
                 "reward",
                 "safe",
                 "eval_rows",
                 "best_pdms",
                 "best_ckpt",
+                "best_eq_step",
+                "best_exposure",
                 "recommendation",
             ]
         )
@@ -586,11 +838,15 @@ def main() -> None:
                     row.get("training_state", ""),
                     row.get("checkpoint_count", ""),
                     row.get("latest_step", ""),
+                    row.get("latest_equivalent_step", ""),
+                    row.get("latest_exposure_band", ""),
                     row.get("train_reward", ""),
                     row.get("safe_ratio", ""),
                     row.get("eval_rows", ""),
                     row.get("best_pdms", ""),
                     row.get("best_checkpoint_id", ""),
+                    row.get("best_equivalent_step", ""),
+                    row.get("best_exposure_band", ""),
                     row.get("recommendation", ""),
                 ]
             )

@@ -23,6 +23,18 @@ EXIT_WHEN_TRAINING_DONE_AND_QUEUE_EMPTY="${EXIT_WHEN_TRAINING_DONE_AND_QUEUE_EMP
 EXTERNAL_SUMMARY_TSV="${EXTERNAL_SUMMARY_TSV:-}"
 EXTERNAL_SUMMARY_SKIP_STATES="${EXTERNAL_SUMMARY_SKIP_STATES:-started,done}"
 GLOBAL_EVAL_LOCK_DIR="${GLOBAL_EVAL_LOCK_DIR:-}"
+EVAL_MIN_CHECKPOINT_STEP="${EVAL_MIN_CHECKPOINT_STEP:-0}"
+EVAL_CHECKPOINT_STEP_INTERVAL="${EVAL_CHECKPOINT_STEP_INTERVAL:-0}"
+EVAL_ALWAYS_EPOCH_CHECKPOINTS="${EVAL_ALWAYS_EPOCH_CHECKPOINTS:-1}"
+
+if [[ ! "${EVAL_MIN_CHECKPOINT_STEP}" =~ ^[0-9]+$ ]]; then
+  echo "EVAL_MIN_CHECKPOINT_STEP must be a non-negative integer, got ${EVAL_MIN_CHECKPOINT_STEP}" >&2
+  exit 2
+fi
+if [[ ! "${EVAL_CHECKPOINT_STEP_INTERVAL}" =~ ^[0-9]+$ ]]; then
+  echo "EVAL_CHECKPOINT_STEP_INTERVAL must be a non-negative integer, got ${EVAL_CHECKPOINT_STEP_INTERVAL}" >&2
+  exit 2
+fi
 
 ASYNC_PDM_WORKERS="${ASYNC_PDM_WORKERS:-2}"
 ASYNC_PDM_BACKEND="${ASYNC_PDM_BACKEND:-process}"
@@ -38,6 +50,20 @@ FAST_METRIC_CACHE_DIR="${FAST_METRIC_CACHE_DIR:-}"
 DISABLE_TQDM="${DISABLE_TQDM:-1}"
 MAX_SCENES="${MAX_SCENES:-0}"
 DISTRIBUTED_TIMEOUT_SECONDS="${DISTRIBUTED_TIMEOUT_SECONDS:-3600}"
+EVAL_MASTER_PORT_MIN="${EVAL_MASTER_PORT_MIN:-29500}"
+EVAL_MASTER_PORT_MAX="${EVAL_MASTER_PORT_MAX:-29999}"
+LOCAL_EVAL_SHARD_COUNT="${LOCAL_EVAL_SHARD_COUNT:-}"
+LOCAL_EVAL_MAX_CONCURRENT="${LOCAL_EVAL_MAX_CONCURRENT:-}"
+LOCAL_EVAL_MASTER_PORT_BASE="${LOCAL_EVAL_MASTER_PORT_BASE:-}"
+
+if ! [[ "${EVAL_MASTER_PORT_MIN}" =~ ^[0-9]+$ && "${EVAL_MASTER_PORT_MAX}" =~ ^[0-9]+$ ]]; then
+  echo "EVAL_MASTER_PORT_MIN/MAX must be integers, got ${EVAL_MASTER_PORT_MIN}/${EVAL_MASTER_PORT_MAX}" >&2
+  exit 2
+fi
+if (( EVAL_MASTER_PORT_MIN <= 0 || EVAL_MASTER_PORT_MAX < EVAL_MASTER_PORT_MIN )); then
+  echo "Invalid EVAL_MASTER_PORT_MIN/MAX: ${EVAL_MASTER_PORT_MIN}/${EVAL_MASTER_PORT_MAX}" >&2
+  exit 2
+fi
 
 STATUS_FILE="${STATUS_FILE:-${TRAIN_OUT_ROOT}/status/stage3_rl_2b.json}"
 ARCHIVE_DIR="${EVAL_OUT_ROOT}/checkpoint_archive"
@@ -83,8 +109,16 @@ fi
   echo "disable_tqdm=${DISABLE_TQDM}"
   echo "max_scenes=${MAX_SCENES}"
   echo "distributed_timeout_seconds=${DISTRIBUTED_TIMEOUT_SECONDS}"
+  echo "eval_master_port_min=${EVAL_MASTER_PORT_MIN}"
+  echo "eval_master_port_max=${EVAL_MASTER_PORT_MAX}"
+  echo "local_eval_shard_count=${LOCAL_EVAL_SHARD_COUNT}"
+  echo "local_eval_max_concurrent=${LOCAL_EVAL_MAX_CONCURRENT}"
+  echo "local_eval_master_port_base=${LOCAL_EVAL_MASTER_PORT_BASE}"
   echo "external_summary_tsv=${EXTERNAL_SUMMARY_TSV}"
   echo "global_eval_lock_dir=${GLOBAL_EVAL_LOCK_DIR}"
+  echo "eval_min_checkpoint_step=${EVAL_MIN_CHECKPOINT_STEP}"
+  echo "eval_checkpoint_step_interval=${EVAL_CHECKPOINT_STEP_INTERVAL}"
+  echo "eval_always_epoch_checkpoints=${EVAL_ALWAYS_EPOCH_CHECKPOINTS}"
 } > "${EVAL_OUT_ROOT}/watcher_resolved_config.txt"
 
 log() {
@@ -95,6 +129,42 @@ checkpoint_id() {
   local name
   name="$(basename "$1" .ckpt)"
   echo "${name}" | sed -E 's/[^A-Za-z0-9_.-]+/_/g; s/[=]+/_/g'
+}
+
+checkpoint_step() {
+  local name
+  name="$(basename "$1" .ckpt)"
+  if [[ "${name}" =~ step[-_=]+([0-9]+) ]]; then
+    echo "${BASH_REMATCH[1]}"
+    return 0
+  fi
+  echo ""
+}
+
+is_epoch_checkpoint() {
+  local name
+  name="$(basename "$1" .ckpt)"
+  [[ "${name}" =~ epoch[-_=]+[0-9]+ ]]
+}
+
+checkpoint_passes_eval_filter() {
+  local ckpt="$1"
+  local step
+  if [[ "${EVAL_ALWAYS_EPOCH_CHECKPOINTS}" == "1" ]] && is_epoch_checkpoint "${ckpt}"; then
+    return 0
+  fi
+
+  step="$(checkpoint_step "${ckpt}")"
+  if [[ -z "${step}" ]]; then
+    return 0
+  fi
+  if [[ "${EVAL_MIN_CHECKPOINT_STEP}" -gt 0 && "${step}" -lt "${EVAL_MIN_CHECKPOINT_STEP}" ]]; then
+    return 1
+  fi
+  if [[ "${EVAL_CHECKPOINT_STEP_INTERVAL}" -gt 0 && $((step % EVAL_CHECKPOINT_STEP_INTERVAL)) -ne 0 ]]; then
+    return 1
+  fi
+  return 0
 }
 
 training_state() {
@@ -339,7 +409,7 @@ evaluate_archive() {
 
   master_port="$("${PYTHON_BIN}" - <<PY
 import random
-print(random.randint(63700, 64500))
+print(random.randint(int("${EVAL_MASTER_PORT_MIN}"), int("${EVAL_MASTER_PORT_MAX}")))
 PY
 )"
 
@@ -363,6 +433,9 @@ PY
     DISABLE_TQDM="${DISABLE_TQDM}" \
     MAX_SCENES="${MAX_SCENES}" \
     DISTRIBUTED_TIMEOUT_SECONDS="${DISTRIBUTED_TIMEOUT_SECONDS}" \
+    LOCAL_EVAL_SHARD_COUNT="${LOCAL_EVAL_SHARD_COUNT}" \
+    LOCAL_EVAL_MAX_CONCURRENT="${LOCAL_EVAL_MAX_CONCURRENT}" \
+    LOCAL_EVAL_MASTER_PORT_BASE="${LOCAL_EVAL_MASTER_PORT_BASE}" \
     bash "${EVAL_SCRIPT}" > "${eval_dir}/eval.log" 2>&1
   rc=$?
   set -e
@@ -399,6 +472,15 @@ while true; do
 
   while IFS= read -r ckpt; do
     [[ -n "${ckpt}" ]] || continue
+    id="$(checkpoint_id "${ckpt}")"
+    if ! checkpoint_passes_eval_filter "${ckpt}"; then
+      if [[ ! -f "${STATE_DIR}/${id}.filter_skipped" ]]; then
+        step="$(checkpoint_step "${ckpt}")"
+        log "checkpoint filtered by eval step policy id=${id} step=${step:-unknown} min_step=${EVAL_MIN_CHECKPOINT_STEP} interval=${EVAL_CHECKPOINT_STEP_INTERVAL}"
+        touch "${STATE_DIR}/${id}.filter_skipped"
+      fi
+      continue
+    fi
     if checkpoint_old_enough "${ckpt}"; then
       archive_checkpoint "${ckpt}"
     else
