@@ -42,7 +42,7 @@ Date: 2026-06-21 UTC
 
 ## Latest Evaluation State
 
-As of the latest readout, completed navtest eval reaches `step-step_24300`.
+As of the latest readout, completed navtest eval reaches `step-step_24600`.
 Training is still running toward the configured 20 epochs.
 
 | Rank | Checkpoint | PDMS | Core | NC | DAC | TTC | EP | Comfort | DDC | Delta vs original | Delta vs Safe DiffGRPO |
@@ -56,6 +56,12 @@ Training is still running toward the configured 20 epochs.
 | 7 | `step-step_18900` | `0.906721` | `0.921577` | `0.985088` | `0.977426` | `0.960537` | `0.851248` | `1.000000` | `0.978580` | `+0.001221` | `+0.000537` |
 | 8 | `step-step_17400` | `0.906594` | `0.922474` | `0.980310` | `0.977261` | `0.948591` | `0.865379` | `0.999918` | `0.967952` | `+0.001094` | `+0.000410` |
 
+Latest non-top checkpoint:
+
+| Checkpoint | PDMS | Core | NC | DAC | TTC | EP | Comfort | DDC | Delta vs original | Delta vs Safe DiffGRPO |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| `step-step_24600` | `0.903886` | `0.921205` | `0.979651` | `0.974543` | `0.948344` | `0.862548` | `1.000000` | `0.974131` | `-0.001614` | `-0.002298` |
+
 ## Interpretation
 
 - Current best is `step-step_21600` with PDMS `0.910274`.
@@ -68,8 +74,24 @@ Training is still running toward the configured 20 epochs.
   Core is the main continuous term but not sufficient by itself.
 - `step-step_24300` becoming the second-best checkpoint shows that the late-run
   improvement is not a single isolated spike.
+- `step-step_24600` regressed below both comparison references, so the late
+  phase still has visible checkpoint volatility.
 - The remaining risk is checkpoint volatility: `21900-23700` included several
-  regressions before the late recovery at `24000/24300`.
+  regressions before the late recovery at `24000/24300`, and `24600` regressed
+  again.
+
+## SOTA Backup
+
+The current best checkpoint has been copied to an independent backup location.
+
+| Field | Value |
+|---|---|
+| Backed-up checkpoint | `step-step=21600.ckpt` |
+| Backup path | `/mnt/project/VLA-AD/checkpoints/recogdrive/stage3_sota_backups/core_pareto_grpo_v2_step21600_pdms0.910274_20260621/recogdrive_stage3_core_pareto_grpo_v2_step21600_pdms0.910274.ckpt` |
+| Latest pointer | `/mnt/project/VLA-AD/checkpoints/recogdrive/stage3_sota_backups/latest_core_pareto_sota` |
+| Manifest | `/mnt/project/VLA-AD/checkpoints/recogdrive/stage3_sota_backups/core_pareto_grpo_v2_step21600_pdms0.910274_20260621/manifest.md` |
+| Checksum file | `/mnt/project/VLA-AD/checkpoints/recogdrive/stage3_sota_backups/core_pareto_grpo_v2_step21600_pdms0.910274_20260621/sha256sums.txt` |
+| SHA256 | `b8f747710e70e264084e1a7f9c2dd9f09761cdff063ec2080332acfe2ff042d5` |
 
 ## Current Evidence
 
