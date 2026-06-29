@@ -35,6 +35,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--num-shards", type=int, default=8)
     p.add_argument("--top-k", type=int, default=5)
     p.add_argument("--once", action="store_true")
+    p.add_argument("--splits", default="val6000,navtest", help="Comma-separated split list to evaluate.")
     p.add_argument("--val-cache-root", type=Path, required=True)
     p.add_argument("--val-cache-pattern", default="val6000_chunk_*")
     p.add_argument("--val-metric-cache", type=Path, required=True)
@@ -248,7 +249,8 @@ def update_ranking(root: Path, split: str, metrics: dict[str, Any], checkpoint: 
 
 
 def split_specs(args: argparse.Namespace) -> list[dict[str, Any]]:
-    return [
+    enabled = {item.strip() for item in args.splits.split(",") if item.strip()}
+    specs = [
         {
             "split": "val6000",
             "chunk_root": args.val_cache_root,
@@ -262,6 +264,7 @@ def split_specs(args: argparse.Namespace) -> list[dict[str, Any]]:
             "metric_cache": args.nav_metric_cache,
         },
     ]
+    return [spec for spec in specs if spec["split"] in enabled]
 
 
 def main() -> int:

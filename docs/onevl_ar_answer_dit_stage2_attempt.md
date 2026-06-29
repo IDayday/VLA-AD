@@ -225,23 +225,28 @@ Stage1 AR Answer prompt4hist navtest result after abnormal-output repair:
 PDMS = 0.8641601403126207
 ```
 
-Stage2 evaluated checkpoints at the time this note was written:
+The earlier navtest cache was found to be misaligned: row prompt commands were
+all `MOVE FORWARD` while cached planner command/status tensors contained
+left/right commands. A corrected scene-prompt navtest cache was generated and
+used for the latest stage2 checkpoint sweep.
+
+Corrected stage2 checkpoint results:
 
 ```text
-val6000 best: epoch_087, PDMS = 0.8768169550203945
-val6000 latest completed: epoch_096, PDMS = 0.8716178867422207
-navtest best: epoch_080, PDMS = 0.8210427529653845
-navtest latest completed: epoch_095, PDMS = 0.7595136183975849
+corrected val6000 selected best: epoch_200, PDMS = 0.8966278090198142
+corrected navtest epoch120-200 best: epoch_147, PDMS = 0.8577635056565133
+corrected navtest epoch120-200 mean: 0.8385811286603977
 ```
 
 Interpretation:
 
-- val6000 is noisy but has recovered near the current best by `epoch_096`.
-- navtest shows a clear drop after the best checkpoints around `epoch_080` and
-  `epoch_087`.
-- Current checkpoint selection should not use `latest.ckpt` blindly. The useful
-  candidates are the split-specific top-k checkpoints, especially `epoch_080`,
-  `epoch_087`, and `epoch_096` pending navtest completion.
+- The corrected navtest result is much better than the broken-cache navtest
+  numbers, but still does not exceed the repaired AR Answer stage1 baseline.
+- `epoch_147` is the current strongest stage2 navtest checkpoint.
+- Late checkpoints around `epoch_178` through `epoch_200` are more stable near
+  0.85, but do not exceed `epoch_147`.
+- See `docs/onevl_stage2_current_results_20260629.md` for paths, cache
+  alignment notes, and the top checkpoint table.
 
 ## Known Open Questions
 

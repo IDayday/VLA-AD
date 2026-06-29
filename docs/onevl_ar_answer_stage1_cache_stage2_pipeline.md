@@ -73,7 +73,9 @@ Stage2 hidden cache generation:
 Stage2 evaluation preparation and remote top-k evaluation:
 
 - `scripts/onevl/build_prompt4hist_stage2_eval_caches.sh` builds val6000 and
-  navtest hidden caches for evaluation.
+  navtest hidden caches for evaluation. It can build either split independently
+  with `EVAL_SPLITS`, and can use separate prompt sources for val/nav through
+  `VAL_PROMPT_SOURCE` and `NAV_PROMPT_SOURCE`.
 - `scripts/onevl/watch_prompt4hist_stage2_eval_cache_then_eval.sh` waits for
   eval caches and starts the top-k evaluation watcher.
 - `scripts/onevl/launch_prompt4hist_stage2_eval_remote.sh` dispatches eval
@@ -81,7 +83,11 @@ Stage2 evaluation preparation and remote top-k evaluation:
   host. `training-rl-zt3` is disabled for this workflow.
 - `scripts/onevl/watch_onevl_stage2_eval_top5_remote.py` watches stage2
   checkpoints, evaluates eligible checkpoints on val6000/navtest, maintains
-  split-specific top-k rankings, and backs up top-k checkpoint objects.
+  split-specific top-k rankings, and backs up top-k checkpoint objects. Use
+  `--splits` to restrict evaluation to one split.
+- `scripts/onevl/run_navtest_epoch_range_parallel.py` evaluates a fixed epoch
+  range on navtest with a configurable queue of GPU groups and aggregates PDM
+  shard metrics per checkpoint.
 
 ## Stage1 Prompt4Hist Data Contract
 
@@ -278,16 +284,17 @@ eval root: /mnt/project/onevl_navsim_exp/ar_answer_prompt4hist_stage2_apsd_eval_
 Current recorded stage2 results:
 
 ```text
-val6000 best: epoch_087, PDMS = 0.8768169550203945
-val6000 latest completed: epoch_096, PDMS = 0.8716178867422207
-navtest best: epoch_080, PDMS = 0.8210427529653845
-navtest latest completed: epoch_095, PDMS = 0.7595136183975849
+corrected val6000 selected best: epoch_200, PDMS = 0.8966278090198142
+corrected navtest epoch120-200 best: epoch_147, PDMS = 0.8577635056565133
+corrected navtest epoch120-200 mean: 0.8385811286603977
+stage1 AR Answer prompt4hist navtest baseline: 0.8641601403126207
 ```
 
-These results should be interpreted as split mismatch or overfitting risk, not
-as proof that the stage2 bridge is correct. The engineering contract still
-needs explicit review of hidden padding masks, trajectory normalization, support
-target selection, and cache provenance.
+The old navtest cache used row prompts whose command text was all
+`MOVE FORWARD`, while the cached planner tensors contained left/right commands.
+Those old navtest results should not be used for current conclusions. The
+corrected navtest scene cache is recorded in
+`docs/onevl_stage2_current_results_20260629.md`.
 
 ## Minimal Reproduction Commands
 

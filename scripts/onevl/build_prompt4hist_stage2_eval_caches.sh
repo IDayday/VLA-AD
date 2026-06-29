@@ -19,8 +19,11 @@ DTYPE="${DTYPE:-bfloat16}"
 MAX_IMAGE_SIZE="${MAX_IMAGE_SIZE:-1792}"
 HIDDEN_MAX_LENGTH="${HIDDEN_MAX_LENGTH:-2800}"
 CURRENT_IMAGE_POLICY="${CURRENT_IMAGE_POLICY:-first}"
-PROMPT_SOURCE="${PROMPT_SOURCE:-row}"
+PROMPT_SOURCE="${PROMPT_SOURCE:-}"
+VAL_PROMPT_SOURCE="${VAL_PROMPT_SOURCE:-${PROMPT_SOURCE:-row}}"
+NAV_PROMPT_SOURCE="${NAV_PROMPT_SOURCE:-${PROMPT_SOURCE:-scene}}"
 INCLUDE_CONTROL_CONVENTION="${INCLUDE_CONTROL_CONVENTION:-0}"
+EVAL_SPLITS="${EVAL_SPLITS:-val6000,navtest}"
 WAIT_FOR_GPU_FREE="${WAIT_FOR_GPU_FREE:-0}"
 GPU_USED_MAX_MB="${GPU_USED_MAX_MB:-1024}"
 GPU_WAIT_POLL_SECONDS="${GPU_WAIT_POLL_SECONDS:-120}"
@@ -69,6 +72,7 @@ run_split() {
   local log_path="$3"
   local cache_root="$4"
   local chunk_prefix="$5"
+  local prompt_source="$6"
 
   IFS=',' read -r -a gpus <<< "${GPU_LIST}"
   if [[ "${#gpus[@]}" -lt "${NUM_SHARDS}" ]]; then
@@ -103,7 +107,7 @@ run_split() {
       --hidden-padding-side left
       --no-hidden-truncation
       --current-image-policy "${CURRENT_IMAGE_POLICY}"
-      --prompt-source "${PROMPT_SOURCE}"
+      --prompt-source "${prompt_source}"
       --dit-type small
       --sampling-method ddim
       --no-dit-forward
@@ -181,6 +185,8 @@ for chunk_dir in sorted(path for path in cache_root.iterdir() if path.is_dir()):
             "high_command_one_hot": list(sample["high_command_one_hot"].shape),
             "trajectory": list(sample["trajectory"].shape),
             "target_source": sample.get("meta", {}).get("target_source"),
+            "prompt_source": sample.get("meta", {}).get("prompt_source"),
+            "prompt_scene_alignment_pass": sample.get("meta", {}).get("prompt_scene_alignment_pass"),
             "hidden_padding": sample.get("meta", {}).get("hidden_padding"),
             "hidden_truncation": sample.get("meta", {}).get("hidden_truncation"),
         }
@@ -229,18 +235,35 @@ PY
   echo "nav_cache_root=${NAV_CACHE_ROOT}"
   echo "num_shards=${NUM_SHARDS}"
   echo "gpu_list=${GPU_LIST}"
+  echo "eval_splits=${EVAL_SPLITS}"
+  echo "prompt_source=${PROMPT_SOURCE}"
+  echo "val_prompt_source=${VAL_PROMPT_SOURCE}"
+  echo "nav_prompt_source=${NAV_PROMPT_SOURCE}"
   echo "wait_for_gpu_free=${WAIT_FOR_GPU_FREE}"
   echo "gpu_used_max_mb=${GPU_USED_MAX_MB}"
 } > "${OUT_ROOT}/eval_cache.env"
 
+split_enabled() {
+  local split="$1"
+  [[ ",${EVAL_SPLITS}," == *",${split},"* ]]
+}
+
 status=0
 wait_for_gpus
-run_split "val6000" "${VAL_DATA_JSONL}" "${VAL_NAVSIM_LOG_PATH}" "${VAL_CACHE_ROOT}" "val6000_chunk" || status=1
-run_split "navtest" "${NAV_DATA_JSON}" "${NAV_NAVSIM_LOG_PATH}" "${NAV_CACHE_ROOT}" "shard" || status=1
+if split_enabled "val6000"; then
+  run_split "val6000" "${VAL_DATA_JSONL}" "${VAL_NAVSIM_LOG_PATH}" "${VAL_CACHE_ROOT}" "val6000_chunk" "${VAL_PROMPT_SOURCE}" || status=1
+fi
+if split_enabled "navtest"; then
+  run_split "navtest" "${NAV_DATA_JSON}" "${NAV_NAVSIM_LOG_PATH}" "${NAV_CACHE_ROOT}" "shard" "${NAV_PROMPT_SOURCE}" || status=1
+fi
 
 if [[ "${status}" -eq 0 ]]; then
-  ln -sfn "${VAL_CACHE_ROOT}" /mnt/project/onevl_navsim_exp/ar_answer_stage2_cache_val6000_prompt4hist_latest
-  ln -sfn "${NAV_CACHE_ROOT}" /mnt/project/onevl_navsim_exp/ar_answer_stage2_cache_navtest_prompt4hist_latest
+  if split_enabled "val6000"; then
+    ln -sfn "${VAL_CACHE_ROOT}" /mnt/project/onevl_navsim_exp/ar_answer_stage2_cache_val6000_prompt4hist_latest
+  fi
+  if split_enabled "navtest"; then
+    ln -sfn "${NAV_CACHE_ROOT}" /mnt/project/onevl_navsim_exp/ar_answer_stage2_cache_navtest_prompt4hist_latest
+  fi
 fi
 echo "${status}" > "${OUT_ROOT}/eval_cache.status"
 exit "${status}"
