@@ -26,6 +26,9 @@ GPU_LIST="${GPU_LIST:-0,1,2,3,4,5,6,7}"
 DTYPE="${DTYPE:-bfloat16}"
 MAX_IMAGE_SIZE="${MAX_IMAGE_SIZE:-1792}"
 HIDDEN_MAX_LENGTH="${HIDDEN_MAX_LENGTH:-2800}"
+CURRENT_IMAGE_POLICY="${CURRENT_IMAGE_POLICY:-first}"
+PROMPT_SOURCE="${PROMPT_SOURCE:-row}"
+INCLUDE_CONTROL_CONVENTION="${INCLUDE_CONTROL_CONVENTION:-0}"
 MASTER_PORT="${MASTER_PORT:-29551}"
 
 CONFIG_PATH="${CONFIG_PATH:-/mnt/project/VLA-AD/configs/onevl_ar_answer_stage2_small.yaml}"
@@ -78,7 +81,7 @@ record_cmd() {
 echo "out_root=${OUT_ROOT}"
 echo "cache_root=${CACHE_ROOT}"
 echo "train_root=${TRAIN_ROOT}"
-env | sort | grep -E '^(PYTHON_BIN|STAGE1_CKPT|DATA_JSONL|TARGET_INDEX|NAVSIM_LOG_PATH|IMAGE_BASE_PATH|OUT_ROOT|CACHE_ROOT|TRAIN_ROOT|RUN_TRAIN|NUM_SHARDS|GPU_LIST|DTYPE|MAX_IMAGE_SIZE|HIDDEN_MAX_LENGTH|MASTER_PORT|CONFIG_PATH|GLOBAL_EPOCHS|BATCH_SIZE|GRAD_ACCUM|NUM_WORKERS|PREFETCH_FACTOR|LR_ACTION_HEAD|MIN_LR|WARMUP_EPOCHS|SAVE_EVERY|LOG_EVERY|SEED)=' \
+env | sort | grep -E '^(PYTHON_BIN|STAGE1_CKPT|DATA_JSONL|TARGET_INDEX|NAVSIM_LOG_PATH|IMAGE_BASE_PATH|OUT_ROOT|CACHE_ROOT|TRAIN_ROOT|RUN_TRAIN|NUM_SHARDS|GPU_LIST|DTYPE|MAX_IMAGE_SIZE|HIDDEN_MAX_LENGTH|CURRENT_IMAGE_POLICY|PROMPT_SOURCE|INCLUDE_CONTROL_CONVENTION|MASTER_PORT|CONFIG_PATH|GLOBAL_EPOCHS|BATCH_SIZE|GRAD_ACCUM|NUM_WORKERS|PREFETCH_FACTOR|LR_ACTION_HEAD|MIN_LR|WARMUP_EPOCHS|SAVE_EVERY|LOG_EVERY|SEED)=' \
   > "${OUT_ROOT}/env.snapshot"
 
 echo "== cache generation start $(date -Is) =="
@@ -107,6 +110,8 @@ for shard in $(seq 0 $((NUM_SHARDS - 1))); do
     --hidden-max-length "${HIDDEN_MAX_LENGTH}"
     --hidden-padding-side left
     --no-hidden-truncation
+    --current-image-policy "${CURRENT_IMAGE_POLICY}"
+    --prompt-source "${PROMPT_SOURCE}"
     --target-index-path "${TARGET_INDEX}"
     --target-selection max_weight
     --stage2-support-mode preserve_support
@@ -114,6 +119,9 @@ for shard in $(seq 0 $((NUM_SHARDS - 1))); do
     --sampling-method ddim
     --no-dit-forward
   )
+  if [[ "${INCLUDE_CONTROL_CONVENTION}" == "1" ]]; then
+    cmd+=(--include-control-convention)
+  fi
   record_cmd env "CUDA_VISIBLE_DEVICES=${gpu}" "${cmd[@]}"
   (
     set +e

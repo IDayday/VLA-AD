@@ -18,6 +18,9 @@ GPU_LIST="${GPU_LIST:-0,1,2,3,4,5,6,7}"
 DTYPE="${DTYPE:-bfloat16}"
 MAX_IMAGE_SIZE="${MAX_IMAGE_SIZE:-1792}"
 HIDDEN_MAX_LENGTH="${HIDDEN_MAX_LENGTH:-2800}"
+CURRENT_IMAGE_POLICY="${CURRENT_IMAGE_POLICY:-first}"
+PROMPT_SOURCE="${PROMPT_SOURCE:-row}"
+INCLUDE_CONTROL_CONVENTION="${INCLUDE_CONTROL_CONVENTION:-0}"
 WAIT_FOR_GPU_FREE="${WAIT_FOR_GPU_FREE:-0}"
 GPU_USED_MAX_MB="${GPU_USED_MAX_MB:-1024}"
 GPU_WAIT_POLL_SECONDS="${GPU_WAIT_POLL_SECONDS:-120}"
@@ -99,11 +102,16 @@ run_split() {
       --hidden-max-length "${HIDDEN_MAX_LENGTH}"
       --hidden-padding-side left
       --no-hidden-truncation
+      --current-image-policy "${CURRENT_IMAGE_POLICY}"
+      --prompt-source "${PROMPT_SOURCE}"
       --dit-type small
       --sampling-method ddim
       --no-dit-forward
       --no-skip-existing
     )
+    if [[ "${INCLUDE_CONTROL_CONVENTION}" == "1" ]]; then
+      cmd+=(--include-control-convention)
+    fi
     record_cmd env "CUDA_VISIBLE_DEVICES=${gpu}" "${cmd[@]}"
     (
       set +e

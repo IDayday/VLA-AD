@@ -3,6 +3,8 @@ use_jepa: false
 use_vggt: false
 vlm_size: small
 vlm_feature_dim: 2560
+vlm_adapter_type: linear
+vlm_adapter_dropout: 0.0
 planner_dim: 384
 expert_adapter_dim: 768
 jepa_dim: 1024
@@ -29,3 +31,6 @@ action_dim: 3
 sampling_method: ddim
 num_inference_steps: 5
 diffusion_loss_weight: 1.0
+use_action_aware_aux: false
+action_aware_aux_weight: 0.0
+action_aware_aux_space: norm_odo

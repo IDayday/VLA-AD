@@ -124,6 +124,8 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     grpo: bool = False
     vlm_size: str = 'large'
     vlm_feature_dim: Optional[int] = None
+    vlm_adapter_type: str = "linear"
+    vlm_adapter_dropout: float = 0.0
     planner_dim: int = 384
     use_expert_features: bool = False
     expert_feature_source: Literal['none', 'dummy', 'chunk', 'disk', 'online', 'cache', 'real'] = 'none'
@@ -265,6 +267,9 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     coarse_heading_loss_weight: float = 0.0
     risk_loss_weight: float = 0.0
     policy_kd_loss_weight: float = 0.0
+    use_action_aware_aux: bool = False
+    action_aware_aux_weight: float = 0.0
+    action_aware_aux_space: str = "norm_odo"
     future_jepa_loss_floor: float = 0.0
     vggt_geometry_loss_floor: float = 0.0
     coarse_traj_loss_floor: float = 0.0
@@ -331,7 +336,39 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         vlm_feature_dim = config.vlm_feature_dim
         if vlm_feature_dim is None:
             vlm_feature_dim = 3584 if config.vlm_size == "large" else 1536
+        if config.vlm_adapter_type not in {"linear", "pre_ln_linear", "pre_ln_linear_post_ln", "mlp_adapter"}:
+            raise ValueError(
+                "vlm_adapter_type must be one of 'linear', 'pre_ln_linear', "
+                "'pre_ln_linear_post_ln', or 'mlp_adapter'."
+            )
+        if not 0.0 <= float(config.vlm_adapter_dropout) < 1.0:
+            raise ValueError("vlm_adapter_dropout must be in [0, 1).")
+        if config.action_aware_aux_space not in {"norm_odo", "raw"}:
+            raise ValueError("action_aware_aux_space must be 'norm_odo' or 'raw'.")
         self.feature_encoder = nn.Linear(vlm_feature_dim, config.input_embedding_dim)
+        self.vlm_pre_norm = (
+            nn.LayerNorm(vlm_feature_dim)
+            if config.vlm_adapter_type in {"pre_ln_linear", "pre_ln_linear_post_ln", "mlp_adapter"}
+            else nn.Identity()
+        )
+        self.vlm_post_norm = (
+            nn.LayerNorm(config.input_embedding_dim)
+            if config.vlm_adapter_type in {"pre_ln_linear_post_ln", "mlp_adapter"}
+            else nn.Identity()
+        )
+        self.vlm_adapter_dropout = (
+            nn.Dropout(float(config.vlm_adapter_dropout))
+            if float(config.vlm_adapter_dropout) > 0.0
+            else nn.Identity()
+        )
+        self.vlm_adapter_mlp = (
+            nn.Sequential(
+                nn.GELU(),
+                nn.Linear(config.input_embedding_dim, config.input_embedding_dim),
+            )
+            if config.vlm_adapter_type == "mlp_adapter"
+            else nn.Identity()
+        )
 
         if config.alignment_loss_type not in {"normalized_mse", "mse", "cosine"}:
             raise ValueError("alignment_loss_type must be one of 'normalized_mse', 'mse', or 'cosine'.")
@@ -353,6 +390,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "coarse_heading_loss_weight",
             "risk_loss_weight",
             "policy_kd_loss_weight",
+            "action_aware_aux_weight",
             "bit_terminal_loss_weight",
             "bit_path_loss_weight",
             "bit_end_consistency_loss_weight",
@@ -632,6 +670,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             out_features=output_dim,
             norm_layer=nn.LayerNorm
         )
+        self.action_aware_aux_head = nn.Sequential(
+            nn.LayerNorm(config.input_embedding_dim),
+            nn.Linear(config.input_embedding_dim, config.hidden_size),
+            nn.GELU(),
+            nn.Linear(config.hidden_size, config.action_horizon * config.action_dim),
+        )
+        if not bool(config.use_action_aware_aux) or float(config.action_aware_aux_weight) <= 0.0:
+            for parameter in self.action_aware_aux_head.parameters():
+                parameter.requires_grad = False
         
         if config.add_pos_embed:
             self.position_embedding = nn.Embedding(config.max_seq_len, config.input_embedding_dim)
@@ -894,6 +941,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 self.action_encoder.eval()
                 self.action_decoder.eval()
                 self.feature_encoder.eval()
+                self.vlm_pre_norm.eval()
+                self.vlm_post_norm.eval()
+                self.vlm_adapter_dropout.eval()
+                self.vlm_adapter_mlp.eval()
+                self.action_aware_aux_head.eval()
                 self.fusion_projector.eval()
                 if self.config.use_expert_features:
                     for module_name in (
@@ -1006,7 +1058,24 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         return tokens.to(device=vl_embeds.device, dtype=vl_embeds.dtype)
 
     def _encode_vlm(self, vl_features: torch.Tensor) -> torch.Tensor:
-        return self.feature_encoder(vl_features)
+        embeds = self.feature_encoder(self.vlm_pre_norm(vl_features))
+        embeds = self.vlm_adapter_mlp(embeds)
+        embeds = self.vlm_adapter_dropout(embeds)
+        return self.vlm_post_norm(embeds)
+
+    def _vlm_context_diagnostics(
+        self,
+        vl_features: torch.Tensor,
+        vl_embeds: torch.Tensor,
+        context_mean: torch.Tensor,
+    ) -> Dict[str, torch.Tensor]:
+        return {
+            "vlm_hidden_input_norm": vl_features.detach().float().norm(dim=-1).mean(),
+            "vlm_context_token_norm": vl_embeds.detach().float().norm(dim=-1).mean(),
+            "vlm_context_mean_norm": context_mean.detach().float().norm(dim=-1).mean(),
+            "context_token_mean_abs": vl_embeds.detach().float().abs().mean(),
+            "context_token_std": vl_embeds.detach().float().std(unbiased=False),
+        }
 
     def _apply_stream_gate_and_dropout(
         self,
@@ -1852,17 +1921,20 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "coarse_heading_loss": zero,
             "risk_loss": zero,
             "policy_kd_loss": zero,
+            "action_aware_aux_loss": zero,
+            "action_aware_aux_l1": zero,
         }
         base_losses.update(self._bit_zero_outputs(zero))
         base_losses.update(self._risk_vla_zero_outputs(zero))
         if not self.config.use_expert_features and not self.config.use_last_rd:
+            context_mean = vl_embeds.mean(1)
             return self._finalize_dit_context({
                 "vl_embeds": vl_embeds,
                 "context_tokens": vl_embeds,
-                "context_mean": vl_embeds.mean(1),
+                "context_mean": context_mean,
                 "expert_step_condition": None,
                 **base_losses,
-                "diagnostics": {},
+                "diagnostics": self._vlm_context_diagnostics(vl_features, vl_embeds, context_mean),
             }, action_input, training=training)
 
         expert: Optional[Dict[str, Any]] = None
@@ -1886,13 +1958,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 context_parts.append(expert["vggt_all"])
             context_tokens = torch.cat(context_parts, dim=1)
             context_mean = self._compute_branch_context_mean(vl_embeds, expert["jepa_all"], expert["vggt_all"])
+            diagnostics = dict(expert["diagnostics"])
+            diagnostics.update(self._vlm_context_diagnostics(vl_features, vl_embeds, context_mean))
             return self._finalize_dit_context({
                 "vl_embeds": vl_embeds,
                 "context_tokens": context_tokens,
                 "context_mean": context_mean,
                 "expert_step_condition": expert["horizon_residual"],
                 **base_losses,
-                "diagnostics": expert["diagnostics"],
+                "diagnostics": diagnostics,
             }, action_input, training=training)
 
         last_rd_input = action_input
@@ -1953,6 +2027,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
         diagnostics = dict(expert["diagnostics"]) if expert is not None else {}
         diagnostics.update(last_rd_output.diagnostics)
+        diagnostics.update(self._vlm_context_diagnostics(vl_features, vl_embeds, context_mean))
         for key, value in last_rd_output.losses.items():
             if key in base_losses:
                 base_losses[key] = value
@@ -2035,6 +2110,38 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         ):
             loss = loss + self._last_rd_aux_weight(key) * dit_context[key].to(dtype=dtype)
         return loss
+
+    def _compute_action_aware_aux_loss(
+        self,
+        dit_context: Dict[str, Any],
+        action_input: BatchFeature,
+        gt_actions_norm: torch.Tensor,
+    ) -> torch.Tensor:
+        reference = gt_actions_norm
+        zero = reference.new_zeros(())
+        if (
+            not bool(self.config.use_action_aware_aux)
+            or float(self.config.action_aware_aux_weight) <= 0.0
+            or "action" not in action_input
+        ):
+            dit_context["action_aware_aux_loss"] = zero
+            dit_context["action_aware_aux_l1"] = zero
+            return zero
+
+        coarse = self.action_aware_aux_head(dit_context["context_mean"]).view(
+            -1,
+            int(self.config.action_horizon),
+            int(self.config.action_dim),
+        )
+        if self.config.action_aware_aux_space == "raw":
+            target = action_input.action.to(device=coarse.device, dtype=coarse.dtype)
+        else:
+            target = gt_actions_norm.to(device=coarse.device, dtype=coarse.dtype)
+        aux_loss = F.smooth_l1_loss(coarse, target, reduction="mean")
+        aux_l1 = (coarse - target).abs().mean()
+        dit_context["action_aware_aux_loss"] = aux_loss
+        dit_context["action_aware_aux_l1"] = aux_l1
+        return float(self.config.action_aware_aux_weight) * aux_loss
 
     @staticmethod
     def _policy_kd_action_input(action_input: BatchFeature) -> BatchFeature:
@@ -2602,10 +2709,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             vggt_alignment_loss = dit_context["vggt_alignment_loss"].to(dtype=diffusion_loss.dtype)
             policy_kd_loss = diffusion_loss
             dit_context["policy_kd_loss"] = policy_kd_loss
+            action_aware_aux_loss = self._compute_action_aware_aux_loss(dit_context, action_input, gt_actions)
             loss = (
                 self._stream_alignment_weight("jepa") * jepa_alignment_loss
                 + self._stream_alignment_weight("vggt") * vggt_alignment_loss
                 + self._last_rd_aux_loss(dit_context, diffusion_loss.dtype)
+                + action_aware_aux_loss.to(dtype=diffusion_loss.dtype)
                 + dit_context["risk_vla_total_aux_loss"].to(dtype=diffusion_loss.dtype)
             )
             return self._format_training_output(loss, diffusion_loss, jepa_alignment_loss, vggt_alignment_loss, dit_context)
@@ -2655,12 +2764,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         jepa_alignment_loss = dit_context["jepa_alignment_loss"].to(dtype=diffusion_loss.dtype)
         vggt_alignment_loss = dit_context["vggt_alignment_loss"].to(dtype=diffusion_loss.dtype)
         bit_aux_loss = self._compute_bit_losses(dit_context, action_input, pred_x0_norm).to(dtype=diffusion_loss.dtype)
+        action_aware_aux_loss = self._compute_action_aware_aux_loss(dit_context, action_input, gt_actions).to(
+            dtype=diffusion_loss.dtype
+        )
         loss = (
             float(self.config.diffusion_loss_weight) * diffusion_loss
             + self._stream_alignment_weight("jepa") * jepa_alignment_loss
             + self._stream_alignment_weight("vggt") * vggt_alignment_loss
             + self._last_rd_aux_loss(dit_context, diffusion_loss.dtype)
             + bit_aux_loss
+            + action_aware_aux_loss
             + dit_context["risk_vla_total_aux_loss"].to(dtype=diffusion_loss.dtype)
         )
 
@@ -2685,6 +2798,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "coarse_heading_loss": dit_context["coarse_heading_loss"].to(dtype=loss.dtype),
             "risk_loss": dit_context["risk_loss"].to(dtype=loss.dtype),
             "policy_kd_loss": dit_context["policy_kd_loss"].to(dtype=loss.dtype),
+            "action_aware_aux_loss": dit_context["action_aware_aux_loss"].to(dtype=loss.dtype),
+            "action_aware_aux_l1": dit_context["action_aware_aux_l1"].to(dtype=loss.dtype),
             "bit_terminal_loss": dit_context["bit_terminal_loss"].to(dtype=loss.dtype),
             "bit_path_loss": dit_context["bit_path_loss"].to(dtype=loss.dtype),
             "bit_end_consistency_loss": dit_context["bit_end_consistency_loss"].to(dtype=loss.dtype),
@@ -2764,6 +2879,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         device=loss.device,
                         dtype=loss.dtype,
                     )
+            for key in (
+                "vlm_hidden_input_norm",
+                "vlm_context_token_norm",
+                "vlm_context_mean_norm",
+                "context_token_mean_abs",
+                "context_token_std",
+            ):
+                if key in diagnostics and isinstance(diagnostics[key], torch.Tensor):
+                    output[key] = diagnostics[key].to(device=loss.device, dtype=loss.dtype)
         return BatchFeature(data=output)
 
     def get_action(

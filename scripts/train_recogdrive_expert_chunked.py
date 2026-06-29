@@ -47,6 +47,8 @@ GATE_MARKERS = ("jepa_gate", "vggt_gate", "branch_logits")
 ACTION_HEAD_MARKERS = (
     "feature_encoder", "his_traj_encoder", "ego_status_encoder", "action_encoder",
     "fusion_projector", "model", "action_decoder", "position_embedding",
+    "vlm_pre_norm", "vlm_post_norm", "vlm_adapter_dropout", "vlm_adapter_mlp",
+    "action_aware_aux_head",
 )
 
 
@@ -112,6 +114,15 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--jepa-align-weight", type=float, default=None)
     parser.add_argument("--vggt-align-weight", type=float, default=None)
     parser.add_argument("--diffusion-loss-weight", type=float, default=None)
+    parser.add_argument(
+        "--vlm-adapter-type",
+        choices=("linear", "pre_ln_linear", "pre_ln_linear_post_ln", "mlp_adapter"),
+        default=None,
+    )
+    parser.add_argument("--vlm-adapter-dropout", type=float, default=None)
+    parser.add_argument("--use-action-aware-aux", action=argparse.BooleanOptionalAction, default=None)
+    parser.add_argument("--action-aware-aux-weight", type=float, default=None)
+    parser.add_argument("--action-aware-aux-space", choices=("norm_odo", "raw"), default=None)
     parser.add_argument("--expert-gate-init", type=float, default=None)
     parser.add_argument("--alignment-ramp-start-epoch", type=int, default=0)
     parser.add_argument("--alignment-ramp-end-epoch", type=int, default=0)
@@ -217,6 +228,20 @@ def build_planner(cfg_dict: Dict[str, Any], args: argparse.Namespace) -> ReCogDr
         if args.diffusion_loss_weight < 0.0:
             raise ValueError("--diffusion-loss-weight must be non-negative.")
         cfg.diffusion_loss_weight = args.diffusion_loss_weight
+    if args.vlm_adapter_type is not None:
+        cfg.vlm_adapter_type = args.vlm_adapter_type
+    if args.vlm_adapter_dropout is not None:
+        if not 0.0 <= args.vlm_adapter_dropout < 1.0:
+            raise ValueError("--vlm-adapter-dropout must be in [0, 1).")
+        cfg.vlm_adapter_dropout = args.vlm_adapter_dropout
+    if args.use_action_aware_aux is not None:
+        cfg.use_action_aware_aux = bool(args.use_action_aware_aux)
+    if args.action_aware_aux_weight is not None:
+        if args.action_aware_aux_weight < 0.0:
+            raise ValueError("--action-aware-aux-weight must be non-negative.")
+        cfg.action_aware_aux_weight = args.action_aware_aux_weight
+    if args.action_aware_aux_space is not None:
+        cfg.action_aware_aux_space = args.action_aware_aux_space
     if args.expert_gate_init is not None:
         cfg.jepa_gate_init = args.expert_gate_init
         cfg.vggt_gate_init = args.expert_gate_init
@@ -461,6 +486,12 @@ def set_trainable(planner: ReCogDriveDiffusionPlanner, args: argparse.Namespace)
         raise ValueError("--freeze-expert leaves no trainable parameters when combined with --train-expert-only or --freeze-base-action-head.")
     for name, parameter in planner.named_parameters():
         expert = is_expert_key(name)
+        if "action_aware_aux_head" in name and (
+            not bool(planner.config.use_action_aware_aux)
+            or float(planner.config.action_aware_aux_weight) <= 0.0
+        ):
+            parameter.requires_grad = False
+            continue
         if args.train_expert_only or args.freeze_base_action_head:
             parameter.requires_grad = expert and not args.freeze_expert
         else:
@@ -662,6 +693,13 @@ def reduce_metrics(output: Dict[str, Any], *, device: torch.device, distributed:
         "diffusion_loss",
         "jepa_alignment_loss",
         "vggt_alignment_loss",
+        "action_aware_aux_loss",
+        "action_aware_aux_l1",
+        "vlm_hidden_input_norm",
+        "vlm_context_token_norm",
+        "vlm_context_mean_norm",
+        "context_token_mean_abs",
+        "context_token_std",
         "jepa_gate_value",
         "vggt_gate_value",
         "branch_weight_vlm",
@@ -858,6 +896,8 @@ def write_final_report(path: Path, summary: Dict[str, Any]) -> None:
         f"World size: {summary.get('world_size')}",
         f"LR scheduler: {summary.get('lr_scheduler')}",
         f"Diffusion loss weight: {summary.get('diffusion_loss_weight')}",
+        f"VLM adapter type: {summary.get('vlm_adapter_type')}",
+        f"Action-aware aux: {summary.get('use_action_aware_aux')} weight={summary.get('action_aware_aux_weight')}",
         f"Freeze expert: {summary.get('freeze_expert')}",
         f"Best loss: {summary.get('best_loss')}",
         f"Last loss: {summary.get('last_loss')}",
@@ -1029,6 +1069,11 @@ def main() -> int:
         "world_size": world_size,
         "lr_scheduler": args.lr_scheduler,
         "diffusion_loss_weight": float(planner.config.diffusion_loss_weight),
+        "vlm_adapter_type": str(planner.config.vlm_adapter_type),
+        "vlm_adapter_dropout": float(planner.config.vlm_adapter_dropout),
+        "use_action_aware_aux": bool(planner.config.use_action_aware_aux),
+        "action_aware_aux_weight": float(planner.config.action_aware_aux_weight),
+        "action_aware_aux_space": str(planner.config.action_aware_aux_space),
         "vlm_feature_dim": vlm_feature_dim,
         "freeze_expert": bool(args.freeze_expert),
         "expert_grad_observed": False,
@@ -1206,6 +1251,13 @@ def main() -> int:
                     "diffusion_loss": diffusion_loss,
                     "jepa_alignment_loss": jepa_loss,
                     "vggt_alignment_loss": vggt_loss,
+                    "action_aware_aux_loss": reduced["action_aware_aux_loss"],
+                    "action_aware_aux_l1": reduced["action_aware_aux_l1"],
+                    "vlm_hidden_input_norm": reduced["vlm_hidden_input_norm"],
+                    "vlm_context_token_norm": reduced["vlm_context_token_norm"],
+                    "vlm_context_mean_norm": reduced["vlm_context_mean_norm"],
+                    "context_token_mean_abs": reduced["context_token_mean_abs"],
+                    "context_token_std": reduced["context_token_std"],
                     "jepa_gate": reduced["jepa_gate_value"] if "jepa_gate_value" in output else None,
                     "vggt_gate": reduced["vggt_gate_value"] if "vggt_gate_value" in output else None,
                     "branch_weight_vlm": reduced["branch_weight_vlm"] if "branch_weight_vlm" in output else None,
@@ -1223,6 +1275,11 @@ def main() -> int:
                     "jepa_alignment_weight": float(planner.config.jepa_alignment_weight),
                     "vggt_alignment_weight": float(planner.config.vggt_alignment_weight),
                     "diffusion_loss_weight": float(planner.config.diffusion_loss_weight),
+                    "vlm_adapter_type": str(planner.config.vlm_adapter_type),
+                    "vlm_adapter_dropout": float(planner.config.vlm_adapter_dropout),
+                    "use_action_aware_aux": bool(planner.config.use_action_aware_aux),
+                    "action_aware_aux_weight": float(planner.config.action_aware_aux_weight),
+                    "action_aware_aux_space": str(planner.config.action_aware_aux_space),
                     "grad_norm": grad_norm_value,
                     "learning_rate": lrs(optimizer),
                     "data_wait_sec": round(data_wait_sec, 4),

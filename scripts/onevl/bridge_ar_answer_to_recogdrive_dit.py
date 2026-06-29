@@ -12,6 +12,7 @@ import argparse
 import ast
 import hashlib
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -49,6 +50,28 @@ def official_sensor_prefix_for_split(split: str) -> str:
     return OFFICIAL_TEST_SENSOR_PREFIX if split == "test" else OFFICIAL_SENSOR_PREFIX
 
 
+COMMAND_TEXT_FROM_ONE_HOT = {
+    0: "TURN LEFT",
+    1: "MOVE FORWARD",
+    2: "TURN RIGHT",
+}
+COMMAND_ONE_HOT_FROM_TEXT = {
+    "TURN LEFT": [1.0, 0.0, 0.0],
+    "MOVE FORWARD": [0.0, 1.0, 0.0],
+    "GO STRAIGHT": [0.0, 1.0, 0.0],
+    "TURN RIGHT": [0.0, 0.0, 1.0],
+}
+PROMPT_PARSE_RE = re.compile(
+    r"Command:\s*(?P<command>[^.]+)\.\s*"
+    r"Velocity:\s*(?P<velocity>\[[^\]]+\])\.\s*"
+    r"Acceleration:\s*(?P<acceleration>\[[^\]]+\])\.\s*"
+    r"Historical trajectory:\s*(?P<history>.*?)\.\s*"
+    r"(?:Predict|Output)",
+    re.IGNORECASE | re.DOTALL,
+)
+POINT_RE = re.compile(r"\[[^\]]+\]")
+
+
 def sha256_text(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
 
@@ -75,6 +98,30 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--hidden-max-length", type=int, default=2800)
     parser.add_argument("--hidden-padding-side", choices=("left", "right"), default="left")
     parser.add_argument("--hidden-truncation", action=argparse.BooleanOptionalAction, default=False)
+    parser.add_argument(
+        "--current-image-policy",
+        choices=("first", "last", "single_or_last", "strict_single"),
+        default="first",
+        help=(
+            "Select which row image is treated as the NAVSIM current frame. "
+            "Default preserves the historical bridge behavior."
+        ),
+    )
+    parser.add_argument(
+        "--prompt-source",
+        choices=("row", "scene", "row_strict_scene_check"),
+        default="row",
+        help=(
+            "Use row prompt text, scene-derived prompt text, or row prompt with strict "
+            "row-vs-scene tensor alignment checks."
+        ),
+    )
+    parser.add_argument(
+        "--include-control-convention",
+        action=argparse.BooleanOptionalAction,
+        default=False,
+        help="Add ego-frame/control convention text to scene-derived prompts only.",
+    )
     parser.add_argument("--skip-vlm", action="store_true")
     parser.add_argument("--dummy-seq-len", type=int, default=64)
     parser.add_argument("--qwen-hidden-dim", type=int, default=2560)
@@ -230,6 +277,178 @@ def normalize_official_trainval_image(path: str, default_split: str = "trainval"
     return path
 
 
+def select_current_image(row: dict[str, Any], policy: str, default_split: str = "trainval") -> str:
+    images = row.get("images") or []
+    if not images:
+        raise ValueError("row has no images")
+    if policy == "strict_single" and len(images) != 1:
+        raise ValueError(f"--current-image-policy=strict_single requires one image, got {len(images)}")
+    if policy == "first":
+        selected = images[0]
+    elif policy in {"last", "single_or_last"}:
+        selected = images[-1]
+    elif policy == "strict_single":
+        selected = images[0]
+    else:
+        raise ValueError(f"unknown current image policy: {policy}")
+    return normalize_official_trainval_image(str(selected), default_split)
+
+
+def current_image_meta(row: dict[str, Any], policy: str, selected: str, default_split: str = "trainval") -> dict[str, Any]:
+    images = [normalize_official_trainval_image(str(image), default_split) for image in (row.get("images") or [])]
+    first = images[0] if images else ""
+    last = images[-1] if images else ""
+    return {
+        "row_image_count": len(images),
+        "row_image_first": first,
+        "row_image_last": last,
+        "current_image_policy": policy,
+        "current_image_selected": selected,
+        "stage1_submission_image_policy": "last",
+        "current_image_first_eq_last": bool(first and first == last),
+    }
+
+
+def command_text_from_one_hot(one_hot: torch.Tensor) -> str:
+    idx = int(torch.argmax(one_hot.float()).item())
+    return COMMAND_TEXT_FROM_ONE_HOT.get(idx, "MOVE FORWARD")
+
+
+def format_float(value: float) -> str:
+    value = float(value)
+    if abs(value) < 0.005:
+        value = 0.0
+    return f"{value:.2f}"
+
+
+def format_point(point: Any) -> str:
+    values = [float(x) for x in point]
+    if len(values) != 3:
+        raise ValueError(f"expected point length 3, got {len(values)}")
+    return f"[{format_float(values[0])}, {format_float(values[1])}, {format_float(values[2])}]"
+
+
+def split_status_feature_values(
+    status_feature: torch.Tensor,
+    high_command_one_hot: torch.Tensor,
+) -> tuple[list[float], list[float], str]:
+    status = [float(x) for x in status_feature.flatten().tolist()]
+    high_command = [float(x) for x in high_command_one_hot.flatten().tolist()]
+    if len(status) != 8:
+        raise ValueError(f"expected status_feature length 8, got {len(status)}")
+    if all(abs(status[i] - high_command[i]) < 1e-5 for i in range(3)):
+        return status[3:5], status[5:8], "command3_velocity2_acceleration3"
+    return status[4:6], status[6:8], "command4_velocity2_acceleration2"
+
+
+def build_qwen_prompt_from_scene_tensors(
+    history_trajectory: torch.Tensor,
+    high_command_one_hot: torch.Tensor,
+    status_feature: torch.Tensor,
+    *,
+    include_control_convention: bool = False,
+) -> str:
+    command = command_text_from_one_hot(high_command_one_hot)
+    velocity, acceleration, _ = split_status_feature_values(status_feature, high_command_one_hot)
+    history = ", ".join(format_point(point) for point in history_trajectory.tolist())
+    prompt = (
+        f"<image> is the front view. Command: {command}. "
+        f"Velocity: [{format_float(velocity[0])}, {format_float(velocity[1])}]. "
+        f"Acceleration: [{', '.join(format_float(value) for value in acceleration)}]. "
+        f"Historical trajectory: {history}. "
+    )
+    if include_control_convention:
+        prompt += (
+            "Control convention: coordinates are ego-local, x is forward, y is lateral, "
+            "heading is in radians, and the output horizon is 8 future waypoints. "
+        )
+    prompt += (
+        "Predict the future trajectory in <answer></answer>. "
+        "For the content in <answer></answer>, only generate 8 future waypoints in pure text format: "
+        "[x_1, y_1, heading_1], [x_2, y_2, heading_2], ..., [x_8, y_8, heading_8]. "
+        "Each waypoint must be [x, y, heading] with exactly 2 digits after the decimal point. "
+        "Separate waypoints with commas. "
+        "Do not include reasoning, extra text, an extra outer list, or invalid values."
+    )
+    return prompt
+
+
+def parse_prompt_fields(prompt: str) -> dict[str, Any]:
+    match = PROMPT_PARSE_RE.search(prompt)
+    if match is None:
+        raise ValueError(f"unrecognized AR Answer prompt: {prompt[:240]}")
+    command = match.group("command").strip().upper()
+    velocity = ast.literal_eval(match.group("velocity"))
+    acceleration = ast.literal_eval(match.group("acceleration"))
+    history_points = []
+    for point_text in POINT_RE.findall(match.group("history")):
+        parsed = ast.literal_eval(point_text)
+        if len(parsed) != 3:
+            raise ValueError(f"invalid history point: {point_text}")
+        history_points.append([float(x) for x in parsed])
+    return {
+        "command": command,
+        "velocity": [float(x) for x in velocity],
+        "acceleration": [float(x) for x in acceleration],
+        "history": history_points,
+    }
+
+
+def prompt_scene_alignment(
+    row_prompt: str,
+    history_trajectory: torch.Tensor,
+    high_command_one_hot: torch.Tensor,
+    status_feature: torch.Tensor,
+    *,
+    atol: float = 0.06,
+) -> dict[str, Any]:
+    scene_command = command_text_from_one_hot(high_command_one_hot)
+    scene_history = [[float(x) for x in point] for point in history_trajectory.tolist()]
+    scene_velocity, scene_acceleration, _ = split_status_feature_values(status_feature, high_command_one_hot)
+    result: dict[str, Any] = {
+        "prompt_command": None,
+        "scene_command": scene_command,
+        "prompt_history_points": None,
+        "scene_history_points": len(scene_history),
+        "prompt_scene_alignment_pass": False,
+        "prompt_scene_alignment_error": "",
+    }
+    try:
+        fields = parse_prompt_fields(row_prompt)
+        result["prompt_command"] = fields["command"]
+        result["prompt_history_points"] = len(fields["history"])
+        errors: list[str] = []
+        if COMMAND_ONE_HOT_FROM_TEXT.get(fields["command"]) != [float(x) for x in high_command_one_hot.tolist()]:
+            errors.append(f"command prompt={fields['command']} scene={scene_command}")
+        if len(fields["history"]) != len(scene_history):
+            errors.append(f"history_count prompt={len(fields['history'])} scene={len(scene_history)}")
+        else:
+            max_history_err = max(
+                abs(float(a) - float(b))
+                for prompt_point, scene_point in zip(fields["history"], scene_history)
+                for a, b in zip(prompt_point, scene_point)
+            )
+            if max_history_err > atol:
+                errors.append(f"history_max_abs_error={max_history_err:.4f}")
+        if len(fields["velocity"]) == len(scene_velocity):
+            max_vel_err = max(abs(float(a) - float(b)) for a, b in zip(fields["velocity"], scene_velocity))
+            if max_vel_err > atol:
+                errors.append(f"velocity_max_abs_error={max_vel_err:.4f}")
+        else:
+            errors.append(f"velocity_len prompt={len(fields['velocity'])} scene={len(scene_velocity)}")
+        if len(fields["acceleration"]) == len(scene_acceleration):
+            max_acc_err = max(abs(float(a) - float(b)) for a, b in zip(fields["acceleration"], scene_acceleration))
+            if max_acc_err > atol:
+                errors.append(f"acceleration_max_abs_error={max_acc_err:.4f}")
+        else:
+            errors.append(f"acceleration_len prompt={len(fields['acceleration'])} scene={len(scene_acceleration)}")
+        result["prompt_scene_alignment_pass"] = not errors
+        result["prompt_scene_alignment_error"] = "; ".join(errors)
+    except Exception as exc:  # noqa: BLE001 - audit metadata must preserve parse failures.
+        result["prompt_scene_alignment_error"] = str(exc)
+    return result
+
+
 def image_log_name(official_image: str) -> str:
     rel = official_image
     for prefix in official_sensor_prefixes():
@@ -286,13 +505,14 @@ def build_scene_mapping(
     navsim_log_path: Path,
     num_history_frames: int,
     num_future_frames: int,
+    current_image_policy: str = "first",
 ) -> dict[str, dict[str, Any]]:
     from navsim.common.dataloader import SceneLoader
     from navsim.common.dataclasses import SceneFilter, SensorConfig
 
     resolved_log_path = resolve_navsim_log_path(navsim_log_path)
     default_split = "test" if resolved_log_path.name == "test" else "trainval"
-    current_images = [normalize_official_trainval_image(str(row["images"][0]), default_split) for row in rows]
+    current_images = [select_current_image(row, current_image_policy, default_split) for row in rows]
     log_names = sorted({image_log_name(image) for image in current_images})
     wanted_images = set(current_images)
     scene_filter = SceneFilter(
@@ -537,11 +757,12 @@ def extract_navsim_planner_tensors(
     num_history_frames: int,
     action_horizon: int,
     use_answer_target: bool,
+    current_image_policy: str = "first",
     target_index: dict[str, Any] | None = None,
     target_selection: str = "max_weight",
     stage2_support_mode: str = "single_target",
 ) -> tuple[dict[str, torch.Tensor], dict[str, torch.Tensor], dict[str, Any]]:
-    current_image = normalize_official_trainval_image(str(row["images"][0]))
+    current_image = select_current_image(row, current_image_policy)
     item = scene_mapping[current_image]
     frames = item["frames"]
     current_index = num_history_frames - 1
@@ -613,12 +834,21 @@ def extract_navsim_planner_tensors(
         "planner_state_source": "navsim_scene_frames",
         "target_source": target_source,
         "current_image": current_image,
+        **current_image_meta(row, current_image_policy, current_image),
         "token": item["token"],
+        "scene_loader_token": item["token"],
+        "support_index_token": item["token"],
         "log_name": item["log_name"],
         "scene_token": item["scene_token"],
         "raw_driving_command": list(map(int, raw_command.flatten().tolist())),
+        "raw_command_shape": list(raw_command.shape),
+        "raw_command_values": [float(x) for x in raw_command.flatten().tolist()],
         "converted_high_command_one_hot": [float(x) for x in high_command.tolist()],
         "high_command_policy": command_policy,
+        "high_command_values": [float(x) for x in high_command.tolist()],
+        "velocity_values": [float(x) for x in velocity.flatten().tolist()],
+        "acceleration_values": [float(x) for x in acceleration.flatten().tolist()],
+        "status_feature_values": [float(x) for x in status.flatten().tolist()],
         "history_policy": "navsim_num_history_frames_4_relative_to_current",
         "status_policy": status_policy,
         **stage2_target_meta,
@@ -654,8 +884,10 @@ def extract_hidden_state(
     hidden_max_length: int,
     hidden_padding_side: str,
     hidden_truncation: bool,
+    prompt_text: str | None = None,
+    prompt_source: str = "row",
 ) -> tuple[torch.Tensor, dict[str, Any]]:
-    prompt = str(row["messages"][0]["content"]).replace("<image>", "")
+    prompt = str(prompt_text if prompt_text is not None else row["messages"][0]["content"]).replace("<image>", "")
     image_paths = [resolve_image_path(str(p), image_base_path) for p in row["images"]]
     messages = [{"role": "user", "content": []}]
     for image_path in image_paths:
@@ -707,6 +939,7 @@ def extract_hidden_state(
         "prompt_template_hash": sha256_text(text),
         "prompt_text_hash": sha256_text(prompt),
         "chat_template_text_hash": sha256_text(text),
+        "prompt_source": prompt_source,
         "hidden_padding": hidden_padding,
         "hidden_max_length": hidden_max_length,
         "hidden_padding_side": hidden_padding_side,
@@ -812,6 +1045,10 @@ def write_cache_metadata(output_dir: Path, args: argparse.Namespace, target_inde
         "hidden_max_length": int(args.hidden_max_length),
         "hidden_padding_side": args.hidden_padding_side,
         "hidden_truncation": bool(args.hidden_truncation),
+        "current_image_policy": args.current_image_policy,
+        "stage1_submission_image_policy": "last",
+        "prompt_source_mode": args.prompt_source,
+        "include_control_convention": bool(args.include_control_convention),
         "hidden_source": "dummy" if args.skip_vlm else "onevl_ar_answer_qwen3_vl",
         "hidden_layer": "final",
         "hidden_extraction_mode": "dummy_hidden" if args.skip_vlm else "processor_chat_template_add_generation_prompt_final_hidden_state",
@@ -866,6 +1103,7 @@ def main() -> None:
         Path(args.navsim_log_path),
         num_history_frames=args.num_history_frames,
         num_future_frames=args.num_future_frames,
+        current_image_policy=args.current_image_policy,
     )
     dtype = torch_dtype(args.dtype, args.device)
     model = processor = None
@@ -878,7 +1116,7 @@ def main() -> None:
         index_fp = (output_dir / "index.jsonl").open("a", encoding="utf-8")
     try:
         for sample_index, (line_index, row) in enumerate(rows):
-            current_image = normalize_official_trainval_image(str(row["images"][0]))
+            current_image = select_current_image(row, args.current_image_policy)
             scene_item = scene_mapping[current_image]
             token = str(scene_item["token"])
             cache_path = (
@@ -904,10 +1142,31 @@ def main() -> None:
                 num_history_frames=args.num_history_frames,
                 action_horizon=args.action_horizon,
                 use_answer_target=args.use_answer_target,
+                current_image_policy=args.current_image_policy,
                 target_index=target_index,
                 target_selection=args.target_selection,
                 stage2_support_mode=args.stage2_support_mode,
             )
+            row_prompt = str(row["messages"][0]["content"])
+            scene_prompt = build_qwen_prompt_from_scene_tensors(
+                features["history_trajectory"],
+                features["high_command_one_hot"],
+                features["status_feature"],
+                include_control_convention=args.include_control_convention,
+            )
+            alignment_meta = prompt_scene_alignment(
+                row_prompt,
+                features["history_trajectory"],
+                features["high_command_one_hot"],
+                features["status_feature"],
+            )
+            if args.prompt_source == "row_strict_scene_check" and not alignment_meta["prompt_scene_alignment_pass"]:
+                raise RuntimeError(
+                    f"row prompt does not align with SceneLoader tensors at line {line_index}: "
+                    f"{alignment_meta['prompt_scene_alignment_error']}"
+                )
+            prompt_for_hidden = scene_prompt if args.prompt_source == "scene" else row_prompt
+            effective_prompt_source = "scene" if args.prompt_source == "scene" else "row"
             if args.skip_vlm:
                 hidden = make_dummy_hidden(args.dummy_seq_len, args.qwen_hidden_dim, line_index)
                 hidden_meta = {
@@ -921,6 +1180,8 @@ def main() -> None:
                     "prompt_template_hash": "",
                     "input_token_count": int(hidden.shape[0]),
                     "valid_hidden_length": int(hidden.shape[0]),
+                    "prompt_source": effective_prompt_source,
+                    "prompt_text_hash": sha256_text(prompt_for_hidden.replace("<image>", "")),
                 }
             else:
                 hidden, hidden_meta = extract_hidden_state(
@@ -935,6 +1196,8 @@ def main() -> None:
                     args.hidden_max_length,
                     args.hidden_padding_side,
                     args.hidden_truncation,
+                    prompt_text=prompt_for_hidden,
+                    prompt_source=effective_prompt_source,
                 )
                 hidden_meta["source"] = "qwen3_vl_ar_answer"
 
@@ -945,7 +1208,15 @@ def main() -> None:
                 "sample_token": token,
                 "feature_shapes": {k: list(v.shape) for k, v in features_with_hidden.items()},
                 "target_shapes": {k: list(v.shape) for k, v in targets.items()},
-                "meta": {**meta, **hidden_meta},
+                "meta": {
+                    **meta,
+                    **alignment_meta,
+                    **hidden_meta,
+                    "prompt_source_mode": args.prompt_source,
+                    "scene_prompt_hash": sha256_text(scene_prompt.replace("<image>", "")),
+                    "row_prompt_hash": sha256_text(row_prompt.replace("<image>", "")),
+                    "include_control_convention": bool(args.include_control_convention),
+                },
             }
             if not args.no_dit_forward:
                 result["dit_forward"] = run_dit_forward(
@@ -1015,6 +1286,10 @@ def main() -> None:
         "hidden_max_length": int(args.hidden_max_length),
         "hidden_padding_side": args.hidden_padding_side,
         "hidden_truncation": bool(args.hidden_truncation),
+        "current_image_policy": args.current_image_policy,
+        "stage1_submission_image_policy": "last",
+        "prompt_source_mode": args.prompt_source,
+        "include_control_convention": bool(args.include_control_convention),
         "selected_rows": len(rows),
         "samples": summaries,
     }
