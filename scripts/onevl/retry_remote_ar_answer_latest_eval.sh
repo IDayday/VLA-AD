@@ -2,7 +2,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REMOTE_HOST=${REMOTE_HOST:-training-rl-zt3}
+REMOTE_HOST=${REMOTE_HOST:?Set REMOTE_HOST explicitly; training-rl-zt3 is disabled for this workflow.}
 RETRY_SECONDS=${RETRY_SECONDS:-60}
 PYTHON_BIN=${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}
 PROJECT_ROOT=${PROJECT_ROOT:-/mnt/project}
@@ -14,6 +14,11 @@ REMOTE_GPU_MAX_UTIL=${REMOTE_GPU_MAX_UTIL:-80}
 mkdir -p "${OUT_ROOT}/logs"
 LOG_FILE="${OUT_ROOT}/logs/retry_remote_launcher.log"
 SSH_PROBE_LOG="${OUT_ROOT}/logs/ssh_probe.last.log"
+
+if [[ "${REMOTE_HOST}" == "training-rl-zt3" || "${REMOTE_HOST}" == "rl-zt3" ]]; then
+  echo "REMOTE_HOST=${REMOTE_HOST} is disabled for this workflow; choose another host." >&2
+  exit 2
+fi
 
 ssh_opts=(
   -o BatchMode=yes

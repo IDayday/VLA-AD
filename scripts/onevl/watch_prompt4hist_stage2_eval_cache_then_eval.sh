@@ -11,7 +11,7 @@ VAL_CACHE_ROOT="${VAL_CACHE_ROOT:-${OUT_ROOT}/cache_val6000}"
 NAV_CACHE_ROOT="${NAV_CACHE_ROOT:-${OUT_ROOT}/cache_navtest}"
 VAL_METRIC_CACHE="${VAL_METRIC_CACHE:-/mnt/project/onevl_navsim_exp/metric_cache_val6000_latest}"
 NAV_METRIC_CACHE="${NAV_METRIC_CACHE:-/mnt/project/VLA-AD/cache/metric_cache_navtest_full_v1}"
-REMOTE_HOST="${REMOTE_HOST:-training-rl-zt3}"
+REMOTE_HOST="${REMOTE_HOST:-local}"
 REMOTE_PYTHON="${REMOTE_PYTHON:-/root/miniconda3/envs/navsim/bin/python}"
 REPO_ROOT="${REPO_ROOT:-/mnt/project/VLA-AD}"
 MIN_EPOCH="${MIN_EPOCH:-50}"
@@ -24,6 +24,11 @@ TOP_K="${TOP_K:-5}"
 mkdir -p "${OUT_ROOT}/logs" "${EVAL_ROOT}"
 WATCH_LOG="${OUT_ROOT}/logs/eval_cache_then_eval.log"
 COMMANDS_LOG="${OUT_ROOT}/commands.log"
+
+if [[ "${REMOTE_HOST}" == "training-rl-zt3" || "${REMOTE_HOST}" == "rl-zt3" ]]; then
+  echo "REMOTE_HOST=${REMOTE_HOST} is disabled for this workflow; choose another host or use local." >&2
+  exit 2
+fi
 
 log() {
   printf '[%s] %s\n' "$(date -Is)" "$*" | tee -a "${WATCH_LOG}"

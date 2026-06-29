@@ -76,8 +76,9 @@ Stage2 evaluation preparation and remote top-k evaluation:
   navtest hidden caches for evaluation.
 - `scripts/onevl/watch_prompt4hist_stage2_eval_cache_then_eval.sh` waits for
   eval caches and starts the top-k evaluation watcher.
-- `scripts/onevl/launch_prompt4hist_stage2_eval_on_rl_zt3.sh` dispatches eval
-  cache preparation and checkpoint evaluation to `training-rl-zt3`.
+- `scripts/onevl/launch_prompt4hist_stage2_eval_remote.sh` dispatches eval
+  cache preparation and checkpoint evaluation to an explicitly selected remote
+  host. `training-rl-zt3` is disabled for this workflow.
 - `scripts/onevl/watch_onevl_stage2_eval_top5_remote.py` watches stage2
   checkpoints, evaluates eligible checkpoints on val6000/navtest, maintains
   split-specific top-k rankings, and backs up top-k checkpoint objects.
@@ -321,12 +322,13 @@ STAGE1_CKPT=/path/to/ar_answer_checkpoint \
 bash scripts/onevl/run_ar_answer_prompt4hist_stage2_cache_then_train.sh
 ```
 
-Dispatch eval cache generation and top-k evaluation watcher to the remote host:
+Dispatch eval cache generation and top-k evaluation watcher to an explicitly
+selected remote host:
 
 ```bash
-REMOTE_HOST=training-rl-zt3 \
+REMOTE_HOST=training-vla-zt-peer \
 TRAIN_DIR=/path/to/stage2_train_full200 \
-bash scripts/onevl/launch_prompt4hist_stage2_eval_on_rl_zt3.sh
+bash scripts/onevl/launch_prompt4hist_stage2_eval_remote.sh
 ```
 
 ## Files That Must Not Be Committed

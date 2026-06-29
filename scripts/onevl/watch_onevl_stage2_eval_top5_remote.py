@@ -25,7 +25,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--train-dir", type=Path, required=True)
     p.add_argument("--output-root", type=Path, required=True)
     p.add_argument("--config", type=Path, required=True)
-    p.add_argument("--remote-host", default="training-rl-zt3")
+    p.add_argument("--remote-host", default="local")
     p.add_argument("--remote-python", default="/root/miniconda3/envs/navsim/bin/python")
     p.add_argument("--repo-root", type=Path, default=Path("/mnt/project/VLA-AD"))
     p.add_argument("--min-epoch", type=int, default=50)
@@ -266,6 +266,8 @@ def split_specs(args: argparse.Namespace) -> list[dict[str, Any]]:
 
 def main() -> int:
     args = parse_args()
+    if args.remote_host in {"training-rl-zt3", "rl-zt3"}:
+        raise SystemExit("training-rl-zt3 is disabled for this workflow; choose another host or use local.")
     args.output_root.mkdir(parents=True, exist_ok=True)
     state_path = args.output_root / "state.json"
     state = json.loads(state_path.read_text()) if state_path.is_file() else {"evaluated": {}}

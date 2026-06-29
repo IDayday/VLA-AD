@@ -2,7 +2,7 @@
 set -Eeuo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REMOTE_HOST="${REMOTE_HOST:-training-rl-zt3}"
+REMOTE_HOST="${REMOTE_HOST:?Set REMOTE_HOST explicitly; training-rl-zt3 is disabled for this workflow.}"
 REMOTE_PYTHON="${REMOTE_PYTHON:-/root/miniconda3/envs/navsim/bin/python}"
 PYTHON_BIN="${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}"
 RUN_ID="${RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)}"
@@ -32,6 +32,11 @@ GPU_WAIT_POLL_SECONDS="${GPU_WAIT_POLL_SECONDS:-120}"
 EVAL_WATCHER_HOST="${EVAL_WATCHER_HOST:-remote}"
 
 mkdir -p "${OUT_ROOT}/logs"
+
+if [[ "${REMOTE_HOST}" == "training-rl-zt3" || "${REMOTE_HOST}" == "rl-zt3" ]]; then
+  echo "REMOTE_HOST=${REMOTE_HOST} is disabled for this workflow; choose another host." >&2
+  exit 2
+fi
 
 for path in "${STAGE1_CKPT}" "${VAL_DATA_JSONL}" "${NAV_DATA_JSON}" "${TRAIN_DIR}" "${CONFIG_PATH}" "${VAL_METRIC_CACHE}" "${NAV_METRIC_CACHE}"; do
   if [[ ! -e "${path}" ]]; then

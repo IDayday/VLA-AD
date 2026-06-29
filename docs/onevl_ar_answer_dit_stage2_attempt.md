@@ -184,7 +184,7 @@ scripts/onevl/run_ar_answer_prompt4hist_stage2_cache_then_train.sh
 scripts/onevl/watch_prompt4hist_stage2_cache_then_train.sh
 scripts/onevl/build_prompt4hist_stage2_eval_caches.sh
 scripts/onevl/watch_prompt4hist_stage2_eval_cache_then_eval.sh
-scripts/onevl/launch_prompt4hist_stage2_eval_on_rl_zt3.sh
+scripts/onevl/launch_prompt4hist_stage2_eval_remote.sh
 scripts/onevl/watch_onevl_stage2_eval_top5_remote.py
 ```
 
