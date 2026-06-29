@@ -8,10 +8,9 @@ validated ReCogDrive stage2 setup while replacing the stage1 hidden-state source
 ## Scope
 
 The implementation in this branch is focused on the DiT/stage2 side inside
-`VLA-AD`. OneVL stage1 data preparation, AR Answer SFT, and hidden-cache
-generation were driven by local orchestration scripts under `/mnt/project`; those
-scripts are referenced here for reproducibility but are not model checkpoints or
-cache artifacts.
+`VLA-AD`. OneVL stage1 data preparation, AR Answer SFT, hidden-cache generation,
+and stage2 evaluation orchestration are now tracked under `scripts/onevl/`.
+Runtime checkpoints, caches, predictions, and logs remain outside git.
 
 The current design treats:
 
@@ -176,22 +175,17 @@ Stage2 eval root:
 /mnt/project/onevl_navsim_exp/ar_answer_prompt4hist_stage2_apsd_eval_20260628T120059Z
 ```
 
-The cache/eval orchestration used local scripts under:
+The cache/eval orchestration now lives in `scripts/onevl/`. Key scripts used
+during this attempt:
 
 ```text
-/mnt/project/onevl_setup
-```
-
-Key scripts used during this attempt:
-
-```text
-bridge_ar_answer_to_recogdrive_dit.py
-run_ar_answer_prompt4hist_stage2_cache_then_train.sh
-watch_prompt4hist_stage2_cache_then_train.sh
-build_prompt4hist_stage2_eval_caches.sh
-watch_prompt4hist_stage2_eval_cache_then_eval.sh
-launch_prompt4hist_stage2_eval_on_rl_zt3.sh
-watch_onevl_stage2_eval_top5_remote.py
+scripts/onevl/bridge_ar_answer_to_recogdrive_dit.py
+scripts/onevl/run_ar_answer_prompt4hist_stage2_cache_then_train.sh
+scripts/onevl/watch_prompt4hist_stage2_cache_then_train.sh
+scripts/onevl/build_prompt4hist_stage2_eval_caches.sh
+scripts/onevl/watch_prompt4hist_stage2_eval_cache_then_eval.sh
+scripts/onevl/launch_prompt4hist_stage2_eval_on_rl_zt3.sh
+scripts/onevl/watch_onevl_stage2_eval_top5_remote.py
 ```
 
 ## Training Command Shape
@@ -260,6 +254,6 @@ Interpretation:
 3. The current stage2 result has not yet exceeded the AR Answer stage1 navtest
    result. The likely next checkpoint decision should be based on completed
    navtest top-k, not training loss.
-4. This branch records the VLA-AD-side implementation. OneVL SFT and cache
-   generation scripts should be moved into a tracked experiment repo if this
-   route becomes the mainline workflow.
+4. OneVL SFT and cache/evaluation orchestration scripts are now tracked in this
+   branch under `scripts/onevl/`; see
+   `docs/onevl_ar_answer_stage1_cache_stage2_pipeline.md` for the full process.
