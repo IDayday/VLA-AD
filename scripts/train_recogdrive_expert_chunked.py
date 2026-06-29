@@ -69,6 +69,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--resume-from", type=Path, default=None)
     parser.add_argument("--resume-mode", choices=("weights-only", "full"), default="weights-only")
     parser.add_argument("--recogdrive-vlm-path", type=Path, default=None)
+    parser.add_argument("--vlm-feature-dim", type=int, default=None)
     parser.add_argument("--chunk-cache-root", type=Path, default=None)
     parser.add_argument("--chunk-cache-dir", type=Path, default=None)
     parser.add_argument("--chunk-name-pattern", default="chunk_*")
@@ -119,6 +120,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--debug-overfit", action="store_true")
     parser.add_argument("--log-every", type=int, default=10)
     parser.add_argument("--save-every", type=int, default=500)
+    parser.add_argument("--save-every-epoch", action="store_true", help="Save epoch_XXX.ckpt at each completed global epoch.")
     parser.add_argument("--seed", type=int, default=20260530)
     parser.add_argument("--true-bf16-weights", action="store_true")
     parser.add_argument("--output-dir", type=Path, required=True)
@@ -177,6 +179,9 @@ def as_bool(value: Any, default: bool = False) -> bool:
 
 
 def build_planner(cfg_dict: Dict[str, Any], args: argparse.Namespace) -> ReCogDriveDiffusionPlanner:
+    vlm_feature_dim = args.vlm_feature_dim
+    if vlm_feature_dim is None and cfg_dict.get("vlm_feature_dim") is not None:
+        vlm_feature_dim = int(cfg_dict["vlm_feature_dim"])
     cfg = ReCogDriveDiffusionPlannerConfig(
         diffusion_model_cfg={
             "num_heads": 8,
@@ -196,6 +201,7 @@ def build_planner(cfg_dict: Dict[str, Any], args: argparse.Namespace) -> ReCogDr
         sampling_method=str(cfg_dict.get("sampling_method", "ddim")),
         num_inference_steps=int(cfg_dict.get("num_inference_steps", 5)),
         model_dtype={"bf16": "bfloat16", "fp16": "float16", "fp32": "float32"}[args.precision],
+        vlm_feature_dim=vlm_feature_dim,
     )
     for key, value in cfg_dict.items():
         if hasattr(cfg, key):
@@ -332,6 +338,7 @@ class ChunkDataset(Dataset):
         require_jepa: bool = True,
         require_vggt: bool = True,
         require_targets: bool = True,
+        vlm_feature_dim: Optional[int] = 1536,
     ) -> None:
         self.chunk_dir = chunk_dir
         metadata_path = chunk_dir / "metadata.json"
@@ -341,6 +348,7 @@ class ChunkDataset(Dataset):
         self.require_jepa = require_jepa
         self.require_vggt = require_vggt
         self.require_targets = require_targets
+        self.vlm_feature_dim = vlm_feature_dim
         self.records = list(iter_index(chunk_dir))
         if max_samples is not None:
             self.records = self.records[:max_samples]
@@ -359,8 +367,9 @@ class ChunkDataset(Dataset):
             require_jepa=self.require_jepa,
             require_vggt=self.require_vggt,
             require_targets=self.require_targets,
+            vlm_feature_dim=self.vlm_feature_dim,
         )
-        for key in ("last_hidden_state", "history_trajectory", "status_feature", "trajectory"):
+        for key in ("last_hidden_state", "history_trajectory", "high_command_one_hot", "status_feature", "trajectory"):
             if key not in sample:
                 raise KeyError(f"{path} missing required training key '{key}'. Rebuild chunk with --build-vlm-hidden.")
         return {
@@ -379,10 +388,12 @@ class FlatChunkDataset(Dataset):
         require_jepa: bool = True,
         require_vggt: bool = True,
         require_targets: bool = True,
+        vlm_feature_dim: Optional[int] = 1536,
     ) -> None:
         self.require_jepa = require_jepa
         self.require_vggt = require_vggt
         self.require_targets = require_targets
+        self.vlm_feature_dim = vlm_feature_dim
         self.records: List[Tuple[Path, Dict[str, Any]]] = []
         for chunk_dir in chunk_paths:
             metadata_path = chunk_dir / "metadata.json"
@@ -410,8 +421,9 @@ class FlatChunkDataset(Dataset):
             require_jepa=self.require_jepa,
             require_vggt=self.require_vggt,
             require_targets=self.require_targets,
+            vlm_feature_dim=self.vlm_feature_dim,
         )
-        for key in ("last_hidden_state", "history_trajectory", "status_feature", "trajectory"):
+        for key in ("last_hidden_state", "history_trajectory", "high_command_one_hot", "status_feature", "trajectory"):
             if key not in sample:
                 raise KeyError(f"{path} missing required training key '{key}'. Rebuild chunk with --build-vlm-hidden.")
         return {
@@ -423,12 +435,24 @@ class FlatChunkDataset(Dataset):
 def collate(samples: List[Dict[str, Any]]) -> Tuple[torch.Tensor, BatchFeature]:
     last_hidden_state = pad_sequence([sample["last_hidden_state"].float() for sample in samples], batch_first=True, padding_value=0.0)
     his = torch.stack([sample["history_trajectory"].float().view(-1) for sample in samples], dim=0)
+    high_command = torch.stack([sample["high_command_one_hot"].float() for sample in samples], dim=0)
     status = torch.stack([sample["status_feature"].float() for sample in samples], dim=0)
     action = torch.stack([sample["trajectory"].float() for sample in samples], dim=0)
-    data: Dict[str, torch.Tensor] = {"his_traj": his, "status_feature": status, "action": action}
+    data: Dict[str, torch.Tensor] = {
+        "his_traj": his,
+        "high_command_one_hot": high_command,
+        "status_feature": status,
+        "action": action,
+    }
     for key in ("jepa_context_tokens", "jepa_target_tokens", "vggt_context_tokens", "vggt_target_tokens"):
         if key in samples[0]:
             data[key] = torch.stack([sample[key].float() for sample in samples], dim=0)
+    for key in ("support_trajectories", "support_weights", "support_scores"):
+        if key in samples[0]:
+            data[key] = torch.stack([sample[key].float() for sample in samples], dim=0)
+    for key in ("support_mask", "support_missing_mask"):
+        if key in samples[0]:
+            data[key] = torch.stack([sample[key].bool() for sample in samples], dim=0)
     return last_hidden_state, BatchFeature(data=data)
 
 
@@ -503,6 +527,17 @@ def chunk_dirs(args: argparse.Namespace) -> List[Path]:
 def save_checkpoint(path: Path, planner: ReCogDriveDiffusionPlanner, optimizer: torch.optim.Optimizer, step: int, cfg: Dict[str, Any], metrics: Dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     torch.save({"state_dict": planner.state_dict(), "optimizer": optimizer.state_dict(), "global_step": step, "config": cfg, "metrics": metrics}, path)
+
+
+def load_checkpoint_payload(path: Path) -> Tuple[Path, Dict[str, Any]]:
+    file_path = find_weight_files(path)[0]
+    try:
+        payload = torch.load(file_path, map_location="cpu", weights_only=False)
+    except TypeError:
+        payload = torch.load(file_path, map_location="cpu")
+    if not isinstance(payload, dict):
+        raise TypeError(f"Checkpoint payload must be a dict: {file_path}")
+    return file_path, payload
 
 
 def finite_scalar(value: torch.Tensor, name: str) -> float:
@@ -634,6 +669,13 @@ def reduce_metrics(output: Dict[str, Any], *, device: torch.device, distributed:
         "branch_weight_vggt",
         "expert_context_scale",
         "expert_horizon_residual_scale",
+        "stage2_pareto_enabled",
+        "stage2_pareto_used_ratio",
+        "stage2_pareto_missing_ratio",
+        "stage2_pareto_support_count_mean",
+        "stage2_pareto_selected_index_mean",
+        "stage2_pareto_selected_weight_mean",
+        "stage2_pareto_selected_score_mean",
     ]
     values = torch.stack([scalar_or_zero(output, key, device) for key in keys]).to(device=device)
     if distributed:
@@ -643,6 +685,98 @@ def reduce_metrics(output: Dict[str, Any], *, device: torch.device, distributed:
         bad = {key: float(value.detach().cpu()) for key, value in zip(keys, values)}
         raise RuntimeError(f"Non-finite reduced metrics: {bad}")
     return {key: float(value.detach().cpu().item()) for key, value in zip(keys, values)}
+
+
+def select_stage2_pareto_support_action(
+    planner: ReCogDriveDiffusionPlanner,
+    action_input: BatchFeature,
+    *,
+    device: torch.device,
+) -> Dict[str, torch.Tensor]:
+    action = action_input.get("action")
+    reference = action if isinstance(action, torch.Tensor) else torch.tensor(0.0, device=device)
+    diagnostics = {
+        "stage2_pareto_enabled": reference.new_zeros(()),
+        "stage2_pareto_used_ratio": reference.new_zeros(()),
+        "stage2_pareto_missing_ratio": reference.new_zeros(()),
+        "stage2_pareto_support_count_mean": reference.new_zeros(()),
+        "stage2_pareto_selected_index_mean": reference.new_zeros(()),
+        "stage2_pareto_selected_weight_mean": reference.new_zeros(()),
+        "stage2_pareto_selected_score_mean": reference.new_zeros(()),
+    }
+    if not planner.training or not isinstance(action, torch.Tensor):
+        return diagnostics
+
+    support_trajectories = action_input.get("support_trajectories")
+    support_mask = action_input.get("support_mask")
+    support_weights = action_input.get("support_weights")
+    support_scores = action_input.get("support_scores")
+    if not (
+        isinstance(support_trajectories, torch.Tensor)
+        and isinstance(support_mask, torch.Tensor)
+        and isinstance(support_weights, torch.Tensor)
+    ):
+        return diagnostics
+
+    batch_size = action.shape[0]
+    if tuple(support_trajectories.shape) != (batch_size, 3, 8, 3):
+        raise ValueError(
+            f"support_trajectories must have shape [B, 3, 8, 3], got {tuple(support_trajectories.shape)}."
+        )
+    if tuple(support_mask.shape) != (batch_size, 3) or tuple(support_weights.shape) != (batch_size, 3):
+        raise ValueError(
+            f"support_mask/support_weights must have shape [B, 3], got "
+            f"{tuple(support_mask.shape)} and {tuple(support_weights.shape)}."
+        )
+
+    support_trajectories = support_trajectories.to(device=device, dtype=action.dtype)
+    support_mask = support_mask.to(device=device, dtype=torch.bool)
+    support_weights = support_weights.to(device=device, dtype=torch.float32)
+    if isinstance(support_scores, torch.Tensor):
+        support_scores = support_scores.to(device=device, dtype=torch.float32)
+        if tuple(support_scores.shape) != (batch_size, 3):
+            raise ValueError(f"support_scores must have shape [B, 3], got {tuple(support_scores.shape)}.")
+    else:
+        support_scores = torch.zeros_like(support_weights)
+
+    missing_mask = action_input.get("support_missing_mask")
+    if isinstance(missing_mask, torch.Tensor):
+        missing_mask = missing_mask.to(device=device, dtype=torch.bool).view(batch_size)
+    else:
+        missing_mask = torch.zeros(batch_size, device=device, dtype=torch.bool)
+
+    finite_support = torch.isfinite(support_trajectories).flatten(2).all(dim=2)
+    finite_weights = torch.isfinite(support_weights)
+    support_mask = support_mask & finite_support & finite_weights
+    support_count = support_mask.sum(dim=1)
+    row_has_support = (support_count > 0) & (~missing_mask)
+
+    diagnostics["stage2_pareto_enabled"] = reference.new_tensor(1.0)
+    diagnostics["stage2_pareto_used_ratio"] = row_has_support.float().mean().to(dtype=reference.dtype)
+    diagnostics["stage2_pareto_missing_ratio"] = (~row_has_support).float().mean().to(dtype=reference.dtype)
+    diagnostics["stage2_pareto_support_count_mean"] = support_count.float().mean().to(dtype=reference.dtype)
+    if not bool(row_has_support.any().item()):
+        return diagnostics
+
+    masked_weights = support_weights.clamp(min=0.0) * support_mask.float()
+    weight_sum = masked_weights.sum(dim=1, keepdim=True)
+    uniform = support_mask.float() / support_count.clamp(min=1).to(dtype=torch.float32).unsqueeze(1)
+    normalized_weights = torch.where(weight_sum > 0.0, masked_weights / weight_sum.clamp(min=1e-8), uniform)
+    fallback_weights = torch.tensor([1.0, 0.0, 0.0], device=device, dtype=torch.float32).view(1, 3)
+    normalized_weights = torch.where(row_has_support[:, None], normalized_weights, fallback_weights)
+
+    selected_idx = torch.multinomial(normalized_weights, num_samples=1).squeeze(1)
+    batch_idx = torch.arange(batch_size, device=device)
+    selected_action = support_trajectories[batch_idx, selected_idx]
+    action_input["action"] = torch.where(row_has_support[:, None, None], selected_action, action)
+
+    used_idx = selected_idx[row_has_support]
+    used_weights = normalized_weights[batch_idx, selected_idx][row_has_support]
+    used_scores = support_scores[batch_idx, selected_idx][row_has_support]
+    diagnostics["stage2_pareto_selected_index_mean"] = used_idx.float().mean().to(dtype=reference.dtype)
+    diagnostics["stage2_pareto_selected_weight_mean"] = used_weights.float().mean().to(dtype=reference.dtype)
+    diagnostics["stage2_pareto_selected_score_mean"] = used_scores.float().mean().to(dtype=reference.dtype)
+    return diagnostics
 
 
 def official_cosine_lr(args: argparse.Namespace, base_lr: float, epoch_index: int) -> float:
@@ -747,8 +881,8 @@ def write_final_report(path: Path, summary: Dict[str, Any]) -> None:
 def main() -> int:
     args = parse_args()
     seed_everything(args.seed)
-    if args.resume_mode == "full":
-        raise NotImplementedError("Full resume is not implemented; use weights-only for continuation ablations.")
+    if args.resume_mode == "full" and args.resume_from is None:
+        raise ValueError("--resume-mode full requires --resume-from.")
     if args.true_bf16_weights and args.precision != "bf16":
         raise ValueError("--true-bf16-weights is only valid with --precision bf16.")
     if args.num_optimizer_steps is not None and args.num_optimizer_steps <= 0:
@@ -767,12 +901,17 @@ def main() -> int:
         "scheduler_restored": False,
     }
     loaded_checkpoint_state_dtype_counts: Dict[str, int] = {}
+    resume_payload: Optional[Dict[str, Any]] = None
+    resume_file: Optional[Path] = None
     if args.resume_from:
+        if args.resume_mode == "full":
+            resume_file, resume_payload = load_checkpoint_payload(args.resume_from)
         loaded_checkpoint_state_dtype_counts = checkpoint_state_dtype_counts(args.resume_from)
         load_report.update(shape_safe_load(planner, args.resume_from, strict_original=False))
         load_report.update({
             "init_mode": "resume_from",
             "init_policy_checkpoint": str(args.resume_from),
+            "resume_file": str(resume_file) if resume_file is not None else str(args.resume_from),
             "loaded_checkpoint_state_dtype_counts": loaded_checkpoint_state_dtype_counts,
         })
     else:
@@ -798,6 +937,30 @@ def main() -> int:
 
     set_trainable(planner, args)
     optimizer = optimizer_for(planner, args)
+    resume_global_step = 0
+    resume_optimizer_step = 0
+    resume_start_epoch = 0
+    resume_best_loss = math.inf
+    if args.resume_mode == "full" and resume_payload is not None:
+        optimizer_state = resume_payload.get("optimizer")
+        if not isinstance(optimizer_state, dict):
+            raise KeyError(f"Full resume checkpoint lacks optimizer state: {resume_file}")
+        optimizer.load_state_dict(optimizer_state)
+        resume_metrics = resume_payload.get("metrics", {})
+        if not isinstance(resume_metrics, dict):
+            resume_metrics = {}
+        resume_global_step = int(resume_payload.get("global_step", resume_metrics.get("step", 0)) or 0)
+        resume_optimizer_step = int(resume_metrics.get("optimizer_step", resume_global_step) or 0)
+        resume_start_epoch = max(int(resume_metrics.get("global_epoch", 0) or 0), 0)
+        resume_best_loss = float(resume_metrics.get("best_loss", math.inf))
+        load_report.update({
+            "optimizer_restored": True,
+            "scheduler_restored": True,
+            "resumed_global_step": resume_global_step,
+            "resumed_optimizer_step": resume_optimizer_step,
+            "resumed_start_epoch": resume_start_epoch,
+            "resumed_best_loss": resume_best_loss,
+        })
     expert_schedule_targets = schedule_targets(planner)
     train_model = planner
     if distributed:
@@ -825,21 +988,22 @@ def main() -> int:
             "optimizer_group_lrs": group_lrs,
             "optimizer_group_weight_decay": group_weight_decays,
             "resume_mode": args.resume_mode,
-            "optimizer_restored": False,
+            "optimizer_restored": bool(load_report.get("optimizer_restored", False)),
             "rng_restored": False,
-            "scheduler_restored": False,
+            "scheduler_restored": bool(load_report.get("scheduler_restored", False)),
         }
         (args.output_dir / "precision_report.json").write_text(json.dumps(precision_report, indent=2, sort_keys=True) + "\n", encoding="utf-8")
     if distributed:
         dist.barrier()
     log_path = args.output_dir / "train_log.jsonl"
-    log_fp = log_path.open("w", encoding="utf-8") if is_rank0(rank) else None
+    log_mode = "a" if args.resume_mode == "full" and args.resume_from is not None else "w"
+    log_fp = log_path.open(log_mode, encoding="utf-8") if is_rank0(rank) else None
 
-    global_step = 0
-    optimizer_step_count = 0
+    global_step = resume_global_step
+    optimizer_step_count = resume_optimizer_step
     pending_grad_steps = 0
-    completed_global_epochs = 0
-    best_loss = math.inf
+    completed_global_epochs = resume_start_epoch
+    best_loss = resume_best_loss
     last_loss: Optional[float] = None
     last_batch: Optional[Tuple[torch.Tensor, BatchFeature]] = None
     expert_grad_observed = False
@@ -851,6 +1015,10 @@ def main() -> int:
     require_jepa = bool(planner.config.use_expert_features and planner.config.use_jepa)
     require_vggt = bool(planner.config.use_expert_features and planner.config.use_vggt)
     require_targets = bool(planner.config.use_expert_features and (planner.config.jepa_alignment_weight > 0 or planner.config.vggt_alignment_weight > 0))
+    vlm_feature_dim = getattr(planner.config, "vlm_feature_dim", None)
+    if vlm_feature_dim is None:
+        vlm_feature_dim = 3584 if getattr(planner.config, "vlm_size", "small") == "large" else 1536
+    vlm_feature_dim = int(vlm_feature_dim)
     summary: Dict[str, Any] = {
         "output_dir": str(args.output_dir),
         "chunks": [str(chunk) for chunk in chunks],
@@ -861,6 +1029,7 @@ def main() -> int:
         "world_size": world_size,
         "lr_scheduler": args.lr_scheduler,
         "diffusion_loss_weight": float(planner.config.diffusion_loss_weight),
+        "vlm_feature_dim": vlm_feature_dim,
         "freeze_expert": bool(args.freeze_expert),
         "expert_grad_observed": False,
         "pred_traj_finite": None,
@@ -900,6 +1069,7 @@ def main() -> int:
                     require_jepa=require_jepa,
                     require_vggt=require_vggt,
                     require_targets=require_targets,
+                    vlm_feature_dim=vlm_feature_dim,
                 )
                 flat_sampler = DistributedSampler(
                     flat_dataset,
@@ -909,14 +1079,14 @@ def main() -> int:
                     drop_last=False,
                 ) if distributed else None
                 flat_loader = make_loader(flat_dataset, flat_sampler)
-                for global_epoch in range(args.global_epochs):
+                for global_epoch in range(resume_start_epoch, args.global_epochs):
                     apply_epoch_lr(optimizer, args, global_epoch)
                     apply_epoch_expert_schedules(planner, args, global_epoch, expert_schedule_targets)
                     if flat_sampler is not None:
                         flat_sampler.set_epoch(global_epoch)
                     yield global_epoch, -1, None, 0, flat_loader
                 return
-            for global_epoch in range(args.global_epochs):
+            for global_epoch in range(resume_start_epoch, args.global_epochs):
                 apply_epoch_lr(optimizer, args, global_epoch)
                 apply_epoch_expert_schedules(planner, args, global_epoch, expert_schedule_targets)
                 for chunk_idx, chunk in enumerate(chunks):
@@ -927,6 +1097,7 @@ def main() -> int:
                         require_jepa=require_jepa,
                         require_vggt=require_vggt,
                         require_targets=require_targets,
+                        vlm_feature_dim=vlm_feature_dim,
                     )
                     sampler = DistributedSampler(
                         dataset,
@@ -951,6 +1122,7 @@ def main() -> int:
                         require_jepa=require_jepa,
                         require_vggt=require_vggt,
                         require_targets=require_targets,
+                        vlm_feature_dim=vlm_feature_dim,
                     )
                     sampler = DistributedSampler(
                         dataset,
@@ -970,7 +1142,21 @@ def main() -> int:
         made_progress = False
         for global_epoch, chunk_idx, chunk, local_epoch, loader in training_passes():
             last_step_end = time.time()
+            resume_skip_batches = 0
+            if (
+                args.resume_mode == "full"
+                and args.resume_from is not None
+                and resume_global_step > 0
+                and args.global_epochs is not None
+                and global_epoch == resume_start_epoch
+            ):
+                steps_per_epoch = len(loader)
+                seen_in_epoch = resume_global_step - resume_start_epoch * steps_per_epoch
+                resume_skip_batches = min(max(int(seen_in_epoch), 0), steps_per_epoch)
             for batch_idx, (vl_features, action_input) in enumerate(loader):
+                if resume_skip_batches and batch_idx < resume_skip_batches:
+                    last_step_end = time.time()
+                    continue
                 made_progress = True
                 batch_ready = time.time()
                 data_wait_sec = batch_ready - last_step_end
@@ -979,12 +1165,17 @@ def main() -> int:
                 vl_features = vl_features.to(device=device, dtype=dtype, non_blocking=True)
                 for key, value in list(action_input.items()):
                     if isinstance(value, torch.Tensor):
-                        action_input[key] = value.to(device=device, dtype=dtype, non_blocking=True)
+                        if value.dtype == torch.bool:
+                            action_input[key] = value.to(device=device, non_blocking=True)
+                        else:
+                            action_input[key] = value.to(device=device, dtype=dtype, non_blocking=True)
                 transfer_sec = time.time() - transfer_start
+                stage2_pareto_diagnostics = select_stage2_pareto_support_action(planner, action_input, device=device)
                 last_batch = (vl_features.detach(), BatchFeature(data={k: v.detach() if isinstance(v, torch.Tensor) else v for k, v in action_input.items()}))
                 with torch.autocast(device_type=device.type, dtype=dtype, enabled=(device.type == "cuda" and dtype != torch.float32)):
                     output = train_model(vl_features, action_input)
                     loss = output["loss"] / args.gradient_accumulation_steps
+                output.update(stage2_pareto_diagnostics)
                 reduced = reduce_metrics(output, device=device, distributed=distributed, world_size=world_size)
                 total_loss = reduced["loss"]
                 diffusion_loss = reduced["diffusion_loss"]
@@ -1022,6 +1213,13 @@ def main() -> int:
                     "branch_weight_vggt": reduced["branch_weight_vggt"] if "branch_weight_vggt" in output else None,
                     "expert_context_scale": reduced["expert_context_scale"] if "expert_context_scale" in output else None,
                     "expert_horizon_residual_scale": reduced["expert_horizon_residual_scale"] if "expert_horizon_residual_scale" in output else None,
+                    "stage2_pareto_enabled": reduced["stage2_pareto_enabled"],
+                    "stage2_pareto_used_ratio": reduced["stage2_pareto_used_ratio"],
+                    "stage2_pareto_missing_ratio": reduced["stage2_pareto_missing_ratio"],
+                    "stage2_pareto_support_count_mean": reduced["stage2_pareto_support_count_mean"],
+                    "stage2_pareto_selected_index_mean": reduced["stage2_pareto_selected_index_mean"],
+                    "stage2_pareto_selected_weight_mean": reduced["stage2_pareto_selected_weight_mean"],
+                    "stage2_pareto_selected_score_mean": reduced["stage2_pareto_selected_score_mean"],
                     "jepa_alignment_weight": float(planner.config.jepa_alignment_weight),
                     "vggt_alignment_weight": float(planner.config.vggt_alignment_weight),
                     "diffusion_loss_weight": float(planner.config.diffusion_loss_weight),
@@ -1068,6 +1266,24 @@ def main() -> int:
                 print(f"delete-old-chunk requested; not deleting {chunk} from this script to avoid accidental data loss.")
             if not stop and args.global_epochs is not None and (args.flat_global_dataset or chunk_idx == len(chunks) - 1):
                 completed_global_epochs = max(completed_global_epochs, global_epoch + 1)
+                if is_rank0(rank) and args.save_every_epoch:
+                    epoch_metrics = {
+                        "step": global_step,
+                        "optimizer_step": optimizer_step_count,
+                        "global_epoch": global_epoch,
+                        "completed_global_epochs": completed_global_epochs,
+                        "loss": last_loss,
+                        "best_loss": best_loss,
+                    }
+                    save_checkpoint(
+                        args.output_dir / f"epoch_{global_epoch + 1:03d}.ckpt",
+                        planner,
+                        optimizer,
+                        global_step,
+                        cfg_dict,
+                        epoch_metrics,
+                    )
+                    save_checkpoint(args.output_dir / "latest.ckpt", planner, optimizer, global_step, cfg_dict, epoch_metrics)
             if stop:
                 break
         if not made_progress:

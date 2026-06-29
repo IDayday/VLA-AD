@@ -182,6 +182,7 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         allow_patch_geometry_fallback: bool = True,
         future_jepa_loss_weight: float = 0.0,
         vggt_geometry_loss_weight: float = 0.0,
+        vlm_feature_dim: Optional[int] = 1536,
     ) -> None:
         super().__init__()
         self.cache_path = Path(cache_path)
@@ -199,6 +200,7 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         self.allow_patch_geometry_fallback = bool(allow_patch_geometry_fallback)
         self.future_jepa_loss_weight = float(future_jepa_loss_weight)
         self.vggt_geometry_loss_weight = float(vggt_geometry_loss_weight)
+        self.vlm_feature_dim = None if vlm_feature_dim is None else int(vlm_feature_dim)
         if self.include_expert_targets and not self.include_expert_features:
             raise ValueError("include_expert_targets=True requires include_expert_features=True.")
         self.log_name_filter: Optional[Set[str]] = set(str(item) for item in log_names) if log_names is not None else None
@@ -316,9 +318,18 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
                     "Do not pad or truncate this field."
                 )
             raise ValueError(f"Chunk sample {sample_path} key '{key}' shape {tuple(tensor.shape)} != {expected}.")
-        if key == "last_hidden_state" and (tensor.ndim != 2 or tensor.shape[-1] != 1536):
+        if key == "last_hidden_state" and tensor.ndim != 2:
             raise ValueError(
-                f"Chunk sample {sample_path} key 'last_hidden_state' must have shape [N, 1536], got {tuple(tensor.shape)}."
+                f"Chunk sample {sample_path} key 'last_hidden_state' must have shape [N, D], got {tuple(tensor.shape)}."
+            )
+        if (
+            key == "last_hidden_state"
+            and self.vlm_feature_dim is not None
+            and tensor.shape[-1] != self.vlm_feature_dim
+        ):
+            raise ValueError(
+                f"Chunk sample {sample_path} key 'last_hidden_state' must have hidden dim "
+                f"{self.vlm_feature_dim}, got {tuple(tensor.shape)}."
             )
 
     def sample_tokens(self) -> List[str]:
@@ -356,6 +367,7 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             "allow_patch_geometry_fallback": self.allow_patch_geometry_fallback,
             "future_jepa_loss_weight": self.future_jepa_loss_weight,
             "vggt_geometry_loss_weight": self.vggt_geometry_loss_weight,
+            "vlm_feature_dim": self.vlm_feature_dim,
             "high_command_one_hot_shape_distribution": high_command_shape_distribution,
             "top_log_names": log_counts.most_common(10),
             "chunk_counts": dict(sorted(chunk_counts.items())),
@@ -613,6 +625,10 @@ def main(cfg: DictConfig) -> None:
             include_expert_targets = bool(cfg.agent.get("allow_expert_target_features", False) or use_last_rd)
             use_jepa = bool(cfg.agent.get("use_jepa", True))
             use_vggt = bool(cfg.agent.get("use_vggt", True))
+            vlm_feature_dim = cfg.agent.get("vlm_feature_dim", None)
+            if vlm_feature_dim is None:
+                vlm_feature_dim = 3584 if str(cfg.agent.get("vlm_size", "small")) == "large" else 1536
+            vlm_feature_dim = int(vlm_feature_dim)
             train_data = ChunkCacheDataset(
                 cfg.cache_path,
                 log_names=list(cfg.train_logs),
@@ -630,6 +646,7 @@ def main(cfg: DictConfig) -> None:
                 allow_patch_geometry_fallback=bool(cfg.agent.get("allow_patch_geometry_fallback", True)),
                 future_jepa_loss_weight=float(cfg.agent.get("future_jepa_loss_weight", 0.0)),
                 vggt_geometry_loss_weight=float(cfg.agent.get("vggt_geometry_loss_weight", 0.0)),
+                vlm_feature_dim=vlm_feature_dim,
             )
             val_data = ChunkCacheDataset(
                 cfg.cache_path,
@@ -648,6 +665,7 @@ def main(cfg: DictConfig) -> None:
                 allow_patch_geometry_fallback=bool(cfg.agent.get("allow_patch_geometry_fallback", True)),
                 future_jepa_loss_weight=float(cfg.agent.get("future_jepa_loss_weight", 0.0)),
                 vggt_geometry_loss_weight=float(cfg.agent.get("vggt_geometry_loss_weight", 0.0)),
+                vlm_feature_dim=vlm_feature_dim,
             )
             train_tokens = set(train_data.sample_tokens())
             val_tokens = set(val_data.sample_tokens())

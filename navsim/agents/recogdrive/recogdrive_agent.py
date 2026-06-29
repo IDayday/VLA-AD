@@ -54,6 +54,7 @@ class ReCogDriveAgent(AbstractAgent):
         metric_cache_path: Optional[str] = '', 
         reference_policy_checkpoint: Optional[str] = '', 
         vlm_size: Optional[str] = 'small', 
+        vlm_feature_dim: Optional[int] = None,
         train_backbone: bool = False,
         use_expert_features: bool = False,
         expert_feature_source: str = "none",
@@ -234,6 +235,7 @@ class ReCogDriveAgent(AbstractAgent):
         self.metric_cache_path = metric_cache_path
         self.reference_policy_checkpoint = reference_policy_checkpoint
         self.vlm_size = vlm_size
+        self.vlm_feature_dim = vlm_feature_dim
         self.train_backbone = train_backbone
         self.use_expert_features = use_expert_features
         if expert_cache_dir is None and chunk_cache_dir is not None:
@@ -449,9 +451,9 @@ class ReCogDriveAgent(AbstractAgent):
                     p.requires_grad = True
 
         if self.dit_type == "large":
-            cfg = make_recogdrive_config(self.dit_type, action_dim=3, action_horizon=8, grpo=self.grpo, input_embedding_dim=1536,sampling_method=sampling_method)
+            cfg = make_recogdrive_config(self.dit_type, action_dim=3, action_horizon=8, grpo=self.grpo, input_embedding_dim=1536,sampling_method=sampling_method, vlm_feature_dim=self.vlm_feature_dim)
         elif self.dit_type == "small":
-            cfg = make_recogdrive_config(self.dit_type, action_dim=3, action_horizon=8, grpo=self.grpo, input_embedding_dim=384,sampling_method=sampling_method)
+            cfg = make_recogdrive_config(self.dit_type, action_dim=3, action_horizon=8, grpo=self.grpo, input_embedding_dim=384,sampling_method=sampling_method, vlm_feature_dim=self.vlm_feature_dim)
 
         cfg.vlm_size = self.vlm_size
         cfg.planner_dim = cfg.input_embedding_dim
@@ -1297,6 +1299,7 @@ def make_recogdrive_config(
     num_inference_steps: int = 5,
     grpo: bool = False,
     model_dtype: str = "float16",
+    vlm_feature_dim: Optional[int] = None,
 ) -> ReCogDriveDiffusionPlannerConfig:
     """
     A factory function to create a ReCogDriveDiffusionPlannerConfig object.
@@ -1343,6 +1346,7 @@ def make_recogdrive_config(
         num_inference_steps=num_inference_steps,
         grpo=grpo,
         model_dtype=model_dtype,
+        vlm_feature_dim=vlm_feature_dim,
     )
     
     return config

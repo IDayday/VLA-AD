@@ -119,6 +119,7 @@ def validate_sample_payload(
     vggt_geometry_loss_weight: float = 0.0,
     require_vggt_geometry: bool = False,
     allow_patch_geometry_fallback: bool = True,
+    vlm_feature_dim: Optional[int] = 1536,
 ) -> Dict[str, Any]:
     payload = normalize_sample_payload(dict(payload))
     if require_jepa:
@@ -140,10 +141,15 @@ def validate_sample_payload(
                 validate_token_tensor(payload, key, CONTEXT_SCHEMA[key])
     if "last_hidden_state" in payload:
         value = payload["last_hidden_state"]
-        if not isinstance(value, torch.Tensor) or value.ndim != 2 or value.shape[-1] != 1536:
+        if not isinstance(value, torch.Tensor) or value.ndim != 2:
             raise ValueError(
-                "last_hidden_state must be a tensor with shape [Nv, 1536], "
+                "last_hidden_state must be a tensor with shape [Nv, D], "
                 f"got {tuple(value.shape) if isinstance(value, torch.Tensor) else type(value).__name__}."
+            )
+        if vlm_feature_dim is not None and value.shape[-1] != int(vlm_feature_dim):
+            raise ValueError(
+                f"last_hidden_state must have hidden dim {int(vlm_feature_dim)}, "
+                f"got {tuple(value.shape)}."
             )
     return payload
 

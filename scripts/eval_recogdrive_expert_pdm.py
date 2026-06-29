@@ -59,6 +59,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="fp32")
     parser.add_argument("--deterministic", action="store_true", default=True)
+    parser.add_argument("--trajectory-output-key", default="pred_traj")
+    parser.add_argument("--num-shards", type=int, default=1)
+    parser.add_argument("--shard-index", type=int, default=0)
     return parser.parse_args()
 
 
@@ -298,13 +301,23 @@ def make_batch(sample: Dict[str, Any], planner: ReCogDriveDiffusionPlanner, devi
     global _WARNED_TRAIN_ONLY_TARGET_KEYS
     require_jepa = bool(planner.config.use_expert_features and planner.config.use_jepa)
     require_vggt = bool(planner.config.use_expert_features and planner.config.use_vggt)
-    validate_sample_payload(sample, require_jepa=require_jepa, require_vggt=require_vggt, require_targets=False)
+    vlm_feature_dim = getattr(planner.config, "vlm_feature_dim", None)
+    if vlm_feature_dim is None:
+        vlm_feature_dim = 3584 if getattr(planner.config, "vlm_size", "small") == "large" else 1536
+    validate_sample_payload(
+        sample,
+        require_jepa=require_jepa,
+        require_vggt=require_vggt,
+        require_targets=False,
+        vlm_feature_dim=int(vlm_feature_dim),
+    )
     if "last_hidden_state" not in sample:
         raise KeyError("Evaluation sample is missing last_hidden_state. Build a VLM-hidden chunk first.")
     vl_features = sample["last_hidden_state"].float().unsqueeze(0).to(device=device, dtype=dtype)
     his = sample["history_trajectory"].float().view(1, -1).to(device=device, dtype=dtype)
     status = sample["status_feature"].float().unsqueeze(0).to(device=device, dtype=dtype)
-    data = {"his_traj": his, "status_feature": status}
+    high_command = sample["high_command_one_hot"].float().unsqueeze(0).to(device=device, dtype=dtype)
+    data = {"his_traj": his, "high_command_one_hot": high_command, "status_feature": status}
     if require_jepa:
         data["jepa_context_tokens"] = sample["jepa_context_tokens"].float().unsqueeze(0).to(device=device, dtype=dtype)
     if require_vggt:
@@ -318,6 +331,10 @@ def make_batch(sample: Dict[str, Any], planner: ReCogDriveDiffusionPlanner, devi
 
 def main() -> int:
     args = parse_args()
+    if args.num_shards < 1:
+        raise ValueError("--num-shards must be >= 1")
+    if args.shard_index < 0 or args.shard_index >= args.num_shards:
+        raise ValueError("--shard-index must satisfy 0 <= shard_index < num_shards")
     if args.feature_source in {"chunk", "disk", "chunk_or_online"}:
         chunks = chunk_dirs(args)
     else:
@@ -351,12 +368,16 @@ def main() -> int:
     missing_metric_cache = 0
     failed_pdm = 0
     paths = sample_paths(chunks, args.max_samples)
+    if args.num_shards > 1:
+        paths = [item for idx, item in enumerate(paths) if idx % args.num_shards == args.shard_index]
     for idx, (chunk_dir, path, index_record) in enumerate(paths):
         sample = load_sample(path)
         vl_features, action_input = make_batch(sample, planner, device, dtype)
         with torch.no_grad():
             output = planner.get_action(vl_features, action_input, deterministic=args.deterministic)
-        pred = output["pred_traj"].detach().float().cpu().squeeze(0)
+        if args.trajectory_output_key not in output:
+            raise KeyError(f"Planner output did not contain {args.trajectory_output_key!r}; available keys: {sorted(output.keys())}")
+        pred = output[args.trajectory_output_key].detach().float().cpu().squeeze(0)
         if not torch.isfinite(pred).all():
             raise RuntimeError(f"Non-finite prediction for {path}")
         record = {
@@ -364,7 +385,7 @@ def main() -> int:
             "chunk": str(chunk_dir),
             "scene_token": str(sample.get("scene_token", path.stem)),
             "sample_token": str(sample.get("sample_token", index_record.get("sample_token", path.stem))),
-            "pred_traj": pred.tolist(),
+            args.trajectory_output_key: pred.tolist(),
             "pdm_valid": None,
         }
         pdm_row: Dict[str, Any] = {
@@ -420,6 +441,9 @@ def main() -> int:
         "chunk_cache_dirs": [str(chunk) for chunk in chunks],
         "metric_cache_dir": str(args.metric_cache_dir) if args.metric_cache_dir is not None else None,
         "num_samples": len(predictions),
+        "num_shards": args.num_shards,
+        "shard_index": args.shard_index,
+        "trajectory_output_key": args.trajectory_output_key,
         "target_teacher_tokens_disabled_in_eval": True,
         "trajectory_l1": sum(l1_values) / len(l1_values) if l1_values else None,
         "num_pdm_valid": len(pdm_metric_values["score"]),

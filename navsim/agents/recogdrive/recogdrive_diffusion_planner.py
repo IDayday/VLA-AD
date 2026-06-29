@@ -123,6 +123,7 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     model_dtype: str = "float16"
     grpo: bool = False
     vlm_size: str = 'large'
+    vlm_feature_dim: Optional[int] = None
     planner_dim: int = 384
     use_expert_features: bool = False
     expert_feature_source: Literal['none', 'dummy', 'chunk', 'disk', 'online', 'cache', 'real'] = 'none'
@@ -327,10 +328,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             action_dim=config.action_dim,
             hidden_size=config.input_embedding_dim,
         )
-        if config.vlm_size == "large":
-            self.feature_encoder = nn.Linear(3584, config.input_embedding_dim)
-        else:
-            self.feature_encoder = nn.Linear(1536, config.input_embedding_dim)
+        vlm_feature_dim = config.vlm_feature_dim
+        if vlm_feature_dim is None:
+            vlm_feature_dim = 3584 if config.vlm_size == "large" else 1536
+        self.feature_encoder = nn.Linear(vlm_feature_dim, config.input_embedding_dim)
 
         if config.alignment_loss_type not in {"normalized_mse", "mse", "cosine"}:
             raise ValueError("alignment_loss_type must be one of 'normalized_mse', 'mse', or 'cosine'.")
