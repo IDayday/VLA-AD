@@ -5,8 +5,8 @@
 - ReCogDrive DiT is not architecturally bound to InternVL. The plain Stage2 path consumes tensors: `last_hidden_state`, `his_traj`, `status_feature`, and raw `action`; it does not call InternVL-specific APIs inside the DiT.
 - Pretrained ReCogDrive/InternVL weights are distribution-bound. The learned `feature_encoder`, `fusion_projector`, DiT cross-attention, and `context_mean` conditioning were trained on InternVL hidden states. Random-init training with Qwen hidden is valid only if the cache contract is clean.
 - Highest-probability contract risks for the current OneVL/Qwen migration are:
-  1. P0 current image/token alignment: the bridge historically used `row["images"][0]`, while Stage1 submission conversion uses `images[-1]`; ReCogDrive feature building uses the current/latest frame.
-  2. P1 prompt/planner tensor source split: hidden prompt came from JSON row text, while history/status/trajectory came from SceneLoader.
+  1. P0 current image/token alignment: the bridge historically used `row["images"][0]`, while Stage1 submission conversion uses `images[-1]`; the launcher defaults now use `single_or_last`, but older caches should be treated as suspect until audited.
+  2. P1 prompt/planner tensor source split: older cache generation used hidden prompt from JSON row text while history/status/trajectory came from SceneLoader; the current default is JSON single-source planner tensors with SceneLoader used only for repair/audit.
   3. P3 hidden distribution shift: Qwen hidden is not InternVL hidden; a direct Linear adapter is the minimum ReCogDrive copy, but Qwen-specific pre-LN/MLP adapters are reasonable controlled ablations.
   4. P4 trajectory/support scale: DiT expects raw NAVSIM ego-local targets and normalizes internally with ReCogDrive fixed `norm_odo`.
 - This review intentionally does not implement residual DiT and does not use AR Answer text trajectory as DiT input.
@@ -40,12 +40,14 @@ The default implementation remains exactly this ReCogDrive-style linear adapter.
 - Stage1 AR Answer SFT uses OneVL/Qwen prompts and `<answer>` trajectory text.
 - Stage2 bridge extracts Qwen final-layer hidden with `processor.apply_chat_template(..., add_generation_prompt=True)`.
 - The bridge does not include assistant answer text in hidden extraction unless `--assistant-prefix` is explicitly set; default is empty.
-- Planner tensors are built from NAVSIM SceneLoader frames:
+- Planner tensors are now built from prepared JSON text by default:
   - `history_trajectory`: 4x3 ego-local history.
   - `high_command_one_hot`: 3-way command.
-  - `status_feature`: 8-d command/velocity/acceleration feature.
-  - `trajectory`: raw future ego-local target.
+  - `status_feature`: 8-d `[command4, velocity2, acceleration2]` feature.
+  - `trajectory`: raw future ego-local target parsed from JSON answer/target text.
   - optional `support_trajectories`: raw ego-local support targets for training-only sampling.
+- `--planner-source scene` remains available for reproducing older scene-derived cache runs.
+- `--planner-source json_strict_scene_check` builds tensors from JSON and checks them against SceneLoader within prompt-rounding tolerance.
 - Train script pads variable hidden with `pad_sequence`, then passes `vl_features` to `ReCogDriveDiffusionPlanner.forward`.
 - Eval script loads one sample at a time and calls `get_action`; support target sampling is not used in eval.
 
@@ -84,18 +86,21 @@ The default implementation remains exactly this ReCogDrive-style linear adapter.
 - ReCogDrive feature builder uses the latest/current frame (`cameras[-1]`, `ego_statuses[-1]`).
 - This is a P0 risk when rows contain multiple images.
 - Added `--current-image-policy` with `first`, `last`, `single_or_last`, `strict_single`.
-- Default remains `first` to avoid silently changing existing runs. The audit script should be run before changing launcher defaults.
+- Current launcher default is `single_or_last`, matching the stage1 submission conversion policy while preserving strict behavior for single-image rows.
 
 ### Prompt/Tensor Source
 
-- Previous bridge had dual source:
+- Older bridge/cache runs had dual source:
   - prompt text from row JSON;
   - planner tensors from SceneLoader.
 - Added:
   - `--prompt-source row|scene|row_strict_scene_check`;
+  - `--planner-source json|scene|json_strict_scene_check`;
   - `build_qwen_prompt_from_scene_tensors(...)`;
+  - JSON prompt parser for `Command`, `Velocity`, `Acceleration`, `Historical trajectory`;
+  - JSON target parser for assistant/GT/trajectory fields;
   - row-vs-scene command/history/velocity/acceleration alignment metadata.
-- Default remains `row`.
+- Current default is row prompt hidden plus JSON-derived planner tensors. SceneLoader is only required to repair/check JSON splits and to recover token/log metadata where the JSON does not carry token fields.
 
 ### Trajectory/Support Contract
 
@@ -110,8 +115,12 @@ The default implementation remains exactly this ReCogDrive-style linear adapter.
 - `scripts/onevl/bridge_ar_answer_to_recogdrive_dit.py`
   - Added current-image policy selection and metadata.
   - Added scene-derived prompt builder and row strict check mode.
+  - Added `--planner-source json|scene|json_strict_scene_check`.
+  - Added JSON-derived planner tensor construction from prompt command/history/velocity/acceleration and JSON target text.
   - Added prompt/status/command/current image provenance fields.
   - Added optional control-convention prompt block for scene prompts only.
+- `scripts/onevl/repair_prompt4hist_json_from_scene.py`
+  - Added one-time JSON repair/check utility to create a canonical row-prompt dataset before cache generation.
 - `scripts/onevl/run_ar_answer_prompt4hist_stage2_cache_then_train.sh`
   - Added environment passthrough for current-image/prompt controls.
 - `scripts/onevl/build_prompt4hist_stage2_eval_caches.sh`
@@ -133,7 +142,7 @@ The default implementation remains exactly this ReCogDrive-style linear adapter.
   - `tests/test_action_aware_aux_head.py`
   - `tests/test_onevl_stage2_contract_audit.py`
 
-Default behavior changed: no, except cache samples now record richer metadata when regenerated. Existing default bridge policy remains `first`, prompt source remains `row`, adapter remains `linear`, action-aware aux remains disabled.
+Default behavior changed: yes for cache generation. The current-image policy is now `single_or_last`, and planner tensors default to `--planner-source json`. Prompt source remains `row`, adapter remains `linear`, and action-aware aux remains disabled.
 
 ## Validation
 
@@ -142,6 +151,7 @@ Run commands:
 ```bash
 python -m py_compile \
   scripts/onevl/bridge_ar_answer_to_recogdrive_dit.py \
+  scripts/onevl/repair_prompt4hist_json_from_scene.py \
   scripts/onevl/audit_onevl_stage2_contract.py \
   scripts/train_recogdrive_expert_chunked.py \
   scripts/eval_recogdrive_expert_pdm.py \
@@ -160,9 +170,52 @@ pytest -q \
   tests/test_action_aware_aux_head.py
 ```
 
-Result: `10 passed`.
+Result: `12 passed`.
 
 No full training, navtest, or val6000 evaluation was run.
+
+Additional JSON single-source validation run after the cache bridge update:
+
+```bash
+python scripts/onevl/bridge_ar_answer_to_recogdrive_dit.py \
+  --data-jsonl /mnt/project/onevl/test_data/navsim_test_prompt4hist_scene_aligned.json \
+  --navsim-log-path /mnt/navsim/test_navsim_logs \
+  --output-dir /tmp/onevl_fixed_navtest_json_strict_full \
+  --max-samples 0 \
+  --skip-vlm \
+  --no-save-cache \
+  --no-dit-forward \
+  --current-image-policy single_or_last \
+  --prompt-source row \
+  --planner-source json_strict_scene_check
+```
+
+Result: passed for all 12146 navtest rows. `planner_state_source=json_prompt_fields`;
+prompt command distribution was `MOVE FORWARD=8070`, `TURN LEFT=2501`,
+`TURN RIGHT=1575`; maximum JSON-vs-SceneLoader tensor differences were about
+0.005 from two-decimal prompt rounding.
+
+```bash
+python scripts/onevl/bridge_ar_answer_to_recogdrive_dit.py \
+  --data-jsonl /mnt/project/onevl/test_data/navsim_test_prompt4hist_scene_aligned.json \
+  --navsim-log-path /mnt/navsim/test_navsim_logs \
+  --output-dir /tmp/onevl_json_single_source_cache_smoke \
+  --max-samples 8 \
+  --skip-vlm \
+  --save-cache \
+  --cache-format flat \
+  --no-skip-existing \
+  --no-dit-forward \
+  --current-image-policy single_or_last \
+  --prompt-source row \
+  --planner-source json_strict_scene_check
+```
+
+Result: saved-cache smoke passed. The sample payload contains
+`last_hidden_state`, `history_trajectory=[4,3]`, `status_feature=[8]`,
+`high_command_one_hot=[3]`, `trajectory=[8,3]`, and meta
+`status_policy=json_command4_velocity2_acceleration2`. The last two
+`status_feature` values match the JSON prompt `Acceleration` field.
 
 ## How To Run Audit
 
@@ -243,7 +296,7 @@ Compare InternVL hidden length/norm/context token diagnostics against Qwen cache
 ## Remaining Risks
 
 - Existing full cache must be regenerated or audited with the new metadata to prove image/token alignment.
-- The historical `first` image default is preserved for compatibility, but may be wrong for multi-image rows.
+- Older caches generated with the historical `first` image policy should be treated as compatibility artifacts; current launchers default to `single_or_last`.
 - Scene prompt builder is available but not default; changing prompt source may affect Stage1 hidden distribution and should be tested separately.
 - Qwen hidden distribution may still require adapter warmup even after current-frame alignment is fixed.
 - Support target generalization to navtest is unproven; audit can show scale/token consistency but not guarantee split generalization.
@@ -268,9 +321,12 @@ Findings:
 - ReCogDrive official navtest expert cache also uses `[4, 3]` history; in 256 checked samples, `history_trajectory[-1] == [0, 0, 0]`.
 - Train and val6000 prompt command/history/velocity/acceleration align with cache/SceneLoader tensors within rounding tolerance.
 - Navtest prompt history/velocity/acceleration align, but navtest prompt command does not: `/mnt/project/onevl/test_data/navsim_test_prompt4hist_onevl.json` has `Command: MOVE FORWARD` for all 12146 rows, while cache `high_command_one_hot` and `status_feature` come from SceneLoader and include left/right commands. This is a real train/eval hidden prompt inconsistency.
+- The navtest JSON was repaired into `/mnt/project/onevl/test_data/navsim_test_prompt4hist_scene_aligned.json`.
+- A full 12146-row `--planner-source json_strict_scene_check` pass on the repaired navtest JSON succeeded. The repaired prompt command distribution is `MOVE FORWARD=8070`, `TURN LEFT=2501`, `TURN RIGHT=1575`, and all checked samples use `status_policy=json_command4_velocity2_acceleration2`.
+- A saved-cache smoke test confirmed `status_feature=[command4, velocity2, acceleration2]`; the final two values exactly match the JSON prompt `Acceleration` field.
 
 Interpretation:
 
-- The current major confirmed alignment problem is not 3-frame vs 4-frame history and not first-vs-last image selection.
-- The confirmed issue is navtest hidden extraction prompt command. Train and val6000 hidden are command-conditioned correctly; navtest hidden is partly command-blind/wrong because the prompt text is always `MOVE FORWARD`, while the planner status branch contains the real command.
-- The next cache regeneration should rebuild navtest JSON/cache from SceneLoader-derived command text, or use `--prompt-source scene` for eval cache generation after strict row/scene checks pass.
+- The current major confirmed alignment problem was not 3-frame vs 4-frame history and not first-vs-last image selection.
+- The confirmed issue was navtest hidden extraction prompt command. The repaired JSON fixes this at the dataset level while keeping row prompt hidden extraction.
+- The next cache regeneration should use repaired/prepared JSON with `PROMPT_SOURCE=row`, `PLANNER_SOURCE=json`, and `CURRENT_IMAGE_POLICY=single_or_last`. Use `PLANNER_SOURCE=json_strict_scene_check` as a preflight audit when preparing a new split.

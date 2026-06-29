@@ -18,10 +18,13 @@ GPU_LIST="${GPU_LIST:-0,1,2,3,4,5,6,7}"
 DTYPE="${DTYPE:-bfloat16}"
 MAX_IMAGE_SIZE="${MAX_IMAGE_SIZE:-1792}"
 HIDDEN_MAX_LENGTH="${HIDDEN_MAX_LENGTH:-2800}"
-CURRENT_IMAGE_POLICY="${CURRENT_IMAGE_POLICY:-first}"
+CURRENT_IMAGE_POLICY="${CURRENT_IMAGE_POLICY:-single_or_last}"
 PROMPT_SOURCE="${PROMPT_SOURCE:-}"
 VAL_PROMPT_SOURCE="${VAL_PROMPT_SOURCE:-${PROMPT_SOURCE:-row}}"
-NAV_PROMPT_SOURCE="${NAV_PROMPT_SOURCE:-${PROMPT_SOURCE:-scene}}"
+NAV_PROMPT_SOURCE="${NAV_PROMPT_SOURCE:-${PROMPT_SOURCE:-row}}"
+PLANNER_SOURCE="${PLANNER_SOURCE:-}"
+VAL_PLANNER_SOURCE="${VAL_PLANNER_SOURCE:-${PLANNER_SOURCE:-json}}"
+NAV_PLANNER_SOURCE="${NAV_PLANNER_SOURCE:-${PLANNER_SOURCE:-json}}"
 INCLUDE_CONTROL_CONVENTION="${INCLUDE_CONTROL_CONVENTION:-0}"
 EVAL_SPLITS="${EVAL_SPLITS:-val6000,navtest}"
 WAIT_FOR_GPU_FREE="${WAIT_FOR_GPU_FREE:-0}"
@@ -73,6 +76,7 @@ run_split() {
   local cache_root="$4"
   local chunk_prefix="$5"
   local prompt_source="$6"
+  local planner_source="$7"
 
   IFS=',' read -r -a gpus <<< "${GPU_LIST}"
   if [[ "${#gpus[@]}" -lt "${NUM_SHARDS}" ]]; then
@@ -108,6 +112,7 @@ run_split() {
       --no-hidden-truncation
       --current-image-policy "${CURRENT_IMAGE_POLICY}"
       --prompt-source "${prompt_source}"
+      --planner-source "${planner_source}"
       --dit-type small
       --sampling-method ddim
       --no-dit-forward
@@ -140,7 +145,7 @@ run_split() {
     return "${status}"
   fi
 
-  "${PYTHON_BIN}" - "${cache_root}" "${data_path}" "${NUM_SHARDS}" "${HIDDEN_MAX_LENGTH}" "${split}" <<'PY'
+  "${PYTHON_BIN}" - "${cache_root}" "${data_path}" "${NUM_SHARDS}" "${HIDDEN_MAX_LENGTH}" "${split}" "${planner_source}" <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -152,6 +157,8 @@ data_path = Path(sys.argv[2])
 num_shards = int(sys.argv[3])
 hidden_max_length = int(sys.argv[4])
 split = sys.argv[5]
+planner_source = sys.argv[6]
+expected_planner_state_source = "json_prompt_fields" if planner_source != "scene" else "navsim_scene_frames"
 
 if data_path.suffix == ".jsonl":
     expected = sum(1 for line in data_path.open("r", encoding="utf-8") if line.strip())
@@ -186,6 +193,8 @@ for chunk_dir in sorted(path for path in cache_root.iterdir() if path.is_dir()):
             "trajectory": list(sample["trajectory"].shape),
             "target_source": sample.get("meta", {}).get("target_source"),
             "prompt_source": sample.get("meta", {}).get("prompt_source"),
+            "planner_state_source": sample.get("meta", {}).get("planner_state_source"),
+            "planner_source_mode": sample.get("meta", {}).get("planner_source_mode"),
             "prompt_scene_alignment_pass": sample.get("meta", {}).get("prompt_scene_alignment_pass"),
             "hidden_padding": sample.get("meta", {}).get("hidden_padding"),
             "hidden_truncation": sample.get("meta", {}).get("hidden_truncation"),
@@ -201,6 +210,10 @@ for chunk_dir in sorted(path for path in cache_root.iterdir() if path.is_dir()):
             errors.append(f"{sample_path} trajectory shape {check['trajectory']}")
         if check["hidden_padding"] != "max_length" or check["hidden_truncation"] is not False:
             errors.append(f"{sample_path} hidden padding/truncation mismatch")
+        if check["planner_state_source"] != expected_planner_state_source:
+            errors.append(f"{sample_path} planner_state_source {check['planner_state_source']}")
+        if check["planner_source_mode"] != planner_source:
+            errors.append(f"{sample_path} planner_source_mode {check['planner_source_mode']}")
 
 summary = {
     "split": split,
@@ -239,6 +252,9 @@ PY
   echo "prompt_source=${PROMPT_SOURCE}"
   echo "val_prompt_source=${VAL_PROMPT_SOURCE}"
   echo "nav_prompt_source=${NAV_PROMPT_SOURCE}"
+  echo "planner_source=${PLANNER_SOURCE}"
+  echo "val_planner_source=${VAL_PLANNER_SOURCE}"
+  echo "nav_planner_source=${NAV_PLANNER_SOURCE}"
   echo "wait_for_gpu_free=${WAIT_FOR_GPU_FREE}"
   echo "gpu_used_max_mb=${GPU_USED_MAX_MB}"
 } > "${OUT_ROOT}/eval_cache.env"
@@ -251,10 +267,10 @@ split_enabled() {
 status=0
 wait_for_gpus
 if split_enabled "val6000"; then
-  run_split "val6000" "${VAL_DATA_JSONL}" "${VAL_NAVSIM_LOG_PATH}" "${VAL_CACHE_ROOT}" "val6000_chunk" "${VAL_PROMPT_SOURCE}" || status=1
+  run_split "val6000" "${VAL_DATA_JSONL}" "${VAL_NAVSIM_LOG_PATH}" "${VAL_CACHE_ROOT}" "val6000_chunk" "${VAL_PROMPT_SOURCE}" "${VAL_PLANNER_SOURCE}" || status=1
 fi
 if split_enabled "navtest"; then
-  run_split "navtest" "${NAV_DATA_JSON}" "${NAV_NAVSIM_LOG_PATH}" "${NAV_CACHE_ROOT}" "shard" "${NAV_PROMPT_SOURCE}" || status=1
+  run_split "navtest" "${NAV_DATA_JSON}" "${NAV_NAVSIM_LOG_PATH}" "${NAV_CACHE_ROOT}" "shard" "${NAV_PROMPT_SOURCE}" "${NAV_PLANNER_SOURCE}" || status=1
 fi
 
 if [[ "${status}" -eq 0 ]]; then

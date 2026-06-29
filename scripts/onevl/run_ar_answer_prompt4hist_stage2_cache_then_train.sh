@@ -26,8 +26,9 @@ GPU_LIST="${GPU_LIST:-0,1,2,3,4,5,6,7}"
 DTYPE="${DTYPE:-bfloat16}"
 MAX_IMAGE_SIZE="${MAX_IMAGE_SIZE:-1792}"
 HIDDEN_MAX_LENGTH="${HIDDEN_MAX_LENGTH:-2800}"
-CURRENT_IMAGE_POLICY="${CURRENT_IMAGE_POLICY:-first}"
+CURRENT_IMAGE_POLICY="${CURRENT_IMAGE_POLICY:-single_or_last}"
 PROMPT_SOURCE="${PROMPT_SOURCE:-row}"
+PLANNER_SOURCE="${PLANNER_SOURCE:-json}"
 INCLUDE_CONTROL_CONVENTION="${INCLUDE_CONTROL_CONVENTION:-0}"
 MASTER_PORT="${MASTER_PORT:-29551}"
 
@@ -81,7 +82,7 @@ record_cmd() {
 echo "out_root=${OUT_ROOT}"
 echo "cache_root=${CACHE_ROOT}"
 echo "train_root=${TRAIN_ROOT}"
-env | sort | grep -E '^(PYTHON_BIN|STAGE1_CKPT|DATA_JSONL|TARGET_INDEX|NAVSIM_LOG_PATH|IMAGE_BASE_PATH|OUT_ROOT|CACHE_ROOT|TRAIN_ROOT|RUN_TRAIN|NUM_SHARDS|GPU_LIST|DTYPE|MAX_IMAGE_SIZE|HIDDEN_MAX_LENGTH|CURRENT_IMAGE_POLICY|PROMPT_SOURCE|INCLUDE_CONTROL_CONVENTION|MASTER_PORT|CONFIG_PATH|GLOBAL_EPOCHS|BATCH_SIZE|GRAD_ACCUM|NUM_WORKERS|PREFETCH_FACTOR|LR_ACTION_HEAD|MIN_LR|WARMUP_EPOCHS|SAVE_EVERY|LOG_EVERY|SEED)=' \
+env | sort | grep -E '^(PYTHON_BIN|STAGE1_CKPT|DATA_JSONL|TARGET_INDEX|NAVSIM_LOG_PATH|IMAGE_BASE_PATH|OUT_ROOT|CACHE_ROOT|TRAIN_ROOT|RUN_TRAIN|NUM_SHARDS|GPU_LIST|DTYPE|MAX_IMAGE_SIZE|HIDDEN_MAX_LENGTH|CURRENT_IMAGE_POLICY|PROMPT_SOURCE|PLANNER_SOURCE|INCLUDE_CONTROL_CONVENTION|MASTER_PORT|CONFIG_PATH|GLOBAL_EPOCHS|BATCH_SIZE|GRAD_ACCUM|NUM_WORKERS|PREFETCH_FACTOR|LR_ACTION_HEAD|MIN_LR|WARMUP_EPOCHS|SAVE_EVERY|LOG_EVERY|SEED)=' \
   > "${OUT_ROOT}/env.snapshot"
 
 echo "== cache generation start $(date -Is) =="
@@ -112,6 +113,7 @@ for shard in $(seq 0 $((NUM_SHARDS - 1))); do
     --no-hidden-truncation
     --current-image-policy "${CURRENT_IMAGE_POLICY}"
     --prompt-source "${PROMPT_SOURCE}"
+    --planner-source "${PLANNER_SOURCE}"
     --target-index-path "${TARGET_INDEX}"
     --target-selection max_weight
     --stage2-support-mode preserve_support
@@ -146,7 +148,7 @@ if [[ "${cache_status}" -ne 0 ]]; then
   exit "${cache_status}"
 fi
 
-"${PYTHON_BIN}" - "${CACHE_ROOT}" "${DATA_JSONL}" "${STAGE1_CKPT}" "${TARGET_INDEX}" "${HIDDEN_MAX_LENGTH}" > "${OUT_ROOT}/logs/validate_cache.log" 2>&1 <<'PY'
+"${PYTHON_BIN}" - "${CACHE_ROOT}" "${DATA_JSONL}" "${STAGE1_CKPT}" "${TARGET_INDEX}" "${HIDDEN_MAX_LENGTH}" "${PLANNER_SOURCE}" > "${OUT_ROOT}/logs/validate_cache.log" 2>&1 <<'PY'
 import json
 import sys
 from pathlib import Path
@@ -158,6 +160,8 @@ data_jsonl = Path(sys.argv[2])
 stage1_ckpt = sys.argv[3]
 target_index = sys.argv[4]
 hidden_max_length = int(sys.argv[5])
+planner_source = sys.argv[6]
+expected_planner_state_source = "json_prompt_fields" if planner_source != "scene" else "navsim_scene_frames"
 
 expected = sum(1 for line in data_jsonl.open("r", encoding="utf-8") if line.strip())
 rows = []
@@ -191,6 +195,8 @@ for shard_dir in sorted(cache_root.glob("shard_*")):
                 "support_missing_mask": list(sample["support_missing_mask"].shape),
                 "target_source": sample.get("meta", {}).get("target_source"),
                 "stage2_target_mode": sample.get("meta", {}).get("stage2_target_mode"),
+                "planner_state_source": sample.get("meta", {}).get("planner_state_source"),
+                "planner_source_mode": sample.get("meta", {}).get("planner_source_mode"),
                 "hidden_padding": sample.get("meta", {}).get("hidden_padding"),
                 "hidden_truncation": sample.get("meta", {}).get("hidden_truncation"),
             }
@@ -211,6 +217,10 @@ for shard_dir in sorted(cache_root.glob("shard_*")):
                 bad.append(f"{sample_path} target_source {checks['target_source']}")
             if checks["stage2_target_mode"] != "preserve_support":
                 bad.append(f"{sample_path} stage2_target_mode {checks['stage2_target_mode']}")
+            if checks["planner_state_source"] != expected_planner_state_source:
+                bad.append(f"{sample_path} planner_state_source {checks['planner_state_source']}")
+            if checks["planner_source_mode"] != planner_source:
+                bad.append(f"{sample_path} planner_source_mode {checks['planner_source_mode']}")
     metadata = json.loads(metadata_path.read_text()) if metadata_path.is_file() else {}
     for key, value in {
         "model_path": stage1_ckpt,
@@ -219,6 +229,7 @@ for shard_dir in sorted(cache_root.glob("shard_*")):
         "hidden_padding": "max_length",
         "hidden_padding_side": "left",
         "stage2_support_mode": "preserve_support",
+        "planner_source_mode": planner_source,
     }.items():
         if metadata.get(key) != value:
             bad.append(f"{metadata_path} {key}: {metadata.get(key)!r} != {value!r}")

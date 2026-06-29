@@ -17,6 +17,7 @@ Stage1 AR Answer prompt4hist:
 Stage2 cache and training:
 
 - `scripts/onevl/bridge_ar_answer_to_recogdrive_dit.py`
+- `scripts/onevl/repair_prompt4hist_json_from_scene.py`
 - `scripts/onevl/run_ar_answer_prompt4hist_stage2_cache_then_train.sh`
 - `scripts/onevl/watch_prompt4hist_stage2_cache_then_train.sh`
 - `scripts/train_recogdrive_expert_chunked.py`
@@ -48,6 +49,9 @@ Val6000 cache:
 - Old val6000 prompt command vs cache command was checked on the first 1024
   samples with zero mismatches.
 - A corrected scene-prompt val6000 cache was generated for consistency checks.
+- The current code path defaults to `PROMPT_SOURCE=row` and
+  `PLANNER_SOURCE=json`, so future val6000 cache should be generated from
+  prepared JSON text as the canonical source.
 
 Navtest cache:
 
@@ -58,14 +62,30 @@ Navtest cache:
 - First 1024 old navtest samples had 485 prompt-vs-cache command mismatches.
 - A corrected navtest scene-prompt cache was generated with
   `prompt_source=scene` and `prompt_scene_alignment_pass=true`.
+- A repaired navtest JSON was also generated:
+
+```text
+/mnt/project/onevl/test_data/navsim_test_prompt4hist_scene_aligned.json
+```
+
+  The repaired JSON keeps row prompts as the hidden source and encodes command,
+  history, velocity, acceleration, and target in the JSON text. Full strict
+  JSON-vs-SceneLoader audit over all 12146 navtest rows passed:
+  `MOVE FORWARD=8070`, `TURN LEFT=2501`, `TURN RIGHT=1575`,
+  `status_policy=json_command4_velocity2_acceleration2`, and maximum
+  history/status/target differences were about 0.005 from two-decimal prompt
+  rounding.
 
 Important interpretation:
 
 - The training cache is not currently proven wrong.
 - The old navtest evaluation cache was wrong and should not be used for current
   conclusions.
-- The corrected navtest scene cache is the current cache for stage2 navtest
-  reporting.
+- The corrected navtest scene cache is the cache used for the recorded stage2
+  navtest reporting below.
+- For future runs, the preferred cache construction is repaired/prepared JSON
+  row prompt plus `PLANNER_SOURCE=json`; `json_strict_scene_check` should be run
+  as a preflight audit when a JSON split is newly prepared.
 
 ## Current Artifact Paths
 
@@ -190,4 +210,3 @@ gap:                                -0.006396634656
 The strongest current stage2 checkpoint for navtest is `epoch_147`. Late
 checkpoints from `epoch_178` through `epoch_200` are more stable near 0.85 but
 do not exceed `epoch_147`.
-

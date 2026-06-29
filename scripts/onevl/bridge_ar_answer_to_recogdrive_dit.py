@@ -101,10 +101,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--current-image-policy",
         choices=("first", "last", "single_or_last", "strict_single"),
-        default="first",
+        default="single_or_last",
         help=(
             "Select which row image is treated as the NAVSIM current frame. "
-            "Default preserves the historical bridge behavior."
+            "Default uses the single image if present, otherwise the last image, "
+            "matching stage1 submission conversion."
         ),
     )
     parser.add_argument(
@@ -114,6 +115,17 @@ def parse_args() -> argparse.Namespace:
         help=(
             "Use row prompt text, scene-derived prompt text, or row prompt with strict "
             "row-vs-scene tensor alignment checks."
+        ),
+    )
+    parser.add_argument(
+        "--planner-source",
+        choices=("json", "scene", "json_strict_scene_check"),
+        default="json",
+        help=(
+            "Build ReCogDrive planner tensors from parsed JSON prompt/target text, "
+            "from SceneLoader, or from JSON with strict SceneLoader alignment checks. "
+            "The JSON modes keep prompt hidden and planner tensors single-sourced from "
+            "the prepared dataset."
         ),
     )
     parser.add_argument(
@@ -401,6 +413,36 @@ def parse_prompt_fields(prompt: str) -> dict[str, Any]:
     }
 
 
+def one_hot_from_command_text(command: str) -> torch.Tensor:
+    command = command.strip().upper()
+    values = COMMAND_ONE_HOT_FROM_TEXT.get(command)
+    if values is None:
+        raise ValueError(f"unsupported command text: {command!r}")
+    return torch.tensor(values, dtype=torch.float32)
+
+
+def status_command4_from_high_command(high_command: torch.Tensor) -> torch.Tensor:
+    high = high_command.float().flatten()
+    if high.numel() != 3:
+        raise ValueError(f"expected high_command length 3, got {high.numel()}")
+    return torch.cat([high, torch.zeros(1, dtype=torch.float32)], dim=0)
+
+
+def normalize_history_from_prompt(fields: dict[str, Any], num_history_frames: int) -> tuple[torch.Tensor, str]:
+    history = torch.tensor(fields["history"], dtype=torch.float32)
+    if history.ndim != 2 or history.shape[-1] != 3:
+        raise ValueError(f"prompt history must have shape [N, 3], got {tuple(history.shape)}")
+    if history.shape[0] == num_history_frames:
+        return history, f"json_prompt_history_{num_history_frames}_relative_to_current"
+    if history.shape[0] == num_history_frames - 1:
+        current = torch.zeros((1, 3), dtype=torch.float32)
+        return torch.cat([history, current], dim=0), f"json_prompt_history_{num_history_frames - 1}_plus_current_zero"
+    raise ValueError(
+        f"prompt history has {history.shape[0]} points, expected {num_history_frames} "
+        f"or {num_history_frames - 1}"
+    )
+
+
 def prompt_scene_alignment(
     row_prompt: str,
     history_trajectory: torch.Tensor,
@@ -453,6 +495,49 @@ def prompt_scene_alignment(
         result["prompt_scene_alignment_error"] = "; ".join(errors)
     except Exception as exc:  # noqa: BLE001 - audit metadata must preserve parse failures.
         result["prompt_scene_alignment_error"] = str(exc)
+    return result
+
+
+def planner_tensor_alignment(
+    json_features: dict[str, torch.Tensor],
+    json_targets: dict[str, torch.Tensor],
+    scene_features: dict[str, torch.Tensor] | None,
+    scene_targets: dict[str, torch.Tensor] | None,
+    *,
+    atol: float = 0.06,
+) -> dict[str, Any]:
+    result: dict[str, Any] = {
+        "planner_scene_alignment_pass": None,
+        "planner_scene_alignment_error": "",
+        "planner_history_max_abs_error": None,
+        "planner_status_max_abs_error": None,
+        "planner_high_command_max_abs_error": None,
+        "planner_trajectory_max_abs_error": None,
+    }
+    if scene_features is None or scene_targets is None:
+        return result
+    errors: list[str] = []
+    comparisons = [
+        ("history", "history_trajectory", json_features, scene_features, "planner_history_max_abs_error"),
+        ("status", "status_feature", json_features, scene_features, "planner_status_max_abs_error"),
+        ("high_command", "high_command_one_hot", json_features, scene_features, "planner_high_command_max_abs_error"),
+        ("trajectory", "trajectory", json_targets, scene_targets, "planner_trajectory_max_abs_error"),
+    ]
+    for label, key, left, right, result_key in comparisons:
+        if key not in left or key not in right:
+            errors.append(f"{label}_missing")
+            continue
+        a = left[key].float()
+        b = right[key].float()
+        if tuple(a.shape) != tuple(b.shape):
+            errors.append(f"{label}_shape json={tuple(a.shape)} scene={tuple(b.shape)}")
+            continue
+        max_err = float((a - b).abs().max().item()) if a.numel() else 0.0
+        result[result_key] = max_err
+        if max_err > atol:
+            errors.append(f"{label}_max_abs_error={max_err:.4f}")
+    result["planner_scene_alignment_pass"] = not errors
+    result["planner_scene_alignment_error"] = "; ".join(errors)
     return result
 
 
@@ -512,7 +597,7 @@ def build_scene_mapping(
     navsim_log_path: Path,
     num_history_frames: int,
     num_future_frames: int,
-    current_image_policy: str = "first",
+    current_image_policy: str = "single_or_last",
 ) -> dict[str, dict[str, Any]]:
     from navsim.common.dataloader import SceneLoader
     from navsim.common.dataclasses import SceneFilter, SensorConfig
@@ -609,6 +694,26 @@ def extract_answer_target(row: dict[str, Any]) -> dict[str, torch.Tensor]:
         raise ValueError("row must contain user and assistant messages")
     answer = str(messages[1]["content"])
     return {"trajectory": parse_waypoints(answer)}
+
+
+def extract_json_target(row: dict[str, Any], action_horizon: int) -> tuple[torch.Tensor, str]:
+    candidates: list[tuple[str, Any]] = []
+    messages = row.get("messages") or []
+    if len(messages) >= 2 and "content" in messages[1]:
+        candidates.append(("messages[1].content", messages[1]["content"]))
+    for key in ("GT", "gt_traj", "trajectory", "solution"):
+        if key in row:
+            candidates.append((key, row[key]))
+    errors: list[str] = []
+    for source, value in candidates:
+        try:
+            trajectory = parse_waypoints(value if isinstance(value, str) else json.dumps(value))
+            if tuple(trajectory.shape) != (action_horizon, 3):
+                raise ValueError(f"expected target shape ({action_horizon}, 3), got {tuple(trajectory.shape)}")
+            return trajectory, f"json_{source}"
+        except Exception as exc:  # noqa: BLE001 - try all candidate target fields.
+            errors.append(f"{source}: {exc}")
+    raise ValueError(f"row has no parseable JSON target trajectory. Errors: {'; '.join(errors[:4])}")
 
 
 def load_stage2_target_index(path: str | Path) -> dict[str, Any] | None:
@@ -758,13 +863,114 @@ def preserve_stage2_support_targets(
     return support, meta
 
 
+def extract_json_planner_tensors(
+    row: dict[str, Any],
+    scene_item: dict[str, Any],
+    num_history_frames: int,
+    action_horizon: int,
+    use_answer_target: bool,
+    current_image_policy: str = "single_or_last",
+    target_index: dict[str, Any] | None = None,
+    target_selection: str = "max_weight",
+    stage2_support_mode: str = "single_target",
+) -> tuple[dict[str, torch.Tensor], dict[str, torch.Tensor], dict[str, Any]]:
+    current_image = select_current_image(row, current_image_policy)
+    row_prompt = str((row.get("messages") or [{}])[0].get("content", ""))
+    fields = parse_prompt_fields(row_prompt)
+    history, history_policy = normalize_history_from_prompt(fields, num_history_frames)
+    if tuple(history.shape) != (num_history_frames, 3):
+        raise ValueError(f"expected history shape ({num_history_frames}, 3), got {tuple(history.shape)}")
+
+    high_command = one_hot_from_command_text(fields["command"])
+    velocity = torch.tensor(fields["velocity"], dtype=torch.float32).flatten()
+    acceleration = torch.tensor(fields["acceleration"], dtype=torch.float32).flatten()
+    if velocity.numel() != 2:
+        raise ValueError(f"prompt velocity must have length 2, got {velocity.numel()}")
+
+    raw_command = status_command4_from_high_command(high_command)
+    if acceleration.numel() == 2:
+        status = torch.cat([raw_command, velocity, acceleration], dim=0)
+        status_policy = "json_command4_velocity2_acceleration2"
+    elif acceleration.numel() == 3:
+        status = torch.cat([high_command, velocity, acceleration], dim=0)
+        status_policy = "json_command3_velocity2_acceleration3"
+    else:
+        raise ValueError(f"prompt acceleration must have length 2 or 3, got {acceleration.numel()}")
+    if tuple(status.shape) != (8,):
+        raise ValueError(f"expected status_feature shape (8,), got {tuple(status.shape)}")
+
+    base_trajectory, json_target_source = extract_json_target(row, action_horizon)
+    stage2_target_meta: dict[str, Any] = {
+        "json_target_source": json_target_source,
+    }
+    if use_answer_target:
+        targets = {"trajectory": base_trajectory}
+        target_source = json_target_source
+    elif target_index is not None:
+        if stage2_support_mode == "preserve_support":
+            support_targets, stage2_target_meta_extra = preserve_stage2_support_targets(
+                target_index,
+                str(scene_item["token"]),
+                base_trajectory,
+            )
+            targets = {"trajectory": base_trajectory, **support_targets}
+            target_source = "stage2_pareto_support"
+            stage2_target_meta.update(stage2_target_meta_extra)
+        else:
+            trajectory, stage2_target_meta_extra = select_stage2_target(
+                target_index,
+                str(scene_item["token"]),
+                target_selection,
+            )
+            targets = {"trajectory": trajectory}
+            target_source = "stage2_support_index"
+            stage2_target_meta.update(stage2_target_meta_extra)
+    else:
+        targets = {"trajectory": base_trajectory}
+        target_source = json_target_source
+
+    features = {
+        "history_trajectory": history,
+        "high_command_one_hot": high_command,
+        "status_feature": status,
+    }
+    meta = {
+        "planner_state_source": "json_prompt_fields",
+        "target_source": target_source,
+        "current_image": current_image,
+        **current_image_meta(row, current_image_policy, current_image),
+        "token": scene_item["token"],
+        "scene_loader_token": scene_item["token"],
+        "support_index_token": scene_item["token"],
+        "log_name": scene_item["log_name"],
+        "scene_token": scene_item["scene_token"],
+        "raw_driving_command": list(map(int, raw_command.flatten().tolist())),
+        "raw_command_shape": list(raw_command.shape),
+        "raw_command_values": [float(x) for x in raw_command.flatten().tolist()],
+        "converted_high_command_one_hot": [float(x) for x in high_command.tolist()],
+        "high_command_policy": "json_prompt_command",
+        "high_command_values": [float(x) for x in high_command.tolist()],
+        "velocity_values": [float(x) for x in velocity.flatten().tolist()],
+        "acceleration_values": [float(x) for x in acceleration.flatten().tolist()],
+        "status_feature_values": [float(x) for x in status.flatten().tolist()],
+        "history_policy": history_policy,
+        "status_policy": status_policy,
+        "prompt_command": fields["command"],
+        "prompt_history_points": len(fields["history"]),
+        "prompt_velocity_values": [float(x) for x in velocity.tolist()],
+        "prompt_acceleration_values": [float(x) for x in acceleration.tolist()],
+        **stage2_target_meta,
+    }
+    return features, targets, meta
+
+
 def extract_navsim_planner_tensors(
     row: dict[str, Any],
     scene_mapping: dict[str, dict[str, Any]],
     num_history_frames: int,
     action_horizon: int,
     use_answer_target: bool,
-    current_image_policy: str = "first",
+    current_image_policy: str = "single_or_last",
     target_index: dict[str, Any] | None = None,
     target_selection: str = "max_weight",
     stage2_support_mode: str = "single_target",
@@ -1055,6 +1261,7 @@ def write_cache_metadata(output_dir: Path, args: argparse.Namespace, target_inde
         "current_image_policy": args.current_image_policy,
         "stage1_submission_image_policy": "last",
         "prompt_source_mode": args.prompt_source,
+        "planner_source_mode": args.planner_source,
         "include_control_convention": bool(args.include_control_convention),
         "hidden_source": "dummy" if args.skip_vlm else "onevl_ar_answer_qwen3_vl",
         "hidden_layer": "final",
@@ -1120,7 +1327,8 @@ def main() -> None:
     summaries: list[dict[str, Any]] = []
     index_fp = None
     if args.save_cache and args.cache_format == "flat":
-        index_fp = (output_dir / "index.jsonl").open("a", encoding="utf-8")
+        index_mode = "a" if args.skip_existing else "w"
+        index_fp = (output_dir / "index.jsonl").open(index_mode, encoding="utf-8")
     try:
         for sample_index, (line_index, row) in enumerate(rows):
             current_image = select_current_image(row, args.current_image_policy)
@@ -1143,34 +1351,88 @@ def main() -> None:
                 print(json.dumps(result, ensure_ascii=False))
                 continue
 
-            features, targets, meta = extract_navsim_planner_tensors(
-                row,
-                scene_mapping,
-                num_history_frames=args.num_history_frames,
-                action_horizon=args.action_horizon,
-                use_answer_target=args.use_answer_target,
-                current_image_policy=args.current_image_policy,
-                target_index=target_index,
-                target_selection=args.target_selection,
-                stage2_support_mode=args.stage2_support_mode,
-            )
             row_prompt = str(row["messages"][0]["content"])
+            scene_features = scene_targets = scene_meta = None
+            if args.planner_source == "scene":
+                features, targets, meta = extract_navsim_planner_tensors(
+                    row,
+                    scene_mapping,
+                    num_history_frames=args.num_history_frames,
+                    action_horizon=args.action_horizon,
+                    use_answer_target=args.use_answer_target,
+                    current_image_policy=args.current_image_policy,
+                    target_index=target_index,
+                    target_selection=args.target_selection,
+                    stage2_support_mode=args.stage2_support_mode,
+                )
+                scene_features, scene_targets, scene_meta = features, targets, meta
+            else:
+                features, targets, meta = extract_json_planner_tensors(
+                    row,
+                    scene_item,
+                    num_history_frames=args.num_history_frames,
+                    action_horizon=args.action_horizon,
+                    use_answer_target=args.use_answer_target,
+                    current_image_policy=args.current_image_policy,
+                    target_index=target_index,
+                    target_selection=args.target_selection,
+                    stage2_support_mode=args.stage2_support_mode,
+                )
+                if args.planner_source == "json_strict_scene_check" or args.prompt_source in {"scene", "row_strict_scene_check"}:
+                    scene_features, scene_targets, scene_meta = extract_navsim_planner_tensors(
+                        row,
+                        scene_mapping,
+                        num_history_frames=args.num_history_frames,
+                        action_horizon=args.action_horizon,
+                        use_answer_target=args.use_answer_target,
+                        current_image_policy=args.current_image_policy,
+                        target_index=target_index,
+                        target_selection=args.target_selection,
+                        stage2_support_mode=args.stage2_support_mode,
+                    )
+            prompt_reference_features = scene_features if scene_features is not None else features
             scene_prompt = build_qwen_prompt_from_scene_tensors(
-                features["history_trajectory"],
-                features["high_command_one_hot"],
-                features["status_feature"],
+                prompt_reference_features["history_trajectory"],
+                prompt_reference_features["high_command_one_hot"],
+                prompt_reference_features["status_feature"],
                 include_control_convention=args.include_control_convention,
             )
-            alignment_meta = prompt_scene_alignment(
-                row_prompt,
-                features["history_trajectory"],
-                features["high_command_one_hot"],
-                features["status_feature"],
-            )
+            if scene_features is not None:
+                alignment_meta = prompt_scene_alignment(
+                    row_prompt,
+                    scene_features["history_trajectory"],
+                    scene_features["high_command_one_hot"],
+                    scene_features["status_feature"],
+                )
+            else:
+                alignment_meta = {
+                    "prompt_command": meta.get("prompt_command"),
+                    "scene_command": None,
+                    "prompt_history_points": meta.get("prompt_history_points"),
+                    "scene_history_points": None,
+                    "prompt_scene_alignment_pass": None,
+                    "prompt_scene_alignment_error": "",
+                }
             if args.prompt_source == "row_strict_scene_check" and not alignment_meta["prompt_scene_alignment_pass"]:
                 raise RuntimeError(
                     f"row prompt does not align with SceneLoader tensors at line {line_index}: "
                     f"{alignment_meta['prompt_scene_alignment_error']}"
+                )
+            planner_alignment_meta = planner_tensor_alignment(
+                features,
+                targets,
+                scene_features,
+                scene_targets,
+            )
+            if args.planner_source == "json_strict_scene_check" and not alignment_meta["prompt_scene_alignment_pass"]:
+                raise RuntimeError(
+                    f"JSON planner tensors do not align with SceneLoader tensors at line {line_index}: "
+                    f"{alignment_meta['prompt_scene_alignment_error']}"
+                )
+            if args.planner_source == "json_strict_scene_check" and not planner_alignment_meta["planner_scene_alignment_pass"]:
+                raise RuntimeError(
+                    f"JSON planner tensors do not align with SceneLoader tensors at line {line_index}: "
+                    f"{planner_alignment_meta['planner_scene_alignment_error']}"
                 )
             prompt_for_hidden = scene_prompt if args.prompt_source == "scene" else row_prompt
             effective_prompt_source = "scene" if args.prompt_source == "scene" else "row"
@@ -1218,10 +1480,13 @@ def main() -> None:
                 "meta": {
                     **meta,
                     **alignment_meta,
+                    **planner_alignment_meta,
                     **hidden_meta,
                     "prompt_source_mode": args.prompt_source,
+                    "planner_source_mode": args.planner_source,
                     "scene_prompt_hash": sha256_text(scene_prompt.replace("<image>", "")),
                     "row_prompt_hash": sha256_text(row_prompt.replace("<image>", "")),
+                    "scene_planner_state_source": scene_meta.get("planner_state_source") if scene_meta else None,
                     "include_control_convention": bool(args.include_control_convention),
                 },
             }
@@ -1280,12 +1545,8 @@ def main() -> None:
         "skip_vlm": bool(args.skip_vlm),
         "dit_type": args.dit_type,
         "sampling_method": args.sampling_method,
-        "planner_state_source": "navsim_scene_frames",
-        "target_source": (
-            "ar_answer_text"
-            if args.use_answer_target
-            else "stage2_support_index" if target_index is not None else "navsim_future_trajectory"
-        ),
+        "planner_state_source": "json_prompt_fields" if args.planner_source != "scene" else "navsim_scene_frames",
+        "target_source": summaries[0]["meta"].get("target_source") if summaries and "meta" in summaries[0] else None,
         "target_index_path": str(target_index.get("_path", "")) if target_index is not None else "",
         "target_selection": args.target_selection,
         "cache_format": args.cache_format,
@@ -1296,6 +1557,7 @@ def main() -> None:
         "current_image_policy": args.current_image_policy,
         "stage1_submission_image_policy": "last",
         "prompt_source_mode": args.prompt_source,
+        "planner_source_mode": args.planner_source,
         "include_control_convention": bool(args.include_control_convention),
         "selected_rows": len(rows),
         "samples": summaries,

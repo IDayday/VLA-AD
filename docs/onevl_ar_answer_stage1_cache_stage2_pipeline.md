@@ -61,8 +61,12 @@ Stage2 hidden cache generation:
 
 - `scripts/onevl/bridge_ar_answer_to_recogdrive_dit.py` is the cache bridge.
   It loads the AR Answer Qwen checkpoint, applies the row prompt through the
-  processor chat template, extracts the final hidden state, and writes the
-  ReCogDrive planner tensors.
+  processor chat template, extracts the final hidden state, parses the prepared
+  JSON prompt/target text, and writes the ReCogDrive planner tensors.
+- `scripts/onevl/repair_prompt4hist_json_from_scene.py` is a one-time dataset
+  repair/check utility. It can rewrite prompt4hist JSON rows from SceneLoader
+  tensors, then the cache bridge can run from JSON text as the single planner
+  source.
 - `scripts/onevl/run_ar_answer_prompt4hist_stage2_cache_then_train.sh` builds
   the full sharded train cache and can launch DiT training after cache
   validation.
@@ -164,6 +168,9 @@ meta:                  provenance and NAVSIM alignment metadata
 The current full-cache settings are:
 
 ```text
+--prompt-source row
+--planner-source json
+--current-image-policy single_or_last
 --hidden-padding max_length
 --hidden-max-length 2800
 --hidden-padding-side left
@@ -187,10 +194,28 @@ Important implementation details:
   `hidden_extraction_mode`, `model_checkpoint`, `processor_checkpoint`,
   `prompt_template_hash`, `input_token_count`, and `valid_hidden_length`.
 
-The planner tensors are built from NAVSIM scene frames, not from the AR Answer
-text output, unless `--use-answer-target` is explicitly set. In the current
-stage2 route, `trajectory` remains the raw NAVSIM ego-local future trajectory
-and support targets come from the improved stage2 support index.
+Default planner tensors are now built from the prepared JSON text, not from
+SceneLoader frame computation:
+
+- `history_trajectory` is parsed from `Historical trajectory`.
+- `high_command_one_hot` is parsed from `Command`.
+- `status_feature` is parsed as `[command4, velocity2, acceleration2]` from
+  `Command`, `Velocity`, and `Acceleration`.
+- `trajectory` is parsed from the JSON target/answer text unless a stage2
+  support index is supplied.
+
+This makes the row prompt hidden and DiT planner tensors single-sourced from the
+same prepared dataset. SceneLoader remains available for two bounded uses:
+
+- one-time repair/check of a JSON/JSONL file before cache generation;
+- `--planner-source json_strict_scene_check` audits that JSON-derived planner
+  tensors match SceneLoader within prompt-rounding tolerance.
+
+`--planner-source scene` is kept only for reproducing older scene-derived cache
+runs. In the current stage2 route, `trajectory` remains raw ego-local future
+trajectory text from the prepared JSON, and support targets come from the
+improved stage2 support index when `--stage2-support-mode preserve_support` is
+enabled.
 
 ## Stage2 Target Contract
 
@@ -268,6 +293,34 @@ Evaluation uses the same cache bridge to build split-specific hidden caches:
 val6000 cache: prompt4hist val6000 JSONL + trainval NAVSIM logs
 navtest cache: prompt4hist navtest JSON + test NAVSIM logs
 ```
+
+The default evaluation cache contract is the same as training:
+
+```text
+PROMPT_SOURCE=row
+PLANNER_SOURCE=json
+CURRENT_IMAGE_POLICY=single_or_last
+```
+
+If a split JSON was generated with incorrect prompt fields, repair it first and
+then run the cache bridge from the repaired JSON. The navtest prompt command bug
+was repaired with:
+
+```bash
+python scripts/onevl/repair_prompt4hist_json_from_scene.py \
+  --input /mnt/project/onevl/test_data/navsim_test_prompt4hist_onevl.json \
+  --output /mnt/project/onevl/test_data/navsim_test_prompt4hist_scene_aligned.json \
+  --report /mnt/project/onevl/test_data/navsim_test_prompt4hist_scene_aligned.report.json \
+  --navsim-log-path /mnt/navsim/test_navsim_logs \
+  --current-image-policy single_or_last \
+  --mode repair \
+  --overwrite
+```
+
+The repaired file keeps row prompts as the hidden source and encodes command,
+history, velocity, acceleration, and target in the JSON text. A full
+`json_strict_scene_check` over all 12146 navtest rows passed with command
+distribution `MOVE FORWARD=8070`, `TURN LEFT=2501`, `TURN RIGHT=1575`.
 
 `watch_onevl_stage2_eval_top5_remote.py` evaluates eligible checkpoints after
 `MIN_EPOCH` and `MIN_STEP`, aggregates shard metrics, writes
