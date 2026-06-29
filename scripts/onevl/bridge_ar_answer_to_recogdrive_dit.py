@@ -336,9 +336,16 @@ def split_status_feature_values(
     high_command = [float(x) for x in high_command_one_hot.flatten().tolist()]
     if len(status) != 8:
         raise ValueError(f"expected status_feature length 8, got {len(status)}")
+    first4 = status[:4]
+    first4_is_command = (
+        all(abs(value - round(value)) < 1e-5 and round(value) in {0, 1} for value in first4)
+        and abs(sum(first4) - 1.0) < 1e-5
+    )
+    if first4_is_command:
+        return status[4:6], status[6:8], "command4_velocity2_acceleration2"
     if all(abs(status[i] - high_command[i]) < 1e-5 for i in range(3)):
         return status[3:5], status[5:8], "command3_velocity2_acceleration3"
-    return status[4:6], status[6:8], "command4_velocity2_acceleration2"
+    raise ValueError(f"cannot infer status_feature layout from values: {status}")
 
 
 def build_qwen_prompt_from_scene_tensors(

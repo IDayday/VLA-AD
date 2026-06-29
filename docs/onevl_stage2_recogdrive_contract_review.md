@@ -249,3 +249,28 @@ Compare InternVL hidden length/norm/context token diagnostics against Qwen cache
 - Support target generalization to navtest is unproven; audit can show scale/token consistency but not guarantee split generalization.
 - Fixed ReCogDrive normalization ranges are unchanged; audit must decide whether OneVL target/support ranges are under-covered.
 - Full training/eval has not been run in this task.
+
+## Follow-Up Cache Alignment Check
+
+Date: 2026-06-29.
+
+Checked current symlinks:
+
+- Train cache: `/mnt/project/onevl_navsim_exp/ar_answer_stage2_cache_full103k_prompt4hist_latest`
+- Val6000 cache: `/mnt/project/onevl_navsim_exp/ar_answer_stage2_cache_val6000_prompt4hist_latest`
+- Navtest cache: `/mnt/project/onevl_navsim_exp/ar_answer_stage2_cache_navtest_prompt4hist_latest`
+
+Findings:
+
+- The source JSON rows for train, val6000, and navtest all contain exactly one image per row, so `images[0] == images[-1]`. The feared first/last image policy mismatch does not apply to these specific caches.
+- A 256-sample token-level check per split found `0` mismatches for `row image -> SceneLoader token -> cache sample_token/scene_token`.
+- OneVL train/val/nav cache history tensors are all `[4, 3]`; in 256 checked samples per split, `history_trajectory[-1] == [0, 0, 0]`.
+- ReCogDrive official navtest expert cache also uses `[4, 3]` history; in 256 checked samples, `history_trajectory[-1] == [0, 0, 0]`.
+- Train and val6000 prompt command/history/velocity/acceleration align with cache/SceneLoader tensors within rounding tolerance.
+- Navtest prompt history/velocity/acceleration align, but navtest prompt command does not: `/mnt/project/onevl/test_data/navsim_test_prompt4hist_onevl.json` has `Command: MOVE FORWARD` for all 12146 rows, while cache `high_command_one_hot` and `status_feature` come from SceneLoader and include left/right commands. This is a real train/eval hidden prompt inconsistency.
+
+Interpretation:
+
+- The current major confirmed alignment problem is not 3-frame vs 4-frame history and not first-vs-last image selection.
+- The confirmed issue is navtest hidden extraction prompt command. Train and val6000 hidden are command-conditioned correctly; navtest hidden is partly command-blind/wrong because the prompt text is always `MOVE FORWARD`, while the planner status branch contains the real command.
+- The next cache regeneration should rebuild navtest JSON/cache from SceneLoader-derived command text, or use `--prompt-source scene` for eval cache generation after strict row/scene checks pass.
