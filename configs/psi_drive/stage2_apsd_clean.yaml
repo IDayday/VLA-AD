@@ -1,0 +1,32 @@
+# PSI-Drive Stage2 APSD Clean override reference.
+# Use with scripts/psi_drive/run_stage2_apsd_8gpu.sh.
+
+stage2_target_source: pareto_support
+stage2_pareto_support_index_path: ${oc.env:PSI_STAGE2_SUPPORT_INDEX}
+stage2_pareto_best_weight: 0.50
+stage2_pareto_gt_weight: 0.20
+stage2_pareto_other_weight: 0.30
+stage2_pareto_require_index: true
+stage2_pareto_log_diagnostics: true
+
+agent:
+  checkpoint_path: ${oc.env:RECOGDRIVE_STAGE2_INIT_CKPT,/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt}
+  grpo: false
+  stage3_objective: none
+  train_backbone: false
+  use_expert_features: false
+  use_jepa: false
+  use_vggt: false
+  use_last_rd: false
+  use_last_vla: false
+  use_two_expert_slots: false
+
+trainer:
+  params:
+    max_epochs: 60
+    precision: 16-mixed
+
+checkpoint:
+  layout: psi
+  every_n_epochs: 1
+  every_n_train_steps: 0

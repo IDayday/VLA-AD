@@ -91,6 +91,20 @@ def _cfg_bool(cfg: DictConfig, key: str, env_key: str, default: bool) -> bool:
     return str(value).strip().lower() in {"1", "true", "yes", "y", "on"}
 
 
+def _read_eval_token_file(cfg: DictConfig) -> List[str]:
+    token_file = _cfg_str(cfg, "eval_token_file", "RECOGDRIVE_EVAL_TOKEN_FILE", "").strip()
+    if not token_file:
+        return []
+    token_path = Path(token_file)
+    if not token_path.is_file():
+        raise FileNotFoundError(f"eval_token_file does not exist: {token_path}")
+    return [
+        line.strip().split(",")[0]
+        for line in token_path.read_text(encoding="utf-8").splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
+
+
 def _distributed_timeout() -> timedelta:
     raw_value = (
         os.environ.get("RECOGDRIVE_EVAL_DISTRIBUTED_TIMEOUT_SECONDS")
@@ -138,6 +152,49 @@ def _apply_eval_token_shard(tokens: List[str], cfg: DictConfig, *, rank: int) ->
             f"from {len(tokens)} available tokens."
         )
     return sharded_tokens
+
+
+def _apply_eval_token_file(tokens: List[str], cfg: DictConfig, *, rank: int) -> List[str]:
+    requested_tokens = _read_eval_token_file(cfg)
+    if not requested_tokens:
+        return tokens
+    requested = set(requested_tokens)
+    filtered = [token for token in tokens if token in requested]
+    if rank == 0:
+        missing = len(requested - set(tokens))
+        logger.info(
+            "Applied eval token file %s: requested=%s available=%s selected=%s missing=%s",
+            _cfg_str(cfg, "eval_token_file", "RECOGDRIVE_EVAL_TOKEN_FILE", "").strip(),
+            len(requested),
+            len(tokens),
+            len(filtered),
+            missing,
+        )
+    if not filtered:
+        token_file = _cfg_str(cfg, "eval_token_file", "RECOGDRIVE_EVAL_TOKEN_FILE", "").strip()
+        raise ValueError(f"eval_token_file={token_file} selected no tokens from {len(tokens)} available tokens.")
+    return filtered
+
+
+def _restrict_scene_filter_to_eval_token_file(scene_filter: SceneFilter, cfg: DictConfig, metric_cache_loader: Any) -> None:
+    requested_tokens = _read_eval_token_file(cfg)
+    if not requested_tokens:
+        return
+    scene_filter.tokens = requested_tokens
+    log_names = set()
+    for token in requested_tokens:
+        metric_cache_path = metric_cache_loader.metric_cache_paths.get(token)
+        if metric_cache_path is None:
+            continue
+        path = Path(metric_cache_path)
+        if len(path.parents) >= 3:
+            log_names.add(path.parents[2].name)
+    if not log_names:
+        return
+    if scene_filter.log_names is None:
+        scene_filter.log_names = sorted(log_names)
+    else:
+        scene_filter.log_names = [log_name for log_name in scene_filter.log_names if log_name in log_names]
 
 
 def _score_params_from_cfg(cfg: DictConfig) -> Dict[str, Any]:
@@ -532,14 +589,17 @@ def main(cfg: DictConfig) -> None:
             context="ReCogDrive exact-pool evaluation",
         )
 
+    metric_cache_loader_for_filter = _metric_cache_loader_from_cfg(cfg)
+    scene_filter = instantiate(cfg.train_test_split.scene_filter)
+    _restrict_scene_filter_to_eval_token_file(scene_filter, cfg, metric_cache_loader_for_filter)
     scene_loader = SceneLoader(
         sensor_blobs_path=None,
         data_path=Path(cfg.navsim_log_path),
-        scene_filter=instantiate(cfg.train_test_split.scene_filter),
+        scene_filter=scene_filter,
         sensor_config=SensorConfig.build_no_sensors(),
     )
     if rank == 0:
-        metric_cache_loader = _metric_cache_loader_from_cfg(cfg)
+        metric_cache_loader = metric_cache_loader_for_filter
         tokens_to_evaluate = sorted(set(scene_loader.tokens) & set(metric_cache_loader.tokens))
         num_missing_metric_cache_tokens = len(set(scene_loader.tokens) - set(metric_cache_loader.tokens))
         num_unused_metric_cache_tokens = len(set(metric_cache_loader.tokens) - set(scene_loader.tokens))
@@ -547,6 +607,7 @@ def main(cfg: DictConfig) -> None:
             logger.warning("Missing metric cache for %s tokens. Skipping these tokens.", num_missing_metric_cache_tokens)
         if num_unused_metric_cache_tokens > 0:
             logger.warning("Unused metric cache for %s tokens. Skipping these tokens.", num_unused_metric_cache_tokens)
+        tokens_to_evaluate = _apply_eval_token_file(tokens_to_evaluate, cfg, rank=rank)
         tokens_to_evaluate = _apply_eval_token_shard(tokens_to_evaluate, cfg, rank=rank)
     else:
         tokens_to_evaluate = []

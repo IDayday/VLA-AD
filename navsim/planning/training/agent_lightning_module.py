@@ -92,6 +92,13 @@ class AgentLightningModule(pl.LightningModule):
             "hidden_anchor_step_index",
             "lora_trainable_param_count",
             "lora_matched_module_count",
+            "stage2_pareto_enabled",
+            "stage2_pareto_used_ratio",
+            "stage2_pareto_missing_ratio",
+            "stage2_pareto_support_count_mean",
+            "stage2_pareto_selected_index_mean",
+            "stage2_pareto_selected_weight_mean",
+            "stage2_pareto_selected_score_mean",
             "base_reward",
             "shaped_reward",
             "safe_ratio",
@@ -129,6 +136,11 @@ class AgentLightningModule(pl.LightningModule):
             "grpo_advantage_zero_ratio",
             "grpo_advantage_clip_frac",
             "grpo_advantage_batch_normalized",
+            "grpo_advantage_rms_scaled",
+            "grpo_reapplied_final_caps",
+            "final_positive_invalid_ratio",
+            "final_positive_slow_fail_ratio",
+            "final_positive_dominated_ratio",
             "grpo_advantage_clip_abs",
             "core_pareto_enabled",
             "pdms_core",
@@ -190,6 +202,24 @@ class AgentLightningModule(pl.LightningModule):
             "core_pareto_ep_floor",
             "core_pareto_ddc_guard_threshold",
             "core_pareto_pareto_bonus",
+            "support_relative_enabled",
+            "support_missing_ratio",
+            "support_count_mean",
+            "occupied_support_bucket_count",
+            "rankable_support_bucket_count",
+            "singleton_support_bucket_ratio",
+            "free_bucket_ratio",
+            "free_bucket_valid_ratio",
+            "within_support_score_std",
+            "between_support_rep_std",
+            "best_valid_minus_median_valid",
+            "best_valid_minus_reference",
+            "support_0_occupancy",
+            "support_1_occupancy",
+            "support_2_occupancy",
+            "support_concentration",
+            "frontier_gain",
+            "support_low_rank_group_ratio",
             "trajectory_logp",
             "gspo_ratio_mean",
             "gspo_ratio_min",
@@ -447,10 +477,29 @@ class AgentLightningModule(pl.LightningModule):
         self._propagate_training_progress(logging_prefix)
         prediction = self.agent.forward(features,targets,tokens_list)
         #prediction = self.agent.forward(features,targets)
-        loss = self.agent.compute_loss(features, targets, prediction)
+        loss_output = self.agent.compute_loss(features, targets, prediction)
+        if isinstance(loss_output, torch.Tensor):
+            loss = loss_output
+            metric_source = prediction
+        else:
+            loss = _prediction_get(loss_output, "loss")
+            if loss is None:
+                raise KeyError("Training prediction object is missing a 'loss' field.")
+            metric_source = loss_output
         self.log(f"{logging_prefix}/loss", loss, on_step=True, on_epoch=True, prog_bar=True, sync_dist=True)
         self.log(f"{logging_prefix}/total_loss", loss, on_step=True, on_epoch=True, prog_bar=False, sync_dist=True)
-        self._log_optional_recogdrive_metrics(prediction, logging_prefix)
+        for key in ("reward", "policy_loss", "bc_loss"):
+            value = _prediction_get(metric_source, key)
+            if value is not None:
+                self.log(
+                    f"{logging_prefix}/{key}",
+                    value,
+                    on_step=True,
+                    on_epoch=True,
+                    prog_bar=True,
+                    sync_dist=True,
+                )
+        self._log_optional_recogdrive_metrics(metric_source, logging_prefix)
         
         return loss
     

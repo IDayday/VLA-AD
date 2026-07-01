@@ -26,6 +26,7 @@ from navsim.agents.recogdrive.recogdrive_features import (
     stack_optional_expert_features,
 )
 from navsim.agents.recogdrive.expert_cache import iter_index, load_sample
+from navsim.agents.recogdrive.pareto_support import load_pareto_support_index, lookup_support_batch
 import torch
 import torch.nn.utils.rnn as rnn_utils
 from typing import List, Dict, Any, Optional, Set
@@ -151,6 +152,14 @@ def _parse_key_epoch_interval() -> int:
     return interval
 
 
+def _cache_train_all_records_enabled(cfg: DictConfig) -> bool:
+    return bool(cfg.get("cache_train_all_records", cfg.get("train_all_cache_records", False)))
+
+
+def _cache_train_log_names(cfg: DictConfig) -> Optional[List[str]]:
+    return None if _cache_train_all_records_enabled(cfg) else list(cfg.train_logs)
+
+
 class StepCheckpointCallback(pl.Callback):
     """Save exact global-step checkpoints for staged PDM evaluation."""
 
@@ -173,6 +182,27 @@ class StepCheckpointCallback(pl.Callback):
 
     def on_train_end(self, trainer, pl_module) -> None:
         self._save(trainer, self.dirpath / "latest.ckpt")
+
+
+class PeriodicStepCheckpointCallback(pl.Callback):
+    """Save append-only checkpoints every N optimizer steps."""
+
+    def __init__(self, dirpath: Path, every_n_train_steps: int) -> None:
+        self.dirpath = dirpath
+        self.every_n_train_steps = int(every_n_train_steps)
+        self.saved_steps: set[int] = set()
+        if self.every_n_train_steps <= 0:
+            raise ValueError(f"every_n_train_steps must be positive, got {every_n_train_steps}")
+
+    def _save(self, trainer: pl.Trainer, path: Path) -> None:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        trainer.save_checkpoint(str(path))
+
+    def on_train_batch_end(self, trainer, pl_module, outputs, batch, batch_idx) -> None:
+        step = int(trainer.global_step)
+        if step > 0 and step % self.every_n_train_steps == 0 and step not in self.saved_steps:
+            self._save(trainer, self.dirpath / f"step_{step:08d}.ckpt")
+            self.saved_steps.add(step)
 
 
 class EpochCheckpointCallback(pl.Callback):
@@ -276,6 +306,9 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         two_expert_vlm_hidden_dim: int = 1536,
         stage2_target_source: str = "gt",
         stage2_elite_target_index_path: Optional[str] = None,
+        stage2_pareto_support_index_path: Optional[str] = None,
+        stage2_pareto_require_index: bool = True,
+        stage2_pareto_log_diagnostics: bool = True,
     ) -> None:
         super().__init__()
         self.cache_path = Path(cache_path)
@@ -320,13 +353,23 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         self.stage2_elite_target_index: Optional[Dict[str, int]] = None
         self.stage2_elite_target_trajectories: Optional[torch.Tensor] = None
         self.stage2_elite_target_metadata: Dict[str, Any] = {}
-        if self.stage2_target_source not in {"gt", "awac_elite_best_valid_above_gt_or_gt"}:
+        self.stage2_pareto_support_index_path = (
+            Path(stage2_pareto_support_index_path) if stage2_pareto_support_index_path else None
+        )
+        self.stage2_pareto_require_index = bool(stage2_pareto_require_index)
+        self.stage2_pareto_log_diagnostics = bool(stage2_pareto_log_diagnostics)
+        self.stage2_pareto_support_index: Optional[Dict[str, Any]] = None
+        self.stage2_pareto_support_metadata: Dict[str, Any] = {}
+        if self.stage2_target_source not in {"gt", "awac_elite_best_valid_above_gt_or_gt", "pareto_support"}:
             raise ValueError(
-                "stage2_target_source must be one of {'gt', 'awac_elite_best_valid_above_gt_or_gt'}, "
+                "stage2_target_source must be one of {'gt', 'awac_elite_best_valid_above_gt_or_gt', "
+                "'pareto_support'}, "
                 f"got {self.stage2_target_source!r}."
             )
-        if self.stage2_target_source != "gt":
+        if self.stage2_target_source == "awac_elite_best_valid_above_gt_or_gt":
             self._load_stage2_elite_target_index()
+        elif self.stage2_target_source == "pareto_support":
+            self._load_stage2_pareto_support_index()
         if self.include_expert_targets and not self.include_expert_features:
             raise ValueError("include_expert_targets=True requires include_expert_features=True.")
         self.log_name_filter: Optional[Set[str]] = set(str(item) for item in log_names) if log_names is not None else None
@@ -388,8 +431,28 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             "selected_target_count": len(tokens),
         }
 
+    def _load_stage2_pareto_support_index(self) -> None:
+        if self.stage2_pareto_support_index_path is None:
+            if self.stage2_pareto_require_index:
+                raise FileNotFoundError(
+                    "stage2_target_source='pareto_support' requires stage2_pareto_support_index_path. "
+                    "Build it with scripts/build_stage2_pareto_support_index.py."
+                )
+            self.stage2_pareto_support_metadata = {"missing_policy": "gt_fallback_no_index"}
+            return
+        self.stage2_pareto_support_index = load_pareto_support_index(self.stage2_pareto_support_index_path)
+        tokens = self.stage2_pareto_support_index.get("tokens", [])
+        summary = self.stage2_pareto_support_index.get("summary", {})
+        self.stage2_pareto_support_metadata = {
+            "index_path": str(self.stage2_pareto_support_index_path),
+            "records": len(tokens) if isinstance(tokens, list) else 0,
+            "summary": summary if isinstance(summary, dict) else {},
+        }
+
     def _stage2_training_target(self, token: str, gt_trajectory: torch.Tensor) -> torch.Tensor:
         if self.stage2_target_source == "gt":
+            return gt_trajectory
+        if self.stage2_target_source == "pareto_support":
             return gt_trajectory
         if self.stage2_elite_target_index is None or self.stage2_elite_target_trajectories is None:
             raise RuntimeError("Stage2 elite target index was not loaded.")
@@ -403,6 +466,43 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
                 f"expected {tuple(gt_trajectory.shape)}."
             )
         return target
+
+    def _stage2_pareto_support_targets(self, token: str, gt_trajectory: torch.Tensor) -> Dict[str, torch.Tensor]:
+        if self.stage2_target_source != "pareto_support":
+            return {}
+        if self.stage2_pareto_support_index is None:
+            support_trajectories = torch.zeros((3, 8, 3), dtype=gt_trajectory.dtype)
+            support_trajectories[0] = gt_trajectory
+            return {
+                "support_trajectories": support_trajectories,
+                "support_mask": torch.tensor([True, False, False], dtype=torch.bool),
+                "support_weights": torch.tensor([1.0, 0.0, 0.0], dtype=gt_trajectory.dtype),
+                "support_scores": torch.zeros(3, dtype=gt_trajectory.dtype),
+                "support_missing_mask": torch.tensor(True, dtype=torch.bool),
+            }
+        support = lookup_support_batch(
+            [str(token)],
+            self.stage2_pareto_support_index,
+            dtype=gt_trajectory.dtype,
+            missing_policy="error" if self.stage2_pareto_require_index else "zeros",
+        )
+        if bool(support["support_missing_mask"][0].item()):
+            support_trajectories = torch.zeros((3, 8, 3), dtype=gt_trajectory.dtype)
+            support_trajectories[0] = gt_trajectory
+            return {
+                "support_trajectories": support_trajectories,
+                "support_mask": torch.tensor([True, False, False], dtype=torch.bool),
+                "support_weights": torch.tensor([1.0, 0.0, 0.0], dtype=gt_trajectory.dtype),
+                "support_scores": torch.zeros(3, dtype=gt_trajectory.dtype),
+                "support_missing_mask": torch.tensor(True, dtype=torch.bool),
+            }
+        return {
+            "support_trajectories": support["support_trajectories"][0].to(dtype=gt_trajectory.dtype),
+            "support_mask": support["support_mask"][0].bool(),
+            "support_weights": support["support_weights"][0].to(dtype=gt_trajectory.dtype),
+            "support_scores": support["support_scores"][0].to(dtype=gt_trajectory.dtype),
+            "support_missing_mask": support["support_missing_mask"][0].bool(),
+        }
 
     @staticmethod
     def _chunk_dirs(cache_path: Path) -> List[Path]:
@@ -743,6 +843,14 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
                 len(self.stage2_elite_target_index) if self.stage2_elite_target_index is not None else 0
             ),
             "stage2_elite_target_metadata": self.stage2_elite_target_metadata,
+            "stage2_pareto_support_index_path": (
+                str(self.stage2_pareto_support_index_path) if self.stage2_pareto_support_index_path else None
+            ),
+            "stage2_pareto_support_index_records": (
+                len(self.stage2_pareto_support_index.get("tokens", []))
+                if self.stage2_pareto_support_index is not None else 0
+            ),
+            "stage2_pareto_support_metadata": self.stage2_pareto_support_metadata,
             "shape_distribution_sample_count": report_sample_count,
             "shape_distribution_sample_limit": int(os.getenv("LAST_RD_DATA_REPORT_MAX_SAMPLES", "256")),
             "high_command_one_hot_shape_distribution": high_command_shape_distribution,
@@ -847,6 +955,7 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
             features[key] = value.long() if key == "vggt_geometry_mode_code" else value.float()
         trajectory = self._stage2_training_target(token, required_values["trajectory"].float())
         targets = {"trajectory": trajectory.float()}
+        targets.update(self._stage2_pareto_support_targets(token, required_values["trajectory"].float()))
         return features, targets, token
 
     def _geometry_mode_code_from_sample(self, sample: Dict[str, Any], sample_path: Path) -> Optional[torch.Tensor]:
@@ -884,6 +993,127 @@ class ChunkCacheDataset(torch.utils.data.Dataset):
         if self.use_last_vla and self.last_vla_geometry_loss_weight > 0.0:
             return torch.tensor(GEOMETRY_MODE_TO_CODE["missing"], dtype=torch.int64)
         return None
+
+
+class Stage2ParetoSupportDataset(torch.utils.data.Dataset):
+    """Injects APSD support targets into cache-only samples without changing GT trajectory."""
+
+    def __init__(
+        self,
+        dataset: torch.utils.data.Dataset,
+        *,
+        support_index_path: str,
+        require_index: bool = True,
+    ) -> None:
+        super().__init__()
+        self.dataset = dataset
+        self.support_index_path = Path(support_index_path) if support_index_path else None
+        self.require_index = bool(require_index)
+        self.support_index: Optional[Dict[str, Any]] = None
+        if self.support_index_path is None:
+            if self.require_index:
+                raise FileNotFoundError(
+                    "stage2_target_source='pareto_support' requires stage2_pareto_support_index_path."
+                )
+        else:
+            self.support_index = load_pareto_support_index(self.support_index_path)
+
+    def __len__(self) -> int:
+        return len(self.dataset)
+
+    @staticmethod
+    def _fallback(gt_trajectory: torch.Tensor, *, missing: bool) -> Dict[str, torch.Tensor]:
+        support_trajectories = torch.zeros((3, 8, 3), dtype=gt_trajectory.dtype)
+        support_trajectories[0] = gt_trajectory
+        return {
+            "support_trajectories": support_trajectories,
+            "support_mask": torch.tensor([True, False, False], dtype=torch.bool),
+            "support_weights": torch.tensor([1.0, 0.0, 0.0], dtype=gt_trajectory.dtype),
+            "support_scores": torch.zeros(3, dtype=gt_trajectory.dtype),
+            "support_missing_mask": torch.tensor(bool(missing), dtype=torch.bool),
+        }
+
+    def _token_for_item(self, idx: int, sample: tuple) -> str:
+        if len(sample) >= 3 and sample[2] is not None:
+            return str(sample[2])
+        tokens = getattr(self.dataset, "tokens", None)
+        if isinstance(tokens, list) and idx < len(tokens):
+            return str(tokens[idx])
+        raise KeyError("Stage2 Pareto support dataset requires sample tokens to look up support targets.")
+
+    def __getitem__(self, idx: int):
+        sample = self.dataset[idx]
+        if len(sample) == 3:
+            features, targets, token = sample
+        elif len(sample) == 2:
+            features, targets = sample
+            token = self._token_for_item(idx, sample)
+        else:
+            raise ValueError(f"Expected wrapped dataset sample with 2 or 3 fields, got {len(sample)}.")
+        if "trajectory" not in targets:
+            raise KeyError("Stage2 Pareto support wrapper requires targets['trajectory'].")
+        gt_trajectory = targets["trajectory"].detach().float()
+        injected: Dict[str, torch.Tensor]
+        if self.support_index is None:
+            injected = self._fallback(gt_trajectory, missing=True)
+        else:
+            support = lookup_support_batch(
+                [str(token)],
+                self.support_index,
+                dtype=gt_trajectory.dtype,
+                missing_policy="error" if self.require_index else "zeros",
+            )
+            if bool(support["support_missing_mask"][0].item()):
+                injected = self._fallback(gt_trajectory, missing=True)
+            else:
+                injected = {
+                    "support_trajectories": support["support_trajectories"][0].to(dtype=gt_trajectory.dtype),
+                    "support_mask": support["support_mask"][0].bool(),
+                    "support_weights": support["support_weights"][0].to(dtype=gt_trajectory.dtype),
+                    "support_scores": support["support_scores"][0].to(dtype=gt_trajectory.dtype),
+                    "support_missing_mask": support["support_missing_mask"][0].bool(),
+                }
+        targets = dict(targets)
+        targets.update(injected)
+        return features, targets, token
+
+    def report(self) -> Dict[str, Any]:
+        tokens = getattr(self.dataset, "tokens", [])
+        support_tokens = []
+        if self.support_index is not None and isinstance(self.support_index.get("tokens"), list):
+            support_tokens = self.support_index["tokens"]
+        return {
+            "wrapped_dataset": type(self.dataset).__name__,
+            "num_records": len(self.dataset),
+            "unique_sample_tokens": len(set(str(token) for token in tokens)) if isinstance(tokens, list) else None,
+            "stage2_target_source": "pareto_support",
+            "stage2_pareto_support_index_path": str(self.support_index_path) if self.support_index_path else None,
+            "stage2_pareto_support_index_records": len(support_tokens),
+            "stage2_pareto_require_index": self.require_index,
+        }
+
+
+def _dataset_sample_tokens(dataset: torch.utils.data.Dataset) -> List[str]:
+    if hasattr(dataset, "sample_tokens"):
+        return [str(token) for token in dataset.sample_tokens()]
+    tokens = getattr(dataset, "tokens", None)
+    if tokens is not None:
+        return [str(token) for token in tokens]
+    wrapped = getattr(dataset, "dataset", None)
+    if wrapped is not None:
+        return _dataset_sample_tokens(wrapped)
+    return []
+
+
+def _dataset_report(dataset: torch.utils.data.Dataset) -> Dict[str, Any]:
+    if hasattr(dataset, "report"):
+        return dataset.report()
+    tokens = _dataset_sample_tokens(dataset)
+    return {
+        "wrapped_dataset": type(dataset).__name__,
+        "num_records": len(dataset),
+        "unique_sample_tokens": len(set(tokens)) if tokens else None,
+    }
 
 
 def write_run_reports(
@@ -1076,6 +1306,14 @@ def custom_collate_fn(
     targets = {
         'trajectory': trajectory
     }
+    for key in ("support_trajectories", "support_mask", "support_weights", "support_scores", "support_missing_mask"):
+        if key in targets_list[0]:
+            values = []
+            for sample_targets in targets_list:
+                if key not in sample_targets:
+                    raise KeyError(f"Target field {key!r} is missing from one sample in a mixed batch.")
+                values.append(sample_targets[key].detach())
+            targets[key] = torch.stack(values, dim=0).cpu()
 
     return features, targets, list(tokens_list)
 
@@ -1288,12 +1526,13 @@ def main(cfg: DictConfig) -> None:
             use_jepa = bool(cfg.agent.get("use_jepa", True))
             use_vggt = bool(cfg.agent.get("use_vggt", True))
             use_two_expert_slots = bool(cfg.agent.get("use_two_expert_slots", False))
-            cache_train_all_records = bool(
-                cfg.get("cache_train_all_records", cfg.get("train_all_cache_records", False))
-            )
-            train_log_names = None if cache_train_all_records else list(cfg.train_logs)
+            cache_train_all_records = _cache_train_all_records_enabled(cfg)
+            train_log_names = _cache_train_log_names(cfg)
             stage2_target_source = str(cfg.get("stage2_target_source", "gt"))
             stage2_elite_target_index_path = cfg.get("stage2_elite_target_index_path", None)
+            stage2_pareto_support_index_path = cfg.get("stage2_pareto_support_index_path", None)
+            stage2_pareto_require_index = bool(cfg.get("stage2_pareto_require_index", True))
+            stage2_pareto_log_diagnostics = bool(cfg.get("stage2_pareto_log_diagnostics", True))
             train_data = ChunkCacheDataset(
                 cfg.cache_path,
                 log_names=train_log_names,
@@ -1330,7 +1569,11 @@ def main(cfg: DictConfig) -> None:
                 two_expert_vlm_hidden_dim=int(cfg.agent.get("two_expert_vlm_hidden_dim", cfg.agent.get("vlm_hidden_dim", 1536))),
                 stage2_target_source=stage2_target_source,
                 stage2_elite_target_index_path=stage2_elite_target_index_path,
+                stage2_pareto_support_index_path=stage2_pareto_support_index_path,
+                stage2_pareto_require_index=stage2_pareto_require_index,
+                stage2_pareto_log_diagnostics=stage2_pareto_log_diagnostics,
             )
+            val_stage2_target_source = "gt" if stage2_target_source == "pareto_support" else stage2_target_source
             val_data = ChunkCacheDataset(
                 cfg.cache_path,
                 log_names=list(cfg.val_logs),
@@ -1365,8 +1608,11 @@ def main(cfg: DictConfig) -> None:
                 two_expert_dyn_tokens_per_group=int(cfg.agent.get("two_expert_dyn_tokens_per_group", 12)),
                 two_expert_num_geo_tokens=int(cfg.agent.get("two_expert_num_geo_tokens", 12)),
                 two_expert_vlm_hidden_dim=int(cfg.agent.get("two_expert_vlm_hidden_dim", cfg.agent.get("vlm_hidden_dim", 1536))),
-                stage2_target_source=stage2_target_source,
+                stage2_target_source=val_stage2_target_source,
                 stage2_elite_target_index_path=stage2_elite_target_index_path,
+                stage2_pareto_support_index_path=None,
+                stage2_pareto_require_index=False,
+                stage2_pareto_log_diagnostics=stage2_pareto_log_diagnostics,
             )
             train_tokens = set(train_data.sample_tokens())
             val_tokens = set(val_data.sample_tokens())
@@ -1392,11 +1638,13 @@ def main(cfg: DictConfig) -> None:
             else:
                 data_report = None
         else:
+            cache_train_all_records = _cache_train_all_records_enabled(cfg)
+            train_log_names = _cache_train_log_names(cfg)
             train_data = CacheOnlyDataset(
                 cache_path=cfg.cache_path,
                 feature_builders=agent.get_feature_builders(),
                 target_builders=agent.get_target_builders(),
-                log_names=cfg.train_logs,
+                log_names=train_log_names,
             )
             val_data = CacheOnlyDataset(
                 cache_path=cfg.cache_path,
@@ -1404,8 +1652,39 @@ def main(cfg: DictConfig) -> None:
                 target_builders=agent.get_target_builders(),
                 log_names=cfg.val_logs,
             )
-            loader_mode = "official-cache-loader"
-            data_report = None
+            stage2_target_source = str(cfg.get("stage2_target_source", "gt"))
+            if stage2_target_source == "pareto_support":
+                train_data = Stage2ParetoSupportDataset(
+                    train_data,
+                    support_index_path=str(cfg.get("stage2_pareto_support_index_path", "")),
+                    require_index=bool(cfg.get("stage2_pareto_require_index", True)),
+                )
+            train_tokens = set(_dataset_sample_tokens(train_data))
+            val_tokens = set(_dataset_sample_tokens(val_data))
+            overlap_count = len(train_tokens & val_tokens)
+            if overlap_count and not cache_train_all_records:
+                raise RuntimeError(f"Official cache train/val split overlap is not allowed; overlap_count={overlap_count}")
+            loader_mode = (
+                "official-cache-loader-all-cache-train-log-val"
+                if cache_train_all_records
+                else "official-cache-loader-log-split"
+            )
+            if int(os.getenv("RANK", "0")) == 0:
+                train_report = _dataset_report(train_data)
+                train_report.setdefault("stage2_target_source", stage2_target_source)
+                val_report = _dataset_report(val_data)
+                val_report.setdefault("stage2_target_source", "gt")
+                data_report = {
+                    "loader_mode": loader_mode,
+                    "cache_train_all_records": cache_train_all_records,
+                    "train": train_report,
+                    "val": val_report,
+                    "train_val_overlap_count": overlap_count,
+                    "train_unique_sample_token_count": len(train_tokens),
+                    "val_unique_sample_token_count": len(val_tokens),
+                }
+            else:
+                data_report = None
     else:
         logger.info("Building SceneLoader")
         train_data, val_data = build_datasets(cfg, agent)
@@ -1423,19 +1702,50 @@ def main(cfg: DictConfig) -> None:
     key_steps = _parse_key_steps()
     key_epochs = _parse_key_epochs()
     key_epoch_interval = _parse_key_epoch_interval()
-    callbacks = [
-        pl.callbacks.ModelCheckpoint(
-            monitor="val/loss_epoch",
-            mode='min',
-            save_top_k=5,
-            every_n_epochs=1,
-            save_last=True,
-        ),
-        StepCheckpointCallback(Path(cfg.output_dir), key_steps),
-        ReCogDriveTrainingProgressCallback(),
-    ]
-    if key_epochs or key_epoch_interval > 0:
-        callbacks.append(EpochCheckpointCallback(Path(cfg.output_dir), key_epochs, every_n_epochs=key_epoch_interval))
+    checkpoint_cfg = cfg.get("checkpoint", {})
+    checkpoint_layout = str(checkpoint_cfg.get("layout", "legacy") or "legacy")
+    if checkpoint_layout == "psi":
+        raw_checkpoint_dir = Path(cfg.output_dir) / "checkpoints" / "raw"
+        val_loss_checkpoint_dir = Path(cfg.output_dir) / "checkpoints" / "val_loss_top5"
+        raw_checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        val_loss_checkpoint_dir.mkdir(parents=True, exist_ok=True)
+        callbacks = [
+            pl.callbacks.ModelCheckpoint(
+                dirpath=val_loss_checkpoint_dir,
+                filename="epoch={epoch:03d}-step={step}",
+                auto_insert_metric_name=False,
+                monitor="val/loss_epoch",
+                mode="min",
+                save_top_k=5,
+                every_n_epochs=1,
+                save_last=True,
+            ),
+            StepCheckpointCallback(raw_checkpoint_dir, key_steps),
+            ReCogDriveTrainingProgressCallback(),
+        ]
+        every_n_train_steps = int(checkpoint_cfg.get("every_n_train_steps", 0) or 0)
+        if every_n_train_steps > 0:
+            callbacks.append(PeriodicStepCheckpointCallback(raw_checkpoint_dir, every_n_train_steps))
+        every_n_epochs = int(checkpoint_cfg.get("every_n_epochs", 0) or 0)
+        epoch_interval = every_n_epochs if every_n_epochs > 0 else key_epoch_interval
+        if key_epochs or epoch_interval > 0:
+            callbacks.append(EpochCheckpointCallback(raw_checkpoint_dir, key_epochs, every_n_epochs=epoch_interval))
+    elif checkpoint_layout == "legacy":
+        callbacks = [
+            pl.callbacks.ModelCheckpoint(
+                monitor="val/loss_epoch",
+                mode='min',
+                save_top_k=5,
+                every_n_epochs=1,
+                save_last=True,
+            ),
+            StepCheckpointCallback(Path(cfg.output_dir), key_steps),
+            ReCogDriveTrainingProgressCallback(),
+        ]
+        if key_epochs or key_epoch_interval > 0:
+            callbacks.append(EpochCheckpointCallback(Path(cfg.output_dir), key_epochs, every_n_epochs=key_epoch_interval))
+    else:
+        raise ValueError(f"checkpoint.layout must be 'legacy' or 'psi', got {checkpoint_layout!r}")
     write_run_reports(cfg, agent, loader_mode, key_steps, key_epochs, key_epoch_interval, data_report)
     trainer = pl.Trainer(**cfg.trainer.params, callbacks=callbacks)
 

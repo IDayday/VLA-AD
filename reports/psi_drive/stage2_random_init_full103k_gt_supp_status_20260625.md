@@ -1,0 +1,538 @@
+# PSI-Drive Stage2 Random Init Full103k GT-Supp Status, 2026-06-25
+
+## Stage2 Training
+
+- Run root: `/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_random_init_full103k_gt_supp_20260625T162149Z`
+- Launch PID file: `state/stage2_random_train.pid` under the run root
+- Current PID at 2026-06-26T01:11:38Z: `1521627` alive
+- Init mode: random planner init
+- Command evidence: `resolved_command.sh`
+- Key settings:
+  - `agent.checkpoint_path=`
+  - `agent.allow_random_init=true`
+  - `trainer.params.max_epochs=200`
+  - `checkpoint.every_n_epochs=1`
+  - `cache_train_all_records=true`
+  - `stage2_target_source=pareto_support`
+  - `stage2_pareto_support_index_path=/mnt/project/VLA-AD/outputs/psi_drive/support_index/stage2_pareto_support_clean_full_gt_supplemented_20260625T162351Z.pt`
+- Data report:
+  - train records: `103288`
+  - val records: `18179`
+  - support index records: `103288`
+  - loader mode: `official-cache-loader-all-cache-train-log-val`
+  - train/val overlap in this full-cache run: `18179`
+  - note: this overlap is intentional for the user-requested full `103k` train-cache run; the fixed val6000 split artifact still has a separate train-complement audit with zero overlap.
+
+## Fixed Val6000
+
+- Token file: `artifacts/splits/navtrain_val6000_seed260306049.txt`
+- Canonical checksum: `artifacts/splits/navtrain_val6000_seed260306049.sha256`
+- Legacy checksum: `artifacts/splits/navtrain_val6000_seed260306049.txt.sha256`
+- Token count: `6000`
+- SHA256: `1b6355bfd1f1fbf9438897d34c64320d3f46d07c62437fe8da7df5e42c5cbc54`
+- Split audit: `artifacts/splits/navtrain_val6000_seed260306049_audit.json`
+- Audit summary from split generation:
+  - train-complement tokens: `97288`
+  - train/val overlap against complement: `0`
+  - navtest overlap: `0`
+- Stage2 evaluator dry-run at 2026-06-25T17:32Z confirmed:
+  - `eval_token_file=/mnt/project/VLA-AD_last_vla_dev/artifacts/splits/navtrain_val6000_seed260306049.txt`
+  - metric cache count: `103288`
+  - eval token file count: `6000`
+  - CUDA device count: `8`
+
+## Support Index
+
+- Index: `/mnt/project/VLA-AD/outputs/psi_drive/support_index/stage2_pareto_support_clean_full_gt_supplemented_20260625T162351Z.pt`
+- Audit: `/mnt/project/VLA-AD/outputs/psi_drive/support_index/stage2_pareto_support_clean_full_gt_supplemented_20260625T162351Z_audit.json`
+- Audit result: `passed=true`
+- Explicit overlap audit:
+  - JSON: `/mnt/project/VLA-AD/outputs/psi_drive/support_index/stage2_pareto_support_clean_full_gt_supplemented_20260625T162351Z_explicit_overlap_audit.json`
+  - MD: `/mnt/project/VLA-AD/outputs/psi_drive/support_index/stage2_pareto_support_clean_full_gt_supplemented_20260625T162351Z_explicit_overlap_audit.md`
+  - result: `passed=true`
+  - overlap with train-complement: `97288`
+  - overlap with fixed val6000: `6000`
+  - overlap with navtest: `0`
+  - note: val6000 overlap is expected in this user-requested full `103k` training-cache run; navtest remains excluded.
+- SHA256: `817ada27e18a92062e2fb4bd5fddacaa3f75cbd30a0f8d903119bc04ab4bbf27`
+- Tokens: `103288`
+- Fallbacks: `gt_fallback=69`
+- Support count histogram:
+  - 1 support: `58287`
+  - 2 supports: `34054`
+  - 3 supports: `10947`
+- Support source histogram:
+  - `gt`: `40407` (`25.38%`)
+  - `progress_endpoint`: `32694` (`20.53%`)
+  - `policy`: `32015` (`20.11%`)
+  - `il`: `26639` (`16.73%`)
+  - `progress_speed`: `10268` (`6.45%`)
+  - `endpoint_lateral`: `7404` (`4.65%`)
+  - `progress_gamma`: `5109` (`3.21%`)
+  - `timing_delay`: `1909` (`1.20%`)
+  - `timing_slow_first`: `1643` (`1.03%`)
+  - `lateral_offset`: `1148` (`0.72%`)
+
+## GT-Only Supplement
+
+- Token list: `/mnt/project/VLA-AD/outputs/psi_drive/support_index/stage2_support_gt_only_missing_candidate_tokens_18179.tsv`
+- Supplement root: `/mnt/project/VLA-AD/outputs/psi_drive/support_index/stage2_gt_only_structured_elite_buffer_20260625T161025Z`
+- Supplement records: `18179`
+- Generation errors: `0`
+- Union buffer: `/mnt/project/VLA-AD/outputs/psi_drive/support_index/stage2_elite_buffer_union_clean_gt_supplemented_20260625T162351Z`
+- Union records: `103288`
+- Generation accounting:
+  - final files: `18179`
+  - written in latest shard summaries: `14663`
+  - skipped because already done: `3516`
+  - valid candidate exists: `14663`
+  - valid candidate better than GT: `11024`
+  - weighted mean best-minus-GT: `+0.01647`
+  - weighted mean valid-best-minus-GT: `+0.01641`
+- GT-only valid-best source histogram:
+  - `progress_endpoint`: `7204` (`49.13%`)
+  - `progress_speed`: `3656` (`24.93%`)
+  - `gt`: `3639` (`24.82%`)
+  - `timing_delay`: `158` (`1.08%`)
+  - `timing_slow_first`: `4` (`0.03%`)
+  - `lateral_offset`: `2` (`0.01%`)
+- Interpretation: for GT-only missing-candidate scenes, the useful supplemental candidates are mostly progress/velocity variants along the GT trajectory. Lateral and timing-only variants rarely become the best valid candidate.
+- Default structured-candidate grid used by the supplement:
+  - endpoint progress deltas: `0.5, 1.0, 1.5, 2.0, 3.0` m
+  - speed scales: `0.95, 1.02, 1.05, 1.08, 1.12`
+  - time gammas: `0.75, 0.85, 0.95, 1.05`
+  - lateral offsets: `-0.8, -0.6, -0.4, -0.2, 0.2, 0.4, 0.6, 0.8` m
+  - endpoint lateral offsets: `-0.8, -0.4, 0.4, 0.8` m
+  - delay strengths: `0.15, 0.25, 0.35`
+- Candidate-generation conclusion: do not restart the active full103k Stage2 run for lateral/timing expansion. If a follow-up ablation is needed, prioritize denser `progress_endpoint` and `progress_speed` grids because they dominate the valid-best source histogram.
+
+## APSD Support Target Mechanism
+
+- Candidate generation is two-source:
+  - original clean elite buffer: `85109` records from existing stage3 AWAC/IQL-style candidate search
+  - GT-only supplement: `18179` records generated from official Stage1 hidden cache GT plus structured perturbations
+- The supplemented path does not inject JEPA/VGGT/LastRD/LastVLA/external features into Stage2; training command sets all those switches to disabled and uses official ReCogDrive Stage1 hidden cache only.
+- Support index construction filters out bootstrap markers in `source_mode=clean`, computes PDM components for candidates, then scores valid candidates with a Core-Pareto score over `ego_progress`, `time_to_collision_within_bound`, and `history_comfort`.
+- For each token, the selector chooses 1 to 3 support trajectories within a `0.02` quality band and enforces descriptor diversity with min normalized descriptor distance `0.75`.
+- Stage2 training does not average support trajectories. During training only, it samples one target from the per-token support set with normalized weights `best=0.50`, `gt=0.20`, `other=0.30`; missing support falls back to GT.
+- Validation/log-val remains GT-based by construction, so final model selection must be based on val6000 exact PDM evaluation rather than validation loss alone.
+
+## Stage2 Evaluation Watchers
+
+Stage2 checkpoint evaluation is now assigned to remote `training-rl-zt3` resources, while local Stage2 training continues on the training node.
+
+- Val6000 watcher PID file: `state/watch_stage2_eval_val6000.pid`
+- Navtest watcher PID file: `state/watch_stage2_eval_navtest.pid`
+- Remote val6000 watcher PID file: `state/watch_stage2_eval_val6000.training-rl-zt3.pid`
+- Remote navtest Top-5 watcher PID file: `state/watch_stage2_eval_navtest_top5.training-rl-zt3.pid`
+- Poll seconds: `60`
+- Stable seconds: `120`
+- Remote GPU policy: use `training-rl-zt3` GPUs `1,2,3,4,5,6` with `GPUS_PER_NODE=6`; wait for free GPUs before PDM eval.
+- Scan policy:
+  - each poll first archives every stable raw checkpoint into `checkpoint_store/objects`
+  - after archival, it attempts eval launch
+  - if eval lock or GPUs are busy, it defers remaining eval attempts for that poll
+  - this keeps checkpoint archival append-only and current while avoiding noisy O(N) GPU-busy checks
+- Navtest watcher gating:
+  - navtest reads `rankings/val6000/current_top5.tsv`
+  - only the current val6000 Top-5 `object_path` entries enter full navtest exact PDM
+  - already evaluated checkpoint SHA values are skipped by marker/status, so Top-5 churn does not repeat completed evals.
+- Backup policy:
+  - val6000 Top-5 checkpoint objects are copied into `checkpoint_backups/val6000_top5`
+  - navtest Top-3 checkpoint objects are copied into `checkpoint_backups/navtest_top3`
+  - backup objects are de-duplicated by SHA256 under `checkpoint_backups/objects`
+- Eval status files:
+  - `eval/val6000/checkpoint_eval_status.tsv`
+  - `eval/navtest/checkpoint_eval_status.tsv`
+- Checkpoint store:
+  - inventory: `checkpoint_store/inventory.tsv`
+  - objects: `checkpoint_store/objects`
+- Current confirmed archive at status capture:
+  - `epoch_001`
+  - SHA256 `112b5c66efa5c2fc5bd4428202d7f1e0504d4a3f1e0c87336b22a778332c709b`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive after watcher reprioritization:
+  - `epoch_002`
+  - SHA256 `a4d15b72ad6bf1474a2ea4c507a9f68197c19442d6d7c06b12b10437e83ece2d`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive after two-phase watcher scan:
+  - `epoch_003`
+  - SHA256 `14c999f0e03fc226cf0c87088485cc9c976a39eebedd5062a8df88ed879e8afe`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T17:28:45Z:
+  - `epoch_004`
+  - SHA256 `773935d91615ffbb09b1876f79250663a38ca0d0502a01c7d9442e64e1b989bf`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T17:31:20Z:
+  - `epoch_005`
+  - SHA256 `5c0c9cdc397d584453f4927508a70b3526995aac9a77e66947c3210a247b941d`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T17:37:24Z:
+  - `epoch_006`
+  - SHA256 `0fc4c9210ba550291768f456aa25e8d5ceadfd75950d8233498c7e20e9a3f98e`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T17:43:29Z:
+  - `epoch_007`
+  - SHA256 `d6fd01bd0d5de5837f44275443a80f6532a2b905c93333a351f9b746099c89cb`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T17:49:33Z:
+  - `epoch_008`
+  - SHA256 `282d1369b01551d0b709804d2319835f161ffa89e02db82d5d191b7a26c2cfaa`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T17:55:39Z:
+  - `epoch_009`
+  - SHA256 `49a4a6288af94b4c7cd20d835e3204528b15e13ec61e69178678ad7f4925d6eb`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T18:01:44Z:
+  - `epoch_010`
+  - SHA256 `bb92c583010a3935166b91ae0495c7b9a6a6b35ded059f46b649b6f9ec03d3f3`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T18:08:36Z:
+  - `epoch_011`
+  - SHA256 `0904740826e3732ec5d7ac4b58d8294a1cc9305813a0f680b524200b1854e6a1`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T18:12:25Z:
+  - `epoch_012`
+  - SHA256 `80d8697ab8cda75e57c6d62ce5d218bd45a5be04a0a3740971bc9691a7635dc1`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T18:20:59Z:
+  - `epoch_013`
+  - SHA256 `d4b98b480e2ea312743968b4b73eda061d4e16a94d3691f0d87d2ae32c5c14a8`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T18:26:55Z:
+  - `epoch_014`
+  - SHA256 `d93b9c32c69994a49dd859030c69ef4723da78c22deab80e95e2dd0f923d6962`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T18:33:00Z:
+  - `epoch_015`
+  - SHA256 `f1ed33b8f1e96c3bb9b176ea3e54d9c4192e76fe109e4e3473625c3d660199ff`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T18:39:19Z:
+  - `epoch_016`
+  - SHA256 `dc07d8cd958aeadc04ee0f2d7893804b548da91d46d0181431b95470a604b0d4`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T18:45:09Z:
+  - `epoch_017`
+  - SHA256 `279d835bfe663df1daddd5b3ddf568daccb30001b4ddcea8a20420e6c2536aff`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T18:51:25Z:
+  - `epoch_018`
+  - SHA256 `ac2020af735ea8b393fc2cf7694606a4eec5e1dcaa35d1bb4751a60c6cc2127d`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T18:58:37Z:
+  - `epoch_019`
+  - SHA256 `0c0e3c4fcd6c161779ed494d46bc7fbf90d7dfeeae4b7f599a681bf6a41b21ee`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T19:03:28Z:
+  - `epoch_020`
+  - SHA256 `9e58c1d67d9d19ca3c73c68d596b9fa392b6cb76465f64e0d6485a67b459c8c9`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T19:09:38Z:
+  - `epoch_021`
+  - SHA256 `ac06b92d2488612918dd7c391ce699d738ca232b3966229ee0f12f72cb41831f`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T19:15:37Z:
+  - `epoch_022`
+  - SHA256 `c8397574c4be22d7cefc05369aa20894972cdff1e17a04a01edd4be52d14d3b7`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T19:22:33Z:
+  - `epoch_023`
+  - SHA256 `fccf549d8b0ff479b66af80e3e2481c1650dee684e908895f60c6fc5d3950f4a`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T19:27:26Z:
+  - `epoch_024`
+  - SHA256 `fef96d245f277aedc6f57562d2eb2e381dc6bc270975a603e8b491b4ab76beb6`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T19:33:34Z:
+  - `epoch_025`
+  - SHA256 `871f3a9c43dd859ede6194307ee2f325b7be86d284ca414dd1e14e09b9870f71`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T19:39:28Z:
+  - `epoch_026`
+  - SHA256 `fde38a7de087b2e388b549bf7144fc805e6a462d4cdbd83eac46c0dad657e4a8`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T19:46:23Z:
+  - `epoch_027`
+  - SHA256 `d51075903cb98e61b15efb7f99e69dbfa7824edba4a1104eb96e5afec5d99532`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T19:51:14Z:
+  - `epoch_028`
+  - SHA256 `138bf1ca2728d7ce14afa042c9f8ada7763522706f06a457047b3d1c7706050c`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T19:57:26Z:
+  - `epoch_029`
+  - SHA256 `89b486a79133eec609df919a0932ef4c782592adb6ff880083cccc3e91dbde4e`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T20:03:52Z:
+  - `epoch_030`
+  - SHA256 `47934c46e9dfe992ce09cc8dd5c4fbdf122396e915b4aa0c15dcfc210e57f259`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T20:09:19Z:
+  - `epoch_031`
+  - SHA256 `3a680b5dbb22baddfd2be5bf3979a141f1115e43389c39b6a4352604fceafca5`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T20:15:57Z:
+  - `epoch_032`
+  - SHA256 `82add1351668c75b78b5ff9be61db5b0ed01859c67801b2cdabac50dd314c0ed`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T20:20:53Z:
+  - `epoch_033`
+  - SHA256 `ac56b5de937a4435dfc1be06915cbc52b58632a6a91e56989048c3adfd48fc88`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T20:27:04Z:
+  - `epoch_034`
+  - SHA256 `72d84c7927d1eaed42d612d6c6e96780a75bada1814ca8055fb12e055fd3b73d`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T20:33:01Z:
+  - `epoch_035`
+  - SHA256 `0838bbe1c9a8bc86461daa5fe1ed898368764a83c36f07ac3b7f26f512ed6cce`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T20:38:27Z:
+  - `epoch_036`
+  - SHA256 `b1b8026ccd54938cb9ee2f4d517ce5b429f3b3848ac3b2abf2076aa34f73dc39`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T20:44:20Z:
+  - `epoch_037`
+  - SHA256 `1b0fa4c2701a52860dcd12e979eb3d91007bd213b0f9ff3de9cdb3eee83455a8`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T20:50:14Z:
+  - `epoch_038`
+  - SHA256 `79ca4bfbdddb6fd743bccaab16d48dfa821693acbf29f367fe39acdeb628d965`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T20:56:04Z:
+  - `epoch_039`
+  - SHA256 `f8e9bb1019283ce1f192455be297fcb4b89f040d4c83abe650b3c04b27787edf`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T21:02:11Z:
+  - `epoch_040`
+  - SHA256 `696be1698a700ff6776e4e1aef519eac12da01c88aefe3ceeb036305ed65ab38`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T21:08:01Z:
+  - `epoch_041`
+  - SHA256 `0b3191c1e8ef39dda08c6da8e2f8dad9a16485a9949925888e594a710a566610`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T21:14:05Z:
+  - `epoch_042`
+  - SHA256 `e11e00a36ca6545c42378f2d6f5f40d4fe0d493d4db04780a334778b5895c7c8`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T21:20:33Z:
+  - `epoch_043`
+  - SHA256 `728732441068382077bdede13ce9fccc6c56eb168c62c71f1a6e19d73246f18d`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T21:26:13Z:
+  - `epoch_044`
+  - SHA256 `b723944d546fdd0df51ad8cf142022a9fd6fa1b309a88ae6cab49686e063d2a5`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T21:32:14Z:
+  - `epoch_045`
+  - SHA256 `7132dcdf901716a7ac703ece001a286292aadaf9cd6b28355157a8f861a86ed2`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T21:38:14Z:
+  - `epoch_046`
+  - SHA256 `911307605046781c40ef222301b99641ce92ba4e6e7128a3f6646cca951116c4`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T21:43:59Z:
+  - `epoch_047`
+  - SHA256 `428ab10d5f2fcbfe30b04870c346a26ec63768178d167b664bcfafcdb1e521aa`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T21:50:19Z:
+  - `epoch_048`
+  - SHA256 `e05b1c27fd929bf976ac62f3ebd425175de0228217dfd820c54458a48c176347`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T21:56:01Z:
+  - `epoch_049`
+  - SHA256 `3c02f01244f665e3f4b47269e63e26704d84381642d35c611b6957e1977400e0`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T22:02:31Z:
+  - `epoch_050`
+  - SHA256 `04c7e60c557e5a5b10a3e8bfef1d9ea2804494bdc1bbdc6c013ed00a6543691c`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive at 2026-06-25T22:08:32Z:
+  - `epoch_051`
+  - SHA256 `d2b7a17efb9f5d602abcd759d5cb6850284935c6db38308a1e06dcd36e314c82`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Additional confirmed archive range through 2026-06-26T01:12:32Z:
+  - `epoch_052` through `epoch_082` are archived in `checkpoint_store/inventory.tsv`
+  - latest archived checkpoint: `epoch_082`
+  - latest archived SHA256: `a2883f5bdae7d43faa8d81ee575e31942737fafd12b1c31e1cf50c3b4f571624`
+  - val6000 state: `pending`
+  - navtest state: `pending`
+- Checkpoint store audit at 2026-06-26T01:14:06Z:
+  - audit JSON: `checkpoint_store/audit_latest.json`
+  - audit MD: `checkpoint_store/audit_latest.md`
+  - passed: `true`
+  - inventory rows: `84`
+  - object files: `84`
+  - checked object rows: `84`
+  - temp file warnings: `4`
+  - top5 entries: `0`
+  - failures: `0`
+- Latest raw checkpoint at 2026-06-26T01:14:15Z:
+  - `epoch_082`
+  - raw mtime: `2026-06-26T01:10:02Z`
+  - archive state: archived
+- Stale watcher cleanup:
+  - stopped old watchers `1407045` and `1407046`
+  - those belonged to `/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_random_init_full103k_20260625T154557Z`, the pre-GT-supplement run
+  - current GT-supplemented run watchers remain alive: val6000 `1560584`, navtest `1560585`
+
+## Stage3 Orchestrator
+
+- Output root: `/mnt/project/VLA-AD/outputs/psi_drive_stage3_sr_pgrpo_from_stage2_random_full103k_gt_supp_wait200_20260625T171030Z`
+- PID file: `state/stage3_after_val6000.pid`
+- Current PID at 2026-06-26T01:11:38Z: `1548272` alive
+- Stage2 run root: `/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_random_init_full103k_gt_supp_20260625T162149Z`
+- Expected Stage2 checkpoints: `200`
+- Launch condition:
+  - wait until val6000 eval has `done=200/200`
+  - fail if any val6000 checkpoint eval fails
+  - select `rankings/val6000/current_top5.tsv` Top-1 object checkpoint
+  - launch Stage3 SR-PGRPO with the supplemented support index
+- Current status at capture:
+  - `val6000 done=0/200 started=0 failed=0`
+
+## Notes
+
+- The original clean support index remains available but is not the default for PSI-Drive scripts after this update.
+- `scripts/psi_drive/run_stage2_apsd_8gpu.sh` and `scripts/psi_drive/run_stage3_sr_pgrpo_8gpu.sh` now default to the GT-supplemented support index if it exists.
+- Stage2 exact PDM eval now runs on `training-rl-zt3` instead of waiting for local training GPUs to become idle.
+- Navtest evaluation is driven by val6000 Top-5, not by all 200 checkpoints.
+- Current random-init/full103k/GT-supp preflight supplement: `reports/psi_drive/preflight_random_init_full103k_gt_supp_20260625T185920Z.md`.
+- Latest run summary refreshed at `2026-06-26T01:14:15Z`: raw checkpoints `84`, archived objects `84`, checkpoint store audit passed with `4` temp-file warnings, val6000/navtest status rows `0`.
+- Process-tree check at `2026-06-26T01:11:38Z` confirmed active `torchrun` PID `1521634` under Stage2 launcher PID `1521627`; GPU utilization remained consistent with active training.
+- Val6000 watcher log at `2026-06-26T01:14:39Z` still reported GPU busy and deferred `epoch_001` exact PDM eval; navtest watcher at `2026-06-26T01:14:21Z` was still waiting for val6000 completion; Stage3 gate at `2026-06-26T01:10:33Z` remained `done=0/200`.
+- Temp-file warning check after the `2026-06-26T01:14:06Z` audit found the same 4 hidden `.tmp` entries are still warnings only; inventory/object validation passed for 84 archived checkpoint objects.
+- `archive_checkpoint_immutable.py` was patched after the `epoch_026` concurrent hardlink race to unlink only its own temporary path in a `finally` block when `tmp_path` and `object_path` are already same-inode hard links; this prevents future `.tmp` warning growth without deleting checkpoint/source/object files.
+- Remote eval update at `2026-06-26T01:49:19Z`: val6000 exact PDM started on `training-rl-zt3` for `epoch_001` SHA `112b5c66efa5c2fc5bd4428202d7f1e0504d4a3f1e0c87336b22a778332c709b`; navtest Top-5 watcher started at `2026-06-26T01:51:17Z` and is waiting for `rankings/val6000/current_top5.tsv`.
+
+## Verification, 2026-06-25
+
+- Pytest:
+  - `tests/test_pareto_support_selection.py`
+  - `tests/test_pareto_support_index_io.py`
+  - `tests/test_stage2_pareto_support_loader.py`
+  - `tests/test_materialize_elite_buffer_union.py`
+  - `tests/test_psi_checkpoint_tools.py`
+  - result: `14 passed`
+- Additional checkpoint-store audit tests:
+  - `tests/test_checkpoint_store_audit.py`
+  - `tests/test_psi_checkpoint_tools.py`
+  - result: `8 passed` after adding the concurrent same-inode hardlink cleanup regression
+- Python compile:
+  - `scripts/checkpoints/audit_checkpoint_store.py`
+  - result: passed
+- Evaluator compile and token-file bugfix:
+  - `navsim/planning/script/run_pdm_score_recogdrive_async_pdm_exact_pool.py`
+  - `navsim/planning/script/run_pdm_score_recogdrive_async_pdm_exact_chunk_pool.py`
+  - result: passed
+  - fixed the `eval_token_file` empty-selection error path to report the configured file instead of referencing an undefined variable.
+- Fixed val6000 checksum:
+  - `sha256sum -c navtrain_val6000_seed260306049.sha256`
+  - result: passed
+- Support/checkpoint regression subset:
+  - `tests/test_support_bucket_assignment.py`
+  - `tests/test_final_advantage_caps.py`
+  - `tests/test_checkpoint_store_audit.py`
+  - `tests/test_psi_checkpoint_tools.py`
+  - `tests/test_pareto_support_selection.py`
+  - `tests/test_pareto_support_index_io.py`
+  - `tests/test_stage2_pareto_support_loader.py`
+  - `tests/test_support_relative_advantage.py`
+  - result: `18 passed`
+- Stage2 APSD forward/original-path subset:
+  - `tests/test_stage2_original_path_regression.py`
+  - `tests/test_stage2_pareto_support_forward.py`
+  - `tests/test_stage2_pareto_support_loader.py`
+  - `tests/test_pareto_support_selection.py`
+  - `tests/test_pareto_support_index_io.py`
+  - result: `13 passed`
+- SR-PGRPO support/checkpoint safety subset:
+  - `tests/test_core_pareto_v2_regression_disabled.py`
+  - `tests/test_support_bucket_assignment.py`
+  - `tests/test_final_advantage_caps.py`
+  - `tests/test_support_relative_advantage.py`
+  - result: `5 passed`
+- Checkpoint safety subset after Stage2 forward tests:
+  - `tests/test_checkpoint_store_audit.py`
+  - `tests/test_psi_checkpoint_tools.py`
+  - result: included in previous `10 passed` run before adding Core-Pareto disabled-path test
+- Checkpoint lifecycle tool recheck at 2026-06-25T17:57:25Z:
+  - `python -m py_compile scripts/checkpoints/archive_checkpoint_immutable.py scripts/checkpoints/build_checkpoint_inventory.py scripts/checkpoints/rank_eval_checkpoints.py scripts/checkpoints/verify_checkpoint_store.py scripts/checkpoints/audit_checkpoint_store.py scripts/checkpoints/update_checkpoint_inventory_eval_metrics.py`
+  - `bash -n scripts/evaluation/watch_psi_stage2_checkpoint_eval_8gpu.sh scripts/evaluation/watch_psi_stage2_checkpoints.sh scripts/evaluation/watch_psi_stage3_checkpoints.sh scripts/evaluation/run_psi_stage2_pdm_eval_8gpu_exact_pool.sh scripts/psi_drive/run_stage2_apsd_8gpu.sh scripts/psi_drive/run_stage2_apsd_random_init_8gpu.sh scripts/psi_drive/run_stage3_after_val6000_top1.sh scripts/psi_drive/run_stage3_sr_pgrpo_8gpu.sh`
+  - `pytest -q tests/test_psi_checkpoint_tools.py tests/test_checkpoint_store_audit.py`
+  - result: `6 passed`
+- APSD/SR-PGRPO regression recheck at 2026-06-25T17:58:21Z:
+  - `pytest -q tests/test_pareto_support_selection.py tests/test_pareto_support_index_io.py tests/test_stage2_pareto_support_loader.py tests/test_stage2_pareto_support_forward.py tests/test_stage2_original_path_regression.py`
+  - result: `13 passed`
+  - `pytest -q tests/test_support_bucket_assignment.py tests/test_support_relative_advantage.py tests/test_final_advantage_caps.py tests/test_core_pareto_v2_regression_disabled.py`
+  - result: `5 passed`
+- PSI run summary utility at 2026-06-25T18:07:05Z:
+  - script: `scripts/psi_drive/summarize_psi_run.py`
+  - test: `pytest -q tests/test_psi_run_summary.py`
+  - result: `1 passed`
+  - current run summary JSON: `/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_random_init_full103k_gt_supp_20260625T162149Z/reports/run_summary_latest.json`
+  - current run summary MD: `/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_random_init_full103k_gt_supp_20260625T162149Z/reports/run_summary_latest.md`
+- Shell syntax:
+  - `scripts/evaluation/watch_psi_stage2_checkpoint_eval_8gpu.sh`
+  - `scripts/evaluation/run_psi_stage2_pdm_eval_8gpu_exact_pool.sh`
+  - `scripts/psi_drive/run_stage2_apsd_8gpu.sh`
+  - `scripts/psi_drive/run_stage2_apsd_random_init_8gpu.sh`
+  - `scripts/psi_drive/run_stage3_sr_pgrpo_8gpu.sh`
+  - `scripts/psi_drive/run_stage3_after_val6000_top1.sh`
+  - `scripts/psi_drive/watch_stage2_supplement_and_launch_random_init.sh`
+  - `scripts/psi_drive/build_stage2_supplemented_support_after_gt_only.sh`
+  - result: `bash -n` passed
+- Dry-run checks:
+  - Stage2 random-init dry-run resolves `stage2_pareto_support_index_path` to the GT-supplemented support index.
+  - Stage3 SR-PGRPO dry-run resolves `agent.grpo_support_index_path` to the GT-supplemented support index.

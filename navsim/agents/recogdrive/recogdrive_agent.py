@@ -194,6 +194,20 @@ class ReCogDriveAgent(AbstractAgent):
         grpo_core_pareto_use_phenotype_bucket_grpo: bool = False,
         grpo_core_pareto_buffer_bonus_enabled: bool = False,
         grpo_core_pareto_buffer_bonus_weight: float = 0.0,
+        grpo_use_support_relative: bool = False,
+        grpo_support_index_path: str = "",
+        grpo_support_rank_margin: float = 0.01,
+        grpo_support_std_floor: float = 0.005,
+        grpo_support_free_distance: float = 1.5,
+        grpo_support_novel_margin: float = 0.01,
+        grpo_support_novel_positive_cap: float = 0.20,
+        grpo_support_intra_weight: float = 1.0,
+        grpo_support_inter_weight: float = 0.15,
+        grpo_support_inter_clip: float = 0.30,
+        grpo_support_positive_only_inter: bool = True,
+        grpo_support_low_rank_group_weight: float = 0.25,
+        grpo_use_rms_advantage_scale: bool = True,
+        grpo_reapply_final_caps: bool = True,
         grpo_ppo_replay_inner_epochs: int = 1,
         grpo_ppo_replay_minibatch_size: int = 0,
         grpo_ppo_replay_max_grad_norm: float = 1.0,
@@ -714,6 +728,20 @@ class ReCogDriveAgent(AbstractAgent):
         self.grpo_core_pareto_use_phenotype_bucket_grpo = bool(grpo_core_pareto_use_phenotype_bucket_grpo)
         self.grpo_core_pareto_buffer_bonus_enabled = bool(grpo_core_pareto_buffer_bonus_enabled)
         self.grpo_core_pareto_buffer_bonus_weight = float(grpo_core_pareto_buffer_bonus_weight)
+        self.grpo_use_support_relative = bool(grpo_use_support_relative)
+        self.grpo_support_index_path = str(grpo_support_index_path or "")
+        self.grpo_support_rank_margin = float(grpo_support_rank_margin)
+        self.grpo_support_std_floor = float(grpo_support_std_floor)
+        self.grpo_support_free_distance = float(grpo_support_free_distance)
+        self.grpo_support_novel_margin = float(grpo_support_novel_margin)
+        self.grpo_support_novel_positive_cap = float(grpo_support_novel_positive_cap)
+        self.grpo_support_intra_weight = float(grpo_support_intra_weight)
+        self.grpo_support_inter_weight = float(grpo_support_inter_weight)
+        self.grpo_support_inter_clip = float(grpo_support_inter_clip)
+        self.grpo_support_positive_only_inter = bool(grpo_support_positive_only_inter)
+        self.grpo_support_low_rank_group_weight = float(grpo_support_low_rank_group_weight)
+        self.grpo_use_rms_advantage_scale = bool(grpo_use_rms_advantage_scale)
+        self.grpo_reapply_final_caps = bool(grpo_reapply_final_caps)
         self.grpo_ppo_replay_inner_epochs = int(grpo_ppo_replay_inner_epochs)
         self.grpo_ppo_replay_minibatch_size = int(grpo_ppo_replay_minibatch_size)
         self.grpo_ppo_replay_max_grad_norm = float(grpo_ppo_replay_max_grad_norm)
@@ -831,9 +859,20 @@ class ReCogDriveAgent(AbstractAgent):
             "grpo_core_pareto_min_core_std",
             "grpo_core_pareto_ep_ttc_balance_margin",
             "grpo_core_pareto_dual_lr",
+            "grpo_support_rank_margin",
+            "grpo_support_std_floor",
+            "grpo_support_free_distance",
+            "grpo_support_novel_margin",
+            "grpo_support_novel_positive_cap",
+            "grpo_support_intra_weight",
+            "grpo_support_inter_weight",
+            "grpo_support_inter_clip",
+            "grpo_support_low_rank_group_weight",
         ):
             if float(getattr(self, name)) < 0.0:
                 raise ValueError(f"{name} must be non-negative.")
+        if self.grpo_use_support_relative and not self.grpo_support_index_path:
+            raise ValueError("grpo_use_support_relative=True requires grpo_support_index_path.")
         if self.grpo_ppo_replay_inner_epochs <= 0:
             raise ValueError("grpo_ppo_replay_inner_epochs must be positive.")
         if self.grpo_ppo_replay_minibatch_size < 0:
@@ -1912,6 +1951,20 @@ class ReCogDriveAgent(AbstractAgent):
             )
             cfg.grpo_cfg.core_pareto_buffer_bonus_enabled = self.grpo_core_pareto_buffer_bonus_enabled
             cfg.grpo_cfg.core_pareto_buffer_bonus_weight = self.grpo_core_pareto_buffer_bonus_weight
+            cfg.grpo_cfg.grpo_use_support_relative = self.grpo_use_support_relative
+            cfg.grpo_cfg.grpo_support_index_path = self.grpo_support_index_path
+            cfg.grpo_cfg.grpo_support_rank_margin = self.grpo_support_rank_margin
+            cfg.grpo_cfg.grpo_support_std_floor = self.grpo_support_std_floor
+            cfg.grpo_cfg.grpo_support_free_distance = self.grpo_support_free_distance
+            cfg.grpo_cfg.grpo_support_novel_margin = self.grpo_support_novel_margin
+            cfg.grpo_cfg.grpo_support_novel_positive_cap = self.grpo_support_novel_positive_cap
+            cfg.grpo_cfg.grpo_support_intra_weight = self.grpo_support_intra_weight
+            cfg.grpo_cfg.grpo_support_inter_weight = self.grpo_support_inter_weight
+            cfg.grpo_cfg.grpo_support_inter_clip = self.grpo_support_inter_clip
+            cfg.grpo_cfg.grpo_support_positive_only_inter = self.grpo_support_positive_only_inter
+            cfg.grpo_cfg.grpo_support_low_rank_group_weight = self.grpo_support_low_rank_group_weight
+            cfg.grpo_cfg.grpo_use_rms_advantage_scale = self.grpo_use_rms_advantage_scale
+            cfg.grpo_cfg.grpo_reapply_final_caps = self.grpo_reapply_final_caps
             cfg.grpo_cfg.ppo_replay_inner_epochs = self.grpo_ppo_replay_inner_epochs
             cfg.grpo_cfg.ppo_replay_minibatch_size = self.grpo_ppo_replay_minibatch_size
             cfg.grpo_cfg.ppo_replay_max_grad_norm = self.grpo_ppo_replay_max_grad_norm
@@ -2329,11 +2382,19 @@ class ReCogDriveAgent(AbstractAgent):
 
         stage3_objective = getattr(self, "stage3_objective", "grpo" if self.grpo else "none")
         if targets is not None and stage3_objective == "none":
+            action_target_data = {
+                "action": targets["trajectory"].to(device=action_device, dtype=model_dtype),
+                "_allow_target_tokens_for_loss": True,
+            }
+            for key in ("support_trajectories", "support_mask", "support_weights", "support_scores", "support_missing_mask"):
+                value = targets.get(key) if isinstance(targets, dict) else None
+                if isinstance(value, torch.Tensor):
+                    target_dtype = torch.bool if key in {"support_mask", "support_missing_mask"} else model_dtype
+                    action_target_data[key] = value.to(device=action_device, dtype=target_dtype)
             action_inputs = BatchFeature(
                 data={
                     **action_input_data,
-                    "action": targets["trajectory"].to(device=action_device, dtype=model_dtype),
-                    "_allow_target_tokens_for_loss": True,
+                    **action_target_data,
                 }
             )
             predictions = self.action_head(last_hidden_state, action_inputs)
@@ -3011,6 +3072,145 @@ class ReCogDriveAgent(AbstractAgent):
             poses = predictions["pred_traj"].float().cpu().squeeze(0)
 
         return Trajectory(poses)
+
+    def _prepare_inference_action_context(
+        self,
+        agent_input: AgentInput,
+    ) -> tuple[torch.Tensor, BatchFeature]:
+        """Build the VLM context once so stochastic diffusion candidates can share it."""
+        features: Dict[str, torch.Tensor] = {}
+        for builder in self.get_feature_builders():
+            features.update(builder.compute_features(agent_input))
+        features = {key: value.unsqueeze(0) for key, value in features.items()}
+
+        action_device = next(self.action_head.parameters()).device
+        for key, tensor in features.items():
+            if isinstance(tensor, torch.Tensor):
+                features[key] = tensor.to(action_device)
+
+        model_dtype = next(self.action_head.parameters()).dtype
+        for key in EXPERT_FEATURE_KEYS:
+            if key in features and isinstance(features[key], torch.Tensor):
+                features[key] = features[key].to(model_dtype)
+        self._add_dummy_expert_features_if_needed(features, action_device, model_dtype)
+
+        history_trajectory = features["history_trajectory"].to(action_device)
+        high_command_one_hot = features["high_command_one_hot"].to(action_device)
+        if history_trajectory.ndim == 2:
+            history_trajectory = history_trajectory.unsqueeze(0)
+        if high_command_one_hot.ndim == 1:
+            high_command_one_hot = high_command_one_hot.unsqueeze(0)
+
+        if self.cache_hidden_state:
+            last_hidden_state = features["last_hidden_state"].to(action_device)
+        else:
+            if self.backbone is None:
+                raise RuntimeError("Agent is in 'no-cache' mode, but backbone is not initialized.")
+            image_path_tensor = features["image_path_tensor"]
+            if image_path_tensor.ndim == 1:
+                image_path_tensor = image_path_tensor.unsqueeze(0)
+            image_paths = self._decode_paths_from_tensor(image_path_tensor)
+            pixel_values_list = [load_image(path) for path in image_paths]
+            num_patches_list = [pixel_values.shape[0] for pixel_values in pixel_values_list]
+            pixel_values_cat = torch.cat(pixel_values_list, dim=0).to(action_device)
+
+            navigation_commands = ["turn left", "go straight", "turn right"]
+            command_indices = torch.argmax(high_command_one_hot, dim=-1)
+            command_str_list = [navigation_commands[idx.item()] for idx in command_indices]
+
+            questions = []
+            batch_size = high_command_one_hot.shape[0]
+            for i in range(batch_size):
+                history_trajectory_sample = history_trajectory[i]
+                command_str_sample = command_str_list[i]
+                history_str = " ".join(
+                    [
+                        f"   - t-{3-j}: ({format_number(history_trajectory_sample[j, 0].item())}, "
+                        f"{format_number(history_trajectory_sample[j, 1].item())}, "
+                        f"{format_number(history_trajectory_sample[j, 2].item())})"
+                        for j in range(history_trajectory_sample.shape[0])
+                    ]
+                )
+                prompt = (
+                    "<image>\nAs an autonomous driving system, predict the vehicle's trajectory based on:\n"
+                    "1. Visual perception from front camera view\n"
+                    f"2. Historical motion context (last 4 timesteps):{history_str}\n"
+                    f"3. Active navigation command: [{command_str_sample.upper()}]"
+                )
+                output_requirements = (
+                    "\nOutput requirements:\n- Predict 8 future trajectory points\n"
+                    "- Each point format: (x:float, y:float, heading:float)\n"
+                    "- Use [PT, ...] to encapsulate the trajectory\n"
+                    "- Maintain numerical precision to 2 decimal places"
+                )
+                questions.append(f"{prompt}{output_requirements}")
+
+            outputs = self.backbone(pixel_values_cat, questions, num_patches_list=num_patches_list)
+            last_hidden_state = outputs.hidden_states[-1]
+
+        status_feature = features["status_feature"].to(action_device)
+        if status_feature.ndim == 1:
+            status_feature = status_feature.unsqueeze(0)
+        if last_hidden_state.ndim == 2:
+            last_hidden_state = last_hidden_state.unsqueeze(0)
+
+        last_hidden_state = last_hidden_state.to(model_dtype)
+        history_trajectory_reshaped = history_trajectory.view(history_trajectory.size(0), -1)
+        action_input_data = {
+            "state": torch.cat([status_feature, history_trajectory_reshaped], dim=1).to(model_dtype),
+            "his_traj": history_trajectory_reshaped.to(model_dtype),
+            "history_trajectory": history_trajectory.to(model_dtype),
+            "status_feature": status_feature.to(model_dtype),
+            "high_command_one_hot": high_command_one_hot.to(model_dtype),
+        }
+
+        optional_feature_keys = tuple(
+            dict.fromkeys(
+                (
+                    *EXPERT_FEATURE_KEYS,
+                    *(LAST_VLA_FEATURE_KEYS if self.use_last_vla else ()),
+                    *(TWO_EXPERT_FEATURE_KEYS if self.use_two_expert_slots else ()),
+                )
+            )
+        )
+        target_feature_keys = set(EXPERT_TARGET_FEATURE_KEYS)
+        if self.use_last_vla:
+            target_feature_keys.update(LAST_VLA_TARGET_KEYS)
+        if self.use_two_expert_slots:
+            target_feature_keys.update(TWO_EXPERT_TARGET_KEYS)
+        for key in optional_feature_keys:
+            if key in features and isinstance(features[key], torch.Tensor) and key not in target_feature_keys:
+                action_input_data[key] = features[key].to(model_dtype)
+
+        return last_hidden_state, BatchFeature(action_input_data)
+
+    def compute_trajectory_candidates(
+        self,
+        agent_input: AgentInput,
+        num_candidates: int,
+        seeds: Optional[List[int]] = None,
+        deterministic: bool = False,
+    ) -> List[Trajectory]:
+        if num_candidates <= 0:
+            raise ValueError(f"num_candidates must be positive, got {num_candidates}.")
+        self.eval()
+        with torch.no_grad():
+            last_hidden_state, action_inputs = self._prepare_inference_action_context(agent_input)
+            trajectories: List[Trajectory] = []
+            for candidate_idx in range(num_candidates):
+                if seeds is not None:
+                    seed = int(seeds[candidate_idx])
+                    torch.manual_seed(seed)
+                    if torch.cuda.is_available():
+                        torch.cuda.manual_seed_all(seed)
+                predictions = self.action_head.get_action(
+                    last_hidden_state,
+                    action_inputs,
+                    deterministic=deterministic,
+                )
+                poses = predictions["pred_traj"].float().cpu().squeeze(0)
+                trajectories.append(Trajectory(poses))
+        return trajectories
 
     def compute_trajectory_vis(self, agent_input: AgentInput) -> Trajectory:
         self.eval()

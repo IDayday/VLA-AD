@@ -57,7 +57,7 @@ class CacheOnlyDataset(torch.utils.data.Dataset):
         if log_names is not None:
             self.log_names = [Path(log_name) for log_name in log_names if (self._cache_path / log_name).is_dir()]
         else:
-            self.log_names = [log_name for log_name in self._cache_path.iterdir()]
+            self.log_names = [log_name for log_name in self._cache_path.iterdir() if log_name.is_dir()]
 
         self._feature_builders = feature_builders
         self._target_builders = target_builders
@@ -103,6 +103,8 @@ class CacheOnlyDataset(torch.utils.data.Dataset):
 
         for log_name in tqdm(log_names, desc="Loading Valid Caches"):
             log_path = cache_path / log_name
+            if not log_path.is_dir():
+                continue
             for token_path in log_path.iterdir():
                 found_caches: List[bool] = []
                 for builder in feature_builders + target_builders:

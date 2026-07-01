@@ -1,0 +1,55 @@
+# PSI-Drive Stage3 SR-PGRPO override reference.
+
+agent:
+  vlm_path: ${oc.env:RECOGDRIVE_VLM_PATH,/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B}
+  cam_type: single
+  cache_hidden_state: true
+  vlm_type: internvl
+  dit_type: small
+  vlm_size: small
+  sampling_method: ddim
+  train_backbone: false
+  use_expert_features: false
+  expert_feature_source: none
+  allow_expert_target_features: false
+  use_jepa: false
+  use_vggt: false
+  use_last_rd: false
+  last_rd_stage: disabled
+  use_last_vla: false
+  last_vla_stage: disabled
+  use_two_expert_slots: false
+  grpo: true
+  stage3_objective: grpo
+  grpo_sample_time: 16
+  grpo_reward_mode: core_pareto
+  grpo_use_core_pareto: true
+  grpo_use_support_relative: true
+  grpo_support_index_path: ${oc.env:PSI_STAGE2_SUPPORT_INDEX}
+  grpo_support_rank_margin: 0.01
+  grpo_support_std_floor: 0.005
+  grpo_support_free_distance: 1.5
+  grpo_support_novel_margin: 0.01
+  grpo_support_novel_positive_cap: 0.20
+  grpo_support_intra_weight: 1.0
+  grpo_support_inter_weight: 0.15
+  grpo_support_inter_clip: 0.30
+  grpo_support_positive_only_inter: true
+  grpo_support_low_rank_group_weight: 0.25
+  grpo_use_rms_advantage_scale: true
+  grpo_reapply_final_caps: true
+  grpo_normalize_advantage_batch: false
+  reference_kl_coeff: 0.02
+  bc_anneal: true
+  bc_coeff_start: 0.10
+  bc_coeff_end: 0.05
+  bc_anneal_epochs: 5
+
+trainer:
+  params:
+    max_epochs: 20
+
+checkpoint:
+  layout: psi
+  every_n_epochs: 1
+  every_n_train_steps: 300

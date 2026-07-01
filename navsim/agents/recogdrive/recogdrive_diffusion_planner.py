@@ -21,7 +21,7 @@ import pickle
 import warnings
 from dataclasses import asdict, dataclass, field, is_dataclass
 from pathlib import Path
-from typing import Any, Dict, Literal, Optional, Union
+from typing import Any, Dict, Literal, Optional, Sequence, Union
 
 import numpy as np
 import torch
@@ -57,6 +57,13 @@ from .blocks.encoder import (
 from .recogdrive_dit import LightningDiT
 from .offline_action_explorer import build_structured_perturbations
 from .offline_rl_buffer import REQUIRED_COMPONENT_KEYS, load_elite_record, load_elite_record_path
+from .pareto_support import (
+    FREE_BUCKET_ID,
+    MISSING_BUCKET_ID,
+    assign_support_buckets,
+    load_pareto_support_index,
+    lookup_support_batch,
+)
 from .expert_fusion import (
     AlignmentHead,
     ExpertAdapter768,
@@ -224,6 +231,22 @@ class GRPOConfig:
     core_pareto_buffer_require_ep_floor: bool = True
     core_pareto_buffer_require_ddc_guard: bool = True
     core_pareto_buffer_max_targets_per_scene: int = 1
+
+    # PSI-Drive SR-PGRPO. Disabled by default.
+    grpo_use_support_relative: bool = False
+    grpo_support_index_path: str = ""
+    grpo_support_rank_margin: float = 0.01
+    grpo_support_std_floor: float = 0.005
+    grpo_support_free_distance: float = 1.5
+    grpo_support_novel_margin: float = 0.01
+    grpo_support_novel_positive_cap: float = 0.20
+    grpo_support_intra_weight: float = 1.0
+    grpo_support_inter_weight: float = 0.15
+    grpo_support_inter_clip: float = 0.30
+    grpo_support_positive_only_inter: bool = True
+    grpo_support_low_rank_group_weight: float = 0.25
+    grpo_use_rms_advantage_scale: bool = True
+    grpo_reapply_final_caps: bool = True
 
     # Legacy prototype fields kept for backward-compatible dry runs.
     core_pareto_ep_floor: float = 0.75
@@ -1786,6 +1809,20 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "core_pareto_buffer_require_ep_floor",
             "core_pareto_buffer_require_ddc_guard",
             "core_pareto_buffer_max_targets_per_scene",
+            "grpo_use_support_relative",
+            "grpo_support_index_path",
+            "grpo_support_rank_margin",
+            "grpo_support_std_floor",
+            "grpo_support_free_distance",
+            "grpo_support_novel_margin",
+            "grpo_support_novel_positive_cap",
+            "grpo_support_intra_weight",
+            "grpo_support_inter_weight",
+            "grpo_support_inter_clip",
+            "grpo_support_positive_only_inter",
+            "grpo_support_low_rank_group_weight",
+            "grpo_use_rms_advantage_scale",
+            "grpo_reapply_final_caps",
             "core_pareto_ep_floor",
             "core_pareto_ep_floor_penalty_weight",
             "core_pareto_use_ddc_guard",
@@ -1948,9 +1985,22 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "core_pareto_buffer_bonus_weight",
             "core_pareto_buffer_bonus_scale_m",
             "core_pareto_buffer_min_reward_margin",
+            "grpo_support_rank_margin",
+            "grpo_support_std_floor",
+            "grpo_support_free_distance",
+            "grpo_support_novel_margin",
+            "grpo_support_novel_positive_cap",
+            "grpo_support_intra_weight",
+            "grpo_support_inter_weight",
+            "grpo_support_inter_clip",
+            "grpo_support_low_rank_group_weight",
         ):
             if float(getattr(self, name)) < 0.0:
                 raise ValueError(f"{name} must be non-negative.")
+        if bool(getattr(self, "grpo_use_support_relative", False)) and not str(
+            getattr(self, "grpo_support_index_path", "")
+        ):
+            raise ValueError("grpo_use_support_relative=True requires grpo_support_index_path.")
         if not (0.0 < float(self.core_pareto_dual_ema) < 1.0):
             raise ValueError("core_pareto_dual_ema must be in (0, 1).")
         if float(self.core_pareto_lambda_slow_max) < float(self.core_pareto_lambda_slow_min):
@@ -3329,6 +3379,99 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
         raise ValueError(f"Unsupported last_vla_teacher_traj_mode={mode!r}.")
 
+    def _select_stage2_pareto_support_target(
+        self,
+        action_input: BatchFeature,
+        gt_actions_norm: torch.Tensor,
+    ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+        diagnostics = {
+            "stage2_pareto_enabled": gt_actions_norm.new_zeros(()),
+            "stage2_pareto_used_ratio": gt_actions_norm.new_zeros(()),
+            "stage2_pareto_missing_ratio": gt_actions_norm.new_zeros(()),
+            "stage2_pareto_support_count_mean": gt_actions_norm.new_zeros(()),
+            "stage2_pareto_selected_index_mean": gt_actions_norm.new_zeros(()),
+            "stage2_pareto_selected_weight_mean": gt_actions_norm.new_zeros(()),
+            "stage2_pareto_selected_score_mean": gt_actions_norm.new_zeros(()),
+        }
+        if not self.training:
+            return gt_actions_norm, diagnostics
+
+        support_trajectories = action_input.get("support_trajectories", None)
+        support_mask = action_input.get("support_mask", None)
+        support_weights = action_input.get("support_weights", None)
+        support_scores = action_input.get("support_scores", None)
+        if not (
+            isinstance(support_trajectories, torch.Tensor)
+            and isinstance(support_mask, torch.Tensor)
+            and isinstance(support_weights, torch.Tensor)
+        ):
+            return gt_actions_norm, diagnostics
+
+        B = gt_actions_norm.shape[0]
+        if tuple(support_trajectories.shape) != (B, 3, 8, 3):
+            raise ValueError(
+                f"support_trajectories must have shape [B, 3, 8, 3], got {tuple(support_trajectories.shape)}."
+            )
+        if tuple(support_mask.shape) != (B, 3) or tuple(support_weights.shape) != (B, 3):
+            raise ValueError(
+                f"support_mask/support_weights must have shape [B, 3], got "
+                f"{tuple(support_mask.shape)} and {tuple(support_weights.shape)}."
+            )
+
+        support_trajectories = support_trajectories.to(device=gt_actions_norm.device, dtype=gt_actions_norm.dtype)
+        support_mask = support_mask.to(device=gt_actions_norm.device, dtype=torch.bool)
+        support_weights = support_weights.to(device=gt_actions_norm.device, dtype=torch.float32)
+        if support_scores is None:
+            support_scores = torch.zeros_like(support_weights)
+        else:
+            support_scores = support_scores.to(device=gt_actions_norm.device, dtype=torch.float32)
+            if tuple(support_scores.shape) != (B, 3):
+                raise ValueError(f"support_scores must have shape [B, 3], got {tuple(support_scores.shape)}.")
+
+        missing_mask = action_input.get("support_missing_mask", None)
+        if isinstance(missing_mask, torch.Tensor):
+            missing_mask = missing_mask.to(device=gt_actions_norm.device, dtype=torch.bool).view(B)
+        else:
+            missing_mask = torch.zeros(B, device=gt_actions_norm.device, dtype=torch.bool)
+
+        finite_support = torch.isfinite(support_trajectories).flatten(2).all(dim=2)
+        finite_weights = torch.isfinite(support_weights)
+        support_mask = support_mask & finite_support & finite_weights
+        support_count = support_mask.sum(dim=1)
+        row_has_support = (support_count > 0) & (~missing_mask)
+        diagnostics["stage2_pareto_enabled"] = gt_actions_norm.new_tensor(1.0)
+        diagnostics["stage2_pareto_used_ratio"] = row_has_support.float().mean().to(dtype=gt_actions_norm.dtype)
+        diagnostics["stage2_pareto_missing_ratio"] = (~row_has_support).float().mean().to(dtype=gt_actions_norm.dtype)
+        diagnostics["stage2_pareto_support_count_mean"] = support_count.float().mean().to(dtype=gt_actions_norm.dtype)
+        if not bool(row_has_support.any().item()):
+            return gt_actions_norm, diagnostics
+
+        masked_weights = support_weights.clamp(min=0.0) * support_mask.float()
+        weight_sum = masked_weights.sum(dim=1, keepdim=True)
+        uniform = support_mask.float() / support_count.clamp(min=1).to(dtype=torch.float32).unsqueeze(1)
+        normalized_weights = torch.where(weight_sum > 0.0, masked_weights / weight_sum.clamp(min=1e-8), uniform)
+        fallback_weights = torch.tensor(
+            [1.0, 0.0, 0.0],
+            device=gt_actions_norm.device,
+            dtype=torch.float32,
+        ).view(1, 3)
+        normalized_weights = torch.where(row_has_support[:, None], normalized_weights, fallback_weights)
+        selected_idx = torch.multinomial(normalized_weights, num_samples=1).squeeze(1)
+        batch_idx = torch.arange(B, device=gt_actions_norm.device)
+        selected_physical = support_trajectories[batch_idx, selected_idx]
+        selected_norm = self.norm_odo(selected_physical)
+        selected_norm = torch.where(row_has_support[:, None, None], selected_norm, gt_actions_norm)
+        if not torch.isfinite(selected_norm).all():
+            raise ValueError("Selected Stage2 Pareto support target contains non-finite values.")
+
+        used_idx = selected_idx[row_has_support]
+        used_weights = normalized_weights[batch_idx, selected_idx][row_has_support]
+        used_scores = support_scores[batch_idx, selected_idx][row_has_support]
+        diagnostics["stage2_pareto_selected_index_mean"] = used_idx.float().mean().to(dtype=gt_actions_norm.dtype)
+        diagnostics["stage2_pareto_selected_weight_mean"] = used_weights.float().mean().to(dtype=gt_actions_norm.dtype)
+        diagnostics["stage2_pareto_selected_score_mean"] = used_scores.float().mean().to(dtype=gt_actions_norm.dtype)
+        return selected_norm, diagnostics
+
     def _last_vla_aux_weight(self, loss_name: str) -> float:
         base = {
             "last_vla_geometry_loss": self.config.last_vla_geometry_loss_weight,
@@ -3847,8 +3990,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             )
             return self._format_training_output(loss, diffusion_loss, jepa_alignment_loss, vggt_alignment_loss, dit_context)
 
-        diffusion_target, residual_alpha, _, residual_diagnostics = self._last_vla_diffusion_target_info(
+        selected_stage2_target, stage2_pareto_diagnostics = self._select_stage2_pareto_support_target(
+            action_input,
             gt_actions,
+        )
+        diffusion_target, residual_alpha, _, residual_diagnostics = self._last_vla_diffusion_target_info(
+            selected_stage2_target,
             training=self.training,
             action_input=action_input,
         )
@@ -3871,6 +4018,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             )
             dit_context["diagnostics"]["residual_alpha"] = diffusion_target.new_tensor(float(residual_alpha))
             dit_context["diagnostics"].update(residual_diagnostics)
+            dit_context["diagnostics"].update(stage2_pareto_diagnostics)
             pred_velocity = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input)
             diffusion_loss = F.mse_loss(pred_velocity, velocity_target, reduction='mean')
             policy_kd_loss = diffusion_loss.new_zeros(())
@@ -3892,6 +4040,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             )
             dit_context["diagnostics"]["residual_alpha"] = diffusion_target.new_tensor(float(residual_alpha))
             dit_context["diagnostics"].update(residual_diagnostics)
+            dit_context["diagnostics"].update(stage2_pareto_diagnostics)
             pred_noise = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input)
             diffusion_loss = F.mse_loss(pred_noise, noise, reduction='mean')
             policy_kd_loss = self._compute_policy_kd_loss(vl_features, action_input, noisy_actions, t_discrete, pred_noise)
@@ -4007,6 +4156,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "residual_anchor_norm",
                 "residual_anchor_l1_to_reference",
                 "residual_target_norm",
+                "stage2_pareto_enabled",
+                "stage2_pareto_used_ratio",
+                "stage2_pareto_missing_ratio",
+                "stage2_pareto_support_count_mean",
+                "stage2_pareto_selected_index_mean",
+                "stage2_pareto_selected_weight_mean",
+                "stage2_pareto_selected_score_mean",
                 "geometry_weight_effective",
                 "dynamic_weight_effective",
                 "coarse_weight_effective",
@@ -4029,7 +4185,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "last_vla_horizon_cot_residual_norm",
             ):
                 if key in diagnostics and isinstance(diagnostics[key], torch.Tensor):
-                    output_key = key if key.startswith(("last_vla_", "two_expert_")) else f"last_vla_{key}"
+                    output_key = (
+                        key
+                        if key.startswith(("last_vla_", "two_expert_", "stage2_pareto_"))
+                        else f"last_vla_{key}"
+                    )
                     output[output_key] = diagnostics[key].to(device=loss.device, dtype=loss.dtype)
         return BatchFeature(data=output)
 
@@ -5383,6 +5543,265 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             lateral_bucket = torch.where(final_y < -threshold, torch.zeros_like(lateral_bucket), lateral_bucket)
         return progress_bucket * 3 + lateral_bucket
 
+    def _load_grpo_support_index(self) -> Optional[Dict[str, Any]]:
+        path = str(getattr(self, "grpo_support_index_path", "") or "")
+        if not path:
+            return None
+        cached_path = getattr(self, "_grpo_support_index_path_loaded", None)
+        if getattr(self, "_grpo_support_index", None) is None or cached_path != path:
+            self._grpo_support_index = load_pareto_support_index(path)
+            self._grpo_support_index_path_loaded = path
+        return self._grpo_support_index
+
+    def _compute_support_relative_pareto_advantages(
+        self,
+        base_adv: torch.Tensor,
+        base_group_weight: torch.Tensor,
+        score: torch.Tensor,
+        trajs_matrix: torch.Tensor,
+        valid_progress: torch.Tensor,
+        valid: torch.Tensor,
+        ep_floor_ok: torch.Tensor,
+        pareto_front: torch.Tensor,
+        reference_margin: torch.Tensor,
+        ref_score: torch.Tensor,
+        tokens_list: Optional[Sequence[str]],
+    ) -> tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
+        B, G = score.shape
+        device = score.device
+        dtype = score.dtype
+        zero = score.new_zeros(())
+        support_aux = {
+            "support_missing_ratio": zero,
+            "support_count_mean": zero,
+            "occupied_support_bucket_count": zero,
+            "rankable_support_bucket_count": zero,
+            "singleton_support_bucket_ratio": zero,
+            "free_bucket_ratio": zero,
+            "free_bucket_valid_ratio": zero,
+            "within_support_score_std": zero,
+            "between_support_rep_std": zero,
+            "best_valid_minus_median_valid": zero,
+            "best_valid_minus_reference": zero,
+            "support_0_occupancy": zero,
+            "support_1_occupancy": zero,
+            "support_2_occupancy": zero,
+            "support_concentration": zero,
+            "frontier_gain": zero,
+            "support_relative_enabled": zero,
+            "support_low_rank_group_ratio": zero,
+        }
+        if tokens_list is None or len(tokens_list) != B:
+            support_aux["support_missing_ratio"] = score.new_ones(())
+            return base_adv, base_group_weight, support_aux
+        support_index = self._load_grpo_support_index()
+        if support_index is None:
+            support_aux["support_missing_ratio"] = score.new_ones(())
+            return base_adv, base_group_weight, support_aux
+
+        support = lookup_support_batch(
+            [str(token) for token in tokens_list],
+            support_index,
+            device=device,
+            dtype=trajs_matrix.dtype,
+            missing_policy="zeros",
+        )
+        support_mask = support["support_mask"].bool()
+        support_missing = support["support_missing_mask"].bool()
+        has_support = support_mask.any(dim=1) & (~support_missing)
+        support_count = support_mask.sum(dim=1)
+        support_aux["support_relative_enabled"] = score.new_tensor(1.0)
+        support_aux["support_missing_ratio"] = (~has_support).float().mean().to(dtype=dtype)
+        support_aux["support_count_mean"] = support_count.float().mean().to(dtype=dtype)
+        if not bool(has_support.any().item()):
+            return base_adv, base_group_weight, support_aux
+
+        descriptor_mean = support_index["descriptor_mean"].to(device=device, dtype=trajs_matrix.dtype)
+        descriptor_std = support_index["descriptor_std"].to(device=device, dtype=trajs_matrix.dtype)
+        buckets = assign_support_buckets(
+            trajs_matrix,
+            support["support_trajectories"].to(device=device, dtype=trajs_matrix.dtype),
+            support_mask,
+            descriptor_mean,
+            descriptor_std,
+            free_distance=float(self.grpo_support_free_distance),
+        )
+        bucket_id = buckets["bucket_id"].to(device=device)
+        adv = base_adv.view(B, G).clone()
+        group_weight = base_group_weight.clone()
+        rankable_group = torch.zeros(B, device=device, dtype=torch.bool)
+        low_rank_group = torch.zeros(B, device=device, dtype=torch.bool)
+        occupied_counts = []
+        rankable_bucket_counts = []
+        singleton_ratios = []
+        free_ratios = []
+        free_valid_ratios = []
+        within_stds = []
+        between_stds = []
+        best_minus_median = []
+        best_minus_ref = []
+        support_occupancy = torch.zeros(3, device=device, dtype=torch.float32)
+        concentration_values = []
+        frontier_gain_values = []
+        rank_margin = float(self.grpo_support_rank_margin)
+        std_floor = float(self.grpo_support_std_floor)
+
+        for b in range(B):
+            if not bool(has_support[b].item()):
+                continue
+            row_bucket = bucket_id[b]
+            row_valid_progress = valid_progress[b]
+            active = row_bucket != MISSING_BUCKET_ID
+            unique_buckets = torch.unique(row_bucket[active])
+            occupied_counts.append(float(unique_buckets.numel()))
+            free_mask = row_bucket == FREE_BUCKET_ID
+            free_ratios.append(float(free_mask.float().mean().detach().cpu()))
+            free_valid_ratios.append(
+                float((free_mask & row_valid_progress).float().sum().detach().cpu())
+                / max(float(free_mask.float().sum().detach().cpu()), 1.0)
+            )
+            for slot in range(3):
+                support_occupancy[slot] += float((row_bucket == slot).float().mean().detach().cpu())
+            bucket_reps = []
+            bucket_values = []
+            row_rankable = 0
+            singleton_count = 0
+            valid_scores = score[b][row_valid_progress]
+            if valid_scores.numel() > 0:
+                best_minus_median.append(float((valid_scores.max() - valid_scores.median()).detach().cpu()))
+                best_minus_ref.append(float((valid_scores.max() - ref_score[b]).detach().cpu()))
+            for bucket in unique_buckets.tolist():
+                mask_b = row_bucket == int(bucket)
+                valid_b = mask_b & row_valid_progress
+                count_b = int(valid_b.sum().item())
+                if count_b == 1:
+                    singleton_count += 1
+                if count_b > 0:
+                    values_b = score[b][valid_b]
+                    topk = torch.topk(values_b, k=min(2, values_b.numel())).values
+                    bucket_reps.append(topk.mean())
+                    bucket_values.append(int(bucket))
+                    if values_b.numel() >= 2:
+                        within_stds.append(float(values_b.std(unbiased=False).detach().cpu()))
+                if count_b >= 2:
+                    values_b = score[b][valid_b]
+                    span_b = values_b.max() - values_b.min()
+                    if bool((span_b >= rank_margin).item()):
+                        centered = values_b - values_b.mean()
+                        z = centered / values_b.std(unbiased=False).clamp(min=std_floor)
+                        adv[b, valid_b] = float(self.grpo_support_intra_weight) * z.to(dtype=adv.dtype)
+                        row_rankable += 1
+                elif int(bucket) == FREE_BUCKET_ID and count_b == 1:
+                    idx = torch.nonzero(valid_b, as_tuple=False).view(-1)[0]
+                    novel = (score[b, idx] > ref_score[b] + float(self.grpo_support_novel_margin)) & pareto_front[b, idx]
+                    if bool(novel.item()):
+                        adv[b, idx] = torch.minimum(
+                            score.new_tensor(float(self.grpo_support_novel_positive_cap)),
+                            (score[b, idx] - ref_score[b]).to(dtype=adv.dtype),
+                        )
+            if bucket_reps:
+                reps = torch.stack(bucket_reps)
+                if reps.numel() >= 2:
+                    between_stds.append(float(reps.std(unbiased=False).detach().cpu()))
+                    rep_z = (reps - reps.mean()) / reps.std(unbiased=False).clamp(min=std_floor)
+                    if bool(self.grpo_support_positive_only_inter):
+                        rep_z = rep_z.clamp(min=0.0)
+                    rep_z = rep_z.clamp(max=float(self.grpo_support_inter_clip))
+                    for idx, bucket in enumerate(bucket_values):
+                        mask_b = (row_bucket == bucket) & row_valid_progress
+                        adv[b, mask_b] = adv[b, mask_b] + float(self.grpo_support_inter_weight) * rep_z[idx].to(adv)
+            if bool(row_valid_progress.any().item()):
+                adv[b, row_valid_progress] = adv[b, row_valid_progress] + reference_margin[b, row_valid_progress].to(adv)
+                frontier_gain_values.append(float((score[b][row_valid_progress].max() - ref_score[b]).detach().cpu()))
+            if row_rankable > 0:
+                rankable_group[b] = True
+            elif int(row_valid_progress.sum().item()) >= 2:
+                low_rank_group[b] = True
+                group_weight[b] = float(self.grpo_support_low_rank_group_weight)
+            rankable_bucket_counts.append(float(row_rankable))
+            singleton_ratios.append(float(singleton_count) / max(float(unique_buckets.numel()), 1.0))
+            counts = torch.stack([(row_bucket == slot).float().mean() for slot in range(3)])
+            concentration_values.append(float(counts.max().detach().cpu()))
+
+        dominated_valid = valid_progress & (~pareto_front)
+        adv = torch.where(
+            dominated_valid & (adv > float(self.core_pareto_dominated_positive_adv_cap)),
+            score.new_full(score.shape, float(self.core_pareto_dominated_positive_adv_cap)),
+            adv,
+        )
+        slow_fail = valid & (~ep_floor_ok)
+        adv = torch.where(
+            slow_fail & (adv > float(self.core_pareto_positive_slow_fail_cap)),
+            score.new_full(score.shape, float(self.core_pareto_positive_slow_fail_cap)),
+            adv,
+        )
+        if occupied_counts:
+            support_aux["occupied_support_bucket_count"] = score.new_tensor(float(sum(occupied_counts) / len(occupied_counts)))
+            support_aux["rankable_support_bucket_count"] = score.new_tensor(float(sum(rankable_bucket_counts) / len(rankable_bucket_counts)))
+            support_aux["singleton_support_bucket_ratio"] = score.new_tensor(float(sum(singleton_ratios) / len(singleton_ratios)))
+            support_aux["free_bucket_ratio"] = score.new_tensor(float(sum(free_ratios) / len(free_ratios)))
+            support_aux["free_bucket_valid_ratio"] = score.new_tensor(float(sum(free_valid_ratios) / len(free_valid_ratios)))
+            support_aux["support_concentration"] = score.new_tensor(float(sum(concentration_values) / len(concentration_values)))
+        if within_stds:
+            support_aux["within_support_score_std"] = score.new_tensor(float(sum(within_stds) / len(within_stds)))
+        if between_stds:
+            support_aux["between_support_rep_std"] = score.new_tensor(float(sum(between_stds) / len(between_stds)))
+        if best_minus_median:
+            support_aux["best_valid_minus_median_valid"] = score.new_tensor(float(sum(best_minus_median) / len(best_minus_median)))
+        if best_minus_ref:
+            support_aux["best_valid_minus_reference"] = score.new_tensor(float(sum(best_minus_ref) / len(best_minus_ref)))
+        if frontier_gain_values:
+            support_aux["frontier_gain"] = score.new_tensor(float(sum(frontier_gain_values) / len(frontier_gain_values)))
+        support_aux["support_0_occupancy"] = (support_occupancy[0] / max(float(B), 1.0)).to(dtype=dtype)
+        support_aux["support_1_occupancy"] = (support_occupancy[1] / max(float(B), 1.0)).to(dtype=dtype)
+        support_aux["support_2_occupancy"] = (support_occupancy[2] / max(float(B), 1.0)).to(dtype=dtype)
+        support_aux["support_low_rank_group_ratio"] = low_rank_group.float().mean().to(dtype=dtype)
+        group_weight[rankable_group] = 1.0
+        return adv.reshape(B * G).detach(), group_weight.detach(), support_aux
+
+    def _sign_preserving_rms_scale(self, adv: torch.Tensor) -> torch.Tensor:
+        rms = adv.float().square().mean().sqrt().to(adv).clamp(min=1.0)
+        return adv / rms
+
+    def _reapply_final_advantage_caps(
+        self,
+        adv: torch.Tensor,
+        advantage_aux: Dict[str, torch.Tensor],
+        B: int,
+        G: int,
+    ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+        matrix = adv.view(B, G)
+        valid = advantage_aux["core_pareto_valid_mask"].to(device=adv.device).bool()
+        ep_ok = advantage_aux["core_pareto_ep_floor_ok_mask"].to(device=adv.device).bool()
+        pareto = advantage_aux["core_pareto_pareto_front_mask"].to(device=adv.device).bool()
+        invalid = ~valid
+        slow_fail = valid & (~ep_ok)
+        dominated = valid & ep_ok & (~pareto)
+        matrix = torch.where(invalid & (matrix > 0.0), torch.zeros_like(matrix), matrix)
+        matrix = torch.where(
+            slow_fail & (matrix > float(self.core_pareto_positive_slow_fail_cap)),
+            matrix.new_full(matrix.shape, float(self.core_pareto_positive_slow_fail_cap)),
+            matrix,
+        )
+        matrix = torch.where(
+            dominated & (matrix > float(self.core_pareto_dominated_positive_adv_cap)),
+            matrix.new_full(matrix.shape, float(self.core_pareto_dominated_positive_adv_cap)),
+            matrix,
+        )
+        final = matrix.reshape(B * G)
+        logs = {
+            "final_positive_invalid_ratio": (
+                ((matrix > 0.0) & invalid).float().sum() / invalid.float().sum().clamp(min=1.0)
+            ).to(final),
+            "final_positive_slow_fail_ratio": (
+                ((matrix > 0.0) & slow_fail).float().sum() / slow_fail.float().sum().clamp(min=1.0)
+            ).to(final),
+            "final_positive_dominated_ratio": (
+                ((matrix > 0.0) & dominated).float().sum() / dominated.float().sum().clamp(min=1.0)
+            ).to(final),
+        }
+        return final, logs
+
     def _masked_zscore(
         self,
         values: torch.Tensor,
@@ -5459,6 +5878,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         components_matrix: Dict[str, torch.Tensor],
         trajs_matrix: torch.Tensor,
         ref: Dict[str, torch.Tensor],
+        tokens_list: Optional[Sequence[str]] = None,
     ) -> tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
         B, G = rewards_matrix.shape
         pdms = components_matrix.get("pdms", rewards_matrix).float()
@@ -5715,6 +6135,21 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "ref_gt_core": ref["gt_core"].mean().detach().to(device=rewards_matrix.device, dtype=rewards_matrix.dtype),
             "ref_il_core": ref["il_core"].mean().detach().to(device=rewards_matrix.device, dtype=rewards_matrix.dtype),
         }
+        if bool(getattr(self, "grpo_use_support_relative", False)):
+            adv, group_weight, support_aux = self._compute_support_relative_pareto_advantages(
+                adv,
+                group_weight,
+                score,
+                trajs_matrix,
+                valid_progress,
+                valid,
+                ep_floor_ok,
+                pareto_front,
+                reference_margin,
+                ref_score,
+                tokens_list,
+            )
+            aux.update({key: value.detach().to(device=rewards_matrix.device, dtype=rewards_matrix.dtype) for key, value in support_aux.items()})
         return adv.reshape(B * G).detach(), group_weight.detach(), aux
 
     def _stage3_core_pareto_log_metrics(
@@ -5800,6 +6235,24 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "core_pareto_ep_floor": ref.new_tensor(float(self.core_pareto_ep_floor)),
             "core_pareto_ddc_guard_threshold": ref.new_tensor(float(self.core_pareto_ddc_guard_threshold)),
             "core_pareto_pareto_bonus": ref.new_tensor(float(self.core_pareto_pareto_bonus)),
+            "support_relative_enabled": aux_value("support_relative_enabled"),
+            "support_missing_ratio": aux_value("support_missing_ratio"),
+            "support_count_mean": aux_value("support_count_mean"),
+            "occupied_support_bucket_count": aux_value("occupied_support_bucket_count"),
+            "rankable_support_bucket_count": aux_value("rankable_support_bucket_count"),
+            "singleton_support_bucket_ratio": aux_value("singleton_support_bucket_ratio"),
+            "free_bucket_ratio": aux_value("free_bucket_ratio"),
+            "free_bucket_valid_ratio": aux_value("free_bucket_valid_ratio"),
+            "within_support_score_std": aux_value("within_support_score_std"),
+            "between_support_rep_std": aux_value("between_support_rep_std"),
+            "best_valid_minus_median_valid": aux_value("best_valid_minus_median_valid"),
+            "best_valid_minus_reference": aux_value("best_valid_minus_reference"),
+            "support_0_occupancy": aux_value("support_0_occupancy"),
+            "support_1_occupancy": aux_value("support_1_occupancy"),
+            "support_2_occupancy": aux_value("support_2_occupancy"),
+            "support_concentration": aux_value("support_concentration"),
+            "frontier_gain": aux_value("frontier_gain"),
+            "support_low_rank_group_ratio": aux_value("support_low_rank_group_ratio"),
         }
 
     def _chain_step_logprobs(
@@ -8807,6 +9260,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 components_matrix,
                 trajs_matrix,
                 ref,
+                [str(token) for token in tokens_list],
             )
             hard_safe_matrix = advantage_aux["core_pareto_valid_mask"].to(device=base_rewards.device).bool()
             hard_safe_mask = hard_safe_matrix.reshape(B * G)
@@ -8913,15 +9367,25 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         grpo_advantage_mean_before = adv_before.mean().to(adv)
         grpo_advantage_std_before = adv_before.std(unbiased=False).to(adv)
         grpo_advantage_clip_frac = adv.new_zeros(())
-        if bool(getattr(self, "normalize_advantage_batch", False)):
+        use_support_relative_advantage = bool(use_core_pareto and getattr(self, "grpo_use_support_relative", False))
+        if bool(getattr(self, "normalize_advantage_batch", False)) and not use_support_relative_advantage:
             adv_mean = adv.mean()
             adv_std = adv.std(unbiased=False).clamp(min=1e-6)
             adv = (adv - adv_mean) / adv_std
+        elif use_support_relative_advantage and bool(getattr(self, "grpo_use_rms_advantage_scale", True)):
+            adv = self._sign_preserving_rms_scale(adv)
         advantage_clip_abs = float(getattr(self, "advantage_clip_abs", 0.0))
         if advantage_clip_abs > 0.0:
             clip_mask = adv.detach().abs() > advantage_clip_abs
             grpo_advantage_clip_frac = clip_mask.float().mean().to(adv)
             adv = adv.clamp(min=-advantage_clip_abs, max=advantage_clip_abs)
+        final_cap_logs = {
+            "final_positive_invalid_ratio": adv.new_zeros(()),
+            "final_positive_slow_fail_ratio": adv.new_zeros(()),
+            "final_positive_dominated_ratio": adv.new_zeros(()),
+        }
+        if use_support_relative_advantage and bool(getattr(self, "grpo_reapply_final_caps", True)):
+            adv, final_cap_logs = self._reapply_final_advantage_caps(adv, advantage_aux, B, G)
         adv_after = adv.detach().float()
         grpo_advantage_mean_after = adv_after.mean().to(adv)
         grpo_advantage_std_after = adv_after.std(unbiased=False).to(adv)
@@ -9453,8 +9917,17 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "grpo_advantage_zero_ratio": grpo_advantage_zero_ratio.to(dtype=total_loss.dtype),
             "grpo_advantage_clip_frac": grpo_advantage_clip_frac.to(dtype=total_loss.dtype),
             "grpo_advantage_batch_normalized": total_loss.new_tensor(
-                float(bool(getattr(self, "normalize_advantage_batch", False)))
+                float(bool(getattr(self, "normalize_advantage_batch", False)) and not use_support_relative_advantage)
             ),
+            "grpo_advantage_rms_scaled": total_loss.new_tensor(
+                float(use_support_relative_advantage and bool(getattr(self, "grpo_use_rms_advantage_scale", True)))
+            ),
+            "grpo_reapplied_final_caps": total_loss.new_tensor(
+                float(use_support_relative_advantage and bool(getattr(self, "grpo_reapply_final_caps", True)))
+            ),
+            "final_positive_invalid_ratio": final_cap_logs["final_positive_invalid_ratio"].to(dtype=total_loss.dtype),
+            "final_positive_slow_fail_ratio": final_cap_logs["final_positive_slow_fail_ratio"].to(dtype=total_loss.dtype),
+            "final_positive_dominated_ratio": final_cap_logs["final_positive_dominated_ratio"].to(dtype=total_loss.dtype),
             "grpo_advantage_clip_abs": total_loss.new_tensor(float(advantage_clip_abs)),
             **self._stage3_core_pareto_log_metrics(total_loss, reward_aux, advantage_aux),
             "trajectory_logp": trajectory_logp.mean(),

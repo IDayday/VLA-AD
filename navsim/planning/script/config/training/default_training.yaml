@@ -22,10 +22,17 @@ force_cache_computation: true
 cache_train_all_records: false
 stage2_target_source: gt
 stage2_elite_target_index_path: ''
+stage2_pareto_support_index_path: ''
+stage2_pareto_best_weight: 0.50
+stage2_pareto_gt_weight: 0.20
+stage2_pareto_other_weight: 0.30
+stage2_pareto_require_index: true
+stage2_pareto_log_diagnostics: true
 seed: 0
 allow_dummy_expert_cache: false
 
 checkpoint:
+  layout: legacy
   every_n_epochs: 1
   every_n_train_steps: 0
   save_on_train_epoch_end: true

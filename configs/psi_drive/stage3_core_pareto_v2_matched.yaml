@@ -1,0 +1,42 @@
+# PSI-Drive matched Stage3 baseline: current Core-Pareto GRPO v2, support-relative off.
+
+agent:
+  vlm_path: ${oc.env:RECOGDRIVE_VLM_PATH,/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B}
+  cam_type: single
+  cache_hidden_state: true
+  vlm_type: internvl
+  dit_type: small
+  vlm_size: small
+  sampling_method: ddim
+  train_backbone: false
+  use_expert_features: false
+  expert_feature_source: none
+  allow_expert_target_features: false
+  use_jepa: false
+  use_vggt: false
+  use_last_rd: false
+  last_rd_stage: disabled
+  use_last_vla: false
+  last_vla_stage: disabled
+  use_two_expert_slots: false
+  grpo: true
+  stage3_objective: grpo
+  grpo_sample_time: 16
+  grpo_reward_mode: core_pareto
+  grpo_use_core_pareto: true
+  grpo_use_support_relative: false
+  grpo_normalize_advantage_batch: false
+  reference_kl_coeff: 0.02
+  bc_anneal: true
+  bc_coeff_start: 0.10
+  bc_coeff_end: 0.05
+  bc_anneal_epochs: 5
+
+trainer:
+  params:
+    max_epochs: 20
+
+checkpoint:
+  layout: psi
+  every_n_epochs: 1
+  every_n_train_steps: 300

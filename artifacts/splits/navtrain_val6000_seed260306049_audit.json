@@ -1,0 +1,18 @@
+{
+  "created_at": "2026-06-24T21:27:34+00:00",
+  "git_branch": "feature/psi-drive-stage2-stage3",
+  "git_commit": "d2a09e03e42e069d617f5b8dd74a1e39fb4a0d04",
+  "navtest_overlap_count": 0,
+  "navtest_overlap_tokens": [],
+  "navtest_token_file": "artifacts/splits/navtest_tokens_recogdrive_expert_chunks_full_v1.txt",
+  "num_source_tokens": 103288,
+  "num_train_complement_tokens": 97288,
+  "num_val_tokens": 6000,
+  "seed": 260306049,
+  "support_index": "/mnt/project/VLA-AD/outputs/psi_drive/support_index/stage2_pareto_support_clean_full.pt",
+  "train_complement_file": "artifacts/splits/navtrain_val6000_seed260306049_train_complement.txt",
+  "train_complement_file_sha256": "68904df7e36871a6ba5bd809113a3d4fe3ac0e42a7794dd866e219e364eac8c2",
+  "train_val_overlap_count": 0,
+  "val_token_file": "artifacts/splits/navtrain_val6000_seed260306049.txt",
+  "val_token_file_sha256": "1b6355bfd1f1fbf9438897d34c64320d3f46d07c62437fe8da7df5e42c5cbc54"
+}
