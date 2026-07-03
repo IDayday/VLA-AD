@@ -138,7 +138,7 @@ class ReCogDriveAgent(AbstractAgent):
         grpo_advantage_clip_abs: float = 0.0,
         grpo_hard_gate_ttc: bool = False,
         grpo_hard_gate_ddc: bool = False,
-        grpo_reward_mode: Literal["safe_diffgrpo", "core_pareto"] = "safe_diffgrpo",
+        grpo_reward_mode: Literal["safe_diffgrpo", "core_pareto", "feasible_pareto"] = "safe_diffgrpo",
         grpo_safety_advantage_mode: Literal["hard", "soft_penalty"] = "hard",
         grpo_ttc_safe_threshold: float = 1.0,
         grpo_ddc_safe_threshold: float = 1.0,
@@ -194,6 +194,35 @@ class ReCogDriveAgent(AbstractAgent):
         grpo_core_pareto_use_phenotype_bucket_grpo: bool = False,
         grpo_core_pareto_buffer_bonus_enabled: bool = False,
         grpo_core_pareto_buffer_bonus_weight: float = 0.0,
+        grpo_use_feasible_pareto: bool = False,
+        grpo_fp_ep_weight: float = 0.60,
+        grpo_fp_ttc_weight: float = 0.25,
+        grpo_fp_ddc_weight: float = 0.10,
+        grpo_fp_feas_weight: float = 0.05,
+        grpo_fp_ddc_min_absolute: float = 0.95,
+        grpo_fp_ddc_ref_tolerance: float = 0.01,
+        grpo_fp_feas_max: float = 0.0,
+        grpo_fp_comfort_min: float = 0.95,
+        grpo_fp_pareto_front_bonus: float = 0.15,
+        grpo_fp_tradeoff_penalty_weight: float = 0.2,
+        grpo_fp_tradeoff_ttc_rho: float = 1.0,
+        grpo_fp_tradeoff_tolerance: float = 0.01,
+        grpo_fp_regression_negative_advantage: float = -1.0,
+        grpo_fp_invalid_negative_advantage: float = -1.0,
+        grpo_fp_dominated_positive_cap: float = 0.0,
+        grpo_fp_geometry_positive_cap: float = 0.0,
+        grpo_fp_ddc_regression_positive_cap: float = 0.0,
+        grpo_fp_offsupport_positive_cap: float = 0.0,
+        grpo_fp_use_bucketed_advantage: bool = True,
+        grpo_fp_inter_bucket_weight: float = 0.25,
+        grpo_fp_inter_bucket_clip: float = 0.5,
+        grpo_fp_use_pdas: bool = True,
+        grpo_pdas_eps: float = 0.05,
+        grpo_pdas_alpha: float = 1.0,
+        grpo_pdas_beta: float = 1.0,
+        grpo_pdas_gamma: float = 0.5,
+        grpo_pdas_lambda_bucket: float = 0.2,
+        grpo_pdas_lambda_regression: float = 0.5,
         grpo_ppo_replay_inner_epochs: int = 1,
         grpo_ppo_replay_minibatch_size: int = 0,
         grpo_ppo_replay_max_grad_norm: float = 1.0,
@@ -401,6 +430,19 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_grpo_self_imitation_dac_min_absolute: float = 1.0,
         offline_rl_grpo_self_imitation_ttc_min_absolute: float = 0.95,
         offline_rl_grpo_self_imitation_ddc_min_absolute: float = 0.99,
+        offline_rl_support_archive_path: str = "",
+        offline_rl_use_dpsi: bool = False,
+        offline_rl_dpsi_top_m: int = 12,
+        offline_rl_dpsi_weight_safe_ep: float = 1.0,
+        offline_rl_dpsi_weight_vector_pareto: float = 0.9,
+        offline_rl_dpsi_weight_safety_repair: float = 0.8,
+        offline_rl_dpsi_weight_ddc_repair: float = 0.8,
+        offline_rl_dpsi_weight_best_pdms: float = 0.7,
+        offline_rl_dpsi_weight_smooth: float = 0.6,
+        offline_rl_dpsi_weight_il: float = 0.5,
+        offline_rl_dpsi_weight_gt: float = 0.4,
+        offline_rl_dpsi_pairwise_rank_weight: float = 0.0,
+        offline_rl_dpsi_pairwise_beta: float = 8.0,
         offline_rl_log_candidate_sources: bool = True,
         offline_rl_log_submetrics: bool = True,
         offline_rl_log_oracle_stats: bool = True,
@@ -425,6 +467,18 @@ class ReCogDriveAgent(AbstractAgent):
         vggt_dim: int = 2048,
         expert_dropout: float = 0.10,
         expert_fusion_mode: str = "concat_context",
+        use_fs_norm: bool = False,
+        fs_norm_stats_path: str = "",
+        fs_norm_use_robust: bool = False,
+        fs_norm_clip: float = 5.0,
+        x0_aux_weight: float = 0.0,
+        geo_aux_weight: float = 0.0,
+        x0_aux_low_noise_frac: float = 0.5,
+        geo_curvature_weight: float = 1.0,
+        geo_reverse_weight: float = 1.0,
+        geo_tail_reverse_weight: float = 2.0,
+        geo_early_kink_weight: float = 2.0,
+        geo_jerk_weight: float = 0.2,
         use_teacher_context_tokens: bool = True,
         use_student_latent_adapters: bool = True,
         use_branch_weighted_mean: bool = True,
@@ -714,6 +768,35 @@ class ReCogDriveAgent(AbstractAgent):
         self.grpo_core_pareto_use_phenotype_bucket_grpo = bool(grpo_core_pareto_use_phenotype_bucket_grpo)
         self.grpo_core_pareto_buffer_bonus_enabled = bool(grpo_core_pareto_buffer_bonus_enabled)
         self.grpo_core_pareto_buffer_bonus_weight = float(grpo_core_pareto_buffer_bonus_weight)
+        self.grpo_use_feasible_pareto = bool(grpo_use_feasible_pareto)
+        self.grpo_fp_ep_weight = float(grpo_fp_ep_weight)
+        self.grpo_fp_ttc_weight = float(grpo_fp_ttc_weight)
+        self.grpo_fp_ddc_weight = float(grpo_fp_ddc_weight)
+        self.grpo_fp_feas_weight = float(grpo_fp_feas_weight)
+        self.grpo_fp_ddc_min_absolute = float(grpo_fp_ddc_min_absolute)
+        self.grpo_fp_ddc_ref_tolerance = float(grpo_fp_ddc_ref_tolerance)
+        self.grpo_fp_feas_max = float(grpo_fp_feas_max)
+        self.grpo_fp_comfort_min = float(grpo_fp_comfort_min)
+        self.grpo_fp_pareto_front_bonus = float(grpo_fp_pareto_front_bonus)
+        self.grpo_fp_tradeoff_penalty_weight = float(grpo_fp_tradeoff_penalty_weight)
+        self.grpo_fp_tradeoff_ttc_rho = float(grpo_fp_tradeoff_ttc_rho)
+        self.grpo_fp_tradeoff_tolerance = float(grpo_fp_tradeoff_tolerance)
+        self.grpo_fp_regression_negative_advantage = float(grpo_fp_regression_negative_advantage)
+        self.grpo_fp_invalid_negative_advantage = float(grpo_fp_invalid_negative_advantage)
+        self.grpo_fp_dominated_positive_cap = float(grpo_fp_dominated_positive_cap)
+        self.grpo_fp_geometry_positive_cap = float(grpo_fp_geometry_positive_cap)
+        self.grpo_fp_ddc_regression_positive_cap = float(grpo_fp_ddc_regression_positive_cap)
+        self.grpo_fp_offsupport_positive_cap = float(grpo_fp_offsupport_positive_cap)
+        self.grpo_fp_use_bucketed_advantage = bool(grpo_fp_use_bucketed_advantage)
+        self.grpo_fp_inter_bucket_weight = float(grpo_fp_inter_bucket_weight)
+        self.grpo_fp_inter_bucket_clip = float(grpo_fp_inter_bucket_clip)
+        self.grpo_fp_use_pdas = bool(grpo_fp_use_pdas)
+        self.grpo_pdas_eps = float(grpo_pdas_eps)
+        self.grpo_pdas_alpha = float(grpo_pdas_alpha)
+        self.grpo_pdas_beta = float(grpo_pdas_beta)
+        self.grpo_pdas_gamma = float(grpo_pdas_gamma)
+        self.grpo_pdas_lambda_bucket = float(grpo_pdas_lambda_bucket)
+        self.grpo_pdas_lambda_regression = float(grpo_pdas_lambda_regression)
         self.grpo_ppo_replay_inner_epochs = int(grpo_ppo_replay_inner_epochs)
         self.grpo_ppo_replay_minibatch_size = int(grpo_ppo_replay_minibatch_size)
         self.grpo_ppo_replay_max_grad_norm = float(grpo_ppo_replay_max_grad_norm)
@@ -768,8 +851,8 @@ class ReCogDriveAgent(AbstractAgent):
             raise ValueError("grpo_clip_advantage_lower_quantile must be <= upper quantile.")
         if self.grpo_gamma_denoising < 0.0:
             raise ValueError("grpo_gamma_denoising must be non-negative.")
-        if self.grpo_reward_mode not in {"safe_diffgrpo", "core_pareto"}:
-            raise ValueError("grpo_reward_mode must be 'safe_diffgrpo' or 'core_pareto'.")
+        if self.grpo_reward_mode not in {"safe_diffgrpo", "core_pareto", "feasible_pareto"}:
+            raise ValueError("grpo_reward_mode must be 'safe_diffgrpo', 'core_pareto', or 'feasible_pareto'.")
         if self.grpo_safety_advantage_mode not in {"hard", "soft_penalty"}:
             raise ValueError("grpo_safety_advantage_mode must be 'hard' or 'soft_penalty'.")
         if not (0.0 <= self.grpo_ttc_safe_threshold <= 1.0):
@@ -801,6 +884,8 @@ class ReCogDriveAgent(AbstractAgent):
             "grpo_core_pareto_target_dac",
             "grpo_core_pareto_target_ddc",
             "grpo_core_pareto_ddc_min_absolute",
+            "grpo_fp_ddc_min_absolute",
+            "grpo_fp_comfort_min",
         ):
             value = float(getattr(self, name))
             if value < 0.0 or value > 1.0:
@@ -831,6 +916,23 @@ class ReCogDriveAgent(AbstractAgent):
             "grpo_core_pareto_min_core_std",
             "grpo_core_pareto_ep_ttc_balance_margin",
             "grpo_core_pareto_dual_lr",
+            "grpo_fp_ep_weight",
+            "grpo_fp_ttc_weight",
+            "grpo_fp_ddc_weight",
+            "grpo_fp_feas_weight",
+            "grpo_fp_ddc_ref_tolerance",
+            "grpo_fp_pareto_front_bonus",
+            "grpo_fp_tradeoff_penalty_weight",
+            "grpo_fp_tradeoff_ttc_rho",
+            "grpo_fp_tradeoff_tolerance",
+            "grpo_fp_inter_bucket_weight",
+            "grpo_fp_inter_bucket_clip",
+            "grpo_pdas_eps",
+            "grpo_pdas_alpha",
+            "grpo_pdas_beta",
+            "grpo_pdas_gamma",
+            "grpo_pdas_lambda_bucket",
+            "grpo_pdas_lambda_regression",
         ):
             if float(getattr(self, name)) < 0.0:
                 raise ValueError(f"{name} must be non-negative.")
@@ -1114,11 +1216,36 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_grpo_self_imitation_ddc_min_absolute = float(
             offline_rl_grpo_self_imitation_ddc_min_absolute
         )
+        self.offline_rl_support_archive_path = str(offline_rl_support_archive_path)
+        self.offline_rl_use_dpsi = bool(offline_rl_use_dpsi)
+        self.offline_rl_dpsi_top_m = int(offline_rl_dpsi_top_m)
+        self.offline_rl_dpsi_weight_safe_ep = float(offline_rl_dpsi_weight_safe_ep)
+        self.offline_rl_dpsi_weight_vector_pareto = float(offline_rl_dpsi_weight_vector_pareto)
+        self.offline_rl_dpsi_weight_safety_repair = float(offline_rl_dpsi_weight_safety_repair)
+        self.offline_rl_dpsi_weight_ddc_repair = float(offline_rl_dpsi_weight_ddc_repair)
+        self.offline_rl_dpsi_weight_best_pdms = float(offline_rl_dpsi_weight_best_pdms)
+        self.offline_rl_dpsi_weight_smooth = float(offline_rl_dpsi_weight_smooth)
+        self.offline_rl_dpsi_weight_il = float(offline_rl_dpsi_weight_il)
+        self.offline_rl_dpsi_weight_gt = float(offline_rl_dpsi_weight_gt)
+        self.offline_rl_dpsi_pairwise_rank_weight = float(offline_rl_dpsi_pairwise_rank_weight)
+        self.offline_rl_dpsi_pairwise_beta = float(offline_rl_dpsi_pairwise_beta)
         self.offline_rl_log_candidate_sources = bool(offline_rl_log_candidate_sources)
         self.offline_rl_log_submetrics = bool(offline_rl_log_submetrics)
         self.offline_rl_log_oracle_stats = bool(offline_rl_log_oracle_stats)
         self.offline_rl_require_reference_policy_checkpoint = bool(offline_rl_require_reference_policy_checkpoint)
         self.offline_rl_report_raw_and_valid_best = bool(offline_rl_report_raw_and_valid_best)
+        self.use_fs_norm = bool(use_fs_norm)
+        self.fs_norm_stats_path = str(fs_norm_stats_path)
+        self.fs_norm_use_robust = bool(fs_norm_use_robust)
+        self.fs_norm_clip = float(fs_norm_clip)
+        self.x0_aux_weight = float(x0_aux_weight)
+        self.geo_aux_weight = float(geo_aux_weight)
+        self.x0_aux_low_noise_frac = float(x0_aux_low_noise_frac)
+        self.geo_curvature_weight = float(geo_curvature_weight)
+        self.geo_reverse_weight = float(geo_reverse_weight)
+        self.geo_tail_reverse_weight = float(geo_tail_reverse_weight)
+        self.geo_early_kink_weight = float(geo_early_kink_weight)
+        self.geo_jerk_weight = float(geo_jerk_weight)
         self.vlm_size = vlm_size
         self.train_backbone = train_backbone
         self.use_expert_features = use_expert_features
@@ -1564,6 +1691,18 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.two_expert_prefusion_condition_dropout = self.two_expert_prefusion_condition_dropout
         cfg.two_expert_prefusion_scale_init = self.two_expert_prefusion_scale_init
         cfg.two_expert_prefusion_zero_init = self.two_expert_prefusion_zero_init
+        cfg.use_fs_norm = self.use_fs_norm
+        cfg.fs_norm_stats_path = self.fs_norm_stats_path
+        cfg.fs_norm_use_robust = self.fs_norm_use_robust
+        cfg.fs_norm_clip = self.fs_norm_clip
+        cfg.x0_aux_weight = self.x0_aux_weight
+        cfg.geo_aux_weight = self.geo_aux_weight
+        cfg.x0_aux_low_noise_frac = self.x0_aux_low_noise_frac
+        cfg.geo_curvature_weight = self.geo_curvature_weight
+        cfg.geo_reverse_weight = self.geo_reverse_weight
+        cfg.geo_tail_reverse_weight = self.geo_tail_reverse_weight
+        cfg.geo_early_kink_weight = self.geo_early_kink_weight
+        cfg.geo_jerk_weight = self.geo_jerk_weight
 
         offline_cfg = cfg.offline_rl_cfg
         offline_cfg.enabled = self.offline_rl_enabled
@@ -1796,6 +1935,19 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.grpo_self_imitation_ddc_min_absolute = (
             self.offline_rl_grpo_self_imitation_ddc_min_absolute
         )
+        offline_cfg.support_archive_path = self.offline_rl_support_archive_path
+        offline_cfg.use_dpsi = self.offline_rl_use_dpsi
+        offline_cfg.dpsi_top_m = self.offline_rl_dpsi_top_m
+        offline_cfg.dpsi_weight_safe_ep = self.offline_rl_dpsi_weight_safe_ep
+        offline_cfg.dpsi_weight_vector_pareto = self.offline_rl_dpsi_weight_vector_pareto
+        offline_cfg.dpsi_weight_safety_repair = self.offline_rl_dpsi_weight_safety_repair
+        offline_cfg.dpsi_weight_ddc_repair = self.offline_rl_dpsi_weight_ddc_repair
+        offline_cfg.dpsi_weight_best_pdms = self.offline_rl_dpsi_weight_best_pdms
+        offline_cfg.dpsi_weight_smooth = self.offline_rl_dpsi_weight_smooth
+        offline_cfg.dpsi_weight_il = self.offline_rl_dpsi_weight_il
+        offline_cfg.dpsi_weight_gt = self.offline_rl_dpsi_weight_gt
+        offline_cfg.dpsi_pairwise_rank_weight = self.offline_rl_dpsi_pairwise_rank_weight
+        offline_cfg.dpsi_pairwise_beta = self.offline_rl_dpsi_pairwise_beta
         offline_cfg.log_candidate_sources = self.offline_rl_log_candidate_sources
         offline_cfg.log_submetrics = self.offline_rl_log_submetrics
         offline_cfg.log_oracle_stats = self.offline_rl_log_oracle_stats
@@ -1912,6 +2064,35 @@ class ReCogDriveAgent(AbstractAgent):
             )
             cfg.grpo_cfg.core_pareto_buffer_bonus_enabled = self.grpo_core_pareto_buffer_bonus_enabled
             cfg.grpo_cfg.core_pareto_buffer_bonus_weight = self.grpo_core_pareto_buffer_bonus_weight
+            cfg.grpo_cfg.use_feasible_pareto_grpo = self.grpo_use_feasible_pareto
+            cfg.grpo_cfg.fp_ep_weight = self.grpo_fp_ep_weight
+            cfg.grpo_cfg.fp_ttc_weight = self.grpo_fp_ttc_weight
+            cfg.grpo_cfg.fp_ddc_weight = self.grpo_fp_ddc_weight
+            cfg.grpo_cfg.fp_feas_weight = self.grpo_fp_feas_weight
+            cfg.grpo_cfg.fp_ddc_min_absolute = self.grpo_fp_ddc_min_absolute
+            cfg.grpo_cfg.fp_ddc_ref_tolerance = self.grpo_fp_ddc_ref_tolerance
+            cfg.grpo_cfg.fp_feas_max = self.grpo_fp_feas_max
+            cfg.grpo_cfg.fp_comfort_min = self.grpo_fp_comfort_min
+            cfg.grpo_cfg.fp_pareto_front_bonus = self.grpo_fp_pareto_front_bonus
+            cfg.grpo_cfg.fp_tradeoff_penalty_weight = self.grpo_fp_tradeoff_penalty_weight
+            cfg.grpo_cfg.fp_tradeoff_ttc_rho = self.grpo_fp_tradeoff_ttc_rho
+            cfg.grpo_cfg.fp_tradeoff_tolerance = self.grpo_fp_tradeoff_tolerance
+            cfg.grpo_cfg.fp_regression_negative_advantage = self.grpo_fp_regression_negative_advantage
+            cfg.grpo_cfg.fp_invalid_negative_advantage = self.grpo_fp_invalid_negative_advantage
+            cfg.grpo_cfg.fp_dominated_positive_cap = self.grpo_fp_dominated_positive_cap
+            cfg.grpo_cfg.fp_geometry_positive_cap = self.grpo_fp_geometry_positive_cap
+            cfg.grpo_cfg.fp_ddc_regression_positive_cap = self.grpo_fp_ddc_regression_positive_cap
+            cfg.grpo_cfg.fp_offsupport_positive_cap = self.grpo_fp_offsupport_positive_cap
+            cfg.grpo_cfg.fp_use_bucketed_advantage = self.grpo_fp_use_bucketed_advantage
+            cfg.grpo_cfg.fp_inter_bucket_weight = self.grpo_fp_inter_bucket_weight
+            cfg.grpo_cfg.fp_inter_bucket_clip = self.grpo_fp_inter_bucket_clip
+            cfg.grpo_cfg.fp_use_pdas = self.grpo_fp_use_pdas
+            cfg.grpo_cfg.pdas_eps = self.grpo_pdas_eps
+            cfg.grpo_cfg.pdas_alpha = self.grpo_pdas_alpha
+            cfg.grpo_cfg.pdas_beta = self.grpo_pdas_beta
+            cfg.grpo_cfg.pdas_gamma = self.grpo_pdas_gamma
+            cfg.grpo_cfg.pdas_lambda_bucket = self.grpo_pdas_lambda_bucket
+            cfg.grpo_cfg.pdas_lambda_regression = self.grpo_pdas_lambda_regression
             cfg.grpo_cfg.ppo_replay_inner_epochs = self.grpo_ppo_replay_inner_epochs
             cfg.grpo_cfg.ppo_replay_minibatch_size = self.grpo_ppo_replay_minibatch_size
             cfg.grpo_cfg.ppo_replay_max_grad_norm = self.grpo_ppo_replay_max_grad_norm

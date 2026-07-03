@@ -57,6 +57,9 @@ from .blocks.encoder import (
 from .recogdrive_dit import LightningDiT
 from .offline_action_explorer import build_structured_perturbations
 from .offline_rl_buffer import REQUIRED_COMPONENT_KEYS, load_elite_record, load_elite_record_path
+from .fs_norm import FSNormTransform, load_fs_norm_stats
+from .pdas import compute_pdas_metrics
+from .trajectory_feasibility import compute_feasibility_metrics
 from .expert_fusion import (
     AlignmentHead,
     ExpertAdapter768,
@@ -116,7 +119,7 @@ class GRPOConfig:
     ))
 
     # reward extraction and shaping
-    reward_mode: Literal["safe_diffgrpo", "core_pareto"] = "safe_diffgrpo"
+    reward_mode: Literal["safe_diffgrpo", "core_pareto", "feasible_pareto"] = "safe_diffgrpo"
     use_safety_shaped_reward: bool = True
     hard_gate_nc: bool = True
     hard_gate_dac: bool = True
@@ -242,6 +245,37 @@ class GRPOConfig:
     core_pareto_target_nc: float = 1.0
     core_pareto_target_dac: float = 1.0
     core_pareto_target_ddc: float = 0.95
+
+    # SG-FPS feasible Pareto-GRPO. Defaults preserve existing GRPO behavior.
+    use_feasible_pareto_grpo: bool = False
+    fp_ep_weight: float = 0.60
+    fp_ttc_weight: float = 0.25
+    fp_ddc_weight: float = 0.10
+    fp_feas_weight: float = 0.05
+    fp_ddc_min_absolute: float = 0.95
+    fp_ddc_ref_tolerance: float = 0.01
+    fp_feas_max: float = 0.0
+    fp_comfort_min: float = 0.95
+    fp_pareto_front_bonus: float = 0.15
+    fp_tradeoff_penalty_weight: float = 0.2
+    fp_tradeoff_ttc_rho: float = 1.0
+    fp_tradeoff_tolerance: float = 0.01
+    fp_regression_negative_advantage: float = -1.0
+    fp_invalid_negative_advantage: float = -1.0
+    fp_dominated_positive_cap: float = 0.0
+    fp_geometry_positive_cap: float = 0.0
+    fp_ddc_regression_positive_cap: float = 0.0
+    fp_offsupport_positive_cap: float = 0.0
+    fp_use_bucketed_advantage: bool = True
+    fp_inter_bucket_weight: float = 0.25
+    fp_inter_bucket_clip: float = 0.5
+    fp_use_pdas: bool = True
+    pdas_eps: float = 0.05
+    pdas_alpha: float = 1.0
+    pdas_beta: float = 1.0
+    pdas_gamma: float = 0.5
+    pdas_lambda_bucket: float = 0.2
+    pdas_lambda_regression: float = 0.5
 
     # asymmetric safe advantage
     use_asymmetric_safe_advantage: bool = True
@@ -530,6 +564,21 @@ class OfflineRLConfig:
     grpo_self_imitation_ttc_min_absolute: float = 0.95
     grpo_self_imitation_ddc_min_absolute: float = 0.99
 
+    # SG-FPS DPSI. These fields are inert unless use_dpsi=True.
+    support_archive_path: str = ""
+    use_dpsi: bool = False
+    dpsi_top_m: int = 12
+    dpsi_weight_safe_ep: float = 1.0
+    dpsi_weight_vector_pareto: float = 0.9
+    dpsi_weight_safety_repair: float = 0.8
+    dpsi_weight_ddc_repair: float = 0.8
+    dpsi_weight_best_pdms: float = 0.7
+    dpsi_weight_smooth: float = 0.6
+    dpsi_weight_il: float = 0.5
+    dpsi_weight_gt: float = 0.4
+    dpsi_pairwise_rank_weight: float = 0.0
+    dpsi_pairwise_beta: float = 8.0
+
     # debugging / logging
     log_candidate_sources: bool = True
     log_submetrics: bool = True
@@ -739,6 +788,20 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     tune_projector: bool = True
     tune_diffusion_model: bool = True
 
+    # SG-FPS FS-Norm and trajectory-centric auxiliary losses.
+    use_fs_norm: bool = False
+    fs_norm_stats_path: str = ""
+    fs_norm_use_robust: bool = False
+    fs_norm_clip: float = 5.0
+    x0_aux_weight: float = 0.0
+    geo_aux_weight: float = 0.0
+    x0_aux_low_noise_frac: float = 0.5
+    geo_curvature_weight: float = 1.0
+    geo_reverse_weight: float = 1.0
+    geo_tail_reverse_weight: float = 2.0
+    geo_early_kink_weight: float = 2.0
+    geo_jerk_weight: float = 0.2
+
     flow_cfg: FlowConfig = field(default_factory=FlowConfig)
     ddpm_cfg: DDPMConfig = field(default_factory=DDPMConfig)
     ddim_cfg: DDIMConfig = field(default_factory=DDIMConfig)
@@ -793,6 +856,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             self.feature_encoder = nn.Linear(3584, config.input_embedding_dim)
         else:
             self.feature_encoder = nn.Linear(1536, config.input_embedding_dim)
+        self.fs_norm_transform: Optional[FSNormTransform] = None
+        if bool(getattr(config, "use_fs_norm", False)):
+            if not str(getattr(config, "fs_norm_stats_path", "")):
+                raise ValueError("use_fs_norm=True requires fs_norm_stats_path.")
+            stats = load_fs_norm_stats(str(config.fs_norm_stats_path), map_location="cpu")
+            stats.use_robust = bool(getattr(config, "fs_norm_use_robust", stats.use_robust))
+            stats.clip = float(getattr(config, "fs_norm_clip", stats.clip))
+            self.fs_norm_transform = FSNormTransform(stats)
 
         if config.alignment_loss_type not in {"normalized_mse", "mse", "cosine"}:
             raise ValueError("alignment_loss_type must be one of 'normalized_mse', 'mse', or 'cosine'.")
@@ -1589,10 +1660,17 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         self._awac_elite_record_cache_root = ""
         if (
             bool(cfg.preload_elite_buffer)
-            and bool(str(cfg.elite_buffer_path))
+            and bool(str(self._offline_candidate_buffer_path(cfg)))
             and not bool(cfg.build_candidates_online)
         ):
             self._preload_awac_elite_buffer(cfg)
+
+    @staticmethod
+    def _offline_candidate_buffer_path(cfg: OfflineRLConfig) -> str:
+        support_path = str(getattr(cfg, "support_archive_path", "") or "")
+        if bool(getattr(cfg, "use_dpsi", False)) and support_path:
+            return support_path
+        return str(getattr(cfg, "elite_buffer_path", "") or "")
 
     def _reset_awac_elite_record_cache_if_needed(self, buffer_root: Path) -> None:
         root_key = str(Path(buffer_root).resolve())
@@ -1601,7 +1679,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             self._awac_elite_record_cache_root = root_key
 
     def _preload_awac_elite_buffer(self, cfg: OfflineRLConfig) -> None:
-        buffer_root = Path(cfg.elite_buffer_path)
+        buffer_root = Path(self._offline_candidate_buffer_path(cfg))
         if not buffer_root.is_dir():
             raise FileNotFoundError(f"AWAC elite buffer path does not exist: {buffer_root}")
         self._reset_awac_elite_record_cache_if_needed(buffer_root)
@@ -1804,6 +1882,35 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "core_pareto_target_nc",
             "core_pareto_target_dac",
             "core_pareto_target_ddc",
+            "use_feasible_pareto_grpo",
+            "fp_ep_weight",
+            "fp_ttc_weight",
+            "fp_ddc_weight",
+            "fp_feas_weight",
+            "fp_ddc_min_absolute",
+            "fp_ddc_ref_tolerance",
+            "fp_feas_max",
+            "fp_comfort_min",
+            "fp_pareto_front_bonus",
+            "fp_tradeoff_penalty_weight",
+            "fp_tradeoff_ttc_rho",
+            "fp_tradeoff_tolerance",
+            "fp_regression_negative_advantage",
+            "fp_invalid_negative_advantage",
+            "fp_dominated_positive_cap",
+            "fp_geometry_positive_cap",
+            "fp_ddc_regression_positive_cap",
+            "fp_offsupport_positive_cap",
+            "fp_use_bucketed_advantage",
+            "fp_inter_bucket_weight",
+            "fp_inter_bucket_clip",
+            "fp_use_pdas",
+            "pdas_eps",
+            "pdas_alpha",
+            "pdas_beta",
+            "pdas_gamma",
+            "pdas_lambda_bucket",
+            "pdas_lambda_regression",
             "use_asymmetric_safe_advantage",
             "advantage_std_floor",
             "safe_negative_adv_scale",
@@ -1846,8 +1953,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             setattr(self, name, getattr(cfg, name))
         if str(self.safety_advantage_mode) not in {"hard", "soft_penalty"}:
             raise ValueError("GRPO safety_advantage_mode must be 'hard' or 'soft_penalty'.")
-        if str(self.reward_mode) not in {"safe_diffgrpo", "core_pareto"}:
-            raise ValueError("GRPO reward_mode must be 'safe_diffgrpo' or 'core_pareto'.")
+        if str(self.reward_mode) not in {"safe_diffgrpo", "core_pareto", "feasible_pareto"}:
+            raise ValueError("GRPO reward_mode must be 'safe_diffgrpo', 'core_pareto', or 'feasible_pareto'.")
         if str(self.advantage_mode) not in {"safe_zscore", "safe_rpp"}:
             raise ValueError("GRPO advantage_mode must be 'safe_zscore' or 'safe_rpp'.")
         for name in (
@@ -1892,6 +1999,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "core_pareto_target_nc",
             "core_pareto_target_dac",
             "core_pareto_target_ddc",
+            "fp_ddc_min_absolute",
+            "fp_comfort_min",
         ):
             value = float(getattr(self, name))
             if value < 0.0 or value > 1.0:
@@ -1948,6 +2057,23 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "core_pareto_buffer_bonus_weight",
             "core_pareto_buffer_bonus_scale_m",
             "core_pareto_buffer_min_reward_margin",
+            "fp_ep_weight",
+            "fp_ttc_weight",
+            "fp_ddc_weight",
+            "fp_feas_weight",
+            "fp_ddc_ref_tolerance",
+            "fp_pareto_front_bonus",
+            "fp_tradeoff_penalty_weight",
+            "fp_tradeoff_ttc_rho",
+            "fp_tradeoff_tolerance",
+            "fp_inter_bucket_weight",
+            "fp_inter_bucket_clip",
+            "pdas_eps",
+            "pdas_alpha",
+            "pdas_beta",
+            "pdas_gamma",
+            "pdas_lambda_bucket",
+            "pdas_lambda_regression",
         ):
             if float(getattr(self, name)) < 0.0:
                 raise ValueError(f"{name} must be non-negative.")
@@ -3175,7 +3301,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         else:
             anchor_value = action_input.get("vlm_text_trajectory", None)
             if isinstance(anchor_value, torch.Tensor):
-                anchor_norm = self.norm_odo(anchor_value.to(device=reference_norm.device, dtype=reference_norm.dtype))
+                anchor_norm = self._encode_action_target(anchor_value.to(device=reference_norm.device, dtype=reference_norm.dtype))
             else:
                 diagnostics["residual_anchor_missing"] = reference_norm.new_tensor(1.0)
                 if require_anchor:
@@ -3270,7 +3396,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         if isinstance(teacher, torch.Tensor):
             teacher_norm = teacher.to(device=gt_actions_norm.device, dtype=gt_actions_norm.dtype)
         elif isinstance(action_input.get("teacher_trajectory", None), torch.Tensor):
-            teacher_norm = self.norm_odo(action_input["teacher_trajectory"].to(device=gt_actions_norm.device, dtype=gt_actions_norm.dtype))
+            teacher_norm = self._encode_action_target(
+                action_input["teacher_trajectory"].to(device=gt_actions_norm.device, dtype=gt_actions_norm.dtype)
+            )
         else:
             if self.config.last_vla_stage == "teacher_traj_sft":
                 raise KeyError(
@@ -3555,6 +3683,100 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             - self.extract(self.ddpm_sqrt_recipm1_alphas_cumprod, timesteps, noisy_actions.shape) * pred_noise
         )
 
+    def _uses_fs_norm(self) -> bool:
+        return self.fs_norm_transform is not None
+
+    def _encode_action_target(self, raw_trajectory: torch.Tensor) -> torch.Tensor:
+        if self._uses_fs_norm():
+            assert self.fs_norm_transform is not None
+            return self.fs_norm_transform.encode(raw_trajectory)
+        return self.norm_odo(raw_trajectory)
+
+    def _decode_action_target(self, representation: torch.Tensor) -> torch.Tensor:
+        if self._uses_fs_norm():
+            assert self.fs_norm_transform is not None
+            return self.fs_norm_transform.decode(representation)
+        return self.denorm_odo(representation)
+
+    def _representation_clip_value(self, fallback: Optional[float]) -> Optional[float]:
+        if self._uses_fs_norm():
+            clip = float(getattr(self.config, "fs_norm_clip", 5.0))
+            return clip if clip > 0.0 else None
+        return fallback
+
+    def _flow_x0_from_velocity(
+        self,
+        noisy_actions: torch.Tensor,
+        t_cont: torch.Tensor,
+        pred_velocity: torch.Tensor,
+    ) -> torch.Tensor:
+        return noisy_actions + (1.0 - t_cont[:, None, None].to(noisy_actions)) * pred_velocity
+
+    def _low_noise_mask(self, timesteps: torch.Tensor, *, method: str) -> torch.Tensor:
+        frac = float(getattr(self.config, "x0_aux_low_noise_frac", 0.5))
+        frac = min(max(frac, 0.0), 1.0)
+        if frac <= 0.0:
+            return torch.zeros_like(timesteps, dtype=torch.bool)
+        if method == "flow":
+            total = max(int(getattr(self.config.flow_cfg, "num_timestep_buckets", 1000)), 1)
+            threshold = int(round((1.0 - frac) * total))
+            return timesteps >= threshold
+        total = max(int(getattr(self.config.ddpm_cfg, "num_train_timesteps", 100)), 1)
+        threshold = int(round(frac * total))
+        return timesteps <= threshold
+
+    def _compute_x0_geo_aux_losses(
+        self,
+        x0_repr: torch.Tensor,
+        target_raw: torch.Tensor,
+        timesteps: torch.Tensor,
+        *,
+        method: str,
+    ) -> tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
+        zero = x0_repr.new_zeros(())
+        x0_weight = float(getattr(self.config, "x0_aux_weight", 0.0))
+        geo_weight = float(getattr(self.config, "geo_aux_weight", 0.0))
+        diagnostics = {
+            "early_kink_rate": zero,
+            "tail_reverse_rate": zero,
+            "curvature_violation_rate": zero,
+        }
+        if x0_weight <= 0.0 and geo_weight <= 0.0:
+            return zero, zero, diagnostics
+        mask = self._low_noise_mask(timesteps, method=method).to(device=x0_repr.device)
+        if not bool(mask.any().detach().cpu().item()):
+            return zero, zero, diagnostics
+        pred_raw = self._decode_action_target(x0_repr)
+        pred_sel = pred_raw[mask].float()
+        target_sel = target_raw.to(device=pred_raw.device, dtype=pred_raw.dtype)[mask].float()
+        xy_loss = F.smooth_l1_loss(pred_sel[..., :2], target_sel[..., :2], reduction="mean")
+        heading_loss = (
+            F.l1_loss(torch.sin(pred_sel[..., 2]), torch.sin(target_sel[..., 2]), reduction="mean")
+            + F.l1_loss(torch.cos(pred_sel[..., 2]), torch.cos(target_sel[..., 2]), reduction="mean")
+        )
+        x0_aux_loss = xy_loss + heading_loss
+
+        metrics = compute_feasibility_metrics(
+            pred_sel,
+            {
+                "w_curv": float(getattr(self.config, "geo_curvature_weight", 1.0)),
+                "w_reverse": float(getattr(self.config, "geo_reverse_weight", 1.0)),
+                "w_tail_reverse": float(getattr(self.config, "geo_tail_reverse_weight", 2.0)),
+                "w_kink": float(getattr(self.config, "geo_early_kink_weight", 2.0)),
+                "w_jerk": float(getattr(self.config, "geo_jerk_weight", 0.2)),
+                "w_heading": 0.0,
+            },
+        )
+        geo_aux_loss = metrics.feas_cost.mean()
+        diagnostics.update(
+            {
+                "early_kink_rate": metrics.early_kink_rate.mean().to(x0_repr),
+                "tail_reverse_rate": metrics.tail_reverse_rate.mean().to(x0_repr),
+                "curvature_violation_rate": metrics.curvature_violation_rate.mean().to(x0_repr),
+            }
+        )
+        return x0_aux_loss.to(x0_repr), geo_aux_loss.to(x0_repr), diagnostics
+
     def _compute_policy_kd_loss(
         self,
         vl_features: torch.Tensor,
@@ -3685,8 +3907,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         else:
              raise ValueError(f"p_mean_variance not supported for method: {self.config.sampling_method}")
 
-        denoised_clip_value = getattr(self, 'denoised_clip_value', 1.0)
-        x_recon.clamp_(-denoised_clip_value, denoised_clip_value)
+        denoised_clip_value = self._representation_clip_value(getattr(self, 'denoised_clip_value', 1.0))
+        if denoised_clip_value is not None:
+            x_recon.clamp_(-denoised_clip_value, denoised_clip_value)
 
         if self.config.sampling_method == 'ddpm':
             model_mean = self.extract(self.ddpm_mu_coef1, t, x.shape) * x_recon + \
@@ -3741,7 +3964,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         Returns:
             BatchFeature: A batch containing the computed loss.
         """
-        gt_actions = self.norm_odo(action_input.action)
+        gt_actions = self._encode_action_target(action_input.action)
         allow_target_tokens = self.training or bool(action_input.get("_allow_target_tokens_for_loss", False))
         if not allow_target_tokens:
             self._warn_if_expert_targets_present(action_input, "forward")
@@ -3791,6 +4014,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 dit_context["diagnostics"].update(residual_diagnostics)
                 pred_velocity = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input)
                 diffusion_loss = F.mse_loss(pred_velocity, velocity_target, reduction="mean")
+                x0_pred = self._flow_x0_from_velocity(noisy_actions, t_cont, pred_velocity)
+                x0_aux_loss, geo_aux_loss, geo_diag = self._compute_x0_geo_aux_losses(
+                    x0_pred,
+                    action_input.action,
+                    t_discrete,
+                    method="flow",
+                )
+                dit_context["x0_aux_loss"] = x0_aux_loss
+                dit_context["geo_aux_loss"] = geo_aux_loss
+                dit_context["diagnostics"].update(geo_diag)
                 policy_kd_loss = diffusion_loss.new_zeros(())
             else:
                 noise = torch.randn_like(diffusion_target)
@@ -3812,6 +4045,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 dit_context["diagnostics"].update(residual_diagnostics)
                 pred_noise = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input)
                 diffusion_loss = F.mse_loss(pred_noise, noise, reduction="mean")
+                x0_pred = self._x0_from_noise(noisy_actions, t_discrete, pred_noise)
+                x0_aux_loss, geo_aux_loss, geo_diag = self._compute_x0_geo_aux_losses(
+                    x0_pred,
+                    action_input.action,
+                    t_discrete,
+                    method="ddpm",
+                )
+                dit_context["x0_aux_loss"] = x0_aux_loss
+                dit_context["geo_aux_loss"] = geo_aux_loss
+                dit_context["diagnostics"].update(geo_diag)
                 policy_kd_loss = self._compute_policy_kd_loss(vl_features, action_input, noisy_actions, t_discrete, pred_noise)
 
             dit_context["policy_kd_loss"] = policy_kd_loss.to(dtype=diffusion_loss.dtype)
@@ -3821,6 +4064,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 float(self.config.diffusion_loss_weight) * diffusion_loss
                 + self._last_vla_aux_loss(dit_context, diffusion_loss.dtype)
                 + float(self.config.policy_kd_loss_weight) * policy_kd_loss.to(dtype=diffusion_loss.dtype)
+                + float(self.config.x0_aux_weight) * dit_context["x0_aux_loss"].to(dtype=diffusion_loss.dtype)
+                + float(self.config.geo_aux_weight) * dit_context["geo_aux_loss"].to(dtype=diffusion_loss.dtype)
             )
             return self._format_training_output(loss, diffusion_loss, zero, zero, dit_context)
 
@@ -3873,6 +4118,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             dit_context["diagnostics"].update(residual_diagnostics)
             pred_velocity = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input)
             diffusion_loss = F.mse_loss(pred_velocity, velocity_target, reduction='mean')
+            x0_pred = self._flow_x0_from_velocity(noisy_actions, t_cont, pred_velocity)
+            x0_aux_loss, geo_aux_loss, geo_diag = self._compute_x0_geo_aux_losses(
+                x0_pred,
+                action_input.action,
+                t_discrete,
+                method="flow",
+            )
+            dit_context["x0_aux_loss"] = x0_aux_loss
+            dit_context["geo_aux_loss"] = geo_aux_loss
+            dit_context["diagnostics"].update(geo_diag)
             policy_kd_loss = diffusion_loss.new_zeros(())
         else: 
             noise = torch.randn_like(diffusion_target)
@@ -3894,6 +4149,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             dit_context["diagnostics"].update(residual_diagnostics)
             pred_noise = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input)
             diffusion_loss = F.mse_loss(pred_noise, noise, reduction='mean')
+            x0_pred = self._x0_from_noise(noisy_actions, t_discrete, pred_noise)
+            x0_aux_loss, geo_aux_loss, geo_diag = self._compute_x0_geo_aux_losses(
+                x0_pred,
+                action_input.action,
+                t_discrete,
+                method="ddpm",
+            )
+            dit_context["x0_aux_loss"] = x0_aux_loss
+            dit_context["geo_aux_loss"] = geo_aux_loss
+            dit_context["diagnostics"].update(geo_diag)
             policy_kd_loss = self._compute_policy_kd_loss(vl_features, action_input, noisy_actions, t_discrete, pred_noise)
         dit_context["policy_kd_loss"] = policy_kd_loss.to(dtype=diffusion_loss.dtype)
 
@@ -3904,6 +4169,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             + self._stream_alignment_weight("jepa") * jepa_alignment_loss
             + self._stream_alignment_weight("vggt") * vggt_alignment_loss
             + self._last_rd_aux_loss(dit_context, diffusion_loss.dtype)
+            + float(self.config.x0_aux_weight) * dit_context["x0_aux_loss"].to(dtype=diffusion_loss.dtype)
+            + float(self.config.geo_aux_weight) * dit_context["geo_aux_loss"].to(dtype=diffusion_loss.dtype)
         )
 
         return self._format_training_output(loss, diffusion_loss, jepa_alignment_loss, vggt_alignment_loss, dit_context)
@@ -3935,6 +4202,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "last_vla_risk_loss": dit_context.get("last_vla_risk_loss", loss.detach().new_tensor(0.0)).to(dtype=loss.dtype),
             "last_vla_cot_consistency_loss": dit_context.get("last_vla_cot_consistency_loss", loss.detach().new_tensor(0.0)).to(dtype=loss.dtype),
             "last_vla_policy_kd_loss": dit_context["policy_kd_loss"].to(dtype=loss.dtype) if self.config.use_last_vla else loss.detach().new_tensor(0.0),
+            "x0_aux_loss": dit_context.get("x0_aux_loss", loss.detach().new_tensor(0.0)).to(dtype=loss.dtype),
+            "geo_aux_loss": dit_context.get("geo_aux_loss", loss.detach().new_tensor(0.0)).to(dtype=loss.dtype),
         }
         diagnostics = dit_context.get("diagnostics", {})
         if diagnostics:
@@ -3993,6 +4262,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "teacher_traj_used_ratio",
                 "teacher_traj_mix",
                 "teacher_score_mean",
+                "early_kink_rate",
+                "tail_reverse_rate",
+                "curvature_violation_rate",
                 "gt_score_mean",
                 "geometry_mode_code",
                 "cot_token_norm",
@@ -4161,8 +4433,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
                 current_actions = mean + std * noise_sample
                 
-                if hasattr(self, 'final_action_clip_value') and self.final_action_clip_value is not None and i == len(timesteps_to_iterate) - 1:
-                    current_actions.clamp_(-self.final_action_clip_value, self.final_action_clip_value)
+                final_clip = self._representation_clip_value(getattr(self, "final_action_clip_value", None))
+                if final_clip is not None and i == len(timesteps_to_iterate) - 1:
+                    current_actions.clamp_(-final_clip, final_clip)
 
         elif self.config.sampling_method == 'ddim':
             eval_min_sampling_denoising_std = getattr(self, 'eval_min_sampling_denoising_std', 0.0001)
@@ -4197,7 +4470,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         else:
             raise ValueError(f"Unsupported sampling method: {self.config.sampling_method}")
 
-        final_action_clip_value = getattr(self, 'final_action_clip_value', 1.0)
+        final_action_clip_value = self._representation_clip_value(getattr(self, 'final_action_clip_value', 1.0))
         if final_action_clip_value is not None:
             current_actions.clamp_(-final_action_clip_value, final_action_clip_value)
 
@@ -4215,17 +4488,17 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
         output_data: Dict[str, torch.Tensor] = {}
         if coarse_prior_norm is not None:
-            output_data["pred_coarse_traj"] = self.denorm_odo(coarse_prior_norm.to(current_actions))
+            output_data["pred_coarse_traj"] = self._decode_action_target(coarse_prior_norm.to(current_actions))
         if residual_anchor_norm is not None:
             output_data["pred_residual_norm"] = current_actions
-            output_data["pred_vlm_text_anchor_traj"] = self.denorm_odo(residual_anchor_norm.to(current_actions))
+            output_data["pred_vlm_text_anchor_traj"] = self._decode_action_target(residual_anchor_norm.to(current_actions))
             output_data["pred_residual_anchor_alpha"] = current_actions.new_tensor(float(residual_alpha))
 
-        final_action_clip_value = getattr(self, 'final_action_clip_value', 1.0)
+        final_action_clip_value = self._representation_clip_value(getattr(self, 'final_action_clip_value', 1.0))
         if final_action_clip_value is not None:
             final_norm = final_norm.clamp(-final_action_clip_value, final_action_clip_value)
 
-        final_actions = self.denorm_odo(final_norm)
+        final_actions = self._decode_action_target(final_norm)
         output_data["pred_traj"] = final_actions
 
         return BatchFeature(data=output_data)
@@ -4379,8 +4652,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
                 current_actions = mean + std * noise_sample
                 
-                if i == len(timesteps) - 1 and hasattr(self, 'final_action_clip_value') and self.final_action_clip_value is not None:
-                    current_actions = current_actions.clamp_(-self.final_action_clip_value, self.final_action_clip_value)
+                final_clip = self._representation_clip_value(getattr(self, "final_action_clip_value", None))
+                if i == len(timesteps) - 1 and final_clip is not None:
+                    current_actions = current_actions.clamp_(-final_clip, final_clip)
                 
                 denoising_chain.append(current_actions.clone())
         else:
@@ -4396,10 +4670,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             )
             assert residual_anchor_norm is not None
             final_norm = current_actions + float(residual_alpha) * residual_anchor_norm.to(current_actions)
-            final_action_clip_value = getattr(self, 'final_action_clip_value', 1.0)
+            final_action_clip_value = self._representation_clip_value(getattr(self, 'final_action_clip_value', 1.0))
             if final_action_clip_value is not None:
                 final_norm = final_norm.clamp(-final_action_clip_value, final_action_clip_value)
-        final_actions = self.denorm_odo(final_norm)
+        final_actions = self._decode_action_target(final_norm)
         chain_tensor = torch.stack(denoising_chain, dim=1)
         
         return chain_tensor.detach(), final_actions.detach()
@@ -5717,6 +5991,211 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         }
         return adv.reshape(B * G).detach(), group_weight.detach(), aux
 
+    def _compute_feasible_pareto_advantages(
+        self,
+        rewards_matrix: torch.Tensor,
+        components_matrix: Dict[str, torch.Tensor],
+        trajs_matrix: torch.Tensor,
+        ref: Dict[str, torch.Tensor],
+    ) -> tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
+        B, G = rewards_matrix.shape
+        dtype = rewards_matrix.dtype
+        device = rewards_matrix.device
+        pdms = components_matrix.get("pdms", rewards_matrix).float()
+        ep = components_matrix["ego_progress"].float()
+        ttc = components_matrix["time_to_collision_within_bound"].float()
+        comfort = components_matrix["history_comfort"].float()
+        nc = components_matrix["no_at_fault_collisions"].float()
+        dac = components_matrix["drivable_area_compliance"].float()
+        ddc = components_matrix["driving_direction_compliance"].float()
+
+        flat_trajs = trajs_matrix.reshape(B * G, trajs_matrix.shape[-2], trajs_matrix.shape[-1])
+        feas_metrics = compute_feasibility_metrics(
+            flat_trajs,
+            {
+                "w_curv": float(getattr(self.config, "geo_curvature_weight", 1.0)),
+                "w_reverse": float(getattr(self.config, "geo_reverse_weight", 1.0)),
+                "w_tail_reverse": float(getattr(self.config, "geo_tail_reverse_weight", 2.0)),
+                "w_kink": float(getattr(self.config, "geo_early_kink_weight", 2.0)),
+                "w_jerk": float(getattr(self.config, "geo_jerk_weight", 0.2)),
+            },
+        )
+        feas_cost = feas_metrics.feas_cost.reshape(B, G).to(device=device, dtype=torch.float32)
+        early_kink_rate = feas_metrics.early_kink_rate.reshape(B, G).to(device=device, dtype=torch.float32)
+        tail_reverse_rate = feas_metrics.tail_reverse_rate.reshape(B, G).to(device=device, dtype=torch.float32)
+        curvature_violation_rate = feas_metrics.curvature_violation_rate.reshape(B, G).to(device=device, dtype=torch.float32)
+
+        ref_pdms = ref["ref_pdms"].to(device=device, dtype=torch.float32)
+        ref_ep = ref["ref_ep"].to(device=device, dtype=torch.float32)
+        ref_ttc = ref["ref_ttc"].to(device=device, dtype=torch.float32)
+        ref_ddc = ref["ref_ddc"].to(device=device, dtype=torch.float32)
+        ref_utility = (
+            float(self.fp_ep_weight) * ref_ep
+            + float(self.fp_ttc_weight) * ref_ttc
+            + float(self.fp_ddc_weight) * ref_ddc
+        )
+
+        if float(self.fp_feas_max) > 0.0:
+            feas_threshold = torch.full((B,), float(self.fp_feas_max), device=device, dtype=torch.float32)
+        else:
+            sorted_feas = torch.sort(feas_cost.detach(), dim=1).values
+            q_idx = min(max(int(round(0.9 * max(G - 1, 0))), 0), max(G - 1, 0))
+            feas_threshold = sorted_feas[:, q_idx].clamp_min(1e-6)
+
+        ddc_guard = ddc >= torch.maximum(
+            ddc.new_full((B, G), float(self.fp_ddc_min_absolute)),
+            ref_ddc[:, None] - float(self.fp_ddc_ref_tolerance),
+        )
+        nc_ok = nc >= 1.0
+        dac_ok = dac >= 1.0
+        comfort_ok = comfort >= float(self.fp_comfort_min)
+        geometry_ok = feas_cost <= feas_threshold[:, None]
+        valid = nc_ok & dac_ok & ddc_guard & geometry_ok & comfort_ok
+
+        utility = (
+            float(self.fp_ep_weight) * ep
+            + float(self.fp_ttc_weight) * ttc
+            + float(self.fp_ddc_weight) * ddc
+            - float(self.fp_feas_weight) * feas_cost
+        )
+        tradeoff_bad = (
+            -((ep - ref_ep[:, None]) + float(self.fp_tradeoff_ttc_rho) * (ttc - ref_ttc[:, None]))
+            - float(self.fp_tradeoff_tolerance)
+        ).clamp(min=0.0)
+        objective_components = {
+            "ego_progress": ep,
+            "time_to_collision_within_bound": ttc,
+            "driving_direction_compliance": ddc,
+            "_neg_feas_cost": -feas_cost,
+        }
+        pareto_front = self._compute_pareto_front_mask(
+            objective_components,
+            valid,
+            ("ego_progress", "time_to_collision_within_bound", "driving_direction_compliance", "_neg_feas_cost"),
+        )
+        score = utility + float(self.fp_pareto_front_bonus) * pareto_front.float()
+        score = score - float(self.fp_tradeoff_penalty_weight) * tradeoff_bad
+
+        all_mask = torch.ones_like(valid, dtype=torch.bool)
+        if bool(self.fp_use_bucketed_advantage):
+            bucket_id = compute_pdas_metrics(
+                score.detach(),
+                {
+                    "ego_progress": ep.detach(),
+                    "time_to_collision_within_bound": ttc.detach(),
+                },
+                trajs_matrix.detach(),
+                {"ref_ep": ref_ep.detach(), "ref_pdms": ref_pdms.detach()},
+                self,
+            )
+            # Reuse the public PDAS helper for group weights; bucket ids come
+            # from the companion function to keep advantage code local.
+            from .pdas import compute_phenotype_buckets
+
+            buckets = compute_phenotype_buckets(
+                trajs_matrix.detach(),
+                {"ego_progress": ep.detach(), "time_to_collision_within_bound": ttc.detach()},
+                {"feas_cost": feas_cost.detach()},
+                {"ref_ep": ref_ep.detach()},
+                self,
+            )
+            z = torch.zeros_like(score)
+            bucket_counts = []
+            for b in range(B):
+                unique = torch.unique(buckets[b])
+                bucket_counts.append(float(unique.numel()))
+                rep_scores = []
+                bucket_values = []
+                for bucket in unique:
+                    bucket_mask = buckets[b : b + 1] == bucket
+                    z[b : b + 1] = torch.where(bucket_mask, self._masked_zscore(score[b : b + 1], bucket_mask), z[b : b + 1])
+                    rep_mask = bucket_mask & valid[b : b + 1]
+                    rep_scores.append(score[b : b + 1][rep_mask].mean() if bool(rep_mask.any().item()) else score[b : b + 1][bucket_mask].mean())
+                    bucket_values.append(int(bucket.item()))
+                if rep_scores:
+                    reps = torch.stack(rep_scores).view(1, -1)
+                    rep_z = self._masked_zscore(reps, torch.ones_like(reps, dtype=torch.bool)).clamp(
+                        min=-float(self.fp_inter_bucket_clip),
+                        max=float(self.fp_inter_bucket_clip),
+                    )
+                    for idx, bucket_value in enumerate(bucket_values):
+                        mask_b = buckets[b] == bucket_value
+                        z[b, mask_b] = z[b, mask_b] + float(self.fp_inter_bucket_weight) * rep_z[0, idx].to(z)
+            bucket_count_mean = score.new_tensor(float(sum(bucket_counts) / max(len(bucket_counts), 1)))
+            pdas_metrics = bucket_id
+        else:
+            z = self._masked_zscore(score, all_mask)
+            bucket_count_mean = score.new_zeros(())
+            pdas_metrics = compute_pdas_metrics(
+                score.detach(),
+                {"ego_progress": ep.detach(), "time_to_collision_within_bound": ttc.detach()},
+                trajs_matrix.detach(),
+                {"ref_ep": ref_ep.detach(), "ref_pdms": ref_pdms.detach()},
+                self,
+            )
+
+        unsafe_adv = score.new_full(score.shape, float(self.fp_invalid_negative_advantage))
+        adv = torch.where(valid, z, unsafe_adv)
+        regression_zero = (ref_pdms[:, None] > 0.0) & (pdms <= 0.0)
+        ddc_regression = ~ddc_guard
+        geometry_bad = ~geometry_ok
+        dominated = valid & (~pareto_front)
+        offsupport = (~pareto_front) & (utility <= ref_utility[:, None] + float(self.fp_tradeoff_tolerance))
+        cap_mask = torch.zeros_like(valid, dtype=torch.bool)
+        adv = torch.where(regression_zero, score.new_full(score.shape, float(self.fp_regression_negative_advantage)), adv)
+        for mask, cap in (
+            (ddc_regression, float(self.fp_ddc_regression_positive_cap)),
+            (geometry_bad, float(self.fp_geometry_positive_cap)),
+            (dominated, float(self.fp_dominated_positive_cap)),
+            (offsupport, float(self.fp_offsupport_positive_cap)),
+            (~comfort_ok, 0.0),
+        ):
+            active = mask & (adv > cap)
+            cap_mask = cap_mask | active
+            adv = torch.where(active, score.new_full(score.shape, cap), adv)
+
+        group_weight = torch.ones(B, device=device, dtype=dtype)
+        if bool(self.fp_use_pdas):
+            group_weight = group_weight * pdas_metrics.weight.to(device=device, dtype=dtype)
+
+        aux = {
+            "reward_std": score.std(dim=1, unbiased=False).detach().to(dtype=dtype),
+            "safe_count": valid.sum(dim=1).detach().to(dtype=dtype),
+            "mixed_group_ratio": ((valid.sum(dim=1) > 0) & (valid.sum(dim=1) < G)).float().mean().to(dtype=dtype),
+            "all_safe_group_ratio": (valid.sum(dim=1) == G).float().mean().to(dtype=dtype),
+            "all_unsafe_group_ratio": (valid.sum(dim=1) == 0).float().mean().to(dtype=dtype),
+            "feasible_pareto_enabled": score.new_tensor(1.0).to(dtype=dtype),
+            "feasible_pareto_score": score.detach(),
+            "feasible_pareto_valid_mask": valid.detach(),
+            "feasible_pareto_pareto_front_mask": pareto_front.detach(),
+            "fp_utility_mean": utility.mean().detach().to(dtype=dtype),
+            "fp_valid_ratio": valid.float().mean().detach().to(dtype=dtype),
+            "fp_pareto_front_ratio": pareto_front.float().mean().detach().to(dtype=dtype),
+            "fp_dominated_ratio": dominated.float().mean().detach().to(dtype=dtype),
+            "fp_ddc_guard_pass_ratio": ddc_guard.float().mean().detach().to(dtype=dtype),
+            "fp_ddc_regression_ratio": ddc_regression.float().mean().detach().to(dtype=dtype),
+            "fp_feas_cost_mean": feas_cost.mean().detach().to(dtype=dtype),
+            "fp_geometry_bad_ratio": geometry_bad.float().mean().detach().to(dtype=dtype),
+            "fp_regression_0_from_positive_ratio": regression_zero.float().mean().detach().to(dtype=dtype),
+            "fp_positive_adv_cap_ratio": cap_mask.float().mean().detach().to(dtype=dtype),
+            "fp_bucket_count_mean": bucket_count_mean.detach().to(dtype=dtype),
+            "fp_intra_adv_mean": z.mean().detach().to(dtype=dtype),
+            "fp_inter_adv_mean": score.new_zeros(()).to(dtype=dtype),
+            "pdas_success_rate": pdas_metrics.success_rate.mean().detach().to(dtype=dtype),
+            "pdas_learnability": pdas_metrics.learnability.mean().detach().to(dtype=dtype),
+            "pdas_reward_std": pdas_metrics.reward_std.mean().detach().to(dtype=dtype),
+            "pdas_bon_gap": pdas_metrics.bon_gap.mean().detach().to(dtype=dtype),
+            "pdas_bucket_diversity": pdas_metrics.bucket_diversity.mean().detach().to(dtype=dtype),
+            "pdas_regression_risk": pdas_metrics.regression_risk.mean().detach().to(dtype=dtype),
+            "pdas_weight_mean": pdas_metrics.weight.mean().detach().to(dtype=dtype),
+            "pdas_weight_min": pdas_metrics.weight.min().detach().to(dtype=dtype),
+            "pdas_weight_max": pdas_metrics.weight.max().detach().to(dtype=dtype),
+            "early_kink_rate": early_kink_rate.mean().detach().to(dtype=dtype),
+            "tail_reverse_rate": tail_reverse_rate.mean().detach().to(dtype=dtype),
+            "curvature_violation_rate": curvature_violation_rate.mean().detach().to(dtype=dtype),
+        }
+        return adv.reshape(B * G).detach(), group_weight.detach(), aux
+
     def _stage3_core_pareto_log_metrics(
         self,
         ref: torch.Tensor,
@@ -5801,6 +6280,49 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "core_pareto_ddc_guard_threshold": ref.new_tensor(float(self.core_pareto_ddc_guard_threshold)),
             "core_pareto_pareto_bonus": ref.new_tensor(float(self.core_pareto_pareto_bonus)),
         }
+
+    def _stage3_feasible_pareto_log_metrics(
+        self,
+        ref: torch.Tensor,
+        advantage_aux: Dict[str, torch.Tensor],
+    ) -> Dict[str, torch.Tensor]:
+        zero = ref.new_zeros(())
+
+        def aux_value(name: str) -> torch.Tensor:
+            value = advantage_aux.get(name)
+            if isinstance(value, torch.Tensor):
+                return value.detach().float().mean().to(device=ref.device, dtype=ref.dtype)
+            return zero
+
+        keys = (
+            "feasible_pareto_enabled",
+            "fp_utility_mean",
+            "fp_valid_ratio",
+            "fp_pareto_front_ratio",
+            "fp_dominated_ratio",
+            "fp_ddc_guard_pass_ratio",
+            "fp_ddc_regression_ratio",
+            "fp_feas_cost_mean",
+            "fp_geometry_bad_ratio",
+            "fp_regression_0_from_positive_ratio",
+            "fp_positive_adv_cap_ratio",
+            "fp_bucket_count_mean",
+            "fp_intra_adv_mean",
+            "fp_inter_adv_mean",
+            "pdas_success_rate",
+            "pdas_learnability",
+            "pdas_reward_std",
+            "pdas_bon_gap",
+            "pdas_bucket_diversity",
+            "pdas_regression_risk",
+            "pdas_weight_mean",
+            "pdas_weight_min",
+            "pdas_weight_max",
+            "early_kink_rate",
+            "tail_reverse_rate",
+            "curvature_violation_rate",
+        )
+        return {key: aux_value(key) for key in keys}
 
     def _chain_step_logprobs(
         self,
@@ -6122,6 +6644,28 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "lateral": 5,
             "timing": 6,
         }.get(cls._source_bucket(source), 0)
+
+    @staticmethod
+    def _dpsi_weight_for_tag(tag: str, source: str, cfg: OfflineRLConfig) -> float:
+        tag_l = str(tag or "").lower()
+        source_l = str(source or "").lower()
+        if "safe_ep" in tag_l:
+            return float(cfg.dpsi_weight_safe_ep)
+        if "vector_pareto" in tag_l or "pareto" in tag_l:
+            return float(cfg.dpsi_weight_vector_pareto)
+        if "safety_repair" in tag_l:
+            return float(cfg.dpsi_weight_safety_repair)
+        if "ddc_repair" in tag_l:
+            return float(cfg.dpsi_weight_ddc_repair)
+        if "best_pdms" in tag_l:
+            return float(cfg.dpsi_weight_best_pdms)
+        if "smooth" in tag_l:
+            return float(cfg.dpsi_weight_smooth)
+        if "il" in tag_l or source_l == "il":
+            return float(cfg.dpsi_weight_il)
+        if "gt" in tag_l or source_l == "gt":
+            return float(cfg.dpsi_weight_gt)
+        return 1.0
 
     def _compute_awac_candidate_valid_mask(
         self,
@@ -6714,7 +7258,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         targets = target_trajs.reshape(B * M, H, D).detach()
         if not torch.isfinite(targets).all():
             raise ValueError("AWAC target trajectories contain non-finite values.")
-        target_norm = policy.norm_odo(targets).clamp(-1.0, 1.0)
+        target_norm = policy._encode_action_target(targets)
+        target_clip = policy._representation_clip_value(1.0)
+        if target_clip is not None:
+            target_norm = target_norm.clamp(-target_clip, target_clip)
         if noise is None:
             noise = torch.randn_like(target_norm)
         else:
@@ -7108,9 +7655,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         metric_cache: Dict[str, Any],
         cfg: OfflineRLConfig,
     ) -> Dict[str, Any]:
-        buffer_root = Path(cfg.elite_buffer_path)
+        buffer_path = self._offline_candidate_buffer_path(cfg)
+        buffer_root = Path(buffer_path)
         if not str(buffer_root):
-            raise ValueError("offline_rl_cfg.elite_buffer_path is empty and build_candidates_online=False.")
+            raise ValueError(
+                "offline_rl_cfg.elite_buffer_path/support_archive_path is empty and build_candidates_online=False."
+            )
         device = action_input.action.device
         dtype = action_input.action.dtype
         records = []
@@ -7159,6 +7709,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         selected_source_code = torch.zeros((B, max_m), device=device, dtype=torch.long)
         selected_source_index = torch.full((B, max_m), -1, device=device, dtype=torch.long)
         selected_selection_score = torch.zeros((B, max_m), device=device, dtype=torch.float32)
+        selected_support_weight = torch.ones((B, max_m), device=device, dtype=torch.float32)
+        selected_support_tag_code = torch.zeros((B, max_m), device=device, dtype=torch.long)
         selected_components = {
             key: torch.zeros((B, max_m), device=device, dtype=torch.float32)
             for key in REQUIRED_COMPONENT_KEYS
@@ -7179,6 +7731,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 raise ValueError(f"Elite buffer token={record['token']!r} has invalid candidate shape {candidates_np.shape}.")
             m = candidates_np.shape[0]
             sources = [str(source) for source in record["sources"]]
+            support_tags = [str(tag) for tag in record.get("support_tags", [""] * m)]
+            if len(support_tags) != m:
+                raise ValueError(
+                    f"Elite buffer token={record['token']!r} support_tags length {len(support_tags)} "
+                    f"does not match candidate count {m}."
+                )
             selected_trajs[b, :m] = torch.from_numpy(candidates_np).to(device=device, dtype=dtype)
             selected_rewards[b, :m] = torch.as_tensor(record["rewards"], device=device, dtype=torch.float32)
             selected_anchor_distance[b, :m] = torch.as_tensor(record["anchor_distance"], device=device, dtype=torch.float32)
@@ -7229,6 +7787,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             selected_source_index[b, :m] = torch.arange(m, device=device, dtype=torch.long)
             source_codes = [self._source_code(source) for source in sources]
             selected_source_code[b, :m] = torch.tensor(source_codes, device=device, dtype=torch.long)
+            selected_support_weight[b, :m] = torch.tensor(
+                [self._dpsi_weight_for_tag(tag, source, cfg) for tag, source in zip(support_tags, sources)],
+                device=device,
+                dtype=torch.float32,
+            )
+            selected_support_tag_code[b, :m] = torch.tensor(
+                [int(hashlib.sha1(tag.encode("utf-8")).hexdigest()[:8], 16) % 1000 for tag in support_tags],
+                device=device,
+                dtype=torch.long,
+            )
             gt_reward[b] = float(record["gt_reward"])
             il_reward[b] = float(record["il_reward"])
             has_valid = bool(valid_mask.any().detach().cpu().item()) if valid_mask_recomputed else bool(
@@ -7265,6 +7833,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "selected_real_mask": selected_real_mask,
             "selected_source_code": selected_source_code,
             "selected_source_index": selected_source_index,
+            "selected_support_weight": selected_support_weight,
+            "selected_support_tag_code": selected_support_tag_code,
             "valid_candidate_ratio": valid_real.float().sum() / real_count,
             "has_valid_candidate_ratio": has_valid_candidate.float().mean(),
             "fallback_candidate_ratio": fallback_candidate.float().mean(),
@@ -7401,8 +7971,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
     ) -> Dict[str, Any]:
         if not bool(cfg.enabled) or not bool(cfg.grpo_buffer_guidance_enabled):
             return {}
-        if not str(cfg.elite_buffer_path):
-            raise ValueError("GRPO buffer guidance requires agent.offline_rl_elite_buffer_path.")
+        if not str(self._offline_candidate_buffer_path(cfg)):
+            raise ValueError("GRPO buffer guidance requires agent.offline_rl_elite_buffer_path/support_archive_path.")
         if bool(cfg.build_candidates_online):
             raise ValueError("GRPO buffer guidance currently expects a prebuilt offline elite buffer.")
         metric_cache: Dict[str, Any] = {}
@@ -7871,7 +8441,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         if tokens_list is None:
             raise ValueError("forward_awac_iql requires tokens_list for train metric-cache reward lookup.")
         token_strs = [str(token) for token in tokens_list]
-        use_offline_buffer = bool(str(cfg.elite_buffer_path)) and not bool(cfg.build_candidates_online)
+        use_offline_buffer = bool(str(self._offline_candidate_buffer_path(cfg))) and not bool(cfg.build_candidates_online)
         metric_cache: Dict[str, Any] = {}
         if not use_offline_buffer or str(cfg.missing_buffer_policy) == "fallback_gt":
             metric_cache = self._load_metric_cache_for_tokens(token_strs)
@@ -7912,6 +8482,18 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             real_mask=selected_real_mask,
             gt_reward=shaped_gt_reward,
         )
+        dpsi_weight_mean = weights.new_tensor(1.0)
+        dpsi_effective_ratio = weights.new_zeros(())
+        if bool(getattr(cfg, "use_dpsi", False)):
+            support_weight = awac_batch.get("selected_support_weight")
+            if isinstance(support_weight, torch.Tensor):
+                support_weight = support_weight.to(device=weights.device, dtype=weights.dtype)
+            else:
+                support_weight = torch.ones_like(weights)
+            weights = weights * support_weight
+            real_positive = selected_real_mask & (weights > 0.0)
+            dpsi_weight_mean = support_weight[selected_real_mask].mean().to(weights) if bool(selected_real_mask.any().item()) else weights.new_tensor(1.0)
+            dpsi_effective_ratio = real_positive.float().sum().to(weights) / selected_real_mask.float().sum().clamp(min=1.0).to(weights)
         weights, source_balance_diag = self._apply_awac_source_balance(
             weights,
             source_code,
@@ -8149,6 +8731,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "positive_weight_candidate_ratio": weight_diag["positive_weight_candidate_ratio"].to(total_loss).detach(),
             "target_filter_row_ratio": weight_diag["target_filter_row_ratio"].to(total_loss).detach(),
             "target_filter_candidate_ratio": weight_diag["target_filter_candidate_ratio"].to(total_loss).detach(),
+            "support_tag_ratios": dpsi_effective_ratio.detach().to(total_loss),
+            "dpsi_enabled": total_loss.new_tensor(float(bool(getattr(cfg, "use_dpsi", False)))),
+            "dpsi_support_weight_mean": dpsi_weight_mean.detach().to(total_loss),
             "has_valid_candidate_ratio": awac_batch["has_valid_candidate_ratio"].to(total_loss).detach(),
             "valid_candidate_ratio": awac_batch["valid_candidate_ratio"].to(total_loss).detach(),
             "selected_valid_ratio": selected_valid_ratio.detach(),
@@ -8402,6 +8987,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             ),
             "grpo_advantage_clip_abs": rewards.new_tensor(float(advantage_clip_abs)),
             **self._stage3_core_pareto_log_metrics(rewards, reward_aux, advantage_aux),
+            **self._stage3_feasible_pareto_log_metrics(rewards, advantage_aux),
             "ppo_replay_valid_ratio": replay_mask.detach().float().mean().to(dtype=rewards.dtype),
             "ppo_replay_valid_count": rewards.new_tensor(float(replay_mask.detach().sum().item())),
             "ppo_replay_inner_epochs": rewards.new_tensor(float(getattr(self, "ppo_replay_inner_epochs", 1))),
@@ -8792,6 +9378,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         }
         grpo_buffer_bonus_weight = 0.0
         use_core_pareto = bool(getattr(self, "use_core_pareto_grpo", False))
+        use_feasible_pareto = (
+            bool(getattr(self, "use_feasible_pareto_grpo", False))
+            or str(getattr(self, "reward_mode", "safe_diffgrpo")) == "feasible_pareto"
+        )
         if use_core_pareto:
             ref = self._compute_core_pareto_reference_components(
                 vl_features,
@@ -8851,6 +9441,64 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         components_matrix["driving_direction_compliance"]
                         >= ref["ref_ddc"].to(device=base_rewards.device)[:, None]
                         - float(self.core_pareto_ddc_drop_tolerance)
+                    )
+                ).reshape(B * G).to(dtype=base_rewards.dtype),
+            }
+            for key in (
+                "no_at_fault_collisions",
+                "drivable_area_compliance",
+                "time_to_collision_within_bound",
+                "history_comfort",
+                "lane_keeping",
+                "driving_direction_compliance",
+                "traffic_light_compliance",
+            ):
+                if key in components:
+                    reward_aux[key] = components[key]
+        elif use_feasible_pareto:
+            ref = self._compute_core_pareto_reference_components(
+                vl_features,
+                action_input,
+                [str(token) for token in tokens_list],
+                metric_cache,
+            )
+            components_matrix = self._reshape_components_for_group(components, B, G)
+            trajs_matrix = trajs.reshape(B, G, trajs.shape[1], trajs.shape[2])
+            rewards_matrix = base_rewards.view(B, G)
+            advantages, group_weight, advantage_aux = self._compute_feasible_pareto_advantages(
+                rewards_matrix,
+                components_matrix,
+                trajs_matrix,
+                ref,
+            )
+            hard_safe_matrix = advantage_aux["feasible_pareto_valid_mask"].to(device=base_rewards.device).bool()
+            hard_safe_mask = hard_safe_matrix.reshape(B * G)
+            rewards_matrix = advantage_aux["feasible_pareto_score"].to(device=base_rewards.device, dtype=base_rewards.dtype)
+            rewards = rewards_matrix.reshape(B * G)
+            if self.log_safe_diversity or self.use_diversity_reward:
+                diversity_bonus = self._compute_safe_diversity_bonus(trajs, hard_safe_mask, base_rewards, B, G)
+            else:
+                diversity_bonus = torch.zeros_like(base_rewards)
+            zero = torch.zeros_like(base_rewards)
+            reward_aux = {
+                "pdms": base_rewards,
+                "ego_progress": components["ego_progress"],
+                "diversity_bonus": diversity_bonus,
+                "soft_safety_penalty": zero,
+                "core_pareto_mode_enabled": base_rewards.new_tensor(0.0),
+                "core_pareto_core": zero,
+                "core_pareto_pdms_formula": zero,
+                "core_pareto_adjusted_core": zero,
+                "core_pareto_ep_floor_gap": zero,
+                "core_pareto_ep_floor_penalty": zero,
+                "core_pareto_ddc_penalty": zero,
+                "core_pareto_dual_penalty": zero,
+                "core_pareto_nc_dac_feasible_mask": hard_safe_mask.to(dtype=base_rewards.dtype),
+                "core_pareto_ddc_guard_mask": (
+                    components_matrix["driving_direction_compliance"]
+                    >= torch.maximum(
+                        base_rewards.new_full((B, G), float(self.fp_ddc_min_absolute)),
+                        ref["ref_ddc"].to(device=base_rewards.device)[:, None] - float(self.fp_ddc_ref_tolerance),
                     )
                 ).reshape(B * G).to(dtype=base_rewards.dtype),
             }
@@ -9457,6 +10105,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             ),
             "grpo_advantage_clip_abs": total_loss.new_tensor(float(advantage_clip_abs)),
             **self._stage3_core_pareto_log_metrics(total_loss, reward_aux, advantage_aux),
+            **self._stage3_feasible_pareto_log_metrics(total_loss, advantage_aux),
             "trajectory_logp": trajectory_logp.mean(),
             "gspo_ratio_mean": gspo_ratio_mean.to(dtype=total_loss.dtype),
             "gspo_ratio_min": gspo_ratio_min.to(dtype=total_loss.dtype),

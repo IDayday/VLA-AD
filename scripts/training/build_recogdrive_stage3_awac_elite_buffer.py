@@ -24,12 +24,19 @@ from navsim.agents.recogdrive.offline_rl_buffer import (
     load_elite_record,
     save_elite_record,
 )
+from navsim.agents.recogdrive.candidate_funnel import ExternalCandidateLoader
+from navsim.agents.recogdrive.pareto_support import (
+    CandidateRecord,
+    build_archive_record,
+    select_feasible_pareto_support,
+)
 from navsim.agents.recogdrive.recogdrive_agent import (
     EXPERT_FEATURE_KEYS,
     EXPERT_TARGET_FEATURE_KEYS,
     LAST_VLA_TARGET_KEYS,
     TWO_EXPERT_TARGET_KEYS,
 )
+from navsim.agents.recogdrive.trajectory_feasibility import compute_feasibility_metrics
 from navsim.planning.script.run_training_recogdrive_rl import (
     TokenizedDataset,
     build_datasets,
@@ -562,6 +569,190 @@ def _save_records(
             save_elite_record(buffer_dir, token, record)
 
 
+def _parse_external_candidate_roots(value: str) -> Dict[str, str]:
+    roots: Dict[str, str] = {}
+    if not value:
+        return roots
+    for item in value.replace(",", " ").split():
+        if not item:
+            continue
+        if "=" not in item:
+            raise ValueError(
+                "EXTERNAL_CANDIDATE_ROOTS must be a whitespace/comma separated list of source=path entries; "
+                f"got {item!r}."
+            )
+        source, path = item.split("=", 1)
+        roots[str(source)] = str(path)
+    return roots
+
+
+def _feasibility_dict(traj: np.ndarray) -> Dict[str, float]:
+    metrics = compute_feasibility_metrics(torch.as_tensor(traj, dtype=torch.float32).unsqueeze(0), {})
+    return {
+        "feas_cost": float(metrics.feas_cost[0].detach().cpu().item()),
+        "early_kink_rate": float(metrics.early_kink_rate[0].detach().cpu().item()),
+        "tail_reverse_rate": float(metrics.tail_reverse_rate[0].detach().cpu().item()),
+        "curvature_violation_rate": float(metrics.curvature_violation_rate[0].detach().cpu().item()),
+    }
+
+
+def _candidate_records_from_awac_row(
+    token: str,
+    awac_batch: Dict[str, Any],
+    batch_idx: int,
+) -> List[CandidateRecord]:
+    candidate_sources = awac_batch["candidate_sources"]
+    real_mask = awac_batch["selected_real_mask"][batch_idx].detach().cpu().bool().numpy()
+    real_count = int(real_mask.sum())
+    source_indices = awac_batch["selected_source_index"][batch_idx, :real_count].detach().cpu().long().numpy()
+    trajs = awac_batch["selected_trajs"][batch_idx, :real_count].detach().cpu().float().numpy()
+    rewards = awac_batch["selected_rewards"][batch_idx, :real_count].detach().cpu().float().numpy()
+    selection_score = awac_batch["selected_selection_score"][batch_idx, :real_count].detach().cpu().float().numpy()
+    components = {
+        key: value[batch_idx, :real_count].detach().cpu().float().numpy()
+        for key, value in awac_batch["selected_components"].items()
+    }
+    records: List[CandidateRecord] = []
+    for idx in range(real_count):
+        source_index = int(source_indices[idx])
+        source = candidate_sources[source_index] if source_index >= 0 else "unknown"
+        traj = np.asarray(trajs[idx], dtype=np.float32)
+        comp = {key: float(values[idx]) for key, values in components.items()}
+        records.append(
+            CandidateRecord(
+                trajectory=traj,
+                source=str(source),
+                token=str(token),
+                components=comp,
+                reward=float(rewards[idx]),
+                feas=_feasibility_dict(traj),
+                selection_score=float(selection_score[idx]),
+            )
+        )
+    return records
+
+
+def _score_external_records(
+    action_head,
+    token: str,
+    external_records: List[CandidateRecord],
+    metric_cache: Dict[str, Any],
+    cfg,
+    expected_shape: Tuple[int, int],
+) -> List[CandidateRecord]:
+    valid_records: List[CandidateRecord] = []
+    for record in external_records:
+        traj = np.asarray(record.trajectory, dtype=np.float32)
+        if traj.shape != expected_shape:
+            logger.warning(
+                "Skipping external candidate token=%s source=%s with shape %s, expected %s.",
+                token,
+                record.source,
+                traj.shape,
+                expected_shape,
+            )
+            continue
+        if not np.isfinite(traj).all():
+            logger.warning("Skipping non-finite external candidate token=%s source=%s.", token, record.source)
+            continue
+        valid_records.append(record)
+    if not valid_records:
+        return []
+    trajs = torch.as_tensor(
+        np.stack([np.asarray(record.trajectory, dtype=np.float32) for record in valid_records], axis=0),
+        dtype=torch.float32,
+        device=next(action_head.parameters()).device,
+    )
+    rewards, components = action_head._score_candidate_trajectories(
+        trajs.unsqueeze(0),
+        [str(token)],
+        metric_cache,
+        cfg,
+    )
+    out: List[CandidateRecord] = []
+    rewards_np = rewards[0].detach().cpu().float().numpy()
+    components_np = {
+        key: value[0].detach().cpu().float().numpy()
+        for key, value in components.items()
+    }
+    for idx, record in enumerate(valid_records):
+        traj = np.asarray(record.trajectory, dtype=np.float32)
+        comp = {key: float(values[idx]) for key, values in components_np.items()}
+        reward = float(rewards_np[idx])
+        out.append(
+            CandidateRecord(
+                trajectory=traj,
+                source=str(record.source),
+                token=str(token),
+                components=comp,
+                reward=reward,
+                feas=_feasibility_dict(traj),
+                selection_score=reward,
+                parent_id=record.parent_id,
+            )
+        )
+    return out
+
+
+def _save_sg_fps_v3_records(
+    buffer_dir: Path,
+    tokens: List[str],
+    awac_batch: Dict[str, Any],
+    action_head,
+    metric_cache: Dict[str, Any],
+    cfg,
+    external_loader: ExternalCandidateLoader | None,
+    dry_run: bool,
+    support_top_m: int,
+) -> Dict[str, Any]:
+    summary: Dict[str, Any] = {
+        "scene_count": 0,
+        "candidate_count": 0,
+        "external_candidate_count": 0,
+        "support_tag_counts": Counter(),
+    }
+    H = int(awac_batch["selected_trajs"].shape[-2])
+    D = int(awac_batch["selected_trajs"].shape[-1])
+    sg_cfg = {
+        "support_top_m": int(support_top_m),
+        "fp_ddc_min_absolute": float(getattr(cfg, "ddc_min_absolute", 0.95)),
+        "fp_ddc_ref_tolerance": float(getattr(cfg, "ddc_max_relative_drop", 0.01)),
+        "fp_comfort_min": 0.95,
+        "support_feas_max": 1.0,
+    }
+    for batch_idx, token in enumerate(tokens):
+        candidates = _candidate_records_from_awac_row(str(token), awac_batch, batch_idx)
+        external_scored: List[CandidateRecord] = []
+        if external_loader is not None:
+            external_scored = _score_external_records(
+                action_head,
+                str(token),
+                external_loader.load(str(token)),
+                metric_cache,
+                cfg,
+                expected_shape=(H, D),
+            )
+            candidates.extend(external_scored)
+        if not candidates:
+            continue
+        ref_record = next((record for record in candidates if record.source == "gt"), candidates[0])
+        selected = select_feasible_pareto_support(candidates, ref_record.components, sg_cfg)
+        record = build_archive_record(
+            str(token),
+            candidates,
+            selected,
+            ref=ref_record.components,
+            cfg=sg_cfg,
+        )
+        if not dry_run:
+            save_elite_record(buffer_dir, str(token), record)
+        summary["scene_count"] += 1
+        summary["candidate_count"] += len(candidates)
+        summary["external_candidate_count"] += len(external_scored)
+        summary["support_tag_counts"].update(tag for tag in record["support_tags"] if tag)
+    return summary
+
+
 @hydra.main(config_path=CONFIG_PATH, config_name=CONFIG_NAME, version_base=None)
 def main(cfg: DictConfig) -> None:
     logging.basicConfig(level=logging.INFO)
@@ -580,6 +771,10 @@ def main(cfg: DictConfig) -> None:
     merge_existing_records = _env_flag("MERGE_EXISTING_RECORDS", False)
     merge_keep_top_k = _env_int("MERGE_KEEP_TOP_K", _env_int("ELITE_TOP_M", 8))
     merge_keep_support = _env_flag("MERGE_KEEP_SUPPORT", True)
+    write_sg_fps_v3 = _env_flag("WRITE_SG_FPS_V3", _env_flag("SG_FPS_V3", False))
+    sg_fps_support_top_m = _env_int("SG_FPS_SUPPORT_TOP_M", _env_int("ELITE_TOP_M", 12))
+    external_candidate_roots = _parse_external_candidate_roots(os.getenv("EXTERNAL_CANDIDATE_ROOTS", ""))
+    external_loader = ExternalCandidateLoader(external_candidate_roots) if external_candidate_roots else None
     shard_index = _env_int("SHARD_INDEX", 0)
     shard_count = _env_int("SHARD_COUNT", 1)
     if shard_count <= 0:
@@ -631,6 +826,8 @@ def main(cfg: DictConfig) -> None:
             cfg.agent.offline_rl_online_policy_samples = int(os.environ["ONLINE_POLICY_SAMPLES"])
         if os.getenv("ELITE_TOP_M"):
             cfg.agent.offline_rl_elite_top_m = int(os.environ["ELITE_TOP_M"])
+        if write_sg_fps_v3:
+            cfg.agent.offline_rl_elite_top_m = max(int(cfg.agent.offline_rl_elite_top_m), int(sg_fps_support_top_m))
         if os.getenv("IL_CHECKPOINT"):
             cfg.agent.checkpoint_path = os.environ["IL_CHECKPOINT"]
             cfg.agent.reference_policy_checkpoint = os.environ["IL_CHECKPOINT"]
@@ -734,6 +931,12 @@ def main(cfg: DictConfig) -> None:
         "num_scenes": 0,
         "sums": defaultdict(float),
         "best_valid_sources": Counter(),
+        "sg_fps": {
+            "scene_count": 0,
+            "candidate_count": 0,
+            "external_candidate_count": 0,
+            "support_tag_counts": Counter(),
+        },
     }
     with summary_csv.open("w", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=summary_fields)
@@ -768,16 +971,35 @@ def main(cfg: DictConfig) -> None:
                 metric_cache,
                 agent.action_head.offline_rl_cfg,
             )
-            _save_records(
-                buffer_dir,
-                tokens,
-                awac_batch,
-                dry_run,
-                merge_existing_records=merge_existing_records,
-                merge_keep_top_k=merge_keep_top_k,
-                merge_keep_support=merge_keep_support,
-            )
+            if write_sg_fps_v3:
+                sg_summary = _save_sg_fps_v3_records(
+                    buffer_dir,
+                    tokens,
+                    awac_batch,
+                    agent.action_head,
+                    metric_cache,
+                    agent.action_head.offline_rl_cfg,
+                    external_loader,
+                    dry_run,
+                    support_top_m=sg_fps_support_top_m,
+                )
+                aggregate["sg_fps"]["scene_count"] += int(sg_summary["scene_count"])
+                aggregate["sg_fps"]["candidate_count"] += int(sg_summary["candidate_count"])
+                aggregate["sg_fps"]["external_candidate_count"] += int(sg_summary["external_candidate_count"])
+                aggregate["sg_fps"]["support_tag_counts"].update(sg_summary["support_tag_counts"])
+            else:
+                _save_records(
+                    buffer_dir,
+                    tokens,
+                    awac_batch,
+                    dry_run,
+                    merge_existing_records=merge_existing_records,
+                    merge_keep_top_k=merge_keep_top_k,
+                    merge_keep_support=merge_keep_support,
+                )
             for row in _iter_summary_rows(tokens, awac_batch):
+                if write_sg_fps_v3:
+                    row["record_version"] = 3
                 writer.writerow(row)
                 aggregate["num_scenes"] += 1
                 for key in (
@@ -810,6 +1032,15 @@ def main(cfg: DictConfig) -> None:
         "has_valid_candidate_ratio": aggregate["sums"]["has_valid_candidate"] / n,
         "best_valid_source_distribution": dict(aggregate["best_valid_sources"]),
         "selected_valid_ratio_mean": aggregate["sums"]["selected_valid_ratio"] / n,
+        "record_version": 3 if write_sg_fps_v3 else 2,
+        "sg_fps_v3": {
+            "enabled": bool(write_sg_fps_v3),
+            "scene_count": int(aggregate["sg_fps"]["scene_count"]),
+            "candidate_count": int(aggregate["sg_fps"]["candidate_count"]),
+            "external_candidate_count": int(aggregate["sg_fps"]["external_candidate_count"]),
+            "support_tag_counts": dict(aggregate["sg_fps"]["support_tag_counts"]),
+            "external_candidate_roots": external_candidate_roots,
+        },
     }
     summary_json.write_text(json.dumps(global_summary, indent=2, sort_keys=True), encoding="utf-8")
 
@@ -818,7 +1049,7 @@ def main(cfg: DictConfig) -> None:
     if dry_run:
         logger.info("DRY_RUN=true; elite records were not written.")
     else:
-        logger.info("AWAC elite records written under %s", buffer_dir)
+        logger.info("%s records written under %s", "SG-FPS v3 support" if write_sg_fps_v3 else "AWAC elite", buffer_dir)
     if skip_existing_records:
         logger.info("Skipped %d existing AWAC elite records.", skipped_existing)
     if merge_existing_records:

@@ -63,6 +63,15 @@ def _validate_record(record: Dict[str, Any]) -> None:
                 "has_valid_candidate",
             }
         )
+    if version >= 3:
+        required.update(
+            {
+                "feasibility",
+                "support_tags",
+                "pareto_front_mask",
+                "utility",
+            }
+        )
     missing = sorted(required.difference(record))
     if missing:
         raise KeyError(f"Elite buffer record is missing keys: {missing}")
@@ -92,6 +101,28 @@ def _validate_record(record: Dict[str, Any]) -> None:
             raise ValueError(
                 f"record['selection_score'] shape {selection_score.shape} does not match K={candidates.shape[0]}."
             )
+    if "pareto_front_mask" in record:
+        pareto_front = np.asarray(record["pareto_front_mask"])
+        if pareto_front.shape != (candidates.shape[0],):
+            raise ValueError(
+                f"record['pareto_front_mask'] shape {pareto_front.shape} does not match K={candidates.shape[0]}."
+            )
+    if "utility" in record:
+        utility = np.asarray(record["utility"])
+        if utility.shape != (candidates.shape[0],):
+            raise ValueError(f"record['utility'] shape {utility.shape} does not match K={candidates.shape[0]}.")
+    if "support_tags" in record and len(record["support_tags"]) != candidates.shape[0]:
+        raise ValueError(
+            f"record['support_tags'] length {len(record['support_tags'])} does not match K={candidates.shape[0]}."
+        )
+    if "feasibility" in record:
+        feasibility = record["feasibility"]
+        if not isinstance(feasibility, dict):
+            raise TypeError("record['feasibility'] must be a dict.")
+        for key, values in feasibility.items():
+            arr = np.asarray(values)
+            if arr.shape != (candidates.shape[0],):
+                raise ValueError(f"feasibility {key!r} shape {arr.shape} does not match K={candidates.shape[0]}.")
 
     components = record["components"]
     if not isinstance(components, dict):
@@ -103,6 +134,22 @@ def _validate_record(record: Dict[str, Any]) -> None:
         values = np.asarray(components[key])
         if values.shape != (candidates.shape[0],):
             raise ValueError(f"component {key!r} shape {values.shape} does not match K={candidates.shape[0]}.")
+
+
+def fill_v3_defaults(record: Dict[str, Any]) -> Dict[str, Any]:
+    """Returns a copy with v3 optional fields filled for legacy records.
+
+    This is intentionally opt-in. Existing v1/v2 buffers keep their original
+    contract unless a caller explicitly wants to run v3-aware code over them.
+    """
+    out = dict(record)
+    candidates = np.asarray(out["candidates"])
+    k = candidates.shape[0]
+    out.setdefault("feasibility", {"feas_cost": np.zeros(k, dtype=np.float32)})
+    out.setdefault("support_tags", ["legacy"] * k)
+    out.setdefault("pareto_front_mask", np.asarray(out.get("valid_mask", np.zeros(k, dtype=np.bool_)), dtype=np.bool_))
+    out.setdefault("utility", np.asarray(out.get("selection_score", out.get("rewards", np.zeros(k))), dtype=np.float32))
+    return out
 
 
 def save_elite_record(buffer_root: Path, token: str, record: Dict[str, Any]) -> None:
@@ -130,7 +177,15 @@ def save_elite_record(buffer_root: Path, token: str, record: Dict[str, Any]) -> 
     payload["best_valid_source"] = str(payload["best_valid_source"])
     payload["best_selected_source"] = str(payload["best_selected_source"])
     payload["has_valid_candidate"] = bool(payload["has_valid_candidate"])
-    payload["version"] = 2
+    version = int(payload.get("version", 2))
+    payload["version"] = version
+    if version >= 3:
+        payload["feasibility"] = {
+            key: np.asarray(value, dtype=np.float32) for key, value in dict(payload["feasibility"]).items()
+        }
+        payload["support_tags"] = [str(tag) for tag in payload["support_tags"]]
+        payload["pareto_front_mask"] = np.asarray(payload["pareto_front_mask"], dtype=np.bool_)
+        payload["utility"] = np.asarray(payload["utility"], dtype=np.float32)
     _validate_record(payload)
     path = _record_path(buffer_root, token)
     tmp_path = path.with_name(f".{path.name}.{os.getpid()}.tmp")
@@ -143,7 +198,7 @@ def save_elite_record(buffer_root: Path, token: str, record: Dict[str, Any]) -> 
             tmp_path.unlink()
 
 
-def load_elite_record_path(path: Path) -> Dict[str, Any]:
+def load_elite_record_path(path: Path, *, fill_legacy_v3_defaults: bool = False) -> Dict[str, Any]:
     path = Path(path)
     if not path.is_file():
         raise FileNotFoundError(f"Elite buffer record not found: {path}")
@@ -151,13 +206,15 @@ def load_elite_record_path(path: Path) -> Dict[str, Any]:
         record = pickle.load(f)
     if not isinstance(record, dict):
         raise TypeError(f"Elite buffer record must be a dict, got {type(record).__name__}: {path}")
+    if fill_legacy_v3_defaults and int(record.get("version", 1)) < 3:
+        record = fill_v3_defaults(record)
     _validate_record(record)
     return record
 
 
-def load_elite_record(buffer_root: Path, token: str) -> Dict[str, Any]:
+def load_elite_record(buffer_root: Path, token: str, *, fill_legacy_v3_defaults: bool = False) -> Dict[str, Any]:
     path = _record_path(Path(buffer_root), token)
-    record = load_elite_record_path(path)
+    record = load_elite_record_path(path, fill_legacy_v3_defaults=fill_legacy_v3_defaults)
     record_token = str(record["token"])
     if record_token != str(token):
         raise ValueError(
