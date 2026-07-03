@@ -12,6 +12,8 @@ MAPS_ROOT=${MAPS_ROOT:-/mnt/navsim/maps}
 OUT_ROOT=${OUT_ROOT:-${REPO_ROOT}/outputs/ddv2_sel_navtrain_batched_$(date -u +%Y%m%dT%H%M%SZ)}
 NUM_SHARDS=${NUM_SHARDS:-8}
 BATCH_SIZE=${BATCH_SIZE:-64}
+PARTIAL_EVERY=${PARTIAL_EVERY:-256}
+RESUME=${RESUME:-true}
 MAX_SCENES_PER_SHARD=${MAX_SCENES_PER_SHARD:-}
 
 mkdir -p "${OUT_ROOT}/logs" "${OUT_ROOT}/pids" "${OUT_ROOT}/log_names" "${OUT_ROOT}/submissions"
@@ -56,8 +58,12 @@ for shard in $(seq 0 $((NUM_SHARDS - 1))); do
     --experiment-name "ddv2_${TRAIN_TEST_SPLIT}_shard_${shard}"
     --log-names-json "${OUT_ROOT}/log_names/shard_${shard}.json"
     --batch-size "${BATCH_SIZE}"
+    --partial-every "${PARTIAL_EVERY}"
     --device cuda
   )
+  if [[ "${RESUME}" == "true" ]]; then
+    cmd+=(--resume)
+  fi
   if [[ -n "${MAX_SCENES_PER_SHARD}" ]]; then
     cmd+=(--max-scenes "${MAX_SCENES_PER_SHARD}")
   fi

@@ -79,6 +79,53 @@ def _compose_cfg(args: argparse.Namespace):
     return cfg
 
 
+def _write_submission(path: Path, output: dict[str, Any], args: argparse.Namespace) -> None:
+    submission = {
+        "team_name": args.team_name,
+        "authors": args.authors,
+        "email": args.email,
+        "institution": args.institution,
+        "country / region": args.country,
+        "predictions": [output],
+    }
+    tmp_path = path.with_suffix(path.suffix + ".tmp")
+    with open(tmp_path, "wb") as f:
+        pickle.dump(submission, f)
+    tmp_path.replace(path)
+
+
+def _load_existing_predictions(output_dir: Path) -> dict[str, Any]:
+    for name in ("submission.pkl", "submission.partial.pkl"):
+        path = output_dir / name
+        if not path.exists():
+            continue
+        with open(path, "rb") as f:
+            payload = pickle.load(f)
+        predictions = payload.get("predictions", [{}])
+        if predictions and isinstance(predictions[0], dict):
+            return {str(k): v for k, v in predictions[0].items()}
+    return {}
+
+
+def _write_summary(path: Path, args: argparse.Namespace, output_count: int, failure_count: int, total_count: int | None, complete: bool) -> None:
+    with open(path, "w", encoding="utf-8") as f:
+        json.dump(
+            {
+                "agent_name": args.agent_name,
+                "checkpoint": str(args.checkpoint),
+                "train_test_split": args.train_test_split,
+                "prediction_count": int(output_count),
+                "failure_count": int(failure_count),
+                "total_count": int(total_count) if total_count is not None else None,
+                "complete": bool(complete),
+                "batch_size": args.batch_size,
+            },
+            f,
+            indent=2,
+            sort_keys=True,
+        )
+
+
 def _flush_batch(agent: Any, feature_batch: list[dict[str, Any]], token_batch: list[str], output: dict[str, Any], device: torch.device) -> None:
     from navsim.common.dataclasses import Trajectory
 
@@ -123,13 +170,16 @@ def run(args: argparse.Namespace) -> None:
     agent.to(device)
 
     feature_builders = agent.get_feature_builders()
-    output: dict[str, Any] = {}
+    output: dict[str, Any] = _load_existing_predictions(args.output_dir) if args.resume else {}
     feature_batch: list[dict[str, Any]] = []
     token_batch: list[str] = []
     failures: list[dict[str, str]] = []
+    last_partial_count = len(output)
 
     total = len(input_loader) if hasattr(input_loader, "__len__") else None
     for token in tqdm(input_loader, total=total, desc="Generating DDV2 submission"):
+        if str(token) in output:
+            continue
         try:
             agent_input = input_loader.get_agent_input_from_token(token)
             features: dict[str, Any] = {}
@@ -141,35 +191,31 @@ def run(args: argparse.Namespace) -> None:
                 _flush_batch(agent, feature_batch, token_batch, output, device)
                 feature_batch = []
                 token_batch = []
+                if args.partial_every > 0 and len(output) - last_partial_count >= args.partial_every:
+                    _write_submission(args.output_dir / "submission.partial.pkl", output, args)
+                    _write_summary(
+                        args.output_dir / "summary.partial.json",
+                        args,
+                        output_count=len(output),
+                        failure_count=len(failures),
+                        total_count=total,
+                        complete=False,
+                    )
+                    last_partial_count = len(output)
         except Exception as exc:  # pragma: no cover - exercised in long-running data jobs
             failures.append({"token": str(token), "error": repr(exc), "traceback": traceback.format_exc()})
     if feature_batch:
         _flush_batch(agent, feature_batch, token_batch, output, device)
 
-    submission = {
-        "team_name": args.team_name,
-        "authors": args.authors,
-        "email": args.email,
-        "institution": args.institution,
-        "country / region": args.country,
-        "predictions": [output],
-    }
-    with open(args.output_dir / "submission.pkl", "wb") as f:
-        pickle.dump(submission, f)
-    with open(args.output_dir / "summary.json", "w", encoding="utf-8") as f:
-        json.dump(
-            {
-                "agent_name": args.agent_name,
-                "checkpoint": str(args.checkpoint),
-                "train_test_split": args.train_test_split,
-                "prediction_count": len(output),
-                "failure_count": len(failures),
-                "batch_size": args.batch_size,
-            },
-            f,
-            indent=2,
-            sort_keys=True,
-        )
+    _write_submission(args.output_dir / "submission.pkl", output, args)
+    _write_summary(
+        args.output_dir / "summary.json",
+        args,
+        output_count=len(output),
+        failure_count=len(failures),
+        total_count=total,
+        complete=True,
+    )
     if failures:
         with open(args.output_dir / "failures.jsonl", "w", encoding="utf-8") as f:
             for item in failures:
@@ -189,6 +235,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--log-names-json", default="")
     parser.add_argument("--max-scenes", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=64)
+    parser.add_argument("--partial-every", type=int, default=0, help="Write submission.partial.pkl every N new predictions; 0 disables.")
+    parser.add_argument("--resume", action="store_true", help="Resume from submission.pkl or submission.partial.pkl in output-dir.")
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--team-name", default="SGFPS")
     parser.add_argument("--authors", default="SGFPS")
