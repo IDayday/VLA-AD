@@ -218,7 +218,7 @@ if [[ "${RUN_DRIVOR_AFTER_DDV2}" == "true" ]]; then
     DRIVOR_ROOT="${DRIVOR_ROOT}" \
     CHECKPOINT="${DRIVOR_CHECKPOINT}" \
     TRAIN_TEST_SPLIT="${TRAIN_TEST_SPLIT:-navtrain}" \
-    DATA_ROOT="${DATA_ROOT:-/mnt/project/navsim_compat}" \
+    DATA_ROOT="${DATA_ROOT:-/mnt/navsim}" \
     MAPS_ROOT="${MAPS_ROOT:-/mnt/navsim/maps}" \
     OUT_ROOT="${DRIVOR_OUT_ROOT}" \
     NUM_SHARDS="${DRIVOR_SHARD_COUNT}" \

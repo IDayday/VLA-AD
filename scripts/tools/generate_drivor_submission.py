@@ -46,6 +46,18 @@ def _load_log_names(path: str) -> list[str] | None:
     return [str(x) for x in data]
 
 
+def _resolve_navsim_split_paths(data_root: Path, data_split: str) -> tuple[Path, Path]:
+    candidates = [
+        (data_root / "navsim_logs" / data_split, data_root / "sensor_blobs" / data_split),
+        (data_root / f"{data_split}_navsim_logs" / data_split, data_root / f"{data_split}_sensor_blobs" / data_split),
+    ]
+    for log_path, sensor_path in candidates:
+        if log_path.is_dir() and sensor_path.is_dir():
+            return log_path.resolve(), sensor_path.resolve()
+    details = "\n".join(f"  logs={log_path} sensors={sensor_path}" for log_path, sensor_path in candidates)
+    raise FileNotFoundError(f"Could not resolve NAVSIM split paths for data_root={data_root}, split={data_split}:\n{details}")
+
+
 def _compose_cfg(args: argparse.Namespace):
     from hydra import compose, initialize_config_dir
     from omegaconf import OmegaConf, open_dict
@@ -69,8 +81,11 @@ def _compose_cfg(args: argparse.Namespace):
         cfg.email = args.email
         cfg.institution = args.institution
         cfg.country = args.country
-        cfg.navsim_log_path = str(args.data_root / "navsim_logs" / cfg.train_test_split.data_split)
-        cfg.sensor_blobs_path = str(args.data_root / "sensor_blobs" / cfg.train_test_split.data_split)
+        navsim_log_path, sensor_blobs_path = _resolve_navsim_split_paths(args.data_root, str(cfg.train_test_split.data_split))
+        cfg.navsim_log_path = str(navsim_log_path)
+        cfg.sensor_blobs_path = str(sensor_blobs_path)
+        args.resolved_navsim_log_path = str(navsim_log_path)
+        args.resolved_sensor_blobs_path = str(sensor_blobs_path)
         cfg.agent.scheduler_args = None
         cfg.agent.batch_size = int(args.batch_size)
         cfg.agent.num_gpus = 1
@@ -129,6 +144,10 @@ def _write_summary(
                 "total_count": int(total_count) if total_count is not None else None,
                 "complete": bool(complete),
                 "batch_size": args.batch_size,
+                "data_root": str(args.data_root),
+                "maps_root": str(args.maps_root),
+                "resolved_navsim_log_path": str(getattr(args, "resolved_navsim_log_path", "")),
+                "resolved_sensor_blobs_path": str(getattr(args, "resolved_sensor_blobs_path", "")),
             },
             f,
             indent=2,
@@ -275,7 +294,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--train-test-split", default="navtrain")
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--experiment-name", default="drivor_candidates")
-    parser.add_argument("--data-root", type=Path, default=Path(os.environ.get("OPENSCENE_DATA_ROOT", "/mnt/project/navsim_compat")))
+    parser.add_argument("--data-root", type=Path, default=Path(os.environ.get("OPENSCENE_DATA_ROOT", "/mnt/navsim")))
     parser.add_argument("--maps-root", type=Path, default=Path(os.environ.get("NUPLAN_MAPS_ROOT", "/mnt/navsim/maps")))
     parser.add_argument("--log-names-json", default="")
     parser.add_argument("--max-scenes", type=int, default=None)
