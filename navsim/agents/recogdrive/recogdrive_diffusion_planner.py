@@ -3736,28 +3736,60 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         zero = x0_repr.new_zeros(())
         x0_weight = float(getattr(self.config, "x0_aux_weight", 0.0))
         geo_weight = float(getattr(self.config, "geo_aux_weight", 0.0))
+        per_x0, per_geo, active_mask, diagnostics = self._compute_x0_geo_aux_per_sample_losses(
+            x0_repr,
+            target_raw,
+            timesteps,
+            method=method,
+        )
+        if x0_weight <= 0.0 and geo_weight <= 0.0:
+            return zero, zero, diagnostics
+        active = active_mask.to(device=per_x0.device, dtype=per_x0.dtype)
+        active_count = active.sum().clamp(min=1.0)
+        x0_aux_loss = (per_x0 * active).sum() / active_count
+        geo_aux_loss = (per_geo * active).sum() / active_count
+        return x0_aux_loss.to(x0_repr), geo_aux_loss.to(x0_repr), diagnostics
+
+    def _compute_x0_geo_aux_per_sample_losses(
+        self,
+        x0_repr: torch.Tensor,
+        target_raw: torch.Tensor,
+        timesteps: torch.Tensor,
+        *,
+        method: str,
+    ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
+        if x0_repr.ndim != 3 or x0_repr.shape[-1] != 3:
+            raise ValueError(f"x0_repr must have shape [N, H, 3], got {tuple(x0_repr.shape)}.")
+        zero = x0_repr.new_zeros(())
+        per_zero = x0_repr.new_zeros((x0_repr.shape[0],))
         diagnostics = {
             "early_kink_rate": zero,
             "tail_reverse_rate": zero,
             "curvature_violation_rate": zero,
         }
+        x0_weight = float(getattr(self.config, "x0_aux_weight", 0.0))
+        geo_weight = float(getattr(self.config, "geo_aux_weight", 0.0))
+        active_mask = self._low_noise_mask(timesteps, method=method).to(device=x0_repr.device)
         if x0_weight <= 0.0 and geo_weight <= 0.0:
-            return zero, zero, diagnostics
-        mask = self._low_noise_mask(timesteps, method=method).to(device=x0_repr.device)
-        if not bool(mask.any().detach().cpu().item()):
-            return zero, zero, diagnostics
+            return per_zero, per_zero, active_mask, diagnostics
+        if not bool(active_mask.any().detach().cpu().item()):
+            return per_zero, per_zero, active_mask, diagnostics
         pred_raw = self._decode_action_target(x0_repr)
-        pred_sel = pred_raw[mask].float()
-        target_sel = target_raw.to(device=pred_raw.device, dtype=pred_raw.dtype)[mask].float()
-        xy_loss = F.smooth_l1_loss(pred_sel[..., :2], target_sel[..., :2], reduction="mean")
+        target = target_raw.to(device=pred_raw.device, dtype=pred_raw.dtype)
+        if target.shape != pred_raw.shape:
+            raise ValueError(f"target_raw shape {tuple(target.shape)} does not match x0 raw shape {tuple(pred_raw.shape)}.")
+
+        pred_f = pred_raw.float()
+        target_f = target.float()
+        xy_loss = F.smooth_l1_loss(pred_f[..., :2], target_f[..., :2], reduction="none").mean(dim=(1, 2))
         heading_loss = (
-            F.l1_loss(torch.sin(pred_sel[..., 2]), torch.sin(target_sel[..., 2]), reduction="mean")
-            + F.l1_loss(torch.cos(pred_sel[..., 2]), torch.cos(target_sel[..., 2]), reduction="mean")
+            (torch.sin(pred_f[..., 2]) - torch.sin(target_f[..., 2])).abs().mean(dim=1)
+            + (torch.cos(pred_f[..., 2]) - torch.cos(target_f[..., 2])).abs().mean(dim=1)
         )
-        x0_aux_loss = xy_loss + heading_loss
+        x0_aux_loss = (xy_loss + heading_loss).to(dtype=x0_repr.dtype)
 
         metrics = compute_feasibility_metrics(
-            pred_sel,
+            pred_f,
             {
                 "w_curv": float(getattr(self.config, "geo_curvature_weight", 1.0)),
                 "w_reverse": float(getattr(self.config, "geo_reverse_weight", 1.0)),
@@ -3767,15 +3799,28 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "w_heading": 0.0,
             },
         )
-        geo_aux_loss = metrics.feas_cost.mean()
+        geo_aux_loss = metrics.feas_cost.reshape(-1).to(device=x0_repr.device, dtype=x0_repr.dtype)
+        active_f = active_mask.to(device=x0_repr.device, dtype=x0_repr.dtype)
+        x0_aux_loss = torch.where(active_mask, x0_aux_loss, per_zero)
+        geo_aux_loss = torch.where(active_mask, geo_aux_loss, per_zero)
+        active_count = active_f.sum().clamp(min=1.0)
         diagnostics.update(
             {
-                "early_kink_rate": metrics.early_kink_rate.mean().to(x0_repr),
-                "tail_reverse_rate": metrics.tail_reverse_rate.mean().to(x0_repr),
-                "curvature_violation_rate": metrics.curvature_violation_rate.mean().to(x0_repr),
+                "early_kink_rate": (
+                    metrics.early_kink_rate.reshape(-1).to(device=x0_repr.device, dtype=x0_repr.dtype) * active_f
+                ).sum()
+                / active_count,
+                "tail_reverse_rate": (
+                    metrics.tail_reverse_rate.reshape(-1).to(device=x0_repr.device, dtype=x0_repr.dtype) * active_f
+                ).sum()
+                / active_count,
+                "curvature_violation_rate": (
+                    metrics.curvature_violation_rate.reshape(-1).to(device=x0_repr.device, dtype=x0_repr.dtype) * active_f
+                ).sum()
+                / active_count,
             }
         )
-        return x0_aux_loss.to(x0_repr), geo_aux_loss.to(x0_repr), diagnostics
+        return x0_aux_loss, geo_aux_loss, active_mask, diagnostics
 
     def _compute_policy_kd_loss(
         self,
@@ -7293,12 +7338,25 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         per_sample_loss = ((pred_noise.float() - noise.float()) ** 2).mean(dim=(1, 2))
         if per_sample_loss.shape != (B * M,):
             raise ValueError(f"per_sample_loss must have shape [B*M], got {tuple(per_sample_loss.shape)}.")
+        x0_pred = policy._x0_from_noise(noisy_actions, t_discrete, pred_noise)
+        x0_aux_per_sample, geo_aux_per_sample, aux_active_mask, geo_diag = policy._compute_x0_geo_aux_per_sample_losses(
+            x0_pred,
+            targets,
+            t_discrete,
+            method="ddpm",
+        )
         diagnostics = {
             "per_sample_loss_mean": per_sample_loss.detach().mean(),
             "target_norm_mean": target_norm.detach().float().abs().mean(),
             "diffusion_timestep_mean": t_discrete.detach().float().mean(),
             "diffusion_timestep_min": t_discrete.detach().float().min(),
             "diffusion_timestep_max": t_discrete.detach().float().max(),
+            "x0_aux_loss_matrix": x0_aux_per_sample.reshape(B, M),
+            "geo_aux_loss_matrix": geo_aux_per_sample.reshape(B, M),
+            "x0_aux_active_mask": aux_active_mask.reshape(B, M).detach(),
+            "early_kink_rate": geo_diag["early_kink_rate"].detach(),
+            "tail_reverse_rate": geo_diag["tail_reverse_rate"].detach(),
+            "curvature_violation_rate": geo_diag["curvature_violation_rate"].detach(),
         }
         return per_sample_loss.reshape(B, M), diagnostics, noise.detach(), t_discrete.detach()
 
@@ -7330,6 +7388,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "effective_weight_sum": raw_weight_sum.detach().to(device=zero_loss.device, dtype=zero_loss.dtype),
                 "zero_weight_ratio": flat_weights.new_tensor(1.0).to(device=zero_loss.device, dtype=zero_loss.dtype),
                 "zero_weight_batch": flat_weights.new_tensor(1.0).to(device=zero_loss.device, dtype=zero_loss.dtype),
+                "x0_aux_loss": zero_loss.detach(),
+                "geo_aux_loss": zero_loss.detach(),
+                "x0_aux_active_weight_sum": zero_loss.detach(),
+                "x0_aux_active_ratio": zero_loss.detach(),
+                "early_kink_rate": zero_loss.detach(),
+                "tail_reverse_rate": zero_loss.detach(),
+                "curvature_violation_rate": zero_loss.detach(),
                 **(
                     {"per_sample_loss_matrix": target_trajs.new_zeros((B, M), dtype=torch.float32)}
                     if return_per_sample_loss
@@ -7342,11 +7407,34 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             target_trajs,
             timestep_sampling=timestep_sampling,
         )
+        x0_aux_matrix = loss_diag.pop("x0_aux_loss_matrix", None)
+        geo_aux_matrix = loss_diag.pop("geo_aux_loss_matrix", None)
+        aux_active_mask = loss_diag.pop("x0_aux_active_mask", None)
         per_sample_loss = per_target_loss.reshape(B * M)
         valid_weight_sum = raw_weight_sum.clamp(min=1e-6)
         awac_loss = (flat_weights.to(per_sample_loss) * per_sample_loss).sum() / valid_weight_sum.to(per_sample_loss)
         if not torch.isfinite(awac_loss):
             raise ValueError("AWAC weighted diffusion loss is non-finite.")
+        zero = awac_loss.new_zeros(())
+        x0_aux_loss = zero
+        geo_aux_loss = zero
+        aux_active_weight_sum = zero
+        aux_active_ratio = zero
+        if x0_aux_matrix is not None and geo_aux_matrix is not None and aux_active_mask is not None:
+            aux_weights = weights.to(device=target_trajs.device, dtype=torch.float32) * aux_active_mask.to(
+                device=target_trajs.device,
+                dtype=torch.float32,
+            )
+            aux_active_weight_sum = aux_weights.sum().to(device=awac_loss.device, dtype=awac_loss.dtype)
+            aux_active_ratio = aux_active_mask.float().mean().to(device=awac_loss.device, dtype=awac_loss.dtype)
+            if bool((aux_active_weight_sum.detach() > 0.0).cpu().item()):
+                aux_denom = aux_active_weight_sum.clamp(min=1e-6)
+                x0_aux_loss = (
+                    aux_weights.to(device=x0_aux_matrix.device, dtype=x0_aux_matrix.dtype) * x0_aux_matrix
+                ).sum() / aux_denom.to(device=x0_aux_matrix.device, dtype=x0_aux_matrix.dtype)
+                geo_aux_loss = (
+                    aux_weights.to(device=geo_aux_matrix.device, dtype=geo_aux_matrix.dtype) * geo_aux_matrix
+                ).sum() / aux_denom.to(device=geo_aux_matrix.device, dtype=geo_aux_matrix.dtype)
         diagnostics = {
             "per_sample_loss_mean": loss_diag["per_sample_loss_mean"].to(device=awac_loss.device, dtype=awac_loss.dtype),
             "target_norm_mean": loss_diag["target_norm_mean"].to(device=awac_loss.device, dtype=awac_loss.dtype),
@@ -7356,6 +7444,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "effective_weight_sum": valid_weight_sum.detach().to(dtype=awac_loss.dtype),
             "zero_weight_ratio": (flat_weights <= 0).float().mean().to(device=awac_loss.device, dtype=awac_loss.dtype),
             "zero_weight_batch": zero_weight_batch.to(device=awac_loss.device, dtype=awac_loss.dtype),
+            "x0_aux_loss": x0_aux_loss.to(device=awac_loss.device, dtype=awac_loss.dtype),
+            "geo_aux_loss": geo_aux_loss.to(device=awac_loss.device, dtype=awac_loss.dtype),
+            "x0_aux_active_weight_sum": aux_active_weight_sum.detach(),
+            "x0_aux_active_ratio": aux_active_ratio.detach(),
+            "early_kink_rate": loss_diag["early_kink_rate"].to(device=awac_loss.device, dtype=awac_loss.dtype),
+            "tail_reverse_rate": loss_diag["tail_reverse_rate"].to(device=awac_loss.device, dtype=awac_loss.dtype),
+            "curvature_violation_rate": loss_diag["curvature_violation_rate"].to(device=awac_loss.device, dtype=awac_loss.dtype),
         }
         if return_per_sample_loss:
             diagnostics["per_sample_loss_matrix"] = per_target_loss
@@ -8581,6 +8676,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             + float(preference_dpo_loss_weight_effective) * dpo_loss
             + float(bc_loss_weight_effective) * bc_loss
             + float(grpo_loss_weight_effective) * grpo_loss
+            + float(getattr(self.config, "x0_aux_weight", 0.0)) * awac_diag["x0_aux_loss"].to(dtype=awac_loss.dtype)
+            + float(getattr(self.config, "geo_aux_weight", 0.0)) * awac_diag["geo_aux_loss"].to(dtype=awac_loss.dtype)
         )
         if not torch.isfinite(total_loss):
             raise ValueError("AWAC/IQL total loss is non-finite.")
@@ -8637,6 +8734,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "awac_pairwise_rank_loss": rank_loss,
             "awac_invalid_repulsion_loss": invalid_repulsion_loss,
             "awac_dpo_loss": dpo_loss,
+            "x0_aux_loss": awac_diag["x0_aux_loss"].detach(),
+            "geo_aux_loss": awac_diag["geo_aux_loss"].detach(),
+            "early_kink_rate": awac_diag["early_kink_rate"].detach(),
+            "tail_reverse_rate": awac_diag["tail_reverse_rate"].detach(),
+            "curvature_violation_rate": awac_diag["curvature_violation_rate"].detach(),
             "bc_loss": bc_loss,
             "awac_loss_weight_effective": total_loss.new_tensor(float(awac_loss_weight_effective)).detach(),
             "preference_dpo_loss_weight_effective": total_loss.new_tensor(
@@ -8760,6 +8862,30 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "awac_zero_weight_ratio": awac_diag["zero_weight_ratio"].detach(),
             "awac_zero_weight_batch": awac_diag["zero_weight_batch"].detach(),
         })
+
+    def forward_dpsi(
+        self,
+        vl_features: torch.Tensor,
+        action_input: BatchFeature,
+        tokens_list,
+        use_bc_loss: bool = True,
+    ) -> BatchFeature:
+        output = self.forward_awac_iql(
+            vl_features,
+            action_input,
+            tokens_list,
+            use_bc_loss=use_bc_loss,
+        )
+        output["dpsi_loss"] = output["awac_loss"]
+        output["dpsi_pairwise_rank_loss"] = output["awac_pairwise_rank_loss"]
+        output["dpsi_invalid_repulsion_loss"] = output["awac_invalid_repulsion_loss"]
+        output["dpsi_preference_dpo_loss"] = output["awac_dpo_loss"]
+        output["dpsi_loss_weight_effective"] = output["awac_loss_weight_effective"]
+        output["dpsi_bc_loss"] = output["bc_loss"]
+        output["dpsi_per_sample_loss_mean"] = output["awac_per_sample_loss_mean"]
+        output["dpsi_target_norm_mean"] = output["awac_target_norm_mean"]
+        output["dpsi_effective_weight_sum"] = output["awac_effective_weight_sum"]
+        return output
 
     def _action_input_index_select(
         self,

@@ -9,6 +9,7 @@ export ELITE_BUFFER_DIR="${SUPPORT_ARCHIVE_PATH}"
 export SUPPORT_ARCHIVE_PATH="${SUPPORT_ARCHIVE_PATH}"
 export HIDDEN_CACHE_DIR="${HIDDEN_CACHE_DIR:-/mnt/project/VLA-AD/cache/recogdrive_official_stage1_hidden_navtrain_2b}"
 export ONLINE_AWAC_CANDIDATES=false
+export STAGE3_OBJECTIVE="${STAGE3_OBJECTIVE:-dpsi}"
 export VALIDATE_ELITE_BUFFER="${VALIDATE_ELITE_BUFFER:-false}"
 export SG_FPS_USE_DPSI=true
 export SG_FPS_DPSI_TOP_M="${SG_FPS_DPSI_TOP_M:-12}"

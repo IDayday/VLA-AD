@@ -194,6 +194,44 @@ def test_feasible_pareto_advantage_runtime() -> None:
     assert "fp_valid_ratio" in aux and float(aux["fp_ddc_regression_ratio"]) > 0.0
 
 
+def test_x0_geo_aux_per_sample_runtime() -> None:
+    planner = ReCogDriveDiffusionPlanner.__new__(ReCogDriveDiffusionPlanner)
+    planner.config = type(
+        "Cfg",
+        (),
+        {
+            "x0_aux_weight": 0.1,
+            "geo_aux_weight": 0.05,
+            "geo_curvature_weight": 1.0,
+            "geo_reverse_weight": 1.0,
+            "geo_tail_reverse_weight": 2.0,
+            "geo_early_kink_weight": 2.0,
+            "geo_jerk_weight": 0.2,
+        },
+    )()
+    planner._decode_action_target = lambda x: x
+    planner._low_noise_mask = lambda timesteps, method: timesteps <= 1
+
+    target = _straight(3)
+    pred = target.clone()
+    pred[0, 1, 2] = 1.0
+    timesteps = torch.tensor([0, 99, 1], dtype=torch.long)
+    per_x0, per_geo, active_mask, diag = planner._compute_x0_geo_aux_per_sample_losses(
+        pred,
+        target,
+        timesteps,
+        method="ddpm",
+    )
+    assert per_x0.shape == (3,)
+    assert per_geo.shape == (3,)
+    assert active_mask.tolist() == [True, False, True]
+    assert float(per_x0[1]) == 0.0
+    assert float(per_geo[1]) == 0.0
+    assert torch.isfinite(per_x0).all()
+    assert torch.isfinite(per_geo).all()
+    assert float(diag["early_kink_rate"]) > 0.0
+
+
 def main() -> None:
     test_trajectory_feasibility()
     test_fs_norm_roundtrip()
@@ -201,6 +239,7 @@ def main() -> None:
     test_candidate_funnel()
     test_scorer_and_pdas()
     test_feasible_pareto_advantage_runtime()
+    test_x0_geo_aux_per_sample_runtime()
     print("SG-FPS smoke tests passed")
 
 

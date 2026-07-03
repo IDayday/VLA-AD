@@ -110,7 +110,7 @@ class ReCogDriveAgent(AbstractAgent):
         cache_hidden_state: bool = True, 
         lr: float = 1e-4,
         grpo: bool = False,
-        stage3_objective: Literal["none", "grpo", "grpo_replay", "awac_iql", "hybrid"] = "none",
+        stage3_objective: Literal["none", "grpo", "grpo_replay", "dpsi", "awac_iql", "hybrid"] = "none",
         grpo_sample_time: int = 8,
         grpo_denoised_clip_value: float = 1.0,
         grpo_eval_randn_clip_value: float = 1.0,
@@ -663,16 +663,16 @@ class ReCogDriveAgent(AbstractAgent):
         self.cache_mode = cache_mode
         self.cache_hidden_state = cache_hidden_state
         self._lr = lr
-        if stage3_objective not in {"none", "grpo", "grpo_replay", "awac_iql", "hybrid"}:
+        if stage3_objective not in {"none", "grpo", "grpo_replay", "dpsi", "awac_iql", "hybrid"}:
             raise ValueError(
-                "stage3_objective must be one of 'none', 'grpo', 'grpo_replay', 'awac_iql', or 'hybrid'."
+                "stage3_objective must be one of 'none', 'grpo', 'grpo_replay', 'dpsi', 'awac_iql', or 'hybrid'."
             )
         resolved_stage3_objective = str(stage3_objective)
         if resolved_stage3_objective == "none" and bool(grpo):
             resolved_stage3_objective = "grpo"
         if resolved_stage3_objective in {"grpo", "grpo_replay"}:
             grpo = True
-        if resolved_stage3_objective in {"awac_iql", "hybrid"}:
+        if resolved_stage3_objective in {"dpsi", "awac_iql", "hybrid"}:
             offline_rl_enabled = True
         if resolved_stage3_objective == "hybrid" and float(offline_rl_grpo_loss_weight) > 0.0:
             grpo = True
@@ -2547,6 +2547,15 @@ class ReCogDriveAgent(AbstractAgent):
                 tokens_list,
                 sample_time=self.grpo_sample_time,
             )
+        elif self.training and stage3_objective == "dpsi":
+            action_inputs = BatchFeature(
+                data={**action_input_data, "action": targets["trajectory"].to(device=action_device, dtype=model_dtype)}
+            )
+            return self.action_head.forward_dpsi(
+                last_hidden_state,
+                action_inputs,
+                tokens_list,
+            )
         elif self.training and stage3_objective in {"awac_iql", "hybrid"}:
             action_inputs = BatchFeature(
                 data={**action_input_data, "action": targets["trajectory"].to(device=action_device, dtype=model_dtype)}
@@ -3211,7 +3220,7 @@ class ReCogDriveAgent(AbstractAgent):
 
 
     def compute_loss(self, features: Dict[str, torch.Tensor], targets: Dict[str, torch.Tensor], predictions: Dict[str, torch.Tensor]) -> torch.Tensor:
-        if self.training and getattr(self, "stage3_objective", "none") in {"grpo", "grpo_replay", "awac_iql", "hybrid"}:
+        if self.training and getattr(self, "stage3_objective", "none") in {"grpo", "grpo_replay", "dpsi", "awac_iql", "hybrid"}:
             return predictions
         elif isinstance(predictions, dict) and "loss" in predictions:
             return predictions["loss"]
