@@ -15,8 +15,8 @@ from torch.utils.data import default_collate
 from tqdm import tqdm
 
 
-def _insert_external_navsim(ddv2_root: Path) -> None:
-    root = str(ddv2_root.resolve())
+def _insert_external_navsim(drivor_root: Path) -> None:
+    root = str(drivor_root.resolve())
     sys.path = [p for p in sys.path if str(Path(p).resolve()) != root] if root else sys.path
     sys.path.insert(0, root)
     os.chdir(root)
@@ -50,7 +50,7 @@ def _compose_cfg(args: argparse.Namespace):
     from hydra import compose, initialize_config_dir
     from omegaconf import OmegaConf, open_dict
 
-    config_dir = args.ddv2_root / "navsim" / "planning" / "script" / "config" / "pdm_scoring"
+    config_dir = args.drivor_root / "navsim" / "planning" / "script" / "config" / "pdm_scoring"
     with initialize_config_dir(config_dir=str(config_dir), version_base=None):
         cfg = compose(
             config_name="default_run_create_submission_pickle",
@@ -71,6 +71,9 @@ def _compose_cfg(args: argparse.Namespace):
         cfg.country = args.country
         cfg.navsim_log_path = str(args.data_root / "navsim_logs" / cfg.train_test_split.data_split)
         cfg.sensor_blobs_path = str(args.data_root / "sensor_blobs" / cfg.train_test_split.data_split)
+        cfg.agent.scheduler_args = None
+        cfg.agent.batch_size = int(args.batch_size)
+        cfg.agent.num_gpus = 1
         log_names = _load_log_names(args.log_names_json)
         if log_names is not None:
             cfg.train_test_split.scene_filter.log_names = log_names
@@ -107,7 +110,14 @@ def _load_existing_predictions(output_dir: Path) -> dict[str, Any]:
     return {}
 
 
-def _write_summary(path: Path, args: argparse.Namespace, output_count: int, failure_count: int, total_count: int | None, complete: bool) -> None:
+def _write_summary(
+    path: Path,
+    args: argparse.Namespace,
+    output_count: int,
+    failure_count: int,
+    total_count: int | None,
+    complete: bool,
+) -> None:
     with open(path, "w", encoding="utf-8") as f:
         json.dump(
             {
@@ -126,7 +136,13 @@ def _write_summary(path: Path, args: argparse.Namespace, output_count: int, fail
         )
 
 
-def _flush_batch(agent: Any, feature_batch: list[dict[str, Any]], token_batch: list[str], output: dict[str, Any], device: torch.device) -> None:
+def _flush_batch(
+    agent: Any,
+    feature_batch: list[dict[str, Any]],
+    token_batch: list[str],
+    output: dict[str, Any],
+    device: torch.device,
+) -> None:
     from navsim.common.dataclasses import Trajectory
 
     features = default_collate(feature_batch)
@@ -145,15 +161,27 @@ def _flush_batch(agent: Any, feature_batch: list[dict[str, Any]], token_batch: l
         output[str(token)] = Trajectory(pose)
 
 
+def _maybe_write_partial(args: argparse.Namespace, output: dict[str, Any], failures: list[dict[str, str]], total: int | None) -> None:
+    _write_submission(args.output_dir / "submission.partial.pkl", output, args)
+    _write_summary(
+        args.output_dir / "summary.partial.json",
+        args,
+        output_count=len(output),
+        failure_count=len(failures),
+        total_count=total,
+        complete=False,
+    )
+
+
 def run(args: argparse.Namespace) -> None:
-    args.ddv2_root = args.ddv2_root.resolve()
+    args.drivor_root = args.drivor_root.resolve()
     args.checkpoint = args.checkpoint.resolve()
     args.output_dir = args.output_dir.resolve()
     args.data_root = args.data_root.resolve()
     args.maps_root = args.maps_root.resolve()
     if args.log_names_json:
         args.log_names_json = str(Path(args.log_names_json).resolve())
-    _insert_external_navsim(args.ddv2_root)
+    _insert_external_navsim(args.drivor_root)
     os.environ.setdefault("NUPLAN_MAPS_ROOT", str(args.maps_root))
     os.environ.setdefault("OPENSCENE_DATA_ROOT", str(args.data_root))
 
@@ -184,7 +212,7 @@ def run(args: argparse.Namespace) -> None:
     last_partial_count = len(output)
 
     total = len(input_loader) if hasattr(input_loader, "__len__") else None
-    for token in tqdm(input_loader, total=total, desc="Generating DDV2 submission"):
+    for token in tqdm(input_loader, total=total, desc="Generating DrivoR submission"):
         if str(token) in output:
             continue
         try:
@@ -194,25 +222,30 @@ def run(args: argparse.Namespace) -> None:
                 features.update(builder.compute_features(agent_input))
             feature_batch.append(features)
             token_batch.append(str(token))
-            if len(feature_batch) >= args.batch_size:
-                _flush_batch(agent, feature_batch, token_batch, output, device)
-                feature_batch = []
-                token_batch = []
-                if args.partial_every > 0 and len(output) - last_partial_count >= args.partial_every:
-                    _write_submission(args.output_dir / "submission.partial.pkl", output, args)
-                    _write_summary(
-                        args.output_dir / "summary.partial.json",
-                        args,
-                        output_count=len(output),
-                        failure_count=len(failures),
-                        total_count=total,
-                        complete=False,
-                    )
-                    last_partial_count = len(output)
         except Exception as exc:  # pragma: no cover - exercised in long-running data jobs
             failures.append({"token": str(token), "error": repr(exc), "traceback": traceback.format_exc()})
+            continue
+
+        if len(feature_batch) >= args.batch_size:
+            try:
+                _flush_batch(agent, feature_batch, token_batch, output, device)
+            except Exception as exc:  # pragma: no cover - exercised in long-running data jobs
+                trace = traceback.format_exc()
+                for failed_token in token_batch:
+                    failures.append({"token": str(failed_token), "error": repr(exc), "traceback": trace})
+            feature_batch = []
+            token_batch = []
+            if args.partial_every > 0 and len(output) - last_partial_count >= args.partial_every:
+                _maybe_write_partial(args, output, failures, total)
+                last_partial_count = len(output)
+
     if feature_batch:
-        _flush_batch(agent, feature_batch, token_batch, output, device)
+        try:
+            _flush_batch(agent, feature_batch, token_batch, output, device)
+        except Exception as exc:  # pragma: no cover - exercised in long-running data jobs
+            trace = traceback.format_exc()
+            for failed_token in token_batch:
+                failures.append({"token": str(failed_token), "error": repr(exc), "traceback": trace})
 
     _write_submission(args.output_dir / "submission.pkl", output, args)
     _write_summary(
@@ -230,13 +263,13 @@ def run(args: argparse.Namespace) -> None:
 
 
 def parse_args() -> argparse.Namespace:
-    parser = argparse.ArgumentParser(description="Generate batched DiffusionDriveV2 NAVSIM submission candidates.")
-    parser.add_argument("--ddv2-root", type=Path, default=Path("/mnt/project/external/DiffusionDriveV2"))
+    parser = argparse.ArgumentParser(description="Generate batched DrivoR NAVSIM submission candidates.")
+    parser.add_argument("--drivor-root", type=Path, default=Path("/mnt/project/external/DrivoR"))
     parser.add_argument("--checkpoint", type=Path, required=True)
-    parser.add_argument("--agent-name", default="diffusiondrivev2_sel_agent")
+    parser.add_argument("--agent-name", default="drivoR")
     parser.add_argument("--train-test-split", default="navtrain")
     parser.add_argument("--output-dir", type=Path, required=True)
-    parser.add_argument("--experiment-name", default="ddv2_candidates")
+    parser.add_argument("--experiment-name", default="drivor_candidates")
     parser.add_argument("--data-root", type=Path, default=Path(os.environ.get("OPENSCENE_DATA_ROOT", "/mnt/project/navsim_compat")))
     parser.add_argument("--maps-root", type=Path, default=Path(os.environ.get("NUPLAN_MAPS_ROOT", "/mnt/navsim/maps")))
     parser.add_argument("--log-names-json", default="")

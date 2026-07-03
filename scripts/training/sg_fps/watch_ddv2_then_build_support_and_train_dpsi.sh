@@ -4,15 +4,30 @@ set -euo pipefail
 REPO_ROOT=${REPO_ROOT:-/mnt/project/VLA-AD_last_vla_dev}
 PYTHON_BIN=${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}
 DDV2_OUT_ROOT=${DDV2_OUT_ROOT:-$(cat "${REPO_ROOT}/outputs/latest_ddv2_navtrain_candidates.txt")}
+RUN_DRIVOR_AFTER_DDV2=${RUN_DRIVOR_AFTER_DDV2:-false}
+DRIVOR_OUT_ROOT=${DRIVOR_OUT_ROOT:-}
+DRIVOR_ROOT=${DRIVOR_ROOT:-/mnt/project/external/DrivoR}
+DRIVOR_CHECKPOINT=${DRIVOR_CHECKPOINT:-${DRIVOR_ROOT}/weights/releases/drivor_Nav1_25epochs.pth}
+DRIVOR_SHARD_COUNT=${DRIVOR_SHARD_COUNT:-${SHARD_COUNT:-8}}
+DRIVOR_BATCH_SIZE=${DRIVOR_BATCH_SIZE:-64}
+DRIVOR_PARTIAL_EVERY=${DRIVOR_PARTIAL_EVERY:-256}
 RUN_ID=${RUN_ID:-sg_fps_v3_support_ddv2_$(date -u +%Y%m%dT%H%M%SZ)}
 OUT_ROOT=${OUT_ROOT:-${REPO_ROOT}/outputs/${RUN_ID}}
 SUPPORT_ARCHIVE=${SUPPORT_ARCHIVE:-${OUT_ROOT}/support_archive}
 FS_STATS=${FS_STATS:-${OUT_ROOT}/fs_norm_stats.pt}
 STAGE2_OUT=${STAGE2_OUT:-${OUT_ROOT}/stage2_dpsi_fs_norm}
+AUTO_LAUNCH_STAGE3=${AUTO_LAUNCH_STAGE3:-false}
+STAGE3_OUT=${STAGE3_OUT:-${OUT_ROOT}/stage3_feasible_pareto_grpo}
 SHARD_COUNT=${SHARD_COUNT:-8}
 POLL_SECONDS=${POLL_SECONDS:-60}
 DDV2_SOURCE_NAME=${DDV2_SOURCE_NAME:-diffusiondrivev2}
-EXTERNAL_CANDIDATE_ROOTS=${EXTERNAL_CANDIDATE_ROOTS:-${DDV2_SOURCE_NAME}=${DDV2_OUT_ROOT}/submissions}
+DRIVOR_SOURCE_NAME=${DRIVOR_SOURCE_NAME:-drivor}
+if [[ -z "${EXTERNAL_CANDIDATE_ROOTS+x}" ]]; then
+  EXTERNAL_CANDIDATE_ROOTS="${DDV2_SOURCE_NAME}=${DDV2_OUT_ROOT}/submissions"
+  EXTERNAL_CANDIDATE_ROOTS_WAS_DEFAULT=true
+else
+  EXTERNAL_CANDIDATE_ROOTS_WAS_DEFAULT=false
+fi
 
 mkdir -p "${OUT_ROOT}/logs" "${OUT_ROOT}/pids" "${SUPPORT_ARCHIVE}"
 
@@ -20,9 +35,14 @@ mkdir -p "${OUT_ROOT}/logs" "${OUT_ROOT}/pids" "${SUPPORT_ARCHIVE}"
   echo "run_id=${RUN_ID}"
   echo "out_root=${OUT_ROOT}"
   echo "ddv2_out_root=${DDV2_OUT_ROOT}"
+  echo "run_drivor_after_ddv2=${RUN_DRIVOR_AFTER_DDV2}"
+  echo "drivor_out_root=${DRIVOR_OUT_ROOT}"
+  echo "drivor_checkpoint=${DRIVOR_CHECKPOINT}"
   echo "support_archive=${SUPPORT_ARCHIVE}"
   echo "fs_stats=${FS_STATS}"
   echo "stage2_out=${STAGE2_OUT}"
+  echo "auto_launch_stage3=${AUTO_LAUNCH_STAGE3}"
+  echo "stage3_out=${STAGE3_OUT}"
   echo "external_candidate_roots=${EXTERNAL_CANDIDATE_ROOTS}"
   echo "started_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 } > "${OUT_ROOT}/commands.log"
@@ -83,6 +103,75 @@ print("ddv2_validation=passed")
 PY
 
 echo "ddv2_complete_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+
+if [[ "${RUN_DRIVOR_AFTER_DDV2}" == "true" ]]; then
+  if [[ -z "${DRIVOR_OUT_ROOT}" ]]; then
+    DRIVOR_OUT_ROOT="${REPO_ROOT}/outputs/drivor_nav1_navtrain_batched_$(date -u +%Y%m%dT%H%M%SZ)"
+  fi
+  echo "launching_drivor_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ) out=${DRIVOR_OUT_ROOT}"
+  env \
+    PYTHON_BIN="${PYTHON_BIN}" \
+    REPO_ROOT="${REPO_ROOT}" \
+    DRIVOR_ROOT="${DRIVOR_ROOT}" \
+    CHECKPOINT="${DRIVOR_CHECKPOINT}" \
+    TRAIN_TEST_SPLIT="${TRAIN_TEST_SPLIT:-navtrain}" \
+    DATA_ROOT="${DATA_ROOT:-/mnt/project/navsim_compat}" \
+    MAPS_ROOT="${MAPS_ROOT:-/mnt/navsim/maps}" \
+    OUT_ROOT="${DRIVOR_OUT_ROOT}" \
+    NUM_SHARDS="${DRIVOR_SHARD_COUNT}" \
+    BATCH_SIZE="${DRIVOR_BATCH_SIZE}" \
+    PARTIAL_EVERY="${DRIVOR_PARTIAL_EVERY}" \
+    RESUME="${DRIVOR_RESUME:-true}" \
+    bash "${REPO_ROOT}/scripts/training/sg_fps/run_generate_drivor_navtrain_candidates.sh"
+fi
+
+if [[ -n "${DRIVOR_OUT_ROOT}" ]]; then
+  echo "waiting_for_drivor_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  while true; do
+    live=$(_live_pid_count "${DRIVOR_OUT_ROOT}/pids")
+    summaries=$(find "${DRIVOR_OUT_ROOT}/submissions" -name summary.json 2>/dev/null | wc -l)
+    submissions=$(find "${DRIVOR_OUT_ROOT}/submissions" -name submission.pkl 2>/dev/null | wc -l)
+    echo "drivor_status_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ) live=${live} summaries=${summaries} submissions=${submissions}"
+    if [[ "${live}" -eq 0 ]]; then
+      break
+    fi
+    sleep "${POLL_SECONDS}"
+  done
+
+  "${PYTHON_BIN}" - "${DRIVOR_OUT_ROOT}" "${DRIVOR_SHARD_COUNT}" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+expected = int(sys.argv[2])
+bad = []
+for idx in range(expected):
+    shard = root / "submissions" / f"shard_{idx}"
+    summary_path = shard / "summary.json"
+    submission_path = shard / "submission.pkl"
+    if not summary_path.exists():
+        bad.append(f"missing summary: {summary_path}")
+        continue
+    if not submission_path.exists():
+        bad.append(f"missing submission: {submission_path}")
+    with open(summary_path, "r", encoding="utf-8") as f:
+        summary = json.load(f)
+    if int(summary.get("failure_count", 0)) != 0:
+        bad.append(f"nonzero failures in {summary_path}: {summary.get('failure_count')}")
+    if int(summary.get("prediction_count", 0)) <= 0:
+        bad.append(f"empty predictions in {summary_path}")
+if bad:
+    raise SystemExit("\n".join(bad))
+print("drivor_validation=passed")
+PY
+  echo "drivor_complete_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  if [[ "${EXTERNAL_CANDIDATE_ROOTS_WAS_DEFAULT}" == "true" ]]; then
+    EXTERNAL_CANDIDATE_ROOTS="${DDV2_SOURCE_NAME}=${DDV2_OUT_ROOT}/submissions,${DRIVOR_SOURCE_NAME}=${DRIVOR_OUT_ROOT}/submissions"
+    echo "external_candidate_roots=${EXTERNAL_CANDIDATE_ROOTS}" >> "${OUT_ROOT}/commands.log"
+  fi
+fi
+
 echo "launching_support_build_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 for shard in $(seq 0 $((SHARD_COUNT - 1))); do
   gpu=$((shard % 8))
@@ -165,3 +254,22 @@ setsid env \
   > "${OUT_ROOT}/logs/stage2_dpsi_fs_norm.log" 2>&1 < /dev/null &
 echo $! > "${OUT_ROOT}/pids/stage2_dpsi_fs_norm.pid"
 echo "stage2_pid=$(cat "${OUT_ROOT}/pids/stage2_dpsi_fs_norm.pid")"
+
+if [[ "${AUTO_LAUNCH_STAGE3}" == "true" ]]; then
+  echo "stage3_watcher_launch_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ) out=${STAGE3_OUT}"
+  setsid env \
+    REPO_ROOT="${REPO_ROOT}" \
+    PYTHON_BIN="${PYTHON_BIN}" \
+    STAGE2_OUT="${STAGE2_OUT}" \
+    STAGE2_PID_FILE="${OUT_ROOT}/pids/stage2_dpsi_fs_norm.pid" \
+    SUPPORT_ARCHIVE_PATH="${SUPPORT_ARCHIVE}" \
+    STAGE3_OUT="${STAGE3_OUT}" \
+    USE_FS_NORM="${USE_FS_NORM:-true}" \
+    FS_NORM_STATS_PATH="${FS_STATS}" \
+    FS_NORM_USE_ROBUST="${FS_NORM_USE_ROBUST:-true}" \
+    POLL_SECONDS="${STAGE3_WATCH_POLL_SECONDS:-300}" \
+    bash "${REPO_ROOT}/scripts/training/sg_fps/watch_stage2_then_train_sg_fps_grpo.sh" \
+    > "${OUT_ROOT}/logs/stage3_watcher.log" 2>&1 < /dev/null &
+  echo $! > "${OUT_ROOT}/pids/stage3_watcher.pid"
+  echo "stage3_watcher_pid=$(cat "${OUT_ROOT}/pids/stage3_watcher.pid")"
+fi
