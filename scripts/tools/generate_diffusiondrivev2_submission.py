@@ -223,6 +223,11 @@ def run(args: argparse.Namespace) -> None:
         total_count=total,
         complete=True,
     )
+    for stale_partial in ("submission.partial.pkl", "summary.partial.json"):
+        try:
+            (args.output_dir / stale_partial).unlink()
+        except FileNotFoundError:
+            pass
     if failures:
         with open(args.output_dir / "failures.jsonl", "w", encoding="utf-8") as f:
             for item in failures:

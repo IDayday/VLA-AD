@@ -10,7 +10,15 @@ DRIVOR_ROOT=${DRIVOR_ROOT:-/mnt/project/external/DrivoR}
 DRIVOR_CHECKPOINT=${DRIVOR_CHECKPOINT:-${DRIVOR_ROOT}/weights/releases/drivor_Nav1_25epochs.pth}
 DRIVOR_SHARD_COUNT=${DRIVOR_SHARD_COUNT:-${SHARD_COUNT:-8}}
 DRIVOR_BATCH_SIZE=${DRIVOR_BATCH_SIZE:-64}
-DRIVOR_PARTIAL_EVERY=${DRIVOR_PARTIAL_EVERY:-256}
+DRIVOR_PARTIAL_EVERY=${DRIVOR_PARTIAL_EVERY:-64}
+DDV2_WAIT_MODE=${DDV2_WAIT_MODE:-final}
+DDV2_MIN_READY_SHARDS=${DDV2_MIN_READY_SHARDS:-${SHARD_COUNT:-8}}
+DDV2_MIN_PREDICTIONS_PER_SHARD=${DDV2_MIN_PREDICTIONS_PER_SHARD:-1}
+STOP_DDV2_AFTER_READY=${STOP_DDV2_AFTER_READY:-false}
+DRIVOR_WAIT_MODE=${DRIVOR_WAIT_MODE:-final}
+DRIVOR_MIN_READY_SHARDS=${DRIVOR_MIN_READY_SHARDS:-${DRIVOR_SHARD_COUNT:-${SHARD_COUNT:-8}}}
+DRIVOR_MIN_PREDICTIONS_PER_SHARD=${DRIVOR_MIN_PREDICTIONS_PER_SHARD:-1}
+STOP_DRIVOR_AFTER_READY=${STOP_DRIVOR_AFTER_READY:-false}
 RUN_ID=${RUN_ID:-sg_fps_v3_support_ddv2_$(date -u +%Y%m%dT%H%M%SZ)}
 OUT_ROOT=${OUT_ROOT:-${REPO_ROOT}/outputs/${RUN_ID}}
 SUPPORT_ARCHIVE=${SUPPORT_ARCHIVE:-${OUT_ROOT}/support_archive}
@@ -35,9 +43,17 @@ mkdir -p "${OUT_ROOT}/logs" "${OUT_ROOT}/pids" "${SUPPORT_ARCHIVE}"
   echo "run_id=${RUN_ID}"
   echo "out_root=${OUT_ROOT}"
   echo "ddv2_out_root=${DDV2_OUT_ROOT}"
+  echo "ddv2_wait_mode=${DDV2_WAIT_MODE}"
+  echo "ddv2_min_ready_shards=${DDV2_MIN_READY_SHARDS}"
+  echo "ddv2_min_predictions_per_shard=${DDV2_MIN_PREDICTIONS_PER_SHARD}"
+  echo "stop_ddv2_after_ready=${STOP_DDV2_AFTER_READY}"
   echo "run_drivor_after_ddv2=${RUN_DRIVOR_AFTER_DDV2}"
   echo "drivor_out_root=${DRIVOR_OUT_ROOT}"
   echo "drivor_checkpoint=${DRIVOR_CHECKPOINT}"
+  echo "drivor_wait_mode=${DRIVOR_WAIT_MODE}"
+  echo "drivor_min_ready_shards=${DRIVOR_MIN_READY_SHARDS}"
+  echo "drivor_min_predictions_per_shard=${DRIVOR_MIN_PREDICTIONS_PER_SHARD}"
+  echo "stop_drivor_after_ready=${STOP_DRIVOR_AFTER_READY}"
   echo "support_archive=${SUPPORT_ARCHIVE}"
   echo "fs_stats=${FS_STATS}"
   echo "stage2_out=${STAGE2_OUT}"
@@ -62,47 +78,134 @@ _live_pid_count() {
   echo "${count}"
 }
 
+_stop_pid_dir() {
+  local dir="$1"
+  local label="$2"
+  shopt -s nullglob
+  local pids=()
+  for f in "${dir}"/*.pid; do
+    local pid
+    pid=$(cat "${f}" 2>/dev/null || true)
+    if [[ -n "${pid}" ]] && kill -0 "${pid}" 2>/dev/null; then
+      pids+=("${pid}")
+    fi
+  done
+  shopt -u nullglob
+  if [[ "${#pids[@]}" -eq 0 ]]; then
+    echo "${label}_stop_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ) live=0"
+    return 0
+  fi
+  echo "${label}_stop_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ) pids=${pids[*]}"
+  kill "${pids[@]}" 2>/dev/null || true
+  sleep 5
+  local survivors=()
+  for pid in "${pids[@]}"; do
+    if kill -0 "${pid}" 2>/dev/null; then
+      survivors+=("${pid}")
+    fi
+  done
+  if [[ "${#survivors[@]}" -gt 0 ]]; then
+    echo "${label}_stop_force_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ) pids=${survivors[*]}"
+    kill -9 "${survivors[@]}" 2>/dev/null || true
+  fi
+}
+
+_candidate_ready() {
+  local label="$1"
+  local root="$2"
+  local expected="$3"
+  local mode="$4"
+  local min_ready_shards="$5"
+  local min_predictions_per_shard="$6"
+  "${PYTHON_BIN}" - "${label}" "${root}" "${expected}" "${mode}" "${min_ready_shards}" "${min_predictions_per_shard}" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+label = sys.argv[1]
+root = Path(sys.argv[2])
+expected = int(sys.argv[3])
+mode = sys.argv[4]
+min_ready = int(sys.argv[5])
+min_predictions = int(sys.argv[6])
+
+if mode not in {"final", "partial"}:
+    raise SystemExit(f"{label}: wait mode must be final or partial, got {mode!r}")
+
+ready = 0
+prediction_total = 0
+bad = []
+for idx in range(expected):
+    shard = root / "submissions" / f"shard_{idx}"
+    if mode == "final":
+        summary_path = shard / "summary.json"
+        submission_path = shard / "submission.pkl"
+    else:
+        final_summary = shard / "summary.json"
+        final_submission = shard / "submission.pkl"
+        partial_summary = shard / "summary.partial.json"
+        partial_submission = shard / "submission.partial.pkl"
+        if final_summary.exists() and final_submission.exists():
+            summary_path = final_summary
+            submission_path = final_submission
+        else:
+            summary_path = partial_summary
+            submission_path = partial_submission
+    if not summary_path.exists() or not submission_path.exists():
+        continue
+    try:
+        with open(summary_path, "r", encoding="utf-8") as f:
+            summary = json.load(f)
+    except Exception as exc:
+        bad.append(f"bad summary {summary_path}: {exc}")
+        continue
+    if int(summary.get("failure_count", 0)) != 0:
+        bad.append(f"nonzero failures in {summary_path}: {summary.get('failure_count')}")
+        continue
+    count = int(summary.get("prediction_count", 0))
+    prediction_total += count
+    if count >= min_predictions:
+        ready += 1
+
+print(
+    f"{label}_candidate_status_utc="
+    f"ready_shards={ready}/{expected} prediction_total={prediction_total} "
+    f"mode={mode} min_ready_shards={min_ready} min_predictions_per_shard={min_predictions} "
+    f"bad_count={len(bad)}"
+)
+if bad:
+    for item in bad[:8]:
+        print(f"{label}_candidate_warning={item}")
+if ready >= min_ready:
+    raise SystemExit(0)
+raise SystemExit(1)
+PY
+}
+
 echo "waiting_for_ddv2_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 while true; do
   live=$(_live_pid_count "${DDV2_OUT_ROOT}/pids")
   summaries=$(find "${DDV2_OUT_ROOT}/submissions" -name summary.json 2>/dev/null | wc -l)
   submissions=$(find "${DDV2_OUT_ROOT}/submissions" -name submission.pkl 2>/dev/null | wc -l)
-  echo "ddv2_status_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ) live=${live} summaries=${summaries} submissions=${submissions}"
-  if [[ "${live}" -eq 0 ]]; then
+  partial_summaries=$(find "${DDV2_OUT_ROOT}/submissions" -name summary.partial.json 2>/dev/null | wc -l)
+  partial_submissions=$(find "${DDV2_OUT_ROOT}/submissions" -name submission.partial.pkl 2>/dev/null | wc -l)
+  echo "ddv2_status_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ) live=${live} summaries=${summaries} submissions=${submissions} partial_summaries=${partial_summaries} partial_submissions=${partial_submissions}"
+  if _candidate_ready "ddv2" "${DDV2_OUT_ROOT}" "${SHARD_COUNT}" "${DDV2_WAIT_MODE}" "${DDV2_MIN_READY_SHARDS}" "${DDV2_MIN_PREDICTIONS_PER_SHARD}"; then
     break
+  fi
+  if [[ "${live}" -eq 0 ]]; then
+    echo "ddv2_no_live_processes_before_ready_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    _candidate_ready "ddv2" "${DDV2_OUT_ROOT}" "${SHARD_COUNT}" "${DDV2_WAIT_MODE}" "${DDV2_MIN_READY_SHARDS}" "${DDV2_MIN_PREDICTIONS_PER_SHARD}"
   fi
   sleep "${POLL_SECONDS}"
 done
 
-"${PYTHON_BIN}" - "${DDV2_OUT_ROOT}" "${SHARD_COUNT}" <<'PY'
-import json
-import sys
-from pathlib import Path
+_candidate_ready "ddv2" "${DDV2_OUT_ROOT}" "${SHARD_COUNT}" "${DDV2_WAIT_MODE}" "${DDV2_MIN_READY_SHARDS}" "${DDV2_MIN_PREDICTIONS_PER_SHARD}"
 
-root = Path(sys.argv[1])
-expected = int(sys.argv[2])
-bad = []
-for idx in range(expected):
-    shard = root / "submissions" / f"shard_{idx}"
-    summary_path = shard / "summary.json"
-    submission_path = shard / "submission.pkl"
-    if not summary_path.exists():
-        bad.append(f"missing summary: {summary_path}")
-        continue
-    if not submission_path.exists():
-        bad.append(f"missing submission: {submission_path}")
-    with open(summary_path, "r", encoding="utf-8") as f:
-        summary = json.load(f)
-    if int(summary.get("failure_count", 0)) != 0:
-        bad.append(f"nonzero failures in {summary_path}: {summary.get('failure_count')}")
-    if int(summary.get("prediction_count", 0)) <= 0:
-        bad.append(f"empty predictions in {summary_path}")
-if bad:
-    raise SystemExit("\n".join(bad))
-print("ddv2_validation=passed")
-PY
-
-echo "ddv2_complete_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+echo "ddv2_ready_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+if [[ "${STOP_DDV2_AFTER_READY}" == "true" ]]; then
+  _stop_pid_dir "${DDV2_OUT_ROOT}/pids" "ddv2"
+fi
 
 if [[ "${RUN_DRIVOR_AFTER_DDV2}" == "true" ]]; then
   if [[ -z "${DRIVOR_OUT_ROOT}" ]]; then
@@ -131,41 +234,24 @@ if [[ -n "${DRIVOR_OUT_ROOT}" ]]; then
     live=$(_live_pid_count "${DRIVOR_OUT_ROOT}/pids")
     summaries=$(find "${DRIVOR_OUT_ROOT}/submissions" -name summary.json 2>/dev/null | wc -l)
     submissions=$(find "${DRIVOR_OUT_ROOT}/submissions" -name submission.pkl 2>/dev/null | wc -l)
-    echo "drivor_status_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ) live=${live} summaries=${summaries} submissions=${submissions}"
-    if [[ "${live}" -eq 0 ]]; then
+    partial_summaries=$(find "${DRIVOR_OUT_ROOT}/submissions" -name summary.partial.json 2>/dev/null | wc -l)
+    partial_submissions=$(find "${DRIVOR_OUT_ROOT}/submissions" -name submission.partial.pkl 2>/dev/null | wc -l)
+    echo "drivor_status_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ) live=${live} summaries=${summaries} submissions=${submissions} partial_summaries=${partial_summaries} partial_submissions=${partial_submissions}"
+    if _candidate_ready "drivor" "${DRIVOR_OUT_ROOT}" "${DRIVOR_SHARD_COUNT}" "${DRIVOR_WAIT_MODE}" "${DRIVOR_MIN_READY_SHARDS}" "${DRIVOR_MIN_PREDICTIONS_PER_SHARD}"; then
       break
+    fi
+    if [[ "${live}" -eq 0 ]]; then
+      echo "drivor_no_live_processes_before_ready_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+      _candidate_ready "drivor" "${DRIVOR_OUT_ROOT}" "${DRIVOR_SHARD_COUNT}" "${DRIVOR_WAIT_MODE}" "${DRIVOR_MIN_READY_SHARDS}" "${DRIVOR_MIN_PREDICTIONS_PER_SHARD}"
     fi
     sleep "${POLL_SECONDS}"
   done
 
-  "${PYTHON_BIN}" - "${DRIVOR_OUT_ROOT}" "${DRIVOR_SHARD_COUNT}" <<'PY'
-import json
-import sys
-from pathlib import Path
-
-root = Path(sys.argv[1])
-expected = int(sys.argv[2])
-bad = []
-for idx in range(expected):
-    shard = root / "submissions" / f"shard_{idx}"
-    summary_path = shard / "summary.json"
-    submission_path = shard / "submission.pkl"
-    if not summary_path.exists():
-        bad.append(f"missing summary: {summary_path}")
-        continue
-    if not submission_path.exists():
-        bad.append(f"missing submission: {submission_path}")
-    with open(summary_path, "r", encoding="utf-8") as f:
-        summary = json.load(f)
-    if int(summary.get("failure_count", 0)) != 0:
-        bad.append(f"nonzero failures in {summary_path}: {summary.get('failure_count')}")
-    if int(summary.get("prediction_count", 0)) <= 0:
-        bad.append(f"empty predictions in {summary_path}")
-if bad:
-    raise SystemExit("\n".join(bad))
-print("drivor_validation=passed")
-PY
-  echo "drivor_complete_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  _candidate_ready "drivor" "${DRIVOR_OUT_ROOT}" "${DRIVOR_SHARD_COUNT}" "${DRIVOR_WAIT_MODE}" "${DRIVOR_MIN_READY_SHARDS}" "${DRIVOR_MIN_PREDICTIONS_PER_SHARD}"
+  echo "drivor_ready_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  if [[ "${STOP_DRIVOR_AFTER_READY}" == "true" ]]; then
+    _stop_pid_dir "${DRIVOR_OUT_ROOT}/pids" "drivor"
+  fi
   if [[ "${EXTERNAL_CANDIDATE_ROOTS_WAS_DEFAULT}" == "true" ]]; then
     EXTERNAL_CANDIDATE_ROOTS="${DDV2_SOURCE_NAME}=${DDV2_OUT_ROOT}/submissions,${DRIVOR_SOURCE_NAME}=${DRIVOR_OUT_ROOT}/submissions"
     echo "external_candidate_roots=${EXTERNAL_CANDIDATE_ROOTS}" >> "${OUT_ROOT}/commands.log"
