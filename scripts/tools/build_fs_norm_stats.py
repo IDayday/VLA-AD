@@ -43,6 +43,16 @@ def _load_record(path: Path) -> Any:
 def _collect_trajs(payload: Any) -> list[torch.Tensor]:
     trajs: list[torch.Tensor] = []
     if isinstance(payload, dict):
+        candidates = payload.get("candidates")
+        support_tags = payload.get("support_tags")
+        if candidates is not None and support_tags is not None:
+            arr = torch.as_tensor(candidates, dtype=torch.float32)
+            tags = [str(tag) for tag in support_tags]
+            if arr.ndim == 3 and arr.shape[-1] == 3 and len(tags) == int(arr.shape[0]):
+                selected = [idx for idx, tag in enumerate(tags) if tag]
+                if selected:
+                    return [arr[idx] for idx in selected]
+
         for key in ("trajectory", "gt_trajectory", "il_trajectory"):
             if key in payload:
                 arr = torch.as_tensor(payload[key], dtype=torch.float32)

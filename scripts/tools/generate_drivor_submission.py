@@ -11,7 +11,7 @@ from pathlib import Path
 from typing import Any
 
 import torch
-from torch.utils.data import default_collate
+from torch.utils.data import DataLoader, Dataset, default_collate
 from tqdm import tqdm
 
 
@@ -125,6 +125,48 @@ def _load_existing_predictions(output_dir: Path) -> dict[str, Any]:
     return {}
 
 
+class _AgentFeatureDataset(Dataset):
+    def __init__(self, input_loader: Any, feature_builders: list[Any], tokens: list[str]):
+        self._input_loader = input_loader
+        self._feature_builders = feature_builders
+        self._tokens = [str(token) for token in tokens]
+
+    def __len__(self) -> int:
+        return len(self._tokens)
+
+    def __getitem__(self, index: int) -> dict[str, Any]:
+        token = self._tokens[index]
+        try:
+            agent_input = self._input_loader.get_agent_input_from_token(token)
+            features: dict[str, Any] = {}
+            for builder in self._feature_builders:
+                features.update(builder.compute_features(agent_input))
+            return {"ok": True, "token": token, "features": features}
+        except Exception as exc:  # pragma: no cover - exercised in long-running data jobs
+            return {
+                "ok": False,
+                "token": token,
+                "error": repr(exc),
+                "traceback": traceback.format_exc(),
+            }
+
+
+def _collate_feature_items(items: list[dict[str, Any]]) -> tuple[dict[str, Any], list[str], list[dict[str, str]]]:
+    ok_items = [item for item in items if item.get("ok")]
+    failures = [
+        {
+            "token": str(item.get("token", "")),
+            "error": str(item.get("error", "")),
+            "traceback": str(item.get("traceback", "")),
+        }
+        for item in items
+        if not item.get("ok")
+    ]
+    if not ok_items:
+        return {}, [], failures
+    return default_collate([item["features"] for item in ok_items]), [str(item["token"]) for item in ok_items], failures
+
+
 def _write_summary(
     path: Path,
     args: argparse.Namespace,
@@ -180,6 +222,32 @@ def _flush_batch(
         output[str(token)] = Trajectory(pose)
 
 
+def _flush_collated_batch(
+    agent: Any,
+    features: dict[str, Any],
+    token_batch: list[str],
+    output: dict[str, Any],
+    device: torch.device,
+) -> None:
+    from navsim.common.dataclasses import Trajectory
+
+    if not token_batch:
+        return
+    features = _to_device(features, device)
+    with torch.inference_mode():
+        predictions = agent.forward(features)
+    if "trajectory" not in predictions:
+        raise KeyError(f"agent.forward did not return trajectory; keys={sorted(predictions.keys())}")
+    poses = predictions["trajectory"]
+    if hasattr(poses, "poses"):
+        poses = poses.poses
+    poses_np = poses.detach().float().cpu().numpy()
+    if poses_np.shape[0] != len(token_batch):
+        raise ValueError(f"Batch output size mismatch: got {poses_np.shape[0]}, expected {len(token_batch)}")
+    for token, pose in zip(token_batch, poses_np):
+        output[str(token)] = Trajectory(pose)
+
+
 def _maybe_write_partial(args: argparse.Namespace, output: dict[str, Any], failures: list[dict[str, str]], total: int | None) -> None:
     _write_submission(args.output_dir / "submission.partial.pkl", output, args)
     _write_summary(
@@ -190,6 +258,49 @@ def _maybe_write_partial(args: argparse.Namespace, output: dict[str, Any], failu
         total_count=total,
         complete=False,
     )
+
+
+def _run_dataloader_inference(
+    agent: Any,
+    input_loader: Any,
+    feature_builders: list[Any],
+    output: dict[str, Any],
+    failures: list[dict[str, str]],
+    args: argparse.Namespace,
+    device: torch.device,
+    total: int | None,
+) -> None:
+    tokens = [str(token) for token in input_loader if str(token) not in output]
+    dataset = _AgentFeatureDataset(input_loader, feature_builders, tokens)
+    loader_kwargs: dict[str, Any] = {
+        "batch_size": int(args.batch_size),
+        "shuffle": False,
+        "num_workers": int(args.num_workers),
+        "collate_fn": _collate_feature_items,
+        "pin_memory": bool(args.pin_memory),
+    }
+    if int(args.num_workers) > 0:
+        loader_kwargs["persistent_workers"] = True
+        if int(args.prefetch_factor) > 0:
+            loader_kwargs["prefetch_factor"] = int(args.prefetch_factor)
+    dataloader = DataLoader(dataset, **loader_kwargs)
+    # Create the iterator before moving the model to CUDA so forked workers do
+    # not inherit an initialized CUDA context.
+    data_iter = iter(dataloader)
+    agent.to(device)
+    last_partial_count = len(output)
+    batch_total = (len(dataset) + int(args.batch_size) - 1) // int(args.batch_size) if int(args.batch_size) > 0 else None
+    for features, token_batch, batch_failures in tqdm(data_iter, total=batch_total, desc="Generating DrivoR submission"):
+        failures.extend(batch_failures)
+        try:
+            _flush_collated_batch(agent, features, token_batch, output, device)
+        except Exception as exc:  # pragma: no cover - exercised in long-running data jobs
+            trace = traceback.format_exc()
+            for failed_token in token_batch:
+                failures.append({"token": str(failed_token), "error": repr(exc), "traceback": trace})
+        if args.partial_every > 0 and len(output) - last_partial_count >= args.partial_every:
+            _maybe_write_partial(args, output, failures, total)
+            last_partial_count = len(output)
 
 
 def run(args: argparse.Namespace) -> None:
@@ -221,50 +332,61 @@ def run(args: argparse.Namespace) -> None:
     agent.initialize()
     agent.eval()
     device = torch.device(args.device if torch.cuda.is_available() or not str(args.device).startswith("cuda") else "cpu")
-    agent.to(device)
-
     feature_builders = agent.get_feature_builders()
     output: dict[str, Any] = _load_existing_predictions(args.output_dir) if args.resume else {}
-    feature_batch: list[dict[str, Any]] = []
-    token_batch: list[str] = []
     failures: list[dict[str, str]] = []
-    last_partial_count = len(output)
 
     total = len(input_loader) if hasattr(input_loader, "__len__") else None
-    for token in tqdm(input_loader, total=total, desc="Generating DrivoR submission"):
-        if str(token) in output:
-            continue
-        try:
-            agent_input = input_loader.get_agent_input_from_token(token)
-            features: dict[str, Any] = {}
-            for builder in feature_builders:
-                features.update(builder.compute_features(agent_input))
-            feature_batch.append(features)
-            token_batch.append(str(token))
-        except Exception as exc:  # pragma: no cover - exercised in long-running data jobs
-            failures.append({"token": str(token), "error": repr(exc), "traceback": traceback.format_exc()})
-            continue
+    if int(args.num_workers) > 0:
+        _run_dataloader_inference(
+            agent=agent,
+            input_loader=input_loader,
+            feature_builders=feature_builders,
+            output=output,
+            failures=failures,
+            args=args,
+            device=device,
+            total=total,
+        )
+    else:
+        feature_batch: list[dict[str, Any]] = []
+        token_batch: list[str] = []
+        last_partial_count = len(output)
+        agent.to(device)
+        for token in tqdm(input_loader, total=total, desc="Generating DrivoR submission"):
+            if str(token) in output:
+                continue
+            try:
+                agent_input = input_loader.get_agent_input_from_token(token)
+                features: dict[str, Any] = {}
+                for builder in feature_builders:
+                    features.update(builder.compute_features(agent_input))
+                feature_batch.append(features)
+                token_batch.append(str(token))
+            except Exception as exc:  # pragma: no cover - exercised in long-running data jobs
+                failures.append({"token": str(token), "error": repr(exc), "traceback": traceback.format_exc()})
+                continue
 
-        if len(feature_batch) >= args.batch_size:
+            if len(feature_batch) >= args.batch_size:
+                try:
+                    _flush_batch(agent, feature_batch, token_batch, output, device)
+                except Exception as exc:  # pragma: no cover - exercised in long-running data jobs
+                    trace = traceback.format_exc()
+                    for failed_token in token_batch:
+                        failures.append({"token": str(failed_token), "error": repr(exc), "traceback": trace})
+                feature_batch = []
+                token_batch = []
+                if args.partial_every > 0 and len(output) - last_partial_count >= args.partial_every:
+                    _maybe_write_partial(args, output, failures, total)
+                    last_partial_count = len(output)
+
+        if feature_batch:
             try:
                 _flush_batch(agent, feature_batch, token_batch, output, device)
             except Exception as exc:  # pragma: no cover - exercised in long-running data jobs
                 trace = traceback.format_exc()
                 for failed_token in token_batch:
                     failures.append({"token": str(failed_token), "error": repr(exc), "traceback": trace})
-            feature_batch = []
-            token_batch = []
-            if args.partial_every > 0 and len(output) - last_partial_count >= args.partial_every:
-                _maybe_write_partial(args, output, failures, total)
-                last_partial_count = len(output)
-
-    if feature_batch:
-        try:
-            _flush_batch(agent, feature_batch, token_batch, output, device)
-        except Exception as exc:  # pragma: no cover - exercised in long-running data jobs
-            trace = traceback.format_exc()
-            for failed_token in token_batch:
-                failures.append({"token": str(failed_token), "error": repr(exc), "traceback": trace})
 
     _write_submission(args.output_dir / "submission.pkl", output, args)
     _write_summary(
@@ -299,6 +421,9 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--log-names-json", default="")
     parser.add_argument("--max-scenes", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=64)
+    parser.add_argument("--num-workers", type=int, default=0, help="Parallel CPU feature-builder workers. 0 uses serial feature extraction.")
+    parser.add_argument("--prefetch-factor", type=int, default=2, help="DataLoader prefetch_factor when num-workers > 0.")
+    parser.add_argument("--pin-memory", action="store_true", help="Pin DataLoader feature batches before CUDA transfer.")
     parser.add_argument("--partial-every", type=int, default=0, help="Write submission.partial.pkl every N new predictions; 0 disables.")
     parser.add_argument("--resume", action="store_true", help="Resume from submission.pkl or submission.partial.pkl in output-dir.")
     parser.add_argument("--device", default="cuda")

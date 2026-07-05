@@ -282,6 +282,8 @@ def run_cycle(args: argparse.Namespace, state: Dict[str, Any]) -> Dict[str, Any]
         epoch = epoch_from_ckpt(ckpt)
         if epoch is None:
             continue
+        if epoch < args.val_min_epoch:
+            continue
         if args.val_every_n_epochs > 0 and epoch % args.val_every_n_epochs != 0:
             continue
         key = ckpt_key(ckpt)
@@ -308,6 +310,9 @@ def run_cycle(args: argparse.Namespace, state: Dict[str, Any]) -> Dict[str, Any]
         ckpt = Path(payload["checkpoint"])
         if not ckpt.is_file():
             continue
+        if args.backup_navtest_top_dir is not None:
+            backup = args.backup_navtest_top_dir / f"rank_pending_epoch_{payload.get('epoch')}_{ckpt.name}"
+            hardlink_or_copy(ckpt, backup)
         try:
             state["navtest_completed"][key] = run_eval(args, ckpt, "navtest")
         except Exception as exc:
@@ -336,8 +341,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--navtest-metric-cache-dir", type=Path, default=NAVTEST_METRIC_CACHE)
     parser.add_argument("--navtest-vlm-text-anchor-cache-root", type=Path, default=None)
     parser.add_argument("--val-every-n-epochs", type=int, default=5)
+    parser.add_argument("--val-min-epoch", type=int, default=1)
     parser.add_argument("--navtest-after-fraction", type=float, default=0.5)
     parser.add_argument("--top-k", type=int, default=5)
+    parser.add_argument("--backup-navtest-top-dir", type=Path, default=None)
     parser.add_argument("--poll-seconds", type=float, default=300.0)
     parser.add_argument("--stable-seconds", type=float, default=90.0)
     parser.add_argument("--num-shards", type=int, default=8)

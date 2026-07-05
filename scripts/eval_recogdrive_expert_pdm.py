@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import gzip
 import json
 import lzma
 import pickle
@@ -263,6 +264,24 @@ def load_vlm_text_anchor_index(root: Optional[Path]) -> Dict[str, Path]:
             token = str(record.get("sample_token") or path.stem)
             index[token] = path if path.is_absolute() else chunk_dir / path
     return index
+
+
+def load_eval_sample(path: Path) -> Dict[str, Any]:
+    """Load a standard .pt chunk sample or an original ReCogDrive raw token cache dir."""
+    if path.is_dir() and (path / "internvl_feature.gz").is_file():
+        with gzip.open(path / "internvl_feature.gz", "rb") as f:
+            sample = pickle.load(f)
+        if not isinstance(sample, dict):
+            raise TypeError(f"Raw ReCogDrive feature cache {path} must contain a dict, got {type(sample).__name__}.")
+        target_path = path / "trajectory_target.gz"
+        if target_path.is_file():
+            with gzip.open(target_path, "rb") as f:
+                target = pickle.load(f)
+            if isinstance(target, dict):
+                sample = {**sample, **target}
+        sample.setdefault("sample_token", path.name)
+        return sample
+    return load_sample(path)
 
 
 def build_pdm_tools() -> Tuple[TrajectorySampling, PDMSimulator, PDMScorer]:
@@ -532,7 +551,7 @@ def main() -> int:
     if args.num_shards > 1:
         paths = [item for idx, item in enumerate(paths) if idx % args.num_shards == args.shard_index]
     for idx, (chunk_dir, path, index_record) in enumerate(paths):
-        sample = load_sample(path)
+        sample = load_eval_sample(path)
         if online_backbone is not None and online_compute_hidden is not None:
             sample = dict(sample)
             sample["last_hidden_state"] = online_compute_hidden(

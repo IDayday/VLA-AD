@@ -19,6 +19,7 @@ DRIVOR_WAIT_MODE=${DRIVOR_WAIT_MODE:-final}
 DRIVOR_MIN_READY_SHARDS=${DRIVOR_MIN_READY_SHARDS:-${DRIVOR_SHARD_COUNT:-${SHARD_COUNT:-8}}}
 DRIVOR_MIN_PREDICTIONS_PER_SHARD=${DRIVOR_MIN_PREDICTIONS_PER_SHARD:-1}
 STOP_DRIVOR_AFTER_READY=${STOP_DRIVOR_AFTER_READY:-false}
+ALLOW_PARTIAL_CANDIDATES_FOR_TRAINING=${ALLOW_PARTIAL_CANDIDATES_FOR_TRAINING:-false}
 RUN_ID=${RUN_ID:-sg_fps_v3_support_ddv2_$(date -u +%Y%m%dT%H%M%SZ)}
 OUT_ROOT=${OUT_ROOT:-${REPO_ROOT}/outputs/${RUN_ID}}
 SUPPORT_ARCHIVE=${SUPPORT_ARCHIVE:-${OUT_ROOT}/support_archive}
@@ -27,6 +28,14 @@ STAGE2_OUT=${STAGE2_OUT:-${OUT_ROOT}/stage2_dpsi_fs_norm}
 AUTO_LAUNCH_STAGE3=${AUTO_LAUNCH_STAGE3:-false}
 STAGE3_OUT=${STAGE3_OUT:-${OUT_ROOT}/stage3_feasible_pareto_grpo}
 SHARD_COUNT=${SHARD_COUNT:-8}
+SUPPORT_BUILD_SPLITS=${SUPPORT_BUILD_SPLITS:-train,val}
+TRAIN_CACHE_PATH=${TRAIN_CACHE_PATH:-${CACHE_PATH:-/mnt/project/VLA-AD/cache/recogdrive_official_stage1_hidden_navtrain_2b}}
+# The official ReCogDrive hidden cache directory is historically named navtrain,
+# but it contains both train and val logs. Use cfg.train_logs/cfg.val_logs to
+# split it instead of requiring a second cache root.
+VAL_CACHE_PATH=${VAL_CACHE_PATH:-${CACHE_PATH_VAL:-${TRAIN_CACHE_PATH}}}
+TRAIN_METRIC_CACHE_PATH=${TRAIN_METRIC_CACHE_PATH:-${METRIC_CACHE_PATH:-/mnt/project/VLA-AD/cache/metric_cache_train_full}}
+VAL_METRIC_CACHE_PATH=${VAL_METRIC_CACHE_PATH:-${METRIC_CACHE_PATH_VAL:-/mnt/project/VLA-AD/cache/metric_cache_train_full}}
 POLL_SECONDS=${POLL_SECONDS:-60}
 DDV2_SOURCE_NAME=${DDV2_SOURCE_NAME:-diffusiondrivev2}
 DRIVOR_SOURCE_NAME=${DRIVOR_SOURCE_NAME:-drivor}
@@ -54,7 +63,13 @@ mkdir -p "${OUT_ROOT}/logs" "${OUT_ROOT}/pids" "${SUPPORT_ARCHIVE}"
   echo "drivor_min_ready_shards=${DRIVOR_MIN_READY_SHARDS}"
   echo "drivor_min_predictions_per_shard=${DRIVOR_MIN_PREDICTIONS_PER_SHARD}"
   echo "stop_drivor_after_ready=${STOP_DRIVOR_AFTER_READY}"
+  echo "allow_partial_candidates_for_training=${ALLOW_PARTIAL_CANDIDATES_FOR_TRAINING}"
   echo "support_archive=${SUPPORT_ARCHIVE}"
+  echo "support_build_splits=${SUPPORT_BUILD_SPLITS}"
+  echo "train_cache_path=${TRAIN_CACHE_PATH}"
+  echo "val_cache_path=${VAL_CACHE_PATH}"
+  echo "train_metric_cache_path=${TRAIN_METRIC_CACHE_PATH}"
+  echo "val_metric_cache_path=${VAL_METRIC_CACHE_PATH}"
   echo "fs_stats=${FS_STATS}"
   echo "stage2_out=${STAGE2_OUT}"
   echo "auto_launch_stage3=${AUTO_LAUNCH_STAGE3}"
@@ -62,6 +77,19 @@ mkdir -p "${OUT_ROOT}/logs" "${OUT_ROOT}/pids" "${SUPPORT_ARCHIVE}"
   echo "external_candidate_roots=${EXTERNAL_CANDIDATE_ROOTS}"
   echo "started_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 } > "${OUT_ROOT}/commands.log"
+
+if [[ "${ALLOW_PARTIAL_CANDIDATES_FOR_TRAINING}" != "true" ]]; then
+  if [[ "${DDV2_WAIT_MODE}" == "partial" ]]; then
+    echo "Refusing to train from partial DDV2 candidates. Set ALLOW_PARTIAL_CANDIDATES_FOR_TRAINING=true for smoke only." >&2
+    exit 2
+  fi
+  if [[ -n "${DRIVOR_OUT_ROOT}" || "${RUN_DRIVOR_AFTER_DDV2}" == "true" ]]; then
+    if [[ "${DRIVOR_WAIT_MODE}" == "partial" ]]; then
+      echo "Refusing to train from partial DriveOR candidates. Set ALLOW_PARTIAL_CANDIDATES_FOR_TRAINING=true for smoke only." >&2
+      exit 2
+    fi
+  fi
+fi
 
 _live_pid_count() {
   local dir="$1"
@@ -185,15 +213,16 @@ PY
 echo "waiting_for_ddv2_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 while true; do
   live=$(_live_pid_count "${DDV2_OUT_ROOT}/pids")
+  pid_files=$(find "${DDV2_OUT_ROOT}/pids" -name '*.pid' 2>/dev/null | wc -l)
   summaries=$(find "${DDV2_OUT_ROOT}/submissions" -name summary.json 2>/dev/null | wc -l)
   submissions=$(find "${DDV2_OUT_ROOT}/submissions" -name submission.pkl 2>/dev/null | wc -l)
   partial_summaries=$(find "${DDV2_OUT_ROOT}/submissions" -name summary.partial.json 2>/dev/null | wc -l)
   partial_submissions=$(find "${DDV2_OUT_ROOT}/submissions" -name submission.partial.pkl 2>/dev/null | wc -l)
-  echo "ddv2_status_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ) live=${live} summaries=${summaries} submissions=${submissions} partial_summaries=${partial_summaries} partial_submissions=${partial_submissions}"
+  echo "ddv2_status_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ) live=${live} pid_files=${pid_files} summaries=${summaries} submissions=${submissions} partial_summaries=${partial_summaries} partial_submissions=${partial_submissions}"
   if _candidate_ready "ddv2" "${DDV2_OUT_ROOT}" "${SHARD_COUNT}" "${DDV2_WAIT_MODE}" "${DDV2_MIN_READY_SHARDS}" "${DDV2_MIN_PREDICTIONS_PER_SHARD}"; then
     break
   fi
-  if [[ "${live}" -eq 0 ]]; then
+  if [[ "${live}" -eq 0 && "${pid_files}" -ge "${SHARD_COUNT}" ]]; then
     echo "ddv2_no_live_processes_before_ready_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
     _candidate_ready "ddv2" "${DDV2_OUT_ROOT}" "${SHARD_COUNT}" "${DDV2_WAIT_MODE}" "${DDV2_MIN_READY_SHARDS}" "${DDV2_MIN_PREDICTIONS_PER_SHARD}"
   fi
@@ -232,15 +261,16 @@ if [[ -n "${DRIVOR_OUT_ROOT}" ]]; then
   echo "waiting_for_drivor_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
   while true; do
     live=$(_live_pid_count "${DRIVOR_OUT_ROOT}/pids")
+    pid_files=$(find "${DRIVOR_OUT_ROOT}/pids" -name '*.pid' 2>/dev/null | wc -l)
     summaries=$(find "${DRIVOR_OUT_ROOT}/submissions" -name summary.json 2>/dev/null | wc -l)
     submissions=$(find "${DRIVOR_OUT_ROOT}/submissions" -name submission.pkl 2>/dev/null | wc -l)
     partial_summaries=$(find "${DRIVOR_OUT_ROOT}/submissions" -name summary.partial.json 2>/dev/null | wc -l)
     partial_submissions=$(find "${DRIVOR_OUT_ROOT}/submissions" -name submission.partial.pkl 2>/dev/null | wc -l)
-    echo "drivor_status_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ) live=${live} summaries=${summaries} submissions=${submissions} partial_summaries=${partial_summaries} partial_submissions=${partial_submissions}"
+    echo "drivor_status_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ) live=${live} pid_files=${pid_files} summaries=${summaries} submissions=${submissions} partial_summaries=${partial_summaries} partial_submissions=${partial_submissions}"
     if _candidate_ready "drivor" "${DRIVOR_OUT_ROOT}" "${DRIVOR_SHARD_COUNT}" "${DRIVOR_WAIT_MODE}" "${DRIVOR_MIN_READY_SHARDS}" "${DRIVOR_MIN_PREDICTIONS_PER_SHARD}"; then
       break
     fi
-    if [[ "${live}" -eq 0 ]]; then
+    if [[ "${live}" -eq 0 && "${pid_files}" -ge "${DRIVOR_SHARD_COUNT}" ]]; then
       echo "drivor_no_live_processes_before_ready_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
       _candidate_ready "drivor" "${DRIVOR_OUT_ROOT}" "${DRIVOR_SHARD_COUNT}" "${DRIVOR_WAIT_MODE}" "${DRIVOR_MIN_READY_SHARDS}" "${DRIVOR_MIN_PREDICTIONS_PER_SHARD}"
     fi
@@ -259,29 +289,67 @@ if [[ -n "${DRIVOR_OUT_ROOT}" ]]; then
 fi
 
 echo "launching_support_build_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-for shard in $(seq 0 $((SHARD_COUNT - 1))); do
-  gpu=$((shard % 8))
-  shard_root="${OUT_ROOT}/shard_${shard}"
-  mkdir -p "${shard_root}"
-  {
-    printf '[%s] CUDA_VISIBLE_DEVICES=%s SHARD_INDEX=%s SHARD_COUNT=%s OUT_ROOT=%q OUTPUT_PATH=%q EXTERNAL_CANDIDATE_ROOTS=%q ' \
-      "$(date -Is)" "${gpu}" "${shard}" "${SHARD_COUNT}" "${shard_root}" "${SUPPORT_ARCHIVE}" "${EXTERNAL_CANDIDATE_ROOTS}"
-    printf 'bash scripts/training/sg_fps/run_build_sg_fps_support.sh\n'
-  } >> "${OUT_ROOT}/commands.log"
-  setsid env \
-    CUDA_VISIBLE_DEVICES="${gpu}" \
-    SHARD_INDEX="${shard}" \
-    SHARD_COUNT="${SHARD_COUNT}" \
-    OUT_ROOT="${shard_root}" \
-    OUTPUT_PATH="${SUPPORT_ARCHIVE}" \
-    BATCH_SIZE="${SUPPORT_BUILD_BATCH_SIZE:-1}" \
-    MAX_SCENES="${MAX_SCENES:-0}" \
-    AWAC_PDM_SHADOW_CHECK="${AWAC_PDM_SHADOW_CHECK:-false}" \
-    EXTERNAL_CANDIDATE_ROOTS="${EXTERNAL_CANDIDATE_ROOTS}" \
-    PYTHON_BIN="${PYTHON_BIN}" \
-    bash "${REPO_ROOT}/scripts/training/sg_fps/run_build_sg_fps_support.sh" \
-    > "${OUT_ROOT}/logs/build_shard_${shard}.log" 2>&1 < /dev/null &
-  echo $! > "${OUT_ROOT}/pids/build_shard_${shard}.pid"
+for split in $(echo "${SUPPORT_BUILD_SPLITS}" | tr ',' ' '); do
+  case "${split}" in
+    train|navtrain)
+      build_cache_path="${TRAIN_CACHE_PATH}"
+      build_metric_cache_path="${TRAIN_METRIC_CACHE_PATH}"
+      build_log_split="train"
+      ;;
+    val|valid|validation|navval)
+      build_cache_path="${VAL_CACHE_PATH}"
+      build_metric_cache_path="${VAL_METRIC_CACHE_PATH}"
+      build_log_split="val"
+      ;;
+    *)
+      echo "Unsupported SUPPORT_BUILD_SPLITS item: ${split}" >&2
+      exit 2
+      ;;
+  esac
+  if [[ ! -d "${build_cache_path}" ]]; then
+    echo "Missing ${build_log_split} hidden cache: ${build_cache_path}" >&2
+    echo "Generate this split cache before building the full 103k SG-FPS support archive." >&2
+    exit 2
+  fi
+  if [[ ! -d "${build_metric_cache_path}" ]]; then
+    echo "Missing ${build_log_split} metric cache: ${build_metric_cache_path}" >&2
+    exit 2
+  fi
+  for shard in $(seq 0 $((SHARD_COUNT - 1))); do
+    gpu=$((shard % 8))
+    shard_root="${OUT_ROOT}/${build_log_split}/shard_${shard}"
+    mkdir -p "${shard_root}"
+    {
+      printf '[%s] split=%s CUDA_VISIBLE_DEVICES=%s SHARD_INDEX=%s SHARD_COUNT=%s OUT_ROOT=%q OUTPUT_PATH=%q CACHE_PATH=%q METRIC_CACHE_PATH=%q EXTERNAL_CANDIDATE_ROOTS=%q ' \
+        "$(date -Is)" "${build_log_split}" "${gpu}" "${shard}" "${SHARD_COUNT}" "${shard_root}" "${SUPPORT_ARCHIVE}" "${build_cache_path}" "${build_metric_cache_path}" "${EXTERNAL_CANDIDATE_ROOTS}"
+      printf 'bash scripts/training/sg_fps/run_build_sg_fps_support.sh\n'
+    } >> "${OUT_ROOT}/commands.log"
+    setsid env \
+      CUDA_VISIBLE_DEVICES="${gpu}" \
+      SHARD_INDEX="${shard}" \
+      SHARD_COUNT="${SHARD_COUNT}" \
+      BUILD_LOG_SPLIT="${build_log_split}" \
+      CACHE_PATH="${build_cache_path}" \
+      METRIC_CACHE_PATH="${build_metric_cache_path}" \
+      OUT_ROOT="${shard_root}" \
+      OUTPUT_PATH="${SUPPORT_ARCHIVE}" \
+      BATCH_SIZE="${SUPPORT_BUILD_BATCH_SIZE:-1}" \
+      MAX_SCENES="${MAX_SCENES:-0}" \
+      AWAC_PDM_SHADOW_CHECK="${AWAC_PDM_SHADOW_CHECK:-false}" \
+      EXTERNAL_CANDIDATE_ROOTS="${EXTERNAL_CANDIDATE_ROOTS}" \
+      ONLINE_POLICY_SAMPLES="${ONLINE_POLICY_SAMPLES:-0}" \
+      ONLINE_USE_CURRENT_POLICY="${ONLINE_USE_CURRENT_POLICY:-false}" \
+      ONLINE_USE_OLD_POLICY="${ONLINE_USE_OLD_POLICY:-false}" \
+      ONLINE_USE_GT="${ONLINE_USE_GT:-true}" \
+      PERTURB_GT="${PERTURB_GT:-true}" \
+      PERTURB_IL="${PERTURB_IL:-false}" \
+      SG_FPS_EXPAND_EXTERNAL_CANDIDATES="${SG_FPS_EXPAND_EXTERNAL_CANDIDATES:-true}" \
+      SG_FPS_EXTERNAL_EXPANSION_MAX_PER_SCENE="${SG_FPS_EXTERNAL_EXPANSION_MAX_PER_SCENE:-32}" \
+      PYTHON_BIN="${PYTHON_BIN}" \
+      bash "${REPO_ROOT}/scripts/training/sg_fps/run_build_sg_fps_support.sh" \
+      > "${OUT_ROOT}/logs/build_${build_log_split}_shard_${shard}.log" 2>&1 < /dev/null &
+    echo $! > "${OUT_ROOT}/pids/build_${build_log_split}_shard_${shard}.pid"
+  done
 done
 
 while true; do
@@ -295,17 +363,24 @@ while true; do
 done
 
 missing=0
-for shard in $(seq 0 $((SHARD_COUNT - 1))); do
-  summary="${OUT_ROOT}/shard_${shard}/awac_elite_buffer_summary.json"
-  log="${OUT_ROOT}/logs/build_shard_${shard}.log"
-  if [[ ! -f "${summary}" ]]; then
-    echo "missing_summary=${summary}"
-    missing=1
-  fi
-  if grep -E "Traceback|RuntimeError|ValueError|FileNotFoundError|CUDA out of memory" "${log}" >/dev/null 2>&1; then
-    echo "error_in_log=${log}"
-    missing=1
-  fi
+for split in $(echo "${SUPPORT_BUILD_SPLITS}" | tr ',' ' '); do
+  case "${split}" in
+    train|navtrain) build_log_split="train" ;;
+    val|valid|validation|navval) build_log_split="val" ;;
+    *) build_log_split="${split}" ;;
+  esac
+  for shard in $(seq 0 $((SHARD_COUNT - 1))); do
+    summary="${OUT_ROOT}/${build_log_split}/shard_${shard}/awac_elite_buffer_summary.json"
+    log="${OUT_ROOT}/logs/build_${build_log_split}_shard_${shard}.log"
+    if [[ ! -f "${summary}" ]]; then
+      echo "missing_summary=${summary}"
+      missing=1
+    fi
+    if grep -E "Traceback|RuntimeError|ValueError|FileNotFoundError|CUDA out of memory" "${log}" >/dev/null 2>&1; then
+      echo "error_in_log=${log}"
+      missing=1
+    fi
+  done
 done
 if [[ "${missing}" -ne 0 ]]; then
   echo "support_build_failed_or_incomplete_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
@@ -314,6 +389,34 @@ fi
 
 records=$(find "${SUPPORT_ARCHIVE}" -name '*.pkl.xz' 2>/dev/null | wc -l)
 echo "support_build_complete_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ) records=${records}"
+
+if [[ -n "${EXTERNAL_CANDIDATE_ROOTS}" ]]; then
+  default_min_external_scene_ratio="0.80"
+else
+  default_min_external_scene_ratio="0.0"
+fi
+if [[ -z "${SUPPORT_AUDIT_MIN_RECORDS+x}" ]]; then
+  if [[ "${MAX_SCENES:-0}" == "0" && "${SUPPORT_BUILD_SPLITS}" == *"val"* ]]; then
+    support_audit_min_records="100000"
+  else
+    support_audit_min_records="1"
+  fi
+else
+  support_audit_min_records="${SUPPORT_AUDIT_MIN_RECORDS}"
+fi
+echo "support_audit_start_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+"${PYTHON_BIN}" "${REPO_ROOT}/scripts/tools/audit_sg_fps_support_archive.py" \
+  --support-archive-path "${SUPPORT_ARCHIVE}" \
+  --output-json "${OUT_ROOT}/support_archive_audit.json" \
+  --output-md "${OUT_ROOT}/support_archive_audit.md" \
+  --min-records "${support_audit_min_records}" \
+  --min-has-valid-candidate-ratio "${SUPPORT_AUDIT_MIN_HAS_VALID_CANDIDATE_RATIO:-0.99}" \
+  --min-selected-valid-ratio "${SUPPORT_AUDIT_MIN_SELECTED_VALID_RATIO:-0.90}" \
+  --min-best-valid-above-gt-ratio "${SUPPORT_AUDIT_MIN_BEST_VALID_ABOVE_GT_RATIO:-0.30}" \
+  --min-selected-source-diversity-ge2-ratio "${SUPPORT_AUDIT_MIN_SELECTED_SOURCE_DIVERSITY_GE2_RATIO:-0.80}" \
+  --min-external-scene-ratio "${SUPPORT_AUDIT_MIN_EXTERNAL_SCENE_RATIO:-${default_min_external_scene_ratio}}" \
+  --max-fallback-tag-ratio "${SUPPORT_AUDIT_MAX_FALLBACK_TAG_RATIO:-0.50}"
+echo "support_audit_complete_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
 "${PYTHON_BIN}" "${REPO_ROOT}/scripts/tools/build_fs_norm_stats.py" \
   --support_archive_path "${SUPPORT_ARCHIVE}" \

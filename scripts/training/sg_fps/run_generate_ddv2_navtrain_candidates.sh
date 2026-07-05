@@ -15,6 +15,9 @@ BATCH_SIZE=${BATCH_SIZE:-64}
 PARTIAL_EVERY=${PARTIAL_EVERY:-64}
 RESUME=${RESUME:-true}
 MAX_SCENES_PER_SHARD=${MAX_SCENES_PER_SHARD:-}
+NUM_WORKERS=${NUM_WORKERS:-0}
+PREFETCH_FACTOR=${PREFETCH_FACTOR:-2}
+PIN_MEMORY=${PIN_MEMORY:-false}
 
 mkdir -p "${OUT_ROOT}/logs" "${OUT_ROOT}/pids" "${OUT_ROOT}/log_names" "${OUT_ROOT}/submissions"
 
@@ -58,9 +61,14 @@ for shard in $(seq 0 $((NUM_SHARDS - 1))); do
     --experiment-name "ddv2_${TRAIN_TEST_SPLIT}_shard_${shard}"
     --log-names-json "${OUT_ROOT}/log_names/shard_${shard}.json"
     --batch-size "${BATCH_SIZE}"
+    --num-workers "${NUM_WORKERS}"
+    --prefetch-factor "${PREFETCH_FACTOR}"
     --partial-every "${PARTIAL_EVERY}"
     --device cuda
   )
+  if [[ "${PIN_MEMORY}" == "true" ]]; then
+    cmd+=(--pin-memory)
+  fi
   if [[ "${RESUME}" == "true" ]]; then
     cmd+=(--resume)
   fi

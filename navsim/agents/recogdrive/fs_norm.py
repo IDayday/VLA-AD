@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Optional
 
+import numpy as np
 import torch
 
 
@@ -75,6 +77,20 @@ class FSNormTransform:
 
 
 def load_fs_norm_stats(path: str, *, map_location: str | torch.device = "cpu") -> FSNormStats:
+    path_obj = Path(path)
+    if path_obj.suffix == ".npz":
+        data = np.load(path_obj, allow_pickle=True)
+        device = torch.device(map_location) if isinstance(map_location, str) and map_location != "cpu" else None
+        median_arr = data["median"] if "median" in data.files and data["median"].size else None
+        mad_arr = data["mad"] if "mad" in data.files and data["mad"].size else None
+        return FSNormStats(
+            mean=torch.as_tensor(data["mean"], dtype=torch.float32, device=device),
+            std=torch.as_tensor(data["std"], dtype=torch.float32, device=device),
+            median=None if median_arr is None else torch.as_tensor(median_arr, dtype=torch.float32, device=device),
+            mad=None if mad_arr is None else torch.as_tensor(mad_arr, dtype=torch.float32, device=device),
+            use_robust=bool(int(data["use_robust"])) if "use_robust" in data.files else False,
+            clip=float(data["clip"]) if "clip" in data.files else 5.0,
+        )
     payload = torch.load(path, map_location=map_location)
     if isinstance(payload, FSNormStats):
         return payload

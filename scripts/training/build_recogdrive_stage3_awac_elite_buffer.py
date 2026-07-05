@@ -24,11 +24,17 @@ from navsim.agents.recogdrive.offline_rl_buffer import (
     load_elite_record,
     save_elite_record,
 )
-from navsim.agents.recogdrive.candidate_funnel import ExternalCandidateLoader
+from navsim.agents.recogdrive.candidate_funnel import (
+    ExternalCandidateLoader,
+    failure_conditioned_expand,
+    pareto_nms,
+    trust_region_control_expand,
+)
 from navsim.agents.recogdrive.pareto_support import (
     CandidateRecord,
     build_archive_record,
     select_feasible_pareto_support,
+    support_semantic_pass,
 )
 from navsim.agents.recogdrive.recogdrive_agent import (
     EXPERT_FEATURE_KEYS,
@@ -81,6 +87,53 @@ def _env_int(name: str, default: int) -> int:
     if value is None or value == "":
         return default
     return int(value)
+
+
+def _env_float(name: str, default: float) -> float:
+    value = os.getenv(name)
+    if value is None or value == "":
+        return default
+    return float(value)
+
+
+def _env_list_float(name: str, default: Tuple[float, ...]) -> Tuple[float, ...]:
+    value = os.getenv(name)
+    if value is None or value.strip() == "":
+        return default
+    if value.strip().lower() in {"none", "null", "off", "false", "[]"}:
+        return ()
+    items = value.replace(",", " ").split()
+    return tuple(float(item) for item in items)
+
+
+def _load_token_manifest(path: str) -> set[str]:
+    if not path:
+        return set()
+    manifest = Path(path).expanduser()
+    if not manifest.exists():
+        raise FileNotFoundError(f"TOKEN_MANIFEST does not exist: {manifest}")
+    tokens: set[str] = set()
+    if manifest.suffix.lower() == ".json":
+        payload = json.loads(manifest.read_text(encoding="utf-8"))
+        if isinstance(payload, dict):
+            raw_items = payload.get("tokens", payload.get("scene_tokens", payload.get("items", [])))
+        else:
+            raw_items = payload
+        for item in raw_items:
+            if isinstance(item, dict):
+                token = item.get("token", item.get("scene_token"))
+            else:
+                token = item
+            if token is not None and str(token).strip():
+                tokens.add(str(token).strip())
+        return tokens
+    with manifest.open("r", encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line or line.startswith("#"):
+                continue
+            tokens.add(line.split(",", 1)[0].strip())
+    return tokens
 
 
 def _move_features_to_device(agent: AbstractAgent, features: Dict[str, torch.Tensor]) -> Tuple[torch.Tensor, BatchFeature]:
@@ -197,15 +250,53 @@ def _prefilter_missing_existing_records(
     return Subset(dataset, missing_indices), skipped
 
 
-def _build_train_dataset(cfg: DictConfig, agent: AbstractAgent):
+def _filter_dataset_by_tokens(
+    dataset: torch.utils.data.Dataset,
+    token_set: set[str],
+) -> torch.utils.data.Dataset:
+    if not token_set:
+        return dataset
+    keep_indices: List[int] = []
+    for index in range(len(dataset)):
+        if _dataset_token_at(dataset, index) in token_set:
+            keep_indices.append(index)
+    logger.info(
+        "Applied TOKEN_MANIFEST filter: kept %d/%d dataset scenes.",
+        len(keep_indices),
+        len(dataset),
+    )
+    return Subset(dataset, keep_indices)
+
+
+def _resolve_build_logs(cfg: DictConfig, build_log_split: str):
+    split = str(build_log_split).strip().lower()
+    if split in {"train", "navtrain"}:
+        return cfg.train_logs
+    if split in {"val", "valid", "validation", "navval"}:
+        return cfg.val_logs
+    if split in {"train_val", "trainval", "all"}:
+        return list(cfg.train_logs) + list(cfg.val_logs)
+    raise ValueError(
+        "BUILD_LOG_SPLIT must be one of train, val, train_val; "
+        f"got {build_log_split!r}."
+    )
+
+
+def _build_train_dataset(cfg: DictConfig, agent: AbstractAgent, build_log_split: str):
+    log_names = _resolve_build_logs(cfg, build_log_split)
     if cfg.use_cache_without_dataset:
         dataset = CacheOnlyDataset(
             cache_path=cfg.cache_path,
             feature_builders=agent.get_feature_builders(),
             target_builders=agent.get_target_builders(),
-            log_names=cfg.train_logs,
+            log_names=log_names,
         )
         return TokenizedCacheOnlyDataset(dataset)
+    if build_log_split not in {"train", "navtrain"}:
+        raise ValueError(
+            "Non-cache support build for val/train_val is not implemented; "
+            "use cached ReCogDrive hidden states with use_cache_without_dataset=true."
+        )
     train_data, _ = build_datasets(cfg, agent)
     return TokenizedDataset(train_data)
 
@@ -694,6 +785,49 @@ def _score_external_records(
     return out
 
 
+def _expand_external_records(
+    records: List[CandidateRecord],
+    *,
+    cfg,
+    max_per_scene: int,
+) -> List[CandidateRecord]:
+    """Build structured variants around DDV2/DriveOR candidates before evaluator scoring."""
+    if not records:
+        return []
+    expanded: List[CandidateRecord] = []
+    for record in records:
+        expanded.append(record)
+        for candidate in failure_conditioned_expand(record, {}, cfg):
+            candidate.source = f"{record.source}:{candidate.source}"
+            candidate.parent_id = candidate.parent_id or record.parent_id or record.source
+            expanded.append(candidate)
+        for candidate in trust_region_control_expand(record, cfg):
+            candidate.source = f"{record.source}:{candidate.source}"
+            candidate.parent_id = candidate.parent_id or record.parent_id or record.source
+            expanded.append(candidate)
+    if max_per_scene > 0:
+        expanded = pareto_nms(expanded, None, {"max_candidates_per_scene": int(max_per_scene)})
+    return expanded
+
+
+def _prefilter_external_anchor_records(
+    records: List[CandidateRecord],
+    *,
+    ref_traj: np.ndarray | None,
+    sg_cfg: Dict[str, Any],
+) -> Tuple[List[CandidateRecord], int]:
+    if not records or ref_traj is None or not bool(sg_cfg.get("support_semantic_enable", False)):
+        return records, 0
+    kept: List[CandidateRecord] = []
+    dropped = 0
+    for record in records:
+        if support_semantic_pass(record.trajectory, ref_traj, sg_cfg):
+            kept.append(record)
+        else:
+            dropped += 1
+    return kept, dropped
+
+
 def _save_sg_fps_v3_records(
     buffer_dir: Path,
     tokens: List[str],
@@ -704,30 +838,86 @@ def _save_sg_fps_v3_records(
     external_loader: ExternalCandidateLoader | None,
     dry_run: bool,
     support_top_m: int,
+    expand_external_candidates: bool,
+    external_expansion_max_per_scene: int,
 ) -> Dict[str, Any]:
     summary: Dict[str, Any] = {
         "scene_count": 0,
         "candidate_count": 0,
         "external_candidate_count": 0,
+        "external_anchor_semantic_dropped": 0,
         "support_tag_counts": Counter(),
     }
     H = int(awac_batch["selected_trajs"].shape[-2])
     D = int(awac_batch["selected_trajs"].shape[-1])
     sg_cfg = {
         "support_top_m": int(support_top_m),
+        "support_selection_strategy": os.getenv("SG_FPS_SELECTION_STRATEGY", "quality_pareto"),
         "fp_ddc_min_absolute": float(getattr(cfg, "ddc_min_absolute", 0.95)),
         "fp_ddc_ref_tolerance": float(getattr(cfg, "ddc_max_relative_drop", 0.01)),
+        "fpv3_ddc_min_absolute": _env_float("SG_FPS_DDC_MIN_ABSOLUTE", float(getattr(cfg, "ddc_min_absolute", 0.95))),
+        "fpv3_ddc_drop_tolerance": _env_float("SG_FPS_DDC_DROP_TOLERANCE", float(getattr(cfg, "ddc_max_relative_drop", 0.01))),
+        "support_ddc_gate_mode": os.getenv("SG_FPS_DDC_GATE_MODE", "ref_relative"),
+        "support_relax_ddc_when_ref_below_min": _env_flag("SG_FPS_RELAX_DDC_WHEN_REF_BELOW_MIN", True),
+        "fpv3_feas_cost_max": _env_float("SG_FPS_FEAS_COST_MAX", 0.10),
+        "support_feas_gate_mode": os.getenv("SG_FPS_FEAS_GATE_MODE", "relax_ref_above_max"),
+        "support_feas_cost_tolerance": _env_float("SG_FPS_FEAS_COST_TOLERANCE", 0.03),
+        "fpv3_comfort_min": _env_float("SG_FPS_COMFORT_MIN", 0.95),
+        "support_comfort_gate_mode": os.getenv("SG_FPS_COMFORT_GATE_MODE", "ref_relative"),
+        "support_comfort_drop_tolerance": _env_float("SG_FPS_COMFORT_DROP_TOLERANCE", 0.05),
         "fp_comfort_min": 0.95,
         "support_feas_max": 1.0,
+        "support_quality_enable": _env_flag("SG_FPS_ENABLE_TRAIN_QUALITY_GATE", True),
+        "support_min_non_gt_reward": _env_float("SG_FPS_MIN_NON_GT_PDMS", 0.90),
+        "support_reward_gate_mode": os.getenv("SG_FPS_REWARD_GATE_MODE", "absolute_or_gt_improver"),
+        "support_min_non_gt_improver_reward": _env_float("SG_FPS_MIN_NON_GT_IMPROVER_PDMS", 0.70),
+        "support_gt_improver_margin": _env_float("SG_FPS_GT_IMPROVER_MARGIN", 0.05),
+        "support_gt_improver_ref_max_reward": _env_float("SG_FPS_GT_IMPROVER_REF_MAX_PDMS", 0.90),
+        "support_max_first_xy_error_m": _env_float("SG_FPS_MAX_FIRST_XY_ERROR_M", 1.0),
+        "support_max_first_heading_error_rad": _env_float("SG_FPS_MAX_FIRST_HEADING_ERROR_RAD", 0.8),
+        "support_max_xy_turn_rad": _env_float("SG_FPS_MAX_XY_TURN_RAD", 1.2),
+        "support_max_early_xy_turn_rad": _env_float("SG_FPS_MAX_EARLY_XY_TURN_RAD", 1.0),
+        "support_max_step_m": _env_float("SG_FPS_MAX_STEP_M", 12.0),
+        "support_semantic_enable": _env_flag("SG_FPS_ENABLE_SEMANTIC_GATE", False),
+        "support_allow_turn_class_mismatch": _env_flag("SG_FPS_ALLOW_TURN_CLASS_MISMATCH", False),
+        "support_max_semantic_final_heading_error_rad": _env_float("SG_FPS_MAX_SEMANTIC_FINAL_HEADING_ERROR_RAD", 0.75),
+        "support_max_semantic_path_angle_error_rad": _env_float("SG_FPS_MAX_SEMANTIC_PATH_ANGLE_ERROR_RAD", 0.75),
+        "support_max_semantic_endpoint_lateral_error_m": _env_float("SG_FPS_MAX_SEMANTIC_ENDPOINT_LATERAL_ERROR_M", 4.0),
+        "support_keep_gt_by_default": _env_flag("SG_FPS_KEEP_GT_BY_DEFAULT", True),
+        "support_gt_keep_min_reward": _env_float("SG_FPS_GT_KEEP_MIN_REWARD", 0.85),
+        "support_gt_replace_margin": _env_float("SG_FPS_GT_REPLACE_MARGIN", 0.05),
+        "support_include_il_anchor": _env_flag("SG_FPS_INCLUDE_IL_ANCHOR", False),
+        "support_high_pdms_threshold": _env_float("SG_FPS_HIGH_PDMS_THRESHOLD", 0.95),
+        "support_top_pdms_count": _env_int("SG_FPS_TOP_PDMS_COUNT", 3),
+        "support_pareto_count": _env_int("SG_FPS_PARETO_COUNT", 5),
+        "support_score_diversity_weight": _env_float("SG_FPS_SCORE_DIVERSITY_WEIGHT", 0.8),
+        "support_min_trajectory_diversity_score": _env_float("SG_FPS_MIN_TRAJECTORY_DIVERSITY_SCORE", 0.05),
     }
     for batch_idx, token in enumerate(tokens):
         candidates = _candidate_records_from_awac_row(str(token), awac_batch, batch_idx)
+        ref_traj = next(
+            (np.asarray(record.trajectory, dtype=np.float32) for record in candidates if record.source == "gt"),
+            None,
+        )
         external_scored: List[CandidateRecord] = []
         if external_loader is not None:
+            external_raw = external_loader.load(str(token))
+            external_raw, semantic_dropped = _prefilter_external_anchor_records(
+                external_raw,
+                ref_traj=ref_traj,
+                sg_cfg=sg_cfg,
+            )
+            summary["external_anchor_semantic_dropped"] += int(semantic_dropped)
+            if expand_external_candidates:
+                external_raw = _expand_external_records(
+                    external_raw,
+                    cfg=cfg,
+                    max_per_scene=int(external_expansion_max_per_scene),
+                )
             external_scored = _score_external_records(
                 action_head,
                 str(token),
-                external_loader.load(str(token)),
+                external_raw,
                 metric_cache,
                 cfg,
                 expected_shape=(H, D),
@@ -775,6 +965,10 @@ def main(cfg: DictConfig) -> None:
     sg_fps_support_top_m = _env_int("SG_FPS_SUPPORT_TOP_M", _env_int("ELITE_TOP_M", 12))
     external_candidate_roots = _parse_external_candidate_roots(os.getenv("EXTERNAL_CANDIDATE_ROOTS", ""))
     external_loader = ExternalCandidateLoader(external_candidate_roots) if external_candidate_roots else None
+    expand_external_candidates = _env_flag("SG_FPS_EXPAND_EXTERNAL_CANDIDATES", True)
+    external_expansion_max_per_scene = _env_int("SG_FPS_EXTERNAL_EXPANSION_MAX_PER_SCENE", 32)
+    build_log_split = os.getenv("BUILD_LOG_SPLIT", "train").strip().lower()
+    token_manifest = os.getenv("TOKEN_MANIFEST", os.getenv("TOKEN_LIST_PATH", "")).strip()
     shard_index = _env_int("SHARD_INDEX", 0)
     shard_count = _env_int("SHARD_COUNT", 1)
     if shard_count <= 0:
@@ -824,6 +1018,44 @@ def main(cfg: DictConfig) -> None:
         cfg.agent.offline_rl_use_final_heading_guard = _env_flag("AWAC_USE_FINAL_HEADING_GUARD", True)
         if os.getenv("ONLINE_POLICY_SAMPLES"):
             cfg.agent.offline_rl_online_policy_samples = int(os.environ["ONLINE_POLICY_SAMPLES"])
+        if os.getenv("ONLINE_USE_CURRENT_POLICY") is not None:
+            cfg.agent.offline_rl_online_use_current_policy = _env_flag("ONLINE_USE_CURRENT_POLICY", True)
+        if os.getenv("ONLINE_USE_OLD_POLICY") is not None:
+            cfg.agent.offline_rl_online_use_old_policy = _env_flag("ONLINE_USE_OLD_POLICY", True)
+        if os.getenv("ONLINE_USE_GT") is not None:
+            cfg.agent.offline_rl_online_use_gt = _env_flag("ONLINE_USE_GT", True)
+        if os.getenv("PERTURB_GT") is not None:
+            cfg.agent.offline_rl_perturb_gt = _env_flag("PERTURB_GT", True)
+        if os.getenv("PERTURB_IL") is not None:
+            cfg.agent.offline_rl_perturb_il = _env_flag("PERTURB_IL", True)
+        cfg.agent.offline_rl_progress_endpoint_deltas_m = _env_list_float(
+            "OFFLINE_RL_PROGRESS_ENDPOINT_DELTAS_M",
+            tuple(float(x) for x in cfg.agent.offline_rl_progress_endpoint_deltas_m),
+        )
+        cfg.agent.offline_rl_progress_speed_scales = _env_list_float(
+            "OFFLINE_RL_PROGRESS_SPEED_SCALES",
+            tuple(float(x) for x in cfg.agent.offline_rl_progress_speed_scales),
+        )
+        cfg.agent.offline_rl_progress_time_gammas = _env_list_float(
+            "OFFLINE_RL_PROGRESS_TIME_GAMMAS",
+            tuple(float(x) for x in cfg.agent.offline_rl_progress_time_gammas),
+        )
+        cfg.agent.offline_rl_lateral_offsets_m = _env_list_float(
+            "OFFLINE_RL_LATERAL_OFFSETS_M",
+            tuple(float(x) for x in cfg.agent.offline_rl_lateral_offsets_m),
+        )
+        cfg.agent.offline_rl_endpoint_lateral_offsets_m = _env_list_float(
+            "OFFLINE_RL_ENDPOINT_LATERAL_OFFSETS_M",
+            tuple(float(x) for x in cfg.agent.offline_rl_endpoint_lateral_offsets_m),
+        )
+        cfg.agent.offline_rl_timing_slow_first_scales = _env_list_float(
+            "OFFLINE_RL_TIMING_SLOW_FIRST_SCALES",
+            tuple(float(x) for x in cfg.agent.offline_rl_timing_slow_first_scales),
+        )
+        cfg.agent.offline_rl_timing_delay_strengths = _env_list_float(
+            "OFFLINE_RL_TIMING_DELAY_STRENGTHS",
+            tuple(float(x) for x in cfg.agent.offline_rl_timing_delay_strengths),
+        )
         if os.getenv("ELITE_TOP_M"):
             cfg.agent.offline_rl_elite_top_m = int(os.environ["ELITE_TOP_M"])
         if write_sg_fps_v3:
@@ -849,7 +1081,9 @@ def main(cfg: DictConfig) -> None:
     agent.initialize()
     agent.action_head.eval()
 
-    dataset = _build_train_dataset(cfg, agent)
+    dataset = _build_train_dataset(cfg, agent, build_log_split)
+    if token_manifest:
+        dataset = _filter_dataset_by_tokens(dataset, _load_token_manifest(token_manifest))
     if max_scenes > 0:
         dataset = Subset(dataset, list(range(min(max_scenes, len(dataset)))))
     if shard_count > 1:
@@ -935,6 +1169,7 @@ def main(cfg: DictConfig) -> None:
             "scene_count": 0,
             "candidate_count": 0,
             "external_candidate_count": 0,
+            "external_anchor_semantic_dropped": 0,
             "support_tag_counts": Counter(),
         },
     }
@@ -982,10 +1217,15 @@ def main(cfg: DictConfig) -> None:
                     external_loader,
                     dry_run,
                     support_top_m=sg_fps_support_top_m,
+                    expand_external_candidates=expand_external_candidates,
+                    external_expansion_max_per_scene=external_expansion_max_per_scene,
                 )
                 aggregate["sg_fps"]["scene_count"] += int(sg_summary["scene_count"])
                 aggregate["sg_fps"]["candidate_count"] += int(sg_summary["candidate_count"])
                 aggregate["sg_fps"]["external_candidate_count"] += int(sg_summary["external_candidate_count"])
+                aggregate["sg_fps"]["external_anchor_semantic_dropped"] += int(
+                    sg_summary.get("external_anchor_semantic_dropped", 0)
+                )
                 aggregate["sg_fps"]["support_tag_counts"].update(sg_summary["support_tag_counts"])
             else:
                 _save_records(
@@ -1038,6 +1278,7 @@ def main(cfg: DictConfig) -> None:
             "scene_count": int(aggregate["sg_fps"]["scene_count"]),
             "candidate_count": int(aggregate["sg_fps"]["candidate_count"]),
             "external_candidate_count": int(aggregate["sg_fps"]["external_candidate_count"]),
+            "external_anchor_semantic_dropped": int(aggregate["sg_fps"]["external_anchor_semantic_dropped"]),
             "support_tag_counts": dict(aggregate["sg_fps"]["support_tag_counts"]),
             "external_candidate_roots": external_candidate_roots,
         },
