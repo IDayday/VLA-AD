@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import argparse
 import csv
+import hashlib
 import json
 import lzma
 import pickle
@@ -59,6 +60,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, required=True)
     parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="fp32")
     parser.add_argument("--deterministic", action="store_true", default=True)
+    parser.add_argument("--init-action-mode", choices=("token_noise", "zeros", "random"), default="token_noise")
+    parser.add_argument("--init-action-seed", type=int, default=20260709)
     parser.add_argument("--trajectory-output-key", default="pred_traj")
     parser.add_argument("--num-shards", type=int, default=1)
     parser.add_argument("--shard-index", type=int, default=0)
@@ -329,6 +332,30 @@ def make_batch(sample: Dict[str, Any], planner: ReCogDriveDiffusionPlanner, devi
     return vl_features, BatchFeature(data=data)
 
 
+def token_seed(token: str, base_seed: int) -> int:
+    digest = hashlib.sha256(f"{base_seed}:{token}".encode("utf-8")).digest()
+    return int.from_bytes(digest[:8], "little") % (2**31 - 1)
+
+
+def make_init_actions(
+    sample_token: str,
+    *,
+    mode: str,
+    seed: int,
+    horizon: int,
+    action_dim: int,
+    device: torch.device,
+    dtype: torch.dtype,
+) -> Optional[torch.Tensor]:
+    if mode == "random":
+        return None
+    if mode == "zeros":
+        return torch.zeros((1, horizon, action_dim), device=device, dtype=dtype)
+    generator = torch.Generator(device="cpu")
+    generator.manual_seed(token_seed(sample_token, seed))
+    return torch.randn((1, horizon, action_dim), generator=generator, dtype=torch.float32).to(device=device, dtype=dtype)
+
+
 def main() -> int:
     args = parse_args()
     if args.num_shards < 1:
@@ -373,8 +400,18 @@ def main() -> int:
     for idx, (chunk_dir, path, index_record) in enumerate(paths):
         sample = load_sample(path)
         vl_features, action_input = make_batch(sample, planner, device, dtype)
+        sample_token = str(sample.get("sample_token", index_record.get("sample_token", path.stem)))
+        init_actions = make_init_actions(
+            sample_token,
+            mode=args.init_action_mode,
+            seed=args.init_action_seed,
+            horizon=int(planner.config.action_horizon),
+            action_dim=int(planner.config.action_dim),
+            device=device,
+            dtype=dtype,
+        )
         with torch.no_grad():
-            output = planner.get_action(vl_features, action_input, deterministic=args.deterministic)
+            output = planner.get_action(vl_features, action_input, init_actions=init_actions, deterministic=args.deterministic)
         if args.trajectory_output_key not in output:
             raise KeyError(f"Planner output did not contain {args.trajectory_output_key!r}; available keys: {sorted(output.keys())}")
         pred = output[args.trajectory_output_key].detach().float().cpu().squeeze(0)
@@ -384,7 +421,7 @@ def main() -> int:
             "path": str(path),
             "chunk": str(chunk_dir),
             "scene_token": str(sample.get("scene_token", path.stem)),
-            "sample_token": str(sample.get("sample_token", index_record.get("sample_token", path.stem))),
+            "sample_token": sample_token,
             args.trajectory_output_key: pred.tolist(),
             "pdm_valid": None,
         }
@@ -444,6 +481,8 @@ def main() -> int:
         "num_shards": args.num_shards,
         "shard_index": args.shard_index,
         "trajectory_output_key": args.trajectory_output_key,
+        "init_action_mode": args.init_action_mode,
+        "init_action_seed": args.init_action_seed,
         "target_teacher_tokens_disabled_in_eval": True,
         "trajectory_l1": sum(l1_values) / len(l1_values) if l1_values else None,
         "num_pdm_valid": len(pdm_metric_values["score"]),

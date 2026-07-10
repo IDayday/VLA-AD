@@ -1,0 +1,11 @@
+use_expert_features: false
+planner_dim: 384
+vlm_feature_dim: 1536
+num_dit_layers: 16
+action_horizon: 8
+action_dim: 3
+sampling_method: ddim
+num_inference_steps: 5
+diffusion_loss_weight: 1.0
+use_alignment_loss: false
+freeze_vlm: true

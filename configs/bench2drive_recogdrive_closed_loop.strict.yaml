@@ -1,0 +1,16 @@
+mode: remote
+server_url: http://127.0.0.1:8765
+request_timeout: 240
+save_name: recogdrive_b2d_strict
+image_dir: outputs/bench2drive_recogdrive_closed_loop/images
+history_frames: 4
+history_interval_steps: 10
+inference_interval_steps: 1
+visual_refresh_interval_steps: 1
+sensor_profile: bench2drive_zoo
+flip_y_for_pid: true
+image_quality: 90
+max_speed_throttle_cutoff: 5.0
+save_debug_images: false
+save_debug_meta: false
+metric_flush_interval_steps: 20

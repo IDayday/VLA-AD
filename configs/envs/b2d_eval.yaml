@@ -1,0 +1,26 @@
+name: b2d_eval
+channels:
+  - conda-forge
+dependencies:
+  - python=3.8
+  - pip
+  - pip:
+      - requests
+      - PyYAML
+      - numpy==1.23.5
+      - scipy==1.10.1
+      - Pillow
+      - opencv-python-headless==4.9.0.80
+      - pygame
+      - tabulate
+      - pexpect
+      - transforms3d
+      - dictor
+      - py-trees==0.8.3
+      - networkx==2.2
+      - Shapely==1.7.1
+      - psutil
+      - xmlschema==1.0.18
+      - ephem
+      - six
+      - simple-watchdog-timer
