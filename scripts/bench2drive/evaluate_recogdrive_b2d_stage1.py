@@ -60,6 +60,13 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument("--max-dynamic-patch", type=int, default=12)
     parser.add_argument("--max-new-tokens", type=int, default=256)
     parser.add_argument(
+        "--commands",
+        nargs="*",
+        choices=("go_straight", "turn_left", "turn_right"),
+        default=[],
+        help="Optionally restrict evaluation to one or more navigation commands.",
+    )
+    parser.add_argument(
         "--controls",
         nargs="*",
         choices=("shuffled_image", "shuffled_command", "shuffled_answer"),
@@ -414,7 +421,17 @@ def main() -> int:
         raise ValueError("--controls are supported only with --mode nll")
     rank, world_size, _, device = init_distributed()
     dtype = dtype_from_name(args.dtype)
-    rows = select_rows(load_rows(args.annotation), args.max_samples, args.seed)
+    candidate_rows = load_rows(args.annotation)
+    if args.commands:
+        allowed_commands = set(args.commands)
+        candidate_rows = [
+            row
+            for row in candidate_rows
+            if command_name(conversation_parts(row)[1]) in allowed_commands
+        ]
+        if not candidate_rows:
+            raise RuntimeError(f"No validation rows matched --commands {args.commands}")
+    rows = select_rows(candidate_rows, args.max_samples, args.seed)
     row_index = {str(row["id"]): index for index, row in enumerate(rows)}
     paired = counterfactual_pairs(rows, args.seed)
     local_rows = rows[rank::world_size]
@@ -514,6 +531,7 @@ def main() -> int:
             "seed": args.seed,
             "selected_examples": len(rows),
             "controls": list(args.controls),
+            "commands": list(args.commands),
             "elapsed_seconds": time.time() - started,
             "summary": summarize_nll(results, args.controls) if args.mode == "nll" else metric_summary(results),
             "rows": results,
