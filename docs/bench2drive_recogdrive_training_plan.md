@@ -104,6 +104,14 @@ This creates `train/shard_*` and `val/shard_*` from the exact Stage1 clip
 lists. Cache metadata records the Stage1 checkpoint and the `bench2drive`
 system-prompt profile. The old pre-Stage1 cache must not be restored or reused.
 
+If the experimental decision is to use all 1,000 clips for Stage2 fitting,
+materialize the union of the Stage1 train/validation clip lists and pass it as
+`TRAIN_CLIP_LIST`, with `SPLITS=train` and `EXPECTED_TRAIN_CLIPS=1000`. This is
+an explicit full-data fit: the former 50-clip validation split is then
+in-sample and must not be reported as held-out Stage2 performance. Use the
+complete 220-route suite, or a separately defined clip split, for model
+selection and final reporting.
+
 ## Stage2 scratch training
 
 Stage2 defaults to a random DiT/action-head initialization. The cache source is

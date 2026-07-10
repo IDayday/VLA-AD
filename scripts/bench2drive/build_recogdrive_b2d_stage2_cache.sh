@@ -11,6 +11,10 @@ DATA_ROOT=${DATA_ROOT:-/mnt/data/Bench2Drive-Base}
 RUN_ID=${RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)}
 OUTPUT_ROOT=${OUTPUT_ROOT:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_stage2_cache_${RUN_ID}}
 SPLITS=${SPLITS:-train,val}
+TRAIN_CLIP_LIST=${TRAIN_CLIP_LIST:-${STAGE1_DATA_DIR}/train_clips.txt}
+VAL_CLIP_LIST=${VAL_CLIP_LIST:-${STAGE1_DATA_DIR}/val_clips.txt}
+EXPECTED_TRAIN_CLIPS=${EXPECTED_TRAIN_CLIPS:-}
+EXPECTED_VAL_CLIPS=${EXPECTED_VAL_CLIPS:-}
 GPU_LIST=${GPU_LIST:-0,1,2,3,4,5,6,7}
 N_SHARDS=${N_SHARDS:-8}
 LOG_EVERY=${LOG_EVERY:-100}
@@ -36,21 +40,43 @@ stage1_data_dir=${STAGE1_DATA_DIR}
 data_root=${DATA_ROOT}
 output_root=${OUTPUT_ROOT}
 splits=${SPLITS}
+train_clip_list=${TRAIN_CLIP_LIST}
+val_clip_list=${VAL_CLIP_LIST}
+expected_train_clips=${EXPECTED_TRAIN_CLIPS}
+expected_val_clips=${EXPECTED_VAL_CLIPS}
 gpu_list=${GPU_LIST}
 n_shards=${N_SHARDS}
 EOF
 
 run_split() {
   local split="$1"
-  local clip_list="${STAGE1_DATA_DIR}/${split}_clips.txt"
+  local clip_list
+  local expected_clips
+  if [[ "${split}" == "train" ]]; then
+    clip_list="${TRAIN_CLIP_LIST}"
+    expected_clips="${EXPECTED_TRAIN_CLIPS}"
+  else
+    clip_list="${VAL_CLIP_LIST}"
+    expected_clips="${EXPECTED_VAL_CLIPS}"
+  fi
   if [[ ! -f "${clip_list}" ]]; then
-    echo "Missing Stage1 ${split} clip list: ${clip_list}" >&2
+    echo "Missing ${split} clip list: ${clip_list}" >&2
     return 2
   fi
   mapfile -t clips < <(sed -e 's/#.*$//' -e '/^[[:space:]]*$/d' "${clip_list}")
   local total=${#clips[@]}
   if (( total == 0 )); then
     echo "Empty clip list: ${clip_list}" >&2
+    return 2
+  fi
+  if [[ -n "${expected_clips}" && "${total}" -ne "${expected_clips}" ]]; then
+    echo "${split} clip list has ${total} entries; expected ${expected_clips}: ${clip_list}" >&2
+    return 2
+  fi
+  local unique_total
+  unique_total=$(printf '%s\n' "${clips[@]}" | sort -u | wc -l)
+  if (( unique_total != total )); then
+    echo "${split} clip list contains duplicate entries: ${clip_list}" >&2
     return 2
   fi
   mkdir -p "${OUTPUT_ROOT}/${split}"
