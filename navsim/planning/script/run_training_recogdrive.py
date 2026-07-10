@@ -1392,11 +1392,20 @@ def main(cfg: DictConfig) -> None:
             else:
                 data_report = None
         else:
+            cache_train_all_records = bool(
+                cfg.get("cache_train_all_records", cfg.get("train_all_cache_records", False))
+            )
+            train_log_names = None if cache_train_all_records else cfg.train_logs
+            if cache_train_all_records:
+                logger.warning(
+                    "cache_train_all_records=true: CacheOnlyDataset train split will load every valid cache record from %s.",
+                    cfg.cache_path,
+                )
             train_data = CacheOnlyDataset(
                 cache_path=cfg.cache_path,
                 feature_builders=agent.get_feature_builders(),
                 target_builders=agent.get_target_builders(),
-                log_names=cfg.train_logs,
+                log_names=train_log_names,
             )
             val_data = CacheOnlyDataset(
                 cache_path=cfg.cache_path,
@@ -1404,7 +1413,7 @@ def main(cfg: DictConfig) -> None:
                 target_builders=agent.get_target_builders(),
                 log_names=cfg.val_logs,
             )
-            loader_mode = "official-cache-loader"
+            loader_mode = "official-cache-loader-all-cache-train-log-val" if cache_train_all_records else "official-cache-loader"
             data_report = None
     else:
         logger.info("Building SceneLoader")
@@ -1423,14 +1432,30 @@ def main(cfg: DictConfig) -> None:
     key_steps = _parse_key_steps()
     key_epochs = _parse_key_epochs()
     key_epoch_interval = _parse_key_epoch_interval()
-    callbacks = [
-        pl.callbacks.ModelCheckpoint(
+    trainer_params = cfg.trainer.params
+    limit_val_batches = trainer_params.get("limit_val_batches", 1.0)
+    has_validation = not (
+        limit_val_batches == 0
+        or limit_val_batches == 0.0
+        or str(limit_val_batches).strip().lower() in {"0", "0.0", "false", "none"}
+    )
+    if has_validation:
+        checkpoint_callback = pl.callbacks.ModelCheckpoint(
             monitor="val/loss_epoch",
             mode='min',
             save_top_k=5,
             every_n_epochs=1,
             save_last=True,
-        ),
+        )
+    else:
+        checkpoint_callback = pl.callbacks.ModelCheckpoint(
+            monitor=None,
+            save_top_k=-1,
+            every_n_epochs=1,
+            save_last=True,
+        )
+    callbacks = [
+        checkpoint_callback,
         StepCheckpointCallback(Path(cfg.output_dir), key_steps),
         ReCogDriveTrainingProgressCallback(),
     ]

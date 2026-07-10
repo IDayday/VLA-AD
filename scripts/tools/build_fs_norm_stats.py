@@ -88,7 +88,13 @@ def iter_archive_paths(root: Path):
         yield from sorted(root.rglob(pattern))
 
 
-def build_stats(support_archive_path: str, use_robust: bool, clip: float = 5.0) -> FSNormStats:
+def build_stats(
+    support_archive_path: str,
+    use_robust: bool,
+    clip: float = 5.0,
+    lower_quantile: float = 0.001,
+    upper_quantile: float = 0.999,
+) -> FSNormStats:
     paths = list(iter_archive_paths(Path(support_archive_path)))
     trajs: list[torch.Tensor] = []
     for path in paths:
@@ -102,12 +108,38 @@ def build_stats(support_archive_path: str, use_robust: bool, clip: float = 5.0) 
     delta = FSNormTransform(FSNormStats(mean=torch.zeros_like(stacked[0]), std=torch.ones_like(stacked[0]))).absolute_to_delta(stacked)
     mean = delta.mean(dim=0)
     std = delta.std(dim=0, unbiased=False).clamp_min(1e-6)
+    delta_min = delta.amin(dim=0)
+    delta_max = delta.amax(dim=0)
     median = None
     mad = None
     if use_robust:
         median = delta.median(dim=0).values
         mad = (delta - median).abs().median(dim=0).values.clamp_min(1e-6)
-    return FSNormStats(mean=mean, std=std, median=median, mad=mad, use_robust=use_robust, clip=float(clip))
+        center = median
+        scale = (1.4826 * mad).clamp_min(1e-6)
+    else:
+        center = mean
+        scale = std
+    if not 0.0 <= lower_quantile < upper_quantile <= 1.0:
+        raise ValueError(
+            f"Expected 0 <= lower_quantile < upper_quantile <= 1, got "
+            f"{lower_quantile}, {upper_quantile}."
+        )
+    normalized = (delta - center.unsqueeze(0)) / scale.unsqueeze(0)
+    clip_lower = torch.quantile(normalized, float(lower_quantile), dim=0)
+    clip_upper = torch.quantile(normalized, float(upper_quantile), dim=0)
+    return FSNormStats(
+        mean=mean,
+        std=std,
+        median=median,
+        mad=mad,
+        delta_min=delta_min,
+        delta_max=delta_max,
+        clip_lower=clip_lower,
+        clip_upper=clip_upper,
+        use_robust=use_robust,
+        clip=float(clip),
+    )
 
 
 def main() -> None:
@@ -116,15 +148,24 @@ def main() -> None:
     parser.add_argument("--output_path", required=True)
     parser.add_argument("--use_robust", type=_str_to_bool, default=False)
     parser.add_argument("--clip", type=float, default=5.0)
+    parser.add_argument("--lower_quantile", type=float, default=0.001)
+    parser.add_argument("--upper_quantile", type=float, default=0.999)
     args = parser.parse_args()
 
-    stats = build_stats(args.support_archive_path, use_robust=args.use_robust, clip=args.clip)
+    stats = build_stats(
+        args.support_archive_path,
+        use_robust=args.use_robust,
+        clip=args.clip,
+        lower_quantile=args.lower_quantile,
+        upper_quantile=args.upper_quantile,
+    )
     output = Path(args.output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
     save_fs_norm_stats(str(output), stats)
     print(
         f"saved FS-Norm stats to {output} "
-        f"(H={stats.mean.shape[0]}, D={stats.mean.shape[1]}, robust={stats.use_robust})"
+        f"(H={stats.mean.shape[0]}, D={stats.mean.shape[1]}, robust={stats.use_robust}, "
+        f"clip_quantiles=[{args.lower_quantile}, {args.upper_quantile}])"
     )
 
 

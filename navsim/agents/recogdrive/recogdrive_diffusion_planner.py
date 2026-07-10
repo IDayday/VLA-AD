@@ -267,6 +267,10 @@ class GRPOConfig:
     fp_ddc_regression_positive_cap: float = 0.0
     fp_offsupport_positive_cap: float = 0.0
     fp_use_bucketed_advantage: bool = True
+    fp_progress_fast_margin: float = 0.02
+    fp_progress_slow_margin: float = 0.02
+    fp_lateral_bucket_threshold_m: float = 0.5
+    fp_feas_bucket_threshold: float = 0.1
     fp_inter_bucket_weight: float = 0.25
     fp_inter_bucket_clip: float = 0.5
     fp_use_pdas: bool = True
@@ -276,6 +280,8 @@ class GRPOConfig:
     pdas_gamma: float = 0.5
     pdas_lambda_bucket: float = 0.2
     pdas_lambda_regression: float = 0.5
+    pdas_lambda_coverage: float = 0.2
+    pdas_min_support_count_for_coverage: int = 4
 
     # asymmetric safe advantage
     use_asymmetric_safe_advantage: bool = True
@@ -334,6 +340,8 @@ class OfflineRLConfig:
     """Configuration for Stage3 offline AWAC/IQL policy improvement."""
 
     enabled: bool = False
+    init_stage3_oracle: bool = True
+    init_reference_policy: bool = True
 
     # elite buffer
     elite_buffer_path: str = ""
@@ -568,14 +576,52 @@ class OfflineRLConfig:
     support_archive_path: str = ""
     use_dpsi: bool = False
     dpsi_top_m: int = 12
+    dpsi_filter_to_support_indices: bool = True
+    dpsi_empty_tag_zero: bool = True
+    dpsi_scene_normalize_weights: bool = True
+    dpsi_use_adaptive_beta: bool = True
+    dpsi_target_sample_m: int = 4
+    dpsi_target_sample_m_after_warmup: int = 6
+    dpsi_force_anchor_target: bool = True
+    dpsi_force_best_target: bool = True
+    dpsi_beta_warmup_epochs: int = 40
+    dpsi_beta_max: float = 0.75
+    dpsi_support_count_mid: int = 4
+    dpsi_distance_scale_m: float = 0.8
+    dpsi_entropy_scale: float = 1.0
+    dpsi_improver_margin: float = 0.03
+    dpsi_strong_improver_margin: float = 0.05
+    dpsi_low_support_count: int = 2
+    dpsi_high_support_count: int = 6
+    dpsi_high_gt_reward: float = 0.95
+    dpsi_scene_weight_min: float = 0.75
+    dpsi_scene_weight_max: float = 1.5
+    dpsi_improver_scene_weight_gain: float = 2.0
     dpsi_weight_safe_ep: float = 1.0
     dpsi_weight_vector_pareto: float = 0.9
     dpsi_weight_safety_repair: float = 0.8
     dpsi_weight_ddc_repair: float = 0.8
-    dpsi_weight_best_pdms: float = 0.7
+    dpsi_weight_best_pdms: float = 0.75
+    dpsi_weight_diversity: float = 0.60
+    dpsi_weight_fallback: float = 0.45
     dpsi_weight_smooth: float = 0.6
     dpsi_weight_il: float = 0.5
-    dpsi_weight_gt: float = 0.4
+    dpsi_weight_gt: float = 0.45
+    dpsi_weight_unknown: float = 0.0
+    dpsi_use_reward_margin_weight: bool = True
+    dpsi_margin_scale: float = 2.0
+    dpsi_margin_weight_min: float = 0.5
+    dpsi_margin_weight_max: float = 1.5
+    dpsi_bad_margin_threshold: float = -0.05
+    dpsi_bad_margin_weight: float = 0.3
+    dpsi_use_source_weight: bool = True
+    dpsi_source_weight_gt: float = 1.0
+    dpsi_source_weight_il: float = 0.9
+    dpsi_source_weight_external: float = 0.85
+    dpsi_source_weight_failure_expand: float = 0.75
+    dpsi_source_weight_trust_region: float = 0.85
+    dpsi_source_weight_structured: float = 0.75
+    dpsi_source_weight_other: float = 0.7
     dpsi_pairwise_rank_weight: float = 0.0
     dpsi_pairwise_beta: float = 8.0
 
@@ -585,6 +631,294 @@ class OfflineRLConfig:
     log_oracle_stats: bool = True
     require_reference_policy_checkpoint: bool = True
     report_raw_and_valid_best: bool = True
+
+
+def _dpsi_source_matches(source: str, names: tuple[str, ...]) -> bool:
+    lower = str(source or "").lower()
+    for raw_name in names:
+        name = str(raw_name).lower()
+        if lower == name or lower.startswith(f"{name}:"):
+            return True
+    return False
+
+
+def _compute_dpsi_support_profile(
+    selected_trajs: torch.Tensor,
+    selected_rewards: torch.Tensor,
+    selected_real_mask: torch.Tensor,
+    selected_source_code: torch.Tensor,
+    gt_reward: torch.Tensor,
+    il_reward: torch.Tensor,
+    selected_valid_mask: torch.Tensor,
+    cfg: OfflineRLConfig,
+    current_epoch: int = 0,
+) -> tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
+    B = selected_rewards.shape[0]
+    device = selected_rewards.device
+    dtype = torch.float32
+    real = selected_real_mask.bool()
+    valid_real = real & selected_valid_mask.bool()
+    support_count = real.float().sum(dim=1)
+    pairwise_distance = selected_rewards.new_zeros((B,), dtype=dtype)
+    source_entropy = selected_rewards.new_zeros((B,), dtype=dtype)
+    best_selected = selected_rewards.new_zeros((B,), dtype=dtype)
+
+    for b in range(B):
+        idx = torch.nonzero(real[b], as_tuple=False).flatten()
+        if idx.numel() == 0:
+            continue
+        best_mask = valid_real[b] if bool(valid_real[b].any().item()) else real[b]
+        best_selected[b] = selected_rewards[b].masked_fill(~best_mask, -torch.inf).max()
+        if idx.numel() >= 2:
+            xy = selected_trajs[b, idx, :, :2].float()
+            mean_xy = torch.cdist(xy.reshape(idx.numel(), -1), xy.reshape(idx.numel(), -1), p=2)
+            mean_xy = mean_xy / math.sqrt(max(int(xy.shape[1]) * 2, 1))
+            endpoint = torch.cdist(xy[:, -1], xy[:, -1], p=2)
+            tri = torch.triu(torch.ones_like(mean_xy, dtype=torch.bool), diagonal=1)
+            pairwise_distance[b] = 0.5 * (mean_xy[tri].mean() + endpoint[tri].mean())
+            codes, counts = torch.unique(selected_source_code[b, idx], return_counts=True)
+            probs = counts.float() / counts.float().sum().clamp(min=1.0)
+            source_entropy[b] = -(probs * probs.clamp(min=1e-6).log()).sum()
+
+    best_selected_minus_gt = best_selected - gt_reward.to(device=device, dtype=dtype)
+    selected_has_improver = best_selected_minus_gt >= float(cfg.dpsi_improver_margin)
+    high_gt_saturated = (
+        gt_reward.to(device=device, dtype=dtype) >= float(cfg.dpsi_high_gt_reward)
+    ) & (best_selected_minus_gt <= float(cfg.dpsi_improver_margin))
+    low_support = support_count <= float(cfg.dpsi_low_support_count)
+
+    beta_max = float(cfg.dpsi_beta_max)
+    count_score = torch.sigmoid(support_count - float(cfg.dpsi_support_count_mid))
+    dist_score = pairwise_distance / (pairwise_distance + float(cfg.dpsi_distance_scale_m))
+    entropy_score = source_entropy / (source_entropy + float(cfg.dpsi_entropy_scale))
+    if bool(cfg.dpsi_use_adaptive_beta):
+        beta = beta_max * count_score * dist_score * entropy_score
+    else:
+        beta = torch.full((B,), beta_max, device=device, dtype=dtype)
+    beta = torch.where(low_support, beta * 0.25, beta)
+    beta = torch.where(high_gt_saturated, torch.zeros_like(beta), beta)
+    strong = best_selected_minus_gt >= float(cfg.dpsi_strong_improver_margin)
+    beta = torch.where(strong, torch.maximum(beta, beta.new_full(beta.shape, 0.4)), beta)
+    beta = beta.clamp(min=0.0, max=beta_max)
+    warmup = int(cfg.dpsi_beta_warmup_epochs)
+    if warmup > 0:
+        ramp = max(0.0, min(float(current_epoch) / float(warmup), 1.0))
+        beta = beta * ramp
+
+    scene_weight = 1.0 + float(cfg.dpsi_improver_scene_weight_gain) * best_selected_minus_gt.clamp(0.0, 0.25)
+    scene_weight = scene_weight.clamp(
+        min=float(cfg.dpsi_scene_weight_min),
+        max=float(cfg.dpsi_scene_weight_max),
+    )
+    scene_weight = torch.where(high_gt_saturated, torch.minimum(scene_weight, scene_weight.new_ones(())), scene_weight)
+    scene_weight = torch.where(
+        low_support & (best_selected_minus_gt <= 0.0),
+        torch.minimum(scene_weight, scene_weight.new_ones(())),
+        scene_weight,
+    )
+
+    profile = {
+        "support_count": support_count,
+        "pairwise_distance": pairwise_distance,
+        "source_entropy": source_entropy,
+        "best_selected_minus_gt": best_selected_minus_gt,
+        "selected_has_improver": selected_has_improver,
+        "high_gt_saturated": high_gt_saturated,
+        "low_support": low_support,
+        "multimodal_profile_score": count_score * dist_score * entropy_score,
+        "beta_profile": beta,
+        "scene_weight": scene_weight,
+    }
+    diag = {
+        "dpsi_support_count_mean": support_count.mean(),
+        "dpsi_pairwise_distance_mean": pairwise_distance.mean(),
+        "dpsi_source_entropy_mean": source_entropy.mean(),
+        "dpsi_beta_mean": beta.mean(),
+        "dpsi_beta_max": beta.max() if beta.numel() else selected_rewards.new_zeros(()),
+        "dpsi_low_support_ratio": low_support.float().mean(),
+        "dpsi_high_gt_saturated_ratio": high_gt_saturated.float().mean(),
+        "dpsi_selected_has_improver_ratio": selected_has_improver.float().mean(),
+        "dpsi_scene_weight_mean": scene_weight.mean(),
+    }
+    return profile, diag
+
+
+def _build_asmi_weights(
+    selected_rewards: torch.Tensor,
+    selected_real_mask: torch.Tensor,
+    selected_valid_mask: torch.Tensor,
+    selected_source_code: torch.Tensor,
+    selected_support_weight: torch.Tensor,
+    gt_reward: torch.Tensor,
+    il_reward: torch.Tensor,
+    support_profile: Dict[str, torch.Tensor],
+    cfg: OfflineRLConfig,
+) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+    device = selected_rewards.device
+    real = selected_real_mask.bool()
+    valid = selected_valid_mask.bool()
+    source_code = selected_source_code.to(device=device)
+    anchor_mask = real & ((source_code == 1) | (source_code == 2))
+    for b in range(selected_rewards.shape[0]):
+        if not bool(anchor_mask[b].any().item()):
+            row = real[b] & valid[b]
+            if not bool(row.any().item()):
+                row = real[b]
+            if bool(row.any().item()):
+                idx = int(selected_rewards[b].masked_fill(~row, -torch.inf).argmax().item())
+                anchor_mask[b, idx] = True
+
+    base_weight = selected_support_weight.to(device=device, dtype=torch.float32).clamp(min=0.0)
+    base_weight = torch.where(real, base_weight, torch.zeros_like(base_weight))
+    base_weight = torch.where(valid | anchor_mask, base_weight, torch.zeros_like(base_weight))
+
+    margin_weight = torch.ones_like(base_weight)
+    if bool(cfg.dpsi_use_reward_margin_weight):
+        ref_reward = torch.maximum(gt_reward.to(device=device), il_reward.to(device=device)).float()
+        margin = selected_rewards.float() - ref_reward[:, None]
+        margin_weight = (1.0 + float(cfg.dpsi_margin_scale) * margin).clamp(
+            min=float(cfg.dpsi_margin_weight_min),
+            max=float(cfg.dpsi_margin_weight_max),
+        )
+        bad = (margin < float(cfg.dpsi_bad_margin_threshold)) & (~anchor_mask)
+        margin_weight = torch.where(bad, margin_weight * float(cfg.dpsi_bad_margin_weight), margin_weight)
+
+    source_weight = torch.ones_like(base_weight)
+    if bool(cfg.dpsi_use_source_weight):
+        source_weight = torch.full_like(base_weight, float(cfg.dpsi_source_weight_other))
+        source_weight = torch.where(source_code == 1, source_weight.new_full((), float(cfg.dpsi_source_weight_gt)), source_weight)
+        source_weight = torch.where(source_code == 2, source_weight.new_full((), float(cfg.dpsi_source_weight_il)), source_weight)
+        source_weight = torch.where((source_code == 3) | (source_code == 7), source_weight.new_full((), float(cfg.dpsi_source_weight_external)), source_weight)
+        source_weight = torch.where(source_code == 8, source_weight.new_full((), float(cfg.dpsi_source_weight_failure_expand)), source_weight)
+        source_weight = torch.where(source_code == 9, source_weight.new_full((), float(cfg.dpsi_source_weight_trust_region)), source_weight)
+        structured = (source_code == 4) | (source_code == 5) | (source_code == 6) | (source_code == 10)
+        source_weight = torch.where(structured, source_weight.new_full((), float(cfg.dpsi_source_weight_structured)), source_weight)
+
+    pareto_raw = base_weight * margin_weight * source_weight
+    pareto_raw = torch.where(real & valid, pareto_raw, torch.zeros_like(pareto_raw))
+    anchor_raw = torch.where(
+        anchor_mask,
+        base_weight.clamp(min=1e-6) * selected_rewards.float().clamp(min=0.0).add(1e-3),
+        torch.zeros_like(base_weight),
+    )
+
+    zero_row = torch.zeros((selected_rewards.shape[0],), device=device, dtype=torch.bool)
+    for raw, mask in ((anchor_raw, anchor_mask), (pareto_raw, real & valid)):
+        row_sum = raw.sum(dim=1)
+        for b in torch.nonzero(row_sum <= 0.0, as_tuple=False).flatten().tolist():
+            row = mask[b]
+            if not bool(row.any().item()):
+                row = real[b]
+            if bool(row.any().item()):
+                idx = int(selected_rewards[b].masked_fill(~row, -torch.inf).argmax().item())
+                raw[b, idx] = 1.0
+            else:
+                zero_row[b] = True
+
+    q_anchor = anchor_raw / anchor_raw.sum(dim=1, keepdim=True).clamp(min=1e-6)
+    q_pareto = pareto_raw / pareto_raw.sum(dim=1, keepdim=True).clamp(min=1e-6)
+    beta = support_profile["beta_profile"].to(device=device, dtype=torch.float32)[:, None]
+    q = (1.0 - beta) * q_anchor + beta * q_pareto
+    pre_row_sum = q.sum(dim=1)
+    for b in torch.nonzero(pre_row_sum <= 0.0, as_tuple=False).flatten().tolist():
+        row = anchor_mask[b] if bool(anchor_mask[b].any().item()) else real[b]
+        if bool(row.any().item()):
+            idx = int(selected_rewards[b].masked_fill(~row, -torch.inf).argmax().item())
+            q[b, idx] = 1.0
+        zero_row[b] = True
+    q = q / q.sum(dim=1, keepdim=True).clamp(min=1e-6)
+    weights = q * support_profile["scene_weight"].to(device=device, dtype=torch.float32)[:, None]
+    weights = torch.where(real, weights, torch.zeros_like(weights))
+
+    total = weights.sum().clamp(min=1e-6)
+    normalized_q = weights / weights.sum(dim=1, keepdim=True).clamp(min=1e-6)
+    effective_count = 1.0 / normalized_q.square().sum(dim=1).clamp(min=1e-6)
+    diag = {
+        "dpsi_anchor_weight_mean": weights.masked_fill(~anchor_mask, 0.0).sum(dim=1).mean(),
+        "dpsi_pareto_weight_mean": weights.masked_fill(anchor_mask | (~real), 0.0).sum(dim=1).mean(),
+        "dpsi_effective_target_count_mean": effective_count.mean(),
+        "dpsi_row_weight_sum_mean": weights.sum(dim=1).mean(),
+        "dpsi_zero_row_ratio": zero_row.float().mean(),
+        "dpsi_external_weight_ratio": weights[((source_code == 3) | (source_code == 7)) & real].sum() / total,
+        "dpsi_gt_weight_ratio": weights[(source_code == 1) & real].sum() / total,
+        "dpsi_il_weight_ratio": weights[(source_code == 2) & real].sum() / total,
+    }
+    return weights, diag
+
+
+def _sample_asmi_targets(
+    selected_trajs: torch.Tensor,
+    weights: torch.Tensor,
+    selected_real_mask: torch.Tensor,
+    selected_valid_mask: torch.Tensor,
+    selected_source_code: torch.Tensor,
+    selected_rewards: torch.Tensor,
+    cfg: OfflineRLConfig,
+    current_epoch: int,
+    training: bool,
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
+    B, M, H, D = selected_trajs.shape
+    warm = int(cfg.dpsi_beta_warmup_epochs)
+    target_m = int(cfg.dpsi_target_sample_m_after_warmup) if current_epoch >= warm else int(cfg.dpsi_target_sample_m)
+    target_m = max(1, min(target_m, M))
+    out_trajs = selected_trajs.new_zeros((B, target_m, H, D))
+    out_weights = weights.new_zeros((B, target_m))
+    out_mask = torch.zeros((B, target_m), device=selected_trajs.device, dtype=torch.bool)
+    anchor_hits = weights.new_zeros((B,))
+    best_hits = weights.new_zeros((B,))
+    counts = weights.new_zeros((B,))
+
+    for b in range(B):
+        available = torch.nonzero(selected_real_mask[b] & (weights[b] > 0.0), as_tuple=False).flatten()
+        if available.numel() == 0:
+            available = torch.nonzero(selected_real_mask[b], as_tuple=False).flatten()
+        if available.numel() == 0:
+            continue
+        if available.numel() <= target_m:
+            keep = available
+        else:
+            chosen: list[int] = []
+            if bool(cfg.dpsi_force_anchor_target):
+                anchor = available[(selected_source_code[b, available] == 1) | (selected_source_code[b, available] == 2)]
+                if anchor.numel() == 0:
+                    anchor = available
+                idx = anchor[torch.argmax(selected_rewards[b, anchor])].item()
+                chosen.append(int(idx))
+            if bool(cfg.dpsi_force_best_target):
+                valid_avail = available[selected_valid_mask[b, available]]
+                if valid_avail.numel() == 0:
+                    valid_avail = available
+                idx = valid_avail[torch.argmax(selected_rewards[b, valid_avail])].item()
+                if int(idx) not in chosen:
+                    chosen.append(int(idx))
+            remaining = [int(i) for i in available.tolist() if int(i) not in chosen]
+            slots = target_m - len(chosen)
+            if slots > 0 and remaining:
+                rem = torch.tensor(remaining, device=selected_trajs.device, dtype=torch.long)
+                probs = weights[b, rem].float().clamp(min=0.0)
+                if bool(training) and bool((probs.sum() > 0).item()):
+                    pick_rel = torch.multinomial(probs / probs.sum().clamp(min=1e-6), min(slots, rem.numel()), replacement=False)
+                else:
+                    pick_rel = torch.topk(probs, k=min(slots, rem.numel()), largest=True).indices
+                chosen.extend(int(i) for i in rem[pick_rel].tolist())
+            keep = torch.tensor(chosen[:target_m], device=selected_trajs.device, dtype=torch.long)
+        n = int(keep.numel())
+        out_trajs[b, :n] = selected_trajs[b, keep]
+        raw = weights[b, keep].float()
+        row_sum = weights[b].sum().clamp(min=1e-6)
+        out_weights[b, :n] = raw / raw.sum().clamp(min=1e-6) * row_sum
+        out_mask[b, :n] = True
+        counts[b] = float(n)
+        anchor_hits[b] = ((selected_source_code[b, keep] == 1) | (selected_source_code[b, keep] == 2)).any().float()
+        best_idx = int(selected_rewards[b].masked_fill(~selected_real_mask[b], -torch.inf).argmax().item())
+        best_hits[b] = (keep == best_idx).any().float()
+
+    diag = {
+        "dpsi_sampled_target_count_mean": counts.mean(),
+        "dpsi_sampled_anchor_ratio": anchor_hits.mean(),
+        "dpsi_sampled_best_ratio": best_hits.mean(),
+    }
+    return out_trajs, out_weights, out_mask, diag
 
 
 @dataclass
@@ -793,7 +1127,11 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     fs_norm_stats_path: str = ""
     fs_norm_use_robust: bool = False
     fs_norm_clip: float = 5.0
+    fs_norm_target_clip: float = -1.0
+    fs_norm_output_clip: float = -1.0
+    fs_norm_output_clip_mode: str = "scalar"
     x0_aux_weight: float = 0.0
+    delta_aux_weight: float = 0.0
     geo_aux_weight: float = 0.0
     x0_aux_low_noise_frac: float = 0.5
     geo_curvature_weight: float = 1.0
@@ -1635,8 +1973,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
     def _init_offline_rl(self, cfg: OfflineRLConfig, stage3_cfg: GRPOConfig) -> None:
         self.offline_rl_cfg = cfg
         self._init_stage3_runtime(stage3_cfg)
-        self._init_stage3_oracle(stage3_cfg)
-        if not hasattr(self, "old_policy"):
+        if bool(getattr(cfg, "init_stage3_oracle", True)):
+            self._init_stage3_oracle(stage3_cfg)
+        elif bool(cfg.build_candidates_online) or str(cfg.missing_buffer_policy) == "fallback_gt":
+            raise RuntimeError(
+                "offline_rl_cfg.init_stage3_oracle=False is only valid for fully offline support "
+                "training. Online candidates or fallback_gt require metric_cache_path/PDM oracle."
+            )
+        if bool(getattr(cfg, "init_reference_policy", True)) and not hasattr(self, "old_policy"):
             reference_required = (
                 bool(cfg.require_reference_policy_checkpoint)
                 and (
@@ -1902,6 +2246,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "fp_ddc_regression_positive_cap",
             "fp_offsupport_positive_cap",
             "fp_use_bucketed_advantage",
+            "fp_progress_fast_margin",
+            "fp_progress_slow_margin",
+            "fp_lateral_bucket_threshold_m",
+            "fp_feas_bucket_threshold",
             "fp_inter_bucket_weight",
             "fp_inter_bucket_clip",
             "fp_use_pdas",
@@ -1911,6 +2259,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "pdas_gamma",
             "pdas_lambda_bucket",
             "pdas_lambda_regression",
+            "pdas_lambda_coverage",
+            "pdas_min_support_count_for_coverage",
             "use_asymmetric_safe_advantage",
             "advantage_std_floor",
             "safe_negative_adv_scale",
@@ -2066,6 +2416,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "fp_tradeoff_penalty_weight",
             "fp_tradeoff_ttc_rho",
             "fp_tradeoff_tolerance",
+            "fp_progress_fast_margin",
+            "fp_progress_slow_margin",
+            "fp_lateral_bucket_threshold_m",
+            "fp_feas_bucket_threshold",
             "fp_inter_bucket_weight",
             "fp_inter_bucket_clip",
             "pdas_eps",
@@ -2074,9 +2428,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "pdas_gamma",
             "pdas_lambda_bucket",
             "pdas_lambda_regression",
+            "pdas_lambda_coverage",
         ):
             if float(getattr(self, name)) < 0.0:
                 raise ValueError(f"{name} must be non-negative.")
+        if int(self.pdas_min_support_count_for_coverage) < 0:
+            raise ValueError("pdas_min_support_count_for_coverage must be non-negative.")
         if not (0.0 < float(self.core_pareto_dual_ema) < 1.0):
             raise ValueError("core_pareto_dual_ema must be in (0, 1).")
         if float(self.core_pareto_lambda_slow_max) < float(self.core_pareto_lambda_slow_min):
@@ -3686,10 +4043,22 @@ class ReCogDriveDiffusionPlanner(nn.Module):
     def _uses_fs_norm(self) -> bool:
         return self.fs_norm_transform is not None
 
+    def _fs_norm_clip_value(self, field_name: str) -> Optional[float]:
+        value = float(getattr(self.config, field_name, -1.0))
+        if value >= 0.0:
+            return value if value > 0.0 else None
+        legacy = float(getattr(self.config, "fs_norm_clip", 5.0))
+        return legacy if legacy > 0.0 else None
+
+    def _target_representation_clip_value(self, fallback: Optional[float]) -> Optional[float]:
+        if self._uses_fs_norm():
+            return self._fs_norm_clip_value("fs_norm_target_clip")
+        return fallback
+
     def _encode_action_target(self, raw_trajectory: torch.Tensor) -> torch.Tensor:
         if self._uses_fs_norm():
             assert self.fs_norm_transform is not None
-            return self.fs_norm_transform.encode(raw_trajectory)
+            return self.fs_norm_transform.encode(raw_trajectory, clip=self._target_representation_clip_value(None))
         return self.norm_odo(raw_trajectory)
 
     def _decode_action_target(self, representation: torch.Tensor) -> torch.Tensor:
@@ -3700,9 +4069,24 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
     def _representation_clip_value(self, fallback: Optional[float]) -> Optional[float]:
         if self._uses_fs_norm():
-            clip = float(getattr(self.config, "fs_norm_clip", 5.0))
-            return clip if clip > 0.0 else None
+            return self._fs_norm_clip_value("fs_norm_output_clip")
         return fallback
+
+    def _clip_output_representation(
+        self,
+        representation: torch.Tensor,
+        fallback: Optional[float],
+    ) -> torch.Tensor:
+        if self._uses_fs_norm() and str(getattr(self.config, "fs_norm_output_clip_mode", "scalar")) == "stats_bounds":
+            assert self.fs_norm_transform is not None
+            bounds = self.fs_norm_transform._clip_bounds(representation)
+            if bounds is not None:
+                lower, upper = bounds
+                return torch.minimum(torch.maximum(representation, lower), upper)
+        clip = self._representation_clip_value(fallback)
+        if clip is None:
+            return representation
+        return representation.clamp(-clip, clip)
 
     def _flow_x0_from_velocity(
         self,
@@ -3735,6 +4119,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
     ) -> tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
         zero = x0_repr.new_zeros(())
         x0_weight = float(getattr(self.config, "x0_aux_weight", 0.0))
+        delta_weight = float(getattr(self.config, "delta_aux_weight", 0.0))
         geo_weight = float(getattr(self.config, "geo_aux_weight", 0.0))
         per_x0, per_geo, active_mask, diagnostics = self._compute_x0_geo_aux_per_sample_losses(
             x0_repr,
@@ -3742,12 +4127,17 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             timesteps,
             method=method,
         )
-        if x0_weight <= 0.0 and geo_weight <= 0.0:
+        if x0_weight <= 0.0 and delta_weight <= 0.0 and geo_weight <= 0.0:
             return zero, zero, diagnostics
         active = active_mask.to(device=per_x0.device, dtype=per_x0.dtype)
         active_count = active.sum().clamp(min=1.0)
         x0_aux_loss = (per_x0 * active).sum() / active_count
         geo_aux_loss = (per_geo * active).sum() / active_count
+        per_delta = diagnostics.get("delta_aux_per_sample")
+        if isinstance(per_delta, torch.Tensor):
+            diagnostics["delta_aux_loss"] = (per_delta.to(active) * active).sum() / active_count
+        else:
+            diagnostics["delta_aux_loss"] = zero
         return x0_aux_loss.to(x0_repr), geo_aux_loss.to(x0_repr), diagnostics
 
     def _compute_x0_geo_aux_per_sample_losses(
@@ -3768,9 +4158,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "curvature_violation_rate": zero,
         }
         x0_weight = float(getattr(self.config, "x0_aux_weight", 0.0))
+        delta_weight = float(getattr(self.config, "delta_aux_weight", 0.0))
         geo_weight = float(getattr(self.config, "geo_aux_weight", 0.0))
         active_mask = self._low_noise_mask(timesteps, method=method).to(device=x0_repr.device)
-        if x0_weight <= 0.0 and geo_weight <= 0.0:
+        if x0_weight <= 0.0 and delta_weight <= 0.0 and geo_weight <= 0.0:
             return per_zero, per_zero, active_mask, diagnostics
         if not bool(active_mask.any().detach().cpu().item()):
             return per_zero, per_zero, active_mask, diagnostics
@@ -3788,6 +4179,25 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         )
         x0_aux_loss = (xy_loss + heading_loss).to(dtype=x0_repr.dtype)
 
+        if pred_f.shape[1] >= 2:
+            pred_delta_xy = pred_f[:, 1:, :2] - pred_f[:, :-1, :2]
+            target_delta_xy = target_f[:, 1:, :2] - target_f[:, :-1, :2]
+            pred_delta_heading = torch.atan2(
+                torch.sin(pred_f[:, 1:, 2] - pred_f[:, :-1, 2]),
+                torch.cos(pred_f[:, 1:, 2] - pred_f[:, :-1, 2]),
+            )
+            target_delta_heading = torch.atan2(
+                torch.sin(target_f[:, 1:, 2] - target_f[:, :-1, 2]),
+                torch.cos(target_f[:, 1:, 2] - target_f[:, :-1, 2]),
+            )
+            pred_delta = torch.cat([pred_delta_xy, pred_delta_heading.unsqueeze(-1)], dim=-1)
+            target_delta = torch.cat([target_delta_xy, target_delta_heading.unsqueeze(-1)], dim=-1)
+            delta_aux_loss = F.smooth_l1_loss(pred_delta, target_delta, reduction="none").mean(dim=(1, 2)).to(
+                dtype=x0_repr.dtype
+            )
+        else:
+            delta_aux_loss = per_zero
+
         metrics = compute_feasibility_metrics(
             pred_f,
             {
@@ -3802,6 +4212,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         geo_aux_loss = metrics.feas_cost.reshape(-1).to(device=x0_repr.device, dtype=x0_repr.dtype)
         active_f = active_mask.to(device=x0_repr.device, dtype=x0_repr.dtype)
         x0_aux_loss = torch.where(active_mask, x0_aux_loss, per_zero)
+        delta_aux_loss = torch.where(active_mask, delta_aux_loss, per_zero)
         geo_aux_loss = torch.where(active_mask, geo_aux_loss, per_zero)
         active_count = active_f.sum().clamp(min=1.0)
         diagnostics.update(
@@ -3818,6 +4229,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     metrics.curvature_violation_rate.reshape(-1).to(device=x0_repr.device, dtype=x0_repr.dtype) * active_f
                 ).sum()
                 / active_count,
+                "delta_aux_per_sample": delta_aux_loss,
+                "delta_aux_loss": (delta_aux_loss * active_f).sum() / active_count,
             }
         )
         return x0_aux_loss, geo_aux_loss, active_mask, diagnostics
@@ -4067,6 +4480,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     method="flow",
                 )
                 dit_context["x0_aux_loss"] = x0_aux_loss
+                dit_context["delta_aux_loss"] = geo_diag.get("delta_aux_loss", x0_aux_loss.new_zeros(()))
                 dit_context["geo_aux_loss"] = geo_aux_loss
                 dit_context["diagnostics"].update(geo_diag)
                 policy_kd_loss = diffusion_loss.new_zeros(())
@@ -4098,6 +4512,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     method="ddpm",
                 )
                 dit_context["x0_aux_loss"] = x0_aux_loss
+                dit_context["delta_aux_loss"] = geo_diag.get("delta_aux_loss", x0_aux_loss.new_zeros(()))
                 dit_context["geo_aux_loss"] = geo_aux_loss
                 dit_context["diagnostics"].update(geo_diag)
                 policy_kd_loss = self._compute_policy_kd_loss(vl_features, action_input, noisy_actions, t_discrete, pred_noise)
@@ -4110,6 +4525,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 + self._last_vla_aux_loss(dit_context, diffusion_loss.dtype)
                 + float(self.config.policy_kd_loss_weight) * policy_kd_loss.to(dtype=diffusion_loss.dtype)
                 + float(self.config.x0_aux_weight) * dit_context["x0_aux_loss"].to(dtype=diffusion_loss.dtype)
+                + float(getattr(self.config, "delta_aux_weight", 0.0)) * dit_context["delta_aux_loss"].to(dtype=diffusion_loss.dtype)
                 + float(self.config.geo_aux_weight) * dit_context["geo_aux_loss"].to(dtype=diffusion_loss.dtype)
             )
             return self._format_training_output(loss, diffusion_loss, zero, zero, dit_context)
@@ -4171,6 +4587,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 method="flow",
             )
             dit_context["x0_aux_loss"] = x0_aux_loss
+            dit_context["delta_aux_loss"] = geo_diag.get("delta_aux_loss", x0_aux_loss.new_zeros(()))
             dit_context["geo_aux_loss"] = geo_aux_loss
             dit_context["diagnostics"].update(geo_diag)
             policy_kd_loss = diffusion_loss.new_zeros(())
@@ -4202,6 +4619,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 method="ddpm",
             )
             dit_context["x0_aux_loss"] = x0_aux_loss
+            dit_context["delta_aux_loss"] = geo_diag.get("delta_aux_loss", x0_aux_loss.new_zeros(()))
             dit_context["geo_aux_loss"] = geo_aux_loss
             dit_context["diagnostics"].update(geo_diag)
             policy_kd_loss = self._compute_policy_kd_loss(vl_features, action_input, noisy_actions, t_discrete, pred_noise)
@@ -4215,6 +4633,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             + self._stream_alignment_weight("vggt") * vggt_alignment_loss
             + self._last_rd_aux_loss(dit_context, diffusion_loss.dtype)
             + float(self.config.x0_aux_weight) * dit_context["x0_aux_loss"].to(dtype=diffusion_loss.dtype)
+            + float(getattr(self.config, "delta_aux_weight", 0.0)) * dit_context["delta_aux_loss"].to(dtype=diffusion_loss.dtype)
             + float(self.config.geo_aux_weight) * dit_context["geo_aux_loss"].to(dtype=diffusion_loss.dtype)
         )
 
@@ -4248,6 +4667,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "last_vla_cot_consistency_loss": dit_context.get("last_vla_cot_consistency_loss", loss.detach().new_tensor(0.0)).to(dtype=loss.dtype),
             "last_vla_policy_kd_loss": dit_context["policy_kd_loss"].to(dtype=loss.dtype) if self.config.use_last_vla else loss.detach().new_tensor(0.0),
             "x0_aux_loss": dit_context.get("x0_aux_loss", loss.detach().new_tensor(0.0)).to(dtype=loss.dtype),
+            "delta_aux_loss": dit_context.get("delta_aux_loss", loss.detach().new_tensor(0.0)).to(dtype=loss.dtype),
             "geo_aux_loss": dit_context.get("geo_aux_loss", loss.detach().new_tensor(0.0)).to(dtype=loss.dtype),
         }
         diagnostics = dit_context.get("diagnostics", {})
@@ -4478,9 +4898,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
                 current_actions = mean + std * noise_sample
                 
-                final_clip = self._representation_clip_value(getattr(self, "final_action_clip_value", None))
-                if final_clip is not None and i == len(timesteps_to_iterate) - 1:
-                    current_actions.clamp_(-final_clip, final_clip)
+                if i == len(timesteps_to_iterate) - 1:
+                    current_actions = self._clip_output_representation(
+                        current_actions,
+                        getattr(self, "final_action_clip_value", None),
+                    )
 
         elif self.config.sampling_method == 'ddim':
             eval_min_sampling_denoising_std = getattr(self, 'eval_min_sampling_denoising_std', 0.0001)
@@ -4515,9 +4937,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         else:
             raise ValueError(f"Unsupported sampling method: {self.config.sampling_method}")
 
-        final_action_clip_value = self._representation_clip_value(getattr(self, 'final_action_clip_value', 1.0))
-        if final_action_clip_value is not None:
-            current_actions.clamp_(-final_action_clip_value, final_action_clip_value)
+        current_actions = self._clip_output_representation(
+            current_actions,
+            getattr(self, "final_action_clip_value", 1.0),
+        )
 
         residual_alpha = self._last_vla_residual_alpha(training=False)
         residual_anchor_norm = None
@@ -4539,9 +4962,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             output_data["pred_vlm_text_anchor_traj"] = self._decode_action_target(residual_anchor_norm.to(current_actions))
             output_data["pred_residual_anchor_alpha"] = current_actions.new_tensor(float(residual_alpha))
 
-        final_action_clip_value = self._representation_clip_value(getattr(self, 'final_action_clip_value', 1.0))
-        if final_action_clip_value is not None:
-            final_norm = final_norm.clamp(-final_action_clip_value, final_action_clip_value)
+        final_norm = self._clip_output_representation(
+            final_norm,
+            getattr(self, "final_action_clip_value", 1.0),
+        )
 
         final_actions = self._decode_action_target(final_norm)
         output_data["pred_traj"] = final_actions
@@ -4697,9 +5121,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
                 current_actions = mean + std * noise_sample
                 
-                final_clip = self._representation_clip_value(getattr(self, "final_action_clip_value", None))
-                if i == len(timesteps) - 1 and final_clip is not None:
-                    current_actions = current_actions.clamp_(-final_clip, final_clip)
+                if i == len(timesteps) - 1:
+                    current_actions = self._clip_output_representation(
+                        current_actions,
+                        getattr(self, "final_action_clip_value", None),
+                    )
                 
                 denoising_chain.append(current_actions.clone())
         else:
@@ -4715,9 +5141,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             )
             assert residual_anchor_norm is not None
             final_norm = current_actions + float(residual_alpha) * residual_anchor_norm.to(current_actions)
-            final_action_clip_value = self._representation_clip_value(getattr(self, 'final_action_clip_value', 1.0))
-            if final_action_clip_value is not None:
-                final_norm = final_norm.clamp(-final_action_clip_value, final_action_clip_value)
+            final_norm = self._clip_output_representation(
+                final_norm,
+                getattr(self, "final_action_clip_value", 1.0),
+            )
         final_actions = self._decode_action_target(final_norm)
         chain_tensor = torch.stack(denoising_chain, dim=1)
         
@@ -6042,6 +6469,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         components_matrix: Dict[str, torch.Tensor],
         trajs_matrix: torch.Tensor,
         ref: Dict[str, torch.Tensor],
+        support_batch: Optional[Dict[str, Any]] = None,
     ) -> tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
         B, G = rewards_matrix.shape
         dtype = rewards_matrix.dtype
@@ -6122,38 +6550,56 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         score = score - float(self.fp_tradeoff_penalty_weight) * tradeoff_bad
 
         all_mask = torch.ones_like(valid, dtype=torch.bool)
-        if bool(self.fp_use_bucketed_advantage):
-            bucket_id = compute_pdas_metrics(
-                score.detach(),
+        pdas_metrics = compute_pdas_metrics(
+            score.detach(),
+            {"ego_progress": ep.detach(), "time_to_collision_within_bound": ttc.detach(), "driving_direction_compliance": ddc.detach()},
+            trajs_matrix.detach(),
+            {"ref_ep": ref_ep.detach(), "ref_pdms": ref_pdms.detach()},
+            self,
+        )
+        z = self._masked_zscore(score, all_mask)
+        bucket_count_mean = score.new_zeros(())
+        bucketed_active_ratio = score.new_zeros(())
+        bucket_fallback_ratio = score.new_zeros(())
+        sampled_buckets = None
+        if bool(self.fp_use_bucketed_advantage) or isinstance(support_batch, dict):
+            from .pdas import compute_phenotype_buckets
+
+            sampled_buckets = compute_phenotype_buckets(
+                trajs_matrix.detach(),
                 {
                     "ego_progress": ep.detach(),
                     "time_to_collision_within_bound": ttc.detach(),
+                    "driving_direction_compliance": ddc.detach(),
                 },
-                trajs_matrix.detach(),
-                {"ref_ep": ref_ep.detach(), "ref_pdms": ref_pdms.detach()},
-                self,
-            )
-            # Reuse the public PDAS helper for group weights; bucket ids come
-            # from the companion function to keep advantage code local.
-            from .pdas import compute_phenotype_buckets
-
-            buckets = compute_phenotype_buckets(
-                trajs_matrix.detach(),
-                {"ego_progress": ep.detach(), "time_to_collision_within_bound": ttc.detach()},
                 {"feas_cost": feas_cost.detach()},
                 {"ref_ep": ref_ep.detach()},
                 self,
             )
-            z = torch.zeros_like(score)
+        if bool(self.fp_use_bucketed_advantage) and sampled_buckets is not None:
+            support_counts = None
+            if isinstance(support_batch, dict) and isinstance(support_batch.get("selected_real_mask"), torch.Tensor):
+                support_counts = support_batch["selected_real_mask"].to(device=device).bool().sum(dim=1)
             bucket_counts = []
+            active_rows = 0
             for b in range(B):
-                unique = torch.unique(buckets[b])
+                unique = torch.unique(sampled_buckets[b])
                 bucket_counts.append(float(unique.numel()))
+                support_ok = True
+                if support_counts is not None and int(support_counts.shape[0]) == B:
+                    support_ok = bool((support_counts[b] >= int(self.pdas_min_support_count_for_coverage)).item())
+                if G < 4 or unique.numel() < 2 or not support_ok:
+                    continue
+                active_rows += 1
                 rep_scores = []
                 bucket_values = []
                 for bucket in unique:
-                    bucket_mask = buckets[b : b + 1] == bucket
-                    z[b : b + 1] = torch.where(bucket_mask, self._masked_zscore(score[b : b + 1], bucket_mask), z[b : b + 1])
+                    bucket_mask = sampled_buckets[b : b + 1] == bucket
+                    z[b : b + 1] = torch.where(
+                        bucket_mask,
+                        self._masked_zscore(score[b : b + 1], bucket_mask),
+                        z[b : b + 1],
+                    )
                     rep_mask = bucket_mask & valid[b : b + 1]
                     rep_scores.append(score[b : b + 1][rep_mask].mean() if bool(rep_mask.any().item()) else score[b : b + 1][bucket_mask].mean())
                     bucket_values.append(int(bucket.item()))
@@ -6164,20 +6610,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         max=float(self.fp_inter_bucket_clip),
                     )
                     for idx, bucket_value in enumerate(bucket_values):
-                        mask_b = buckets[b] == bucket_value
+                        mask_b = sampled_buckets[b] == bucket_value
                         z[b, mask_b] = z[b, mask_b] + float(self.fp_inter_bucket_weight) * rep_z[0, idx].to(z)
             bucket_count_mean = score.new_tensor(float(sum(bucket_counts) / max(len(bucket_counts), 1)))
-            pdas_metrics = bucket_id
-        else:
-            z = self._masked_zscore(score, all_mask)
-            bucket_count_mean = score.new_zeros(())
-            pdas_metrics = compute_pdas_metrics(
-                score.detach(),
-                {"ego_progress": ep.detach(), "time_to_collision_within_bound": ttc.detach()},
-                trajs_matrix.detach(),
-                {"ref_ep": ref_ep.detach(), "ref_pdms": ref_pdms.detach()},
-                self,
-            )
+            bucketed_active_ratio = score.new_tensor(float(active_rows) / max(float(B), 1.0))
+            bucket_fallback_ratio = score.new_tensor(float(B - active_rows) / max(float(B), 1.0))
 
         unsafe_adv = score.new_full(score.shape, float(self.fp_invalid_negative_advantage))
         adv = torch.where(valid, z, unsafe_adv)
@@ -6200,8 +6637,54 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             adv = torch.where(active, score.new_full(score.shape, cap), adv)
 
         group_weight = torch.ones(B, device=device, dtype=dtype)
+        coverage_gap = score.new_zeros((B,), dtype=torch.float32)
+        archive_bucket_count = score.new_zeros((B,), dtype=torch.float32)
+        sampled_bucket_count = score.new_zeros((B,), dtype=torch.float32)
+        if sampled_buckets is not None:
+            for b in range(B):
+                sampled_bucket_count[b] = float(torch.unique(sampled_buckets[b]).numel())
+        if isinstance(support_batch, dict) and isinstance(support_batch.get("selected_trajs"), torch.Tensor):
+            support_trajs = support_batch["selected_trajs"].to(device=device)
+            support_real = support_batch.get("selected_real_mask")
+            support_valid = support_batch.get("selected_valid_mask")
+            support_components = support_batch.get("selected_components", {})
+            if isinstance(support_real, torch.Tensor) and isinstance(support_valid, torch.Tensor) and isinstance(support_components, dict):
+                support_real = support_real.to(device=device).bool()
+                support_valid = support_valid.to(device=device).bool()
+                support_mask = support_real & support_valid
+                support_count = support_real.sum(dim=1)
+                support_component_tensors = {
+                    key: value.to(device=device).detach()
+                    for key, value in support_components.items()
+                    if isinstance(value, torch.Tensor)
+                }
+                if support_trajs.ndim == 4 and int(support_trajs.shape[0]) == B:
+                    from .pdas import compute_phenotype_buckets
+
+                    archive_buckets = compute_phenotype_buckets(
+                        support_trajs.detach(),
+                        support_component_tensors,
+                        {},
+                        {"ref_ep": ref_ep.detach()},
+                        self,
+                    )
+                    for b in range(B):
+                        if support_count[b] < int(self.pdas_min_support_count_for_coverage):
+                            continue
+                        row_mask = support_mask[b]
+                        if not bool(row_mask.any().item()):
+                            continue
+                        archive_count = float(torch.unique(archive_buckets[b][row_mask]).numel())
+                        archive_bucket_count[b] = archive_count
+                        if sampled_bucket_count[b] <= 0.0:
+                            sampled_bucket_count[b] = float(torch.unique(sampled_buckets[b]).numel()) if sampled_buckets is not None else 0.0
+                        coverage_gap[b] = max(
+                            0.0,
+                            min((archive_count - float(sampled_bucket_count[b].item())) / max(archive_count, 1.0), 1.0),
+                        )
         if bool(self.fp_use_pdas):
-            group_weight = group_weight * pdas_metrics.weight.to(device=device, dtype=dtype)
+            coverage_factor = 1.0 + float(self.pdas_lambda_coverage) * coverage_gap.to(device=device, dtype=dtype)
+            group_weight = group_weight * pdas_metrics.weight.to(device=device, dtype=dtype) * coverage_factor
 
         aux = {
             "reward_std": score.std(dim=1, unbiased=False).detach().to(dtype=dtype),
@@ -6224,6 +6707,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "fp_regression_0_from_positive_ratio": regression_zero.float().mean().detach().to(dtype=dtype),
             "fp_positive_adv_cap_ratio": cap_mask.float().mean().detach().to(dtype=dtype),
             "fp_bucket_count_mean": bucket_count_mean.detach().to(dtype=dtype),
+            "fp_bucketed_active_ratio": bucketed_active_ratio.detach().to(dtype=dtype),
+            "fp_unique_bucket_count_mean": bucket_count_mean.detach().to(dtype=dtype),
+            "fp_bucket_fallback_ratio": bucket_fallback_ratio.detach().to(dtype=dtype),
             "fp_intra_adv_mean": z.mean().detach().to(dtype=dtype),
             "fp_inter_adv_mean": score.new_zeros(()).to(dtype=dtype),
             "pdas_success_rate": pdas_metrics.success_rate.mean().detach().to(dtype=dtype),
@@ -6235,6 +6721,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "pdas_weight_mean": pdas_metrics.weight.mean().detach().to(dtype=dtype),
             "pdas_weight_min": pdas_metrics.weight.min().detach().to(dtype=dtype),
             "pdas_weight_max": pdas_metrics.weight.max().detach().to(dtype=dtype),
+            "pdas_support_coverage_gap": coverage_gap.mean().detach().to(dtype=dtype),
+            "pdas_archive_bucket_count": archive_bucket_count.mean().detach().to(dtype=dtype),
+            "pdas_sampled_bucket_count": sampled_bucket_count.mean().detach().to(dtype=dtype),
             "early_kink_rate": early_kink_rate.mean().detach().to(dtype=dtype),
             "tail_reverse_rate": tail_reverse_rate.mean().detach().to(dtype=dtype),
             "curvature_violation_rate": curvature_violation_rate.mean().detach().to(dtype=dtype),
@@ -6352,6 +6841,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "fp_regression_0_from_positive_ratio",
             "fp_positive_adv_cap_ratio",
             "fp_bucket_count_mean",
+            "fp_bucketed_active_ratio",
+            "fp_unique_bucket_count_mean",
+            "fp_bucket_fallback_ratio",
             "fp_intra_adv_mean",
             "fp_inter_adv_mean",
             "pdas_success_rate",
@@ -6363,6 +6855,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "pdas_weight_mean",
             "pdas_weight_min",
             "pdas_weight_max",
+            "pdas_support_coverage_gap",
+            "pdas_archive_bucket_count",
+            "pdas_sampled_bucket_count",
             "early_kink_rate",
             "tail_reverse_rate",
             "curvature_violation_rate",
@@ -6664,11 +7159,23 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
     @staticmethod
     def _source_bucket(source: str) -> str:
-        source = str(source)
-        if source == "gt":
+        source = str(source or "").lower()
+        if source == "gt" or source.startswith("gt:"):
             return "gt"
-        if source == "il":
+        if source == "il" or source.startswith("il:") or source == "recogdrive_stage3" or source.startswith("recogdrive_stage3:"):
             return "il"
+        if source.startswith("failure_expand"):
+            return "failure_expand"
+        if source.startswith("trust_region"):
+            return "trust_region"
+        if (
+            source.startswith("external")
+            or source in {"ddv2", "driveor", "drivor", "diffusiondrivev2", "diffusion_drive_v2"}
+            or source.startswith(("ddv2:", "driveor:", "drivor:", "diffusiondrivev2:", "diffusion_drive_v2:"))
+        ):
+            return "external"
+        if source.startswith("structured"):
+            return "structured"
         if source.startswith("policy"):
             return "policy"
         if source.startswith("progress"):
@@ -6688,12 +7195,18 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "progress": 4,
             "lateral": 5,
             "timing": 6,
+            "external": 7,
+            "failure_expand": 8,
+            "trust_region": 9,
+            "structured": 10,
         }.get(cls._source_bucket(source), 0)
 
     @staticmethod
     def _dpsi_weight_for_tag(tag: str, source: str, cfg: OfflineRLConfig) -> float:
         tag_l = str(tag or "").lower()
         source_l = str(source or "").lower()
+        if tag_l == "":
+            return 0.0 if bool(cfg.dpsi_empty_tag_zero) else float(cfg.dpsi_weight_unknown)
         if "safe_ep" in tag_l:
             return float(cfg.dpsi_weight_safe_ep)
         if "vector_pareto" in tag_l or "pareto" in tag_l:
@@ -6704,13 +7217,17 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             return float(cfg.dpsi_weight_ddc_repair)
         if "best_pdms" in tag_l:
             return float(cfg.dpsi_weight_best_pdms)
+        if "diversity" in tag_l:
+            return float(cfg.dpsi_weight_diversity)
+        if "fallback" in tag_l:
+            return float(cfg.dpsi_weight_fallback)
         if "smooth" in tag_l:
             return float(cfg.dpsi_weight_smooth)
-        if "il" in tag_l or source_l == "il":
+        if "il" in tag_l or _dpsi_source_matches(source_l, ("il", "recogdrive_stage3")):
             return float(cfg.dpsi_weight_il)
-        if "gt" in tag_l or source_l == "gt":
+        if "gt" in tag_l or _dpsi_source_matches(source_l, ("gt",)):
             return float(cfg.dpsi_weight_gt)
-        return 1.0
+        return float(cfg.dpsi_weight_unknown)
 
     def _compute_awac_candidate_valid_mask(
         self,
@@ -7304,7 +7821,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         if not torch.isfinite(targets).all():
             raise ValueError("AWAC target trajectories contain non-finite values.")
         target_norm = policy._encode_action_target(targets)
-        target_clip = policy._representation_clip_value(1.0)
+        target_clip = policy._target_representation_clip_value(1.0)
         if target_clip is not None:
             target_norm = target_norm.clamp(-target_clip, target_clip)
         if noise is None:
@@ -7352,6 +7869,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "diffusion_timestep_min": t_discrete.detach().float().min(),
             "diffusion_timestep_max": t_discrete.detach().float().max(),
             "x0_aux_loss_matrix": x0_aux_per_sample.reshape(B, M),
+            "delta_aux_loss_matrix": geo_diag.get(
+                "delta_aux_per_sample",
+                x0_aux_per_sample.new_zeros(x0_aux_per_sample.shape),
+            ).reshape(B, M),
             "geo_aux_loss_matrix": geo_aux_per_sample.reshape(B, M),
             "x0_aux_active_mask": aux_active_mask.reshape(B, M).detach(),
             "early_kink_rate": geo_diag["early_kink_rate"].detach(),
@@ -7389,6 +7910,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "zero_weight_ratio": flat_weights.new_tensor(1.0).to(device=zero_loss.device, dtype=zero_loss.dtype),
                 "zero_weight_batch": flat_weights.new_tensor(1.0).to(device=zero_loss.device, dtype=zero_loss.dtype),
                 "x0_aux_loss": zero_loss.detach(),
+                "delta_aux_loss": zero_loss.detach(),
                 "geo_aux_loss": zero_loss.detach(),
                 "x0_aux_active_weight_sum": zero_loss.detach(),
                 "x0_aux_active_ratio": zero_loss.detach(),
@@ -7408,6 +7930,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             timestep_sampling=timestep_sampling,
         )
         x0_aux_matrix = loss_diag.pop("x0_aux_loss_matrix", None)
+        delta_aux_matrix = loss_diag.pop("delta_aux_loss_matrix", None)
         geo_aux_matrix = loss_diag.pop("geo_aux_loss_matrix", None)
         aux_active_mask = loss_diag.pop("x0_aux_active_mask", None)
         per_sample_loss = per_target_loss.reshape(B * M)
@@ -7417,6 +7940,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("AWAC weighted diffusion loss is non-finite.")
         zero = awac_loss.new_zeros(())
         x0_aux_loss = zero
+        delta_aux_loss = zero
         geo_aux_loss = zero
         aux_active_weight_sum = zero
         aux_active_ratio = zero
@@ -7432,6 +7956,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 x0_aux_loss = (
                     aux_weights.to(device=x0_aux_matrix.device, dtype=x0_aux_matrix.dtype) * x0_aux_matrix
                 ).sum() / aux_denom.to(device=x0_aux_matrix.device, dtype=x0_aux_matrix.dtype)
+                if delta_aux_matrix is not None:
+                    delta_aux_loss = (
+                        aux_weights.to(device=delta_aux_matrix.device, dtype=delta_aux_matrix.dtype) * delta_aux_matrix
+                    ).sum() / aux_denom.to(device=delta_aux_matrix.device, dtype=delta_aux_matrix.dtype)
                 geo_aux_loss = (
                     aux_weights.to(device=geo_aux_matrix.device, dtype=geo_aux_matrix.dtype) * geo_aux_matrix
                 ).sum() / aux_denom.to(device=geo_aux_matrix.device, dtype=geo_aux_matrix.dtype)
@@ -7445,6 +7973,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "zero_weight_ratio": (flat_weights <= 0).float().mean().to(device=awac_loss.device, dtype=awac_loss.dtype),
             "zero_weight_batch": zero_weight_batch.to(device=awac_loss.device, dtype=awac_loss.dtype),
             "x0_aux_loss": x0_aux_loss.to(device=awac_loss.device, dtype=awac_loss.dtype),
+            "delta_aux_loss": delta_aux_loss.to(device=awac_loss.device, dtype=awac_loss.dtype),
             "geo_aux_loss": geo_aux_loss.to(device=awac_loss.device, dtype=awac_loss.dtype),
             "x0_aux_active_weight_sum": aux_active_weight_sum.detach(),
             "x0_aux_active_ratio": aux_active_ratio.detach(),
@@ -7793,6 +8322,39 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 }
                 records.append(record)
 
+        if bool(getattr(cfg, "use_dpsi", False)) and bool(getattr(cfg, "dpsi_filter_to_support_indices", True)):
+            filtered_records = []
+            for record in records:
+                if "support_indices" not in record:
+                    raise KeyError(
+                        f"DPSI requires support_indices in v3 archive for token={record.get('token', '')!r}."
+                    )
+                support_indices = np.asarray(record["support_indices"], dtype=np.int64)
+                if support_indices.ndim != 1 or support_indices.size == 0:
+                    raise ValueError(
+                        f"DPSI requires non-empty support_indices in v3 archive for token={record.get('token', '')!r}."
+                    )
+                candidate_count = int(np.asarray(record["candidates"]).shape[0])
+                if int(support_indices.min()) < 0 or int(support_indices.max()) >= candidate_count:
+                    raise IndexError(
+                        f"DPSI support_indices out of range for token={record.get('token', '')!r}: "
+                        f"candidate_count={candidate_count}, support_indices={support_indices.tolist()}."
+                    )
+                filtered = dict(record)
+                for key in ("candidates", "rewards", "anchor_distance", "valid_mask", "selection_score"):
+                    if key in filtered:
+                        filtered[key] = np.asarray(filtered[key])[support_indices]
+                filtered["sources"] = [str(record["sources"][int(i)]) for i in support_indices.tolist()]
+                filtered["support_tags"] = [str(record.get("support_tags", [""] * candidate_count)[int(i)]) for i in support_indices.tolist()]
+                if "components" in filtered:
+                    filtered["components"] = {
+                        key: np.asarray(value)[support_indices]
+                        for key, value in dict(record["components"]).items()
+                    }
+                filtered["support_indices"] = list(range(int(support_indices.size)))
+                filtered_records.append(filtered)
+            records = filtered_records
+
         B = len(records)
         max_m = max(int(np.asarray(record["candidates"]).shape[0]) for record in records)
         H, D = action_input.action.shape[-2], action_input.action.shape[-1]
@@ -7804,7 +8366,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         selected_source_code = torch.zeros((B, max_m), device=device, dtype=torch.long)
         selected_source_index = torch.full((B, max_m), -1, device=device, dtype=torch.long)
         selected_selection_score = torch.zeros((B, max_m), device=device, dtype=torch.float32)
-        selected_support_weight = torch.ones((B, max_m), device=device, dtype=torch.float32)
+        selected_support_weight = torch.zeros((B, max_m), device=device, dtype=torch.float32)
         selected_support_tag_code = torch.zeros((B, max_m), device=device, dtype=torch.long)
         selected_components = {
             key: torch.zeros((B, max_m), device=device, dtype=torch.float32)
@@ -8115,6 +8677,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "target_mask": target_mask.detach(),
             "selected_trajs": awac_batch["selected_trajs"].detach(),
             "selected_rewards": selected_rewards.detach(),
+            "selected_components": {
+                key: value.detach()
+                for key, value in awac_batch["selected_components"].items()
+            },
             "selected_real_mask": selected_real_mask.detach(),
             "selected_valid_mask": selected_valid_mask.detach(),
             "selected_source_code": awac_batch["selected_source_code"].detach(),
@@ -8677,6 +9243,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             + float(bc_loss_weight_effective) * bc_loss
             + float(grpo_loss_weight_effective) * grpo_loss
             + float(getattr(self.config, "x0_aux_weight", 0.0)) * awac_diag["x0_aux_loss"].to(dtype=awac_loss.dtype)
+            + float(getattr(self.config, "delta_aux_weight", 0.0)) * awac_diag["delta_aux_loss"].to(dtype=awac_loss.dtype)
             + float(getattr(self.config, "geo_aux_weight", 0.0)) * awac_diag["geo_aux_loss"].to(dtype=awac_loss.dtype)
         )
         if not torch.isfinite(total_loss):
@@ -8735,6 +9302,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "awac_invalid_repulsion_loss": invalid_repulsion_loss,
             "awac_dpo_loss": dpo_loss,
             "x0_aux_loss": awac_diag["x0_aux_loss"].detach(),
+            "delta_aux_loss": awac_diag["delta_aux_loss"].detach(),
             "geo_aux_loss": awac_diag["geo_aux_loss"].detach(),
             "early_kink_rate": awac_diag["early_kink_rate"].detach(),
             "tail_reverse_rate": awac_diag["tail_reverse_rate"].detach(),
@@ -8870,22 +9438,116 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         tokens_list,
         use_bc_loss: bool = True,
     ) -> BatchFeature:
-        output = self.forward_awac_iql(
+        self.set_frozen_modules_to_eval_mode()
+        cfg = self.offline_rl_cfg
+        if not bool(cfg.enabled) or not bool(cfg.use_dpsi):
+            raise RuntimeError("forward_dpsi requires offline_rl_cfg.enabled=True and use_dpsi=True.")
+        if tokens_list is None:
+            raise ValueError("forward_dpsi requires tokens_list for support archive lookup.")
+        token_strs = [str(token) for token in tokens_list]
+        awac_batch = self._load_awac_buffer_candidates(action_input, token_strs, {}, cfg)
+        current_epoch = int(getattr(self.config, "current_train_epoch", 0))
+
+        profile, profile_diag = _compute_dpsi_support_profile(
+            awac_batch["selected_trajs"],
+            awac_batch["selected_rewards"],
+            awac_batch["selected_real_mask"],
+            awac_batch["selected_source_code"],
+            awac_batch["gt_reward"],
+            awac_batch["il_reward"],
+            awac_batch["selected_valid_mask"],
+            cfg,
+            current_epoch=current_epoch,
+        )
+        asmi_weights, asmi_diag = _build_asmi_weights(
+            awac_batch["selected_rewards"],
+            awac_batch["selected_real_mask"],
+            awac_batch["selected_valid_mask"],
+            awac_batch["selected_source_code"],
+            awac_batch["selected_support_weight"],
+            awac_batch["gt_reward"],
+            awac_batch["il_reward"],
+            profile,
+            cfg,
+        )
+        target_trajs, target_weights, target_mask, sample_diag = _sample_asmi_targets(
+            awac_batch["selected_trajs"],
+            asmi_weights,
+            awac_batch["selected_real_mask"],
+            awac_batch["selected_valid_mask"],
+            awac_batch["selected_source_code"],
+            awac_batch["selected_rewards"],
+            cfg,
+            current_epoch=current_epoch,
+            training=bool(self.training),
+        )
+        dpsi_loss, dpsi_diag = self._weighted_diffusion_loss_on_targets(
             vl_features,
             action_input,
-            tokens_list,
-            use_bc_loss=use_bc_loss,
+            target_trajs,
+            target_weights,
+            timestep_sampling=cfg.awac_timestep_sampling,
         )
-        output["dpsi_loss"] = output["awac_loss"]
-        output["dpsi_pairwise_rank_loss"] = output["awac_pairwise_rank_loss"]
-        output["dpsi_invalid_repulsion_loss"] = output["awac_invalid_repulsion_loss"]
-        output["dpsi_preference_dpo_loss"] = output["awac_dpo_loss"]
-        output["dpsi_loss_weight_effective"] = output["awac_loss_weight_effective"]
-        output["dpsi_bc_loss"] = output["bc_loss"]
-        output["dpsi_per_sample_loss_mean"] = output["awac_per_sample_loss_mean"]
-        output["dpsi_target_norm_mean"] = output["awac_target_norm_mean"]
-        output["dpsi_effective_weight_sum"] = output["awac_effective_weight_sum"]
-        return output
+        x0_aux = dpsi_diag["x0_aux_loss"].to(dtype=dpsi_loss.dtype)
+        delta_aux = dpsi_diag["delta_aux_loss"].to(dtype=dpsi_loss.dtype)
+        geo_aux = dpsi_diag["geo_aux_loss"].to(dtype=dpsi_loss.dtype)
+        total_loss = (
+            dpsi_loss
+            + float(getattr(self.config, "x0_aux_weight", 0.0)) * x0_aux
+            + float(getattr(self.config, "delta_aux_weight", 0.0)) * delta_aux
+            + float(getattr(self.config, "geo_aux_weight", 0.0)) * geo_aux
+        )
+        if not torch.isfinite(total_loss):
+            raise ValueError("DPSI/ASMI total loss is non-finite.")
+
+        selected_real = awac_batch["selected_real_mask"]
+        selected_rewards = awac_batch["selected_rewards"]
+        denom = selected_real.float().sum().clamp(min=1.0)
+        selected_reward_mean = (selected_rewards * selected_real.float()).sum() / denom
+        zero = total_loss.new_zeros(())
+        out = {
+            "loss": total_loss,
+            "diffusion_loss": dpsi_loss.detach(),
+            "policy_loss": dpsi_loss,
+            "awac_loss": dpsi_loss,
+            "dpsi_loss": dpsi_loss,
+            "dpsi_loss_weight_effective": total_loss.new_tensor(1.0).detach(),
+            "dpsi_bc_loss": zero.detach(),
+            "dpsi_pairwise_rank_loss": zero.detach(),
+            "dpsi_invalid_repulsion_loss": zero.detach(),
+            "dpsi_preference_dpo_loss": zero.detach(),
+            "jepa_alignment_loss": zero.detach(),
+            "vggt_alignment_loss": zero.detach(),
+            "reward": selected_reward_mean.detach(),
+            "reward_mean": selected_reward_mean.detach(),
+            "gt_reward_mean": awac_batch["gt_reward"].mean().to(total_loss).detach(),
+            "il_reward_mean": awac_batch["il_reward"].mean().to(total_loss).detach(),
+            "best_selected_reward_mean": awac_batch["best_selected_reward"].mean().to(total_loss).detach(),
+            "x0_aux_loss": x0_aux.detach(),
+            "delta_aux_loss": delta_aux.detach(),
+            "geo_aux_loss": geo_aux.detach(),
+            "early_kink_rate": dpsi_diag["early_kink_rate"].detach(),
+            "tail_reverse_rate": dpsi_diag["tail_reverse_rate"].detach(),
+            "curvature_violation_rate": dpsi_diag["curvature_violation_rate"].detach(),
+            "dpsi_enabled": total_loss.new_tensor(1.0).detach(),
+            "dpsi_per_sample_loss_mean": dpsi_diag["per_sample_loss_mean"].detach(),
+            "dpsi_target_norm_mean": dpsi_diag["target_norm_mean"].detach(),
+            "dpsi_timestep_mean": dpsi_diag["diffusion_timestep_mean"].detach(),
+            "dpsi_timestep_min": dpsi_diag["diffusion_timestep_min"].detach(),
+            "dpsi_timestep_max": dpsi_diag["diffusion_timestep_max"].detach(),
+            "dpsi_effective_weight_sum": dpsi_diag["effective_weight_sum"].detach(),
+            "dpsi_zero_weight_ratio": dpsi_diag["zero_weight_ratio"].detach(),
+            "dpsi_sampled_weight_sum_mean": target_weights.sum(dim=1).mean().detach(),
+            "dpsi_sampled_real_ratio": target_mask.float().mean().detach(),
+            "valid_candidate_ratio": awac_batch["valid_candidate_ratio"].to(total_loss).detach(),
+            "selected_valid_ratio": (
+                ((awac_batch["selected_valid_mask"] & selected_real).float().sum())
+                / selected_real.float().sum().clamp(min=1.0)
+            ).to(total_loss).detach(),
+        }
+        for diag in (profile_diag, asmi_diag, sample_diag):
+            out.update({key: value.to(total_loss).detach() for key, value in diag.items()})
+        return BatchFeature(data=out)
 
     def _action_input_index_select(
         self,
@@ -9596,6 +10258,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 components_matrix,
                 trajs_matrix,
                 ref,
+                support_batch=grpo_buffer_guidance if use_grpo_buffer_guidance else None,
             )
             hard_safe_matrix = advantage_aux["feasible_pareto_valid_mask"].to(device=base_rewards.device).bool()
             hard_safe_mask = hard_safe_matrix.reshape(B * G)

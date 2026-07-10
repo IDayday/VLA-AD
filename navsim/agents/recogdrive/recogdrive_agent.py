@@ -223,6 +223,8 @@ class ReCogDriveAgent(AbstractAgent):
         grpo_pdas_gamma: float = 0.5,
         grpo_pdas_lambda_bucket: float = 0.2,
         grpo_pdas_lambda_regression: float = 0.5,
+        grpo_pdas_lambda_coverage: float = 0.2,
+        grpo_pdas_min_support_count_for_coverage: int = 4,
         grpo_ppo_replay_inner_epochs: int = 1,
         grpo_ppo_replay_minibatch_size: int = 0,
         grpo_ppo_replay_max_grad_norm: float = 1.0,
@@ -240,6 +242,8 @@ class ReCogDriveAgent(AbstractAgent):
         metric_cache_path: Optional[str] = '', 
         reference_policy_checkpoint: Optional[str] = '', 
         offline_rl_enabled: bool = False,
+        offline_rl_init_stage3_oracle: bool = True,
+        offline_rl_init_reference_policy: bool = True,
         offline_rl_elite_buffer_path: str = "",
         offline_rl_missing_buffer_policy: str = "error",
         offline_rl_elite_top_m: int = 8,
@@ -433,14 +437,52 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_support_archive_path: str = "",
         offline_rl_use_dpsi: bool = False,
         offline_rl_dpsi_top_m: int = 12,
+        offline_rl_dpsi_filter_to_support_indices: bool = True,
+        offline_rl_dpsi_empty_tag_zero: bool = True,
+        offline_rl_dpsi_scene_normalize_weights: bool = True,
+        offline_rl_dpsi_use_adaptive_beta: bool = True,
+        offline_rl_dpsi_target_sample_m: int = 4,
+        offline_rl_dpsi_target_sample_m_after_warmup: int = 6,
+        offline_rl_dpsi_force_anchor_target: bool = True,
+        offline_rl_dpsi_force_best_target: bool = True,
+        offline_rl_dpsi_beta_warmup_epochs: int = 40,
+        offline_rl_dpsi_beta_max: float = 0.75,
+        offline_rl_dpsi_support_count_mid: int = 4,
+        offline_rl_dpsi_distance_scale_m: float = 0.8,
+        offline_rl_dpsi_entropy_scale: float = 1.0,
+        offline_rl_dpsi_improver_margin: float = 0.03,
+        offline_rl_dpsi_strong_improver_margin: float = 0.05,
+        offline_rl_dpsi_low_support_count: int = 2,
+        offline_rl_dpsi_high_support_count: int = 6,
+        offline_rl_dpsi_high_gt_reward: float = 0.95,
+        offline_rl_dpsi_scene_weight_min: float = 0.75,
+        offline_rl_dpsi_scene_weight_max: float = 1.5,
+        offline_rl_dpsi_improver_scene_weight_gain: float = 2.0,
         offline_rl_dpsi_weight_safe_ep: float = 1.0,
         offline_rl_dpsi_weight_vector_pareto: float = 0.9,
         offline_rl_dpsi_weight_safety_repair: float = 0.8,
         offline_rl_dpsi_weight_ddc_repair: float = 0.8,
-        offline_rl_dpsi_weight_best_pdms: float = 0.7,
+        offline_rl_dpsi_weight_best_pdms: float = 0.75,
+        offline_rl_dpsi_weight_diversity: float = 0.60,
+        offline_rl_dpsi_weight_fallback: float = 0.45,
         offline_rl_dpsi_weight_smooth: float = 0.6,
         offline_rl_dpsi_weight_il: float = 0.5,
-        offline_rl_dpsi_weight_gt: float = 0.4,
+        offline_rl_dpsi_weight_gt: float = 0.45,
+        offline_rl_dpsi_weight_unknown: float = 0.0,
+        offline_rl_dpsi_use_reward_margin_weight: bool = True,
+        offline_rl_dpsi_margin_scale: float = 2.0,
+        offline_rl_dpsi_margin_weight_min: float = 0.5,
+        offline_rl_dpsi_margin_weight_max: float = 1.5,
+        offline_rl_dpsi_bad_margin_threshold: float = -0.05,
+        offline_rl_dpsi_bad_margin_weight: float = 0.3,
+        offline_rl_dpsi_use_source_weight: bool = True,
+        offline_rl_dpsi_source_weight_gt: float = 1.0,
+        offline_rl_dpsi_source_weight_il: float = 0.9,
+        offline_rl_dpsi_source_weight_external: float = 0.85,
+        offline_rl_dpsi_source_weight_failure_expand: float = 0.75,
+        offline_rl_dpsi_source_weight_trust_region: float = 0.85,
+        offline_rl_dpsi_source_weight_structured: float = 0.75,
+        offline_rl_dpsi_source_weight_other: float = 0.7,
         offline_rl_dpsi_pairwise_rank_weight: float = 0.0,
         offline_rl_dpsi_pairwise_beta: float = 8.0,
         offline_rl_log_candidate_sources: bool = True,
@@ -471,7 +513,11 @@ class ReCogDriveAgent(AbstractAgent):
         fs_norm_stats_path: str = "",
         fs_norm_use_robust: bool = False,
         fs_norm_clip: float = 5.0,
+        fs_norm_target_clip: float = -1.0,
+        fs_norm_output_clip: float = -1.0,
+        fs_norm_output_clip_mode: str = "scalar",
         x0_aux_weight: float = 0.0,
+        delta_aux_weight: float = 0.0,
         geo_aux_weight: float = 0.0,
         x0_aux_low_noise_frac: float = 0.5,
         geo_curvature_weight: float = 1.0,
@@ -797,6 +843,8 @@ class ReCogDriveAgent(AbstractAgent):
         self.grpo_pdas_gamma = float(grpo_pdas_gamma)
         self.grpo_pdas_lambda_bucket = float(grpo_pdas_lambda_bucket)
         self.grpo_pdas_lambda_regression = float(grpo_pdas_lambda_regression)
+        self.grpo_pdas_lambda_coverage = float(grpo_pdas_lambda_coverage)
+        self.grpo_pdas_min_support_count_for_coverage = int(grpo_pdas_min_support_count_for_coverage)
         self.grpo_ppo_replay_inner_epochs = int(grpo_ppo_replay_inner_epochs)
         self.grpo_ppo_replay_minibatch_size = int(grpo_ppo_replay_minibatch_size)
         self.grpo_ppo_replay_max_grad_norm = float(grpo_ppo_replay_max_grad_norm)
@@ -933,9 +981,12 @@ class ReCogDriveAgent(AbstractAgent):
             "grpo_pdas_gamma",
             "grpo_pdas_lambda_bucket",
             "grpo_pdas_lambda_regression",
+            "grpo_pdas_lambda_coverage",
         ):
             if float(getattr(self, name)) < 0.0:
                 raise ValueError(f"{name} must be non-negative.")
+        if self.grpo_pdas_min_support_count_for_coverage < 0:
+            raise ValueError("grpo_pdas_min_support_count_for_coverage must be non-negative.")
         if self.grpo_ppo_replay_inner_epochs <= 0:
             raise ValueError("grpo_ppo_replay_inner_epochs must be positive.")
         if self.grpo_ppo_replay_minibatch_size < 0:
@@ -961,6 +1012,8 @@ class ReCogDriveAgent(AbstractAgent):
         self.backbone = None
         self.metric_cache_path = metric_cache_path
         self.reference_policy_checkpoint = reference_policy_checkpoint
+        self.offline_rl_init_stage3_oracle = bool(offline_rl_init_stage3_oracle)
+        self.offline_rl_init_reference_policy = bool(offline_rl_init_reference_policy)
         self.offline_rl_elite_buffer_path = offline_rl_elite_buffer_path
         self.offline_rl_missing_buffer_policy = offline_rl_missing_buffer_policy
         self.offline_rl_elite_top_m = int(offline_rl_elite_top_m)
@@ -1219,14 +1272,52 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_support_archive_path = str(offline_rl_support_archive_path)
         self.offline_rl_use_dpsi = bool(offline_rl_use_dpsi)
         self.offline_rl_dpsi_top_m = int(offline_rl_dpsi_top_m)
+        self.offline_rl_dpsi_filter_to_support_indices = bool(offline_rl_dpsi_filter_to_support_indices)
+        self.offline_rl_dpsi_empty_tag_zero = bool(offline_rl_dpsi_empty_tag_zero)
+        self.offline_rl_dpsi_scene_normalize_weights = bool(offline_rl_dpsi_scene_normalize_weights)
+        self.offline_rl_dpsi_use_adaptive_beta = bool(offline_rl_dpsi_use_adaptive_beta)
+        self.offline_rl_dpsi_target_sample_m = int(offline_rl_dpsi_target_sample_m)
+        self.offline_rl_dpsi_target_sample_m_after_warmup = int(offline_rl_dpsi_target_sample_m_after_warmup)
+        self.offline_rl_dpsi_force_anchor_target = bool(offline_rl_dpsi_force_anchor_target)
+        self.offline_rl_dpsi_force_best_target = bool(offline_rl_dpsi_force_best_target)
+        self.offline_rl_dpsi_beta_warmup_epochs = int(offline_rl_dpsi_beta_warmup_epochs)
+        self.offline_rl_dpsi_beta_max = float(offline_rl_dpsi_beta_max)
+        self.offline_rl_dpsi_support_count_mid = int(offline_rl_dpsi_support_count_mid)
+        self.offline_rl_dpsi_distance_scale_m = float(offline_rl_dpsi_distance_scale_m)
+        self.offline_rl_dpsi_entropy_scale = float(offline_rl_dpsi_entropy_scale)
+        self.offline_rl_dpsi_improver_margin = float(offline_rl_dpsi_improver_margin)
+        self.offline_rl_dpsi_strong_improver_margin = float(offline_rl_dpsi_strong_improver_margin)
+        self.offline_rl_dpsi_low_support_count = int(offline_rl_dpsi_low_support_count)
+        self.offline_rl_dpsi_high_support_count = int(offline_rl_dpsi_high_support_count)
+        self.offline_rl_dpsi_high_gt_reward = float(offline_rl_dpsi_high_gt_reward)
+        self.offline_rl_dpsi_scene_weight_min = float(offline_rl_dpsi_scene_weight_min)
+        self.offline_rl_dpsi_scene_weight_max = float(offline_rl_dpsi_scene_weight_max)
+        self.offline_rl_dpsi_improver_scene_weight_gain = float(offline_rl_dpsi_improver_scene_weight_gain)
         self.offline_rl_dpsi_weight_safe_ep = float(offline_rl_dpsi_weight_safe_ep)
         self.offline_rl_dpsi_weight_vector_pareto = float(offline_rl_dpsi_weight_vector_pareto)
         self.offline_rl_dpsi_weight_safety_repair = float(offline_rl_dpsi_weight_safety_repair)
         self.offline_rl_dpsi_weight_ddc_repair = float(offline_rl_dpsi_weight_ddc_repair)
         self.offline_rl_dpsi_weight_best_pdms = float(offline_rl_dpsi_weight_best_pdms)
+        self.offline_rl_dpsi_weight_diversity = float(offline_rl_dpsi_weight_diversity)
+        self.offline_rl_dpsi_weight_fallback = float(offline_rl_dpsi_weight_fallback)
         self.offline_rl_dpsi_weight_smooth = float(offline_rl_dpsi_weight_smooth)
         self.offline_rl_dpsi_weight_il = float(offline_rl_dpsi_weight_il)
         self.offline_rl_dpsi_weight_gt = float(offline_rl_dpsi_weight_gt)
+        self.offline_rl_dpsi_weight_unknown = float(offline_rl_dpsi_weight_unknown)
+        self.offline_rl_dpsi_use_reward_margin_weight = bool(offline_rl_dpsi_use_reward_margin_weight)
+        self.offline_rl_dpsi_margin_scale = float(offline_rl_dpsi_margin_scale)
+        self.offline_rl_dpsi_margin_weight_min = float(offline_rl_dpsi_margin_weight_min)
+        self.offline_rl_dpsi_margin_weight_max = float(offline_rl_dpsi_margin_weight_max)
+        self.offline_rl_dpsi_bad_margin_threshold = float(offline_rl_dpsi_bad_margin_threshold)
+        self.offline_rl_dpsi_bad_margin_weight = float(offline_rl_dpsi_bad_margin_weight)
+        self.offline_rl_dpsi_use_source_weight = bool(offline_rl_dpsi_use_source_weight)
+        self.offline_rl_dpsi_source_weight_gt = float(offline_rl_dpsi_source_weight_gt)
+        self.offline_rl_dpsi_source_weight_il = float(offline_rl_dpsi_source_weight_il)
+        self.offline_rl_dpsi_source_weight_external = float(offline_rl_dpsi_source_weight_external)
+        self.offline_rl_dpsi_source_weight_failure_expand = float(offline_rl_dpsi_source_weight_failure_expand)
+        self.offline_rl_dpsi_source_weight_trust_region = float(offline_rl_dpsi_source_weight_trust_region)
+        self.offline_rl_dpsi_source_weight_structured = float(offline_rl_dpsi_source_weight_structured)
+        self.offline_rl_dpsi_source_weight_other = float(offline_rl_dpsi_source_weight_other)
         self.offline_rl_dpsi_pairwise_rank_weight = float(offline_rl_dpsi_pairwise_rank_weight)
         self.offline_rl_dpsi_pairwise_beta = float(offline_rl_dpsi_pairwise_beta)
         self.offline_rl_log_candidate_sources = bool(offline_rl_log_candidate_sources)
@@ -1238,7 +1329,11 @@ class ReCogDriveAgent(AbstractAgent):
         self.fs_norm_stats_path = str(fs_norm_stats_path)
         self.fs_norm_use_robust = bool(fs_norm_use_robust)
         self.fs_norm_clip = float(fs_norm_clip)
+        self.fs_norm_target_clip = float(fs_norm_target_clip)
+        self.fs_norm_output_clip = float(fs_norm_output_clip)
+        self.fs_norm_output_clip_mode = str(fs_norm_output_clip_mode)
         self.x0_aux_weight = float(x0_aux_weight)
+        self.delta_aux_weight = float(delta_aux_weight)
         self.geo_aux_weight = float(geo_aux_weight)
         self.x0_aux_low_noise_frac = float(x0_aux_low_noise_frac)
         self.geo_curvature_weight = float(geo_curvature_weight)
@@ -1695,7 +1790,11 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.fs_norm_stats_path = self.fs_norm_stats_path
         cfg.fs_norm_use_robust = self.fs_norm_use_robust
         cfg.fs_norm_clip = self.fs_norm_clip
+        cfg.fs_norm_target_clip = self.fs_norm_target_clip
+        cfg.fs_norm_output_clip = self.fs_norm_output_clip
+        cfg.fs_norm_output_clip_mode = self.fs_norm_output_clip_mode
         cfg.x0_aux_weight = self.x0_aux_weight
+        cfg.delta_aux_weight = self.delta_aux_weight
         cfg.geo_aux_weight = self.geo_aux_weight
         cfg.x0_aux_low_noise_frac = self.x0_aux_low_noise_frac
         cfg.geo_curvature_weight = self.geo_curvature_weight
@@ -1706,6 +1805,8 @@ class ReCogDriveAgent(AbstractAgent):
 
         offline_cfg = cfg.offline_rl_cfg
         offline_cfg.enabled = self.offline_rl_enabled
+        offline_cfg.init_stage3_oracle = self.offline_rl_init_stage3_oracle
+        offline_cfg.init_reference_policy = self.offline_rl_init_reference_policy
         offline_cfg.elite_buffer_path = self.offline_rl_elite_buffer_path
         offline_cfg.missing_buffer_policy = self.offline_rl_missing_buffer_policy
         offline_cfg.elite_top_m = self.offline_rl_elite_top_m
@@ -1938,14 +2039,52 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.support_archive_path = self.offline_rl_support_archive_path
         offline_cfg.use_dpsi = self.offline_rl_use_dpsi
         offline_cfg.dpsi_top_m = self.offline_rl_dpsi_top_m
+        offline_cfg.dpsi_filter_to_support_indices = self.offline_rl_dpsi_filter_to_support_indices
+        offline_cfg.dpsi_empty_tag_zero = self.offline_rl_dpsi_empty_tag_zero
+        offline_cfg.dpsi_scene_normalize_weights = self.offline_rl_dpsi_scene_normalize_weights
+        offline_cfg.dpsi_use_adaptive_beta = self.offline_rl_dpsi_use_adaptive_beta
+        offline_cfg.dpsi_target_sample_m = self.offline_rl_dpsi_target_sample_m
+        offline_cfg.dpsi_target_sample_m_after_warmup = self.offline_rl_dpsi_target_sample_m_after_warmup
+        offline_cfg.dpsi_force_anchor_target = self.offline_rl_dpsi_force_anchor_target
+        offline_cfg.dpsi_force_best_target = self.offline_rl_dpsi_force_best_target
+        offline_cfg.dpsi_beta_warmup_epochs = self.offline_rl_dpsi_beta_warmup_epochs
+        offline_cfg.dpsi_beta_max = self.offline_rl_dpsi_beta_max
+        offline_cfg.dpsi_support_count_mid = self.offline_rl_dpsi_support_count_mid
+        offline_cfg.dpsi_distance_scale_m = self.offline_rl_dpsi_distance_scale_m
+        offline_cfg.dpsi_entropy_scale = self.offline_rl_dpsi_entropy_scale
+        offline_cfg.dpsi_improver_margin = self.offline_rl_dpsi_improver_margin
+        offline_cfg.dpsi_strong_improver_margin = self.offline_rl_dpsi_strong_improver_margin
+        offline_cfg.dpsi_low_support_count = self.offline_rl_dpsi_low_support_count
+        offline_cfg.dpsi_high_support_count = self.offline_rl_dpsi_high_support_count
+        offline_cfg.dpsi_high_gt_reward = self.offline_rl_dpsi_high_gt_reward
+        offline_cfg.dpsi_scene_weight_min = self.offline_rl_dpsi_scene_weight_min
+        offline_cfg.dpsi_scene_weight_max = self.offline_rl_dpsi_scene_weight_max
+        offline_cfg.dpsi_improver_scene_weight_gain = self.offline_rl_dpsi_improver_scene_weight_gain
         offline_cfg.dpsi_weight_safe_ep = self.offline_rl_dpsi_weight_safe_ep
         offline_cfg.dpsi_weight_vector_pareto = self.offline_rl_dpsi_weight_vector_pareto
         offline_cfg.dpsi_weight_safety_repair = self.offline_rl_dpsi_weight_safety_repair
         offline_cfg.dpsi_weight_ddc_repair = self.offline_rl_dpsi_weight_ddc_repair
         offline_cfg.dpsi_weight_best_pdms = self.offline_rl_dpsi_weight_best_pdms
+        offline_cfg.dpsi_weight_diversity = self.offline_rl_dpsi_weight_diversity
+        offline_cfg.dpsi_weight_fallback = self.offline_rl_dpsi_weight_fallback
         offline_cfg.dpsi_weight_smooth = self.offline_rl_dpsi_weight_smooth
         offline_cfg.dpsi_weight_il = self.offline_rl_dpsi_weight_il
         offline_cfg.dpsi_weight_gt = self.offline_rl_dpsi_weight_gt
+        offline_cfg.dpsi_weight_unknown = self.offline_rl_dpsi_weight_unknown
+        offline_cfg.dpsi_use_reward_margin_weight = self.offline_rl_dpsi_use_reward_margin_weight
+        offline_cfg.dpsi_margin_scale = self.offline_rl_dpsi_margin_scale
+        offline_cfg.dpsi_margin_weight_min = self.offline_rl_dpsi_margin_weight_min
+        offline_cfg.dpsi_margin_weight_max = self.offline_rl_dpsi_margin_weight_max
+        offline_cfg.dpsi_bad_margin_threshold = self.offline_rl_dpsi_bad_margin_threshold
+        offline_cfg.dpsi_bad_margin_weight = self.offline_rl_dpsi_bad_margin_weight
+        offline_cfg.dpsi_use_source_weight = self.offline_rl_dpsi_use_source_weight
+        offline_cfg.dpsi_source_weight_gt = self.offline_rl_dpsi_source_weight_gt
+        offline_cfg.dpsi_source_weight_il = self.offline_rl_dpsi_source_weight_il
+        offline_cfg.dpsi_source_weight_external = self.offline_rl_dpsi_source_weight_external
+        offline_cfg.dpsi_source_weight_failure_expand = self.offline_rl_dpsi_source_weight_failure_expand
+        offline_cfg.dpsi_source_weight_trust_region = self.offline_rl_dpsi_source_weight_trust_region
+        offline_cfg.dpsi_source_weight_structured = self.offline_rl_dpsi_source_weight_structured
+        offline_cfg.dpsi_source_weight_other = self.offline_rl_dpsi_source_weight_other
         offline_cfg.dpsi_pairwise_rank_weight = self.offline_rl_dpsi_pairwise_rank_weight
         offline_cfg.dpsi_pairwise_beta = self.offline_rl_dpsi_pairwise_beta
         offline_cfg.log_candidate_sources = self.offline_rl_log_candidate_sources
@@ -2093,6 +2232,8 @@ class ReCogDriveAgent(AbstractAgent):
             cfg.grpo_cfg.pdas_gamma = self.grpo_pdas_gamma
             cfg.grpo_cfg.pdas_lambda_bucket = self.grpo_pdas_lambda_bucket
             cfg.grpo_cfg.pdas_lambda_regression = self.grpo_pdas_lambda_regression
+            cfg.grpo_cfg.pdas_lambda_coverage = self.grpo_pdas_lambda_coverage
+            cfg.grpo_cfg.pdas_min_support_count_for_coverage = self.grpo_pdas_min_support_count_for_coverage
             cfg.grpo_cfg.ppo_replay_inner_epochs = self.grpo_ppo_replay_inner_epochs
             cfg.grpo_cfg.ppo_replay_minibatch_size = self.grpo_ppo_replay_minibatch_size
             cfg.grpo_cfg.ppo_replay_max_grad_norm = self.grpo_ppo_replay_max_grad_norm
@@ -3220,14 +3361,16 @@ class ReCogDriveAgent(AbstractAgent):
 
 
     def compute_loss(self, features: Dict[str, torch.Tensor], targets: Dict[str, torch.Tensor], predictions: Dict[str, torch.Tensor]) -> torch.Tensor:
-        if self.training and getattr(self, "stage3_objective", "none") in {"grpo", "grpo_replay", "dpsi", "awac_iql", "hybrid"}:
-            return predictions
-        elif isinstance(predictions, dict) and "loss" in predictions:
+        if isinstance(predictions, dict) and "loss" in predictions:
             return predictions["loss"]
-        elif hasattr(predictions, "loss"):
+        try:
+            if "loss" in predictions:
+                return predictions["loss"]
+        except (TypeError, KeyError):
+            pass
+        if hasattr(predictions, "loss"):
             return predictions.loss
-        else:
-            return torch.nn.functional.l1_loss(predictions["pred_traj"], targets["trajectory"])
+        return torch.nn.functional.l1_loss(predictions["pred_traj"], targets["trajectory"])
 
     def get_optimizers(self) -> Union[Optimizer, Dict[str, LRScheduler]]:
         self._set_trainable_parameters()

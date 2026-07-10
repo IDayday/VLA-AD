@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 from pathlib import Path
 import logging
 import uuid
@@ -6,7 +6,7 @@ import os
 
 import hydra
 from hydra.utils import instantiate
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 import pytorch_lightning as pl
 import pickle
 
@@ -27,6 +27,75 @@ logger = logging.getLogger(__name__)
 
 CONFIG_PATH = "config/training"
 CONFIG_NAME = "default_training"
+
+
+def _read_token_manifest(path: Union[str, Path]) -> List[Tuple[str, str]]:
+    """
+    Read a tab-separated log/token manifest.
+
+    Each non-comment line must be either `log_name<TAB>token` or
+    `log_name token`. Keeping the manifest outside Hydra avoids passing very
+    large token lists through the command line.
+    """
+    entries: List[Tuple[str, str]] = []
+    with open(path, "r", encoding="utf-8") as f:
+        for line_no, raw_line in enumerate(f, start=1):
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+            parts = line.split("\t")
+            if len(parts) != 2:
+                parts = line.split()
+            if len(parts) != 2:
+                raise ValueError(f"Malformed token manifest line {line_no} in {path}: {raw_line!r}")
+            log_name, token = parts
+            entries.append((log_name, token))
+    if not entries:
+        raise ValueError(f"Token manifest is empty: {path}")
+    return entries
+
+
+def _apply_token_manifest_shard(scene_filter: SceneFilter, cfg: DictConfig) -> None:
+    manifest_path = OmegaConf.select(cfg, "cache_token_manifest")
+    if manifest_path is None:
+        manifest_path = os.environ.get("NAVSIM_CACHE_TOKEN_MANIFEST")
+    if not manifest_path:
+        return
+
+    shard_count = int(
+        OmegaConf.select(cfg, "cache_token_shard_count")
+        or os.environ.get("NAVSIM_CACHE_TOKEN_SHARD_COUNT", "1")
+    )
+    shard_index = int(
+        OmegaConf.select(cfg, "cache_token_shard_index")
+        or os.environ.get("NAVSIM_CACHE_TOKEN_SHARD_INDEX", "0")
+    )
+    if shard_count < 1:
+        raise ValueError(f"cache_token_shard_count must be >= 1, got {shard_count}")
+    if not (0 <= shard_index < shard_count):
+        raise ValueError(f"cache_token_shard_index must be in [0, {shard_count}), got {shard_index}")
+
+    entries = _read_token_manifest(manifest_path)
+    selected_entries = [entry for idx, entry in enumerate(entries) if idx % shard_count == shard_index]
+    if not selected_entries:
+        raise ValueError(
+            f"Token manifest shard {shard_index}/{shard_count} is empty: {manifest_path}"
+        )
+
+    if scene_filter.tokens is not None:
+        allowed_tokens = set(scene_filter.tokens)
+        selected_entries = [(log_name, token) for log_name, token in selected_entries if token in allowed_tokens]
+
+    scene_filter.tokens = [token for _, token in selected_entries]
+    scene_filter.log_names = sorted({log_name for log_name, _ in selected_entries})
+    logger.info(
+        "Applied token manifest shard %s/%s from %s: %s tokens across %s logs.",
+        shard_index,
+        shard_count,
+        manifest_path,
+        len(scene_filter.tokens),
+        len(scene_filter.log_names),
+    )
 
 
 def cache_features(args: List[Dict[str, Union[List[str], DictConfig]]]) -> List[Optional[Any]]:
@@ -139,6 +208,7 @@ def main(cfg: DictConfig) -> None:
 
     logger.info("Building SceneLoader")
     scene_filter: SceneFilter = instantiate(cfg.train_test_split.scene_filter)
+    _apply_token_manifest_shard(scene_filter, cfg)
     data_path = Path(cfg.navsim_log_path)
     sensor_blobs_path = Path(cfg.sensor_blobs_path)
     scene_loader = SceneLoader(

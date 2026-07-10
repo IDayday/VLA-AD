@@ -267,8 +267,81 @@ def write_summary(args: argparse.Namespace, state: Dict[str, Any]) -> None:
                 writer.writerow({key: row.get(key) for key in fields})
 
 
+def expected_val_epochs(args: argparse.Namespace) -> List[int]:
+    epochs: List[int] = []
+    for epoch in range(args.val_min_epoch, args.max_epochs + 1):
+        if args.val_every_n_epochs > 0 and epoch % args.val_every_n_epochs != 0:
+            continue
+        epochs.append(epoch)
+    return epochs
+
+
+def val_epochs_completed(state: Dict[str, Any]) -> set[int]:
+    epochs = set()
+    for payload in state.get("val_completed", {}).values():
+        try:
+            epochs.add(int(payload.get("epoch") or 0))
+        except Exception:
+            continue
+    return epochs
+
+
+def refresh_navtest_top_backups(args: argparse.Namespace, state: Dict[str, Any]) -> None:
+    if args.backup_navtest_top_dir is None or args.backup_navtest_top_k <= 0:
+        return
+    rows = [
+        payload
+        for payload in state.get("navtest_completed", {}).values()
+        if payload.get("PDMS") is not None
+    ]
+    rows = sorted(rows, key=lambda row: float(row["PDMS"]), reverse=True)
+    args.backup_navtest_top_dir.mkdir(parents=True, exist_ok=True)
+    for old in args.backup_navtest_top_dir.glob("rank*.ckpt"):
+        old.unlink()
+    ranking_csv = args.backup_navtest_top_dir / "navtest_top_ranking.csv"
+    with ranking_csv.open("w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=["rank", "epoch", "PDMS", "checkpoint", "source_checkpoint", "backup_checkpoint", "eval_dir"],
+        )
+        writer.writeheader()
+        for rank, payload in enumerate(rows, start=1):
+            if rank > args.backup_navtest_top_k:
+                break
+            source = Path(payload.get("source_checkpoint") or payload.get("checkpoint"))
+            backup_name = (
+                f"rank{rank:02d}_PDMS_{float(payload['PDMS']):.6f}_"
+                f"epoch_{int(payload.get('epoch') or 0):03d}_{safe_name(source.name)}"
+            )
+            backup = args.backup_navtest_top_dir / backup_name
+            if source.is_file():
+                hardlink_or_copy(source, backup)
+            writer.writerow(
+                {
+                    "rank": rank,
+                    "epoch": payload.get("epoch"),
+                    "PDMS": payload.get("PDMS"),
+                    "checkpoint": payload.get("checkpoint"),
+                    "source_checkpoint": str(source),
+                    "backup_checkpoint": str(backup),
+                    "eval_dir": payload.get("eval_dir"),
+                }
+            )
+
+
 def ckpt_key(path: Path) -> str:
     return str(path.resolve())
+
+
+def navtest_resources_ready(args: argparse.Namespace) -> bool:
+    patterns = [item.strip() for item in str(args.navtest_chunk_name_pattern).split(",") if item.strip()]
+    if not args.navtest_chunk_cache_root.is_dir():
+        return False
+    for pattern in patterns:
+        for path in args.navtest_chunk_cache_root.glob(pattern):
+            if path.is_dir() and (path / "index.jsonl").is_file():
+                return True
+    return False
 
 
 def run_cycle(args: argparse.Namespace, state: Dict[str, Any]) -> Dict[str, Any]:
@@ -298,19 +371,38 @@ def run_cycle(args: argparse.Namespace, state: Dict[str, Any]) -> Dict[str, Any]
         save_state(args, state)
         write_summary(args, state)
 
+    if args.defer_navtest_until_val_complete:
+        expected = set(expected_val_epochs(args))
+        completed = val_epochs_completed(state)
+        missing = sorted(expected - completed)
+        if missing:
+            log(
+                args,
+                f"waiting before navtest: val6000 completed {len(completed & expected)}/{len(expected)} "
+                f"expected epochs; next missing={missing[:5]}",
+            )
+            return state
+
     eligible = [
         (key, payload)
         for key, payload in state["val_completed"].items()
         if int(payload.get("epoch") or 0) >= half_epoch and payload.get("PDMS") is not None
     ]
     top = sorted(eligible, key=lambda item: float(item[1]["PDMS"]), reverse=True)[: args.top_k]
+    if top and not navtest_resources_ready(args):
+        log(
+            args,
+            f"waiting before navtest: no indexed navtest chunks matching "
+            f"{args.navtest_chunk_name_pattern!r} under {args.navtest_chunk_cache_root}",
+        )
+        return state
     for key, payload in top:
         if key in state["navtest_completed"]:
             continue
         ckpt = Path(payload["checkpoint"])
         if not ckpt.is_file():
             continue
-        if args.backup_navtest_top_dir is not None:
+        if args.backup_navtest_top_dir is not None and args.backup_navtest_top_k <= 0:
             backup = args.backup_navtest_top_dir / f"rank_pending_epoch_{payload.get('epoch')}_{ckpt.name}"
             hardlink_or_copy(ckpt, backup)
         try:
@@ -319,6 +411,8 @@ def run_cycle(args: argparse.Namespace, state: Dict[str, Any]) -> Dict[str, Any]
             state["failed"][key] = {"checkpoint": str(ckpt), "stage": "navtest", "error": repr(exc), "failed_at": utc_now()}
         save_state(args, state)
         write_summary(args, state)
+        refresh_navtest_top_backups(args, state)
+    refresh_navtest_top_backups(args, state)
     return state
 
 
@@ -345,6 +439,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--navtest-after-fraction", type=float, default=0.5)
     parser.add_argument("--top-k", type=int, default=5)
     parser.add_argument("--backup-navtest-top-dir", type=Path, default=None)
+    parser.add_argument("--backup-navtest-top-k", type=int, default=0)
+    parser.add_argument("--defer-navtest-until-val-complete", action="store_true")
     parser.add_argument("--poll-seconds", type=float, default=300.0)
     parser.add_argument("--stable-seconds", type=float, default=90.0)
     parser.add_argument("--num-shards", type=int, default=8)

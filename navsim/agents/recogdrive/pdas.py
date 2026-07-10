@@ -39,7 +39,7 @@ def compute_phenotype_buckets(trajs, components, feas, ref, cfg) -> torch.Tensor
     B, G = trajs.shape[:2]
     device = trajs.device
     ep = _component(components, "ego_progress", trajs[..., 0, 0])
-    ttc = _component(components, "time_to_collision_within_bound", trajs[..., 0, 0])
+    ddc = _component(components, "driving_direction_compliance", trajs[..., 0, 0])
     ref_ep = ref.get("ref_ep", ep.mean(dim=1)).to(device=device, dtype=trajs.dtype)
     endpoint_y = trajs[..., -1, 1]
     fast = ep > ref_ep[:, None] + float(_cfg_value(cfg, "fp_progress_fast_margin", 0.02))
@@ -47,13 +47,13 @@ def compute_phenotype_buckets(trajs, components, feas, ref, cfg) -> torch.Tensor
     progress_bucket = torch.where(fast, torch.full_like(ep, 2, dtype=torch.long), torch.where(slow, torch.zeros_like(ep, dtype=torch.long), torch.ones_like(ep, dtype=torch.long)))
     lateral_threshold = float(_cfg_value(cfg, "fp_lateral_bucket_threshold_m", 0.5))
     lateral_bucket = torch.where(endpoint_y > lateral_threshold, torch.full((B, G), 2, device=device, dtype=torch.long), torch.where(endpoint_y < -lateral_threshold, torch.zeros((B, G), device=device, dtype=torch.long), torch.ones((B, G), device=device, dtype=torch.long)))
-    ttc_bucket = (ttc >= float(_cfg_value(cfg, "fp_ttc_high_threshold", 0.95))).to(torch.long)
+    ddc_bucket = (ddc >= float(_cfg_value(cfg, "fp_ddc_min_absolute", 0.95))).to(torch.long)
     feas_cost = feas.get("feas_cost") if isinstance(feas, Mapping) else None
     if feas_cost is None:
-        feas_bucket = torch.zeros((B, G), device=device, dtype=torch.long)
+        feas_bucket = torch.ones((B, G), device=device, dtype=torch.long)
     else:
         feas_bucket = (feas_cost.to(device=device, dtype=trajs.dtype) <= float(_cfg_value(cfg, "fp_feas_bucket_threshold", 0.1))).to(torch.long)
-    return progress_bucket * 18 + lateral_bucket * 6 + ttc_bucket * 2 + feas_bucket
+    return progress_bucket * 18 + lateral_bucket * 6 + ddc_bucket * 2 + feas_bucket
 
 
 def compute_pdas_metrics(rewards_matrix, components_matrix, trajs_matrix, ref, cfg) -> PDASMetrics:
