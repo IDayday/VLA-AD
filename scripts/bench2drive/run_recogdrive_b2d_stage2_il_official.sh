@@ -15,6 +15,7 @@ EXPECTED_VLM_PATH=${EXPECTED_VLM_PATH:-}
 ALLOW_BASE_VLM_CACHE=${ALLOW_BASE_VLM_CACHE:-0}
 RUN_ID=${RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)}
 OUTPUT_DIR=${OUTPUT_DIR:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_stage2_scratch_2b_${RUN_ID}}
+LAUNCH_LOCK_PATH=${LAUNCH_LOCK_PATH:-${OUTPUT_DIR}.launch.lock}
 
 # ReCogDrive reports Stage II diffusion planner training with large-batch
 # IL. With 8 GPUs, 32 per GPU and grad-accum 2 gives effective batch 512.
@@ -61,6 +62,13 @@ export CHUNK_CACHE_ROOT CHUNK_NAME_PATTERN OUTPUT_DIR BASE_VLM_PATH EXPECTED_VLM
 
 cd "${VLA_AD_ROOT}"
 mkdir -p "${OUTPUT_DIR}"
+mkdir -p "$(dirname "${LAUNCH_LOCK_PATH}")"
+exec 9>"${LAUNCH_LOCK_PATH}"
+if ! flock -n 9; then
+  echo "Another Stage2 launcher already owns ${LAUNCH_LOCK_PATH}; refusing a duplicate run." >&2
+  exit 75
+fi
+GIT_COMMIT=$(git rev-parse HEAD)
 
 python - <<'PY'
 import json
@@ -122,6 +130,7 @@ PY
 
 cat > "${OUTPUT_DIR}/launch_env.txt" <<EOF
 date_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+git_commit=${GIT_COMMIT}
 vla_ad_root=${VLA_AD_ROOT}
 config=${CONFIG}
 chunk_cache_root=${CHUNK_CACHE_ROOT}
@@ -132,6 +141,7 @@ base_vlm_path=${BASE_VLM_PATH}
 expected_vlm_path=${EXPECTED_VLM_PATH}
 allow_base_vlm_cache=${ALLOW_BASE_VLM_CACHE}
 output_dir=${OUTPUT_DIR}
+launch_lock_path=${LAUNCH_LOCK_PATH}
 global_epochs=${GLOBAL_EPOCHS}
 batch_size=${BATCH_SIZE}
 gradient_accumulation_steps=${GRADIENT_ACCUMULATION_STEPS}

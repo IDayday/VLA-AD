@@ -130,20 +130,43 @@ action-head learning rate 1e-4, three warmup epochs, and cosine decay. The
 launcher refuses dummy features, non-VLM features, NAVSIM prompt caches,
 mixed-source shards, and caches generated from the pre-Stage1 base VLM.
 
+For a long cache build, start the independent watcher in a detached terminal.
+It waits until every shard has final metadata and index files, validates exact
+clip/range/record coverage, loads boundary samples to check tensor contracts,
+and then launches the scratch Stage2 job exactly once:
+
+```bash
+CACHE_RUN_ROOT=outputs/bench2drive_recogdrive_stage2_cache_<run> \
+VLM_PATH=outputs/bench2drive_recogdrive_stage1_sft_<run> \
+OUTPUT_DIR=outputs/bench2drive_recogdrive_stage2_scratch_2b_<run> \
+EXPECTED_SHARDS=8 \
+EXPECTED_CLIPS=1000 \
+EXPECTED_RECORDS=38934 \
+bash scripts/bench2drive/watch_recogdrive_b2d_stage2_cache_then_train.sh
+```
+
+The watcher records its state and logs under `<CACHE_RUN_ROOT>/watcher/`.
+The Stage2 launcher holds a non-blocking output lock, so a manual launcher and
+the watcher cannot start duplicate training jobs for the same output path.
+
 ## Stage2 evaluation gate
 
-First run the cached open-loop evaluator on the held-out `val/shard_*` cache
-and report L1, ADE, FDE, and heading error. Then run all 220 closed-loop routes
-with the Stage1 VLM and Stage2 checkpoint. Do not start Stage3 from a partial
-route subset. Record route completion count, DS, RC, strict success, infractions,
-and scenario-family breakdown.
+For a split-data experiment, first run the cached open-loop evaluator on the
+held-out `val/shard_*` cache and report L1, ADE, FDE, and heading error. The
+active full-1,000-clip fit has deliberately consumed the former 50 validation
+clips, so that cache is no longer an unbiased evaluation set. Its cached
+metrics may be used only as in-sample diagnostics.
 
-Stage3 is accepted only if its Stage2 initialization and evaluation artifacts
-can be traced to the same Stage1 checkpoint and clip manifest.
+Evaluate the accepted full-data Stage2 checkpoint on all 220 closed-loop routes
+with the paired Stage1 VLM. Record route completion count, DS, RC, strict
+success, infractions, and scenario-family breakdown. Stage3 is deferred and is
+not part of the current execution plan.
 
-## Stage3 GRPO
+## Deferred Stage3 GRPO
 
-The checked-in GRPO path currently computes NAVSIM/PDM rewards. It is not a
+Stage3 is outside the active execution plan until Stage2 training and the full
+Stage2 evaluation are complete. The checked-in GRPO path currently computes
+NAVSIM/PDM rewards. It is not a
 faithful Bench2Drive reward implementation and must not be relabeled as B2D
 GRPO. After the Stage2 gate, implement a B2D metric cache/reward adapter using
 the official route criteria (progress, infraction penalties, success, and
