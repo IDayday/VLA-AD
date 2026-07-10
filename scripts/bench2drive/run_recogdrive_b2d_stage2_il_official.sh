@@ -77,7 +77,7 @@ from pathlib import Path
 
 root = Path(os.environ["CHUNK_CACHE_ROOT"])
 pattern = os.environ["CHUNK_NAME_PATTERN"]
-chunks = sorted(root.glob(pattern))
+chunks = sorted(path for path in root.glob(pattern) if path.is_dir())
 if not chunks:
     raise SystemExit(f"No chunk cache shards matched {root / pattern}")
 total = 0
