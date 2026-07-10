@@ -509,6 +509,15 @@ class ReCogDriveAgent(AbstractAgent):
         vggt_dim: int = 2048,
         expert_dropout: float = 0.10,
         expert_fusion_mode: str = "concat_context",
+        use_planning_token_adapter: bool = False,
+        planning_token_source: str = "none",
+        planning_num_tokens: int = 16,
+        planning_num_heads: int = 8,
+        planning_condition_layers: str = "cross_attention",
+        planning_gate_init: float = 0.05,
+        planning_context_gate_init: float = 0.05,
+        planning_condition_dropout: float = 0.10,
+        planning_legacy_cot_gradient_path: bool = True,
         use_fs_norm: bool = False,
         fs_norm_stats_path: str = "",
         fs_norm_use_robust: bool = False,
@@ -516,6 +525,7 @@ class ReCogDriveAgent(AbstractAgent):
         fs_norm_target_clip: float = -1.0,
         fs_norm_output_clip: float = -1.0,
         fs_norm_output_clip_mode: str = "scalar",
+        fs_norm_min_version: int = 1,
         x0_aux_weight: float = 0.0,
         delta_aux_weight: float = 0.0,
         geo_aux_weight: float = 0.0,
@@ -525,6 +535,15 @@ class ReCogDriveAgent(AbstractAgent):
         geo_tail_reverse_weight: float = 2.0,
         geo_early_kink_weight: float = 2.0,
         geo_jerk_weight: float = 0.2,
+        trajectory_aux_weight: float = 0.0,
+        trajectory_heading_weight: float = 1.0,
+        trajectory_huber_beta: float = 0.5,
+        feasibility_aux_weight: float = 0.0,
+        aux_alpha_power: float = 1.0,
+        aux_warmup_epochs: int = 10,
+        tangent_margin_rad: float = 0.08,
+        curvature_margin: float = 0.05,
+        min_segment_length: float = 0.20,
         use_teacher_context_tokens: bool = True,
         use_student_latent_adapters: bool = True,
         use_branch_weighted_mean: bool = True,
@@ -1325,6 +1344,15 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_log_oracle_stats = bool(offline_rl_log_oracle_stats)
         self.offline_rl_require_reference_policy_checkpoint = bool(offline_rl_require_reference_policy_checkpoint)
         self.offline_rl_report_raw_and_valid_best = bool(offline_rl_report_raw_and_valid_best)
+        self.use_planning_token_adapter = bool(use_planning_token_adapter)
+        self.planning_token_source = str(planning_token_source)
+        self.planning_num_tokens = int(planning_num_tokens)
+        self.planning_num_heads = int(planning_num_heads)
+        self.planning_condition_layers = str(planning_condition_layers)
+        self.planning_gate_init = float(planning_gate_init)
+        self.planning_context_gate_init = float(planning_context_gate_init)
+        self.planning_condition_dropout = float(planning_condition_dropout)
+        self.planning_legacy_cot_gradient_path = bool(planning_legacy_cot_gradient_path)
         self.use_fs_norm = bool(use_fs_norm)
         self.fs_norm_stats_path = str(fs_norm_stats_path)
         self.fs_norm_use_robust = bool(fs_norm_use_robust)
@@ -1332,6 +1360,7 @@ class ReCogDriveAgent(AbstractAgent):
         self.fs_norm_target_clip = float(fs_norm_target_clip)
         self.fs_norm_output_clip = float(fs_norm_output_clip)
         self.fs_norm_output_clip_mode = str(fs_norm_output_clip_mode)
+        self.fs_norm_min_version = int(fs_norm_min_version)
         self.x0_aux_weight = float(x0_aux_weight)
         self.delta_aux_weight = float(delta_aux_weight)
         self.geo_aux_weight = float(geo_aux_weight)
@@ -1341,6 +1370,15 @@ class ReCogDriveAgent(AbstractAgent):
         self.geo_tail_reverse_weight = float(geo_tail_reverse_weight)
         self.geo_early_kink_weight = float(geo_early_kink_weight)
         self.geo_jerk_weight = float(geo_jerk_weight)
+        self.trajectory_aux_weight = float(trajectory_aux_weight)
+        self.trajectory_heading_weight = float(trajectory_heading_weight)
+        self.trajectory_huber_beta = float(trajectory_huber_beta)
+        self.feasibility_aux_weight = float(feasibility_aux_weight)
+        self.aux_alpha_power = float(aux_alpha_power)
+        self.aux_warmup_epochs = int(aux_warmup_epochs)
+        self.tangent_margin_rad = float(tangent_margin_rad)
+        self.curvature_margin = float(curvature_margin)
+        self.min_segment_length = float(min_segment_length)
         self.vlm_size = vlm_size
         self.train_backbone = train_backbone
         self.use_expert_features = use_expert_features
@@ -1786,6 +1824,15 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.two_expert_prefusion_condition_dropout = self.two_expert_prefusion_condition_dropout
         cfg.two_expert_prefusion_scale_init = self.two_expert_prefusion_scale_init
         cfg.two_expert_prefusion_zero_init = self.two_expert_prefusion_zero_init
+        cfg.use_planning_token_adapter = self.use_planning_token_adapter
+        cfg.planning_token_source = self.planning_token_source
+        cfg.planning_num_tokens = self.planning_num_tokens
+        cfg.planning_num_heads = self.planning_num_heads
+        cfg.planning_condition_layers = self.planning_condition_layers
+        cfg.planning_gate_init = self.planning_gate_init
+        cfg.planning_context_gate_init = self.planning_context_gate_init
+        cfg.planning_condition_dropout = self.planning_condition_dropout
+        cfg.planning_legacy_cot_gradient_path = self.planning_legacy_cot_gradient_path
         cfg.use_fs_norm = self.use_fs_norm
         cfg.fs_norm_stats_path = self.fs_norm_stats_path
         cfg.fs_norm_use_robust = self.fs_norm_use_robust
@@ -1793,6 +1840,7 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.fs_norm_target_clip = self.fs_norm_target_clip
         cfg.fs_norm_output_clip = self.fs_norm_output_clip
         cfg.fs_norm_output_clip_mode = self.fs_norm_output_clip_mode
+        cfg.fs_norm_min_version = self.fs_norm_min_version
         cfg.x0_aux_weight = self.x0_aux_weight
         cfg.delta_aux_weight = self.delta_aux_weight
         cfg.geo_aux_weight = self.geo_aux_weight
@@ -1802,6 +1850,15 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.geo_tail_reverse_weight = self.geo_tail_reverse_weight
         cfg.geo_early_kink_weight = self.geo_early_kink_weight
         cfg.geo_jerk_weight = self.geo_jerk_weight
+        cfg.trajectory_aux_weight = self.trajectory_aux_weight
+        cfg.trajectory_heading_weight = self.trajectory_heading_weight
+        cfg.trajectory_huber_beta = self.trajectory_huber_beta
+        cfg.feasibility_aux_weight = self.feasibility_aux_weight
+        cfg.aux_alpha_power = self.aux_alpha_power
+        cfg.aux_warmup_epochs = self.aux_warmup_epochs
+        cfg.tangent_margin_rad = self.tangent_margin_rad
+        cfg.curvature_margin = self.curvature_margin
+        cfg.min_segment_length = self.min_segment_length
 
         offline_cfg = cfg.offline_rl_cfg
         offline_cfg.enabled = self.offline_rl_enabled
@@ -2741,6 +2798,12 @@ class ReCogDriveAgent(AbstractAgent):
         return key.startswith("action_head.last_vla_cot.")
 
     @staticmethod
+    def _is_planning_adapter_parameter_key(key: str) -> bool:
+        return key.startswith("action_head.planning_adapter.") or (
+            key.startswith("action_head.model.transformer_blocks.") and ".planning_gate_logit" in key
+        )
+
+    @staticmethod
     def _is_last_vla_condition_parameter_key(key: str) -> bool:
         if not key.startswith("action_head."):
             return False
@@ -2758,7 +2821,16 @@ class ReCogDriveAgent(AbstractAgent):
 
     @staticmethod
     def _is_gate_parameter_key(key: str) -> bool:
-        gate_markers = ("jepa_gate", "vggt_gate", "branch_logits", "scene_gate", "timestep_gate", "two_expert_denoise_gate")
+        gate_markers = (
+            "jepa_gate",
+            "vggt_gate",
+            "branch_logits",
+            "scene_gate",
+            "timestep_gate",
+            "two_expert_denoise_gate",
+            "planning_gate_logit",
+            "context_gate_logit",
+        )
         return key.startswith("action_head.") and any(marker in key for marker in gate_markers)
 
     @staticmethod
@@ -2798,6 +2870,10 @@ class ReCogDriveAgent(AbstractAgent):
         if not self.use_last_vla:
             for name, parameter in self.named_parameters():
                 if self._is_last_vla_condition_parameter_key(name):
+                    if self.use_planning_token_adapter and self.planning_token_source == "adapter" and (
+                        ".cot_cross_attn." in name or ".cot_out_proj." in name
+                    ):
+                        continue
                     parameter.requires_grad = False
         if self.freeze_expert and (self.train_expert_only or self.freeze_base_action_head):
             raise ValueError(
@@ -3156,10 +3232,26 @@ class ReCogDriveAgent(AbstractAgent):
         filtered_state: Dict[str, torch.Tensor] = {}
         unexpected_keys: List[str] = []
         skipped_expert_shape: List[str] = []
+        skipped_legacy_planning_projection: List[str] = []
         shape_mismatches: List[str] = []
+        normalized_checkpoint_keys = {
+            key[len("agent."):] if key.startswith("agent.") else key for key in state_dict
+        }
+        preserve_adapter_projection_init = bool(
+            self.use_planning_token_adapter
+            and self.planning_token_source == "adapter"
+            and not any(key.startswith("action_head.planning_adapter.") for key in normalized_checkpoint_keys)
+        )
 
         for key, value in state_dict.items():
             mapped_key = key[len("agent."):] if key.startswith("agent.") else key
+            if (
+                preserve_adapter_projection_init
+                and mapped_key.startswith("action_head.model.transformer_blocks.")
+                and ".cot_out_proj." in mapped_key
+            ):
+                skipped_legacy_planning_projection.append(mapped_key)
+                continue
             if mapped_key not in model_dict:
                 unexpected_keys.append(mapped_key)
                 continue
@@ -3184,7 +3276,13 @@ class ReCogDriveAgent(AbstractAgent):
 
         incompatible = self.load_state_dict(filtered_state, strict=False)
         missing_keys = list(incompatible.missing_keys)
-        missing_expert = [key for key in missing_keys if self._is_expert_parameter_key(key) or self._is_last_vla_parameter_key(key)]
+        missing_expert = [
+            key
+            for key in missing_keys
+            if self._is_expert_parameter_key(key)
+            or self._is_last_vla_parameter_key(key)
+            or self._is_planning_adapter_parameter_key(key)
+        ]
         missing_other = [key for key in missing_keys if key not in missing_expert]
         verbose_key_log = os.environ.get("RECOGDRIVE_CHECKPOINT_LOAD_VERBOSE", "0").strip().lower() in {
             "1",
@@ -3219,6 +3317,7 @@ class ReCogDriveAgent(AbstractAgent):
         _print_key_summary("missing non-expert keys", missing_other)
         _print_key_summary("unexpected keys", [*unexpected_keys, *incompatible.unexpected_keys])
         _print_key_summary("skipped expert shape mismatches", skipped_expert_shape)
+        _print_key_summary("skipped legacy zero-init planning projections", skipped_legacy_planning_projection)
 
     def _safe_load_last_rd_adapter(self, checkpoint_path: str) -> None:
         path = self._resolve_checkpoint_path(checkpoint_path)

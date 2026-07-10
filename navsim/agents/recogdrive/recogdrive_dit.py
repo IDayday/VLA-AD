@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import math
 import torch
 from torch import nn
 import torch.nn.functional as F
@@ -108,8 +109,13 @@ class LightningDiTBlock(nn.Module):
         nn.init.constant_(self.cot_out_proj.weight, 0.0)
         nn.init.constant_(self.cot_out_proj.bias, 0.0)
         self.cot_condition_scale = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
+        self.planning_gate_logit = nn.Parameter(
+            torch.tensor(math.log(0.05 / 0.95), dtype=torch.float32)
+        )
         self.cot_branch_gradient_scale = 1e-3
         self.last_cot_delta_norm: Optional[torch.Tensor] = None
+        self.last_planning_delta_norm: Optional[torch.Tensor] = None
+        self.last_planning_gate: Optional[torch.Tensor] = None
 
         if norm_type == "layer_norm":
             self.norm2 = nn.LayerNorm(dim, elementwise_affine=False, eps=1e-6)
@@ -138,6 +144,8 @@ class LightningDiTBlock(nn.Module):
         conditioning: torch.Tensor,
         encoder_hidden_states: Optional[torch.Tensor] = None,
         cot_condition_tokens: Optional[torch.Tensor] = None,
+        planning_condition_tokens: Optional[torch.Tensor] = None,
+        planning_legacy_cot_gradient_path: bool = True,
         rotary_embedder: Optional[nn.Module] = None,
     ) -> torch.Tensor:
         mod_params = self.adaLN_modulation(conditioning)
@@ -153,18 +161,31 @@ class LightningDiTBlock(nn.Module):
             rotary_embedder=rotary_embedder
         )
         hidden_states = hidden_states + gate_attn.unsqueeze(1) * attn_output
+        condition_tokens = planning_condition_tokens
+        legacy_path = bool(condition_tokens is not None and planning_legacy_cot_gradient_path)
+        if condition_tokens is None and cot_condition_tokens is not None:
+            condition_tokens = cot_condition_tokens
+            legacy_path = bool(planning_legacy_cot_gradient_path)
         self.last_cot_delta_norm = hidden_states.new_zeros(())
-        if cot_condition_tokens is not None:
+        self.last_planning_delta_norm = hidden_states.new_zeros(())
+        self.last_planning_gate = hidden_states.new_zeros(())
+        if condition_tokens is not None:
             cot_attn_output = self.cot_cross_attn(
                 modulated_states,
-                encoder_hidden_states=cot_condition_tokens,
+                encoder_hidden_states=condition_tokens,
                 rotary_embedder=rotary_embedder,
             )
             cot_delta = self.cot_out_proj(cot_attn_output)
-            if self.cot_branch_gradient_scale > 0.0:
+            if legacy_path and self.cot_branch_gradient_scale > 0.0:
                 cot_delta = cot_delta + float(self.cot_branch_gradient_scale) * (cot_attn_output - cot_attn_output.detach())
-            cot_delta = cot_delta * self.cot_condition_scale.to(device=cot_delta.device, dtype=cot_delta.dtype)
+            if legacy_path:
+                gate = self.cot_condition_scale.to(device=cot_delta.device, dtype=cot_delta.dtype)
+            else:
+                gate = torch.sigmoid(self.planning_gate_logit).to(device=cot_delta.device, dtype=cot_delta.dtype)
+            cot_delta = cot_delta * gate
             self.last_cot_delta_norm = cot_delta.detach().float().norm(dim=-1).mean()
+            self.last_planning_delta_norm = self.last_cot_delta_norm
+            self.last_planning_gate = gate.detach().float()
             hidden_states = hidden_states + cot_delta
 
         normed_states = self.norm2(hidden_states)
@@ -222,6 +243,16 @@ class LightningDiT(nn.Module):
 
         self._initialize_weights()
 
+    def configure_planning_adapter_branch(self, planning_gate_init: float) -> None:
+        """Enable normally initialized projection/gates for standalone planning tokens."""
+        if not 0.0 < float(planning_gate_init) < 1.0:
+            raise ValueError("planning_gate_init must be in (0.0, 1.0).")
+        gate_logit = math.log(float(planning_gate_init) / (1.0 - float(planning_gate_init)))
+        for block in self.transformer_blocks:
+            block.cot_out_proj.reset_parameters()
+            with torch.no_grad():
+                block.planning_gate_logit.fill_(gate_logit)
+
     def _initialize_weights(self) -> None:
         """
         Initializes weights for stable training.
@@ -245,6 +276,9 @@ class LightningDiT(nn.Module):
         conditioning_features: torch.Tensor,
         timesteps: torch.LongTensor,
         cot_condition_tokens: Optional[torch.Tensor] = None,
+        planning_condition_tokens: Optional[torch.Tensor] = None,
+        planning_condition_layers: str = "all",
+        planning_legacy_cot_gradient_path: bool = True,
         return_hidden_states: bool = False,
     ) -> torch.Tensor | tuple[torch.Tensor, List[torch.Tensor]]:
         """
@@ -269,35 +303,54 @@ class LightningDiT(nn.Module):
         conditioning_features = conditioning_features.contiguous()
         if cot_condition_tokens is not None:
             cot_condition_tokens = cot_condition_tokens.contiguous()
+        if planning_condition_tokens is not None:
+            planning_condition_tokens = planning_condition_tokens.contiguous()
+        if planning_condition_layers not in {"all", "cross_attention"}:
+            raise ValueError("planning_condition_layers must be 'all' or 'cross_attention'.")
 
         time_embedding = self.timestep_encoder(timesteps)
         conditioning = time_embedding + conditioning_features
 
         all_hidden_states = [hidden_states]
-        cot_delta_norms = []
+        planning_delta_norms = []
+        planning_gates = []
         for idx, block in enumerate(self.transformer_blocks):
             use_cross_attention = not (idx % 2 == 0 and self.interleave_attention)
             current_encoder_states = encoder_hidden_states if use_cross_attention else None
+            inject_planning = planning_condition_layers == "all" or use_cross_attention
+            current_planning_tokens = planning_condition_tokens if inject_planning else None
+            current_cot_tokens = cot_condition_tokens if inject_planning else None
             
             hidden_states = block(
                 hidden_states,
                 conditioning=conditioning,
                 encoder_hidden_states=current_encoder_states,
-                cot_condition_tokens=cot_condition_tokens,
+                cot_condition_tokens=current_cot_tokens,
+                planning_condition_tokens=current_planning_tokens,
+                planning_legacy_cot_gradient_path=planning_legacy_cot_gradient_path,
                 rotary_embedder=self.rotary_embedder,
             )
-            if cot_condition_tokens is not None and block.last_cot_delta_norm is not None:
-                cot_delta_norms.append(block.last_cot_delta_norm)
+            if inject_planning and (planning_condition_tokens is not None or cot_condition_tokens is not None):
+                if block.last_planning_delta_norm is not None:
+                    planning_delta_norms.append(block.last_planning_delta_norm)
+                if block.last_planning_gate is not None:
+                    planning_gates.append(block.last_planning_gate)
             all_hidden_states.append(hidden_states)
 
         output = self.final_layer(hidden_states, conditioning)
-        if cot_delta_norms:
-            self.last_cot_condition_delta_norm = torch.stack([item.to(output) for item in cot_delta_norms]).mean()
+        if planning_delta_norms:
+            self.last_planning_condition_delta_norm = torch.stack(
+                [item.to(output) for item in planning_delta_norms]
+            ).mean()
         else:
-            self.last_cot_condition_delta_norm = output.new_zeros(())
+            self.last_planning_condition_delta_norm = output.new_zeros(())
+        if planning_gates:
+            self.last_planning_layer_gate_mean = torch.stack([item.to(output) for item in planning_gates]).mean()
+        else:
+            self.last_planning_layer_gate_mean = output.new_zeros(())
+        self.last_cot_condition_delta_norm = self.last_planning_condition_delta_norm
         self.last_cot_branch_zero_init = output.new_tensor(
             float(all(torch.count_nonzero(block.cot_out_proj.weight.detach()).item() == 0 for block in self.transformer_blocks))
         )
         
         return (output, all_hidden_states) if return_hidden_states else output
-

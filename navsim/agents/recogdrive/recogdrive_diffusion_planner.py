@@ -58,6 +58,8 @@ from .recogdrive_dit import LightningDiT
 from .offline_action_explorer import build_structured_perturbations
 from .offline_rl_buffer import REQUIRED_COMPONENT_KEYS, load_elite_record, load_elite_record_path
 from .fs_norm import FSNormTransform, load_fs_norm_stats
+from .planning_token_adapter import PlanningTokenAdapter, PlanningTokenAdapterConfig
+from .reference_relative_geometry import compute_reference_relative_geometry_components
 from .pdas import compute_pdas_metrics
 from .trajectory_feasibility import compute_feasibility_metrics
 from .expert_fusion import (
@@ -864,6 +866,7 @@ def _sample_asmi_targets(
     out_trajs = selected_trajs.new_zeros((B, target_m, H, D))
     out_weights = weights.new_zeros((B, target_m))
     out_mask = torch.zeros((B, target_m), device=selected_trajs.device, dtype=torch.bool)
+    out_source_code = torch.zeros((B, target_m), device=selected_trajs.device, dtype=selected_source_code.dtype)
     anchor_hits = weights.new_zeros((B,))
     best_hits = weights.new_zeros((B,))
     counts = weights.new_zeros((B,))
@@ -908,6 +911,7 @@ def _sample_asmi_targets(
         row_sum = weights[b].sum().clamp(min=1e-6)
         out_weights[b, :n] = raw / raw.sum().clamp(min=1e-6) * row_sum
         out_mask[b, :n] = True
+        out_source_code[b, :n] = selected_source_code[b, keep]
         counts[b] = float(n)
         anchor_hits[b] = ((selected_source_code[b, keep] == 1) | (selected_source_code[b, keep] == 2)).any().float()
         best_idx = int(selected_rewards[b].masked_fill(~selected_real_mask[b], -torch.inf).argmax().item())
@@ -917,8 +921,28 @@ def _sample_asmi_targets(
         "dpsi_sampled_target_count_mean": counts.mean(),
         "dpsi_sampled_anchor_ratio": anchor_hits.mean(),
         "dpsi_sampled_best_ratio": best_hits.mean(),
+        # Consumed by forward_dpsi before diagnostics are exposed to the logger.
+        "_sampled_target_source_code": out_source_code,
     }
     return out_trajs, out_weights, out_mask, diag
+
+
+@dataclass
+class TrainingTarget:
+    raw_trajectory: torch.Tensor
+    selected_repr: torch.Tensor
+    diffusion_target_repr: torch.Tensor
+    residual_anchor_repr: Optional[torch.Tensor]
+    residual_alpha: float
+    diagnostics: Dict[str, torch.Tensor] = field(default_factory=dict)
+
+    def reconstruct_full_x0(self, predicted_diffusion_x0: torch.Tensor) -> torch.Tensor:
+        if self.residual_anchor_repr is None or float(self.residual_alpha) == 0.0:
+            return predicted_diffusion_x0
+        return predicted_diffusion_x0 + float(self.residual_alpha) * self.residual_anchor_repr.to(
+            device=predicted_diffusion_x0.device,
+            dtype=predicted_diffusion_x0.dtype,
+        )
 
 
 @dataclass
@@ -940,6 +964,15 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     grpo: bool = False
     vlm_size: str = 'large'
     planner_dim: int = 384
+    use_planning_token_adapter: bool = False
+    planning_token_source: Literal["none", "adapter", "last_vla_cot"] = "none"
+    planning_num_tokens: int = 16
+    planning_num_heads: int = 8
+    planning_condition_layers: Literal["cross_attention", "all"] = "cross_attention"
+    planning_gate_init: float = 0.05
+    planning_context_gate_init: float = 0.05
+    planning_condition_dropout: float = 0.10
+    planning_legacy_cot_gradient_path: bool = True
     use_expert_features: bool = False
     expert_feature_source: Literal['none', 'dummy', 'chunk', 'disk', 'online', 'cache', 'real'] = 'none'
     expert_adapter_dim: int = 768
@@ -1130,6 +1163,7 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     fs_norm_target_clip: float = -1.0
     fs_norm_output_clip: float = -1.0
     fs_norm_output_clip_mode: str = "scalar"
+    fs_norm_min_version: int = 1
     x0_aux_weight: float = 0.0
     delta_aux_weight: float = 0.0
     geo_aux_weight: float = 0.0
@@ -1139,6 +1173,15 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     geo_tail_reverse_weight: float = 2.0
     geo_early_kink_weight: float = 2.0
     geo_jerk_weight: float = 0.2
+    trajectory_aux_weight: float = 0.0
+    trajectory_heading_weight: float = 1.0
+    trajectory_huber_beta: float = 0.5
+    feasibility_aux_weight: float = 0.0
+    aux_alpha_power: float = 1.0
+    aux_warmup_epochs: int = 10
+    tangent_margin_rad: float = 0.08
+    curvature_margin: float = 0.05
+    min_segment_length: float = 0.20
 
     flow_cfg: FlowConfig = field(default_factory=FlowConfig)
     ddpm_cfg: DDPMConfig = field(default_factory=DDPMConfig)
@@ -1162,8 +1205,45 @@ class ReCogDriveDiffusionPlanner(nn.Module):
     def __init__(self, config: ReCogDriveDiffusionPlannerConfig):
         super().__init__()
         self.config = config
-        
+
+        if config.planning_token_source not in {"none", "adapter", "last_vla_cot"}:
+            raise ValueError("planning_token_source must be 'none', 'adapter', or 'last_vla_cot'.")
+        if config.planning_condition_layers not in {"cross_attention", "all"}:
+            raise ValueError("planning_condition_layers must be 'cross_attention' or 'all'.")
+        if int(config.planning_num_tokens) <= 0:
+            raise ValueError("planning_num_tokens must be positive.")
+        if int(config.planning_num_heads) <= 0 or int(config.planner_dim) % int(config.planning_num_heads) != 0:
+            raise ValueError("planning_num_heads must be positive and divide planner_dim.")
+        if not 0.0 <= float(config.planning_condition_dropout) < 1.0:
+            raise ValueError("planning_condition_dropout must be in [0.0, 1.0).")
+        for gate_name in ("planning_gate_init", "planning_context_gate_init"):
+            if not 0.0 < float(getattr(config, gate_name)) < 1.0:
+                raise ValueError(f"{gate_name} must be in (0.0, 1.0).")
+        if config.planning_token_source == "adapter" and not bool(config.use_planning_token_adapter):
+            raise ValueError("planning_token_source='adapter' requires use_planning_token_adapter=True.")
+        if config.planning_token_source == "adapter" and int(config.planner_dim) != int(config.input_embedding_dim):
+            raise ValueError("Standalone planning adapter requires planner_dim == input_embedding_dim.")
+        if config.planning_token_source == "last_vla_cot" and not bool(config.use_last_vla):
+            raise ValueError("planning_token_source='last_vla_cot' requires use_last_vla=True.")
+        if config.planning_token_source == "last_vla_cot" and bool(config.use_planning_token_adapter):
+            raise ValueError("Standalone planning adapter and Last-VLA CoT cannot be enabled together.")
+        if config.planning_token_source == "adapter" and bool(config.use_last_vla):
+            raise ValueError("Standalone planning adapter and Last-VLA CoT cannot be injected together.")
+
         self.model = LightningDiT(**config.diffusion_model_cfg)
+        self.planning_adapter: Optional[PlanningTokenAdapter] = None
+        if config.planning_token_source == "adapter":
+            self.planning_adapter = PlanningTokenAdapter(
+                PlanningTokenAdapterConfig(
+                    planner_dim=int(config.planner_dim),
+                    hidden_dim=int(config.hidden_size),
+                    num_tokens=int(config.planning_num_tokens),
+                    num_heads=int(config.planning_num_heads),
+                    condition_dropout=float(config.planning_condition_dropout),
+                    context_gate_init=float(config.planning_context_gate_init),
+                )
+            )
+            self.model.configure_planning_adapter_branch(float(config.planning_gate_init))
 
         self.his_traj_encoder = Mlp(
             in_features=12,
@@ -1199,9 +1279,23 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             if not str(getattr(config, "fs_norm_stats_path", "")):
                 raise ValueError("use_fs_norm=True requires fs_norm_stats_path.")
             stats = load_fs_norm_stats(str(config.fs_norm_stats_path), map_location="cpu")
+            if int(getattr(stats, "version", 1)) < int(getattr(config, "fs_norm_min_version", 1)):
+                raise ValueError(
+                    f"FS-Norm stats version {getattr(stats, 'version', 1)} is below required "
+                    f"version {config.fs_norm_min_version}."
+                )
             stats.use_robust = bool(getattr(config, "fs_norm_use_robust", stats.use_robust))
             stats.clip = float(getattr(config, "fs_norm_clip", stats.clip))
             self.fs_norm_transform = FSNormTransform(stats)
+
+        if str(config.fs_norm_output_clip_mode) not in {"scalar", "stats_bounds"}:
+            raise ValueError("fs_norm_output_clip_mode must be 'scalar' or 'stats_bounds'.")
+        if bool(config.use_fs_norm) and float(config.fs_norm_target_clip) not in {-1.0, 0.0}:
+            warnings.warn(
+                "fs_norm_target_clip is deprecated and ignored: FS diffusion targets are never clipped.",
+                DeprecationWarning,
+                stacklevel=2,
+            )
 
         if config.alignment_loss_type not in {"normalized_mse", "mse", "cosine"}:
             raise ValueError("alignment_loss_type must be one of 'normalized_mse', 'mse', or 'cosine'.")
@@ -1213,6 +1307,54 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("last_rd_stage must be 'disabled' when use_last_rd=False.")
         if config.use_last_vla and config.use_last_rd:
             raise ValueError("use_last_vla and use_last_rd are mutually exclusive.")
+        if bool(config.use_last_vla) and bool(config.use_fs_norm):
+            if float(config.last_vla_heading_loss_weight) != 0.0 or float(config.last_vla_progress_loss_weight) != 0.0:
+                raise ValueError(
+                    "Last-VLA with FS-Norm requires last_vla_heading_loss_weight=0 and "
+                    "last_vla_progress_loss_weight=0 because those losses use legacy normalized semantics."
+                )
+        if config.sampling_method == "flow" and (
+            float(config.trajectory_aux_weight) > 0.0 or float(config.feasibility_aux_weight) > 0.0
+        ):
+            raise ValueError("trajectory/feasibility auxiliaries currently support DDPM/DDIM only, not flow.")
+        for name in (
+            "trajectory_aux_weight",
+            "trajectory_heading_weight",
+            "feasibility_aux_weight",
+            "aux_alpha_power",
+            "tangent_margin_rad",
+            "curvature_margin",
+            "min_segment_length",
+        ):
+            if float(getattr(config, name)) < 0.0:
+                raise ValueError(f"{name} must be non-negative.")
+        if float(config.trajectory_huber_beta) <= 0.0:
+            raise ValueError("trajectory_huber_beta must be positive.")
+        if int(config.aux_warmup_epochs) < 0:
+            raise ValueError("aux_warmup_epochs must be non-negative.")
+        if config.use_last_vla:
+            if config.last_vla_cot_condition_layers not in {"all", "cross_attention"}:
+                raise ValueError("last_vla_cot_condition_layers must be 'all' or 'cross_attention'.")
+            ignored_nondefaults = []
+            if int(config.last_vla_cot_num_steps) != 4:
+                ignored_nondefaults.append(f"last_vla_cot_num_steps={config.last_vla_cot_num_steps}")
+            if float(config.last_vla_vlm_context_dropout_start) != 0.0:
+                ignored_nondefaults.append(
+                    f"last_vla_vlm_context_dropout_start={config.last_vla_vlm_context_dropout_start}"
+                )
+            if float(config.last_vla_vlm_context_dropout_end) != 0.7:
+                ignored_nondefaults.append(
+                    f"last_vla_vlm_context_dropout_end={config.last_vla_vlm_context_dropout_end}"
+                )
+            if int(config.last_vla_fusion_tokens) != 192:
+                ignored_nondefaults.append(f"last_vla_fusion_tokens={config.last_vla_fusion_tokens}")
+            if ignored_nondefaults:
+                warnings.warn(
+                    "The following legacy Last-VLA options are declared but do not alter forward and are ignored: "
+                    + ", ".join(ignored_nondefaults),
+                    DeprecationWarning,
+                    stacklevel=2,
+                )
         if config.use_two_expert_slots:
             allowed_two_expert_modes = {
                 "horizon_hmef_lite",
@@ -1480,6 +1622,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     use_residual_diffusion=False,
                     residual_detach_coarse_for_diffusion=config.last_vla_residual_detach_coarse,
                     coarse_prior_clip=config.last_vla_coarse_prior_clip,
+                    use_fs_norm=bool(config.use_fs_norm),
                     require_full_geometry=config.last_vla_require_full_geometry,
                     allow_patch_geometry_fallback=config.last_vla_allow_patch_geometry_fallback,
                     geometry_teacher_dim=config.last_vla_geometry_teacher_dim,
@@ -3243,6 +3386,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         diffusion_timestep: Optional[torch.Tensor] = None,
         target_action_norm: Optional[torch.Tensor] = None,
         allow_target_tokens: Optional[bool] = None,
+        cached_planning_condition_tokens: Optional[torch.Tensor] = None,
     ) -> Dict[str, Any]:
         vl_embeds = self._encode_vlm(vl_features)
         zero = vl_embeds.new_zeros(())
@@ -3263,24 +3407,79 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "last_vla_risk_loss": zero,
             "last_vla_cot_consistency_loss": zero,
         }
+        adapter_tokens: Optional[torch.Tensor] = None
+        adapter_diagnostics: Dict[str, torch.Tensor] = {}
+        if self.planning_adapter is not None and cached_planning_condition_tokens is not None:
+            adapter_tokens = cached_planning_condition_tokens.to(vl_embeds)
+            adapter_diagnostics = {
+                "planning_token_norm": adapter_tokens.detach().float().norm(dim=-1).mean().to(adapter_tokens),
+                "planning_token_pairwise_cosine": self.planning_adapter._pairwise_cosine(adapter_tokens.detach()),
+                "planning_condition_keep_ratio": adapter_tokens.new_tensor(1.0),
+                "planning_adapter_forward_count": adapter_tokens.new_tensor(
+                    float(self.planning_adapter.forward_count)
+                ),
+            }
+        elif self.planning_adapter is not None:
+            batch_size = int(vl_embeds.shape[0])
+            if action_input is None:
+                status_feature = vl_embeds.new_zeros((batch_size, 8))
+                high_command = vl_embeds.new_zeros((batch_size, 3))
+                history = vl_embeds.new_zeros((batch_size, 12))
+            else:
+                status_feature = action_input.get("status_feature")
+                high_command = action_input.get("high_command_one_hot")
+                history = action_input.get("his_traj", action_input.get("history_trajectory"))
+                if not isinstance(status_feature, torch.Tensor):
+                    status_feature = vl_embeds.new_zeros((batch_size, 8))
+                if not isinstance(high_command, torch.Tensor):
+                    high_command = vl_embeds.new_zeros((batch_size, 3))
+                if not isinstance(history, torch.Tensor):
+                    history = vl_embeds.new_zeros((batch_size, 12))
+            adapter_tokens, adapter_diagnostics = self.planning_adapter(
+                vl_embeds,
+                status_feature,
+                high_command,
+                history,
+            )
+
+        def finalize_static_planning(payload: Dict[str, Any]) -> Dict[str, Any]:
+            context_mean = payload["context_mean"]
+            if adapter_tokens is None:
+                payload.setdefault("planning_condition_tokens", None)
+                payload.setdefault("cot_condition_tokens", None)
+                payload.setdefault("planning_context_mean_residual", torch.zeros_like(context_mean))
+                payload.setdefault("planning_condition_is_static", False)
+                return payload
+            assert self.planning_adapter is not None
+            context_gate = torch.sigmoid(self.planning_adapter.context_gate_logit).to(adapter_tokens)
+            context_residual = context_gate * adapter_tokens.mean(dim=1)
+            payload["context_mean"] = context_mean + context_residual
+            payload["planning_condition_tokens"] = adapter_tokens
+            payload["cot_condition_tokens"] = adapter_tokens
+            payload["planning_context_mean_residual"] = context_residual
+            payload["planning_condition_is_static"] = True
+            diagnostics = payload.setdefault("diagnostics", {})
+            diagnostics.update(adapter_diagnostics)
+            diagnostics["planning_context_gate"] = context_gate.detach().float()
+            return payload
         if (
             not self.config.use_expert_features
             and not self.config.use_last_rd
             and not self.config.use_last_vla
             and not self.config.use_two_expert_slots
         ):
-            return {
+            return finalize_static_planning({
                 "vl_embeds": vl_embeds,
                 "context_tokens": vl_embeds,
                 "context_mean": vl_embeds.mean(1),
                 "expert_step_condition": None,
                 **base_losses,
                 "diagnostics": {},
-            }
+            })
 
         if self.config.use_two_expert_slots:
             two_expert_context = self._build_two_expert_context(vl_embeds, action_input)
-            return {
+            return finalize_static_planning({
                 "vl_embeds": vl_embeds,
                 "context_tokens": two_expert_context["context_tokens"],
                 "context_mean": two_expert_context["context_mean"],
@@ -3294,7 +3493,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "two_expert_geo_delta": two_expert_context["geo_delta"],
                 "two_expert_memory_tokens": two_expert_context["expert_memory_tokens"],
                 "selected_target_norm": target_action_norm,
-            }
+            })
 
         if self.config.use_last_vla:
             allow_targets = training if allow_target_tokens is None else bool(allow_target_tokens)
@@ -3308,6 +3507,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 current_epoch=self.config.current_train_epoch,
                 total_epochs=self.config.total_train_epochs,
                 allow_target_tokens=allow_targets,
+                output_bound_fn=(
+                    (lambda value: self._bound_output_representation(value, None))
+                    if self._uses_fs_norm()
+                    else None
+                ),
             )
             if (
                 training
@@ -3395,11 +3599,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         "last_vla_horizon_cot_residual_norm": cot_horizon_residual.detach().float().norm(dim=-1).mean(),
                     }
                 )
+            planning_context_residual = context_mean - context_tokens.mean(1)
             return {
                 "vl_embeds": vl_embeds,
                 "context_tokens": context_tokens,
                 "context_mean": context_mean,
                 "expert_step_condition": expert_step_condition,
+                "planning_condition_tokens": cot_condition_tokens,
+                "planning_context_mean_residual": planning_context_residual,
+                "planning_condition_is_static": False,
                 "cot_condition_tokens": cot_condition_tokens,
                 **base_losses,
                 "diagnostics": diagnostics,
@@ -3428,14 +3636,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 context_parts.append(expert["vggt_all"])
             context_tokens = torch.cat(context_parts, dim=1)
             context_mean = self._compute_branch_context_mean(vl_embeds, expert["jepa_all"], expert["vggt_all"])
-            return {
+            return finalize_static_planning({
                 "vl_embeds": vl_embeds,
                 "context_tokens": context_tokens,
                 "context_mean": context_mean,
                 "expert_step_condition": expert["horizon_residual"],
                 **base_losses,
                 "diagnostics": expert["diagnostics"],
-            }
+            })
 
         last_rd_input = action_input
         if last_rd_input is not None and (
@@ -3498,7 +3706,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         for key, value in last_rd_output.losses.items():
             if key in base_losses:
                 base_losses[key] = value
-        return {
+        return finalize_static_planning({
             "vl_embeds": vl_embeds,
             "context_tokens": context_tokens,
             "context_mean": context_mean,
@@ -3506,7 +3714,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             **base_losses,
             "diagnostics": diagnostics,
             "last_rd_output": last_rd_output,
-        }
+        })
 
     def _repeat_expert_action_input(
         self,
@@ -3733,6 +3941,66 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             action_input=action_input,
         )
         return diffusion_target, alpha
+
+    def _build_training_target(
+        self,
+        *,
+        raw_trajectory: Optional[torch.Tensor],
+        selected_repr: Optional[torch.Tensor] = None,
+        action_input: Optional[BatchFeature] = None,
+        selected_source_code: Optional[torch.Tensor] = None,
+        selected_target_is_gt: Optional[torch.Tensor] = None,
+        diagnostics: Optional[Dict[str, torch.Tensor]] = None,
+    ) -> TrainingTarget:
+        if selected_repr is None:
+            if raw_trajectory is None:
+                raise ValueError("TrainingTarget requires raw_trajectory or selected_repr.")
+            selected_repr = self._encode_action_target(raw_trajectory)
+        selected = selected_repr.detach()
+        if raw_trajectory is None:
+            raw = self._decode_action_target(selected).detach()
+        else:
+            raw = raw_trajectory.to(device=selected.device, dtype=selected.dtype).detach()
+        if raw.shape != selected.shape:
+            raise ValueError(
+                f"TrainingTarget raw/representation shapes must match, got {tuple(raw.shape)} and {tuple(selected.shape)}."
+            )
+        diffusion_target, residual_alpha, residual_anchor, residual_diag = self._last_vla_diffusion_target_info(
+            selected,
+            training=self.training,
+            action_input=action_input,
+        )
+        target_diag: Dict[str, torch.Tensor] = dict(diagnostics or {})
+        target_diag.update(residual_diag)
+        if selected_target_is_gt is None:
+            selected_target_is_gt = selected.new_ones((selected.shape[0],))
+        gt_ratio = selected_target_is_gt.detach().to(device=selected.device, dtype=torch.float32).mean()
+        if selected_source_code is None:
+            source_code = selected.new_tensor(1.0)
+        else:
+            source_code = selected_source_code.detach().to(device=selected.device, dtype=torch.float32).mean()
+        target_diag.update(
+            {
+                "selected_target_is_gt_ratio": gt_ratio.to(selected),
+                "selected_target_source_code": source_code.to(selected),
+                "residual_alpha": selected.new_tensor(float(residual_alpha)),
+            }
+        )
+        if self._uses_fs_norm():
+            abs_target = selected.detach().float().abs()
+            target_diag["fs_target_abs_gt3_ratio"] = (abs_target > 3.0).float().mean().to(selected)
+            target_diag["fs_target_abs_gt5_ratio"] = (abs_target > 5.0).float().mean().to(selected)
+        else:
+            target_diag["fs_target_abs_gt3_ratio"] = selected.new_zeros(())
+            target_diag["fs_target_abs_gt5_ratio"] = selected.new_zeros(())
+        return TrainingTarget(
+            raw_trajectory=raw,
+            selected_repr=selected,
+            diffusion_target_repr=diffusion_target.detach(),
+            residual_anchor_repr=None if residual_anchor is None else residual_anchor.detach(),
+            residual_alpha=float(residual_alpha),
+            diagnostics=target_diag,
+        )
 
     def _select_last_vla_training_target(
         self,
@@ -3982,6 +4250,18 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             return fused_input
         return fused_input + expert_step_condition.to(device=fused_input.device, dtype=fused_input.dtype)
 
+    def _planning_condition_layers(self) -> str:
+        if self.config.use_last_vla:
+            return str(self.config.last_vla_cot_condition_layers)
+        return str(self.config.planning_condition_layers)
+
+    def _planning_uses_legacy_cot_path(self) -> bool:
+        return bool(self.config.use_last_vla and self.config.planning_legacy_cot_gradient_path)
+
+    def _reset_planning_adapter_forward_count(self) -> None:
+        if self.planning_adapter is not None:
+            self.planning_adapter.reset_forward_count()
+
     def _denoise_model_output(
         self,
         noisy_actions: torch.Tensor,
@@ -3992,6 +4272,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         context_embeds = dit_context["context_tokens"]
         context_mean = dit_context["context_mean"]
         expert_step_condition = dit_context["expert_step_condition"]
+        planning_condition_tokens = dit_context.get("planning_condition_tokens")
         cot_condition_tokens = dit_context.get("cot_condition_tokens")
         his_traj_features = self.his_traj_encoder(
             action_input.his_traj.unsqueeze(1)
@@ -4019,12 +4300,26 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             conditioning_features=ego_status_features,
             timesteps=timesteps,
             cot_condition_tokens=cot_condition_tokens,
+            planning_condition_tokens=planning_condition_tokens,
+            planning_condition_layers=self._planning_condition_layers(),
+            planning_legacy_cot_gradient_path=self._planning_uses_legacy_cot_path(),
         )
+        if planning_condition_tokens is not None or cot_condition_tokens is not None:
+            diagnostics = dit_context.setdefault("diagnostics", {})
+            diagnostics["planning_delta_norm"] = getattr(
+                self.model,
+                "last_planning_condition_delta_norm",
+                context_embeds.new_zeros(()),
+            )
+            diagnostics["planning_layer_gate_mean"] = getattr(
+                self.model,
+                "last_planning_layer_gate_mean",
+                context_embeds.new_zeros(()),
+            )
         if self.config.use_last_vla:
             diagnostics = dit_context.setdefault("diagnostics", {})
-            diagnostics["last_vla_cot_condition_delta_norm"] = getattr(
-                self.model,
-                "last_cot_condition_delta_norm",
+            diagnostics["last_vla_cot_condition_delta_norm"] = diagnostics.get(
+                "planning_delta_norm",
                 context_embeds.new_zeros(()),
             )
             diagnostics["last_vla_cot_branch_zero_init"] = getattr(
@@ -4052,13 +4347,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
     def _target_representation_clip_value(self, fallback: Optional[float]) -> Optional[float]:
         if self._uses_fs_norm():
-            return self._fs_norm_clip_value("fs_norm_target_clip")
+            return None
         return fallback
 
     def _encode_action_target(self, raw_trajectory: torch.Tensor) -> torch.Tensor:
         if self._uses_fs_norm():
             assert self.fs_norm_transform is not None
-            return self.fs_norm_transform.encode(raw_trajectory, clip=self._target_representation_clip_value(None))
+            return self.fs_norm_transform.encode(raw_trajectory, apply_clip=False)
         return self.norm_odo(raw_trajectory)
 
     def _decode_action_target(self, representation: torch.Tensor) -> torch.Tensor:
@@ -4072,7 +4367,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             return self._fs_norm_clip_value("fs_norm_output_clip")
         return fallback
 
-    def _clip_output_representation(
+    def _bound_output_representation(
         self,
         representation: torch.Tensor,
         fallback: Optional[float],
@@ -4080,13 +4375,21 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         if self._uses_fs_norm() and str(getattr(self.config, "fs_norm_output_clip_mode", "scalar")) == "stats_bounds":
             assert self.fs_norm_transform is not None
             bounds = self.fs_norm_transform._clip_bounds(representation)
-            if bounds is not None:
-                lower, upper = bounds
-                return torch.minimum(torch.maximum(representation, lower), upper)
+            if bounds is None:
+                raise ValueError("fs_norm_output_clip_mode='stats_bounds' requires clip_lower/clip_upper statistics.")
+            lower, upper = bounds
+            return torch.minimum(torch.maximum(representation, lower), upper)
         clip = self._representation_clip_value(fallback)
         if clip is None:
             return representation
         return representation.clamp(-clip, clip)
+
+    def _clip_output_representation(
+        self,
+        representation: torch.Tensor,
+        fallback: Optional[float],
+    ) -> torch.Tensor:
+        return self._bound_output_representation(representation, fallback)
 
     def _flow_x0_from_velocity(
         self,
@@ -4235,6 +4538,163 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         )
         return x0_aux_loss, geo_aux_loss, active_mask, diagnostics
 
+    def _aux_warmup_ramp(self) -> float:
+        warmup = max(int(getattr(self.config, "aux_warmup_epochs", 10)), 1)
+        return min((int(getattr(self.config, "current_train_epoch", 0)) + 1) / float(warmup), 1.0)
+
+    def _aux_alpha_weights(self, timesteps: torch.Tensor, reference: torch.Tensor) -> torch.Tensor:
+        if self.config.sampling_method == "flow":
+            raise ValueError("trajectory/feasibility auxiliaries do not support flow sampling.")
+        alpha_bar = self.extract(self.ddpm_alphas_cumprod, timesteps, reference.shape)
+        alpha_bar = alpha_bar.reshape(reference.shape[0], -1)[:, 0].detach().float()
+        return alpha_bar.clamp(min=0.0, max=1.0).pow(float(self.config.aux_alpha_power)).to(reference)
+
+    def _compute_pta_aux_per_sample_losses(
+        self,
+        predicted_diffusion_x0_repr: torch.Tensor,
+        training_target: TrainingTarget,
+        timesteps: torch.Tensor,
+        *,
+        method: str,
+    ) -> tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
+        batch_size = int(predicted_diffusion_x0_repr.shape[0])
+        zeros = predicted_diffusion_x0_repr.new_zeros((batch_size,))
+        zero = predicted_diffusion_x0_repr.new_zeros(())
+        ramp = self._aux_warmup_ramp()
+        diagnostics: Dict[str, torch.Tensor] = {
+            "trajectory_aux_loss": zero,
+            "feasibility_aux_loss": zero,
+            "tangent_excess_loss": zero,
+            "curvature_excess_loss": zero,
+            "aux_alpha_weight_mean": zero,
+            "aux_warmup_ramp": predicted_diffusion_x0_repr.new_tensor(ramp),
+            "full_x0_reconstruction_l1": zero,
+            "fs_output_bound_hit_ratio": zero,
+        }
+        if method == "flow":
+            if float(self.config.trajectory_aux_weight) > 0.0 or float(self.config.feasibility_aux_weight) > 0.0:
+                raise ValueError("trajectory/feasibility auxiliaries support DDPM/DDIM only.")
+            return zeros, zeros, diagnostics
+        if float(self.config.trajectory_aux_weight) <= 0.0 and float(self.config.feasibility_aux_weight) <= 0.0:
+            return zeros, zeros, diagnostics
+
+        full_x0_repr = training_target.reconstruct_full_x0(predicted_diffusion_x0_repr)
+        pred_raw = self._decode_action_target(full_x0_repr)
+        target_raw = training_target.raw_trajectory.to(device=pred_raw.device, dtype=pred_raw.dtype)
+        if pred_raw.shape != target_raw.shape:
+            raise ValueError(
+                f"PTA auxiliary prediction/target shapes differ: {tuple(pred_raw.shape)} vs {tuple(target_raw.shape)}."
+            )
+        pred_f = pred_raw.float()
+        target_f = target_raw.detach().float()
+        xy_loss = F.smooth_l1_loss(
+            pred_f[..., :2],
+            target_f[..., :2],
+            beta=float(self.config.trajectory_huber_beta),
+            reduction="none",
+        ).mean(dim=(1, 2))
+        heading_error = torch.atan2(
+            torch.sin(pred_f[..., 2] - target_f[..., 2]),
+            torch.cos(pred_f[..., 2] - target_f[..., 2]),
+        )
+        heading_loss = (1.0 - torch.cos(heading_error)).mean(dim=1)
+        trajectory_loss = xy_loss + float(self.config.trajectory_heading_weight) * heading_loss
+        tangent_loss, curvature_loss = compute_reference_relative_geometry_components(
+            pred_f,
+            target_f,
+            float(self.config.tangent_margin_rad),
+            float(self.config.curvature_margin),
+            float(self.config.min_segment_length),
+        )
+        feasibility_loss = tangent_loss + curvature_loss
+        alpha_weight = self._aux_alpha_weights(timesteps, full_x0_repr)
+        weighted_trajectory = alpha_weight.float() * trajectory_loss
+        weighted_feasibility = alpha_weight.float() * feasibility_loss.float()
+        full_l1_per_sample = (
+            full_x0_repr.float() - training_target.selected_repr.to(full_x0_repr).float()
+        ).abs().mean(dim=(1, 2))
+        if self._uses_fs_norm():
+            bounded = self._bound_output_representation(full_x0_repr, None)
+            bound_hit_per_sample = (
+                (bounded.detach().float() - full_x0_repr.detach().float()).abs().gt(1e-7).float().mean(dim=(1, 2))
+            )
+        else:
+            bound_hit_per_sample = zeros
+        diagnostics.update(
+            {
+                "trajectory_aux_loss": weighted_trajectory.mean().to(predicted_diffusion_x0_repr),
+                "feasibility_aux_loss": weighted_feasibility.mean().to(predicted_diffusion_x0_repr),
+                "tangent_excess_loss": (alpha_weight.float() * tangent_loss.float()).mean().to(
+                    predicted_diffusion_x0_repr
+                ),
+                "curvature_excess_loss": (alpha_weight.float() * curvature_loss.float()).mean().to(
+                    predicted_diffusion_x0_repr
+                ),
+                "aux_alpha_weight_mean": alpha_weight.detach().float().mean().to(predicted_diffusion_x0_repr),
+                "full_x0_reconstruction_l1": full_l1_per_sample.detach().mean().to(predicted_diffusion_x0_repr),
+                "fs_output_bound_hit_ratio": bound_hit_per_sample.mean().to(predicted_diffusion_x0_repr),
+                "_tangent_excess_per_sample": (alpha_weight.float() * tangent_loss.float()).to(
+                    predicted_diffusion_x0_repr
+                ),
+                "_curvature_excess_per_sample": (alpha_weight.float() * curvature_loss.float()).to(
+                    predicted_diffusion_x0_repr
+                ),
+                "_aux_alpha_weight_per_sample": alpha_weight.detach().to(predicted_diffusion_x0_repr),
+                "_full_x0_reconstruction_l1_per_sample": full_l1_per_sample.detach().to(
+                    predicted_diffusion_x0_repr
+                ),
+                "_fs_output_bound_hit_per_sample": bound_hit_per_sample.to(predicted_diffusion_x0_repr),
+            }
+        )
+        return (
+            weighted_trajectory.to(predicted_diffusion_x0_repr),
+            weighted_feasibility.to(predicted_diffusion_x0_repr),
+            diagnostics,
+        )
+
+    def _attach_training_aux_losses(
+        self,
+        dit_context: Dict[str, Any],
+        predicted_diffusion_x0_repr: torch.Tensor,
+        training_target: TrainingTarget,
+        timesteps: torch.Tensor,
+        *,
+        method: str,
+    ) -> None:
+        x0_aux_loss, geo_aux_loss, geo_diag = self._compute_x0_geo_aux_losses(
+            training_target.reconstruct_full_x0(predicted_diffusion_x0_repr),
+            training_target.raw_trajectory,
+            timesteps,
+            method=method,
+        )
+        trajectory_per_sample, feasibility_per_sample, pta_diag = self._compute_pta_aux_per_sample_losses(
+            predicted_diffusion_x0_repr,
+            training_target,
+            timesteps,
+            method=method,
+        )
+        dit_context["training_target"] = training_target
+        dit_context["x0_aux_loss"] = x0_aux_loss
+        dit_context["delta_aux_loss"] = geo_diag.get("delta_aux_loss", x0_aux_loss.new_zeros(()))
+        dit_context["geo_aux_loss"] = geo_aux_loss
+        dit_context["trajectory_aux_loss"] = trajectory_per_sample.mean()
+        dit_context["feasibility_aux_loss"] = feasibility_per_sample.mean()
+        diagnostics = dit_context.setdefault("diagnostics", {})
+        diagnostics.update(training_target.diagnostics)
+        diagnostics.update(geo_diag)
+        diagnostics.update({key: value for key, value in pta_diag.items() if not key.startswith("_")})
+
+    def _new_auxiliary_weighted_loss(self, dit_context: Dict[str, Any], dtype: torch.dtype) -> torch.Tensor:
+        reference = dit_context.get("trajectory_aux_loss")
+        if not isinstance(reference, torch.Tensor):
+            reference = next(self.parameters()).sum() * 0.0
+        ramp = float(self._aux_warmup_ramp())
+        return ramp * (
+            float(self.config.trajectory_aux_weight) * dit_context.get("trajectory_aux_loss", reference.new_zeros(())).to(dtype=dtype)
+            + float(self.config.feasibility_aux_weight)
+            * dit_context.get("feasibility_aux_loss", reference.new_zeros(())).to(dtype=dtype)
+        )
+
     def _compute_policy_kd_loss(
         self,
         vl_features: torch.Tensor,
@@ -4285,6 +4745,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         deterministic: bool = True,
         context_mean: Optional[torch.Tensor] = None,
         expert_step_condition: Optional[torch.Tensor] = None,
+        planning_condition_tokens: Optional[torch.Tensor] = None,
         cot_condition_tokens: Optional[torch.Tensor] = None,
         two_expert_f_dyn: Optional[torch.Tensor] = None,
         two_expert_f_geo: Optional[torch.Tensor] = None,
@@ -4309,10 +4770,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 noisy_actions=x,
                 diffusion_timestep=t,
                 allow_target_tokens=False,
+                cached_planning_condition_tokens=(
+                    planning_condition_tokens if self.planning_adapter is not None else None
+                ),
             )
             context_embeds = latent_context["context_tokens"]
             context_mean = latent_context["context_mean"]
             expert_step_condition = latent_context["expert_step_condition"]
+            planning_condition_tokens = latent_context.get("planning_condition_tokens")
             cot_condition_tokens = latent_context.get("cot_condition_tokens")
             two_expert_f_dyn = latent_context.get("two_expert_f_dyn")
             two_expert_f_geo = latent_context.get("two_expert_f_geo")
@@ -4352,6 +4817,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             conditioning_features=ego_status_features,
             timesteps=t,
             cot_condition_tokens=cot_condition_tokens,
+            planning_condition_tokens=planning_condition_tokens,
+            planning_condition_layers=self._planning_condition_layers(),
+            planning_legacy_cot_gradient_path=self._planning_uses_legacy_cot_path(),
         )
         pred_noise = self.action_decoder(model_output)
 
@@ -4365,9 +4833,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         else:
              raise ValueError(f"p_mean_variance not supported for method: {self.config.sampling_method}")
 
-        denoised_clip_value = self._representation_clip_value(getattr(self, 'denoised_clip_value', 1.0))
-        if denoised_clip_value is not None:
-            x_recon.clamp_(-denoised_clip_value, denoised_clip_value)
+        x_recon = self._bound_output_representation(
+            x_recon,
+            getattr(self, 'denoised_clip_value', 1.0),
+        )
 
         if self.config.sampling_method == 'ddpm':
             model_mean = self.extract(self.ddpm_mu_coef1, t, x.shape) * x_recon + \
@@ -4422,6 +4891,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         Returns:
             BatchFeature: A batch containing the computed loss.
         """
+        self._reset_planning_adapter_forward_count()
         gt_actions = self._encode_action_target(action_input.action)
         allow_target_tokens = self.training or bool(action_input.get("_allow_target_tokens_for_loss", False))
         if not allow_target_tokens:
@@ -4446,11 +4916,22 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 loss = self._last_vla_aux_loss(dit_context, gt_actions.dtype)
                 return self._format_training_output(loss, zero, zero, zero, dit_context)
 
-            diffusion_target, residual_alpha, _, residual_diagnostics = self._last_vla_diffusion_target_info(
-                selected_target_norm,
-                training=self.training,
-                action_input=action_input,
+            teacher_ratio = target_diagnostics.get("teacher_traj_used_ratio", selected_target_norm.new_zeros(()))
+            selected_is_gt = selected_target_norm.new_full(
+                (selected_target_norm.shape[0],),
+                1.0 - float(teacher_ratio.detach().float().item()),
             )
+            selected_source_code = 1.0 + 10.0 * (1.0 - selected_is_gt)
+            training_target = self._build_training_target(
+                raw_trajectory=None,
+                selected_repr=selected_target_norm,
+                action_input=action_input,
+                selected_source_code=selected_source_code,
+                selected_target_is_gt=selected_is_gt,
+                diagnostics=target_diagnostics,
+            )
+            diffusion_target = training_target.diffusion_target_repr
+            residual_alpha = training_target.residual_alpha
 
             if self.config.sampling_method == "flow":
                 noise = torch.randn_like(diffusion_target)
@@ -4469,20 +4950,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     allow_target_tokens=allow_target_tokens,
                 )
                 dit_context["diagnostics"]["residual_alpha"] = diffusion_target.new_tensor(float(residual_alpha))
-                dit_context["diagnostics"].update(residual_diagnostics)
                 pred_velocity = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input)
                 diffusion_loss = F.mse_loss(pred_velocity, velocity_target, reduction="mean")
                 x0_pred = self._flow_x0_from_velocity(noisy_actions, t_cont, pred_velocity)
-                x0_aux_loss, geo_aux_loss, geo_diag = self._compute_x0_geo_aux_losses(
+                self._attach_training_aux_losses(
+                    dit_context,
                     x0_pred,
-                    action_input.action,
+                    training_target,
                     t_discrete,
                     method="flow",
                 )
-                dit_context["x0_aux_loss"] = x0_aux_loss
-                dit_context["delta_aux_loss"] = geo_diag.get("delta_aux_loss", x0_aux_loss.new_zeros(()))
-                dit_context["geo_aux_loss"] = geo_aux_loss
-                dit_context["diagnostics"].update(geo_diag)
                 policy_kd_loss = diffusion_loss.new_zeros(())
             else:
                 noise = torch.randn_like(diffusion_target)
@@ -4501,20 +4978,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     allow_target_tokens=allow_target_tokens,
                 )
                 dit_context["diagnostics"]["residual_alpha"] = diffusion_target.new_tensor(float(residual_alpha))
-                dit_context["diagnostics"].update(residual_diagnostics)
                 pred_noise = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input)
                 diffusion_loss = F.mse_loss(pred_noise, noise, reduction="mean")
                 x0_pred = self._x0_from_noise(noisy_actions, t_discrete, pred_noise)
-                x0_aux_loss, geo_aux_loss, geo_diag = self._compute_x0_geo_aux_losses(
+                self._attach_training_aux_losses(
+                    dit_context,
                     x0_pred,
-                    action_input.action,
+                    training_target,
                     t_discrete,
                     method="ddpm",
                 )
-                dit_context["x0_aux_loss"] = x0_aux_loss
-                dit_context["delta_aux_loss"] = geo_diag.get("delta_aux_loss", x0_aux_loss.new_zeros(()))
-                dit_context["geo_aux_loss"] = geo_aux_loss
-                dit_context["diagnostics"].update(geo_diag)
                 policy_kd_loss = self._compute_policy_kd_loss(vl_features, action_input, noisy_actions, t_discrete, pred_noise)
 
             dit_context["policy_kd_loss"] = policy_kd_loss.to(dtype=diffusion_loss.dtype)
@@ -4527,6 +5000,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 + float(self.config.x0_aux_weight) * dit_context["x0_aux_loss"].to(dtype=diffusion_loss.dtype)
                 + float(getattr(self.config, "delta_aux_weight", 0.0)) * dit_context["delta_aux_loss"].to(dtype=diffusion_loss.dtype)
                 + float(self.config.geo_aux_weight) * dit_context["geo_aux_loss"].to(dtype=diffusion_loss.dtype)
+                + self._new_auxiliary_weighted_loss(dit_context, diffusion_loss.dtype)
             )
             return self._format_training_output(loss, diffusion_loss, zero, zero, dit_context)
 
@@ -4553,11 +5027,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             )
             return self._format_training_output(loss, diffusion_loss, jepa_alignment_loss, vggt_alignment_loss, dit_context)
 
-        diffusion_target, residual_alpha, _, residual_diagnostics = self._last_vla_diffusion_target_info(
-            gt_actions,
-            training=self.training,
+        training_target = self._build_training_target(
+            raw_trajectory=action_input.action,
+            selected_repr=gt_actions,
             action_input=action_input,
         )
+        diffusion_target = training_target.diffusion_target_repr
+        residual_alpha = training_target.residual_alpha
 
         if self.config.sampling_method == 'flow':
             noise = torch.randn_like(diffusion_target)
@@ -4576,20 +5052,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 allow_target_tokens=allow_target_tokens,
             )
             dit_context["diagnostics"]["residual_alpha"] = diffusion_target.new_tensor(float(residual_alpha))
-            dit_context["diagnostics"].update(residual_diagnostics)
             pred_velocity = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input)
             diffusion_loss = F.mse_loss(pred_velocity, velocity_target, reduction='mean')
             x0_pred = self._flow_x0_from_velocity(noisy_actions, t_cont, pred_velocity)
-            x0_aux_loss, geo_aux_loss, geo_diag = self._compute_x0_geo_aux_losses(
+            self._attach_training_aux_losses(
+                dit_context,
                 x0_pred,
-                action_input.action,
+                training_target,
                 t_discrete,
                 method="flow",
             )
-            dit_context["x0_aux_loss"] = x0_aux_loss
-            dit_context["delta_aux_loss"] = geo_diag.get("delta_aux_loss", x0_aux_loss.new_zeros(()))
-            dit_context["geo_aux_loss"] = geo_aux_loss
-            dit_context["diagnostics"].update(geo_diag)
             policy_kd_loss = diffusion_loss.new_zeros(())
         else: 
             noise = torch.randn_like(diffusion_target)
@@ -4608,20 +5080,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 allow_target_tokens=allow_target_tokens,
             )
             dit_context["diagnostics"]["residual_alpha"] = diffusion_target.new_tensor(float(residual_alpha))
-            dit_context["diagnostics"].update(residual_diagnostics)
             pred_noise = self._denoise_model_output(noisy_actions, t_discrete, dit_context, action_input)
             diffusion_loss = F.mse_loss(pred_noise, noise, reduction='mean')
             x0_pred = self._x0_from_noise(noisy_actions, t_discrete, pred_noise)
-            x0_aux_loss, geo_aux_loss, geo_diag = self._compute_x0_geo_aux_losses(
+            self._attach_training_aux_losses(
+                dit_context,
                 x0_pred,
-                action_input.action,
+                training_target,
                 t_discrete,
                 method="ddpm",
             )
-            dit_context["x0_aux_loss"] = x0_aux_loss
-            dit_context["delta_aux_loss"] = geo_diag.get("delta_aux_loss", x0_aux_loss.new_zeros(()))
-            dit_context["geo_aux_loss"] = geo_aux_loss
-            dit_context["diagnostics"].update(geo_diag)
             policy_kd_loss = self._compute_policy_kd_loss(vl_features, action_input, noisy_actions, t_discrete, pred_noise)
         dit_context["policy_kd_loss"] = policy_kd_loss.to(dtype=diffusion_loss.dtype)
 
@@ -4635,6 +5103,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             + float(self.config.x0_aux_weight) * dit_context["x0_aux_loss"].to(dtype=diffusion_loss.dtype)
             + float(getattr(self.config, "delta_aux_weight", 0.0)) * dit_context["delta_aux_loss"].to(dtype=diffusion_loss.dtype)
             + float(self.config.geo_aux_weight) * dit_context["geo_aux_loss"].to(dtype=diffusion_loss.dtype)
+            + self._new_auxiliary_weighted_loss(dit_context, diffusion_loss.dtype)
         )
 
         return self._format_training_output(loss, diffusion_loss, jepa_alignment_loss, vggt_alignment_loss, dit_context)
@@ -4669,9 +5138,35 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "x0_aux_loss": dit_context.get("x0_aux_loss", loss.detach().new_tensor(0.0)).to(dtype=loss.dtype),
             "delta_aux_loss": dit_context.get("delta_aux_loss", loss.detach().new_tensor(0.0)).to(dtype=loss.dtype),
             "geo_aux_loss": dit_context.get("geo_aux_loss", loss.detach().new_tensor(0.0)).to(dtype=loss.dtype),
+            "trajectory_aux_loss": dit_context.get("trajectory_aux_loss", loss.detach().new_tensor(0.0)).to(dtype=loss.dtype),
+            "feasibility_aux_loss": dit_context.get("feasibility_aux_loss", loss.detach().new_tensor(0.0)).to(dtype=loss.dtype),
         }
         diagnostics = dit_context.get("diagnostics", {})
         if diagnostics:
+            for key in (
+                "planning_token_norm",
+                "planning_token_pairwise_cosine",
+                "planning_condition_keep_ratio",
+                "planning_context_gate",
+                "planning_layer_gate_mean",
+                "planning_delta_norm",
+                "planning_adapter_forward_count",
+                "trajectory_aux_loss",
+                "feasibility_aux_loss",
+                "tangent_excess_loss",
+                "curvature_excess_loss",
+                "aux_alpha_weight_mean",
+                "aux_warmup_ramp",
+                "selected_target_is_gt_ratio",
+                "selected_target_source_code",
+                "residual_alpha",
+                "full_x0_reconstruction_l1",
+                "fs_target_abs_gt3_ratio",
+                "fs_target_abs_gt5_ratio",
+                "fs_output_bound_hit_ratio",
+            ):
+                if key in diagnostics and isinstance(diagnostics[key], torch.Tensor):
+                    output[key] = diagnostics[key].to(device=loss.device, dtype=loss.dtype)
             branch_weights = diagnostics.get("branch_weights")
             output["jepa_gate_value"] = diagnostics.get("jepa_gate", loss.detach().new_tensor(0.0)).to(device=loss.device)
             output["vggt_gate_value"] = diagnostics.get("vggt_gate", loss.detach().new_tensor(0.0)).to(device=loss.device)
@@ -4794,11 +5289,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         Returns:
             BatchFeature: A batch containing the final predicted trajectory.
         """
+        self._reset_planning_adapter_forward_count()
         self._warn_if_expert_targets_present(action_input, "get_action")
         dit_context = self._prepare_dit_context(vl_features, action_input, training=False, allow_target_tokens=False)
         context_embeds = dit_context["context_tokens"]
         context_mean = dit_context["context_mean"]
         expert_step_condition = dit_context["expert_step_condition"]
+        planning_condition_tokens = dit_context.get("planning_condition_tokens")
         cot_condition_tokens = dit_context.get("cot_condition_tokens")
         coarse_prior_norm = None
         if self.config.use_last_vla:
@@ -4832,10 +5329,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         noisy_actions=current_actions,
                         diffusion_timestep=t,
                         allow_target_tokens=False,
+                        cached_planning_condition_tokens=(
+                            planning_condition_tokens if self.planning_adapter is not None else None
+                        ),
                     )
                     context_embeds = dit_context["context_tokens"]
                     context_mean = dit_context["context_mean"]
                     expert_step_condition = dit_context["expert_step_condition"]
+                    planning_condition_tokens = dit_context.get("planning_condition_tokens")
                     cot_condition_tokens = dit_context.get("cot_condition_tokens")
 
                 action_features = self.action_encoder(current_actions, t)
@@ -4860,6 +5361,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     ego_embeds,
                     t,
                     cot_condition_tokens=cot_condition_tokens,
+                    planning_condition_tokens=planning_condition_tokens,
+                    planning_condition_layers=self._planning_condition_layers(),
+                    planning_legacy_cot_gradient_path=self._planning_uses_legacy_cot_path(),
                 )
                 pred = self.action_decoder(model_output)
                 
@@ -4878,6 +5382,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     current_actions, t_batch, index_batch, context_embeds, history_embeds, ego_embeds, deterministic,
                     context_mean=context_mean,
                     expert_step_condition=expert_step_condition,
+                    planning_condition_tokens=planning_condition_tokens,
                     cot_condition_tokens=cot_condition_tokens,
                     vl_features=vl_features,
                     action_input=action_input,
@@ -4915,6 +5420,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     current_actions, t_batch, index_batch, context_embeds, history_embeds, ego_embeds, deterministic,
                     context_mean=context_mean,
                     expert_step_condition=expert_step_condition,
+                    planning_condition_tokens=planning_condition_tokens,
                     cot_condition_tokens=cot_condition_tokens,
                     vl_features=vl_features,
                     action_input=action_input,
@@ -4999,6 +5505,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 - The full denoising chain as a tensor of shape (B, K+1, H, D).
                 - The final, denormalized trajectory of shape (B, H, D).
         """
+        self._reset_planning_adapter_forward_count()
         context_allow_target_tokens = self.training if allow_target_tokens is None else bool(allow_target_tokens)
         if not context_allow_target_tokens:
             self._warn_if_expert_targets_present(action_input, "sample_chain")
@@ -5011,6 +5518,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         context_embeds = dit_context["context_tokens"]
         context_mean = dit_context["context_mean"]
         expert_step_condition = dit_context["expert_step_condition"]
+        planning_condition_tokens = dit_context.get("planning_condition_tokens")
         cot_condition_tokens = dit_context.get("cot_condition_tokens")
         B, D = context_embeds.shape[0], self.config.action_dim
         device, dtype = context_embeds.device, context_embeds.dtype
@@ -5045,10 +5553,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         noisy_actions=current_actions,
                         diffusion_timestep=t_batch,
                         allow_target_tokens=context_allow_target_tokens,
+                        cached_planning_condition_tokens=(
+                            planning_condition_tokens if self.planning_adapter is not None else None
+                        ),
                     )
                     context_embeds = dit_context["context_tokens"]
                     context_mean = dit_context["context_mean"]
                     expert_step_condition = dit_context["expert_step_condition"]
+                    planning_condition_tokens = dit_context.get("planning_condition_tokens")
                     cot_condition_tokens = dit_context.get("cot_condition_tokens")
                 
                 action_features = self.action_encoder(current_actions, t_batch)
@@ -5073,6 +5585,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     ego_status_features,
                     t_batch,
                     cot_condition_tokens=cot_condition_tokens,
+                    planning_condition_tokens=planning_condition_tokens,
+                    planning_condition_layers=self._planning_condition_layers(),
+                    planning_legacy_cot_gradient_path=self._planning_uses_legacy_cot_path(),
                 )
                 pred = self.action_decoder(model_output)
                 
@@ -5095,6 +5610,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     current_actions, t_batch, index_batch, context_embeds, his_traj_features, ego_status_features, deterministic,
                     context_mean=context_mean,
                     expert_step_condition=expert_step_condition,
+                    planning_condition_tokens=planning_condition_tokens,
                     cot_condition_tokens=cot_condition_tokens,
                     vl_features=vl_features if action_input is not None else None,
                     action_input=action_input,
@@ -5169,6 +5685,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         context_embeds = dit_context["context_tokens"]
         context_mean = dit_context["context_mean"]
         expert_step_condition = dit_context["expert_step_condition"]
+        planning_condition_tokens = dit_context.get("planning_condition_tokens")
         cot_condition_tokens = dit_context.get("cot_condition_tokens")
 
         his_traj_features = self.his_traj_encoder(
@@ -5189,6 +5706,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             conditioning_embeds['expert_step_condition'] = expert_step_condition
         if cot_condition_tokens is not None:
             conditioning_embeds['cot_condition_tokens'] = cot_condition_tokens
+        if planning_condition_tokens is not None:
+            conditioning_embeds['planning_condition_tokens'] = planning_condition_tokens
         for key in ("two_expert_f_dyn", "two_expert_f_geo", "two_expert_dyn_delta", "two_expert_geo_delta"):
             value = dit_context.get(key)
             if isinstance(value, torch.Tensor):
@@ -5225,6 +5744,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             deterministic=deterministic,
             context_mean=batched_conditioning['context_mean'],
             expert_step_condition=batched_conditioning.get('expert_step_condition'),
+            planning_condition_tokens=batched_conditioning.get('planning_condition_tokens'),
             cot_condition_tokens=batched_conditioning.get('cot_condition_tokens'),
             two_expert_f_dyn=batched_conditioning.get('two_expert_f_dyn'),
             two_expert_f_geo=batched_conditioning.get('two_expert_f_geo'),
@@ -7810,6 +8330,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         noise: Optional[torch.Tensor] = None,
         t_discrete: Optional[torch.Tensor] = None,
         timestep_sampling: str = "uniform",
+        target_source_code: Optional[torch.Tensor] = None,
     ) -> tuple[torch.Tensor, Dict[str, torch.Tensor], torch.Tensor, torch.Tensor]:
         if target_trajs.ndim != 4 or target_trajs.shape[-1] != 3:
             raise ValueError(f"target_trajs must have shape [B, M, H, 3], got {tuple(target_trajs.shape)}.")
@@ -7821,25 +8342,37 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         if not torch.isfinite(targets).all():
             raise ValueError("AWAC target trajectories contain non-finite values.")
         target_norm = policy._encode_action_target(targets)
-        target_clip = policy._target_representation_clip_value(1.0)
-        if target_clip is not None:
-            target_norm = target_norm.clamp(-target_clip, target_clip)
+        flat_source_code = None
+        flat_is_gt = None
+        if target_source_code is not None:
+            if target_source_code.shape != (B, M):
+                raise ValueError(f"target_source_code must have shape [B, M], got {tuple(target_source_code.shape)}.")
+            flat_source_code = target_source_code.reshape(B * M).to(device=target_norm.device)
+            flat_is_gt = (flat_source_code == 1).to(dtype=target_norm.dtype)
+        training_target = policy._build_training_target(
+            raw_trajectory=targets,
+            selected_repr=target_norm,
+            action_input=policy._repeat_action_input_for_loss(action_input, M),
+            selected_source_code=flat_source_code,
+            selected_target_is_gt=flat_is_gt,
+        )
+        diffusion_target = training_target.diffusion_target_repr
         if noise is None:
-            noise = torch.randn_like(target_norm)
+            noise = torch.randn_like(diffusion_target)
         else:
-            noise = noise.to(device=target_norm.device, dtype=target_norm.dtype)
+            noise = noise.to(device=diffusion_target.device, dtype=diffusion_target.dtype)
         if t_discrete is None:
             t_discrete = policy._sample_offline_rl_timesteps(
                 B * M,
-                device=target_norm.device,
-                dtype=target_norm.dtype,
+                device=diffusion_target.device,
+                dtype=diffusion_target.dtype,
                 mode=timestep_sampling,
             )
         else:
             t_discrete = t_discrete.to(device=target_norm.device)
         noisy_actions = (
-            policy.extract(policy.ddpm_sqrt_alphas_cumprod, t_discrete, target_norm.shape) * target_norm
-            + policy.extract(policy.ddpm_sqrt_one_minus_alphas_cumprod, t_discrete, target_norm.shape) * noise
+            policy.extract(policy.ddpm_sqrt_alphas_cumprod, t_discrete, diffusion_target.shape) * diffusion_target
+            + policy.extract(policy.ddpm_sqrt_one_minus_alphas_cumprod, t_discrete, diffusion_target.shape) * noise
         )
         vl_features_rep = vl_features.repeat_interleave(M, 0)
         action_input_rep = policy._repeat_action_input_for_loss(action_input, M)
@@ -7857,11 +8390,52 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError(f"per_sample_loss must have shape [B*M], got {tuple(per_sample_loss.shape)}.")
         x0_pred = policy._x0_from_noise(noisy_actions, t_discrete, pred_noise)
         x0_aux_per_sample, geo_aux_per_sample, aux_active_mask, geo_diag = policy._compute_x0_geo_aux_per_sample_losses(
-            x0_pred,
-            targets,
+            training_target.reconstruct_full_x0(x0_pred),
+            training_target.raw_trajectory,
             t_discrete,
             method="ddpm",
         )
+        trajectory_aux_per_sample, feasibility_aux_per_sample, pta_diag = policy._compute_pta_aux_per_sample_losses(
+            x0_pred,
+            training_target,
+            t_discrete,
+            method="ddpm",
+        )
+        tangent_per_sample = pta_diag.pop("_tangent_excess_per_sample", trajectory_aux_per_sample.new_zeros(B * M))
+        curvature_per_sample = pta_diag.pop(
+            "_curvature_excess_per_sample",
+            trajectory_aux_per_sample.new_zeros(B * M),
+        )
+        alpha_weight_per_sample = pta_diag.pop(
+            "_aux_alpha_weight_per_sample",
+            trajectory_aux_per_sample.new_zeros(B * M),
+        )
+        full_x0_l1_per_sample = pta_diag.pop(
+            "_full_x0_reconstruction_l1_per_sample",
+            trajectory_aux_per_sample.new_zeros(B * M),
+        )
+        fs_bound_hit_per_sample = pta_diag.pop(
+            "_fs_output_bound_hit_per_sample",
+            trajectory_aux_per_sample.new_zeros(B * M),
+        )
+        if target_source_code is None:
+            source_code_matrix = torch.ones((B, M), device=target_norm.device, dtype=target_norm.dtype)
+            target_is_gt_matrix = torch.ones_like(source_code_matrix)
+        else:
+            source_code_matrix = target_source_code.to(device=target_norm.device, dtype=target_norm.dtype)
+            target_is_gt_matrix = (source_code_matrix == 1).to(dtype=target_norm.dtype)
+        target_abs = training_target.selected_repr.detach().float().abs()
+        if policy._uses_fs_norm():
+            fs_abs_gt3_matrix = (target_abs > 3.0).float().mean(dim=(1, 2)).reshape(B, M)
+            fs_abs_gt5_matrix = (target_abs > 5.0).float().mean(dim=(1, 2)).reshape(B, M)
+        else:
+            fs_abs_gt3_matrix = target_abs.new_zeros((B, M))
+            fs_abs_gt5_matrix = target_abs.new_zeros((B, M))
+        dit_scalar_diag = {
+            key: value.detach()
+            for key, value in dit_context.get("diagnostics", {}).items()
+            if isinstance(value, torch.Tensor) and value.numel() == 1
+        }
         diagnostics = {
             "per_sample_loss_mean": per_sample_loss.detach().mean(),
             "target_norm_mean": target_norm.detach().float().abs().mean(),
@@ -7874,10 +8448,24 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 x0_aux_per_sample.new_zeros(x0_aux_per_sample.shape),
             ).reshape(B, M),
             "geo_aux_loss_matrix": geo_aux_per_sample.reshape(B, M),
+            "trajectory_aux_loss_matrix": trajectory_aux_per_sample.reshape(B, M),
+            "feasibility_aux_loss_matrix": feasibility_aux_per_sample.reshape(B, M),
+            "tangent_excess_loss_matrix": tangent_per_sample.reshape(B, M),
+            "curvature_excess_loss_matrix": curvature_per_sample.reshape(B, M),
+            "aux_alpha_weight_matrix": alpha_weight_per_sample.reshape(B, M),
+            "full_x0_reconstruction_l1_matrix": full_x0_l1_per_sample.reshape(B, M),
+            "fs_output_bound_hit_matrix": fs_bound_hit_per_sample.reshape(B, M),
+            "selected_target_is_gt_matrix": target_is_gt_matrix,
+            "selected_target_source_code_matrix": source_code_matrix,
+            "fs_target_abs_gt3_matrix": fs_abs_gt3_matrix,
+            "fs_target_abs_gt5_matrix": fs_abs_gt5_matrix,
             "x0_aux_active_mask": aux_active_mask.reshape(B, M).detach(),
             "early_kink_rate": geo_diag["early_kink_rate"].detach(),
             "tail_reverse_rate": geo_diag["tail_reverse_rate"].detach(),
             "curvature_violation_rate": geo_diag["curvature_violation_rate"].detach(),
+            **{key: value.detach() for key, value in training_target.diagnostics.items()},
+            **{key: value.detach() for key, value in pta_diag.items()},
+            **dit_scalar_diag,
         }
         return per_sample_loss.reshape(B, M), diagnostics, noise.detach(), t_discrete.detach()
 
@@ -7889,12 +8477,17 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         weights: torch.Tensor,
         return_per_sample_loss: bool = False,
         timestep_sampling: str = "uniform",
+        target_source_code: Optional[torch.Tensor] = None,
     ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         if target_trajs.ndim != 4 or target_trajs.shape[-1] != 3:
             raise ValueError(f"target_trajs must have shape [B, M, H, 3], got {tuple(target_trajs.shape)}.")
         B, M, H, D = target_trajs.shape
         if weights.shape != (B, M):
             raise ValueError(f"weights must have shape [B, M], got {tuple(weights.shape)}.")
+        if target_source_code is not None and target_source_code.shape != (B, M):
+            raise ValueError(
+                f"target_source_code must have shape [B, M], got {tuple(target_source_code.shape)}."
+            )
         flat_weights = weights.reshape(B * M).to(device=target_trajs.device, dtype=torch.float32)
         raw_weight_sum = flat_weights.sum()
         zero_weight_batch = raw_weight_sum.detach() <= 0.0
@@ -7912,6 +8505,19 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "x0_aux_loss": zero_loss.detach(),
                 "delta_aux_loss": zero_loss.detach(),
                 "geo_aux_loss": zero_loss.detach(),
+                "trajectory_aux_loss": zero_loss.detach(),
+                "feasibility_aux_loss": zero_loss.detach(),
+                "tangent_excess_loss": zero_loss.detach(),
+                "curvature_excess_loss": zero_loss.detach(),
+                "aux_alpha_weight_mean": zero_loss.detach(),
+                "aux_warmup_ramp": zero_loss.new_tensor(self._aux_warmup_ramp()).detach(),
+                "selected_target_is_gt_ratio": zero_loss.detach(),
+                "selected_target_source_code": zero_loss.detach(),
+                "residual_alpha": zero_loss.new_tensor(self._last_vla_residual_alpha(training=self.training)).detach(),
+                "full_x0_reconstruction_l1": zero_loss.detach(),
+                "fs_target_abs_gt3_ratio": zero_loss.detach(),
+                "fs_target_abs_gt5_ratio": zero_loss.detach(),
+                "fs_output_bound_hit_ratio": zero_loss.detach(),
                 "x0_aux_active_weight_sum": zero_loss.detach(),
                 "x0_aux_active_ratio": zero_loss.detach(),
                 "early_kink_rate": zero_loss.detach(),
@@ -7928,10 +8534,22 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             action_input,
             target_trajs,
             timestep_sampling=timestep_sampling,
+            target_source_code=target_source_code,
         )
         x0_aux_matrix = loss_diag.pop("x0_aux_loss_matrix", None)
         delta_aux_matrix = loss_diag.pop("delta_aux_loss_matrix", None)
         geo_aux_matrix = loss_diag.pop("geo_aux_loss_matrix", None)
+        trajectory_aux_matrix = loss_diag.pop("trajectory_aux_loss_matrix", None)
+        feasibility_aux_matrix = loss_diag.pop("feasibility_aux_loss_matrix", None)
+        tangent_excess_matrix = loss_diag.pop("tangent_excess_loss_matrix", None)
+        curvature_excess_matrix = loss_diag.pop("curvature_excess_loss_matrix", None)
+        alpha_weight_matrix = loss_diag.pop("aux_alpha_weight_matrix", None)
+        full_x0_l1_matrix = loss_diag.pop("full_x0_reconstruction_l1_matrix", None)
+        fs_bound_hit_matrix = loss_diag.pop("fs_output_bound_hit_matrix", None)
+        target_is_gt_matrix = loss_diag.pop("selected_target_is_gt_matrix", None)
+        target_source_matrix = loss_diag.pop("selected_target_source_code_matrix", None)
+        fs_abs_gt3_matrix = loss_diag.pop("fs_target_abs_gt3_matrix", None)
+        fs_abs_gt5_matrix = loss_diag.pop("fs_target_abs_gt5_matrix", None)
         aux_active_mask = loss_diag.pop("x0_aux_active_mask", None)
         per_sample_loss = per_target_loss.reshape(B * M)
         valid_weight_sum = raw_weight_sum.clamp(min=1e-6)
@@ -7942,8 +8560,37 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         x0_aux_loss = zero
         delta_aux_loss = zero
         geo_aux_loss = zero
+        trajectory_aux_loss = zero
+        feasibility_aux_loss = zero
+        tangent_excess_loss = zero
+        curvature_excess_loss = zero
+        aux_alpha_weight_mean = zero
+        full_x0_reconstruction_l1 = zero
+        fs_output_bound_hit_ratio = zero
+        selected_target_is_gt_ratio = zero
+        selected_target_source_code = zero
+        fs_target_abs_gt3_ratio = zero
+        fs_target_abs_gt5_ratio = zero
         aux_active_weight_sum = zero
         aux_active_ratio = zero
+
+        def weighted_matrix_mean(matrix: Optional[torch.Tensor]) -> torch.Tensor:
+            if matrix is None:
+                return zero
+            matrix_weights = weights.to(device=matrix.device, dtype=matrix.dtype)
+            return (matrix_weights * matrix).sum() / valid_weight_sum.to(device=matrix.device, dtype=matrix.dtype)
+
+        trajectory_aux_loss = weighted_matrix_mean(trajectory_aux_matrix)
+        feasibility_aux_loss = weighted_matrix_mean(feasibility_aux_matrix)
+        tangent_excess_loss = weighted_matrix_mean(tangent_excess_matrix)
+        curvature_excess_loss = weighted_matrix_mean(curvature_excess_matrix)
+        aux_alpha_weight_mean = weighted_matrix_mean(alpha_weight_matrix)
+        full_x0_reconstruction_l1 = weighted_matrix_mean(full_x0_l1_matrix)
+        fs_output_bound_hit_ratio = weighted_matrix_mean(fs_bound_hit_matrix)
+        selected_target_is_gt_ratio = weighted_matrix_mean(target_is_gt_matrix)
+        selected_target_source_code = weighted_matrix_mean(target_source_matrix)
+        fs_target_abs_gt3_ratio = weighted_matrix_mean(fs_abs_gt3_matrix)
+        fs_target_abs_gt5_ratio = weighted_matrix_mean(fs_abs_gt5_matrix)
         if x0_aux_matrix is not None and geo_aux_matrix is not None and aux_active_mask is not None:
             aux_weights = weights.to(device=target_trajs.device, dtype=torch.float32) * aux_active_mask.to(
                 device=target_trajs.device,
@@ -7975,12 +8622,58 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "x0_aux_loss": x0_aux_loss.to(device=awac_loss.device, dtype=awac_loss.dtype),
             "delta_aux_loss": delta_aux_loss.to(device=awac_loss.device, dtype=awac_loss.dtype),
             "geo_aux_loss": geo_aux_loss.to(device=awac_loss.device, dtype=awac_loss.dtype),
+            "trajectory_aux_loss": trajectory_aux_loss.to(device=awac_loss.device, dtype=awac_loss.dtype),
+            "feasibility_aux_loss": feasibility_aux_loss.to(device=awac_loss.device, dtype=awac_loss.dtype),
+            "tangent_excess_loss": tangent_excess_loss.to(device=awac_loss.device, dtype=awac_loss.dtype),
+            "curvature_excess_loss": curvature_excess_loss.to(device=awac_loss.device, dtype=awac_loss.dtype),
+            "aux_alpha_weight_mean": aux_alpha_weight_mean.to(device=awac_loss.device, dtype=awac_loss.dtype),
+            "aux_warmup_ramp": awac_loss.new_tensor(self._aux_warmup_ramp()).detach(),
+            "selected_target_is_gt_ratio": selected_target_is_gt_ratio.to(
+                device=awac_loss.device,
+                dtype=awac_loss.dtype,
+            ),
+            "selected_target_source_code": selected_target_source_code.to(
+                device=awac_loss.device,
+                dtype=awac_loss.dtype,
+            ),
+            "residual_alpha": loss_diag.get("residual_alpha", zero).to(
+                device=awac_loss.device,
+                dtype=awac_loss.dtype,
+            ),
+            "full_x0_reconstruction_l1": full_x0_reconstruction_l1.to(
+                device=awac_loss.device,
+                dtype=awac_loss.dtype,
+            ),
+            "fs_target_abs_gt3_ratio": fs_target_abs_gt3_ratio.to(
+                device=awac_loss.device,
+                dtype=awac_loss.dtype,
+            ),
+            "fs_target_abs_gt5_ratio": fs_target_abs_gt5_ratio.to(
+                device=awac_loss.device,
+                dtype=awac_loss.dtype,
+            ),
+            "fs_output_bound_hit_ratio": fs_output_bound_hit_ratio.to(
+                device=awac_loss.device,
+                dtype=awac_loss.dtype,
+            ),
             "x0_aux_active_weight_sum": aux_active_weight_sum.detach(),
             "x0_aux_active_ratio": aux_active_ratio.detach(),
             "early_kink_rate": loss_diag["early_kink_rate"].to(device=awac_loss.device, dtype=awac_loss.dtype),
             "tail_reverse_rate": loss_diag["tail_reverse_rate"].to(device=awac_loss.device, dtype=awac_loss.dtype),
             "curvature_violation_rate": loss_diag["curvature_violation_rate"].to(device=awac_loss.device, dtype=awac_loss.dtype),
         }
+        for key in (
+            "planning_token_norm",
+            "planning_token_pairwise_cosine",
+            "planning_condition_keep_ratio",
+            "planning_context_gate",
+            "planning_layer_gate_mean",
+            "planning_delta_norm",
+            "planning_adapter_forward_count",
+        ):
+            value = loss_diag.get(key)
+            if isinstance(value, torch.Tensor) and value.numel() == 1:
+                diagnostics[key] = value.to(device=awac_loss.device, dtype=awac_loss.dtype)
         if return_per_sample_loss:
             diagnostics["per_sample_loss_matrix"] = per_target_loss
         return awac_loss, diagnostics
@@ -9095,6 +9788,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         tokens_list,
         use_bc_loss: bool = True,
     ) -> BatchFeature:
+        self._reset_planning_adapter_forward_count()
         self.set_frozen_modules_to_eval_mode()
         cfg = self.offline_rl_cfg
         if not bool(cfg.enabled):
@@ -9175,6 +9869,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             loss_target_trajs,
             weights,
             timestep_sampling=cfg.awac_timestep_sampling,
+            target_source_code=source_code,
             return_per_sample_loss=(
                 float(cfg.pairwise_rank_loss_weight) > 0.0 or float(cfg.invalid_repulsion_loss_weight) > 0.0
             ),
@@ -9245,6 +9940,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             + float(getattr(self.config, "x0_aux_weight", 0.0)) * awac_diag["x0_aux_loss"].to(dtype=awac_loss.dtype)
             + float(getattr(self.config, "delta_aux_weight", 0.0)) * awac_diag["delta_aux_loss"].to(dtype=awac_loss.dtype)
             + float(getattr(self.config, "geo_aux_weight", 0.0)) * awac_diag["geo_aux_loss"].to(dtype=awac_loss.dtype)
+            + awac_diag["aux_warmup_ramp"].to(dtype=awac_loss.dtype)
+            * (
+                float(getattr(self.config, "trajectory_aux_weight", 0.0))
+                * awac_diag["trajectory_aux_loss"].to(dtype=awac_loss.dtype)
+                + float(getattr(self.config, "feasibility_aux_weight", 0.0))
+                * awac_diag["feasibility_aux_loss"].to(dtype=awac_loss.dtype)
+            )
         )
         if not torch.isfinite(total_loss):
             raise ValueError("AWAC/IQL total loss is non-finite.")
@@ -9304,6 +10006,32 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "x0_aux_loss": awac_diag["x0_aux_loss"].detach(),
             "delta_aux_loss": awac_diag["delta_aux_loss"].detach(),
             "geo_aux_loss": awac_diag["geo_aux_loss"].detach(),
+            "trajectory_aux_loss": awac_diag["trajectory_aux_loss"].detach(),
+            "feasibility_aux_loss": awac_diag["feasibility_aux_loss"].detach(),
+            "tangent_excess_loss": awac_diag["tangent_excess_loss"].detach(),
+            "curvature_excess_loss": awac_diag["curvature_excess_loss"].detach(),
+            "aux_alpha_weight_mean": awac_diag["aux_alpha_weight_mean"].detach(),
+            "aux_warmup_ramp": awac_diag["aux_warmup_ramp"].detach(),
+            "selected_target_is_gt_ratio": awac_diag["selected_target_is_gt_ratio"].detach(),
+            "selected_target_source_code": awac_diag["selected_target_source_code"].detach(),
+            "residual_alpha": awac_diag["residual_alpha"].detach(),
+            "full_x0_reconstruction_l1": awac_diag["full_x0_reconstruction_l1"].detach(),
+            "fs_target_abs_gt3_ratio": awac_diag["fs_target_abs_gt3_ratio"].detach(),
+            "fs_target_abs_gt5_ratio": awac_diag["fs_target_abs_gt5_ratio"].detach(),
+            "fs_output_bound_hit_ratio": awac_diag["fs_output_bound_hit_ratio"].detach(),
+            **{
+                key: awac_diag[key].detach()
+                for key in (
+                    "planning_token_norm",
+                    "planning_token_pairwise_cosine",
+                    "planning_condition_keep_ratio",
+                    "planning_context_gate",
+                    "planning_layer_gate_mean",
+                    "planning_delta_norm",
+                    "planning_adapter_forward_count",
+                )
+                if key in awac_diag and isinstance(awac_diag[key], torch.Tensor) and awac_diag[key].numel() == 1
+            },
             "early_kink_rate": awac_diag["early_kink_rate"].detach(),
             "tail_reverse_rate": awac_diag["tail_reverse_rate"].detach(),
             "curvature_violation_rate": awac_diag["curvature_violation_rate"].detach(),
@@ -9438,6 +10166,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         tokens_list,
         use_bc_loss: bool = True,
     ) -> BatchFeature:
+        self._reset_planning_adapter_forward_count()
         self.set_frozen_modules_to_eval_mode()
         cfg = self.offline_rl_cfg
         if not bool(cfg.enabled) or not bool(cfg.use_dpsi):
@@ -9481,21 +10210,31 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             current_epoch=current_epoch,
             training=bool(self.training),
         )
+        target_source_code = sample_diag.pop("_sampled_target_source_code")
         dpsi_loss, dpsi_diag = self._weighted_diffusion_loss_on_targets(
             vl_features,
             action_input,
             target_trajs,
             target_weights,
             timestep_sampling=cfg.awac_timestep_sampling,
+            target_source_code=target_source_code,
         )
         x0_aux = dpsi_diag["x0_aux_loss"].to(dtype=dpsi_loss.dtype)
         delta_aux = dpsi_diag["delta_aux_loss"].to(dtype=dpsi_loss.dtype)
         geo_aux = dpsi_diag["geo_aux_loss"].to(dtype=dpsi_loss.dtype)
+        trajectory_aux = dpsi_diag["trajectory_aux_loss"].to(dtype=dpsi_loss.dtype)
+        feasibility_aux = dpsi_diag["feasibility_aux_loss"].to(dtype=dpsi_loss.dtype)
+        aux_ramp = dpsi_diag["aux_warmup_ramp"].to(dtype=dpsi_loss.dtype)
         total_loss = (
             dpsi_loss
             + float(getattr(self.config, "x0_aux_weight", 0.0)) * x0_aux
             + float(getattr(self.config, "delta_aux_weight", 0.0)) * delta_aux
             + float(getattr(self.config, "geo_aux_weight", 0.0)) * geo_aux
+            + aux_ramp
+            * (
+                float(getattr(self.config, "trajectory_aux_weight", 0.0)) * trajectory_aux
+                + float(getattr(self.config, "feasibility_aux_weight", 0.0)) * feasibility_aux
+            )
         )
         if not torch.isfinite(total_loss):
             raise ValueError("DPSI/ASMI total loss is non-finite.")
@@ -9526,6 +10265,19 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "x0_aux_loss": x0_aux.detach(),
             "delta_aux_loss": delta_aux.detach(),
             "geo_aux_loss": geo_aux.detach(),
+            "trajectory_aux_loss": trajectory_aux.detach(),
+            "feasibility_aux_loss": feasibility_aux.detach(),
+            "tangent_excess_loss": dpsi_diag["tangent_excess_loss"].detach(),
+            "curvature_excess_loss": dpsi_diag["curvature_excess_loss"].detach(),
+            "aux_alpha_weight_mean": dpsi_diag["aux_alpha_weight_mean"].detach(),
+            "aux_warmup_ramp": aux_ramp.detach(),
+            "selected_target_is_gt_ratio": dpsi_diag["selected_target_is_gt_ratio"].detach(),
+            "selected_target_source_code": dpsi_diag["selected_target_source_code"].detach(),
+            "residual_alpha": dpsi_diag["residual_alpha"].detach(),
+            "full_x0_reconstruction_l1": dpsi_diag["full_x0_reconstruction_l1"].detach(),
+            "fs_target_abs_gt3_ratio": dpsi_diag["fs_target_abs_gt3_ratio"].detach(),
+            "fs_target_abs_gt5_ratio": dpsi_diag["fs_target_abs_gt5_ratio"].detach(),
+            "fs_output_bound_hit_ratio": dpsi_diag["fs_output_bound_hit_ratio"].detach(),
             "early_kink_rate": dpsi_diag["early_kink_rate"].detach(),
             "tail_reverse_rate": dpsi_diag["tail_reverse_rate"].detach(),
             "curvature_violation_rate": dpsi_diag["curvature_violation_rate"].detach(),
@@ -9545,6 +10297,18 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 / selected_real.float().sum().clamp(min=1.0)
             ).to(total_loss).detach(),
         }
+        for key in (
+            "planning_token_norm",
+            "planning_token_pairwise_cosine",
+            "planning_condition_keep_ratio",
+            "planning_context_gate",
+            "planning_layer_gate_mean",
+            "planning_delta_norm",
+            "planning_adapter_forward_count",
+        ):
+            value = dpsi_diag.get(key)
+            if isinstance(value, torch.Tensor) and value.numel() == 1:
+                out[key] = value.to(total_loss).detach()
         for diag in (profile_diag, asmi_diag, sample_diag):
             out.update({key: value.to(total_loss).detach() for key, value in diag.items()})
         return BatchFeature(data=out)

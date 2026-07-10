@@ -3,7 +3,7 @@ from __future__ import annotations
 import math
 import warnings
 from dataclasses import dataclass
-from typing import Any, Dict, Literal, Optional, Tuple
+from typing import Any, Callable, Dict, Literal, Optional, Tuple
 
 import torch
 from torch import nn
@@ -43,6 +43,7 @@ class LastVLACoTConfig:
     use_residual_diffusion: bool = False
     residual_detach_coarse_for_diffusion: bool = True
     coarse_prior_clip: float = 1.0
+    use_fs_norm: bool = False
 
     require_full_geometry: bool = False
     allow_patch_geometry_fallback: bool = False
@@ -544,14 +545,21 @@ class CoTCoarseTrajectoryHead(nn.Module):
         high_command_one_hot: Optional[torch.Tensor],
         history_trajectory_flat: Optional[torch.Tensor],
         target_action_norm: Optional[torch.Tensor] = None,
+        output_bound_fn: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
         batch_size = cot_tokens.shape[0]
         memory = torch.cat([cot_tokens, self._state_token(ego_status, high_command_one_hot, history_trajectory_flat)], dim=1)
         horizon_queries = self.horizon_queries.unsqueeze(0).expand(batch_size, -1, -1).to(cot_tokens)
         horizon_hidden = self.horizon_attn(horizon_queries, memory)
-        coarse = torch.tanh(self.traj_head(horizon_hidden))
-        if self.config.coarse_prior_clip > 0:
-            coarse = coarse.clamp(-float(self.config.coarse_prior_clip), float(self.config.coarse_prior_clip))
+        coarse_logits = self.traj_head(horizon_hidden)
+        if self.config.use_fs_norm:
+            if output_bound_fn is None:
+                raise ValueError("FS-Norm Last-VLA coarse prediction requires the planner output-bound function.")
+            coarse = output_bound_fn(coarse_logits)
+        else:
+            coarse = torch.tanh(coarse_logits)
+            if self.config.coarse_prior_clip > 0:
+                coarse = coarse.clamp(-float(self.config.coarse_prior_clip), float(self.config.coarse_prior_clip))
         ego_queries = self.ego_queries.unsqueeze(0).expand(batch_size, -1, -1).to(cot_tokens)
         ego_tokens = self.ego_attn(ego_queries, torch.cat([memory, horizon_hidden], dim=1))
 
@@ -560,9 +568,9 @@ class CoTCoarseTrajectoryHead(nn.Module):
         if target_action_norm is not None:
             target = target_action_norm.detach().to(coarse)
             losses["coarse_loss"] = smooth_l1(coarse, target)
-            if coarse.shape[-1] >= 3:
+            if not self.config.use_fs_norm and coarse.shape[-1] >= 3:
                 losses["heading_loss"] = self._heading_loss(coarse[..., 2], target[..., 2])
-            if coarse.shape[1] > 1 and coarse.shape[-1] >= 2:
+            if not self.config.use_fs_norm and coarse.shape[1] > 1 and coarse.shape[-1] >= 2:
                 losses["progress_loss"] = smooth_l1(coarse[:, 1:, :2] - coarse[:, :-1, :2], target[:, 1:, :2] - target[:, :-1, :2])
         finite_or_raise("coarse_traj_norm", coarse)
         return coarse, ego_tokens, losses
@@ -741,6 +749,7 @@ class LastVLACoTTransformer(nn.Module):
         current_epoch: Optional[int] = None,
         total_epochs: Optional[int] = None,
         allow_target_tokens: bool = False,
+        output_bound_fn: Optional[Callable[[torch.Tensor], torch.Tensor]] = None,
     ) -> LastVLAOutput:
         if self.config.condition_mode != "decoupled_cot_residual" or self.config.cot_bottleneck_mode:
             raise ValueError(
@@ -809,7 +818,14 @@ class LastVLACoTTransformer(nn.Module):
         )
         cot_steps["geometry"] = cot_geometry
 
-        coarse_0, _, _ = self.coarse_head(cot_scene, ego_status, command, history, target_action_norm)
+        coarse_0, _, _ = self.coarse_head(
+            cot_scene,
+            ego_status,
+            command,
+            history,
+            target_action_norm,
+            output_bound_fn=output_bound_fn,
+        )
         jepa_context = self._context_tokens(action_input, "jepa_context_tokens", self.config.jepa_dim, vlm_tokens)
         if jepa_context is not None and self.config.dynamic_tokens > 12 and jepa_context.shape[1] != self.config.dynamic_tokens:
             raise ValueError(
@@ -847,7 +863,14 @@ class LastVLACoTTransformer(nn.Module):
         cot_ego = self.ego_step(cot_fusion, ego_memory, action_tokens=ego_action_tokens, timestep_embedding=t_embed) if self.config.use_ego_step else cot_fusion
         if corrupt_ego:
             cot_ego = torch.zeros_like(cot_ego)
-        coarse_traj_norm, ego_tokens, coarse_losses = self.coarse_head(cot_fusion, ego_status, command, history, target_action_norm)
+        coarse_traj_norm, ego_tokens, coarse_losses = self.coarse_head(
+            cot_fusion,
+            ego_status,
+            command,
+            history,
+            target_action_norm,
+            output_bound_fn=output_bound_fn,
+        )
         if corrupt_coarse_prior:
             coarse_traj_norm = torch.zeros_like(coarse_traj_norm)
             ego_tokens = torch.zeros_like(ego_tokens)

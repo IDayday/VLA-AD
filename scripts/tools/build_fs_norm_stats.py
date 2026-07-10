@@ -2,19 +2,22 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
 import lzma
 import pickle
 import sys
 from pathlib import Path
 from typing import Any
 
+import numpy as np
 import torch
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from navsim.agents.recogdrive.fs_norm import FSNormStats, FSNormTransform, save_fs_norm_stats
+from navsim.agents.recogdrive.fs_norm import FSNormStats, save_fs_norm_stats
+from navsim.agents.recogdrive.pareto_support.fs_norm import fit_fs_norm_stats as fit_numpy_fs_norm_stats
 
 
 def _str_to_bool(value: str | bool) -> bool:
@@ -42,31 +45,35 @@ def _load_record(path: Path) -> Any:
 
 def _collect_trajs(payload: Any) -> list[torch.Tensor]:
     trajs: list[torch.Tensor] = []
+    support_set = getattr(payload, "support_set", None)
+    if support_set is not None:
+        return [torch.as_tensor(item.trajectory, dtype=torch.float32) for item in support_set]
     if isinstance(payload, dict):
+        support_set = payload.get("support_set")
+        if support_set is not None:
+            for item in support_set:
+                trajectory = getattr(item, "trajectory", None)
+                if trajectory is None and isinstance(item, dict):
+                    trajectory = item.get("trajectory")
+                if trajectory is not None:
+                    trajs.append(torch.as_tensor(trajectory, dtype=torch.float32))
+            return trajs
         candidates = payload.get("candidates")
-        support_tags = payload.get("support_tags")
-        if candidates is not None and support_tags is not None:
+        support_indices = payload.get("support_indices")
+        if candidates is not None and support_indices is not None:
             arr = torch.as_tensor(candidates, dtype=torch.float32)
-            tags = [str(tag) for tag in support_tags]
-            if arr.ndim == 3 and arr.shape[-1] == 3 and len(tags) == int(arr.shape[0]):
-                selected = [idx for idx, tag in enumerate(tags) if tag]
-                if selected:
-                    return [arr[idx] for idx in selected]
+            indices = [int(index) for index in support_indices]
+            if arr.ndim == 3 and arr.shape[-1] == 3:
+                if any(index < 0 or index >= int(arr.shape[0]) for index in indices):
+                    raise ValueError("support_indices contain out-of-range candidate indices.")
+                return [arr[index] for index in indices]
 
-        for key in ("trajectory", "gt_trajectory", "il_trajectory"):
-            if key in payload:
-                arr = torch.as_tensor(payload[key], dtype=torch.float32)
-                if arr.ndim == 2 and arr.shape[-1] == 3:
-                    trajs.append(arr)
-                elif arr.ndim == 3 and arr.shape[-1] == 3:
-                    trajs.extend([row for row in arr])
-        for key in ("candidates", "support_trajectories", "trajectories"):
-            if key in payload:
-                arr = torch.as_tensor(payload[key], dtype=torch.float32)
-                if arr.ndim == 2 and arr.shape[-1] == 3:
-                    trajs.append(arr)
-                elif arr.ndim == 3 and arr.shape[-1] == 3:
-                    trajs.extend([row for row in arr])
+        if "support_trajectories" in payload:
+            arr = torch.as_tensor(payload["support_trajectories"], dtype=torch.float32)
+            if arr.ndim == 2 and arr.shape[-1] == 3:
+                trajs.append(arr)
+            elif arr.ndim == 3 and arr.shape[-1] == 3:
+                trajs.extend([row for row in arr])
         return trajs
     if isinstance(payload, list):
         for item in payload:
@@ -97,48 +104,56 @@ def build_stats(
 ) -> FSNormStats:
     paths = list(iter_archive_paths(Path(support_archive_path)))
     trajs: list[torch.Tensor] = []
+    scene_ids: list[str] = []
+    fingerprint = hashlib.sha256()
     for path in paths:
         try:
-            trajs.extend(_collect_trajs(_load_record(path)))
+            scene_trajs = _collect_trajs(_load_record(path))
         except Exception as exc:
             raise RuntimeError(f"Failed loading trajectories from {path}: {exc}") from exc
+        if not scene_trajs:
+            continue
+        trajs.extend(scene_trajs)
+        scene_ids.extend([str(path)] * len(scene_trajs))
+        stat = path.stat()
+        fingerprint.update(f"{path}:{stat.st_size}:{stat.st_mtime_ns}\n".encode("utf-8"))
     if not trajs:
         raise ValueError(f"No [H, 3] trajectories found under {support_archive_path}.")
-    stacked = torch.stack(trajs, dim=0)
-    delta = FSNormTransform(FSNormStats(mean=torch.zeros_like(stacked[0]), std=torch.ones_like(stacked[0]))).absolute_to_delta(stacked)
-    mean = delta.mean(dim=0)
-    std = delta.std(dim=0, unbiased=False).clamp_min(1e-6)
-    delta_min = delta.amin(dim=0)
-    delta_max = delta.amax(dim=0)
-    median = None
-    mad = None
-    if use_robust:
-        median = delta.median(dim=0).values
-        mad = (delta - median).abs().median(dim=0).values.clamp_min(1e-6)
-        center = median
-        scale = (1.4826 * mad).clamp_min(1e-6)
-    else:
-        center = mean
-        scale = std
-    if not 0.0 <= lower_quantile < upper_quantile <= 1.0:
-        raise ValueError(
-            f"Expected 0 <= lower_quantile < upper_quantile <= 1, got "
-            f"{lower_quantile}, {upper_quantile}."
-        )
-    normalized = (delta - center.unsqueeze(0)) / scale.unsqueeze(0)
-    clip_lower = torch.quantile(normalized, float(lower_quantile), dim=0)
-    clip_upper = torch.quantile(normalized, float(upper_quantile), dim=0)
+    stacked = torch.stack(trajs, dim=0).numpy()
+    numpy_stats = fit_numpy_fs_norm_stats(
+        stacked,
+        robust=use_robust,
+        clip=clip,
+        scene_ids=np.asarray(scene_ids),
+        lower_quantile=lower_quantile,
+        upper_quantile=upper_quantile,
+        archive_path=str(Path(support_archive_path).resolve()),
+        archive_fingerprint=fingerprint.hexdigest(),
+    )
+
+    def tensor_or_none(value):
+        return None if value is None else torch.as_tensor(value, dtype=torch.float32)
+
     return FSNormStats(
-        mean=mean,
-        std=std,
-        median=median,
-        mad=mad,
-        delta_min=delta_min,
-        delta_max=delta_max,
-        clip_lower=clip_lower,
-        clip_upper=clip_upper,
-        use_robust=use_robust,
-        clip=float(clip),
+        mean=torch.as_tensor(numpy_stats.mean, dtype=torch.float32),
+        std=torch.as_tensor(numpy_stats.std, dtype=torch.float32),
+        median=tensor_or_none(numpy_stats.median),
+        mad=tensor_or_none(numpy_stats.mad),
+        delta_min=tensor_or_none(numpy_stats.delta_min),
+        delta_max=tensor_or_none(numpy_stats.delta_max),
+        clip_lower=tensor_or_none(numpy_stats.clip_lower),
+        clip_upper=tensor_or_none(numpy_stats.clip_upper),
+        use_robust=numpy_stats.use_robust,
+        clip=numpy_stats.clip,
+        version=numpy_stats.version,
+        representation=numpy_stats.representation,
+        p0=numpy_stats.p0,
+        scene_balanced=numpy_stats.scene_balanced,
+        heading_center_zero=numpy_stats.heading_center_zero,
+        num_scenes=numpy_stats.num_scenes,
+        num_supports=numpy_stats.num_supports,
+        archive_path=numpy_stats.archive_path,
+        archive_fingerprint=numpy_stats.archive_fingerprint,
     )
 
 
@@ -164,7 +179,8 @@ def main() -> None:
     save_fs_norm_stats(str(output), stats)
     print(
         f"saved FS-Norm stats to {output} "
-        f"(H={stats.mean.shape[0]}, D={stats.mean.shape[1]}, robust={stats.use_robust}, "
+        f"(version={stats.version}, scenes={stats.num_scenes}, supports={stats.num_supports}, "
+        f"H={stats.mean.shape[0]}, D={stats.mean.shape[1]}, robust={stats.use_robust}, "
         f"clip_quantiles=[{args.lower_quantile}, {args.upper_quantile}])"
     )
 

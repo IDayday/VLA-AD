@@ -45,7 +45,7 @@ if (( EFFECTIVE_BATCH_SIZE != TARGET_EFFECTIVE_BATCH_SIZE )); then
   exit 2
 fi
 
-if [[ "${HYDRA_EXPERIMENT}" == *"fs_norm"* && -z "${FS_NORM_STATS_PATH:-}" ]]; then
+if [[ ("${HYDRA_EXPERIMENT}" == *"fs_norm"* || "${HYDRA_EXPERIMENT}" == "pta_fs_dit_stage2_103k") && -z "${FS_NORM_STATS_PATH:-}" ]]; then
   echo "HYDRA_EXPERIMENT=${HYDRA_EXPERIMENT} requires FS_NORM_STATS_PATH." >&2
   exit 2
 fi
@@ -75,11 +75,38 @@ cmd=(
 if [[ -n "${FS_NORM_STATS_PATH:-}" ]]; then
   cmd+=("agent.fs_norm_stats_path=${FS_NORM_STATS_PATH}")
 fi
-if [[ "${HYDRA_EXPERIMENT}" == *"fs_norm"* ]]; then
+if [[ "${HYDRA_EXPERIMENT}" == *"fs_norm"* || "${HYDRA_EXPERIMENT}" == "pta_fs_dit_stage2_103k" ]]; then
   cmd+=("agent.fs_norm_target_clip=${FS_NORM_TARGET_CLIP:-0.0}")
   cmd+=("agent.fs_norm_output_clip=${FS_NORM_OUTPUT_CLIP:-12.0}")
   cmd+=("agent.fs_norm_output_clip_mode=${FS_NORM_OUTPUT_CLIP_MODE:-stats_bounds}")
 fi
+optional_overrides=(
+  "USE_PLANNING_TOKEN_ADAPTER:agent.use_planning_token_adapter"
+  "PLANNING_TOKEN_SOURCE:agent.planning_token_source"
+  "PLANNING_NUM_TOKENS:agent.planning_num_tokens"
+  "PLANNING_NUM_HEADS:agent.planning_num_heads"
+  "PLANNING_CONDITION_LAYERS:agent.planning_condition_layers"
+  "PLANNING_GATE_INIT:agent.planning_gate_init"
+  "PLANNING_CONTEXT_GATE_INIT:agent.planning_context_gate_init"
+  "PLANNING_CONDITION_DROPOUT:agent.planning_condition_dropout"
+  "TRAJECTORY_AUX_WEIGHT:agent.trajectory_aux_weight"
+  "FEASIBILITY_AUX_WEIGHT:agent.feasibility_aux_weight"
+  "AUX_ALPHA_POWER:agent.aux_alpha_power"
+  "AUX_WARMUP_EPOCHS:agent.aux_warmup_epochs"
+  "TANGENT_MARGIN_RAD:agent.tangent_margin_rad"
+  "CURVATURE_MARGIN:agent.curvature_margin"
+  "MIN_SEGMENT_LENGTH:agent.min_segment_length"
+  "X0_AUX_WEIGHT:agent.x0_aux_weight"
+  "DELTA_AUX_WEIGHT:agent.delta_aux_weight"
+  "GEO_AUX_WEIGHT:agent.geo_aux_weight"
+)
+for mapping in "${optional_overrides[@]}"; do
+  env_name="${mapping%%:*}"
+  hydra_key="${mapping#*:}"
+  if [[ -n "${!env_name:-}" ]]; then
+    cmd+=("${hydra_key}=${!env_name}")
+  fi
+done
 if [[ -n "${EXTRA_HYDRA_OVERRIDES:-}" ]]; then
   read -r -a extra_overrides <<<"${EXTRA_HYDRA_OVERRIDES}"
   cmd+=("${extra_overrides[@]}")
