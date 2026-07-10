@@ -4,11 +4,15 @@
 # Licensed under The MIT License [see LICENSE for details]
 # --------------------------------------------------------
 
-import datasets
 import torch
 import transformers
 from torch.utils.data import DataLoader
 from transformers.trainer import is_datasets_available, seed_worker
+
+try:
+    import datasets
+except ImportError:
+    datasets = None
 
 
 def get_train_dataloader(self) -> DataLoader:
@@ -25,7 +29,7 @@ def get_train_dataloader(self) -> DataLoader:
 
     train_dataset = self.train_dataset
     data_collator = self.data_collator
-    if is_datasets_available() and isinstance(train_dataset, datasets.Dataset):
+    if datasets is not None and is_datasets_available() and isinstance(train_dataset, datasets.Dataset):
         train_dataset = self._remove_unused_columns(train_dataset, description='training')
     else:
         data_collator = self._get_collator_with_removed_columns(data_collator, description='training')

@@ -16,7 +16,10 @@ from collections import Counter
 from typing import Dict
 
 import cv2
-import imageio
+try:
+    import imageio
+except ImportError:
+    imageio = None
 import numpy as np
 import torch
 import torch.nn.functional as F
@@ -103,6 +106,8 @@ def read_frames_gif(
         video_path, num_frames, sample='rand', fix_start=None,
         client=None, min_num_frames=4
 ):
+    if imageio is None:
+        raise ImportError('imageio is required for GIF datasets')
     # if 's3://' in video_path:
     #     video_bytes = client.get(video_path)
     #     gif = imageio.get_reader(io.BytesIO(video_bytes))

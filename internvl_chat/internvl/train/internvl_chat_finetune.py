@@ -423,9 +423,17 @@ class LazySupervisedDataset(Dataset):
         # Build transformation function
         transform = self.get_transform()
 
-        # Ensure the first conversation contains an image placeholder
-        if '<image>' not in data_item['conversations'][0]['value']:
-            data_item['conversations'][0]['value'] = '<image>\n' + data_item['conversations'][0]['value']
+        # Ensure a human turn contains the image placeholder. The first turn may
+        # be a custom system prompt, which preprocess_internvl2_5 removes before
+        # replacing image tokens.
+        if not any('<image>' in turn.get('value', '') for turn in data_item['conversations']):
+            first_human = next(
+                (turn for turn in data_item['conversations'] if turn.get('from') == 'human'),
+                None,
+            )
+            if first_human is None:
+                raise ValueError('Multimodal sample has no human conversation turn')
+            first_human['value'] = '<image>\n' + first_human['value']
 
         # Merge the image path
         image_path = self.get_image_path(data_item['image'])

@@ -40,6 +40,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument("--clip-stop", type=int, default=None, help="Exclusive stop index in sorted Bench2Drive clip list, after optional --clip-name filtering.")
     parser.add_argument("--max-samples", type=int, default=None)
     parser.add_argument("--clip-name", action="append", default=None, help="Limit to one or more exact clip directory names.")
+    parser.add_argument("--clip-list", type=Path, default=None, help="Newline-delimited exact clip names. Cannot be combined with --clip-name.")
     parser.add_argument("--frame-step", type=int, default=5, help="Frame spacing for 0.5s-like history/future samples in 10Hz Bench2Drive clips.")
     parser.add_argument("--sample-stride", type=int, default=5, help="Stride between current-frame anchors.")
     parser.add_argument("--history-frames", type=int, default=4)
@@ -55,6 +56,12 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     )
     parser.add_argument("--recogdrive-vlm-path", type=Path, default=Path("checkpoints/recogdrive/ReCogDrive-VLM-2B"))
     parser.add_argument("--device", default="cuda", help="Device for --hidden-source recogdrive-vlm.")
+    parser.add_argument(
+        "--system-prompt-profile",
+        choices=("bench2drive", "navsim"),
+        default="bench2drive",
+        help="System prompt embedded in VLM hidden states. Bench2Drive caches should keep the default.",
+    )
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--log-every", type=int, default=100)
     return parser.parse_args(argv)
@@ -70,6 +77,7 @@ def clip_dirs(
     max_clips: Optional[int],
     clip_start: int = 0,
     clip_stop: Optional[int] = None,
+    clip_list: Optional[Path] = None,
 ) -> List[Path]:
     if not data_root.is_dir():
         raise FileNotFoundError(f"Bench2Drive data root does not exist: {data_root}")
@@ -77,7 +85,19 @@ def clip_dirs(
         raise ValueError("--clip-start must be non-negative")
     if clip_stop is not None and clip_stop < clip_start:
         raise ValueError("--clip-stop must be >= --clip-start")
+    if clip_names and clip_list is not None:
+        raise ValueError("Use only one of --clip-name or --clip-list")
     requested = set(clip_names or [])
+    if clip_list is not None:
+        if not clip_list.is_file():
+            raise FileNotFoundError(f"Bench2Drive clip list does not exist: {clip_list}")
+        requested = {
+            line.strip()
+            for line in clip_list.read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        }
+        if not requested:
+            raise ValueError(f"Bench2Drive clip list is empty: {clip_list}")
     dirs = [
         child
         for child in sorted(data_root.iterdir())
@@ -214,6 +234,7 @@ def build_vlm_feature_builder(args: argparse.Namespace):
         device=args.device,
         cache_mode=True,
         use_expert_features=False,
+        system_prompt_profile=args.system_prompt_profile,
     )
 
 
@@ -367,7 +388,14 @@ def build_cache(args: argparse.Namespace) -> Dict[str, Any]:
     scanned = 0
     min_current = args.frame_step * (args.history_frames - 1)
     written_by_clip: Dict[str, int] = {}
-    selected_clip_dirs = clip_dirs(args.data_root, args.clip_name, args.max_clips, args.clip_start, args.clip_stop)
+    selected_clip_dirs = clip_dirs(
+        args.data_root,
+        args.clip_name,
+        args.max_clips,
+        args.clip_start,
+        args.clip_stop,
+        clip_list=args.clip_list,
+    )
     for clip_dir in selected_clip_dirs:
         paths = annotation_paths(clip_dir)
         if not paths:
@@ -437,6 +465,7 @@ def build_cache(args: argparse.Namespace) -> Dict[str, Any]:
         "num_selected_clips": len(selected_clip_dirs),
         "clip_start": args.clip_start,
         "clip_stop": args.clip_stop,
+        "clip_list": str(args.clip_list) if args.clip_list else None,
         "num_scanned_windows": scanned,
         "num_skipped_windows": skipped,
         "frame_step": args.frame_step,
@@ -447,6 +476,7 @@ def build_cache(args: argparse.Namespace) -> Dict[str, Any]:
         "vlm_feature_dim": args.vlm_feature_dim if args.hidden_source == "deterministic" else "from_vlm_output",
         "hidden_dtype": args.hidden_dtype,
         "recogdrive_vlm_path": str(args.recogdrive_vlm_path) if args.hidden_source == "recogdrive-vlm" else None,
+        "system_prompt_profile": args.system_prompt_profile,
         "written_by_clip": written_by_clip,
     }
     write_json(args.output_dir / "metadata.json", metadata)

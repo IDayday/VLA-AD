@@ -1,4 +1,6 @@
-from typing import List, Optional, Tuple, Union
+from __future__ import annotations
+
+from typing import List, Optional, Sequence, Tuple, Union
 import torch
 from torch import nn
 from transformers import AutoModel, AutoTokenizer
@@ -10,7 +12,7 @@ IMG_CONTEXT_TOKEN = '<IMG_CONTEXT>'
 IMG_START_TOKEN = '<img>'
 IMG_END_TOKEN = '</img>'
 
-system_message = """
+NAVSIM_SYSTEM_MESSAGE = """
 You are a vehicle trajectory prediction model for autonomous driving. Your task is to predict the ego vehicle's 4-second trajectory based on the following inputs: multi-view images from 8 cameras, ego vehicle states (position), and discrete navigation commands. The input provides a 2-second history, and your output should ensure a safe trajectory for the next 4 seconds. Your predictions must adhere to the following metrics:
 1. **No at-fault Collisions (NC)**: Avoid collisions with other objects/vehicles.
 2. **Drivable Area Compliance (DAC)**: Stay within the drivable area.
@@ -20,7 +22,100 @@ You are a vehicle trajectory prediction model for autonomous driving. Your task 
 6. **Driving Direction Compliance (DDC)**: Align with the intended driving direction.
 For evaluation, use the **PDM Score**, which combines these metrics: **PDM Score** = NC * DAC * (5*TTC + 5*EP + 2*C + 0*DDC) / 12.
 Your predictions will be evaluated through a non-reactive 4-second simulation with an LQR controller and background actors following their recorded trajectories. The better your predictions, the higher your score.
-"""
+""".strip()
+
+BENCH2DRIVE_SYSTEM_MESSAGE = """
+You are a vehicle trajectory prediction model for autonomous driving in Bench2Drive. Predict a safe 4-second ego trajectory from one front-camera image, the last four ego poses, and a discrete navigation command. The eight output poses are expressed in the current ego coordinate frame as (x, y, heading), sampled every 0.5 seconds. Respect the commanded route, avoid collisions, remain in the drivable area, make useful progress, and keep the motion comfortable. Return the trajectory in [PT, ...] format with exactly eight poses.
+""".strip()
+
+RECOGDRIVE_SYSTEM_MESSAGES = {
+    "navsim": NAVSIM_SYSTEM_MESSAGE,
+    "bench2drive": BENCH2DRIVE_SYSTEM_MESSAGE,
+}
+
+# Backward-compatible alias for callers that imported the original module global.
+system_message = NAVSIM_SYSTEM_MESSAGE
+
+
+def resolve_recogdrive_system_message(profile: str = "navsim") -> str:
+    """Resolve a named prompt profile without silently falling back."""
+    normalized = str(profile).strip().lower().replace("-", "").replace("_", "")
+    aliases = {
+        "navsim": "navsim",
+        "b2d": "bench2drive",
+        "bench2drive": "bench2drive",
+    }
+    try:
+        return RECOGDRIVE_SYSTEM_MESSAGES[aliases[normalized]]
+    except KeyError as exc:
+        supported = ", ".join(sorted(RECOGDRIVE_SYSTEM_MESSAGES))
+        raise ValueError(f"Unsupported ReCogDrive system prompt profile {profile!r}; choose one of: {supported}") from exc
+
+
+def _navigation_command_name(high_command_one_hot: Sequence[float] | torch.Tensor) -> str:
+    command = torch.as_tensor(high_command_one_hot, dtype=torch.float32).reshape(-1)
+    if command.numel() != 3:
+        raise ValueError(f"Expected a 3-class navigation command, got shape {tuple(command.shape)}")
+    if not torch.isfinite(command).all() or float(command.max()) <= 0.0:
+        return "unknown"
+    return ("turn left", "go straight", "turn right")[int(command.argmax().item())]
+
+
+def _format_prompt_number(value: float, decimal_places: int = 2) -> str:
+    rounded = round(float(value), decimal_places)
+    if abs(rounded) <= 10 ** (-decimal_places):
+        return "0.0"
+    return f"{rounded:+.{decimal_places}f}"
+
+
+def build_recogdrive_planning_question(
+    history_trajectory: Sequence[Sequence[float]] | torch.Tensor,
+    high_command_one_hot: Sequence[float] | torch.Tensor,
+) -> str:
+    """Build the single canonical question used by B2D SFT, caching, and serving."""
+    history = torch.as_tensor(history_trajectory, dtype=torch.float32)
+    if tuple(history.shape) != (4, 3):
+        raise ValueError(f"Expected history trajectory shape (4, 3), got {tuple(history.shape)}")
+    if not torch.isfinite(history).all():
+        raise ValueError("History trajectory contains non-finite values")
+    history_lines = "\n".join(
+        f"   - t-{3 - index}: "
+        f"({_format_prompt_number(row[0])}, {_format_prompt_number(row[1])}, {_format_prompt_number(row[2])})"
+        for index, row in enumerate(history.tolist())
+    )
+    command = _navigation_command_name(high_command_one_hot)
+    return (
+        "<image>\n"
+        "As an autonomous driving system, predict the vehicle's trajectory based on:\n"
+        "1. Visual perception from front camera view\n"
+        f"2. Historical motion context (last 4 timesteps):\n{history_lines}\n"
+        f"3. Active navigation command: [{command.upper()}]\n"
+        "Output requirements:\n"
+        "- Predict 8 future trajectory points\n"
+        "- Each point format: (x:float, y:float, heading:float)\n"
+        "- Use [PT, ...] to encapsulate the trajectory\n"
+        "- Maintain numerical precision to 2 decimal places"
+    )
+
+
+def format_recogdrive_trajectory_answer(trajectory: Sequence[Sequence[float]] | torch.Tensor) -> str:
+    """Format an 8-pose target exactly as requested by the canonical question."""
+    poses = torch.as_tensor(trajectory, dtype=torch.float32)
+    if tuple(poses.shape) != (8, 3):
+        raise ValueError(f"Expected future trajectory shape (8, 3), got {tuple(poses.shape)}")
+    if not torch.isfinite(poses).all():
+        raise ValueError("Future trajectory contains non-finite values")
+
+    def value_text(value: float) -> str:
+        rounded = round(float(value), 2)
+        return "0.00" if abs(rounded) < 0.005 else f"{rounded:.2f}"
+
+    points = ", ".join(
+        f"({value_text(x)},{value_text(y)},{value_text(heading)})"
+        for x, y, heading in poses.tolist()
+    )
+    return f"Here is the planning trajectory [PT, {points}]."
+
 
 class RecogDriveBackbone(nn.Module):
     """
@@ -30,7 +125,8 @@ class RecogDriveBackbone(nn.Module):
     def __init__(self,
                  model_type: str,
                  checkpoint_path: str,
-                 device: str = "cuda"):
+                 device: str = "cuda",
+                 system_prompt_profile: str = "navsim"):
         """
         Initializes and loads the specified model and its preprocessor/tokenizer.
 
@@ -45,6 +141,8 @@ class RecogDriveBackbone(nn.Module):
         self.tokenizer = None  
         self.model_type = model_type.lower()
         self.device = device
+        self.system_prompt_profile = system_prompt_profile
+        self.system_message = resolve_recogdrive_system_message(system_prompt_profile)
 
         print(f"Initializing backbone of type: '{self.model_type}' from path: '{checkpoint_path}'")
 
@@ -87,7 +185,7 @@ class RecogDriveBackbone(nn.Module):
 
     def _configure_internvl(self):
         """Applies specific configurations required for the InternVL model."""
-        self.model.system_message = system_message
+        self.model.system_message = self.system_message
         self.img_context_token_id = self.tokenizer.convert_tokens_to_ids(IMG_CONTEXT_TOKEN)
         self.model.img_context_token_id = self.img_context_token_id
         print("InternVL model configured.")
@@ -105,7 +203,7 @@ class RecogDriveBackbone(nn.Module):
                 question = '<image>\n' + question
             
             template = get_conv_template("internvl2_5")
-            template.system_message = system_message
+            template.system_message = self.system_message
             template.append_message(template.roles[0], question)
             template.append_message(template.roles[1], None)
             query = template.get_prompt()

@@ -38,6 +38,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--config", type=Path, default=Path("configs/bench2drive_recogdrive_il.yaml"))
     parser.add_argument("--planner-checkpoint", type=Path, required=True)
     parser.add_argument("--vlm-path", type=Path, default=Path("checkpoints/recogdrive/ReCogDrive-VLM-2B"))
+    parser.add_argument("--system-prompt-profile", choices=("bench2drive", "navsim"), default="bench2drive")
     parser.add_argument("--precision", choices=("bf16", "fp16", "fp32"), default="bf16")
     parser.add_argument("--init-action-mode", choices=("token_noise", "zeros", "random"), default="token_noise")
     parser.add_argument("--init-action-seed", type=int, default=20260709)
@@ -163,6 +164,7 @@ class ReCogDriveB2DPredictor:
             device=str(self.device),
             cache_mode=True,
             use_expert_features=False,
+            system_prompt_profile=args.system_prompt_profile,
         )
         self.planner = build_planner(self.cfg, make_planner_args(args)).to(self.device)
         if self.dtype != torch.float32:
@@ -183,6 +185,7 @@ class ReCogDriveB2DPredictor:
                     "config": str(args.config),
                     "planner_checkpoint": str(args.planner_checkpoint),
                     "vlm_path": str(args.vlm_path),
+                    "system_prompt_profile": args.system_prompt_profile,
                     "load_report": self.load_report,
                 },
                 sort_keys=True,

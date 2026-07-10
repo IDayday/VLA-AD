@@ -15,6 +15,7 @@ GRADIENT_ACCUMULATION_STEPS=${GRADIENT_ACCUMULATION_STEPS:-1}
 NUM_WORKERS=${NUM_WORKERS:-2}
 SAVE_EVERY=${SAVE_EVERY:-1000}
 MODE=${MODE:-both}
+CHUNK_CACHE_ROOT=${CHUNK_CACHE_ROOT:?Set CHUNK_CACHE_ROOT explicitly; the pre-Stage1 hidden-state cache was retired}
 
 mkdir -p "${OUTPUT_ROOT}"
 
@@ -35,6 +36,7 @@ run_probe() {
   GRADIENT_ACCUMULATION_STEPS="${GRADIENT_ACCUMULATION_STEPS}" \
   NUM_WORKERS="${NUM_WORKERS}" \
   SAVE_EVERY="${SAVE_EVERY}" \
+  CHUNK_CACHE_ROOT="${CHUNK_CACHE_ROOT}" \
     bash "${VLA_AD_ROOT}/scripts/bench2drive/run_recogdrive_b2d_stage2_il_official.sh"
 }
 

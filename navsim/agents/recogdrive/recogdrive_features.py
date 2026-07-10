@@ -180,7 +180,8 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
                  use_vggt: bool = True,
                  jepa_dim: int = 1024,
                  vggt_dim: int = 2048,
-                 dummy_expert_seed: int = 0, ):
+                 dummy_expert_seed: int = 0,
+                 system_prompt_profile: str = "navsim", ):
         """
         Initializes the feature builder.
 
@@ -214,6 +215,7 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
         self.jepa_dim = jepa_dim
         self.vggt_dim = vggt_dim
         self.dummy_expert_seed = dummy_expert_seed
+        self.system_prompt_profile = system_prompt_profile
         self._dummy_expert_backend: Optional[DummyExpertBackend] = None
 
         if self.use_expert_features and self.expert_feature_source in {"chunk", "disk"} and self.expert_cache_dir is None:
@@ -239,7 +241,8 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
             self.backbone = RecogDriveBackbone(
                 model_type=model_type,
                 checkpoint_path=checkpoint_path,
-                device=device
+                device=device,
+                system_prompt_profile=system_prompt_profile,
             )
 
     def get_unique_name(self) -> str:
@@ -469,13 +472,9 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
             num_patches_list = [pv.shape[0] for pv in pixel_values_squeezed]
             pixel_values_cat = torch.cat(list(pixel_values_squeezed), dim=0)
 
-            navigation_commands = ['turn left', 'go straight', 'turn right']
-            command_str = next((navigation_commands[i] for i, v in enumerate(high_command_one_hot) if v == 1), "unknown")
-            history_str = " ".join([f'   - t-{3-i}: ({format_number(history_trajectory[i, 0].item())}, {format_number(history_trajectory[i, 1].item())}, {format_number(history_trajectory[i, 2].item())})' for i in range(4)])
-            
-            prompt = f"<image>\nAs an autonomous driving system, predict the vehicle's trajectory based on:\n1. Visual perception from front camera view\n2. Historical motion context (last 4 timesteps):{history_str}\n3. Active navigation command: [{command_str.upper()}]"
-            output_requirements = "\nOutput requirements:\n- Predict 8 future trajectory points\n- Each point format: (x:float, y:float, heading:float)\n- Use [PT, ...] to encapsulate the trajectory\n- Maintain numerical precision to 2 decimal places"
-            questions = [f"{prompt}{output_requirements}"]
+            from .recogdrive_backbone import build_recogdrive_planning_question
+
+            questions = [build_recogdrive_planning_question(history_trajectory, high_command_one_hot)]
 
             outputs = self.backbone(pixel_values_cat.to(self.device), questions, num_patches_list=num_patches_list)
             last_hidden_state = outputs.hidden_states[-1]

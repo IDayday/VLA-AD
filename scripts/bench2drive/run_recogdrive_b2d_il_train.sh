@@ -4,9 +4,16 @@ set -euo pipefail
 VLA_AD_ROOT=${VLA_AD_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}
 CONDA_BIN=${CONDA_BIN:-/root/miniconda3/bin/conda}
 NAVSIM_ENV=${NAVSIM_ENV:-navsim}
+ALLOW_LEGACY_IL_INIT=${ALLOW_LEGACY_IL_INIT:-0}
+
+if [[ "${ALLOW_LEGACY_IL_INIT}" != "1" && "${ALLOW_LEGACY_IL_INIT}" != "true" && "${ALLOW_LEGACY_IL_INIT}" != "TRUE" ]]; then
+  echo "This legacy launcher initializes from the released IL policy and is disabled for the scratch Stage2 plan." >&2
+  echo "Use scripts/bench2drive/run_recogdrive_b2d_stage2_il_official.sh instead." >&2
+  exit 2
+fi
 
 CONFIG=${CONFIG:-${VLA_AD_ROOT}/configs/bench2drive_recogdrive_il.yaml}
-CHUNK_CACHE_ROOT=${CHUNK_CACHE_ROOT:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_vlm_cache_full_v1}
+CHUNK_CACHE_ROOT=${CHUNK_CACHE_ROOT:?Set CHUNK_CACHE_ROOT explicitly; the pre-Stage1 hidden-state cache was retired}
 CHUNK_NAME_PATTERN=${CHUNK_NAME_PATTERN:-shard_*}
 INIT_POLICY_CHECKPOINT=${INIT_POLICY_CHECKPOINT:-${VLA_AD_ROOT}/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt}
 OUTPUT_DIR=${OUTPUT_DIR:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_vlm_il_train_full_stage}

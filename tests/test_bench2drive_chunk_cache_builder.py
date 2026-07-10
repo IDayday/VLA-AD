@@ -6,7 +6,7 @@ from pathlib import Path
 
 import torch
 
-from scripts.build_bench2drive_recogdrive_chunk_cache import build_cache, parse_args
+from scripts.build_bench2drive_recogdrive_chunk_cache import build_cache, clip_dirs, parse_args
 from navsim.agents.recogdrive.expert_cache import load_sample
 
 
@@ -65,3 +65,14 @@ def test_build_bench2drive_chunk_cache(tmp_path: Path):
     assert tuple(sample["status_feature"].shape) == (8,)
     assert tuple(sample["last_hidden_state"].shape) == (3, 8)
     assert torch.isfinite(sample["last_hidden_state"].float()).all()
+
+
+def test_clip_list_filters_before_shard_slice(tmp_path: Path):
+    data_root = tmp_path / "Bench2Drive-Base"
+    for name in ("clip_a", "clip_b", "clip_c"):
+        (data_root / name / "anno").mkdir(parents=True)
+    clip_list = tmp_path / "clips.txt"
+    clip_list.write_text("# held-out split\nclip_c\nclip_a\n", encoding="utf-8")
+
+    selected = clip_dirs(data_root, None, None, 1, None, clip_list=clip_list)
+    assert [path.name for path in selected] == ["clip_c"]

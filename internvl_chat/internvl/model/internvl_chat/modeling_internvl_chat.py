@@ -13,7 +13,11 @@ import transformers
 from internvl.conversation import get_conv_template
 from internvl.model.internlm2.modeling_internlm2 import InternLM2ForCausalLM
 from internvl.model.phi3.modeling_phi3 import Phi3ForCausalLM
-from peft import LoraConfig, get_peft_model
+try:
+    from peft import LoraConfig, get_peft_model
+except ImportError:
+    LoraConfig = None
+    get_peft_model = None
 from torch import nn
 from torch.nn import CrossEntropyLoss
 from transformers import (AutoModel, GenerationConfig, LlamaForCausalLM,
@@ -108,6 +112,8 @@ class InternVLChatModel(PreTrainedModel):
             self.wrap_llm_lora(r=config.use_llm_lora, lora_alpha=2 * config.use_llm_lora)
 
     def wrap_backbone_lora(self, r=128, lora_alpha=256, lora_dropout=0.05):
+        if LoraConfig is None or get_peft_model is None:
+            raise ImportError('PEFT is required when use_backbone_lora is enabled')
         lora_config = LoraConfig(
             r=r,
             target_modules=['attn.qkv', 'attn.proj', 'mlp.fc1', 'mlp.fc2'],
@@ -118,6 +124,8 @@ class InternVLChatModel(PreTrainedModel):
         self.vision_model.print_trainable_parameters()
 
     def wrap_llm_lora(self, r=128, lora_alpha=256, lora_dropout=0.05):
+        if LoraConfig is None or get_peft_model is None:
+            raise ImportError('PEFT is required when use_llm_lora is enabled')
         # Determine the target modules based on the architecture of the language model
         if self.llm_arch_name == 'InternLM2ForCausalLM':
             target_modules = ['attention.wqkv', 'attention.wo', 'feed_forward.w1', 'feed_forward.w2', 'feed_forward.w3']
