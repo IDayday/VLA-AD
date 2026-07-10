@@ -152,3 +152,22 @@ env CUDA_VISIBLE_DEVICES="${GPU_LIST}" \
   LAUNCHER=pytorch \
   "${CONDA_BIN}" run --no-capture-output -n "${NAVSIM_ENV}" \
   "${cmd[@]}" 2>&1 | tee -a "${OUTPUT_DIR}/training_log.txt"
+
+# Trainer.save_model does not copy local trust_remote_code modules. Keep the
+# final Stage1 directory directly loadable by AutoModel and the Stage2 cache
+# builder without relying on a pre-populated Hugging Face module cache.
+runtime_files=(
+  configuration_intern_vit.py
+  configuration_internvl_chat.py
+  conversation.py
+  modeling_intern_vit.py
+  modeling_internvl_chat.py
+  generation_config.json
+)
+for filename in "${runtime_files[@]}"; do
+  if [[ ! -f "${BASE_VLM_PATH}/${filename}" ]]; then
+    echo "Missing required InternVL runtime file: ${BASE_VLM_PATH}/${filename}" >&2
+    exit 2
+  fi
+  cp -f "${BASE_VLM_PATH}/${filename}" "${OUTPUT_DIR}/${filename}"
+done
