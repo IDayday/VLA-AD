@@ -965,14 +965,12 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     vlm_size: str = 'large'
     planner_dim: int = 384
     use_planning_token_adapter: bool = False
-    planning_token_source: Literal["none", "adapter", "last_vla_cot"] = "none"
     planning_num_tokens: int = 16
     planning_num_heads: int = 8
     planning_condition_layers: Literal["cross_attention", "all"] = "cross_attention"
     planning_gate_init: float = 0.05
     planning_context_gate_init: float = 0.05
     planning_condition_dropout: float = 0.10
-    planning_legacy_cot_gradient_path: bool = True
     use_expert_features: bool = False
     expert_feature_source: Literal['none', 'dummy', 'chunk', 'disk', 'online', 'cache', 'real'] = 'none'
     expert_adapter_dim: int = 768
@@ -1206,8 +1204,6 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         super().__init__()
         self.config = config
 
-        if config.planning_token_source not in {"none", "adapter", "last_vla_cot"}:
-            raise ValueError("planning_token_source must be 'none', 'adapter', or 'last_vla_cot'.")
         if config.planning_condition_layers not in {"cross_attention", "all"}:
             raise ValueError("planning_condition_layers must be 'cross_attention' or 'all'.")
         if int(config.planning_num_tokens) <= 0:
@@ -1219,20 +1215,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         for gate_name in ("planning_gate_init", "planning_context_gate_init"):
             if not 0.0 < float(getattr(config, gate_name)) < 1.0:
                 raise ValueError(f"{gate_name} must be in (0.0, 1.0).")
-        if config.planning_token_source == "adapter" and not bool(config.use_planning_token_adapter):
-            raise ValueError("planning_token_source='adapter' requires use_planning_token_adapter=True.")
-        if config.planning_token_source == "adapter" and int(config.planner_dim) != int(config.input_embedding_dim):
+        if bool(config.use_planning_token_adapter) and int(config.planner_dim) != int(config.input_embedding_dim):
             raise ValueError("Standalone planning adapter requires planner_dim == input_embedding_dim.")
-        if config.planning_token_source == "last_vla_cot" and not bool(config.use_last_vla):
-            raise ValueError("planning_token_source='last_vla_cot' requires use_last_vla=True.")
-        if config.planning_token_source == "last_vla_cot" and bool(config.use_planning_token_adapter):
-            raise ValueError("Standalone planning adapter and Last-VLA CoT cannot be enabled together.")
-        if config.planning_token_source == "adapter" and bool(config.use_last_vla):
-            raise ValueError("Standalone planning adapter and Last-VLA CoT cannot be injected together.")
+        if bool(config.use_planning_token_adapter) and bool(config.use_last_vla):
+            raise ValueError("PlanningTokenAdapter and Last-VLA are separate alternatives and cannot be enabled together.")
 
         self.model = LightningDiT(**config.diffusion_model_cfg)
         self.planning_adapter: Optional[PlanningTokenAdapter] = None
-        if config.planning_token_source == "adapter":
+        if config.use_planning_token_adapter:
             self.planning_adapter = PlanningTokenAdapter(
                 PlanningTokenAdapterConfig(
                     planner_dim=int(config.planner_dim),
@@ -1243,7 +1233,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     context_gate_init=float(config.planning_context_gate_init),
                 )
             )
-            self.model.configure_planning_adapter_branch(float(config.planning_gate_init))
+            self.model.set_planning_gate_init(float(config.planning_gate_init))
+            self.model.set_planning_trainable_layers(str(config.planning_condition_layers))
 
         self.his_traj_encoder = Mlp(
             in_features=12,
@@ -1284,7 +1275,22 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     f"FS-Norm stats version {getattr(stats, 'version', 1)} is below required "
                     f"version {config.fs_norm_min_version}."
                 )
-            stats.use_robust = bool(getattr(config, "fs_norm_use_robust", stats.use_robust))
+            requested_robust = bool(getattr(config, "fs_norm_use_robust", stats.use_robust))
+            if int(getattr(stats, "version", 1)) >= 2 and requested_robust != bool(stats.use_robust):
+                raise ValueError(
+                    "FS-Norm v2 use_robust must match the stats file because clip bounds are "
+                    "representation-specific. Rebuild the stats with the requested mode."
+                )
+            stats.use_robust = requested_robust
+            support_archive_path = str(getattr(config.offline_rl_cfg, "support_archive_path", "") or "")
+            if int(getattr(stats, "version", 1)) >= 2 and stats.archive_path and support_archive_path:
+                stats_archive = Path(stats.archive_path).expanduser().resolve()
+                configured_archive = Path(support_archive_path).expanduser().resolve()
+                if stats_archive != configured_archive:
+                    raise ValueError(
+                        "FS-Norm stats archive_path does not match the configured support archive: "
+                        f"{stats_archive} != {configured_archive}."
+                    )
             stats.clip = float(getattr(config, "fs_norm_clip", stats.clip))
             self.fs_norm_transform = FSNormTransform(stats)
 
@@ -3446,7 +3452,6 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             context_mean = payload["context_mean"]
             if adapter_tokens is None:
                 payload.setdefault("planning_condition_tokens", None)
-                payload.setdefault("cot_condition_tokens", None)
                 payload.setdefault("planning_context_mean_residual", torch.zeros_like(context_mean))
                 payload.setdefault("planning_condition_is_static", False)
                 return payload
@@ -3455,7 +3460,6 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             context_residual = context_gate * adapter_tokens.mean(dim=1)
             payload["context_mean"] = context_mean + context_residual
             payload["planning_condition_tokens"] = adapter_tokens
-            payload["cot_condition_tokens"] = adapter_tokens
             payload["planning_context_mean_residual"] = context_residual
             payload["planning_condition_is_static"] = True
             diagnostics = payload.setdefault("diagnostics", {})
@@ -3599,15 +3603,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         "last_vla_horizon_cot_residual_norm": cot_horizon_residual.detach().float().norm(dim=-1).mean(),
                     }
                 )
-            planning_context_residual = context_mean - context_tokens.mean(1)
             return {
                 "vl_embeds": vl_embeds,
                 "context_tokens": context_tokens,
                 "context_mean": context_mean,
                 "expert_step_condition": expert_step_condition,
-                "planning_condition_tokens": cot_condition_tokens,
-                "planning_context_mean_residual": planning_context_residual,
-                "planning_condition_is_static": False,
                 "cot_condition_tokens": cot_condition_tokens,
                 **base_losses,
                 "diagnostics": diagnostics,
@@ -4250,14 +4250,6 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             return fused_input
         return fused_input + expert_step_condition.to(device=fused_input.device, dtype=fused_input.dtype)
 
-    def _planning_condition_layers(self) -> str:
-        if self.config.use_last_vla:
-            return str(self.config.last_vla_cot_condition_layers)
-        return str(self.config.planning_condition_layers)
-
-    def _planning_uses_legacy_cot_path(self) -> bool:
-        return bool(self.config.use_last_vla and self.config.planning_legacy_cot_gradient_path)
-
     def _reset_planning_adapter_forward_count(self) -> None:
         if self.planning_adapter is not None:
             self.planning_adapter.reset_forward_count()
@@ -4301,10 +4293,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             timesteps=timesteps,
             cot_condition_tokens=cot_condition_tokens,
             planning_condition_tokens=planning_condition_tokens,
-            planning_condition_layers=self._planning_condition_layers(),
-            planning_legacy_cot_gradient_path=self._planning_uses_legacy_cot_path(),
+            planning_condition_layers=self.config.planning_condition_layers,
+            cot_condition_layers=self.config.last_vla_cot_condition_layers,
         )
-        if planning_condition_tokens is not None or cot_condition_tokens is not None:
+        if planning_condition_tokens is not None:
             diagnostics = dit_context.setdefault("diagnostics", {})
             diagnostics["planning_delta_norm"] = getattr(
                 self.model,
@@ -4318,8 +4310,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             )
         if self.config.use_last_vla:
             diagnostics = dit_context.setdefault("diagnostics", {})
-            diagnostics["last_vla_cot_condition_delta_norm"] = diagnostics.get(
-                "planning_delta_norm",
+            diagnostics["last_vla_cot_condition_delta_norm"] = getattr(
+                self.model,
+                "last_cot_condition_delta_norm",
                 context_embeds.new_zeros(()),
             )
             diagnostics["last_vla_cot_branch_zero_init"] = getattr(
@@ -4818,8 +4811,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             timesteps=t,
             cot_condition_tokens=cot_condition_tokens,
             planning_condition_tokens=planning_condition_tokens,
-            planning_condition_layers=self._planning_condition_layers(),
-            planning_legacy_cot_gradient_path=self._planning_uses_legacy_cot_path(),
+            planning_condition_layers=self.config.planning_condition_layers,
+            cot_condition_layers=self.config.last_vla_cot_condition_layers,
         )
         pred_noise = self.action_decoder(model_output)
 
@@ -5362,8 +5355,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     t,
                     cot_condition_tokens=cot_condition_tokens,
                     planning_condition_tokens=planning_condition_tokens,
-                    planning_condition_layers=self._planning_condition_layers(),
-                    planning_legacy_cot_gradient_path=self._planning_uses_legacy_cot_path(),
+                    planning_condition_layers=self.config.planning_condition_layers,
+                    cot_condition_layers=self.config.last_vla_cot_condition_layers,
                 )
                 pred = self.action_decoder(model_output)
                 
@@ -5586,8 +5579,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     t_batch,
                     cot_condition_tokens=cot_condition_tokens,
                     planning_condition_tokens=planning_condition_tokens,
-                    planning_condition_layers=self._planning_condition_layers(),
-                    planning_legacy_cot_gradient_path=self._planning_uses_legacy_cot_path(),
+                    planning_condition_layers=self.config.planning_condition_layers,
+                    cot_condition_layers=self.config.last_vla_cot_condition_layers,
                 )
                 pred = self.action_decoder(model_output)
                 

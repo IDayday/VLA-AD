@@ -40,7 +40,7 @@ def test_flag_off_output_is_unchanged_at_fixed_seed() -> None:
     )
     with torch.no_grad():
         baseline = model(*inputs)
-        model.configure_planning_adapter_branch(0.05)
+        model.set_planning_gate_init(0.05)
         no_condition = model(*inputs, planning_condition_tokens=None)
     assert torch.equal(baseline, no_condition)
 
@@ -50,13 +50,13 @@ def test_old_checkpoint_loads_with_strict_false() -> None:
     old_state = {
         key: value
         for key, value in old_model.state_dict().items()
-        if "planning_gate_logit" not in key
+        if ".planning_" not in key
     }
     new_model = _dit()
     incompatible = new_model.load_state_dict(old_state, strict=False)
     assert not incompatible.unexpected_keys
     assert incompatible.missing_keys
-    assert all("planning_gate_logit" in key for key in incompatible.missing_keys)
+    assert all(".planning_" in key for key in incompatible.missing_keys)
 
 
 def test_last_vla_fs_rejects_legacy_heading_and_progress_losses(tmp_path) -> None:
@@ -99,6 +99,49 @@ def test_last_vla_fs_rejects_legacy_heading_and_progress_losses(tmp_path) -> Non
         last_vla_progress_loss_weight=0.0,
     )
     with pytest.raises(ValueError, match="heading_loss_weight=0"):
+        ReCogDriveDiffusionPlanner(cfg)
+
+
+def test_fs_v2_rejects_robust_mode_mismatch(tmp_path) -> None:
+    stats_path = tmp_path / "robust_stats_v2.pt"
+    save_fs_norm_stats(
+        str(stats_path),
+        FSNormStats(
+            mean=torch.zeros(8, 3),
+            std=torch.ones(8, 3),
+            median=torch.zeros(8, 3),
+            mad=torch.ones(8, 3),
+            use_robust=True,
+            version=2,
+            scene_balanced=True,
+            heading_center_zero=True,
+        ),
+    )
+    cfg = ReCogDriveDiffusionPlannerConfig(
+        diffusion_model_cfg={
+            "num_heads": 2,
+            "head_dim": 16,
+            "num_layers": 2,
+            "output_dim": 32,
+            "dropout": 0.0,
+            "attention_bias": True,
+            "norm_eps": 1e-5,
+            "interleave_attention": True,
+        },
+        input_embedding_dim=32,
+        planner_dim=32,
+        hidden_size=64,
+        action_horizon=8,
+        sampling_method="ddim",
+        num_inference_steps=2,
+        vlm_size="small",
+        ddim_cfg=DDIMConfig(num_train_timesteps=10),
+        use_fs_norm=True,
+        fs_norm_stats_path=str(stats_path),
+        fs_norm_use_robust=False,
+        fs_norm_min_version=2,
+    )
+    with pytest.raises(ValueError, match="use_robust must match"):
         ReCogDriveDiffusionPlanner(cfg)
 
 

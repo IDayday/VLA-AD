@@ -15,7 +15,7 @@ def _model() -> LightningDiT:
         attention_bias=True,
         interleave_attention=True,
     )
-    model.configure_planning_adapter_branch(0.05)
+    model.set_planning_gate_init(0.05)
     return model
 
 
@@ -24,13 +24,13 @@ def test_planning_condition_defaults_to_cross_attention_blocks(monkeypatch) -> N
     model = _model()
     calls = [0, 0, 0, 0]
     for index, block in enumerate(model.transformer_blocks):
-        original = block.cot_cross_attn.forward
+        original = block.planning_cross_attn.forward
 
         def wrapped(*args, _index=index, _original=original, **kwargs):
             calls[_index] += 1
             return _original(*args, **kwargs)
 
-        monkeypatch.setattr(block.cot_cross_attn, "forward", wrapped)
+        monkeypatch.setattr(block.planning_cross_attn, "forward", wrapped)
 
     model(
         torch.randn(2, 8, 32),
@@ -39,7 +39,6 @@ def test_planning_condition_defaults_to_cross_attention_blocks(monkeypatch) -> N
         torch.tensor([1, 2]),
         planning_condition_tokens=torch.randn(2, 6, 32),
         planning_condition_layers="cross_attention",
-        planning_legacy_cot_gradient_path=False,
     )
 
     assert calls == [0, 1, 0, 1]
@@ -54,13 +53,13 @@ def test_planning_condition_all_mode_is_available(monkeypatch) -> None:
     model = _model()
     calls = [0, 0, 0, 0]
     for index, block in enumerate(model.transformer_blocks):
-        original = block.cot_cross_attn.forward
+        original = block.planning_cross_attn.forward
 
         def wrapped(*args, _index=index, _original=original, **kwargs):
             calls[_index] += 1
             return _original(*args, **kwargs)
 
-        monkeypatch.setattr(block.cot_cross_attn, "forward", wrapped)
+        monkeypatch.setattr(block.planning_cross_attn, "forward", wrapped)
 
     model(
         torch.randn(1, 8, 32),
@@ -69,6 +68,23 @@ def test_planning_condition_all_mode_is_available(monkeypatch) -> None:
         torch.tensor([1]),
         planning_condition_tokens=torch.randn(1, 6, 32),
         planning_condition_layers="all",
-        planning_legacy_cot_gradient_path=False,
     )
     assert calls == [1, 1, 1, 1]
+
+
+def test_planning_tokens_never_enter_legacy_cot_branch(monkeypatch) -> None:
+    model = _model()
+
+    def unexpected_cot_call(*args, **kwargs):
+        raise AssertionError("PTA called the legacy Last-VLA CoT branch")
+
+    for block in model.transformer_blocks:
+        monkeypatch.setattr(block.cot_cross_attn, "forward", unexpected_cot_call)
+
+    model(
+        torch.randn(1, 8, 32),
+        torch.randn(1, 5, 32),
+        torch.randn(1, 32),
+        torch.tensor([1]),
+        planning_condition_tokens=torch.randn(1, 6, 32),
+    )

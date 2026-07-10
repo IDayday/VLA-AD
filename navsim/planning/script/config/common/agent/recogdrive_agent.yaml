@@ -553,14 +553,12 @@ last_vla_hidden_anchor_mode: summary_cosine
 last_vla_hidden_anchor_every_n_steps: 4
 last_vla_log_lora_diagnostics: true
 use_planning_token_adapter: false
-planning_token_source: none
 planning_num_tokens: 16
 planning_num_heads: 8
 planning_condition_layers: cross_attention
 planning_gate_init: 0.05
 planning_context_gate_init: 0.05
 planning_condition_dropout: 0.10
-planning_legacy_cot_gradient_path: true
 use_fs_norm: false
 fs_norm_stats_path: ''
 fs_norm_use_robust: false

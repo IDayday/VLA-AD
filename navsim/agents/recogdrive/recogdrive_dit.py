@@ -109,10 +109,19 @@ class LightningDiTBlock(nn.Module):
         nn.init.constant_(self.cot_out_proj.weight, 0.0)
         nn.init.constant_(self.cot_out_proj.bias, 0.0)
         self.cot_condition_scale = nn.Parameter(torch.tensor(1.0, dtype=torch.float32))
+        self.cot_branch_gradient_scale = 1e-3
+        self.planning_cross_attn = Attention(
+            query_dim=dim,
+            heads=num_heads,
+            dim_head=head_dim,
+            dropout=dropout,
+            bias=attention_bias,
+            cross_attention_dim=dim,
+        )
+        self.planning_out_proj = nn.Linear(dim, dim)
         self.planning_gate_logit = nn.Parameter(
             torch.tensor(math.log(0.05 / 0.95), dtype=torch.float32)
         )
-        self.cot_branch_gradient_scale = 1e-3
         self.last_cot_delta_norm: Optional[torch.Tensor] = None
         self.last_planning_delta_norm: Optional[torch.Tensor] = None
         self.last_planning_gate: Optional[torch.Tensor] = None
@@ -145,7 +154,6 @@ class LightningDiTBlock(nn.Module):
         encoder_hidden_states: Optional[torch.Tensor] = None,
         cot_condition_tokens: Optional[torch.Tensor] = None,
         planning_condition_tokens: Optional[torch.Tensor] = None,
-        planning_legacy_cot_gradient_path: bool = True,
         rotary_embedder: Optional[nn.Module] = None,
     ) -> torch.Tensor:
         mod_params = self.adaLN_modulation(conditioning)
@@ -161,32 +169,36 @@ class LightningDiTBlock(nn.Module):
             rotary_embedder=rotary_embedder
         )
         hidden_states = hidden_states + gate_attn.unsqueeze(1) * attn_output
-        condition_tokens = planning_condition_tokens
-        legacy_path = bool(condition_tokens is not None and planning_legacy_cot_gradient_path)
-        if condition_tokens is None and cot_condition_tokens is not None:
-            condition_tokens = cot_condition_tokens
-            legacy_path = bool(planning_legacy_cot_gradient_path)
         self.last_cot_delta_norm = hidden_states.new_zeros(())
         self.last_planning_delta_norm = hidden_states.new_zeros(())
         self.last_planning_gate = hidden_states.new_zeros(())
-        if condition_tokens is not None:
+        if cot_condition_tokens is not None:
             cot_attn_output = self.cot_cross_attn(
                 modulated_states,
-                encoder_hidden_states=condition_tokens,
+                encoder_hidden_states=cot_condition_tokens,
                 rotary_embedder=rotary_embedder,
             )
             cot_delta = self.cot_out_proj(cot_attn_output)
-            if legacy_path and self.cot_branch_gradient_scale > 0.0:
+            if self.cot_branch_gradient_scale > 0.0:
                 cot_delta = cot_delta + float(self.cot_branch_gradient_scale) * (cot_attn_output - cot_attn_output.detach())
-            if legacy_path:
-                gate = self.cot_condition_scale.to(device=cot_delta.device, dtype=cot_delta.dtype)
-            else:
-                gate = torch.sigmoid(self.planning_gate_logit).to(device=cot_delta.device, dtype=cot_delta.dtype)
-            cot_delta = cot_delta * gate
+            cot_delta = cot_delta * self.cot_condition_scale.to(device=cot_delta.device, dtype=cot_delta.dtype)
             self.last_cot_delta_norm = cot_delta.detach().float().norm(dim=-1).mean()
-            self.last_planning_delta_norm = self.last_cot_delta_norm
-            self.last_planning_gate = gate.detach().float()
             hidden_states = hidden_states + cot_delta
+        if planning_condition_tokens is not None:
+            planning_attn_output = self.planning_cross_attn(
+                modulated_states,
+                encoder_hidden_states=planning_condition_tokens,
+                rotary_embedder=rotary_embedder,
+            )
+            planning_delta = self.planning_out_proj(planning_attn_output)
+            planning_gate = torch.sigmoid(self.planning_gate_logit).to(
+                device=planning_delta.device,
+                dtype=planning_delta.dtype,
+            )
+            planning_delta = planning_delta * planning_gate
+            self.last_planning_delta_norm = planning_delta.detach().float().norm(dim=-1).mean()
+            self.last_planning_gate = planning_gate.detach().float()
+            hidden_states = hidden_states + planning_delta
 
         normed_states = self.norm2(hidden_states)
         modulated_states = self.modulate(normed_states, shift_ffn, scale_ffn)
@@ -243,15 +255,25 @@ class LightningDiT(nn.Module):
 
         self._initialize_weights()
 
-    def configure_planning_adapter_branch(self, planning_gate_init: float) -> None:
-        """Enable normally initialized projection/gates for standalone planning tokens."""
+    def set_planning_gate_init(self, planning_gate_init: float) -> None:
+        """Set the standalone planning branch gate without touching its projections."""
         if not 0.0 < float(planning_gate_init) < 1.0:
             raise ValueError("planning_gate_init must be in (0.0, 1.0).")
         gate_logit = math.log(float(planning_gate_init) / (1.0 - float(planning_gate_init)))
         for block in self.transformer_blocks:
-            block.cot_out_proj.reset_parameters()
             with torch.no_grad():
                 block.planning_gate_logit.fill_(gate_logit)
+
+    def set_planning_trainable_layers(self, planning_condition_layers: str) -> None:
+        """Freeze planning modules in blocks where the branch is never evaluated."""
+        if planning_condition_layers not in {"all", "cross_attention"}:
+            raise ValueError("planning_condition_layers must be 'all' or 'cross_attention'.")
+        for idx, block in enumerate(self.transformer_blocks):
+            use_cross_attention = not (idx % 2 == 0 and self.interleave_attention)
+            trainable = planning_condition_layers == "all" or use_cross_attention
+            block.planning_cross_attn.requires_grad_(trainable)
+            block.planning_out_proj.requires_grad_(trainable)
+            block.planning_gate_logit.requires_grad_(trainable)
 
     def _initialize_weights(self) -> None:
         """
@@ -277,8 +299,8 @@ class LightningDiT(nn.Module):
         timesteps: torch.LongTensor,
         cot_condition_tokens: Optional[torch.Tensor] = None,
         planning_condition_tokens: Optional[torch.Tensor] = None,
-        planning_condition_layers: str = "all",
-        planning_legacy_cot_gradient_path: bool = True,
+        planning_condition_layers: str = "cross_attention",
+        cot_condition_layers: str = "all",
         return_hidden_states: bool = False,
     ) -> torch.Tensor | tuple[torch.Tensor, List[torch.Tensor]]:
         """
@@ -307,6 +329,8 @@ class LightningDiT(nn.Module):
             planning_condition_tokens = planning_condition_tokens.contiguous()
         if planning_condition_layers not in {"all", "cross_attention"}:
             raise ValueError("planning_condition_layers must be 'all' or 'cross_attention'.")
+        if cot_condition_layers not in {"all", "cross_attention"}:
+            raise ValueError("cot_condition_layers must be 'all' or 'cross_attention'.")
 
         time_embedding = self.timestep_encoder(timesteps)
         conditioning = time_embedding + conditioning_features
@@ -314,12 +338,14 @@ class LightningDiT(nn.Module):
         all_hidden_states = [hidden_states]
         planning_delta_norms = []
         planning_gates = []
+        cot_delta_norms = []
         for idx, block in enumerate(self.transformer_blocks):
             use_cross_attention = not (idx % 2 == 0 and self.interleave_attention)
             current_encoder_states = encoder_hidden_states if use_cross_attention else None
             inject_planning = planning_condition_layers == "all" or use_cross_attention
+            inject_cot = cot_condition_layers == "all" or use_cross_attention
             current_planning_tokens = planning_condition_tokens if inject_planning else None
-            current_cot_tokens = cot_condition_tokens if inject_planning else None
+            current_cot_tokens = cot_condition_tokens if inject_cot else None
             
             hidden_states = block(
                 hidden_states,
@@ -327,14 +353,15 @@ class LightningDiT(nn.Module):
                 encoder_hidden_states=current_encoder_states,
                 cot_condition_tokens=current_cot_tokens,
                 planning_condition_tokens=current_planning_tokens,
-                planning_legacy_cot_gradient_path=planning_legacy_cot_gradient_path,
                 rotary_embedder=self.rotary_embedder,
             )
-            if inject_planning and (planning_condition_tokens is not None or cot_condition_tokens is not None):
+            if inject_planning and planning_condition_tokens is not None:
                 if block.last_planning_delta_norm is not None:
                     planning_delta_norms.append(block.last_planning_delta_norm)
                 if block.last_planning_gate is not None:
                     planning_gates.append(block.last_planning_gate)
+            if inject_cot and cot_condition_tokens is not None and block.last_cot_delta_norm is not None:
+                cot_delta_norms.append(block.last_cot_delta_norm)
             all_hidden_states.append(hidden_states)
 
         output = self.final_layer(hidden_states, conditioning)
@@ -348,7 +375,10 @@ class LightningDiT(nn.Module):
             self.last_planning_layer_gate_mean = torch.stack([item.to(output) for item in planning_gates]).mean()
         else:
             self.last_planning_layer_gate_mean = output.new_zeros(())
-        self.last_cot_condition_delta_norm = self.last_planning_condition_delta_norm
+        if cot_delta_norms:
+            self.last_cot_condition_delta_norm = torch.stack([item.to(output) for item in cot_delta_norms]).mean()
+        else:
+            self.last_cot_condition_delta_norm = output.new_zeros(())
         self.last_cot_branch_zero_init = output.new_tensor(
             float(all(torch.count_nonzero(block.cot_out_proj.weight.detach()).item() == 0 for block in self.transformer_blocks))
         )

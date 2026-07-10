@@ -19,6 +19,7 @@ from navsim.agents.recogdrive.recogdrive_diffusion_planner import (
     ReCogDriveDiffusionPlanner,
     ReCogDriveDiffusionPlannerConfig,
 )
+from navsim.agents.recogdrive.fs_norm import load_fs_norm_stats
 from scripts.pareto_support.build_fs_norm_stats import _selected_supports
 
 
@@ -59,6 +60,7 @@ def load_targets(archive_dir: Path, num_scenes: int, targets_per_scene: int) -> 
 
 
 def planner_config(fs_stats: Path, *, adapter: bool) -> ReCogDriveDiffusionPlannerConfig:
+    stats = load_fs_norm_stats(str(fs_stats), map_location="cpu")
     return ReCogDriveDiffusionPlannerConfig(
         diffusion_model_cfg={
             "num_heads": 8,
@@ -83,12 +85,11 @@ def planner_config(fs_stats: Path, *, adapter: bool) -> ReCogDriveDiffusionPlann
         use_fs_norm=True,
         fs_norm_stats_path=str(fs_stats),
         fs_norm_min_version=2,
-        fs_norm_use_robust=True,
+        fs_norm_use_robust=bool(stats.use_robust),
         fs_norm_target_clip=0.0,
         fs_norm_output_clip=12.0,
         fs_norm_output_clip_mode="stats_bounds",
         use_planning_token_adapter=adapter,
-        planning_token_source="adapter" if adapter else "none",
         planning_num_tokens=16,
         planning_num_heads=8,
         planning_condition_layers="cross_attention",

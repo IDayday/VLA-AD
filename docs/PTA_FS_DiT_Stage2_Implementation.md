@@ -24,8 +24,8 @@ Audited compatibility/config fields:
 
 | Field | Pre-change status | Current status |
 |---|---|---|
-| `cot_condition_tokens` | Last-VLA output and DiT condition key | Kept as compatibility alias; internal code prefers `planning_condition_tokens` |
-| `last_vla_cot_condition_layers` | Declared and passed, but ignored by DiT | Active deprecated alias controlling Last-VLA layer injection |
+| `cot_condition_tokens` | Last-VLA output and DiT condition key | Retained only in the isolated Last-VLA branch; never aliases PTA tokens |
+| `last_vla_cot_condition_layers` | Declared and passed, but ignored by DiT | Controls only the isolated Last-VLA CoT branch |
 | `last_vla_vlm_context_dropout_start/end` | Declared, no forward effect | Non-default values emit `DeprecationWarning` |
 | `last_vla_cot_num_steps` | Declared, no forward effect | Non-default values emit `DeprecationWarning` |
 | `last_vla_fusion_tokens` | Declared, actual count followed CoT tokens | Non-default values emit `DeprecationWarning` |
@@ -52,9 +52,10 @@ status + command + history -------+-> PlanningTokenAdapter ----------+-> gated p
 
 The adapter runs once before a DDPM/DDIM chain. Its tokens are passed unchanged into each
 reverse step. In interleaved LightningDiT, the default `cross_attention` mode injects only
-into odd blocks. Each block uses its retained `cot_cross_attn`/`cot_out_proj` keys with a
-new sigmoid gate initialized to `0.05`. Last-VLA can retain the old zero-init and
-straight-through gradient path through `planning_legacy_cot_gradient_path=True`.
+into odd blocks. Each block uses a dedicated, normally initialized
+`planning_cross_attn`/`planning_out_proj` branch with a sigmoid gate initialized to
+`0.05`. PTA has no Last-VLA source mode, CoT alias, shared projection, or legacy-gradient
+switch. Historical Last-VLA configs remain behind their own `cot_cross_attn` branch.
 
 ## FS-Norm v2
 
@@ -72,6 +73,12 @@ weight `1/K_i`, giving every scene equal total mass.
 - v2 metadata records representation, `p0`, balancing/heading flags, counts, archive path,
   and fingerprint.
 - v1 files remain loadable. The PTA main config requires `fs_norm_min_version: 2`.
+
+The full v3 support archive showed that robust MAD scaling was too narrow for heading:
+`|FS| > 5` affected `10.42%` of all values and `22.88%` of heading values. The A5
+configuration therefore uses scene-balanced standard mean/std scaling, where the same
+ratios are `0.0219%` and `0.0470%`. A v2 stats file must use the same robust/standard mode
+as the runtime config because its quantile bounds are representation-specific.
 
 Target encoding always uses `apply_clip=False`. Inference output bounds use the single
 planner helper; requesting `stats_bounds` without `clip_lower/clip_upper` fails instead of
@@ -140,9 +147,9 @@ Primary implementation locations:
 `navsim/planning/script/config/experiment/pta_fs_dit_stage2_103k.yaml`:
 
 - `use_fs_norm: true`
+- `fs_norm_use_robust: false`
 - `fs_norm_min_version: 2`
 - `use_planning_token_adapter: true`
-- `planning_token_source: adapter`
 - `planning_num_tokens: 16`
 - `planning_num_heads: 8`
 - `planning_condition_layers: cross_attention`
@@ -185,4 +192,10 @@ Legacy `x0/delta/geo` weights are zero in every row.
   flag-off output, and old strict-false checkpoint loading.
 - A real-support smoke built v2 stats from 16 scenes/179 selected supports, ran 10 optimizer
   steps with the production 16-layer/384-dim DiT, and ran deterministic 5-step DDIM.
+- Full standard v2 statistics were rebuilt from 103,288 v3 scenes and 1,061,713 selected
+  supports; the stats metadata carries the source archive fingerprint.
+- A real 8-GPU Lightning/DDP probe loaded all 103,288 cache records and the complete v3
+  archive, then completed 20 optimizer steps with finite losses and diagnostics. Static
+  adapter forward count stayed at one per step. The probe also caught and fixed unused
+  planning parameters in non-injected interleaved blocks by freezing those blocks.
 - No 200-epoch PTA training or new PTA NAVSIM evaluation was launched.

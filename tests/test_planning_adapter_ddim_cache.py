@@ -38,7 +38,6 @@ def _planner() -> ReCogDriveDiffusionPlanner:
         vlm_size="small",
         ddim_cfg=DDIMConfig(num_train_timesteps=10),
         use_planning_token_adapter=True,
-        planning_token_source="adapter",
         planning_num_tokens=16,
         planning_num_heads=4,
         planning_condition_dropout=0.0,

@@ -68,7 +68,7 @@ def test_diffusion_loss_reaches_planning_adapter() -> None:
         attention_bias=True,
         interleave_attention=True,
     )
-    dit.configure_planning_adapter_branch(0.05)
+    dit.set_planning_gate_init(0.05)
     planning_tokens, _ = adapter(
         torch.randn(2, 5, 32),
         torch.randn(2, 8),
@@ -82,7 +82,6 @@ def test_diffusion_loss_reaches_planning_adapter() -> None:
         torch.tensor([1, 2]),
         planning_condition_tokens=planning_tokens,
         planning_condition_layers="cross_attention",
-        planning_legacy_cot_gradient_path=False,
     )
     loss = torch.nn.functional.mse_loss(output, torch.randn_like(output))
     loss.backward()
@@ -93,9 +92,9 @@ def test_diffusion_loss_reaches_planning_adapter() -> None:
         if parameter.grad is not None
     )
     planning_projection_grad = sum(
-        block.cot_out_proj.weight.grad.abs().sum().item()
+        block.planning_out_proj.weight.grad.abs().sum().item()
         for block in dit.transformer_blocks
-        if block.cot_out_proj.weight.grad is not None
+        if block.planning_out_proj.weight.grad is not None
     )
     assert adapter_grad > 0.0
     assert planning_projection_grad > 0.0
@@ -122,7 +121,6 @@ def _adapter_planner_config() -> ReCogDriveDiffusionPlannerConfig:
         vlm_size="small",
         ddim_cfg=DDIMConfig(num_train_timesteps=10),
         use_planning_token_adapter=True,
-        planning_token_source="adapter",
         planning_num_heads=4,
     )
 
@@ -134,7 +132,6 @@ def _agent_with_adapter() -> ReCogDriveAgent:
     agent.last_vla_train_vlm_lora = False
     agent.use_last_vla = False
     agent.use_planning_token_adapter = True
-    agent.planning_token_source = "adapter"
     agent.freeze_expert = False
     agent.train_expert_only = False
     agent.freeze_base_action_head = False
@@ -147,28 +144,32 @@ def test_agent_scope_keeps_adapter_planning_branch_trainable() -> None:
 
     agent._set_trainable_parameters()
 
-    assert all(block.cot_cross_attn.to_q.weight.requires_grad for block in agent.action_head.model.transformer_blocks)
-    assert all(block.cot_out_proj.weight.requires_grad for block in agent.action_head.model.transformer_blocks)
-    assert all(block.planning_gate_logit.requires_grad for block in agent.action_head.model.transformer_blocks)
+    for index, block in enumerate(agent.action_head.model.transformer_blocks):
+        expected_trainable = index % 2 == 1
+        assert block.planning_cross_attn.to_q.weight.requires_grad is expected_trainable
+        assert block.planning_out_proj.weight.requires_grad is expected_trainable
+        assert block.planning_gate_logit.requires_grad is expected_trainable
+    assert all(not block.cot_cross_attn.to_q.weight.requires_grad for block in agent.action_head.model.transformer_blocks)
+    assert all(not block.cot_out_proj.weight.requires_grad for block in agent.action_head.model.transformer_blocks)
 
 
 def test_agent_old_checkpoint_preserves_new_planning_projection_init(tmp_path) -> None:
     agent = _agent_with_adapter()
     old_state = {}
     for key, value in agent.state_dict().items():
-        if "planning_adapter" in key or "planning_gate_logit" in key:
+        if "planning_adapter" in key or ".planning_" in key:
             continue
-        old_state[key] = torch.zeros_like(value) if ".cot_out_proj." in key else value.detach().clone()
+        old_state[key] = value.detach().clone()
     checkpoint = tmp_path / "legacy_stage2.ckpt"
     torch.save({"state_dict": old_state}, checkpoint)
     before = [
-        block.cot_out_proj.weight.detach().clone()
+        block.planning_out_proj.weight.detach().clone()
         for block in agent.action_head.model.transformer_blocks
     ]
 
     agent._safe_load_checkpoint(str(checkpoint))
 
-    after = [block.cot_out_proj.weight.detach() for block in agent.action_head.model.transformer_blocks]
+    after = [block.planning_out_proj.weight.detach() for block in agent.action_head.model.transformer_blocks]
     assert all(torch.count_nonzero(weight).item() > 0 for weight in after)
     assert all(torch.equal(expected, actual) for expected, actual in zip(before, after))
 

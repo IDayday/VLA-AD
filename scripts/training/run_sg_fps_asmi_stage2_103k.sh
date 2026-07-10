@@ -82,7 +82,6 @@ if [[ "${HYDRA_EXPERIMENT}" == *"fs_norm"* || "${HYDRA_EXPERIMENT}" == "pta_fs_d
 fi
 optional_overrides=(
   "USE_PLANNING_TOKEN_ADAPTER:agent.use_planning_token_adapter"
-  "PLANNING_TOKEN_SOURCE:agent.planning_token_source"
   "PLANNING_NUM_TOKENS:agent.planning_num_tokens"
   "PLANNING_NUM_HEADS:agent.planning_num_heads"
   "PLANNING_CONDITION_LAYERS:agent.planning_condition_layers"
