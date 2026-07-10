@@ -68,6 +68,27 @@ and optimizer settings to `launch_env.txt`. The eight-GPU smoke measured about
 1.1 seconds per micro-step after startup, giving an initial 4-6 hour estimate;
 use the first 100 full-run steps to replace that estimate with measured throughput.
 
+## Stage1 result and gate
+
+The formal run `bench2drive_recogdrive_stage1_sft_20260710T065201Z` completed
+all three epochs (1,728 optimizer steps) in 1:58:58 with aggregate train loss
+0.75462. On all 2,083 examples from the 50 held-out clips, token NLL decreased
+from 1.54483 for the released VLM to 0.72040 for Stage1, a 53.37% reduction.
+
+Greedy generation on a deterministic 256-example, all-clip sample reduced ADE
+from 13.5930 m to 3.6443 m and FDE from 24.7505 m to 7.1366 m. On all 118 turn
+examples, ADE decreased from 14.5207 m to 5.4953 m and FDE from 26.8010 m to
+10.8198 m. Clip-level paired bootstrap intervals exclude zero improvement, and
+shuffled-image, shuffled-command, and shuffled-answer controls show that the
+fine-tuned model uses the paired inputs rather than only memorizing the output
+syntax.
+
+Stage1 therefore passes the gate for rebuilding hidden states and starting the
+scratch Stage2 run. It does not pass a final-planner gate, and a 220-route run is
+not meaningful until Stage2 is trained. See
+`docs/bench2drive_stage1_evaluation_20260710.md` for the full protocol, metrics,
+confidence intervals, limitations, and artifact paths.
+
 ## Rebuild Stage2 caches
 
 Only a completed Stage1 output may be supplied as `VLM_PATH`:
