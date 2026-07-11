@@ -4,6 +4,8 @@ set -euo pipefail
 VLA_AD_ROOT=${VLA_AD_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}
 CONDA_BIN=${CONDA_BIN:-/root/miniconda3/bin/conda}
 NAVSIM_ENV=${NAVSIM_ENV:-navsim}
+TRAIN_PYTHON=${TRAIN_PYTHON:-}
+TORCHRUN_BIN=${TORCHRUN_BIN:-}
 RUN_MODE=${RUN_MODE:-formal}
 RUN_ID=${RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)}
 
@@ -26,23 +28,47 @@ LEARNING_RATE=${LEARNING_RATE:-4e-5}
 WEIGHT_DECAY=${WEIGHT_DECAY:-0.05}
 WARMUP_RATIO=${WARMUP_RATIO:-0.1}
 MAX_SEQ_LENGTH=${MAX_SEQ_LENGTH:-12288}
-MAX_DYNAMIC_PATCH=${MAX_DYNAMIC_PATCH:-12}
+MAX_DYNAMIC_PATCH=${MAX_DYNAMIC_PATCH:-16}
 DROP_PATH_RATE=${DROP_PATH_RATE:-0.1}
 DATALOADER_NUM_WORKERS=${DATALOADER_NUM_WORKERS:-8}
 LOGGING_STEPS=${LOGGING_STEPS:-1}
 SEED=${SEED:-20260711}
-REPORT_TO=${REPORT_TO:-none}
+REPORT_TO=${REPORT_TO:-}
 DRY_RUN=${DRY_RUN:-0}
 SKIP_DATA_PREFLIGHT=${SKIP_DATA_PREFLIGHT:-0}
 ALLOW_PUBLIC_PROXY_OVERRIDE=${ALLOW_PUBLIC_PROXY_OVERRIDE:-0}
+ALLOW_ENVIRONMENT_VERSION_MISMATCH=${ALLOW_ENVIRONMENT_VERSION_MISMATCH:-0}
+
+if [[ -n "${TRAIN_PYTHON}" ]]; then
+  if [[ ! -x "${TRAIN_PYTHON}" ]]; then
+    echo "TRAIN_PYTHON is not executable: ${TRAIN_PYTHON}" >&2
+    exit 2
+  fi
+  if [[ -z "${TORCHRUN_BIN}" ]]; then
+    TORCHRUN_BIN=$(dirname "${TRAIN_PYTHON}")/torchrun
+  fi
+  if [[ ! -x "${TORCHRUN_BIN}" ]]; then
+    echo "torchrun is not executable: ${TORCHRUN_BIN}" >&2
+    exit 2
+  fi
+  PYTHON_RUN=("${TRAIN_PYTHON}")
+  TRAIN_ENV_PREFIX=()
+  TRAIN_ENV_DESCRIPTION="venv:${TRAIN_PYTHON}"
+else
+  TORCHRUN_BIN=${TORCHRUN_BIN:-torchrun}
+  PYTHON_RUN=("${CONDA_BIN}" run --no-capture-output -n "${NAVSIM_ENV}" python)
+  TRAIN_ENV_PREFIX=("${CONDA_BIN}" run --no-capture-output -n "${NAVSIM_ENV}")
+  TRAIN_ENV_DESCRIPTION="conda:${NAVSIM_ENV}"
+fi
 
 case "${RUN_MODE}" in
   formal)
     GLOBAL_BATCH_SIZE=${GLOBAL_BATCH_SIZE:-1024}
     MAX_STEPS=${MAX_STEPS:--1}
-    SAVE_STRATEGY=${SAVE_STRATEGY:-epoch}
+    SAVE_STRATEGY=${SAVE_STRATEGY:-steps}
     SAVE_STEPS=${SAVE_STEPS:-200}
-    SAVE_TOTAL_LIMIT=${SAVE_TOTAL_LIMIT:-4}
+    SAVE_TOTAL_LIMIT=${SAVE_TOTAL_LIMIT:-10}
+    REPORT_TO=${REPORT_TO:-tensorboard}
     SMOKE_RECORDS_PER_DATASET=${SMOKE_RECORDS_PER_DATASET:-8}
     OUTPUT_DIR=${OUTPUT_DIR:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_stage1_official_multiview_${RUN_ID}}
     GATE_FULL_HASH=${GATE_FULL_HASH:-1}
@@ -53,6 +79,7 @@ case "${RUN_MODE}" in
     SAVE_STRATEGY=${SAVE_STRATEGY:-steps}
     SAVE_STEPS=${SAVE_STEPS:-1}
     SAVE_TOTAL_LIMIT=${SAVE_TOTAL_LIMIT:-2}
+    REPORT_TO=${REPORT_TO:-none}
     SMOKE_RECORDS_PER_DATASET=${SMOKE_RECORDS_PER_DATASET:-8}
     OUTPUT_DIR=${OUTPUT_DIR:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_stage1_official_multiview_smoke_${RUN_ID}}
     GATE_FULL_HASH=${GATE_FULL_HASH:-0}
@@ -75,13 +102,18 @@ require_formal_value() {
 
 require_formal_value NUM_TRAIN_EPOCHS "${NUM_TRAIN_EPOCHS}" 3
 require_formal_value GLOBAL_BATCH_SIZE "${GLOBAL_BATCH_SIZE}" 1024
+require_formal_value PER_DEVICE_BATCH_SIZE "${PER_DEVICE_BATCH_SIZE}" 1
+require_formal_value NPROC_PER_NODE "${NPROC_PER_NODE}" 8
 require_formal_value LEARNING_RATE "${LEARNING_RATE}" 4e-5
 require_formal_value WEIGHT_DECAY "${WEIGHT_DECAY}" 0.05
 require_formal_value WARMUP_RATIO "${WARMUP_RATIO}" 0.1
 require_formal_value MAX_SEQ_LENGTH "${MAX_SEQ_LENGTH}" 12288
-require_formal_value MAX_DYNAMIC_PATCH "${MAX_DYNAMIC_PATCH}" 12
+require_formal_value MAX_DYNAMIC_PATCH "${MAX_DYNAMIC_PATCH}" 16
 require_formal_value DROP_PATH_RATE "${DROP_PATH_RATE}" 0.1
 require_formal_value MAX_STEPS "${MAX_STEPS}" -1
+require_formal_value SAVE_STRATEGY "${SAVE_STRATEGY}" steps
+require_formal_value SAVE_STEPS "${SAVE_STEPS}" 200
+require_formal_value SAVE_TOTAL_LIMIT "${SAVE_TOTAL_LIMIT}" 10
 
 if [[ ! -d "${BASE_VLM_PATH}" ]]; then
   echo "Official Stage1 base VLM not found: ${BASE_VLM_PATH}" >&2
@@ -118,6 +150,7 @@ python scripts/bench2drive/check_recogdrive_b2d_reproduction_gate.py "${gate_arg
 
 python scripts/bench2drive/prepare_recogdrive_b2d_official_stage1.py \
   --output-dir "${STAGE1_DATA_DIR}" \
+  --max-dynamic-patch "${MAX_DYNAMIC_PATCH}" \
   --smoke-records-per-dataset "${SMOKE_RECORDS_PER_DATASET}" >/dev/null
 
 if [[ "${RUN_MODE}" == "formal" ]]; then
@@ -130,13 +163,27 @@ if [[ ! -f "${TRAIN_META}" ]]; then
   exit 2
 fi
 
+environment_args=(
+  --min-gpus "${NPROC_PER_NODE}"
+  --report "${OUTPUT_DIR}/environment_preflight.json"
+)
+if [[ "${ALLOW_ENVIRONMENT_VERSION_MISMATCH}" == "1" ]]; then
+  environment_args+=(--allow-version-mismatch)
+fi
+env CUDA_VISIBLE_DEVICES="${GPU_LIST}" \
+  "${PYTHON_RUN[@]}" \
+  "${VLA_AD_ROOT}/scripts/bench2drive/check_recogdrive_b2d_stage1_environment.py" \
+  "${environment_args[@]}" >/dev/null
+"${PYTHON_RUN[@]}" -m pip freeze --all > "${OUTPUT_DIR}/pip_freeze.txt"
+
 if [[ "${SKIP_DATA_PREFLIGHT}" != "1" ]]; then
   env PYTHONPATH="${VLA_AD_ROOT}/internvl_chat${PYTHONPATH:+:${PYTHONPATH}}" \
-    "${CONDA_BIN}" run --no-capture-output -n "${NAVSIM_ENV}" \
-    python "${VLA_AD_ROOT}/scripts/bench2drive/preflight_recogdrive_b2d_official_stage1.py" \
+    "${PYTHON_RUN[@]}" \
+    "${VLA_AD_ROOT}/scripts/bench2drive/preflight_recogdrive_b2d_official_stage1.py" \
       --meta "${STAGE1_DATA_DIR}/smoke_meta.json" \
       --base-vlm "${BASE_VLM_PATH}" \
       --max-seq-length "${MAX_SEQ_LENGTH}" \
+      --max-dynamic-patch "${MAX_DYNAMIC_PATCH}" \
       --report "${OUTPUT_DIR}/data_preflight.json" >/dev/null
 fi
 
@@ -146,6 +193,9 @@ date_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 git_commit=${GIT_COMMIT}
 classification=closest-public official-checkpoint-anchored Bench2Drive Stage1
 run_mode=${RUN_MODE}
+train_environment=${TRAIN_ENV_DESCRIPTION}
+train_python=${TRAIN_PYTHON:-conda:${NAVSIM_ENV}}
+torchrun_bin=${TORCHRUN_BIN}
 base_vlm_path=${BASE_VLM_PATH}
 reproduction_gate=${REPRODUCTION_GATE}
 stage1_data_dir=${STAGE1_DATA_DIR}
@@ -195,7 +245,7 @@ args=(
   --num_train_epochs "${NUM_TRAIN_EPOCHS}"
   --per_device_train_batch_size "${PER_DEVICE_BATCH_SIZE}"
   --gradient_accumulation_steps "${GRADIENT_ACCUMULATION_STEPS}"
-  --eval_strategy no
+  --evaluation_strategy no
   --save_strategy "${SAVE_STRATEGY}"
   --save_steps "${SAVE_STEPS}"
   --save_total_limit "${SAVE_TOTAL_LIMIT}"
@@ -220,7 +270,7 @@ args=(
   --ddp_find_unused_parameters False
 )
 
-cmd=(torchrun --standalone --nproc_per_node "${NPROC_PER_NODE}" --master_port "${MASTER_PORT}" "${args[@]}")
+cmd=("${TORCHRUN_BIN}" --standalone --nproc_per_node "${NPROC_PER_NODE}" --master_port "${MASTER_PORT}" "${args[@]}")
 printf '%q ' "${cmd[@]}" > "${OUTPUT_DIR}/launch_command.txt"
 printf '\n' >> "${OUTPUT_DIR}/launch_command.txt"
 
@@ -233,7 +283,7 @@ cd "${VLA_AD_ROOT}/internvl_chat"
 env CUDA_VISIBLE_DEVICES="${GPU_LIST}" \
   PYTHONPATH="${VLA_AD_ROOT}:${VLA_AD_ROOT}/internvl_chat${PYTHONPATH:+:${PYTHONPATH}}" \
   LAUNCHER=pytorch \
-  "${CONDA_BIN}" run --no-capture-output -n "${NAVSIM_ENV}" \
+  "${TRAIN_ENV_PREFIX[@]}" \
   "${cmd[@]}" 2>&1 | tee -a "${OUTPUT_DIR}/training_log.txt"
 
 runtime_files=(

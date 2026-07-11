@@ -58,6 +58,7 @@ def test_prepare_official_stage1_data_preserves_sources_and_selects_long_qa(tmp_
             raw_data_root=raw,
             output_dir=output,
             smoke_records_per_dataset=2,
+            max_dynamic_patch=16,
         )
     )
 
@@ -68,7 +69,7 @@ def test_prepare_official_stage1_data_preserves_sources_and_selects_long_qa(tmp_
     formal_meta = json.loads((output / "official_meta.json").read_text())
     assert list(formal_meta) == ["Bench2drive_Traj", "Bench2drive_QA"]
     assert formal_meta["Bench2drive_Traj"]["repeat_time"] == 1
-    assert formal_meta["Bench2drive_QA"]["max_dynamic_patch"] == 12
+    assert formal_meta["Bench2drive_QA"]["max_dynamic_patch"] == 16
     assert summary["smoke"]["max_qa_conversation_length"] == 20
     smoke_qa = Path(summary["smoke"]["qa_jsonl"])
     assert len(smoke_qa.read_text().splitlines()) == 2

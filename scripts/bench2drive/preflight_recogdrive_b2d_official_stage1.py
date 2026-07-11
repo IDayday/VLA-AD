@@ -39,6 +39,7 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
     parser.add_argument("--meta", type=Path, required=True)
     parser.add_argument("--base-vlm", type=Path, required=True)
     parser.add_argument("--max-seq-length", type=int, default=12288)
+    parser.add_argument("--max-dynamic-patch", type=int, default=16)
     parser.add_argument("--report", type=Path, default=None)
     return parser.parse_args(argv)
 
@@ -65,7 +66,12 @@ def _special_tokens() -> list[str]:
     ]
 
 
-def run_preflight(meta_path: Path, base_vlm: Path, max_seq_length: int) -> Dict[str, Any]:
+def run_preflight(
+    meta_path: Path,
+    base_vlm: Path,
+    max_seq_length: int,
+    max_dynamic_patch: int,
+) -> Dict[str, Any]:
     meta = json.loads(meta_path.read_text(encoding="utf-8"))
     tokenizer = AutoTokenizer.from_pretrained(
         base_vlm,
@@ -92,7 +98,7 @@ def run_preflight(meta_path: Path, base_vlm: Path, max_seq_length: int) -> Dict[
             dynamic_image_size=True,
             use_thumbnail=True,
             min_dynamic_patch=1,
-            max_dynamic_patch=12,
+            max_dynamic_patch=max_dynamic_patch,
             repeat_time=1,
         )
         for index in sorted({0, len(dataset) - 1}):
@@ -126,6 +132,7 @@ def run_preflight(meta_path: Path, base_vlm: Path, max_seq_length: int) -> Dict[
         "meta": str(meta_path.resolve()),
         "base_vlm": str(base_vlm.resolve()),
         "max_seq_length": int(max_seq_length),
+        "max_dynamic_patch": int(max_dynamic_patch),
         "expected_camera_views": 6,
         "expected_tiles_per_sample": 18,
         "checks": checks,
@@ -135,7 +142,12 @@ def run_preflight(meta_path: Path, base_vlm: Path, max_seq_length: int) -> Dict[
 def main(argv: Optional[Sequence[str]] = None) -> int:
     args = parse_args(argv)
     try:
-        result = run_preflight(args.meta, args.base_vlm, args.max_seq_length)
+        result = run_preflight(
+            args.meta,
+            args.base_vlm,
+            args.max_seq_length,
+            args.max_dynamic_patch,
+        )
     except Exception as exc:
         print(f"official Stage1 preflight failed: {exc}", file=sys.stderr)
         return 1

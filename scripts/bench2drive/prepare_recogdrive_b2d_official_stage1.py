@@ -40,6 +40,12 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         default=8,
         help="Write deterministic smoke JSONLs; set to zero to omit them.",
     )
+    parser.add_argument(
+        "--max-dynamic-patch",
+        type=int,
+        default=16,
+        help="Match the public ReCogDrive SFT launcher; six views receive floor(value / 6) patches each.",
+    )
     return parser.parse_args(argv)
 
 
@@ -108,12 +114,19 @@ def _ensure_dataset_symlink(view_root: Path, raw_root: Path) -> Path:
     return link
 
 
-def _meta(root: Path, traj: Path, qa: Path, traj_length: int, qa_length: int) -> Dict[str, Any]:
+def _meta(
+    root: Path,
+    traj: Path,
+    qa: Path,
+    traj_length: int,
+    qa_length: int,
+    max_dynamic_patch: int,
+) -> Dict[str, Any]:
     common = {
         "root": str(root.resolve()),
         "data_augment": False,
         "repeat_time": 1,
-        "max_dynamic_patch": 12,
+        "max_dynamic_patch": int(max_dynamic_patch),
     }
     return {
         "Bench2drive_Traj": {
@@ -140,12 +153,14 @@ def prepare_official_stage1_data(args: argparse.Namespace) -> Dict[str, Any]:
         raise OfficialStage1DataError(f"raw Bench2Drive root missing: {raw_root}")
     if args.smoke_records_per_dataset < 0:
         raise OfficialStage1DataError("--smoke-records-per-dataset must be non-negative")
+    if args.max_dynamic_patch < 6:
+        raise OfficialStage1DataError("--max-dynamic-patch must be at least six for six-view data")
 
     output.mkdir(parents=True, exist_ok=True)
     view_root = output / "dataset_view"
     link = _ensure_dataset_symlink(view_root, raw_root)
 
-    formal_meta = _meta(view_root, traj, qa, 196761, 49942)
+    formal_meta = _meta(view_root, traj, qa, 196761, 49942, args.max_dynamic_patch)
     formal_meta_path = output / "official_meta.json"
     formal_meta_path.write_text(json.dumps(formal_meta, indent=2) + "\n", encoding="utf-8")
 
@@ -161,7 +176,14 @@ def prepare_official_stage1_data(args: argparse.Namespace) -> Dict[str, Any]:
         qa_rows = _select_smoke_rows(qa, count, include_longest_conversation=True)
         smoke_traj.write_text("".join(traj_rows), encoding="utf-8")
         smoke_qa.write_text("".join(qa_rows), encoding="utf-8")
-        smoke_meta = _meta(view_root, smoke_traj, smoke_qa, len(traj_rows), len(qa_rows))
+        smoke_meta = _meta(
+            view_root,
+            smoke_traj,
+            smoke_qa,
+            len(traj_rows),
+            len(qa_rows),
+            args.max_dynamic_patch,
+        )
         smoke_meta_path = output / "smoke_meta.json"
         smoke_meta_path.write_text(json.dumps(smoke_meta, indent=2) + "\n", encoding="utf-8")
         qa_records = [json.loads(line) for line in qa_rows]

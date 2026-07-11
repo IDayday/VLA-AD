@@ -69,14 +69,39 @@ choices, not silently filled official values.
 
 The approved public proxy uses the natural record frequency of the two
 unmodified JSONLs (`repeat_time=1` for each and no weighted resampling). The
-loader receives `max_dynamic_patch=12`; for six images it assigns at most two
-dynamic patches plus one thumbnail to each view, producing 18 image tiles per
-sample as described by the authors.
+loader receives the public SFT launcher's `max_dynamic_patch=16`; for six images
+it assigns at most two dynamic patches plus one thumbnail to each view,
+producing 18 image tiles per sample as described by the authors.
+
+The training software is also locked. The vendored InternVL pins Transformers
+4.37.2, Tokenizers 0.15.1, DeepSpeed 0.13.5, and several preprocessing
+dependencies. A dedicated Python 3.9 environment uses Torch 2.2.2/CUDA 12.1,
+torchvision 0.17.2, Accelerate 0.28.0, and FlashAttention 2.5.8 as explicit
+compatibility choices. Those four versions are not author-confirmed. Before
+loading data, the launcher records every version and executes a real BF16
+FlashAttention CUDA forward pass on the visible devices.
+The Python 3.9/Torch 2.2 FlashAttention wheel is additionally pinned by SHA-256
+in the manifest and verified before installation.
+
+The dedicated environment can be rebuilt without changing or accepting terms
+for an existing Conda installation:
+
+```bash
+REBUILD_STAGE1_ENV=1 \
+bash scripts/bench2drive/create_recogdrive_b2d_stage1_env.sh
+```
+
+The public shell script launches 8 nodes x 8 GPUs and accumulates 16 microsteps.
+This machine has one 8-GPU node, so the local launcher accumulates 128
+microsteps to preserve the effective global batch of 1,024. This hardware
+topology adaptation is recorded explicitly; it is not presented as identical
+floating-point execution.
 
 Run the real multi-view two-step smoke before a formal launch:
 
 ```bash
 RUN_MODE=smoke \
+TRAIN_PYTHON=/mnt/project/recogdrive_stage1_env/bin/python \
 bash scripts/bench2drive/run_recogdrive_b2d_stage1_official_multiview_sft.sh
 ```
 
@@ -85,6 +110,7 @@ unlabeled changes:
 
 ```bash
 RUN_MODE=formal \
+TRAIN_PYTHON=/mnt/project/recogdrive_stage1_env/bin/python \
 bash scripts/bench2drive/run_recogdrive_b2d_stage1_official_multiview_sft.sh
 ```
 
