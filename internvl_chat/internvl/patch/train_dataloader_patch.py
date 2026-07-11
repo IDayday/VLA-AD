@@ -5,6 +5,7 @@
 # --------------------------------------------------------
 
 from functools import partial
+from inspect import signature
 
 import torch
 import transformers
@@ -15,6 +16,14 @@ try:
     import datasets
 except ImportError:
     datasets = None
+
+
+def build_worker_init_fn(num_workers, rank):
+    """Use the native worker seeding contract of the installed Transformers."""
+    parameters = signature(seed_worker).parameters
+    if 'num_workers' in parameters and 'rank' in parameters:
+        return partial(seed_worker, num_workers=num_workers, rank=rank)
+    return seed_worker
 
 
 def get_train_dataloader(self) -> DataLoader:
@@ -47,10 +56,9 @@ def get_train_dataloader(self) -> DataLoader:
     if not isinstance(train_dataset, torch.utils.data.IterableDataset):
         dataloader_params['sampler'] = self._get_train_sampler()
         dataloader_params['drop_last'] = self.args.dataloader_drop_last
-        dataloader_params['worker_init_fn'] = partial(
-            seed_worker,
-            num_workers=self.args.dataloader_num_workers,
-            rank=self.args.process_index,
+        dataloader_params['worker_init_fn'] = build_worker_init_fn(
+            self.args.dataloader_num_workers,
+            self.args.process_index,
         )
 
     if self.args.use_packed_ds:
