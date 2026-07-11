@@ -5,22 +5,10 @@ from typing import Dict, Tuple,Any
 import torch
 
 from navsim.agents.abstract_agent import AbstractAgent
-
-
-_CHECKPOINT_EXCLUDED_PREFIXES = (
-    "agent.model",
-    "agent.action_head.old_policy",
-    "agent.action_head.behavior_policy",
+from navsim.planning.training.checkpoint_utils import (
+    _filter_recogdrive_checkpoint_state_dict,
+    _load_recogdrive_checkpoint_state_dict,
 )
-
-
-def _filter_recogdrive_checkpoint_state_dict(state_dict: Dict[str, Tensor]) -> Dict[str, Tensor]:
-    """Skip frozen backbone/reference weights before Lightning serializes checkpoints."""
-
-    def keep_key(key: str) -> bool:
-        return not any(key == prefix or key.startswith(f"{prefix}.") for prefix in _CHECKPOINT_EXCLUDED_PREFIXES)
-
-    return {key: value for key, value in state_dict.items() if keep_key(key)}
 
 
 def _prediction_get(prediction: Any, key: str) -> Any:
@@ -119,6 +107,52 @@ class AgentLightningModule(pl.LightningModule):
             "lora_trainable_param_count",
             "lora_matched_module_count",
             "base_reward",
+            "lfp_scalar_mean",
+            "lfp_ref_scalar_mean",
+            "lfp_delta_scalar_mean",
+            "lfp_ep_mean",
+            "lfp_ttc_mean",
+            "lfp_quality_mean",
+            "lfp_nc_mean",
+            "lfp_dac_mean",
+            "lfp_ddc_mean",
+            "lfp_tlc_mean",
+            "lfp_feasible_ratio",
+            "lfp_progress_ok_ratio",
+            "lfp_pareto_front_ratio",
+            "lfp_dominated_ratio",
+            "lfp_positive_advantage_ratio",
+            "lfp_negative_advantage_ratio",
+            "lfp_zero_advantage_ratio",
+            "lfp_all_infeasible_group_ratio",
+            "lfp_advantage_clip_ratio",
+            "lfp_global_centered_mean",
+            "lfp_global_centered_std",
+            "lfp_global_normalization_count",
+            "lfp_frontier_energy_mean",
+            "lfp_frontier_energy_p50",
+            "lfp_frontier_energy_p90",
+            "lfp_positive_fraction_mean",
+            "lfp_negative_fraction_mean",
+            "lfp_advantage_magnitude_mean",
+            "lfp_frontier_fast_ema_mean",
+            "lfp_frontier_slow_ema_mean",
+            "lfp_learning_progress_mean",
+            "lfp_sampler_entropy",
+            "lfp_sampler_priority_max_to_median",
+            "lfp_sampler_uniform_ratio_actual",
+            "lfp_sampler_unseen_scene_ratio",
+            "lfp_policy_loss",
+            "lfp_exact_kl",
+            "lfp_reference_kl_coeff",
+            "lfp_trajectory_logprob_mean",
+            "lfp_policy_gradient_norm",
+            "lfp_planning_adapter_gradient_norm",
+            "lfp_reference_fallback_ratio",
+            "lfp_reference_source_code",
+            "lfp_metric_ddc_fallback_ratio",
+            "lfp_metric_raw_ddc_available_ratio",
+            "scene_stage_type",
             "shaped_reward",
             "safe_ratio",
             "hard_safe_ratio",
@@ -545,9 +579,38 @@ class AgentLightningModule(pl.LightningModule):
         每次保存 checkpoint 时，只保留 state_dict 中不以 'agent.model' 开头的条目。
         """
         checkpoint["state_dict"] = _filter_recogdrive_checkpoint_state_dict(checkpoint["state_dict"])
+        action_head = getattr(self.agent, "action_head", None)
+        if action_head is not None and hasattr(action_head, "lfp_runtime_state_dict"):
+            lfp_state = action_head.lfp_runtime_state_dict()
+            if lfp_state:
+                checkpoint["lfp_runtime"] = lfp_state
+
+    def on_load_checkpoint(self, checkpoint: Dict[str, Any]) -> None:
+        action_head = getattr(self.agent, "action_head", None)
+        if action_head is not None and hasattr(action_head, "load_lfp_runtime_state_dict"):
+            action_head.load_lfp_runtime_state_dict(checkpoint.get("lfp_runtime", {}))
+
+    def on_fit_end(self) -> None:
+        action_head = getattr(self.agent, "action_head", None)
+        evaluator = getattr(action_head, "lfp_v2_rollout_evaluator", None)
+        if evaluator is not None:
+            evaluator.close()
 
     def state_dict(self, *args: Any, **kwargs: Any) -> Dict[str, Tensor]:
         return _filter_recogdrive_checkpoint_state_dict(super().state_dict(*args, **kwargs))
+
+    def load_state_dict(
+        self,
+        state_dict: Dict[str, Tensor],
+        strict: bool = True,
+        assign: bool = False,
+    ):
+        return _load_recogdrive_checkpoint_state_dict(
+            self,
+            state_dict,
+            strict=strict,
+            assign=assign,
+        )
 
     def training_step(self, batch: Tuple[Dict[str, Tensor], Dict[str, Tensor]], batch_idx: int) -> Tensor:
         """
@@ -639,9 +702,83 @@ class AgentLightningDiT(pl.LightningModule):
         每次保存 checkpoint 时，只保留 state_dict 中不以 'agent.model' 开头的条目。
         """
         checkpoint["state_dict"] = _filter_recogdrive_checkpoint_state_dict(checkpoint["state_dict"])
+        action_head = getattr(self.agent, "action_head", None)
+        if action_head is not None and hasattr(action_head, "lfp_runtime_state_dict"):
+            lfp_state = action_head.lfp_runtime_state_dict()
+            if lfp_state:
+                checkpoint["lfp_runtime"] = lfp_state
+
+    def on_load_checkpoint(self, checkpoint: Dict[str, Any]) -> None:
+        action_head = getattr(self.agent, "action_head", None)
+        if action_head is not None and hasattr(action_head, "load_lfp_runtime_state_dict"):
+            action_head.load_lfp_runtime_state_dict(checkpoint.get("lfp_runtime", {}))
+
+    def on_fit_end(self) -> None:
+        action_head = getattr(self.agent, "action_head", None)
+        evaluator = getattr(action_head, "lfp_v2_rollout_evaluator", None)
+        if evaluator is not None:
+            evaluator.close()
+
+    @staticmethod
+    def _gradient_norm(parameters) -> torch.Tensor:
+        grads = [parameter.grad.detach().float() for parameter in parameters if parameter.grad is not None]
+        if not grads:
+            return torch.zeros((), dtype=torch.float32)
+        device = grads[0].device
+        total = torch.zeros((), device=device, dtype=torch.float32)
+        for grad in grads:
+            total = total + grad.square().sum()
+        return total.sqrt()
+
+    def on_after_backward(self) -> None:
+        if getattr(self.agent, "stage3_algorithm", "legacy") != "lfp_grpo":
+            return
+        action_head = getattr(self.agent, "action_head", None)
+        if action_head is None:
+            return
+        reference = getattr(action_head, "old_policy", None)
+        if reference is None or any(parameter.requires_grad for parameter in reference.parameters()):
+            raise RuntimeError("LFP Stage2 reference policy must remain frozen.")
+        if any(parameter.grad is not None for parameter in reference.parameters()):
+            raise RuntimeError("LFP Stage2 reference policy received gradients.")
+        policy_norm = self._gradient_norm(
+            parameter for parameter in action_head.parameters() if parameter.requires_grad
+        ).to(self.device)
+        planning_parameters = []
+        for name, parameter in self.agent.named_parameters():
+            if self.agent._is_planning_adapter_parameter_key(name) and parameter.requires_grad:
+                planning_parameters.append(parameter)
+        planning_norm = self._gradient_norm(planning_parameters).to(self.device)
+        self.log(
+            "train/lfp_policy_gradient_norm",
+            policy_norm,
+            on_step=True,
+            on_epoch=True,
+            sync_dist=True,
+        )
+        self.log(
+            "train/lfp_planning_adapter_gradient_norm",
+            planning_norm,
+            on_step=True,
+            on_epoch=True,
+            sync_dist=True,
+        )
 
     def state_dict(self, *args: Any, **kwargs: Any) -> Dict[str, Tensor]:
         return _filter_recogdrive_checkpoint_state_dict(super().state_dict(*args, **kwargs))
+
+    def load_state_dict(
+        self,
+        state_dict: Dict[str, Tensor],
+        strict: bool = True,
+        assign: bool = False,
+    ):
+        return _load_recogdrive_checkpoint_state_dict(
+            self,
+            state_dict,
+            strict=strict,
+            assign=assign,
+        )
 
     def training_step(self, batch: Tuple[Dict[str, Tensor], Dict[str, Tensor]], batch_idx: int) -> Tensor:
         """

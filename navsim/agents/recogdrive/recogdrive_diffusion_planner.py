@@ -17,6 +17,7 @@ import copy
 import hashlib
 import lzma
 import math
+import os
 import pickle
 import warnings
 from dataclasses import asdict, dataclass, field, is_dataclass
@@ -60,6 +61,16 @@ from .offline_rl_buffer import REQUIRED_COMPONENT_KEYS, load_elite_record, load_
 from .fs_norm import FSNormTransform, load_fs_norm_stats
 from .planning_token_adapter import PlanningTokenAdapter, PlanningTokenAdapterConfig
 from .reference_relative_geometry import compute_reference_relative_geometry_components
+from .stage3_lfp_grpo import (
+    LFPGRPOConfig,
+    coerce_lfp_grpo_config,
+    compute_lfp_advantages,
+    trajectory_reinforce_loss,
+    validate_lfp_config_exclusivity,
+)
+from .stage3_metric_adapter import Stage3MetricAdapter
+from .stage3_reference_cache import Stage3ReferenceCache
+from .stage3_v2_official_evaluator import OfficialNAVSIMV2MetricEvaluator
 from .pdas import compute_pdas_metrics
 from .trajectory_feasibility import compute_feasibility_metrics
 from .expert_fusion import (
@@ -962,6 +973,7 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     num_inference_steps: int = 5
     model_dtype: str = "float16"
     grpo: bool = False
+    stage3_algorithm: Literal["legacy", "lfp_grpo"] = "legacy"
     vlm_size: str = 'large'
     planner_dim: int = 384
     use_planning_token_adapter: bool = False
@@ -1186,6 +1198,7 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     ddim_cfg: DDIMConfig = field(default_factory=DDIMConfig)
     grpo_cfg: GRPOConfig = field(default_factory=GRPOConfig)
     offline_rl_cfg: OfflineRLConfig = field(default_factory=OfflineRLConfig)
+    lfp_grpo_cfg: LFPGRPOConfig = field(default_factory=LFPGRPOConfig)
 
 
 class ReCogDriveDiffusionPlanner(nn.Module):
@@ -1203,6 +1216,23 @@ class ReCogDriveDiffusionPlanner(nn.Module):
     def __init__(self, config: ReCogDriveDiffusionPlannerConfig):
         super().__init__()
         self.config = config
+        config.lfp_grpo_cfg = coerce_lfp_grpo_config(config.lfp_grpo_cfg)
+
+        if str(config.stage3_algorithm) not in {"legacy", "lfp_grpo"}:
+            raise ValueError("stage3_algorithm must be 'legacy' or 'lfp_grpo'.")
+        self.stage3_algorithm = str(config.stage3_algorithm)
+        if self.stage3_algorithm == "lfp_grpo":
+            if not bool(config.grpo):
+                raise ValueError("stage3_algorithm='lfp_grpo' requires grpo=True.")
+            if not bool(config.lfp_grpo_cfg.enabled):
+                raise ValueError("stage3_algorithm='lfp_grpo' requires lfp_grpo_cfg.enabled=True.")
+            config.lfp_grpo_cfg.validate()
+            validate_lfp_config_exclusivity(
+                self.stage3_algorithm,
+                config.grpo_cfg,
+                config.offline_rl_cfg,
+                stage3_objective="grpo",
+            )
 
         if config.planning_condition_layers not in {"cross_attention", "all"}:
             raise ValueError("planning_condition_layers must be 'cross_attention' or 'all'.")
@@ -1747,6 +1777,62 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 self._init_offline_rl(self.offline_rl_cfg, config.grpo_cfg)
         elif self.offline_rl_cfg.enabled:
             self._init_offline_rl(self.offline_rl_cfg, config.grpo_cfg)
+
+        self.lfp_grpo_cfg = config.lfp_grpo_cfg
+        self.lfp_metric_adapter: Optional[Stage3MetricAdapter] = None
+        self.lfp_reference_cache: Optional[Stage3ReferenceCache] = None
+        self.lfp_v2_rollout_evaluator: Optional[OfficialNAVSIMV2MetricEvaluator] = None
+        self._lfp_epoch_energy: Dict[str, list[float]] = {}
+        if self.stage3_algorithm == "lfp_grpo":
+            self.lfp_metric_adapter = Stage3MetricAdapter(self.lfp_grpo_cfg.benchmark)
+            self.lfp_reference_cache = Stage3ReferenceCache(
+                self.lfp_grpo_cfg.reference_cache_path,
+                benchmark=self.lfp_grpo_cfg.benchmark,
+            )
+            self.reference_kl_coeff = float(self.lfp_grpo_cfg.reference_kl_coeff)
+            if not hasattr(self, "old_policy"):
+                raise RuntimeError("LFP-GRPO requires the frozen Stage2 old_policy initialized by _init_grpo().")
+            if hasattr(self, "behavior_policy"):
+                raise RuntimeError("LFP-GRPO must not initialize a behavior policy.")
+            expected_reference_sha = str(
+                self.lfp_reference_cache.metadata.get("stage2_checkpoint_sha256", "")
+            )
+            reference_path = Path(self.stage3_reference_checkpoint_path)
+            actual_reference_sha = self._distributed_sha256_file(reference_path)
+            if expected_reference_sha and expected_reference_sha != actual_reference_sha:
+                raise ValueError(
+                    "LFP reference cache was built from a different Stage2 checkpoint: "
+                    f"cache={expected_reference_sha}, configured={actual_reference_sha}."
+                )
+            if not expected_reference_sha:
+                warnings.warn(
+                    "LFP reference cache metadata has no stage2_checkpoint_sha256; "
+                    "checkpoint identity cannot be verified.",
+                    RuntimeWarning,
+                )
+            self.lfp_reference_policy_checkpoint_sha256 = actual_reference_sha
+            if int(os.getenv("RANK", "0")) == 0:
+                print(
+                    "LFP frozen Stage2 reference SHA256: "
+                    f"{self.lfp_reference_policy_checkpoint_sha256}"
+                )
+            if self.lfp_grpo_cfg.benchmark == "navsim_v2":
+                missing_adjacent = [
+                    token
+                    for token, record in self.lfp_reference_cache.records.items()
+                    if not record.get("previous_token")
+                    or record.get("previous_stage2_trajectory") is None
+                ]
+                if missing_adjacent:
+                    raise KeyError(
+                        "NAVSIM v2 LFP references require an adjacent frozen Stage2 trajectory for "
+                        f"official EC; missing for {len(missing_adjacent)} token(s), "
+                        f"first={missing_adjacent[0]!r}."
+                    )
+                self.lfp_v2_rollout_evaluator = OfficialNAVSIMV2MetricEvaluator(
+                    self.lfp_grpo_cfg,
+                    self.config.grpo_cfg.metric_cache_path,
+                )
 
     def _init_flow_sampler(self, cfg: FlowConfig):
         """Initializes components required for Flow Matching."""
@@ -2609,6 +2695,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             cfg.reference_policy_checkpoint,
             required=True,
         )
+        self.stage3_reference_checkpoint_path = str(reference_checkpoint)
         self._safe_load_reference_policy(str(reference_checkpoint))
 
         behavior_policy = None
@@ -2621,6 +2708,25 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
         if behavior_policy is not None:
             self.behavior_policy = behavior_policy
+
+    @staticmethod
+    def _sha256_file(path: Path, chunk_size: int = 8 << 20) -> str:
+        digest = hashlib.sha256()
+        with path.open("rb") as handle:
+            while True:
+                chunk = handle.read(chunk_size)
+                if not chunk:
+                    break
+                digest.update(chunk)
+        return digest.hexdigest()
+
+    @classmethod
+    def _distributed_sha256_file(cls, path: Path) -> str:
+        if not torch.distributed.is_available() or not torch.distributed.is_initialized():
+            return cls._sha256_file(path)
+        payload = [cls._sha256_file(path) if torch.distributed.get_rank() == 0 else ""]
+        torch.distributed.broadcast_object_list(payload, src=0)
+        return str(payload[0])
 
     @staticmethod
     def _is_expert_parameter_key(key: str) -> bool:
@@ -3727,6 +3833,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             and not self.config.use_last_vla
             and not self.config.use_two_expert_slots
             and not self.config.last_vla_use_residual_diffusion
+            and not self.config.use_planning_token_adapter
         ):
             return None
 
@@ -5480,6 +5587,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         deterministic: bool = False,
         action_input: Optional[BatchFeature] = None,
         allow_target_tokens: Optional[bool] = None,
+        prepared_dit_context: Optional[Dict[str, Any]] = None,
     ):
         """
         Generates the full denoising chain and the final trajectory.
@@ -5498,16 +5606,19 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 - The full denoising chain as a tensor of shape (B, K+1, H, D).
                 - The final, denormalized trajectory of shape (B, H, D).
         """
-        self._reset_planning_adapter_forward_count()
         context_allow_target_tokens = self.training if allow_target_tokens is None else bool(allow_target_tokens)
         if not context_allow_target_tokens:
             self._warn_if_expert_targets_present(action_input, "sample_chain")
-        dit_context = self._prepare_dit_context(
-            vl_features,
-            action_input,
-            training=self.training,
-            allow_target_tokens=context_allow_target_tokens,
-        )
+        if prepared_dit_context is None:
+            self._reset_planning_adapter_forward_count()
+            dit_context = self._prepare_dit_context(
+                vl_features,
+                action_input,
+                training=self.training,
+                allow_target_tokens=context_allow_target_tokens,
+            )
+        else:
+            dit_context = prepared_dit_context
         context_embeds = dit_context["context_tokens"]
         context_mean = dit_context["context_mean"]
         expert_step_condition = dit_context["expert_step_condition"]
@@ -5667,6 +5778,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         chains: torch.Tensor,
         deterministic: bool = False,
         action_input: Optional[BatchFeature] = None,
+        prepared_dit_context: Optional[Dict[str, Any]] = None,
     ) -> Normal:
         """Returns reverse-process transition distributions for a denoising chain."""
         if not self.training:
@@ -5674,7 +5786,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         B, K1, H, D = chains.shape
         num_denoising_steps = K1 - 1
         
-        dit_context = self._prepare_dit_context(vl_features, action_input, training=self.training)
+        dit_context = (
+            prepared_dit_context
+            if prepared_dit_context is not None
+            else self._prepare_dit_context(vl_features, action_input, training=self.training)
+        )
         context_embeds = dit_context["context_tokens"]
         context_mean = dit_context["context_mean"]
         expert_step_condition = dit_context["expert_step_condition"]
@@ -5756,6 +5872,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         chains: torch.Tensor,
         deterministic: bool = False,
         action_input: Optional[BatchFeature] = None,
+        prepared_dit_context: Optional[Dict[str, Any]] = None,
     ) -> torch.Tensor:
         """Calculates the log probability of a full denoising chain."""
         dist = self._chain_transition_distribution(
@@ -5765,11 +5882,30 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             chains,
             deterministic=deterministic,
             action_input=action_input,
+            prepared_dit_context=prepared_dit_context,
         )
         x_t_minus_1 = chains[:, 1:].reshape(-1, chains.shape[2], chains.shape[3])
         log_prob = dist.log_prob(x_t_minus_1)
         
         return log_prob
+
+    @staticmethod
+    def _slice_prepared_dit_context(
+        context: Optional[Dict[str, Any]],
+        start: int,
+        end: int,
+    ) -> Optional[Dict[str, Any]]:
+        if context is None:
+            return None
+        sliced: Dict[str, Any] = {}
+        for key, value in context.items():
+            if isinstance(value, torch.Tensor) and value.ndim > 0 and value.shape[0] >= end:
+                sliced[key] = value[start:end]
+            elif key == "diagnostics" and isinstance(value, dict):
+                sliced[key] = dict(value)
+            else:
+                sliced[key] = value
+        return sliced
 
     def _chain_transition_reference_kl(
         self,
@@ -5782,6 +5918,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         G: int,
         num_denoising_steps: int,
         discount: torch.Tensor,
+        current_dit_context: Optional[Dict[str, Any]] = None,
+        reference_dit_context: Optional[Dict[str, Any]] = None,
     ) -> torch.Tensor:
         """Computes exact per-transition KL(current || frozen reference) on sampled chains."""
         if not hasattr(self, "old_policy"):
@@ -5799,6 +5937,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 chains,
                 deterministic=False,
                 action_input=action_input,
+                prepared_dit_context=current_dit_context,
             )
             self.old_policy.eval()
             with torch.no_grad():
@@ -5809,6 +5948,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     chains,
                     deterministic=False,
                     action_input=action_input,
+                    prepared_dit_context=reference_dit_context,
                 )
             step_kl = kl_divergence(current_dist, reference_dist).mean(dim=(1, 2))
             step_kl = step_kl.view(total_samples, num_denoising_steps)
@@ -5834,6 +5974,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 chains[start:end],
                 deterministic=False,
                 action_input=action_input_chunk,
+                prepared_dit_context=self._slice_prepared_dit_context(current_dit_context, start, end),
             )
             with torch.no_grad():
                 reference_dist = self.old_policy._chain_transition_distribution(
@@ -5843,6 +5984,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     chains[start:end],
                     deterministic=False,
                     action_input=action_input_chunk,
+                    prepared_dit_context=self._slice_prepared_dit_context(reference_dit_context, start, end),
                 )
             step_kl = kl_divergence(current_dist, reference_dist).mean(dim=(1, 2))
             step_kl = step_kl.view(end - start, num_denoising_steps)
@@ -10817,6 +10959,265 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "bc_coeff": bc_loss.new_tensor(float(bc_coeff)),
         })
 
+    def _accumulate_lfp_epoch_energy(
+        self,
+        tokens_list: list[str],
+        energy: torch.Tensor,
+    ) -> None:
+        if energy.ndim != 1 or energy.shape[0] != len(tokens_list):
+            raise ValueError("LFP frontier energy must have one value per scene token.")
+        for token, value in zip(tokens_list, energy.detach().float().cpu().tolist()):
+            if not math.isfinite(float(value)):
+                raise ValueError(f"Non-finite LFP frontier energy for token {token!r}.")
+            stats = self._lfp_epoch_energy.setdefault(str(token), [0.0, 0.0])
+            stats[0] += float(value)
+            stats[1] += 1.0
+
+    def consume_lfp_epoch_energy(self) -> Dict[str, tuple[float, int]]:
+        output = {
+            token: (float(values[0]), int(values[1]))
+            for token, values in self._lfp_epoch_energy.items()
+        }
+        self._lfp_epoch_energy.clear()
+        return output
+
+    def lfp_runtime_state_dict(self) -> Dict[str, Any]:
+        if self.stage3_algorithm != "lfp_grpo" or self.lfp_reference_cache is None:
+            return {}
+        return {
+            "version": 1,
+            "benchmark": str(self.lfp_grpo_cfg.benchmark),
+            "reference_cache_metadata_hash": self.lfp_reference_cache.metadata_hash,
+            "reference_policy_checkpoint_sha256": self.lfp_reference_policy_checkpoint_sha256,
+            "epoch_energy": {
+                token: (float(values[0]), int(values[1]))
+                for token, values in self._lfp_epoch_energy.items()
+            },
+        }
+
+    def load_lfp_runtime_state_dict(self, state_dict: Dict[str, Any]) -> None:
+        if not state_dict:
+            return
+        if self.stage3_algorithm != "lfp_grpo" or self.lfp_reference_cache is None:
+            raise ValueError("Checkpoint contains LFP runtime state but current algorithm is not LFP-GRPO.")
+        if int(state_dict.get("version", 0)) != 1:
+            raise ValueError("Unsupported LFP runtime checkpoint version.")
+        if str(state_dict.get("benchmark")) != str(self.lfp_grpo_cfg.benchmark):
+            raise ValueError("LFP benchmark changed across checkpoint resume.")
+        if str(state_dict.get("reference_cache_metadata_hash")) != self.lfp_reference_cache.metadata_hash:
+            raise ValueError("LFP reference cache metadata changed across checkpoint resume.")
+        if str(state_dict.get("reference_policy_checkpoint_sha256", "")) != str(
+            self.lfp_reference_policy_checkpoint_sha256
+        ):
+            raise ValueError("Frozen LFP Stage2 reference checkpoint changed across resume.")
+        self._lfp_epoch_energy = {
+            str(token): [float(values[0]), float(values[1])]
+            for token, values in dict(state_dict.get("epoch_energy", {})).items()
+        }
+
+    def _evaluate_lfp_rollouts(
+        self,
+        trajectories: torch.Tensor,
+        tokens_rep: list[str],
+        metric_cache: Dict[str, Any],
+        B: int,
+        G: int,
+    ):
+        if self.lfp_metric_adapter is None:
+            raise RuntimeError("LFP metric adapter is not initialized.")
+        if self.lfp_grpo_cfg.benchmark == "navsim_v2":
+            evaluator = self.lfp_v2_rollout_evaluator
+            if evaluator is None:
+                raise RuntimeError(
+                    "NAVSIM v2 LFP training requires an official one-stage EPDMS rollout evaluator. "
+                    "The local NAVSIM v1 pdm_score backend cannot supply two_frame_extended_comfort/TLC "
+                    "and must not be used as a silent approximation."
+                )
+            if self.lfp_reference_cache is None:
+                raise RuntimeError("NAVSIM v2 LFP scoring requires the coherent reference cache.")
+            components = evaluator.score(trajectories, tokens_rep, self.lfp_reference_cache)
+            if not isinstance(components, dict):
+                raise TypeError("lfp_v2_rollout_evaluator must return a metric component dict.")
+        else:
+            _, components = self.reward_fn(
+                trajectories,
+                tokens_rep,
+                metric_cache,
+                return_components=True,
+                strict_submetrics=True,
+                required_submetrics=(
+                    "pdms",
+                    "no_at_fault_collisions",
+                    "drivable_area_compliance",
+                    "time_to_collision_within_bound",
+                    "ego_progress",
+                    "history_comfort",
+                    "driving_direction_compliance",
+                ),
+                missing_submetric_policy="error",
+                use_batched_pdm_scoring=True,
+                use_exact_array_pdm_state_conversion=True,
+                use_fast_pdm_scorer=True,
+            )
+        return self.lfp_metric_adapter.canonicalize(
+            components,
+            batch_size=B,
+            group_size=G,
+        )
+
+    def forward_lfp_grpo(
+        self,
+        vl_features: torch.Tensor,
+        action_input: BatchFeature,
+        tokens_list,
+        sample_time: Optional[int] = None,
+    ) -> BatchFeature:
+        """Runs one on-policy trajectory-level LFP-GRPO update."""
+        if self.stage3_algorithm != "lfp_grpo":
+            raise RuntimeError("forward_lfp_grpo requires stage3_algorithm='lfp_grpo'.")
+        if self.lfp_reference_cache is None or self.lfp_metric_adapter is None:
+            raise RuntimeError("LFP reference cache/metric adapter is not initialized.")
+        self.set_frozen_modules_to_eval_mode()
+        B = int(vl_features.shape[0])
+        G = int(sample_time if sample_time is not None else self.grpo_sample_time)
+        if G <= 0:
+            raise ValueError("LFP-GRPO group size must be positive.")
+        tokens = [str(token) for token in tokens_list]
+        if len(tokens) != B:
+            raise ValueError(f"Expected {B} scene tokens, got {len(tokens)}.")
+
+        vl_features_rep = vl_features.repeat_interleave(G, 0)
+        his_traj_rep = action_input.his_traj.repeat_interleave(G, 0)
+        status_feature_rep = action_input.status_feature.repeat_interleave(G, 0)
+        condition_input_rep = self._repeat_expert_action_input(action_input, G)
+
+        self._reset_planning_adapter_forward_count()
+        current_dit_context = self._prepare_dit_context(
+            vl_features_rep,
+            condition_input_rep,
+            training=True,
+            allow_target_tokens=False,
+        )
+        with torch.no_grad():
+            chains, trajectories = self.sample_chain(
+                vl_features_rep,
+                his_traj_rep,
+                status_feature_rep,
+                deterministic=False,
+                action_input=condition_input_rep,
+                allow_target_tokens=False,
+                prepared_dit_context=current_dit_context,
+            )
+
+        tokens_rep = [token for token in tokens for _ in range(G)]
+        metric_cache: Dict[str, Any] = {}
+        if self.lfp_grpo_cfg.benchmark == "navsim_v1":
+            for token in set(tokens):
+                try:
+                    path = self.metric_cache_loader.metric_cache_paths[token]
+                except KeyError as error:
+                    raise KeyError(f"Stage3 metric cache is missing token {token!r}.") from error
+                with lzma.open(path, "rb") as handle:
+                    metric_cache[token] = pickle.load(handle)
+        metrics = self._evaluate_lfp_rollouts(trajectories, tokens_rep, metric_cache, B, G)
+        reference = self.lfp_reference_cache.get(tokens, metrics.scalar.device, metrics.scalar.dtype)
+        advantage_output = compute_lfp_advantages(metrics, reference, self.lfp_grpo_cfg)
+        if bool(self.lfp_grpo_cfg.curriculum_enabled):
+            self._accumulate_lfp_epoch_energy(tokens, advantage_output.energy)
+
+        num_denoising_steps = int(chains.shape[1] - 1)
+        discount = self._stage3_discount(
+            num_denoising_steps,
+            device=chains.device,
+            dtype=metrics.scalar.dtype,
+        )
+        log_probs = self.get_logprobs(
+            vl_features_rep,
+            his_traj_rep,
+            status_feature_rep,
+            chains,
+            deterministic=False,
+            action_input=condition_input_rep,
+            prepared_dit_context=current_dit_context,
+        )
+        trajectory_logp = self._reduce_chain_logprobs(log_probs, B, G, num_denoising_steps, discount)
+        policy_loss = trajectory_reinforce_loss(advantage_output.advantages, trajectory_logp)
+
+        self.old_policy.eval()
+        with torch.no_grad():
+            reference_dit_context = self.old_policy._prepare_dit_context(
+                vl_features_rep,
+                condition_input_rep,
+                training=False,
+                allow_target_tokens=False,
+            )
+        exact_kl = self._chain_transition_reference_kl(
+            vl_features_rep,
+            his_traj_rep,
+            status_feature_rep,
+            chains,
+            condition_input_rep,
+            B,
+            G,
+            num_denoising_steps,
+            discount,
+            current_dit_context=current_dit_context,
+            reference_dit_context=reference_dit_context,
+        ).to(policy_loss)
+        kl_coeff = float(self.lfp_grpo_cfg.reference_kl_coeff)
+        total_loss = policy_loss + kl_coeff * exact_kl
+        if not torch.isfinite(total_loss):
+            raise FloatingPointError(
+                f"Non-finite LFP loss: policy={policy_loss.detach().item()}, kl={exact_kl.detach().item()}."
+            )
+
+        diagnostics = dict(advantage_output.diagnostics)
+        planning_diagnostics = current_dit_context.get("diagnostics", {})
+        for key in (
+            "planning_token_norm",
+            "planning_token_pairwise_cosine",
+            "planning_condition_keep_ratio",
+            "planning_context_gate",
+            "planning_adapter_forward_count",
+        ):
+            value = planning_diagnostics.get(key)
+            if isinstance(value, torch.Tensor):
+                diagnostics[key] = value.detach().float().mean().to(total_loss)
+        diagnostics.update(
+            {
+                "lfp_policy_loss": policy_loss.detach(),
+                "lfp_exact_kl": exact_kl.detach(),
+                "lfp_reference_kl_coeff": total_loss.new_tensor(kl_coeff),
+                "lfp_trajectory_logprob_mean": trajectory_logp.detach().mean(),
+                "scene_stage_type": total_loss.new_tensor(
+                    float(
+                        sum(
+                            {"first": 1, "followup": 2}.get(
+                                str(self.lfp_reference_cache.records[token].get("scene_stage_type", "unknown")),
+                                0,
+                            )
+                            for token in tokens
+                        )
+                        / max(len(tokens), 1)
+                    )
+                ),
+            }
+        )
+        zero = total_loss.new_zeros(())
+        return BatchFeature(
+            data={
+                "loss": total_loss,
+                "reward": metrics.scalar.mean().detach(),
+                "policy_loss": policy_loss,
+                "bc_loss": zero,
+                "bc_coeff": zero,
+                "reference_kl_loss": exact_kl,
+                "reference_kl_coeff": total_loss.new_tensor(kl_coeff),
+                "trajectory_logp": trajectory_logp.detach().mean(),
+                **diagnostics,
+            }
+        )
+
     def forward_grpo(
         self,
         vl_features: torch.Tensor,
@@ -10828,6 +11229,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         use_bc_loss: bool = True
     ) -> BatchFeature:
         """Computes the Diffusion-GRPO loss."""
+        if self.stage3_algorithm == "lfp_grpo":
+            return self.forward_lfp_grpo(
+                vl_features,
+                action_input,
+                tokens_list,
+                sample_time=sample_time,
+            )
         self.set_frozen_modules_to_eval_mode()
         B = vl_features.shape[0]
         G = int(sample_time if sample_time is not None else getattr(self, "grpo_sample_time", 8))

@@ -42,6 +42,7 @@ DRY_RUN="${DRY_RUN:-0}"
 # Stage 3 RL hyperparameters for the Safe DiffGRPO continuation.
 STAGE3_LR="${LR:-1e-4}"
 STAGE3_OBJECTIVE="${STAGE3_OBJECTIVE:-none}"
+STAGE3_ALGORITHM="${STAGE3_ALGORITHM:-legacy}"
 STAGE3_DIT_DROPOUT="${DIT_DROPOUT:-0.0}"
 STAGE3_MAX_EPOCHS="${MAX_EPOCHS:-20}"
 STAGE3_BATCH_SIZE="${BATCH_SIZE:-8}"
@@ -71,6 +72,8 @@ STAGE3_GRPO_BEHAVIOR_POLICY_SAMPLE="${GRPO_BEHAVIOR_POLICY_SAMPLE:-true}"
 STAGE3_GRPO_ADVANTAGE_MODE="${GRPO_ADVANTAGE_MODE:-safe_zscore}"
 STAGE3_GRPO_NORMALIZE_ADVANTAGE_BATCH="${GRPO_NORMALIZE_ADVANTAGE_BATCH:-false}"
 STAGE3_GRPO_ADVANTAGE_CLIP_ABS="${GRPO_ADVANTAGE_CLIP_ABS:-0.0}"
+STAGE3_GRPO_USE_DYNAMIC_GROUP_WEIGHT="${GRPO_USE_DYNAMIC_GROUP_WEIGHT:-true}"
+STAGE3_GRPO_USE_DIVERSITY_REWARD="${GRPO_USE_DIVERSITY_REWARD:-false}"
 STAGE3_GRPO_HARD_GATE_TTC="${GRPO_HARD_GATE_TTC:-false}"
 STAGE3_GRPO_HARD_GATE_DDC="${GRPO_HARD_GATE_DDC:-false}"
 STAGE3_GRPO_REWARD_MODE="${GRPO_REWARD_MODE:-safe_diffgrpo}"
@@ -281,11 +284,26 @@ STAGE3_OFFLINE_RL_PDM_SHADOW_MAX_SAMPLES="${OFFLINE_RL_PDM_SHADOW_MAX_SAMPLES:-4
 STAGE3_OFFLINE_RL_PDM_SHADOW_MAX_ABS_DIFF="${OFFLINE_RL_PDM_SHADOW_MAX_ABS_DIFF:-0.0}"
 STAGE3_OFFLINE_RL_STRICT_REWARD_SUBMETRICS="${OFFLINE_RL_STRICT_REWARD_SUBMETRICS:-true}"
 STAGE3_OFFLINE_RL_MISSING_SUBMETRIC_POLICY="${OFFLINE_RL_MISSING_SUBMETRIC_POLICY:-error}"
+STAGE3_OFFLINE_RL_BC_LOSS_WEIGHT="${OFFLINE_RL_BC_LOSS_WEIGHT:-0.05}"
+STAGE3_OFFLINE_RL_BC_LOSS_WEIGHT_START="${OFFLINE_RL_BC_LOSS_WEIGHT_START:-0.05}"
+STAGE3_OFFLINE_RL_BC_LOSS_WEIGHT_END="${OFFLINE_RL_BC_LOSS_WEIGHT_END:-0.05}"
+STAGE3_USE_PLANNING_TOKEN_ADAPTER="${USE_PLANNING_TOKEN_ADAPTER:-false}"
+STAGE3_PLANNING_NUM_TOKENS="${PLANNING_NUM_TOKENS:-16}"
+STAGE3_PLANNING_NUM_HEADS="${PLANNING_NUM_HEADS:-8}"
+STAGE3_PLANNING_CONDITION_LAYERS="${PLANNING_CONDITION_LAYERS:-cross_attention}"
+STAGE3_PLANNING_GATE_INIT="${PLANNING_GATE_INIT:-0.05}"
+STAGE3_PLANNING_CONTEXT_GATE_INIT="${PLANNING_CONTEXT_GATE_INIT:-0.05}"
+STAGE3_PLANNING_CONDITION_DROPOUT="${PLANNING_CONDITION_DROPOUT:-0.10}"
 STAGE3_USE_FS_NORM="${USE_FS_NORM:-false}"
 STAGE3_FS_NORM_STATS_PATH="${FS_NORM_STATS_PATH:-}"
 STAGE3_FS_NORM_USE_ROBUST="${FS_NORM_USE_ROBUST:-false}"
 STAGE3_FS_NORM_CLIP="${FS_NORM_CLIP:-5.0}"
+STAGE3_FS_NORM_TARGET_CLIP="${FS_NORM_TARGET_CLIP:--1.0}"
+STAGE3_FS_NORM_OUTPUT_CLIP="${FS_NORM_OUTPUT_CLIP:--1.0}"
+STAGE3_FS_NORM_OUTPUT_CLIP_MODE="${FS_NORM_OUTPUT_CLIP_MODE:-scalar}"
+STAGE3_FS_NORM_MIN_VERSION="${FS_NORM_MIN_VERSION:-1}"
 STAGE3_X0_AUX_WEIGHT="${X0_AUX_WEIGHT:-0.0}"
+STAGE3_DELTA_AUX_WEIGHT="${DELTA_AUX_WEIGHT:-0.0}"
 STAGE3_GEO_AUX_WEIGHT="${GEO_AUX_WEIGHT:-0.0}"
 STAGE3_X0_AUX_LOW_NOISE_FRAC="${X0_AUX_LOW_NOISE_FRAC:-0.5}"
 STAGE3_GEO_CURVATURE_WEIGHT="${GEO_CURVATURE_WEIGHT:-1.0}"
@@ -293,6 +311,38 @@ STAGE3_GEO_REVERSE_WEIGHT="${GEO_REVERSE_WEIGHT:-1.0}"
 STAGE3_GEO_TAIL_REVERSE_WEIGHT="${GEO_TAIL_REVERSE_WEIGHT:-2.0}"
 STAGE3_GEO_EARLY_KINK_WEIGHT="${GEO_EARLY_KINK_WEIGHT:-2.0}"
 STAGE3_GEO_JERK_WEIGHT="${GEO_JERK_WEIGHT:-0.2}"
+STAGE3_TRAJECTORY_AUX_WEIGHT="${TRAJECTORY_AUX_WEIGHT:-0.0}"
+STAGE3_FEASIBILITY_AUX_WEIGHT="${FEASIBILITY_AUX_WEIGHT:-0.0}"
+
+LFP_BENCHMARK="${LFP_BENCHMARK:-navsim_v1}"
+LFP_REFERENCE_CACHE_PATH="${LFP_REFERENCE_CACHE_PATH:-}"
+LFP_CURRICULUM_STATE_PATH="${LFP_CURRICULUM_STATE_PATH:-}"
+LFP_V2_NAVSIM_ROOT="${LFP_V2_NAVSIM_ROOT:-}"
+LFP_V2_CONFIG_DIR="${LFP_V2_CONFIG_DIR:-}"
+LFP_V2_CONFIG_NAME="${LFP_V2_CONFIG_NAME:-default_run_pdm_score}"
+LFP_V2_EVALUATOR_TIMEOUT_S="${LFP_V2_EVALUATOR_TIMEOUT_S:-600}"
+LFP_DDC_GT_TOLERANCE="${LFP_DDC_GT_TOLERANCE:-0.01}"
+LFP_EP_REFERENCE_TOLERANCE="${LFP_EP_REFERENCE_TOLERANCE:-0.02}"
+LFP_REFERENCE_MARGIN_WEIGHT="${LFP_REFERENCE_MARGIN_WEIGHT:-0.20}"
+LFP_REFERENCE_MARGIN_SCALE="${LFP_REFERENCE_MARGIN_SCALE:-0.05}"
+LFP_PARETO_GATE_ENABLED="${LFP_PARETO_GATE_ENABLED:-true}"
+LFP_PROGRESS_GATE_ENABLED="${LFP_PROGRESS_GATE_ENABLED:-true}"
+LFP_GLOBAL_STD_FLOOR="${LFP_GLOBAL_STD_FLOOR:-0.05}"
+LFP_ADVANTAGE_CLIP="${LFP_ADVANTAGE_CLIP:-3.0}"
+LFP_CURRICULUM_ENABLED="${LFP_CURRICULUM_ENABLED:-true}"
+LFP_CURRICULUM_WARMUP_EPOCHS="${LFP_CURRICULUM_WARMUP_EPOCHS:-1}"
+LFP_FRONTIER_FAST_EMA="${LFP_FRONTIER_FAST_EMA:-0.80}"
+LFP_FRONTIER_SLOW_EMA="${LFP_FRONTIER_SLOW_EMA:-0.98}"
+LFP_FRONTIER_PROGRESS_WEIGHT="${LFP_FRONTIER_PROGRESS_WEIGHT:-0.50}"
+LFP_FRONTIER_PRIORITY_EXPONENT="${LFP_FRONTIER_PRIORITY_EXPONENT:-0.50}"
+LFP_FRONTIER_UNIFORM_RATIO="${LFP_FRONTIER_UNIFORM_RATIO:-0.20}"
+LFP_FRONTIER_PRIORITY_EPS="${LFP_FRONTIER_PRIORITY_EPS:-1e-3}"
+LFP_FRONTIER_PRIORITY_QUANTILE_CAP="${LFP_FRONTIER_PRIORITY_QUANTILE_CAP:-0.95}"
+LFP_V2_REQUIRE_TLC="${LFP_V2_REQUIRE_TLC:-true}"
+LFP_ENABLED=false
+if [[ "${STAGE3_ALGORITHM}" == "lfp_grpo" ]]; then
+  LFP_ENABLED=true
+fi
 STAGE3_TRAIN_TEST_SPLIT="navtrain"
 STAGE3_EXPERIMENT_NAME="training_recogdrive_agent"
 
@@ -355,6 +405,16 @@ if [[ "${STAGE3_USE_FS_NORM}" == "true" && ! -f "${STAGE3_FS_NORM_STATS_PATH}" ]
   echo "FS_NORM_STATS_PATH must exist when USE_FS_NORM=true: ${STAGE3_FS_NORM_STATS_PATH}" >&2
   exit 2
 fi
+if [[ "${STAGE3_ALGORITHM}" == "lfp_grpo" && ! -f "${LFP_REFERENCE_CACHE_PATH}" ]]; then
+  echo "LFP_REFERENCE_CACHE_PATH must exist for LFP-GRPO: ${LFP_REFERENCE_CACHE_PATH}" >&2
+  exit 2
+fi
+if [[ "${STAGE3_ALGORITHM}" == "lfp_grpo" && "${LFP_BENCHMARK}" == "navsim_v2" ]]; then
+  if [[ -z "${LFP_V2_NAVSIM_ROOT}" || ! -f "${LFP_V2_NAVSIM_ROOT}/navsim/evaluate/pdm_score.py" ]]; then
+    echo "LFP_V2_NAVSIM_ROOT must point to the official NAVSIM v2 source checkout" >&2
+    exit 2
+  fi
+fi
 
 "${PYTHON_BIN}" - <<PY
 import sys
@@ -389,6 +449,34 @@ HYDRA_ARGS=(
   "agent=recogdrive_agent"
   "agent.lr=${STAGE3_LR}"
   "agent.stage3_objective=${STAGE3_OBJECTIVE}"
+  "agent.stage3_algorithm=${STAGE3_ALGORITHM}"
+  "agent.lfp_grpo_cfg.enabled=${LFP_ENABLED}"
+  "agent.lfp_grpo_cfg.benchmark=${LFP_BENCHMARK}"
+  "agent.lfp_grpo_cfg.reference_cache_path=${LFP_REFERENCE_CACHE_PATH}"
+  "agent.lfp_grpo_cfg.v2_official_navsim_root=${LFP_V2_NAVSIM_ROOT}"
+  "agent.lfp_grpo_cfg.v2_official_config_dir=${LFP_V2_CONFIG_DIR}"
+  "agent.lfp_grpo_cfg.v2_official_config_name=${LFP_V2_CONFIG_NAME}"
+  "agent.lfp_grpo_cfg.v2_evaluator_timeout_s=${LFP_V2_EVALUATOR_TIMEOUT_S}"
+  "agent.lfp_grpo_cfg.ddc_gt_tolerance=${LFP_DDC_GT_TOLERANCE}"
+  "agent.lfp_grpo_cfg.v2_require_tlc=${LFP_V2_REQUIRE_TLC}"
+  "agent.lfp_grpo_cfg.ep_reference_tolerance=${LFP_EP_REFERENCE_TOLERANCE}"
+  "agent.lfp_grpo_cfg.reference_margin_weight=${LFP_REFERENCE_MARGIN_WEIGHT}"
+  "agent.lfp_grpo_cfg.reference_margin_scale=${LFP_REFERENCE_MARGIN_SCALE}"
+  "agent.lfp_grpo_cfg.pareto_gate_enabled=${LFP_PARETO_GATE_ENABLED}"
+  "agent.lfp_grpo_cfg.progress_gate_enabled=${LFP_PROGRESS_GATE_ENABLED}"
+  "agent.lfp_grpo_cfg.global_std_floor=${LFP_GLOBAL_STD_FLOOR}"
+  "agent.lfp_grpo_cfg.advantage_clip=${LFP_ADVANTAGE_CLIP}"
+  "agent.lfp_grpo_cfg.curriculum_enabled=${LFP_CURRICULUM_ENABLED}"
+  "agent.lfp_grpo_cfg.curriculum_warmup_epochs=${LFP_CURRICULUM_WARMUP_EPOCHS}"
+  "agent.lfp_grpo_cfg.frontier_fast_ema=${LFP_FRONTIER_FAST_EMA}"
+  "agent.lfp_grpo_cfg.frontier_slow_ema=${LFP_FRONTIER_SLOW_EMA}"
+  "agent.lfp_grpo_cfg.frontier_progress_weight=${LFP_FRONTIER_PROGRESS_WEIGHT}"
+  "agent.lfp_grpo_cfg.frontier_priority_exponent=${LFP_FRONTIER_PRIORITY_EXPONENT}"
+  "agent.lfp_grpo_cfg.frontier_uniform_ratio=${LFP_FRONTIER_UNIFORM_RATIO}"
+  "agent.lfp_grpo_cfg.frontier_priority_eps=${LFP_FRONTIER_PRIORITY_EPS}"
+  "agent.lfp_grpo_cfg.frontier_priority_quantile_cap=${LFP_FRONTIER_PRIORITY_QUANTILE_CAP}"
+  "agent.lfp_grpo_cfg.frontier_state_path=${LFP_CURRICULUM_STATE_PATH}"
+  "agent.lfp_grpo_cfg.reference_kl_coeff=${STAGE3_REFERENCE_KL_COEFF}"
   "agent.dit_dropout=${STAGE3_DIT_DROPOUT}"
   "agent.vlm_path=${VLM_PATH}"
   "agent.cam_type=single"
@@ -418,6 +506,8 @@ HYDRA_ARGS=(
   "agent.grpo_advantage_mode=${STAGE3_GRPO_ADVANTAGE_MODE}"
   "agent.grpo_normalize_advantage_batch=${STAGE3_GRPO_NORMALIZE_ADVANTAGE_BATCH}"
   "agent.grpo_advantage_clip_abs=${STAGE3_GRPO_ADVANTAGE_CLIP_ABS}"
+  "agent.grpo_use_dynamic_group_weight=${STAGE3_GRPO_USE_DYNAMIC_GROUP_WEIGHT}"
+  "agent.grpo_use_diversity_reward=${STAGE3_GRPO_USE_DIVERSITY_REWARD}"
   "agent.grpo_hard_gate_ttc=${STAGE3_GRPO_HARD_GATE_TTC}"
   "agent.grpo_hard_gate_ddc=${STAGE3_GRPO_HARD_GATE_DDC}"
   "agent.grpo_reward_mode=${STAGE3_GRPO_REWARD_MODE}"
@@ -603,6 +693,9 @@ HYDRA_ARGS=(
   "agent.offline_rl_grpo_self_imitation_dac_min_absolute=${STAGE3_GRPO_SELF_IMITATION_DAC_MIN_ABSOLUTE}"
   "agent.offline_rl_grpo_self_imitation_ttc_min_absolute=${STAGE3_GRPO_SELF_IMITATION_TTC_MIN_ABSOLUTE}"
   "agent.offline_rl_grpo_self_imitation_ddc_min_absolute=${STAGE3_GRPO_SELF_IMITATION_DDC_MIN_ABSOLUTE}"
+  "agent.offline_rl_bc_loss_weight=${STAGE3_OFFLINE_RL_BC_LOSS_WEIGHT}"
+  "agent.offline_rl_bc_loss_weight_start=${STAGE3_OFFLINE_RL_BC_LOSS_WEIGHT_START}"
+  "agent.offline_rl_bc_loss_weight_end=${STAGE3_OFFLINE_RL_BC_LOSS_WEIGHT_END}"
   "agent.cache_mode=False"
   "agent.vlm_type=internvl"
   "agent.checkpoint_path=${IL_CHECKPOINT}"
@@ -628,11 +721,23 @@ HYDRA_ARGS=(
   "agent.two_expert_prefusion_condition_dropout=${STAGE3_TWO_EXPERT_PREFUSION_CONDITION_DROPOUT}"
   "agent.two_expert_prefusion_scale_init=${STAGE3_TWO_EXPERT_PREFUSION_SCALE_INIT}"
   "agent.two_expert_prefusion_zero_init=${STAGE3_TWO_EXPERT_PREFUSION_ZERO_INIT}"
+  "agent.use_planning_token_adapter=${STAGE3_USE_PLANNING_TOKEN_ADAPTER}"
+  "agent.planning_num_tokens=${STAGE3_PLANNING_NUM_TOKENS}"
+  "agent.planning_num_heads=${STAGE3_PLANNING_NUM_HEADS}"
+  "agent.planning_condition_layers=${STAGE3_PLANNING_CONDITION_LAYERS}"
+  "agent.planning_gate_init=${STAGE3_PLANNING_GATE_INIT}"
+  "agent.planning_context_gate_init=${STAGE3_PLANNING_CONTEXT_GATE_INIT}"
+  "agent.planning_condition_dropout=${STAGE3_PLANNING_CONDITION_DROPOUT}"
   "agent.use_fs_norm=${STAGE3_USE_FS_NORM}"
   "agent.fs_norm_stats_path=${STAGE3_FS_NORM_STATS_PATH}"
   "agent.fs_norm_use_robust=${STAGE3_FS_NORM_USE_ROBUST}"
   "agent.fs_norm_clip=${STAGE3_FS_NORM_CLIP}"
+  "agent.fs_norm_target_clip=${STAGE3_FS_NORM_TARGET_CLIP}"
+  "agent.fs_norm_output_clip=${STAGE3_FS_NORM_OUTPUT_CLIP}"
+  "agent.fs_norm_output_clip_mode=${STAGE3_FS_NORM_OUTPUT_CLIP_MODE}"
+  "agent.fs_norm_min_version=${STAGE3_FS_NORM_MIN_VERSION}"
   "agent.x0_aux_weight=${STAGE3_X0_AUX_WEIGHT}"
+  "agent.delta_aux_weight=${STAGE3_DELTA_AUX_WEIGHT}"
   "agent.geo_aux_weight=${STAGE3_GEO_AUX_WEIGHT}"
   "agent.x0_aux_low_noise_frac=${STAGE3_X0_AUX_LOW_NOISE_FRAC}"
   "agent.geo_curvature_weight=${STAGE3_GEO_CURVATURE_WEIGHT}"
@@ -640,6 +745,8 @@ HYDRA_ARGS=(
   "agent.geo_tail_reverse_weight=${STAGE3_GEO_TAIL_REVERSE_WEIGHT}"
   "agent.geo_early_kink_weight=${STAGE3_GEO_EARLY_KINK_WEIGHT}"
   "agent.geo_jerk_weight=${STAGE3_GEO_JERK_WEIGHT}"
+  "agent.trajectory_aux_weight=${STAGE3_TRAJECTORY_AUX_WEIGHT}"
+  "agent.feasibility_aux_weight=${STAGE3_FEASIBILITY_AUX_WEIGHT}"
   "agent.metric_cache_path=${METRIC_CACHE_DIR}"
   "agent.reference_policy_checkpoint=${IL_CHECKPOINT}"
   "trainer.params.max_epochs=${STAGE3_MAX_EPOCHS}"
@@ -654,6 +761,10 @@ HYDRA_ARGS=(
   "train_test_split=${STAGE3_TRAIN_TEST_SPLIT}"
   "force_cache_computation=False"
 )
+if [[ "${STAGE3_ALGORITHM}" == "lfp_grpo" ]]; then
+  # Every torchrun rank must resolve the same Hydra directory.
+  HYDRA_ARGS+=("experiment_uid=${RUN_NAME}")
+fi
 if [[ -n "${STAGE3_TRAINER_GRADIENT_CLIP_VAL}" ]]; then
   HYDRA_ARGS+=("trainer.params.gradient_clip_val=${STAGE3_TRAINER_GRADIENT_CLIP_VAL}")
 elif [[ "${STAGE3_OBJECTIVE}" == "grpo_replay" ]]; then
@@ -706,6 +817,10 @@ if [[ -n "${MAX_SCENES:-}" ]]; then
   HYDRA_ARGS+=("train_test_split.scene_filter.max_scenes=${MAX_SCENES}")
 fi
 
+if (($# > 0)); then
+  HYDRA_ARGS+=("$@")
+fi
+
 CMD=(
   "${TORCHRUN_BIN}"
   "--nnodes=${NODES}"
@@ -731,6 +846,9 @@ CMD=(
   echo "ddp_strategy=${DDP_STRATEGY}"
   echo "stage3_lr=${STAGE3_LR}"
   echo "stage3_objective=${STAGE3_OBJECTIVE}"
+  echo "stage3_algorithm=${STAGE3_ALGORITHM}"
+  echo "lfp_benchmark=${LFP_BENCHMARK}"
+  echo "lfp_reference_cache_path=${LFP_REFERENCE_CACHE_PATH}"
   echo "stage3_dit_dropout=${STAGE3_DIT_DROPOUT}"
   echo "stage3_max_epochs=${STAGE3_MAX_EPOCHS}"
   echo "stage3_batch_size=${STAGE3_BATCH_SIZE}"

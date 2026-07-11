@@ -35,6 +35,7 @@ from .recogdrive_diffusion_planner import (
     ReCogDriveDiffusionPlanner,
     ReCogDriveDiffusionPlannerConfig,
 )
+from .stage3_lfp_grpo import coerce_lfp_grpo_config
 from .vlm_lora_utils import (
     audit_actual_trainable_lora_modules,
     audit_lora_target_modules,
@@ -111,6 +112,8 @@ class ReCogDriveAgent(AbstractAgent):
         lr: float = 1e-4,
         grpo: bool = False,
         stage3_objective: Literal["none", "grpo", "grpo_replay", "dpsi", "awac_iql", "hybrid"] = "none",
+        stage3_algorithm: Literal["legacy", "lfp_grpo"] = "legacy",
+        lfp_grpo_cfg: Optional[Dict[str, Any]] = None,
         grpo_sample_time: int = 8,
         grpo_denoised_clip_value: float = 1.0,
         grpo_eval_randn_clip_value: float = 1.0,
@@ -136,6 +139,8 @@ class ReCogDriveAgent(AbstractAgent):
         grpo_advantage_mode: Literal["safe_zscore", "safe_rpp"] = "safe_zscore",
         grpo_normalize_advantage_batch: bool = False,
         grpo_advantage_clip_abs: float = 0.0,
+        grpo_use_dynamic_group_weight: bool = True,
+        grpo_use_diversity_reward: bool = False,
         grpo_hard_gate_ttc: bool = False,
         grpo_hard_gate_ddc: bool = False,
         grpo_reward_mode: Literal["safe_diffgrpo", "core_pareto", "feasible_pareto"] = "safe_diffgrpo",
@@ -731,6 +736,17 @@ class ReCogDriveAgent(AbstractAgent):
                 "stage3_objective must be one of 'none', 'grpo', 'grpo_replay', 'dpsi', 'awac_iql', or 'hybrid'."
             )
         resolved_stage3_objective = str(stage3_objective)
+        if str(stage3_algorithm) not in {"legacy", "lfp_grpo"}:
+            raise ValueError("stage3_algorithm must be 'legacy' or 'lfp_grpo'.")
+        self.stage3_algorithm = str(stage3_algorithm)
+        self.lfp_grpo_cfg = coerce_lfp_grpo_config(lfp_grpo_cfg)
+        if self.stage3_algorithm == "lfp_grpo":
+            if not self.lfp_grpo_cfg.enabled:
+                raise ValueError("stage3_algorithm='lfp_grpo' requires lfp_grpo_cfg.enabled=true.")
+            if resolved_stage3_objective == "grpo_replay":
+                raise ValueError("stage3_algorithm='lfp_grpo' is incompatible with stage3_objective='grpo_replay'.")
+            resolved_stage3_objective = "grpo"
+            grpo = True
         if resolved_stage3_objective == "none" and bool(grpo):
             resolved_stage3_objective = "grpo"
         if resolved_stage3_objective in {"grpo", "grpo_replay"}:
@@ -769,6 +785,8 @@ class ReCogDriveAgent(AbstractAgent):
         self.grpo_advantage_mode = str(grpo_advantage_mode)
         self.grpo_normalize_advantage_batch = bool(grpo_normalize_advantage_batch)
         self.grpo_advantage_clip_abs = float(grpo_advantage_clip_abs)
+        self.grpo_use_dynamic_group_weight = bool(grpo_use_dynamic_group_weight)
+        self.grpo_use_diversity_reward = bool(grpo_use_diversity_reward)
         self.grpo_hard_gate_ttc = bool(grpo_hard_gate_ttc)
         self.grpo_hard_gate_ddc = bool(grpo_hard_gate_ddc)
         self.grpo_reward_mode = str(grpo_reward_mode)
@@ -1615,6 +1633,17 @@ class ReCogDriveAgent(AbstractAgent):
             )
         if self.last_vla_train_vlm_lora and self.cache_hidden_state:
             raise ValueError("VLM LoRA training requires no-cache/online VLM forward or regenerated hidden cache.")
+        if self.stage3_algorithm == "lfp_grpo":
+            conflicts = []
+            if self.train_backbone:
+                conflicts.append("train_backbone")
+            if self.last_vla_train_vlm_lora:
+                conflicts.append("last_vla_train_vlm_lora")
+            if conflicts:
+                raise ValueError(
+                    "LFP-GRPO freezes the VLM backbone and does not train VLM LoRA; conflicting fields: "
+                    + ", ".join(conflicts)
+                )
         self._validate_last_vla_lora_config()
 
         local_rank = int(os.getenv("LOCAL_RANK", "0"))
@@ -1661,6 +1690,8 @@ class ReCogDriveAgent(AbstractAgent):
             )
 
         cfg.vlm_size = self.vlm_size
+        cfg.stage3_algorithm = self.stage3_algorithm
+        cfg.lfp_grpo_cfg = self.lfp_grpo_cfg
         cfg.planner_dim = cfg.input_embedding_dim
         cfg.use_expert_features = self.use_expert_features
         cfg.expert_feature_source = self.expert_feature_source
@@ -2171,6 +2202,8 @@ class ReCogDriveAgent(AbstractAgent):
             cfg.grpo_cfg.reference_kl_coeff = self.reference_kl_coeff
             cfg.grpo_cfg.reference_kl_chunk_size = self.reference_kl_chunk_size
             cfg.grpo_cfg.use_gspo_ratio = self.grpo_use_gspo_ratio
+            cfg.grpo_cfg.use_dynamic_group_weight = self.grpo_use_dynamic_group_weight
+            cfg.grpo_cfg.use_diversity_reward = self.grpo_use_diversity_reward
             cfg.grpo_cfg.gspo_clip_low = self.grpo_gspo_clip_low
             cfg.grpo_cfg.gspo_clip_high = self.grpo_gspo_clip_high
             cfg.grpo_cfg.behavior_policy_sync_interval = self.grpo_behavior_policy_sync_interval
@@ -2719,6 +2752,16 @@ class ReCogDriveAgent(AbstractAgent):
                 hidden_anchor_step_index=hidden_anchor_step_index,
             )
             return predictions
+        elif self.training and self.stage3_algorithm == "lfp_grpo":
+            action_inputs = BatchFeature(
+                data={**action_input_data, "action": targets["trajectory"].to(device=action_device, dtype=model_dtype)}
+            )
+            return self.action_head.forward_lfp_grpo(
+                last_hidden_state,
+                action_inputs,
+                tokens_list,
+                sample_time=self.grpo_sample_time,
+            )
         elif self.training and stage3_objective == "grpo":
             action_inputs = BatchFeature(
                 data={**action_input_data, "action": targets["trajectory"].to(device=action_device, dtype=model_dtype)}

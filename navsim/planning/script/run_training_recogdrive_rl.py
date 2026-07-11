@@ -18,6 +18,10 @@ from navsim.agents.recogdrive.recogdrive_features import (
     assert_real_expert_cache_for_training,
     stack_optional_expert_features,
 )
+from navsim.agents.recogdrive.stage3_frontier_curriculum import (
+    DistributedFrontierSampler,
+    LFPFrontierCurriculumCallback,
+)
 import torch
 import torch.nn.utils.rnn as rnn_utils
 from typing import List, Dict
@@ -51,6 +55,10 @@ class TokenizedDataset(torch.utils.data.Dataset):
         if tokens is None:
             raise AttributeError("TokenizedDataset requires an online Dataset with _scene_loader.tokens.")
         self._tokens = tokens
+
+    @property
+    def tokens(self) -> List[str]:
+        return [str(token) for token in self._tokens]
 
     def __len__(self) -> int:
         return len(self._dataset)
@@ -267,6 +275,18 @@ def build_datasets(cfg: DictConfig, agent: AbstractAgent) -> Tuple[Dataset, Data
     return train_data, val_data
 
 
+def _dataset_tokens_in_index_order(dataset: torch.utils.data.Dataset) -> List[str]:
+    tokens = getattr(dataset, "tokens", None)
+    if tokens is None:
+        tokens = getattr(dataset, "_tokens", None)
+    if tokens is None:
+        raise AttributeError("LFP frontier sampling requires dataset tokens in index order.")
+    tokens = [str(token) for token in tokens]
+    if len(tokens) != len(dataset):
+        raise ValueError(f"Dataset exposes {len(tokens)} tokens for {len(dataset)} samples.")
+    return tokens
+
+
 @hydra.main(config_path=CONFIG_PATH, config_name=CONFIG_NAME, version_base=None)
 def main(cfg: DictConfig) -> None:
     """
@@ -339,7 +359,50 @@ def main(cfg: DictConfig) -> None:
         val_data = TokenizedDataset(val_data)
 
     logger.info("Building Datasets")
-    train_dataloader = DataLoader(train_data, collate_fn=custom_collate_fn,  **cfg.dataloader.params, shuffle=True)
+    frontier_sampler = None
+    frontier_callback = None
+    lfp_cfg = getattr(agent, "lfp_grpo_cfg", None)
+    use_frontier_sampler = (
+        getattr(agent, "stage3_algorithm", "legacy") == "lfp_grpo"
+        and lfp_cfg is not None
+        and bool(lfp_cfg.curriculum_enabled)
+    )
+    if use_frontier_sampler:
+        train_tokens = _dataset_tokens_in_index_order(train_data)
+        initial_weights = torch.full((len(train_data),), 1.0 / len(train_data), dtype=torch.float64)
+        frontier_sampler = DistributedFrontierSampler(
+            len(train_data),
+            initial_weights,
+            num_replicas=world_size,
+            rank=rank,
+            seed=int(cfg.seed),
+            warmup_epochs=int(lfp_cfg.curriculum_warmup_epochs),
+            uniform_ratio=float(lfp_cfg.frontier_uniform_ratio),
+        )
+        train_dataloader = DataLoader(
+            train_data,
+            collate_fn=custom_collate_fn,
+            **cfg.dataloader.params,
+            sampler=frontier_sampler,
+            shuffle=False,
+        )
+        reference_cache = getattr(agent.action_head, "lfp_reference_cache", None)
+        if reference_cache is None:
+            raise RuntimeError("LFP frontier sampling requires an initialized reference cache.")
+        frontier_callback = LFPFrontierCurriculumCallback(
+            sampler=frontier_sampler,
+            dataset_tokens=train_tokens,
+            cfg=lfp_cfg,
+            reference_cache_metadata_hash=reference_cache.metadata_hash,
+            benchmark=str(lfp_cfg.benchmark),
+        )
+    else:
+        train_dataloader = DataLoader(
+            train_data,
+            collate_fn=custom_collate_fn,
+            **cfg.dataloader.params,
+            shuffle=True,
+        )
     logger.info("Num training samples: %d", len(train_data))
     val_dataloader = DataLoader(val_data, collate_fn=custom_collate_fn, **cfg.dataloader.params, shuffle=False)
     logger.info("Num validation samples: %d", len(val_data))
@@ -349,7 +412,7 @@ def main(cfg: DictConfig) -> None:
     checkpoint_every_n_epochs = int(checkpoint_cfg.get("every_n_epochs", 1) or 0)
     checkpoint_every_n_train_steps = int(checkpoint_cfg.get("every_n_train_steps", 0) or 0)
     checkpoint_save_on_train_epoch_end = checkpoint_cfg.get("save_on_train_epoch_end", True)
-    callbacks = []
+    callbacks = [frontier_callback] if frontier_callback is not None else []
     if checkpoint_every_n_epochs > 0:
         callbacks.append(
             pl.callbacks.ModelCheckpoint(
@@ -375,14 +438,22 @@ def main(cfg: DictConfig) -> None:
             ReCogDriveTrainingProgressCallback(),
         ]
     )
-    trainer = pl.Trainer(**cfg.trainer.params, callbacks=callbacks)
+    trainer_params = dict(cfg.trainer.params)
+    if frontier_sampler is not None:
+        trainer_params["use_distributed_sampler"] = False
+    trainer = pl.Trainer(**trainer_params, callbacks=callbacks)
 
     logger.info("Starting Training")
-    trainer.fit(
-        model=lightning_module,
-        train_dataloaders=train_dataloader,
-        val_dataloaders=val_dataloader,
-    )
+    try:
+        trainer.fit(
+            model=lightning_module,
+            train_dataloaders=train_dataloader,
+            val_dataloaders=val_dataloader,
+            ckpt_path=cfg.get("resume_checkpoint_path", None),
+        )
+    finally:
+        if dist.is_available() and dist.is_initialized():
+            dist.destroy_process_group()
 
 
 if __name__ == "__main__":
