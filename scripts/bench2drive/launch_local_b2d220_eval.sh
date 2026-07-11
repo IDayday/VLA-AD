@@ -10,16 +10,29 @@ RUN_ID=${RUN_ID:-best_step17136_8gpu_$(date -u +%Y%m%dT%H%M%SZ)}
 
 OUT=${OUT:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_closed_loop/${RUN_ID}}
 PLANNER_CHECKPOINT=${PLANNER_CHECKPOINT:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_stage2_il_official_2b_20260709T210221Z/best_step17136_for_bench2drive220_20260710T0044.ckpt}
+VLM_PATH=${VLM_PATH:-${VLA_AD_ROOT}/checkpoints/recogdrive/ReCogDrive-VLM-2B}
 TEAM_CONFIG=${TEAM_CONFIG:-${VLA_AD_ROOT}/configs/bench2drive_recogdrive_closed_loop.remote.yaml}
 
+if [[ ! -f "${PLANNER_CHECKPOINT}" ]]; then
+  echo "Planner checkpoint not found: ${PLANNER_CHECKPOINT}" >&2
+  exit 2
+fi
+if [[ ! -d "${VLM_PATH}" ]]; then
+  echo "VLM checkpoint directory not found: ${VLM_PATH}" >&2
+  exit 2
+fi
+
 mkdir -p "${OUT}"
+GIT_COMMIT=$(cd "${VLA_AD_ROOT}" && git rev-parse HEAD)
 {
   echo "date_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+  echo "git_commit=${GIT_COMMIT}"
   echo "vla_ad_root=${VLA_AD_ROOT}"
   echo "bench2drive_root=${BENCH2DRIVE_ROOT}"
   echo "carla_root=${CARLA_ROOT}"
   echo "out=${OUT}"
   echo "planner_checkpoint=${PLANNER_CHECKPOINT}"
+  echo "vlm_path=${VLM_PATH}"
   echo "team_config=${TEAM_CONFIG}"
   echo "gpu_rank_list=${GPU_RANK_LIST:-0 1 2 3 4 5 6 7}"
 } > "${OUT}/launch_env.txt"
@@ -39,6 +52,7 @@ export SERVER_PROFILE_EVERY=${SERVER_PROFILE_EVERY:-200}
 export FORCE_SPLIT=${FORCE_SPLIT:-1}
 export TEAM_CONFIG
 export PLANNER_CHECKPOINT
+export VLM_PATH
 export SAVE_PATH=${SAVE_PATH:-${OUT}/metrics}
 export RESULT_JSON_DIR=${RESULT_JSON_DIR:-${OUT}/route_json}
 export WORKER_LOG_DIR=${WORKER_LOG_DIR:-${OUT}/worker_logs}
