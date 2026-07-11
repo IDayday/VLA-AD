@@ -1,0 +1,221 @@
+{
+  "schema_version": 1,
+  "as_of_utc": "2026-07-11",
+  "goal": "Maximize fidelity to the reported ReCogDrive Bench2Drive result while separating author-confirmed settings from public proxies and custom extensions.",
+  "policy": {
+    "paper_exact_requires_author_artifacts": true,
+    "allow_public_proxy_stage1": true,
+    "allow_unresolved_contract_defaults": false,
+    "allow_full_220_for_model_selection": false,
+    "allow_custom_stage3_reward_to_be_labeled_official": false,
+    "final_evaluation_must_use_official_bench2drive_metrics": true
+  },
+  "sources": {
+    "paper": {
+      "url": "https://arxiv.org/html/2506.08052v2",
+      "revision": "v2"
+    },
+    "recogdrive_repository": {
+      "url": "https://github.com/xiaomi-research/recogdrive",
+      "commit": "d54404796de7a44ca418b96057e3f8c3de3e8c0d",
+      "bench2drive_code_public": false
+    },
+    "pretraining_dataset": {
+      "url": "https://huggingface.co/datasets/owl10/ReCogDrive_Pretraining",
+      "revision": "f55bb18e0aca846bbedfb516760a1b9b7cfe3ebf"
+    },
+    "base_vlm": {
+      "url": "https://huggingface.co/owl10/ReCogDrive-VLM-2B",
+      "revision": "16873acca08e3c04ab229b3d973f39aeba9db68d"
+    },
+    "bench2drive_repository": {
+      "url": "https://github.com/Thinklab-SJTU/Bench2Drive",
+      "local_commit": "2645714eb1f3a100217928dd113093cae0779f36",
+      "paper_table_commit": null
+    }
+  },
+  "artifacts": {
+    "traj_jsonl": {
+      "local_path": "/mnt/project/recogdrive_pretraining/Bench2drive_Traj/Bench2drive_Traj.jsonl",
+      "size_bytes": 409885730,
+      "sha256": "9a0840a360347178d68faf0716723ab55d49c259b0a69b9e6471aa4360222084",
+      "expected_rows": 196761,
+      "expected_clips": 950,
+      "expected_images_per_record": 6,
+      "expected_conversation_min": 3,
+      "expected_conversation_max": 3,
+      "expected_role_counts": {
+        "system": 196761,
+        "human": 196761,
+        "gpt": 196761
+      }
+    },
+    "qa_jsonl": {
+      "local_path": "/mnt/project/recogdrive_pretraining/Bench2drive_QA/Bench2drive_QA.jsonl",
+      "size_bytes": 1007343319,
+      "sha256": "e65849bbec072431b12fb513375e616c6d1708b3698a2489cf84c4bc5760c212",
+      "expected_rows": 49942,
+      "expected_clips": 1000,
+      "expected_images_per_record": 6,
+      "expected_conversation_min": 80,
+      "expected_conversation_max": 242,
+      "expected_role_counts": {
+        "human": 2878608,
+        "gpt": 2878608
+      }
+    },
+    "raw_bench2drive_base": {
+      "local_path": "/mnt/data/Bench2Drive-Base",
+      "expected_clips": 1000,
+      "ignored_directories": [
+        "maps"
+      ],
+      "expected_cameras": [
+        "rgb_back",
+        "rgb_back_left",
+        "rgb_back_right",
+        "rgb_front",
+        "rgb_front_left",
+        "rgb_front_right"
+      ]
+    },
+    "base_vlm_model": {
+      "local_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/model.safetensors",
+      "size_bytes": 4178048344,
+      "sha256": "79fb39297e322cd2d3dc68d4f23b86ff85806b336a4d5d0ed5db9b66e4034a3c",
+      "config_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/config.json",
+      "expected_hidden_size": 1536,
+      "expected_image_size": 448
+    },
+    "bench2drive_checkout": {
+      "local_path": "/mnt/data/Bench2Drive",
+      "expected_commit": "2645714eb1f3a100217928dd113093cae0779f36",
+      "require_clean": true
+    },
+    "route_xml": {
+      "local_path": "/mnt/data/Bench2Drive/leaderboard/data/bench2drive220.xml",
+      "size_bytes": 693537,
+      "sha256": "ffff24b3a2b8584632730fb42de7cb6036af780c3952cfef08ee8cf96a712f88",
+      "expected_routes": 220
+    },
+    "carla": {
+      "local_path": "/mnt/project/CARLA_0.9.15",
+      "version_file": "/mnt/project/CARLA_0.9.15/VERSION",
+      "expected_version": "0.9.15"
+    }
+  },
+  "stage_contracts": {
+    "stage1": {
+      "status": "ready_public_proxy",
+      "classification": "official-checkpoint-anchored Bench2Drive adaptation",
+      "start_checkpoint": "owl10/ReCogDrive-VLM-2B@16873acca08e3c04ab229b3d973f39aeba9db68d",
+      "datasets": [
+        "Bench2drive_Traj",
+        "Bench2drive_QA"
+      ],
+      "mixing": "joint",
+      "camera_views": 6,
+      "patching_per_view": "1x2 patches plus one thumbnail",
+      "full_parameter_finetune": true,
+      "public_proxy_hyperparameters": {
+        "epochs": 3,
+        "global_batch_size": 1024,
+        "learning_rate": 4e-05,
+        "weight_decay": 0.05,
+        "warmup_ratio": 0.1,
+        "scheduler": "cosine",
+        "image_size": 448,
+        "max_seq_length": 12288,
+        "drop_path_rate": 0.1
+      },
+      "unresolved": [
+        "Whether the Bench2Drive-only adaptation changed any paper-wide Stage1 hyperparameter",
+        "Exact sampling ratio between the 196761 trajectory records and 49942 multi-turn QA records"
+      ]
+    },
+    "stage2": {
+      "status": "blocked_official_contract",
+      "classification": "must not launch the main reproduction run yet",
+      "author_confirmed": {
+        "input_data_type": "raw Bench2Drive trajectories"
+      },
+      "paper_and_public_code_proxy": {
+        "vlm_frozen": true,
+        "planner_initialization": "random",
+        "epochs": 200,
+        "global_batch_size": 512,
+        "learning_rate": 0.0001,
+        "weight_decay": 0.0001,
+        "warmup_ratio": 0.015,
+        "minimum_learning_rate": 1e-06,
+        "dit_hidden_size": 384,
+        "attention_heads": 8,
+        "dit_layers": 16,
+        "diffusion_training_steps": 100,
+        "ddim_inference_steps": 5
+      },
+      "blocking_unknowns": [
+        "950/50 versus all-1000 raw clip split",
+        "Raw frame sampling cadence and whether downsampling is used",
+        "History duration and sampling interval",
+        "Six versus eight output waypoints and their time horizon",
+        "Bench2Drive coordinate and heading convention inside the planner",
+        "Exact multi-view hidden-state prompt and selected token window",
+        "Checkpoint selection rule"
+      ]
+    },
+    "stage3": {
+      "status": "blocked_pending_custom_reward_validation",
+      "classification": "ReCogDrive-style custom Bench2Drive DiffGRPO extension, not an official reward reproduction",
+      "reward_id": "bench2drive_diffgrpo_reward_v1",
+      "known_training_proxy": {
+        "epochs": 10,
+        "global_batch_size": 128,
+        "learning_rate": 0.0001,
+        "scheduler": "cosine_to_zero",
+        "bc_loss_weight": 0.01,
+        "denoising_discount": 0.6
+      },
+      "required_consistency_axes": [
+        "coordinate frame, units, waypoint horizon and sampling interval",
+        "route progress and route-completion semantics",
+        "collision, drivable-area and outside-lane semantics",
+        "red-light, stop-sign and emergency-yield event semantics",
+        "blocked and minimum-speed semantics",
+        "comfort formulas and 20 Hz ego-state sampling",
+        "reward component sign, normalization, clipping and aggregation"
+      ],
+      "required_validation": [
+        "Version every reward implementation and record its source-code commit",
+        "Log every reward component instead of only the scalar aggregate",
+        "Unit-test monotonic behavior on controlled safe and unsafe trajectories",
+        "Shadow-score frozen validation rollouts with both the reward and official Bench2Drive evaluator",
+        "Calibrate on training/validation data only; never tune reward weights on the full 220-route result",
+        "Evaluate final checkpoints only with the official Bench2Drive metrics"
+      ]
+    },
+    "evaluation": {
+      "status": "blocked_official_wrapper",
+      "author_confirmed": {
+        "routes": 220,
+        "camera_mode": "multi-view",
+        "metrics": [
+          "Driving Score",
+          "Success Rate",
+          "Multi-Ability",
+          "Driving Efficiency",
+          "Driving Smoothness"
+        ]
+      },
+      "blocking_unknowns": [
+        "Exact sensor intrinsics and extrinsics used by ReCogDrive",
+        "VLM refresh and planner/control frequency",
+        "Trajectory-to-control controller and PID gains",
+        "Coordinate conversion between planner output and CARLA control",
+        "CARLA and Bench2Drive commits used for the reported Table 2 result",
+        "Evaluation seed/repetition policy",
+        "Raw official 220-route result JSON"
+      ]
+    }
+  }
+}

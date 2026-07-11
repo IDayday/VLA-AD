@@ -1,5 +1,12 @@
 # Bench2Drive ReCogDrive Training Plan
 
+> **Retired diagnostic plan (2026-07-11):** this document records the completed
+> front-only custom-contract experiment and its result. Its Stage1/Stage2
+> launchers now require `ALLOW_RETIRED_CUSTOM_B2D_PIPELINE=1` and must not be
+> used for the main reproduction. The active source of truth is
+> `docs/bench2drive_recogdrive_reproduction_gate.md` and its machine-readable
+> manifest.
+
 ## Decision and baseline
 
 The previous Bench2Drive run is a retired diagnostic baseline, not a result to

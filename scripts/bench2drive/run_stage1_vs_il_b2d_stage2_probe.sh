@@ -37,7 +37,8 @@ run_probe() {
   NUM_WORKERS="${NUM_WORKERS}" \
   SAVE_EVERY="${SAVE_EVERY}" \
   CHUNK_CACHE_ROOT="${CHUNK_CACHE_ROOT}" \
-    bash "${VLA_AD_ROOT}/scripts/bench2drive/run_recogdrive_b2d_stage2_il_official.sh"
+    ALLOW_RETIRED_CUSTOM_B2D_PIPELINE=1 \
+      bash "${VLA_AD_ROOT}/scripts/bench2drive/run_recogdrive_b2d_stage2_il_official.sh"
 }
 
 case "${MODE}" in

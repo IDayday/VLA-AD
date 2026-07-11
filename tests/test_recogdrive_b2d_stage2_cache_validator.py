@@ -134,6 +134,7 @@ def test_stage2_launcher_ignores_matching_log_files(tmp_path: Path):
             "GPU_LIST": "0",
             "NPROC_PER_NODE": "1",
             "GLOBAL_EPOCHS": "1",
+            "ALLOW_RETIRED_CUSTOM_B2D_PIPELINE": "1",
         }
     )
     result = subprocess.run(

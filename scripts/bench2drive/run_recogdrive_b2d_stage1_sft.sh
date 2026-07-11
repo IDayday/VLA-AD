@@ -2,6 +2,17 @@
 set -euo pipefail
 
 VLA_AD_ROOT=${VLA_AD_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}
+ALLOW_RETIRED_CUSTOM_B2D_PIPELINE=${ALLOW_RETIRED_CUSTOM_B2D_PIPELINE:-0}
+if [[ "${ALLOW_RETIRED_CUSTOM_B2D_PIPELINE}" != "1" ]]; then
+  cat >&2 <<'EOF'
+This launcher uses the retired custom front-only/4-history/8-waypoint Stage1
+contract. It is not admissible for the ReCogDrive Bench2Drive reproduction.
+See docs/bench2drive_recogdrive_reproduction_gate.md. Set
+ALLOW_RETIRED_CUSTOM_B2D_PIPELINE=1 only for an explicitly labeled diagnostic.
+EOF
+  exit 64
+fi
+
 CONDA_BIN=${CONDA_BIN:-/root/miniconda3/bin/conda}
 NAVSIM_ENV=${NAVSIM_ENV:-navsim}
 
