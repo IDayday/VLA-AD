@@ -12,6 +12,7 @@ EPOCH_STRIDE="${EPOCH_STRIDE:-1}"
 EPOCH_OFFSET="${EPOCH_OFFSET:-0}"
 WORKER_ID="${WORKER_ID:-stride${EPOCH_STRIDE}_offset${EPOCH_OFFSET}}"
 TOP_K="${TOP_K:-3}"
+TOPK_BACKUP_MODE="${TOPK_BACKUP_MODE:-hardlink_or_copy}"
 POLL_SECONDS="${POLL_SECONDS:-900}"
 STABLE_SECONDS="${STABLE_SECONDS:-180}"
 NUM_SHARDS="${NUM_SHARDS:-2}"
@@ -30,6 +31,10 @@ if ! [[ "${EPOCH_STRIDE}" =~ ^[1-9][0-9]*$ ]]; then
 fi
 if ! [[ "${EPOCH_OFFSET}" =~ ^[0-9]+$ ]] || (( EPOCH_OFFSET >= EPOCH_STRIDE )); then
   echo "EPOCH_OFFSET must be in [0, EPOCH_STRIDE), got: ${EPOCH_OFFSET}" >&2
+  exit 2
+fi
+if [[ "${TOPK_BACKUP_MODE}" != "hardlink_or_copy" && "${TOPK_BACKUP_MODE}" != "record_only" ]]; then
+  echo "TOPK_BACKUP_MODE must be hardlink_or_copy or record_only, got: ${TOPK_BACKUP_MODE}" >&2
   exit 2
 fi
 
@@ -75,7 +80,7 @@ refresh_topk() {
   (
     flock -x 8
     flock -x 9
-    "${PYTHON_BIN}" - "${SUMMARY_TSV}" "${OUT_ROOT}/top${TOP_K}_ckpts" "${TOP_TSV}" "${TOP_K}" <<'PY'
+    "${PYTHON_BIN}" - "${SUMMARY_TSV}" "${OUT_ROOT}/top${TOP_K}_ckpts" "${TOP_TSV}" "${TOP_K}" "${TOPK_BACKUP_MODE}" <<'PY'
 import csv
 import os
 import shutil
@@ -86,6 +91,7 @@ summary = Path(sys.argv[1])
 top_dir = Path(sys.argv[2])
 top_tsv = Path(sys.argv[3])
 top_k = int(sys.argv[4])
+backup_mode = sys.argv[5]
 rows_by_checkpoint = {}
 with summary.open("r", encoding="utf-8") as f:
     reader = csv.DictReader(f, delimiter="\t")
@@ -103,17 +109,18 @@ top = rows[:top_k]
 top_dir.mkdir(parents=True, exist_ok=True)
 
 active_names = set()
-for rank, row in enumerate(top, 1):
-    ckpt = Path(row["checkpoint_path"])
-    dst = top_dir / f"rank{rank}_{row['checkpoint']}"
-    active_names.add(dst.name)
-    if not dst.exists():
-        tmp = dst.with_suffix(dst.suffix + ".tmp")
-        try:
-            os.link(ckpt, tmp)
-        except OSError:
-            shutil.copy2(ckpt, tmp)
-        tmp.replace(dst)
+if backup_mode == "hardlink_or_copy":
+    for rank, row in enumerate(top, 1):
+        ckpt = Path(row["checkpoint_path"])
+        dst = top_dir / f"rank{rank}_{row['checkpoint']}"
+        active_names.add(dst.name)
+        if not dst.exists():
+            tmp = dst.with_suffix(dst.suffix + ".tmp")
+            try:
+                os.link(ckpt, tmp)
+            except OSError:
+                shutil.copy2(ckpt, tmp)
+            tmp.replace(dst)
 
 for old in top_dir.glob("rank*_*.ckpt"):
     if old.name not in active_names:
@@ -143,7 +150,11 @@ with tmp_top_tsv.open("w", encoding="utf-8", newline="") as f:
     for rank, row in enumerate(top, 1):
         out = {key: row.get(key, "") for key in fieldnames}
         out["rank"] = str(rank)
-        out["backup_path"] = str(top_dir / f"rank{rank}_{row['checkpoint']}")
+        out["backup_path"] = (
+            str(top_dir / f"rank{rank}_{row['checkpoint']}")
+            if backup_mode == "hardlink_or_copy"
+            else ""
+        )
         writer.writerow(out)
 tmp_top_tsv.replace(top_tsv)
 PY
@@ -158,7 +169,7 @@ mark_evaluated() {
   ) 9>"${STATE_LOCK}"
 }
 
-log "watcher started worker_id=${WORKER_ID} run_root=${RUN_ROOT} out_root=${OUT_ROOT} epoch_min=${EPOCH_MIN} epoch_max=${EPOCH_MAX} epoch_stride=${EPOCH_STRIDE} epoch_offset=${EPOCH_OFFSET} gpus=${GPUS_CSV} num_shards=${NUM_SHARDS} config=${CONFIG}"
+log "watcher started worker_id=${WORKER_ID} run_root=${RUN_ROOT} out_root=${OUT_ROOT} epoch_min=${EPOCH_MIN} epoch_max=${EPOCH_MAX} epoch_stride=${EPOCH_STRIDE} epoch_offset=${EPOCH_OFFSET} gpus=${GPUS_CSV} num_shards=${NUM_SHARDS} topk_backup_mode=${TOPK_BACKUP_MODE} config=${CONFIG}"
 
 while true; do
   mapfile -t candidates < <(
