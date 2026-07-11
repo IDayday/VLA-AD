@@ -1,0 +1,28 @@
+# ReCogDrive Bench2Drive Stage2 closest-public baseline.
+# Private Bench2Drive planner code is unavailable; provenance and proxy choices
+# are recorded in configs/bench2drive_recogdrive_reproduction_gate.json.
+reproduction_classification: closest-public
+contract_id: recogdrive_b2d_closest_public_multiview_10hz_6x0p5s_v1
+
+use_expert_features: false
+use_jepa: false
+use_vggt: false
+use_teacher_context_tokens: false
+use_student_latent_adapters: false
+freeze_vlm: true
+planner_dim: 384
+vlm_feature_dim: 1536
+num_dit_layers: 16
+action_horizon: 6
+max_seq_len: 6
+action_dim: 3
+sampling_method: ddim
+num_inference_steps: 5
+diffusion_loss_weight: 1.0
+use_alignment_loss: false
+use_action_aware_aux: false
+use_bit_drive: false
+use_risk_vla: false
+use_last_rd: false
+last_rd_stage: disabled
+grpo: false

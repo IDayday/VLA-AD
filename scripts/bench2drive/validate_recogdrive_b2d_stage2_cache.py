@@ -11,6 +11,15 @@ from typing import Any, Dict, Optional, Sequence
 
 import torch
 
+EXPECTED_CONTRACT_ID = "recogdrive_b2d_closest_public_multiview_10hz_6x0p5s_v1"
+EXPECTED_CAMERA_ORDER = [
+    "rgb_front",
+    "rgb_front_left",
+    "rgb_front_right",
+    "rgb_back_left",
+    "rgb_back_right",
+    "rgb_back",
+]
 
 class CacheValidationError(RuntimeError):
     """Raised when a cache is incomplete or violates the Stage2 contract."""
@@ -77,7 +86,7 @@ def _check_sample(shard: Path, row: Dict[str, Any]) -> Dict[str, Any]:
     if not torch.isfinite(hidden.float()).all():
         raise CacheValidationError(f"last_hidden_state contains non-finite values: {sample_path}")
     _check_tensor(sample, "history_trajectory", (4, 3))
-    _check_tensor(sample, "trajectory", (8, 3))
+    _check_tensor(sample, "trajectory", (6, 3))
     _check_tensor(sample, "high_command_one_hot", (3,))
     _check_tensor(sample, "status_feature", (8,))
     return {
@@ -131,6 +140,29 @@ def validate_cache(
             raise CacheValidationError(f"unexpected hidden source in {shard}: {metadata.get('hidden_source')}")
         if metadata.get("system_prompt_profile") != "bench2drive":
             raise CacheValidationError(f"unexpected prompt profile in {shard}: {metadata.get('system_prompt_profile')}")
+        if metadata.get("contract_id") != EXPECTED_CONTRACT_ID:
+            raise CacheValidationError(
+                f"unexpected contract in {shard}: {metadata.get('contract_id')!r}, "
+                f"expected {EXPECTED_CONTRACT_ID!r}"
+            )
+        expected_fields = {
+            "frame_step": 5,
+            "sample_stride": 1,
+            "history_frames": 4,
+            "future_frames": 6,
+            "training_anchor_frequency_hz": 10,
+            "target_waypoint_frequency_hz": 2,
+            "coordinate_policy": "current_world2lidar_x_forward_y_lateral_relative_yaw",
+        }
+        for key, expected_value in expected_fields.items():
+            if metadata.get(key) != expected_value:
+                raise CacheValidationError(
+                    f"unexpected {key} in {shard}: {metadata.get(key)!r}, expected {expected_value!r}"
+                )
+        if metadata.get("camera_order") != EXPECTED_CAMERA_ORDER:
+            raise CacheValidationError(
+                f"unexpected camera order in {shard}: {metadata.get('camera_order')!r}"
+            )
         source_vlm = metadata.get("recogdrive_vlm_path")
         if not source_vlm or Path(str(source_vlm)).resolve() != resolved_vlm:
             raise CacheValidationError(f"wrong source VLM in {shard}: {source_vlm!r}, expected {resolved_vlm}")

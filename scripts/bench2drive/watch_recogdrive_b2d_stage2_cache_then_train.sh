@@ -10,7 +10,7 @@ VLM_PATH=${VLM_PATH:?Set VLM_PATH to the accepted Stage1 checkpoint}
 OUTPUT_DIR=${OUTPUT_DIR:?Set OUTPUT_DIR for scratch Stage2 training}
 EXPECTED_SHARDS=${EXPECTED_SHARDS:-8}
 EXPECTED_CLIPS=${EXPECTED_CLIPS:-1000}
-EXPECTED_RECORDS=${EXPECTED_RECORDS:-38934}
+EXPECTED_RECORDS=${EXPECTED_RECORDS:-202656}
 POLL_SECONDS=${POLL_SECONDS:-30}
 CACHE_TMUX_SESSION=${CACHE_TMUX_SESSION:-}
 
@@ -32,7 +32,7 @@ WATCH_LOG=${WATCH_LOG:-${WATCH_DIR}/watch.log}
 TRAIN_LOG=${TRAIN_LOG:-${WATCH_DIR}/stage2_train.log}
 WATCH_STATUS=${WATCH_STATUS:-${WATCH_DIR}/status}
 VALIDATOR=${VLA_AD_ROOT}/scripts/bench2drive/validate_recogdrive_b2d_stage2_cache.py
-TRAIN_LAUNCHER=${VLA_AD_ROOT}/scripts/bench2drive/run_recogdrive_b2d_stage2_il_official.sh
+TRAIN_LAUNCHER=${VLA_AD_ROOT}/scripts/bench2drive/run_recogdrive_b2d_stage2_closest_public.sh
 
 mkdir -p "${WATCH_DIR}"
 GIT_COMMIT=$(cd "${VLA_AD_ROOT}" && git rev-parse HEAD)

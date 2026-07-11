@@ -6,6 +6,7 @@ from torch import nn
 from transformers import AutoModel, AutoTokenizer
 from transformers.modeling_outputs import CausalLMOutputWithPast
 
+from .bench2drive_contract import BENCH2DRIVE_SYSTEM_MESSAGE
 from .utils.conversation import get_conv_template
 
 IMG_CONTEXT_TOKEN = '<IMG_CONTEXT>'
@@ -22,10 +23,6 @@ You are a vehicle trajectory prediction model for autonomous driving. Your task 
 6. **Driving Direction Compliance (DDC)**: Align with the intended driving direction.
 For evaluation, use the **PDM Score**, which combines these metrics: **PDM Score** = NC * DAC * (5*TTC + 5*EP + 2*C + 0*DDC) / 12.
 Your predictions will be evaluated through a non-reactive 4-second simulation with an LQR controller and background actors following their recorded trajectories. The better your predictions, the higher your score.
-""".strip()
-
-BENCH2DRIVE_SYSTEM_MESSAGE = """
-You are a vehicle trajectory prediction model for autonomous driving in Bench2Drive. Predict a safe 4-second ego trajectory from one front-camera image, the last four ego poses, and a discrete navigation command. The eight output poses are expressed in the current ego coordinate frame as (x, y, heading), sampled every 0.5 seconds. Respect the commanded route, avoid collisions, remain in the drivable area, make useful progress, and keep the motion comfortable. Return the trajectory in [PT, ...] format with exactly eight poses.
 """.strip()
 
 RECOGDRIVE_SYSTEM_MESSAGES = {
@@ -190,14 +187,57 @@ class RecogDriveBackbone(nn.Module):
         self.model.img_context_token_id = self.img_context_token_id
         print("InternVL model configured.")
     
-    def forward(self, pixel_values: torch.Tensor, questions: List[str], num_patches_list: List[int]):
+    @staticmethod
+    def _patch_groups(
+        questions: Sequence[str],
+        num_patches_list: Sequence[int] | Sequence[Sequence[int]],
+    ) -> List[List[int]]:
+        """Normalize legacy one-image counts and formal multi-image counts."""
+
+        if len(num_patches_list) != len(questions):
+            raise ValueError(
+                "num_patches_list must contain one entry per question; "
+                f"got {len(num_patches_list)} entries for {len(questions)} questions"
+            )
+        groups: List[List[int]] = []
+        for question, raw_counts in zip(questions, num_patches_list):
+            if isinstance(raw_counts, int):
+                counts = [int(raw_counts)]
+            else:
+                counts = [int(value) for value in raw_counts]
+            if not counts or any(value <= 0 for value in counts):
+                raise ValueError(f"Patch counts must be positive, got {counts}")
+            image_slots = question.count("<image>")
+            if image_slots == 0:
+                if len(counts) != 1:
+                    raise ValueError("A prompt without <image> can only receive one image")
+            elif image_slots != len(counts):
+                raise ValueError(
+                    f"Prompt has {image_slots} <image> slots but received {len(counts)} patch groups"
+                )
+            groups.append(counts)
+        return groups
+
+    def forward(
+        self,
+        pixel_values: torch.Tensor,
+        questions: List[str],
+        num_patches_list: Sequence[int] | Sequence[Sequence[int]],
+    ):
         if not self.model:
             raise RuntimeError("Backbone model has not been initialized. Call initialize() on the agent first.")
         
         model_dtype = next(self.model.parameters()).dtype
 
+        patch_groups = self._patch_groups(questions, num_patches_list)
+        expected_patches = sum(sum(group) for group in patch_groups)
+        if int(pixel_values.size(0)) != expected_patches:
+            raise ValueError(
+                f"pixel_values contains {pixel_values.size(0)} patches, expected {expected_patches}"
+            )
+
         queries = []
-        for idx, num_patches in enumerate(num_patches_list):
+        for idx, patch_counts in enumerate(patch_groups):
             question = questions[idx]
             if pixel_values is not None and '<image>' not in question:
                 question = '<image>\n' + question
@@ -208,11 +248,28 @@ class RecogDriveBackbone(nn.Module):
             template.append_message(template.roles[1], None)
             query = template.get_prompt()
 
-            image_tokens = IMG_START_TOKEN + IMG_CONTEXT_TOKEN * self.num_image_token * num_patches + IMG_END_TOKEN
-            query = query.replace('<image>', image_tokens, 1)
+            for num_patches in patch_counts:
+                image_tokens = (
+                    IMG_START_TOKEN
+                    + IMG_CONTEXT_TOKEN * self.num_image_token * num_patches
+                    + IMG_END_TOKEN
+                )
+                query = query.replace('<image>', image_tokens, 1)
+            if '<image>' in query:
+                raise ValueError("Not all image placeholders were expanded")
             queries.append(query)
         self.tokenizer.padding_side = 'left'
-        model_inputs = self.tokenizer(queries, return_tensors='pt', padding='max_length', max_length=2800)
+        model_inputs = self.tokenizer(
+            queries,
+            return_tensors='pt',
+            padding=True,
+            truncation=False,
+        )
+        if int(model_inputs['input_ids'].shape[-1]) > 12288:
+            raise ValueError(
+                "ReCogDrive prompt exceeds the Stage1 max sequence length of 12288 tokens: "
+                f"{model_inputs['input_ids'].shape[-1]}"
+            )
         device = torch.device(self.device)
         input_ids = model_inputs['input_ids'].to(device)
         attention_mask = model_inputs['attention_mask'].to(device)
@@ -221,7 +278,12 @@ class RecogDriveBackbone(nn.Module):
         position_ids.masked_fill_(attention_mask == 0, 1)
         
         num_patches = pixel_values.size(0)
-        image_flags = torch.tensor([1] * num_patches, dtype=torch.long, device=device)
+        image_flags = torch.ones(num_patches, dtype=torch.long, device=device)
+
+        # Cache builders use one prompt at a time and therefore have no padding.
+        # Retaining the mask also lets callers remove padding when batching is
+        # introduced later without changing the public model output type.
+        self._last_attention_mask = attention_mask.detach()
 
 
         return self.model(
@@ -233,5 +295,18 @@ class RecogDriveBackbone(nn.Module):
                 output_hidden_states=True,
                 return_dict=True,
         )
+
+    def active_hidden_state(self, outputs, batch_index: int = 0) -> torch.Tensor:
+        """Return final-layer tokens selected by the prompt attention mask."""
+
+        if not hasattr(self, "_last_attention_mask"):
+            raise RuntimeError("No attention mask is available; call the backbone first")
+        hidden = outputs.hidden_states[-1][batch_index]
+        mask = self._last_attention_mask[batch_index].to(device=hidden.device, dtype=torch.bool)
+        if hidden.shape[0] != mask.shape[0]:
+            raise RuntimeError(
+                f"Hidden/token mask mismatch: hidden={hidden.shape[0]}, mask={mask.shape[0]}"
+            )
+        return hidden[mask]
 
     

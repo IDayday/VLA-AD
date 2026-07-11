@@ -1,5 +1,9 @@
 # ReCogDrive Bench2Drive Closed-Loop Evaluation
 
+> Updated 2026-07-11: the formal baseline is the six-view, six-pose
+> `closest-public` contract. The older front-only/8-pose profiles are retained
+> only for historical diagnostics and are not admissible reproduction results.
+
 This wiring follows the public Bench2Drive/Bench2DriveZoo pattern used by UniAD/VAD, UniDriveVLA, DiffAD, and DriveMoE-style projects:
 
 - run CARLA 0.9.15 closed-loop through the official Bench2Drive `leaderboard_evaluator.py`
@@ -45,8 +49,8 @@ echo "$CARLA_ROOT/PythonAPI/carla/dist/carla-0.9.15-py3.7-linux-x86_64.egg" \
 Run this in the existing `navsim` environment:
 
 ```bash
-PLANNER_CHECKPOINT=/mnt/project/VLA-AD/outputs/bench2drive_recogdrive_vlm_il_train_full_epoch1/best.ckpt \
-VLM_PATH=/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B \
+PLANNER_CHECKPOINT=/path/to/stage2/epoch_200.ckpt \
+VLM_PATH=/path/to/completed/stage1 \
 bash scripts/bench2drive/run_recogdrive_inference_server.sh
 ```
 
@@ -55,28 +59,16 @@ The server exposes:
 - `GET /health`
 - `POST /predict`
 
-The CARLA agent sends front-camera JPEG path, 4-step history, command one-hot, and status vector. The server returns an 8x3 ReCogDrive trajectory.
+The CARLA agent sends six ordered camera JPEG paths, four history poses, exact
+command id, speed, acceleration and planner status. The server rebuilds the
+same released Stage1 prompt used for cache generation and returns a 6x3
+trajectory. Temporary JPEGs are removed synchronously after each response.
 
-The default remote config is the accelerated closed-loop path:
-
-- `sensor_profile: front_only`, because the current ReCogDrive server consumes only `CAM_FRONT`
-- `visual_refresh_interval_steps: 10`, so InternVL hidden states refresh at 2 Hz while planner/control still run at 20 Hz
-- `image_dir: /dev/shm/recogdrive_b2d_images`, avoiding slow persistent image writes
-- `save_debug_images: false` and `save_debug_meta: false`, while `metric_info.json` is still written for scoring
-
-For a slow apples-to-apples baseline with the old full Bench2DriveZoo-style sensor suite and VLM refresh every tick:
-
-```bash
-export TEAM_CONFIG=/mnt/project/VLA-AD/configs/bench2drive_recogdrive_closed_loop.strict.yaml
-```
-
-For a speed ablation that also lowers planner frequency to 2 Hz and repeats the last control between requests:
-
-```bash
-export TEAM_CONFIG=/mnt/project/VLA-AD/configs/bench2drive_recogdrive_closed_loop.turbo.yaml
-```
-
-Treat `turbo.yaml` as an iteration tool until Dev10 confirms the score impact.
+The formal config is
+`configs/bench2drive_recogdrive_closed_loop.closest_public.yaml`: official
+six-camera zoo calibration, 20 Hz control with 10 Hz VLM/planner refresh, four
+history poses at 0.5-second spacing and six planner poses. The front-only
+`remote.yaml` and `turbo.yaml` profiles are speed diagnostics only.
 
 ## Preflight
 
@@ -119,19 +111,14 @@ export SERVER_STARTUP_SECONDS=90
 
 `START_INFERENCE_SERVERS=1` starts one ReCogDrive HTTP server per worker port, waits once for model loading, health-checks each port, writes generated per-worker agent configs, and cleans those servers when the evaluation script exits. This avoids serializing all CARLA workers through a single VLM/planner server.
 
-For final score reporting, run one short Dev10 comparison before launching all 220 routes:
+Before all 220 routes, run one short debug route with the fixed formal config to
+verify sensor delivery, coordinate signs and PID stability:
 
 ```bash
-TEAM_CONFIG=/mnt/project/VLA-AD/configs/bench2drive_recogdrive_closed_loop.strict.yaml \
-/root/miniconda3/bin/conda run --no-capture-output -n b2d_eval \
-  bash scripts/bench2drive/run_recogdrive_closed_loop_debug.sh
-
-TEAM_CONFIG=/mnt/project/VLA-AD/configs/bench2drive_recogdrive_closed_loop.remote.yaml \
+TEAM_CONFIG=/mnt/project/VLA-AD/configs/bench2drive_recogdrive_closed_loop.closest_public.yaml \
 /root/miniconda3/bin/conda run --no-capture-output -n b2d_eval \
   bash scripts/bench2drive/run_recogdrive_closed_loop_debug.sh
 ```
-
-If the accelerated config changes DS/SR materially on Dev10, use `strict.yaml` for publication-style reproduction and keep the accelerated config for iteration.
 
 Then collect metrics:
 
@@ -145,42 +132,23 @@ export METRIC_DIR=/mnt/project/VLA-AD/outputs/bench2drive_recogdrive_closed_loop
 
 ## Weight Strategy
 
-Do not treat the current one-epoch IL checkpoint as final. Public VLA projects report Bench2Drive closed-loop using Bench2Drive-specific training:
-
-- UniDriveVLA reports staged B2D training and Stage 3 B2D weights.
-- DiffAD reports B2D stage1/stage2 training before closed-loop.
-- ReCogDrive README states additional Bench2Drive-Traj/QA adaptation after mixed-data training.
-
-For credible reproduction, use this loop:
-
-1. Run closed-loop debug on a small route set to validate wrapper correctness.
-2. Evaluate official ReCogDrive IL/RL or our trained checkpoints with identical wrapper settings.
-3. Retrain/fine-tune on the full Bench2Drive cache and, if available, Bench2Drive-Traj/QA data.
-4. Re-run full 220-route closed-loop and compare DS/SR/Efficiency/Smoothness, not just open-loop L1.
-
-Current B2D IL retraining wrapper:
-
-```bash
-GLOBAL_EPOCHS=4 \
-BATCH_SIZE=16 \
-OUTPUT_DIR=/mnt/project/VLA-AD/outputs/bench2drive_recogdrive_vlm_il_train_full_stage \
-bash scripts/bench2drive/run_recogdrive_b2d_il_train.sh
-```
-
-Then point the inference server to the resulting checkpoint:
-
-```bash
-PLANNER_CHECKPOINT=/mnt/project/VLA-AD/outputs/bench2drive_recogdrive_vlm_il_train_full_stage/best.ckpt \
-bash scripts/bench2drive/run_recogdrive_inference_server.sh
-```
+Only the epoch-200 checkpoint from
+`run_recogdrive_b2d_stage2_closest_public.sh`, paired with the exact Stage1 VLM
+that generated its cache, is admitted to the formal baseline. Do not substitute
+the released NAVSIM IL/RL planner, the retired front-only B2D checkpoint, a
+loss-selected checkpoint, or any research branch.
 
 ## Coordinate Notes
 
-The wrapper keeps the same feature convention as `scripts/build_bench2drive_recogdrive_chunk_cache.py`:
+The wrapper keeps the same feature convention as
+`scripts/build_bench2drive_recogdrive_chunk_cache.py`:
 
-- 4 history poses are current-frame relative `[x, y, compass]`
+- raw cache history/targets use exact `world2lidar` matrices;
+- live history uses the equivalent planar Bench2Drive compass convention;
+- 4 history poses are current-frame relative `[forward, lateral, yaw]`;
 - command one-hot is `[left, straight, right]`
-- status is `[cmd3, speed, 0, ax_local, ay_local, 0]`
+- status is `[cmd3, speed, 0, acceleration_x, acceleration_y, 0]`;
+- output is 6 poses in `[forward, lateral, relative_yaw]`.
 
 The ReCogDrive trajectory is converted to Bench2DriveZoo PID waypoints by flipping the local y axis before control. This keeps the trained cache convention and the public Bench2DriveZoo PID convention aligned.
 
@@ -188,9 +156,9 @@ The ReCogDrive trajectory is converted to Bench2DriveZoo PID waypoints by flippi
 
 Do not speed up Bench2Drive by changing CARLA synchronous mode, fixed delta, route count, or metric collection semantics. CARLA documents synchronous fixed-step mode as the deterministic setup, and Bench2DriveZoo explicitly notes that efficiency/smoothness need per-step `metric_info` at 20 Hz. The safe optimization layer is inside the agent/server:
 
-- remove sensors the model never reads
-- cache or gate expensive VLM visual features
-- keep planner/control updates at 20 Hz where possible
+- retain all six formal camera sensors
+- do not cache a prompt across changed speed/acceleration/command state
+- keep VLM/planner/control updates at the fixed formal frequency
 - avoid debug image/meta writes during scored runs
 - run one inference server per active model GPU, or add request batching before increasing CARLA workers
 

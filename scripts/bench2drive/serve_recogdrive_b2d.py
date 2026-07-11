@@ -27,6 +27,10 @@ except ModuleNotFoundError:
     from transformers.feature_extraction_utils import BatchFeature
 
 from navsim.agents.recogdrive.recogdrive_features import ReCogDriveFeatureBuilder
+from navsim.agents.recogdrive.bench2drive_contract import (
+    BENCH2DRIVE_CAMERA_ORDER,
+    BENCH2DRIVE_CONTRACT_ID,
+)
 from navsim.common.dataclasses import AgentInput, Camera, Cameras, EgoStatus, Lidar
 from scripts.train_recogdrive_expert_chunked import build_planner, shape_safe_load
 
@@ -35,7 +39,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Serve ReCogDrive trajectory predictions for Bench2Drive closed-loop.")
     parser.add_argument("--host", default="127.0.0.1")
     parser.add_argument("--port", type=int, default=8765)
-    parser.add_argument("--config", type=Path, default=Path("configs/bench2drive_recogdrive_il.yaml"))
+    parser.add_argument(
+        "--config",
+        type=Path,
+        default=Path("configs/bench2drive_recogdrive_stage2_closest_public_2b.yaml"),
+    )
     parser.add_argument("--planner-checkpoint", type=Path, required=True)
     parser.add_argument("--vlm-path", type=Path, default=Path("checkpoints/recogdrive/ReCogDrive-VLM-2B"))
     parser.add_argument("--system-prompt-profile", choices=("bench2drive", "navsim"), default="bench2drive")
@@ -45,6 +53,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--deterministic", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--profile-every", type=int, default=50)
     parser.add_argument("--visual-cache-limit", type=int, default=512)
+    parser.add_argument(
+        "--contract",
+        choices=("closest-public", "retired-front-only"),
+        default="closest-public",
+    )
     return parser.parse_args()
 
 
@@ -151,6 +164,13 @@ class ReCogDriveB2DPredictor:
     def __init__(self, args: argparse.Namespace) -> None:
         self.args = args
         self.cfg = load_yaml(args.config)
+        if args.contract == "closest-public":
+            contract_id = self.cfg.get("contract_id")
+            if contract_id != BENCH2DRIVE_CONTRACT_ID:
+                raise ValueError(
+                    f"Formal server requires config contract_id={BENCH2DRIVE_CONTRACT_ID!r}, "
+                    f"got {contract_id!r}"
+                )
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         self.dtype = dtype_from_precision(args.precision) if self.device.type == "cuda" else torch.float32
         if self.device.type == "cuda":
@@ -186,6 +206,7 @@ class ReCogDriveB2DPredictor:
                     "planner_checkpoint": str(args.planner_checkpoint),
                     "vlm_path": str(args.vlm_path),
                     "system_prompt_profile": args.system_prompt_profile,
+                    "contract": args.contract,
                     "load_report": self.load_report,
                 },
                 sort_keys=True,
@@ -200,18 +221,49 @@ class ReCogDriveB2DPredictor:
                 raise KeyError(f"Request missing required key: {key}")
         start = time.monotonic()
         timings: Dict[str, float] = {}
-        sample_token = str(payload.get("sample_token") or Path(str(payload.get("image_path", "frame"))).stem)
+        first_image = payload.get("image_path", "frame")
+        if isinstance(payload.get("image_paths"), dict):
+            first_image = payload["image_paths"].get(BENCH2DRIVE_CAMERA_ORDER[0], "frame")
+        sample_token = str(payload.get("sample_token") or Path(str(first_image)).stem)
         visual_cache_key = str(payload.get("visual_cache_key") or sample_token)
         image_path_value = payload.get("image_path")
-        visual_refreshed = bool(image_path_value)
+        image_paths_value = payload.get("image_paths")
+        visual_refreshed = bool(image_path_value or image_paths_value)
 
-        if image_path_value:
+        if visual_refreshed:
             t0 = time.monotonic()
-            agent_input = build_agent_input(payload)
-            timings["build_agent_input"] = time.monotonic() - t0
+            if self.args.contract == "closest-public":
+                if not isinstance(image_paths_value, dict):
+                    raise TypeError("closest-public requests require an image_paths camera mapping")
+                missing_views = [name for name in BENCH2DRIVE_CAMERA_ORDER if name not in image_paths_value]
+                if missing_views:
+                    raise KeyError(f"image_paths is missing views: {missing_views}")
+                image_paths = [Path(str(image_paths_value[name])) for name in BENCH2DRIVE_CAMERA_ORDER]
+                history = torch.as_tensor(payload["history_trajectory"], dtype=torch.float32)
+                high_command = torch.as_tensor(payload["high_command_one_hot"], dtype=torch.float32)
+                status = torch.as_tensor(payload["status_feature"], dtype=torch.float32)
+                feature_kwargs = {
+                    "image_paths": image_paths,
+                    "history_trajectory": history,
+                    "high_command_one_hot": high_command,
+                    "status_feature": status,
+                    "speed": float(payload.get("speed", status[3].item())),
+                    "acceleration_xy": payload.get(
+                        "prompt_acceleration_xy",
+                        [float(status[5].item()), float(status[6].item())],
+                    ),
+                    "command": payload.get("command_value", 4),
+                }
+                timings["build_agent_input"] = time.monotonic() - t0
+            else:
+                agent_input = build_agent_input(payload)
+                timings["build_agent_input"] = time.monotonic() - t0
             t0 = time.monotonic()
             with torch.inference_mode():
-                features = self.feature_builder.compute_features(agent_input)
+                if self.args.contract == "closest-public":
+                    features = self.feature_builder.compute_bench2drive_multiview_features(**feature_kwargs)
+                else:
+                    features = self.feature_builder.compute_features(agent_input)
             timings["visual_features"] = time.monotonic() - t0
             hidden_state = features["last_hidden_state"].detach()
             self.visual_cache[visual_cache_key] = hidden_state
@@ -221,7 +273,7 @@ class ReCogDriveB2DPredictor:
             if visual_cache_key not in self.visual_cache:
                 raise KeyError(
                     f"No cached visual features for key '{visual_cache_key}'. "
-                    "Send image_path on the first request or reduce visual_refresh_interval_steps."
+                    "Send the required image path(s) on the first request or reduce visual_refresh_interval_steps."
                 )
             hidden_state = self.visual_cache[visual_cache_key]
 
@@ -259,8 +311,9 @@ class ReCogDriveB2DPredictor:
             )
         timings["planner"] = time.monotonic() - t0
         trajectory = output["pred_traj"].detach().float().cpu().squeeze(0)
-        if trajectory.shape != (8, 3):
-            raise RuntimeError(f"Planner returned shape {tuple(trajectory.shape)}, expected (8, 3).")
+        expected_shape = (self.horizon, self.action_dim)
+        if tuple(trajectory.shape) != expected_shape:
+            raise RuntimeError(f"Planner returned shape {tuple(trajectory.shape)}, expected {expected_shape}.")
         if not torch.isfinite(trajectory).all():
             raise RuntimeError("Planner returned non-finite trajectory.")
         timings["total"] = time.monotonic() - start
@@ -270,6 +323,7 @@ class ReCogDriveB2DPredictor:
             "elapsed_seconds": timings["total"],
             "sample_token": sample_token,
             "visual_refreshed": visual_refreshed,
+            "contract_id": self.cfg.get("contract_id"),
             "timings": timings,
         }
 

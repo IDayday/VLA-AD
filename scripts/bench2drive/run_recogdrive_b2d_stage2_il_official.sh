@@ -2,8 +2,9 @@
 set -euo pipefail
 
 VLA_AD_ROOT=${VLA_AD_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}
+FORMAL_CLOSEST_PUBLIC=${FORMAL_CLOSEST_PUBLIC:-0}
 ALLOW_RETIRED_CUSTOM_B2D_PIPELINE=${ALLOW_RETIRED_CUSTOM_B2D_PIPELINE:-0}
-if [[ "${ALLOW_RETIRED_CUSTOM_B2D_PIPELINE}" != "1" ]]; then
+if [[ "${FORMAL_CLOSEST_PUBLIC}" != "1" && "${ALLOW_RETIRED_CUSTOM_B2D_PIPELINE}" != "1" ]]; then
   cat >&2 <<'EOF'
 This launcher uses the retired custom front-only/4-history/8-waypoint Stage2
 cache contract. It is not admissible for the ReCogDrive Bench2Drive
@@ -15,8 +16,17 @@ fi
 
 CONDA_BIN=${CONDA_BIN:-/root/miniconda3/bin/conda}
 NAVSIM_ENV=${NAVSIM_ENV:-navsim}
+NAVSIM_PYTHON=${NAVSIM_PYTHON:-/root/miniconda3/envs/${NAVSIM_ENV}/bin/python}
 
-CONFIG=${CONFIG:-${VLA_AD_ROOT}/configs/bench2drive_recogdrive_stage2_official_2b.yaml}
+if [[ "${FORMAL_CLOSEST_PUBLIC}" == "1" ]]; then
+  CONFIG=${CONFIG:-${VLA_AD_ROOT}/configs/bench2drive_recogdrive_stage2_closest_public_2b.yaml}
+  EXPECTED_CONTRACT_ID=${EXPECTED_CONTRACT_ID:-recogdrive_b2d_closest_public_multiview_10hz_6x0p5s_v1}
+  EXPECTED_RECORDS=${EXPECTED_RECORDS:-202656}
+else
+  CONFIG=${CONFIG:-${VLA_AD_ROOT}/configs/bench2drive_recogdrive_stage2_official_2b.yaml}
+  EXPECTED_CONTRACT_ID=${EXPECTED_CONTRACT_ID:-}
+  EXPECTED_RECORDS=${EXPECTED_RECORDS:-}
+fi
 CHUNK_CACHE_ROOT=${CHUNK_CACHE_ROOT:-}
 CHUNK_NAME_PATTERN=${CHUNK_NAME_PATTERN:-shard_*}
 INIT_POLICY_CHECKPOINT=${INIT_POLICY_CHECKPOINT:-${VLA_AD_ROOT}/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt}
@@ -25,7 +35,7 @@ BASE_VLM_PATH=${BASE_VLM_PATH:-${VLA_AD_ROOT}/checkpoints/recogdrive/ReCogDrive-
 EXPECTED_VLM_PATH=${EXPECTED_VLM_PATH:-}
 ALLOW_BASE_VLM_CACHE=${ALLOW_BASE_VLM_CACHE:-0}
 RUN_ID=${RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)}
-OUTPUT_DIR=${OUTPUT_DIR:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_stage2_scratch_2b_${RUN_ID}}
+OUTPUT_DIR=${OUTPUT_DIR:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_stage2_closest_public_2b_${RUN_ID}}
 LAUNCH_LOCK_PATH=${LAUNCH_LOCK_PATH:-${OUTPUT_DIR}.launch.lock}
 
 # ReCogDrive reports Stage II diffusion planner training with large-batch
@@ -69,7 +79,11 @@ if [[ -z "${CHUNK_CACHE_ROOT}" ]]; then
   exit 2
 fi
 
-export CHUNK_CACHE_ROOT CHUNK_NAME_PATTERN OUTPUT_DIR BASE_VLM_PATH EXPECTED_VLM_PATH ALLOW_BASE_VLM_CACHE
+export CHUNK_CACHE_ROOT CHUNK_NAME_PATTERN OUTPUT_DIR BASE_VLM_PATH EXPECTED_VLM_PATH ALLOW_BASE_VLM_CACHE CONFIG
+export EXPECTED_CONTRACT_ID EXPECTED_RECORDS
+export FORMAL_CLOSEST_PUBLIC
+export RANDOM_INIT_POLICY GLOBAL_EPOCHS BATCH_SIZE GRADIENT_ACCUMULATION_STEPS NPROC_PER_NODE
+export PRECISION LR_ACTION_HEAD LR_SCHEDULER LR_SCHEDULER_EPOCHS LR_WARMUP_EPOCHS MIN_LR
 
 cd "${VLA_AD_ROOT}"
 mkdir -p "${OUTPUT_DIR}"
@@ -81,10 +95,62 @@ if ! flock -n 9; then
 fi
 GIT_COMMIT=$(git rev-parse HEAD)
 
-python - <<'PY'
+"${NAVSIM_PYTHON}" - <<'PY'
 import json
 import os
 from pathlib import Path
+import yaml
+
+config_path = Path(os.environ["CONFIG"])
+if not config_path.is_file():
+    raise SystemExit(f"Stage2 config does not exist: {config_path}")
+config = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+if os.environ.get("FORMAL_CLOSEST_PUBLIC") == "1":
+    expected_contract = os.environ["EXPECTED_CONTRACT_ID"]
+    required = {
+        "contract_id": expected_contract,
+        "action_horizon": 6,
+        "use_expert_features": False,
+        "use_jepa": False,
+        "use_vggt": False,
+        "use_teacher_context_tokens": False,
+        "use_student_latent_adapters": False,
+        "use_alignment_loss": False,
+        "use_action_aware_aux": False,
+        "use_bit_drive": False,
+        "use_risk_vla": False,
+        "use_last_rd": False,
+        "grpo": False,
+    }
+    mismatches = {
+        key: {"actual": config.get(key), "expected": expected}
+        for key, expected in required.items()
+        if config.get(key) != expected
+    }
+    if mismatches:
+        raise SystemExit(f"Formal Stage2 config mismatch: {mismatches}")
+    effective_batch = (
+        int(os.environ["BATCH_SIZE"])
+        * int(os.environ["GRADIENT_ACCUMULATION_STEPS"])
+        * int(os.environ["NPROC_PER_NODE"])
+    )
+    runtime_checks = {
+        "random_init_policy": os.environ["RANDOM_INIT_POLICY"].lower() in {"1", "true"},
+        "global_epochs": int(os.environ["GLOBAL_EPOCHS"]) == 200,
+        "effective_global_batch": effective_batch == 512,
+        "precision": os.environ["PRECISION"] == "bf16",
+        "learning_rate": float(os.environ["LR_ACTION_HEAD"]) == 1e-4,
+        "scheduler": os.environ["LR_SCHEDULER"] == "official-cosine",
+        "scheduler_epochs": int(os.environ["LR_SCHEDULER_EPOCHS"]) == 200,
+        "warmup_epochs": int(os.environ["LR_WARMUP_EPOCHS"]) == 3,
+        "minimum_lr": float(os.environ["MIN_LR"]) == 1e-6,
+    }
+    failed_runtime = {key: value for key, value in runtime_checks.items() if not value}
+    if failed_runtime:
+        raise SystemExit(
+            f"Formal Stage2 runtime hyperparameters changed: {failed_runtime}; "
+            f"effective_batch={effective_batch}"
+        )
 
 root = Path(os.environ["CHUNK_CACHE_ROOT"])
 pattern = os.environ["CHUNK_NAME_PATTERN"]
@@ -94,6 +160,7 @@ if not chunks:
 total = 0
 summary = []
 vlm_paths = set()
+contract_ids = set()
 for chunk in chunks:
     meta_path = chunk / "metadata.json"
     index_path = chunk / "index.jsonl"
@@ -114,6 +181,7 @@ for chunk in chunks:
     if not vlm_path:
         raise SystemExit(f"Shard does not record its source VLM: {chunk}")
     vlm_paths.add(str(Path(vlm_path).resolve()))
+    contract_ids.add(str(meta.get("contract_id") or ""))
     count = int(meta.get("num_records") or sum(1 for _ in index_path.open("r", encoding="utf-8")))
     total += count
     summary.append({"name": chunk.name, "num_records": count, "hidden_source": meta.get("hidden_source")})
@@ -122,6 +190,12 @@ if total <= 0:
 if len(vlm_paths) != 1:
     raise SystemExit(f"Cache shards came from multiple VLM checkpoints: {sorted(vlm_paths)}")
 cache_vlm_path = next(iter(vlm_paths))
+expected_contract = os.environ.get("EXPECTED_CONTRACT_ID", "").strip()
+if expected_contract and contract_ids != {expected_contract}:
+    raise SystemExit(f"Cache contract mismatch: found {sorted(contract_ids)}, expected {expected_contract}")
+expected_records = os.environ.get("EXPECTED_RECORDS", "").strip()
+if expected_records and total != int(expected_records):
+    raise SystemExit(f"Cache contains {total} records, expected {expected_records}")
 base_vlm_path = str(Path(os.environ["BASE_VLM_PATH"]).resolve())
 allow_base = os.environ.get("ALLOW_BASE_VLM_CACHE", "0").lower() in {"1", "true", "yes"}
 if cache_vlm_path == base_vlm_path and not allow_base:
@@ -151,6 +225,9 @@ random_init_policy=${RANDOM_INIT_POLICY}
 base_vlm_path=${BASE_VLM_PATH}
 expected_vlm_path=${EXPECTED_VLM_PATH}
 allow_base_vlm_cache=${ALLOW_BASE_VLM_CACHE}
+formal_closest_public=${FORMAL_CLOSEST_PUBLIC}
+expected_contract_id=${EXPECTED_CONTRACT_ID}
+expected_records=${EXPECTED_RECORDS}
 output_dir=${OUTPUT_DIR}
 launch_lock_path=${LAUNCH_LOCK_PATH}
 global_epochs=${GLOBAL_EPOCHS}

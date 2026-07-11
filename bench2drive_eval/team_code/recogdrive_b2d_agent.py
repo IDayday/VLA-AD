@@ -22,6 +22,7 @@ from recogdrive_b2d_common import (
     build_status_feature,
     command_one_hot,
     relative_poses,
+    road_option_value,
     sample_pose_history,
     trajectory_to_pid_waypoints,
 )
@@ -92,6 +93,9 @@ class ReCogDriveB2DAgent(autonomous_agent.AutonomousAgent):
         self.repeat_control_when_not_infer = _cfg_bool(
             self.cfg.get("repeat_control_when_not_infer", self.inference_interval_steps > 1)
         )
+        self.action_horizon = int(self.cfg.get("action_horizon", 6))
+        if self.action_horizon != 6 and self.sensor_profile in {"full", "all", "bench2drive_zoo", "zoo"}:
+            raise ValueError("The closest-public Bench2Drive contract requires action_horizon=6")
 
         self.pidcontroller = PIDController()
         self.pose_history: deque[np.ndarray] = deque(maxlen=max(1, self.history_frames * self.history_interval_steps * 4))
@@ -305,28 +309,73 @@ class ReCogDriveB2DAgent(autonomous_agent.AutonomousAgent):
         Image.fromarray(front_rgb).save(image_path, quality=self.image_quality)
         return image_path
 
+    def _write_multiview_images(self, camera_images: Dict[str, np.ndarray]) -> Dict[str, str]:
+        expected = (
+            "rgb_front",
+            "rgb_front_left",
+            "rgb_front_right",
+            "rgb_back_left",
+            "rgb_back_right",
+            "rgb_back",
+        )
+        missing = [name for name in expected if name not in camera_images]
+        if missing:
+            raise KeyError(f"Missing formal Bench2Drive camera images: {missing}")
+        frame_dir = self.image_dir / self.route_save_name / f"{self.step:06d}"
+        frame_dir.mkdir(parents=True, exist_ok=True)
+        result: Dict[str, str] = {}
+        for camera_name in expected:
+            image_path = frame_dir / f"{camera_name}.jpg"
+            Image.fromarray(camera_images[camera_name]).save(image_path, quality=self.image_quality)
+            result[camera_name] = str(image_path)
+        return result
+
     def _request_trajectory(
-        self, image_path: Optional[Path], history: np.ndarray, command, status: np.ndarray
+        self,
+        image_paths: Optional[Dict[str, str]],
+        history: np.ndarray,
+        command,
+        status: np.ndarray,
+        speed: float,
+        acceleration_xy: np.ndarray,
     ) -> np.ndarray:
         payload = {
             "sample_token": f"{self.route_save_name}_{self.step:06d}",
             "visual_cache_key": self.visual_cache_key,
-            "visual_refresh": image_path is not None,
+            "visual_refresh": image_paths is not None,
             "history_trajectory": history.tolist(),
             "high_command_one_hot": command_one_hot(command).tolist(),
             "status_feature": status.tolist(),
+            "command_value": road_option_value(command),
+            "speed": float(speed),
+            "prompt_acceleration_xy": [float(acceleration_xy[0]), -float(acceleration_xy[1])],
         }
-        if image_path is not None:
-            payload["image_path"] = str(image_path)
-        response = requests.post(f"{self.server_url}/predict", json=payload, timeout=self.request_timeout)
+        if image_paths is not None:
+            payload["image_paths"] = image_paths
+        try:
+            response = requests.post(f"{self.server_url}/predict", json=payload, timeout=self.request_timeout)
+        finally:
+            if image_paths is not None:
+                parents = set()
+                for value in image_paths.values():
+                    path = Path(value)
+                    parents.add(path.parent)
+                    path.unlink(missing_ok=True)
+                for parent in parents:
+                    try:
+                        parent.rmdir()
+                    except OSError:
+                        pass
         if response.status_code >= 400:
             raise RuntimeError(f"ReCogDrive server HTTP {response.status_code}: {response.text[:1000]}")
         result = response.json()
         if "trajectory" not in result:
             raise KeyError(f"ReCogDrive server response missing 'trajectory': {result}")
         trajectory = np.asarray(result["trajectory"], dtype=np.float32)
-        if trajectory.shape != (8, 3):
-            raise ValueError(f"Expected trajectory shape (8, 3), got {trajectory.shape}")
+        if trajectory.shape != (self.action_horizon, 3):
+            raise ValueError(
+                f"Expected trajectory shape ({self.action_horizon}, 3), got {trajectory.shape}"
+            )
         if not np.isfinite(trajectory).all():
             raise ValueError("ReCogDrive server returned non-finite trajectory.")
         return trajectory
@@ -334,6 +383,17 @@ class ReCogDriveB2DAgent(autonomous_agent.AutonomousAgent):
     def tick(self, input_data: Dict[str, Any]) -> Dict[str, Any]:
         self.step += 1
         front_rgb = self._rgb(input_data, "CAM_FRONT")
+        camera_images = {"rgb_front": front_rgb}
+        if self.sensor_profile in {"full", "all", "bench2drive_zoo", "zoo"}:
+            camera_images.update(
+                {
+                    "rgb_front_left": self._rgb(input_data, "CAM_FRONT_LEFT"),
+                    "rgb_front_right": self._rgb(input_data, "CAM_FRONT_RIGHT"),
+                    "rgb_back_left": self._rgb(input_data, "CAM_BACK_LEFT"),
+                    "rgb_back_right": self._rgb(input_data, "CAM_BACK_RIGHT"),
+                    "rgb_back": self._rgb(input_data, "CAM_BACK"),
+                }
+            )
         gps = input_data["GPS"][1][:2]
         speed = float(input_data["SPEED"][1]["speed"])
         compass = float(input_data["IMU"][1][-1])
@@ -362,6 +422,7 @@ class ReCogDriveB2DAgent(autonomous_agent.AutonomousAgent):
         )
         return {
             "front_rgb": front_rgb,
+            "camera_images": camera_images,
             "gps": gps,
             "pos": pos,
             "speed": speed,
@@ -391,12 +452,20 @@ class ReCogDriveB2DAgent(autonomous_agent.AutonomousAgent):
                 or self.visual_refresh_interval_steps <= 1
                 or self.step % self.visual_refresh_interval_steps == 0
             )
-            image_path = self._write_front_image(tick_data["front_rgb"]) if should_refresh_visual else None
+            if should_refresh_visual:
+                if self.sensor_profile in {"full", "all", "bench2drive_zoo", "zoo"}:
+                    image_paths = self._write_multiview_images(tick_data["camera_images"])
+                else:
+                    image_paths = {"rgb_front": str(self._write_front_image(tick_data["front_rgb"]))}
+            else:
+                image_paths = None
             self.last_trajectory = self._request_trajectory(
-                image_path=image_path,
+                image_paths=image_paths,
                 history=tick_data["history_trajectory"],
                 command=tick_data["command_near"],
                 status=tick_data["status_feature"],
+                speed=tick_data["speed"],
+                acceleration_xy=tick_data["acceleration"],
             )
 
         repeated_control = (not should_infer) and self.repeat_control_when_not_infer and self.last_control is not None

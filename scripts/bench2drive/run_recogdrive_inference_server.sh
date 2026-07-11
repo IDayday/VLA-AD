@@ -7,12 +7,13 @@ NAVSIM_ENV=${NAVSIM_ENV:-navsim}
 
 HOST=${HOST:-127.0.0.1}
 PORT=${PORT:-8765}
-CONFIG=${CONFIG:-${VLA_AD_ROOT}/configs/bench2drive_recogdrive_il.yaml}
+CONFIG=${CONFIG:-${VLA_AD_ROOT}/configs/bench2drive_recogdrive_stage2_closest_public_2b.yaml}
 PLANNER_CHECKPOINT=${PLANNER_CHECKPOINT:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_vlm_il_train_full_epoch1/best.ckpt}
 VLM_PATH=${VLM_PATH:-${VLA_AD_ROOT}/checkpoints/recogdrive/ReCogDrive-VLM-2B}
 PRECISION=${PRECISION:-bf16}
 INIT_ACTION_MODE=${INIT_ACTION_MODE:-token_noise}
 INIT_ACTION_SEED=${INIT_ACTION_SEED:-20260709}
+CONTRACT=${CONTRACT:-closest-public}
 
 cd "${VLA_AD_ROOT}"
 exec "${CONDA_BIN}" run --no-capture-output -n "${NAVSIM_ENV}" python scripts/bench2drive/serve_recogdrive_b2d.py \
@@ -22,5 +23,6 @@ exec "${CONDA_BIN}" run --no-capture-output -n "${NAVSIM_ENV}" python scripts/be
   --planner-checkpoint "${PLANNER_CHECKPOINT}" \
   --vlm-path "${VLM_PATH}" \
   --precision "${PRECISION}" \
+  --contract "${CONTRACT}" \
   --init-action-mode "${INIT_ACTION_MODE}" \
   --init-action-seed "${INIT_ACTION_SEED}"

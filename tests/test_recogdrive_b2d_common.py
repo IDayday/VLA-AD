@@ -22,10 +22,10 @@ class DummyRoadOption:
 def test_relative_poses_matches_current_origin() -> None:
     poses = np.array(
         [
-            [10.0, 0.0, 0.0],
-            [11.0, 0.0, 0.0],
-            [12.0, 0.0, 0.0],
-            [13.0, 0.0, 0.0],
+            [0.0, 0.0, 0.0],
+            [0.0, -1.0, 0.0],
+            [0.0, -2.0, 0.0],
+            [0.0, -3.0, 0.0],
         ],
         dtype=np.float64,
     )
@@ -36,7 +36,7 @@ def test_relative_poses_matches_current_origin() -> None:
 
 def test_relative_poses_rotates_by_compass_like_cache_builder() -> None:
     origin = np.array([0.0, 0.0, math.pi / 2], dtype=np.float64)
-    poses = np.array([[0.0, 1.0, math.pi / 2]], dtype=np.float64)
+    poses = np.array([[1.0, 0.0, math.pi / 2]], dtype=np.float64)
     rel = relative_poses(origin, poses)
     np.testing.assert_allclose(rel[0, :2], [1.0, 0.0], atol=1e-6)
     assert abs(float(rel[0, 2])) < 1e-6
@@ -60,6 +60,7 @@ def test_sample_pose_history_pads_with_earliest_available_pose() -> None:
 def test_status_feature_and_pid_waypoint_conversion() -> None:
     status = build_status_feature(command=4, speed=3.0, acceleration_xyz=[1.0, 2.0, 9.8], compass=0.0)
     np.testing.assert_allclose(status[:5], [0.0, 1.0, 0.0, 3.0, 0.0])
+    np.testing.assert_allclose(status[5:], [1.0, 2.0, 0.0])
     assert status.shape == (8,)
 
     trajectory = np.array([[1.0, 2.0, 0.0], [2.0, 3.0, 0.0]], dtype=np.float32)

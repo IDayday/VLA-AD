@@ -21,6 +21,16 @@ def _write_anno(path: Path, idx: int) -> None:
         "command_far": 4,
         "next_command": 4,
         "acceleration": [0.0, 0.0, 9.8],
+        "sensors": {
+            "LIDAR_TOP": {
+                "world2lidar": [
+                    [1.0, 0.0, 0.0, -idx * 0.1],
+                    [0.0, 1.0, 0.0, 0.0],
+                    [0.0, 0.0, 1.0, 0.0],
+                    [0.0, 0.0, 0.0, 1.0],
+                ]
+            }
+        },
     }
     with gzip.open(path, "wt", encoding="utf-8") as f:
         json.dump(payload, f)
@@ -31,8 +41,19 @@ def test_build_bench2drive_chunk_cache(tmp_path: Path):
     clip = data_root / "Straight_Town01_Route1_Weather0"
     for idx in range(60):
         _write_anno(clip / "anno" / f"{idx:05d}.json.gz", idx)
-    (clip / "camera" / "rgb_front").mkdir(parents=True)
-    (clip / "camera" / "rgb_front" / "00015.jpg").write_bytes(b"fake")
+    camera_names = (
+        "rgb_front",
+        "rgb_front_left",
+        "rgb_front_right",
+        "rgb_back_left",
+        "rgb_back_right",
+        "rgb_back",
+    )
+    for camera_name in camera_names:
+        directory = clip / "camera" / camera_name
+        directory.mkdir(parents=True)
+        for idx in (15, 16):
+            (directory / f"{idx:05d}.jpg").write_bytes(b"fake")
 
     args = parse_args(
         [
@@ -42,17 +63,20 @@ def test_build_bench2drive_chunk_cache(tmp_path: Path):
             str(tmp_path / "cache"),
             "--max-samples",
             "2",
-            "--hidden-tokens",
-            "3",
-            "--vlm-feature-dim",
-            "8",
-            "--hidden-dtype",
+            "--cache-hidden-dtype",
             "float32",
-            "--sample-stride",
-            "1",
         ]
     )
-    metadata = build_cache(args)
+
+    class FakeVLMFeatureBuilder:
+        def compute_bench2drive_multiview_features(self, **kwargs):
+            assert len(kwargs["image_paths"]) == 6
+            return {
+                "last_hidden_state": torch.arange(24, dtype=torch.float32).reshape(3, 8),
+                "image_patch_counts": torch.tensor([3, 3, 3, 3, 3, 3]),
+            }
+
+    metadata = build_cache(args, vlm_feature_builder=FakeVLMFeatureBuilder())
     assert metadata["num_records"] == 2
 
     lines = (tmp_path / "cache" / "index.jsonl").read_text(encoding="utf-8").strip().splitlines()
@@ -60,7 +84,7 @@ def test_build_bench2drive_chunk_cache(tmp_path: Path):
     record = json.loads(lines[0])
     sample = load_sample(tmp_path / "cache" / record["path"])
     assert tuple(sample["history_trajectory"].shape) == (4, 3)
-    assert tuple(sample["trajectory"].shape) == (8, 3)
+    assert tuple(sample["trajectory"].shape) == (6, 3)
     assert tuple(sample["high_command_one_hot"].shape) == (3,)
     assert tuple(sample["status_feature"].shape) == (8,)
     assert tuple(sample["last_hidden_state"].shape) == (3, 8)

@@ -443,7 +443,7 @@ def run_gate(args: argparse.Namespace) -> Dict[str, Any]:
         [
             "The pinned Bench2Drive checkout is a clean current public proxy; the commit used for ReCogDrive Table 2 is unknown.",
             "A passing Stage1 gate means closest-public fidelity, not access to the private author Bench2Drive code.",
-            "Stage3 may use a custom reward only under the custom-extension label recorded in the manifest.",
+            "The public Stage3 reward is NAVSIM PDMS; no Bench2Drive or Pareto reward is admitted into the current baseline.",
         ]
     )
     ok = all(item["ok"] for item in checks)

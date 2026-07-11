@@ -12,7 +12,7 @@ ALGO=${ALGO:-recogdrive}
 PLANNER_TYPE=${PLANNER_TYPE:-only_traj}
 BASE_ROUTES=${BASE_ROUTES:-leaderboard/data/bench2drive220}
 TEAM_AGENT=${TEAM_AGENT:-${VLA_AD_ROOT}/bench2drive_eval/team_code/recogdrive_b2d_agent.py}
-TEAM_CONFIG=${TEAM_CONFIG:-${VLA_AD_ROOT}/configs/bench2drive_recogdrive_closed_loop.remote.yaml}
+TEAM_CONFIG=${TEAM_CONFIG:-${VLA_AD_ROOT}/configs/bench2drive_recogdrive_closed_loop.closest_public.yaml}
 SAVE_PATH=${SAVE_PATH:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_closed_loop/bench2drive220}
 RESULT_JSON_DIR=${RESULT_JSON_DIR:-${BENCH2DRIVE_ROOT}/${ALGO}_b2d_${PLANNER_TYPE}}
 WORKER_LOG_DIR=${WORKER_LOG_DIR:-${SAVE_PATH}/worker_logs}
@@ -31,10 +31,23 @@ SERVER_STARTUP_SECONDS=${SERVER_STARTUP_SECONDS:-90}
 SERVER_LOG_DIR=${SERVER_LOG_DIR:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_closed_loop/server_logs}
 SERVER_PROFILE_EVERY=${SERVER_PROFILE_EVERY:-100}
 PRECISION=${PRECISION:-bf16}
-PLANNER_CHECKPOINT=${PLANNER_CHECKPOINT:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_vlm_il_train_full_epoch1/best.ckpt}
-VLM_PATH=${VLM_PATH:-${VLA_AD_ROOT}/checkpoints/recogdrive/ReCogDrive-VLM-2B}
+PLANNER_CHECKPOINT=${PLANNER_CHECKPOINT:-}
+VLM_PATH=${VLM_PATH:-}
+SERVER_CONFIG=${SERVER_CONFIG:-${VLA_AD_ROOT}/configs/bench2drive_recogdrive_stage2_closest_public_2b.yaml}
+SERVER_CONTRACT=${SERVER_CONTRACT:-closest-public}
 GENERATED_TEAM_CONFIG_DIR=${GENERATED_TEAM_CONFIG_DIR:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_closed_loop/generated_team_configs}
 USE_PER_WORKER_SERVER_URLS=${USE_PER_WORKER_SERVER_URLS:-${START_INFERENCE_SERVERS}}
+
+if [[ "${SERVER_CONTRACT}" == "closest-public" ]]; then
+  if [[ -z "${PLANNER_CHECKPOINT}" || -z "${VLM_PATH}" ]]; then
+    echo "closest-public evaluation requires explicit PLANNER_CHECKPOINT and VLM_PATH" >&2
+    exit 2
+  fi
+  if [[ "$(realpath -m "${VLM_PATH}")" == "$(realpath -m "${VLA_AD_ROOT}/checkpoints/recogdrive/ReCogDrive-VLM-2B")" ]]; then
+    echo "Refusing the pre-Stage1 base VLM for closest-public evaluation: ${VLM_PATH}" >&2
+    exit 2
+  fi
+fi
 
 IFS=' ' read -r -a GPU_RANK_LIST <<< "${GPU_RANK_LIST:-0 1 2 3 4 5 6 7}"
 IFS=' ' read -r -a TASK_LIST <<< "${TASK_LIST:-0 1 2 3 4 5 6 7}"
@@ -239,9 +252,10 @@ if [ "${START_INFERENCE_SERVERS}" = "1" ]; then
         python scripts/bench2drive/serve_recogdrive_b2d.py \
           --host "${SERVER_HOST}" \
           --port "${SERVER_PORT}" \
-          --config configs/bench2drive_recogdrive_il.yaml \
+          --config "${SERVER_CONFIG}" \
           --planner-checkpoint "${PLANNER_CHECKPOINT}" \
           --vlm-path "${VLM_PATH}" \
+          --contract "${SERVER_CONTRACT}" \
           --precision "${PRECISION}" \
           --profile-every "${SERVER_PROFILE_EVERY}" > "${SERVER_LOG}" 2>&1
     ) &

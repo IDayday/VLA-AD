@@ -21,7 +21,7 @@ The old 625 GB hidden-state cache
 Stage2 launchers now reject caches sourced from the pre-Stage1 base VLM unless
 an explicit diagnostic override is supplied.
 
-The new pipeline is:
+The historical proposal below is retained only to explain the retired run:
 
 1. Stage1: full VLM SFT on Bench2Drive with the exact online prompt/trajectory contract.
 2. Rebuild disjoint train and validation hidden-state caches from that Stage1 VLM.
@@ -29,6 +29,11 @@ The new pipeline is:
 4. Evaluate Stage2 on the held-out cache and the complete 220-route closed-loop suite.
 5. Stage3: train with a Bench2Drive GRPO reward/cache implementation, initialized from the accepted Stage2 model.
 6. Evaluate the final model on the same complete 220-route suite.
+
+Steps 5-6 were never an authorized reproduction contract and are superseded.
+The active plan stops after the corrected Stage2 baseline and its 220-route
+evaluation. No Pareto, custom Bench2Drive reward, or existing research code is
+introduced before that baseline result is established.
 
 ## Stage1 data contract
 
@@ -184,12 +189,10 @@ ability, comfort/efficiency, infraction, timing, and comparability details.
 
 ## Deferred Stage3 GRPO
 
-Stage3 is outside the active execution plan until Stage2 training and the full
-Stage2 evaluation are complete. The checked-in GRPO path currently computes
-NAVSIM/PDM rewards. It is not a
-faithful Bench2Drive reward implementation and must not be relabeled as B2D
-GRPO. After the Stage2 gate, implement a B2D metric cache/reward adapter using
-the official route criteria (progress, infraction penalties, success, and
-comfort), freeze a Stage2 reference policy, and validate reward parity on a
-small route set before the full GRPO run. The final checkpoint is then evaluated
-on the complete 220-route suite with the same strict serving contract.
+Stage3 is outside the active execution plan. The checked-in public GRPO path
+computes NAVSIM/PDM rewards; it is not a faithful Bench2Drive reward
+implementation and must not be relabeled as B2D GRPO. Public ReCogDrive
+materials do not disclose whether the reported Bench2Drive model used Stage3
+or define a Bench2Drive reward. Only after the corrected Stage2 baseline has
+been trained and evaluated will reward design and migration of the existing
+research code be considered as a separate experiment.

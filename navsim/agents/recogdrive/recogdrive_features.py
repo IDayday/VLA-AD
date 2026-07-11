@@ -8,6 +8,10 @@ import warnings
 import torch
 
 from navsim.planning.training.abstract_feature_target_builder import AbstractFeatureBuilder, AbstractTargetBuilder
+from .bench2drive_contract import (
+    BENCH2DRIVE_CAMERA_ORDER,
+    build_bench2drive_stage1_question,
+)
 from .expert_backends import (
     DummyExpertBackend,
     EXPERT_ALL_KEYS,
@@ -430,6 +434,85 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
             features.setdefault(key, value)
         return features
 
+    def compute_bench2drive_multiview_features(
+        self,
+        *,
+        image_paths: List[str | Path],
+        history_trajectory: torch.Tensor,
+        high_command_one_hot: torch.Tensor,
+        status_feature: torch.Tensor,
+        speed: float,
+        acceleration_xy: List[float] | Tuple[float, float],
+        command: Any,
+    ) -> Dict[str, torch.Tensor]:
+        """Encode the released six-view Bench2Drive Stage1 prompt contract."""
+
+        if self.backbone is None:
+            raise RuntimeError("FeatureBuilder is in online mode, but the backbone was not initialized.")
+        if len(image_paths) != len(BENCH2DRIVE_CAMERA_ORDER):
+            raise ValueError(
+                f"Expected {len(BENCH2DRIVE_CAMERA_ORDER)} Bench2Drive images, got {len(image_paths)}"
+            )
+        history = torch.as_tensor(history_trajectory, dtype=torch.float32)
+        high_command = torch.as_tensor(high_command_one_hot, dtype=torch.float32)
+        status = torch.as_tensor(status_feature, dtype=torch.float32)
+        if tuple(history.shape) != (4, 3):
+            raise ValueError(f"Expected history shape (4, 3), got {tuple(history.shape)}")
+        if tuple(high_command.shape) != (3,):
+            raise ValueError(f"Expected command shape (3,), got {tuple(high_command.shape)}")
+        if tuple(status.shape) != (8,):
+            raise ValueError(f"Expected status shape (8,), got {tuple(status.shape)}")
+
+        from .utils.internvl_preprocess import load_image
+
+        patch_tensors: List[torch.Tensor] = []
+        patch_counts: List[int] = []
+        for camera_name, raw_path in zip(BENCH2DRIVE_CAMERA_ORDER, image_paths):
+            image_path = Path(raw_path)
+            if not image_path.is_file():
+                raise FileNotFoundError(f"Missing {camera_name} image: {image_path}")
+            # Stage1 receives max_dynamic_patch=16 for six images.  InternVL's
+            # multi-image loader allocates floor(16/6)=2 dynamic patches per
+            # view, then appends one thumbnail when the view has >1 patch.
+            patches = load_image(str(image_path), max_num=2)
+            patch_tensors.append(patches)
+            patch_counts.append(int(patches.shape[0]))
+
+        pixel_values = torch.cat(patch_tensors, dim=0).to(self.device)
+        question = build_bench2drive_stage1_question(
+            speed=float(speed),
+            acceleration_xy=acceleration_xy,
+            command=command,
+        )
+        outputs = self.backbone(
+            pixel_values,
+            [question],
+            num_patches_list=[patch_counts],
+        )
+        last_hidden_state = self.backbone.active_hidden_state(outputs).detach().cpu()
+        return {
+            "history_trajectory": history.cpu(),
+            "high_command_one_hot": high_command.cpu(),
+            "last_hidden_state": last_hidden_state,
+            "status_feature": status.cpu(),
+            "image_patch_counts": torch.tensor(patch_counts, dtype=torch.int16),
+        }
+
+    @staticmethod
+    def _bench2drive_image_paths(cameras: Any) -> List[str | Path]:
+        # The B2D adapter maps the six public views onto the NAVSIM camera
+        # container as front, front-left, front-right, back-left, back-right,
+        # and back respectively.
+        camera_slots = (
+            cameras.cam_f0,
+            cameras.cam_l0,
+            cameras.cam_r0,
+            cameras.cam_l2,
+            cameras.cam_r2,
+            cameras.cam_b0,
+        )
+        return [camera.image for camera in camera_slots]
+
     def compute_features(self, agent_input: AgentInput) -> Dict[str, torch.Tensor]:
 
         ego_statuses = agent_input.ego_statuses
@@ -464,6 +547,21 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
         else:
             if self.backbone is None:
                 raise RuntimeError("FeatureBuilder is in online mode, but the backbone was not initialized.")
+            if self.system_prompt_profile == "bench2drive":
+                command_index = int(high_command_one_hot.argmax().item()) if float(high_command_one_hot.max()) > 0 else 1
+                command_value = (1, 4, 2)[command_index]
+                return self._add_expert_features(
+                    self.compute_bench2drive_multiview_features(
+                        image_paths=self._bench2drive_image_paths(cameras[-1]),
+                        history_trajectory=history_trajectory,
+                        high_command_one_hot=high_command_one_hot,
+                        status_feature=status_feature,
+                        speed=float(status_feature[3]),
+                        acceleration_xy=[float(status_feature[5]), float(status_feature[6])],
+                        command=command_value,
+                    ),
+                    agent_input,
+                )
             from .utils.internvl_preprocess import load_image
             
             pixel_values = load_image(str(cameras[-1].cam_f0.image),max_num=12).unsqueeze(0)
@@ -477,12 +575,12 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
             questions = [build_recogdrive_planning_question(history_trajectory, high_command_one_hot)]
 
             outputs = self.backbone(pixel_values_cat.to(self.device), questions, num_patches_list=num_patches_list)
-            last_hidden_state = outputs.hidden_states[-1]
+            last_hidden_state = self.backbone.active_hidden_state(outputs)
 
             features = {
                 "history_trajectory": history_trajectory.cpu(),
                 "high_command_one_hot": high_command_one_hot.cpu(),
-                "last_hidden_state": last_hidden_state.squeeze(0).float().cpu(),
+                "last_hidden_state": last_hidden_state.detach().cpu(),
                 "status_feature": status_feature.cpu(),
             }
             return self._add_expert_features(features, agent_input)

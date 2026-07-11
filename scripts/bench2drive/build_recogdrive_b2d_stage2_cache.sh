@@ -2,28 +2,40 @@
 set -euo pipefail
 
 VLA_AD_ROOT=${VLA_AD_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)}
-CONDA_BIN=${CONDA_BIN:-/root/miniconda3/bin/conda}
-NAVSIM_ENV=${NAVSIM_ENV:-navsim}
+CACHE_PYTHON=${CACHE_PYTHON:-/root/miniconda3/envs/navsim/bin/python}
 
 VLM_PATH=${VLM_PATH:?Set VLM_PATH to the completed Stage1 checkpoint directory}
-STAGE1_DATA_DIR=${STAGE1_DATA_DIR:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_stage1_sft_data_v1}
 DATA_ROOT=${DATA_ROOT:-/mnt/data/Bench2Drive-Base}
+VLM_CODE_SOURCE=${VLM_CODE_SOURCE:-${VLA_AD_ROOT}/checkpoints/recogdrive/ReCogDrive-VLM-2B}
 RUN_ID=${RUN_ID:-$(date -u +%Y%m%dT%H%M%SZ)}
-OUTPUT_ROOT=${OUTPUT_ROOT:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_stage2_cache_${RUN_ID}}
-SPLITS=${SPLITS:-train,val}
-TRAIN_CLIP_LIST=${TRAIN_CLIP_LIST:-${STAGE1_DATA_DIR}/train_clips.txt}
-VAL_CLIP_LIST=${VAL_CLIP_LIST:-${STAGE1_DATA_DIR}/val_clips.txt}
-EXPECTED_TRAIN_CLIPS=${EXPECTED_TRAIN_CLIPS:-}
+OUTPUT_ROOT=${OUTPUT_ROOT:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_stage2_cache_closest_public_${RUN_ID}}
+SPLITS=${SPLITS:-train}
+TRAIN_CLIP_LIST=${TRAIN_CLIP_LIST:-}
+VAL_CLIP_LIST=${VAL_CLIP_LIST:-}
+EXPECTED_TRAIN_CLIPS=${EXPECTED_TRAIN_CLIPS:-1000}
 EXPECTED_VAL_CLIPS=${EXPECTED_VAL_CLIPS:-}
 GPU_LIST=${GPU_LIST:-0,1,2,3,4,5,6,7}
 N_SHARDS=${N_SHARDS:-8}
 LOG_EVERY=${LOG_EVERY:-100}
 OVERWRITE=${OVERWRITE:-0}
+CONTRACT_AUDIT_SAMPLES=${CONTRACT_AUDIT_SAMPLES:-128}
 
 if [[ ! -d "${VLM_PATH}" ]]; then
   echo "Stage1 VLM checkpoint not found: ${VLM_PATH}" >&2
   exit 2
 fi
+if [[ ! -f "${VLM_PATH}/model.safetensors" || ! -f "${VLM_PATH}/config.json" ]]; then
+  echo "Stage1 VLM is incomplete (need model.safetensors and config.json): ${VLM_PATH}" >&2
+  exit 2
+fi
+if [[ ! -x "${CACHE_PYTHON}" ]]; then
+  echo "Cache Python is missing or not executable: ${CACHE_PYTHON}" >&2
+  exit 2
+fi
+"${CACHE_PYTHON}" "${VLA_AD_ROOT}/scripts/bench2drive/materialize_recogdrive_vlm_remote_code.py" \
+  --checkpoint "${VLM_PATH}" \
+  --source "${VLM_CODE_SOURCE}" \
+  > "${VLM_PATH}/recogdrive_remote_code_materialization.log"
 IFS=',' read -r -a GPUS <<< "${GPU_LIST}"
 if (( ${#GPUS[@]} < N_SHARDS )); then
   echo "N_SHARDS=${N_SHARDS} requires at least that many entries in GPU_LIST=${GPU_LIST}" >&2
@@ -31,12 +43,33 @@ if (( ${#GPUS[@]} < N_SHARDS )); then
 fi
 
 mkdir -p "${OUTPUT_ROOT}"
+if [[ -z "${TRAIN_CLIP_LIST}" ]]; then
+  TRAIN_CLIP_LIST="${OUTPUT_ROOT}/all_1000_clips.txt"
+  DATA_ROOT="${DATA_ROOT}" TRAIN_CLIP_LIST="${TRAIN_CLIP_LIST}" python - <<'PY'
+import os
+from pathlib import Path
+
+root = Path(os.environ["DATA_ROOT"])
+clips = sorted(
+    path.name
+    for path in root.iterdir()
+    if path.is_dir() and path.name != "maps" and (path / "anno").is_dir()
+)
+if len(clips) != 1000:
+    raise SystemExit(f"Expected 1000 raw Bench2Drive clips, found {len(clips)} under {root}")
+Path(os.environ["TRAIN_CLIP_LIST"]).write_text("\n".join(clips) + "\n", encoding="utf-8")
+PY
+fi
+"${CACHE_PYTHON}" "${VLA_AD_ROOT}/scripts/bench2drive/audit_recogdrive_b2d_stage2_contract.py" \
+  --data-root "${DATA_ROOT}" \
+  --sample-count "${CONTRACT_AUDIT_SAMPLES}" \
+  --report "${OUTPUT_ROOT}/released_contract_audit.json" \
+  > "${OUTPUT_ROOT}/released_contract_audit.log"
 GIT_COMMIT=$(cd "${VLA_AD_ROOT}" && git rev-parse HEAD)
 cat > "${OUTPUT_ROOT}/launch_env.txt" <<EOF
 date_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 git_commit=${GIT_COMMIT}
 vlm_path=${VLM_PATH}
-stage1_data_dir=${STAGE1_DATA_DIR}
 data_root=${DATA_ROOT}
 output_root=${OUTPUT_ROOT}
 splits=${SPLITS}
@@ -44,8 +77,11 @@ train_clip_list=${TRAIN_CLIP_LIST}
 val_clip_list=${VAL_CLIP_LIST}
 expected_train_clips=${EXPECTED_TRAIN_CLIPS}
 expected_val_clips=${EXPECTED_VAL_CLIPS}
+cache_python=${CACHE_PYTHON}
+vlm_code_source=${VLM_CODE_SOURCE}
 gpu_list=${GPU_LIST}
 n_shards=${N_SHARDS}
+contract_audit_samples=${CONTRACT_AUDIT_SAMPLES}
 EOF
 
 run_split() {
@@ -92,7 +128,7 @@ run_split() {
     local shard_dir="${OUTPUT_ROOT}/${split}/${shard_name}"
     local log_path="${OUTPUT_ROOT}/${split}/${shard_name}.log"
     local -a args=(
-      python scripts/build_bench2drive_recogdrive_chunk_cache.py
+      "${CACHE_PYTHON}" scripts/build_bench2drive_recogdrive_chunk_cache.py
       --data-root "${DATA_ROOT}"
       --output-dir "${shard_dir}"
       --clip-list "${clip_list}"
@@ -103,9 +139,10 @@ run_split() {
       --system-prompt-profile bench2drive
       --device cuda
       --frame-step 5
-      --sample-stride 5
+      --sample-stride 1
       --history-frames 4
-      --future-frames 8
+      --future-frames 6
+      --cache-hidden-dtype bfloat16
       --log-every "${LOG_EVERY}"
     )
     if [[ "${OVERWRITE}" == "1" || "${OVERWRITE}" == "true" || "${OVERWRITE}" == "TRUE" ]]; then
@@ -116,7 +153,7 @@ run_split() {
       cd "${VLA_AD_ROOT}"
       env CUDA_VISIBLE_DEVICES="${GPUS[shard]}" \
         PYTHONPATH="${VLA_AD_ROOT}${PYTHONPATH:+:${PYTHONPATH}}" \
-        "${CONDA_BIN}" run --no-capture-output -n "${NAVSIM_ENV}" "${args[@]}"
+        "${args[@]}"
     ) > "${log_path}" 2>&1 &
     pids+=("$!")
   done

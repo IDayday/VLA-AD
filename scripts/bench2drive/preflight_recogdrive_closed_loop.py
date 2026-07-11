@@ -19,7 +19,11 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Preflight checks for ReCogDrive Bench2Drive closed-loop evaluation.")
     parser.add_argument("--bench2drive-root", type=Path, default=Path(os.environ.get("BENCH2DRIVE_ROOT", "")))
     parser.add_argument("--carla-root", type=Path, default=Path(os.environ.get("CARLA_ROOT", "")))
-    parser.add_argument("--agent-config", type=Path, default=Path("configs/bench2drive_recogdrive_closed_loop.remote.yaml"))
+    parser.add_argument(
+        "--agent-config",
+        type=Path,
+        default=Path("configs/bench2drive_recogdrive_closed_loop.closest_public.yaml"),
+    )
     parser.add_argument("--routes", type=Path, default=None)
     parser.add_argument("--server-url", default=None)
     parser.add_argument("--require-server", action="store_true")
@@ -91,6 +95,21 @@ def main() -> int:
         cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
         server_url = server_url or cfg.get("server_url")
         add(checks, "agent_mode_remote", cfg.get("mode", "remote") == "remote", str(cfg.get("mode")))
+        add(
+            checks,
+            "closest_public_contract",
+            cfg.get("contract_id") == "recogdrive_b2d_closest_public_multiview_10hz_6x0p5s_v1",
+            str(cfg.get("contract_id")),
+        )
+        add(checks, "six_view_sensor_profile", cfg.get("sensor_profile") == "bench2drive_zoo", str(cfg.get("sensor_profile")))
+        add(checks, "six_pose_horizon", int(cfg.get("action_horizon", -1)) == 6, str(cfg.get("action_horizon")))
+        add(
+            checks,
+            "ten_hz_model_refresh",
+            int(cfg.get("inference_interval_steps", -1)) == 2
+            and int(cfg.get("visual_refresh_interval_steps", -1)) == 2,
+            f"inference={cfg.get('inference_interval_steps')} visual={cfg.get('visual_refresh_interval_steps')}",
+        )
     if server_url:
         health = server_health(str(server_url))
         add(checks, "recogdrive_server", bool(health.get("ok")), json.dumps(health, sort_keys=True))

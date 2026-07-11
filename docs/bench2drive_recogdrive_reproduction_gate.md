@@ -118,72 +118,77 @@ Both modes execute the reproduction gate and load real trajectory, ordinary
 QA, and maximum-length QA samples through the InternVL tokenizer/image pipeline
 before allocating the full model. The old front-only launcher is not called.
 
-### Stage2: blocked pending contract closure
+### Stage2: ready as closest-public
 
-The main Stage2 reproduction must not start until the following are resolved or
-explicitly approved as public proxies:
+The released trajectory JSONL and matched raw annotations close the previously
+ambiguous data contract sufficiently for a declared public proxy:
 
-- 950/50 versus all-1,000 raw clips;
-- raw frame cadence and downsampling;
-- history duration and interval;
-- six versus eight future waypoints and the prediction horizon;
-- planner coordinate/heading convention;
-- multi-view hidden-state prompt and token selection;
-- checkpoint selection rule.
+- all 1,000 raw clips are fitting data, as explicitly selected for this run;
+- training anchors retain every consecutive raw frame (10 Hz), matching the
+  released Traj row cadence; history and future waypoints use five-frame
+  spacing (0.5 seconds);
+- history is four poses at 0.5-second intervals;
+- the target is six poses at 0.5-second intervals (3 seconds total), matching
+  the released trajectory rows; same-team UniDriveVLA independently uses a
+  six-pose B2D action horizon;
+- all six views and the released Stage1 prompt are reused byte-for-byte;
+- hidden caching keeps every non-padding final-layer token and stores BF16;
+- planner actions are `[LIDAR-forward, LIDAR-lateral, relative-yaw]`, computed
+  from the raw 4x4 `world2lidar` matrices. The textual Stage1 answer swaps the
+  first two axes and adds a pi/2 heading offset, so it is not used directly as
+  the DiT action target;
+- the DiT starts randomly, trains 200 epochs with effective batch 512, and the
+  epoch-200 checkpoint is the formal candidate.
 
-The architecture and headline optimizer settings are known and recorded in the
-manifest, but they do not resolve the B2D data contract.
+The 1,000 clips yield exactly 202,656 windows. Eight windows rejected by the old
+pipeline had NaN scalar `theta`, but their official `world2lidar` matrices are
+finite and the released Stage1 JSONL includes those frames. The corrected
+matrix-based cache therefore retains them. The launcher refuses any other
+count or contract identifier.
 
-### Stage3: custom-aligned extension
+Build the cache and start Stage2 manually:
 
-The official B2D reward is unavailable. A local reward is authorized, but the
-stage must be called `custom-aligned-extension`, not an official Stage3
-reproduction. Training/evaluation consistency means sharing semantics, units,
-thresholds, coordinate transforms, horizon, and component direction. It does
-not mean replacing final evaluation with the training reward.
+```bash
+VLM_PATH=/path/to/completed/stage1 \
+OUTPUT_ROOT=outputs/bench2drive_recogdrive_stage2_cache_<run> \
+bash scripts/bench2drive/build_recogdrive_b2d_stage2_cache.sh
 
-The reward must be versioned as `bench2drive_diffgrpo_reward_v1` and must expose
-separate components for at least:
+CHUNK_CACHE_ROOT=outputs/bench2drive_recogdrive_stage2_cache_<run>/train \
+EXPECTED_VLM_PATH=/path/to/completed/stage1 \
+bash scripts/bench2drive/run_recogdrive_b2d_stage2_closest_public.sh
+```
 
-- official-style route progress/completion;
-- collisions and drivable-area/outside-lane compliance;
-- traffic lights, stop signs, and emergency-vehicle yielding;
-- blocked/minimum-speed behavior and bounded useful progress;
-- command/route adherence;
-- comfort based on the same acceleration/jerk/yaw semantics and 20 Hz ego-state
-  sampling used by the official evaluation.
+Or use `watch_recogdrive_b2d_stage1_then_stage2.sh` to wait for the final
+Stage1 checkpoint, build/validate the full cache, and launch scratch Stage2
+exactly once.
 
-Safety-critical penalties should retain the official multiplicative/hard-gate
-semantics, while dense shaping may be added to prevent zero-advantage groups.
-Every dense term must be logged separately so reward gaming can be identified.
+### Stage3: blocked from the current baseline
 
-Before Stage3 training, the reward gate requires:
+The paper and public code define DiffGRPO rollouts with the NAVSIM non-reactive
+PDM simulator and scalar NAVSIM PDMS. They do not disclose a Bench2Drive reward,
+state whether Table 2 used Stage3, or explain how public 8-pose NAVSIM GRPO
+connects to the released six-pose B2D contract.
 
-1. unit tests showing monotonic ordering for controlled safe/unsafe candidate
-   trajectories;
-2. component-level golden cases for collision, off-road, traffic-law, blocked,
-   progress, and comfort events;
-3. shadow scoring of frozen validation rollouts using both the custom reward and
-   the official Bench2Drive evaluator;
-4. a calibration report produced without tuning on the complete 220-route
-   result;
-5. a frozen reward configuration and source commit recorded in every Stage3
-   checkpoint.
+Therefore this baseline does not invent a B2D scalar reward and does not add
+Pareto optimization. The checked-in public NAVSIM DiffGRPO path remains
+unchanged. The corrected Stage2 baseline is trained and evaluated first. A
+later custom reward or migration of our research method must be a separate,
+explicitly labeled experiment initialized from the reproduced baseline.
 
-Final model selection may use only training/validation evidence. The complete
-220-route suite remains a final evaluation and is always scored with the
-official Bench2Drive tools, not the custom training reward.
+### Evaluation: ready as closest-public
 
-### Evaluation: infrastructure available, ReCogDrive wrapper unresolved
+The public proxy wrapper now uses the official Bench2Drive six-camera zoo
+calibration, the same multi-view prompt as caching, four 0.5-second history
+poses, a six-pose planner output, and the repository's trajectory PID. Control
+runs at 20 Hz while VLM/planner inference runs every second tick (10 Hz),
+matching the released consecutive-anchor cadence without reusing a prompt
+across more than one intermediate control tick.
 
-The 220 routes, CARLA version, and official metric tools are available. The
-reported ReCogDrive sensor/controller contract is not. A formal final run still
-requires closure of multi-view sensor calibration, VLM/planner/control
-frequency, trajectory-to-control conversion, PID parameters, evaluator commit,
-and seed/repetition policy.
-
-The current front-only 2 Hz visual-refresh HTTP wrapper cannot be used for the
-formal reproduction.
+The exact private ReCogDrive controller, inference frequency, evaluator commit,
+seed policy and raw route JSON remain unknown. Those limitations prevent a
+paper-exact label but no longer justify using the retired front-only wrapper.
+The complete 220 routes are final evaluation only and are scored by the
+official Bench2Drive evaluator.
 
 ## Running the gate
 
@@ -206,6 +211,6 @@ python scripts/bench2drive/check_recogdrive_b2d_reproduction_gate.py \
   --verify-all-images
 ```
 
-Requests for Stage2, Stage3, or evaluation return exit code 2 while their
-contract is blocked. Artifact corruption or provenance mismatch returns exit
-code 1. A ready target returns exit code 0.
+Stage1, Stage2 and evaluation return zero when their closest-public contracts
+and artifacts pass. Stage3 intentionally returns exit code 2. Artifact or
+provenance failure returns exit code 1.

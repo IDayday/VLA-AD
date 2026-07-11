@@ -1349,7 +1349,14 @@ def main() -> int:
             optimizer_step(planner, optimizer, scaler)
             optimizer_step_count += 1
             pending_grad_steps = 0
-        final_metrics = {"step": global_step, "optimizer_step": optimizer_step_count, "loss": last_loss, "best_loss": best_loss}
+        final_metrics = {
+            "step": global_step,
+            "optimizer_step": optimizer_step_count,
+            "global_epoch": max(completed_global_epochs - 1, 0),
+            "completed_global_epochs": completed_global_epochs,
+            "loss": last_loss,
+            "best_loss": best_loss,
+        }
         if is_rank0(rank):
             save_checkpoint(args.output_dir / "latest.ckpt", planner, optimizer, global_step, cfg_dict, final_metrics)
         if is_rank0(rank) and not (args.output_dir / "best.ckpt").is_file():

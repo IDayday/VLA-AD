@@ -32,6 +32,11 @@
       "url": "https://github.com/Thinklab-SJTU/Bench2Drive",
       "local_commit": "2645714eb1f3a100217928dd113093cae0779f36",
       "paper_table_commit": null
+    },
+    "unidrivevla_reference": {
+      "url": "https://github.com/xiaomi-research/unidrivevla",
+      "commit": "a93c175af893b35dc16618e659eca4d18bb1ec86",
+      "use": "same-team public Bench2Drive proxy for six-view sensors and a six-pose action horizon"
     }
   },
   "artifacts": {
@@ -177,8 +182,9 @@
       ]
     },
     "stage2": {
-      "status": "blocked_official_contract",
-      "classification": "must not launch the main reproduction run yet",
+      "status": "ready_public_proxy",
+      "classification": "closest-public ReCogDrive Bench2Drive Stage2 baseline; not paper-exact",
+      "contract_id": "recogdrive_b2d_closest_public_multiview_10hz_6x0p5s_v1",
       "author_confirmed": {
         "input_data_type": "raw Bench2Drive trajectories"
       },
@@ -197,48 +203,76 @@
         "diffusion_training_steps": 100,
         "ddim_inference_steps": 5
       },
-      "blocking_unknowns": [
-        "950/50 versus all-1000 raw clip split",
-        "Raw frame sampling cadence and whether downsampling is used",
-        "History duration and sampling interval",
-        "Six versus eight output waypoints and their time horizon",
-        "Bench2Drive coordinate and heading convention inside the planner",
-        "Exact multi-view hidden-state prompt and selected token window",
-        "Checkpoint selection rule"
+      "approved_public_proxy_contract": {
+        "training_clips": 1000,
+        "expected_windows_before_invalid_filter": 202656,
+        "expected_invalid_world2lidar_windows": 0,
+        "expected_training_records": 202656,
+        "raw_frequency_hz": 10,
+        "sample_stride_frames": 1,
+        "training_anchor_frequency_hz": 10,
+        "target_waypoint_frequency_hz": 2,
+        "history_poses": 4,
+        "history_interval_seconds": 0.5,
+        "future_poses": 6,
+        "future_interval_seconds": 0.5,
+        "future_horizon_seconds": 3.0,
+        "camera_views": 6,
+        "camera_order": [
+          "rgb_front",
+          "rgb_front_left",
+          "rgb_front_right",
+          "rgb_back_left",
+          "rgb_back_right",
+          "rgb_back"
+        ],
+        "vlm_prompt": "byte-equivalent released Bench2drive_Traj system/human prompt for matched raw records",
+        "hidden_token_selection": "all non-padding final-layer tokens; no semantic truncation",
+        "hidden_cache_dtype": "bfloat16",
+        "planner_coordinate": "[LIDAR-forward, LIDAR-lateral, relative-yaw] from current_world2lidar @ inverse(target_world2lidar)",
+        "planner_initialization": "random",
+        "checkpoint_for_final_evaluation": "epoch 200 final checkpoint; loss-best is diagnostic only",
+        "model_selection_policy": "the complete 220-route suite is final evaluation, not checkpoint tuning"
+      },
+      "remaining_private_unknowns": [
+        "Whether the author run used all 1000 clips or a private split",
+        "Whether the private planner used a different hidden-token subset",
+        "Whether the private planner target horizon differed from the released six-point trajectory data",
+        "Exact random seed and multi-node topology"
       ]
     },
     "stage3": {
-      "status": "blocked_pending_custom_reward_validation",
-      "classification": "ReCogDrive-style custom Bench2Drive DiffGRPO extension, not an official reward reproduction",
-      "reward_id": "bench2drive_diffgrpo_reward_v1",
-      "known_training_proxy": {
+      "status": "blocked_no_public_bench2drive_reward_contract",
+      "classification": "not part of the current baseline run; no custom or Pareto reward may be introduced",
+      "public_navsim_contract": {
+        "simulator": "NAVSIM non-reactive PDM simulator",
+        "reward": "scalar Predictive Driver Model Score (PDMS)",
+        "components": [
+          "collision avoidance",
+          "drivable area compliance",
+          "time to collision",
+          "comfort",
+          "ego progress"
+        ],
         "epochs": 10,
         "global_batch_size": 128,
         "learning_rate": 0.0001,
         "scheduler": "cosine_to_zero",
         "bc_loss_weight": 0.01,
-        "denoising_discount": 0.6
+        "denoising_discount": 0.6,
+        "policy_updates_per_batch": 1
       },
-      "required_consistency_axes": [
-        "coordinate frame, units, waypoint horizon and sampling interval",
-        "route progress and route-completion semantics",
-        "collision, drivable-area and outside-lane semantics",
-        "red-light, stop-sign and emergency-yield event semantics",
-        "blocked and minimum-speed semantics",
-        "comfort formulas and 20 Hz ego-state sampling",
-        "reward component sign, normalization, clipping and aggregation"
+      "blocking_unknowns": [
+        "Whether the reported Bench2Drive Table 2 model used Stage3 at all",
+        "Whether any Bench2Drive simulator/reward cache was used",
+        "How a six-pose 3-second Bench2Drive planner was reconciled with the public NAVSIM 8-pose 4-second GRPO code",
+        "Exact Bench2Drive reward definition, rollout data and aggregation"
       ],
-      "required_validation": [
-        "Version every reward implementation and record its source-code commit",
-        "Log every reward component instead of only the scalar aggregate",
-        "Unit-test monotonic behavior on controlled safe and unsafe trajectories",
-        "Shadow-score frozen validation rollouts with both the reward and official Bench2Drive evaluator",
-        "Calibrate on training/validation data only; never tune reward weights on the full 220-route result",
-        "Evaluate final checkpoints only with the official Bench2Drive metrics"
-      ]
+      "decision": "First train and evaluate the corrected Stage2 baseline. Keep the published NAVSIM DiffGRPO path unchanged. Do not create a Bench2Drive scalar, Pareto, or migrated research reward under the reproduction label."
     },
     "evaluation": {
-      "status": "blocked_official_wrapper",
+      "status": "ready_public_proxy",
+      "classification": "closest-public six-view Bench2Drive wrapper; controller/frequency remain disclosed proxies",
       "author_confirmed": {
         "routes": 220,
         "camera_mode": "multi-view",
@@ -250,11 +284,20 @@
           "Driving Smoothness"
         ]
       },
-      "blocking_unknowns": [
-        "Exact sensor intrinsics and extrinsics used by ReCogDrive",
-        "VLM refresh and planner/control frequency",
-        "Trajectory-to-control controller and PID gains",
-        "Coordinate conversion between planner output and CARLA control",
+      "approved_public_proxy_contract": {
+        "sensor_profile": "official Bench2Drive six-camera zoo calibration",
+        "vlm_prompt": "same six-view Stage1 prompt as cache generation",
+        "history": "four poses at 0.5-second intervals",
+        "planner_output": "six poses at 0.5-second intervals in forward/lateral/yaw coordinates",
+        "control_frequency_hz": 20,
+        "vlm_and_planner_refresh": "every second control tick (10 Hz), matching released consecutive training anchors",
+        "controller": "repository Bench2Drive trajectory PID",
+        "final_suite": "all 220 routes exactly once",
+        "metrics": "official Bench2Drive evaluator only"
+      },
+      "remaining_private_unknowns": [
+        "Exact VLM refresh and planner/control frequency used by ReCogDrive",
+        "Exact trajectory-to-control controller and PID gains used by ReCogDrive",
         "CARLA and Bench2Drive commits used for the reported Table 2 result",
         "Evaluation seed/repetition policy",
         "Raw official 220-route result JSON"
