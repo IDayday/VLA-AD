@@ -22,12 +22,17 @@ if (( ${#GPUS[@]} == 0 )); then
   exit 2
 fi
 
-mkdir -p "${OUT_ROOT}/logs"
+mkdir -p "${OUT_ROOT}/logs" "${OUT_ROOT}/state"
 SUMMARY_TSV="${OUT_ROOT}/navtest_summary.tsv"
 COMMANDS_LOG="${OUT_ROOT}/commands.log"
-if [[ ! -f "${SUMMARY_TSV}" ]]; then
-  printf 'checkpoint\tcheckpoint_path\tPDMS\tNC\tDAC\tTTC\tcomfort\tEP\tDDC\ttrajectory_l1\tnum_samples\tnum_pdm_valid\tnum_pdm_failed\tnum_pdm_missing_metric_cache\teval_dir\n' >"${SUMMARY_TSV}"
-fi
+SUMMARY_LOCK="${OUT_ROOT}/state/summary.lock"
+COMMANDS_LOCK="${OUT_ROOT}/state/commands.lock"
+{
+  flock -x 9
+  if [[ ! -f "${SUMMARY_TSV}" ]]; then
+    printf 'checkpoint\tcheckpoint_path\tPDMS\tNC\tDAC\tTTC\tcomfort\tEP\tDDC\ttrajectory_l1\tnum_samples\tnum_pdm_valid\tnum_pdm_failed\tnum_pdm_missing_metric_cache\teval_dir\n' >"${SUMMARY_TSV}"
+  fi
+} 9>"${SUMMARY_LOCK}"
 
 safe_name() {
   "${PYTHON_BIN}" - "$1" <<'PY'
@@ -40,7 +45,8 @@ PY
 aggregate_metrics() {
   local eval_dir="$1"
   local checkpoint="$2"
-  "${PYTHON_BIN}" - "${eval_dir}" "${checkpoint}" "${SUMMARY_TSV}" <<'PY'
+  "${PYTHON_BIN}" - "${eval_dir}" "${checkpoint}" "${SUMMARY_TSV}" "${SUMMARY_LOCK}" <<'PY'
+import fcntl
 import json
 import sys
 from pathlib import Path
@@ -48,6 +54,7 @@ from pathlib import Path
 eval_dir = Path(sys.argv[1])
 checkpoint = sys.argv[2]
 summary_tsv = Path(sys.argv[3])
+summary_lock = Path(sys.argv[4])
 metrics = []
 for path in sorted(eval_dir.glob("shard_*/metrics.json")):
     metrics.append(json.loads(path.read_text()))
@@ -85,8 +92,19 @@ fields = [
     payload["trajectory_l1"], payload["num_samples"], payload["num_pdm_valid"], payload["num_pdm_failed"],
     payload["num_pdm_missing_metric_cache"], payload["eval_dir"],
 ]
-with summary_tsv.open("a", encoding="utf-8") as f:
-    f.write("\t".join("" if v is None else str(v) for v in fields) + "\n")
+with summary_lock.open("a", encoding="utf-8") as lock:
+    fcntl.flock(lock, fcntl.LOCK_EX)
+    already_recorded = False
+    if summary_tsv.exists():
+        with summary_tsv.open("r", encoding="utf-8") as f:
+            for index, line in enumerate(f):
+                columns = line.rstrip("\n").split("\t")
+                if index > 0 and len(columns) > 1 and columns[1] == checkpoint:
+                    already_recorded = True
+                    break
+    if not already_recorded:
+        with summary_tsv.open("a", encoding="utf-8") as f:
+            f.write("\t".join("" if v is None else str(v) for v in fields) + "\n")
 print(json.dumps(payload, indent=2, sort_keys=True))
 PY
 }
@@ -129,10 +147,13 @@ for checkpoint in "${CKPTS[@]}"; do
       --output-dir "${shard_dir}"
     )
     {
-      printf '[%s] CUDA_VISIBLE_DEVICES=%q ' "$(date -Is)" "${gpu}"
-      printf '%q ' "${cmd[@]}"
-      printf '\n'
-    } >>"${COMMANDS_LOG}"
+      flock -x 9
+      {
+        printf '[%s] CUDA_VISIBLE_DEVICES=%q ' "$(date -Is)" "${gpu}"
+        printf '%q ' "${cmd[@]}"
+        printf '\n'
+      } >>"${COMMANDS_LOG}"
+    } 9>"${COMMANDS_LOCK}"
     CUDA_VISIBLE_DEVICES="${gpu}" "${cmd[@]}" >"${eval_dir}/logs/shard_$(printf '%02d' "${shard}").log" 2>&1 &
     pids+=("$!")
     sleep "${STAGGER_SECONDS:-1}"

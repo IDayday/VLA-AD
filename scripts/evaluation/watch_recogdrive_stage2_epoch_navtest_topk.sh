@@ -8,6 +8,9 @@ PROJECT_ROOT="${PROJECT_ROOT:-/mnt/project/VLA-AD_last_vla_dev}"
 PYTHON_BIN="${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}"
 EPOCH_MIN="${EPOCH_MIN:-100}"
 EPOCH_MAX="${EPOCH_MAX:-200}"
+EPOCH_STRIDE="${EPOCH_STRIDE:-1}"
+EPOCH_OFFSET="${EPOCH_OFFSET:-0}"
+WORKER_ID="${WORKER_ID:-stride${EPOCH_STRIDE}_offset${EPOCH_OFFSET}}"
 TOP_K="${TOP_K:-3}"
 POLL_SECONDS="${POLL_SECONDS:-900}"
 STABLE_SECONDS="${STABLE_SECONDS:-180}"
@@ -21,11 +24,24 @@ CHUNK_NAME_PATTERN="${CHUNK_NAME_PATTERN:-navtest_full_chunk_*}"
 METRIC_CACHE_DIR="${METRIC_CACHE_DIR:-/mnt/project/VLA-AD/cache/metric_cache_navtest_full_v1}"
 TRAJECTORY_OUTPUT_KEY="${TRAJECTORY_OUTPUT_KEY:-pred_traj}"
 
+if ! [[ "${EPOCH_STRIDE}" =~ ^[1-9][0-9]*$ ]]; then
+  echo "EPOCH_STRIDE must be positive, got: ${EPOCH_STRIDE}" >&2
+  exit 2
+fi
+if ! [[ "${EPOCH_OFFSET}" =~ ^[0-9]+$ ]] || (( EPOCH_OFFSET >= EPOCH_STRIDE )); then
+  echo "EPOCH_OFFSET must be in [0, EPOCH_STRIDE), got: ${EPOCH_OFFSET}" >&2
+  exit 2
+fi
+
 mkdir -p "${OUT_ROOT}/logs" "${OUT_ROOT}/state" "${OUT_ROOT}/top${TOP_K}_ckpts"
-WATCH_LOG="${OUT_ROOT}/logs/watcher.log"
+WATCH_LOG="${WATCH_LOG:-${OUT_ROOT}/logs/watcher.log}"
+mkdir -p "$(dirname "${WATCH_LOG}")"
 STATE_FILE="${OUT_ROOT}/state/evaluated_ckpts.txt"
 SUMMARY_TSV="${OUT_ROOT}/navtest_summary.tsv"
 TOP_TSV="${OUT_ROOT}/top${TOP_K}_summary.tsv"
+STATE_LOCK="${OUT_ROOT}/state/evaluated_ckpts.lock"
+SUMMARY_LOCK="${OUT_ROOT}/state/summary.lock"
+TOPK_LOCK="${OUT_ROOT}/state/topk.lock"
 touch "${STATE_FILE}"
 
 log() {
@@ -56,7 +72,10 @@ is_stable_file() {
 
 refresh_topk() {
   [[ -f "${SUMMARY_TSV}" ]] || return 0
-  "${PYTHON_BIN}" - "${SUMMARY_TSV}" "${OUT_ROOT}/top${TOP_K}_ckpts" "${TOP_TSV}" "${TOP_K}" <<'PY'
+  (
+    flock -x 8
+    flock -x 9
+    "${PYTHON_BIN}" - "${SUMMARY_TSV}" "${OUT_ROOT}/top${TOP_K}_ckpts" "${TOP_TSV}" "${TOP_K}" <<'PY'
 import csv
 import os
 import shutil
@@ -67,7 +86,7 @@ summary = Path(sys.argv[1])
 top_dir = Path(sys.argv[2])
 top_tsv = Path(sys.argv[3])
 top_k = int(sys.argv[4])
-rows = []
+rows_by_checkpoint = {}
 with summary.open("r", encoding="utf-8") as f:
     reader = csv.DictReader(f, delimiter="\t")
     for row in reader:
@@ -77,7 +96,8 @@ with summary.open("r", encoding="utf-8") as f:
             continue
         ckpt = Path(row.get("checkpoint_path") or "")
         if ckpt.is_file():
-            rows.append(row)
+            rows_by_checkpoint[str(ckpt)] = row
+rows = list(rows_by_checkpoint.values())
 rows.sort(key=lambda row: row["_pdms"], reverse=True)
 top = rows[:top_k]
 top_dir.mkdir(parents=True, exist_ok=True)
@@ -99,7 +119,8 @@ for old in top_dir.glob("rank*_*.ckpt"):
     if old.name not in active_names:
         old.unlink()
 
-with top_tsv.open("w", encoding="utf-8", newline="") as f:
+tmp_top_tsv = top_tsv.with_suffix(top_tsv.suffix + ".tmp")
+with tmp_top_tsv.open("w", encoding="utf-8", newline="") as f:
     fieldnames = [
         "rank",
         "checkpoint",
@@ -124,10 +145,20 @@ with top_tsv.open("w", encoding="utf-8", newline="") as f:
         out["rank"] = str(rank)
         out["backup_path"] = str(top_dir / f"rank{rank}_{row['checkpoint']}")
         writer.writerow(out)
+tmp_top_tsv.replace(top_tsv)
 PY
+  ) 8>"${SUMMARY_LOCK}" 9>"${TOPK_LOCK}"
 }
 
-log "watcher started run_root=${RUN_ROOT} out_root=${OUT_ROOT} epoch_min=${EPOCH_MIN} epoch_max=${EPOCH_MAX} gpus=${GPUS_CSV} num_shards=${NUM_SHARDS} config=${CONFIG}"
+mark_evaluated() {
+  local ckpt="$1"
+  (
+    flock -x 9
+    grep -Fxq "${ckpt}" "${STATE_FILE}" || echo "${ckpt}" >>"${STATE_FILE}"
+  ) 9>"${STATE_LOCK}"
+}
+
+log "watcher started worker_id=${WORKER_ID} run_root=${RUN_ROOT} out_root=${OUT_ROOT} epoch_min=${EPOCH_MIN} epoch_max=${EPOCH_MAX} epoch_stride=${EPOCH_STRIDE} epoch_offset=${EPOCH_OFFSET} gpus=${GPUS_CSV} num_shards=${NUM_SHARDS} config=${CONFIG}"
 
 while true; do
   mapfile -t candidates < <(
@@ -137,6 +168,7 @@ while true; do
           epoch="$(epoch_from_path "${path}" || true)"
           [[ -n "${epoch:-}" ]] || continue
           (( epoch >= EPOCH_MIN && epoch <= EPOCH_MAX )) || continue
+          (( (epoch - EPOCH_MIN) % EPOCH_STRIDE == EPOCH_OFFSET )) || continue
           grep -Fxq "${path}" "${STATE_FILE}" && continue
           printf '%s\n' "${path}"
         done
@@ -175,7 +207,7 @@ while true; do
     status=$?
     set -e
     if (( status == 0 )); then
-      echo "${ckpt}" >> "${STATE_FILE}"
+      mark_evaluated "${ckpt}"
       refresh_topk
       log "completed epoch=${epoch} ckpt=${ckpt}"
     else
