@@ -15,6 +15,11 @@ NUM_SHARDS="${NUM_SHARDS:-2}"
 GPUS_CSV="${GPUS_CSV:-1,2}"
 PRECISION="${PRECISION:-fp32}"
 SKIP_COMPLETED="${SKIP_COMPLETED:-1}"
+CONFIG="${CONFIG:-${PROJECT_ROOT}/configs/sg_fps_asmi_stage2_fs_norm_eval.yaml}"
+CHUNK_CACHE_ROOT="${CHUNK_CACHE_ROOT:-/mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1}"
+CHUNK_NAME_PATTERN="${CHUNK_NAME_PATTERN:-navtest_full_chunk_*}"
+METRIC_CACHE_DIR="${METRIC_CACHE_DIR:-/mnt/project/VLA-AD/cache/metric_cache_navtest_full_v1}"
+TRAJECTORY_OUTPUT_KEY="${TRAJECTORY_OUTPUT_KEY:-pred_traj}"
 
 mkdir -p "${OUT_ROOT}/logs" "${OUT_ROOT}/state" "${OUT_ROOT}/top${TOP_K}_ckpts"
 WATCH_LOG="${OUT_ROOT}/logs/watcher.log"
@@ -90,6 +95,10 @@ for rank, row in enumerate(top, 1):
             shutil.copy2(ckpt, tmp)
         tmp.replace(dst)
 
+for old in top_dir.glob("rank*_*.ckpt"):
+    if old.name not in active_names:
+        old.unlink()
+
 with top_tsv.open("w", encoding="utf-8", newline="") as f:
     fieldnames = [
         "rank",
@@ -118,7 +127,7 @@ with top_tsv.open("w", encoding="utf-8", newline="") as f:
 PY
 }
 
-log "watcher started run_root=${RUN_ROOT} out_root=${OUT_ROOT} epoch_min=${EPOCH_MIN} epoch_max=${EPOCH_MAX} gpus=${GPUS_CSV} num_shards=${NUM_SHARDS}"
+log "watcher started run_root=${RUN_ROOT} out_root=${OUT_ROOT} epoch_min=${EPOCH_MIN} epoch_max=${EPOCH_MAX} gpus=${GPUS_CSV} num_shards=${NUM_SHARDS} config=${CONFIG}"
 
 while true; do
   mapfile -t candidates < <(
@@ -156,6 +165,11 @@ while true; do
       GPUS_CSV="${GPUS_CSV}" \
       PRECISION="${PRECISION}" \
       SKIP_COMPLETED="${SKIP_COMPLETED}" \
+      CONFIG="${CONFIG}" \
+      CHUNK_CACHE_ROOT="${CHUNK_CACHE_ROOT}" \
+      CHUNK_NAME_PATTERN="${CHUNK_NAME_PATTERN}" \
+      METRIC_CACHE_DIR="${METRIC_CACHE_DIR}" \
+      TRAJECTORY_OUTPUT_KEY="${TRAJECTORY_OUTPUT_KEY}" \
       bash "${PROJECT_ROOT}/scripts/evaluation/run_recogdrive_stage2_navtest_sharded_ckpts.sh" \
       >> "${WATCH_LOG}" 2>&1
     status=$?
