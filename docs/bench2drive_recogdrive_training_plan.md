@@ -162,6 +162,19 @@ with the paired Stage1 VLM. Record route completion count, DS, RC, strict
 success, infractions, and scenario-family breakdown. Stage3 is deferred and is
 not part of the current execution plan.
 
+## Stage2 full-1,000 result
+
+The epoch-200 scratch Stage2 checkpoint completed the full 220-route evaluation
+on 2026-07-11. All routes produced records in approximately 4 hours 16 minutes.
+The result was DS 45.11, strict success 21.36%, mean route completion 72.55%,
+and mean multi-ability 28.76%. This is materially below the reported ReCogDrive
+result of DS 71.36, success 45.45%, and mean ability 42.03%.
+
+Stage2 therefore fails the closed-loop reproduction gate despite normal
+training completion. Stage3 remains deferred. See
+`docs/bench2drive_stage2_full1000_evaluation_20260711.md` for all closed-loop,
+ability, comfort/efficiency, infraction, timing, and comparability details.
+
 ## Deferred Stage3 GRPO
 
 Stage3 is outside the active execution plan until Stage2 training and the full
