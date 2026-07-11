@@ -113,7 +113,7 @@
         "Bench2drive_Traj",
         "Bench2drive_QA"
       ],
-      "mixing": "joint",
+      "mixing": "joint natural record frequency (repeat_time=1 for both datasets; public proxy)",
       "camera_views": 6,
       "patching_per_view": "1x2 patches plus one thumbnail",
       "full_parameter_finetune": true,
@@ -130,7 +130,7 @@
       },
       "unresolved": [
         "Whether the Bench2Drive-only adaptation changed any paper-wide Stage1 hyperparameter",
-        "Exact sampling ratio between the 196761 trajectory records and 49942 multi-turn QA records"
+        "Whether the private run used a sampling ratio different from the approved natural-record-frequency proxy"
       ]
     },
     "stage2": {

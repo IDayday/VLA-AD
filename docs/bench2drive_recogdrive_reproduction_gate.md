@@ -67,6 +67,31 @@ The exact B2D-only data mixing ratio and whether its adaptation changed any
 paper-wide Stage1 hyperparameter remain unknown. These are disclosed proxy
 choices, not silently filled official values.
 
+The approved public proxy uses the natural record frequency of the two
+unmodified JSONLs (`repeat_time=1` for each and no weighted resampling). The
+loader receives `max_dynamic_patch=12`; for six images it assigns at most two
+dynamic patches plus one thumbnail to each view, producing 18 image tiles per
+sample as described by the authors.
+
+Run the real multi-view two-step smoke before a formal launch:
+
+```bash
+RUN_MODE=smoke \
+bash scripts/bench2drive/run_recogdrive_b2d_stage1_official_multiview_sft.sh
+```
+
+The formal launcher enforces the declared proxy hyperparameters and refuses
+unlabeled changes:
+
+```bash
+RUN_MODE=formal \
+bash scripts/bench2drive/run_recogdrive_b2d_stage1_official_multiview_sft.sh
+```
+
+Both modes execute the reproduction gate and load real trajectory, ordinary
+QA, and maximum-length QA samples through the InternVL tokenizer/image pipeline
+before allocating the full model. The old front-only launcher is not called.
+
 ### Stage2: blocked pending contract closure
 
 The main Stage2 reproduction must not start until the following are resolved or
