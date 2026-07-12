@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import math
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Optional
 
 import torch
 from torch import nn
@@ -99,6 +99,7 @@ class PlanningTokenAdapter(nn.Module):
         status_feature: torch.Tensor,
         high_command_one_hot: torch.Tensor,
         history_trajectory: torch.Tensor,
+        condition_dropout_enabled: Optional[bool] = None,
     ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
         if vlm_tokens.ndim != 3 or vlm_tokens.shape[-1] != self.config.planner_dim:
             raise ValueError(
@@ -134,7 +135,10 @@ class PlanningTokenAdapter(nn.Module):
         value, gate = self.ffn_in(self.ffn_norm(tokens)).chunk(2, dim=-1)
         tokens = tokens + self.ffn_out(value * F.silu(gate))
 
-        if self.training and self.config.condition_dropout > 0.0:
+        apply_condition_dropout = (
+            self.training if condition_dropout_enabled is None else bool(condition_dropout_enabled)
+        )
+        if apply_condition_dropout and self.config.condition_dropout > 0.0:
             keep = (
                 torch.rand((batch_size, 1, 1), device=tokens.device)
                 >= float(self.config.condition_dropout)

@@ -3552,6 +3552,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 status_feature,
                 high_command,
                 history,
+                condition_dropout_enabled=training,
             )
 
         def finalize_static_planning(payload: Dict[str, Any]) -> Dict[str, Any]:
@@ -11095,7 +11096,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         current_dit_context = self._prepare_dit_context(
             vl_features_rep,
             condition_input_rep,
-            training=True,
+            # Exact KL requires current and frozen policies to see the same condition.
+            # DDIM noise remains the sole on-policy exploration source in LFP.
+            training=False,
             allow_target_tokens=False,
         )
         with torch.no_grad():

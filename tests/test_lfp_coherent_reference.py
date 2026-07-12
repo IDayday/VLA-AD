@@ -4,6 +4,7 @@ from navsim.agents.recogdrive.stage3_reference_cache import (
     Stage3ReferenceCache,
     select_coherent_reference,
 )
+from scripts.stage3.merge_lfp_reference_cache import merge_reference_shards
 
 
 def _row(base: float):
@@ -50,3 +51,43 @@ def test_reference_cache_missing_token_is_an_error() -> None:
         assert "Dynamic/random reference fallback is forbidden" in str(error)
     else:
         raise AssertionError("missing reference token must fail")
+
+
+def test_reference_shards_merge_only_when_complete(tmp_path) -> None:
+    common = {
+        "version": 1,
+        "benchmark": "navsim_v1",
+        "stage2_checkpoint_path": "stage2.ckpt",
+        "stage2_checkpoint_sha256": "abc",
+        "metric_cache_path": "metrics",
+        "metric_cache_fingerprint": "def",
+        "total_scene_count": 2,
+        "dataset_token_hash": "tokens",
+        "num_shards": 2,
+        "ddc_gt_tolerance": 0.01,
+        "v2_require_tlc": True,
+        "raw_ddc_availability_ratio": 0.0,
+    }
+    paths = []
+    for index, token in enumerate(("a", "b")):
+        path = tmp_path / f"shard_{index}.pt"
+        torch.save(
+            {
+                "metadata": {**common, "shard_index": index, "scene_count": 1},
+                "records": {
+                    token: select_coherent_reference(
+                        _row(float(index)),
+                        _row(float(index + 1)),
+                        gt_feasible=True,
+                        stage2_feasible=True,
+                    )
+                },
+            },
+            path,
+        )
+        paths.append(path)
+
+    merged = merge_reference_shards(paths)
+    assert set(merged["records"]) == {"a", "b"}
+    assert merged["metadata"]["scene_count"] == 2
+    assert merged["metadata"]["source_num_shards"] == 2

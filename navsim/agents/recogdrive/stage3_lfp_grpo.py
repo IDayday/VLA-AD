@@ -137,6 +137,7 @@ def validate_lfp_config_exclusivity(
         conflicts.append("trajectory_logprob_reduce")
     for name in (
         "use_gspo_ratio",
+        "behavior_policy_sample",
         "use_core_pareto_grpo",
         "use_feasible_pareto_grpo",
         "fp_use_pdas",

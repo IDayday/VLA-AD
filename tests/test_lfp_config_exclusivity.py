@@ -10,6 +10,7 @@ def _grpo(**overrides):
         "use_trajectory_level_objective": True,
         "trajectory_logprob_reduce": "discounted_mean",
         "use_gspo_ratio": False,
+        "behavior_policy_sample": False,
         "use_core_pareto_grpo": False,
         "use_feasible_pareto_grpo": False,
         "fp_use_pdas": False,
@@ -49,6 +50,7 @@ def _offline(**overrides):
     ("scope", "field", "value"),
     [
         ("grpo", "use_gspo_ratio", True),
+        ("grpo", "behavior_policy_sample", True),
         ("grpo", "use_feasible_pareto_grpo", True),
         ("grpo", "fp_use_pdas", True),
         ("grpo", "core_pareto_use_adaptive_dual", True),

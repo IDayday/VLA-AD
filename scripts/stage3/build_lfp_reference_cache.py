@@ -93,6 +93,14 @@ def _directory_fingerprint(path: Path) -> str:
     return digest.hexdigest()
 
 
+def _token_sequence_hash(tokens: Iterable[str]) -> str:
+    digest = hashlib.sha256()
+    for token in tokens:
+        digest.update(str(token).encode("utf-8"))
+        digest.update(b"\0")
+    return digest.hexdigest()
+
+
 def _find_checkpoint_config(checkpoint: Path) -> Optional[Path]:
     candidates = []
     for parent in checkpoint.resolve().parents:
@@ -343,6 +351,9 @@ def _parse_args() -> argparse.Namespace:
     parser.add_argument("--batch_size", "--batch-size", type=int, default=8)
     parser.add_argument("--num_workers", "--num-workers", type=int, default=4)
     parser.add_argument("--max_scenes", "--max-scenes", type=int, default=0)
+    parser.add_argument("--num_shards", "--num-shards", type=int, default=1)
+    parser.add_argument("--shard_index", "--shard-index", type=int, default=0)
+    parser.add_argument("--metric_cache_fingerprint", "--metric-cache-fingerprint", default="")
     parser.add_argument("--device", default="cuda")
     parser.add_argument("--config_path", "--config-path", type=Path)
     parser.add_argument("--hydra_override", "--hydra-override", action="append", default=[])
@@ -380,6 +391,10 @@ def main() -> None:
             raise FileNotFoundError(f"Missing {label}: {path}")
     if args.batch_size <= 0 or args.num_workers < 0 or args.max_scenes < 0:
         raise ValueError("batch_size must be positive; num_workers/max_scenes must be non-negative.")
+    if args.num_shards <= 0 or not 0 <= args.shard_index < args.num_shards:
+        raise ValueError("num_shards must be positive and shard_index must be in [0, num_shards).")
+    if args.benchmark == "navsim_v2" and args.num_shards != 1:
+        raise ValueError("Sharded reference construction currently supports navsim_v1 only.")
 
     cfg = _load_training_config(args)
     _prepare_agent_config(cfg, args)
@@ -392,9 +407,23 @@ def main() -> None:
     planner.eval()
     planner.config.grpo_cfg.metric_cache_path = str(args.metric_cache_path)
 
-    dataset: Dataset = _make_dataset(agent, args.cache_path)
-    if args.max_scenes:
-        dataset = Subset(dataset, range(min(args.max_scenes, len(dataset))))
+    full_dataset = _make_dataset(agent, args.cache_path)
+    total_scene_count = min(args.max_scenes, len(full_dataset)) if args.max_scenes else len(full_dataset)
+    selected_tokens = full_dataset.tokens[:total_scene_count]
+    dataset_token_hash = _token_sequence_hash(selected_tokens)
+    shard_indices = list(range(args.shard_index, total_scene_count, args.num_shards))
+    if not shard_indices:
+        raise ValueError(
+            f"Shard {args.shard_index}/{args.num_shards} is empty for {total_scene_count} scenes."
+        )
+    dataset: Dataset = Subset(full_dataset, shard_indices)
+    LOG.info(
+        "Building reference shard %d/%d with %d of %d scenes",
+        args.shard_index,
+        args.num_shards,
+        len(dataset),
+        total_scene_count,
+    )
     loader = DataLoader(
         dataset,
         batch_size=args.batch_size,
@@ -530,8 +559,16 @@ def main() -> None:
         "stage2_checkpoint_path": str(args.stage2_checkpoint),
         "stage2_checkpoint_sha256": _sha256_file(args.stage2_checkpoint),
         "metric_cache_path": str(args.metric_cache_path),
-        "metric_cache_fingerprint": _directory_fingerprint(args.metric_cache_path),
+        "metric_cache_fingerprint": (
+            str(args.metric_cache_fingerprint)
+            if args.metric_cache_fingerprint
+            else _directory_fingerprint(args.metric_cache_path)
+        ),
         "scene_count": len(records),
+        "total_scene_count": total_scene_count,
+        "dataset_token_hash": dataset_token_hash,
+        "num_shards": int(args.num_shards),
+        "shard_index": int(args.shard_index),
         "creation_timestamp": datetime.now(timezone.utc).isoformat(),
         "component_field_mapping": dict(getattr(adapter, "last_field_mapping", {})),
         "raw_ddc_availability_ratio": raw_ddc_count / max(len(records), 1),

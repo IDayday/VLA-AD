@@ -44,7 +44,7 @@ def _model_config(**kwargs) -> ReCogDriveDiffusionPlannerConfig:
         ddim_cfg=DDIMConfig(num_train_timesteps=10),
         use_planning_token_adapter=True,
         planning_num_heads=4,
-        planning_condition_dropout=0.0,
+        planning_condition_dropout=0.5,
     )
     values.update(kwargs)
     return ReCogDriveDiffusionPlannerConfig(**values)
@@ -98,6 +98,7 @@ def test_on_policy_loss_reaches_dit_and_planning_adapter_but_not_reference(tmp_p
         bc_coeff_start=0.0,
         bc_coeff_end=0.0,
         use_gspo_ratio=False,
+        behavior_policy_sample=False,
         use_core_pareto_grpo=False,
         use_feasible_pareto_grpo=False,
         fp_use_pdas=False,
@@ -156,6 +157,8 @@ def test_on_policy_loss_reaches_dit_and_planning_adapter_but_not_reference(tmp_p
     )
     output = planner.forward_lfp_grpo(torch.randn(1, 5, 1536), action_input, ["scene"], sample_time=4)
     assert torch.isfinite(output["loss"])
+    assert output["planning_condition_keep_ratio"].item() == 1.0
+    assert output["lfp_exact_kl"].abs().item() < 1e-6
     output["loss"].backward()
 
     dit_grad = sum(

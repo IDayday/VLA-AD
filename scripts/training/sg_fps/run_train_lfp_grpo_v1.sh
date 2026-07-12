@@ -49,6 +49,7 @@ export BC_ANNEAL=false
 export BC_COEFF_START=0
 export BC_COEFF_END=0
 export GRPO_USE_GSPO_RATIO=false
+export GRPO_BEHAVIOR_POLICY_SAMPLE=false
 export GRPO_USE_CORE_PARETO=false
 export GRPO_USE_FEASIBLE_PARETO=false
 export GRPO_FP_USE_PDAS=false
@@ -76,6 +77,9 @@ export DELTA_AUX_WEIGHT=0
 export GEO_AUX_WEIGHT=0
 export TRAJECTORY_AUX_WEIGHT=0
 export FEASIBILITY_AUX_WEIGHT=0
+
+# LFP has no separate validation objective; evaluation is performed from saved checkpoints.
+export LIMIT_VAL_BATCHES="${LIMIT_VAL_BATCHES:-0}"
 
 export RUN_NAME="${RUN_NAME:-stage3_lfp_grpo_v1_$(date -u +%Y%m%dT%H%M%SZ)}"
 exec "${REPO_ROOT}/scripts/training/run_recogdrive_stage3_rl_2b_local.sh" "$@"
