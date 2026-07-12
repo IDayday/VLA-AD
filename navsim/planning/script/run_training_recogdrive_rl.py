@@ -287,6 +287,11 @@ def _dataset_tokens_in_index_order(dataset: torch.utils.data.Dataset) -> List[st
     return tokens
 
 
+def _cache_train_log_names(cfg: DictConfig) -> Optional[List[str]]:
+    train_all = bool(cfg.get("cache_train_all_records", cfg.get("train_all_cache_records", False)))
+    return None if train_all else list(cfg.train_logs)
+
+
 @hydra.main(config_path=CONFIG_PATH, config_name=CONFIG_NAME, version_base=None)
 def main(cfg: DictConfig) -> None:
     """
@@ -335,16 +340,22 @@ def main(cfg: DictConfig) -> None:
         assert (
             cfg.cache_path is not None
         ), "cache_path must be provided when using cached data without building SceneLoader"
+        train_log_names = _cache_train_log_names(cfg)
+        if train_log_names is None:
+            logger.warning(
+                "cache_train_all_records=true: Stage3 train split will load every valid cache record from %s.",
+                cfg.cache_path,
+            )
         if IndexedPtCacheDataset.looks_like(cfg.cache_path):
             logger.info("Using indexed .pt chunk cache dataset")
-            train_data = IndexedPtCacheDataset(cache_path=cfg.cache_path, log_names=cfg.train_logs)
+            train_data = IndexedPtCacheDataset(cache_path=cfg.cache_path, log_names=train_log_names)
             val_data = IndexedPtCacheDataset(cache_path=cfg.cache_path, log_names=cfg.val_logs)
         else:
             train_data = CacheOnlyDataset(
                 cache_path=cfg.cache_path,
                 feature_builders=agent.get_feature_builders(),
                 target_builders=agent.get_target_builders(),
-                log_names=cfg.train_logs,
+                log_names=train_log_names,
             )
             val_data = CacheOnlyDataset(
                 cache_path=cfg.cache_path,
@@ -389,6 +400,17 @@ def main(cfg: DictConfig) -> None:
         reference_cache = getattr(agent.action_head, "lfp_reference_cache", None)
         if reference_cache is None:
             raise RuntimeError("LFP frontier sampling requires an initialized reference cache.")
+        missing_reference_tokens = [token for token in train_tokens if token not in reference_cache.records]
+        if missing_reference_tokens:
+            raise KeyError(
+                "LFP reference cache does not cover the Stage3 train dataset: "
+                f"missing={len(missing_reference_tokens)}, first={missing_reference_tokens[0]!r}."
+            )
+        logger.info(
+            "LFP reference coverage verified: train_tokens=%d cache_records=%d",
+            len(train_tokens),
+            len(reference_cache.records),
+        )
         frontier_callback = LFPFrontierCurriculumCallback(
             sampler=frontier_sampler,
             dataset_tokens=train_tokens,

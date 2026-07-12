@@ -80,6 +80,7 @@ export FEASIBILITY_AUX_WEIGHT=0
 
 # LFP has no separate validation objective; evaluation is performed from saved checkpoints.
 export LIMIT_VAL_BATCHES="${LIMIT_VAL_BATCHES:-0}"
+export CACHE_TRAIN_ALL_RECORDS="${CACHE_TRAIN_ALL_RECORDS:-true}"
 
 export RUN_NAME="${RUN_NAME:-stage3_lfp_grpo_v1_$(date -u +%Y%m%dT%H%M%SZ)}"
 exec "${REPO_ROOT}/scripts/training/run_recogdrive_stage3_rl_2b_local.sh" "$@"
