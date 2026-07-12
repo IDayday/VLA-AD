@@ -15,6 +15,7 @@ GPUS_CSV="${GPUS_CSV:-1,2,3,4,5,6,7}"
 PRECISION="${PRECISION:-fp32}"
 TRAJECTORY_OUTPUT_KEY="${TRAJECTORY_OUTPUT_KEY:-pred_traj}"
 SKIP_COMPLETED="${SKIP_COMPLETED:-1}"
+INITIAL_NOISE_SEED="${INITIAL_NOISE_SEED:-}"
 
 IFS=',' read -r -a GPUS <<<"${GPUS_CSV}"
 if (( ${#GPUS[@]} == 0 )); then
@@ -60,6 +61,9 @@ for path in sorted(eval_dir.glob("shard_*/metrics.json")):
     metrics.append(json.loads(path.read_text()))
 if not metrics:
     raise SystemExit(f"no shard metrics under {eval_dir}")
+initial_noise_seeds = {item.get("initial_noise_seed") for item in metrics}
+if len(initial_noise_seeds) != 1:
+    raise SystemExit(f"inconsistent initial_noise_seed across shards: {sorted(initial_noise_seeds, key=str)}")
 
 def weighted_mean(key, weight_key):
     total = 0.0
@@ -81,6 +85,7 @@ payload = {
     "num_pdm_failed": sum(int(item.get("num_pdm_failed") or 0) for item in metrics),
     "num_pdm_missing_metric_cache": sum(int(item.get("num_pdm_missing_metric_cache") or 0) for item in metrics),
     "trajectory_l1": weighted_mean("trajectory_l1", "num_samples"),
+    "initial_noise_seed": initial_noise_seeds.pop(),
 }
 for key in ("PDMS", "NC", "DAC", "TTC", "comfort", "EP", "DDC"):
     payload[key] = weighted_mean(key, "num_pdm_valid")
@@ -146,6 +151,9 @@ for checkpoint in "${CKPTS[@]}"; do
       --shard-index "${shard}"
       --output-dir "${shard_dir}"
     )
+    if [[ -n "${INITIAL_NOISE_SEED}" ]]; then
+      cmd+=(--initial-noise-seed "${INITIAL_NOISE_SEED}")
+    fi
     {
       flock -x 9
       {

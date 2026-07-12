@@ -4,6 +4,7 @@ from __future__ import annotations
 import argparse
 import csv
 import gzip
+import hashlib
 import json
 import lzma
 import pickle
@@ -79,6 +80,15 @@ def parse_args() -> argparse.Namespace:
         default="normal",
     )
     parser.add_argument("--deterministic", action="store_true", default=True)
+    parser.add_argument(
+        "--initial-noise-seed",
+        type=int,
+        default=None,
+        help=(
+            "Optional base seed for a sample-token-stable initial diffusion noise. "
+            "Use this for checkpoint comparisons that must be invariant to shard count."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -95,6 +105,33 @@ def resolve_index_path(chunk_dir: Path, path_value: str) -> Path:
 
 def dtype_from_precision(precision: str) -> torch.dtype:
     return {"bf16": torch.bfloat16, "fp16": torch.float16, "fp32": torch.float32}[precision]
+
+
+def stable_sample_seed(base_seed: int, sample_token: str) -> int:
+    payload = f"{int(base_seed)}:{sample_token}".encode("utf-8")
+    return int.from_bytes(hashlib.sha256(payload).digest()[:8], "big") & ((1 << 63) - 1)
+
+
+def make_initial_noise(
+    planner: ReCogDriveDiffusionPlanner,
+    vl_features: torch.Tensor,
+    sample_token: str,
+    base_seed: Optional[int],
+) -> Optional[torch.Tensor]:
+    if base_seed is None:
+        return None
+    generator = torch.Generator(device=vl_features.device)
+    generator.manual_seed(stable_sample_seed(base_seed, sample_token))
+    return torch.randn(
+        (
+            int(vl_features.shape[0]),
+            int(planner.config.action_horizon),
+            int(planner.config.action_dim),
+        ),
+        device=vl_features.device,
+        dtype=vl_features.dtype,
+        generator=generator,
+    )
 
 
 def load_yaml(path: Path) -> Dict[str, Any]:
@@ -552,6 +589,7 @@ def main() -> int:
         paths = [item for idx, item in enumerate(paths) if idx % args.num_shards == args.shard_index]
     for idx, (chunk_dir, path, index_record) in enumerate(paths):
         sample = load_eval_sample(path)
+        sample_token = str(sample.get("sample_token", index_record.get("sample_token", path.stem)))
         if online_backbone is not None and online_compute_hidden is not None:
             sample = dict(sample)
             sample["last_hidden_state"] = online_compute_hidden(
@@ -567,8 +605,14 @@ def main() -> int:
             anchor_index=anchor_index,
             two_expert_corruption_mode=args.two_expert_corruption_mode,
         )
+        init_actions = make_initial_noise(planner, vl_features, sample_token, args.initial_noise_seed)
         with torch.no_grad():
-            output = planner.get_action(vl_features, action_input, deterministic=args.deterministic)
+            output = planner.get_action(
+                vl_features,
+                action_input,
+                init_actions=init_actions,
+                deterministic=args.deterministic,
+            )
         if args.trajectory_output_key not in output:
             available_keys = ", ".join(sorted(output.keys()))
             raise KeyError(f"Missing requested trajectory output {args.trajectory_output_key!r}; available keys: {available_keys}")
@@ -579,7 +623,7 @@ def main() -> int:
             "path": str(path),
             "chunk": str(chunk_dir),
             "scene_token": str(sample.get("scene_token", path.stem)),
-            "sample_token": str(sample.get("sample_token", index_record.get("sample_token", path.stem))),
+            "sample_token": sample_token,
             "trajectory_output_key": args.trajectory_output_key,
             "pred_traj": pred.tolist(),
             "pdm_valid": None,
@@ -634,6 +678,8 @@ def main() -> int:
         "feature_source": args.feature_source,
         "checkpoint": str(args.checkpoint),
         "precision": args.precision,
+        "deterministic": bool(args.deterministic),
+        "initial_noise_seed": args.initial_noise_seed,
         "trajectory_output_key": args.trajectory_output_key,
         "two_expert_corruption_mode": args.two_expert_corruption_mode,
         "online_vlm_path": str(args.online_vlm_path) if args.online_vlm_path is not None else None,
@@ -674,6 +720,7 @@ def main() -> int:
         f"Split: `{args.split}`",
         f"Samples: {len(predictions)}",
         f"Trajectory output key: `{args.trajectory_output_key}`",
+        f"Initial noise seed: {args.initial_noise_seed}",
         f"Target teacher tokens disabled in eval: {metrics['target_teacher_tokens_disabled_in_eval']}",
         f"Trajectory L1: {metrics.get('trajectory_l1')}",
         f"PDM valid samples: {metrics['num_pdm_valid']}",

@@ -732,17 +732,28 @@ class AgentLightningDiT(pl.LightningModule):
             total = total + grad.square().sum()
         return total.sqrt()
 
-    def on_after_backward(self) -> None:
+    def _validate_lfp_reference_gradients(self) -> bool:
         if getattr(self.agent, "stage3_algorithm", "legacy") != "lfp_grpo":
-            return
+            return False
         action_head = getattr(self.agent, "action_head", None)
         if action_head is None:
-            return
+            return False
         reference = getattr(action_head, "old_policy", None)
         if reference is None or any(parameter.requires_grad for parameter in reference.parameters()):
             raise RuntimeError("LFP Stage2 reference policy must remain frozen.")
         if any(parameter.grad is not None for parameter in reference.parameters()):
             raise RuntimeError("LFP Stage2 reference policy received gradients.")
+        return True
+
+    def on_after_backward(self) -> None:
+        self._validate_lfp_reference_gradients()
+
+    def on_before_optimizer_step(self, optimizer) -> None:
+        # Lightning invokes this hook after AMP unscaling and before clipping.
+        # Recording in on_after_backward reports GradScaler-scaled values.
+        if not self._validate_lfp_reference_gradients():
+            return
+        action_head = getattr(self.agent, "action_head")
         policy_norm = self._gradient_norm(
             parameter for parameter in action_head.parameters() if parameter.requires_grad
         ).to(self.device)
