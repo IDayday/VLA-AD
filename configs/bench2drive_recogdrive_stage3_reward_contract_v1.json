@@ -1,0 +1,166 @@
+{
+  "contract_id": "recogdrive_b2d_stage3_multi_objective_reward_v1",
+  "created_utc": "2026-07-12",
+  "classification": "custom-aligned research extension; not an official ReCogDrive reward and not a Bench2Drive PDMS",
+  "activation_status": "inactive; reward semantics are fixed, but the B2D pseudo-simulation cache builder and GRPO adapter are not yet wired",
+  "baseline_isolation": {
+    "modify_active_stage1_stage2_pipeline": false,
+    "modify_public_navsim_pdms_path": false,
+    "allow_label_official_recogdrive": false,
+    "allow_label_official_bench2drive_reward": false
+  },
+  "official_bench2drive_evaluation": {
+    "primary_metrics": [
+      "Driving Score",
+      "Success Rate",
+      "Driving Efficiency",
+      "Driving Smoothness",
+      "Multi-Ability"
+    ],
+    "pdms_is_official": false,
+    "routes": 220,
+    "abilities": [
+      "Merging",
+      "Overtaking",
+      "Emergency Brake",
+      "Give Way",
+      "Traffic Signs"
+    ],
+    "bench2drive_commit": "2645714eb1f3a100217928dd113093cae0779f36"
+  },
+  "candidate_rollout": {
+    "trajectory_points": 6,
+    "trajectory_interval_seconds": 0.5,
+    "horizon_seconds": 3.0,
+    "ego_rollout_frequency_hz": 20,
+    "ego_dynamics": "deployment-consistent PID plus kinematic bicycle rollout",
+    "other_agents": "replay recorded future boxes and interpolate the 10 Hz annotations to rollout frequency",
+    "map": "Bench2Drive HD map plus scenario-aware permitted route corridor",
+    "important_limitation": "recorded actors are non-reactive; all offline components must be validated against held-out closed-loop B2D outcomes"
+  },
+  "reward_vector": {
+    "order": [
+      "safety",
+      "compliance",
+      "efficiency",
+      "comfort"
+    ],
+    "range": [0.0, 1.0],
+    "safety": {
+      "formula": "collision_free * clip((minimum_ttc_seconds - 1.0) / (3.0 - 1.0), 0, 1)",
+      "ttc_critical_seconds": 1.0,
+      "ttc_saturation_seconds": 3.0,
+      "note": "TTC is a B2D training proxy supported by B2D log-replay work, not an official B2D report column"
+    },
+    "compliance": {
+      "formula": "geometric_mean(drivable_area_compliance, route_corridor_compliance, traffic_rule_compliance, command_following, scenario_task_compliance)",
+      "traffic_rules": [
+        "red light",
+        "stop sign",
+        "yield to emergency vehicle"
+      ],
+      "route_rule": "never use unconditional lane-center distance; permitted corridors must include scenario-valid merge, overtake and detour behavior",
+      "scenario_task": "derive a local ability-aware signal for merge, overtake, emergency brake, give way or traffic-sign behavior; report official Multi-Ability only from closed-loop route success"
+    },
+    "efficiency": {
+      "formula": "sqrt(progress_score * speed_score)",
+      "progress_score": "clip(candidate_route_progress / reference_route_progress, 0, 1); stationary expert windows pass only when the candidate is also stationary within 0.5 m",
+      "speed_score": "clip(mean_ego_speed / mean_surrounding_background_speed, 0, 1)",
+      "no_background_speed_fallback": 1.0,
+      "stationary_progress_tolerance_m": 0.5,
+      "note": "speed_score is the local, capped counterpart of official B2D Driving Efficiency; raw uncapped percentages remain diagnostics"
+    },
+    "comfort": {
+      "formula": "0.70 * official_segment_pass_ratio + 0.30 * normalized_margin_to_limits",
+      "official_weight": 0.7,
+      "segment_seconds": 2.0,
+      "limits": {
+        "longitudinal_acceleration_mps2": [-4.05, 2.4],
+        "absolute_lateral_acceleration_mps2": 4.89,
+        "absolute_yaw_rate_radps": 0.95,
+        "absolute_yaw_acceleration_radps2": 1.93,
+        "absolute_longitudinal_jerk_mps3": 4.13,
+        "absolute_magnitude_jerk_mps3": 8.37
+      },
+      "reporting_rule": "only official_segment_pass_ratio may be compared with B2D Driving Smoothness; the margin term is training-only"
+    }
+  },
+  "hard_feasibility": {
+    "requirements": [
+      "finite candidate trajectory",
+      "collision free",
+      "no route-deviation terminal event",
+      "no B2D infraction that would invalidate route success",
+      "drivable-area compliance >= 0.99",
+      "traffic-rule compliance == 1"
+    ],
+    "hard_drivable_minimum": 0.99,
+    "ttc_is_hard_gate": false,
+    "command_following_is_hard_gate": false,
+    "scenario_task_is_hard_gate": false,
+    "reason": "retain graded safety and task signals while ensuring an unsafe or illegal candidate cannot outrank a feasible one"
+  },
+  "official_infraction_penalty": {
+    "collision_pedestrian": 0.5,
+    "collision_vehicle": 0.6,
+    "collision_static": 0.65,
+    "red_light": 0.7,
+    "stop_sign": 0.8,
+    "scenario_timeout": 0.7,
+    "yield_emergency_vehicle": 0.7,
+    "outside_route_lanes": "1 - percentage / 100",
+    "minimum_speed": "excluded from Driving Score in B2D V0.0.3"
+  },
+  "plain_grpo_scalar_baseline": {
+    "purpose": "compatibility and ablation only; this is not the future Pareto optimizer",
+    "weights": {
+      "safety": 0.25,
+      "compliance": 0.25,
+      "efficiency": 0.25,
+      "comfort": 0.25
+    },
+    "feasible_formula": "official_infraction_penalty * weighted_mean(reward_vector)",
+    "infeasible_formula": "-1.0 + 0.25 * official_infraction_penalty * weighted_mean(reward_vector)",
+    "ordering_invariant": "every feasible candidate outranks every infeasible candidate"
+  },
+  "imitation_anchor": {
+    "included_in_reward_vector": false,
+    "implementation": "retain the frozen Stage2 reference policy through the existing KL/BC term",
+    "reason": "expert ADE is useful for stability but making it a Pareto objective would suppress valid multimodal overtake, merge and detour solutions"
+  },
+  "required_cache_fields": [
+    "collision_free",
+    "minimum_ttc_seconds",
+    "drivable_area_compliance",
+    "route_corridor_compliance",
+    "traffic_rule_compliance",
+    "command_following",
+    "scenario_task_compliance",
+    "candidate_progress_m",
+    "reference_progress_m",
+    "ego_mean_speed_mps",
+    "surrounding_mean_speed_mps",
+    "comfort_segment_extrema",
+    "official_infraction_events",
+    "route_deviation_free",
+    "infraction_free_for_success"
+  ],
+  "validation_gates_before_training": [
+    "unit and synthetic counterexample tests pass",
+    "all four objectives have non-zero within-group variance on held-out training clips",
+    "collision and rule violations are detected with >= 0.99 recall on injected counterexamples",
+    "component signs and rank correlations are reported on a held-out split rather than assumed",
+    "no official 220-route result is used to tune thresholds or scalar weights",
+    "reward definition, cache commit, controller and evaluator commit are frozen before final 220-route evaluation"
+  ],
+  "mandatory_final_reporting": [
+    "Driving Score",
+    "Success Rate",
+    "Driving Efficiency",
+    "Driving Smoothness",
+    "all five Multi-Ability scores",
+    "per-infraction counts",
+    "reward-vector distributions and pairwise conflicts",
+    "offline-to-closed-loop correlation audit"
+  ]
+}

@@ -175,6 +175,12 @@ unchanged. The corrected Stage2 baseline is trained and evaluated first. A
 later custom reward or migration of our research method must be a separate,
 explicitly labeled experiment initialized from the reproduced baseline.
 
+The separate evidence review and inactive research contract are documented in
+`docs/bench2drive_stage3_reward_evidence_and_contract_20260712.md`. That
+contract is aligned to B2D event, efficiency and smoothness semantics; it does
+not change this reproduction gate and must not be described as an official B2D
+PDMS or a disclosed ReCogDrive reward.
+
 ### Evaluation: ready as closest-public
 
 The public proxy wrapper now uses the official Bench2Drive six-camera zoo
