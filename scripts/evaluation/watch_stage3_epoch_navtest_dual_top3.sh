@@ -52,23 +52,47 @@ gpu_pressure_enabled() {
   [[ -n "${GPU_PRESSURE_PROCESS_PATTERN}" ]]
 }
 
+gpu_pressure_candidate_leaders() {
+  {
+    pgrep -f -- "${GPU_PRESSURE_PROCESS_PATTERN}" 2>/dev/null || true
+    [[ -f "${OUT_ROOT}/state/gpu_pressure.pid" ]] && cat "${OUT_ROOT}/state/gpu_pressure.pid"
+    [[ -f "${OUT_ROOT}/state/gpu_pressure.stopped_pids" ]] && cat "${OUT_ROOT}/state/gpu_pressure.stopped_pids"
+  } | awk '/^[0-9]+$/' | sort -nu
+}
+
+gpu_pressure_running() {
+  local pid
+  gpu_pressure_enabled || return 1
+  while IFS= read -r pid; do
+    if kill -0 "${pid}" 2>/dev/null || kill -0 -- "-${pid}" 2>/dev/null; then
+      return 0
+    fi
+  done < <(gpu_pressure_candidate_leaders)
+  return 1
+}
+
 stop_gpu_pressure() {
   local any_alive deadline pid
   local -a pids=()
   gpu_pressure_enabled || return 0
-  mapfile -t pids < <(pgrep -f -- "${GPU_PRESSURE_PROCESS_PATTERN}" || true)
+  mapfile -t pids < <(gpu_pressure_candidate_leaders)
   if (( ${#pids[@]} == 0 )); then
     return 0
   fi
 
   printf '%s\n' "${pids[@]}" > "${OUT_ROOT}/state/gpu_pressure.stopped_pids"
-  log "stopping GPU pressure before evaluation: pids=${pids[*]} pattern=${GPU_PRESSURE_PROCESS_PATTERN}"
+  log "stopping GPU pressure before evaluation: leaders=${pids[*]} pattern=${GPU_PRESSURE_PROCESS_PATTERN}"
   kill -TERM "${pids[@]}" 2>/dev/null || true
+  for pid in "${pids[@]}"; do
+    # The pressure launcher uses setsid; workers share the leader's process
+    # group and can survive if only the Python parent receives SIGTERM.
+    kill -TERM -- "-${pid}" 2>/dev/null || true
+  done
   deadline=$(( $(date +%s) + GPU_PRESSURE_STOP_TIMEOUT_SECONDS ))
   while (( $(date +%s) < deadline )); do
     any_alive=0
     for pid in "${pids[@]}"; do
-      if kill -0 "${pid}" 2>/dev/null; then
+      if kill -0 "${pid}" 2>/dev/null || kill -0 -- "-${pid}" 2>/dev/null; then
         any_alive=1
         break
       fi
@@ -81,6 +105,7 @@ stop_gpu_pressure() {
   done
   for pid in "${pids[@]}"; do
     kill -KILL "${pid}" 2>/dev/null || true
+    kill -KILL -- "-${pid}" 2>/dev/null || true
   done
   touch "${OUT_ROOT}/state/gpu_pressure.restart_required"
 }
@@ -88,7 +113,7 @@ stop_gpu_pressure() {
 restart_gpu_pressure() {
   local pressure_pid
   [[ -f "${OUT_ROOT}/state/gpu_pressure.restart_required" ]] || return 0
-  if gpu_pressure_enabled && pgrep -f -- "${GPU_PRESSURE_PROCESS_PATTERN}" >/dev/null 2>&1; then
+  if gpu_pressure_running; then
     log "GPU pressure already running after evaluation; skipping duplicate restart"
     rm -f "${OUT_ROOT}/state/gpu_pressure.restart_required"
     return 0
