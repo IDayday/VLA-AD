@@ -26,6 +26,15 @@ POLL_SECONDS="${POLL_SECONDS:-60}"
 STABLE_SECONDS="${STABLE_SECONDS:-120}"
 RETRY_SECONDS="${RETRY_SECONDS:-300}"
 
+# Optional lifecycle control for a disposable GPU pressure process on the
+# evaluation host. Defaults are inert so existing watchers are unchanged.
+GPU_PRESSURE_PROCESS_PATTERN="${GPU_PRESSURE_PROCESS_PATTERN:-}"
+GPU_PRESSURE_PYTHON_BIN="${GPU_PRESSURE_PYTHON_BIN:-${PYTHON_BIN}}"
+GPU_PRESSURE_SCRIPT="${GPU_PRESSURE_SCRIPT:-}"
+GPU_PRESSURE_RESTART_CWD="${GPU_PRESSURE_RESTART_CWD:-${PROJECT_ROOT}}"
+GPU_PRESSURE_MEMORY_GB="${GPU_PRESSURE_MEMORY_GB:-}"
+GPU_PRESSURE_STOP_TIMEOUT_SECONDS="${GPU_PRESSURE_STOP_TIMEOUT_SECONDS:-30}"
+
 mkdir -p "${OUT_ROOT}/logs" "${OUT_ROOT}/state"
 WATCH_LOG="${OUT_ROOT}/logs/watcher.log"
 COMMANDS_LOG="${OUT_ROOT}/commands.log"
@@ -38,6 +47,73 @@ fi
 log() {
   printf '[%s] %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$*" | tee -a "${WATCH_LOG}"
 }
+
+gpu_pressure_enabled() {
+  [[ -n "${GPU_PRESSURE_PROCESS_PATTERN}" ]]
+}
+
+stop_gpu_pressure() {
+  local any_alive deadline pid
+  local -a pids=()
+  gpu_pressure_enabled || return 0
+  mapfile -t pids < <(pgrep -f -- "${GPU_PRESSURE_PROCESS_PATTERN}" || true)
+  if (( ${#pids[@]} == 0 )); then
+    return 0
+  fi
+
+  printf '%s\n' "${pids[@]}" > "${OUT_ROOT}/state/gpu_pressure.stopped_pids"
+  log "stopping GPU pressure before evaluation: pids=${pids[*]} pattern=${GPU_PRESSURE_PROCESS_PATTERN}"
+  kill -TERM "${pids[@]}" 2>/dev/null || true
+  deadline=$(( $(date +%s) + GPU_PRESSURE_STOP_TIMEOUT_SECONDS ))
+  while (( $(date +%s) < deadline )); do
+    any_alive=0
+    for pid in "${pids[@]}"; do
+      if kill -0 "${pid}" 2>/dev/null; then
+        any_alive=1
+        break
+      fi
+    done
+    if (( any_alive == 0 )); then
+      touch "${OUT_ROOT}/state/gpu_pressure.restart_required"
+      return 0
+    fi
+    sleep 1
+  done
+  for pid in "${pids[@]}"; do
+    kill -KILL "${pid}" 2>/dev/null || true
+  done
+  touch "${OUT_ROOT}/state/gpu_pressure.restart_required"
+}
+
+restart_gpu_pressure() {
+  local pressure_pid
+  [[ -f "${OUT_ROOT}/state/gpu_pressure.restart_required" ]] || return 0
+  if gpu_pressure_enabled && pgrep -f -- "${GPU_PRESSURE_PROCESS_PATTERN}" >/dev/null 2>&1; then
+    log "GPU pressure already running after evaluation; skipping duplicate restart"
+    rm -f "${OUT_ROOT}/state/gpu_pressure.restart_required"
+    return 0
+  fi
+  if [[ -z "${GPU_PRESSURE_SCRIPT}" || -z "${GPU_PRESSURE_MEMORY_GB}" ]]; then
+    log "GPU pressure restart requested but script/memory configuration is incomplete"
+    return 1
+  fi
+
+  mkdir -p "${OUT_ROOT}/logs"
+  (
+    cd "${GPU_PRESSURE_RESTART_CWD}"
+    setsid "${GPU_PRESSURE_PYTHON_BIN}" "${GPU_PRESSURE_SCRIPT}" \
+      --memory-gb "${GPU_PRESSURE_MEMORY_GB}" \
+      >> "${OUT_ROOT}/logs/gpu_pressure.log" 2>&1 < /dev/null &
+    pressure_pid=$!
+    printf '%s\n' "${pressure_pid}" > "${OUT_ROOT}/state/gpu_pressure.pid"
+  )
+  rm -f "${OUT_ROOT}/state/gpu_pressure.restart_required"
+  log "restarted GPU pressure after evaluation: pid=$(cat "${OUT_ROOT}/state/gpu_pressure.pid")"
+}
+
+trap 'restart_gpu_pressure || true' EXIT
+trap 'exit 130' INT
+trap 'exit 143' TERM
 
 require_path() {
   local path="$1"
@@ -188,10 +264,13 @@ while true; do
       continue
     fi
 
+    stop_gpu_pressure
+
     if [[ ! -f "${epoch_dir}/v1.done" ]]; then
       log "epoch=${epoch} step=${step} starting NAVSIM v1 PDMS"
       if ! run_v1 "${checkpoint}" "${epoch_dir}"; then
         log "epoch=${epoch} NAVSIM v1 PDMS failed; retrying in ${RETRY_SECONDS}s"
+        restart_gpu_pressure || true
         sleep "${RETRY_SECONDS}"
         continue
       fi
@@ -203,12 +282,14 @@ while true; do
       log "epoch=${epoch} step=${step} starting NAVSIM v2 navtest EPDMS from identical trajectories"
       if ! run_v2 "${epoch_dir}"; then
         log "epoch=${epoch} NAVSIM v2 EPDMS failed; retrying in ${RETRY_SECONDS}s"
+        restart_gpu_pressure || true
         sleep "${RETRY_SECONDS}"
         continue
       fi
       write_epoch_metrics "${epoch}" "${step}" "${checkpoint}" "${epoch_dir}"
       log "epoch=${epoch} NAVSIM v2 EPDMS complete"
     fi
+    restart_gpu_pressure
     completed=$((completed + 1))
   done < <(find "${CHECKPOINT_ROOT}" -maxdepth 1 -type f -name '*.ckpt' -printf '%T@ %p\n' 2>/dev/null | sort -n | cut -d' ' -f2-)
 
