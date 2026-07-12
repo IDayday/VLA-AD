@@ -151,12 +151,23 @@ Build the cache and start Stage2 manually:
 ```bash
 VLM_PATH=/path/to/completed/stage1 \
 OUTPUT_ROOT=outputs/bench2drive_recogdrive_stage2_cache_<run> \
+GPU_LIST=0,1,2,3,4,5,6,7 \
+N_SHARDS=32 \
+CACHE_CPU_THREADS=4 \
 bash scripts/bench2drive/build_recogdrive_b2d_stage2_cache.sh
 
 CHUNK_CACHE_ROOT=outputs/bench2drive_recogdrive_stage2_cache_<run>/train \
 EXPECTED_VLM_PATH=/path/to/completed/stage1 \
 bash scripts/bench2drive/run_recogdrive_b2d_stage2_closest_public.sh
 ```
+
+`N_SHARDS` may exceed the number of GPUs. Shards are assigned round-robin, so
+the profile above runs four independent cache workers per GPU. Limiting each
+worker to four PyTorch/OMP threads keeps the aggregate at 128 CPU threads on
+the current host; launching extra workers without this limit oversubscribes
+the CPU while leaving the GPUs mostly idle. Sharding changes only parallelism:
+the validator still requires 1,000 non-overlapping clips and exactly 202,656
+unique records before Stage2 can start.
 
 Or use `watch_recogdrive_b2d_stage1_then_stage2.sh` to wait for the final
 Stage1 checkpoint, build/validate the full cache, and launch scratch Stage2

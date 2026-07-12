@@ -73,6 +73,12 @@ def parse_args(argv: Optional[Sequence[str]] = None) -> argparse.Namespace:
         choices=("bfloat16", "float16", "float32"),
         default="bfloat16",
     )
+    parser.add_argument(
+        "--cpu-threads",
+        type=int,
+        default=None,
+        help="Limit PyTorch intra-op threads for multi-worker-per-GPU cache generation.",
+    )
     parser.add_argument("--overwrite", action="store_true")
     parser.add_argument("--log-every", type=int, default=100)
     return parser.parse_args(argv)
@@ -356,6 +362,8 @@ def build_cache(args: argparse.Namespace, *, vlm_feature_builder: Any = None) ->
         raise ValueError(
             "The formal contract requires consecutive 10 Hz anchors and 0.5-second history/future spacing"
         )
+    if args.cpu_threads is not None and args.cpu_threads <= 0:
+        raise ValueError("--cpu-threads must be positive when supplied")
     if args.output_dir.exists() and any(args.output_dir.iterdir()) and not args.overwrite:
         raise FileExistsError(f"Output directory is not empty: {args.output_dir}")
 
@@ -464,6 +472,7 @@ def build_cache(args: argparse.Namespace, *, vlm_feature_builder: Any = None) ->
         "hidden_tokens_max": max(hidden_token_counts),
         "vlm_feature_dim": hidden_feature_dims[0],
         "hidden_dtype": args.cache_hidden_dtype,
+        "cpu_threads": args.cpu_threads,
         "recogdrive_vlm_path": str(args.recogdrive_vlm_path.resolve()),
         "system_prompt_profile": "bench2drive",
         "coordinate_policy": "current_world2lidar_x_forward_y_lateral_relative_yaw",
@@ -475,6 +484,9 @@ def build_cache(args: argparse.Namespace, *, vlm_feature_builder: Any = None) ->
 
 def main() -> int:
     args = parse_args()
+    if args.cpu_threads is not None:
+        torch.set_num_threads(args.cpu_threads)
+        torch.set_num_interop_threads(min(2, args.cpu_threads))
     metadata = build_cache(args)
     print(json.dumps(metadata, indent=2, sort_keys=True))
     return 0

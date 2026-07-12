@@ -65,6 +65,8 @@ def test_build_bench2drive_chunk_cache(tmp_path: Path):
             "2",
             "--cache-hidden-dtype",
             "float32",
+            "--cpu-threads",
+            "2",
         ]
     )
 
@@ -78,6 +80,7 @@ def test_build_bench2drive_chunk_cache(tmp_path: Path):
 
     metadata = build_cache(args, vlm_feature_builder=FakeVLMFeatureBuilder())
     assert metadata["num_records"] == 2
+    assert metadata["cpu_threads"] == 2
 
     lines = (tmp_path / "cache" / "index.jsonl").read_text(encoding="utf-8").strip().splitlines()
     assert len(lines) == 2

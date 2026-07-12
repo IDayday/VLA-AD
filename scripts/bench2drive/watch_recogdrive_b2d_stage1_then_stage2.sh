@@ -17,6 +17,7 @@ LOCK_PATH=${LOCK_PATH:-${WATCH_DIR}/watch.lock}
 
 GPU_LIST=${GPU_LIST:-0,1,2,3,4,5,6,7}
 N_SHARDS=${N_SHARDS:-8}
+CACHE_CPU_THREADS=${CACHE_CPU_THREADS:-4}
 NPROC_PER_NODE=${NPROC_PER_NODE:-8}
 MASTER_PORT=${MASTER_PORT:-29551}
 NAVSIM_PYTHON=${NAVSIM_PYTHON:-/root/miniconda3/envs/navsim/bin/python}
@@ -64,6 +65,7 @@ PY
 
 log "watcher started at git commit $(cd "${VLA_AD_ROOT}" && git rev-parse HEAD)"
 log "Stage1=${STAGE1_RUN_DIR}; cache=${CACHE_RUN_ROOT}; Stage2=${STAGE2_OUTPUT_DIR}"
+log "Cache topology: GPUs=${GPU_LIST}; shards=${N_SHARDS}; CPU threads/worker=${CACHE_CPU_THREADS}"
 write_status waiting_for_stage1
 
 while ! stage1_complete; do
@@ -85,6 +87,7 @@ env \
   EXPECTED_TRAIN_CLIPS=1000 \
   GPU_LIST="${GPU_LIST}" \
   N_SHARDS="${N_SHARDS}" \
+  CACHE_CPU_THREADS="${CACHE_CPU_THREADS}" \
   bash "${VLA_AD_ROOT}/scripts/bench2drive/build_recogdrive_b2d_stage2_cache.sh" \
   >> "${WATCH_DIR}/cache_build.log" 2>&1
 cache_status=$?
