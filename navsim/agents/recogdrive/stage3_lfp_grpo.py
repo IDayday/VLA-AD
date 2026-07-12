@@ -30,10 +30,14 @@ class LFPGRPOConfig:
     v2_require_tlc: bool = True
 
     ep_reference_tolerance: float = 0.02
+    ttc_positive_credit_guard: bool = False
+    ttc_reference_tolerance: float = 0.01
     reference_margin_weight: float = 0.20
     reference_margin_scale: float = 0.05
     pareto_gate_enabled: bool = True
     progress_gate_enabled: bool = True
+    all_infeasible_rescue: bool = False
+    gradient_checkpointing: bool = False
 
     global_std_floor: float = 0.05
     advantage_clip: float = 3.0
@@ -68,6 +72,7 @@ class LFPGRPOConfig:
         for name in (
             "ddc_gt_tolerance",
             "ep_reference_tolerance",
+            "ttc_reference_tolerance",
             "reference_margin_weight",
             "global_std_floor",
             "advantage_clip",
@@ -131,6 +136,16 @@ def validate_lfp_config_exclusivity(
 
     if str(stage3_objective) == "grpo_replay":
         conflicts.append("stage3_objective=grpo_replay")
+    sampling_std = float(getattr(grpo_cfg, "min_sampling_denoising_std", 0.04))
+    logprob_std = float(getattr(grpo_cfg, "min_logprob_denoising_std", sampling_std))
+    if sampling_std <= 0.0 or logprob_std <= 0.0:
+        raise ValueError("LFP-GRPO requires positive reverse-transition standard-deviation floors.")
+    if abs(sampling_std - logprob_std) > 1e-12:
+        raise ValueError(
+            "LFP-GRPO exact on-policy transitions require min_sampling_denoising_std "
+            "and min_logprob_denoising_std to be identical; "
+            f"got {sampling_std} and {logprob_std}."
+        )
     if not enabled(grpo_cfg, "use_trajectory_level_objective", True):
         conflicts.append("use_trajectory_level_objective")
     if str(getattr(grpo_cfg, "trajectory_logprob_reduce", "discounted_mean")) != "discounted_mean":
@@ -197,6 +212,7 @@ class LFPAdvantageOutput:
     pareto_front: torch.Tensor
     feasible: torch.Tensor
     progress_ok: torch.Tensor
+    ttc_ok: torch.Tensor
     energy: torch.Tensor
     diagnostics: Dict[str, torch.Tensor]
 
@@ -313,7 +329,13 @@ def compute_lfp_advantages(
     progress_ok = metrics.ep >= reference.ep[:, None].to(metrics.ep) - float(cfg.ep_reference_tolerance)
     if not bool(cfg.progress_gate_enabled):
         progress_ok = torch.ones_like(progress_ok)
-    eligible = feasible & progress_ok
+    if bool(cfg.ttc_positive_credit_guard):
+        ttc_ok = metrics.ttc >= (
+            reference.ttc[:, None].to(metrics.ttc) - float(cfg.ttc_reference_tolerance)
+        )
+    else:
+        ttc_ok = torch.ones_like(progress_ok)
+    eligible = feasible & progress_ok & ttc_ok
     pareto = (
         compute_pareto_front_mask(adapter.pareto_objectives(metrics), eligible)
         if bool(cfg.pareto_gate_enabled)
@@ -325,8 +347,8 @@ def compute_lfp_advantages(
     z = (centered - moments.mean) / moments.std
 
     advantages = torch.zeros_like(z)
-    positive_eligible = feasible & progress_ok & pareto
-    nonpositive_eligible = feasible & (~progress_ok | ~pareto)
+    positive_eligible = feasible & progress_ok & ttc_ok & pareto
+    nonpositive_eligible = feasible & (~progress_ok | ~ttc_ok | ~pareto)
     advantages[positive_eligible] = z[positive_eligible]
     advantages[nonpositive_eligible] = torch.minimum(
         z[nonpositive_eligible],
@@ -334,7 +356,12 @@ def compute_lfp_advantages(
     )
     has_feasible = feasible.any(dim=1)
     advantages[(~feasible) & has_feasible[:, None]] = -1.0
-    advantages[(~has_feasible)[:, None].expand_as(advantages)] = 0.0
+    all_infeasible_mask = (~has_feasible)[:, None].expand_as(advantages)
+    if bool(cfg.all_infeasible_rescue):
+        rescue = torch.minimum(z, torch.zeros_like(z))
+        advantages[all_infeasible_mask] = rescue[all_infeasible_mask]
+    else:
+        advantages[all_infeasible_mask] = 0.0
 
     pre_clip = advantages.clone()
     advantages = advantages.clamp(-float(cfg.advantage_clip), float(cfg.advantage_clip)).detach()
@@ -354,12 +381,16 @@ def compute_lfp_advantages(
         "lfp_ddc_mean": metrics.ddc_guard_value.mean().detach(),
         "lfp_feasible_ratio": feasible.float().mean().detach(),
         "lfp_progress_ok_ratio": progress_ok.float().mean().detach(),
+        "lfp_ttc_ok_ratio": ttc_ok.float().mean().detach(),
         "lfp_pareto_front_ratio": pareto.float().mean().detach(),
         "lfp_dominated_ratio": dominated.float().mean().detach(),
         "lfp_positive_advantage_ratio": (advantages > eps).float().mean().detach(),
         "lfp_negative_advantage_ratio": (advantages < -eps).float().mean().detach(),
         "lfp_zero_advantage_ratio": (advantages.abs() <= eps).float().mean().detach(),
         "lfp_all_infeasible_group_ratio": all_infeasible.float().mean().detach(),
+        "lfp_all_infeasible_rescue_ratio": (
+            ((advantages < -eps) & all_infeasible_mask).float().mean().detach()
+        ),
         "lfp_advantage_clip_ratio": (pre_clip.abs() > float(cfg.advantage_clip)).float().mean().detach(),
         "lfp_global_centered_mean": moments.mean.detach(),
         "lfp_global_centered_std": moments.std.detach(),
@@ -385,6 +416,7 @@ def compute_lfp_advantages(
         pareto_front=pareto,
         feasible=feasible,
         progress_ok=progress_ok,
+        ttc_ok=ttc_ok,
         energy=energy.detach(),
         diagnostics=diagnostics,
     )

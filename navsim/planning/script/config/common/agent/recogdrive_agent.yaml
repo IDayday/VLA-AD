@@ -39,10 +39,14 @@ lfp_grpo_cfg:
   ddc_gt_tolerance: 0.01
   v2_require_tlc: true
   ep_reference_tolerance: 0.02
+  ttc_positive_credit_guard: false
+  ttc_reference_tolerance: 0.01
   reference_margin_weight: 0.20
   reference_margin_scale: 0.05
   pareto_gate_enabled: true
   progress_gate_enabled: true
+  all_infeasible_rescue: false
+  gradient_checkpointing: false
   global_std_floor: 0.05
   advantage_clip: 3.0
   curriculum_enabled: true

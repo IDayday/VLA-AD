@@ -9,6 +9,7 @@ import math
 import torch
 from torch import nn
 import torch.nn.functional as F
+from torch.utils.checkpoint import checkpoint
 from typing import Optional, List
 import numpy as np
 
@@ -228,6 +229,7 @@ class LightningDiT(nn.Module):
         self.inner_dim = num_heads * head_dim
         self.output_dim = output_dim
         self.interleave_attention = interleave_attention
+        self.gradient_checkpointing = False
 
         self.timestep_encoder = TimestepEncoder(
             embedding_dim=self.inner_dim
@@ -254,6 +256,10 @@ class LightningDiT(nn.Module):
         self.final_layer = FinalLayer(self.inner_dim, output_dim)
 
         self._initialize_weights()
+
+    def set_gradient_checkpointing(self, enabled: bool) -> None:
+        """Trade recomputation for lower Stage3 activation memory."""
+        self.gradient_checkpointing = bool(enabled)
 
     def set_planning_gate_init(self, planning_gate_init: float) -> None:
         """Set the standalone planning branch gate without touching its projections."""
@@ -335,7 +341,7 @@ class LightningDiT(nn.Module):
         time_embedding = self.timestep_encoder(timesteps)
         conditioning = time_embedding + conditioning_features
 
-        all_hidden_states = [hidden_states]
+        all_hidden_states = [hidden_states] if return_hidden_states else None
         planning_delta_norms = []
         planning_gates = []
         cot_delta_norms = []
@@ -347,14 +353,43 @@ class LightningDiT(nn.Module):
             current_planning_tokens = planning_condition_tokens if inject_planning else None
             current_cot_tokens = cot_condition_tokens if inject_cot else None
             
-            hidden_states = block(
-                hidden_states,
-                conditioning=conditioning,
-                encoder_hidden_states=current_encoder_states,
-                cot_condition_tokens=current_cot_tokens,
-                planning_condition_tokens=current_planning_tokens,
-                rotary_embedder=self.rotary_embedder,
-            )
+            if self.gradient_checkpointing and self.training and torch.is_grad_enabled():
+                def block_forward(
+                    states,
+                    condition,
+                    encoder_states,
+                    cot_tokens,
+                    planning_tokens,
+                    *,
+                    current_block=block,
+                ):
+                    return current_block(
+                        states,
+                        conditioning=condition,
+                        encoder_hidden_states=encoder_states,
+                        cot_condition_tokens=cot_tokens,
+                        planning_condition_tokens=planning_tokens,
+                        rotary_embedder=self.rotary_embedder,
+                    )
+
+                hidden_states = checkpoint(
+                    block_forward,
+                    hidden_states,
+                    conditioning,
+                    current_encoder_states,
+                    current_cot_tokens,
+                    current_planning_tokens,
+                    use_reentrant=False,
+                )
+            else:
+                hidden_states = block(
+                    hidden_states,
+                    conditioning=conditioning,
+                    encoder_hidden_states=current_encoder_states,
+                    cot_condition_tokens=current_cot_tokens,
+                    planning_condition_tokens=current_planning_tokens,
+                    rotary_embedder=self.rotary_embedder,
+                )
             if inject_planning and planning_condition_tokens is not None:
                 if block.last_planning_delta_norm is not None:
                     planning_delta_norms.append(block.last_planning_delta_norm)
@@ -362,7 +397,8 @@ class LightningDiT(nn.Module):
                     planning_gates.append(block.last_planning_gate)
             if inject_cot and cot_condition_tokens is not None and block.last_cot_delta_norm is not None:
                 cot_delta_norms.append(block.last_cot_delta_norm)
-            all_hidden_states.append(hidden_states)
+            if all_hidden_states is not None:
+                all_hidden_states.append(hidden_states)
 
         output = self.final_layer(hidden_states, conditioning)
         if planning_delta_norms:

@@ -36,3 +36,12 @@ def test_two_ranks_receive_strided_global_draw_streams() -> None:
     rank1.set_epoch(3)
     assert len(list(rank0)) == len(rank0) == 51
     assert len(list(rank1)) == len(rank1) == 51
+
+
+def test_warmup_epoch_covers_dataset_without_replacement() -> None:
+    size = 1000
+    sampler = DistributedFrontierSampler(size, torch.ones(size), seed=5, warmup_epochs=1)
+    sampler.set_epoch(0)
+    indices = list(sampler)
+    assert len(indices) == size
+    assert len(set(indices)) == size

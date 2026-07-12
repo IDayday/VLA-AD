@@ -1251,6 +1251,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             raise ValueError("PlanningTokenAdapter and Last-VLA are separate alternatives and cannot be enabled together.")
 
         self.model = LightningDiT(**config.diffusion_model_cfg)
+        self.model.set_gradient_checkpointing(
+            self.stage3_algorithm == "lfp_grpo" and bool(config.lfp_grpo_cfg.gradient_checkpointing)
+        )
         self.planning_adapter: Optional[PlanningTokenAdapter] = None
         if config.use_planning_token_adapter:
             self.planning_adapter = PlanningTokenAdapter(
@@ -5640,6 +5643,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             (B, self.config.action_horizon, D), device=device, dtype=dtype
         )
         denoising_chain = [current_actions.clone()]
+        lfp_on_policy = self.stage3_algorithm == "lfp_grpo" and not deterministic
+        bounded_final_norm: Optional[torch.Tensor] = None
 
         if self.config.sampling_method == 'flow':
             dt = 1.0 / self.config.num_inference_steps
@@ -5737,23 +5742,33 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     else:
                         std = std.clamp(min=self.min_sampling_denoising_std)
                 
-                if hasattr(self, 'randn_clip_value') and self.randn_clip_value is not None:
+                if (
+                    not lfp_on_policy
+                    and hasattr(self, 'randn_clip_value')
+                    and self.randn_clip_value is not None
+                ):
                     noise_sample = noise_sample.clamp_(-self.randn_clip_value, self.randn_clip_value)
 
                 current_actions = mean + std * noise_sample
                 
                 if i == len(timesteps) - 1:
-                    current_actions = self._clip_output_representation(
+                    bounded_output = self._clip_output_representation(
                         current_actions,
                         getattr(self, "final_action_clip_value", None),
                     )
+                    if lfp_on_policy:
+                        # The scored action remains bounded, but the sampled transition stored
+                        # in the chain must stay Gaussian for exact on-policy log-prob and KL.
+                        bounded_final_norm = bounded_output
+                    else:
+                        current_actions = bounded_output
                 
                 denoising_chain.append(current_actions.clone())
         else:
             raise ValueError(f"Unsupported sampling method: {self.config.sampling_method}")
 
         residual_alpha = self._last_vla_residual_alpha(training=self.training)
-        final_norm = current_actions
+        final_norm = bounded_final_norm if bounded_final_norm is not None else current_actions
         if residual_alpha != 0.0:
             residual_anchor_norm, _ = self._last_vla_residual_anchor_norm(
                 action_input,

@@ -95,6 +95,7 @@ def test_on_policy_loss_reaches_dit_and_planning_adapter_but_not_reference(tmp_p
         metric_cache_path=str(metric_root),
         reference_policy_checkpoint=str(reference_checkpoint),
         sample_time=4,
+        min_logprob_denoising_std=0.04,
         bc_coeff_start=0.0,
         bc_coeff_end=0.0,
         use_gspo_ratio=False,
@@ -124,6 +125,7 @@ def test_on_policy_loss_reaches_dit_and_planning_adapter_but_not_reference(tmp_p
                 benchmark="navsim_v1",
                 reference_cache_path=str(reference_cache),
                 curriculum_enabled=False,
+                gradient_checkpointing=True,
             ),
         )
     ).train()

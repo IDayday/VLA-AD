@@ -21,6 +21,8 @@ def _grpo(**overrides):
         "use_diversity_reward": False,
         "bc_coeff_start": 0.0,
         "bc_coeff_end": 0.0,
+        "min_sampling_denoising_std": 0.04,
+        "min_logprob_denoising_std": 0.04,
     }
     values.update(overrides)
     return SimpleNamespace(**values)
@@ -79,3 +81,12 @@ def test_lfp_replay_conflicts_and_old_algorithm_is_unchanged() -> None:
         )
     # The validator is a no-op for every legacy algorithm.
     validate_lfp_config_exclusivity("none", _grpo(use_gspo_ratio=True), _offline(bc_loss_weight=1.0))
+
+
+def test_lfp_requires_exact_sampling_and_logprob_std_match() -> None:
+    with pytest.raises(ValueError, match="to be identical"):
+        validate_lfp_config_exclusivity(
+            "lfp_grpo",
+            _grpo(min_sampling_denoising_std=0.04, min_logprob_denoising_std=0.10),
+            _offline(),
+        )

@@ -84,3 +84,80 @@ def test_advantage_clamp_and_energy_are_finite() -> None:
     assert output.advantages.abs().max() <= 0.2
     assert output.diagnostics["lfp_advantage_clip_ratio"] > 0.0
     assert torch.isfinite(output.energy).all()
+
+
+def test_ttc_regression_cannot_receive_positive_credit() -> None:
+    output = _case()
+    metrics_ttc = torch.ones_like(output.advantages)
+    metrics_ttc[0, 1] = 0.8
+    scalar = torch.tensor(
+        [[0.7, 0.9, 0.6, 0.8], [0.9, 0.8, 0.7, 0.6], [0.9, 0.8, 0.7, 0.6], [0.9, 0.8, 0.7, 0.6]]
+    )
+    ep = scalar.clone()
+    ones = torch.ones_like(scalar)
+    nc = ones.clone()
+    nc[2, 2:] = 0.0
+    nc[3] = 0.0
+    metrics = CanonicalMetricBatch(
+        scalar=scalar,
+        ep=ep,
+        ttc=metrics_ttc,
+        quality=ep,
+        nc=nc,
+        dac=ones,
+        ddc_guard_value=ones,
+        tlc=None,
+        diagnostics={},
+    )
+    reference = ReferenceBatch(
+        scalar=torch.full((4,), 0.7),
+        ep=torch.full((4,), 0.7),
+        ttc=torch.ones(4),
+        quality=torch.ones(4),
+        nc=torch.ones(4),
+        dac=torch.ones(4),
+        ddc=torch.ones(4),
+        tlc=None,
+        gt_ddc=torch.ones(4),
+        selected_source_code=torch.ones(4, dtype=torch.long),
+        fallback_mask=torch.zeros(4, dtype=torch.bool),
+    )
+    guarded = compute_lfp_advantages(
+        metrics,
+        reference,
+        LFPGRPOConfig(ttc_positive_credit_guard=True, ttc_reference_tolerance=0.01),
+    )
+    assert not guarded.ttc_ok[0, 1]
+    assert guarded.advantages[0, 1] <= 0.0
+
+
+def test_all_infeasible_rescue_only_assigns_negative_credit() -> None:
+    scalar = torch.tensor([[0.9, 0.8, 0.7, 0.6]])
+    ones = torch.ones_like(scalar)
+    metrics = CanonicalMetricBatch(
+        scalar=scalar,
+        ep=scalar,
+        ttc=ones,
+        quality=scalar,
+        nc=torch.zeros_like(scalar),
+        dac=ones,
+        ddc_guard_value=ones,
+        tlc=None,
+        diagnostics={},
+    )
+    reference = ReferenceBatch(
+        scalar=torch.tensor([0.7]),
+        ep=torch.tensor([0.7]),
+        ttc=torch.ones(1),
+        quality=torch.ones(1),
+        nc=torch.ones(1),
+        dac=torch.ones(1),
+        ddc=torch.ones(1),
+        tlc=None,
+        gt_ddc=torch.ones(1),
+        selected_source_code=torch.ones(1, dtype=torch.long),
+        fallback_mask=torch.zeros(1, dtype=torch.bool),
+    )
+    rescued = compute_lfp_advantages(metrics, reference, LFPGRPOConfig(all_infeasible_rescue=True))
+    assert (rescued.advantages <= 0.0).all()
+    assert (rescued.advantages < 0.0).any()

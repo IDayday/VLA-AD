@@ -246,16 +246,19 @@ class DistributedFrontierSampler(Sampler[int]):
         generator.manual_seed(self.seed + self.epoch)
         if self.epoch < self.warmup_epochs:
             uniform_source = torch.ones(self.total_size, dtype=torch.bool)
+            indices = torch.randperm(self.dataset_size, generator=generator)
+            if self.total_size > self.dataset_size:
+                indices = torch.cat((indices, indices[: self.total_size - self.dataset_size]))
         else:
             uniform_source = torch.rand(self.total_size, generator=generator) < self.uniform_ratio
-        uniform_indices = torch.randint(self.dataset_size, (self.total_size,), generator=generator)
-        frontier_indices = torch.multinomial(
-            self.frontier_weights,
-            self.total_size,
-            replacement=True,
-            generator=generator,
-        )
-        indices = torch.where(uniform_source, uniform_indices, frontier_indices)
+            uniform_indices = torch.randint(self.dataset_size, (self.total_size,), generator=generator)
+            frontier_indices = torch.multinomial(
+                self.frontier_weights,
+                self.total_size,
+                replacement=True,
+                generator=generator,
+            )
+            indices = torch.where(uniform_source, uniform_indices, frontier_indices)
         rank_positions = torch.arange(self.rank, self.total_size, self.num_replicas)
         rank_indices = indices[rank_positions]
         rank_sources = uniform_source[rank_positions]
