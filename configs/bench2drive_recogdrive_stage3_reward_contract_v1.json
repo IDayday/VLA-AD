@@ -2,7 +2,8 @@
   "contract_id": "recogdrive_b2d_stage3_multi_objective_reward_v1",
   "created_utc": "2026-07-12",
   "classification": "custom-aligned research extension; not an official ReCogDrive reward and not a Bench2Drive PDMS",
-  "activation_status": "inactive; reward semantics are fixed, but the B2D pseudo-simulation cache builder and GRPO adapter are not yet wired",
+  "activation_status": "superseded by recogdrive_b2d_stage3_report_aligned_reward_v2; retained only for audit history",
+  "superseded_by": "configs/bench2drive_recogdrive_stage3_report_reward_v2.json",
   "baseline_isolation": {
     "modify_active_stage1_stage2_pipeline": false,
     "modify_public_navsim_pdms_path": false,

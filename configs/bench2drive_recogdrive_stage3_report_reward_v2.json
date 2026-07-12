@@ -1,0 +1,147 @@
+{
+  "contract_id": "recogdrive_b2d_stage3_report_aligned_reward_v2",
+  "created_utc": "2026-07-12",
+  "classification": "custom-aligned B2D research reward; report-aligned but not an official Bench2Drive aggregate and not a disclosed ReCogDrive reward",
+  "activation_status": "inactive until candidate rollout cache and held-out correlation gates pass",
+  "supersedes": "configs/bench2drive_recogdrive_stage3_reward_contract_v1.json",
+  "design_principle": {
+    "navsim_analogy": "PDMS multiplies safety/feasibility penalties by a weighted average of progress, TTC and comfort",
+    "bench2drive_translation": "store the official B2D sufficient statistics and use their non-redundant decomposition as the Pareto vector",
+    "forbidden_shortcut": "do not call a NAVSIM scorer on B2D trajectories and do not label B2D-RAS as PDMS"
+  },
+  "official_route_state": {
+    "route_completion": "RC in [0,1], converted directly from official score_route percentage",
+    "infraction_penalty": "P in [0,1], exact product of official B2D V0.0.3 event factors",
+    "strict_infraction_free": "all official infractions except minimum-speed are absent; route deviation, blocking and route timeout also fail this flag",
+    "efficiency_accumulator": "sum and count of valid official speed percentages at the 20 route checkpoints; individual values >1000% are filtered",
+    "smoothness_accumulator": "number of official two-second smooth segments passed and total valid segments",
+    "terminal": "route-finished and target-reached flags",
+    "ability_metadata": "official ability labels plus the special Traffic-Signs junction outcome"
+  },
+  "exact_report_reconstruction": {
+    "route_driving_score": "100 * RC * P",
+    "global_driving_score": "sum(route_driving_score) / 220; missing routes contribute zero",
+    "route_success": "route_finished and target_reached and RC == 1 and strict_infraction_free",
+    "success_rate": "100 * successful_routes / 220; missing routes are failures",
+    "driving_efficiency": "mean of each valid route's checkpoint speed-percentage mean; routes without a first check are omitted exactly as in the official tool",
+    "driving_smoothness": "100 * mean(route smooth-segment pass ratio) over valid routes",
+    "multi_ability": "route success grouped by Merging, Overtaking, Emergency Brake, Give Way and Traffic Signs; preserve the official additional Traffic-Signs junction contribution"
+  },
+  "pareto_objectives": {
+    "order": [
+      "infraction_compliance",
+      "route_completion",
+      "driving_efficiency",
+      "driving_smoothness"
+    ],
+    "infraction_compliance": "P, the exact official multiplicative infraction penalty",
+    "route_completion": "RC, the exact official DS progress component",
+    "driving_efficiency": {
+      "raw_report_value": "official checkpoint speed percentage mean",
+      "optimization_transform": "raw_percentage / 1000",
+      "missing_value": 0.0,
+      "reason": "positive affine normalization preserves arithmetic means and model ordering over the same valid-route set; clipping or logarithms do not, while missing routes are handled by the explicit coverage guard"
+    },
+    "driving_smoothness": {
+      "value": "official smooth-segment pass ratio",
+      "missing_value": 0.0,
+      "dense_margin_is_primary_objective": false
+    },
+    "constraint_dominance": {
+      "primary_constraint": "sr_feasible = strict_infraction_free and (route is non-terminal or terminal_success), using the exact SR infraction rule with minimum-speed excluded",
+      "rule": "an SR-feasible candidate dominates an infeasible candidate; when feasibility matches, apply ordinary Pareto dominance to the four-objective vector",
+      "missingness_metadata": [
+        "efficiency_valid",
+        "smoothness_valid"
+      ]
+    },
+    "why_sr_is_not_a_fifth_objective": "SR is the terminal indicator derived from RC and strict infraction-free; it is enforced through constraint dominance instead of duplicated as a sparse objective",
+    "why_ability_is_not_a_per_candidate_dimension": "Multi-Ability is the same route-success signal grouped by scenario; use ability-balanced sampling and report the five group aggregates"
+  },
+  "report_aligned_scalar_baseline": {
+    "name": "B2D-RAS",
+    "official_metric": false,
+    "base_utility": "U = P * (2 * RC + 1 * E_linear + 1 * Smoothness) / 4",
+    "formula": "B2D-RAS = U if sr_feasible else -1 + 0.25 * U",
+    "feasibility_property": "every SR-feasible state scores in [0,1], every infeasible state scores in [-1,-0.75], and all-infeasible groups retain residual ordering",
+    "infeasible_residual_scale": 0.25,
+    "weights": {
+      "route_completion": 2.0,
+      "driving_efficiency": 1.0,
+      "driving_smoothness": 1.0
+    },
+    "reason": "the strict barrier directly represents SR feasibility; within each feasibility class, DS components remain primary while Efficiency and Smoothness are separately reported secondary outcomes",
+    "use": "plain-GRPO chain validation and scalar ablation only; Pareto training consumes the canonical four-objective vector"
+  },
+  "candidate_transition": {
+    "input": "before route state plus a candidate-specific projected after route state",
+    "grpo_group_reward": "apply SR constraint dominance, then compare after-state objective potentials because every candidate in a group shares the same before state",
+    "sequential_reward": "use after-potential minus before-potential; the DS and B2D-RAS potential differences telescope across a route",
+    "required_invariants": [
+      "route completion cannot decrease",
+      "infraction penalty cannot recover",
+      "strict infraction-free cannot recover",
+      "efficiency and smoothness accumulator counts cannot decrease",
+      "ability labels cannot change within a route"
+    ]
+  },
+  "candidate_rollout_requirements": {
+    "trajectory_points": 6,
+    "trajectory_interval_seconds": 0.5,
+    "horizon_seconds": 3.0,
+    "ego_rollout_frequency_hz": 20,
+    "controller": "same PID and control frequency used by the closed-loop B2D agent",
+    "environment_preference": "reactive CARLA rollout is the reference; non-reactive log replay is a cheaper proxy that must be calibrated",
+    "other_agents_for_proxy": "interpolate future B2D actor boxes to rollout ticks",
+    "official_event_logic": "reuse B2D event semantics for collisions, red lights, stop signs, outside-route, yield, deviation and blocking",
+    "official_efficiency_logic": "carry the current route checkpoint accumulator into every candidate branch",
+    "official_smoothness_logic": "carry segment boundary/history so a candidate is scored with the exact official 20-frame segmentation"
+  },
+  "explicit_conflicts": [
+    "infraction compliance versus route completion in merge, overtake and detour",
+    "infraction compliance versus efficiency when larger safety margins require earlier braking",
+    "efficiency versus smoothness through acceleration and jerk",
+    "infraction compliance versus smoothness during necessary emergency braking",
+    "route completion versus smoothness because a stationary or blocked route can appear perfectly smooth"
+  ],
+  "missingness_guards": {
+    "efficiency": "a route with no first checkpoint has no official Efficiency value but receives optimization value zero; always report efficiency route coverage",
+    "smoothness": "a route without a full official segment receives optimization value zero; always report smoothness route coverage",
+    "reason": "the official omission rules must not become a reward-hacking path"
+  },
+  "training_policy": {
+    "primary_reward": "SR-constrained four-objective vector",
+    "scalar_baseline": "B2D-RAS",
+    "imitation": "retain the Stage2 reference through KL/BC; ADE is not a primary report-aligned objective",
+    "ability_sampling": "stratify or balance groups by the five official abilities and 44 scenario types",
+    "test_route_tuning": false
+  },
+  "validation_gates": [
+    "the route aggregator reproduces official DS, SR, Efficiency and Smoothness on saved official evaluation JSON/metric logs",
+    "the route aggregator reproduces all five official ability scores including Traffic-Signs special handling",
+    "candidate transitions preserve all route-state invariants",
+    "all four objectives show useful within-group variance on held-out training routes",
+    "injected collisions and traffic-rule violations never improve infraction compliance or B2D-RAS",
+    "efficiency and smoothness coverage are reported and cannot decrease silently",
+    "non-reactive candidate scores are correlated against reactive held-out CARLA rollouts before formal Stage3",
+    "reward configuration is frozen before the final complete 220-route evaluation"
+  ],
+  "validated_existing_artifact": {
+    "evaluation": "stage2_scratch_full1000_epoch200_220route_20260711T000033Z",
+    "tolerance": 0.00001,
+    "driving_score_delta": 0.00000140559090766601,
+    "success_rate_delta": 0.0,
+    "driving_efficiency_delta": 8.526512829121202e-14,
+    "driving_smoothness_delta": -7.105427357601002e-15,
+    "efficiency_route_coverage_percent": 97.27272727272727,
+    "smoothness_route_coverage_percent": 100.0,
+    "exact_report_gate_passed": true,
+    "real_multi_ability_route_reconstruction": "pending route XML and Traffic-Signs junction audit"
+  },
+  "implementation": {
+    "module": "navsim/agents/recogdrive/bench2drive_report_reward.py",
+    "tests": "tests/test_bench2drive_report_reward.py",
+    "validator": "scripts/bench2drive/validate_b2d_report_reward.py",
+    "active_trainer_wired": false
+  }
+}

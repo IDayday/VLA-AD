@@ -4,7 +4,7 @@
 
 分支：`feature/bench2drive-recogdrive`
 
-状态：奖励语义与 CPU 组合器已固定；尚未接入正式 Stage3 cache/GRPO，且不影响正在运行的 Stage1 → Stage2 基线流水线。
+状态：v2 report-aligned reward state、聚合器与 CPU 组合器已固定；尚未接入正式 Stage3 cache/GRPO，且不影响正在运行的 Stage1 → Stage2 基线流水线。
 
 ## 1. 先固定口径
 
@@ -82,190 +82,228 @@ MindDrive 的精确在线实现已核查到 commit
 
 因此必须自行构造，但每个分项都要注明“官方对齐”还是“训练代理”。
 
-## 4. B2D reward vector v1
+## 4. 为什么 v1 需要被替换
 
-配置：`configs/bench2drive_recogdrive_stage3_reward_contract_v1.json`
+v1 的 `[Safety, Compliance, Efficiency, Comfort]` 能表达冲突，但仍有三处不够严格：
 
-CPU 组合器：`navsim/agents/recogdrive/bench2drive_reward_contract.py`
+1. continuous TTC、command following 和 comfort margin 不是 B2D 最终汇报列；
+2. capped local speed ratio 不能还原官方可超过 100% 的 Efficiency；
+3. 从四个 v1 分量不能精确重建 DS、SR 和 Multi-Ability。
 
-对每个 6 点、3 秒候选轨迹，pseudo-sim 输出四维向量：
+因此 v1 配置只保留作审计历史，正式候选合同升级为：
 
-\[
-\mathbf r(\tau) = [S(\tau), L(\tau), E(\tau), C(\tau)]\in[0,1]^4.
-\]
+- 配置：`configs/bench2drive_recogdrive_stage3_report_reward_v2.json`；
+- 实现：`navsim/agents/recogdrive/bench2drive_report_reward.py`；
+- 单测：`tests/test_bench2drive_report_reward.py`。
 
-这里只定义 reward vector，不实现 Pareto-GRPO 算法。
+v2 不再先“猜”局部 reward，而是先保存能还原官方报告的 route-level sufficient statistics，再让每条 3 秒候选轨迹预测一次 after-state。
 
-### 4.1 Safety：碰撞门控 + 连续 TTC 余量
+## 5. v2 route state 与官方结果的精确关系
 
-\[
-S = I_{\mathrm{no\ collision}}
-\operatorname{clip}\left(\frac{TTC_{min}-1\mathrm{s}}{3\mathrm{s}-1\mathrm{s}},0,1\right).
-\]
+每条 route 保存：
 
-- 碰撞来自候选 ego swept box 与未来 actor box 的时序相交；
-- TTC `<=1s` 是 iPad 的 B2D scorer 阈值；3 秒为当前候选 horizon；
-- 没有 closing actor 时 `TTC=+inf`，TTC score 为 1；
-- TTC 是训练代理与安全诊断，不得写进 B2D 官方结果列。
+- `RC`：官方 Route Completion，范围 `[0,1]`；
+- `P`：collision、red light、stop、yield、outside-route 等官方 penalty 的累乘；
+- `infraction_free`：除 minimum-speed 外没有任何正式 infraction，且没有 deviation、blocked、route timeout；
+- Efficiency 的有效 checkpoint percentage `sum/count`；
+- Smoothness 的有效 segment `pass_count/segment_count`；
+- `route_finished`、`target_reached`；
+- ability labels 与 Traffic-Signs 的特殊 junction outcome。
 
-二元 collision-free 保证底线，连续 TTC 保留“更早制动更安全，但可能降低效率”的 Pareto 冲突。
-
-### 4.2 Compliance：可行驶区、路线、规则、指令
-
-\[
-L=(D_{area}D_{route}D_{rule}D_{cmd}D_{ability})^{1/5}.
-\]
-
-- `D_area`：ego footprint 位于可行驶区域的比例；
-- `D_route`：ego 位于**场景允许路线走廊**的比例；
-- `D_rule`：红灯、停车牌、让行紧急车辆等规则符合度；
-- `D_cmd`：到达正确路线分支并满足 high-level command 的连续分数。
-- `D_ability`：按场景类型构造的局部能力信号，例如 merge/overtake 是否进入正确空隙、emergency brake 是否避开风险、give-way 是否让行；正式 Multi-Ability 仍只由闭环 route success 计算。
-
-禁止把“到 lane center 的距离”直接当通用惩罚。B2D 的超车、事故绕行、施工绕行、merge、双向道路避障会合法离开当前车道中心；route corridor 必须按场景和导航分支构造。
-
-### 4.3 Efficiency：路线进度 × B2D 周车速度比
+这些量可以直接重建：
 
 \[
-P=\operatorname{clip}(\Delta s_{candidate}/\Delta s_{reference},0,1),
+DS_i=100\,RC_iP_i,
+\qquad
+DS=\frac{1}{220}\sum_i DS_i.
 \]
 
 \[
-V=\operatorname{clip}(\bar v_{ego}/\bar v_{background},0,1),\qquad
-E=\sqrt{PV}.
-\]
-
-- `V` 直接对应 B2D Efficiency 的局部形式；正式评价仍用 20 个 route checkpoints 的官方实现；
-- 对训练 reward 将速度比 cap 到 1，避免通过超速无限刷分；原始百分比仍写入 diagnostics；
-- 没有 background vehicles 时按官方逻辑令 `V=1`；
-- reference 处于必要停车状态时，候选也在 0.5 m 容差内停车则 `P=1`，避免在红灯/紧急制动时错误奖励前进；
-- 几何均值要求“有进度且不比周车过慢”，单纯原地停车不能在整个 route 上获得高效率。
-
-### 4.4 Comfort：官方通过率 + 稠密阈值余量
-
-B2D 官方 2 秒分段阈值：
-
-| 运动量 | 阈值 |
-|---|---:|
-| longitudinal acceleration | `[-4.05, 2.40] m/s²` |
-| absolute lateral acceleration | `< 4.89 m/s²` |
-| absolute yaw rate | `< 0.95 rad/s` |
-| absolute yaw acceleration | `< 1.93 rad/s²` |
-| absolute longitudinal jerk | `< 4.13 m/s³` |
-| absolute magnitude jerk | `< 8.37 m/s³` |
-
-训练分量定义为：
-
-\[
-C=0.70C_{official-pass}+0.30C_{margin}.
-\]
-
-- `C_official-pass` 是所有变量均过阈值的 segment 比例，可与官方 Smoothness 做同方向审计；
-- `C_margin` 是到各阈值的归一化余量，只提供组内稠密差异；
-- 最终论文汇报只能把 `C_official-pass`/官方闭环脚本结果称为 B2D Smoothness，不能把混合后的 `C` 冒充官方指标。
-
-### 4.5 Hard feasibility gate
-
-候选只有同时满足以下条件才是 feasible：
-
-- 轨迹有限且格式有效；
-- 无碰撞；
-- 无 route-deviation terminal event；
-- 没有会使 B2D route success 失效的正式 infraction；
-- drivable-area compliance `>=0.99`；
-- traffic-rule compliance `=1`。
-
-TTC 与 command following 不设硬门，保留连续学习信号。后续 Pareto 方法应先处理可行性，再比较四维向量；不要让高速但碰撞/闯灯的候选依靠效率补偿安全失败。
-
-## 5. 普通 GRPO 的兼容标量基线
-
-为了在 Pareto 方法实现前验证整个 Stage3 数据链路，定义一个明确标注的普通 GRPO baseline：
-
-\[
-U= P_{B2D-infraction}\frac{S+L+E+C}{4}.
+Success_i=I(route\ finished\land target\ reached\land RC_i=1
+\land infraction\ free),
 \]
 
 \[
-R_{scalar}=\begin{cases}
-U,& feasible,\\
--1+0.25U,& infeasible.
+SR=\frac{100}{220}\sum_i Success_i.
+\]
+
+官方 Efficiency 仍是每条有效 route 的 checkpoint speed-percentage 均值，再在有效 routes 间取均值；官方 Smoothness 是有效 route 的 smooth-segment pass ratio 均值。五类 Multi-Ability 是同一个 `Success_i` 按场景组聚合，Traffic Signs 保留官方脚本额外计算 junction outcome 的行为。
+
+这意味着 v2 route aggregator 可以和官方 220-route JSON/metric logs 逐项对账，不再只有“同方向”关系。
+
+## 6. Pareto 目标：官方量的非冗余分解
+
+对每个 candidate after-state，定义：
+
+\[
+\mathbf f=[P,\ RC,\ E_{linear},\ Smoothness].
+\]
+
+四个分量分别对应：
+
+1. `Infraction Compliance = P`：DS 的官方安全/守法乘法项；
+2. `Route Completion = RC`：DS 的官方任务进度项；
+3. `Driving Efficiency = E_linear`：官方 Efficiency 的正线性归一化；
+4. `Driving Smoothness`：官方 segment pass ratio，不再混入 dense margin。
+
+### 6.1 Efficiency 必须线性归一化
+
+B2D 的 Efficiency 可以超过 100%，官方只过滤单个大于 1000% 的异常值。直接 cap 到 100% 会改变最终排名；对数变换虽然保留单条 route 的大小关系，却会改变跨 routes 取算术平均后的模型排名。因此优化量只做正线性归一化：
+
+\[
+E_{linear}=\frac{E_{official}}{1000}.
+\]
+
+它把官方有效范围映射到 `[0,1]`，并且在同一组有效 routes 上满足 `mean(E_linear)=mean(E_official)/1000`，所以算术聚合和模型排序都不变。若模型的有效 route coverage 不同，则由下一节的显式缺失值规则处理，不能宣称官方省略口径也天然不变。最终报告仍输出 raw percentage。Pareto 支配对正线性缩放不敏感，训练时再做组内按维标准化，不能修改原始目标定义。
+
+### 6.2 缺失值不能成为刷 reward 的路径
+
+- 未到第一个 5% checkpoint 的 route 在官方 Efficiency 中被省略；训练目标将其记为 `E_linear=0`，同时记录 Efficiency route coverage；
+- 没有完整 smooth segment 时优化值为 0，同时记录 Smoothness coverage；
+- 正式报告仍照官方省略规则计算，但必须同时给出 coverage，防止“不开动所以没有低 Efficiency”“过早失败所以没有不舒适段”造成误判。
+
+### 6.3 SR 作为约束支配，而不是稀疏第五维
+
+- SR 是 `RC=1 + infraction_free + terminal` 的二元派生量，直接加入 vector 会形成稀疏且冗余的第五维，但完全忽略它又会偏离最终汇报；
+- 因此定义 `sr_feasible = infraction_free AND (尚未终止 OR terminal_success)`，采用 constrained dominance：仍有 SR 成功可能的候选无条件优先于已经不可成功的候选；两者可行性相同时，再比较四维 Pareto vector；
+- blocked、route deviation 和 route timeout 虽然没有单独的 DS 乘法因子，也会使 `infraction_free=false`；minimum-speed 按官方规则不触发该约束；
+- Multi-Ability 是同一个 route success 按 scenario group 聚合，不是新的 per-candidate 物理量；
+- 训练时采用五种 ability/44 scenarios 平衡采样，验证时直接报告五维 ability success vector。
+
+TTC、clearance、command following 和 dense comfort margin 仍可作为 diagnostics/tie-breaker，但不进入 report-aligned 主 Pareto vector。
+
+## 7. B2D-RAS：普通 GRPO 的标量链路基线
+
+类比 NAVSIM 的“penalty × weighted quality”，先定义同类可行状态内的基础效用：
+
+\[
+U=P\frac{2RC+E_{linear}+Smoothness}{4}.
+\]
+
+再把 SR 的零违章条件编码为不可被效率补偿的 barrier：
+
+\[
+B2D\text{-}RAS=
+\begin{cases}
+U,& sr\_feasible,\\
+-1+0.25U,& otherwise.
 \end{cases}
 \]
 
-性质：
+- `P` 使用 B2D 官方 penalty，不使用 NAVSIM NC/DAC；
+- `RC` 权重 2，因为 DS/SR 是 B2D 主结果；
+- Efficiency 和 Smoothness 各权重 1，因为二者独立汇报；
+- 任意 SR-feasible 状态位于 `[0,1]`，任意 infeasible 状态位于 `[-1,-0.75]`，因此速度或平顺性不能补偿导致 SR 归零的违章；
+- `0.25U` 只在一组候选已经全部不可行时保留相对学习信号；
+- 该分数可验证普通 scalar GRPO 数据链路，但不是官方指标，也不是 Pareto 方法；
+- 真正 Pareto 训练直接消费上一节的四维向量，避免权重掩盖冲突。
 
-- 任意 feasible candidate 都优于任意 infeasible candidate；
-- 当一组候选全部失败时，残差项仍提供相对排序，避免全组 constant reward；
-- `P_B2D-infraction` 使用官方 collision/red-light/stop/yield/outside-route 乘法因子；
-- 该标量只是数据链路与普通 GRPO ablation，**不是** Pareto 方法、DS、SR 或 PDMS。
+ADE 不进入主 reward。Stage2 reference policy 继续通过 KL/BC 保持，避免把专家单一路径变成与官方报告无关的第五目标。
 
-模仿 ADE 不进入四维 reward。Stage2 reference policy 通过既有 KL/BC 项保留，避免把专家单一路径变成目标维度后压制合法的多模态 merge/overtake/detour 解。
+## 8. 3 秒 candidate 如何与完整 route 对齐
 
-## 6. 本定义显式保留的天然冲突
+每个 GRPO group 共享同一个 before-state。候选轨迹经同 controller rollout 后得到各自 after-state：
 
-1. **Safety vs Efficiency**：更大 TTC 余量通常需要更早减速；merge/overtake 又需要主动加速进入空隙。
-2. **Efficiency vs Comfort**：快速起步/制动提高进度，但增加 acceleration/jerk。DriveReward 的 B2D 实验也出现 DS/SR 上升而 Comfort 大幅下降。
-3. **Safety vs Comfort**：Emergency Brake、pedestrian crossing 等场景中，必要急刹可能违反平顺阈值。iPad 观察到 Comfort 与闭环 B2D 得分负相关，给出了同类证据。
-4. **Route compliance vs scenario completion**：过强 lane-center 约束会阻止超车、施工绕行或双向路避障。
-5. **Imitation vs multimodality**：低 ADE 偏好专家单一路径，但多个安全可行策略可能具有不同横纵向动作。
-6. **离线非反应式安全 vs 闭环交互**：回放 actor 不会响应 ego；iPad 已报告其 NC/TTC 与闭环表现可能反向，因此必须审计相关性，不能假定 proxy 就是真值。
+\[
+s_t\xrightarrow{\tau_k}s_{t+3s}^{(k)}.
+\]
 
-这正是后续 Pareto 方法应该发挥作用的位置：保留冲突分项和可行性关系，而不是先用一组未经验证的权重把它们永久压成一个数。
+组内先应用 SR constraint dominance，再比较 after-state potential：
 
-## 7. Cache/pseudo-sim 合同
+\[
+[P_{t+3s}^{(k)},RC_{t+3s}^{(k)},E_{t+3s}^{(k)},S_{t+3s}^{(k)}].
+\]
 
-当前 B2D Base 原始标注足以提供：ego pose/state、未来车辆/行人 oriented boxes、交通灯/标志、road/lane IDs、HD map 和导航命令。v1 cache builder 应固定：
+因为 before-state 对组内全部候选相同，相对优势不会受到共同历史项影响。若以后采用连续 route rollout，则使用 potential difference：
 
-1. 输入只来自 training split，不读取 220-route 结果作为 label；
-2. 当前六点轨迹间隔 0.5 秒、horizon 3 秒；
-3. 使用闭环部署相同的 PID，并以 20 Hz 自行车模型 rollout ego；
-4. 把 10 Hz future actor boxes 插值到 rollout ticks；
-5. 保存每个候选的原始事件/运动学量和四维 reward，不能只保存 scalar；
-6. 保存 `data commit + cache builder commit + controller config + map commit + reward contract id`；
-7. cache manifest 必须标注非反应式 actor 假设。
+\[
+r_t=\Phi(s_{t+3s})-\Phi(s_t),
+\]
 
-必须保存的最小字段已列在 JSON 配置的 `required_cache_fields` 中。
+DS 与 B2D-RAS 的差分在整条 route 上 telescoping，累计值等于终局 potential 减去初值。
 
-## 8. 训练前验证门与最终评价
+候选分支必须继承：
 
-### 8.1 不使用 220-route 调 reward
+- 当前 RC 与 penalty；
+- 已有 Efficiency checkpoint `sum/count` 以及下一个 5% checkpoint；
+- Smoothness 的 segment boundary 和运动学历史；
+- 已经发生的 infraction 状态；
+- route/scenario/ability metadata。
 
-- 用 training clips 内部划分 held-out validation；
-- 注入碰撞、越界、闯灯、停止、激进加速、原地不动等可控 counterexamples；
-- 检查每个 GRPO group 的四维方差、方向性和 reward-hacking；
-- 报告 offline component 与 held-out outcome 的 rank correlation；
-- 在阈值、controller、cache 和权重冻结前，不用完整 220 routes 做选择。
+如果独立 frame cache 没有这些 route context，就不能声称 report-aligned，应先补全 route-state cache。
 
-### 8.2 Stage3 结束后的同口径评价
+## 9. 本定义保留的真实冲突
 
-必须继续运行 B2D 官方 220-route evaluator，汇报：
+1. **Infraction Compliance vs Route Completion**：merge/overtake/detour 中过度保守可以保持 `P=1`，但降低 RC，甚至 blocked/timeout。
+2. **Infraction Compliance vs Efficiency**：更大安全余量通常需要更早制动，而 B2D Efficiency 奖励更高的周车速度比。
+3. **Efficiency vs Smoothness**：快速起步、抢 gap、急减速提高进度/速度，却增加 acceleration 与 jerk。
+4. **Infraction Compliance vs Smoothness**：Emergency Brake 中必要急刹可能保住无碰撞，却损失 Smoothness。
+5. **Route Completion vs Smoothness**：静止或 blocked route 可能得到完美 Smoothness，但 RC/DS 很低。
+6. **非反应式 proxy vs reactive closed-loop**：回放 actor 不会响应 ego，因此 candidate after-state 必须和 held-out CARLA reactive rollout 校准。
 
-- DS、SR；
-- Efficiency、Smoothness；
+[NAVSIM 原论文](https://proceedings.neurips.cc/paper_files/paper/2024/file/32768f7faf1995026ef9821c696f3404-Paper-Datasets_and_Benchmarks_Track.pdf)本身就采用 penalty 与 progress/comfort 的分项聚合；[近期跨基准研究](https://arxiv.org/html/2605.00066)进一步观察到安全过度优化会因低进度和 timeout 导致 B2D 排名反转。这正是保留 Pareto 分项而不是只优化 scalar 的研究依据。
+
+## 10. Cache、训练与验证门
+
+### 10.1 两档 rollout
+
+1. **参考真值**：CARLA reactive rollout，复用正式 agent 的 PID、20 Hz control 和官方 event logic；
+2. **低成本 proxy**：B2D future actor box log replay；必须明确标注 non-reactive，并在 held-out routes 上对照 reactive rollout。
+
+无论哪一档，都必须保存原始 route state、四维 vector 和 B2D-RAS，不能只保存 scalar。
+
+### 10.2 正式 Stage3 前的门
+
+- v2 aggregator 在现有官方 evaluation JSON/metric logs 上逐项复现 DS、SR、Efficiency、Smoothness；
+- 在 route XML 与官方 CARLA map 上单独复现五类 ability，包含 Traffic-Signs 的额外 junction contribution；
+- 注入 collision、red-light、stop、outside-route、blocked 等反例，确保它们失去 SR feasibility，且 B2D-RAS 跨越负 barrier；
+- 检查候选转移的 RC 单调、penalty 不可恢复、accumulator count 不可减少；
+- 检查四个目标在 held-out training routes 的组内方差；
+- 报告 proxy 与 reactive rollout 的 component-wise Spearman/Kendall 相关性和 ranking inversion；
+- 在 reward/cache/controller 固定前，不用完整 220-route 结果调权重。
+
+已用现有 Stage2 完整 220-route 工件执行第一项数值门：
+
+| 指标 | v2 聚合器 | 官方后处理 | 差值 |
+|---|---:|---:|---:|
+| DS | 45.10557816 | 45.10557675 | `+1.41e-6` |
+| SR | 21.36363636 | 21.36363636 | `0` |
+| Efficiency | 137.51002511 | 137.51002511 | `+8.53e-14` |
+| Smoothness | 37.71364351 | 37.71364351 | `-7.11e-15` |
+
+DS 的微小差值来自已保存 route score 的六位小数累加；`1e-5` 精度门通过。该次评估的 Efficiency route coverage 为 `97.27%`，Smoothness coverage 为 `100%`，进一步证明 coverage 不能省略。真实五类 ability 的 per-route 特殊处理仍待 route XML/CARLA 对账。
+
+### 10.3 Stage3 完成后的最终汇报
+
+- 官方 DS、SR、raw Efficiency、Smoothness；
 - 五类 Multi-Ability 与 mean；
-- route completion 与各类 infraction count；
-- 四维训练 reward 的分布与 pairwise conflict；
-- offline reward 对 closed-loop 结果的相关性审计。
+- per-infraction counts、RC、Efficiency/Smoothness coverage；
+- 四个 Pareto objectives 的分布、相关矩阵和 Pareto front；
+- B2D-RAS 只作为 scalar baseline ablation；
+- offline proxy 到 reactive closed-loop 的相关性审计。
 
-训练 reward 与评价“一致”不等于把二者强行写成同一个标量，而是：同一交通事件、同一 controller、同一运动学阈值、同一路线语义可追溯；同时承认局部非反应式 proxy 与完整闭环 route metric 的层级差异。
-
-## 9. 当前可执行边界
+## 11. 当前可执行边界
 
 已经完成：
 
-- 公开 reward 证据分类与固定来源；
-- B2D 官方 event penalty 组合器；
-- B2D Smoothness 阈值通过率及稠密 margin 组合器；
-- 四维 reward vector；
-- 普通 GRPO scalar baseline；
-- 单元测试与 machine-readable JSON 合同。
+- v1 的局限审计并标记 superseded；
+- v2 route sufficient-state 数据结构；
+- 官方 DS/SR/Efficiency/Smoothness/Multi-Ability 聚合器；
+- report-aligned 四维 Pareto vector；
+- SR constraint-dominance 与不可补偿的 scalar barrier；
+- B2D-RAS scalar baseline；
+- candidate potential/delta 及状态不变量；
+- machine-readable 配置与 CPU 单元测试。
+- 在既有 220-route artifacts 上复现官方 DS、SR、Efficiency、Smoothness，`1e-5` 数值门通过；
+- 独立验证脚本 `scripts/bench2drive/validate_b2d_report_reward.py`。
 
 尚未完成、不能假装完成：
 
-- 3 秒 B2D actor/map pseudo-simulation cache builder；
-- reward cache 的 held-out correlation audit；
+- 用 route XML/CARLA 复现真实五类 Multi-Ability 的 per-route 特殊处理；
+- 3 秒 actor/map/controller candidate rollout cache builder；
+- non-reactive proxy 与 reactive CARLA 的相关性门；
 - 将 vector/scalar adapter 接入 ReCogDrive DiffGRPO trainer；
 - Pareto-GRPO 算法迁移；
 - 正式 Stage3 训练。
 
-以上缺口不改变当前复现结论：先完成并验收纠正后的 Stage2；Stage3 作为单独的、明确标注的研究扩展启动。
+以上设计仍遵守既定顺序：先完成并验收纠正后的 Stage2；Stage3 baseline 与后续 Pareto 方法作为明确标注、可相互比较的独立阶段。

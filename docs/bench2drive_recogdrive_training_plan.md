@@ -197,9 +197,10 @@ or define a Bench2Drive reward. Only after the corrected Stage2 baseline has
 been trained and evaluated will reward design and migration of the existing
 research code be considered as a separate experiment.
 
-The public-evidence survey and the inactive, multi-objective B2D reward
+The public-evidence survey and the inactive, report-aligned B2D reward
 contract are now frozen separately in
 `docs/bench2drive_stage3_reward_evidence_and_contract_20260712.md` and
-`configs/bench2drive_recogdrive_stage3_reward_contract_v1.json`. They do not
+`configs/bench2drive_recogdrive_stage3_report_reward_v2.json`. The earlier v1
+proxy contract is retained only as superseded audit history. These files do not
 unblock or mutate the reproduction run; they prevent future reward research
 from being confused with the paper-exact baseline.
