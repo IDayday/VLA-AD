@@ -18,6 +18,8 @@ This creates three causal errors:
   probability;
 - fixed target probability does not limit gradient influence when non-GT targets have much larger
   denoising residuals.
+- the first v4 prototype still called v3's absolute/GT-improver scalar reward gate before its
+  explicit `reward >= GT - 0.05` rule, silently removing feasible trade-offs from low-score scenes.
 
 The full 103,288-scene audit measured 10.279 selected rows per scene but only 1.977 coarse SNSAD
 modes. Non-GT targets had mean ADE 1.570 m and 26.91% exceeded 2 m. In controlled Stage2 probes,
@@ -49,6 +51,8 @@ Every non-GT mode must satisfy all of the following:
    Stage2 initialization policy.
 
 Safety is a hard constraint. It is not traded against progress or used as a soft target weight.
+The v3 absolute/GT-improver reward gate is explicitly bypassed; scalar PDMS cannot add a hidden
+second eligibility rule. Trajectory continuity and semantic checks remain active.
 Scenes with no valid alternative remain GT-only. Natural differences in per-scene mode capacity are
 therefore preserved instead of being hidden by a fixed support count.
 
@@ -78,6 +82,7 @@ novelty as the secondary key and capped scalar reward only as a tie breaker. The
 
 ```text
 mode_selection_order = scene_normalized_objective_fps_then_snsad
+legacy_reward_gate_disabled = true
 ```
 
 This prevents a nominally multi-objective archive from collapsing back to one scalar optimum at
@@ -189,7 +194,9 @@ Static validation is necessary but insufficient. A full 103k rebuild is admitted
 4. every selected non-GT mode is within the declared current-policy reachability radius;
 5. checkpoint and FS-statistics SHA256 provenance is complete;
 6. at least 25% of scenes retain a valid non-GT mode;
-7. no single generator's row count is used as probability mass.
+7. mean capacity-normalized coverage is at least `0.90`, where each scene is normalized by
+   `min(reachable Pareto SNSAD mode capacity, 3)`;
+8. no single generator's row count is used as probability mass.
 
 Stage2 is promoted beyond a short probe only if:
 
@@ -228,11 +235,30 @@ EXTERNAL_CANDIDATE_ROOTS='ddv2=/path/to/ddv2 driveor=/path/to/driveor' \
 bash scripts/training/sg_fps/run_build_sg_fps_support_v4.sh
 ```
 
+The production build uses recoverable one-process-per-GPU sharding and requires an exact expected
+token set. An earlier archive may supply token identity only; none of its trajectories, scores, or
+selection tags are reused:
+
+```bash
+OUTPUT_PATH=/path/to/support_v4 \
+RUN_ROOT=/path/to/support_v4_build \
+POLICY_CHECKPOINT=/path/to/stage2_initialization.ckpt \
+FS_NORM_STATS_PATH=/path/to/that_checkpoint_fs_norm_stats_v2.npz \
+EXPECTED_TOKEN_SOURCE=/path/to/archive_or_token_manifest \
+EXTERNAL_CANDIDATE_ROOTS='ddv2=/path/to/ddv2 driveor=/path/to/driveor' \
+bash scripts/training/sg_fps/run_build_sg_fps_support_v4_8gpu.sh
+```
+
+The launcher hashes model-coordinate provenance once, assigns disjoint dataset-index shards,
+prefilters valid existing records on resume, and validates missing, extra, and duplicate dataset
+tokens after all shards finish.
+
 Validate before training:
 
 ```bash
 python scripts/tools/validate_sg_fps_v4_archive.py \
   --archive-path /path/to/support_v4 \
+  --expected-token-source /path/to/archive_or_token_manifest \
   --workers 24 \
   --output-json /path/to/validation.json \
   --output-md /path/to/validation.md

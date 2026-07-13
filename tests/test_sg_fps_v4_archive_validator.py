@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import lzma
+import pickle
+
 import numpy as np
 
 from navsim.agents.recogdrive.pareto_support import CandidateRecord, build_archive_record
 from navsim.agents.recogdrive.pareto_support import select_feasible_pareto_support
-from scripts.tools.validate_sg_fps_v4_archive import validate_record
+from scripts.tools.validate_sg_fps_v4_archive import validate_archive, validate_record
 from scripts.tools.reselect_sg_fps_support_archive import reselect_record
 
 
@@ -68,6 +71,8 @@ def test_v4_validator_accepts_coherent_learnable_mode_record() -> None:
     assert result["errors"] == []
     assert result["selected_count"] == 2
     assert result["multimode"] == 1
+    assert result["reachable_pareto_mode_capacity"] == 1
+    assert result["capacity_normalized_coverage"] == 1.0
 
 
 def test_v4_validator_rejects_selected_non_pareto_candidate() -> None:
@@ -100,3 +105,20 @@ def test_raw_v4_reselection_preserves_policy_provenance() -> None:
     assert metadata["policy_checkpoint_sha256"] == "checkpoint-sha"
     assert metadata["max_policy_snsad"] == 0.50
     assert validate_record(rebuilt)["errors"] == []
+
+
+def test_v4_archive_coverage_rejects_missing_expected_token(tmp_path) -> None:
+    archive = tmp_path / "archive"
+    expected = tmp_path / "expected.txt"
+    archive.mkdir()
+    with lzma.open(archive / "scene.pkl.xz", "wb") as stream:
+        pickle.dump(_record(), stream)
+    expected.write_text("scene\nmissing\n", encoding="utf-8")
+
+    report = validate_archive(archive, expected_token_source=expected)
+
+    assert report["hard_contract_pass"] is True
+    assert report["token_coverage_pass"] is False
+    assert report["missing_token_count"] == 1
+    assert report["missing_token_examples"] == ["missing"]
+    assert report["static_promotion_pass"] is False

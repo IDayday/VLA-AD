@@ -10,7 +10,7 @@ import pickle
 import sys
 from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Any, Iterable, Mapping
+from typing import Any, Iterable, Mapping, Optional
 
 import numpy as np
 
@@ -25,6 +25,40 @@ def _iter_paths(root: Path) -> list[Path]:
     if root.is_file():
         return [root]
     return sorted(root.glob("*.pkl.xz"))
+
+
+def _load_expected_token(path: Path) -> str:
+    token = str(_load(path).get("token", "")).strip()
+    if not token:
+        raise ValueError(f"Expected-token archive record has no token: {path}")
+    return token
+
+
+def _load_expected_tokens(source: Path, workers: int = 1) -> list[str]:
+    if source.is_dir():
+        paths = _iter_paths(source)
+        if workers > 1:
+            with mp.Pool(workers) as pool:
+                return list(pool.imap_unordered(_load_expected_token, paths, chunksize=64))
+        return [_load_expected_token(path) for path in paths]
+    if not source.is_file():
+        raise FileNotFoundError(source)
+    text = source.read_text(encoding="utf-8").strip()
+    if not text:
+        return set()
+    try:
+        payload = json.loads(text)
+    except json.JSONDecodeError:
+        payload = None
+    if isinstance(payload, list):
+        return [str(token).strip() for token in payload if str(token).strip()]
+    if isinstance(payload, Mapping) and isinstance(payload.get("tokens"), list):
+        return [str(token).strip() for token in payload["tokens"] if str(token).strip()]
+    return [
+        line.strip().split()[0]
+        for line in text.splitlines()
+        if line.strip() and not line.lstrip().startswith("#")
+    ]
 
 
 def _load(path: Path) -> dict[str, Any]:
@@ -88,6 +122,35 @@ def _array(record: Mapping[str, Any], key: str, count: int, dtype: Any) -> np.nd
     return value
 
 
+def _greedy_mode_capacity(
+    candidates: np.ndarray,
+    candidate_indices: np.ndarray,
+    gt_index: int,
+    mode_threshold: float,
+) -> int:
+    remaining = set(int(index) for index in candidate_indices.tolist())
+    selected = [int(gt_index)]
+    capacity = 0
+    while remaining:
+        distances = [
+            (
+                min(
+                    trajectory_snsad_distance(candidates[index], candidates[chosen])
+                    for chosen in selected
+                ),
+                index,
+            )
+            for index in remaining
+        ]
+        distance, index = max(distances, key=lambda item: (item[0], -item[1]))
+        if distance + 1e-6 < mode_threshold:
+            break
+        selected.append(index)
+        remaining.remove(index)
+        capacity += 1
+    return capacity
+
+
 def validate_record(record: Mapping[str, Any]) -> dict[str, Any]:
     errors: list[str] = []
     token = str(record.get("token", ""))
@@ -119,6 +182,7 @@ def validate_record(record: Mapping[str, Any]) -> dict[str, Any]:
         policy_reachability = _array(record, "policy_reachability_snsad", count, np.float64)
         objective_novelty = _array(record, "pareto_objective_novelty", count, np.float64)
         pareto = _array(record, "pareto_front_mask", count, np.bool_)
+        quality = _array(record, "support_quality_mask", count, np.bool_)
         rewards = _array(record, "rewards", count, np.float64)
     except (KeyError, ValueError) as exc:
         return {"token": token, "errors": [str(exc)]}
@@ -128,6 +192,7 @@ def validate_record(record: Mapping[str, Any]) -> dict[str, Any]:
         "selection_strategy",
         "teacher_contract",
         "mode_selection_order",
+        "legacy_reward_gate_disabled",
         "support_top_m",
         "max_gt_ade_m",
         "max_gt_fde_m",
@@ -151,6 +216,8 @@ def validate_record(record: Mapping[str, Any]) -> dict[str, Any]:
         errors.append(f"teacher_contract={metadata.get('teacher_contract')!r}")
     if metadata.get("mode_selection_order") != "scene_normalized_objective_fps_then_snsad":
         errors.append(f"mode_selection_order={metadata.get('mode_selection_order')!r}")
+    if not bool(metadata.get("legacy_reward_gate_disabled", False)):
+        errors.append("legacy_reward_gate_disabled=false")
     if not bool(metadata.get("policy_reachability_required", False)):
         errors.append("policy_reachability_required=false")
     if int(metadata.get("policy_samples_per_scene", 0)) <= 0:
@@ -172,6 +239,8 @@ def validate_record(record: Mapping[str, Any]) -> dict[str, Any]:
         errors.append("GT anchor is not selected")
     if not bool(np.all(teacher_eligible[selected])):
         errors.append("a selected candidate is not teacher eligible")
+    if not bool(np.all(quality[selected])):
+        errors.append("a selected candidate fails the persisted v4 trajectory-quality mask")
     selected_modes = mode_ids[selected]
     if len(set(selected_modes.tolist())) != selected.size or set(selected_modes.tolist()) != set(range(selected.size)):
         errors.append(f"selected mode IDs are not one-to-one contiguous IDs: {selected_modes.tolist()}")
@@ -209,6 +278,22 @@ def validate_record(record: Mapping[str, Any]) -> dict[str, Any]:
     if not math.isfinite(min_pairwise_distance):
         min_pairwise_distance = 0.0
 
+    eligible_pareto = np.flatnonzero(
+        teacher_eligible & pareto & (np.arange(count, dtype=np.int64) != gt_index)
+    )
+    mode_capacity = _greedy_mode_capacity(
+        candidates,
+        eligible_pareto,
+        gt_index,
+        mode_threshold,
+    )
+    target_mode_count = min(mode_capacity, max(top_m - 1, 0))
+    capacity_coverage = (
+        min(float(non_gt.size) / float(target_mode_count), 1.0)
+        if target_mode_count > 0
+        else math.nan
+    )
+
     selected_families = Counter(_source_family(sources[int(index)]) for index in selected)
     return {
         "token": token,
@@ -217,6 +302,10 @@ def validate_record(record: Mapping[str, Any]) -> dict[str, Any]:
         "selected_count": int(selected.size),
         "non_gt_count": int(non_gt.size),
         "multimode": int(non_gt.size > 0),
+        "reachable_pareto_mode_capacity": int(mode_capacity),
+        "target_mode_count": int(target_mode_count),
+        "capacity_normalized_coverage": float(capacity_coverage),
+        "capacity_undercovered": int(target_mode_count > 0 and non_gt.size < target_mode_count),
         "raw_internal_candidates": int(bool(metadata.get("raw_internal_candidates", False))),
         "external_expansion_disabled": int(not bool(metadata.get("expand_external_candidates", True))),
         "policy_reachability_required": int(bool(metadata.get("policy_reachability_required", False))),
@@ -245,6 +334,8 @@ def validate_archive(
     workers: int = 1,
     require_raw_build: bool = True,
     min_multimode_scene_ratio: float = 0.25,
+    min_capacity_normalized_coverage: float = 0.90,
+    expected_token_source: Optional[Path] = None,
 ) -> dict[str, Any]:
     paths = _iter_paths(root)
     if max_records > 0:
@@ -260,8 +351,10 @@ def validate_archive(
     source_families: Counter[str] = Counter()
     values: dict[str, list[float]] = defaultdict(list)
     error_examples: list[dict[str, Any]] = []
+    actual_token_counts: Counter[str] = Counter()
     for row in rows:
         totals["records"] += 1
+        actual_token_counts[str(row.get("token", ""))] += 1
         if row.get("errors"):
             totals["contract_errors"] += 1
             if len(error_examples) < 20:
@@ -272,6 +365,9 @@ def validate_archive(
             "selected_count",
             "non_gt_count",
             "multimode",
+            "reachable_pareto_mode_capacity",
+            "target_mode_count",
+            "capacity_undercovered",
             "raw_internal_candidates",
             "external_expansion_disabled",
             "policy_reachability_required",
@@ -285,16 +381,43 @@ def validate_archive(
         values["policy_reachability"].extend(row["policy_reachability"])
         values["objective_novelty"].extend(row["objective_novelty"])
         values["min_pairwise_snsad"].append(float(row["min_pairwise_snsad"]))
+        if math.isfinite(float(row["capacity_normalized_coverage"])):
+            values["capacity_normalized_coverage"].append(
+                float(row["capacity_normalized_coverage"])
+            )
 
     valid_records = max(totals["records"] - totals["contract_errors"], 1)
     multimode_ratio = totals["multimode"] / valid_records
     raw_ratio = totals["raw_internal_candidates"] / valid_records
     expansion_disabled_ratio = totals["external_expansion_disabled"] / valid_records
     policy_reachability_ratio = totals["policy_reachability_required"] / valid_records
+    capacity_coverage_values = np.asarray(values["capacity_normalized_coverage"], dtype=np.float64)
+    capacity_normalized_coverage = (
+        float(capacity_coverage_values.mean()) if capacity_coverage_values.size else 1.0
+    )
+    duplicate_tokens = sorted(token for token, count in actual_token_counts.items() if count > 1)
+    expected_token_list = (
+        _load_expected_tokens(expected_token_source, workers=workers)
+        if expected_token_source
+        else None
+    )
+    expected_token_counts = Counter(expected_token_list or [])
+    expected_tokens = set(expected_token_counts) if expected_token_list is not None else None
+    expected_duplicate_tokens = sorted(
+        token for token, count in expected_token_counts.items() if count > 1
+    )
+    actual_tokens = set(actual_token_counts)
+    missing_tokens = sorted(expected_tokens - actual_tokens) if expected_tokens is not None else []
+    extra_tokens = sorted(actual_tokens - expected_tokens) if expected_tokens is not None else []
+    coverage_pass = not duplicate_tokens and not expected_duplicate_tokens and (
+        expected_tokens is None or (not missing_tokens and not extra_tokens)
+    )
     hard_contract_pass = totals["records"] > 0 and totals["contract_errors"] == 0
     static_promotion_pass = (
         hard_contract_pass
+        and coverage_pass
         and multimode_ratio >= float(min_multimode_scene_ratio)
+        and capacity_normalized_coverage >= float(min_capacity_normalized_coverage)
         and (not require_raw_build or raw_ratio == 1.0)
         and (not require_raw_build or expansion_disabled_ratio == 1.0)
         and policy_reachability_ratio == 1.0
@@ -305,13 +428,31 @@ def validate_archive(
         "contract_error_count": totals["contract_errors"],
         "error_examples": error_examples,
         "hard_contract_pass": hard_contract_pass,
+        "token_coverage_pass": coverage_pass,
+        "expected_token_source": str(expected_token_source) if expected_token_source else "",
+        "expected_token_count": len(expected_tokens) if expected_tokens is not None else None,
+        "expected_duplicate_token_count": len(expected_duplicate_tokens),
+        "expected_duplicate_token_examples": expected_duplicate_tokens[:20],
+        "actual_unique_token_count": len(actual_tokens),
+        "missing_token_count": len(missing_tokens),
+        "missing_token_examples": missing_tokens[:20],
+        "extra_token_count": len(extra_tokens),
+        "extra_token_examples": extra_tokens[:20],
+        "duplicate_token_count": len(duplicate_tokens),
+        "duplicate_token_examples": duplicate_tokens[:20],
         "static_promotion_pass": static_promotion_pass,
         "require_raw_build": bool(require_raw_build),
         "min_multimode_scene_ratio": float(min_multimode_scene_ratio),
+        "min_capacity_normalized_coverage": float(min_capacity_normalized_coverage),
         "candidate_count_per_scene": totals["candidate_count"] / valid_records,
         "selected_count_per_scene": totals["selected_count"] / valid_records,
         "non_gt_count_per_scene": totals["non_gt_count"] / valid_records,
         "multimode_scene_ratio": multimode_ratio,
+        "reachable_pareto_mode_capacity_per_scene": totals["reachable_pareto_mode_capacity"]
+        / valid_records,
+        "target_mode_count_per_scene": totals["target_mode_count"] / valid_records,
+        "capacity_normalized_coverage": capacity_normalized_coverage,
+        "capacity_undercovered_scene_ratio": totals["capacity_undercovered"] / valid_records,
         "raw_internal_candidate_build_ratio": raw_ratio,
         "external_expansion_disabled_ratio": expansion_disabled_ratio,
         "policy_reachability_required_ratio": policy_reachability_ratio,
@@ -336,9 +477,15 @@ def _markdown(report: Mapping[str, Any]) -> str:
             f"- Records: {report['record_count']}",
             f"- Contract errors: {report['contract_error_count']}",
             f"- Hard contract: **{'PASS' if report['hard_contract_pass'] else 'FAIL'}**",
+            f"- Token coverage: **{'PASS' if report['token_coverage_pass'] else 'FAIL'}**",
+            f"- Expected / actual unique tokens: {report['expected_token_count']} / {report['actual_unique_token_count']}",
+            f"- Missing / extra / duplicate tokens: {report['missing_token_count']} / {report['extra_token_count']} / {report['duplicate_token_count']}",
             f"- Static promotion gate: **{'PASS' if report['static_promotion_pass'] else 'FAIL'}**",
             f"- Mean selected trajectories: {report['selected_count_per_scene']:.4f}",
             f"- Multi-mode scene ratio: {report['multimode_scene_ratio']:.4f}",
+            f"- Reachable Pareto mode capacity per scene: {report['reachable_pareto_mode_capacity_per_scene']:.4f}",
+            f"- Capacity-normalized coverage: {report['capacity_normalized_coverage']:.4f}",
+            f"- Capacity-undercovered scene ratio: {report['capacity_undercovered_scene_ratio']:.4f}",
             f"- Raw candidate build ratio: {report['raw_internal_candidate_build_ratio']:.4f}",
             f"- External expansion disabled ratio: {report['external_expansion_disabled_ratio']:.4f}",
             f"- Policy reachability required ratio: {report['policy_reachability_required_ratio']:.4f}",
@@ -355,6 +502,12 @@ def main() -> None:
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--require-raw-build", action=argparse.BooleanOptionalAction, default=True)
     parser.add_argument("--min-multimode-scene-ratio", type=float, default=0.25)
+    parser.add_argument("--min-capacity-normalized-coverage", type=float, default=0.90)
+    parser.add_argument(
+        "--expected-token-source",
+        default="",
+        help="Archive directory or text/JSON manifest defining the exact expected token set.",
+    )
     parser.add_argument("--output-json", default="")
     parser.add_argument("--output-md", default="")
     parser.add_argument("--report-only", action="store_true")
@@ -366,6 +519,8 @@ def main() -> None:
         workers=max(int(args.workers), 1),
         require_raw_build=bool(args.require_raw_build),
         min_multimode_scene_ratio=float(args.min_multimode_scene_ratio),
+        min_capacity_normalized_coverage=float(args.min_capacity_normalized_coverage),
+        expected_token_source=Path(args.expected_token_source) if args.expected_token_source else None,
     )
     payload = json.dumps(report, indent=2, sort_keys=True)
     print(payload)

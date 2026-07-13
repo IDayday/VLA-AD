@@ -208,6 +208,7 @@ def _frontier_v4_record(*, raw_internal_candidates: bool) -> dict:
             "selection_strategy": "mode_pareto_v4",
             "teacher_contract": "gt_anchor_plus_uniform_reachable_pareto_modes",
             "mode_selection_order": "scene_normalized_objective_fps_then_snsad",
+            "legacy_reward_gate_disabled": True,
             "raw_internal_candidates": raw_internal_candidates,
             "expand_external_candidates": False,
             "policy_reachability_required": True,

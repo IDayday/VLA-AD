@@ -241,6 +241,31 @@ def test_mode_pareto_v4_covers_objective_front_before_scalar_reward() -> None:
     assert float(getattr(selected[1], "_sg_fps_objective_novelty")) > 0.0
 
 
+def test_mode_pareto_v4_uses_only_its_explicit_gt_relative_reward_gate() -> None:
+    gt = _legacy_record("gt", 0, valid=True, reward=0.50)
+    tradeoff = _legacy_record("progress_tradeoff", 2, valid=True, reward=0.48)
+    gt.components.update(ego_progress=0.50, time_to_collision_within_bound=0.90)
+    tradeoff.components.update(ego_progress=0.80, time_to_collision_within_bound=0.70)
+    cfg = {
+        "support_archive_version": 4,
+        "support_selection_strategy": "mode_pareto_v4",
+        "support_top_m": 2,
+        "support_quality_enable": True,
+        "support_min_non_gt_reward": 0.90,
+        "support_reward_gate_mode": "absolute",
+        "support_v4_max_gt_reward_drop": 0.05,
+        "support_v4_mode_distance_threshold": 0.01,
+        "support_v4_pareto_eps": 0.0,
+    }
+
+    selected = select_feasible_pareto_support([gt, tradeoff], gt.components, cfg)
+    record = build_archive_record("scene", [gt, tradeoff], selected, ref=gt.components, cfg=cfg)
+
+    assert [candidate.source for candidate in selected] == ["gt", "progress_tradeoff"]
+    assert record["build_metadata"]["legacy_reward_gate_disabled"] is True
+    assert record["support_quality_mask"][record["support_indices"]].all()
+
+
 def test_reselect_archive_record_replaces_invalid_non_anchor_support() -> None:
     candidates = [
         _legacy_record("gt", 0, valid=True, reward=0.5),

@@ -9842,6 +9842,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         contract_errors.append(
                             "mode_selection_order=scene_normalized_objective_fps_then_snsad"
                         )
+                    if not bool(build_metadata.get("legacy_reward_gate_disabled", False)):
+                        contract_errors.append("legacy_reward_gate_disabled=true")
                     if not bool(build_metadata.get("raw_internal_candidates", False)):
                         contract_errors.append("raw_internal_candidates=true")
                     if bool(build_metadata.get("expand_external_candidates", True)):

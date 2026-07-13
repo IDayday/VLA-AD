@@ -185,6 +185,20 @@ def support_quality_pass(
         return True
     if not support_reward_pass(candidate, ref_reward, cfg):
         return False
+    return support_trajectory_quality_pass(candidate, ref_traj, cfg)
+
+
+def support_trajectory_quality_pass(
+    candidate: CandidateRecord,
+    ref_traj: np.ndarray | None,
+    cfg: Any,
+) -> bool:
+    """Apply trajectory/semantic quality checks without a scalar reward gate."""
+
+    if not bool(cfg_value(cfg, "support_quality_enable", False)):
+        return True
+    if _source_matches(candidate.source, ("gt",)) and bool(cfg_value(cfg, "support_quality_exempt_gt", True)):
+        return True
     metrics = support_quality_metrics(candidate.trajectory, ref_traj)
     checks = (
         ("first_xy_error_m", "support_max_first_xy_error_m"),
@@ -406,7 +420,7 @@ def _select_mode_pareto_v4(
         dtype=np.bool_,
     )
     quality = np.asarray(
-        [support_quality_pass(candidate, gt_traj, cfg, ref_reward=gt_reward) for candidate in candidates],
+        [support_trajectory_quality_pass(candidate, gt_traj, cfg) for candidate in candidates],
         dtype=np.bool_,
     )
     eligible = evaluator_valid & quality
@@ -877,7 +891,16 @@ def build_archive_record(
     ref_reward = next((float(c.reward) for c in candidates if _source_matches(c.source, ("gt",))), None)
     all_values = _pareto_values_legacy(candidates) if candidates else np.zeros((0, 4), dtype=np.float32)
     valid_mask = np.asarray([is_valid_candidate(c.components, c.feas, ref, cfg) for c in candidates], dtype=np.bool_)
-    quality_mask = np.asarray([support_quality_pass(c, ref_traj, cfg, ref_reward=ref_reward) for c in candidates], dtype=np.bool_)
+    if strategy.lower() in {"mode_pareto_v4", "v4", "learnable_modes"}:
+        quality_mask = np.asarray(
+            [support_trajectory_quality_pass(candidate, ref_traj, cfg) for candidate in candidates],
+            dtype=np.bool_,
+        )
+    else:
+        quality_mask = np.asarray(
+            [support_quality_pass(candidate, ref_traj, cfg, ref_reward=ref_reward) for candidate in candidates],
+            dtype=np.bool_,
+        )
     front_mask = pareto_front_mask(all_values, valid_mask) if candidates else np.zeros((0,), dtype=np.bool_)
     if strategy.lower() in {"mode_pareto_v4", "v4", "learnable_modes"}:
         front_mask = np.asarray(
@@ -983,6 +1006,7 @@ def build_archive_record(
             {
                 "teacher_contract": "gt_anchor_plus_uniform_reachable_pareto_modes",
                 "mode_selection_order": "scene_normalized_objective_fps_then_snsad",
+                "legacy_reward_gate_disabled": True,
                 "max_gt_ade_m": float(cfg_value(cfg, "support_v4_max_gt_ade_m", 1.5)),
                 "max_gt_fde_m": float(cfg_value(cfg, "support_v4_max_gt_fde_m", 4.0)),
                 "mode_distance_threshold": float(cfg_value(cfg, "support_v4_mode_distance_threshold", 0.25)),
