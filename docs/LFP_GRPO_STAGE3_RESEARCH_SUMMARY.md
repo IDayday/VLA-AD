@@ -210,7 +210,8 @@ physical trust 与 progress-biased credit 仍未解决。
 为保留因果消融，代码提供两个互斥且显式命名的 priority mode：主方案
 `credit_multiplicative` 使用上式；`additive_preservation` 复现旧公式，只用于检验零优势 scene
 上的 frozen-Stage2 KL 是否能保持已经学到的多样性。后者不能被解释为学习新策略的 frontier，
-也不作为默认配置。
+也不作为默认配置。`credit_multiplicative` loader 会拒绝缺少上述 no-quota metadata 的旧 v3
+cache；旧 cache 只能用于显式的 `additive_preservation` 历史复现。
 
 ## 5. 当前原因排序
 

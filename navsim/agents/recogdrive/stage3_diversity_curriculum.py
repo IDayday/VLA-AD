@@ -34,6 +34,7 @@ class Stage3DiversityCapacityCache:
         path: str | Path | None = None,
         *,
         payload: Optional[Mapping[str, Any]] = None,
+        require_no_quota_semantics: bool = False,
     ) -> None:
         if payload is None:
             if path is None or not str(path):
@@ -54,6 +55,16 @@ class Stage3DiversityCapacityCache:
         if version != self.VERSION:
             raise ValueError(
                 f"Unsupported diversity-capacity cache version {version}; expected {self.VERSION}."
+            )
+        if require_no_quota_semantics and (
+            not bool(self.metadata.get("no_per_scene_candidate_quota", False))
+            or self.metadata.get("capacity_semantics")
+            != "observed_selected_support_not_scene_intrinsic"
+        ):
+            raise ValueError(
+                "Credit-multiplicative diversity curriculum requires a no-quota v4 capacity "
+                "cache with observed, non-intrinsic capacity semantics. Rebuild the cache from "
+                "the validated v4 support archive."
             )
         records = payload.get("records")
         if not isinstance(records, Mapping) or not records:

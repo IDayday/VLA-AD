@@ -2319,7 +2319,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             )
             if self.lfp_grpo_cfg.frontier_diversity_capacity_enabled:
                 self.lfp_diversity_capacity_cache = Stage3DiversityCapacityCache(
-                    self.lfp_grpo_cfg.frontier_diversity_capacity_cache_path
+                    self.lfp_grpo_cfg.frontier_diversity_capacity_cache_path,
+                    require_no_quota_semantics=(
+                        self.lfp_grpo_cfg.frontier_diversity_priority_mode
+                        == "credit_multiplicative"
+                    ),
                 )
             self.reference_kl_coeff = float(self.lfp_grpo_cfg.reference_kl_coeff)
             if not hasattr(self, "old_policy"):

@@ -35,6 +35,30 @@ def test_capacity_cache_loads_scene_records_and_rejects_missing_token() -> None:
         cache.get(["missing"], "cpu", torch.float32)
 
 
+def test_credit_capacity_cache_requires_explicit_no_quota_semantics() -> None:
+    records = {
+        "a": {"support_pairwise_ade_m": 0.8, "reference_mode_count": 2},
+    }
+    with pytest.raises(ValueError, match="no-quota v4 capacity cache"):
+        Stage3DiversityCapacityCache(
+            payload={"metadata": {"version": 2}, "records": records},
+            require_no_quota_semantics=True,
+        )
+
+    cache = Stage3DiversityCapacityCache(
+        payload={
+            "metadata": {
+                "version": 2,
+                "no_per_scene_candidate_quota": True,
+                "capacity_semantics": "observed_selected_support_not_scene_intrinsic",
+            },
+            "records": records,
+        },
+        require_no_quota_semantics=True,
+    )
+    assert cache.records["a"]["reference_mode_count"] == 2.0
+
+
 def test_capacity_normalized_energy_only_boosts_uncovered_all_feasible_multimodal_scene() -> None:
     base = torch.tensor([0.10, 0.20])
     feasible = torch.ones((2, 4), dtype=torch.bool)
