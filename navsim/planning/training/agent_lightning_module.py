@@ -5,6 +5,7 @@ from typing import Dict, Tuple,Any
 import torch
 
 from navsim.agents.abstract_agent import AbstractAgent
+from navsim.agents.recogdrive.stage3_optimization import stable_gradient_norm
 from navsim.planning.training.checkpoint_utils import (
     _filter_recogdrive_checkpoint_state_dict,
     _load_recogdrive_checkpoint_state_dict,
@@ -120,18 +121,80 @@ class AgentLightningModule(pl.LightningModule):
             "lfp_feasible_ratio",
             "lfp_progress_ok_ratio",
             "lfp_ttc_ok_ratio",
+            "lfp_quality_ok_ratio",
+            "lfp_reference_pareto_ok_ratio",
+            "lfp_reference_dominated_ratio",
+            "lfp_quality_reference_regression_ratio",
             "lfp_pareto_front_ratio",
             "lfp_dominated_ratio",
             "lfp_positive_advantage_ratio",
             "lfp_negative_advantage_ratio",
             "lfp_zero_advantage_ratio",
+            "lfp_advantage_mean",
+            "lfp_advantage_std",
+            "lfp_positive_eligible_advantage_mean",
+            "lfp_ttc_fail_ratio",
+            "lfp_ttc_fail_advantage_mean",
+            "lfp_ttc_fail_zero_credit_ratio",
+            "lfp_quality_fail_ratio",
+            "lfp_quality_fail_advantage_mean",
+            "lfp_quality_fail_zero_credit_ratio",
+            "lfp_reference_dominated_advantage_mean",
+            "lfp_reference_dominated_zero_credit_ratio",
+            "lfp_positive_advantage_below_ref_scalar_ratio",
+            "lfp_positive_advantage_below_ref_quality_ratio",
+            "lfp_positive_advantage_reference_dominated_ratio",
+            "lfp_positive_advantage_scalar_delta_mean",
+            "lfp_positive_advantage_quality_delta_mean",
+            "lfp_progress_fail_ratio",
+            "lfp_progress_fail_advantage_mean",
+            "lfp_progress_fail_zero_credit_ratio",
+            "lfp_unsafe_advantage_mean",
             "lfp_all_infeasible_group_ratio",
             "lfp_all_infeasible_rescue_ratio",
             "lfp_advantage_clip_ratio",
+            "lfp_group_pairwise_ade_m_mean",
+            "lfp_group_pairwise_ade_m_p50",
+            "lfp_group_endpoint_std_x_m",
+            "lfp_group_endpoint_std_y_m",
+            "lfp_group_endpoint_std_heading_rad",
+            "lfp_group_scalar_span_mean",
+            "lfp_low_spread_group_ratio",
+            "lfp_low_scalar_span_group_ratio",
+            "lfp_credit_active_group_ratio",
+            "lfp_advantage_deadband_zero_ratio",
+            "lfp_fs_transition_std_enabled",
+            "lfp_transition_floor_normalized_mean",
+            "lfp_transition_floor_normalized_max",
+            "lfp_transition_floor_endpoint_std_x_m",
+            "lfp_transition_floor_endpoint_std_y_m",
+            "lfp_transition_floor_endpoint_std_heading_rad",
             "lfp_global_centered_mean",
             "lfp_global_centered_std",
             "lfp_global_normalization_count",
+            "lfp_scene_group_std_mean",
+            "lfp_advantage_normalization_scene_group",
             "lfp_frontier_energy_mean",
+            "lfp_frontier_base_energy_mean",
+            "lfp_frontier_pareto_energy_mean",
+            "lfp_frontier_safety_energy_mean",
+            "lfp_frontier_safety_first_enabled",
+            "lfp_all_feasible_group_ratio",
+            "lfp_mixed_feasibility_group_ratio",
+            "lfp_unsafe_fraction_mean",
+            "lfp_pareto_tradeoff_intensity_mean",
+            "lfp_pareto_tradeoff_intensity_p50",
+            "lfp_frontier_tradeoff_multiplier_mean",
+            "lfp_diversity_mode_capacity_mean",
+            "lfp_diversity_coverage_ratio_mean",
+            "lfp_diversity_coverage_gap_mean",
+            "lfp_diversity_frontier_bonus_mean",
+            "lfp_diversity_capacity_active_ratio",
+            "lfp_diversity_frontier_energy_mean",
+            "lfp_v1_ep_ttc_ddc_tradeoff_intensity_mean",
+            "lfp_v1_ep_ttc_ddc_pareto_front_ratio",
+            "lfp_v1_ep_scalar_ddc_tradeoff_intensity_mean",
+            "lfp_v1_ep_scalar_ddc_pareto_front_ratio",
             "lfp_frontier_energy_p50",
             "lfp_frontier_energy_p90",
             "lfp_positive_fraction_mean",
@@ -723,14 +786,7 @@ class AgentLightningDiT(pl.LightningModule):
 
     @staticmethod
     def _gradient_norm(parameters) -> torch.Tensor:
-        grads = [parameter.grad.detach().float() for parameter in parameters if parameter.grad is not None]
-        if not grads:
-            return torch.zeros((), dtype=torch.float32)
-        device = grads[0].device
-        total = torch.zeros((), device=device, dtype=torch.float32)
-        for grad in grads:
-            total = total + grad.square().sum()
-        return total.sqrt()
+        return stable_gradient_norm(parameters)
 
     def _validate_lfp_reference_gradients(self) -> bool:
         if getattr(self.agent, "stage3_algorithm", "legacy") != "lfp_grpo":
@@ -772,6 +828,20 @@ class AgentLightningDiT(pl.LightningModule):
         self.log(
             "train/lfp_planning_adapter_gradient_norm",
             planning_norm,
+            on_step=True,
+            on_epoch=True,
+            sync_dist=True,
+        )
+        self.log(
+            "train/lfp_policy_gradient_finite_ratio",
+            torch.isfinite(policy_norm).float(),
+            on_step=True,
+            on_epoch=True,
+            sync_dist=True,
+        )
+        self.log(
+            "train/lfp_planning_adapter_gradient_finite_ratio",
+            torch.isfinite(planning_norm).float(),
             on_step=True,
             on_epoch=True,
             sync_dist=True,

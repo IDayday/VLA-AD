@@ -69,7 +69,17 @@ from .stage3_lfp_grpo import (
     validate_lfp_config_exclusivity,
 )
 from .stage3_metric_adapter import Stage3MetricAdapter
+from .stage3_policy_geometry import (
+    apply_transition_std_floor,
+    compute_group_trajectory_spread,
+    endpoint_std_from_normalized_transition_floor,
+    normalized_transition_floor_from_endpoint_std,
+)
 from .stage3_reference_cache import Stage3ReferenceCache
+from .stage3_diversity_curriculum import (
+    Stage3DiversityCapacityCache,
+    compute_capacity_normalized_frontier_energy,
+)
 from .stage3_v2_official_evaluator import OfficialNAVSIMV2MetricEvaluator
 from .pdas import compute_pdas_metrics
 from .trajectory_feasibility import compute_feasibility_metrics
@@ -1227,6 +1237,19 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             if not bool(config.lfp_grpo_cfg.enabled):
                 raise ValueError("stage3_algorithm='lfp_grpo' requires lfp_grpo_cfg.enabled=True.")
             config.lfp_grpo_cfg.validate()
+            if bool(config.lfp_grpo_cfg.fs_transition_std_enabled):
+                if not bool(config.use_fs_norm):
+                    raise ValueError(
+                        "lfp_grpo_cfg.fs_transition_std_enabled requires use_fs_norm=True."
+                    )
+                if int(config.action_dim) != 3:
+                    raise ValueError(
+                        "LFP FS-aware transition covariance requires action_dim=3."
+                    )
+                if str(config.sampling_method) not in {"ddpm", "ddim"}:
+                    raise ValueError(
+                        "LFP FS-aware transition covariance only supports DDPM/DDIM."
+                    )
             validate_lfp_config_exclusivity(
                 self.stage3_algorithm,
                 config.grpo_cfg,
@@ -1784,6 +1807,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         self.lfp_grpo_cfg = config.lfp_grpo_cfg
         self.lfp_metric_adapter: Optional[Stage3MetricAdapter] = None
         self.lfp_reference_cache: Optional[Stage3ReferenceCache] = None
+        self.lfp_diversity_capacity_cache: Optional[Stage3DiversityCapacityCache] = None
         self.lfp_v2_rollout_evaluator: Optional[OfficialNAVSIMV2MetricEvaluator] = None
         self._lfp_epoch_energy: Dict[str, list[float]] = {}
         if self.stage3_algorithm == "lfp_grpo":
@@ -1792,6 +1816,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 self.lfp_grpo_cfg.reference_cache_path,
                 benchmark=self.lfp_grpo_cfg.benchmark,
             )
+            if self.lfp_grpo_cfg.frontier_diversity_capacity_enabled:
+                self.lfp_diversity_capacity_cache = Stage3DiversityCapacityCache(
+                    self.lfp_grpo_cfg.frontier_diversity_capacity_cache_path
+                )
             self.reference_kl_coeff = float(self.lfp_grpo_cfg.reference_kl_coeff)
             if not hasattr(self, "old_policy"):
                 raise RuntimeError("LFP-GRPO requires the frozen Stage2 old_policy initialized by _init_grpo().")
@@ -4442,6 +4470,68 @@ class ReCogDriveDiffusionPlanner(nn.Module):
     def _uses_fs_norm(self) -> bool:
         return self.fs_norm_transform is not None
 
+    def _lfp_runtime_config(self) -> LFPGRPOConfig:
+        return getattr(self, "lfp_grpo_cfg", self.config.lfp_grpo_cfg)
+
+    def _lfp_fs_transition_representation_floor(
+        self,
+        ref: torch.Tensor,
+    ) -> Optional[torch.Tensor]:
+        if self.stage3_algorithm != "lfp_grpo":
+            return None
+        cfg = self._lfp_runtime_config()
+        if not bool(cfg.fs_transition_std_enabled):
+            return None
+        if self.fs_norm_transform is None:
+            raise RuntimeError("FS-aware LFP transition covariance requires FS-Norm.")
+        _, fs_scale = self.fs_norm_transform._center_scale(ref)
+        endpoint_std = ref.new_tensor(
+            (
+                float(cfg.fs_endpoint_std_x_m),
+                float(cfg.fs_endpoint_std_y_m),
+                float(cfg.fs_endpoint_std_heading_rad),
+            )
+        )
+        return normalized_transition_floor_from_endpoint_std(fs_scale, endpoint_std)
+
+    def _apply_lfp_transition_std_floor(
+        self,
+        std: torch.Tensor,
+        scalar_floor: float,
+    ) -> torch.Tensor:
+        representation_floor = self._lfp_fs_transition_representation_floor(std)
+        return apply_transition_std_floor(std, scalar_floor, representation_floor)
+
+    def _lfp_transition_floor_diagnostics(
+        self,
+        ref: torch.Tensor,
+    ) -> Dict[str, torch.Tensor]:
+        if self.stage3_algorithm != "lfp_grpo" or self.fs_norm_transform is None:
+            return {}
+        _, fs_scale = self.fs_norm_transform._center_scale(ref)
+        representation_floor = self._lfp_fs_transition_representation_floor(ref)
+        scalar_floor = float(self.min_sampling_denoising_std)
+        effective_floor = apply_transition_std_floor(
+            torch.zeros_like(fs_scale),
+            scalar_floor,
+            representation_floor,
+        )
+        endpoint_std = endpoint_std_from_normalized_transition_floor(
+            effective_floor,
+            fs_scale,
+        )
+        cfg = self._lfp_runtime_config()
+        return {
+            "lfp_fs_transition_std_enabled": ref.new_tensor(
+                float(bool(cfg.fs_transition_std_enabled))
+            ),
+            "lfp_transition_floor_normalized_mean": effective_floor.mean().detach(),
+            "lfp_transition_floor_normalized_max": effective_floor.max().detach(),
+            "lfp_transition_floor_endpoint_std_x_m": endpoint_std[0].detach(),
+            "lfp_transition_floor_endpoint_std_y_m": endpoint_std[1].detach(),
+            "lfp_transition_floor_endpoint_std_heading_rad": endpoint_std[2].detach(),
+        }
+
     def _fs_norm_clip_value(self, field_name: str) -> Optional[float]:
         value = float(getattr(self.config, field_name, -1.0))
         if value >= 0.0:
@@ -5732,6 +5822,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 if self.config.sampling_method == 'ddim':
                     if deterministic:
                         std.zero_()
+                    elif lfp_on_policy:
+                        std = self._apply_lfp_transition_std_floor(
+                            std,
+                            self.min_sampling_denoising_std,
+                        )
                     else:
                         std = std.clamp(min=self.min_sampling_denoising_std)
                 else: # ddpm
@@ -5739,6 +5834,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         std = torch.zeros_like(std)
                     elif deterministic:
                         std = std.clamp(min=1e-3)
+                    elif lfp_on_policy:
+                        std = self._apply_lfp_transition_std_floor(
+                            std,
+                            self.min_sampling_denoising_std,
+                        )
                     else:
                         std = std.clamp(min=self.min_sampling_denoising_std)
                 
@@ -5877,7 +5977,14 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             two_expert_geo_delta=batched_conditioning.get('two_expert_geo_delta'),
         )
 
-        std = torch.exp(0.5 * logvar).clamp(min=self.min_logprob_denoising_std)
+        std = torch.exp(0.5 * logvar)
+        if self.stage3_algorithm == "lfp_grpo":
+            std = self._apply_lfp_transition_std_floor(
+                std,
+                self.min_logprob_denoising_std,
+            )
+        else:
+            std = std.clamp(min=self.min_logprob_denoising_std)
         return Normal(mean, std)
 
     def get_logprobs(
@@ -11005,6 +11112,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "benchmark": str(self.lfp_grpo_cfg.benchmark),
             "reference_cache_metadata_hash": self.lfp_reference_cache.metadata_hash,
             "reference_policy_checkpoint_sha256": self.lfp_reference_policy_checkpoint_sha256,
+            "diversity_capacity_cache_metadata_hash": (
+                self.lfp_diversity_capacity_cache.metadata_hash
+                if self.lfp_diversity_capacity_cache is not None
+                else ""
+            ),
             "epoch_energy": {
                 token: (float(values[0]), int(values[1]))
                 for token, values in self._lfp_epoch_energy.items()
@@ -11026,6 +11138,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             self.lfp_reference_policy_checkpoint_sha256
         ):
             raise ValueError("Frozen LFP Stage2 reference checkpoint changed across resume.")
+        expected_diversity_hash = (
+            self.lfp_diversity_capacity_cache.metadata_hash
+            if self.lfp_diversity_capacity_cache is not None
+            else ""
+        )
+        if str(state_dict.get("diversity_capacity_cache_metadata_hash", "")) != str(
+            expected_diversity_hash
+        ):
+            raise ValueError("LFP diversity-capacity cache changed across checkpoint resume.")
         self._lfp_epoch_energy = {
             str(token): [float(values[0]), float(values[1])]
             for token, values in dict(state_dict.get("epoch_energy", {})).items()
@@ -11139,9 +11260,46 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     metric_cache[token] = pickle.load(handle)
         metrics = self._evaluate_lfp_rollouts(trajectories, tokens_rep, metric_cache, B, G)
         reference = self.lfp_reference_cache.get(tokens, metrics.scalar.device, metrics.scalar.dtype)
-        advantage_output = compute_lfp_advantages(metrics, reference, self.lfp_grpo_cfg)
+        group_spread = compute_group_trajectory_spread(
+            trajectories.reshape(B, G, trajectories.shape[-2], trajectories.shape[-1])
+        )
+        advantage_output = compute_lfp_advantages(
+            metrics,
+            reference,
+            self.lfp_grpo_cfg,
+            group_pairwise_ade_m=group_spread.pairwise_ade_m,
+        )
+        frontier_energy = advantage_output.energy
+        diversity_diagnostics: Dict[str, torch.Tensor] = {}
+        if self.lfp_diversity_capacity_cache is not None:
+            capacity = self.lfp_diversity_capacity_cache.get(
+                tokens,
+                metrics.scalar.device,
+                metrics.scalar.dtype,
+            )
+            diversity_frontier = compute_capacity_normalized_frontier_energy(
+                frontier_energy,
+                advantage_output.feasible,
+                group_spread.pairwise_ade_m,
+                capacity,
+                gap_weight=float(self.lfp_grpo_cfg.frontier_diversity_gap_weight),
+                dispersion_floor=float(
+                    self.lfp_grpo_cfg.frontier_diversity_dispersion_floor
+                ),
+            )
+            frontier_energy = diversity_frontier.energy
+            diversity_diagnostics = {
+                "lfp_diversity_mode_capacity_mean": diversity_frontier.mode_capacity.mean().detach(),
+                "lfp_diversity_coverage_ratio_mean": diversity_frontier.coverage_ratio.mean().detach(),
+                "lfp_diversity_coverage_gap_mean": diversity_frontier.coverage_gap.mean().detach(),
+                "lfp_diversity_frontier_bonus_mean": diversity_frontier.bonus.mean().detach(),
+                "lfp_diversity_capacity_active_ratio": (
+                    diversity_frontier.active_mask.float().mean().detach()
+                ),
+                "lfp_diversity_frontier_energy_mean": frontier_energy.mean().detach(),
+            }
         if bool(self.lfp_grpo_cfg.curriculum_enabled):
-            self._accumulate_lfp_epoch_energy(tokens, advantage_output.energy)
+            self._accumulate_lfp_epoch_energy(tokens, frontier_energy)
 
         num_denoising_steps = int(chains.shape[1] - 1)
         discount = self._stage3_discount(
@@ -11190,6 +11348,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             )
 
         diagnostics = dict(advantage_output.diagnostics)
+        diagnostics.update(diversity_diagnostics)
+        diagnostics.update(group_spread.scalar_diagnostics())
+        diagnostics.update(self._lfp_transition_floor_diagnostics(trajectories))
         planning_diagnostics = current_dit_context.get("diagnostics", {})
         for key in (
             "planning_token_norm",

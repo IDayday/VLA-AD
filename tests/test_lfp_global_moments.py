@@ -39,3 +39,28 @@ def test_global_std_is_not_scene_local_std() -> None:
     moments = lfp.distributed_masked_moments(values, torch.ones_like(values, dtype=torch.bool), 0.05)
     scene_std_mean = values.std(dim=1, unbiased=False).mean()
     assert not torch.isclose(moments.std, scene_std_mean)
+
+
+def test_scene_group_std_equalizes_scene_spread_without_changing_centering() -> None:
+    centered = torch.tensor([[-1.0, 1.0], [-10.0, 10.0]])
+    mask = torch.ones_like(centered, dtype=torch.bool)
+    moments = lfp.distributed_masked_moments(centered, mask, std_floor=0.05)
+
+    global_scaled, scene_std = lfp.normalize_group_centered_scores(
+        centered,
+        mask,
+        moments,
+        mode="global_std",
+        std_floor=0.05,
+    )
+    group_scaled, _ = lfp.normalize_group_centered_scores(
+        centered,
+        mask,
+        moments,
+        mode="scene_group_std",
+        std_floor=0.05,
+    )
+
+    torch.testing.assert_close(scene_std, torch.tensor([1.0, 10.0]))
+    assert global_scaled[1].abs().mean() > global_scaled[0].abs().mean()
+    torch.testing.assert_close(group_scaled, torch.tensor([[-1.0, 1.0], [-1.0, 1.0]]))

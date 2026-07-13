@@ -1,11 +1,22 @@
+from pathlib import Path
+
 import torch
 
-from navsim.agents.recogdrive.stage3_lfp_grpo import LFPGRPOConfig, compute_lfp_advantages
+from navsim.agents.recogdrive.stage3_lfp_grpo import (
+    LFPGRPOConfig,
+    compute_bidirectional_pareto_advantage_energy,
+    compute_lfp_advantages,
+)
 from navsim.agents.recogdrive.stage3_metric_adapter import CanonicalMetricBatch
 from navsim.agents.recogdrive.stage3_reference_cache import ReferenceBatch
 
 
-def _case(advantage_clip: float = 3.0):
+def _case(
+    advantage_clip: float = 3.0,
+    *,
+    config_overrides=None,
+    group_pairwise_ade_m=None,
+):
     scalar = torch.tensor(
         [
             [0.7, 0.9, 0.6, 0.8],
@@ -50,10 +61,13 @@ def _case(advantage_clip: float = 3.0):
         selected_source_code=torch.ones(4, dtype=torch.long),
         fallback_mask=torch.zeros(4, dtype=torch.bool),
     )
+    config_values = {"advantage_clip": advantage_clip}
+    config_values.update(config_overrides or {})
     return compute_lfp_advantages(
         metrics,
         reference,
-        LFPGRPOConfig(advantage_clip=advantage_clip),
+        LFPGRPOConfig(**config_values),
+        group_pairwise_ade_m=group_pairwise_ade_m,
     )
 
 
@@ -84,6 +98,28 @@ def test_advantage_clamp_and_energy_are_finite() -> None:
     assert output.advantages.abs().max() <= 0.2
     assert output.diagnostics["lfp_advantage_clip_ratio"] > 0.0
     assert torch.isfinite(output.energy).all()
+
+
+def test_default_tradeoff_weight_preserves_original_bpae() -> None:
+    output = _case()
+    expected, _ = compute_bidirectional_pareto_advantage_energy(output.advantages)
+    torch.testing.assert_close(output.energy, expected)
+    torch.testing.assert_close(
+        output.diagnostics["lfp_frontier_tradeoff_multiplier_mean"],
+        torch.tensor(1.0),
+    )
+
+
+def test_low_spread_group_is_removed_before_frontier_energy() -> None:
+    output = _case(
+        config_overrides={"min_group_pairwise_ade_m": 0.05},
+        group_pairwise_ade_m=torch.tensor([0.01, 0.2, 0.2, 0.2]),
+    )
+    torch.testing.assert_close(output.advantages[0], torch.zeros(4))
+    torch.testing.assert_close(output.energy[0], torch.tensor(0.0))
+    assert output.diagnostics["lfp_low_spread_group_ratio"].item() == 0.25
+    assert output.diagnostics["lfp_credit_active_group_ratio"].item() == 0.75
+    assert output.diagnostics["lfp_global_normalization_count"].item() == 6.0
 
 
 def test_ttc_regression_cannot_receive_positive_credit() -> None:
@@ -129,6 +165,120 @@ def test_ttc_regression_cannot_receive_positive_credit() -> None:
     )
     assert not guarded.ttc_ok[0, 1]
     assert guarded.advantages[0, 1] <= 0.0
+    assert guarded.diagnostics["lfp_ttc_fail_ratio"] > 0.0
+    assert guarded.diagnostics["lfp_ttc_fail_advantage_mean"] <= 0.0
+    assert 0.0 <= guarded.diagnostics["lfp_ttc_fail_zero_credit_ratio"] <= 1.0
+
+
+def _reference_gate_case(**config_overrides):
+    scalar = torch.tensor([[0.95, 0.90, 0.70]])
+    metrics = CanonicalMetricBatch(
+        scalar=scalar,
+        ep=torch.tensor([[0.89, 0.95, 0.70]]),
+        ttc=torch.tensor([[0.99, 0.90, 0.80]]),
+        quality=torch.tensor([[0.85, 0.80, 0.70]]),
+        nc=torch.ones_like(scalar),
+        dac=torch.ones_like(scalar),
+        ddc_guard_value=torch.ones_like(scalar),
+        tlc=None,
+        diagnostics={},
+    )
+    reference = ReferenceBatch(
+        scalar=torch.tensor([0.80]),
+        ep=torch.tensor([0.90]),
+        ttc=torch.tensor([1.0]),
+        quality=torch.tensor([0.90]),
+        nc=torch.ones(1),
+        dac=torch.ones(1),
+        ddc=torch.ones(1),
+        tlc=None,
+        gt_ddc=torch.ones(1),
+        selected_source_code=torch.ones(1, dtype=torch.long),
+        fallback_mask=torch.zeros(1, dtype=torch.bool),
+    )
+    return compute_lfp_advantages(metrics, reference, LFPGRPOConfig(**config_overrides))
+
+
+def test_coherent_reference_pareto_gate_removes_reference_dominated_positive_credit() -> None:
+    baseline = _reference_gate_case()
+    guarded = _reference_gate_case(reference_pareto_gate_enabled=True)
+
+    assert baseline.advantages[0, 0] > 0.0
+    assert not guarded.reference_pareto_ok[0, 0]
+    assert guarded.reference_pareto_ok[0, 1]
+    assert guarded.advantages[0, 0] <= 0.0
+    assert guarded.diagnostics["lfp_positive_advantage_reference_dominated_ratio"] == 0.0
+
+
+def test_quality_guard_bounds_pareto_tradeoff_regression() -> None:
+    baseline = _reference_gate_case()
+    guarded = _reference_gate_case(
+        quality_positive_credit_guard=True,
+        quality_reference_tolerance=0.02,
+    )
+
+    assert baseline.advantages[0, 0] > 0.0
+    assert not guarded.quality_ok[0, 0]
+    assert guarded.advantages[0, 0] <= 0.0
+    assert guarded.diagnostics["lfp_quality_fail_ratio"] > 0.0
+
+
+def test_reference_regression_diagnostics_expose_group_relative_positive_credit() -> None:
+    output = _reference_gate_case()
+    diagnostics = output.diagnostics
+
+    assert diagnostics["lfp_reference_dominated_ratio"] > 0.0
+    assert diagnostics["lfp_positive_advantage_reference_dominated_ratio"] > 0.0
+    for key in (
+        "lfp_positive_advantage_below_ref_scalar_ratio",
+        "lfp_positive_advantage_below_ref_quality_ratio",
+        "lfp_positive_advantage_scalar_delta_mean",
+        "lfp_positive_advantage_quality_delta_mean",
+    ):
+        assert diagnostics[key].numel() == 1
+        assert torch.isfinite(diagnostics[key])
+
+
+def test_credit_diagnostics_are_scalar_and_match_final_advantages() -> None:
+    output = _case()
+    diagnostics = output.diagnostics
+    torch.testing.assert_close(diagnostics["lfp_advantage_mean"], output.advantages.mean())
+    torch.testing.assert_close(
+        diagnostics["lfp_advantage_std"],
+        output.advantages.std(unbiased=False),
+    )
+    for key in (
+        "lfp_positive_eligible_advantage_mean",
+        "lfp_ttc_fail_advantage_mean",
+        "lfp_ttc_fail_zero_credit_ratio",
+        "lfp_quality_fail_advantage_mean",
+        "lfp_reference_dominated_advantage_mean",
+        "lfp_positive_advantage_reference_dominated_ratio",
+        "lfp_progress_fail_advantage_mean",
+        "lfp_progress_fail_zero_credit_ratio",
+        "lfp_unsafe_advantage_mean",
+    ):
+        assert diagnostics[key].numel() == 1
+        assert torch.isfinite(diagnostics[key])
+
+
+def test_credit_diagnostics_are_in_lightning_logging_contract() -> None:
+    module_path = (
+        Path(__file__).resolve().parents[1]
+        / "navsim/planning/training/agent_lightning_module.py"
+    )
+    source = module_path.read_text()
+    for key in (
+        "lfp_advantage_mean",
+        "lfp_ttc_fail_advantage_mean",
+        "lfp_ttc_fail_zero_credit_ratio",
+        "lfp_quality_fail_advantage_mean",
+        "lfp_reference_dominated_advantage_mean",
+        "lfp_positive_advantage_reference_dominated_ratio",
+        "lfp_progress_fail_advantage_mean",
+        "lfp_unsafe_advantage_mean",
+    ):
+        assert f'"{key}"' in source
 
 
 def test_all_infeasible_rescue_only_assigns_negative_credit() -> None:

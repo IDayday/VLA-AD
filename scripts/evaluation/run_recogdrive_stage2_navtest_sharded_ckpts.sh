@@ -37,9 +37,15 @@ COMMANDS_LOCK="${OUT_ROOT}/state/commands.lock"
 
 safe_name() {
   "${PYTHON_BIN}" - "$1" <<'PY'
-import re, sys
-text = sys.argv[1]
-print(re.sub(r"[^A-Za-z0-9_.-]+", "_", text).strip("._") or "ckpt")
+import hashlib
+import re
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1]).expanduser().resolve()
+basename = re.sub(r"[^A-Za-z0-9_.-]+", "_", path.name).strip("._") or "ckpt"
+path_hash = hashlib.sha256(str(path).encode("utf-8")).hexdigest()[:10]
+print(f"{basename}-{path_hash}")
 PY
 }
 
@@ -123,7 +129,7 @@ for checkpoint in "${CKPTS[@]}"; do
     echo "checkpoint not found: ${checkpoint}" >&2
     exit 2
   fi
-  ckpt_name="$(safe_name "$(basename "${checkpoint}")")"
+  ckpt_name="$(safe_name "${checkpoint}")"
   eval_dir="${OUT_ROOT}/${ckpt_name}"
   mkdir -p "${eval_dir}/logs"
   if [[ "${SKIP_COMPLETED}" == "1" && -f "${eval_dir}/aggregate_metrics.json" ]]; then

@@ -3,6 +3,7 @@ from __future__ import annotations
 import lzma
 import pickle
 
+import pytest
 import torch
 
 from scripts.testing.smoke_recogdrive_expert_planner import _install_dependency_stubs
@@ -11,6 +12,7 @@ _install_dependency_stubs()
 
 from transformers.feature_extraction_utils import BatchFeature
 
+from navsim.agents.recogdrive.fs_norm import FSNormStats, save_fs_norm_stats
 from navsim.agents.recogdrive.recogdrive_diffusion_planner import (
     DDIMConfig,
     GRPOConfig,
@@ -50,9 +52,35 @@ def _model_config(**kwargs) -> ReCogDriveDiffusionPlannerConfig:
     return ReCogDriveDiffusionPlannerConfig(**values)
 
 
-def test_on_policy_loss_reaches_dit_and_planning_adapter_but_not_reference(tmp_path) -> None:
+@pytest.mark.parametrize("use_fs_transition_floor", [False, True])
+def test_on_policy_loss_reaches_dit_and_planning_adapter_but_not_reference(
+    tmp_path,
+    use_fs_transition_floor: bool,
+) -> None:
     torch.manual_seed(61)
-    initial = ReCogDriveDiffusionPlanner(_model_config())
+    model_overrides = {}
+    if use_fs_transition_floor:
+        stats_path = tmp_path / "fs_stats.pt"
+        scale = torch.tensor([[1.0, 0.10, 0.05]] * 8)
+        save_fs_norm_stats(
+            str(stats_path),
+            FSNormStats(
+                mean=torch.zeros_like(scale),
+                std=scale,
+                clip_lower=torch.full_like(scale, -10.0),
+                clip_upper=torch.full_like(scale, 10.0),
+                version=2,
+                scene_balanced=True,
+                heading_center_zero=True,
+            ),
+        )
+        model_overrides.update(
+            use_fs_norm=True,
+            fs_norm_stats_path=str(stats_path),
+            fs_norm_min_version=2,
+            fs_norm_output_clip_mode="stats_bounds",
+        )
+    initial = ReCogDriveDiffusionPlanner(_model_config(**model_overrides))
     reference_checkpoint = tmp_path / "stage2.ckpt"
     torch.save(
         {"state_dict": {f"agent.action_head.{key}": value for key, value in initial.state_dict().items()}},
@@ -126,7 +154,12 @@ def test_on_policy_loss_reaches_dit_and_planning_adapter_but_not_reference(tmp_p
                 reference_cache_path=str(reference_cache),
                 curriculum_enabled=False,
                 gradient_checkpointing=True,
+                fs_transition_std_enabled=use_fs_transition_floor,
+                fs_endpoint_std_x_m=0.4 if use_fs_transition_floor else 0.0,
+                fs_endpoint_std_y_m=0.16 if use_fs_transition_floor else 0.0,
+                fs_endpoint_std_heading_rad=0.014 if use_fs_transition_floor else 0.0,
             ),
+            **model_overrides,
         )
     ).train()
     planner.metric_cache_loader.metric_cache_paths["scene"] = metric_path
