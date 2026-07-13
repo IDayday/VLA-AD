@@ -49,9 +49,25 @@ def test_capacity_normalized_energy_only_boosts_uncovered_all_feasible_multimoda
     expected_coverage = (0.20 + 0.05) / (1.0 + 0.05)
     expected_gap = (1.0 - 1.0 / 4.0) * (1.0 - expected_coverage)
     assert output.coverage_gap[0].item() == pytest.approx(expected_gap)
-    assert output.energy[0].item() == pytest.approx(0.10 + 0.05 * expected_gap)
+    assert output.energy[0].item() == pytest.approx(0.10 * (1.0 + 0.05 * expected_gap))
     assert output.energy[1].item() == pytest.approx(0.20)
     assert output.active_mask.tolist() == [True, False]
+
+
+def test_capacity_gap_cannot_create_frontier_energy_without_policy_credit() -> None:
+    output = compute_capacity_normalized_frontier_energy(
+        torch.tensor([0.0]),
+        torch.ones((1, 4), dtype=torch.bool),
+        torch.tensor([0.05]),
+        _capacity(dispersion=(1.0,), modes=(8.0,)),
+        gap_weight=1.0,
+        dispersion_floor=0.05,
+    )
+
+    assert output.coverage_gap.item() > 0.0
+    assert output.active_mask.item()
+    assert output.energy.item() == 0.0
+    assert output.bonus.item() == 0.0
 
 
 def test_capacity_normalized_energy_does_not_override_safety_first() -> None:

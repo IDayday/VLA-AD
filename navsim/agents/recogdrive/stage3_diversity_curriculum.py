@@ -125,7 +125,14 @@ def compute_capacity_normalized_frontier_energy(
     gap_weight: float,
     dispersion_floor: float,
 ) -> DiversityFrontierOutput:
-    """Adds bounded support-relative coverage pressure to all-feasible scenes only."""
+    """Modulates an existing learning frontier by its normalized diversity gap.
+
+    A coverage gap is not itself a policy-learning signal.  In particular, a
+    scene with zero bidirectional advantage has zero REINFORCE gradient, so
+    assigning it additive curriculum energy only wastes samples.  The gap may
+    therefore increase the priority of an already active frontier, but it must
+    never create one.
+    """
     if base_energy.ndim != 1:
         raise ValueError("base_energy must have shape [B].")
     if feasible_mask.ndim != 2 or feasible_mask.shape[0] != base_energy.shape[0]:
@@ -155,8 +162,13 @@ def compute_capacity_normalized_frontier_energy(
     all_feasible = feasible_mask.all(dim=1)
     has_capacity = (mode_count > 1.0) & (support_dispersion > 0.0)
     active_mask = all_feasible & has_capacity
-    bonus = float(gap_weight) * coverage_gap * active_mask.to(base_energy)
-    energy = torch.nan_to_num(base_energy + bonus)
+    safe_base_energy = torch.nan_to_num(base_energy)
+    priority_multiplier = 1.0 + float(gap_weight) * coverage_gap * active_mask.to(base_energy)
+    energy = torch.nan_to_num(safe_base_energy * priority_multiplier)
+    # Keep the existing diagnostic field/checkpoint contract.  It now records
+    # the realized energy uplift rather than an additive signal independent of
+    # the policy gradient.
+    bonus = energy - safe_base_energy
     return DiversityFrontierOutput(
         energy=energy,
         mode_capacity=mode_capacity,

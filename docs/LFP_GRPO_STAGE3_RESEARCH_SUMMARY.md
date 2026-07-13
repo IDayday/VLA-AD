@@ -157,7 +157,9 @@ PDMS/EPDMS/SNSAD 改善；完整结果见 `docs/Stage2_V3_Target_Distribution_St
 
 ### 4.2 Capacity-normalized learning frontier
 
-对 v3 selected positive support 缓存 scene 固有容量：
+旧实验从 v3 selected positive support 缓存了一个观测到的参考宽度。它不是 scene 固有容量；
+在固定 proposal、evaluator、初始化 policy 和阈值下没有合格替代模式时，`K_i=0` 是合法结果。
+当前定义为：
 
 ```text
 mode_capacity = 1 - 1 / reference_mode_count
@@ -167,14 +169,19 @@ coverage_ratio = clip(
     0, 1,
 )
 coverage_gap = mode_capacity * (1 - coverage_ratio)
-frontier_bonus = 0.05 * coverage_gap * all_feasible
+frontier_energy = base_BPAE * (
+    1 + 0.05 * coverage_gap * all_feasible
+)
 ```
 
-该 bonus 只进入下一 epoch sampler，不进入 advantage 或 policy loss。完整 cache 有 103,288 scenes，
-support ADE 均值 `1.36082m`，mode count 均值 `4.9077`。
+coverage gap 只调制下一 epoch sampler，不进入 advantage 或 policy loss，并且不能在
+`base_BPAE=0` 时凭空生成课程能量。旧 v3 cache 有 103,288 scenes，support ADE 均值
+`1.36082m`，mode count 均值 `4.9077`；它由于旧构建会填充候选，不能继续作为新版无配额数据的
+容量事实，必须由 v4 archive 重建。
 
 300-step 配对中，它使 frontier energy 与 mode capacity 的 Spearman 相关从 `0.0965` 提高到
 `0.2327`。epoch1 实际采样的 multimodal ratio 提高 `0.49` 个百分点，没有 sampler collapse。
+该历史实验使用的是加性 bonus，下面结果保留为方向性证据，不能证明加性公式正确。
 
 固定 seed0 全量 v1：
 
@@ -189,6 +196,12 @@ capacity 相对 safety-only 的 PDMS delta 为 `+0.004758`，scene-cluster boots
 `-0.001483`，CI 跨 0，但 NC/TTC/L1 仍明确更差。因此主动学习方向得到支持，Stage3 的
 physical trust 与 progress-biased credit 仍未解决。
 
+后续在无配额 v4 的 128-scene 固定候选池上发现了加性公式的反例：122 个多模态 scene 中有 70 个
+`base_BPAE=0`，加性 gap 会给这 70 个零策略梯度 scene 制造非零 priority。按当前 sampler 的
+`sqrt(priority)` 和 20% uniform mixture 重放，credit-ready 采样占比从 68.0% 降至 44.5%，
+零 BPAE scene 的采样占比从 31.0% 升至 54.0%。乘性调制分别保持为 68.1% 和 30.9%。因此当前
+实现改为乘性公式：多样性只在已有双向 Pareto credit 的学习前沿之间调整顺序。
+
 ## 5. 当前原因排序
 
 1. **首要：decoded trajectory trust 不足。** transition KL 不能阻止轨迹在物理空间显著漂移。
@@ -197,8 +210,8 @@ physical trust 与 progress-biased credit 仍未解决。
 3. **Stage2 多模态监督错位。** v3 轨迹库有可行模式，但 reward 饱和、progress-biased winner、
    远距离 teacher、模式内冗余和静态 beta 使它没有变成条件可学习的 policy prior。单变量实验
    已确认 mode mass 存在安全边界：0.25 有温和多样性收益，0.45 以上干扰明显。
-4. **次要：课程目标曾与核心多样性目标错位。** 旧 BPAE 更偏低 reference reward；容量课程已
-   提供第一项正向因果证据，但效应温和。
+4. **次要：课程目标曾与核心多样性目标错位。** 旧 BPAE 更偏低 reference reward；旧加性容量
+   bonus 还会优先采样零梯度 scene。容量课程提供过正向方向性证据，但新版必须用乘性调制复验。
 5. **不是主因：优势使用 global std。** 严格对照已否定恢复 scene-group std。
 6. **不是主因：Stage2 明显过拟合、FS-Norm 或 PTA。** navtest 趋势、GT-only 对照和 A5 相对
    Official 的 v1/v2 改善均不支持。更准确的问题是 support teacher 分布缺少概率和可学习性校准。
@@ -239,7 +252,8 @@ reports/recogdrive_stage3/lfp_grpo_r4_evidence_review_20260712.md
    safety 控制 beta；课程 priority 只控制 exposure，不乘入 loss。
 3. 加入动态 non-GT residual-mass budget，在旧 shortcut 与 capacity-only 之间搜索 Pareto 点；
    晋级条件同时约束 NC/TTC、L1、SNSAD 和 support recall。
-4. 对 capacity frontier 复验至少一个 seed，并补 NAVSIM v2 EPDMS；在通过前保持默认关闭。
+4. 用无配额 v4 重建 capacity cache，对乘性 capacity frontier 复验至少一个 seed，并补 NAVSIM
+   v2 EPDMS；在通过前保持默认关闭。
 5. 单变量测试 reference-relative decoded trajectory trust，不能同时改 reward、KL 和 curriculum。
 6. trust 有效后，再测试 v1/v2 分离的 quality objective；不能把 NAVSIM v2 与历史 Pareto GRPO v2
    混为一谈。
