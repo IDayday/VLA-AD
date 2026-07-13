@@ -303,6 +303,54 @@ def _learning_frontier_v5_record() -> dict:
     return record
 
 
+def _full_training_v6_record() -> dict:
+    record = _frontier_v4_record(raw_internal_candidates=True)
+    record.update(
+        version=6,
+        sources=["gt", "ddv2", "progress_endpoint"],
+        support_tags=["gt_anchor", "full_training_direct", "full_training_structured"],
+        teacher_tier=np.asarray([0, 1, 2], dtype=np.int8),
+        teacher_confidence=np.asarray([1.0, 0.90, 0.62], dtype=np.float32),
+        full_training_objectives=np.asarray(
+            [[0.5, 0.5, 0.0, 1.0], [1.0, 0.5, 0.5, 0.9], [0.5, 1.0, 1.0, 0.62]],
+            dtype=np.float32,
+        ),
+        gt_mode_distance_snsad=np.asarray([0.0, 0.5, 0.7], dtype=np.float32),
+        candidate_funnel={
+            "version": 4,
+            "non_gt_proposal_count": 2,
+            "policy_candidate_count": 0,
+            "evaluator_valid_count": 2,
+            "trajectory_quality_count": 2,
+            "policy_independent_trust_region_count": 2,
+            "distinct_from_gt_count": 2,
+            "pareto_eligible_count": 2,
+            "selected_non_gt_count": 2,
+            "supervision_type": "full_training_modes",
+            "gt_only_reason": "",
+        },
+    )
+    record["build_metadata"].update(
+        selection_strategy="mode_full_training_v6",
+        teacher_contract="gt_anchor_plus_policy_independent_evaluator_valid_modes",
+        mode_selection_order=(
+            "policy_independent_hard_gates_then_safety_efficiency_diversity_confidence_"
+            "pareto_then_family_aware_snsad_fps"
+        ),
+        candidate_capacity_contract="full_dataset_policy_independent_evaluator_modes_v1",
+        capacity_semantics="selected_full_training_support_cap_not_scene_quota",
+        support_top_m=4,
+        support_cap_not_quota=True,
+        policy_candidates_excluded=True,
+        policy_fields_used_for_admission=False,
+        policy_fields_used_for_ranking=False,
+        mode_distance_threshold=0.40,
+        max_gt_ade_m=1.5,
+        max_gt_fde_m=4.0,
+    )
+    return record
+
+
 def test_frontier_v4_loader_rejects_shadow_preselected_archive() -> None:
     record = _frontier_v4_record(raw_internal_candidates=False)
     planner = ReCogDriveDiffusionPlanner.__new__(ReCogDriveDiffusionPlanner)
@@ -408,6 +456,52 @@ def test_learning_frontier_v5_loader_rejects_unevidenced_selected_mode() -> None
     )
 
     with pytest.raises(ValueError, match="without independent evidence"):
+        planner._load_awac_buffer_candidates(action_input, ["tok"], {}, cfg)
+
+
+def test_full_training_v6_loader_accepts_policy_independent_modes() -> None:
+    record = _full_training_v6_record()
+    planner = ReCogDriveDiffusionPlanner.__new__(ReCogDriveDiffusionPlanner)
+
+    def load(self, root, token, cfg):
+        return record
+
+    planner._load_elite_record_cached = MethodType(load, planner)
+    action_input = BatchFeature(data={"action": torch.zeros((1, 8, 3), dtype=torch.float32)})
+    cfg = OfflineRLConfig(
+        enabled=True,
+        support_archive_path="/tmp/support",
+        use_dpsi=True,
+        dpsi_target_distribution="full_training_v6",
+    )
+
+    batch = planner._load_awac_buffer_candidates(action_input, ["tok"], {}, cfg)
+
+    assert torch.equal(batch["selected_mode_id"][0], torch.tensor([0, 1, 2]))
+    assert torch.allclose(
+        batch["selected_teacher_confidence"][0], torch.tensor([1.0, 0.90, 0.62])
+    )
+    assert not (batch["selected_source_code"] == 3).any()
+
+
+def test_full_training_v6_loader_rejects_previous_policy_target() -> None:
+    record = _full_training_v6_record()
+    record["sources"][1] = "policy:0"
+    planner = ReCogDriveDiffusionPlanner.__new__(ReCogDriveDiffusionPlanner)
+
+    def load(self, root, token, cfg):
+        return record
+
+    planner._load_elite_record_cached = MethodType(load, planner)
+    action_input = BatchFeature(data={"action": torch.zeros((1, 8, 3), dtype=torch.float32)})
+    cfg = OfflineRLConfig(
+        enabled=True,
+        support_archive_path="/tmp/support",
+        use_dpsi=True,
+        dpsi_target_distribution="full_training_v6",
+    )
+
+    with pytest.raises(ValueError, match="must not select previous-policy candidates"):
         planner._load_awac_buffer_candidates(action_input, ["tok"], {}, cfg)
 
 
@@ -588,6 +682,51 @@ def test_learning_frontier_v5_reuses_paired_gt_mode_weighting() -> None:
     assert weights[0, 1:].sum().item() == pytest.approx(0.25)
     assert profile_diag["dpsi_learning_frontier_v5_enabled"].item() == 1.0
     assert profile_diag["dpsi_frontier_v4_enabled"].item() == 0.0
+
+
+def test_full_training_v6_weights_modes_by_teacher_confidence() -> None:
+    cfg = OfflineRLConfig(
+        dpsi_target_distribution="full_training_v6",
+        dpsi_beta_max=0.50,
+        dpsi_beta_warmup_epochs=0,
+        dpsi_use_reward_margin_weight=False,
+        dpsi_use_source_weight=False,
+    )
+    trajs = _traj_row([0.0, 1.0, 3.0])
+    rewards = torch.tensor([[0.9, 0.95, 0.94]])
+    source = torch.tensor([[1, 7, 4]])
+    mask = torch.ones_like(rewards, dtype=torch.bool)
+    profile, profile_diag = _compute_dpsi_support_profile(
+        trajs,
+        rewards,
+        mask,
+        source,
+        torch.tensor([0.9]),
+        torch.tensor([0.9]),
+        mask,
+        cfg,
+        current_epoch=0,
+    )
+    weights, _ = _build_asmi_weights(
+        rewards,
+        mask,
+        mask,
+        source,
+        torch.zeros_like(rewards),
+        torch.tensor([0.9]),
+        torch.tensor([0.9]),
+        profile,
+        cfg,
+        selected_mode_id=torch.tensor([[0, 1, 2]]),
+        selected_teacher_eligible=mask,
+        selected_frontier_difficulty=torch.zeros_like(rewards),
+        selected_teacher_confidence=torch.tensor([[1.0, 0.9, 0.3]]),
+        current_epoch=0,
+    )
+
+    assert weights[0].tolist() == pytest.approx([0.50, 0.375, 0.125])
+    assert profile_diag["dpsi_full_training_v6_enabled"].item() == 1.0
+    assert profile_diag["dpsi_learning_frontier_v5_enabled"].item() == 0.0
 
 
 def test_learning_frontier_v5_downweights_gt_only_continuation_scene() -> None:

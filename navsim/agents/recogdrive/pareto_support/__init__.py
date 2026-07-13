@@ -43,6 +43,15 @@ from .fs_norm import (
     trajectory_to_delta,
     delta_to_trajectory,
 )
+from .full_training_v6 import (
+    FullTrainingV6Config,
+    V6_OBJECTIVES,
+    V6_SELECTION_STRATEGY,
+    V6_TEACHER_CONTRACT,
+    full_training_v6_selection,
+    promote_v5_record_to_v6,
+    source_family,
+)
 
 __all__ = [
     "CandidateRecord",
@@ -82,4 +91,11 @@ __all__ = [
     "denormalize_trajectory",
     "trajectory_to_delta",
     "delta_to_trajectory",
+    "FullTrainingV6Config",
+    "V6_OBJECTIVES",
+    "V6_SELECTION_STRATEGY",
+    "V6_TEACHER_CONTRACT",
+    "full_training_v6_selection",
+    "promote_v5_record_to_v6",
+    "source_family",
 ]
