@@ -1,0 +1,375 @@
+from __future__ import annotations
+
+from dataclasses import asdict
+from typing import List, Sequence, Union
+
+import numpy as np
+import numpy.typing as npt
+from scipy.interpolate import interp1d
+
+from navsim.common.dataclasses import PDMResults, Trajectory
+from navsim.evaluate.pdm_score import get_trajectory_as_array, transform_trajectory
+from navsim.planning.metric_caching.metric_cache import MetricCache
+from navsim.planning.simulation.planner.pdm_planner.scoring.pdm_scorer import PDMScorer
+from navsim.planning.simulation.planner.pdm_planner.simulation.pdm_simulator import PDMSimulator
+from navsim.planning.simulation.planner.pdm_planner.utils.pdm_array_representation import ego_state_to_state_array
+from navsim.planning.simulation.planner.pdm_planner.utils.pdm_enums import MultiMetricIndex, WeightedMetricIndex
+from navsim.planning.simulation.planner.pdm_planner.utils.pdm_enums import StateIndex
+from nuplan.common.geometry.compute import principal_value
+from nuplan.common.geometry.convert import matrix_from_pose
+from nuplan.planning.simulation.trajectory.trajectory_sampling import TrajectorySampling
+
+
+TrajectoryLike = Union[Trajectory, npt.NDArray[np.floating]]
+
+
+def _coerce_trajectory(model_trajectory: TrajectoryLike) -> Trajectory:
+    if isinstance(model_trajectory, Trajectory):
+        return model_trajectory
+    return Trajectory(np.asarray(model_trajectory, dtype=np.float64))
+
+
+def _as_trajectory_list(model_trajectories: Union[TrajectoryLike, Sequence[TrajectoryLike]]) -> List[Trajectory]:
+    if isinstance(model_trajectories, Trajectory):
+        return [model_trajectories]
+    if isinstance(model_trajectories, np.ndarray):
+        if model_trajectories.ndim == 2:
+            return [_coerce_trajectory(model_trajectories)]
+        if model_trajectories.ndim == 3:
+            return [_coerce_trajectory(trajectory) for trajectory in model_trajectories]
+        raise ValueError(f"Expected trajectory array with shape [H, 3] or [N, H, 3], got {model_trajectories.shape}.")
+    return [_coerce_trajectory(trajectory) for trajectory in model_trajectories]
+
+
+def _as_trajectory_array(model_trajectories: Union[TrajectoryLike, Sequence[TrajectoryLike]]) -> npt.NDArray[np.float64]:
+    if isinstance(model_trajectories, Trajectory):
+        return np.asarray(model_trajectories.poses, dtype=np.float64)[None]
+    if isinstance(model_trajectories, np.ndarray):
+        trajectories = np.asarray(model_trajectories, dtype=np.float64)
+        if trajectories.ndim == 2:
+            trajectories = trajectories[None]
+        if trajectories.ndim != 3:
+            raise ValueError(
+                f"Expected trajectory array with shape [H, 3] or [N, H, 3], got {trajectories.shape}."
+            )
+        return trajectories
+    trajectories_seq = list(model_trajectories)
+    if not trajectories_seq:
+        return np.zeros((0, 0, 3), dtype=np.float64)
+    return np.asarray(
+        [trajectory.poses if isinstance(trajectory, Trajectory) else trajectory for trajectory in trajectories_seq],
+        dtype=np.float64,
+    )
+
+
+def _principal_value(angle: npt.NDArray[np.float64]) -> npt.NDArray[np.float64]:
+    return (angle + np.pi) % (2.0 * np.pi) - np.pi
+
+
+def _trajectory_arrays_to_state_array_fast(
+    metric_cache: MetricCache,
+    model_trajectories: npt.NDArray[np.floating],
+    future_sampling: TrajectorySampling,
+    source_sampling: TrajectorySampling,
+) -> npt.NDArray[np.float64]:
+    """Vectorized equivalent of transform_trajectory + get_trajectory_as_array for SE2 reference states."""
+    rel = np.asarray(model_trajectories, dtype=np.float64)
+    if rel.ndim != 3 or rel.shape[-1] != 3:
+        raise ValueError(f"Expected trajectories with shape [N, H, 3], got {rel.shape}.")
+
+    initial_ego_state = metric_cache.ego_state
+    origin = initial_ego_state.rear_axle
+    origin_xy = np.asarray([origin.x, origin.y], dtype=np.float64)
+    origin_heading = float(origin.heading)
+    cos_h = np.cos(origin_heading)
+    sin_h = np.sin(origin_heading)
+
+    local_xy = rel[..., :2]
+    global_xy = np.empty_like(local_xy, dtype=np.float64)
+    global_xy[..., 0] = origin_xy[0] + cos_h * local_xy[..., 0] - sin_h * local_xy[..., 1]
+    global_xy[..., 1] = origin_xy[1] + sin_h * local_xy[..., 0] + cos_h * local_xy[..., 1]
+    global_heading = _principal_value(origin_heading + rel[..., 2])
+
+    initial_state = ego_state_to_state_array(initial_ego_state)
+    key_xy = np.concatenate(
+        [np.broadcast_to(initial_state[StateIndex.POINT], (rel.shape[0], 1, 2)), global_xy],
+        axis=1,
+    )
+    key_heading = np.concatenate(
+        [np.full((rel.shape[0], 1), initial_state[StateIndex.HEADING], dtype=np.float64), global_heading],
+        axis=1,
+    )
+    key_heading = np.unwrap(key_heading, axis=1)
+
+    key_times = np.concatenate(
+        [
+            np.asarray([0.0], dtype=np.float64),
+            np.arange(1, rel.shape[1] + 1, dtype=np.float64) * source_sampling.interval_length,
+        ]
+    )
+    out_times = (
+        np.arange(0, future_sampling.num_poses + 1, dtype=np.float64) * future_sampling.interval_length
+    )
+    out_times = np.clip(out_times, key_times[0], key_times[-1])
+    left = np.searchsorted(key_times, out_times, side="right") - 1
+    left = np.clip(left, 0, len(key_times) - 2)
+    right = left + 1
+    denom = np.maximum(key_times[right] - key_times[left], 1e-12)
+    alpha = ((out_times - key_times[left]) / denom).astype(np.float64)
+
+    interp_xy = key_xy[:, left] * (1.0 - alpha)[None, :, None] + key_xy[:, right] * alpha[None, :, None]
+    interp_heading = key_heading[:, left] * (1.0 - alpha)[None, :] + key_heading[:, right] * alpha[None, :]
+    interp_heading = _principal_value(interp_heading)
+
+    states = np.zeros((rel.shape[0], future_sampling.num_poses + 1, StateIndex.size()), dtype=np.float64)
+    states[:, :, StateIndex.POINT] = interp_xy
+    states[:, :, StateIndex.HEADING] = interp_heading
+    states[:, 0, :] = initial_state
+    return states
+
+
+def _trajectory_arrays_to_state_array_interpolated_exact(
+    metric_cache: MetricCache,
+    model_trajectories: npt.NDArray[np.floating],
+    future_sampling: TrajectorySampling,
+    source_sampling: TrajectorySampling = Trajectory.trajectory_sampling,
+) -> npt.NDArray[np.float64]:
+    """
+    Vectorized equivalent of transform_trajectory() + get_trajectory_as_array().
+
+    This keeps NuPlan InterpolatedTrajectory semantics intact: linear split-state interpolation,
+    AngularInterpolator's unwrap/principal-value handling, integer microsecond timestamps, and
+    default-zero angular velocity/acceleration/steering-rate after EgoState.from_split_state().
+    """
+    rel = np.asarray(model_trajectories, dtype=np.float64)
+    if rel.ndim == 2:
+        rel = rel[None]
+    if rel.ndim != 3 or rel.shape[-1] != 3:
+        raise ValueError(f"Expected trajectories with shape [N, H, 3], got {rel.shape}.")
+
+    num_trajectories, horizon, _ = rel.shape
+    initial_ego_state = metric_cache.ego_state
+
+    source_times_s = (
+        np.arange(0.0, source_sampling.time_horizon, source_sampling.interval_length, dtype=np.float64)
+        + source_sampling.interval_length
+        + initial_ego_state.time_point.time_s
+    )
+    if source_times_s.shape[0] != horizon:
+        raise ValueError(
+            f"Trajectory horizon H={horizon} does not match source sampling poses={source_times_s.shape[0]}."
+        )
+    source_times_us = np.asarray([int(time_s * 1e6) for time_s in source_times_s], dtype=np.float64)
+    key_times_us = np.concatenate([[float(initial_ego_state.time_us)], source_times_us])
+
+    rel_mats = np.zeros((num_trajectories, horizon, 3, 3), dtype=np.float64)
+    cos_h = np.cos(rel[..., 2])
+    sin_h = np.sin(rel[..., 2])
+    rel_mats[..., 0, 0] = cos_h
+    rel_mats[..., 0, 1] = -sin_h
+    rel_mats[..., 0, 2] = rel[..., 0]
+    rel_mats[..., 1, 0] = sin_h
+    rel_mats[..., 1, 1] = cos_h
+    rel_mats[..., 1, 2] = rel[..., 1]
+    rel_mats[..., 2, 2] = 1.0
+
+    absolute_mats = matrix_from_pose(initial_ego_state.rear_axle) @ rel_mats
+    absolute_x = absolute_mats[..., 0, 2]
+    absolute_y = absolute_mats[..., 1, 2]
+    absolute_heading = np.arctan2(absolute_mats[..., 1, 0], absolute_mats[..., 0, 0])
+
+    initial_split = initial_ego_state.to_split_state()
+    initial_linear = np.asarray(initial_split.linear_states, dtype=np.float64)
+    initial_heading = float(initial_split.angular_states[0])
+
+    linear_states = np.zeros((num_trajectories, horizon + 1, 8), dtype=np.float64)
+    linear_states[:, 0, :] = initial_linear
+    linear_states[:, 1:, 0] = source_times_us[None, :]
+    linear_states[:, 1:, 1] = absolute_x
+    linear_states[:, 1:, 2] = absolute_y
+
+    angular_states = np.zeros((num_trajectories, horizon + 1, 1), dtype=np.float64)
+    angular_states[:, 0, 0] = initial_heading
+    angular_states[:, 1:, 0] = absolute_heading
+    angular_states = np.unwrap(angular_states, axis=1)
+
+    query_times_s = (
+        np.arange(
+            0.0,
+            future_sampling.time_horizon + future_sampling.interval_length,
+            future_sampling.interval_length,
+            dtype=np.float64,
+        )
+        + initial_ego_state.time_point.time_s
+    )
+    query_times_us = np.asarray([int(time_s * 1e6) for time_s in query_times_s], dtype=np.float64)
+    query_times_us = np.clip(query_times_us, key_times_us[0], key_times_us[-1])
+
+    linear_out = interp1d(key_times_us, linear_states, axis=1)(query_times_us)
+    angular_out = principal_value(interp1d(key_times_us, angular_states, axis=1)(query_times_us))[..., 0]
+
+    states = np.zeros((num_trajectories, len(query_times_us), StateIndex.size()), dtype=np.float64)
+    states[..., StateIndex.X] = linear_out[..., 1]
+    states[..., StateIndex.Y] = linear_out[..., 2]
+    states[..., StateIndex.HEADING] = angular_out
+    states[..., StateIndex.VELOCITY_X] = linear_out[..., 3]
+    states[..., StateIndex.VELOCITY_Y] = linear_out[..., 4]
+    states[..., StateIndex.ACCELERATION_X] = linear_out[..., 5]
+    states[..., StateIndex.ACCELERATION_Y] = linear_out[..., 6]
+    states[..., StateIndex.STEERING_ANGLE] = linear_out[..., 7]
+    return states
+
+
+def _extract_pairwise_scalar_equivalent_results(scorer: PDMScorer) -> List[PDMResults]:
+    """Extract batched metrics but preserve scalar pdm_score progress normalization semantics."""
+    num_proposals = int(scorer._num_proposals)
+    if num_proposals < 2:
+        return []
+
+    multi_metrics = scorer._multi_metrics
+    weighted_metrics = scorer._weighted_metrics
+    progress_raw = scorer._progress_raw
+    if multi_metrics is None or weighted_metrics is None or progress_raw is None:
+        raise RuntimeError("PDMScorer did not populate metric arrays.")
+
+    multiplicative = multi_metrics.prod(axis=0)
+    raw_progress = progress_raw * multiplicative
+    baseline_progress = float(raw_progress[0])
+    pred_progress = raw_progress[1:]
+    pred_multiplicative = multiplicative[1:]
+
+    pairwise_max_progress = np.maximum(baseline_progress, pred_progress)
+    normalized_progress = np.ones_like(pred_progress, dtype=np.float64)
+    progress_mask = pairwise_max_progress > scorer._config.progress_distance_threshold
+    normalized_progress[progress_mask] = pred_progress[progress_mask] / pairwise_max_progress[progress_mask]
+    normalized_progress[~progress_mask & (pred_multiplicative == 0.0)] = 0.0
+
+    weights = scorer._config.weighted_metrics_array
+    weighted_sum = (
+        normalized_progress * weights[WeightedMetricIndex.PROGRESS]
+        + weighted_metrics[WeightedMetricIndex.TTC, 1:] * weights[WeightedMetricIndex.TTC]
+        + weighted_metrics[WeightedMetricIndex.COMFORTABLE, 1:] * weights[WeightedMetricIndex.COMFORTABLE]
+        + weighted_metrics[WeightedMetricIndex.DRIVING_DIRECTION, 1:] * weights[WeightedMetricIndex.DRIVING_DIRECTION]
+    ) / weights.sum()
+    scores = pred_multiplicative * weighted_sum
+
+    results: List[PDMResults] = []
+    for pred_idx in range(1, num_proposals):
+        out_idx = pred_idx - 1
+        results.append(
+            PDMResults(
+                no_at_fault_collisions=float(multi_metrics[MultiMetricIndex.NO_COLLISION, pred_idx]),
+                drivable_area_compliance=float(multi_metrics[MultiMetricIndex.DRIVABLE_AREA, pred_idx]),
+                ego_progress=float(normalized_progress[out_idx]),
+                time_to_collision_within_bound=float(weighted_metrics[WeightedMetricIndex.TTC, pred_idx]),
+                comfort=float(weighted_metrics[WeightedMetricIndex.COMFORTABLE, pred_idx]),
+                driving_direction_compliance=float(weighted_metrics[WeightedMetricIndex.DRIVING_DIRECTION, pred_idx]),
+                score=float(scores[out_idx]),
+            )
+        )
+    return results
+
+
+def pdm_score_batch_same_cache_fast(
+    metric_cache: MetricCache,
+    model_trajectories: npt.NDArray[np.floating],
+    future_sampling: TrajectorySampling,
+    simulator: PDMSimulator,
+    scorer: PDMScorer,
+    source_sampling: TrajectorySampling = Trajectory.trajectory_sampling,
+) -> List[PDMResults]:
+    """
+    Faster array-only variant for multiple candidates from one token.
+
+    This bypasses NuPlan trajectory objects for candidate reference states, while keeping the same
+    simulator/scorer and scalar-equivalent final score aggregation. Validate against ``pdm_score``
+    before using it in a training/evaluation path.
+    """
+    trajectories = np.asarray(model_trajectories, dtype=np.float64)
+    if trajectories.ndim == 2:
+        trajectories = trajectories[None]
+    if trajectories.shape[0] == 0:
+        return []
+
+    initial_ego_state = metric_cache.ego_state
+    pdm_states = get_trajectory_as_array(metric_cache.trajectory, future_sampling, initial_ego_state.time_point)
+    pred_states = _trajectory_arrays_to_state_array_fast(
+        metric_cache,
+        trajectories,
+        future_sampling,
+        source_sampling,
+    )
+
+    trajectory_states = np.concatenate([pdm_states[None, ...], pred_states], axis=0)
+    simulated_states = simulator.simulate_proposals(trajectory_states, initial_ego_state)
+    scorer.score_proposals(
+        simulated_states,
+        metric_cache.observation,
+        metric_cache.centerline,
+        metric_cache.route_lane_ids,
+        metric_cache.drivable_area_map,
+    )
+    return _extract_pairwise_scalar_equivalent_results(scorer)
+
+
+def pdm_score_batch_same_cache(
+    metric_cache: MetricCache,
+    model_trajectories: Union[TrajectoryLike, Sequence[TrajectoryLike]],
+    future_sampling: TrajectorySampling,
+    simulator: PDMSimulator,
+    scorer: PDMScorer,
+    use_exact_array_conversion: bool = False,
+) -> List[PDMResults]:
+    """
+    Score multiple candidate trajectories for one token/metric_cache in one simulator/scorer pass.
+
+    The returned values preserve the scalar ``pdm_score`` semantics: each candidate's final score is
+    aggregated as if it were scored against only the PDM baseline trajectory. This matters because the
+    original scorer normalizes progress by the max progress among proposals in the current call.
+    """
+    initial_ego_state = metric_cache.ego_state
+    pdm_states = get_trajectory_as_array(metric_cache.trajectory, future_sampling, initial_ego_state.time_point)
+
+    if use_exact_array_conversion:
+        trajectories_array = _as_trajectory_array(model_trajectories)
+        if trajectories_array.shape[0] == 0:
+            return []
+        pred_states = _trajectory_arrays_to_state_array_interpolated_exact(
+            metric_cache,
+            trajectories_array,
+            future_sampling,
+        )
+    else:
+        trajectories = _as_trajectory_list(model_trajectories)
+        if not trajectories:
+            return []
+
+        pred_states = []
+        for trajectory in trajectories:
+            pred_trajectory = transform_trajectory(trajectory, initial_ego_state)
+            pred_states.append(get_trajectory_as_array(pred_trajectory, future_sampling, initial_ego_state.time_point))
+        pred_states = np.stack(pred_states, axis=0)
+
+    trajectory_states = np.concatenate([pdm_states[None, ...], pred_states], axis=0)
+    simulated_states = simulator.simulate_proposals(trajectory_states, initial_ego_state)
+    scorer.score_proposals(
+        simulated_states,
+        metric_cache.observation,
+        metric_cache.centerline,
+        metric_cache.route_lane_ids,
+        metric_cache.drivable_area_map,
+    )
+    return _extract_pairwise_scalar_equivalent_results(scorer)
+
+
+def pdm_score_batch_same_cache_as_dicts(
+    metric_cache: MetricCache,
+    model_trajectories: Union[TrajectoryLike, Sequence[TrajectoryLike]],
+    future_sampling: TrajectorySampling,
+    simulator: PDMSimulator,
+    scorer: PDMScorer,
+) -> List[dict]:
+    return [
+        asdict(result)
+        for result in pdm_score_batch_same_cache(metric_cache, model_trajectories, future_sampling, simulator, scorer)
+    ]

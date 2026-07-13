@@ -6,6 +6,7 @@ from pathlib import Path
 from tqdm import tqdm
 import pickle
 import lzma
+import os
 
 from navsim.common.dataclasses import AgentInput, Scene, SceneFilter, SensorConfig
 from navsim.planning.metric_caching.metric_cache import MetricCache
@@ -37,7 +38,8 @@ def filter_scenes(data_path: Path, scene_filter: SceneFilter) -> Dict[str, List[
     else:
         filter_tokens = False
 
-    for log_pickle_path in tqdm(log_files, desc="Loading logs"):
+    disable_tqdm = os.environ.get("NAVSIM_DISABLE_TQDM", "0").strip().lower() in {"1", "true", "yes", "on"}
+    for log_pickle_path in tqdm(log_files, desc="Loading logs", disable=disable_tqdm):
 
         scene_dict_list = pickle.load(open(log_pickle_path, "rb"))
         for frame_list in split_list(scene_dict_list, scene_filter.num_frames, scene_filter.frame_interval):

@@ -1,0 +1,149 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+PYTHON_BIN="${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}"
+ARTIFACT_ROOT="${ARTIFACT_ROOT:-/mnt/project/VLA-AD_last_vla_dev}"
+
+TOKEN_MANIFEST="${TOKEN_MANIFEST:?set TOKEN_MANIFEST to a newline-delimited scene-token list}"
+OUTPUT_PATH="${OUTPUT_PATH:?set OUTPUT_PATH to this shard supplemental support_v3 directory}"
+if [[ -z "${OUT_ROOT:-}" ]]; then
+  OUT_ROOT="$(dirname "${OUTPUT_PATH}")"
+fi
+
+CACHE_PATH="${CACHE_PATH:-${ARTIFACT_ROOT}/cache/recogdrive_official_stage1_hidden_navtrain_2b}"
+METRIC_CACHE_PATH="${METRIC_CACHE_PATH:-${ARTIFACT_ROOT}/cache/metric_cache_train_full}"
+IL_CHECKPOINT="${IL_CHECKPOINT:-${ARTIFACT_ROOT}/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt}"
+VLM_PATH="${VLM_PATH:-${ARTIFACT_ROOT}/checkpoints/recogdrive/ReCogDrive-VLM-2B}"
+
+DDV2_CANDIDATES="${DDV2_CANDIDATES:-$(cat "${REPO_ROOT}/outputs/latest_ddv2_navtrain_candidates.txt" 2>/dev/null || true)}"
+DRIVOR_CANDIDATES="${DRIVOR_CANDIDATES:-$(cat "${REPO_ROOT}/outputs/latest_drivor_navtrain_candidates.txt" 2>/dev/null || true)}"
+EXTERNAL_CANDIDATE_ROOTS="${EXTERNAL_CANDIDATE_ROOTS:-}"
+if [[ -z "${EXTERNAL_CANDIDATE_ROOTS}" ]]; then
+  roots=()
+  if [[ -n "${DDV2_CANDIDATES}" ]]; then
+    roots+=("ddv2=${DDV2_CANDIDATES}")
+  fi
+  if [[ -n "${DRIVOR_CANDIDATES}" ]]; then
+    roots+=("driveor=${DRIVOR_CANDIDATES}")
+  fi
+  EXTERNAL_CANDIDATE_ROOTS="${roots[*]}"
+fi
+
+mkdir -p "${OUT_ROOT}/logs" "${OUT_ROOT}/pids" "${OUTPUT_PATH}"
+
+export PYTHONPATH="${REPO_ROOT}:${PYTHONPATH:-}"
+export NUPLAN_MAP_VERSION="${NUPLAN_MAP_VERSION:-nuplan-maps-v1.0}"
+export NUPLAN_MAPS_ROOT="${NUPLAN_MAPS_ROOT:-/mnt/navsim/maps}"
+export OUT_ROOT
+export TOKEN_MANIFEST
+export ELITE_BUFFER_DIR="${OUTPUT_PATH}"
+export RUN_STAGE3=1
+export WRITE_SG_FPS_V3=1
+export BUILD_LOG_SPLIT="${BUILD_LOG_SPLIT:-train_val}"
+export CACHE_PATH
+export METRIC_CACHE_PATH
+export METRIC_CACHE_DIR="${METRIC_CACHE_PATH}"
+export IL_CHECKPOINT
+export VLM_PATH
+export BATCH_SIZE="${BATCH_SIZE:-1}"
+export NUM_WORKERS="${NUM_WORKERS:-0}"
+export SHARD_INDEX="${SHARD_INDEX:-0}"
+export SHARD_COUNT="${SHARD_COUNT:-1}"
+export SKIP_EXISTING_RECORDS="${SKIP_EXISTING_RECORDS:-true}"
+export VALIDATE_EXISTING_RECORDS="${VALIDATE_EXISTING_RECORDS:-true}"
+export PREFILTER_EXISTING_RECORDS="${PREFILTER_EXISTING_RECORDS:-true}"
+export AWAC_PDM_SHADOW_CHECK="${AWAC_PDM_SHADOW_CHECK:-false}"
+export AWAC_USE_BATCHED_PDM_SCORING="${AWAC_USE_BATCHED_PDM_SCORING:-true}"
+export AWAC_PDM_BATCH_CHUNK_SIZE="${AWAC_PDM_BATCH_CHUNK_SIZE:-0}"
+export EXTERNAL_CANDIDATE_ROOTS
+export SG_FPS_SUPPORT_TOP_M="${SG_FPS_SUPPORT_TOP_M:-12}"
+export SG_FPS_SELECTION_STRATEGY="${SG_FPS_SELECTION_STRATEGY:-quality_pareto}"
+export SG_FPS_EXPAND_EXTERNAL_CANDIDATES="${SG_FPS_EXPAND_EXTERNAL_CANDIDATES:-true}"
+export SG_FPS_EXTERNAL_EXPANSION_MAX_PER_SCENE="${SG_FPS_EXTERNAL_EXPANSION_MAX_PER_SCENE:-128}"
+export SG_FPS_ENABLE_TRAIN_QUALITY_GATE="${SG_FPS_ENABLE_TRAIN_QUALITY_GATE:-true}"
+export SG_FPS_MIN_NON_GT_PDMS="${SG_FPS_MIN_NON_GT_PDMS:-0.90}"
+export SG_FPS_REWARD_GATE_MODE="${SG_FPS_REWARD_GATE_MODE:-absolute_or_gt_improver}"
+export SG_FPS_MIN_NON_GT_IMPROVER_PDMS="${SG_FPS_MIN_NON_GT_IMPROVER_PDMS:-0.70}"
+export SG_FPS_GT_IMPROVER_MARGIN="${SG_FPS_GT_IMPROVER_MARGIN:-0.05}"
+export SG_FPS_GT_IMPROVER_REF_MAX_PDMS="${SG_FPS_GT_IMPROVER_REF_MAX_PDMS:-0.90}"
+export SG_FPS_MAX_FIRST_XY_ERROR_M="${SG_FPS_MAX_FIRST_XY_ERROR_M:-1.0}"
+export SG_FPS_MAX_FIRST_HEADING_ERROR_RAD="${SG_FPS_MAX_FIRST_HEADING_ERROR_RAD:-0.8}"
+export SG_FPS_MAX_XY_TURN_RAD="${SG_FPS_MAX_XY_TURN_RAD:-1.2}"
+export SG_FPS_MAX_EARLY_XY_TURN_RAD="${SG_FPS_MAX_EARLY_XY_TURN_RAD:-1.0}"
+export SG_FPS_MAX_STEP_M="${SG_FPS_MAX_STEP_M:-12.0}"
+export SG_FPS_ENABLE_SEMANTIC_GATE="${SG_FPS_ENABLE_SEMANTIC_GATE:-true}"
+export SG_FPS_ALLOW_TURN_CLASS_MISMATCH="${SG_FPS_ALLOW_TURN_CLASS_MISMATCH:-false}"
+export SG_FPS_MAX_SEMANTIC_FINAL_HEADING_ERROR_RAD="${SG_FPS_MAX_SEMANTIC_FINAL_HEADING_ERROR_RAD:-0.75}"
+export SG_FPS_MAX_SEMANTIC_PATH_ANGLE_ERROR_RAD="${SG_FPS_MAX_SEMANTIC_PATH_ANGLE_ERROR_RAD:-0.75}"
+export SG_FPS_MAX_SEMANTIC_ENDPOINT_LATERAL_ERROR_M="${SG_FPS_MAX_SEMANTIC_ENDPOINT_LATERAL_ERROR_M:-4.0}"
+export SG_FPS_KEEP_GT_BY_DEFAULT="${SG_FPS_KEEP_GT_BY_DEFAULT:-true}"
+export SG_FPS_GT_KEEP_MIN_REWARD="${SG_FPS_GT_KEEP_MIN_REWARD:-0.85}"
+export SG_FPS_GT_REPLACE_MARGIN="${SG_FPS_GT_REPLACE_MARGIN:-0.05}"
+export SG_FPS_INCLUDE_IL_ANCHOR="${SG_FPS_INCLUDE_IL_ANCHOR:-false}"
+export SG_FPS_HIGH_PDMS_THRESHOLD="${SG_FPS_HIGH_PDMS_THRESHOLD:-0.95}"
+export SG_FPS_TOP_PDMS_COUNT="${SG_FPS_TOP_PDMS_COUNT:-3}"
+export SG_FPS_PARETO_COUNT="${SG_FPS_PARETO_COUNT:-5}"
+export SG_FPS_SCORE_DIVERSITY_WEIGHT="${SG_FPS_SCORE_DIVERSITY_WEIGHT:-0.8}"
+export SG_FPS_MIN_TRAJECTORY_DIVERSITY_SCORE="${SG_FPS_MIN_TRAJECTORY_DIVERSITY_SCORE:-0.05}"
+export SG_FPS_DDC_GATE_MODE="${SG_FPS_DDC_GATE_MODE:-ref_relative}"
+export SG_FPS_RELAX_DDC_WHEN_REF_BELOW_MIN="${SG_FPS_RELAX_DDC_WHEN_REF_BELOW_MIN:-true}"
+export SG_FPS_FEAS_GATE_MODE="${SG_FPS_FEAS_GATE_MODE:-relax_ref_above_max}"
+export SG_FPS_FEAS_COST_TOLERANCE="${SG_FPS_FEAS_COST_TOLERANCE:-0.03}"
+export SG_FPS_COMFORT_GATE_MODE="${SG_FPS_COMFORT_GATE_MODE:-ref_relative}"
+export SG_FPS_COMFORT_DROP_TOLERANCE="${SG_FPS_COMFORT_DROP_TOLERANCE:-0.05}"
+
+# Keep first trajectory point anchored. Endpoint lateral offsets still provide lateral diversity.
+if [[ -z "${OFFLINE_RL_LATERAL_OFFSETS_M:-}" ]]; then
+  OFFLINE_RL_LATERAL_OFFSETS_M="none"
+fi
+if [[ -z "${OFFLINE_RL_ENDPOINT_LATERAL_OFFSETS_M:-}" ]]; then
+  OFFLINE_RL_ENDPOINT_LATERAL_OFFSETS_M="-1.2 -0.8 -0.5 -0.25 0.25 0.5 0.8 1.2"
+fi
+if [[ -z "${OFFLINE_RL_PROGRESS_ENDPOINT_DELTAS_M:-}" ]]; then
+  OFFLINE_RL_PROGRESS_ENDPOINT_DELTAS_M="0.2 0.4 0.6 0.8 1.0 1.5 2.0 2.5 3.0"
+fi
+if [[ -z "${OFFLINE_RL_PROGRESS_SPEED_SCALES:-}" ]]; then
+  OFFLINE_RL_PROGRESS_SPEED_SCALES="0.85 0.90 0.95 1.02 1.05 1.08 1.12 1.18"
+fi
+if [[ -z "${OFFLINE_RL_PROGRESS_TIME_GAMMAS:-}" ]]; then
+  OFFLINE_RL_PROGRESS_TIME_GAMMAS="0.65 0.75 0.85 0.95 1.05 1.15 1.30"
+fi
+if [[ -z "${OFFLINE_RL_TIMING_SLOW_FIRST_SCALES:-}" ]]; then
+  OFFLINE_RL_TIMING_SLOW_FIRST_SCALES="0.55 0.65 0.75 0.85 0.92"
+fi
+if [[ -z "${OFFLINE_RL_TIMING_DELAY_STRENGTHS:-}" ]]; then
+  OFFLINE_RL_TIMING_DELAY_STRENGTHS="0.10 0.20 0.30 0.40 0.50"
+fi
+export OFFLINE_RL_LATERAL_OFFSETS_M
+export OFFLINE_RL_ENDPOINT_LATERAL_OFFSETS_M
+export OFFLINE_RL_PROGRESS_ENDPOINT_DELTAS_M
+export OFFLINE_RL_PROGRESS_SPEED_SCALES
+export OFFLINE_RL_PROGRESS_TIME_GAMMAS
+export OFFLINE_RL_TIMING_SLOW_FIRST_SCALES
+export OFFLINE_RL_TIMING_DELAY_STRENGTHS
+
+{
+  printf '[%s] ' "$(date -Is)"
+  printf 'TOKEN_MANIFEST=%q OUTPUT_PATH=%q SHARD_INDEX=%q SHARD_COUNT=%q EXTERNAL_CANDIDATE_ROOTS=%q\n' \
+    "${TOKEN_MANIFEST}" "${OUTPUT_PATH}" "${SHARD_INDEX}" "${SHARD_COUNT}" "${EXTERNAL_CANDIDATE_ROOTS}"
+} >> "${OUT_ROOT}/commands.log"
+
+"${PYTHON_BIN}" scripts/training/build_recogdrive_stage3_awac_elite_buffer.py \
+  train_test_split=navtrain \
+  output_dir="${OUT_ROOT}/hydra" \
+  cache_path="${CACHE_PATH}" \
+  force_cache_computation=False \
+  use_cache_without_dataset=True \
+  dataloader.params.batch_size="${BATCH_SIZE}" \
+  dataloader.params.num_workers="${NUM_WORKERS}" \
+  agent=recogdrive_agent \
+  agent.cache_hidden_state=True \
+  agent.cache_mode=True \
+  agent.vlm_path="${VLM_PATH}" \
+  agent.checkpoint_path="${IL_CHECKPOINT}" \
+  agent.reference_policy_checkpoint="${IL_CHECKPOINT}" \
+  agent.metric_cache_path="${METRIC_CACHE_PATH}" \
+  agent.dit_type=small \
+  agent.vlm_size=small \
+  agent.sampling_method=ddim

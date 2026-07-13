@@ -12,6 +12,7 @@ vlm_path: ''
 cam_type: 'single'
 vlm_type: 'internvl'
 dit_type: 'small'
+dit_dropout: 0.0
 sampling_method: 'ddim'
 cache_mode: False
 cache_hidden_state: True
@@ -20,7 +21,459 @@ reference_policy_checkpoint: ''
 vlm_size: 'small'
 train_backbone: false
 grpo: False
+stage3_objective: none
+stage3_algorithm: legacy
+lfp_grpo_cfg:
+  enabled: false
+  benchmark: navsim_v1
+  reference_cache_path: ''
+  v2_official_navsim_root: ''
+  v2_official_config_dir: ''
+  v2_official_config_name: default_run_pdm_score
+  v2_official_overrides:
+    - train_test_split=navtrain
+  v2_evaluator_timeout_s: 600.0
+  require_nc: true
+  require_dac: true
+  ddc_guard_mode: gt_relative
+  ddc_gt_tolerance: 0.01
+  v2_require_tlc: true
+  ep_reference_tolerance: 0.02
+  ttc_positive_credit_guard: false
+  ttc_reference_tolerance: 0.01
+  quality_positive_credit_guard: false
+  quality_reference_tolerance: 0.02
+  reference_pareto_gate_enabled: false
+  reference_margin_weight: 0.20
+  reference_margin_scale: 0.05
+  pareto_gate_enabled: true
+  progress_gate_enabled: true
+  all_infeasible_rescue: false
+  gradient_checkpointing: false
+  advantage_normalization: global_std
+  global_std_floor: 0.05
+  advantage_clip: 3.0
+  fs_transition_std_enabled: false
+  fs_endpoint_std_x_m: 0.0
+  fs_endpoint_std_y_m: 0.0
+  fs_endpoint_std_heading_rad: 0.0
+  min_group_pairwise_ade_m: 0.0
+  min_group_scalar_span: 0.0
+  advantage_deadband: 0.0
+  curriculum_enabled: true
+  curriculum_warmup_epochs: 1
+  frontier_fast_ema: 0.80
+  frontier_slow_ema: 0.98
+  frontier_progress_weight: 0.50
+  frontier_priority_exponent: 0.50
+  frontier_uniform_ratio: 0.20
+  frontier_priority_eps: 1e-3
+  frontier_priority_quantile_cap: 0.95
+  frontier_safety_first: false
+  frontier_tradeoff_weight: 0.0
+  frontier_tradeoff_eps: 0.01
+  frontier_diversity_capacity_enabled: false
+  frontier_diversity_capacity_cache_path: ''
+  frontier_diversity_priority_mode: credit_multiplicative
+  frontier_diversity_gap_weight: 0.05
+  frontier_diversity_dispersion_floor: 0.05
+  frontier_state_path: ''
+  reference_kl_coeff: 0.005
 lr: 1e-4
+grpo_sample_time: 8
+grpo_denoised_clip_value: 1.0
+grpo_eval_randn_clip_value: 1.0
+grpo_randn_clip_value: 5.0
+grpo_final_action_clip_value: 1.0
+grpo_eval_min_sampling_denoising_std: 0.0001
+grpo_min_sampling_denoising_std: 0.04
+grpo_min_logprob_denoising_std: 0.1
+grpo_clip_advantage_lower_quantile: 0.0
+grpo_clip_advantage_upper_quantile: 1.0
+grpo_gamma_denoising: 0.6
+bc_anneal: false
+bc_coeff_start: 0.1
+bc_coeff_end: 0.1
+bc_anneal_epochs: 1
+reference_kl_coeff: 0.0
+reference_kl_chunk_size: 0
+grpo_use_gspo_ratio: false
+grpo_gspo_clip_low: 0.05
+grpo_gspo_clip_high: 0.05
+grpo_behavior_policy_sync_interval: 4
+grpo_behavior_policy_sample: true
+grpo_advantage_mode: safe_zscore
+grpo_normalize_advantage_batch: false
+grpo_advantage_clip_abs: 0.0
+grpo_use_dynamic_group_weight: true
+grpo_use_diversity_reward: false
+grpo_hard_gate_ttc: false
+grpo_hard_gate_ddc: false
+grpo_reward_mode: safe_diffgrpo
+grpo_safety_advantage_mode: hard
+grpo_ttc_safe_threshold: 1.0
+grpo_ddc_safe_threshold: 1.0
+grpo_soft_safety_penalty_weight: 0.50
+grpo_soft_safety_penalty_clip: 0.50
+grpo_soft_safety_min_reward: 0.0
+grpo_use_core_pareto: false
+grpo_core_ep_weight: 5.0
+grpo_core_ttc_weight: 5.0
+grpo_core_comfort_weight: 2.0
+grpo_core_pareto_reference_mode: max_gt_il
+grpo_core_pareto_reference_margin_weight: 0.3
+grpo_core_pareto_reference_margin_scale: 0.05
+grpo_core_pareto_require_nc: true
+grpo_core_pareto_require_dac: true
+grpo_core_pareto_ep_floor: 0.75
+grpo_core_pareto_ep_floor_penalty_weight: 0.40
+grpo_core_pareto_use_ddc_guard: true
+grpo_core_pareto_ddc_guard_threshold: 0.95
+grpo_core_pareto_ddc_drop_tolerance: 0.01
+grpo_core_pareto_ddc_min_absolute: 0.95
+grpo_core_pareto_use_ep_floor: true
+grpo_core_pareto_ep_floor_tolerance: 0.02
+grpo_core_pareto_slow_penalty_weight: 0.5
+grpo_core_pareto_use_ttc_tradeoff_penalty: true
+grpo_core_pareto_tradeoff_tolerance: 0.01
+grpo_core_pareto_tradeoff_penalty_weight: 0.2
+grpo_core_pareto_score_mode: pdms_plus_core_margin_minus_slow
+grpo_core_pareto_core_margin_weight: 0.3
+grpo_core_pareto_use_pareto_front: true
+grpo_core_pareto_pareto_front_bonus: 0.2
+grpo_core_pareto_dominated_positive_adv_cap: 0.0
+grpo_core_pareto_all_valid_objective: core
+grpo_core_pareto_all_safe_low_std_group_weight: 0.5
+grpo_core_pareto_min_group_reward_std: 0.005
+grpo_core_pareto_use_all_unsafe_rescue_advantage: true
+grpo_core_pareto_all_unsafe_adv_max: 0.0
+grpo_core_pareto_all_slow_group_weight: 0.25
+grpo_core_pareto_ddc_penalty_weight: 0.25
+grpo_core_pareto_ddc_penalty_clip: 1.0
+grpo_core_pareto_pareto_bonus: 0.15
+grpo_core_pareto_low_ep_adv_scale: 0.25
+grpo_core_pareto_infeasible_advantage_offset: 1.0
+grpo_core_pareto_min_core_std: 0.03
+grpo_core_pareto_advantage_mode: group_zscore
+grpo_core_pareto_use_phenotype_buckets: true
+grpo_core_pareto_ep_ttc_balance_margin: 0.05
+grpo_core_pareto_use_adaptive_dual: false
+grpo_core_pareto_dual_lr: 0.02
+grpo_core_pareto_target_nc: 1.0
+grpo_core_pareto_target_dac: 1.0
+grpo_core_pareto_target_ddc: 0.95
+grpo_core_pareto_use_phenotype_bucket_grpo: false
+grpo_core_pareto_buffer_bonus_enabled: false
+grpo_core_pareto_buffer_bonus_weight: 0.0
+grpo_use_feasible_pareto: false
+grpo_fp_ep_weight: 0.60
+grpo_fp_ttc_weight: 0.25
+grpo_fp_ddc_weight: 0.10
+grpo_fp_feas_weight: 0.05
+grpo_fp_ddc_min_absolute: 0.95
+grpo_fp_ddc_ref_tolerance: 0.01
+grpo_fp_feas_max: 0.0
+grpo_fp_comfort_min: 0.95
+grpo_fp_pareto_front_bonus: 0.15
+grpo_fp_tradeoff_penalty_weight: 0.2
+grpo_fp_tradeoff_ttc_rho: 1.0
+grpo_fp_tradeoff_tolerance: 0.01
+grpo_fp_regression_negative_advantage: -1.0
+grpo_fp_invalid_negative_advantage: -1.0
+grpo_fp_dominated_positive_cap: 0.0
+grpo_fp_geometry_positive_cap: 0.0
+grpo_fp_ddc_regression_positive_cap: 0.0
+grpo_fp_offsupport_positive_cap: 0.0
+grpo_fp_use_bucketed_advantage: true
+grpo_fp_inter_bucket_weight: 0.25
+grpo_fp_inter_bucket_clip: 0.5
+grpo_fp_use_pdas: true
+grpo_pdas_eps: 0.05
+grpo_pdas_alpha: 1.0
+grpo_pdas_beta: 1.0
+grpo_pdas_gamma: 0.5
+grpo_pdas_lambda_bucket: 0.2
+grpo_pdas_lambda_regression: 0.5
+grpo_pdas_lambda_coverage: 0.2
+grpo_pdas_min_support_count_for_coverage: 4
+grpo_ppo_replay_inner_epochs: 1
+grpo_ppo_replay_minibatch_size: 0
+grpo_ppo_replay_max_grad_norm: 1.0
+grpo_ppo_replay_min_abs_advantage: 1e-6
+grpo_ppo_replay_filter_zero_advantage: true
+grpo_ppo_replay_sync_behavior_each_batch: true
+grpo_ppo_replay_bc_update: true
+grpo_ppo_replay_logprob_mode: trajectory
+grpo_ppo_replay_step_minibatch_mode: trajectory_all_steps
+grpo_ppo_replay_logprob_clamp_min: -5.0
+grpo_ppo_replay_logprob_clamp_max: 2.0
+grpo_ppo_replay_step_clip_schedule: constant
+grpo_ppo_replay_step_clip_base: 0.001
+grpo_ppo_replay_step_clip_rate: 3.0
+offline_rl_enabled: false
+offline_rl_init_stage3_oracle: true
+offline_rl_init_reference_policy: true
+offline_rl_elite_buffer_path: ''
+offline_rl_support_archive_path: ''
+offline_rl_use_dpsi: false
+offline_rl_dpsi_top_m: 12
+offline_rl_dpsi_filter_to_support_indices: true
+offline_rl_dpsi_empty_tag_zero: true
+offline_rl_dpsi_scene_normalize_weights: true
+offline_rl_dpsi_use_adaptive_beta: true
+offline_rl_dpsi_target_distribution: legacy
+offline_rl_dpsi_mode_density_bandwidth: 0.40
+offline_rl_dpsi_pair_target_randomness: false
+offline_rl_dpsi_residual_budget_enabled: false
+offline_rl_dpsi_non_gt_residual_mass_cap: 0.38
+offline_rl_dpsi_frontier_gt_only_scene_weight: 1.0
+offline_rl_dpsi_frontier_curriculum_enabled: false
+offline_rl_dpsi_frontier_difficulty_start: 0.45
+offline_rl_dpsi_frontier_difficulty_end: 1.0
+offline_rl_dpsi_frontier_difficulty_warmup_epochs: 40
+offline_rl_dpsi_target_sample_m: 4
+offline_rl_dpsi_target_sample_m_after_warmup: 6
+offline_rl_dpsi_force_anchor_target: true
+offline_rl_dpsi_force_best_target: true
+offline_rl_dpsi_beta_warmup_epochs: 40
+offline_rl_dpsi_beta_max: 0.75
+offline_rl_dpsi_support_count_mid: 4
+offline_rl_dpsi_distance_scale_m: 0.8
+offline_rl_dpsi_entropy_scale: 1.0
+offline_rl_dpsi_improver_margin: 0.03
+offline_rl_dpsi_strong_improver_margin: 0.05
+offline_rl_dpsi_low_support_count: 2
+offline_rl_dpsi_high_support_count: 6
+offline_rl_dpsi_high_gt_reward: 0.95
+offline_rl_dpsi_scene_weight_min: 0.75
+offline_rl_dpsi_scene_weight_max: 1.5
+offline_rl_dpsi_improver_scene_weight_gain: 2.0
+offline_rl_dpsi_weight_safe_ep: 1.0
+offline_rl_dpsi_weight_vector_pareto: 0.9
+offline_rl_dpsi_weight_safety_repair: 0.8
+offline_rl_dpsi_weight_ddc_repair: 0.8
+offline_rl_dpsi_weight_best_pdms: 0.75
+offline_rl_dpsi_weight_diversity: 0.60
+offline_rl_dpsi_weight_fallback: 0.45
+offline_rl_dpsi_weight_smooth: 0.6
+offline_rl_dpsi_weight_il: 0.5
+offline_rl_dpsi_weight_gt: 0.45
+offline_rl_dpsi_weight_unknown: 0.0
+offline_rl_dpsi_use_reward_margin_weight: true
+offline_rl_dpsi_margin_scale: 2.0
+offline_rl_dpsi_margin_weight_min: 0.5
+offline_rl_dpsi_margin_weight_max: 1.5
+offline_rl_dpsi_bad_margin_threshold: -0.05
+offline_rl_dpsi_bad_margin_weight: 0.3
+offline_rl_dpsi_use_source_weight: true
+offline_rl_dpsi_source_weight_gt: 1.0
+offline_rl_dpsi_source_weight_il: 0.9
+offline_rl_dpsi_source_weight_external: 0.85
+offline_rl_dpsi_source_weight_failure_expand: 0.75
+offline_rl_dpsi_source_weight_trust_region: 0.85
+offline_rl_dpsi_source_weight_structured: 0.75
+offline_rl_dpsi_source_weight_other: 0.7
+offline_rl_dpsi_pairwise_rank_weight: 0.0
+offline_rl_dpsi_pairwise_beta: 8.0
+offline_rl_missing_buffer_policy: error
+offline_rl_elite_top_m: 8
+offline_rl_elite_min_candidates: 2
+offline_rl_keep_gt_candidate: true
+offline_rl_keep_il_candidate: true
+offline_rl_elite_buffer_version: 2
+offline_rl_require_buffer_valid_mask: true
+offline_rl_allow_v1_buffer_recompute_valid_mask: true
+offline_rl_recompute_buffer_valid_mask_on_load: false
+offline_rl_cache_elite_records_in_memory: false
+offline_rl_preload_elite_buffer: false
+offline_rl_elite_buffer_preload_max_records: 0
+offline_rl_build_candidates_online: false
+offline_rl_online_policy_samples: 8
+offline_rl_online_use_current_policy: true
+offline_rl_online_use_old_policy: true
+offline_rl_online_use_gt: true
+offline_rl_perturb_gt: true
+offline_rl_perturb_il: true
+offline_rl_progress_endpoint_deltas_m: [0.5, 1.0, 1.5, 2.0, 3.0]
+offline_rl_progress_speed_scales: [0.95, 1.02, 1.05, 1.08, 1.12]
+offline_rl_progress_time_gammas: [0.75, 0.85, 0.95, 1.05]
+offline_rl_lateral_offsets_m: [-0.8, -0.6, -0.4, -0.2, 0.2, 0.4, 0.6, 0.8]
+offline_rl_endpoint_lateral_offsets_m: [-0.8, -0.4, 0.4, 0.8]
+offline_rl_timing_slow_first_scales: [0.7, 0.8, 0.9]
+offline_rl_timing_delay_strengths: [0.15, 0.25, 0.35]
+offline_rl_strict_reward_submetrics: true
+offline_rl_required_reward_submetrics:
+  - no_at_fault_collisions
+  - drivable_area_compliance
+  - time_to_collision_within_bound
+  - driving_direction_compliance
+offline_rl_missing_submetric_policy: error
+offline_rl_use_batched_pdm_scoring: true
+offline_rl_use_exact_array_pdm_state_conversion: true
+offline_rl_use_fast_pdm_scorer: true
+offline_rl_pdm_batch_chunk_size: 0
+offline_rl_pdm_shadow_check: false
+offline_rl_pdm_shadow_max_samples: 4
+offline_rl_pdm_shadow_max_abs_diff: 0.0
+offline_rl_clip_candidates_to_norm_range: true
+offline_rl_enforce_forward_monotonic_x: true
+offline_rl_max_heading_step_rad: 0.25
+offline_rl_max_final_heading_delta_rad: 0.4
+offline_rl_use_final_heading_guard: true
+offline_rl_require_nc: true
+offline_rl_require_dac: true
+offline_rl_require_ddc_guard: true
+offline_rl_ddc_guard_mode: relative_or_absolute
+offline_rl_ddc_min_absolute: 0.99
+offline_rl_ddc_max_relative_drop: 0.01
+offline_rl_require_ttc_guard: false
+offline_rl_ttc_guard_mode: relative_or_absolute
+offline_rl_ttc_min_absolute: 0.95
+offline_rl_ttc_max_relative_drop: 0.02
+offline_rl_select_valid_topk_only: true
+offline_rl_train_invalid_fallback_candidates: false
+offline_rl_fallback_invalid_candidate_weight: 0.0
+offline_rl_prior_distance_weight: 0.02
+offline_rl_jerk_penalty_weight: 0.005
+offline_rl_select_by: pdms_minus_prior
+offline_rl_baseline_mode: max_gt_il
+offline_rl_expectile_tau: 0.8
+offline_rl_expectile_iters: 20
+offline_rl_top_mean_frac: 0.2
+offline_rl_advantage_temperature: 0.03
+offline_rl_advantage_clip_min: -0.2
+offline_rl_advantage_clip_max: 0.2
+offline_rl_weight_min: 0.05
+offline_rl_weight_max: 20.0
+offline_rl_normalize_weights_per_scene: true
+offline_rl_train_only_valid_candidates: true
+offline_rl_min_reward_margin_to_gt_for_extra_weight: 0.0
+offline_rl_allow_zero_weight_rows: true
+offline_rl_target_filter_mode: none
+offline_rl_target_top_k: 1
+offline_rl_target_min_advantage: 0.0
+offline_rl_awac_timestep_sampling: uniform
+offline_rl_preference_dpo_timestep_sampling: uniform
+offline_rl_low_noise_timestep_frac: 0.35
+offline_rl_mid_noise_timestep_low_frac: 0.15
+offline_rl_mid_noise_timestep_high_frac: 0.65
+offline_rl_target_blend_mode: none
+offline_rl_target_blend_alpha: 1.0
+offline_rl_target_blend_schedule: constant
+offline_rl_target_blend_alpha_start: 0.0
+offline_rl_target_blend_warmup_start_epoch: 0
+offline_rl_target_blend_warmup_epochs: 1
+offline_rl_component_advantage_enabled: false
+offline_rl_component_progress_weight: 0.05
+offline_rl_component_safety_penalty_weight: 0.20
+offline_rl_component_advantage_clip_min: -0.10
+offline_rl_component_advantage_clip_max: 0.05
+offline_rl_source_balance_enabled: false
+offline_rl_source_balance_min_factor: 0.50
+offline_rl_source_balance_max_factor: 2.00
+offline_rl_pairwise_rank_loss_weight: 0.0
+offline_rl_pairwise_rank_margin: 0.02
+offline_rl_pairwise_rank_min_reward_gap: 0.02
+offline_rl_pairwise_rank_max_pairs_per_scene: 2
+offline_rl_invalid_repulsion_loss_weight: 0.0
+offline_rl_invalid_repulsion_margin: 0.05
+offline_rl_invalid_repulsion_max_pairs_per_scene: 2
+offline_rl_preference_dpo_loss_weight: 0.0
+offline_rl_preference_dpo_beta: 8.0
+offline_rl_preference_dpo_label_smoothing: 0.0
+offline_rl_preference_dpo_reference_free: false
+offline_rl_preference_dpo_pair_mode: best_vs_gt_il
+offline_rl_preference_dpo_min_reward_gap: 0.02
+offline_rl_preference_dpo_max_pairs_per_scene: 2
+offline_rl_preference_dpo_gap_weight_mode: none
+offline_rl_preference_dpo_gap_weight_scale: 0.05
+offline_rl_preference_dpo_gap_weight_min: 0.0
+offline_rl_preference_dpo_gap_weight_max: 3.0
+offline_rl_preference_dpo_loss_schedule: constant
+offline_rl_preference_dpo_loss_weight_start: 0.0
+offline_rl_preference_dpo_loss_warmup_start_epoch: 0
+offline_rl_preference_dpo_loss_warmup_epochs: 1
+offline_rl_awac_loss_weight: 1.0
+offline_rl_awac_loss_schedule: constant
+offline_rl_awac_loss_weight_start: 0.0
+offline_rl_awac_loss_warmup_start_epoch: 0
+offline_rl_awac_loss_warmup_epochs: 1
+offline_rl_bc_loss_weight: 0.05
+offline_rl_bc_loss_schedule: constant
+offline_rl_bc_loss_weight_start: 0.05
+offline_rl_bc_loss_weight_end: 0.05
+offline_rl_bc_loss_schedule_epochs: 1
+offline_rl_grpo_loss_weight: 0.0
+offline_rl_grpo_loss_schedule: constant
+offline_rl_grpo_loss_weight_start: 0.0
+offline_rl_grpo_loss_warmup_start_epoch: 0
+offline_rl_grpo_loss_warmup_epochs: 1
+offline_rl_grpo_buffer_guidance_enabled: false
+offline_rl_grpo_buffer_reward_bonus_weight: 0.0
+offline_rl_grpo_buffer_reward_bonus_scale_m: 4.0
+offline_rl_grpo_buffer_reward_bonus_use_margin: true
+offline_rl_grpo_buffer_distill_loss_weight: 0.0
+offline_rl_grpo_buffer_distill_loss_schedule: linear_warmup
+offline_rl_grpo_buffer_distill_loss_weight_start: 0.0
+offline_rl_grpo_buffer_distill_loss_weight_end: 0.0
+offline_rl_grpo_buffer_distill_warmup_start_epoch: 0
+offline_rl_grpo_buffer_distill_warmup_epochs: 3
+offline_rl_grpo_buffer_distill_decay_start_step: -1
+offline_rl_grpo_buffer_distill_decay_end_step: -1
+offline_rl_grpo_buffer_distill_top_k: 1
+offline_rl_grpo_buffer_distill_min_reward_margin: 0.0
+offline_rl_grpo_buffer_distill_timestep_sampling: low_noise
+offline_rl_grpo_buffer_preference_dpo_loss_weight: 0.0
+offline_rl_grpo_buffer_preference_dpo_loss_schedule: linear_warmup
+offline_rl_grpo_buffer_preference_dpo_loss_weight_start: 0.0
+offline_rl_grpo_buffer_preference_dpo_warmup_start_epoch: 0
+offline_rl_grpo_buffer_preference_dpo_warmup_epochs: 2
+offline_rl_grpo_buffer_preference_dpo_timestep_sampling: uniform
+offline_rl_grpo_buffer_preference_dpo_beta: 8.0
+offline_rl_grpo_buffer_preference_dpo_label_smoothing: 0.0
+offline_rl_grpo_buffer_preference_dpo_reference_free: false
+offline_rl_grpo_buffer_preference_dpo_pair_mode: best_vs_gt_il
+offline_rl_grpo_buffer_preference_dpo_min_reward_gap: 0.02
+offline_rl_grpo_buffer_preference_dpo_max_pairs_per_scene: 2
+offline_rl_grpo_buffer_preference_dpo_gap_weight_mode: none
+offline_rl_grpo_buffer_preference_dpo_gap_weight_scale: 0.05
+offline_rl_grpo_buffer_preference_dpo_gap_weight_min: 0.0
+offline_rl_grpo_buffer_preference_dpo_gap_weight_max: 3.0
+offline_rl_grpo_buffer_preference_dpo_include_il: true
+offline_rl_grpo_self_imitation_loss_weight: 0.0
+offline_rl_grpo_self_imitation_loss_schedule: linear_warmup
+offline_rl_grpo_self_imitation_loss_weight_start: 0.0
+offline_rl_grpo_self_imitation_loss_weight_end: 0.0
+offline_rl_grpo_self_imitation_warmup_start_epoch: 0
+offline_rl_grpo_self_imitation_warmup_epochs: 3
+offline_rl_grpo_self_imitation_decay_start_step: -1
+offline_rl_grpo_self_imitation_decay_end_step: -1
+offline_rl_grpo_self_imitation_top_k: 1
+offline_rl_grpo_self_imitation_min_reward: 0.85
+offline_rl_grpo_self_imitation_min_reward_margin: 0.01
+offline_rl_grpo_self_imitation_max_target_scene_ratio: 1.0
+offline_rl_grpo_self_imitation_batch_cap_score: reward
+offline_rl_grpo_self_imitation_baseline_mode: buffer_or_group_mean
+offline_rl_grpo_self_imitation_timestep_sampling: low_noise
+offline_rl_grpo_self_imitation_require_nc: true
+offline_rl_grpo_self_imitation_require_dac: true
+offline_rl_grpo_self_imitation_require_ttc: true
+offline_rl_grpo_self_imitation_require_ddc: true
+offline_rl_grpo_self_imitation_nc_min_absolute: 1.0
+offline_rl_grpo_self_imitation_dac_min_absolute: 1.0
+offline_rl_grpo_self_imitation_ttc_min_absolute: 0.95
+offline_rl_grpo_self_imitation_ddc_min_absolute: 0.99
+offline_rl_log_candidate_sources: true
+offline_rl_log_submetrics: true
+offline_rl_log_oracle_stats: true
+offline_rl_require_reference_policy_checkpoint: true
+offline_rl_report_raw_and_valid_best: true
+scheduler_epochs: 200
+scheduler_warmup_epochs: 3
+scheduler_min_lr: 1e-6
+grpo_scheduler_epochs: 20
+grpo_scheduler_warmup_epochs: 0
+grpo_scheduler_min_lr: 1e-5
 use_expert_features: false
 expert_feature_source: "none"
 expert_cache_dir: null
@@ -40,3 +493,165 @@ expert_alignment_weight: 0.0
 jepa_alignment_weight: 0.0
 vggt_alignment_weight: 0.0
 alignment_loss_type: "mse"
+diffusion_loss_weight: 1.0
+use_last_rd: false
+last_rd_stage: disabled
+use_vggt_geometry_tokens: true
+num_dynamic_tokens: 12
+num_geometry_tokens: 12
+num_ego_tokens: 8
+num_risk_tokens: 8
+require_vggt_geometry: false
+allow_patch_geometry_fallback: false
+last_rd_latent_dim: 384
+vggt_geometry_loss_weight: 0.0
+vggt_geometry_loss_floor: 0.0
+policy_kd_loss_weight: 0.0
+policy_kd_mode: none
+last_rd_context_scale: 1.0
+last_rd_horizon_condition_scale: 1.0
+last_rd_token_dropout: 0.0
+last_rd_group_dropout: 0.0
+last_rd_adapter_checkpoint: null
+freeze_base_action_head: false
+train_expert_only: false
+freeze_expert: false
+
+# ReCogDrive-LaST-v2 / Last-VLA CoT planner defaults.
+use_last_vla: false
+last_vla_stage: disabled
+last_vla_cot_num_tokens: 32
+last_vla_cot_num_steps: 4
+last_vla_condition_mode: decoupled_cot_residual
+last_vla_raw_vlm_context_to_dit: true
+last_vla_cot_bottleneck_mode: false
+last_vla_vlm_context_dropout_start: 0.0
+last_vla_vlm_context_dropout_end: 0.7
+last_vla_use_scene_step: true
+last_vla_use_parallel_geometry_dynamic: true
+last_vla_fusion_tokens: 192
+last_vla_dynamic_uses_geometry_memory: true
+last_vla_use_geometry_step: true
+last_vla_use_dynamic_step: true
+last_vla_use_ego_step: true
+last_vla_use_action_refine_step: true
+last_vla_use_action_conditioned_dynamics: true
+last_vla_use_risk_head: true
+last_vla_require_full_geometry: false
+last_vla_allow_patch_geometry_fallback: false
+last_vla_geometry_teacher_dim: 512
+last_vla_geometry_grid_rows: 3
+last_vla_geometry_grid_cols: 4
+last_vla_use_residual_diffusion: false
+last_vla_residual_detach_coarse: true
+last_vla_residual_anchor_source: vlm_text_traj
+last_vla_require_residual_anchor: true
+last_vla_residual_anchor_cache_dir: null
+last_vla_coarse_prior_clip: 1.0
+last_vla_residual_alpha_start: 0.0
+last_vla_residual_alpha_end: 1.0
+last_vla_residual_alpha_warmup_epochs: 80
+last_vla_cot_condition_zero_init: true
+last_vla_cot_condition_dropout: 0.0
+last_vla_cot_condition_layers: all
+last_vla_cot_condition_scale_init: 1.0
+last_vla_cot_condition_trainable_scale: true
+last_vla_context_mean_mode: raw_vlm_plus_zero_init_cot_residual
+last_vla_horizon_condition_mode: raw_vlm_plus_zero_init_cot_residual
+last_vla_aux_decay_epochs: 160
+last_vla_teacher_traj_mode: none
+last_vla_teacher_traj_mix_start: 0.0
+last_vla_teacher_traj_mix_end: 1.0
+last_vla_teacher_score_margin: 0.0
+last_vla_geometry_loss_weight: 0.0
+last_vla_dynamic_loss_weight: 0.0
+last_vla_coarse_loss_weight: 0.0
+last_vla_heading_loss_weight: 0.0
+last_vla_progress_loss_weight: 0.0
+last_vla_risk_loss_weight: 0.0
+last_vla_cot_consistency_loss_weight: 0.0
+last_vla_geometry_loss_floor: 0.0
+last_vla_dynamic_loss_floor: 0.0
+last_vla_coarse_loss_floor: 0.0
+last_vla_progress_loss_floor: 0.0
+last_vla_adapter_checkpoint: null
+last_vla_train_vlm_lora: false
+last_vla_vlm_lora_preset: attention_mlp
+last_vla_vlm_lora_scope: llm
+last_vla_vlm_lora_r: 32
+last_vla_vlm_lora_alpha: 64
+last_vla_vlm_lora_dropout: 0.05
+last_vla_vlm_lora_bias: none
+last_vla_vlm_lora_target_modules: ""
+last_vla_vlm_lora_use_rslora: true
+last_vla_vlm_lora_use_dora: false
+last_vla_vlm_lora_init: default
+last_vla_vlm_lora_vision_last_n: 0
+last_vla_lora_allow_mixed_scope: false
+last_vla_lora_allow_all_linear_global: false
+use_two_expert_slots: false
+two_expert_cache_mode: true
+two_expert_slot_mode: vlm_soft_slots
+two_expert_condition_mode: horizon_hmef_lite
+two_expert_dit_condition_mode: horizon_hmef_lite
+two_expert_planner_dim: 384
+two_expert_use_raw_vlm_base: true
+two_expert_zero_init_deltas: true
+two_expert_dyn_loss_floor: 0.0
+two_expert_geo_loss_floor: 0.0
+two_expert_num_dyn_groups: 3
+two_expert_dyn_tokens_per_group: 12
+two_expert_num_geo_tokens: 12
+two_expert_memory_tokens_to_dit: false
+two_expert_denoise_gate_hidden_dim: 384
+two_expert_denoise_gate_temperature: 1.0
+two_expert_denoise_condition_scale_init: 1.0
+two_expert_memory_scale_init: 1.0
+two_expert_prefusion_heads: 8
+two_expert_prefusion_dropout: 0.10
+two_expert_prefusion_token_dropout: 0.05
+two_expert_prefusion_condition_dropout: 0.10
+two_expert_prefusion_scale_init: 1.0
+two_expert_prefusion_zero_init: true
+lr_vlm_lora: 1e-5
+weight_decay_vlm_lora: 0.0
+lr_last_vla_cot: 1e-4
+weight_decay_last_vla_cot: 1e-4
+last_vla_hidden_anchor_weight: 0.01
+last_vla_hidden_anchor_mode: summary_cosine
+last_vla_hidden_anchor_every_n_steps: 4
+last_vla_log_lora_diagnostics: true
+use_planning_token_adapter: false
+planning_num_tokens: 16
+planning_num_heads: 8
+planning_condition_layers: cross_attention
+planning_gate_init: 0.05
+planning_context_gate_init: 0.05
+planning_condition_dropout: 0.10
+use_fs_norm: false
+fs_norm_stats_path: ''
+fs_norm_use_robust: false
+fs_norm_clip: 5.0
+fs_norm_target_clip: -1.0
+fs_norm_output_clip: -1.0
+fs_norm_output_clip_mode: scalar
+fs_norm_min_version: 1
+fs_norm_require_archive_match: false
+x0_aux_weight: 0.0
+delta_aux_weight: 0.0
+geo_aux_weight: 0.0
+x0_aux_low_noise_frac: 0.5
+geo_curvature_weight: 1.0
+geo_reverse_weight: 1.0
+geo_tail_reverse_weight: 2.0
+geo_early_kink_weight: 2.0
+geo_jerk_weight: 0.2
+trajectory_aux_weight: 0.0
+trajectory_heading_weight: 1.0
+trajectory_huber_beta: 0.5
+feasibility_aux_weight: 0.0
+aux_alpha_power: 1.0
+aux_warmup_epochs: 10
+tangent_margin_rad: 0.08
+curvature_margin: 0.05
+min_segment_length: 0.20

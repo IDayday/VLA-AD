@@ -4,6 +4,7 @@ import logging
 import pickle
 import gzip
 import os
+import uuid
 
 import torch
 from tqdm import tqdm
@@ -29,8 +30,14 @@ def load_feature_target_from_pickle(path: Path) -> Dict[str, torch.Tensor]:
 def dump_feature_target_to_pickle(path: Path, data_dict: Dict[str, torch.Tensor]) -> None:
     """Helper function to save feature/target to pickle."""
     # Use compresslevel = 1 to compress the size but also has fast write and read.
-    with gzip.open(path, "wb", compresslevel=1) as f:
-        pickle.dump(data_dict, f)
+    tmp_path = path.with_name(f".{path.name}.{os.getpid()}.{uuid.uuid4().hex}.tmp")
+    try:
+        with gzip.open(tmp_path, "wb", compresslevel=1) as f:
+            pickle.dump(data_dict, f)
+        os.replace(tmp_path, path)
+    finally:
+        if tmp_path.exists():
+            tmp_path.unlink()
 
 
 class CacheOnlyDataset(torch.utils.data.Dataset):
@@ -57,7 +64,7 @@ class CacheOnlyDataset(torch.utils.data.Dataset):
         if log_names is not None:
             self.log_names = [Path(log_name) for log_name in log_names if (self._cache_path / log_name).is_dir()]
         else:
-            self.log_names = [log_name for log_name in self._cache_path.iterdir()]
+            self.log_names = [log_name for log_name in self._cache_path.iterdir() if log_name.is_dir()]
 
         self._feature_builders = feature_builders
         self._target_builders = target_builders

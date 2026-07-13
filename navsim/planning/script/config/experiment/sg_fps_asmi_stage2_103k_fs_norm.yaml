@@ -1,0 +1,23 @@
+# @package _global_
+
+defaults:
+  - sg_fps_asmi_stage2_103k
+  - _self_
+
+agent:
+  use_fs_norm: true
+  fs_norm_stats_path: ${oc.env:FS_NORM_STATS_PATH}
+  fs_norm_use_robust: true
+  fs_norm_clip: 5.0
+  fs_norm_target_clip: 0.0
+  fs_norm_output_clip: 12.0
+  fs_norm_output_clip_mode: stats_bounds
+  x0_aux_weight: 0.10
+  delta_aux_weight: 0.05
+  geo_aux_weight: 0.05
+  x0_aux_low_noise_frac: 0.5
+  geo_curvature_weight: 1.0
+  geo_reverse_weight: 1.0
+  geo_tail_reverse_weight: 2.0
+  geo_early_kink_weight: 2.0
+  geo_jerk_weight: 0.2

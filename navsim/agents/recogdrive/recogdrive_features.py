@@ -15,6 +15,7 @@ from .expert_backends import (
     build_dummy_expert_backend,
     normalize_expert_feature_source,
 )
+from .expert_cache import iter_index
 
 if TYPE_CHECKING:
     from navsim.common.dataclasses import AgentInput, Scene
@@ -26,7 +27,14 @@ except ImportError:  # safetensors is optional in this repo.
     load_safetensors_file = None
 
 EXPERT_FEATURE_KEYS: Tuple[str, ...] = EXPERT_ALL_KEYS
-EXPERT_TARGET_FEATURE_KEYS: Tuple[str, ...] = EXPERT_TARGET_KEYS
+EXPERT_TARGET_FEATURE_KEYS: Tuple[str, ...] = (
+    *EXPERT_TARGET_KEYS,
+    "teacher_trajectory",
+    "teacher_trajectory_norm",
+    "teacher_score",
+    "gt_score",
+    "oracle_best_of_k_score",
+)
 DUMMY_EXPERT_CACHE_WARNING = "Dummy cache for computation smoke tests only. Do not use for real training."
 
 def format_number(n, decimal_places=2):
@@ -187,11 +195,13 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
                  expert_cache_dir: Optional[str] = None,
                  num_jepa_tokens: int = 12,
                  num_vggt_tokens: int = 12,
+                 num_geometry_tokens: Optional[int] = None,
                  allow_expert_target_features: bool = False,
                  use_jepa: bool = True,
                  use_vggt: bool = True,
                  jepa_dim: int = 1024,
                  vggt_dim: int = 2048,
+                 geometry_teacher_dim: Optional[int] = None,
                  dummy_expert_seed: int = 0, ):
         """
         Initializes the feature builder.
@@ -218,13 +228,17 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
             expert_cache_dir=expert_cache_dir,
         )
         self.expert_cache_dir = Path(expert_cache_dir) if expert_cache_dir else None
+        self._expert_cache_index_by_log_token: Optional[Dict[Tuple[str, str], Path]] = None
+        self._expert_cache_index_by_token: Optional[Dict[str, Path]] = None
         self.num_jepa_tokens = num_jepa_tokens
         self.num_vggt_tokens = num_vggt_tokens
+        self.num_geometry_tokens = int(num_geometry_tokens) if num_geometry_tokens is not None else int(num_vggt_tokens)
         self.allow_expert_target_features = allow_expert_target_features
         self.use_jepa = use_jepa
         self.use_vggt = use_vggt
         self.jepa_dim = jepa_dim
         self.vggt_dim = vggt_dim
+        self.geometry_teacher_dim = int(geometry_teacher_dim) if geometry_teacher_dim is not None else int(vggt_dim)
         self.dummy_expert_seed = dummy_expert_seed
         self._dummy_expert_backend: Optional[DummyExpertBackend] = None
 
@@ -267,6 +281,9 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
         This mirrors the existing ReCogDrive feature-cache layout:
             cache_path / log_name / token / internvl_feature.gz
 
+        Chunk-cache roots are resolved through their index.jsonl files by
+        _expert_cache_index_candidates.
+
         Safetensors files are used only when safetensors is importable; .pt files
         are always supported.
         """
@@ -291,9 +308,65 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
             ])
         return candidates
 
+    @staticmethod
+    def _expert_cache_chunk_dirs(cache_root: Path) -> List[Path]:
+        if (cache_root / "index.jsonl").is_file():
+            return [cache_root]
+        if not cache_root.is_dir():
+            return []
+        return sorted(
+            child for child in cache_root.iterdir()
+            if child.is_dir() and (child / "index.jsonl").is_file()
+        )
+
+    def _ensure_expert_cache_index(self) -> None:
+        if self._expert_cache_index_by_token is not None and self._expert_cache_index_by_log_token is not None:
+            return
+
+        by_token: Dict[str, Path] = {}
+        by_log_token: Dict[Tuple[str, str], Path] = {}
+        if self.expert_cache_dir is not None:
+            for chunk_dir in self._expert_cache_chunk_dirs(self.expert_cache_dir):
+                for record in iter_index(chunk_dir):
+                    raw_path = record.get("path")
+                    if not raw_path:
+                        continue
+                    sample_path = Path(raw_path)
+                    token = str(record.get("sample_token") or sample_path.stem)
+                    if not token:
+                        continue
+                    by_token.setdefault(token, sample_path)
+                    record_log_name = record.get("log_name")
+                    if record_log_name is not None:
+                        by_log_token.setdefault((str(record_log_name), token), sample_path)
+
+        self._expert_cache_index_by_token = by_token
+        self._expert_cache_index_by_log_token = by_log_token
+
+    def _expert_cache_index_candidates(self, log_name: str, token: str) -> List[Path]:
+        if self.expert_feature_source not in {"chunk", "disk"}:
+            return []
+        self._ensure_expert_cache_index()
+        assert self._expert_cache_index_by_token is not None
+        assert self._expert_cache_index_by_log_token is not None
+
+        candidates: List[Path] = []
+        log_token_path = self._expert_cache_index_by_log_token.get((str(log_name), str(token)))
+        if log_token_path is not None:
+            candidates.append(log_token_path)
+        token_path = self._expert_cache_index_by_token.get(str(token))
+        if token_path is not None and token_path not in candidates:
+            candidates.append(token_path)
+        return candidates
+
     def _resolve_expert_cache_path(self, log_name: str, token: str) -> Path:
         candidates = self._expert_cache_candidates(log_name, token)
         for path in candidates:
+            if path.is_file():
+                return path
+
+        index_candidates = self._expert_cache_index_candidates(log_name, token)
+        for path in index_candidates:
             if path.is_file():
                 return path
 
@@ -308,7 +381,7 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
         message = (
             "Expert feature cache not found for "
             f"log_name='{log_name}', token='{token}'. Tried: "
-            + ", ".join(str(path) for path in candidates)
+            + ", ".join(str(path) for path in [*candidates, *index_candidates])
         )
         if unsupported_safetensors:
             message += (
@@ -355,6 +428,30 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
             raise TypeError(
                 f"Expert cache {path} key '{key}' must be a torch.Tensor, got {type(tensor).__name__}."
             )
+        if key == "vggt_geometry_mode_code":
+            if tensor.ndim > 1:
+                raise ValueError(
+                    f"Expert cache {path} key '{key}' must be scalar or [1], got {tuple(tensor.shape)}."
+                )
+            return tensor.detach().cpu().long()
+        if key in {"teacher_score", "gt_score", "oracle_best_of_k_score", "candidate_count"}:
+            if tensor.ndim > 1:
+                raise ValueError(
+                    f"Expert cache {path} key '{key}' must be scalar or [1], got {tuple(tensor.shape)}."
+                )
+            return tensor.detach().cpu().float()
+        if key == "vlm_text_parse_ok":
+            if tensor.ndim > 1:
+                raise ValueError(
+                    f"Expert cache {path} key '{key}' must be scalar or [1], got {tuple(tensor.shape)}."
+                )
+            return tensor.detach().cpu().float()
+        if key in {"teacher_trajectory", "teacher_trajectory_norm", "vlm_text_trajectory", "vlm_text_trajectory_norm"}:
+            if tuple(tensor.shape) != (8, 3):
+                raise ValueError(
+                    f"Expert cache {path} key '{key}' must have shape [8, 3], got {tuple(tensor.shape)}."
+                )
+            return tensor.detach().cpu().float()
         if tensor.ndim != 2:
             raise ValueError(
                 f"Expert cache {path} key '{key}' must have shape [K, D], got {tuple(tensor.shape)}."
@@ -362,17 +459,37 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
 
         expected_tokens: Optional[int]
         normalized_key = {"jepa_tokens": "jepa_context_tokens", "vggt_tokens": "vggt_context_tokens"}.get(key, key)
+        expected_dim: Optional[int]
         if normalized_key.startswith("jepa_"):
             expected_tokens = self.num_jepa_tokens
+            expected_dim = self.jepa_dim
+        elif normalized_key in {
+            "vggt_geometry_tokens",
+            "vggt_geometry_target_tokens",
+            "vggt_depth_tokens",
+            "vggt_pointmap_tokens",
+            "vggt_camera_tokens",
+            "vggt_depth_target_tokens",
+            "vggt_pointmap_target_tokens",
+        }:
+            expected_tokens = self.num_geometry_tokens
+            expected_dim = self.geometry_teacher_dim
         elif normalized_key.startswith("vggt_"):
             expected_tokens = self.num_vggt_tokens
+            expected_dim = self.vggt_dim
         else:
             expected_tokens = None
+            expected_dim = None
 
         if expected_tokens is not None and tensor.shape[0] != expected_tokens:
             raise ValueError(
                 f"Expert cache {path} key '{key}' has K={tensor.shape[0]}, "
                 f"expected K={expected_tokens}. Full shape: {tuple(tensor.shape)}."
+            )
+        if expected_dim is not None and tensor.shape[-1] != expected_dim:
+            raise ValueError(
+                f"Expert cache {path} key '{key}' has D={tensor.shape[-1]}, "
+                f"expected D={expected_dim}. Full shape: {tuple(tensor.shape)}."
             )
 
         return tensor.detach().cpu().float()
@@ -399,6 +516,10 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
         for key in EXPERT_FEATURE_KEYS:
             if key in data:
                 output_key = alias_map.get(key, key)
+                if output_key.startswith("jepa_") and not self.use_jepa:
+                    continue
+                if output_key in {"vggt_context_tokens", "vggt_target_tokens"} and not self.use_vggt:
+                    continue
                 if output_key in EXPERT_TARGET_FEATURE_KEYS and not self.allow_expert_target_features:
                     warnings.warn(
                         f"Expert cache {path} contains train-only '{output_key}', but "
@@ -476,7 +597,7 @@ class ReCogDriveFeatureBuilder(AbstractFeatureBuilder):
                 raise RuntimeError("FeatureBuilder is in online mode, but the backbone was not initialized.")
             from .utils.internvl_preprocess import load_image
             
-            pixel_values = load_image(str(cameras[-1].cam_f0.image),max_num=12).unsqueeze(0)
+            pixel_values = load_image(cameras[-1].cam_f0.image, max_num=12).unsqueeze(0)
 
             pixel_values_squeezed = pixel_values.squeeze(1)
             num_patches_list = [pv.shape[0] for pv in pixel_values_squeezed]

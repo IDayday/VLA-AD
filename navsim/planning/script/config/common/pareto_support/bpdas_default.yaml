@@ -1,0 +1,11 @@
+pdas_eps: 0.05
+pdas_alpha: 1.0
+pdas_beta: 1.0
+pdas_gamma: 0.5
+pdas_lambda_bucket: 0.2
+pdas_lambda_reg: 0.5
+pdas_sigma0: 0.1
+pdas_delta0: 0.1
+pdas_success_delta: 0.01
+pdas_max_bucket_count: 36.0
+uniform_sampling_fraction: 0.2

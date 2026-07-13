@@ -1,0 +1,16 @@
+path,exists,notes
+/mnt/project/VLA-AD/outputs/a0_stage2_repro_20260531_003029/a0_official_aligned_a0complete,True,Large outputs/checkpoints/caches remain outside git; bundle records metrics and paths only.
+/mnt/project/VLA-AD/outputs/last_vla_v2/highcap_no_risk_navtest_eval_20260606T034658Z,True,Large outputs/checkpoints/caches remain outside git; bundle records metrics and paths only.
+/mnt/project/VLA-AD/outputs/last_vla_v2/decoupled_highcap_no_risk_ab_cacheenv_setsid_20260607T022706Z,True,Large outputs/checkpoints/caches remain outside git; bundle records metrics and paths only.
+/mnt/project/VLA-AD/outputs/last_vla_v2/decoupled_highcap_no_risk_navtest_cot_lora_eval_20260607T142428Z,True,Large outputs/checkpoints/caches remain outside git; bundle records metrics and paths only.
+/mnt/project/VLA-AD/outputs/last_vla_v2/decoupled_highcap_no_risk_a_progressive_all_ckpt_eval_20260608T0633Z,True,Large outputs/checkpoints/caches remain outside git; bundle records metrics and paths only.
+/mnt/project/VLA-AD/outputs/last_vla_v2/decoupled_highcap_no_risk_b_progressive_parallel_eval_20260608T160612Z,True,Large outputs/checkpoints/caches remain outside git; bundle records metrics and paths only.
+/mnt/project/VLA-AD/outputs/last_vla_v2/decoupled_highcap_no_risk_b_progressive_parallel_eval_20260608T221613Z_100k_120k,True,Large outputs/checkpoints/caches remain outside git; bundle records metrics and paths only.
+/mnt/project/VLA-AD/outputs/last_vla_v2/direct_text_navtest_eval_8shard_parallel_20260608T135058Z,True,Large outputs/checkpoints/caches remain outside git; bundle records metrics and paths only.
+/mnt/project/VLA-AD/outputs/last_vla_v2/no_residual_stage2_ab_fixed_step_eval_20260609T164130Z,True,Large outputs/checkpoints/caches remain outside git; bundle records metrics and paths only.
+/mnt/project/VLA-AD/outputs/last_vla_v2/no_residual_stage2_ab_A_remote_step100_eval_20260609T2212Z,True,Large outputs/checkpoints/caches remain outside git; bundle records metrics and paths only.
+/mnt/project/VLA-AD/outputs/last_vla_v2/no_residual_stage2_ab_A_remaining_eval_corrected_20260610T055035Z,True,Large outputs/checkpoints/caches remain outside git; bundle records metrics and paths only.
+/mnt/project/VLA-AD/outputs/last_vla_v2/vlm_text_residual_anchor_ckpt_eval_20260610T051017Z,True,Large outputs/checkpoints/caches remain outside git; bundle records metrics and paths only.
+/mnt/project/VLA-AD/outputs/last_vla_v2/residual_anchor_fixed_step_eval_local_pure_20260611T012841Z,True,Large outputs/checkpoints/caches remain outside git; bundle records metrics and paths only.
+/mnt/project/VLA-AD/outputs/last_vla_v2/residual_anchor_fixed_step_eval_remote_lastvla_20260611T012841Z,True,Large outputs/checkpoints/caches remain outside git; bundle records metrics and paths only.
+/mnt/project/VLA-AD/outputs/last_vla_v2/residual_anchor_live_ckpt_eval_probe_20260610T153652Z,True,Large outputs/checkpoints/caches remain outside git; bundle records metrics and paths only.

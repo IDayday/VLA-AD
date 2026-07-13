@@ -1,0 +1,35 @@
+# @package _global_
+
+defaults:
+  - sg_fps_asmi_stage2_103k_fs_norm
+  - _self_
+
+agent:
+  use_fs_norm: true
+  fs_norm_use_robust: false
+  fs_norm_min_version: 2
+  fs_norm_target_clip: 0.0
+  fs_norm_output_clip: 12.0
+  fs_norm_output_clip_mode: stats_bounds
+
+  use_planning_token_adapter: true
+  planning_num_tokens: 16
+  planning_num_heads: 8
+  planning_condition_layers: cross_attention
+  planning_gate_init: 0.05
+  planning_context_gate_init: 0.05
+  planning_condition_dropout: 0.10
+
+  trajectory_aux_weight: 0.05
+  trajectory_heading_weight: 1.0
+  trajectory_huber_beta: 0.5
+  feasibility_aux_weight: 0.01
+  aux_alpha_power: 1.0
+  aux_warmup_epochs: 10
+  tangent_margin_rad: 0.08
+  curvature_margin: 0.05
+  min_segment_length: 0.20
+
+  x0_aux_weight: 0.0
+  delta_aux_weight: 0.0
+  geo_aux_weight: 0.0

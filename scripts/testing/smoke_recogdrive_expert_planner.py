@@ -157,7 +157,13 @@ def _install_dependency_stubs() -> None:
 
     pdm_score_mod = ModuleType("navsim.evaluate.pdm_score")
     pdm_score_mod.pdm_score = lambda **kwargs: SimpleNamespace(score=0.0)
+    pdm_score_mod.get_trajectory_as_array = lambda *args, **kwargs: None
+    pdm_score_mod.transform_trajectory = lambda *args, **kwargs: None
     sys.modules.setdefault("navsim.evaluate.pdm_score", pdm_score_mod)
+
+    pdm_score_batch_mod = ModuleType("navsim.evaluate.pdm_score_batch")
+    pdm_score_batch_mod.pdm_score_batch_same_cache = lambda *args, **kwargs: {}
+    sys.modules.setdefault("navsim.evaluate.pdm_score_batch", pdm_score_batch_mod)
 
     scorer_mod = ModuleType("navsim.planning.simulation.planner.pdm_planner.scoring.pdm_scorer")
 
@@ -174,6 +180,15 @@ def _install_dependency_stubs() -> None:
     scorer_mod.PDMScorerConfig = PDMScorerConfig
     scorer_mod.PDMScorer = PDMScorer
     sys.modules.setdefault("navsim.planning.simulation.planner.pdm_planner.scoring.pdm_scorer", scorer_mod)
+
+    fast_scorer_mod = ModuleType("navsim.planning.simulation.planner.pdm_planner.scoring.fast_pdm_scorer")
+
+    class FastPDMScorer:
+        def __init__(self, *args, **kwargs):
+            pass
+
+    fast_scorer_mod.FastPDMScorer = FastPDMScorer
+    sys.modules.setdefault("navsim.planning.simulation.planner.pdm_planner.scoring.fast_pdm_scorer", fast_scorer_mod)
 
     simulator_mod = ModuleType("navsim.planning.simulation.planner.pdm_planner.simulation.pdm_simulator")
 

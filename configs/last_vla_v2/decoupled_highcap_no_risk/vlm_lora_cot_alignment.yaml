@@ -1,0 +1,17 @@
+defaults:
+  - cot_alignment
+  - _self_
+
+cache_hidden_state: false
+train_backbone: true
+last_vla_train_vlm_lora: true
+last_vla_vlm_lora_preset: attention_mlp
+last_vla_vlm_lora_scope: llm
+last_vla_vlm_lora_r: 32
+last_vla_vlm_lora_alpha: 64
+last_vla_vlm_lora_dropout: 0.05
+last_vla_vlm_lora_use_rslora: true
+lr_vlm_lora: 1e-5
+lr_last_vla_cot: 1e-4
+last_vla_hidden_anchor_weight: 0.01
+last_vla_hidden_anchor_every_n_steps: 4

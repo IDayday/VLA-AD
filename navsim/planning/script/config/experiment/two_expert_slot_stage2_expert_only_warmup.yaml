@@ -1,0 +1,55 @@
+# @package _global_
+
+defaults:
+  - override /agent: recogdrive_agent
+
+agent:
+  use_two_expert_slots: true
+  two_expert_cache_mode: true
+  two_expert_slot_mode: vlm_soft_slots
+  two_expert_condition_mode: horizon_hmef_lite
+  two_expert_dit_condition_mode: horizon_hmef_lite
+  two_expert_planner_dim: 384
+  two_expert_use_raw_vlm_base: true
+  two_expert_zero_init_deltas: true
+  two_expert_dyn_loss_floor: 0.0
+  two_expert_geo_loss_floor: 0.0
+  two_expert_num_dyn_groups: 3
+  two_expert_dyn_tokens_per_group: 12
+  two_expert_num_geo_tokens: 12
+  cache_hidden_state: true
+  train_backbone: false
+  use_last_vla: false
+  last_vla_stage: disabled
+  use_last_rd: false
+  last_rd_stage: disabled
+  use_expert_features: false
+  diffusion_loss_weight: 1.0
+  last_vla_use_residual_diffusion: false
+  last_vla_teacher_traj_mode: none
+  last_vla_residual_anchor_source: none
+
+  # Diagnostic warmup/ablation only. This freezes the A0 action base and
+  # trains only action_head.two_expert_* parameters. It is useful to verify
+  # whether H_dyn/H_geo can improve a frozen A0 policy, but it is not the
+  # formal high-ceiling Stage2 setting.
+  train_expert_only: true
+  freeze_base_action_head: false
+  freeze_expert: false
+  lr: 1e-4
+  lr_expert: 1e-4
+  lr_action_head: null
+  lr_expert_gate: null
+  scheduler_epochs: 40
+  scheduler_warmup_epochs: 2
+  scheduler_min_lr: 1e-6
+
+trainer:
+  params:
+    max_epochs: 40
+    gradient_clip_val: 1.0
+    precision: bf16-mixed
+
+dataloader:
+  params:
+    batch_size: 16

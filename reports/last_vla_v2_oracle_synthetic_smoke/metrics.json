@@ -1,0 +1,18 @@
+{
+  "K": 4,
+  "candidate_score_mean": 0.0954485684633255,
+  "candidate_score_std": 0.018306642770767212,
+  "deterministic_PDMS": null,
+  "deterministic_score": 0.08736027777194977,
+  "hard_gate_teacher_sft_plausible": false,
+  "num_samples": 4,
+  "oracle_best_of_K_PDMS": null,
+  "oracle_best_of_K_score": 0.11199221760034561,
+  "oracle_delta_vs_A0_baseline": null,
+  "oracle_delta_vs_deterministic": 0.024631939828395844,
+  "pdm_scoring_active": false,
+  "proxy_scoring_active": true,
+  "score_mode": "proxy",
+  "stochastic_mean_PDMS": null,
+  "stochastic_mean_score": 0.0954485610127449
+}

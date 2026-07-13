@@ -1,0 +1,43 @@
+{
+  "cache_root": "/mnt/project/VLA-AD/cache/recogdrive_expert_chunks",
+  "coverage": {
+    "candidate_count": {
+      "count": 0,
+      "coverage": 0.0
+    },
+    "gt_score": {
+      "count": 0,
+      "coverage": 0.0
+    },
+    "oracle_best_of_k_score": {
+      "count": 0,
+      "coverage": 0.0
+    },
+    "teacher_score": {
+      "count": 0,
+      "coverage": 0.0
+    },
+    "teacher_trajectory": {
+      "count": 0,
+      "coverage": 0.0
+    },
+    "teacher_trajectory_any": {
+      "count": 0,
+      "coverage": 0.0
+    },
+    "teacher_trajectory_norm": {
+      "count": 0,
+      "coverage": 0.0
+    }
+  },
+  "errors": [],
+  "num_errors": 0,
+  "oracle_delta_vs_gt": {
+    "count": 0,
+    "max": null,
+    "mean": null,
+    "min": null
+  },
+  "ready_for_teacher_traj_sft": false,
+  "scanned": 64
+}

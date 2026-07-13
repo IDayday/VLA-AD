@@ -3,6 +3,7 @@ import numpy as np
 import torch
 import torchvision.transforms as T
 from decord import VideoReader, cpu
+from pathlib import Path
 from PIL import Image
 from torchvision.transforms.functional import InterpolationMode
 
@@ -67,8 +68,21 @@ def dynamic_preprocess(image, min_num=1, max_num=12, image_size=448, use_thumbna
         processed_images.append(thumbnail_img)
     return processed_images
 
+def _to_pil_image(image_source):
+    if isinstance(image_source, Image.Image):
+        return image_source.convert('RGB')
+    if isinstance(image_source, (str, Path)):
+        return Image.open(image_source).convert('RGB')
+    if isinstance(image_source, np.ndarray):
+        array = image_source
+        if array.dtype != np.uint8:
+            array = np.clip(array, 0, 255).astype(np.uint8)
+        return Image.fromarray(array).convert('RGB')
+    raise TypeError(f"Unsupported image source type for InternVL preprocessing: {type(image_source).__name__}")
+
+
 def load_image(image_file, input_size=448, max_num=12):
-    image = Image.open(image_file).convert('RGB')
+    image = _to_pil_image(image_file)
     transform = build_transform(input_size=input_size)
     images = dynamic_preprocess(image, image_size=input_size, use_thumbnail=True, max_num=max_num)
     pixel_values = [transform(image) for image in images]

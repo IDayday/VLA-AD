@@ -1,0 +1,24 @@
+status	size_bytes	size_human	path	note
+OK	210844778496	197GB	/mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1	
+OK	4096	4.0KB	/mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1_trainval_all	
+OK	162623488	156MB	/mnt/project/VLA-AD/cache/vggt_py310_conda	
+OK	28672	28KB	/mnt/project/VLA-AD/cache/vggt_py310_venv	
+OK	38219776	37MB	/mnt/project/VLA-AD/outputs/last_vla_v2/tmp_b_lora_cache_batch2_smoke	
+OK	4096	4.0KB	/mnt/project/VLA-AD/outputs/last_vla_v2/decoupled_highcap_no_risk_navtest_cot_lora_eval_20260607T142428Z/cache	
+OK	4842438656	4.6GB	/mnt/project/VLA-AD/outputs/hidden_cache_equiv_navtest2	
+OK	36864	36KB	/mnt/project/VLA-AD/outputs/fast_metric_cache_navtest_mirror_20260613T011857Z	
+OK	20480	20KB	/mnt/project/VLA-AD/outputs/last_vla_v2/decoupled_highcap_no_risk_ab_cacheenv_20260607T022549Z	
+TIMEOUT			/mnt/project/VLA-AD/outputs/last_vla_v2/decoupled_highcap_no_risk_ab_cacheenv_setsid_20260607T022706Z	du produced no output within 120s
+OK	12288	12KB	/mnt/project/VLA-AD/outputs/last_vla_v2/decoupled_highcap_no_risk_cache_rebuild_20260606T185348Z	
+OK	123486208	118MB	/mnt/project/VLA-AD/experiments/recogdrive_expert/cache_generation	
+OK	8192	8.0KB	/mnt/project/VLA-AD/experiments/recogdrive_expert/pdm_flow/metric_cache_missing8_20260527_1827	
+OK	233472	228KB	/mnt/project/VLA-AD/experiments/recogdrive_expert/pdm_flow/metric_cache_navtest_first1024	
+OK	1400832	1.4MB	/mnt/project/VLA-AD/experiments/recogdrive_expert/pdm_flow/metric_cache_navtest_full_v1	
+OK	2596864	2.5MB	/mnt/project/VLA-AD/experiments/recogdrive_expert/pdm_flow/metric_cache_navtest_full_v1_shard_backfill_20260528_0000	
+OK	2653859840	2.5GB	/mnt/project/VLA-AD/experiments/recogdrive_expert/smoke_tests/full_v1_cache_smoke_20260527_124745	
+OK	137887744	132MB	/mnt/project/VLA-AD/experiments/bit_drive/d5_mining_background/metric_cache_train_chunk000015_512	
+OK	240300032	230MB	/mnt/project/VLA-AD/experiments/bit_drive/d5_mining_background/metric_cache_train_chunk000016_512	
+OK	195350528	187MB	/mnt/project/VLA-AD/experiments/bit_drive/d5_mining_background/metric_cache_train_chunk000017_512	
+OK	11038720	11MB	/mnt/project/VLA-AD/experiments/bit_drive/select/metric_cache_train_probe16	
+OK	5824512	5.6MB	/mnt/project/VLA-AD/experiments/bit_drive/select/metric_cache_val_probe16	
+OK	4096	4.0KB	/mnt/project/VLA-AD/experiments/two_expert_slot_real_20260612_172446/cache	

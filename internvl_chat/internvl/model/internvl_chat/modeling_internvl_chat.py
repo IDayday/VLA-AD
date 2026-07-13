@@ -4,6 +4,7 @@
 # Licensed under The MIT License [see LICENSE for details]
 # --------------------------------------------------------
 
+import os
 import warnings
 from typing import List, Optional, Tuple, Union
 
@@ -169,11 +170,20 @@ class InternVLChatModel(PreTrainedModel):
         input_embeds = input_embeds.reshape(B * N, C)
 
         if torch.distributed.is_initialized() and torch.distributed.get_rank() == 0:
-            print(f'dynamic ViT batch size: {vit_batch_size}, images per sample: {vit_batch_size / B}, dynamic token length: {N}')
+            verbose_forward = os.environ.get('INTERNVL_VERBOSE_FORWARD', '0').lower() in {'1', 'true', 'yes', 'on'}
+            if verbose_forward:
+                print(
+                    f'dynamic ViT batch size: {vit_batch_size}, '
+                    f'images per sample: {vit_batch_size / B}, dynamic token length: {N}'
+                )
             if statistics is not None:
                 num_samples, num_padding_tokens, num_padding_images = statistics.tolist()
                 self.num_samples += num_samples
-                print(f'total_samples={self.num_samples}, {num_samples=}, {num_padding_tokens=}, {num_padding_images=}')
+                if verbose_forward:
+                    print(
+                        f'total_samples={self.num_samples}, {num_samples=}, '
+                        f'{num_padding_tokens=}, {num_padding_images=}'
+                    )
 
         input_ids = input_ids.reshape(B * N)
         selected = (input_ids == self.img_context_token_id)

@@ -1,0 +1,13 @@
+use_fs_norm: false
+fs_norm_stats_path: ""
+fs_norm_delta_target: true
+fs_norm_use_robust: true
+fs_norm_clip: 5.0
+x0_aux_enabled: false
+x0_aux_low_noise_frac: 0.5
+x0_aux_weight: 0.0
+geometry_aux_weight: 0.0
+curvature_aux_weight: 1.0
+reverse_aux_weight: 1.0
+kink_aux_weight: 1.0
+jerk_aux_weight: 0.3
