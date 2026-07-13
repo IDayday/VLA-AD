@@ -5,7 +5,7 @@ import json
 import math
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Dict, Mapping, Optional
+from typing import Any, Dict, Literal, Mapping, Optional
 
 import torch
 
@@ -124,6 +124,7 @@ def compute_capacity_normalized_frontier_energy(
     *,
     gap_weight: float,
     dispersion_floor: float,
+    priority_mode: Literal["credit_multiplicative", "additive_preservation"] = "credit_multiplicative",
 ) -> DiversityFrontierOutput:
     """Modulates an existing learning frontier by its normalized diversity gap.
 
@@ -149,6 +150,8 @@ def compute_capacity_normalized_frontier_energy(
         raise ValueError("gap_weight must be non-negative.")
     if dispersion_floor <= 0.0:
         raise ValueError("dispersion_floor must be positive.")
+    if priority_mode not in {"credit_multiplicative", "additive_preservation"}:
+        raise ValueError(f"Unsupported diversity priority mode: {priority_mode!r}.")
 
     support_dispersion = capacity.support_pairwise_ade_m.to(base_energy).clamp_min(0.0)
     group_dispersion = group_pairwise_ade_m.to(base_energy).clamp_min(0.0)
@@ -163,11 +166,16 @@ def compute_capacity_normalized_frontier_energy(
     has_capacity = (mode_count > 1.0) & (support_dispersion > 0.0)
     active_mask = all_feasible & has_capacity
     safe_base_energy = torch.nan_to_num(base_energy)
-    priority_multiplier = 1.0 + float(gap_weight) * coverage_gap * active_mask.to(base_energy)
-    energy = torch.nan_to_num(safe_base_energy * priority_multiplier)
-    # Keep the existing diagnostic field/checkpoint contract.  It now records
-    # the realized energy uplift rather than an additive signal independent of
-    # the policy gradient.
+    weighted_gap = float(gap_weight) * coverage_gap * active_mask.to(base_energy)
+    if priority_mode == "additive_preservation":
+        # Explicit ablation: this can schedule a zero-advantage scene so the
+        # frozen Stage2 KL preserves its learned support, but it cannot create
+        # a new policy-gradient direction.
+        energy = torch.nan_to_num(safe_base_energy + weighted_gap)
+    else:
+        energy = torch.nan_to_num(safe_base_energy * (1.0 + weighted_gap))
+    # Keep the existing diagnostic/checkpoint field.  It records the realized
+    # priority uplift under either ablation mode.
     bonus = energy - safe_base_energy
     return DiversityFrontierOutput(
         energy=energy,

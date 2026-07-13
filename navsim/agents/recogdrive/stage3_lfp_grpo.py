@@ -73,6 +73,9 @@ class LFPGRPOConfig:
     frontier_tradeoff_eps: float = 0.01
     frontier_diversity_capacity_enabled: bool = False
     frontier_diversity_capacity_cache_path: str = ""
+    frontier_diversity_priority_mode: Literal[
+        "credit_multiplicative", "additive_preservation"
+    ] = "credit_multiplicative"
     frontier_diversity_gap_weight: float = 0.05
     frontier_diversity_dispersion_floor: float = 0.05
     frontier_state_path: str = ""
@@ -166,6 +169,14 @@ class LFPGRPOConfig:
             raise ValueError("lfp_grpo_cfg.frontier_priority_quantile_cap must be in (0, 1].")
         if not 0.0 <= self.frontier_tradeoff_weight <= 1.0:
             raise ValueError("lfp_grpo_cfg.frontier_tradeoff_weight must be in [0, 1].")
+        if self.frontier_diversity_priority_mode not in {
+            "credit_multiplicative",
+            "additive_preservation",
+        }:
+            raise ValueError(
+                "lfp_grpo_cfg.frontier_diversity_priority_mode must be "
+                "'credit_multiplicative' or 'additive_preservation'."
+            )
 
 
 def coerce_lfp_grpo_config(value: Any) -> LFPGRPOConfig:

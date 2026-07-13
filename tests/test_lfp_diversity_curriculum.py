@@ -70,6 +70,22 @@ def test_capacity_gap_cannot_create_frontier_energy_without_policy_credit() -> N
     assert output.bonus.item() == 0.0
 
 
+def test_additive_preservation_mode_remains_an_explicit_ablation() -> None:
+    output = compute_capacity_normalized_frontier_energy(
+        torch.tensor([0.0]),
+        torch.ones((1, 4), dtype=torch.bool),
+        torch.tensor([0.05]),
+        _capacity(dispersion=(1.0,), modes=(8.0,)),
+        gap_weight=0.25,
+        dispersion_floor=0.05,
+        priority_mode="additive_preservation",
+    )
+
+    assert output.coverage_gap.item() > 0.0
+    assert output.energy.item() == pytest.approx(0.25 * output.coverage_gap.item())
+    assert output.bonus.item() == pytest.approx(output.energy.item())
+
+
 def test_capacity_normalized_energy_does_not_override_safety_first() -> None:
     base = torch.tensor([0.10])
     feasible = torch.tensor([[True, True, False, True]])
@@ -126,3 +142,5 @@ def test_capacity_curriculum_config_requires_curriculum_and_cache() -> None:
             frontier_diversity_capacity_enabled=True,
             curriculum_enabled=True,
         ).validate()
+    with pytest.raises(ValueError, match="frontier_diversity_priority_mode"):
+        LFPGRPOConfig(frontier_diversity_priority_mode="invalid").validate()

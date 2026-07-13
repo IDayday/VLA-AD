@@ -202,6 +202,11 @@ physical trust 与 progress-biased credit 仍未解决。
 零 BPAE scene 的采样占比从 31.0% 升至 54.0%。乘性调制分别保持为 68.1% 和 30.9%。因此当前
 实现改为乘性公式：多样性只在已有双向 Pareto credit 的学习前沿之间调整顺序。
 
+为保留因果消融，代码提供两个互斥且显式命名的 priority mode：主方案
+`credit_multiplicative` 使用上式；`additive_preservation` 复现旧公式，只用于检验零优势 scene
+上的 frozen-Stage2 KL 是否能保持已经学到的多样性。后者不能被解释为学习新策略的 frontier，
+也不作为默认配置。
+
 ## 5. 当前原因排序
 
 1. **首要：decoded trajectory trust 不足。** transition KL 不能阻止轨迹在物理空间显著漂移。

@@ -74,6 +74,7 @@ lfp_grpo_cfg:
   frontier_tradeoff_eps: 0.01
   frontier_diversity_capacity_enabled: false
   frontier_diversity_capacity_cache_path: ''
+  frontier_diversity_priority_mode: credit_multiplicative
   frontier_diversity_gap_weight: 0.05
   frontier_diversity_dispersion_floor: 0.05
   frontier_state_path: ''

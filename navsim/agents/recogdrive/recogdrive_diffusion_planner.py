@@ -12186,6 +12186,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 dispersion_floor=float(
                     self.lfp_grpo_cfg.frontier_diversity_dispersion_floor
                 ),
+                priority_mode=self.lfp_grpo_cfg.frontier_diversity_priority_mode,
             )
             frontier_energy = diversity_frontier.energy
             diversity_diagnostics = {
