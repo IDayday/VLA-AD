@@ -1167,3 +1167,67 @@ physical trajectory trust 的主问题。
 EPDMS 复核后才能进入主配置。`training-rl-zt3` 已按要求释放，本轮未继续占用它做 v2 scoring。
 评估过程中另发现同 basename checkpoint 会碰撞输出目录，批量脚本已改为 basename 加规范路径
 SHA256 前 10 位，避免第二个权重被静默跳过。
+
+### 15.25 KL 剂量对照：约束物理漂移，但不解决 credit trade-off
+
+在 capacity curriculum 其他配置不变的条件下，将 frozen Stage2 exact transition KL 从
+`0.02` 扫描到 `0.05/0.10`。三组均从 A5 epoch155 开始，seed0、G=16、LR=`1e-5`、
+2x150 steps，并使用固定 `initial_noise_seed=0` 的 32-shard 全量 v1 NAVTEST。
+
+| KL | train exact KL | train group ADE | PDMS | NC | TTC | EP | L1 |
+|---:|---:|---:|---:|---:|---:|---:|---:|
+| 0.02 | 0.10017 | 0.78505m | 0.871628 | 0.969766 | 0.916958 | 0.847799 | 0.444004 |
+| 0.05 | 0.03911 | 0.69828m | 0.870997 | 0.971579 | 0.921653 | 0.839347 | 0.386443 |
+| 0.10 | 0.01822 | 0.60062m | 0.869298 | 0.971950 | 0.925526 | 0.833024 | 0.360407 |
+| A5 Stage2 | - | - | 0.873112 | 0.980806 | 0.942910 | 0.820586 | 0.283275 |
+
+存在清晰的剂量反应：KL 越强，train KL/group ADE 和 held-out L1 越小，NC/TTC 越高；
+但 EP 持续下降，PDMS 并未提高。KL=0.05 相对 KL=0.02 的 L1 差为 `-0.05756`，
+95% scene-cluster CI `[-0.06240,-0.05273]`，TTC 差为 `+0.00470`，CI
+`[+0.00262,+0.00684]`；PDMS 差 `-0.00063`，CI 跨 0。KL=0.10 相对 A5 的 PDMS
+差为 `-0.00381`，CI `[-0.00651,-0.00113]`。
+
+因此 transition KL 不是无效，它确实是 trust 约束；但增大标量 KL 只能在进度和
+安全之间移动 trade-off，不会自动修正 credit 或 Stage2 的多模态先验。下一个 trust 实验
+若继续，应使用 decoded physical trajectory deadband，不再继续提高全局 KL。
+
+### 15.26 Stage2 v3 数据审计：高质量候选库，但不是校准的多模态分布
+
+需要区分两个问题：入选轨迹是否低质量，以及它们是否给出了正确的模式概率监督。
+
+1. **单轨迹质量并不差。** 全量 archive 的 selected-valid ratio 为 1，`58.49%` 场景
+   存在优于 GT 的 support。固定协议下 A5 也比 Official Stage2 提高 v1 PDMS
+   `+0.01361` 和 v2 EPDMS `+0.00770`。
+2. **reward 标签高度饱和。** 103,288 scene 中，support reward mean 为 `0.96363`，
+   `46.26%` 场景的 mean 不低于 `0.99`；`75.81%` 场景的 best support reward 等于
+   1。固定 seed 抽样 5,000 scene 中，`35.16%` 场景的所有 support reward 都等于 1。
+   这些标签能过滤坏轨迹，但不能稳定区分安全域内的行为模式。
+3. **候选有容量，但局部冗余明显。** support pairwise ADE 均值为 `1.36082m`，
+   reference mode count 均值为 `4.9077`；同时 5,000-scene 抽样的 support 近邻 ADE
+   均值只有 `0.43619m`，`39.32%` 的 support 存在 `<0.3m` 近邻。因此“总宽度大”
+   不等于“每个有效模式获得均衡概率”。
+4. **当前 DPSI 把来源多样性误当行为多样性。** 抽样 support 的来源大类平均只有
+   `3.006`，source entropy 均值 `0.722`，其与 trajectory mode capacity 的 Spearman
+   相关为 `-0.263`。现有 adaptive beta 同时使用 support count、轨迹距离和 source entropy，
+   最终 beta 与 mode capacity 的相关仍只有约 `0.206`。
+5. **真正进入 loss 的分布仍然锚定 GT。** A5 全 200 epoch 中每 scene 平均有
+   `10.279` 条 selected support，名义采样 `3.821` 条 target，但 pre-sampling effective
+   target count 只有 `1.842`，adaptive beta 为 `0.2709`，最终 diffusion loss 的 GT mass
+   为 `87.29%`。
+
+Official Stage2 的 GT-only 训练能获得很好的 deterministic PDMS，说明 NAVSIM 单轨迹
+评估并不要求学会宽分布。Official 在 SNSAD 中的采样宽度更大，但 precision 更低；
+那部分宽度可能是 legacy representation/sampler 噪声，不是被证明的语义模式。
+因此不能用“Official 不用补充轨迹也很好”推出 v3 轨迹低质量；可以推出的是：
+**当前 Stage2 对 deterministic planner 有效，但 v3 selection + DPSI weighting 没有实现论文
+所需的 density/mode-balanced conditional distribution。**
+
+下一步先做同 archive 的单变量因果实验，不立即重建全量数据：
+
+- D0：当前 v3 + 当前 target distribution；
+- D1：当前 v3 + trajectory-density/mode-balanced target distribution，去掉 source entropy 对 beta 的作用；
+- D2：对 v3 做模式内去重后 + 同一 mode-balanced distribution。
+
+先从 A5 epoch155 做短程 fine-tune，同时检查 PDMS/EPDMS 和 SNSAD precision/recall/KEMR/
+width。只有 D1 无效而 D2 有效，才能把主因归结为 archive 构建；如果 D1 已有效，
+主因是训练目标分布而不是轨迹库本身。

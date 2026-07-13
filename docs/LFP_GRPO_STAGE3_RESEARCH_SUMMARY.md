@@ -1,6 +1,6 @@
 # LFP-GRPO Stage3 探究总结
 
-更新时间：2026-07-13 01:05 UTC
+更新时间：2026-07-13 01:56 UTC
 
 ## 1. 术语与研究目标
 
@@ -46,6 +46,20 @@ outputs/stage2_pta_fs_dit_a5_full103k_standardv2_clean_20260710T091344Z/epoch_15
 - 因而当前问题不是“unsafe 没被罚”，而是 sampled train safety 信号太稀疏，不能约束共享 DiT
   更新后的 held-out deterministic tail。
 
+### 2.4 v3 是高质量候选库，但未校准为多模态目标分布
+
+- 全量 103,288 scene 的 selected support 均通过当前质量门控，`58.49%` 场景存在
+  优于 GT 的候选；因此不支持“补充轨迹整体低质量”。
+- reward 标签过度饱和：`75.81%` 场景 best support reward 等于 1，5,000-scene
+  抽样中 `35.16%` 场景所有 support reward 都等于 1。
+- support 有平均 `4.91` 个几何模式，但近邻 ADE 均值仅 `0.436m`，存在明显模式内冗余。
+- 现有 adaptive beta 使用 source entropy，而 source entropy 与 trajectory mode capacity 的
+  Spearman 相关为 `-0.263`。A5 名义采样 `3.821` 个 target，effective target count 仅
+  `1.842`，最终 diffusion loss 的 GT mass 为 `87.29%`。
+- 因此 Stage2 的基础性能是正向的，但“学到宽、support-aligned distribution”的监督目标没有
+  真正成立。先在同一 v3 archive 上对比当前 weighting 和 mode/density-balanced weighting，
+  再决定是否重建数据。
+
 ## 3. 已完成的关键因果对照
 
 | 对照 | 结果 | 决定 |
@@ -57,6 +71,7 @@ outputs/stage2_pta_fs_dit_a5_full103k_standardv2_clean_20260710T091344Z/epoch_15
 | quality/reference Pareto gate | 首批 credit 几乎不变 | 不进入主配置 |
 | safety-first frontier | sampler/EMA 正常，短 smoke 未损害 progress | 作为课程基线 |
 | support-capacity frontier | v1 PDMS 相对 safety-only `+0.004758`，CI 不跨 0 | 有效缓解退化，仍默认关闭等待复验 |
+| KL 0.02/0.05/0.10 | L1 `0.444/0.386/0.360`，但 PDMS `0.8716/0.8710/0.8693` | KL 约束漂移但不解决 credit trade-off |
 
 优势归一化的准确表述是：每个 scene 内减 feasible mean，再用 DDP-global std 缩放。它不是
 跨 scene 的 batch mean 排序。纯 scene-group std 会放大低 reward-spread 场景中的噪声。
@@ -113,10 +128,13 @@ physical trust 与 progress-biased credit 仍未解决。
 1. **首要：decoded trajectory trust 不足。** transition KL 不能阻止轨迹在物理空间显著漂移。
 2. **首要：安全饱和后的 credit 偏向 progress。** Pareto gate 逻辑正确，但安全域内标量仍更容易
    奖励纵向激进轨迹；NAVSIM v2 comfort 不在 v1 reward 中。
-3. **次要：课程目标曾与核心多样性目标错位。** 旧 BPAE 更偏低 reference reward；容量课程已
+3. **Stage2 多模态监督错位。** v3 轨迹库本身有质量和容量，但 reward 饱和、模式内冗余、
+   source-entropy beta 和 anchor-heavy target sampling 使它没有变成 mode-balanced policy prior。
+4. **次要：课程目标曾与核心多样性目标错位。** 旧 BPAE 更偏低 reference reward；容量课程已
    提供第一项正向因果证据，但效应温和。
-4. **不是主因：优势使用 global std。** 严格对照已否定恢复 scene-group std。
-5. **不是主因：Stage2 明显过拟合或完全没有候选。** navtest 趋势和 covariance calibration 均不支持。
+5. **不是主因：优势使用 global std。** 严格对照已否定恢复 scene-group std。
+6. **不是主因：Stage2 明显过拟合或补充轨迹整体低质量。** navtest 趋势、support audit 和
+   A5 相对 Official 的 v1/v2 改善均不支持。
 
 ## 6. 代码与复现入口
 
@@ -148,11 +166,13 @@ reports/recogdrive_stage3/lfp_grpo_r4_evidence_review_20260712.md
 
 ## 7. 下一步最小实验
 
-1. 对 capacity frontier 复验至少一个 seed，并补 NAVSIM v2 EPDMS；在通过前保持默认关闭。
-2. 单变量测试 reference-relative decoded trajectory trust，不能同时改 reward、KL 和 curriculum。
-3. trust 有效后，再测试 v1/v2 分离的 quality objective；不能把 NAVSIM v2 与历史 Pareto GRPO v2
+1. 在当前 v3 archive 上做 Stage2 D0/D1 短程单变量对照：当前 weighting vs
+   trajectory-density/mode-balanced weighting。先分离训练目标问题，不立即重建数据。
+2. 对 capacity frontier 复验至少一个 seed，并补 NAVSIM v2 EPDMS；在通过前保持默认关闭。
+3. 单变量测试 reference-relative decoded trajectory trust，不能同时改 reward、KL 和 curriculum。
+4. trust 有效后，再测试 v1/v2 分离的 quality objective；不能把 NAVSIM v2 与历史 Pareto GRPO v2
    混为一谈。
-4. 最终候选必须同时报告 PDMS、EPDMS、NC/TTC/EC、L1 与 SNSAD，不以单一训练 reward 晋级。
+5. 最终候选必须同时报告 PDMS、EPDMS、NC/TTC/EC、L1 与 SNSAD，不以单一训练 reward 晋级。
 
 本轮没有启动完整 Stage3 长训练，也没有继续占用 `training-rl-zt3`。容量课程的 v2 评估因该
 资源已释放而未执行，不能从 v1 结果外推 v2 改善。
