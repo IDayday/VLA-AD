@@ -1,6 +1,6 @@
 # LFP-GRPO Stage3 探究总结
 
-更新时间：2026-07-13 04:05 UTC
+更新时间：2026-07-13 06:17 UTC
 
 ## 1. 术语与研究目标
 
@@ -46,16 +46,18 @@ outputs/stage2_pta_fs_dit_a5_full103k_standardv2_clean_20260710T091344Z/epoch_15
 - 因而当前问题不是“unsafe 没被罚”，而是 sampled train safety 信号太稀疏，不能约束共享 DiT
   更新后的 held-out deterministic tail。
 
-### 2.4 v3 是高质量候选库，但未校准为多模态目标分布
+### 2.4 v3 是可行候选库，但未校准为多模态 teacher 分布
 
-- 全量 103,288 scene 的 selected support 均通过当前质量门控，`58.49%` 场景存在
-  优于 GT 的候选；因此不支持“补充轨迹整体低质量”。
+- 全量 103,288 scene 的 selected support 均通过当前 evaluator/几何门控，`58.51%` 场景的
+  cache-best 是非 GT；这证明轨迹池有可用模式，但不能证明它们适合作为直接监督 teacher。
 - reward 标签过度饱和：`75.81%` 场景 best support reward 等于 1，5,000-scene
   抽样中 `35.16%` 场景所有 support reward 都等于 1。
 - support 有平均 `4.91` 个几何模式，但近邻 ADE 均值仅 `0.436m`，存在明显模式内冗余。
 - 现有 adaptive beta 使用 source entropy，而 source entropy 与 trajectory mode capacity 的
   Spearman 相关为 `-0.263`。A5 名义采样 `3.821` 个 target，effective target count 仅
   `1.842`，最终 diffusion loss 的 GT mass 为 `87.29%`。
+- cache-best 非 GT 相对 GT 的 EP 增益均值 `+0.16063`，而 TTC 已饱和；其 GT-relative ADE
+  均值 `2.443m`、FDE 均值 `4.867m`，主要来自 external/failure-expand/progress generator。
 - 因此 Stage2 的基础性能是正向的，但“学到宽、support-aligned distribution”的监督目标没有
   真正成立。同一 v3 archive 上的 mode/density-balanced 对照已经完成：高 mode mass 能显著
   提高 recall 和 width，证明 archive 中存在可学习多样性；但 `beta>=0.45` 明确损害安全、
@@ -64,14 +66,51 @@ outputs/stage2_pta_fs_dit_a5_full103k_standardv2_clean_20260710T091344Z/epoch_15
 
 ### 2.5 Stage2 数据问题的准确定位
 
-- v3 是有效候选库，不是自然校准的目标概率分布；archive record frequency 不能直接作为 mode mass。
+- v3 是有效候选库，不是自然校准的目标概率分布；archive quota/source frequency 不能直接作为 mode mass。
+- 旧 v3 的 `anchor_distance` 误把 candidate 0 当 GT，而 candidate 0 只有 `66.23%` 是 GT；新构建
+  和 runtime 读取均已修为真实 GT-relative distance。
 - legacy sampler 使 diffusion loss 的实际 GT mass 达到约 87.3%，解释了 A5 的窄分布。
 - 把 GT mass 一次降到约 56% 可以显著学宽，但会产生共享 DiT 的质量/安全干扰；延长到
   累计 1,000 step、降低 sampler variance 都不能消除该退化。
 - `beta=0.15` 退回更高 GT mass，保住 PDMS 但没有新增多样性；`beta=0.25` 是首个同时具有
   显著 width/SNSAD 增益且 PDMS 差异未显著的点。
-- 因此下一步不是立即重建 archive，也不是删除 FS-Norm/PTA，而是把 mode-balanced exposure
-  放入 safety/quality trust budget，并做多 seed 复验。
+- 纯 GT continuation 在相同 FS-Norm/PTA 下，相对 legacy multi-support 得到 NC `+0.00416`、
+  TTC `+0.00952`、L1 `-0.04467`，但 EP `-0.00636`。这排除了 FS-Norm/PTA 是主因。
+- 每 scene 只训练唯一 cache-best 后，相对纯 GT 得到 EP `+0.01981`，但 PDMS `-0.01622`、
+  NC `-0.02220`、TTC `-0.04972`、L1 `+0.22422`。这排除了同一步多目标平均是唯一原因。
+- 因此下一步不是删除 FS-Norm/PTA，也不是把 cache-best 固化为 teacher，而是把模式去重、条件
+  可学习性和实际 residual/gradient budget 接入渐进式 support exposure。
+
+### 2.6 Stage2 的训练方式直接决定 Stage3 难度
+
+Stage3 需要的不是最大宽度，而是局部可优化的 policy prior：高 feasible rollout ratio、足够的
+组内 reward spread、可解释模式和连续的 decoded-trajectory 响应。当前 Stage2 的静态 beta 只
+控制 target probability，不控制难 target 的实际残差影响；A5 epoch155 已达到当前分布的 loss
+floor，因此继续同配方训练不能自动获得更合适的 RL prior。
+
+`M=1 mode-balanced beta=0.25` 双 seed 对照已完成。相对同 seed M=4，NAVSIM v1 PDMS
+`-0.00090` 且区间跨 0，L1 `-0.00719`；SNSAD `-0.00240`、recall `-0.00298`、width
+`-0.00496`，区间均低于 0。跨 step 单模式学习略微降低轨迹误差，但同时收窄分布，证明并行
+多目标平均不是主要退化原因，目标分布的期望偏差更重要。
+
+进一步静态审计发现，既有 mode-balanced 路径仍继承 legacy reward shortcut：约 `51.4%` scene
+因 cache-best reward margin 被提高 beta，且声明为 true 的 scene normalization 没有生效，scene
+loss mass 均值被放大到 `1.111`。这与 cache-best 的 progress 偏差叠加。代码已仅对新
+mode-balanced 路径改为 capacity-only、scene-uniform，legacy 路径保持不变，并完成独立双 seed
+短训验证。
+
+修正路径的 2-seed 训练已显示：non-GT target mass 约 `14.8%`，但 residual-mass proxy 约
+`37.7%`，non-GT/GT diffusion loss ratio 约 `8.7`。这给出了 Stage2 训练失衡的直接机制：
+概率质量远小于实际优化影响。后续 support curriculum 必须同时调度 mode probability 和
+residual/gradient budget，不能只退火 beta。
+
+其 NAVSIM v1 2-seed 配对结果相对旧 mode-balanced 为 PDMS `+0.00073`、NC `+0.00130`、
+TTC `+0.00288`、L1 `-0.00914`，置信区间均支持改善；EP `-0.00121`。这验证了 legacy
+progress shortcut 确实是可复现的退化来源，而不是纯代码审美问题。与此同时，SNSAD
+`-0.01081`、support recall `-0.01832`、width ratio `-0.01527`、pairwise ADE `-0.01603m`，
+置信区间均低于 0，precision `+0.00076`。旧 shortcut 的确扩宽了策略，但方式是过度优化
+progress-biased hard targets；capacity-only 则回到更精确、更安全但更窄的分布。下一版需要显式
+约束安全下的模式覆盖，而不是在两个端点之间继续手调静态 beta。
 
 完整实验表、置信区间和路径见 `docs/Stage2_V3_Target_Distribution_Study.md`。
 
@@ -88,6 +127,10 @@ outputs/stage2_pta_fs_dit_a5_full103k_standardv2_clean_20260710T091344Z/epoch_15
 | support-capacity frontier | v1 PDMS 相对 safety-only `+0.004758`，CI 不跨 0 | 有效缓解退化，仍默认关闭等待复验 |
 | KL 0.02/0.05/0.10 | L1 `0.444/0.386/0.360`，但 PDMS `0.8716/0.8710/0.8693` | KL 约束漂移但不解决 credit trade-off |
 | Stage2 target D0 vs mode balance | 0.25 提高 SNSAD/width 且 PDMS CI 跨 0；0.45 以上单调退化 | 保留 legacy 默认，mode 实验上限改为 0.25 |
+| Stage2 GT-only vs multi-support | GT-only 显著改善 NC/TTC/L1，但降低 EP | support 带来 progress，同时引入安全和可学习性代价 |
+| Stage2 single cache-best vs GT-only | EP 提高，但 PDMS/NC/TTC/L1 大幅退化 | cache-best 不能直接作为 teacher；问题不只来自 M>1 |
+| Stage2 M=1 vs M=4 | M=1 改善 L1，但 SNSAD/recall/width 显著下降，PDMS 无显著收益 | 多目标同步平均不是主因；不能靠减小 M 修复 |
+| Stage2 capacity-only vs reward shortcut | 安全/PDMS/L1 改善，同时 SNSAD/recall/width 显著下降 | 将安全锚定与多样性释放拆成动态约束课程 |
 
 优势归一化的准确表述是：每个 scene 内减 feasible mean，再用 DDP-global std 缩放。它不是
 跨 scene 的 batch mean 排序。纯 scene-group std 会放大低 reward-spread 场景中的噪声。
@@ -144,14 +187,14 @@ physical trust 与 progress-biased credit 仍未解决。
 1. **首要：decoded trajectory trust 不足。** transition KL 不能阻止轨迹在物理空间显著漂移。
 2. **首要：安全饱和后的 credit 偏向 progress。** Pareto gate 逻辑正确，但安全域内标量仍更容易
    奖励纵向激进轨迹；NAVSIM v2 comfort 不在 v1 reward 中。
-3. **Stage2 多模态监督错位。** v3 轨迹库本身有质量和容量，但 reward 饱和、模式内冗余、
-   source-entropy beta 和 anchor-heavy target sampling 使它没有变成 mode-balanced policy prior。
-   单变量实验已确认 mode mass 存在安全边界：0.25 有温和正向多样性证据，0.45 以上干扰明显。
+3. **Stage2 多模态监督错位。** v3 轨迹库有可行模式，但 reward 饱和、progress-biased winner、
+   远距离 teacher、模式内冗余和静态 beta 使它没有变成条件可学习的 policy prior。单变量实验
+   已确认 mode mass 存在安全边界：0.25 有温和多样性收益，0.45 以上干扰明显。
 4. **次要：课程目标曾与核心多样性目标错位。** 旧 BPAE 更偏低 reference reward；容量课程已
    提供第一项正向因果证据，但效应温和。
 5. **不是主因：优势使用 global std。** 严格对照已否定恢复 scene-group std。
-6. **不是主因：Stage2 明显过拟合或补充轨迹整体低质量。** navtest 趋势、support audit 和
-   A5 相对 Official 的 v1/v2 改善均不支持。
+6. **不是主因：Stage2 明显过拟合、FS-Norm 或 PTA。** navtest 趋势、GT-only 对照和 A5 相对
+   Official 的 v1/v2 改善均不支持。更准确的问题是 support teacher 分布缺少概率和可学习性校准。
 
 ## 6. 代码与复现入口
 
@@ -183,13 +226,18 @@ reports/recogdrive_stage3/lfp_grpo_r4_evidence_review_20260712.md
 
 ## 7. 下一步最小实验
 
-1. 在当前 v3 archive 上做 Stage2 D0/D1 短程单变量对照：当前 weighting vs
-   trajectory-density/mode-balanced weighting。先分离训练目标问题，不立即重建数据。
-2. 对 capacity frontier 复验至少一个 seed，并补 NAVSIM v2 EPDMS；在通过前保持默认关闭。
-3. 单变量测试 reference-relative decoded trajectory trust，不能同时改 reward、KL 和 curriculum。
-4. trust 有效后，再测试 v1/v2 分离的 quality objective；不能把 NAVSIM v2 与历史 Pareto GRPO v2
+1. 按 GT-relative distance、source holdout 和非饱和 safety gain 分层支持集，测试哪些 support
+   具有可迁移的条件可学习性；不再用 cache-best 作为 teacher oracle。
+2. 设计 anchor、local-support、mode 三阶段课程，用 target loss ratio、residual budget 和 held-out
+   safety 控制 beta；课程 priority 只控制 exposure，不乘入 loss。
+3. 加入动态 non-GT residual-mass budget，在旧 shortcut 与 capacity-only 之间搜索 Pareto 点；
+   晋级条件同时约束 NC/TTC、L1、SNSAD 和 support recall。
+4. 对 capacity frontier 复验至少一个 seed，并补 NAVSIM v2 EPDMS；在通过前保持默认关闭。
+5. 单变量测试 reference-relative decoded trajectory trust，不能同时改 reward、KL 和 curriculum。
+6. trust 有效后，再测试 v1/v2 分离的 quality objective；不能把 NAVSIM v2 与历史 Pareto GRPO v2
    混为一谈。
-5. 最终候选必须同时报告 PDMS、EPDMS、NC/TTC/EC、L1 与 SNSAD，不以单一训练 reward 晋级。
+7. 最终候选必须同时报告 PDMS、EPDMS、NC/TTC/EC、L1、SNSAD 和 Stage3 reward-spread probe，
+   不以单一训练 reward 晋级。
 
 本轮没有启动完整 Stage3 长训练，也没有继续占用 `training-rl-zt3`。容量课程的 v2 评估因该
 资源已释放而未执行，不能从 v1 结果外推 v2 改善。

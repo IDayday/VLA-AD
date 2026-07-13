@@ -19,10 +19,37 @@ from navsim.agents.recogdrive.recogdrive_diffusion_planner import (
     OfflineRLConfig,
     ReCogDriveDiffusionPlanner,
     _build_asmi_weights,
+    _compute_dpsi_target_hardness_diagnostics,
     _compute_dpsi_mode_balance,
     _compute_dpsi_support_profile,
     _sample_asmi_targets,
 )
+
+
+def test_dpsi_target_hardness_separates_probability_and_residual_mass():
+    losses = torch.tensor([[1.0, 9.0, 0.0]])
+    weights = torch.tensor([[0.8, 0.2, 0.0]])
+    sources = torch.tensor([[1, 7, 0]])
+
+    diagnostics = _compute_dpsi_target_hardness_diagnostics(losses, weights, sources)
+
+    assert diagnostics["gt_target_loss"].item() == pytest.approx(1.0)
+    assert diagnostics["non_gt_target_loss"].item() == pytest.approx(9.0)
+    assert diagnostics["non_gt_to_gt_loss_ratio"].item() == pytest.approx(9.0)
+    assert diagnostics["non_gt_target_weight_ratio"].item() == pytest.approx(0.2)
+    assert diagnostics["non_gt_residual_mass_ratio"].item() == pytest.approx(0.6 / 1.4)
+
+
+def test_dpsi_target_hardness_handles_missing_source_without_nan():
+    diagnostics = _compute_dpsi_target_hardness_diagnostics(
+        torch.tensor([[0.0, 0.0]]),
+        torch.tensor([[1.0, 0.0]]),
+        torch.tensor([[1, 7]]),
+    )
+
+    assert all(torch.isfinite(value) for value in diagnostics.values())
+    assert diagnostics["non_gt_to_gt_loss_ratio"].item() == 0.0
+    assert diagnostics["non_gt_residual_mass_ratio"].item() == 0.0
 
 
 def _record(k: int = 10) -> dict:
@@ -72,6 +99,12 @@ def test_dpsi_support_indices_filter():
     assert batch["selected_support_weight"][0, 0].item() == pytest.approx(cfg.dpsi_weight_vector_pareto)
     assert batch["selected_support_weight"][0, 1].item() == 0.0
     assert batch["selected_support_weight"][0, 2].item() == pytest.approx(cfg.dpsi_weight_gt)
+    expected_distance = torch.linalg.vector_norm(
+        batch["selected_trajs"][0, :, :, :2] - batch["selected_trajs"][0, 2, :, :2].unsqueeze(0),
+        dim=-1,
+    ).mean(dim=-1)
+    assert torch.allclose(batch["selected_anchor_distance"][0], expected_distance)
+    assert batch["selected_anchor_distance"][0, 2].item() == 0.0
 
 
 def test_dpsi_tag_weights():
@@ -238,6 +271,39 @@ def test_mode_balanced_distribution_stays_active_for_saturated_gt():
     assert weight_diag["dpsi_gt_weight_ratio"].item() < 0.6
     assert weight_diag["dpsi_effective_target_count_mean"].item() > 2.5
     assert weights.sum().item() == pytest.approx(profile["scene_weight"].item())
+
+
+def test_mode_balanced_beta_and_scene_mass_ignore_reward_improver_shortcuts():
+    cfg = OfflineRLConfig(
+        dpsi_target_distribution="mode_balanced",
+        dpsi_beta_max=0.25,
+        dpsi_beta_warmup_epochs=0,
+        dpsi_scene_normalize_weights=True,
+        dpsi_strong_improver_margin=0.01,
+        dpsi_improver_scene_weight_gain=2.0,
+    )
+    trajs = _traj_row([0.0, 1.5, 3.0])
+    rewards = torch.tensor([[0.5, 0.9, 1.0]])
+    source = torch.tensor([[1, 7, 4]])
+    mask = torch.ones_like(rewards, dtype=torch.bool)
+
+    profile, diagnostics = _compute_dpsi_support_profile(
+        trajs,
+        rewards,
+        mask,
+        source,
+        torch.tensor([0.5]),
+        torch.tensor([0.5]),
+        mask,
+        cfg,
+        current_epoch=0,
+    )
+
+    expected_beta = cfg.dpsi_beta_max * profile["mode_capacity"]
+    assert profile["strong_improver"].item()
+    assert profile["beta_profile"].item() == pytest.approx(expected_beta.item())
+    assert profile["scene_weight"].item() == 1.0
+    assert diagnostics["dpsi_scene_uniform_weighting"].item() == 1.0
 
 
 def test_mode_balance_rejects_nonpositive_bandwidth():

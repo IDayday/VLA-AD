@@ -2,7 +2,7 @@ from types import SimpleNamespace
 
 import torch
 
-from scripts.eval_recogdrive_expert_pdm import make_initial_noise, stable_sample_seed
+from scripts.eval_recogdrive_expert_pdm import file_sha256, make_initial_noise, stable_sample_seed
 
 
 def test_stable_sample_seed_depends_only_on_base_seed_and_token() -> None:
@@ -25,3 +25,12 @@ def test_initial_noise_is_invariant_to_evaluation_order() -> None:
     for token in forward:
         torch.testing.assert_close(forward[token], reverse[token], rtol=0.0, atol=0.0)
 
+
+def test_file_sha256_fingerprints_exact_evaluation_config(tmp_path) -> None:
+    config = tmp_path / "planner.yaml"
+    config.write_bytes(b"sampling_method: ddim\nnum_inference_steps: 5\n")
+
+    first = file_sha256(config)
+    config.write_bytes(b"sampling_method: ddim\nnum_inference_steps: 4\n")
+
+    assert file_sha256(config) != first

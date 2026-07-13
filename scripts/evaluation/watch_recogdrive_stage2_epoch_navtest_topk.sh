@@ -3,6 +3,7 @@ set -Eeuo pipefail
 
 : "${RUN_ROOT:?Set RUN_ROOT to the training output directory containing epoch_*.ckpt}"
 : "${OUT_ROOT:?Set OUT_ROOT to the evaluation output directory}"
+: "${CONFIG:?Set CONFIG to the exact planner evaluation YAML used by the checkpoint}"
 
 PROJECT_ROOT="${PROJECT_ROOT:-/mnt/project/VLA-AD_last_vla_dev}"
 PYTHON_BIN="${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}"
@@ -19,7 +20,6 @@ NUM_SHARDS="${NUM_SHARDS:-2}"
 GPUS_CSV="${GPUS_CSV:-1,2}"
 PRECISION="${PRECISION:-fp32}"
 SKIP_COMPLETED="${SKIP_COMPLETED:-1}"
-CONFIG="${CONFIG:-${PROJECT_ROOT}/configs/sg_fps_asmi_stage2_fs_norm_eval.yaml}"
 CHUNK_CACHE_ROOT="${CHUNK_CACHE_ROOT:-/mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1}"
 CHUNK_NAME_PATTERN="${CHUNK_NAME_PATTERN:-navtest_full_chunk_*}"
 METRIC_CACHE_DIR="${METRIC_CACHE_DIR:-/mnt/project/VLA-AD/cache/metric_cache_navtest_full_v1}"

@@ -675,16 +675,23 @@ def build_archive_record(
     best_valid_reward = float(rewards[valid_best_idx]) if rewards.size else 0.0
     best_selected_reward = float(rewards[selected_mask].max()) if np.any(selected_mask) else best_valid_reward
     if candidates:
-        first = np.asarray(candidates[0].trajectory, dtype=np.float32)
+        anchor = ref_traj if ref_traj is not None else np.asarray(candidates[0].trajectory, dtype=np.float32)
+        anchor_reference = "gt" if ref_traj is not None else "candidate0_fallback"
         anchor_distance = np.asarray(
             [
-                float(np.linalg.norm(np.asarray(c.trajectory, dtype=np.float32)[..., :2] - first[..., :2], axis=-1).mean())
+                float(
+                    np.linalg.norm(
+                        np.asarray(c.trajectory, dtype=np.float32)[..., :2] - anchor[..., :2],
+                        axis=-1,
+                    ).mean()
+                )
                 for c in candidates
             ],
             dtype=np.float32,
         )
     else:
         anchor_distance = np.zeros((0,), dtype=np.float32)
+        anchor_reference = "missing"
     component_keys = (
         "pdms",
         "no_at_fault_collisions",
@@ -704,6 +711,7 @@ def build_archive_record(
         else np.zeros((0, 0, 3), dtype=np.float32),
         "rewards": rewards,
         "anchor_distance": anchor_distance,
+        "anchor_distance_reference": anchor_reference,
         "components": {
             key: np.asarray([_component_value(c.components, key) for c in candidates], dtype=np.float32)
             for key in component_keys

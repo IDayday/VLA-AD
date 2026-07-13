@@ -139,6 +139,14 @@ def load_yaml(path: Path) -> Dict[str, Any]:
         return yaml.safe_load(f) or {}
 
 
+def file_sha256(path: Path) -> str:
+    digest = hashlib.sha256()
+    with path.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
+
+
 def as_bool(value: Any, default: bool = False) -> bool:
     if value is None:
         return default
@@ -677,6 +685,27 @@ def main() -> int:
         "split": args.split,
         "feature_source": args.feature_source,
         "checkpoint": str(args.checkpoint),
+        "config": str(args.config.resolve()),
+        "config_sha256": file_sha256(args.config),
+        "fs_norm_stats_path": str(Path(planner.config.fs_norm_stats_path).resolve())
+        if bool(getattr(planner.config, "use_fs_norm", False))
+        else None,
+        "fs_norm_stats_sha256": file_sha256(Path(planner.config.fs_norm_stats_path))
+        if bool(getattr(planner.config, "use_fs_norm", False))
+        else None,
+        "resolved_planner_config": {
+            "sampling_method": str(planner.config.sampling_method),
+            "num_inference_steps": int(planner.config.num_inference_steps),
+            "use_fs_norm": bool(getattr(planner.config, "use_fs_norm", False)),
+            "fs_norm_output_clip_mode": str(getattr(planner.config, "fs_norm_output_clip_mode", "")),
+            "use_planning_token_adapter": bool(
+                getattr(planner.config, "use_planning_token_adapter", False)
+            ),
+            "planning_num_tokens": int(getattr(planner.config, "planning_num_tokens", 0)),
+            "planning_condition_layers": str(
+                getattr(planner.config, "planning_condition_layers", "")
+            ),
+        },
         "precision": args.precision,
         "deterministic": bool(args.deterministic),
         "initial_noise_seed": args.initial_noise_seed,

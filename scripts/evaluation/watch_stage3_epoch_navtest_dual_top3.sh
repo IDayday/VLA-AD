@@ -3,13 +3,13 @@ set -Eeuo pipefail
 
 : "${CHECKPOINT_ROOT:?Set CHECKPOINT_ROOT to the Lightning epoch checkpoint directory}"
 : "${OUT_ROOT:?Set OUT_ROOT to the dual-protocol evaluation directory}"
+: "${V1_CONFIG:?Set V1_CONFIG to the exact planner evaluation YAML used by the checkpoint}"
 
 PROJECT_ROOT="${PROJECT_ROOT:-/mnt/project/VLA-AD_last_vla_dev}"
 PYTHON_BIN="${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}"
 V2_PYTHON_BIN="${V2_PYTHON_BIN:-/mnt/code/miniconda/envs/navsimv2-recogdrive/bin/python}"
 V2_NAVSIM_ROOT="${V2_NAVSIM_ROOT:-/mnt/code/liushiqi/navsim}"
 V2_METRIC_CACHE_PATH="${V2_METRIC_CACHE_PATH:-/mnt/code/dataset/navsim/metric_cache_v2/navtest_full_2026-03-07_15-40-49}"
-V1_CONFIG="${V1_CONFIG:-${PROJECT_ROOT}/outputs/pta_fs_dit_a5_navtest_latest_20260710T1650Z/a5_eval.yaml}"
 V1_CHUNK_CACHE_ROOT="${V1_CHUNK_CACHE_ROOT:-/mnt/project/VLA-AD/cache/recogdrive_expert_chunks/full_v1}"
 V1_METRIC_CACHE_DIR="${V1_METRIC_CACHE_DIR:-/mnt/project/VLA-AD/cache/metric_cache_navtest_full_v1}"
 

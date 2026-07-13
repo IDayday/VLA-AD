@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import numpy as np
+import pytest
 
 from navsim.agents.recogdrive.pareto_support.dataclasses import CandidateRecord, TrajectoryCandidate
 from navsim.agents.recogdrive.pareto_support.pareto_archive import (
@@ -96,6 +97,31 @@ def test_legacy_support_does_not_tag_invalid_non_anchor_candidates() -> None:
     assert tagged["progress_speed"]
     assert "il" not in tagged
     assert "progress_endpoint" not in tagged
+
+
+def test_archive_anchor_distance_uses_gt_even_when_gt_is_not_first() -> None:
+    candidates = [
+        _legacy_record("progress_endpoint", 4, valid=True, reward=0.8),
+        _legacy_record("gt", 1, valid=True, reward=0.6),
+        _legacy_record("ddv2", 2, valid=True, reward=0.7),
+    ]
+
+    record = build_archive_record(
+        "scene",
+        candidates,
+        candidates,
+        ref=candidates[1].components,
+        cfg={"support_top_m": 4},
+    )
+
+    gt_xy = candidates[1].trajectory[..., :2]
+    expected = [
+        float(np.linalg.norm(candidate.trajectory[..., :2] - gt_xy, axis=-1).mean())
+        for candidate in candidates
+    ]
+    assert record["anchor_distance_reference"] == "gt"
+    assert record["anchor_distance"] == pytest.approx(expected)
+    assert record["anchor_distance"][1] == 0.0
 
 
 def test_reselect_archive_record_replaces_invalid_non_anchor_support() -> None:

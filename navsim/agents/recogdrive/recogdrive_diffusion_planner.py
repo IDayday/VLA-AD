@@ -601,6 +601,8 @@ class OfflineRLConfig:
     dpsi_top_m: int = 12
     dpsi_filter_to_support_indices: bool = True
     dpsi_empty_tag_zero: bool = True
+    # For mode_balanced, normalize every scene to unit target mass. Legacy keeps
+    # its historical reward-dependent scene weighting for checkpoint parity.
     dpsi_scene_normalize_weights: bool = True
     dpsi_use_adaptive_beta: bool = True
     dpsi_target_distribution: Literal["legacy", "mode_balanced"] = "legacy"
@@ -836,7 +838,9 @@ def _compute_dpsi_support_profile(
         beta = torch.where(low_support, beta * 0.25, beta)
         beta = torch.where(high_gt_saturated, torch.zeros_like(beta), beta)
     strong = best_selected_minus_gt >= float(cfg.dpsi_strong_improver_margin)
-    beta = torch.where(strong, torch.maximum(beta, beta.new_full(beta.shape, 0.4)), beta)
+    # Geometric mode capacity and legacy reward shortcuts are separate contracts.
+    if not use_mode_balance:
+        beta = torch.where(strong, torch.maximum(beta, beta.new_full(beta.shape, 0.4)), beta)
     beta = beta.clamp(min=0.0, max=beta_max)
     warmup = int(cfg.dpsi_beta_warmup_epochs)
     if warmup > 0:
@@ -854,6 +858,8 @@ def _compute_dpsi_support_profile(
         torch.minimum(scene_weight, scene_weight.new_ones(())),
         scene_weight,
     )
+    if use_mode_balance and bool(cfg.dpsi_scene_normalize_weights):
+        scene_weight = torch.ones_like(scene_weight)
 
     profile = {
         "support_count": support_count,
@@ -861,6 +867,7 @@ def _compute_dpsi_support_profile(
         "source_entropy": source_entropy,
         "best_selected_minus_gt": best_selected_minus_gt,
         "selected_has_improver": selected_has_improver,
+        "strong_improver": strong,
         "high_gt_saturated": high_gt_saturated,
         "low_support": low_support,
         "multimodal_profile_score": mode_profile["mode_capacity"] if use_mode_balance else count_score * dist_score * entropy_score,
@@ -878,7 +885,12 @@ def _compute_dpsi_support_profile(
         "dpsi_low_support_ratio": low_support.float().mean(),
         "dpsi_high_gt_saturated_ratio": high_gt_saturated.float().mean(),
         "dpsi_selected_has_improver_ratio": selected_has_improver.float().mean(),
+        "dpsi_strong_improver_ratio": strong.float().mean(),
         "dpsi_scene_weight_mean": scene_weight.mean(),
+        "dpsi_scene_uniform_weighting": selected_rewards.new_tensor(
+            float(use_mode_balance and bool(cfg.dpsi_scene_normalize_weights)),
+            dtype=dtype,
+        ),
         "dpsi_mode_balance_enabled": selected_rewards.new_tensor(float(use_mode_balance), dtype=dtype),
         "dpsi_mode_effective_count_mean": mode_profile["effective_mode_count"].mean(),
         "dpsi_mode_capacity_mean": mode_profile["mode_capacity"].mean(),
@@ -1100,6 +1112,60 @@ def _sample_asmi_targets(
         "_sampled_target_source_code": out_source_code,
     }
     return out_trajs, out_weights, out_mask, diag
+
+
+def _compute_dpsi_target_hardness_diagnostics(
+    per_target_loss: torch.Tensor,
+    weights: torch.Tensor,
+    source_code: torch.Tensor,
+) -> Dict[str, torch.Tensor]:
+    if per_target_loss.shape != weights.shape or per_target_loss.shape != source_code.shape:
+        raise ValueError(
+            "per_target_loss, weights, and source_code must have the same [B, M] shape, got "
+            f"{tuple(per_target_loss.shape)}, {tuple(weights.shape)}, and {tuple(source_code.shape)}."
+        )
+    loss = per_target_loss.detach().float().clamp_min(0.0)
+    mass = weights.detach().float().clamp_min(0.0)
+    active = mass > 0.0
+    gt_mask = active & (source_code == 1)
+    non_gt_mask = active & (source_code != 1)
+    zero = loss.new_zeros(())
+
+    def masked_weighted_mean(mask: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
+        masked_mass = mass * mask.float()
+        denominator = masked_mass.sum()
+        mean = torch.where(
+            denominator > 0.0,
+            (masked_mass * loss).sum() / denominator.clamp_min(1e-12),
+            zero,
+        )
+        return mean, denominator
+
+    gt_loss, gt_mass = masked_weighted_mean(gt_mask)
+    non_gt_loss, non_gt_mass = masked_weighted_mean(non_gt_mask)
+    has_both = (gt_mass > 0.0) & (non_gt_mass > 0.0)
+    loss_ratio = torch.where(has_both, non_gt_loss / gt_loss.clamp_min(1e-12), zero)
+
+    residual_mass = mass * loss.sqrt()
+    residual_total = residual_mass.sum()
+    non_gt_residual_ratio = torch.where(
+        residual_total > 0.0,
+        (residual_mass * non_gt_mask.float()).sum() / residual_total.clamp_min(1e-12),
+        zero,
+    )
+    target_mass_total = mass.sum()
+    non_gt_target_weight_ratio = torch.where(
+        target_mass_total > 0.0,
+        non_gt_mass / target_mass_total.clamp_min(1e-12),
+        zero,
+    )
+    return {
+        "gt_target_loss": gt_loss,
+        "non_gt_target_loss": non_gt_loss,
+        "non_gt_to_gt_loss_ratio": loss_ratio,
+        "non_gt_residual_mass_ratio": non_gt_residual_ratio,
+        "non_gt_target_weight_ratio": non_gt_target_weight_ratio,
+    }
 
 
 @dataclass
@@ -8935,6 +9001,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "early_kink_rate": zero_loss.detach(),
                 "tail_reverse_rate": zero_loss.detach(),
                 "curvature_violation_rate": zero_loss.detach(),
+                "gt_target_loss": zero_loss.detach(),
+                "non_gt_target_loss": zero_loss.detach(),
+                "non_gt_to_gt_loss_ratio": zero_loss.detach(),
+                "non_gt_residual_mass_ratio": zero_loss.detach(),
+                "non_gt_target_weight_ratio": zero_loss.detach(),
                 **(
                     {"per_sample_loss_matrix": target_trajs.new_zeros((B, M), dtype=torch.float32)}
                     if return_per_sample_loss
@@ -8963,6 +9034,13 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         fs_abs_gt3_matrix = loss_diag.pop("fs_target_abs_gt3_matrix", None)
         fs_abs_gt5_matrix = loss_diag.pop("fs_target_abs_gt5_matrix", None)
         aux_active_mask = loss_diag.pop("x0_aux_active_mask", None)
+        if target_source_matrix is None:
+            target_source_matrix = torch.ones_like(per_target_loss, dtype=torch.long)
+        hardness_diag = _compute_dpsi_target_hardness_diagnostics(
+            per_target_loss,
+            weights,
+            target_source_matrix,
+        )
         per_sample_loss = per_target_loss.reshape(B * M)
         valid_weight_sum = raw_weight_sum.clamp(min=1e-6)
         awac_loss = (flat_weights.to(per_sample_loss) * per_sample_loss).sum() / valid_weight_sum.to(per_sample_loss)
@@ -9073,6 +9151,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "early_kink_rate": loss_diag["early_kink_rate"].to(device=awac_loss.device, dtype=awac_loss.dtype),
             "tail_reverse_rate": loss_diag["tail_reverse_rate"].to(device=awac_loss.device, dtype=awac_loss.dtype),
             "curvature_violation_rate": loss_diag["curvature_violation_rate"].to(device=awac_loss.device, dtype=awac_loss.dtype),
+            **{
+                key: value.to(device=awac_loss.device, dtype=awac_loss.dtype)
+                for key, value in hardness_diag.items()
+            },
         }
         for key in (
             "planning_token_norm",
@@ -9501,7 +9583,19 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 )
             selected_trajs[b, :m] = torch.from_numpy(candidates_np).to(device=device, dtype=dtype)
             selected_rewards[b, :m] = torch.as_tensor(record["rewards"], device=device, dtype=torch.float32)
-            selected_anchor_distance[b, :m] = torch.as_tensor(record["anchor_distance"], device=device, dtype=torch.float32)
+            gt_indices = [idx for idx, source in enumerate(sources) if self._source_code(source) == 1]
+            if gt_indices:
+                gt_xy = selected_trajs[b, gt_indices[0], :, :2].float()
+                selected_anchor_distance[b, :m] = torch.linalg.vector_norm(
+                    selected_trajs[b, :m, :, :2].float() - gt_xy.unsqueeze(0),
+                    dim=-1,
+                ).mean(dim=-1)
+            else:
+                selected_anchor_distance[b, :m] = torch.as_tensor(
+                    record["anchor_distance"],
+                    device=device,
+                    dtype=torch.float32,
+                )
             selected_real_mask[b, :m] = True
             for key in REQUIRED_COMPONENT_KEYS:
                 selected_components[key][b, :m] = torch.as_tensor(
@@ -10701,6 +10795,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "dpsi_timestep_max": dpsi_diag["diffusion_timestep_max"].detach(),
             "dpsi_effective_weight_sum": dpsi_diag["effective_weight_sum"].detach(),
             "dpsi_zero_weight_ratio": dpsi_diag["zero_weight_ratio"].detach(),
+            "dpsi_gt_target_loss": dpsi_diag["gt_target_loss"].detach(),
+            "dpsi_non_gt_target_loss": dpsi_diag["non_gt_target_loss"].detach(),
+            "dpsi_non_gt_to_gt_loss_ratio": dpsi_diag["non_gt_to_gt_loss_ratio"].detach(),
+            "dpsi_non_gt_residual_mass_ratio": dpsi_diag["non_gt_residual_mass_ratio"].detach(),
+            "dpsi_non_gt_target_weight_ratio": dpsi_diag["non_gt_target_weight_ratio"].detach(),
             "dpsi_sampled_weight_sum_mean": target_weights.sum(dim=1).mean().detach(),
             "dpsi_sampled_real_ratio": target_mask.float().mean().detach(),
             "valid_candidate_ratio": awac_batch["valid_candidate_ratio"].to(total_loss).detach(),
