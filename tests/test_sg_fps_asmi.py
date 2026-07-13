@@ -7,12 +7,19 @@ import pytest
 import torch
 from transformers.feature_extraction_utils import BatchFeature
 
+import navsim.agents.recogdrive.recogdrive_diffusion_planner as planner_module
 from navsim.agents.recogdrive.offline_rl_buffer import REQUIRED_COMPONENT_KEYS
+from navsim.agents.recogdrive.support_aligned_diversity import (
+    SupportAlignedDiversityConfig,
+    density_balanced_support_weights,
+    trajectory_distance_matrix,
+)
 from navsim.agents.recogdrive.recogdrive_diffusion_planner import (
     GRPOConfig,
     OfflineRLConfig,
     ReCogDriveDiffusionPlanner,
     _build_asmi_weights,
+    _compute_dpsi_mode_balance,
     _compute_dpsi_support_profile,
     _sample_asmi_targets,
 )
@@ -117,6 +124,164 @@ def test_asmi_multimodal_scene():
     assert profile["beta_profile"].item() > 0.0
     assert weights[0, 2:].sum().item() > 0.0
     assert weights.sum().item() == pytest.approx(profile["scene_weight"].item())
+
+
+def test_mode_balance_removes_duplicate_vote_advantage():
+    trajs = _traj_row([0.0, 0.0, 4.0])
+    stats = _compute_dpsi_mode_balance(
+        trajs,
+        torch.ones((1, 3), dtype=torch.bool),
+        bandwidth=0.4,
+    )
+
+    probability = stats["mode_density_weights"][0]
+    assert probability.sum().item() == pytest.approx(1.0)
+    assert probability[:2].sum().item() == pytest.approx(probability[2].item(), rel=0.05)
+    assert stats["effective_mode_count"].item() == pytest.approx(2.0, rel=0.05)
+    assert stats["mode_capacity"].item() == pytest.approx(0.5, rel=0.05)
+
+
+def test_mode_balance_matches_snsad_density_contract():
+    trajs = _traj_row([-1.5, 0.0, 0.0, 3.0])
+    stats = _compute_dpsi_mode_balance(
+        trajs,
+        torch.ones((1, 4), dtype=torch.bool),
+        bandwidth=0.4,
+    )
+    config = SupportAlignedDiversityConfig(density_bandwidth=0.4)
+    numpy_distance = trajectory_distance_matrix(trajs[0].numpy(), trajs[0].numpy(), config)
+    numpy_weights = density_balanced_support_weights(numpy_distance, bandwidth=0.4)
+
+    assert np.allclose(stats["mode_density_weights"][0].numpy(), numpy_weights, atol=1e-6)
+
+
+def test_legacy_target_distribution_does_not_run_mode_balance(monkeypatch):
+    def fail_if_called(*args, **kwargs):
+        raise AssertionError("legacy path must not compute mode-density statistics")
+
+    monkeypatch.setattr(planner_module, "_compute_dpsi_mode_balance", fail_if_called)
+    cfg = OfflineRLConfig(dpsi_target_distribution="legacy")
+    trajs = _traj_row([-1.0, 0.0, 1.0])
+    rewards = torch.tensor([[0.8, 0.9, 1.0]])
+    mask = torch.ones_like(rewards, dtype=torch.bool)
+    source = torch.tensor([[1, 7, 4]])
+
+    profile, diag = _compute_dpsi_support_profile(
+        trajs,
+        rewards,
+        mask,
+        source,
+        torch.tensor([0.8]),
+        torch.tensor([0.8]),
+        mask,
+        cfg,
+        current_epoch=40,
+    )
+
+    assert profile["effective_mode_count"].item() == 0.0
+    assert diag["dpsi_mode_balance_enabled"].item() == 0.0
+
+
+def test_mode_balanced_beta_is_independent_of_source_provenance():
+    cfg = OfflineRLConfig(
+        dpsi_target_distribution="mode_balanced",
+        dpsi_beta_warmup_epochs=0,
+        dpsi_high_gt_reward=1.1,
+    )
+    trajs = _traj_row([-3.0, -1.5, 0.0, 1.5, 3.0])
+    rewards = torch.full((1, 5), 0.98)
+    real = torch.ones_like(rewards, dtype=torch.bool)
+    valid = torch.ones_like(rewards, dtype=torch.bool)
+    gt = torch.tensor([0.98])
+    il = torch.tensor([0.98])
+    single_source = torch.tensor([[1, 7, 7, 7, 7]])
+    varied_sources = torch.tensor([[1, 7, 4, 5, 6]])
+
+    single, _ = _compute_dpsi_support_profile(
+        trajs, rewards, real, single_source, gt, il, valid, cfg, current_epoch=0
+    )
+    varied, _ = _compute_dpsi_support_profile(
+        trajs, rewards, real, varied_sources, gt, il, valid, cfg, current_epoch=0
+    )
+
+    assert single["source_entropy"].item() != pytest.approx(varied["source_entropy"].item())
+    assert single["beta_profile"].item() == pytest.approx(varied["beta_profile"].item())
+    assert single["beta_profile"].item() > 0.5
+
+
+def test_mode_balanced_distribution_stays_active_for_saturated_gt():
+    cfg = OfflineRLConfig(
+        dpsi_target_distribution="mode_balanced",
+        dpsi_beta_warmup_epochs=0,
+        dpsi_high_gt_reward=0.95,
+        dpsi_use_source_weight=False,
+    )
+    trajs = _traj_row([-3.0, -1.5, 0.0, 1.5, 3.0])
+    rewards = torch.ones((1, 5))
+    source = torch.tensor([[1, 7, 4, 5, 6]])
+    real = torch.ones_like(rewards, dtype=torch.bool)
+    valid = torch.ones_like(rewards, dtype=torch.bool)
+    support_weight = torch.ones_like(rewards)
+    gt = torch.tensor([1.0])
+    il = torch.tensor([1.0])
+
+    profile, diag = _compute_dpsi_support_profile(
+        trajs, rewards, real, source, gt, il, valid, cfg, current_epoch=0
+    )
+    weights, weight_diag = _build_asmi_weights(
+        rewards, real, valid, source, support_weight, gt, il, profile, cfg
+    )
+
+    assert profile["high_gt_saturated"].item()
+    assert profile["beta_profile"].item() > 0.5
+    assert diag["dpsi_mode_balance_enabled"].item() == 1.0
+    assert weight_diag["dpsi_gt_weight_ratio"].item() < 0.6
+    assert weight_diag["dpsi_effective_target_count_mean"].item() > 2.5
+    assert weights.sum().item() == pytest.approx(profile["scene_weight"].item())
+
+
+def test_mode_balance_rejects_nonpositive_bandwidth():
+    with pytest.raises(ValueError, match="bandwidth"):
+        _compute_dpsi_mode_balance(
+            _traj_row([0.0, 1.0]),
+            torch.ones((1, 2), dtype=torch.bool),
+            bandwidth=0.0,
+        )
+
+
+def test_mode_balanced_systematic_sampler_is_unbiased_for_target_distribution():
+    torch.manual_seed(7)
+    batch_size = 2048
+    cfg = OfflineRLConfig(
+        dpsi_target_distribution="mode_balanced",
+        dpsi_target_sample_m=4,
+        dpsi_target_sample_m_after_warmup=4,
+        dpsi_beta_warmup_epochs=0,
+    )
+    trajs = _traj_row([0.0, 1.0, 2.0]).expand(batch_size, -1, -1, -1).clone()
+    weights = torch.tensor([0.50, 0.25, 0.25]).expand(batch_size, -1).clone()
+    real = torch.ones((batch_size, 3), dtype=torch.bool)
+    valid = torch.ones_like(real)
+    source = torch.tensor([1, 7, 4]).expand(batch_size, -1).clone()
+    rewards = torch.tensor([1.0, 0.9, 0.8]).expand(batch_size, -1).clone()
+
+    _, sampled_weights, sampled_mask, diag = _sample_asmi_targets(
+        trajs,
+        weights,
+        real,
+        valid,
+        source,
+        rewards,
+        cfg,
+        current_epoch=0,
+        training=True,
+    )
+
+    assert sampled_mask.all()
+    assert torch.allclose(sampled_weights, torch.full_like(sampled_weights, 0.25))
+    assert diag["dpsi_unbiased_systematic_sampling"].item() == 1.0
+    assert diag["dpsi_sampled_gt_weight_ratio"].item() == pytest.approx(0.5, abs=0.02)
+    assert diag["dpsi_sampled_unique_target_ratio"].item() == pytest.approx(0.75)
 
 
 def test_asmi_high_gt_saturated():

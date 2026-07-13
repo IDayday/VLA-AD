@@ -1,6 +1,6 @@
 # LFP-GRPO Stage3 探究总结
 
-更新时间：2026-07-13 01:56 UTC
+更新时间：2026-07-13 04:05 UTC
 
 ## 1. 术语与研究目标
 
@@ -57,8 +57,23 @@ outputs/stage2_pta_fs_dit_a5_full103k_standardv2_clean_20260710T091344Z/epoch_15
   Spearman 相关为 `-0.263`。A5 名义采样 `3.821` 个 target，effective target count 仅
   `1.842`，最终 diffusion loss 的 GT mass 为 `87.29%`。
 - 因此 Stage2 的基础性能是正向的，但“学到宽、support-aligned distribution”的监督目标没有
-  真正成立。先在同一 v3 archive 上对比当前 weighting 和 mode/density-balanced weighting，
-  再决定是否重建数据。
+  真正成立。同一 v3 archive 上的 mode/density-balanced 对照已经完成：高 mode mass 能显著
+  提高 recall 和 width，证明 archive 中存在可学习多样性；但 `beta>=0.45` 明确损害安全、
+  PDMS 和 L1。当前可接受边界为 `beta=0.25`，其相对 legacy D0 的 SNSAD `+0.00589`、
+  width ratio `+0.00925`，PDMS `-0.00143` 且 95% CI 跨 0。
+
+### 2.5 Stage2 数据问题的准确定位
+
+- v3 是有效候选库，不是自然校准的目标概率分布；archive record frequency 不能直接作为 mode mass。
+- legacy sampler 使 diffusion loss 的实际 GT mass 达到约 87.3%，解释了 A5 的窄分布。
+- 把 GT mass 一次降到约 56% 可以显著学宽，但会产生共享 DiT 的质量/安全干扰；延长到
+  累计 1,000 step、降低 sampler variance 都不能消除该退化。
+- `beta=0.15` 退回更高 GT mass，保住 PDMS 但没有新增多样性；`beta=0.25` 是首个同时具有
+  显著 width/SNSAD 增益且 PDMS 差异未显著的点。
+- 因此下一步不是立即重建 archive，也不是删除 FS-Norm/PTA，而是把 mode-balanced exposure
+  放入 safety/quality trust budget，并做多 seed 复验。
+
+完整实验表、置信区间和路径见 `docs/Stage2_V3_Target_Distribution_Study.md`。
 
 ## 3. 已完成的关键因果对照
 
@@ -72,6 +87,7 @@ outputs/stage2_pta_fs_dit_a5_full103k_standardv2_clean_20260710T091344Z/epoch_15
 | safety-first frontier | sampler/EMA 正常，短 smoke 未损害 progress | 作为课程基线 |
 | support-capacity frontier | v1 PDMS 相对 safety-only `+0.004758`，CI 不跨 0 | 有效缓解退化，仍默认关闭等待复验 |
 | KL 0.02/0.05/0.10 | L1 `0.444/0.386/0.360`，但 PDMS `0.8716/0.8710/0.8693` | KL 约束漂移但不解决 credit trade-off |
+| Stage2 target D0 vs mode balance | 0.25 提高 SNSAD/width 且 PDMS CI 跨 0；0.45 以上单调退化 | 保留 legacy 默认，mode 实验上限改为 0.25 |
 
 优势归一化的准确表述是：每个 scene 内减 feasible mean，再用 DDP-global std 缩放。它不是
 跨 scene 的 batch mean 排序。纯 scene-group std 会放大低 reward-spread 场景中的噪声。
@@ -130,6 +146,7 @@ physical trust 与 progress-biased credit 仍未解决。
    奖励纵向激进轨迹；NAVSIM v2 comfort 不在 v1 reward 中。
 3. **Stage2 多模态监督错位。** v3 轨迹库本身有质量和容量，但 reward 饱和、模式内冗余、
    source-entropy beta 和 anchor-heavy target sampling 使它没有变成 mode-balanced policy prior。
+   单变量实验已确认 mode mass 存在安全边界：0.25 有温和正向多样性证据，0.45 以上干扰明显。
 4. **次要：课程目标曾与核心多样性目标错位。** 旧 BPAE 更偏低 reference reward；容量课程已
    提供第一项正向因果证据，但效应温和。
 5. **不是主因：优势使用 global std。** 严格对照已否定恢复 scene-group std。

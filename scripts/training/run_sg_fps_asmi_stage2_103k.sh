@@ -98,6 +98,10 @@ optional_overrides=(
   "X0_AUX_WEIGHT:agent.x0_aux_weight"
   "DELTA_AUX_WEIGHT:agent.delta_aux_weight"
   "GEO_AUX_WEIGHT:agent.geo_aux_weight"
+  "DPSI_TARGET_DISTRIBUTION:agent.offline_rl_dpsi_target_distribution"
+  "DPSI_MODE_DENSITY_BANDWIDTH:agent.offline_rl_dpsi_mode_density_bandwidth"
+  "DPSI_USE_SOURCE_WEIGHT:agent.offline_rl_dpsi_use_source_weight"
+  "DPSI_BETA_MAX:agent.offline_rl_dpsi_beta_max"
 )
 for mapping in "${optional_overrides[@]}"; do
   env_name="${mapping%%:*}"

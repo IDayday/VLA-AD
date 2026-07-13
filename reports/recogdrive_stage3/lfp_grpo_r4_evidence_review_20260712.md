@@ -1,6 +1,6 @@
 # LFP-GRPO Stage3 R4 阶段性证据与结论
 
-更新时间：2026-07-13 01:05 UTC
+更新时间：2026-07-13 04:05 UTC
 
 ## 1. 范围与状态
 
@@ -1231,3 +1231,39 @@ Official Stage2 的 GT-only 训练能获得很好的 deterministic PDMS，说明
 先从 A5 epoch155 做短程 fine-tune，同时检查 PDMS/EPDMS 和 SNSAD precision/recall/KEMR/
 width。只有 D1 无效而 D2 有效，才能把主因归结为 archive 构建；如果 D1 已有效，
 主因是训练目标分布而不是轨迹库本身。
+
+### 15.27 Stage2 D0/D1 结果：archive 可学，mode mass 必须受 trust budget 约束
+
+上述 D0/D1 已完成。所有短训从 A5 epoch155 开始，seed0、全局 batch64、LR=`1e-5`、
+300 optimizer steps；NAVTEST 使用固定 seed0，SNSAD 使用相同 1,024 scene、K=32。
+
+| 配置 | sampled GT mass | target ESS | PDMS | L1 | Recall | Width | SNSAD |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| D0 legacy | 0.8735 | 1.856 | 0.870513 | 0.292797 | 0.652396 | 0.227664 | 0.469284 |
+| D1 beta=0.15 | 0.8851 | 1.245 | 0.869893 | 0.287590 | 0.631220 | 0.212320 | 0.458341 |
+| D1 beta=0.25 | 0.8180 | 1.465 | 0.869079 | 0.305483 | 0.658400 | 0.236909 | 0.475173 |
+| D1 beta=0.45 | about 0.70 | about 2.00 | 0.865694 | 0.338254 | - | - | - |
+| D1 beta=0.75 | about 0.56 | about 3.20 | 0.862283 | 0.376257 | 0.765235 | 0.373021 | 0.559025 |
+
+`beta=0.75` 相对 D0 的 Recall `+0.11284`、width `+0.14536`、SNSAD `+0.08974`，
+置信区间均严格为正。这直接证明 v3 中存在模型可学习的行为多样性，排除“archive 没有有用
+模式”。代价是 PDMS `-0.00823`，NC/TTC/L1 明确退化。`beta=0.45/0.60/0.75` 随 mode
+mass 增加呈单调质量退化；D0 和 0.45 继续到累计 1,000 step 后差距仍存在。用 systematic
+resampling 替代 multinomial 提高了 unique target ratio，却没有改善 NAVTEST，故 estimator
+variance 和短时未收敛都不是主因。
+
+`beta=0.15` 因 mode capacity 缩放后实际比 D0 更 anchor-heavy，没有新增宽度。`beta=0.25`
+是首个可接受点：相对 D0 的 Recall `+0.00600`、width `+0.00925`、SNSAD `+0.00589`，
+配对置信区间均为正；PDMS `-0.00143`，95% CI `[-0.00324,+0.00034]`。它证明存在温和的
+质量/多样性折中区间，但尚未证明长期训练和多 seed 下无 PDMS 代价。
+
+因此 D2 archive 重建不再是第一优先级。更准确的算法原则是：
+
+1. v3 只定义通过 Pareto/safety gate 的候选集合，不定义经验概率；
+2. trajectory density 决定模式去重后的相对 exposure；
+3. mode capacity 决定 scene 最多需要多少 diversity mass；
+4. held-out safety/quality trust 决定当前允许释放多少 non-anchor mass；
+5. 多样性课程只改变 scene/target exposure，不额外乘入 policy loss。
+
+代码保持 `legacy` 为全局默认，mode-balanced 入口默认由已否定的 `0.45` 收紧到 `0.25`。
+完整实验表和复现路径见 `docs/Stage2_V3_Target_Distribution_Study.md`。

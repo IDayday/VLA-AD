@@ -220,6 +220,8 @@ offline_rl_dpsi_filter_to_support_indices: true
 offline_rl_dpsi_empty_tag_zero: true
 offline_rl_dpsi_scene_normalize_weights: true
 offline_rl_dpsi_use_adaptive_beta: true
+offline_rl_dpsi_target_distribution: legacy
+offline_rl_dpsi_mode_density_bandwidth: 0.40
 offline_rl_dpsi_target_sample_m: 4
 offline_rl_dpsi_target_sample_m_after_warmup: 6
 offline_rl_dpsi_force_anchor_target: true

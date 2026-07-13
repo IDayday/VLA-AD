@@ -603,6 +603,8 @@ class OfflineRLConfig:
     dpsi_empty_tag_zero: bool = True
     dpsi_scene_normalize_weights: bool = True
     dpsi_use_adaptive_beta: bool = True
+    dpsi_target_distribution: Literal["legacy", "mode_balanced"] = "legacy"
+    dpsi_mode_density_bandwidth: float = 0.40
     dpsi_target_sample_m: int = 4
     dpsi_target_sample_m_after_warmup: int = 6
     dpsi_force_anchor_target: bool = True
@@ -665,6 +667,88 @@ def _dpsi_source_matches(source: str, names: tuple[str, ...]) -> bool:
     return False
 
 
+def _compute_dpsi_mode_balance(
+    selected_trajs: torch.Tensor,
+    support_mask: torch.Tensor,
+    bandwidth: float,
+) -> Dict[str, torch.Tensor]:
+    """Compute support-relative density weights without rewarding duplicate targets."""
+
+    if selected_trajs.ndim != 4 or selected_trajs.shape[-1] != 3:
+        raise ValueError(f"selected_trajs must have shape [B,M,H,3], got {tuple(selected_trajs.shape)}.")
+    if support_mask.shape != selected_trajs.shape[:2]:
+        raise ValueError(
+            f"support_mask shape {tuple(support_mask.shape)} does not match {tuple(selected_trajs.shape[:2])}."
+        )
+    if not math.isfinite(float(bandwidth)) or float(bandwidth) <= 0.0:
+        raise ValueError(f"dpsi_mode_density_bandwidth must be positive, got {bandwidth}.")
+    if not torch.isfinite(selected_trajs).all():
+        raise ValueError("selected_trajs contain NaN or Inf.")
+
+    B, M = selected_trajs.shape[:2]
+    dtype = torch.float32
+    density_weights = selected_trajs.new_zeros((B, M), dtype=dtype)
+    effective_mode_count = selected_trajs.new_ones((B,), dtype=dtype)
+    mode_capacity = selected_trajs.new_zeros((B,), dtype=dtype)
+    density_ess = selected_trajs.new_ones((B,), dtype=dtype)
+    nearest_neighbor_distance = selected_trajs.new_zeros((B,), dtype=dtype)
+    support_count = support_mask.bool().sum(dim=1).to(dtype=dtype)
+
+    # This is the Torch equivalent of the fixed SNSAD support-relative distance.
+    scales = selected_trajs.new_tensor([3.0, 1.5, 1.5, 0.8, 0.35], dtype=dtype)
+    component_weights = selected_trajs.new_tensor([0.30, 0.30, 0.15, 0.15, 0.10], dtype=dtype)
+    bandwidth_value = float(bandwidth)
+    for b in range(B):
+        indices = torch.nonzero(support_mask[b].bool(), as_tuple=False).flatten()
+        count = int(indices.numel())
+        if count == 0:
+            effective_mode_count[b] = 0.0
+            density_ess[b] = 0.0
+            continue
+        if count == 1:
+            density_weights[b, indices[0]] = 1.0
+            continue
+
+        trajs = selected_trajs[b, indices].to(dtype=dtype)
+        delta_xy = trajs[:, None, :, :2] - trajs[None, :, :, :2]
+        xy_distance = torch.linalg.vector_norm(delta_xy, dim=-1)
+        heading_delta = trajs[:, None, :, 2] - trajs[None, :, :, 2]
+        wrapped_heading = torch.atan2(torch.sin(heading_delta), torch.cos(heading_delta)).abs()
+        components = torch.stack(
+            (
+                xy_distance[..., -1],
+                xy_distance.mean(dim=-1),
+                delta_xy[..., 0].abs().mean(dim=-1),
+                delta_xy[..., 1].abs().mean(dim=-1),
+                wrapped_heading.mean(dim=-1),
+            ),
+            dim=-1,
+        )
+        distance = ((components / scales) * component_weights).sum(dim=-1)
+        density_similarity = torch.exp(-0.5 * (distance / bandwidth_value).square())
+        inverse_density = density_similarity.sum(dim=-1).clamp_min(1e-12).reciprocal()
+        probability = inverse_density / inverse_density.sum().clamp_min(1e-12)
+        density_weights[b, indices] = probability
+        density_ess[b] = probability.square().sum().clamp_min(1e-12).reciprocal()
+
+        squared_similarity = torch.exp(-(distance / bandwidth_value).square())
+        collision_probability = probability @ squared_similarity @ probability
+        modes = collision_probability.clamp_min(1e-12).reciprocal().clamp(1.0, float(count))
+        effective_mode_count[b] = modes
+        mode_capacity[b] = (1.0 - modes.reciprocal()).clamp(0.0, 1.0)
+        masked_distance = distance.masked_fill(torch.eye(count, device=distance.device, dtype=torch.bool), torch.inf)
+        nearest_neighbor_distance[b] = masked_distance.min(dim=1).values.mean()
+
+    return {
+        "mode_density_weights": density_weights,
+        "effective_mode_count": effective_mode_count,
+        "mode_capacity": mode_capacity,
+        "density_ess": density_ess,
+        "nearest_neighbor_distance": nearest_neighbor_distance,
+        "mode_support_count": support_count,
+    }
+
+
 def _compute_dpsi_support_profile(
     selected_trajs: torch.Tensor,
     selected_rewards: torch.Tensor,
@@ -681,6 +765,13 @@ def _compute_dpsi_support_profile(
     dtype = torch.float32
     real = selected_real_mask.bool()
     valid_real = real & selected_valid_mask.bool()
+    target_distribution = str(cfg.dpsi_target_distribution).strip().lower()
+    if target_distribution not in {"legacy", "mode_balanced"}:
+        raise ValueError(
+            "dpsi_target_distribution must be 'legacy' or 'mode_balanced', "
+            f"got {cfg.dpsi_target_distribution!r}."
+        )
+    use_mode_balance = target_distribution == "mode_balanced"
     support_count = real.float().sum(dim=1)
     pairwise_distance = selected_rewards.new_zeros((B,), dtype=dtype)
     source_entropy = selected_rewards.new_zeros((B,), dtype=dtype)
@@ -711,15 +802,39 @@ def _compute_dpsi_support_profile(
     low_support = support_count <= float(cfg.dpsi_low_support_count)
 
     beta_max = float(cfg.dpsi_beta_max)
+    if not 0.0 <= beta_max <= 1.0:
+        raise ValueError(f"dpsi_beta_max must be in [0,1], got {beta_max}.")
     count_score = torch.sigmoid(support_count - float(cfg.dpsi_support_count_mid))
     dist_score = pairwise_distance / (pairwise_distance + float(cfg.dpsi_distance_scale_m))
     entropy_score = source_entropy / (source_entropy + float(cfg.dpsi_entropy_scale))
-    if bool(cfg.dpsi_use_adaptive_beta):
-        beta = beta_max * count_score * dist_score * entropy_score
+    mode_support_mask = valid_real.clone()
+    empty_valid = ~mode_support_mask.any(dim=1)
+    mode_support_mask[empty_valid] = real[empty_valid]
+    if use_mode_balance:
+        mode_profile = _compute_dpsi_mode_balance(
+            selected_trajs,
+            mode_support_mask,
+            float(cfg.dpsi_mode_density_bandwidth),
+        )
+        beta_from_modes = beta_max * mode_profile["mode_capacity"]
+        beta = beta_from_modes
     else:
-        beta = torch.full((B,), beta_max, device=device, dtype=dtype)
-    beta = torch.where(low_support, beta * 0.25, beta)
-    beta = torch.where(high_gt_saturated, torch.zeros_like(beta), beta)
+        mode_profile = {
+            "mode_density_weights": selected_rewards.new_zeros(selected_rewards.shape, dtype=dtype),
+            "effective_mode_count": selected_rewards.new_zeros((B,), dtype=dtype),
+            "mode_capacity": selected_rewards.new_zeros((B,), dtype=dtype),
+            "density_ess": selected_rewards.new_zeros((B,), dtype=dtype),
+            "nearest_neighbor_distance": selected_rewards.new_zeros((B,), dtype=dtype),
+            "mode_support_count": selected_rewards.new_zeros((B,), dtype=dtype),
+        }
+        beta_from_modes = selected_rewards.new_zeros((B,), dtype=dtype)
+        if bool(cfg.dpsi_use_adaptive_beta):
+            beta = beta_max * count_score * dist_score * entropy_score
+        else:
+            beta = torch.full((B,), beta_max, device=device, dtype=dtype)
+    if not use_mode_balance:
+        beta = torch.where(low_support, beta * 0.25, beta)
+        beta = torch.where(high_gt_saturated, torch.zeros_like(beta), beta)
     strong = best_selected_minus_gt >= float(cfg.dpsi_strong_improver_margin)
     beta = torch.where(strong, torch.maximum(beta, beta.new_full(beta.shape, 0.4)), beta)
     beta = beta.clamp(min=0.0, max=beta_max)
@@ -748,9 +863,11 @@ def _compute_dpsi_support_profile(
         "selected_has_improver": selected_has_improver,
         "high_gt_saturated": high_gt_saturated,
         "low_support": low_support,
-        "multimodal_profile_score": count_score * dist_score * entropy_score,
+        "multimodal_profile_score": mode_profile["mode_capacity"] if use_mode_balance else count_score * dist_score * entropy_score,
         "beta_profile": beta,
+        "beta_from_modes": beta_from_modes,
         "scene_weight": scene_weight,
+        **mode_profile,
     }
     diag = {
         "dpsi_support_count_mean": support_count.mean(),
@@ -762,6 +879,12 @@ def _compute_dpsi_support_profile(
         "dpsi_high_gt_saturated_ratio": high_gt_saturated.float().mean(),
         "dpsi_selected_has_improver_ratio": selected_has_improver.float().mean(),
         "dpsi_scene_weight_mean": scene_weight.mean(),
+        "dpsi_mode_balance_enabled": selected_rewards.new_tensor(float(use_mode_balance), dtype=dtype),
+        "dpsi_mode_effective_count_mean": mode_profile["effective_mode_count"].mean(),
+        "dpsi_mode_capacity_mean": mode_profile["mode_capacity"].mean(),
+        "dpsi_mode_density_ess_mean": mode_profile["density_ess"].mean(),
+        "dpsi_mode_nearest_neighbor_distance_mean": mode_profile["nearest_neighbor_distance"].mean(),
+        "dpsi_mode_beta_mean": beta_from_modes.mean(),
     }
     return profile, diag
 
@@ -819,6 +942,9 @@ def _build_asmi_weights(
 
     pareto_raw = base_weight * margin_weight * source_weight
     pareto_raw = torch.where(real & valid, pareto_raw, torch.zeros_like(pareto_raw))
+    if str(cfg.dpsi_target_distribution).strip().lower() == "mode_balanced":
+        density_weight = support_profile["mode_density_weights"].to(pareto_raw)
+        pareto_raw = pareto_raw * density_weight
     anchor_raw = torch.where(
         anchor_mask,
         base_weight.clamp(min=1e-6) * selected_rewards.float().clamp(min=0.0).add(1e-3),
@@ -881,9 +1007,14 @@ def _sample_asmi_targets(
     training: bool,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
     B, M, H, D = selected_trajs.shape
+    use_unbiased_systematic = (
+        str(cfg.dpsi_target_distribution).strip().lower() == "mode_balanced" and bool(training)
+    )
     warm = int(cfg.dpsi_beta_warmup_epochs)
     target_m = int(cfg.dpsi_target_sample_m_after_warmup) if current_epoch >= warm else int(cfg.dpsi_target_sample_m)
-    target_m = max(1, min(target_m, M))
+    target_m = max(1, target_m)
+    if not use_unbiased_systematic:
+        target_m = min(target_m, M)
     out_trajs = selected_trajs.new_zeros((B, target_m, H, D))
     out_weights = weights.new_zeros((B, target_m))
     out_mask = torch.zeros((B, target_m), device=selected_trajs.device, dtype=torch.bool)
@@ -891,14 +1022,28 @@ def _sample_asmi_targets(
     anchor_hits = weights.new_zeros((B,))
     best_hits = weights.new_zeros((B,))
     counts = weights.new_zeros((B,))
-
+    unique_ratios = weights.new_zeros((B,))
     for b in range(B):
         available = torch.nonzero(selected_real_mask[b] & (weights[b] > 0.0), as_tuple=False).flatten()
         if available.numel() == 0:
             available = torch.nonzero(selected_real_mask[b], as_tuple=False).flatten()
         if available.numel() == 0:
             continue
-        if available.numel() <= target_m:
+        if use_unbiased_systematic:
+            probabilities = weights[b, available].float().clamp(min=0.0)
+            if not bool((probabilities.sum() > 0.0).item()):
+                probabilities = torch.ones_like(probabilities)
+            probabilities = probabilities / probabilities.sum().clamp_min(1e-12)
+            cumulative = probabilities.cumsum(dim=0)
+            cumulative[-1] = 1.0
+            offset = torch.rand((), device=available.device, dtype=probabilities.dtype) / float(target_m)
+            positions = offset + torch.arange(
+                target_m,
+                device=available.device,
+                dtype=probabilities.dtype,
+            ) / float(target_m)
+            keep = available[torch.searchsorted(cumulative, positions, right=False)]
+        elif available.numel() <= target_m:
             keep = available
         else:
             chosen: list[int] = []
@@ -930,18 +1075,27 @@ def _sample_asmi_targets(
         out_trajs[b, :n] = selected_trajs[b, keep]
         raw = weights[b, keep].float()
         row_sum = weights[b].sum().clamp(min=1e-6)
-        out_weights[b, :n] = raw / raw.sum().clamp(min=1e-6) * row_sum
+        if use_unbiased_systematic:
+            out_weights[b, :n] = row_sum / float(max(n, 1))
+        else:
+            out_weights[b, :n] = raw / raw.sum().clamp(min=1e-6) * row_sum
         out_mask[b, :n] = True
         out_source_code[b, :n] = selected_source_code[b, keep]
         counts[b] = float(n)
+        unique_ratios[b] = float(torch.unique(keep).numel()) / float(max(n, 1))
         anchor_hits[b] = ((selected_source_code[b, keep] == 1) | (selected_source_code[b, keep] == 2)).any().float()
         best_idx = int(selected_rewards[b].masked_fill(~selected_real_mask[b], -torch.inf).argmax().item())
         best_hits[b] = (keep == best_idx).any().float()
 
+    sampled_total = out_weights.sum().clamp_min(1e-12)
+    sampled_gt_mass = out_weights.masked_fill(out_source_code != 1, 0.0).sum()
     diag = {
         "dpsi_sampled_target_count_mean": counts.mean(),
         "dpsi_sampled_anchor_ratio": anchor_hits.mean(),
         "dpsi_sampled_best_ratio": best_hits.mean(),
+        "dpsi_sampled_unique_target_ratio": unique_ratios.mean(),
+        "dpsi_sampled_gt_weight_ratio": sampled_gt_mass / sampled_total,
+        "dpsi_unbiased_systematic_sampling": weights.new_tensor(float(use_unbiased_systematic)),
         # Consumed by forward_dpsi before diagnostics are exposed to the logger.
         "_sampled_target_source_code": out_source_code,
     }
