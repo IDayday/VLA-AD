@@ -297,9 +297,54 @@ NAVSIM v1 相对旧 mode-balanced reward-shortcut 路径的 2-seed pooled 配对
 shortcut 也不是最终方案。训练目标必须把安全锚定与多样性释放拆开：先满足 held-out safety 和
 residual budget，再按 coverage gap 逐步释放可学习模式。
 
+### 6.3 Paired residual-budget prototype
+
+针对“约 `14.8%` target mass 产生约 `37.7%` residual mass”的失衡，已实现默认关闭的
+训练机制，而不是继续把 `beta` 当作梯度预算：
+
+1. 同一 scene 的 M 个 target 共用 diffusion noise 和 timestep，降低 target 难度比较的采样方差；
+2. 使用 detached `weight * sqrt(epsilon_mse)` 作为 residual-gradient proxy；
+3. 每 scene 统一缩放 non-GT 权重，使其 proxy mass 不超过配置上限，再恢复原 scene loss mass；
+4. 同一 effective weight 同时作用于 diffusion、trajectory 和 feasibility auxiliary；
+5. 每个 active scene 必须含真实 GT anchor。v3 support filter 丢失 GT 时只在新路径追加原 archive
+   GT，并记录注入比例；新功能关闭时不改变候选或权重。
+
+入口为：
+
+```text
+scripts/training/sg_fps/run_train_pta_fs_dit_residual_frontier.sh
+```
+
+默认实验点为 mode mass `beta_max=0.35`、residual cap `0.38`、M=4。A5 epoch155 起点上的完整
+navtrain cache、单卡 10 optimizer-step smoke 已通过：
+
+| 诊断 | 10-step mean |
+|---|---:|
+| loss | 0.024461 |
+| non-GT exposure mass | 0.190625 |
+| non-GT residual mass before budget | 0.481078 |
+| non-GT residual mass after budget | 0.289742 |
+| budget active scene ratio | 0.656250 |
+| non-GT scale | 0.502973 |
+| unanchored scene ratio | 0.000000 |
+| scene target weight sum | 1.000000 |
+| planning adapter forward count | 1.000000 |
+
+输出位于：
+
+```text
+outputs/stage2_residual_frontier_smoke_gtanchor_20260713T063730Z
+```
+
+该 smoke 只验证数值、权重守恒和调用链，不证明 NAVTEST/SNSAD 改善。抽到的 batch 中 archive-level
+GT 注入比例为 0，因此不能用该短样本估计全 archive 的边缘条件频率。下一项因果实验仍应是
+paired-only 与 paired+budget 的双 seed 300-step 对照，再按 v1/v2、L1、SNSAD 和 RL-readiness
+联合晋级。
+
 ## 7. 下一版 Stage2 训练原则
 
-本轮 M=1 和 capacity-only 对照均已闭环；在实现并验证动态预算前不启动新的 200-epoch 全训。
+本轮 M=1 和 capacity-only 对照均已闭环，residual-budget prototype 已通过短 smoke；在完成
+双 seed NAVTEST/SNSAD 因果验证前不启动新的 200-epoch 全训。
 当前最有依据的方向是渐进式、受 trust budget 约束的 support 学习，而不是固定 beta 从第一个
 epoch 训练到底：
 

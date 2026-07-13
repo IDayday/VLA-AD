@@ -112,6 +112,13 @@ progress shortcut 确实是可复现的退化来源，而不是纯代码审美�
 progress-biased hard targets；capacity-only 则回到更精确、更安全但更窄的分布。下一版需要显式
 约束安全下的模式覆盖，而不是在两个端点之间继续手调静态 beta。
 
+基于上述机制证据，已实现默认关闭的 paired residual-budget prototype：同 scene 的候选共享
+noise/timestep，以 `weight * sqrt(epsilon_mse)` 标定 non-GT residual mass，并在保持 scene loss
+mass 不变的前提下将其逐 scene 限制到 `0.38`。A5 epoch155 的 10-step smoke 中，non-GT
+exposure 为 `0.1906`，residual mass 从 `0.4811` 降至 `0.2897`，budget 在 `65.63%` scene
+生效，unanchored ratio 为 0，所有 loss finite。该结果仅证明机制按定义工作，尚未证明最终
+PDMS/EPDMS/SNSAD 改善；完整结果见 `docs/Stage2_V3_Target_Distribution_Study.md`。
+
 完整实验表、置信区间和路径见 `docs/Stage2_V3_Target_Distribution_Study.md`。
 
 ## 3. 已完成的关键因果对照

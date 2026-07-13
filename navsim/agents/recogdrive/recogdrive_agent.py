@@ -448,6 +448,9 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_dpsi_use_adaptive_beta: bool = True,
         offline_rl_dpsi_target_distribution: str = "legacy",
         offline_rl_dpsi_mode_density_bandwidth: float = 0.40,
+        offline_rl_dpsi_pair_target_randomness: bool = False,
+        offline_rl_dpsi_residual_budget_enabled: bool = False,
+        offline_rl_dpsi_non_gt_residual_mass_cap: float = 0.38,
         offline_rl_dpsi_target_sample_m: int = 4,
         offline_rl_dpsi_target_sample_m_after_warmup: int = 6,
         offline_rl_dpsi_force_anchor_target: bool = True,
@@ -1315,6 +1318,9 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_dpsi_use_adaptive_beta = bool(offline_rl_dpsi_use_adaptive_beta)
         self.offline_rl_dpsi_target_distribution = str(offline_rl_dpsi_target_distribution)
         self.offline_rl_dpsi_mode_density_bandwidth = float(offline_rl_dpsi_mode_density_bandwidth)
+        self.offline_rl_dpsi_pair_target_randomness = bool(offline_rl_dpsi_pair_target_randomness)
+        self.offline_rl_dpsi_residual_budget_enabled = bool(offline_rl_dpsi_residual_budget_enabled)
+        self.offline_rl_dpsi_non_gt_residual_mass_cap = float(offline_rl_dpsi_non_gt_residual_mass_cap)
         self.offline_rl_dpsi_target_sample_m = int(offline_rl_dpsi_target_sample_m)
         self.offline_rl_dpsi_target_sample_m_after_warmup = int(offline_rl_dpsi_target_sample_m_after_warmup)
         self.offline_rl_dpsi_force_anchor_target = bool(offline_rl_dpsi_force_anchor_target)
@@ -2131,6 +2137,9 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.dpsi_use_adaptive_beta = self.offline_rl_dpsi_use_adaptive_beta
         offline_cfg.dpsi_target_distribution = self.offline_rl_dpsi_target_distribution
         offline_cfg.dpsi_mode_density_bandwidth = self.offline_rl_dpsi_mode_density_bandwidth
+        offline_cfg.dpsi_pair_target_randomness = self.offline_rl_dpsi_pair_target_randomness
+        offline_cfg.dpsi_residual_budget_enabled = self.offline_rl_dpsi_residual_budget_enabled
+        offline_cfg.dpsi_non_gt_residual_mass_cap = self.offline_rl_dpsi_non_gt_residual_mass_cap
         offline_cfg.dpsi_target_sample_m = self.offline_rl_dpsi_target_sample_m
         offline_cfg.dpsi_target_sample_m_after_warmup = self.offline_rl_dpsi_target_sample_m_after_warmup
         offline_cfg.dpsi_force_anchor_target = self.offline_rl_dpsi_force_anchor_target

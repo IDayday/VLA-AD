@@ -102,6 +102,11 @@ optional_overrides=(
   "DPSI_MODE_DENSITY_BANDWIDTH:agent.offline_rl_dpsi_mode_density_bandwidth"
   "DPSI_USE_SOURCE_WEIGHT:agent.offline_rl_dpsi_use_source_weight"
   "DPSI_BETA_MAX:agent.offline_rl_dpsi_beta_max"
+  "DPSI_PAIR_TARGET_RANDOMNESS:agent.offline_rl_dpsi_pair_target_randomness"
+  "DPSI_RESIDUAL_BUDGET_ENABLED:agent.offline_rl_dpsi_residual_budget_enabled"
+  "DPSI_NON_GT_RESIDUAL_MASS_CAP:agent.offline_rl_dpsi_non_gt_residual_mass_cap"
+  "DPSI_TARGET_SAMPLE_M:agent.offline_rl_dpsi_target_sample_m"
+  "DPSI_TARGET_SAMPLE_M_AFTER_WARMUP:agent.offline_rl_dpsi_target_sample_m_after_warmup"
 )
 for mapping in "${optional_overrides[@]}"; do
   env_name="${mapping%%:*}"

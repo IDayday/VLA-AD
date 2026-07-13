@@ -18,6 +18,7 @@ from navsim.agents.recogdrive.recogdrive_diffusion_planner import (
     GRPOConfig,
     OfflineRLConfig,
     ReCogDriveDiffusionPlanner,
+    _apply_dpsi_residual_budget,
     _build_asmi_weights,
     _compute_dpsi_target_hardness_diagnostics,
     _compute_dpsi_mode_balance,
@@ -50,6 +51,58 @@ def test_dpsi_target_hardness_handles_missing_source_without_nan():
     assert all(torch.isfinite(value) for value in diagnostics.values())
     assert diagnostics["non_gt_to_gt_loss_ratio"].item() == 0.0
     assert diagnostics["non_gt_residual_mass_ratio"].item() == 0.0
+
+
+def test_dpsi_residual_budget_caps_proxy_and_preserves_scene_mass():
+    losses = torch.tensor([[1.0, 9.0], [4.0, 1.0]])
+    weights = torch.tensor([[0.8, 0.2], [0.6, 0.4]])
+    sources = torch.tensor([[1, 7], [1, 4]])
+
+    adjusted, diagnostics = _apply_dpsi_residual_budget(
+        losses,
+        weights,
+        sources,
+        enabled=True,
+        non_gt_residual_mass_cap=0.30,
+    )
+
+    torch.testing.assert_close(adjusted.sum(dim=1), weights.sum(dim=1))
+    assert diagnostics["non_gt_residual_mass_ratio_pre_budget"].item() > 0.30
+    assert diagnostics["non_gt_residual_mass_ratio_post_budget"].item() <= 0.30 + 1e-6
+    assert diagnostics["residual_budget_active_ratio"].item() == 0.5
+    assert diagnostics["residual_budget_unanchored_ratio"].item() == 0.0
+
+
+def test_dpsi_residual_budget_flag_off_is_exactly_identity():
+    losses = torch.tensor([[1.0, 9.0]])
+    weights = torch.tensor([[0.8, 0.2]])
+    sources = torch.tensor([[1, 7]])
+
+    adjusted, diagnostics = _apply_dpsi_residual_budget(
+        losses,
+        weights,
+        sources,
+        enabled=False,
+        non_gt_residual_mass_cap=0.30,
+    )
+
+    assert adjusted is weights
+    assert torch.equal(adjusted, weights)
+    assert diagnostics["residual_budget_enabled"].item() == 0.0
+    assert diagnostics["non_gt_residual_mass_ratio_pre_budget"].item() == pytest.approx(
+        diagnostics["non_gt_residual_mass_ratio_post_budget"].item()
+    )
+
+
+def test_dpsi_residual_budget_rejects_active_scene_without_gt():
+    with pytest.raises(ValueError, match="positive-weight GT target"):
+        _apply_dpsi_residual_budget(
+            torch.tensor([[1.0, 2.0]]),
+            torch.tensor([[0.5, 0.5]]),
+            torch.tensor([[7, 4]]),
+            enabled=True,
+            non_gt_residual_mass_cap=0.38,
+        )
 
 
 def _record(k: int = 10) -> dict:
@@ -105,6 +158,38 @@ def test_dpsi_support_indices_filter():
     ).mean(dim=-1)
     assert torch.allclose(batch["selected_anchor_distance"][0], expected_distance)
     assert batch["selected_anchor_distance"][0, 2].item() == 0.0
+
+
+def test_residual_budget_injects_gt_before_support_filter_without_changing_baseline():
+    record = _record()
+    record["sources"][7] = "gt"
+    record["support_tags"][7] = "gt_anchor"
+    planner = ReCogDriveDiffusionPlanner.__new__(ReCogDriveDiffusionPlanner)
+
+    def load(self, root, token, cfg):
+        return record
+
+    planner._load_elite_record_cached = MethodType(load, planner)
+    action_input = BatchFeature(data={"action": torch.zeros((1, 8, 3), dtype=torch.float32)})
+
+    baseline_cfg = OfflineRLConfig(enabled=True, support_archive_path="/tmp/support", use_dpsi=True)
+    baseline = planner._load_awac_buffer_candidates(action_input, ["tok"], {}, baseline_cfg)
+    assert baseline["selected_trajs"].shape[1] == 3
+    assert not (baseline["selected_source_code"] == 1).any()
+    assert baseline["dpsi_gt_anchor_injected_ratio"].item() == 0.0
+
+    budget_cfg = OfflineRLConfig(
+        enabled=True,
+        support_archive_path="/tmp/support",
+        use_dpsi=True,
+        dpsi_pair_target_randomness=True,
+        dpsi_residual_budget_enabled=True,
+    )
+    budget = planner._load_awac_buffer_candidates(action_input, ["tok"], {}, budget_cfg)
+    assert budget["selected_trajs"].shape[1] == 4
+    assert torch.equal(budget["selected_source_code"][0], torch.tensor([7, 7, 7, 1]))
+    assert budget["dpsi_gt_anchor_injected_ratio"].item() == 1.0
+    assert budget["selected_anchor_distance"][0, -1].item() == 0.0
 
 
 def test_dpsi_tag_weights():
@@ -348,6 +433,53 @@ def test_mode_balanced_systematic_sampler_is_unbiased_for_target_distribution():
     assert diag["dpsi_unbiased_systematic_sampling"].item() == 1.0
     assert diag["dpsi_sampled_gt_weight_ratio"].item() == pytest.approx(0.5, abs=0.02)
     assert diag["dpsi_sampled_unique_target_ratio"].item() == pytest.approx(0.75)
+
+
+def test_residual_budget_systematic_sampler_keeps_gt_anchor():
+    torch.manual_seed(19)
+    batch_size = 256
+    cfg = OfflineRLConfig(
+        dpsi_target_distribution="mode_balanced",
+        dpsi_pair_target_randomness=True,
+        dpsi_residual_budget_enabled=True,
+        dpsi_target_sample_m=2,
+        dpsi_target_sample_m_after_warmup=2,
+        dpsi_beta_warmup_epochs=0,
+    )
+    trajs = _traj_row([0.0, 1.0, 2.0]).expand(batch_size, -1, -1, -1).clone()
+    weights = torch.tensor([0.05, 0.475, 0.475]).expand(batch_size, -1).clone()
+    real = torch.ones((batch_size, 3), dtype=torch.bool)
+    source = torch.tensor([1, 7, 4]).expand(batch_size, -1).clone()
+    rewards = torch.tensor([1.0, 0.9, 0.8]).expand(batch_size, -1).clone()
+
+    _, _, _, diagnostics = _sample_asmi_targets(
+        trajs,
+        weights,
+        real,
+        real,
+        source,
+        rewards,
+        cfg,
+        current_epoch=0,
+        training=True,
+    )
+    sampled_source = diagnostics["_sampled_target_source_code"]
+
+    assert (sampled_source == 1).any(dim=1).all()
+    assert diagnostics["dpsi_residual_budget_forced_gt_ratio"].item() > 0.8
+    assert diagnostics["dpsi_unbiased_systematic_sampling"].item() == 0.0
+
+
+def test_residual_budget_config_requires_paired_mode_balanced_targets():
+    cfg = OfflineRLConfig(
+        enabled=True,
+        use_dpsi=True,
+        dpsi_target_distribution="mode_balanced",
+        dpsi_residual_budget_enabled=True,
+        dpsi_pair_target_randomness=False,
+    )
+    with pytest.raises(ValueError, match="paired difficulty estimates"):
+        ReCogDriveDiffusionPlanner._validate_offline_rl_config(cfg)
 
 
 def test_asmi_high_gt_saturated():

@@ -607,6 +607,12 @@ class OfflineRLConfig:
     dpsi_use_adaptive_beta: bool = True
     dpsi_target_distribution: Literal["legacy", "mode_balanced"] = "legacy"
     dpsi_mode_density_bandwidth: float = 0.40
+    # Paired randomness is a variance-reduction estimator for alternative
+    # targets from the same scene. The residual budget uses it to compare
+    # target difficulty without confounding timestep/noise draws.
+    dpsi_pair_target_randomness: bool = False
+    dpsi_residual_budget_enabled: bool = False
+    dpsi_non_gt_residual_mass_cap: float = 0.38
     dpsi_target_sample_m: int = 4
     dpsi_target_sample_m_after_warmup: int = 6
     dpsi_force_anchor_target: bool = True
@@ -1035,6 +1041,7 @@ def _sample_asmi_targets(
     best_hits = weights.new_zeros((B,))
     counts = weights.new_zeros((B,))
     unique_ratios = weights.new_zeros((B,))
+    residual_budget_forced_gt = weights.new_zeros((B,))
     for b in range(B):
         available = torch.nonzero(selected_real_mask[b] & (weights[b] > 0.0), as_tuple=False).flatten()
         if available.numel() == 0:
@@ -1083,6 +1090,17 @@ def _sample_asmi_targets(
                     pick_rel = torch.topk(probs, k=min(slots, rem.numel()), largest=True).indices
                 chosen.extend(int(i) for i in rem[pick_rel].tolist())
             keep = torch.tensor(chosen[:target_m], device=selected_trajs.device, dtype=torch.long)
+        if bool(cfg.dpsi_residual_budget_enabled) and not bool((selected_source_code[b, keep] == 1).any().item()):
+            gt_available = available[selected_source_code[b, available] == 1]
+            if gt_available.numel() == 0:
+                raise ValueError(
+                    "DPSI residual budget requires a positive-weight GT candidate in every active scene."
+                )
+            gt_idx = gt_available[torch.argmax(weights[b, gt_available])]
+            replace_at = torch.argmin(weights[b, keep])
+            keep = keep.clone()
+            keep[replace_at] = gt_idx
+            residual_budget_forced_gt[b] = 1.0
         n = int(keep.numel())
         out_trajs[b, :n] = selected_trajs[b, keep]
         raw = weights[b, keep].float()
@@ -1107,7 +1125,10 @@ def _sample_asmi_targets(
         "dpsi_sampled_best_ratio": best_hits.mean(),
         "dpsi_sampled_unique_target_ratio": unique_ratios.mean(),
         "dpsi_sampled_gt_weight_ratio": sampled_gt_mass / sampled_total,
-        "dpsi_unbiased_systematic_sampling": weights.new_tensor(float(use_unbiased_systematic)),
+        "dpsi_unbiased_systematic_sampling": weights.new_tensor(
+            float(use_unbiased_systematic and not bool(cfg.dpsi_residual_budget_enabled))
+        ),
+        "dpsi_residual_budget_forced_gt_ratio": residual_budget_forced_gt.mean(),
         # Consumed by forward_dpsi before diagnostics are exposed to the logger.
         "_sampled_target_source_code": out_source_code,
     }
@@ -1166,6 +1187,112 @@ def _compute_dpsi_target_hardness_diagnostics(
         "non_gt_residual_mass_ratio": non_gt_residual_ratio,
         "non_gt_target_weight_ratio": non_gt_target_weight_ratio,
     }
+
+
+def _apply_dpsi_residual_budget(
+    per_target_loss: torch.Tensor,
+    weights: torch.Tensor,
+    source_code: torch.Tensor,
+    *,
+    enabled: bool,
+    non_gt_residual_mass_cap: float,
+) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+    if per_target_loss.shape != weights.shape or per_target_loss.shape != source_code.shape:
+        raise ValueError(
+            "per_target_loss, weights, and source_code must have the same [B, M] shape, got "
+            f"{tuple(per_target_loss.shape)}, {tuple(weights.shape)}, and {tuple(source_code.shape)}."
+        )
+    cap = float(non_gt_residual_mass_cap)
+    if not 0.0 < cap < 1.0:
+        raise ValueError(f"non_gt_residual_mass_cap must be in (0, 1), got {cap}.")
+
+    base_weights = weights.detach().clamp_min(0.0)
+    loss = per_target_loss.detach().float().clamp_min(0.0)
+    residual = loss.sqrt()
+    active = base_weights > 0.0
+    gt_mask = active & (source_code == 1)
+    non_gt_mask = active & (source_code != 1)
+    row_mass = base_weights.sum(dim=1)
+    row_has_mass = row_mass > 0.0
+    row_has_gt = gt_mask.any(dim=1)
+    unanchored = row_has_mass & (~row_has_gt)
+    zero = loss.new_zeros(())
+
+    def aggregate_ratio(candidate_weights: torch.Tensor, mask: torch.Tensor) -> torch.Tensor:
+        proxy = candidate_weights.float() * residual
+        denominator = proxy.sum()
+        return torch.where(
+            denominator > 0.0,
+            proxy.masked_fill(~mask, 0.0).sum() / denominator.clamp_min(1e-12),
+            zero,
+        )
+
+    pre_residual_ratio = aggregate_ratio(base_weights, non_gt_mask)
+    target_total = base_weights.sum()
+    pre_target_ratio = torch.where(
+        target_total > 0.0,
+        base_weights.masked_fill(~non_gt_mask, 0.0).sum() / target_total.clamp_min(1e-12),
+        zero,
+    )
+    exposure_ratio = torch.where(
+        active.sum() > 0,
+        non_gt_mask.float().sum() / active.float().sum().clamp_min(1.0),
+        zero,
+    )
+
+    adjusted = weights
+    scale = loss.new_ones((loss.shape[0],))
+    active_budget = torch.zeros_like(row_has_mass)
+    if bool(enabled):
+        if bool(unanchored.any().item()):
+            raise ValueError(
+                "DPSI residual budget requires at least one positive-weight GT target per active scene; "
+                f"missing GT in {int(unanchored.sum().item())} scene(s)."
+            )
+        gt_residual = (base_weights.float() * residual).masked_fill(~gt_mask, 0.0).sum(dim=1)
+        non_gt_residual = (base_weights.float() * residual).masked_fill(~non_gt_mask, 0.0).sum(dim=1)
+        desired_scale = (
+            cap * gt_residual / ((1.0 - cap) * non_gt_residual).clamp_min(1e-12)
+        ).clamp(max=1.0)
+        scale = torch.where(non_gt_residual > 0.0, desired_scale, torch.ones_like(desired_scale))
+        active_budget = scale < (1.0 - 1e-6)
+        adjusted = torch.where(non_gt_mask, base_weights * scale[:, None].to(base_weights), base_weights)
+        adjusted_row_mass = adjusted.sum(dim=1)
+        row_renorm = torch.where(
+            adjusted_row_mass > 0.0,
+            row_mass / adjusted_row_mass.clamp_min(1e-12),
+            torch.ones_like(row_mass),
+        )
+        adjusted = adjusted * row_renorm[:, None]
+        adjusted = adjusted.to(device=weights.device, dtype=weights.dtype)
+
+    post_residual_ratio = aggregate_ratio(adjusted.detach().clamp_min(0.0), non_gt_mask)
+    post_target_total = adjusted.detach().clamp_min(0.0).sum()
+    post_target_ratio = torch.where(
+        post_target_total > 0.0,
+        adjusted.detach().clamp_min(0.0).masked_fill(~non_gt_mask, 0.0).sum()
+        / post_target_total.clamp_min(1e-12),
+        zero,
+    )
+    rows_with_non_gt = non_gt_mask.any(dim=1)
+    scale_mean = torch.where(
+        rows_with_non_gt.any(),
+        scale.masked_select(rows_with_non_gt).mean(),
+        scale.new_ones(()),
+    )
+    diagnostics = {
+        "residual_budget_enabled": loss.new_tensor(float(enabled)),
+        "residual_budget_cap": loss.new_tensor(cap),
+        "residual_budget_active_ratio": active_budget.float().mean(),
+        "residual_budget_scale_mean": scale_mean,
+        "residual_budget_unanchored_ratio": unanchored.float().mean(),
+        "non_gt_exposure_ratio": exposure_ratio,
+        "non_gt_residual_mass_ratio_pre_budget": pre_residual_ratio,
+        "non_gt_residual_mass_ratio_post_budget": post_residual_ratio,
+        "non_gt_target_weight_ratio_pre_budget": pre_target_ratio,
+        "non_gt_target_weight_ratio_post_budget": post_target_ratio,
+    }
+    return adjusted, diagnostics
 
 
 @dataclass
@@ -2158,6 +2285,29 @@ class ReCogDriveDiffusionPlanner(nn.Module):
 
     @staticmethod
     def _validate_offline_rl_config(cfg: OfflineRLConfig) -> None:
+        residual_cap = float(cfg.dpsi_non_gt_residual_mass_cap)
+        if not 0.0 < residual_cap < 1.0:
+            raise ValueError("offline_rl_cfg.dpsi_non_gt_residual_mass_cap must be in (0, 1).")
+        if bool(cfg.dpsi_pair_target_randomness) or bool(cfg.dpsi_residual_budget_enabled):
+            if not bool(cfg.enabled) or not bool(cfg.use_dpsi):
+                raise ValueError(
+                    "DPSI paired-target randomness/residual budget requires offline_rl enabled with use_dpsi=True."
+                )
+            if str(cfg.dpsi_target_distribution).strip().lower() != "mode_balanced":
+                raise ValueError(
+                    "DPSI paired-target randomness/residual budget requires dpsi_target_distribution='mode_balanced'."
+                )
+        if bool(cfg.dpsi_residual_budget_enabled):
+            if not bool(cfg.dpsi_pair_target_randomness):
+                raise ValueError(
+                    "dpsi_residual_budget_enabled requires dpsi_pair_target_randomness=True for paired difficulty estimates."
+                )
+            if not bool(cfg.dpsi_scene_normalize_weights):
+                raise ValueError(
+                    "dpsi_residual_budget_enabled requires dpsi_scene_normalize_weights=True."
+                )
+            if min(int(cfg.dpsi_target_sample_m), int(cfg.dpsi_target_sample_m_after_warmup)) < 2:
+                raise ValueError("DPSI residual budget requires at least two sampled targets per scene.")
         if int(cfg.elite_top_m) <= 0:
             raise ValueError("offline_rl_cfg.elite_top_m must be positive.")
         if int(cfg.elite_min_candidates) <= 0:
@@ -8835,17 +8985,27 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             selected_target_is_gt=flat_is_gt,
         )
         diffusion_target = training_target.diffusion_target_repr
+        pair_target_randomness = bool(
+            getattr(policy.offline_rl_cfg, "dpsi_pair_target_randomness", False)
+        )
         if noise is None:
-            noise = torch.randn_like(diffusion_target)
+            if pair_target_randomness:
+                scene_noise = torch.randn_like(diffusion_target.reshape(B, M, H, D)[:, 0])
+                noise = scene_noise.repeat_interleave(M, dim=0)
+            else:
+                noise = torch.randn_like(diffusion_target)
         else:
             noise = noise.to(device=diffusion_target.device, dtype=diffusion_target.dtype)
         if t_discrete is None:
+            timestep_batch = B if pair_target_randomness else B * M
             t_discrete = policy._sample_offline_rl_timesteps(
-                B * M,
+                timestep_batch,
                 device=diffusion_target.device,
                 dtype=diffusion_target.dtype,
                 mode=timestep_sampling,
             )
+            if pair_target_randomness:
+                t_discrete = t_discrete.repeat_interleave(M, dim=0)
         else:
             t_discrete = t_discrete.to(device=target_norm.device)
         noisy_actions = (
@@ -8920,6 +9080,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "diffusion_timestep_mean": t_discrete.detach().float().mean(),
             "diffusion_timestep_min": t_discrete.detach().float().min(),
             "diffusion_timestep_max": t_discrete.detach().float().max(),
+            "paired_target_randomness": target_norm.new_tensor(float(pair_target_randomness)).detach(),
             "x0_aux_loss_matrix": x0_aux_per_sample.reshape(B, M),
             "delta_aux_loss_matrix": geo_diag.get(
                 "delta_aux_per_sample",
@@ -9006,6 +9167,17 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "non_gt_to_gt_loss_ratio": zero_loss.detach(),
                 "non_gt_residual_mass_ratio": zero_loss.detach(),
                 "non_gt_target_weight_ratio": zero_loss.detach(),
+                "paired_target_randomness": zero_loss.detach(),
+                "residual_budget_enabled": zero_loss.detach(),
+                "residual_budget_cap": zero_loss.detach(),
+                "residual_budget_active_ratio": zero_loss.detach(),
+                "residual_budget_scale_mean": zero_loss.new_ones(()).detach(),
+                "residual_budget_unanchored_ratio": zero_loss.detach(),
+                "non_gt_exposure_ratio": zero_loss.detach(),
+                "non_gt_residual_mass_ratio_pre_budget": zero_loss.detach(),
+                "non_gt_residual_mass_ratio_post_budget": zero_loss.detach(),
+                "non_gt_target_weight_ratio_pre_budget": zero_loss.detach(),
+                "non_gt_target_weight_ratio_post_budget": zero_loss.detach(),
                 **(
                     {"per_sample_loss_matrix": target_trajs.new_zeros((B, M), dtype=torch.float32)}
                     if return_per_sample_loss
@@ -9036,9 +9208,20 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         aux_active_mask = loss_diag.pop("x0_aux_active_mask", None)
         if target_source_matrix is None:
             target_source_matrix = torch.ones_like(per_target_loss, dtype=torch.long)
-        hardness_diag = _compute_dpsi_target_hardness_diagnostics(
+        effective_weights, residual_budget_diag = _apply_dpsi_residual_budget(
             per_target_loss,
             weights,
+            target_source_matrix,
+            enabled=bool(getattr(self.offline_rl_cfg, "dpsi_residual_budget_enabled", False)),
+            non_gt_residual_mass_cap=float(
+                getattr(self.offline_rl_cfg, "dpsi_non_gt_residual_mass_cap", 0.38)
+            ),
+        )
+        flat_weights = effective_weights.reshape(B * M).to(device=target_trajs.device, dtype=torch.float32)
+        raw_weight_sum = flat_weights.sum()
+        hardness_diag = _compute_dpsi_target_hardness_diagnostics(
+            per_target_loss,
+            effective_weights,
             target_source_matrix,
         )
         per_sample_loss = per_target_loss.reshape(B * M)
@@ -9067,7 +9250,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         def weighted_matrix_mean(matrix: Optional[torch.Tensor]) -> torch.Tensor:
             if matrix is None:
                 return zero
-            matrix_weights = weights.to(device=matrix.device, dtype=matrix.dtype)
+            matrix_weights = effective_weights.to(device=matrix.device, dtype=matrix.dtype)
             return (matrix_weights * matrix).sum() / valid_weight_sum.to(device=matrix.device, dtype=matrix.dtype)
 
         trajectory_aux_loss = weighted_matrix_mean(trajectory_aux_matrix)
@@ -9082,7 +9265,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         fs_target_abs_gt3_ratio = weighted_matrix_mean(fs_abs_gt3_matrix)
         fs_target_abs_gt5_ratio = weighted_matrix_mean(fs_abs_gt5_matrix)
         if x0_aux_matrix is not None and geo_aux_matrix is not None and aux_active_mask is not None:
-            aux_weights = weights.to(device=target_trajs.device, dtype=torch.float32) * aux_active_mask.to(
+            aux_weights = effective_weights.to(device=target_trajs.device, dtype=torch.float32) * aux_active_mask.to(
                 device=target_trajs.device,
                 dtype=torch.float32,
             )
@@ -9106,6 +9289,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "diffusion_timestep_mean": loss_diag["diffusion_timestep_mean"].to(device=awac_loss.device, dtype=awac_loss.dtype),
             "diffusion_timestep_min": loss_diag["diffusion_timestep_min"].to(device=awac_loss.device, dtype=awac_loss.dtype),
             "diffusion_timestep_max": loss_diag["diffusion_timestep_max"].to(device=awac_loss.device, dtype=awac_loss.dtype),
+            "paired_target_randomness": loss_diag["paired_target_randomness"].to(
+                device=awac_loss.device,
+                dtype=awac_loss.dtype,
+            ),
             "effective_weight_sum": valid_weight_sum.detach().to(dtype=awac_loss.dtype),
             "zero_weight_ratio": (flat_weights <= 0).float().mean().to(device=awac_loss.device, dtype=awac_loss.dtype),
             "zero_weight_batch": zero_weight_batch.to(device=awac_loss.device, dtype=awac_loss.dtype),
@@ -9154,6 +9341,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             **{
                 key: value.to(device=awac_loss.device, dtype=awac_loss.dtype)
                 for key, value in hardness_diag.items()
+            },
+            **{
+                key: value.to(device=awac_loss.device, dtype=awac_loss.dtype)
+                for key, value in residual_budget_diag.items()
             },
         }
         for key in (
@@ -9527,6 +9718,27 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         f"DPSI support_indices out of range for token={record.get('token', '')!r}: "
                         f"candidate_count={candidate_count}, support_indices={support_indices.tolist()}."
                     )
+                gt_anchor_injected = False
+                if bool(getattr(cfg, "dpsi_residual_budget_enabled", False)):
+                    sources = [str(source) for source in record["sources"]]
+                    if len(sources) != candidate_count:
+                        raise ValueError(
+                            f"DPSI source count mismatch for token={record.get('token', '')!r}: "
+                            f"candidate_count={candidate_count}, source_count={len(sources)}."
+                        )
+                    gt_indices = [idx for idx, source in enumerate(sources) if self._source_code(source) == 1]
+                    if not gt_indices:
+                        raise ValueError(
+                            "DPSI residual budget requires a GT candidate in the unfiltered archive for "
+                            f"token={record.get('token', '')!r}."
+                        )
+                    gt_index = int(gt_indices[0])
+                    if gt_index not in support_indices.tolist():
+                        support_indices = np.concatenate(
+                            [support_indices, np.asarray([gt_index], dtype=np.int64)],
+                            axis=0,
+                        )
+                        gt_anchor_injected = True
                 filtered = dict(record)
                 for key in ("candidates", "rewards", "anchor_distance", "valid_mask", "selection_score"):
                     if key in filtered:
@@ -9539,6 +9751,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         for key, value in dict(record["components"]).items()
                     }
                 filtered["support_indices"] = list(range(int(support_indices.size)))
+                filtered["_dpsi_gt_anchor_injected"] = gt_anchor_injected
                 filtered_records.append(filtered)
             records = filtered_records
 
@@ -9569,6 +9782,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         best_selected_source_code = torch.zeros((B,), device=device, dtype=torch.long)
         has_valid_candidate = torch.zeros((B,), device=device, dtype=torch.bool)
         fallback_candidate = torch.zeros((B,), device=device, dtype=torch.bool)
+        gt_anchor_injected = torch.zeros((B,), device=device, dtype=torch.bool)
         for b, record in enumerate(records):
             candidates_np = np.asarray(record["candidates"], dtype=np.float32)
             if candidates_np.ndim != 3 or candidates_np.shape[-1] != 3:
@@ -9660,6 +9874,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             )
             has_valid_candidate[b] = has_valid
             fallback_candidate[b] = not has_valid
+            gt_anchor_injected[b] = bool(record.get("_dpsi_gt_anchor_injected", False))
             raw_idx = int(selected_rewards[b, :m].argmax().item())
             if bool(valid_mask.any().item()):
                 valid_rewards = selected_rewards[b, :m].masked_fill(~valid_mask, -torch.inf)
@@ -9695,6 +9910,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "has_valid_candidate_ratio": has_valid_candidate.float().mean(),
             "fallback_candidate_ratio": fallback_candidate.float().mean(),
             "fallback_candidate": fallback_candidate,
+            "dpsi_gt_anchor_injected": gt_anchor_injected,
+            "dpsi_gt_anchor_injected_ratio": gt_anchor_injected.float().mean(),
             "has_valid_candidate": has_valid_candidate,
             "gt_reward": gt_reward,
             "il_reward": il_reward,
@@ -10800,6 +11017,26 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "dpsi_non_gt_to_gt_loss_ratio": dpsi_diag["non_gt_to_gt_loss_ratio"].detach(),
             "dpsi_non_gt_residual_mass_ratio": dpsi_diag["non_gt_residual_mass_ratio"].detach(),
             "dpsi_non_gt_target_weight_ratio": dpsi_diag["non_gt_target_weight_ratio"].detach(),
+            "dpsi_paired_target_randomness": dpsi_diag["paired_target_randomness"].detach(),
+            "dpsi_residual_budget_enabled": dpsi_diag["residual_budget_enabled"].detach(),
+            "dpsi_residual_budget_cap": dpsi_diag["residual_budget_cap"].detach(),
+            "dpsi_residual_budget_active_ratio": dpsi_diag["residual_budget_active_ratio"].detach(),
+            "dpsi_residual_budget_scale_mean": dpsi_diag["residual_budget_scale_mean"].detach(),
+            "dpsi_residual_budget_unanchored_ratio": dpsi_diag["residual_budget_unanchored_ratio"].detach(),
+            "dpsi_gt_anchor_injected_ratio": awac_batch["dpsi_gt_anchor_injected_ratio"].to(total_loss).detach(),
+            "dpsi_non_gt_exposure_ratio": dpsi_diag["non_gt_exposure_ratio"].detach(),
+            "dpsi_non_gt_residual_mass_ratio_pre_budget": dpsi_diag[
+                "non_gt_residual_mass_ratio_pre_budget"
+            ].detach(),
+            "dpsi_non_gt_residual_mass_ratio_post_budget": dpsi_diag[
+                "non_gt_residual_mass_ratio_post_budget"
+            ].detach(),
+            "dpsi_non_gt_target_weight_ratio_pre_budget": dpsi_diag[
+                "non_gt_target_weight_ratio_pre_budget"
+            ].detach(),
+            "dpsi_non_gt_target_weight_ratio_post_budget": dpsi_diag[
+                "non_gt_target_weight_ratio_post_budget"
+            ].detach(),
             "dpsi_sampled_weight_sum_mean": target_weights.sum(dim=1).mean().detach(),
             "dpsi_sampled_real_ratio": target_mask.float().mean().detach(),
             "valid_candidate_ratio": awac_batch["valid_candidate_ratio"].to(total_loss).detach(),
