@@ -4,7 +4,10 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import lzma
+import pickle
 import sys
+from collections import Counter
 from concurrent.futures import ProcessPoolExecutor
 from dataclasses import asdict
 from datetime import datetime, timezone
@@ -52,14 +55,34 @@ def _process_one(args: tuple[str, Dict[str, Any]]) -> tuple[str, Dict[str, Any]]
     delta_xy = support.trajectories[:, None, :, :2] - support.trajectories[None, :, :, :2]
     pairwise_ade_m = np.linalg.norm(delta_xy, axis=-1).mean(axis=-1)
     rewards = np.asarray(support.rewards, dtype=np.float64)
+    with lzma.open(path, "rb") as stream:
+        payload = pickle.load(stream)
+    if not isinstance(payload, dict):
+        raise TypeError(f"Support archive payload must be a mapping: {path}")
+    funnel = dict(payload.get("candidate_funnel", {}) or {})
+    build_metadata = dict(payload.get("build_metadata", {}) or {})
+    if "support_indices" in payload and "mode_ids" in payload:
+        selected = np.asarray(payload["support_indices"], dtype=np.int64).reshape(-1)
+        mode_ids = np.asarray(payload["mode_ids"], dtype=np.int64).reshape(-1)
+        selected_non_gt_count = int((mode_ids[selected] > 0).sum())
+    else:
+        selected_non_gt_count = max(int(support.trajectories.shape[0]) - 1, 0)
     return support.token, {
         "support_dispersion": float(_mean_off_diagonal(distance, weights)),
         "support_pairwise_ade_m": float(_mean_off_diagonal(pairwise_ade_m, weights)),
         "reference_mode_count": int(len(medoids)),
+        "selected_non_gt_count": selected_non_gt_count,
         "num_supports": int(support.trajectories.shape[0]),
         "support_reward_mean": float(rewards.mean()) if rewards.size else 0.0,
         "support_reward_max": float(rewards.max()) if rewards.size else 0.0,
         "archive_version": int(support.archive_version),
+        "supervision_type": str(
+            funnel.get("supervision_type", "frontier_modes" if selected_non_gt_count else "gt_only")
+        ),
+        "gt_only_reason": str(funnel.get("gt_only_reason", "")),
+        "candidate_capacity_contract": str(
+            build_metadata.get("candidate_capacity_contract", "legacy_unspecified")
+        ),
     }
 
 
@@ -103,6 +126,8 @@ def main() -> None:
 
     metadata = {
         "version": 2,
+        "capacity_semantics": "observed_selected_support_not_scene_intrinsic",
+        "no_per_scene_candidate_quota": True,
         "coverage_representation": "density_balanced_xy_pairwise_ade_m",
         "mode_representation": "support_relative_trajectory_distance",
         "scene_balanced": True,
@@ -111,6 +136,21 @@ def main() -> None:
         "archive_fingerprint": _archive_fingerprint(paths, support_root),
         "creation_timestamp": datetime.now(timezone.utc).isoformat(),
         "metric_config": asdict(config),
+        "selected_non_gt_count_histogram": dict(
+            sorted(Counter(str(record["selected_non_gt_count"]) for record in records.values()).items())
+        ),
+        "gt_only_reason_counts": dict(
+            sorted(
+                Counter(
+                    record["gt_only_reason"] or "unspecified"
+                    for record in records.values()
+                    if int(record["selected_non_gt_count"]) == 0
+                ).items()
+            )
+        ),
+        "candidate_capacity_contract_counts": dict(
+            sorted(Counter(record["candidate_capacity_contract"] for record in records.values()).items())
+        ),
     }
     payload = {"metadata": metadata, "records": records}
     output_path.parent.mkdir(parents=True, exist_ok=True)

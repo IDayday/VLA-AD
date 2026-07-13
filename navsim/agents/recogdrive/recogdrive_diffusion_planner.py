@@ -12197,6 +12197,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 "lfp_diversity_capacity_active_ratio": (
                     diversity_frontier.active_mask.float().mean().detach()
                 ),
+                "lfp_diversity_priority_uplift_ratio": (
+                    (diversity_frontier.bonus > 1e-8).float().mean().detach()
+                ),
+                "lfp_diversity_priority_mode_code": metrics.scalar.new_tensor(
+                    float(
+                        self.lfp_grpo_cfg.frontier_diversity_priority_mode
+                        == "additive_preservation"
+                    )
+                ),
                 "lfp_diversity_frontier_energy_mean": frontier_energy.mean().detach(),
             }
         if bool(self.lfp_grpo_cfg.curriculum_enabled):

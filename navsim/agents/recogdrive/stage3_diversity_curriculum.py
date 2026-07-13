@@ -124,15 +124,18 @@ def compute_capacity_normalized_frontier_energy(
     *,
     gap_weight: float,
     dispersion_floor: float,
-    priority_mode: Literal["credit_multiplicative", "additive_preservation"] = "credit_multiplicative",
+    priority_mode: Literal[
+        "credit_multiplicative", "additive_preservation"
+    ] = "credit_multiplicative",
 ) -> DiversityFrontierOutput:
-    """Modulates an existing learning frontier by its normalized diversity gap.
+    """Combines a policy frontier with its normalized diversity gap.
 
     A coverage gap is not itself a policy-learning signal.  In particular, a
     scene with zero bidirectional advantage has zero REINFORCE gradient, so
-    assigning it additive curriculum energy only wastes samples.  The gap may
-    therefore increase the priority of an already active frontier, but it must
-    never create one.
+    the default mode only increases the priority of an existing frontier.  The
+    explicit additive ablation can instead schedule such a scene for frozen
+    Stage2 KL preservation; callers must not interpret that uplift as new
+    policy credit.
     """
     if base_energy.ndim != 1:
         raise ValueError("base_energy must have shape [B].")

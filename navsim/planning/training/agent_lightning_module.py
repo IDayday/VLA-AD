@@ -190,6 +190,8 @@ class AgentLightningModule(pl.LightningModule):
             "lfp_diversity_coverage_gap_mean",
             "lfp_diversity_frontier_bonus_mean",
             "lfp_diversity_capacity_active_ratio",
+            "lfp_diversity_priority_uplift_ratio",
+            "lfp_diversity_priority_mode_code",
             "lfp_diversity_frontier_energy_mean",
             "lfp_v1_ep_ttc_ddc_tradeoff_intensity_mean",
             "lfp_v1_ep_ttc_ddc_pareto_front_ratio",

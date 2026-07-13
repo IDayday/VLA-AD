@@ -179,6 +179,11 @@ coverage gap 只调制下一 epoch sampler，不进入 advantage 或 policy loss
 `1.36082m`，mode count 均值 `4.9077`；它由于旧构建会填充候选，不能继续作为新版无配额数据的
 容量事实，必须由 v4 archive 重建。
 
+新版 cache 在 scene record 中同时保存 `selected_non_gt_count`、聚类后的
+`reference_mode_count`、`supervision_type` 和 `gt_only_reason`；metadata 固定声明
+`capacity_semantics=observed_selected_support_not_scene_intrinsic` 与
+`no_per_scene_candidate_quota=true`。因此 `K_i=0` 可直接表示 GT-only，不需要伪造最小容量。
+
 300-step 配对中，它使 frontier energy 与 mode capacity 的 Spearman 相关从 `0.0965` 提高到
 `0.2327`。epoch1 实际采样的 multimodal ratio 提高 `0.49` 个百分点，没有 sampler collapse。
 该历史实验使用的是加性 bonus，下面结果保留为方向性证据，不能证明加性公式正确。
