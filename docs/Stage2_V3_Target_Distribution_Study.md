@@ -401,9 +401,10 @@ The complete contract, artifacts, promotion gates, and commands are documented i
 
 最终 v4 不再按 scalar reward 对 Pareto front 做最后一次 top-k，而是按场景内归一化的
 `[EP, TTC, comfort]` 做最远点覆盖，再用轨迹 SNSAD 打破饱和指标的平局。每条非 GT teacher
-还必须位于 A5 八次随机 rollout 的最近 SNSAD `0.50` 内。128-scene 重构的 multi-mode ratio
-为 96.09%，平均 2.094 条 non-GT mode，policy reachability 为 mean 0.359 / p90 0.477 / max 0.499，
-严格 validator 为零错误。
+还必须位于 A5 八次随机 rollout 的最近 SNSAD `0.50` 内。最终 128-scene 重构加入不扩增的
+DDV2/DriveOR 原始 proposal 后，multi-mode ratio 为 95.31%，平均 2.047 条 non-GT mode，policy
+reachability 为 mean 0.337 / p90 0.439 / max 0.484，严格 validator 为零错误。6 个 scene 合法地
+保持 GT-only（`no_distinct_mode=1`、`no_pareto_candidate=5`），没有用低质量候选补数。
 
 FS-Norm 实验同时确认：FS stats 是 checkpoint 的动作坐标系，不是随 teacher archive 更新的数据
 统计。用新 v4 stats 直接微调 A5 会造成 representation reconstruction 明显漂移；保留 A5 原始
@@ -442,3 +443,62 @@ trajectory/feasibility auxiliary 为 0，保留 epsilon prediction、FS-Norm、P
 这不是以无约束宽度换安全，而是先通过数据的 safety/reachability gate 缩小 teacher hardness，再
 给予通过 gate 的 Pareto mode 足够梯度。完整 103k rebuild 和长训仍必须经过 held-out NAVTEST、
 support-aligned coverage 和 Stage3 BPAE 三重晋级，不能由该 128-scene train-subset probe 直接替代。
+
+### 10.4 不使用逐 scene 候选配额
+
+全量 token 覆盖不等于每个 scene 都要产生替代轨迹。新契约允许 `K_i=0`：这类 scene 只保留 GT，
+不会用低质量、不可达或重复轨迹填满 top-k。archive 新增可重算的 `candidate_funnel`，逐级记录
+proposal、evaluator-valid、trajectory-quality、GT trust region、1 个/要求数量的 policy witness、
+teacher eligibility、与 GT 的模式分离、Pareto eligibility 和最终 pairwise-distinct mode 数。模式分离
+必须先于 Pareto：否则近 GT 的高指标候选可能支配真正独立的候选，随后自己又被距离门槛丢弃，
+导致增加 proposal source 反而损失 mode。GT-only scene 记录第一处空漏斗的
+原因，但该原因只用于改进 proposal generator，不进入 target 权重，也不是单 scene promotion gate。
+
+同一原则也用于 Stage2 curriculum：如果某个 scene 的全部 non-GT mode 都高于当前难度阈值，
+该 scene 在这一 epoch 暂时只学习 GT；不会绕过阈值强行启用“最容易的一条”。阈值随后从
+`0.45` 逐步升到 `1.0`，因此这是延迟暴露而不是永久丢弃。训练日志用
+`dpsi_frontier_all_modes_deferred_scene_ratio` 单独记录这类暂时 GT-only scene。
+
+这里的 capacity 是冻结的候选生成器、A5 policy、evaluator 和阈值下的**观测容量**，不能宣称是
+scene 的固有容量。跨 scene 晋级只检查全局多模态比例、仅在正容量 scene 上计算的 capacity-normalized
+coverage，以及 Stage3 credit-ready 比例。
+
+新的 8-GPU、8-scene `train_val` 端到端 smoke 位于：
+
+```text
+outputs/sg_fps_v4_repro_a_smoke_20260713
+outputs/sg_fps_v4_repro_b_smoke_20260713
+```
+
+它确认真实 dataset domain 为 103,288 scenes，8/8 shard 成功、contract error 为 0。平均每 scene
+有 40 条 non-GT proposal；39.625 条 evaluator-valid、39.0 条 trajectory-quality、30.375 条进入 trust
+region、29.375 条满足 2/8 policy-density witness，最终选择 2.25 条 non-GT mode。policy feasible ratio
+为 0.921875，Stage3 credit-ready 比例为 2/8。两次独立构建的 8 个压缩 record 逐字节一致，确认
+`sha256(token) xor build_seed` 的 scene seed 不受 shard 启动顺序影响。该小样本没有出现 GT-only
+scene，因此不能估计全量困难场景比例；它只证明漏斗、真实 evaluator、train/val 覆盖元数据、
+可复现性和 validator 调用链一致。
+
+随后在固定的 128-scene 原始候选池上做了 proposal-source 配对。把“与 GT 的 SNSAD 模式分离”
+前移到 Pareto dominance 之前后，基础池保留 `121/128` 个多模态 scene、254 条 non-GT mode；
+加入未扩增的 DDV2/DrivoR 原始预测后为 `122/128`、262 条。外部候选在 24 个 scene 中各入选
+一条，恢复 1 个 GT-only scene，丢失 0 个已有多模态 scene。基础池剩余 7 个 GT-only scene 的
+漏斗原因为 `no_distinct_mode=1`、`no_pareto_candidate=6`；外部池分别为 1 和 5。这说明外部源有
+有限但真实的全局增量，不足以也不需要逐 scene 补齐。
+
+该配对还发现并修复了一个非单调选择 bug：旧顺序允许近 GT 的高指标候选先支配独立模式，
+再因 FPS 距离不足被丢弃，曾出现加入外部源后恢复 2 个 scene、同时损失 1 个 scene。新契约
+`observed_funnel_distinct_before_pareto_no_quota_v2` 消除了该路径。validator 现在从持久化的完整
+selection-gate 配置重算 valid/quality、teacher eligibility 和 Pareto mask，而不是校验自报字段；
+外部候选根目录保存 payload SHA256 与文件数。
+
+当前代码的 128-scene 正式构建位于：
+
+```text
+outputs/sg_fps_v4_contract_v2_external_128_20260713/support_v4
+```
+
+其漏斗均值从每 scene 41.922 条 non-GT proposal 依次收敛到 40.586 条 evaluator-valid、39.258 条
+trajectory-quality、36.477 条 trust-region、34.719 条具有至少 2/8 policy witness、15.133 条与 GT
+足够不同、8.055 条 Pareto-eligible，最终选中 2.047 条。122/128 scene 有非 GT mode，6/128 为
+GT-only；capacity-normalized coverage 为 1.0，Stage3 credit-ready scene ratio 为 42.97%。这些数字
+说明难 scene 可以没有替代监督，但每一次候选消失都能定位到可重算的漏斗阶段。

@@ -613,6 +613,10 @@ class OfflineRLConfig:
     dpsi_pair_target_randomness: bool = False
     dpsi_residual_budget_enabled: bool = False
     dpsi_non_gt_residual_mass_cap: float = 0.38
+    dpsi_frontier_curriculum_enabled: bool = False
+    dpsi_frontier_difficulty_start: float = 0.45
+    dpsi_frontier_difficulty_end: float = 1.0
+    dpsi_frontier_difficulty_warmup_epochs: int = 40
     dpsi_target_sample_m: int = 4
     dpsi_target_sample_m_after_warmup: int = 6
     dpsi_force_anchor_target: bool = True
@@ -922,6 +926,56 @@ def _compute_dpsi_support_profile(
     return profile, diag
 
 
+def build_frontier_curriculum_mask(
+    support_mask: torch.Tensor,
+    frontier_difficulty: torch.Tensor,
+    cfg: OfflineRLConfig,
+    current_epoch: int,
+) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
+    """Expose nearby modes first while recovering uniform mode support at ramp end."""
+
+    support_mask = support_mask.bool()
+    difficulty = frontier_difficulty.to(device=support_mask.device, dtype=torch.float32)
+    if difficulty.shape != support_mask.shape:
+        raise ValueError("frontier difficulty must match support_mask [B,M].")
+    enabled = bool(cfg.dpsi_frontier_curriculum_enabled)
+    start = float(cfg.dpsi_frontier_difficulty_start)
+    end = float(cfg.dpsi_frontier_difficulty_end)
+    warmup = int(cfg.dpsi_frontier_difficulty_warmup_epochs)
+    if not (0.0 <= start <= end <= 1.0):
+        raise ValueError(
+            "DPSI frontier difficulty curriculum requires 0 <= start <= end <= 1, "
+            f"got start={start}, end={end}."
+        )
+    if warmup < 0:
+        raise ValueError("dpsi_frontier_difficulty_warmup_epochs must be non-negative.")
+    if enabled:
+        progress = 1.0 if warmup == 0 else min(max(float(current_epoch) / float(warmup), 0.0), 1.0)
+        threshold = start + (end - start) * progress
+        active = support_mask & (difficulty <= threshold + 1e-6)
+    else:
+        threshold = 1.0
+        active = support_mask.clone()
+    support_count = support_mask.float().sum(dim=1)
+    active_count = active.float().sum(dim=1)
+    has_support = support_count > 0.0
+    diagnostics = {
+        "dpsi_frontier_curriculum_enabled": difficulty.new_tensor(float(enabled)),
+        "dpsi_frontier_difficulty_threshold": difficulty.new_tensor(float(threshold)),
+        "dpsi_frontier_active_mode_count_mean": active_count.mean(),
+        "dpsi_frontier_active_mode_ratio": (
+            active_count.sum() / support_count.sum().clamp_min(1.0)
+        ),
+        "dpsi_frontier_deferred_scene_ratio": (
+            (active_count < support_count).float().mean()
+        ),
+        "dpsi_frontier_all_modes_deferred_scene_ratio": (
+            (has_support & (active_count == 0.0)).float().mean()
+        ),
+    }
+    return active, diagnostics
+
+
 def _build_asmi_weights(
     selected_rewards: torch.Tensor,
     selected_real_mask: torch.Tensor,
@@ -934,6 +988,8 @@ def _build_asmi_weights(
     cfg: OfflineRLConfig,
     selected_mode_id: torch.Tensor | None = None,
     selected_teacher_eligible: torch.Tensor | None = None,
+    selected_frontier_difficulty: torch.Tensor | None = None,
+    current_epoch: int = 0,
 ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
     device = selected_rewards.device
     real = selected_real_mask.bool()
@@ -960,6 +1016,14 @@ def _build_asmi_weights(
         if mode_id.shape != selected_rewards.shape or teacher_eligible.shape != selected_rewards.shape:
             raise ValueError("frontier_v4 mode and teacher masks must match selected_rewards [B, M].")
         support_mask = real & valid & teacher_eligible & (~anchor_mask) & (mode_id > 0)
+        if selected_frontier_difficulty is None:
+            raise ValueError("frontier_v4 requires learning_frontier_difficulty tensors.")
+        support_mask, curriculum_diag = build_frontier_curriculum_mask(
+            support_mask,
+            selected_frontier_difficulty,
+            cfg,
+            current_epoch,
+        )
         support_raw = torch.zeros_like(selected_rewards, dtype=torch.float32)
         for b in range(selected_rewards.shape[0]):
             for mode in torch.unique(mode_id[b, support_mask[b]]).tolist():
@@ -985,6 +1049,7 @@ def _build_asmi_weights(
             "dpsi_il_weight_ratio": weights[(source_code == 2) & real].sum() / total,
             "dpsi_frontier_support_scene_ratio": support_mask.any(dim=1).float().mean(),
             "dpsi_frontier_mode_count_mean": support_raw.sum(dim=1).mean(),
+            **curriculum_diag,
         }
         return weights, diagnostics
 
@@ -2377,6 +2442,18 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         residual_cap = float(cfg.dpsi_non_gt_residual_mass_cap)
         if not 0.0 < residual_cap < 1.0:
             raise ValueError("offline_rl_cfg.dpsi_non_gt_residual_mass_cap must be in (0, 1).")
+        difficulty_start = float(cfg.dpsi_frontier_difficulty_start)
+        difficulty_end = float(cfg.dpsi_frontier_difficulty_end)
+        if not 0.0 <= difficulty_start <= difficulty_end <= 1.0:
+            raise ValueError(
+                "offline_rl_cfg frontier difficulty curriculum requires 0 <= start <= end <= 1."
+            )
+        if int(cfg.dpsi_frontier_difficulty_warmup_epochs) < 0:
+            raise ValueError("dpsi_frontier_difficulty_warmup_epochs must be non-negative.")
+        if bool(cfg.dpsi_frontier_curriculum_enabled) and (
+            str(cfg.dpsi_target_distribution).strip().lower() != "frontier_v4"
+        ):
+            raise ValueError("dpsi_frontier_curriculum_enabled requires dpsi_target_distribution='frontier_v4'.")
         if bool(cfg.dpsi_pair_target_randomness) or bool(cfg.dpsi_residual_budget_enabled):
             if not bool(cfg.enabled) or not bool(cfg.use_dpsi):
                 raise ValueError(
@@ -9815,7 +9892,12 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         "mode_ids",
                         "teacher_eligible_mask",
                         "policy_reachability_snsad",
+                        "policy_neighbor_count",
+                        "policy_neighbor_fraction",
+                        "learning_frontier_difficulty",
                         "pareto_objective_novelty",
+                        "candidate_funnel",
+                        "stage3_readiness",
                         "build_metadata",
                     }
                     missing = sorted(required.difference(record))
@@ -9837,13 +9919,32 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         )
                     if (
                         build_metadata.get("mode_selection_order")
-                        != "scene_normalized_objective_fps_then_snsad"
+                        != "scene_normalized_objective_fps_then_snsad_then_policy_density"
                     ):
                         contract_errors.append(
-                            "mode_selection_order=scene_normalized_objective_fps_then_snsad"
+                            "mode_selection_order=scene_normalized_objective_fps_then_snsad_then_policy_density"
+                        )
+                    if (
+                        build_metadata.get("learnability_tiebreak")
+                        != "policy_density_then_frontier_difficulty"
+                    ):
+                        contract_errors.append(
+                            "learnability_tiebreak=policy_density_then_frontier_difficulty"
+                        )
+                    if build_metadata.get("learnability_contract") != "policy_density_bounded_frontier_v1":
+                        contract_errors.append("learnability_contract=policy_density_bounded_frontier_v1")
+                    if (
+                        build_metadata.get("candidate_capacity_contract")
+                        != "observed_funnel_distinct_before_pareto_no_quota_v2"
+                    ):
+                        contract_errors.append(
+                            "candidate_capacity_contract="
+                            "observed_funnel_distinct_before_pareto_no_quota_v2"
                         )
                     if not bool(build_metadata.get("legacy_reward_gate_disabled", False)):
                         contract_errors.append("legacy_reward_gate_disabled=true")
+                    if not bool(build_metadata.get("exclude_derived_external", False)):
+                        contract_errors.append("exclude_derived_external=true")
                     if not bool(build_metadata.get("raw_internal_candidates", False)):
                         contract_errors.append("raw_internal_candidates=true")
                     if bool(build_metadata.get("expand_external_candidates", True)):
@@ -9852,10 +9953,31 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         contract_errors.append("policy_reachability_required=true")
                     if int(build_metadata.get("policy_samples_per_scene", 0)) <= 0:
                         contract_errors.append("policy_samples_per_scene>0")
+                    if int(build_metadata.get("min_policy_neighbors", 0)) <= 0:
+                        contract_errors.append("min_policy_neighbors>0")
+                    if int(build_metadata.get("min_policy_neighbors", 0)) > int(
+                        build_metadata.get("policy_samples_per_scene", 0)
+                    ):
+                        contract_errors.append("min_policy_neighbors<=policy_samples_per_scene")
                     if not str(build_metadata.get("policy_checkpoint_sha256", "")):
                         contract_errors.append("policy_checkpoint_sha256=<non-empty>")
                     if not str(build_metadata.get("fs_norm_stats_sha256", "")):
                         contract_errors.append("fs_norm_stats_sha256=<non-empty>")
+                    if str(build_metadata.get("build_log_split", "")).strip().lower() not in {
+                        "train",
+                        "val",
+                        "train_val",
+                    }:
+                        contract_errors.append("build_log_split=<train|val|train_val>")
+                    if int(build_metadata.get("dataset_scene_count", 0)) <= 0:
+                        contract_errors.append("dataset_scene_count>0")
+                    if (
+                        build_metadata.get("scene_seed_scheme")
+                        != "sha256_token_xor_build_seed_v1"
+                    ):
+                        contract_errors.append(
+                            "scene_seed_scheme=sha256_token_xor_build_seed_v1"
+                        )
                     if contract_errors:
                         raise ValueError(
                             "frontier_v4 refuses migrated/preselected support archives; rebuild from raw candidates. "
@@ -9879,7 +10001,33 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 if str(getattr(cfg, "dpsi_target_distribution", "legacy")).strip().lower() == "frontier_v4":
                     mode_ids = np.asarray(record["mode_ids"], dtype=np.int64).reshape(-1)
                     reachability = np.asarray(record["policy_reachability_snsad"], dtype=np.float32).reshape(-1)
+                    neighbor_count = np.asarray(record["policy_neighbor_count"], dtype=np.int64).reshape(-1)
+                    difficulty = np.asarray(
+                        record["learning_frontier_difficulty"], dtype=np.float32
+                    ).reshape(-1)
                     non_gt_indices = support_indices[mode_ids[support_indices] != 0]
+                    candidate_funnel = dict(record["candidate_funnel"] or {})
+                    expected_supervision_type = (
+                        "frontier_modes" if non_gt_indices.size else "gt_only"
+                    )
+                    if (
+                        int(candidate_funnel.get("version", 0)) != 2
+                        or int(candidate_funnel.get("selected_non_gt_count", -1))
+                        != int(non_gt_indices.size)
+                        or int(candidate_funnel.get("distinct_from_gt_count", -1)) < 0
+                        or candidate_funnel.get("supervision_type") != expected_supervision_type
+                    ):
+                        raise ValueError(
+                            "frontier_v4 candidate_funnel disagrees with selected modes; "
+                            f"token={record.get('token', '')!r}."
+                        )
+                    if not non_gt_indices.size and not str(
+                        candidate_funnel.get("gt_only_reason", "")
+                    ):
+                        raise ValueError(
+                            "frontier_v4 GT-only scene requires an explicit candidate-funnel reason; "
+                            f"token={record.get('token', '')!r}."
+                        )
                     max_policy_snsad = float(build_metadata["max_policy_snsad"])
                     if non_gt_indices.size and (
                         not np.isfinite(reachability[non_gt_indices]).all()
@@ -9887,6 +10035,21 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     ):
                         raise ValueError(
                             "frontier_v4 selected a mode outside the current-policy learning frontier; "
+                            f"token={record.get('token', '')!r}."
+                        )
+                    if non_gt_indices.size and bool(
+                        np.any(neighbor_count[non_gt_indices] < int(build_metadata["min_policy_neighbors"]))
+                    ):
+                        raise ValueError(
+                            "frontier_v4 selected a mode without enough current-policy neighbors; "
+                            f"token={record.get('token', '')!r}."
+                        )
+                    if non_gt_indices.size and (
+                        not np.isfinite(difficulty[non_gt_indices]).all()
+                        or bool(np.any((difficulty[non_gt_indices] < 0.0) | (difficulty[non_gt_indices] > 1.0)))
+                    ):
+                        raise ValueError(
+                            "frontier_v4 selected a mode with invalid learning difficulty; "
                             f"token={record.get('token', '')!r}."
                         )
                 gt_anchor_injected = False
@@ -9923,6 +10086,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                     "gt_relative_ade",
                     "gt_relative_fde",
                     "policy_reachability_snsad",
+                    "policy_neighbor_count",
+                    "policy_neighbor_fraction",
+                    "learning_frontier_difficulty",
                     "pareto_objective_novelty",
                 ):
                     if key in filtered:
@@ -9956,6 +10122,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         selected_teacher_eligible = torch.zeros((B, max_m), device=device, dtype=torch.bool)
         selected_source_conditioned = torch.zeros((B, max_m), device=device, dtype=torch.bool)
         selected_policy_reachability = torch.zeros((B, max_m), device=device, dtype=torch.float32)
+        selected_frontier_difficulty = torch.ones((B, max_m), device=device, dtype=torch.float32)
         selected_objective_novelty = torch.zeros((B, max_m), device=device, dtype=torch.float32)
         selected_components = {
             key: torch.zeros((B, max_m), device=device, dtype=torch.float32)
@@ -10070,6 +10237,10 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 selected_policy_reachability[b, :m] = torch.as_tensor(
                     record["policy_reachability_snsad"], device=device, dtype=torch.float32
                 )
+            if "learning_frontier_difficulty" in record:
+                selected_frontier_difficulty[b, :m] = torch.as_tensor(
+                    record["learning_frontier_difficulty"], device=device, dtype=torch.float32
+                )
             if "pareto_objective_novelty" in record:
                 selected_objective_novelty[b, :m] = torch.as_tensor(
                     record["pareto_objective_novelty"], device=device, dtype=torch.float32
@@ -10117,6 +10288,7 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "selected_teacher_eligible": selected_teacher_eligible,
             "selected_source_conditioned": selected_source_conditioned,
             "selected_policy_reachability": selected_policy_reachability,
+            "selected_frontier_difficulty": selected_frontier_difficulty,
             "selected_objective_novelty": selected_objective_novelty,
             "valid_candidate_ratio": valid_real.float().sum() / real_count,
             "has_valid_candidate_ratio": has_valid_candidate.float().mean(),
@@ -11144,6 +11316,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             cfg,
             selected_mode_id=awac_batch.get("selected_mode_id"),
             selected_teacher_eligible=awac_batch.get("selected_teacher_eligible"),
+            selected_frontier_difficulty=awac_batch.get("selected_frontier_difficulty"),
+            current_epoch=current_epoch,
         )
         target_trajs, target_weights, target_mask, sample_diag = _sample_asmi_targets(
             awac_batch["selected_trajs"],

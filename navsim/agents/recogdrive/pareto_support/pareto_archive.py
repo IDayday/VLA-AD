@@ -362,6 +362,124 @@ def trajectory_snsad_distance(lhs: np.ndarray, rhs: np.ndarray) -> float:
     return float(np.dot(components, weights))
 
 
+def compute_policy_credit_readiness(
+    candidates: Sequence[CandidateRecord],
+    evaluator_valid: np.ndarray,
+    trajectory_quality: np.ndarray,
+    gt_index: int,
+    cfg: Any,
+) -> dict[str, float | int | bool | str]:
+    """Estimate whether current-policy rollouts can provide bidirectional Stage3 credit.
+
+    This is a dataset diagnostic, not a reward or a Stage2 target weight. It mirrors
+    the sign structure of LFP-GRPO using the GT reference available during archive
+    construction, while leaving DDP-global scaling to Stage3 itself.
+    """
+
+    policy_indices = np.asarray(
+        [index for index, candidate in enumerate(candidates) if _is_current_policy_proposal(candidate.source)],
+        dtype=np.int64,
+    )
+    sample_count = int(policy_indices.size)
+    empty: dict[str, float | int | bool | str] = {
+        "benchmark": "navsim_v1",
+        "policy_sample_count": sample_count,
+        "feasible_count": 0,
+        "feasible_ratio": 0.0,
+        "progress_ok_ratio": 0.0,
+        "pareto_front_ratio": 0.0,
+        "positive_fraction": 0.0,
+        "negative_fraction": 0.0,
+        "zero_fraction": 1.0 if sample_count else 0.0,
+        "advantage_magnitude": 0.0,
+        "bidirectional_energy": 0.0,
+        "feasible_score_span": 0.0,
+        "feasible_objective_span": 0.0,
+        "safety_frontier": False,
+        "credit_ready": False,
+    }
+    if sample_count == 0:
+        return empty
+
+    feasible = (
+        np.asarray(evaluator_valid, dtype=np.bool_)[policy_indices]
+        & np.asarray(trajectory_quality, dtype=np.bool_)[policy_indices]
+    )
+    feasible_count = int(feasible.sum())
+    rewards = np.asarray([float(candidates[index].reward) for index in policy_indices], dtype=np.float32)
+    objectives = np.asarray(
+        [
+            [
+                _component_value(candidates[index].components, "ego_progress", "ep"),
+                _component_value(candidates[index].components, "time_to_collision_within_bound", "ttc"),
+                _component_value(candidates[index].components, "history_comfort", "comfort", default=1.0),
+            ]
+            for index in policy_indices
+        ],
+        dtype=np.float32,
+    )
+    ref_ep = _component_value(candidates[gt_index].components, "ego_progress", "ep")
+    progress_tolerance = float(cfg_value(cfg, "support_v4_stage3_ep_tolerance", 0.02))
+    progress_ok = objectives[:, 0] >= ref_ep - progress_tolerance
+    eligible = feasible & progress_ok
+    pareto = pareto_front_mask(
+        objectives,
+        eligible,
+        eps=float(cfg_value(cfg, "support_v4_pareto_eps", 0.01)),
+    )
+
+    ref_reward = float(candidates[gt_index].reward)
+    margin_scale = max(float(cfg_value(cfg, "support_v4_stage3_reference_margin_scale", 0.05)), 1e-6)
+    margin_weight = float(cfg_value(cfg, "support_v4_stage3_reference_margin_weight", 0.20))
+    score = rewards + margin_weight * np.clip((rewards - ref_reward) / margin_scale, -1.0, 1.0)
+    baseline = float(score[feasible].mean()) if feasible_count >= 2 else float(score.mean())
+    centered = score - baseline
+    advantage = np.zeros_like(centered)
+    positive_eligible = feasible & progress_ok & pareto
+    nonpositive_eligible = feasible & (~progress_ok | ~pareto)
+    advantage[positive_eligible] = centered[positive_eligible]
+    advantage[nonpositive_eligible] = np.minimum(centered[nonpositive_eligible], 0.0)
+    if feasible_count > 0:
+        advantage[~feasible] = -1.0
+
+    sign_eps = float(cfg_value(cfg, "support_v4_stage3_advantage_eps", 1e-6))
+    positive_fraction = float(np.mean(advantage > sign_eps))
+    negative_fraction = float(np.mean(advantage < -sign_eps))
+    magnitude = float(np.mean(np.abs(advantage)))
+    energy = 4.0 * positive_fraction * negative_fraction * magnitude
+    if feasible_count >= 2:
+        feasible_score_span = float(np.ptp(score[feasible]))
+        feasible_objective_span = float(np.ptp(objectives[feasible], axis=0).mean())
+    else:
+        feasible_score_span = 0.0
+        feasible_objective_span = 0.0
+    min_feasible = int(cfg_value(cfg, "support_v4_stage3_min_feasible_rollouts", 2))
+    min_score_span = float(cfg_value(cfg, "support_v4_stage3_min_score_span", 0.01))
+    credit_ready = bool(
+        feasible_count >= min_feasible
+        and positive_fraction > 0.0
+        and negative_fraction > 0.0
+        and feasible_score_span >= min_score_span
+    )
+    return {
+        "benchmark": "navsim_v1",
+        "policy_sample_count": sample_count,
+        "feasible_count": feasible_count,
+        "feasible_ratio": float(feasible_count / sample_count),
+        "progress_ok_ratio": float(progress_ok.mean()),
+        "pareto_front_ratio": float(pareto.mean()),
+        "positive_fraction": positive_fraction,
+        "negative_fraction": negative_fraction,
+        "zero_fraction": float(np.mean(np.abs(advantage) <= sign_eps)),
+        "advantage_magnitude": magnitude,
+        "bidirectional_energy": float(energy),
+        "feasible_score_span": feasible_score_span,
+        "feasible_objective_span": feasible_objective_span,
+        "safety_frontier": bool(0 < feasible_count < sample_count),
+        "credit_ready": credit_ready,
+    }
+
+
 def _select_mode_pareto_v4(
     candidates: list[CandidateRecord],
     ref: dict,
@@ -394,10 +512,13 @@ def _select_mode_pareto_v4(
     exclude_derived_external = bool(cfg_value(cfg, "support_v4_exclude_derived_external", True))
     require_policy_reachability = bool(cfg_value(cfg, "support_v4_require_policy_reachability", False))
     max_policy_snsad = float(cfg_value(cfg, "support_v4_max_policy_snsad", 0.50))
+    min_policy_neighbors = int(cfg_value(cfg, "support_v4_min_policy_neighbors", 2))
     if max_ade <= 0.0 or max_fde <= 0.0:
         raise ValueError("mode_pareto_v4 GT-relative distance bounds must be positive.")
     if min(mode_threshold, reward_gain_cap, max_reward_drop, pareto_eps, max_policy_snsad) < 0.0:
         raise ValueError("mode_pareto_v4 thresholds and reward bounds must be non-negative.")
+    if min_policy_neighbors <= 0:
+        raise ValueError("mode_pareto_v4 min_policy_neighbors must be positive.")
 
     policy_indices = [
         index for index, candidate in enumerate(candidates) if _is_current_policy_proposal(candidate.source)
@@ -407,13 +528,26 @@ def _select_mode_pareto_v4(
             "mode_pareto_v4 requires current-policy proposals when "
             "support_v4_require_policy_reachability=True."
         )
+    if require_policy_reachability and min_policy_neighbors > len(policy_indices):
+        raise ValueError(
+            "mode_pareto_v4 min_policy_neighbors cannot exceed the number of "
+            f"current-policy proposals ({min_policy_neighbors} > {len(policy_indices)})."
+        )
     policy_reachability = np.full((len(candidates),), np.inf, dtype=np.float32)
+    policy_neighbor_count = np.zeros((len(candidates),), dtype=np.int64)
+    policy_neighbor_fraction = np.zeros((len(candidates),), dtype=np.float32)
     if policy_indices:
         for index, candidate in enumerate(candidates):
-            policy_reachability[index] = min(
-                trajectory_snsad_distance(candidate.trajectory, candidates[policy_index].trajectory)
-                for policy_index in policy_indices
+            distances = np.asarray(
+                [
+                    trajectory_snsad_distance(candidate.trajectory, candidates[policy_index].trajectory)
+                    for policy_index in policy_indices
+                ],
+                dtype=np.float32,
             )
+            policy_reachability[index] = float(distances.min())
+            policy_neighbor_count[index] = int(np.sum(distances <= max_policy_snsad + 1e-6))
+            policy_neighbor_fraction[index] = float(policy_neighbor_count[index] / len(policy_indices))
 
     evaluator_valid = np.asarray(
         [is_valid_candidate(candidate.components, candidate.feas, ref, cfg) for candidate in candidates],
@@ -426,6 +560,7 @@ def _select_mode_pareto_v4(
     eligible = evaluator_valid & quality
     gt_ade = np.zeros((len(candidates),), dtype=np.float32)
     gt_fde = np.zeros((len(candidates),), dtype=np.float32)
+    gt_mode_distance = np.zeros((len(candidates),), dtype=np.float32)
     for index, candidate in enumerate(candidates):
         trajectory = np.asarray(candidate.trajectory, dtype=np.float32)
         n = min(trajectory.shape[0], gt_traj.shape[0])
@@ -437,11 +572,13 @@ def _select_mode_pareto_v4(
         distance = np.linalg.norm(trajectory[:n, :2] - gt_traj[:n, :2], axis=-1)
         gt_ade[index] = float(distance.mean())
         gt_fde[index] = float(distance[-1])
+        gt_mode_distance[index] = trajectory_snsad_distance(trajectory, gt_traj)
         if candidate is not gt:
             eligible[index] &= bool(gt_ade[index] <= max_ade and gt_fde[index] <= max_fde)
             eligible[index] &= bool(float(candidate.reward) >= gt_reward - max_reward_drop)
             if require_policy_reachability:
                 eligible[index] &= bool(policy_reachability[index] <= max_policy_snsad)
+                eligible[index] &= bool(policy_neighbor_count[index] >= min_policy_neighbors)
             if exclude_derived_external and _is_derived_external(candidate.source):
                 eligible[index] = False
         candidate.support_tag = ""
@@ -450,6 +587,15 @@ def _select_mode_pareto_v4(
         setattr(candidate, "_sg_fps_gt_fde", float(gt_fde[index]))
         setattr(candidate, "_sg_fps_source_conditioned", _is_scene_conditioned_proposal(candidate.source))
         setattr(candidate, "_sg_fps_policy_reachability_snsad", float(policy_reachability[index]))
+        setattr(candidate, "_sg_fps_policy_neighbor_count", int(policy_neighbor_count[index]))
+        setattr(candidate, "_sg_fps_policy_neighbor_fraction", float(policy_neighbor_fraction[index]))
+        normalized_reachability = min(float(policy_reachability[index]) / max(max_policy_snsad, 1e-6), 1.0)
+        frontier_difficulty = (
+            0.50 * normalized_reachability
+            + 0.25 * min(float(gt_ade[index]) / max(max_ade, 1e-6), 1.0)
+            + 0.25 * min(float(gt_fde[index]) / max(max_fde, 1e-6), 1.0)
+        )
+        setattr(candidate, "_sg_fps_frontier_difficulty", float(frontier_difficulty))
         setattr(candidate, "_sg_fps_objective_novelty", 0.0)
         setattr(candidate, "_sg_fps_mode_id", -1)
 
@@ -467,7 +613,15 @@ def _select_mode_pareto_v4(
         ],
         dtype=np.float32,
     )
-    front = pareto_front_mask(pareto_values, eligible, eps=pareto_eps)
+    # A near-GT proposal cannot become a non-GT supervision mode. Exclude it
+    # before Pareto dominance so it cannot suppress a genuinely distinct mode
+    # and then be discarded by the subsequent FPS distance check.
+    mode_distinct_from_gt = gt_mode_distance + 1e-6 >= mode_threshold
+    pareto_domain = eligible & (
+        mode_distinct_from_gt
+        | (np.arange(len(candidates), dtype=np.int64) == gt_index)
+    )
+    front = pareto_front_mask(pareto_values, pareto_domain, eps=pareto_eps)
     for candidate, is_front in zip(candidates, front):
         setattr(candidate, "_sg_fps_pareto_front", bool(is_front))
 
@@ -498,7 +652,7 @@ def _select_mode_pareto_v4(
     setattr(gt, "_sg_fps_mode_id", 0)
     remaining = set(ranked_indices)
     while remaining and len(selected) < top_m:
-        choices: list[tuple[tuple[float, float, float, float, int], int, float]] = []
+        choices: list[tuple[tuple[float, float, float, float, float, float, int], int, float]] = []
         for index in remaining:
             trajectory_novelty = min(
                 trajectory_snsad_distance(candidates[index].trajectory, candidates[chosen].trajectory)
@@ -515,6 +669,8 @@ def _select_mode_pareto_v4(
             key = (
                 objective_novelty,
                 trajectory_novelty,
+                float(policy_neighbor_fraction[index]),
+                -float(getattr(candidates[index], "_sg_fps_frontier_difficulty", 1.0)),
                 capped_gain,
                 -float(gt_ade[index]),
                 -int(index),
@@ -530,6 +686,81 @@ def _select_mode_pareto_v4(
         setattr(candidate, "_sg_fps_mode_id", len(selected))
         selected.append(candidate)
         selected_indices.append(index)
+
+    non_gt_mask = np.arange(len(candidates), dtype=np.int64) != gt_index
+    nested_quality_mask = non_gt_mask & evaluator_valid & quality
+    trust_region_mask = (
+        nested_quality_mask
+        & (gt_ade <= max_ade)
+        & (gt_fde <= max_fde)
+        & (np.asarray([float(candidate.reward) for candidate in candidates]) >= gt_reward - max_reward_drop)
+    )
+    if exclude_derived_external:
+        trust_region_mask &= np.asarray(
+            [not _is_derived_external(candidate.source) for candidate in candidates],
+            dtype=np.bool_,
+        )
+    within_policy_radius = np.isfinite(policy_reachability) & (
+        policy_reachability <= max_policy_snsad + 1e-6
+    )
+    one_neighbor_reachable = trust_region_mask & within_policy_radius & (policy_neighbor_count >= 1)
+    required_neighbors_reachable = (
+        trust_region_mask & within_policy_radius & (policy_neighbor_count >= min_policy_neighbors)
+    )
+    teacher_eligible_non_gt = non_gt_mask & eligible
+    distinct_teacher_non_gt = teacher_eligible_non_gt & mode_distinct_from_gt
+    pareto_eligible_non_gt = teacher_eligible_non_gt & front
+    selected_non_gt_count = len(selected) - 1
+    funnel_counts = {
+        "non_gt_proposal_count": int(non_gt_mask.sum()),
+        "current_policy_proposal_count": int(len(policy_indices)),
+        "evaluator_valid_count": int((non_gt_mask & evaluator_valid).sum()),
+        "trajectory_quality_count": int(nested_quality_mask.sum()),
+        "trust_region_count": int(trust_region_mask.sum()),
+        "one_neighbor_reachable_count": int(one_neighbor_reachable.sum()),
+        "required_neighbors_reachable_count": int(required_neighbors_reachable.sum()),
+        "teacher_eligible_count": int(teacher_eligible_non_gt.sum()),
+        "distinct_from_gt_count": int(distinct_teacher_non_gt.sum()),
+        "pareto_eligible_count": int(pareto_eligible_non_gt.sum()),
+        "selected_non_gt_count": int(selected_non_gt_count),
+    }
+    if selected_non_gt_count > 0:
+        gt_only_reason = ""
+        supervision_type = "frontier_modes"
+    elif funnel_counts["non_gt_proposal_count"] == 0:
+        gt_only_reason = "no_non_gt_proposals"
+        supervision_type = "gt_only"
+    elif funnel_counts["evaluator_valid_count"] == 0:
+        gt_only_reason = "no_evaluator_valid_candidate"
+        supervision_type = "gt_only"
+    elif funnel_counts["trajectory_quality_count"] == 0:
+        gt_only_reason = "no_trajectory_quality_candidate"
+        supervision_type = "gt_only"
+    elif funnel_counts["trust_region_count"] == 0:
+        gt_only_reason = "no_trust_region_candidate"
+        supervision_type = "gt_only"
+    elif funnel_counts["required_neighbors_reachable_count"] == 0:
+        gt_only_reason = "no_policy_reachable_candidate"
+        supervision_type = "gt_only"
+    elif funnel_counts["distinct_from_gt_count"] == 0:
+        gt_only_reason = "no_distinct_mode"
+        supervision_type = "gt_only"
+    elif funnel_counts["pareto_eligible_count"] == 0:
+        gt_only_reason = "no_pareto_candidate"
+        supervision_type = "gt_only"
+    else:
+        gt_only_reason = "no_distinct_mode"
+        supervision_type = "gt_only"
+    setattr(
+        gt,
+        "_sg_fps_candidate_funnel",
+        {
+            "version": 2,
+            **funnel_counts,
+            "supervision_type": supervision_type,
+            "gt_only_reason": gt_only_reason,
+        },
+    )
     return selected
 
 
@@ -565,6 +796,62 @@ def _sort_by_utility(candidates: Iterable[CandidateRecord], weights: Mapping[str
         ),
         reverse=True,
     )
+
+
+def _selection_gate_config(cfg: Any) -> dict[str, Any]:
+    """Serialize the gates that determine v4 validity and trajectory quality."""
+
+    return {
+        "fpv3_ddc_min_absolute": float(cfg_value(cfg, "fpv3_ddc_min_absolute", 0.95)),
+        "fpv3_ddc_drop_tolerance": float(cfg_value(cfg, "fpv3_ddc_drop_tolerance", 0.01)),
+        "support_ddc_gate_mode": str(cfg_value(cfg, "support_ddc_gate_mode", "absolute_and_ref")),
+        "support_relax_ddc_when_ref_below_min": bool(
+            cfg_value(cfg, "support_relax_ddc_when_ref_below_min", False)
+        ),
+        "fpv3_feas_cost_max": float(cfg_value(cfg, "fpv3_feas_cost_max", 0.10)),
+        "support_feas_gate_mode": str(cfg_value(cfg, "support_feas_gate_mode", "absolute")),
+        "support_feas_cost_tolerance": float(cfg_value(cfg, "support_feas_cost_tolerance", 0.03)),
+        "fpv3_comfort_min": float(cfg_value(cfg, "fpv3_comfort_min", 0.95)),
+        "support_comfort_gate_mode": str(cfg_value(cfg, "support_comfort_gate_mode", "absolute")),
+        "support_comfort_drop_tolerance": float(
+            cfg_value(cfg, "support_comfort_drop_tolerance", 0.05)
+        ),
+        "support_quality_enable": bool(cfg_value(cfg, "support_quality_enable", False)),
+        "support_quality_exempt_gt": bool(cfg_value(cfg, "support_quality_exempt_gt", True)),
+        "support_min_non_gt_reward": float(cfg_value(cfg, "support_min_non_gt_reward", 0.0)),
+        "support_reward_gate_mode": str(cfg_value(cfg, "support_reward_gate_mode", "absolute")),
+        "support_min_non_gt_improver_reward": float(
+            cfg_value(cfg, "support_min_non_gt_improver_reward", 0.70)
+        ),
+        "support_gt_improver_margin": float(cfg_value(cfg, "support_gt_improver_margin", 0.05)),
+        "support_gt_improver_ref_max_reward": float(
+            cfg_value(cfg, "support_gt_improver_ref_max_reward", 0.90)
+        ),
+        "support_max_first_xy_error_m": float(
+            cfg_value(cfg, "support_max_first_xy_error_m", np.inf)
+        ),
+        "support_max_first_heading_error_rad": float(
+            cfg_value(cfg, "support_max_first_heading_error_rad", np.inf)
+        ),
+        "support_max_xy_turn_rad": float(cfg_value(cfg, "support_max_xy_turn_rad", np.inf)),
+        "support_max_early_xy_turn_rad": float(
+            cfg_value(cfg, "support_max_early_xy_turn_rad", np.inf)
+        ),
+        "support_max_step_m": float(cfg_value(cfg, "support_max_step_m", np.inf)),
+        "support_semantic_enable": bool(cfg_value(cfg, "support_semantic_enable", False)),
+        "support_allow_turn_class_mismatch": bool(
+            cfg_value(cfg, "support_allow_turn_class_mismatch", False)
+        ),
+        "support_max_semantic_final_heading_error_rad": float(
+            cfg_value(cfg, "support_max_semantic_final_heading_error_rad", 0.75)
+        ),
+        "support_max_semantic_path_angle_error_rad": float(
+            cfg_value(cfg, "support_max_semantic_path_angle_error_rad", 0.75)
+        ),
+        "support_max_semantic_endpoint_lateral_error_m": float(
+            cfg_value(cfg, "support_max_semantic_endpoint_lateral_error_m", 4.0)
+        ),
+    }
 
 
 def _diversity_order(candidates: Sequence[CandidateRecord]) -> list[CandidateRecord]:
@@ -990,6 +1277,18 @@ def build_archive_record(
         [float(getattr(candidate, "_sg_fps_policy_reachability_snsad", np.inf)) for candidate in candidates],
         dtype=np.float32,
     )
+    policy_neighbor_count = np.asarray(
+        [int(getattr(candidate, "_sg_fps_policy_neighbor_count", 0)) for candidate in candidates],
+        dtype=np.int64,
+    )
+    policy_neighbor_fraction = np.asarray(
+        [float(getattr(candidate, "_sg_fps_policy_neighbor_fraction", 0.0)) for candidate in candidates],
+        dtype=np.float32,
+    )
+    learning_frontier_difficulty = np.asarray(
+        [float(getattr(candidate, "_sg_fps_frontier_difficulty", 1.0)) for candidate in candidates],
+        dtype=np.float32,
+    )
     pareto_objective_novelty = np.asarray(
         [float(getattr(candidate, "_sg_fps_objective_novelty", 0.0)) for candidate in candidates],
         dtype=np.float32,
@@ -1002,10 +1301,17 @@ def build_archive_record(
         }
     )
     if archive_version >= 4:
+        build_metadata.setdefault("external_candidate_roots", {})
+        build_metadata.setdefault("external_candidate_root_fingerprints", {})
+        build_metadata.setdefault("external_candidate_root_file_counts", {})
         build_metadata.update(
             {
                 "teacher_contract": "gt_anchor_plus_uniform_reachable_pareto_modes",
-                "mode_selection_order": "scene_normalized_objective_fps_then_snsad",
+                "mode_selection_order": "scene_normalized_objective_fps_then_snsad_then_policy_density",
+                "learnability_tiebreak": "policy_density_then_frontier_difficulty",
+                "learnability_contract": "policy_density_bounded_frontier_v1",
+                "candidate_capacity_contract": "observed_funnel_distinct_before_pareto_no_quota_v2",
+                "selection_gate_config": _selection_gate_config(cfg),
                 "legacy_reward_gate_disabled": True,
                 "max_gt_ade_m": float(cfg_value(cfg, "support_v4_max_gt_ade_m", 1.5)),
                 "max_gt_fde_m": float(cfg_value(cfg, "support_v4_max_gt_fde_m", 4.0)),
@@ -1018,6 +1324,15 @@ def build_archive_record(
                     cfg_value(cfg, "support_v4_require_policy_reachability", False)
                 ),
                 "max_policy_snsad": float(cfg_value(cfg, "support_v4_max_policy_snsad", 0.50)),
+                "min_policy_neighbors": int(cfg_value(cfg, "support_v4_min_policy_neighbors", 2)),
+                "frontier_difficulty_formula": "0.50*policy_snsad+0.25*gt_ade+0.25*gt_fde",
+                "stage3_readiness_benchmark": "navsim_v1",
+                "stage3_min_feasible_rollouts": int(
+                    cfg_value(cfg, "support_v4_stage3_min_feasible_rollouts", 2)
+                ),
+                "stage3_min_score_span": float(
+                    cfg_value(cfg, "support_v4_stage3_min_score_span", 0.01)
+                ),
             }
         )
     record = {
@@ -1073,6 +1388,14 @@ def build_archive_record(
         "has_valid_candidate": bool(np.any(valid_mask)),
     }
     if archive_version >= 4:
+        gt_candidate = next(
+            candidate for candidate in candidates if _source_matches(candidate.source, ("gt",))
+        )
+        candidate_funnel = dict(getattr(gt_candidate, "_sg_fps_candidate_funnel", {}) or {})
+        if not candidate_funnel:
+            raise ValueError(
+                "SG-FPS v4 candidate_funnel is missing; run mode_pareto_v4 selection before archiving."
+            )
         record.update(
             {
                 "mode_ids": mode_ids,
@@ -1081,7 +1404,22 @@ def build_archive_record(
                 "gt_relative_ade": gt_relative_ade,
                 "gt_relative_fde": gt_relative_fde,
                 "policy_reachability_snsad": policy_reachability_snsad,
+                "policy_neighbor_count": policy_neighbor_count,
+                "policy_neighbor_fraction": policy_neighbor_fraction,
+                "learning_frontier_difficulty": learning_frontier_difficulty,
                 "pareto_objective_novelty": pareto_objective_novelty,
+                "candidate_funnel": candidate_funnel,
+                "stage3_readiness": compute_policy_credit_readiness(
+                    candidates,
+                    valid_mask,
+                    quality_mask,
+                    next(
+                        index
+                        for index, candidate in enumerate(candidates)
+                        if _source_matches(candidate.source, ("gt",))
+                    ),
+                    cfg,
+                ),
                 "build_metadata": build_metadata,
             }
         )

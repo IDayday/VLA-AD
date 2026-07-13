@@ -93,6 +93,26 @@ def reselect_record(record: dict[str, Any], cfg: dict[str, Any]) -> tuple[dict[s
         preserved_metadata = dict(source_metadata)
         preserved_metadata["reselected_from_raw_v4"] = bool(source_metadata.get("raw_internal_candidates", False))
         selection_cfg["support_build_metadata"] = preserved_metadata
+        if bool(selection_cfg.get("reuse_source_v4_contract", True)):
+            source_gate_config = source_metadata.get("selection_gate_config", {})
+            if isinstance(source_gate_config, dict):
+                selection_cfg.update(source_gate_config)
+            metadata_to_cfg = {
+                "support_top_m": "support_top_m",
+                "max_gt_ade_m": "support_v4_max_gt_ade_m",
+                "max_gt_fde_m": "support_v4_max_gt_fde_m",
+                "mode_distance_threshold": "support_v4_mode_distance_threshold",
+                "reward_gain_cap": "support_v4_reward_gain_cap",
+                "max_gt_reward_drop": "support_v4_max_gt_reward_drop",
+                "pareto_eps": "support_v4_pareto_eps",
+                "exclude_derived_external": "support_v4_exclude_derived_external",
+                "policy_reachability_required": "support_v4_require_policy_reachability",
+                "max_policy_snsad": "support_v4_max_policy_snsad",
+                "min_policy_neighbors": "support_v4_min_policy_neighbors",
+            }
+            for metadata_key, cfg_key in metadata_to_cfg.items():
+                if metadata_key in source_metadata:
+                    selection_cfg[cfg_key] = source_metadata[metadata_key]
         selection_cfg.setdefault(
             "support_v4_require_policy_reachability",
             bool(source_metadata.get("policy_reachability_required", False)),
@@ -100,6 +120,10 @@ def reselect_record(record: dict[str, Any], cfg: dict[str, Any]) -> tuple[dict[s
         selection_cfg.setdefault(
             "support_v4_max_policy_snsad",
             float(source_metadata.get("max_policy_snsad", 0.50)),
+        )
+        selection_cfg.setdefault(
+            "support_v4_min_policy_neighbors",
+            int(source_metadata.get("min_policy_neighbors", 2)),
         )
     selected = select_feasible_pareto_support(candidates, _reference_components(candidates), selection_cfg)
     rebuilt = build_archive_record(
@@ -225,6 +249,12 @@ def main() -> None:
         default=None,
     )
     parser.add_argument("--v4-max-policy-snsad", type=float, default=None)
+    parser.add_argument(
+        "--reuse-source-v4-contract",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Reuse all persisted v4 gate and frontier thresholds unless explicitly disabled.",
+    )
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
@@ -274,6 +304,7 @@ def main() -> None:
         "support_v4_max_gt_reward_drop": float(args.v4_max_gt_reward_drop),
         "support_v4_pareto_eps": float(args.v4_pareto_eps),
         "support_v4_exclude_derived_external": bool(args.v4_exclude_derived_external),
+        "reuse_source_v4_contract": bool(args.reuse_source_v4_contract),
         "support_build_metadata": {
             "migration": "shadow_reselect_without_rescoring",
             "raw_internal_candidates": False,

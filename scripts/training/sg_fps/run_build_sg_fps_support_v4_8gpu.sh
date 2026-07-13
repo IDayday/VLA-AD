@@ -18,8 +18,47 @@ fi
 
 MAX_SCENES="${MAX_SCENES:-0}"
 EXPECTED_TOKEN_SOURCE="${EXPECTED_TOKEN_SOURCE:-}"
+BUILD_LOG_SPLIT="${BUILD_LOG_SPLIT:-train_val}"
 if [[ "${MAX_SCENES}" -eq 0 && -z "${EXPECTED_TOKEN_SOURCE}" ]]; then
   echo "A full build requires EXPECTED_TOKEN_SOURCE for exact token coverage validation." >&2
+  exit 2
+fi
+
+EXPECTED_SCENE_COUNT="${EXPECTED_SCENE_COUNT:-0}"
+if [[ "${MAX_SCENES}" -eq 0 && "${EXPECTED_SCENE_COUNT}" -eq 0 ]]; then
+  if [[ -d "${EXPECTED_TOKEN_SOURCE}" ]]; then
+    EXPECTED_SCENE_COUNT="$(find "${EXPECTED_TOKEN_SOURCE}" -maxdepth 1 -type f -name '*.pkl.xz' -printf '.' | wc -c)"
+  else
+    EXPECTED_SCENE_COUNT="$(
+      EXPECTED_TOKEN_SOURCE="${EXPECTED_TOKEN_SOURCE}" "${PYTHON_BIN}" - <<'PY'
+import json
+import os
+from pathlib import Path
+
+path = Path(os.environ["EXPECTED_TOKEN_SOURCE"])
+text = path.read_text(encoding="utf-8").strip()
+try:
+    payload = json.loads(text)
+except json.JSONDecodeError:
+    payload = None
+if isinstance(payload, dict):
+    items = payload.get("tokens", payload.get("scene_tokens", payload.get("items", [])))
+elif isinstance(payload, list):
+    items = payload
+else:
+    items = [line.split()[0] for line in text.splitlines() if line.strip() and not line.lstrip().startswith("#")]
+tokens = {
+    str(item.get("token", item.get("scene_token")) if isinstance(item, dict) else item).strip()
+    for item in items
+}
+tokens.discard("")
+print(len(tokens))
+PY
+    )"
+  fi
+fi
+if [[ "${MAX_SCENES}" -eq 0 && "${EXPECTED_SCENE_COUNT}" -le 0 ]]; then
+  echo "Could not derive a positive EXPECTED_SCENE_COUNT from ${EXPECTED_TOKEN_SOURCE}." >&2
   exit 2
 fi
 
@@ -40,11 +79,13 @@ export POLICY_CHECKPOINT_SHA256 FS_NORM_STATS_SHA256
 
 {
   printf '[%s] git_head=%s\n' "$(date -Is)" "$(git -C "${REPO_ROOT}" rev-parse HEAD)"
-  printf 'output=%q run_root=%q gpu_ids=%q shards=%q max_scenes=%q resume=%q\n' \
-    "${OUTPUT_PATH}" "${RUN_ROOT}" "${GPU_IDS}" "${SHARD_COUNT}" "${MAX_SCENES}" "${RESUME}"
+  printf 'output=%q run_root=%q gpu_ids=%q shards=%q max_scenes=%q resume=%q split=%q expected_scene_count=%q\n' \
+    "${OUTPUT_PATH}" "${RUN_ROOT}" "${GPU_IDS}" "${SHARD_COUNT}" "${MAX_SCENES}" "${RESUME}" \
+    "${BUILD_LOG_SPLIT}" "${EXPECTED_SCENE_COUNT}"
   printf 'policy=%q policy_sha256=%s fs_stats=%q fs_sha256=%s expected_tokens=%q\n' \
     "${POLICY_CHECKPOINT}" "${POLICY_CHECKPOINT_SHA256}" \
     "${FS_NORM_STATS_PATH}" "${FS_NORM_STATS_SHA256}" "${EXPECTED_TOKEN_SOURCE}"
+  printf 'external_candidate_roots=%q\n' "${EXTERNAL_CANDIDATE_ROOTS:-}"
 } >> "${RUN_ROOT}/commands.log"
 
 declare -a PIDS=()
@@ -67,6 +108,8 @@ for ((shard = 0; shard < SHARD_COUNT; shard++)); do
     SHARD_INDEX="${shard}" \
     SHARD_COUNT="${SHARD_COUNT}" \
     MAX_SCENES="${MAX_SCENES}" \
+    BUILD_LOG_SPLIT="${BUILD_LOG_SPLIT}" \
+    EXPECTED_SCENE_COUNT="${EXPECTED_SCENE_COUNT}" \
     SKIP_EXISTING_RECORDS="${RESUME}" \
     PREFILTER_EXISTING_RECORDS=true \
     VALIDATE_EXISTING_RECORDS=true \

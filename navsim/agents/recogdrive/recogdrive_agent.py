@@ -451,6 +451,10 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_dpsi_pair_target_randomness: bool = False,
         offline_rl_dpsi_residual_budget_enabled: bool = False,
         offline_rl_dpsi_non_gt_residual_mass_cap: float = 0.38,
+        offline_rl_dpsi_frontier_curriculum_enabled: bool = False,
+        offline_rl_dpsi_frontier_difficulty_start: float = 0.45,
+        offline_rl_dpsi_frontier_difficulty_end: float = 1.0,
+        offline_rl_dpsi_frontier_difficulty_warmup_epochs: int = 40,
         offline_rl_dpsi_target_sample_m: int = 4,
         offline_rl_dpsi_target_sample_m_after_warmup: int = 6,
         offline_rl_dpsi_force_anchor_target: bool = True,
@@ -1322,6 +1326,18 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_dpsi_pair_target_randomness = bool(offline_rl_dpsi_pair_target_randomness)
         self.offline_rl_dpsi_residual_budget_enabled = bool(offline_rl_dpsi_residual_budget_enabled)
         self.offline_rl_dpsi_non_gt_residual_mass_cap = float(offline_rl_dpsi_non_gt_residual_mass_cap)
+        self.offline_rl_dpsi_frontier_curriculum_enabled = bool(
+            offline_rl_dpsi_frontier_curriculum_enabled
+        )
+        self.offline_rl_dpsi_frontier_difficulty_start = float(
+            offline_rl_dpsi_frontier_difficulty_start
+        )
+        self.offline_rl_dpsi_frontier_difficulty_end = float(
+            offline_rl_dpsi_frontier_difficulty_end
+        )
+        self.offline_rl_dpsi_frontier_difficulty_warmup_epochs = int(
+            offline_rl_dpsi_frontier_difficulty_warmup_epochs
+        )
         self.offline_rl_dpsi_target_sample_m = int(offline_rl_dpsi_target_sample_m)
         self.offline_rl_dpsi_target_sample_m_after_warmup = int(offline_rl_dpsi_target_sample_m_after_warmup)
         self.offline_rl_dpsi_force_anchor_target = bool(offline_rl_dpsi_force_anchor_target)
@@ -2143,6 +2159,12 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.dpsi_pair_target_randomness = self.offline_rl_dpsi_pair_target_randomness
         offline_cfg.dpsi_residual_budget_enabled = self.offline_rl_dpsi_residual_budget_enabled
         offline_cfg.dpsi_non_gt_residual_mass_cap = self.offline_rl_dpsi_non_gt_residual_mass_cap
+        offline_cfg.dpsi_frontier_curriculum_enabled = self.offline_rl_dpsi_frontier_curriculum_enabled
+        offline_cfg.dpsi_frontier_difficulty_start = self.offline_rl_dpsi_frontier_difficulty_start
+        offline_cfg.dpsi_frontier_difficulty_end = self.offline_rl_dpsi_frontier_difficulty_end
+        offline_cfg.dpsi_frontier_difficulty_warmup_epochs = (
+            self.offline_rl_dpsi_frontier_difficulty_warmup_epochs
+        )
         offline_cfg.dpsi_target_sample_m = self.offline_rl_dpsi_target_sample_m
         offline_cfg.dpsi_target_sample_m_after_warmup = self.offline_rl_dpsi_target_sample_m_after_warmup
         offline_cfg.dpsi_force_anchor_target = self.offline_rl_dpsi_force_anchor_target

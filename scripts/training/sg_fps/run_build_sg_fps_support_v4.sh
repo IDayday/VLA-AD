@@ -6,6 +6,10 @@ REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 : "${POLICY_CHECKPOINT:?set POLICY_CHECKPOINT to the Stage2 initialization checkpoint}"
 : "${FS_NORM_STATS_PATH:?set FS_NORM_STATS_PATH to the checkpoint FS-Norm statistics}"
 
+# The production Stage2 domain contains both NAVTRAIN and NAVVAL logs. Keeping
+# this explicit prevents a valid-looking train-only archive from being promoted.
+export BUILD_LOG_SPLIT="${BUILD_LOG_SPLIT:-train_val}"
+
 # v4 removes the hidden AWAC pre-selector and external mechanical expansion.
 # All raw internal and external proposals enter one evaluator/quality/mode gate.
 export SG_FPS_ARCHIVE_VERSION=4
@@ -22,6 +26,12 @@ export SG_FPS_V4_PARETO_EPS="${SG_FPS_V4_PARETO_EPS:-0.01}"
 export SG_FPS_V4_EXCLUDE_DERIVED_EXTERNAL=true
 export SG_FPS_V4_REQUIRE_POLICY_REACHABILITY=true
 export SG_FPS_V4_MAX_POLICY_SNSAD="${SG_FPS_V4_MAX_POLICY_SNSAD:-0.50}"
+export SG_FPS_V4_MIN_POLICY_NEIGHBORS="${SG_FPS_V4_MIN_POLICY_NEIGHBORS:-2}"
+export SG_FPS_V4_STAGE3_EP_TOLERANCE="${SG_FPS_V4_STAGE3_EP_TOLERANCE:-0.02}"
+export SG_FPS_V4_STAGE3_REFERENCE_MARGIN_WEIGHT="${SG_FPS_V4_STAGE3_REFERENCE_MARGIN_WEIGHT:-0.20}"
+export SG_FPS_V4_STAGE3_REFERENCE_MARGIN_SCALE="${SG_FPS_V4_STAGE3_REFERENCE_MARGIN_SCALE:-0.05}"
+export SG_FPS_V4_STAGE3_MIN_FEASIBLE_ROLLOUTS="${SG_FPS_V4_STAGE3_MIN_FEASIBLE_ROLLOUTS:-2}"
+export SG_FPS_V4_STAGE3_MIN_SCORE_SPAN="${SG_FPS_V4_STAGE3_MIN_SCORE_SPAN:-0.01}"
 export SG_FPS_KEEP_GT_BY_DEFAULT=true
 
 # Current-policy rollouts define a local learning frontier. They are candidates,

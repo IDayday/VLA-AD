@@ -153,6 +153,7 @@ def test_mode_pareto_v4_is_gt_anchored_and_excludes_derived_external() -> None:
         "support_v4_exclude_derived_external": True,
         "support_v4_require_policy_reachability": True,
         "support_v4_max_policy_snsad": 0.75,
+        "support_v4_min_policy_neighbors": 1,
     }
 
     selected = select_feasible_pareto_support(candidates, candidates[0].components, cfg)
@@ -168,8 +169,9 @@ def test_mode_pareto_v4_is_gt_anchored_and_excludes_derived_external() -> None:
     )
     assert (
         record["build_metadata"]["mode_selection_order"]
-        == "scene_normalized_objective_fps_then_snsad"
+        == "scene_normalized_objective_fps_then_snsad_then_policy_density"
     )
+    assert record["candidate_funnel"]["selected_non_gt_count"] == len(selected_sources) - 1
     selected_modes = record["mode_ids"][record["support_indices"]]
     assert sorted(selected_modes.tolist()) == list(range(len(selected_sources)))
     assert record["teacher_eligible_mask"][record["support_indices"]].all()
@@ -177,6 +179,52 @@ def test_mode_pareto_v4_is_gt_anchored_and_excludes_derived_external() -> None:
     assert bool(record["source_conditioned_mask"][raw_ddv2_index])
     assert np.isfinite(record["policy_reachability_snsad"][record["support_indices"]]).all()
     assert np.isfinite(record["pareto_objective_novelty"][record["support_indices"]]).all()
+
+
+def test_mode_pareto_v4_near_gt_candidate_cannot_suppress_distinct_mode() -> None:
+    gt = _legacy_record("gt", 0, valid=True, reward=0.90)
+    near_gt = _legacy_record("policy", 0, valid=True, reward=0.99)
+    near_gt.trajectory = gt.trajectory.copy()
+    near_gt.trajectory[:, 1] += 0.01
+    distinct = _legacy_record("progress_endpoint", 1, valid=True, reward=0.92)
+    distinct.trajectory = gt.trajectory.copy()
+    distinct.trajectory[:, 1] += 0.6
+
+    gt.components.update(ego_progress=0.80, time_to_collision_within_bound=1.0, history_comfort=1.0)
+    near_gt.components.update(
+        ego_progress=1.0,
+        time_to_collision_within_bound=1.0,
+        history_comfort=1.0,
+    )
+    distinct.components.update(
+        ego_progress=0.90,
+        time_to_collision_within_bound=0.90,
+        history_comfort=1.0,
+    )
+    cfg = {
+        "support_archive_version": 4,
+        "support_selection_strategy": "mode_pareto_v4",
+        "support_top_m": 4,
+        "support_v4_max_gt_ade_m": 1.5,
+        "support_v4_max_gt_fde_m": 4.0,
+        "support_v4_mode_distance_threshold": 0.25,
+        "support_v4_max_gt_reward_drop": 0.05,
+        "support_v4_pareto_eps": 0.01,
+        "support_v4_require_policy_reachability": True,
+        "support_v4_max_policy_snsad": 0.75,
+        "support_v4_min_policy_neighbors": 1,
+    }
+
+    candidates = [gt, near_gt, distinct]
+    selected = select_feasible_pareto_support(candidates, gt.components, cfg)
+    record = build_archive_record("scene", candidates, selected, ref=gt.components, cfg=cfg)
+    selected_sources = [record["sources"][index] for index in record["support_indices"]]
+
+    assert selected_sources == ["gt", "progress_endpoint"]
+    assert not bool(record["pareto_front_mask"][1])
+    assert bool(record["pareto_front_mask"][2])
+    assert record["candidate_funnel"]["distinct_from_gt_count"] == 1
+    assert record["candidate_funnel"]["version"] == 2
 
 
 def test_mode_pareto_v4_rejects_mode_outside_policy_learning_frontier() -> None:
@@ -192,6 +240,7 @@ def test_mode_pareto_v4_rejects_mode_outside_policy_learning_frontier() -> None:
         "support_v4_mode_distance_threshold": 0.01,
         "support_v4_require_policy_reachability": True,
         "support_v4_max_policy_snsad": 0.05,
+        "support_v4_min_policy_neighbors": 1,
     }
 
     selected = select_feasible_pareto_support([gt, policy, unreachable], gt.components, cfg)
@@ -239,6 +288,35 @@ def test_mode_pareto_v4_covers_objective_front_before_scalar_reward() -> None:
 
     assert [candidate.source for candidate in selected] == ["gt", "progress_tradeoff"]
     assert float(getattr(selected[1], "_sg_fps_objective_novelty")) > 0.0
+
+
+def test_mode_pareto_v4_preserves_diversity_after_policy_density_gate() -> None:
+    gt = _legacy_record("gt", 0, valid=True, reward=0.90)
+    policies = [
+        _legacy_record(f"policy:{index}", index, valid=True, reward=0.90)
+        for index in (1, 2, 3, 4, 8, 9)
+    ]
+    far_mode = _legacy_record("lateral_offset", 10, valid=True, reward=0.90)
+    candidates = [gt, *policies, far_mode]
+    for candidate in candidates:
+        candidate.components.update(ego_progress=0.80, time_to_collision_within_bound=1.0)
+    cfg = {
+        "support_archive_version": 4,
+        "support_selection_strategy": "mode_pareto_v4",
+        "support_top_m": 2,
+        "support_v4_max_gt_ade_m": 10.0,
+        "support_v4_max_gt_fde_m": 20.0,
+        "support_v4_mode_distance_threshold": 0.05,
+        "support_v4_pareto_eps": 0.0,
+        "support_v4_require_policy_reachability": True,
+        "support_v4_max_policy_snsad": 0.06,
+        "support_v4_min_policy_neighbors": 2,
+    }
+
+    selected = select_feasible_pareto_support(candidates, gt.components, cfg)
+
+    assert [candidate.source for candidate in selected] == ["gt", "lateral_offset"]
+    assert getattr(selected[1], "_sg_fps_policy_neighbor_count") == 2
 
 
 def test_mode_pareto_v4_uses_only_its_explicit_gt_relative_reward_gate() -> None:

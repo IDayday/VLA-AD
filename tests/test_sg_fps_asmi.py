@@ -196,26 +196,54 @@ def _frontier_v4_record(*, raw_internal_candidates: bool) -> dict:
     record = _record(k=3)
     record.update(
         version=4,
-        sources=["gt", "progress_endpoint", "ddv2"],
+        sources=["gt", "policy:0", "policy:1"],
         support_tags=["gt_anchor", "mode_pareto", "mode_pareto"],
         support_indices=[0, 1, 2],
         mode_ids=np.asarray([0, 1, 2], dtype=np.int64),
         teacher_eligible_mask=np.ones((3,), dtype=np.bool_),
         source_conditioned_mask=np.asarray([False, False, True], dtype=np.bool_),
         policy_reachability_snsad=np.asarray([0.1, 0.2, 0.3], dtype=np.float32),
+        policy_neighbor_count=np.asarray([8, 2, 2], dtype=np.int64),
+        policy_neighbor_fraction=np.asarray([1.0, 0.25, 0.25], dtype=np.float32),
+        learning_frontier_difficulty=np.asarray([0.1, 0.3, 0.4], dtype=np.float32),
         pareto_objective_novelty=np.asarray([0.0, 0.5, 0.25], dtype=np.float32),
+        candidate_funnel={
+            "version": 2,
+            "non_gt_proposal_count": 2,
+            "current_policy_proposal_count": 2,
+            "evaluator_valid_count": 2,
+            "trajectory_quality_count": 2,
+            "trust_region_count": 2,
+            "one_neighbor_reachable_count": 2,
+            "required_neighbors_reachable_count": 2,
+            "teacher_eligible_count": 2,
+            "distinct_from_gt_count": 2,
+            "pareto_eligible_count": 2,
+            "selected_non_gt_count": 2,
+            "supervision_type": "frontier_modes",
+            "gt_only_reason": "",
+        },
+        stage3_readiness={"credit_ready": True},
         build_metadata={
             "selection_strategy": "mode_pareto_v4",
             "teacher_contract": "gt_anchor_plus_uniform_reachable_pareto_modes",
-            "mode_selection_order": "scene_normalized_objective_fps_then_snsad",
+            "mode_selection_order": "scene_normalized_objective_fps_then_snsad_then_policy_density",
+            "learnability_tiebreak": "policy_density_then_frontier_difficulty",
+            "learnability_contract": "policy_density_bounded_frontier_v1",
+            "candidate_capacity_contract": "observed_funnel_distinct_before_pareto_no_quota_v2",
             "legacy_reward_gate_disabled": True,
+            "exclude_derived_external": True,
             "raw_internal_candidates": raw_internal_candidates,
             "expand_external_candidates": False,
             "policy_reachability_required": True,
             "max_policy_snsad": 0.75,
-            "policy_samples_per_scene": 8,
+            "min_policy_neighbors": 2,
+            "policy_samples_per_scene": 2,
             "policy_checkpoint_sha256": "checkpoint-sha",
             "fs_norm_stats_sha256": "stats-sha",
+            "build_log_split": "train_val",
+            "dataset_scene_count": 3,
+            "scene_seed_scheme": "sha256_token_xor_build_seed_v1",
         },
     )
     return record
@@ -406,12 +434,63 @@ def test_frontier_v4_weights_modes_not_duplicate_rows() -> None:
         cfg,
         selected_mode_id=torch.tensor([[0, 1, 1, 2]]),
         selected_teacher_eligible=mask,
+        selected_frontier_difficulty=torch.zeros_like(rewards),
+        current_epoch=40,
     )
 
     assert weights[0, 0].item() == pytest.approx(0.75)
     assert weights[0, 1:3].sum().item() == pytest.approx(0.125)
     assert weights[0, 3].item() == pytest.approx(0.125)
     assert diagnostics["dpsi_frontier_mode_count_mean"].item() == pytest.approx(2.0)
+
+
+def test_frontier_v4_curriculum_can_temporarily_use_gt_only() -> None:
+    cfg = OfflineRLConfig(
+        dpsi_target_distribution="frontier_v4",
+        dpsi_beta_max=0.25,
+        dpsi_beta_warmup_epochs=40,
+        dpsi_frontier_curriculum_enabled=True,
+        dpsi_frontier_difficulty_start=0.45,
+        dpsi_frontier_difficulty_end=1.0,
+        dpsi_frontier_difficulty_warmup_epochs=40,
+        dpsi_use_reward_margin_weight=False,
+        dpsi_use_source_weight=False,
+    )
+    trajs = _traj_row([0.0, 1.0, 2.0])
+    rewards = torch.tensor([[0.9, 0.95, 1.0]])
+    source = torch.tensor([[1, 7, 4]])
+    mask = torch.ones_like(rewards, dtype=torch.bool)
+    profile, _ = _compute_dpsi_support_profile(
+        trajs,
+        rewards,
+        mask,
+        source,
+        torch.tensor([0.9]),
+        torch.tensor([0.9]),
+        mask,
+        cfg,
+        current_epoch=10,
+    )
+
+    weights, diagnostics = _build_asmi_weights(
+        rewards,
+        mask,
+        mask,
+        source,
+        torch.zeros_like(rewards),
+        torch.tensor([0.9]),
+        torch.tensor([0.9]),
+        profile,
+        cfg,
+        selected_mode_id=torch.tensor([[0, 1, 2]]),
+        selected_teacher_eligible=mask,
+        selected_frontier_difficulty=torch.tensor([[0.0, 0.8, 0.9]]),
+        current_epoch=10,
+    )
+
+    assert torch.equal(weights, torch.tensor([[1.0, 0.0, 0.0]]))
+    assert diagnostics["dpsi_frontier_all_modes_deferred_scene_ratio"].item() == 1.0
+    assert torch.isfinite(weights).all()
 
 
 def test_frontier_v4_sampler_always_pairs_gt_and_one_mode() -> None:
@@ -445,6 +524,39 @@ def test_frontier_v4_sampler_always_pairs_gt_and_one_mode() -> None:
     assert sampled_mask.tolist() == [[True, True]]
     assert sampled_weights[0].tolist() == pytest.approx([0.75, 0.25])
     assert diagnostics["dpsi_sampled_anchor_ratio"].item() == 1.0
+
+
+def test_frontier_v4_sampler_keeps_gt_only_scene_without_filling_second_slot() -> None:
+    cfg = OfflineRLConfig(
+        dpsi_target_distribution="frontier_v4",
+        dpsi_use_reward_margin_weight=False,
+        dpsi_use_source_weight=False,
+        dpsi_pair_target_randomness=True,
+        dpsi_residual_budget_enabled=True,
+        dpsi_target_sample_m=2,
+        dpsi_target_sample_m_after_warmup=2,
+    )
+    trajs = _traj_row([0.0, 0.0])
+    weights = torch.tensor([[1.0, 0.0]])
+    real = torch.tensor([[True, False]])
+    source = torch.tensor([[1, 0]])
+    rewards = torch.tensor([[0.9, 0.0]])
+
+    _, sampled_weights, sampled_mask, diagnostics = _sample_asmi_targets(
+        trajs,
+        weights,
+        real,
+        real,
+        source,
+        rewards,
+        cfg,
+        current_epoch=40,
+        training=True,
+    )
+
+    assert sampled_mask.tolist() == [[True, False]]
+    assert sampled_weights[0].tolist() == pytest.approx([1.0, 0.0])
+    assert diagnostics["dpsi_sampled_target_count_mean"].item() == 1.0
 
 
 def test_frontier_v4_config_rejects_legacy_weighting() -> None:

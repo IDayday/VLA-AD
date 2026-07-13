@@ -5,6 +5,7 @@ import hashlib
 import json
 import logging
 import os
+import random
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any, Dict, Iterable, List, Mapping, Tuple
@@ -55,6 +56,22 @@ logger = logging.getLogger(__name__)
 
 CONFIG_PATH = "../../navsim/planning/script/config/training"
 CONFIG_NAME = "default_training"
+
+
+def _seed_all(seed: int) -> None:
+    seed = int(seed) % (2**31 - 1)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed_all(seed)
+
+
+def _scene_seed(build_seed: int, token: str) -> int:
+    token_hash = int.from_bytes(
+        hashlib.sha256(str(token).encode("utf-8")).digest()[:8], "big"
+    )
+    return (int(build_seed) ^ token_hash) % (2**31 - 1)
 
 
 class TokenizedCacheOnlyDataset(torch.utils.data.Dataset):
@@ -115,6 +132,37 @@ def _file_sha256(path: str) -> str:
         for chunk in iter(lambda: stream.read(8 * 1024 * 1024), b""):
             digest.update(chunk)
     return digest.hexdigest()
+
+
+def _candidate_root_fingerprint(path: str) -> tuple[str, int]:
+    root = Path(path).expanduser()
+    if not root.exists():
+        raise FileNotFoundError(root)
+    if root.is_file():
+        payloads = [root]
+        base = root.parent
+    else:
+        base = root
+        payloads = sorted(
+            item
+            for item in root.rglob("*")
+            if item.is_file()
+            and (
+                item.suffix in {".pkl", ".npz", ".pt", ".pth"}
+                or item.name.endswith(".pkl.xz")
+            )
+        )
+    if not payloads:
+        raise ValueError(f"External candidate root has no supported payload files: {root}")
+    digest = hashlib.sha256()
+    for payload in payloads:
+        digest.update(payload.relative_to(base).as_posix().encode("utf-8"))
+        digest.update(b"\0")
+        with payload.open("rb") as stream:
+            for chunk in iter(lambda: stream.read(8 * 1024 * 1024), b""):
+                digest.update(chunk)
+        digest.update(b"\0")
+    return digest.hexdigest(), len(payloads)
 
 
 def _load_token_manifest(path: str) -> set[str]:
@@ -932,6 +980,18 @@ def _save_sg_fps_v3_records(
             False,
         ),
         "support_v4_max_policy_snsad": _env_float("SG_FPS_V4_MAX_POLICY_SNSAD", 0.50),
+        "support_v4_min_policy_neighbors": _env_int("SG_FPS_V4_MIN_POLICY_NEIGHBORS", 2),
+        "support_v4_stage3_ep_tolerance": _env_float("SG_FPS_V4_STAGE3_EP_TOLERANCE", 0.02),
+        "support_v4_stage3_reference_margin_weight": _env_float(
+            "SG_FPS_V4_STAGE3_REFERENCE_MARGIN_WEIGHT", 0.20
+        ),
+        "support_v4_stage3_reference_margin_scale": _env_float(
+            "SG_FPS_V4_STAGE3_REFERENCE_MARGIN_SCALE", 0.05
+        ),
+        "support_v4_stage3_min_feasible_rollouts": _env_int(
+            "SG_FPS_V4_STAGE3_MIN_FEASIBLE_ROLLOUTS", 2
+        ),
+        "support_v4_stage3_min_score_span": _env_float("SG_FPS_V4_STAGE3_MIN_SCORE_SPAN", 0.01),
         "support_build_metadata": {
             "raw_internal_candidates": bool(use_raw_internal_candidates),
             "expand_external_candidates": bool(expand_external_candidates),
@@ -999,6 +1059,8 @@ def _save_sg_fps_v3_records(
 def main(cfg: DictConfig) -> None:
     logging.basicConfig(level=logging.INFO)
     torch.set_grad_enabled(False)
+    build_seed = int(cfg.get("seed", 0))
+    _seed_all(build_seed)
 
     out_root = Path(os.getenv("OUT_ROOT", str(cfg.output_dir))).expanduser()
     buffer_dir = Path(os.getenv("ELITE_BUFFER_DIR", str(out_root / "elite_buffer"))).expanduser()
@@ -1016,6 +1078,16 @@ def main(cfg: DictConfig) -> None:
     write_sg_fps_v3 = _env_flag("WRITE_SG_FPS_V3", _env_flag("SG_FPS_V3", False))
     sg_fps_support_top_m = _env_int("SG_FPS_SUPPORT_TOP_M", _env_int("ELITE_TOP_M", 12))
     external_candidate_roots = _parse_external_candidate_roots(os.getenv("EXTERNAL_CANDIDATE_ROOTS", ""))
+    resolved_external_candidate_roots = {
+        source: str(Path(path).expanduser().resolve())
+        for source, path in external_candidate_roots.items()
+    }
+    external_candidate_root_fingerprints: Dict[str, str] = {}
+    external_candidate_root_file_counts: Dict[str, int] = {}
+    for source, path in external_candidate_roots.items():
+        fingerprint, file_count = _candidate_root_fingerprint(path)
+        external_candidate_root_fingerprints[source] = fingerprint
+        external_candidate_root_file_counts[source] = file_count
     external_loader = ExternalCandidateLoader(external_candidate_roots) if external_candidate_roots else None
     expand_external_candidates = _env_flag("SG_FPS_EXPAND_EXTERNAL_CANDIDATES", True)
     external_expansion_max_per_scene = _env_int("SG_FPS_EXTERNAL_EXPANSION_MAX_PER_SCENE", 32)
@@ -1026,6 +1098,9 @@ def main(cfg: DictConfig) -> None:
     policy_checkpoint_path = os.getenv("POLICY_CHECKPOINT", "").strip()
     fs_norm_stats_path = os.getenv("FS_NORM_STATS_PATH", "").strip()
     build_log_split = os.getenv("BUILD_LOG_SPLIT", "train").strip().lower()
+    expected_scene_count = _env_int("EXPECTED_SCENE_COUNT", 0)
+    if expected_scene_count < 0:
+        raise ValueError(f"EXPECTED_SCENE_COUNT must be non-negative, got {expected_scene_count}.")
     token_manifest = os.getenv("TOKEN_MANIFEST", os.getenv("TOKEN_LIST_PATH", "")).strip()
     shard_index = _env_int("SHARD_INDEX", 0)
     shard_count = _env_int("SHARD_COUNT", 1)
@@ -1044,6 +1119,11 @@ def main(cfg: DictConfig) -> None:
         return
 
     if sg_fps_archive_version >= 4 and require_policy_reachability:
+        if batch_size != 1:
+            raise ValueError(
+                "Reachable SG-FPS v4 builds require BATCH_SIZE=1 so token-derived scene seeds "
+                "remain invariant to sharding and resume order."
+            )
         if policy_samples_per_scene <= 0 or not _env_flag("ONLINE_USE_CURRENT_POLICY", False):
             raise ValueError(
                 "A reachable SG-FPS v4 build requires ONLINE_POLICY_SAMPLES>0 and "
@@ -1071,7 +1151,13 @@ def main(cfg: DictConfig) -> None:
             os.getenv("FS_NORM_STATS_SHA256", "").strip()
             or (_file_sha256(fs_norm_stats_path) if fs_norm_stats_path else "")
         ),
-        "build_seed": int(cfg.get("seed", 0)),
+        "build_seed": build_seed,
+        "scene_seed_scheme": "sha256_token_xor_build_seed_v1",
+        "build_log_split": build_log_split,
+        "expected_scene_count": int(expected_scene_count),
+        "external_candidate_roots": resolved_external_candidate_roots,
+        "external_candidate_root_fingerprints": external_candidate_root_fingerprints,
+        "external_candidate_root_file_counts": external_candidate_root_file_counts,
     }
 
     with open_dict(cfg.agent):
@@ -1205,6 +1291,14 @@ def main(cfg: DictConfig) -> None:
     dataset = _build_train_dataset(cfg, agent, build_log_split)
     if token_manifest:
         dataset = _filter_dataset_by_tokens(dataset, _load_token_manifest(token_manifest))
+    dataset_scene_count = len(dataset)
+    if expected_scene_count > 0 and dataset_scene_count != expected_scene_count:
+        raise ValueError(
+            "SG-FPS dataset coverage mismatch before sharding: "
+            f"BUILD_LOG_SPLIT={build_log_split!r} resolved {dataset_scene_count} scenes, "
+            f"but EXPECTED_SCENE_COUNT={expected_scene_count}. Refusing a partial archive."
+        )
+    build_provenance["dataset_scene_count"] = int(dataset_scene_count)
     if max_scenes > 0:
         dataset = Subset(dataset, list(range(min(max_scenes, len(dataset)))))
     if shard_count > 1:
@@ -1316,6 +1410,12 @@ def main(cfg: DictConfig) -> None:
                     features = _filter_batch_by_indices(features, missing_indices, batch_len)
                     targets = _filter_batch_by_indices(targets, missing_indices, batch_len)
                     tokens = [tokens[index] for index in missing_indices]
+            if sg_fps_archive_version >= 4 and require_policy_reachability:
+                if len(tokens) != 1:
+                    raise RuntimeError(
+                        "Reachable SG-FPS v4 expected exactly one token after resume filtering."
+                    )
+                _seed_all(_scene_seed(build_seed, tokens[0]))
             last_hidden_state, action_inputs = _move_features_to_device(agent, features)
             action_device = next(agent.action_head.parameters()).device
             model_dtype = next(agent.action_head.parameters()).dtype

@@ -111,6 +111,10 @@ optional_overrides=(
   "DPSI_PAIR_TARGET_RANDOMNESS:agent.offline_rl_dpsi_pair_target_randomness"
   "DPSI_RESIDUAL_BUDGET_ENABLED:agent.offline_rl_dpsi_residual_budget_enabled"
   "DPSI_NON_GT_RESIDUAL_MASS_CAP:agent.offline_rl_dpsi_non_gt_residual_mass_cap"
+  "DPSI_FRONTIER_CURRICULUM_ENABLED:agent.offline_rl_dpsi_frontier_curriculum_enabled"
+  "DPSI_FRONTIER_DIFFICULTY_START:agent.offline_rl_dpsi_frontier_difficulty_start"
+  "DPSI_FRONTIER_DIFFICULTY_END:agent.offline_rl_dpsi_frontier_difficulty_end"
+  "DPSI_FRONTIER_DIFFICULTY_WARMUP_EPOCHS:agent.offline_rl_dpsi_frontier_difficulty_warmup_epochs"
   "DPSI_TARGET_SAMPLE_M:agent.offline_rl_dpsi_target_sample_m"
   "DPSI_TARGET_SAMPLE_M_AFTER_WARMUP:agent.offline_rl_dpsi_target_sample_m_after_warmup"
 )

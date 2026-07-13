@@ -47,14 +47,17 @@ Every non-GT mode must satisfy all of the following:
    comparison, with epsilon `0.01`;
 5. pairwise SNSAD distance at least `0.25` from GT and every previously selected mode;
 6. no DDV2/DriveOR failure expansion or trust-region repair derivative;
-7. finite SNSAD distance no greater than `0.50` from one of eight stochastic rollouts of the
-   Stage2 initialization policy.
+7. finite SNSAD distance no greater than `0.50` from the Stage2 initialization policy, with at
+   least two of eight stochastic rollouts inside that radius. The second witness rejects isolated
+   lucky samples without imposing a selected-mode quota.
 
 Safety is a hard constraint. It is not traded against progress or used as a soft target weight.
 The v3 absolute/GT-improver reward gate is explicitly bypassed; scalar PDMS cannot add a hidden
 second eligibility rule. Trajectory continuity and semantic checks remain active.
-Scenes with no valid alternative remain GT-only. Natural differences in per-scene mode capacity are
-therefore preserved instead of being hidden by a fixed support count.
+Scenes with no valid alternative remain GT-only. `K_i=0` is a valid teacher contract, not a build
+failure. Per-scene capacity is the capacity observed under the frozen proposal generators,
+evaluator, and reachability gates; it is not claimed to be an intrinsic property of the scene.
+No selector or validator may manufacture alternatives merely to reach a per-scene count.
 
 The archive stores all raw candidates and explicit semantics:
 
@@ -67,21 +70,30 @@ source_conditioned_mask
 gt_relative_ade
 gt_relative_fde
 policy_reachability_snsad
+policy_neighbor_count
+policy_neighbor_fraction
+learning_frontier_difficulty
 pareto_front_mask
+candidate_funnel
+stage3_readiness
 build_metadata
 ```
 
 `mode_id`, not source or selector tag, is the unit of target probability. Exact duplicate
 trajectories cannot re-enter the selected set through fingerprint aliasing. Policy rollouts define
 the local learning frontier but receive no source quota or privileged training weight.
+Reachable v4 construction uses batch size one and
+`scene_seed_scheme=sha256_token_xor_build_seed_v1`, so each scene's stochastic rollout seed is
+stable across shard counts and resume order.
 
 After the hard gates and epsilon-Pareto test, the selector does not sort the front by scalar PDMS.
 It greedily covers the scene-normalized `[EP, TTC, comfort]` objective space, with SNSAD trajectory
-novelty as the secondary key and capped scalar reward only as a tie breaker. The archive records
+novelty as the secondary key. Policy density and frontier difficulty break remaining ties after the
+hard reachability gate; capped scalar reward is later still. The archive records
 `pareto_objective_novelty` and the immutable provenance value:
 
 ```text
-mode_selection_order = scene_normalized_objective_fps_then_snsad
+mode_selection_order = scene_normalized_objective_fps_then_snsad_then_policy_density
 legacy_reward_gate_disabled = true
 ```
 
@@ -89,6 +101,30 @@ This prevents a nominally multi-objective archive from collapsing back to one sc
 the final top-k operation. If all evaluator components are saturated, objective novelty is zero and
 the selector retains geometrically distinct equal-quality behavior rather than inventing metric
 spread.
+
+Every record also stores a recomputable candidate funnel:
+
+```text
+non-GT proposal -> evaluator valid -> trajectory quality -> trust region
+  -> one policy witness -> required policy witnesses -> teacher eligible
+  -> distinct from GT -> Pareto eligible -> selected pairwise-distinct mode
+```
+
+The GT-distance test precedes Pareto dominance. A safe high-scoring proposal that is effectively
+the GT mode cannot dominate a genuinely distinct proposal and then disappear in the later FPS
+step. This makes the selector stable when a new proposal source contributes only near-GT rows.
+The record marks this as
+`candidate_capacity_contract=observed_funnel_distinct_before_pareto_no_quota_v2`.
+All validity, trajectory-quality, reward, semantic, and trust gate parameters are serialized in
+`selection_gate_config`. Configured external proposal roots store resolved paths, payload file
+counts, and content fingerprints. The validator recomputes the masks and front from these fields;
+it does not accept a record merely because its persisted booleans agree with one another.
+
+For a GT-only scene, `gt_only_reason` identifies the first empty stage (`no_non_gt_proposals`,
+`no_evaluator_valid_candidate`, `no_trajectory_quality_candidate`,
+`no_trust_region_candidate`, `no_policy_reachable_candidate`, `no_pareto_candidate`, or
+`no_distinct_mode`). These labels diagnose generator and contract limitations; they do not reject
+the scene or cause candidate filling.
 
 ## 3. Raw construction is mandatory
 
@@ -130,14 +166,16 @@ outputs/sg_fps_support_v4_shadow_strict_20260713
 outputs/sg_fps_support_v4_raw_smoke_20260713
 ```
 
-The subsequent 128-scene policy-reachable reconstruction used eight A5 rollouts per scene and a
-maximum nearest-policy SNSAD of `0.50`. It passed the strict validator with zero errors. The final
-objective-covering selector retained 3.094 trajectories per scene, a 96.09% multi-mode scene ratio,
-and 2.094 non-GT modes per scene. Non-GT nearest-policy SNSAD was 0.359 mean / 0.477 p90 / 0.499 max;
-only the hard bound, not source identity, grants eligibility. The selected set is stored at:
+The final 128-scene policy-reachable reconstruction used eight A5 rollouts per scene, unexpanded
+DDV2/DriveOR proposals where available, and a maximum nearest-policy SNSAD of `0.50`. It passed the
+strict validator with zero errors. The final objective-covering selector retained 3.047 trajectories
+per scene, a 95.31% multi-mode scene ratio, and 2.047 non-GT modes per scene. Non-GT nearest-policy
+SNSAD was 0.337 mean / 0.439 p90 / 0.484 max; only the hard bound, not source identity, grants
+eligibility. Six scenes correctly remained GT-only (`no_distinct_mode=1`,
+`no_pareto_candidate=5`) instead of receiving filled candidates. The selected set is stored at:
 
 ```text
-outputs/sg_fps_support_v4_reachable_smoke_20260713/support_v4_paretofps_reach050
+outputs/sg_fps_v4_contract_v2_external_128_20260713/support_v4
 ```
 
 ## 4. Stage2 target distribution
@@ -151,6 +189,13 @@ q_i(mode k) = beta_i / K_i
 
 `beta_i=0` for GT-only scenes. Otherwise it is independent of `K_i`, reward margin, source count,
 or selector tag. The default final mass is `0.25`, ramped over 40 epochs.
+
+Mode exposure is also capacity-aware. At a given curriculum threshold, a scene whose retained
+non-GT modes are all harder than the threshold receives GT-only supervision for that epoch. The
+trainer does not force-enable the scene's easiest alternative to satisfy a per-scene quota. As the
+threshold increases from `0.45` to `1.0`, those modes enter naturally; at the end every retained
+mode is active. `dpsi_frontier_all_modes_deferred_scene_ratio` measures the temporarily GT-only
+fraction separately from scenes that have no valid alternative in the archive.
 
 Each optimizer step uses GT and one uniformly sampled non-GT mode. The sampled mode receives the
 full `beta_i` mass for that step, which is an unbiased estimator of the uniform mode objective.
@@ -193,10 +238,19 @@ Static validation is necessary but insufficient. A full 103k rebuild is admitted
 3. GT inclusion, safety, trust-region, Pareto, and mode-separation violation rates are zero;
 4. every selected non-GT mode is within the declared current-policy reachability radius;
 5. checkpoint and FS-statistics SHA256 provenance is complete;
-6. at least 25% of scenes retain a valid non-GT mode;
-7. mean capacity-normalized coverage is at least `0.90`, where each scene is normalized by
-   `min(reachable Pareto SNSAD mode capacity, 3)`;
+6. at least 25% of scenes retain a valid non-GT mode as a **global** corpus check; no individual
+   scene is required to retain one;
+7. mean capacity-normalized coverage is at least `0.90`, evaluated only over scenes whose observed
+   reachable Pareto SNSAD mode capacity is positive and normalized by `min(capacity, 3)`;
 8. no single generator's row count is used as probability mass.
+
+The validator reports the full candidate-funnel transition counts and GT-only reason histogram.
+Those diagnostics determine whether a future proposal generator should be improved, but they are
+not per-scene promotion gates. Exact token coverage and a candidate quota are different concepts:
+every train/validation token must have a record, while that record may legitimately contain only GT.
+The initial policy feasible ratio and Stage3 credit-ready ratio are reported separately as
+`initial_policy_readiness_pass`; they do not enter `static_promotion_pass`. They describe the policy
+being used to define the frontier, not whether an already selected teacher trajectory is correct.
 
 Stage2 is promoted beyond a short probe only if:
 
@@ -251,7 +305,9 @@ bash scripts/training/sg_fps/run_build_sg_fps_support_v4_8gpu.sh
 
 The launcher hashes model-coordinate provenance once, assigns disjoint dataset-index shards,
 prefilters valid existing records on resume, and validates missing, extra, and duplicate dataset
-tokens after all shards finish.
+tokens after all shards finish. Production defaults to `BUILD_LOG_SPLIT=train_val`; the resolved
+dataset count must equal the expected token count before sharding, so a train-only 85,109-scene
+archive cannot masquerade as the 103,288-scene Stage2 domain.
 
 Validate before training:
 
