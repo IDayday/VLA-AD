@@ -180,11 +180,41 @@ feasibility_aux_weight=0
 
 ## 8. Promotion boundary
 
-当前证据足以晋级到**全量 v5 archive 构建**，不足以直接晋级到完整 Stage2/Stage3 训练。全量构建
-后必须先做：
+全量 v5 archive 已完成并通过静态晋级门：
 
-1. validator 0 error、完整 token coverage、无机械 external expansion；
-2. 报告 GT-only 原因分布，但不设置 per-scene 或 multi-mode-ratio 配额；
-3. 在固定 held-out panel 上比较 A5 与 5/10/15/20/25 epoch checkpoint；
-4. 同时检查 NAVSIM v1/v2、GT precision、mode-stratum KEMR/SNSAD 和 Stage3 reward spread；
-5. 只保留同时满足质量与多样性约束的 checkpoint，不按 train loss 选模型。
+```text
+outputs/sg_fps_v5_full_evidence_20260713T1329Z/support_v5
+outputs/sg_fps_v5_full_evidence_20260713T1329Z/build/validation.json
+outputs/sg_fps_v5_full_evidence_20260713T1329Z/build/stage2_frontier_scene_index.json
+```
+
+完整域为 `103,288/103,288` unique token，missing/extra/duplicate 均为 0，contract error 为 0，
+`static_promotion_pass=true`。其中 `11,855` 个 scene 有 independently evidenced frontier，
+`91,433` 个 scene 合法保持 GT-only；共选出 `11,945` 条非 GT mode。GT-only 原因为：
+
+| reason | scenes |
+|---|---:|
+| no independent mode evidence | 79,600 |
+| no distinct mode hypothesis | 10,746 |
+| no policy-reachable candidate | 803 |
+| no trajectory-quality candidate | 276 |
+| no trust-region candidate | 7 |
+| no evaluator-valid candidate | 1 |
+
+`77.07%` scene 有 hypothesis 但没有独立 evidence，说明当前瓶颈主要是证据不足，而不是应当通过
+逐 scene 配额补齐。selected mode 的 reward delta 均值为 `+0.04912`（p50 `+0.03609`），policy
+reachability SNSAD 均值为 `0.20303`。这些都是固定 A5 policy、proposal sources、evaluator 和 gate
+下的观测统计，不能解释成 scene 的固有多模态比例。
+
+第一次全量验证曾报告 5/103,288 个边界错误。逐条审计确认 archive 未损坏：validator 为
+ADE/FDE/reward gate 额外添加了构建器不存在的 `1e-6` 宽松区，并把 float32 policy distance 提升到
+float64 后再做阈值比较。validator 已统一为落盘 float32 契约并增加 reward/policy-radius 边界测试；
+修复后 82 项相关回归测试及全量独立重算均通过。
+
+该结果足以启动预注册的 **25-epoch Stage2 continuation**，但不足以直接批准最终 checkpoint 或
+Stage3。训练完成后必须：
+
+1. 在固定 held-out panel 上比较 A5 与 5/10/15/20/25 epoch checkpoint；
+2. 同时检查 NAVSIM v1/v2、GT precision、mode-stratum KEMR/SNSAD 和 Stage3 reward spread；
+3. 只保留同时满足质量与多样性约束的 checkpoint，不按 train loss 选模型；
+4. 若任一 checkpoint 未通过质量/安全约束，则停止在 Stage2，不启动 Stage3。

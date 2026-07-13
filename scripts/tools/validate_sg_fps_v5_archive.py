@@ -142,9 +142,13 @@ def _candidate_records(record: Mapping[str, Any], candidates: np.ndarray) -> lis
 
 
 def _scene_normalize(values: np.ndarray, mask: np.ndarray) -> np.ndarray:
-    values = np.asarray(values, dtype=np.float64)
+    # Archive candidates and selector statistics are persisted as float32.  Keep
+    # the independent recomputation in that numerical contract so threshold
+    # decisions do not change merely because validation promotes a scalar to
+    # float64 (notably at max_policy_snsad + 1e-6).
+    values = np.asarray(values, dtype=np.float32)
     mask = np.asarray(mask, dtype=np.bool_)
-    output = np.full(values.shape, 0.5, dtype=np.float64)
+    output = np.full(values.shape, 0.5, dtype=np.float32)
     finite = mask & np.isfinite(values)
     if not bool(finite.any()):
         return output
@@ -180,7 +184,7 @@ def _pairwise_policy_distance(
             ]
             for index in range(candidates.shape[0])
         ],
-        dtype=np.float64,
+        dtype=np.float32,
     )
 
 
@@ -287,7 +291,7 @@ def validate_record(record: Mapping[str, Any]) -> dict[str, Any]:
         selected = np.asarray(record["support_indices"], dtype=np.int64).reshape(-1)
         if selected.size == 0 or selected.min() < 0 or selected.max() >= count:
             raise ValueError("support_indices must be non-empty and in range")
-        rewards = _array(record, "rewards", count, np.float64)
+        rewards = _array(record, "rewards", count, np.float32)
         valid = _array(record, "valid_mask", count, np.bool_)
         quality = _array(record, "support_quality_mask", count, np.bool_)
         teacher = _array(record, "teacher_eligible_mask", count, np.bool_)
@@ -416,7 +420,7 @@ def validate_record(record: Mapping[str, Any]) -> dict[str, Any]:
     )
     expected_gt_distance = np.asarray(
         [trajectory_snsad_distance(candidate, candidates[gt_index]) for candidate in candidates],
-        dtype=np.float64,
+        dtype=np.float32,
     )
     if not np.allclose(gt_ade, expected_gt_ade, atol=1e-6, rtol=1e-5):
         errors.append("gt_relative_ade disagrees with trajectories")
@@ -446,11 +450,11 @@ def validate_record(record: Mapping[str, Any]) -> dict[str, Any]:
         non_gt
         & expected_valid
         & expected_quality
-        & (expected_gt_ade <= float(metadata.get("max_gt_ade_m", math.inf)) + 1e-6)
-        & (expected_gt_fde <= float(metadata.get("max_gt_fde_m", math.inf)) + 1e-6)
+        & (expected_gt_ade <= float(metadata.get("max_gt_ade_m", math.inf)))
+        & (expected_gt_fde <= float(metadata.get("max_gt_fde_m", math.inf)))
         & (
             rewards
-            >= rewards[gt_index] - float(metadata.get("max_gt_reward_drop", math.inf)) - 1e-6
+            >= rewards[gt_index] - float(metadata.get("max_gt_reward_drop", math.inf))
         )
     )
     if bool(metadata.get("exclude_derived_external", False)):
@@ -462,14 +466,34 @@ def validate_record(record: Mapping[str, Any]) -> dict[str, Any]:
     required_neighbors = trust_region & within_policy & (
         expected_neighbor_count >= int(metadata.get("min_policy_neighbors", 0))
     )
-    hard_eligible = required_neighbors.copy()
+    # The selector's teacher gate uses the exact policy-radius comparison,
+    # while the funnel's reachability diagnostic intentionally includes its
+    # documented 1e-6 boundary allowance.  Recompute those two masks
+    # separately instead of deriving the teacher gate from the funnel mask.
+    hard_eligible = (
+        non_gt
+        & expected_valid
+        & expected_quality
+        & (expected_gt_ade <= float(metadata.get("max_gt_ade_m", math.inf)))
+        & (expected_gt_fde <= float(metadata.get("max_gt_fde_m", math.inf)))
+        & (
+            rewards
+            >= rewards[gt_index] - float(metadata.get("max_gt_reward_drop", math.inf))
+        )
+        & (expected_reachability <= float(metadata.get("max_policy_snsad", 0.0)))
+        & (expected_neighbor_count >= int(metadata.get("min_policy_neighbors", 0)))
+    )
+    if bool(metadata.get("exclude_derived_external", False)):
+        hard_eligible &= np.asarray(
+            [not _is_derived_external(source) for source in sources], dtype=np.bool_
+        )
     hard_eligible[gt_index] = True
     distinct = expected_gt_distance + 1e-6 >= float(metadata.get("mode_distance_threshold", 0.0))
     expected_hypothesis = hard_eligible & non_gt & distinct
 
     expected_policy_witness = np.zeros((count,), dtype=np.int64)
     expected_source_witness = np.zeros((count,), dtype=np.int64)
-    expected_evidence_score = np.zeros((count,), dtype=np.float64)
+    expected_evidence_score = np.zeros((count,), dtype=np.float32)
     expected_evidence = np.zeros((count,), dtype=np.bool_)
     policy_gt_distance = policy_distance[gt_index]
     eligible_policy = hard_eligible[policy_indices]
@@ -503,7 +527,7 @@ def validate_record(record: Mapping[str, Any]) -> dict[str, Any]:
                     trajectory_snsad_distance(candidates[index], candidates[witness_index])
                     for witness_index in family_indices
                 ],
-                dtype=np.float64,
+                dtype=np.float32,
             )
             family_advantage = expected_gt_distance[family_indices] - family_distance
             expected_source_witness[index] += int(

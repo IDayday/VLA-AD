@@ -107,6 +107,59 @@ def test_v5_validator_rejects_forged_policy_witness_count() -> None:
     assert any("policy_assignment_witness_count" in error for error in result["errors"])
 
 
+def test_v5_validator_does_not_relax_selector_reward_gate() -> None:
+    candidates = [
+        _candidate("gt", 0.0),
+        _candidate("policy:0", 0.58),
+        _candidate("policy:1", 0.62),
+        _candidate("lateral_offset", 0.60),
+    ]
+    # This candidate is less than 1e-6 below the exact selector boundary.  The
+    # validator must not add its own tolerance and move it into the funnel.
+    candidates[-1].reward = float(np.float32(0.95 - 0.05 - 5e-7))
+    candidates[-1].selection_score = candidates[-1].reward
+    selected = select_feasible_pareto_support(candidates, candidates[0].components, _config())
+    record = build_archive_record(
+        "scene",
+        candidates,
+        selected,
+        ref=candidates[0].components,
+        cfg=_config(),
+    )
+
+    result = validate_record(record)
+
+    assert result["errors"] == []
+
+
+def test_v5_validator_preserves_float32_policy_radius_boundary() -> None:
+    # For straight trajectories this offset produces an SNSAD value equal to
+    # float32(0.5 + 1e-6), but very slightly greater than the float64 scalar.
+    # Selector and validator must therefore both count the boundary neighbor.
+    boundary_delta = 1.0256431
+    candidates = [
+        _candidate("gt", 0.0),
+        _candidate("policy:0", 0.60),
+        _candidate("policy:1", 0.60 + boundary_delta),
+        _candidate("progress_gamma", 0.60),
+    ]
+    cfg = _config()
+    cfg["support_v5_max_policy_snsad"] = 0.5
+    selected = select_feasible_pareto_support(candidates, candidates[0].components, cfg)
+    record = build_archive_record(
+        "scene",
+        candidates,
+        selected,
+        ref=candidates[0].components,
+        cfg=cfg,
+    )
+
+    result = validate_record(record)
+
+    assert record["policy_neighbor_count"][-1] == 2
+    assert result["errors"] == []
+
+
 def test_v5_gt_only_scene_passes_static_contract_without_diversity_quota(tmp_path) -> None:
     archive = tmp_path / "archive"
     archive.mkdir()
