@@ -1,6 +1,6 @@
 # Stage2 v3 Target Distribution Study
 
-更新时间：2026-07-13 06:17 UTC
+更新时间：2026-07-13 13:23 UTC
 
 ## 1. 研究问题与当前结论
 
@@ -460,8 +460,10 @@ teacher eligibility、与 GT 的模式分离、Pareto eligibility 和最终 pair
 `dpsi_frontier_all_modes_deferred_scene_ratio` 单独记录这类暂时 GT-only scene。
 
 这里的 capacity 是冻结的候选生成器、A5 policy、evaluator 和阈值下的**观测容量**，不能宣称是
-scene 的固有容量。跨 scene 晋级只检查全局多模态比例、仅在正容量 scene 上计算的 capacity-normalized
-coverage，以及 Stage3 credit-ready 比例。
+scene 的固有容量。`multimode_scene_ratio` 和 `capacity_normalized_coverage` 只用于描述固定生成协议的
+输出，不再作为 archive 晋级门槛。静态晋级只检查数据契约、token 完整覆盖、原始候选构建、外部候选
+未机械扩增以及 policy-reachability 配置；Stage3 credit readiness 单独报告，不能反向迫使困难 scene
+生成替代轨迹。一个 scene 在当前生成器下只能得到 GT 是合法结果，不代表该 scene 天然单模态。
 
 新的 8-GPU、8-scene `train_val` 端到端 smoke 位于：
 
@@ -502,3 +504,26 @@ trajectory-quality、36.477 条 trust-region、34.719 条具有至少 2/8 policy
 足够不同、8.055 条 Pareto-eligible，最终选中 2.047 条。122/128 scene 有非 GT mode，6/128 为
 GT-only；capacity-normalized coverage 为 1.0，Stage3 credit-ready scene ratio 为 42.97%。这些数字
 说明难 scene 可以没有替代监督，但每一次候选消失都能定位到可重算的漏斗阶段。
+
+## 11. v5 独立证据与跨 scene learning frontier
+
+继续审计发现，v4 的 2/8 policy-density witness 只能证明某个模板位于策略分布的宽邻域，不能证明
+当前策略实际支持该模板所代表的独立模式。在同一个 128-scene raw pool 上，要求“至少两个
+current-policy rollout 更接近 candidate 而不是 GT”或“至少两个独立 direct source family 一致”
+后，`SNSAD >= 0.40` 的可信多模态 scene 为 `13/128`。其余 115 个 scene 合法地保持 GT-only；
+其中 12 个没有 distinct hypothesis，103 个有 hypothesis 但没有独立 evidence。该结果否定的是
+逐 scene 补数，不是宣称这些 scene 天生单模态。
+
+单纯均匀 scene continuation 会使少数 mode 的梯度被 GT-only scene 淹没。真实 DataLoader
+frontier/uniform mixture 将 mode scene 曝光提高后，100-step mode recall 相对均匀采样从
+`0.84359` 提高到 `0.84980`，但长训仍收缩。随后加入两个受控修正：GT-only scene loss mass
+降为 `0.25`，frontier scene 的 conditional beta 提为 `0.45`。配合 25-data-epoch cosine scheduler，
+最终 13-scene mode stratum 相对 A5 为 Recall `+0.00580`、F1 `+0.00792`、Pairwise ADE
+`+0.00013m`、SNSAD `+0.00181`，同时 best/mean GT ADE 分别改善 `0.03390m/0.03665m`。
+
+相同配置继续到 50 data epochs 后，mode SNSAD 从 `0.56727` 降到 `0.54971`，证明早停和 LR
+窗口属于正确性约束，不是可任意延长的训练预算。完整数据契约、公式、artifact 和启动命令见：
+
+```text
+docs/SG_FPS_V5_Evidence_Frontier_Contract.md
+```

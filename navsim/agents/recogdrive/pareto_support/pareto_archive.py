@@ -339,6 +339,35 @@ def _is_current_policy_proposal(source: str) -> bool:
     return lower == "policy" or lower.startswith("policy:") or lower.startswith("current_policy")
 
 
+def _direct_mode_source_family(source: str) -> str:
+    lower = str(source).lower()
+    if _is_current_policy_proposal(lower):
+        return "policy"
+    if lower == "ddv2" or lower.startswith(("ddv2:", "diffusiondrivev2")):
+        return "ddv2"
+    if lower == "driveor" or lower.startswith(("driveor:", "drivor")):
+        return "driveor"
+    return ""
+
+
+def _scene_normalize(values: np.ndarray, mask: np.ndarray) -> np.ndarray:
+    values = np.asarray(values, dtype=np.float32)
+    mask = np.asarray(mask, dtype=np.bool_)
+    normalized = np.full(values.shape, 0.5, dtype=np.float32)
+    if not bool(mask.any()):
+        return normalized
+    finite = mask & np.isfinite(values)
+    if not bool(finite.any()):
+        return normalized
+    lower = float(values[finite].min())
+    upper = float(values[finite].max())
+    if upper - lower > 1e-6:
+        normalized = (np.nan_to_num(values, nan=lower, posinf=upper, neginf=lower) - lower) / (
+            upper - lower
+        )
+    return np.clip(normalized, 0.0, 1.0).astype(np.float32)
+
+
 def trajectory_snsad_distance(lhs: np.ndarray, rhs: np.ndarray) -> float:
     lhs = np.asarray(lhs, dtype=np.float32)
     rhs = np.asarray(rhs, dtype=np.float32)
@@ -764,6 +793,350 @@ def _select_mode_pareto_v4(
     return selected
 
 
+def _select_learning_frontier_v5(
+    candidates: list[CandidateRecord],
+    ref: dict,
+    cfg: Any,
+) -> list[CandidateRecord]:
+    """Select independently evidenced modes without a per-scene quota.
+
+    Synthetic proposals are hypotheses, not mode evidence. A non-GT candidate
+    becomes a teacher only when at least two current-policy rollouts assign to
+    it over GT, or when at least two independent direct source families agree
+    with it. Safety, trajectory quality, GT trust bounds, and broad policy
+    reachability remain hard gates before this evidence test.
+    """
+
+    top_m = int(cfg_value(cfg, "support_top_m", 4))
+    archive_version = int(cfg_value(cfg, "support_archive_version", 5))
+    if archive_version < 5:
+        raise ValueError("mode_learning_frontier_v5 requires support_archive_version>=5.")
+    if top_m <= 0:
+        return []
+    gt_candidates = [candidate for candidate in candidates if _source_matches(candidate.source, ("gt",))]
+    if len(gt_candidates) != 1:
+        raise ValueError(
+            "mode_learning_frontier_v5 requires exactly one GT candidate, "
+            f"found {len(gt_candidates)}."
+        )
+    gt = gt_candidates[0]
+    gt_index = next(index for index, candidate in enumerate(candidates) if candidate is gt)
+    gt_traj = np.asarray(gt.trajectory, dtype=np.float32)
+    gt_reward = float(gt.reward)
+
+    max_ade = float(cfg_value(cfg, "support_v5_max_gt_ade_m", 1.5))
+    max_fde = float(cfg_value(cfg, "support_v5_max_gt_fde_m", 4.0))
+    mode_threshold = float(cfg_value(cfg, "support_v5_mode_distance_threshold", 0.40))
+    reward_gain_cap = float(cfg_value(cfg, "support_v5_reward_gain_cap", 0.05))
+    max_reward_drop = float(cfg_value(cfg, "support_v5_max_gt_reward_drop", 0.05))
+    pareto_eps = float(cfg_value(cfg, "support_v5_pareto_eps", 0.01))
+    exclude_derived_external = bool(cfg_value(cfg, "support_v5_exclude_derived_external", True))
+    max_policy_snsad = float(cfg_value(cfg, "support_v5_max_policy_snsad", 0.50))
+    min_policy_neighbors = int(cfg_value(cfg, "support_v5_min_policy_neighbors", 2))
+    evidence_radius = float(cfg_value(cfg, "support_v5_mode_evidence_radius", 0.35))
+    evidence_margin = float(cfg_value(cfg, "support_v5_mode_evidence_margin", 0.01))
+    min_policy_witnesses = int(cfg_value(cfg, "support_v5_min_policy_witnesses", 2))
+    min_source_families = int(cfg_value(cfg, "support_v5_min_source_families", 2))
+    if min(max_ade, max_fde, mode_threshold, max_policy_snsad, evidence_radius) <= 0.0:
+        raise ValueError("mode_learning_frontier_v5 distance bounds must be positive.")
+    if min(reward_gain_cap, max_reward_drop, pareto_eps, evidence_margin) < 0.0:
+        raise ValueError("mode_learning_frontier_v5 margins must be non-negative.")
+    if min(min_policy_neighbors, min_policy_witnesses, min_source_families) <= 0:
+        raise ValueError("mode_learning_frontier_v5 witness counts must be positive.")
+
+    policy_indices = [
+        index for index, candidate in enumerate(candidates) if _is_current_policy_proposal(candidate.source)
+    ]
+    if not policy_indices:
+        raise ValueError("mode_learning_frontier_v5 requires current-policy proposals.")
+    if min_policy_neighbors > len(policy_indices) or min_policy_witnesses > len(policy_indices):
+        raise ValueError(
+            "mode_learning_frontier_v5 policy neighbor/witness counts cannot exceed "
+            f"the number of policy proposals ({len(policy_indices)})."
+        )
+
+    count = len(candidates)
+    policy_distances = np.empty((count, len(policy_indices)), dtype=np.float32)
+    for index, candidate in enumerate(candidates):
+        policy_distances[index] = np.asarray(
+            [
+                trajectory_snsad_distance(candidate.trajectory, candidates[policy_index].trajectory)
+                for policy_index in policy_indices
+            ],
+            dtype=np.float32,
+        )
+    policy_reachability = policy_distances.min(axis=1)
+    policy_neighbor_count = np.sum(
+        policy_distances <= max_policy_snsad + 1e-6, axis=1
+    ).astype(np.int64)
+    policy_neighbor_fraction = policy_neighbor_count.astype(np.float32) / float(len(policy_indices))
+
+    evaluator_valid = np.asarray(
+        [is_valid_candidate(candidate.components, candidate.feas, ref, cfg) for candidate in candidates],
+        dtype=np.bool_,
+    )
+    quality = np.asarray(
+        [support_trajectory_quality_pass(candidate, gt_traj, cfg) for candidate in candidates],
+        dtype=np.bool_,
+    )
+    hard_eligible = evaluator_valid & quality
+    gt_ade = np.zeros((count,), dtype=np.float32)
+    gt_fde = np.zeros((count,), dtype=np.float32)
+    gt_mode_distance = np.zeros((count,), dtype=np.float32)
+    rewards = np.asarray([float(candidate.reward) for candidate in candidates], dtype=np.float32)
+    for index, candidate in enumerate(candidates):
+        trajectory = np.asarray(candidate.trajectory, dtype=np.float32)
+        n = min(trajectory.shape[0], gt_traj.shape[0])
+        if n <= 0:
+            hard_eligible[index] = False
+            gt_ade[index] = np.inf
+            gt_fde[index] = np.inf
+            gt_mode_distance[index] = np.inf
+            continue
+        distance = np.linalg.norm(trajectory[:n, :2] - gt_traj[:n, :2], axis=-1)
+        gt_ade[index] = float(distance.mean())
+        gt_fde[index] = float(distance[-1])
+        gt_mode_distance[index] = trajectory_snsad_distance(trajectory, gt_traj)
+        if index != gt_index:
+            hard_eligible[index] &= bool(gt_ade[index] <= max_ade and gt_fde[index] <= max_fde)
+            hard_eligible[index] &= bool(rewards[index] >= gt_reward - max_reward_drop)
+            hard_eligible[index] &= bool(policy_reachability[index] <= max_policy_snsad)
+            hard_eligible[index] &= bool(policy_neighbor_count[index] >= min_policy_neighbors)
+            if exclude_derived_external and _is_derived_external(candidate.source):
+                hard_eligible[index] = False
+    hard_eligible[gt_index] = True
+
+    non_gt_mask = np.arange(count, dtype=np.int64) != gt_index
+    distinct_from_gt = gt_mode_distance + 1e-6 >= mode_threshold
+    hypothesis_mask = hard_eligible & non_gt_mask & distinct_from_gt
+    policy_witness_count = np.zeros((count,), dtype=np.int64)
+    source_witness_count = np.zeros((count,), dtype=np.int64)
+    evidence_score = np.zeros((count,), dtype=np.float32)
+    mode_evidence = np.zeros((count,), dtype=np.bool_)
+    policy_gt_distance = policy_distances[gt_index]
+    eligible_policy_witness = hard_eligible[np.asarray(policy_indices, dtype=np.int64)]
+    direct_families = ("policy", "ddv2", "driveor")
+    direct_family_indices = {
+        family: np.asarray(
+            [
+                index
+                for index, candidate in enumerate(candidates)
+                if _direct_mode_source_family(candidate.source) == family and hard_eligible[index]
+            ],
+            dtype=np.int64,
+        )
+        for family in direct_families
+    }
+    for index in np.flatnonzero(hypothesis_mask):
+        policy_advantage = policy_gt_distance - policy_distances[index]
+        policy_witness = (
+            eligible_policy_witness
+            & (policy_distances[index] <= evidence_radius + 1e-6)
+            & (policy_advantage + 1e-6 >= evidence_margin)
+        )
+        policy_witness_count[index] = int(policy_witness.sum())
+        witnessed_families = 0
+        for family in direct_families:
+            family_indices = direct_family_indices[family]
+            if not family_indices.size:
+                continue
+            family_distance = np.asarray(
+                [
+                    trajectory_snsad_distance(
+                        candidates[index].trajectory,
+                        candidates[witness_index].trajectory,
+                    )
+                    for witness_index in family_indices
+                ],
+                dtype=np.float32,
+            )
+            family_advantage = gt_mode_distance[family_indices] - family_distance
+            if bool(
+                np.any(
+                    (family_distance <= evidence_radius + 1e-6)
+                    & (family_advantage + 1e-6 >= evidence_margin)
+                )
+            ):
+                witnessed_families += 1
+        source_witness_count[index] = witnessed_families
+        mode_evidence[index] = bool(
+            policy_witness_count[index] >= min_policy_witnesses
+            or source_witness_count[index] >= min_source_families
+        )
+        policy_score = min(policy_witness_count[index] / float(len(policy_indices)), 1.0)
+        source_score = min(source_witness_count[index] / float(len(direct_families)), 1.0)
+        reachability_score = 1.0 - min(policy_reachability[index] / evidence_radius, 1.0)
+        evidence_score[index] = float(
+            0.50 * policy_score + 0.25 * source_score + 0.25 * reachability_score
+        )
+
+    teacher_eligible = hard_eligible & (mode_evidence | (~non_gt_mask))
+    pareto_domain = teacher_eligible & (distinct_from_gt | (~non_gt_mask))
+    performance = _scene_normalize(rewards, pareto_domain)
+    diversity = _scene_normalize(gt_mode_distance, pareto_domain)
+    learnability = evidence_score.copy()
+    learnability[gt_index] = 1.0
+    frontier_objectives = np.stack((performance, diversity, learnability), axis=-1)
+    front = pareto_front_mask(frontier_objectives, pareto_domain, eps=pareto_eps)
+
+    normalized_reachability = np.minimum(
+        policy_reachability / max(max_policy_snsad, 1e-6), 1.0
+    )
+    frontier_difficulty = np.clip(
+        0.40 * normalized_reachability
+        + 0.20 * np.minimum(gt_ade / max(max_ade, 1e-6), 1.0)
+        + 0.20 * np.minimum(gt_fde / max(max_fde, 1e-6), 1.0)
+        + 0.20 * (1.0 - evidence_score),
+        0.0,
+        1.0,
+    ).astype(np.float32)
+    frontier_difficulty[gt_index] = 0.0
+
+    for index, candidate in enumerate(candidates):
+        candidate.support_tag = ""
+        setattr(candidate, "_sg_fps_teacher_eligible", bool(teacher_eligible[index]))
+        setattr(candidate, "_sg_fps_gt_ade", float(gt_ade[index]))
+        setattr(candidate, "_sg_fps_gt_fde", float(gt_fde[index]))
+        setattr(candidate, "_sg_fps_source_conditioned", _is_scene_conditioned_proposal(candidate.source))
+        setattr(candidate, "_sg_fps_policy_reachability_snsad", float(policy_reachability[index]))
+        setattr(candidate, "_sg_fps_policy_neighbor_count", int(policy_neighbor_count[index]))
+        setattr(candidate, "_sg_fps_policy_neighbor_fraction", float(policy_neighbor_fraction[index]))
+        setattr(candidate, "_sg_fps_policy_assignment_witness_count", int(policy_witness_count[index]))
+        setattr(candidate, "_sg_fps_independent_source_witness_count", int(source_witness_count[index]))
+        setattr(candidate, "_sg_fps_mode_evidence", bool(mode_evidence[index]))
+        setattr(candidate, "_sg_fps_mode_hypothesis", bool(hypothesis_mask[index]))
+        setattr(candidate, "_sg_fps_mode_evidence_score", float(evidence_score[index]))
+        setattr(candidate, "_sg_fps_frontier_objectives", frontier_objectives[index].astype(np.float32))
+        setattr(candidate, "_sg_fps_frontier_difficulty", float(frontier_difficulty[index]))
+        setattr(candidate, "_sg_fps_objective_novelty", 0.0)
+        setattr(candidate, "_sg_fps_pareto_front", bool(front[index]))
+        setattr(candidate, "_sg_fps_mode_id", -1)
+
+    ranked_indices = [
+        index for index in np.flatnonzero(front & teacher_eligible & non_gt_mask)
+    ]
+    selected = [gt]
+    selected_indices = [gt_index]
+    gt.support_tag = "gt_anchor"
+    setattr(gt, "_sg_fps_mode_id", 0)
+    remaining = set(ranked_indices)
+    while remaining and len(selected) < top_m:
+        choices: list[tuple[tuple[float, float, float, int, int, float, float, int], int, float]] = []
+        for index in remaining:
+            trajectory_novelty = min(
+                trajectory_snsad_distance(candidates[index].trajectory, candidates[chosen].trajectory)
+                for chosen in selected_indices
+            )
+            if trajectory_novelty + 1e-6 < mode_threshold:
+                continue
+            objective_novelty = min(
+                float(np.abs(frontier_objectives[index] - frontier_objectives[chosen]).mean())
+                for chosen in selected_indices
+            )
+            gain = float(rewards[index] - gt_reward)
+            capped_gain = min(max(gain, -reward_gain_cap), reward_gain_cap)
+            key = (
+                objective_novelty,
+                trajectory_novelty,
+                float(evidence_score[index]),
+                int(policy_witness_count[index]),
+                int(source_witness_count[index]),
+                -float(frontier_difficulty[index]),
+                capped_gain,
+                -int(index),
+            )
+            choices.append((key, index, objective_novelty))
+        if not choices:
+            break
+        _, index, objective_novelty = max(choices, key=lambda item: item[0])
+        remaining.remove(index)
+        candidate = candidates[index]
+        candidate.support_tag = "learning_frontier_mode"
+        setattr(candidate, "_sg_fps_objective_novelty", float(objective_novelty))
+        setattr(candidate, "_sg_fps_mode_id", len(selected))
+        selected.append(candidate)
+        selected_indices.append(index)
+
+    nested_quality_mask = non_gt_mask & evaluator_valid & quality
+    trust_region_mask = (
+        nested_quality_mask
+        & (gt_ade <= max_ade)
+        & (gt_fde <= max_fde)
+        & (rewards >= gt_reward - max_reward_drop)
+    )
+    if exclude_derived_external:
+        trust_region_mask &= np.asarray(
+            [not _is_derived_external(candidate.source) for candidate in candidates],
+            dtype=np.bool_,
+        )
+    within_policy_radius = np.isfinite(policy_reachability) & (
+        policy_reachability <= max_policy_snsad + 1e-6
+    )
+    one_neighbor_reachable = trust_region_mask & within_policy_radius & (policy_neighbor_count >= 1)
+    required_neighbors_reachable = (
+        trust_region_mask & within_policy_radius & (policy_neighbor_count >= min_policy_neighbors)
+    )
+    selected_non_gt_count = len(selected) - 1
+    funnel_counts = {
+        "non_gt_proposal_count": int(non_gt_mask.sum()),
+        "current_policy_proposal_count": int(len(policy_indices)),
+        "evaluator_valid_count": int((non_gt_mask & evaluator_valid).sum()),
+        "trajectory_quality_count": int(nested_quality_mask.sum()),
+        "trust_region_count": int(trust_region_mask.sum()),
+        "one_neighbor_reachable_count": int(one_neighbor_reachable.sum()),
+        "required_neighbors_reachable_count": int(required_neighbors_reachable.sum()),
+        "hard_teacher_eligible_count": int((hard_eligible & non_gt_mask).sum()),
+        "distinct_hypothesis_count": int(hypothesis_mask.sum()),
+        "independent_mode_evidence_count": int((mode_evidence & hypothesis_mask).sum()),
+        "teacher_eligible_count": int((teacher_eligible & non_gt_mask).sum()),
+        "distinct_from_gt_count": int((teacher_eligible & distinct_from_gt & non_gt_mask).sum()),
+        "pareto_eligible_count": int((front & teacher_eligible & non_gt_mask).sum()),
+        "selected_non_gt_count": int(selected_non_gt_count),
+    }
+    if selected_non_gt_count > 0:
+        gt_only_reason = ""
+        supervision_type = "learning_frontier_modes"
+    elif funnel_counts["non_gt_proposal_count"] == 0:
+        gt_only_reason = "no_non_gt_proposals"
+        supervision_type = "gt_only"
+    elif funnel_counts["evaluator_valid_count"] == 0:
+        gt_only_reason = "no_evaluator_valid_candidate"
+        supervision_type = "gt_only"
+    elif funnel_counts["trajectory_quality_count"] == 0:
+        gt_only_reason = "no_trajectory_quality_candidate"
+        supervision_type = "gt_only"
+    elif funnel_counts["trust_region_count"] == 0:
+        gt_only_reason = "no_trust_region_candidate"
+        supervision_type = "gt_only"
+    elif funnel_counts["required_neighbors_reachable_count"] == 0:
+        gt_only_reason = "no_policy_reachable_candidate"
+        supervision_type = "gt_only"
+    elif funnel_counts["distinct_hypothesis_count"] == 0:
+        gt_only_reason = "no_distinct_mode_hypothesis"
+        supervision_type = "gt_only"
+    elif funnel_counts["independent_mode_evidence_count"] == 0:
+        gt_only_reason = "no_independent_mode_evidence"
+        supervision_type = "gt_only"
+    elif funnel_counts["pareto_eligible_count"] == 0:
+        gt_only_reason = "no_learning_frontier_candidate"
+        supervision_type = "gt_only"
+    else:
+        gt_only_reason = "no_pairwise_distinct_frontier_mode"
+        supervision_type = "gt_only"
+    setattr(
+        gt,
+        "_sg_fps_candidate_funnel",
+        {
+            "version": 3,
+            **funnel_counts,
+            "supervision_type": supervision_type,
+            "gt_only_reason": gt_only_reason,
+            "capacity_semantics": "observed_under_frozen_generator_not_scene_intrinsic",
+        },
+    )
+    return selected
+
+
 def _append_unique(
     selected: list[CandidateRecord],
     used: set[str],
@@ -1097,6 +1470,8 @@ def select_feasible_pareto_support(candidates: list[CandidateRecord], ref: dict,
         "feas": float(cfg_value(cfg, "fp_feas_weight", 0.05)),
     }
     strategy = str(cfg_value(cfg, "support_selection_strategy", "quota")).lower()
+    if strategy in {"mode_learning_frontier_v5", "learning_frontier_v5", "v5"}:
+        return _select_learning_frontier_v5(candidates, ref, cfg)
     if strategy in {"mode_pareto_v4", "v4", "learnable_modes"}:
         return _select_mode_pareto_v4(candidates, ref, cfg)
     if strategy in {"quality_pareto", "pareto_diverse", "quality"}:
@@ -1174,11 +1549,15 @@ def build_archive_record(
     ref = dict(ref or {})
     cfg = cfg or {}
     strategy = str(cfg_value(cfg, "support_selection_strategy", "quota"))
+    strategy_lower = strategy.lower()
+    is_v4 = strategy_lower in {"mode_pareto_v4", "v4", "learnable_modes"}
+    is_v5 = strategy_lower in {"mode_learning_frontier_v5", "learning_frontier_v5", "v5"}
+    is_mode_frontier = is_v4 or is_v5
     ref_traj = next((np.asarray(c.trajectory, dtype=np.float32) for c in candidates if _source_matches(c.source, ("gt",))), None)
     ref_reward = next((float(c.reward) for c in candidates if _source_matches(c.source, ("gt",))), None)
     all_values = _pareto_values_legacy(candidates) if candidates else np.zeros((0, 4), dtype=np.float32)
     valid_mask = np.asarray([is_valid_candidate(c.components, c.feas, ref, cfg) for c in candidates], dtype=np.bool_)
-    if strategy.lower() in {"mode_pareto_v4", "v4", "learnable_modes"}:
+    if is_mode_frontier:
         quality_mask = np.asarray(
             [support_trajectory_quality_pass(candidate, ref_traj, cfg) for candidate in candidates],
             dtype=np.bool_,
@@ -1189,13 +1568,13 @@ def build_archive_record(
             dtype=np.bool_,
         )
     front_mask = pareto_front_mask(all_values, valid_mask) if candidates else np.zeros((0,), dtype=np.bool_)
-    if strategy.lower() in {"mode_pareto_v4", "v4", "learnable_modes"}:
+    if is_mode_frontier:
         front_mask = np.asarray(
             [bool(getattr(candidate, "_sg_fps_pareto_front", False)) for candidate in candidates],
             dtype=np.bool_,
         )
     utilities = np.asarray([compute_utility(c.components, _feas_cost(c.feas), dict(cfg or {})) for c in candidates], dtype=np.float32)
-    if strategy.lower() in {"mode_pareto_v4", "v4", "learnable_modes"}:
+    if is_mode_frontier:
         selected_tag_by_id = {id(candidate): str(candidate.support_tag or "support") for candidate in selected}
         selected_mask = np.asarray([id(candidate) in selected_tag_by_id for candidate in candidates], dtype=np.bool_)
         support_tags = [selected_tag_by_id.get(id(candidate), "") for candidate in candidates]
@@ -1293,6 +1672,36 @@ def build_archive_record(
         [float(getattr(candidate, "_sg_fps_objective_novelty", 0.0)) for candidate in candidates],
         dtype=np.float32,
     )
+    policy_assignment_witness_count = np.asarray(
+        [int(getattr(candidate, "_sg_fps_policy_assignment_witness_count", 0)) for candidate in candidates],
+        dtype=np.int64,
+    )
+    independent_source_witness_count = np.asarray(
+        [int(getattr(candidate, "_sg_fps_independent_source_witness_count", 0)) for candidate in candidates],
+        dtype=np.int64,
+    )
+    mode_evidence_mask = np.asarray(
+        [bool(getattr(candidate, "_sg_fps_mode_evidence", False)) for candidate in candidates],
+        dtype=np.bool_,
+    )
+    mode_hypothesis_mask = np.asarray(
+        [bool(getattr(candidate, "_sg_fps_mode_hypothesis", False)) for candidate in candidates],
+        dtype=np.bool_,
+    )
+    mode_evidence_score = np.asarray(
+        [float(getattr(candidate, "_sg_fps_mode_evidence_score", 0.0)) for candidate in candidates],
+        dtype=np.float32,
+    )
+    learning_frontier_objectives = np.asarray(
+        [
+            np.asarray(
+                getattr(candidate, "_sg_fps_frontier_objectives", np.zeros((3,), dtype=np.float32)),
+                dtype=np.float32,
+            )
+            for candidate in candidates
+        ],
+        dtype=np.float32,
+    )
     build_metadata = dict(cfg_value(cfg, "support_build_metadata", {}) or {})
     build_metadata.update(
         {
@@ -1300,12 +1709,76 @@ def build_archive_record(
             "support_top_m": int(cfg_value(cfg, "support_top_m", 12)),
         }
     )
+    if is_v5 and archive_version < 5:
+        raise ValueError("mode_learning_frontier_v5 requires support_archive_version>=5.")
     if archive_version >= 4:
         build_metadata.setdefault("external_candidate_roots", {})
         build_metadata.setdefault("external_candidate_root_fingerprints", {})
         build_metadata.setdefault("external_candidate_root_file_counts", {})
-        build_metadata.update(
-            {
+        if is_v5:
+            build_metadata.update(
+                {
+                    "teacher_contract": "gt_anchor_plus_independently_evidenced_learning_frontier_modes",
+                    "mode_selection_order": (
+                        "evidence_gate_then_performance_diversity_learnability_pareto_then_snsad_fps"
+                    ),
+                    "learnability_tiebreak": "independent_evidence_then_frontier_difficulty",
+                    "learnability_contract": "closer_than_gt_independent_witness_v1",
+                    "candidate_capacity_contract": "observed_independent_evidence_no_quota_v3",
+                    "capacity_semantics": "observed_selected_support_not_scene_intrinsic",
+                    "no_per_scene_candidate_quota": True,
+                    "selection_gate_config": _selection_gate_config(cfg),
+                    "legacy_reward_gate_disabled": True,
+                    "max_gt_ade_m": float(cfg_value(cfg, "support_v5_max_gt_ade_m", 1.5)),
+                    "max_gt_fde_m": float(cfg_value(cfg, "support_v5_max_gt_fde_m", 4.0)),
+                    "mode_distance_threshold": float(
+                        cfg_value(cfg, "support_v5_mode_distance_threshold", 0.25)
+                    ),
+                    "reward_gain_cap": float(cfg_value(cfg, "support_v5_reward_gain_cap", 0.05)),
+                    "max_gt_reward_drop": float(
+                        cfg_value(cfg, "support_v5_max_gt_reward_drop", 0.05)
+                    ),
+                    "pareto_eps": float(cfg_value(cfg, "support_v5_pareto_eps", 0.01)),
+                    "pareto_objectives": (
+                        "scene_relative_performance,gt_relative_snsad_diversity,independent_learnability"
+                    ),
+                    "exclude_derived_external": bool(
+                        cfg_value(cfg, "support_v5_exclude_derived_external", True)
+                    ),
+                    "policy_reachability_required": True,
+                    "max_policy_snsad": float(
+                        cfg_value(cfg, "support_v5_max_policy_snsad", 0.50)
+                    ),
+                    "min_policy_neighbors": int(
+                        cfg_value(cfg, "support_v5_min_policy_neighbors", 2)
+                    ),
+                    "mode_evidence_radius": float(
+                        cfg_value(cfg, "support_v5_mode_evidence_radius", 0.35)
+                    ),
+                    "mode_evidence_margin": float(
+                        cfg_value(cfg, "support_v5_mode_evidence_margin", 0.01)
+                    ),
+                    "min_policy_witnesses": int(
+                        cfg_value(cfg, "support_v5_min_policy_witnesses", 2)
+                    ),
+                    "min_source_families": int(
+                        cfg_value(cfg, "support_v5_min_source_families", 2)
+                    ),
+                    "frontier_difficulty_formula": (
+                        "0.40*policy_snsad+0.20*gt_ade+0.20*gt_fde+0.20*(1-evidence)"
+                    ),
+                    "stage3_readiness_benchmark": "navsim_v1",
+                    "stage3_min_feasible_rollouts": int(
+                        cfg_value(cfg, "support_v4_stage3_min_feasible_rollouts", 2)
+                    ),
+                    "stage3_min_score_span": float(
+                        cfg_value(cfg, "support_v4_stage3_min_score_span", 0.01)
+                    ),
+                }
+            )
+        else:
+            build_metadata.update(
+                {
                 "teacher_contract": "gt_anchor_plus_uniform_reachable_pareto_modes",
                 "mode_selection_order": "scene_normalized_objective_fps_then_snsad_then_policy_density",
                 "learnability_tiebreak": "policy_density_then_frontier_difficulty",
@@ -1333,8 +1806,8 @@ def build_archive_record(
                 "stage3_min_score_span": float(
                     cfg_value(cfg, "support_v4_stage3_min_score_span", 0.01)
                 ),
-            }
-        )
+                }
+            )
     record = {
         "version": archive_version,
         "token": str(token),
@@ -1394,7 +1867,7 @@ def build_archive_record(
         candidate_funnel = dict(getattr(gt_candidate, "_sg_fps_candidate_funnel", {}) or {})
         if not candidate_funnel:
             raise ValueError(
-                "SG-FPS v4 candidate_funnel is missing; run mode_pareto_v4 selection before archiving."
+                "SG-FPS frontier candidate_funnel is missing; run the configured mode selection before archiving."
             )
         record.update(
             {
@@ -1423,6 +1896,17 @@ def build_archive_record(
                 "build_metadata": build_metadata,
             }
         )
+        if is_v5:
+            record.update(
+                {
+                    "policy_assignment_witness_count": policy_assignment_witness_count,
+                    "independent_source_witness_count": independent_source_witness_count,
+                    "mode_evidence_mask": mode_evidence_mask,
+                    "mode_hypothesis_mask": mode_hypothesis_mask,
+                    "mode_evidence_score": mode_evidence_score,
+                    "learning_frontier_objectives": learning_frontier_objectives,
+                }
+            )
     return record
 
 

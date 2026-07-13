@@ -249,6 +249,60 @@ def _frontier_v4_record(*, raw_internal_candidates: bool) -> dict:
     return record
 
 
+def _learning_frontier_v5_record() -> dict:
+    record = _frontier_v4_record(raw_internal_candidates=True)
+    record.update(
+        version=5,
+        support_tags=["gt_anchor", "learning_frontier_mode", "learning_frontier_mode"],
+        policy_assignment_witness_count=np.asarray([0, 2, 2], dtype=np.int64),
+        independent_source_witness_count=np.asarray([0, 1, 1], dtype=np.int64),
+        mode_evidence_mask=np.asarray([False, True, True], dtype=np.bool_),
+        mode_hypothesis_mask=np.asarray([False, True, True], dtype=np.bool_),
+        mode_evidence_score=np.asarray([0.0, 0.5, 0.5], dtype=np.float32),
+        learning_frontier_objectives=np.asarray(
+            [[0.5, 0.0, 1.0], [0.5, 0.5, 0.5], [0.5, 1.0, 0.5]],
+            dtype=np.float32,
+        ),
+        candidate_funnel={
+            "version": 3,
+            "non_gt_proposal_count": 2,
+            "current_policy_proposal_count": 2,
+            "evaluator_valid_count": 2,
+            "trajectory_quality_count": 2,
+            "trust_region_count": 2,
+            "one_neighbor_reachable_count": 2,
+            "required_neighbors_reachable_count": 2,
+            "hard_teacher_eligible_count": 2,
+            "distinct_hypothesis_count": 2,
+            "independent_mode_evidence_count": 2,
+            "teacher_eligible_count": 2,
+            "distinct_from_gt_count": 2,
+            "pareto_eligible_count": 2,
+            "selected_non_gt_count": 2,
+            "supervision_type": "learning_frontier_modes",
+            "gt_only_reason": "",
+            "capacity_semantics": "observed_under_frozen_generator_not_scene_intrinsic",
+        },
+    )
+    record["build_metadata"].update(
+        selection_strategy="mode_learning_frontier_v5",
+        teacher_contract="gt_anchor_plus_independently_evidenced_learning_frontier_modes",
+        mode_selection_order=(
+            "evidence_gate_then_performance_diversity_learnability_pareto_then_snsad_fps"
+        ),
+        learnability_tiebreak="independent_evidence_then_frontier_difficulty",
+        learnability_contract="closer_than_gt_independent_witness_v1",
+        candidate_capacity_contract="observed_independent_evidence_no_quota_v3",
+        capacity_semantics="observed_selected_support_not_scene_intrinsic",
+        no_per_scene_candidate_quota=True,
+        min_policy_witnesses=2,
+        min_source_families=2,
+        mode_evidence_radius=0.35,
+        mode_evidence_margin=0.01,
+    )
+    return record
+
+
 def test_frontier_v4_loader_rejects_shadow_preselected_archive() -> None:
     record = _frontier_v4_record(raw_internal_candidates=False)
     planner = ReCogDriveDiffusionPlanner.__new__(ReCogDriveDiffusionPlanner)
@@ -311,6 +365,49 @@ def test_frontier_v4_loader_rejects_mode_outside_policy_frontier() -> None:
     )
 
     with pytest.raises(ValueError, match="outside the current-policy learning frontier"):
+        planner._load_awac_buffer_candidates(action_input, ["tok"], {}, cfg)
+
+
+def test_learning_frontier_v5_loader_accepts_independently_evidenced_modes() -> None:
+    record = _learning_frontier_v5_record()
+    planner = ReCogDriveDiffusionPlanner.__new__(ReCogDriveDiffusionPlanner)
+
+    def load(self, root, token, cfg):
+        return record
+
+    planner._load_elite_record_cached = MethodType(load, planner)
+    action_input = BatchFeature(data={"action": torch.zeros((1, 8, 3), dtype=torch.float32)})
+    cfg = OfflineRLConfig(
+        enabled=True,
+        support_archive_path="/tmp/support",
+        use_dpsi=True,
+        dpsi_target_distribution="learning_frontier_v5",
+    )
+
+    batch = planner._load_awac_buffer_candidates(action_input, ["tok"], {}, cfg)
+
+    assert torch.equal(batch["selected_mode_id"][0], torch.tensor([0, 1, 2]))
+    assert batch["selected_teacher_eligible"].all()
+
+
+def test_learning_frontier_v5_loader_rejects_unevidenced_selected_mode() -> None:
+    record = _learning_frontier_v5_record()
+    record["mode_evidence_mask"][1] = False
+    planner = ReCogDriveDiffusionPlanner.__new__(ReCogDriveDiffusionPlanner)
+
+    def load(self, root, token, cfg):
+        return record
+
+    planner._load_elite_record_cached = MethodType(load, planner)
+    action_input = BatchFeature(data={"action": torch.zeros((1, 8, 3), dtype=torch.float32)})
+    cfg = OfflineRLConfig(
+        enabled=True,
+        support_archive_path="/tmp/support",
+        use_dpsi=True,
+        dpsi_target_distribution="learning_frontier_v5",
+    )
+
+    with pytest.raises(ValueError, match="without independent evidence"):
         planner._load_awac_buffer_candidates(action_input, ["tok"], {}, cfg)
 
 
@@ -444,6 +541,104 @@ def test_frontier_v4_weights_modes_not_duplicate_rows() -> None:
     assert diagnostics["dpsi_frontier_mode_count_mean"].item() == pytest.approx(2.0)
 
 
+def test_learning_frontier_v5_reuses_paired_gt_mode_weighting() -> None:
+    cfg = OfflineRLConfig(
+        dpsi_target_distribution="learning_frontier_v5",
+        dpsi_beta_max=0.25,
+        dpsi_beta_warmup_epochs=0,
+        dpsi_use_reward_margin_weight=False,
+        dpsi_use_source_weight=False,
+        dpsi_pair_target_randomness=True,
+        dpsi_residual_budget_enabled=True,
+        dpsi_target_sample_m=2,
+        dpsi_target_sample_m_after_warmup=2,
+    )
+    trajs = _traj_row([0.0, 1.0, 3.0])
+    rewards = torch.tensor([[0.9, 0.95, 0.94]])
+    source = torch.tensor([[1, 7, 4]])
+    mask = torch.ones_like(rewards, dtype=torch.bool)
+    profile, profile_diag = _compute_dpsi_support_profile(
+        trajs,
+        rewards,
+        mask,
+        source,
+        torch.tensor([0.9]),
+        torch.tensor([0.9]),
+        mask,
+        cfg,
+        current_epoch=0,
+    )
+    weights, _ = _build_asmi_weights(
+        rewards,
+        mask,
+        mask,
+        source,
+        torch.zeros_like(rewards),
+        torch.tensor([0.9]),
+        torch.tensor([0.9]),
+        profile,
+        cfg,
+        selected_mode_id=torch.tensor([[0, 1, 2]]),
+        selected_teacher_eligible=mask,
+        selected_frontier_difficulty=torch.zeros_like(rewards),
+        current_epoch=0,
+    )
+
+    assert weights[0, 0].item() == pytest.approx(0.75)
+    assert weights[0, 1:].sum().item() == pytest.approx(0.25)
+    assert profile_diag["dpsi_learning_frontier_v5_enabled"].item() == 1.0
+    assert profile_diag["dpsi_frontier_v4_enabled"].item() == 0.0
+
+
+def test_learning_frontier_v5_downweights_gt_only_continuation_scene() -> None:
+    cfg = OfflineRLConfig(
+        dpsi_target_distribution="learning_frontier_v5",
+        dpsi_beta_max=0.25,
+        dpsi_beta_warmup_epochs=0,
+        dpsi_frontier_gt_only_scene_weight=0.25,
+        dpsi_use_reward_margin_weight=False,
+        dpsi_use_source_weight=False,
+    )
+    trajs = torch.cat((_traj_row([0.0, 1.0]), _traj_row([0.0, 1.0])), dim=0)
+    rewards = torch.tensor([[0.9, 0.95], [0.9, 0.95]])
+    source = torch.tensor([[1, 7], [1, 7]])
+    real = torch.tensor([[True, True], [True, False]])
+    profile, _ = _compute_dpsi_support_profile(
+        trajs,
+        rewards,
+        real,
+        source,
+        torch.tensor([0.9, 0.9]),
+        torch.tensor([0.9, 0.9]),
+        real,
+        cfg,
+        current_epoch=0,
+    )
+
+    weights, diagnostics = _build_asmi_weights(
+        rewards,
+        real,
+        real,
+        source,
+        torch.zeros_like(rewards),
+        torch.tensor([0.9, 0.9]),
+        torch.tensor([0.9, 0.9]),
+        profile,
+        cfg,
+        selected_mode_id=torch.tensor([[0, 1], [0, -1]]),
+        selected_teacher_eligible=real,
+        selected_frontier_difficulty=torch.zeros_like(rewards),
+        current_epoch=0,
+    )
+
+    assert weights[0].sum().item() == pytest.approx(1.0)
+    assert weights[1].sum().item() == pytest.approx(0.25)
+    assert weights[0].tolist() == pytest.approx([0.75, 0.25])
+    assert weights[1].tolist() == pytest.approx([0.25, 0.0])
+    assert diagnostics["dpsi_frontier_gt_only_scene_ratio"].item() == pytest.approx(0.5)
+    assert diagnostics["dpsi_scene_weight_mean"].item() == pytest.approx(0.625)
+
+
 def test_frontier_v4_curriculum_can_temporarily_use_gt_only() -> None:
     cfg = OfflineRLConfig(
         dpsi_target_distribution="frontier_v4",
@@ -571,6 +766,14 @@ def test_frontier_v4_config_rejects_legacy_weighting() -> None:
     )
 
     with pytest.raises(ValueError, match="legacy tag/source/reward weighting"):
+        ReCogDriveDiffusionPlanner._validate_offline_rl_config(cfg)
+
+
+@pytest.mark.parametrize("weight", [0.0, -0.1, 1.1])
+def test_frontier_gt_only_scene_weight_must_be_bounded(weight: float) -> None:
+    cfg = OfflineRLConfig(dpsi_frontier_gt_only_scene_weight=weight)
+
+    with pytest.raises(ValueError, match="gt_only_scene_weight"):
         ReCogDriveDiffusionPlanner._validate_offline_rl_config(cfg)
 
 

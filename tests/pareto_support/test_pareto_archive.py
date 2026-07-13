@@ -93,6 +93,107 @@ def _legacy_record(source: str, idx: int, *, valid: bool, reward: float) -> Cand
     )
 
 
+def _v5_candidate(source: str, lateral_offset: float, reward: float = 0.95) -> CandidateRecord:
+    candidate = _legacy_record(source, 0, valid=True, reward=reward)
+    candidate.trajectory = candidate.trajectory.copy()
+    candidate.trajectory[:, 1] += float(lateral_offset)
+    candidate.components["ego_progress"] = reward
+    return candidate
+
+
+def _v5_cfg() -> dict:
+    return {
+        "support_archive_version": 5,
+        "support_selection_strategy": "mode_learning_frontier_v5",
+        "support_top_m": 4,
+        "support_v5_max_gt_ade_m": 1.5,
+        "support_v5_max_gt_fde_m": 4.0,
+        "support_v5_mode_distance_threshold": 0.05,
+        "support_v5_max_gt_reward_drop": 0.05,
+        "support_v5_pareto_eps": 0.01,
+        "support_v5_max_policy_snsad": 1.0,
+        "support_v5_min_policy_neighbors": 2,
+        "support_v5_mode_evidence_radius": 0.20,
+        "support_v5_mode_evidence_margin": 0.01,
+        "support_v5_min_policy_witnesses": 2,
+        "support_v5_min_source_families": 2,
+    }
+
+
+def test_learning_frontier_v5_keeps_gt_only_without_independent_mode_evidence() -> None:
+    candidates = [
+        _v5_candidate("gt", 0.0),
+        _v5_candidate("policy:0", 0.01),
+        _v5_candidate("policy:1", 0.02),
+        _v5_candidate("lateral_offset", 0.60),
+    ]
+
+    selected = select_feasible_pareto_support(candidates, candidates[0].components, _v5_cfg())
+    record = build_archive_record(
+        "scene",
+        candidates,
+        selected,
+        ref=candidates[0].components,
+        cfg=_v5_cfg(),
+    )
+
+    assert [candidate.source for candidate in selected] == ["gt"]
+    assert record["candidate_funnel"]["distinct_hypothesis_count"] > 0
+    assert record["candidate_funnel"]["independent_mode_evidence_count"] == 0
+    assert record["candidate_funnel"]["gt_only_reason"] == "no_independent_mode_evidence"
+    assert record["build_metadata"]["no_per_scene_candidate_quota"] is True
+
+
+def test_learning_frontier_v5_accepts_two_policy_assignment_witnesses() -> None:
+    candidates = [
+        _v5_candidate("gt", 0.0),
+        _v5_candidate("policy:0", 0.58),
+        _v5_candidate("policy:1", 0.62),
+        _v5_candidate("lateral_offset", 0.60),
+    ]
+
+    selected = select_feasible_pareto_support(candidates, candidates[0].components, _v5_cfg())
+    record = build_archive_record(
+        "scene",
+        candidates,
+        selected,
+        ref=candidates[0].components,
+        cfg=_v5_cfg(),
+    )
+
+    selected_non_gt = [index for index in record["support_indices"] if index != 0]
+    assert len(selected_non_gt) == 1
+    assert bool(record["mode_evidence_mask"][selected_non_gt[0]])
+    assert int(record["policy_assignment_witness_count"][selected_non_gt[0]]) >= 2
+    assert record["candidate_funnel"]["supervision_type"] == "learning_frontier_modes"
+    assert record["learning_frontier_objectives"].shape == (4, 3)
+
+
+def test_learning_frontier_v5_accepts_agreement_from_two_direct_source_families() -> None:
+    candidates = [
+        _v5_candidate("gt", 0.0),
+        _v5_candidate("policy:0", 0.01),
+        _v5_candidate("policy:1", 0.02),
+        _v5_candidate("ddv2", 0.59),
+        _v5_candidate("driveor", 0.61),
+        _v5_candidate("lateral_offset", 0.60),
+    ]
+
+    selected = select_feasible_pareto_support(candidates, candidates[0].components, _v5_cfg())
+    record = build_archive_record(
+        "scene",
+        candidates,
+        selected,
+        ref=candidates[0].components,
+        cfg=_v5_cfg(),
+    )
+
+    selected_non_gt = [index for index in record["support_indices"] if index != 0]
+    assert len(selected_non_gt) == 1
+    assert int(record["independent_source_witness_count"][selected_non_gt[0]]) >= 2
+    assert record["candidate_funnel"]["selected_non_gt_count"] == 1
+
+
 def test_legacy_support_does_not_tag_invalid_non_anchor_candidates() -> None:
     candidates = [
         _legacy_record("gt", 0, valid=False, reward=0.9),

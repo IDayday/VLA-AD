@@ -84,6 +84,12 @@ if [[ "${HYDRA_EXPERIMENT}" == *"fs_norm"* || "${HYDRA_EXPERIMENT}" == "pta_fs_d
   cmd+=("agent.fs_norm_output_clip_mode=${FS_NORM_OUTPUT_CLIP_MODE:-stats_bounds}")
 fi
 optional_overrides=(
+  "CHECKPOINT_PATH:agent.checkpoint_path"
+  "ALLOW_RANDOM_INIT:agent.allow_random_init"
+  "LR:agent.lr"
+  "SCHEDULER_EPOCHS:agent.scheduler_epochs"
+  "SCHEDULER_WARMUP_EPOCHS:agent.scheduler_warmup_epochs"
+  "MAX_EPOCHS:trainer.params.max_epochs"
   "USE_PLANNING_TOKEN_ADAPTER:agent.use_planning_token_adapter"
   "PLANNING_NUM_TOKENS:agent.planning_num_tokens"
   "PLANNING_NUM_HEADS:agent.planning_num_heads"
@@ -111,12 +117,18 @@ optional_overrides=(
   "DPSI_PAIR_TARGET_RANDOMNESS:agent.offline_rl_dpsi_pair_target_randomness"
   "DPSI_RESIDUAL_BUDGET_ENABLED:agent.offline_rl_dpsi_residual_budget_enabled"
   "DPSI_NON_GT_RESIDUAL_MASS_CAP:agent.offline_rl_dpsi_non_gt_residual_mass_cap"
+  "DPSI_FRONTIER_GT_ONLY_SCENE_WEIGHT:agent.offline_rl_dpsi_frontier_gt_only_scene_weight"
   "DPSI_FRONTIER_CURRICULUM_ENABLED:agent.offline_rl_dpsi_frontier_curriculum_enabled"
   "DPSI_FRONTIER_DIFFICULTY_START:agent.offline_rl_dpsi_frontier_difficulty_start"
   "DPSI_FRONTIER_DIFFICULTY_END:agent.offline_rl_dpsi_frontier_difficulty_end"
   "DPSI_FRONTIER_DIFFICULTY_WARMUP_EPOCHS:agent.offline_rl_dpsi_frontier_difficulty_warmup_epochs"
   "DPSI_TARGET_SAMPLE_M:agent.offline_rl_dpsi_target_sample_m"
   "DPSI_TARGET_SAMPLE_M_AFTER_WARMUP:agent.offline_rl_dpsi_target_sample_m_after_warmup"
+  "DPSI_FRONTIER_SCENE_SAMPLING_ENABLED:stage2_frontier_sampling.enabled"
+  "DPSI_FRONTIER_SCENE_INDEX_PATH:stage2_frontier_sampling.scene_index_path"
+  "DPSI_FRONTIER_SCENE_UNIFORM_RATIO:stage2_frontier_sampling.uniform_ratio"
+  "DPSI_FRONTIER_SCENE_PRIORITY_EXPONENT:stage2_frontier_sampling.priority_exponent"
+  "DPSI_FRONTIER_SCENE_WARMUP_EPOCHS:stage2_frontier_sampling.warmup_epochs"
 )
 for mapping in "${optional_overrides[@]}"; do
   env_name="${mapping%%:*}"
@@ -131,7 +143,10 @@ if [[ -n "${EXTRA_HYDRA_OVERRIDES:-}" ]]; then
 fi
 
 {
-  printf '[%s] RANDOM_INIT_DIT=1 SG_FPS_ASMI_DPSI_FS_X0_DELTA_GEO=1 lr=1e-4 micro_bs=%q nproc=%q accum=%q effective_bs=%q target_effective_bs=%q 200ep warmup3 minlr1e-6 val_loss_disabled ' "$(date -Is)" "${MICRO_BATCH_SIZE}" "${NPROC_PER_NODE}" "${ACCUMULATE_GRAD_BATCHES}" "${EFFECTIVE_BATCH_SIZE}" "${TARGET_EFFECTIVE_BATCH_SIZE}"
+  printf '[%s] SG_FPS_ASMI_DPSI=1 lr=%q max_epochs=%q scheduler_epochs=%q scheduler_warmup_epochs=%q micro_bs=%q nproc=%q accum=%q effective_bs=%q target_effective_bs=%q val_loss_disabled ' \
+    "$(date -Is)" "${LR:-config}" "${MAX_EPOCHS:-config}" "${SCHEDULER_EPOCHS:-config}" \
+    "${SCHEDULER_WARMUP_EPOCHS:-config}" "${MICRO_BATCH_SIZE}" "${NPROC_PER_NODE}" \
+    "${ACCUMULATE_GRAD_BATCHES}" "${EFFECTIVE_BATCH_SIZE}" "${TARGET_EFFECTIVE_BATCH_SIZE}"
   printf 'A0_STAGE2_KEY_STEPS=%q ' "${KEY_STEPS}"
   printf '%q ' "${cmd[@]}"
   printf '\n'

@@ -387,6 +387,8 @@ class AgentLightningModule(pl.LightningModule):
             "dpsi_policy_reachability_max",
             "dpsi_pareto_objective_novelty_mean",
             "dpsi_mode_balance_enabled",
+            "dpsi_frontier_v4_enabled",
+            "dpsi_learning_frontier_v5_enabled",
             "dpsi_mode_effective_count_mean",
             "dpsi_mode_capacity_mean",
             "dpsi_mode_density_ess_mean",

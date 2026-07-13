@@ -451,6 +451,7 @@ class ReCogDriveAgent(AbstractAgent):
         offline_rl_dpsi_pair_target_randomness: bool = False,
         offline_rl_dpsi_residual_budget_enabled: bool = False,
         offline_rl_dpsi_non_gt_residual_mass_cap: float = 0.38,
+        offline_rl_dpsi_frontier_gt_only_scene_weight: float = 1.0,
         offline_rl_dpsi_frontier_curriculum_enabled: bool = False,
         offline_rl_dpsi_frontier_difficulty_start: float = 0.45,
         offline_rl_dpsi_frontier_difficulty_end: float = 1.0,
@@ -1326,6 +1327,9 @@ class ReCogDriveAgent(AbstractAgent):
         self.offline_rl_dpsi_pair_target_randomness = bool(offline_rl_dpsi_pair_target_randomness)
         self.offline_rl_dpsi_residual_budget_enabled = bool(offline_rl_dpsi_residual_budget_enabled)
         self.offline_rl_dpsi_non_gt_residual_mass_cap = float(offline_rl_dpsi_non_gt_residual_mass_cap)
+        self.offline_rl_dpsi_frontier_gt_only_scene_weight = float(
+            offline_rl_dpsi_frontier_gt_only_scene_weight
+        )
         self.offline_rl_dpsi_frontier_curriculum_enabled = bool(
             offline_rl_dpsi_frontier_curriculum_enabled
         )
@@ -2159,6 +2163,9 @@ class ReCogDriveAgent(AbstractAgent):
         offline_cfg.dpsi_pair_target_randomness = self.offline_rl_dpsi_pair_target_randomness
         offline_cfg.dpsi_residual_budget_enabled = self.offline_rl_dpsi_residual_budget_enabled
         offline_cfg.dpsi_non_gt_residual_mass_cap = self.offline_rl_dpsi_non_gt_residual_mass_cap
+        offline_cfg.dpsi_frontier_gt_only_scene_weight = (
+            self.offline_rl_dpsi_frontier_gt_only_scene_weight
+        )
         offline_cfg.dpsi_frontier_curriculum_enabled = self.offline_rl_dpsi_frontier_curriculum_enabled
         offline_cfg.dpsi_frontier_difficulty_start = self.offline_rl_dpsi_frontier_difficulty_start
         offline_cfg.dpsi_frontier_difficulty_end = self.offline_rl_dpsi_frontier_difficulty_end

@@ -4,6 +4,7 @@ import lzma
 import pickle
 
 import numpy as np
+import pytest
 
 from navsim.agents.recogdrive.pareto_support import (
     CandidateRecord,
@@ -206,18 +207,36 @@ def test_v4_archive_coverage_rejects_missing_expected_token(tmp_path) -> None:
     assert report["static_promotion_pass"] is False
 
 
-def test_gt_only_scene_does_not_fail_static_data_contract_on_policy_readiness(tmp_path) -> None:
+def test_gt_only_scene_does_not_fail_default_static_data_contract(tmp_path) -> None:
     archive = tmp_path / "archive"
     archive.mkdir()
     with lzma.open(archive / "hard-scene.pkl.xz", "wb") as stream:
         pickle.dump(_gt_only_record(), stream)
 
-    report = validate_archive(archive, min_multimode_scene_ratio=0.0)
+    report = validate_archive(archive)
 
     assert report["hard_contract_pass"] is True
     assert report["static_promotion_pass"] is True
+    assert report["diversity_statistics_are_promotion_gates"] is False
     assert report["initial_policy_readiness_pass"] is False
     assert report["supervision_type_counts"] == {"gt_only": 1}
+
+
+def test_deprecated_diversity_quota_arguments_do_not_reject_gt_only_scene(tmp_path) -> None:
+    archive = tmp_path / "archive"
+    archive.mkdir()
+    with lzma.open(archive / "hard-scene.pkl.xz", "wb") as stream:
+        pickle.dump(_gt_only_record(), stream)
+
+    with pytest.warns(DeprecationWarning, match="quota thresholds"):
+        report = validate_archive(
+            archive,
+            min_multimode_scene_ratio=1.0,
+            min_capacity_normalized_coverage=1.0,
+        )
+
+    assert report["static_promotion_pass"] is True
+    assert report["deprecated_min_multimode_scene_ratio"] == 1.0
 
 
 def test_policy_credit_readiness_requires_bidirectional_credit() -> None:

@@ -23,6 +23,12 @@ resume_checkpoint_path: null
 cache_train_all_records: false
 stage2_target_source: gt
 stage2_elite_target_index_path: ''
+stage2_frontier_sampling:
+  enabled: false
+  scene_index_path: ''
+  uniform_ratio: 0.50
+  priority_exponent: 0.50
+  warmup_epochs: 1
 seed: 0
 allow_dummy_expert_cache: false
 

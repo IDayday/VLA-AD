@@ -992,6 +992,31 @@ def _save_sg_fps_v3_records(
             "SG_FPS_V4_STAGE3_MIN_FEASIBLE_ROLLOUTS", 2
         ),
         "support_v4_stage3_min_score_span": _env_float("SG_FPS_V4_STAGE3_MIN_SCORE_SPAN", 0.01),
+        "support_v5_max_gt_ade_m": _env_float("SG_FPS_V5_MAX_GT_ADE_M", 1.5),
+        "support_v5_max_gt_fde_m": _env_float("SG_FPS_V5_MAX_GT_FDE_M", 4.0),
+        "support_v5_mode_distance_threshold": _env_float(
+            "SG_FPS_V5_MODE_DISTANCE_THRESHOLD", 0.40
+        ),
+        "support_v5_reward_gain_cap": _env_float("SG_FPS_V5_REWARD_GAIN_CAP", 0.05),
+        "support_v5_max_gt_reward_drop": _env_float("SG_FPS_V5_MAX_GT_REWARD_DROP", 0.05),
+        "support_v5_pareto_eps": _env_float("SG_FPS_V5_PARETO_EPS", 0.01),
+        "support_v5_exclude_derived_external": _env_flag(
+            "SG_FPS_V5_EXCLUDE_DERIVED_EXTERNAL", True
+        ),
+        "support_v5_max_policy_snsad": _env_float("SG_FPS_V5_MAX_POLICY_SNSAD", 0.50),
+        "support_v5_min_policy_neighbors": _env_int("SG_FPS_V5_MIN_POLICY_NEIGHBORS", 2),
+        "support_v5_mode_evidence_radius": _env_float(
+            "SG_FPS_V5_MODE_EVIDENCE_RADIUS", 0.35
+        ),
+        "support_v5_mode_evidence_margin": _env_float(
+            "SG_FPS_V5_MODE_EVIDENCE_MARGIN", 0.01
+        ),
+        "support_v5_min_policy_witnesses": _env_int(
+            "SG_FPS_V5_MIN_POLICY_WITNESSES", 2
+        ),
+        "support_v5_min_source_families": _env_int(
+            "SG_FPS_V5_MIN_SOURCE_FAMILIES", 2
+        ),
         "support_build_metadata": {
             "raw_internal_candidates": bool(use_raw_internal_candidates),
             "expand_external_candidates": bool(expand_external_candidates),

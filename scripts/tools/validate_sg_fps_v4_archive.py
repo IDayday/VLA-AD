@@ -8,6 +8,7 @@ import math
 import multiprocessing as mp
 import pickle
 import sys
+import warnings
 from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any, Iterable, Mapping, Optional
@@ -877,12 +878,18 @@ def validate_archive(
     max_records: int = 0,
     workers: int = 1,
     require_raw_build: bool = True,
-    min_multimode_scene_ratio: float = 0.25,
-    min_capacity_normalized_coverage: float = 0.90,
+    min_multimode_scene_ratio: Optional[float] = None,
+    min_capacity_normalized_coverage: Optional[float] = None,
     min_policy_feasible_ratio: float = 0.90,
     min_stage3_credit_ready_scene_ratio: float = 0.05,
     expected_token_source: Optional[Path] = None,
 ) -> dict[str, Any]:
+    if min_multimode_scene_ratio is not None or min_capacity_normalized_coverage is not None:
+        warnings.warn(
+            "v4 diversity quota thresholds are deprecated and no longer gate the static data contract.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
     paths = _iter_paths(root)
     if max_records > 0:
         paths = paths[:max_records]
@@ -985,8 +992,6 @@ def validate_archive(
     static_promotion_pass = (
         hard_contract_pass
         and coverage_pass
-        and multimode_ratio >= float(min_multimode_scene_ratio)
-        and capacity_normalized_coverage >= float(min_capacity_normalized_coverage)
         and (not require_raw_build or raw_ratio == 1.0)
         and (not require_raw_build or expansion_disabled_ratio == 1.0)
         and policy_reachability_ratio == 1.0
@@ -1012,8 +1017,9 @@ def validate_archive(
         "static_promotion_pass": static_promotion_pass,
         "initial_policy_readiness_pass": initial_policy_readiness_pass,
         "require_raw_build": bool(require_raw_build),
-        "min_multimode_scene_ratio": float(min_multimode_scene_ratio),
-        "min_capacity_normalized_coverage": float(min_capacity_normalized_coverage),
+        "diversity_statistics_are_promotion_gates": False,
+        "deprecated_min_multimode_scene_ratio": min_multimode_scene_ratio,
+        "deprecated_min_capacity_normalized_coverage": min_capacity_normalized_coverage,
         "min_policy_feasible_ratio": float(min_policy_feasible_ratio),
         "min_stage3_credit_ready_scene_ratio": float(min_stage3_credit_ready_scene_ratio),
         "candidate_count_per_scene": totals["candidate_count"] / valid_records,
@@ -1093,8 +1099,8 @@ def main() -> None:
     parser.add_argument("--max-records", type=int, default=0)
     parser.add_argument("--workers", type=int, default=1)
     parser.add_argument("--require-raw-build", action=argparse.BooleanOptionalAction, default=True)
-    parser.add_argument("--min-multimode-scene-ratio", type=float, default=0.25)
-    parser.add_argument("--min-capacity-normalized-coverage", type=float, default=0.90)
+    parser.add_argument("--min-multimode-scene-ratio", type=float, default=None, help=argparse.SUPPRESS)
+    parser.add_argument("--min-capacity-normalized-coverage", type=float, default=None, help=argparse.SUPPRESS)
     parser.add_argument("--min-policy-feasible-ratio", type=float, default=0.90)
     parser.add_argument("--min-stage3-credit-ready-scene-ratio", type=float, default=0.05)
     parser.add_argument(
@@ -1112,8 +1118,8 @@ def main() -> None:
         max_records=int(args.max_records),
         workers=max(int(args.workers), 1),
         require_raw_build=bool(args.require_raw_build),
-        min_multimode_scene_ratio=float(args.min_multimode_scene_ratio),
-        min_capacity_normalized_coverage=float(args.min_capacity_normalized_coverage),
+        min_multimode_scene_ratio=args.min_multimode_scene_ratio,
+        min_capacity_normalized_coverage=args.min_capacity_normalized_coverage,
         min_policy_feasible_ratio=float(args.min_policy_feasible_ratio),
         min_stage3_credit_ready_scene_ratio=float(args.min_stage3_credit_ready_scene_ratio),
         expected_token_source=Path(args.expected_token_source) if args.expected_token_source else None,

@@ -204,7 +204,7 @@ def main() -> None:
     parser.add_argument("--comfort-drop-tolerance", type=float, default=0.05)
     parser.add_argument(
         "--selection-strategy",
-        choices=["quota", "quality_pareto", "mode_pareto_v4"],
+        choices=["quota", "quality_pareto", "mode_pareto_v4", "mode_learning_frontier_v5"],
         default="quota",
     )
     parser.add_argument("--enable-train-quality-gate", action="store_true")
@@ -249,6 +249,19 @@ def main() -> None:
         default=None,
     )
     parser.add_argument("--v4-max-policy-snsad", type=float, default=None)
+    parser.add_argument("--v5-max-gt-ade-m", type=float, default=1.5)
+    parser.add_argument("--v5-max-gt-fde-m", type=float, default=4.0)
+    parser.add_argument("--v5-mode-distance-threshold", type=float, default=0.40)
+    parser.add_argument("--v5-reward-gain-cap", type=float, default=0.05)
+    parser.add_argument("--v5-max-gt-reward-drop", type=float, default=0.05)
+    parser.add_argument("--v5-pareto-eps", type=float, default=0.01)
+    parser.add_argument("--v5-exclude-derived-external", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument("--v5-max-policy-snsad", type=float, default=0.50)
+    parser.add_argument("--v5-min-policy-neighbors", type=int, default=2)
+    parser.add_argument("--v5-mode-evidence-radius", type=float, default=0.35)
+    parser.add_argument("--v5-mode-evidence-margin", type=float, default=0.01)
+    parser.add_argument("--v5-min-policy-witnesses", type=int, default=2)
+    parser.add_argument("--v5-min-source-families", type=int, default=2)
     parser.add_argument(
         "--reuse-source-v4-contract",
         action=argparse.BooleanOptionalAction,
@@ -304,6 +317,19 @@ def main() -> None:
         "support_v4_max_gt_reward_drop": float(args.v4_max_gt_reward_drop),
         "support_v4_pareto_eps": float(args.v4_pareto_eps),
         "support_v4_exclude_derived_external": bool(args.v4_exclude_derived_external),
+        "support_v5_max_gt_ade_m": float(args.v5_max_gt_ade_m),
+        "support_v5_max_gt_fde_m": float(args.v5_max_gt_fde_m),
+        "support_v5_mode_distance_threshold": float(args.v5_mode_distance_threshold),
+        "support_v5_reward_gain_cap": float(args.v5_reward_gain_cap),
+        "support_v5_max_gt_reward_drop": float(args.v5_max_gt_reward_drop),
+        "support_v5_pareto_eps": float(args.v5_pareto_eps),
+        "support_v5_exclude_derived_external": bool(args.v5_exclude_derived_external),
+        "support_v5_max_policy_snsad": float(args.v5_max_policy_snsad),
+        "support_v5_min_policy_neighbors": int(args.v5_min_policy_neighbors),
+        "support_v5_mode_evidence_radius": float(args.v5_mode_evidence_radius),
+        "support_v5_mode_evidence_margin": float(args.v5_mode_evidence_margin),
+        "support_v5_min_policy_witnesses": int(args.v5_min_policy_witnesses),
+        "support_v5_min_source_families": int(args.v5_min_source_families),
         "reuse_source_v4_contract": bool(args.reuse_source_v4_contract),
         "support_build_metadata": {
             "migration": "shadow_reselect_without_rescoring",

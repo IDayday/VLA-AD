@@ -3,8 +3,23 @@ set -euo pipefail
 
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 PYTHON_BIN="${PYTHON_BIN:-/root/miniconda3/envs/navsim/bin/python}"
+BUILD_VARIANT="${SG_FPS_BUILD_VARIANT:-v4}"
+case "${BUILD_VARIANT}" in
+  v4)
+    BUILD_SCRIPT="scripts/training/sg_fps/run_build_sg_fps_support_v4.sh"
+    VALIDATOR_SCRIPT="scripts/tools/validate_sg_fps_v4_archive.py"
+    ;;
+  v5)
+    BUILD_SCRIPT="scripts/training/sg_fps/run_build_sg_fps_support_v5.sh"
+    VALIDATOR_SCRIPT="scripts/tools/validate_sg_fps_v5_archive.py"
+    ;;
+  *)
+    echo "Unsupported SG_FPS_BUILD_VARIANT=${BUILD_VARIANT}; expected v4 or v5." >&2
+    exit 2
+    ;;
+esac
 
-: "${OUTPUT_PATH:?set OUTPUT_PATH to the shared SG-FPS v4 archive directory}"
+: "${OUTPUT_PATH:?set OUTPUT_PATH to the shared SG-FPS archive directory}"
 : "${POLICY_CHECKPOINT:?set POLICY_CHECKPOINT to the Stage2 frontier checkpoint}"
 : "${FS_NORM_STATS_PATH:?set FS_NORM_STATS_PATH to the checkpoint FS-Norm statistics}"
 
@@ -62,7 +77,7 @@ if [[ "${MAX_SCENES}" -eq 0 && "${EXPECTED_SCENE_COUNT}" -le 0 ]]; then
   exit 2
 fi
 
-RUN_ROOT="${RUN_ROOT:-$(dirname "${OUTPUT_PATH}")/sg_fps_v4_build}"
+RUN_ROOT="${RUN_ROOT:-$(dirname "${OUTPUT_PATH}")/sg_fps_${BUILD_VARIANT}_build}"
 RESUME="${RESUME:-true}"
 VALIDATOR_WORKERS="${VALIDATOR_WORKERS:-16}"
 cd "${REPO_ROOT}"
@@ -115,7 +130,7 @@ for ((shard = 0; shard < SHARD_COUNT; shard++)); do
     VALIDATE_EXISTING_RECORDS=true \
     POLICY_CHECKPOINT_SHA256="${POLICY_CHECKPOINT_SHA256}" \
     FS_NORM_STATS_SHA256="${FS_NORM_STATS_SHA256}" \
-    bash scripts/training/sg_fps/run_build_sg_fps_support_v4.sh \
+    bash "${BUILD_SCRIPT}" \
     > "${RUN_ROOT}/logs/build_shard_$(printf '%02d' "${shard}").log" 2>&1 < /dev/null &
   PIDS+=("$!")
   SHARDS+=("${shard}")
@@ -141,12 +156,16 @@ if [[ "${failed}" -ne 0 ]]; then
 fi
 
 validator=(
-  "${PYTHON_BIN}" scripts/tools/validate_sg_fps_v4_archive.py
+  "${PYTHON_BIN}" "${VALIDATOR_SCRIPT}"
   --archive-path "${OUTPUT_PATH}"
   --workers "${VALIDATOR_WORKERS}"
   --output-json "${RUN_ROOT}/validation.json"
-  --output-md "${RUN_ROOT}/validation.md"
 )
+if [[ "${BUILD_VARIANT}" == "v4" ]]; then
+  validator+=(--output-md "${RUN_ROOT}/validation.md")
+else
+  validator+=(--output-scene-index "${RUN_ROOT}/stage2_frontier_scene_index.json")
+fi
 if [[ -n "${EXPECTED_TOKEN_SOURCE}" ]]; then
   validator+=(--expected-token-source "${EXPECTED_TOKEN_SOURCE}")
 fi
@@ -155,4 +174,4 @@ fi
   "${validator[@]}"
 ) > "${RUN_ROOT}/logs/validation.log" 2>&1
 
-echo "SG-FPS v4 build and validation completed: ${OUTPUT_PATH}"
+echo "SG-FPS ${BUILD_VARIANT} build and validation completed: ${OUTPUT_PATH}"

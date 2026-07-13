@@ -24,6 +24,11 @@ PRIMARY_METRICS = (
     "best_gt_ade_m",
 )
 
+LOWER_IS_BETTER_METRICS = {
+    "mean_gt_ade_m",
+    "best_gt_ade_m",
+}
+
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Aggregate and compare support-aligned policy-diversity shards.")
@@ -106,20 +111,46 @@ def paired_comparison(
     merged = baseline.merge(candidate, on="token", suffixes=("_baseline", "_candidate"), validate="one_to_one")
     if len(merged) != len(baseline) or len(merged) != len(candidate):
         raise ValueError("Models do not contain exactly the same scene tokens.")
-    metrics: dict[str, object] = {}
-    for metric in PRIMARY_METRICS:
-        baseline_key = f"{metric}_baseline"
-        candidate_key = f"{metric}_candidate"
-        if baseline_key not in merged or candidate_key not in merged:
-            continue
-        delta = pd.to_numeric(merged[candidate_key], errors="coerce").to_numpy() - pd.to_numeric(
-            merged[baseline_key], errors="coerce"
-        ).to_numpy()
-        finite = delta[np.isfinite(delta)]
-        ci = _bootstrap_mean_ci(finite, rng, samples)
-        ci["candidate_win_rate"] = float(np.mean(finite > 0.0)) if finite.size else float("nan")
-        metrics[metric] = ci
-    return {"num_aligned_scenes": int(len(merged)), "metrics": metrics}
+
+    def summarize(subset: pd.DataFrame) -> dict[str, object]:
+        metrics: dict[str, object] = {}
+        for metric in PRIMARY_METRICS:
+            baseline_key = f"{metric}_baseline"
+            candidate_key = f"{metric}_candidate"
+            if baseline_key not in subset or candidate_key not in subset:
+                continue
+            delta = pd.to_numeric(subset[candidate_key], errors="coerce").to_numpy() - pd.to_numeric(
+                subset[baseline_key], errors="coerce"
+            ).to_numpy()
+            finite = delta[np.isfinite(delta)]
+            ci = _bootstrap_mean_ci(finite, rng, samples)
+            improvement = -finite if metric in LOWER_IS_BETTER_METRICS else finite
+            ci["candidate_win_rate"] = float(np.mean(improvement > 0.0)) if finite.size else float("nan")
+            ci["higher_is_better"] = metric not in LOWER_IS_BETTER_METRICS
+            metrics[metric] = ci
+        return metrics
+
+    result: dict[str, object] = {
+        "num_aligned_scenes": int(len(merged)),
+        "metrics": summarize(merged),
+        "strata": {},
+    }
+    mode_key = "reference_mode_count_baseline"
+    if mode_key in merged:
+        modes = pd.to_numeric(merged[mode_key], errors="coerce")
+        strata = {
+            "all": np.ones(len(merged), dtype=bool),
+            "mode_1": modes <= 1.0,
+            "mode_2_3": (modes >= 2.0) & (modes <= 3.0),
+            "mode_4_plus": modes >= 4.0,
+        }
+        for name, mask in strata.items():
+            subset = merged.loc[mask]
+            result["strata"][name] = {
+                "num_aligned_scenes": int(len(subset)),
+                "metrics": summarize(subset),
+            }
+    return result
 
 
 def oracle_normalized_gain(

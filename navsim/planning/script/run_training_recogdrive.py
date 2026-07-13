@@ -26,6 +26,11 @@ from navsim.agents.recogdrive.recogdrive_features import (
     stack_optional_expert_features,
 )
 from navsim.agents.recogdrive.expert_cache import iter_index, load_sample
+from navsim.agents.recogdrive.stage2_frontier_sampling import (
+    DistributedStage2FrontierSampler,
+    Stage2FrontierSamplingCallback,
+    load_stage2_frontier_weights,
+)
 import torch
 import torch.nn.utils.rnn as rnn_utils
 from typing import List, Dict, Any, Optional, Set
@@ -38,6 +43,20 @@ CONFIG_NAME = "default_training"
 
 KEY_CHECKPOINT_STEPS = (50000, 60000, 80000, 100000, 120000, 140000, 160000)
 GEOMETRY_MODE_TO_CODE = {"missing": -1, "no_geometry": 0, "patch_fallback": 1, "full_geometry": 2}
+
+
+def _dataset_tokens_in_index_order(dataset: torch.utils.data.Dataset) -> List[str]:
+    sample_tokens = getattr(dataset, "sample_tokens", None)
+    if callable(sample_tokens):
+        tokens = sample_tokens()
+    else:
+        tokens = getattr(dataset, "tokens", None)
+    if tokens is None:
+        raise AttributeError("Stage2 frontier sampling requires dataset tokens in index order.")
+    tokens = [str(token) for token in tokens]
+    if len(tokens) != len(dataset):
+        raise ValueError(f"Dataset exposes {len(tokens)} tokens for {len(dataset)} samples.")
+    return tokens
 
 
 def _dtype_name(dtype: torch.dtype) -> str:
@@ -1435,7 +1454,58 @@ def main(cfg: DictConfig) -> None:
 
     logger.info("Building Datasets")
     dataloader_params = _normalized_dataloader_params(cfg.dataloader.params)
-    train_dataloader = DataLoader(train_data, collate_fn=custom_collate_fn,  **dataloader_params, shuffle=True)
+    stage2_frontier_sampler = None
+    stage2_frontier_callback = None
+    stage2_frontier_cfg = cfg.get("stage2_frontier_sampling", {})
+    if bool(stage2_frontier_cfg.get("enabled", False)):
+        target_distribution = str(cfg.agent.get("offline_rl_dpsi_target_distribution", "legacy"))
+        if target_distribution != "learning_frontier_v5":
+            raise ValueError(
+                "stage2_frontier_sampling.enabled=true requires "
+                "agent.offline_rl_dpsi_target_distribution=learning_frontier_v5."
+            )
+        dataset_tokens = _dataset_tokens_in_index_order(train_data)
+        frontier_weights = load_stage2_frontier_weights(
+            stage2_frontier_cfg.get("scene_index_path", ""),
+            dataset_tokens,
+            uniform_ratio=float(stage2_frontier_cfg.get("uniform_ratio", 0.50)),
+            priority_exponent=float(stage2_frontier_cfg.get("priority_exponent", 0.50)),
+        )
+        stage2_frontier_sampler = DistributedStage2FrontierSampler(
+            len(train_data),
+            frontier_weights.weights,
+            eligible_mask=frontier_weights.eligible_mask,
+            num_replicas=world_size,
+            rank=rank,
+            seed=int(cfg.seed),
+            warmup_epochs=int(stage2_frontier_cfg.get("warmup_epochs", 1)),
+            uniform_ratio=float(stage2_frontier_cfg.get("uniform_ratio", 0.50)),
+        )
+        stage2_frontier_callback = Stage2FrontierSamplingCallback(
+            stage2_frontier_sampler,
+            frontier_weights.diagnostics,
+        )
+        train_dataloader = DataLoader(
+            train_data,
+            collate_fn=custom_collate_fn,
+            **dataloader_params,
+            sampler=stage2_frontier_sampler,
+            shuffle=False,
+        )
+        logger.info(
+            "Stage2 frontier sampler enabled: eligible_scene_ratio=%.4f expected_sampled_ratio=%.4f "
+            "uniform_ratio=%.4f",
+            frontier_weights.diagnostics["stage2_frontier_eligible_scene_ratio"],
+            frontier_weights.diagnostics["stage2_frontier_expected_sampled_scene_ratio"],
+            frontier_weights.diagnostics["stage2_frontier_uniform_ratio"],
+        )
+    else:
+        train_dataloader = DataLoader(
+            train_data,
+            collate_fn=custom_collate_fn,
+            **dataloader_params,
+            shuffle=True,
+        )
     logger.info("Num training samples: %d", len(train_data))
     val_dataloader = DataLoader(val_data, collate_fn=custom_collate_fn, **dataloader_params, shuffle=False)
     logger.info("Num validation samples: %d", len(val_data))
@@ -1458,6 +1528,8 @@ def main(cfg: DictConfig) -> None:
         or str(limit_val_batches).strip().lower() in {"0", "0.0", "false", "none"}
     )
     callbacks: List[pl.Callback] = [ReCogDriveTrainingProgressCallback()]
+    if stage2_frontier_callback is not None:
+        callbacks.append(stage2_frontier_callback)
     if not disable_checkpointing:
         if not step_checkpoints_only:
             if has_validation:
@@ -1490,6 +1562,8 @@ def main(cfg: DictConfig) -> None:
         logger.warning("RECOGDRIVE_DISABLE_CHECKPOINTING=true: no model checkpoints will be written.")
     write_run_reports(cfg, agent, loader_mode, key_steps, key_epochs, key_epoch_interval, data_report)
     trainer_kwargs = dict(cfg.trainer.params)
+    if stage2_frontier_sampler is not None:
+        trainer_kwargs["use_distributed_sampler"] = False
     if disable_checkpointing or step_checkpoints_only:
         trainer_kwargs["enable_checkpointing"] = False
     trainer = pl.Trainer(**trainer_kwargs, callbacks=callbacks)

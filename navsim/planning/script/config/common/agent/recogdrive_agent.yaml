@@ -226,6 +226,7 @@ offline_rl_dpsi_mode_density_bandwidth: 0.40
 offline_rl_dpsi_pair_target_randomness: false
 offline_rl_dpsi_residual_budget_enabled: false
 offline_rl_dpsi_non_gt_residual_mass_cap: 0.38
+offline_rl_dpsi_frontier_gt_only_scene_weight: 1.0
 offline_rl_dpsi_frontier_curriculum_enabled: false
 offline_rl_dpsi_frontier_difficulty_start: 0.45
 offline_rl_dpsi_frontier_difficulty_end: 1.0
