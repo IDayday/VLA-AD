@@ -106,7 +106,7 @@ Defaults:
 - target difficulty expands from `0.30` to `1.0` over 40 epochs;
 - paired timestep/noise draws;
 - non-GT residual mass capped at `0.35`;
-- two targets early and up to four after warmup;
+- two paired targets throughout (GT plus one rotating non-GT mode);
 - uniform scene sampling, because v6 already covers 93.61% of scenes;
 - trajectory and feasibility auxiliary weights `0.05` and `0.01`.
 
