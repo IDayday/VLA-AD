@@ -7,7 +7,7 @@ import logging
 import os
 from collections import Counter, defaultdict
 from pathlib import Path
-from typing import Any, Dict, Iterable, List, Tuple
+from typing import Any, Dict, Iterable, List, Mapping, Tuple
 
 import hydra
 import numpy as np
@@ -104,6 +104,17 @@ def _env_list_float(name: str, default: Tuple[float, ...]) -> Tuple[float, ...]:
         return ()
     items = value.replace(",", " ").split()
     return tuple(float(item) for item in items)
+
+
+def _file_sha256(path: str) -> str:
+    path_obj = Path(path).expanduser()
+    if not path_obj.is_file():
+        raise FileNotFoundError(path_obj)
+    digest = hashlib.sha256()
+    with path_obj.open("rb") as stream:
+        for chunk in iter(lambda: stream.read(8 * 1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _load_token_manifest(path: str) -> set[str]:
@@ -691,18 +702,31 @@ def _candidate_records_from_awac_row(
     token: str,
     awac_batch: Dict[str, Any],
     batch_idx: int,
+    *,
+    use_raw_candidates: bool = False,
 ) -> List[CandidateRecord]:
     candidate_sources = awac_batch["candidate_sources"]
-    real_mask = awac_batch["selected_real_mask"][batch_idx].detach().cpu().bool().numpy()
-    real_count = int(real_mask.sum())
-    source_indices = awac_batch["selected_source_index"][batch_idx, :real_count].detach().cpu().long().numpy()
-    trajs = awac_batch["selected_trajs"][batch_idx, :real_count].detach().cpu().float().numpy()
-    rewards = awac_batch["selected_rewards"][batch_idx, :real_count].detach().cpu().float().numpy()
-    selection_score = awac_batch["selected_selection_score"][batch_idx, :real_count].detach().cpu().float().numpy()
-    components = {
-        key: value[batch_idx, :real_count].detach().cpu().float().numpy()
-        for key, value in awac_batch["selected_components"].items()
-    }
+    if use_raw_candidates:
+        trajs = awac_batch["candidate_trajs"][batch_idx].detach().cpu().float().numpy()
+        rewards = awac_batch["candidate_rewards"][batch_idx].detach().cpu().float().numpy()
+        selection_score = awac_batch["candidate_selection_score"][batch_idx].detach().cpu().float().numpy()
+        components = {
+            key: value[batch_idx].detach().cpu().float().numpy()
+            for key, value in awac_batch["candidate_components"].items()
+        }
+        source_indices = np.arange(len(candidate_sources), dtype=np.int64)
+        real_count = len(candidate_sources)
+    else:
+        real_mask = awac_batch["selected_real_mask"][batch_idx].detach().cpu().bool().numpy()
+        real_count = int(real_mask.sum())
+        source_indices = awac_batch["selected_source_index"][batch_idx, :real_count].detach().cpu().long().numpy()
+        trajs = awac_batch["selected_trajs"][batch_idx, :real_count].detach().cpu().float().numpy()
+        rewards = awac_batch["selected_rewards"][batch_idx, :real_count].detach().cpu().float().numpy()
+        selection_score = awac_batch["selected_selection_score"][batch_idx, :real_count].detach().cpu().float().numpy()
+        components = {
+            key: value[batch_idx, :real_count].detach().cpu().float().numpy()
+            for key, value in awac_batch["selected_components"].items()
+        }
     records: List[CandidateRecord] = []
     for idx in range(real_count):
         source_index = int(source_indices[idx])
@@ -840,6 +864,9 @@ def _save_sg_fps_v3_records(
     support_top_m: int,
     expand_external_candidates: bool,
     external_expansion_max_per_scene: int,
+    use_raw_internal_candidates: bool,
+    archive_version: int,
+    build_provenance: Mapping[str, Any] | None = None,
 ) -> Dict[str, Any]:
     summary: Dict[str, Any] = {
         "scene_count": 0,
@@ -892,9 +919,34 @@ def _save_sg_fps_v3_records(
         "support_pareto_count": _env_int("SG_FPS_PARETO_COUNT", 5),
         "support_score_diversity_weight": _env_float("SG_FPS_SCORE_DIVERSITY_WEIGHT", 0.8),
         "support_min_trajectory_diversity_score": _env_float("SG_FPS_MIN_TRAJECTORY_DIVERSITY_SCORE", 0.05),
+        "support_archive_version": int(archive_version),
+        "support_v4_max_gt_ade_m": _env_float("SG_FPS_V4_MAX_GT_ADE_M", 1.5),
+        "support_v4_max_gt_fde_m": _env_float("SG_FPS_V4_MAX_GT_FDE_M", 4.0),
+        "support_v4_mode_distance_threshold": _env_float("SG_FPS_V4_MODE_DISTANCE_THRESHOLD", 0.25),
+        "support_v4_reward_gain_cap": _env_float("SG_FPS_V4_REWARD_GAIN_CAP", 0.05),
+        "support_v4_max_gt_reward_drop": _env_float("SG_FPS_V4_MAX_GT_REWARD_DROP", 0.05),
+        "support_v4_pareto_eps": _env_float("SG_FPS_V4_PARETO_EPS", 0.01),
+        "support_v4_exclude_derived_external": _env_flag("SG_FPS_V4_EXCLUDE_DERIVED_EXTERNAL", True),
+        "support_v4_require_policy_reachability": _env_flag(
+            "SG_FPS_V4_REQUIRE_POLICY_REACHABILITY",
+            False,
+        ),
+        "support_v4_max_policy_snsad": _env_float("SG_FPS_V4_MAX_POLICY_SNSAD", 0.50),
+        "support_build_metadata": {
+            "raw_internal_candidates": bool(use_raw_internal_candidates),
+            "expand_external_candidates": bool(expand_external_candidates),
+            "external_expansion_max_per_scene": int(external_expansion_max_per_scene),
+            **dict(build_provenance or {}),
+        },
     }
+    summary["build_config"] = dict(sg_cfg)
     for batch_idx, token in enumerate(tokens):
-        candidates = _candidate_records_from_awac_row(str(token), awac_batch, batch_idx)
+        candidates = _candidate_records_from_awac_row(
+            str(token),
+            awac_batch,
+            batch_idx,
+            use_raw_candidates=use_raw_internal_candidates,
+        )
         ref_traj = next(
             (np.asarray(record.trajectory, dtype=np.float32) for record in candidates if record.source == "gt"),
             None,
@@ -967,6 +1019,12 @@ def main(cfg: DictConfig) -> None:
     external_loader = ExternalCandidateLoader(external_candidate_roots) if external_candidate_roots else None
     expand_external_candidates = _env_flag("SG_FPS_EXPAND_EXTERNAL_CANDIDATES", True)
     external_expansion_max_per_scene = _env_int("SG_FPS_EXTERNAL_EXPANSION_MAX_PER_SCENE", 32)
+    use_raw_internal_candidates = _env_flag("SG_FPS_USE_RAW_INTERNAL_CANDIDATES", False)
+    sg_fps_archive_version = _env_int("SG_FPS_ARCHIVE_VERSION", 3)
+    require_policy_reachability = _env_flag("SG_FPS_V4_REQUIRE_POLICY_REACHABILITY", False)
+    policy_samples_per_scene = _env_int("ONLINE_POLICY_SAMPLES", 0)
+    policy_checkpoint_path = os.getenv("POLICY_CHECKPOINT", "").strip()
+    fs_norm_stats_path = os.getenv("FS_NORM_STATS_PATH", "").strip()
     build_log_split = os.getenv("BUILD_LOG_SPLIT", "train").strip().lower()
     token_manifest = os.getenv("TOKEN_MANIFEST", os.getenv("TOKEN_LIST_PATH", "")).strip()
     shard_index = _env_int("SHARD_INDEX", 0)
@@ -985,11 +1043,44 @@ def main(cfg: DictConfig) -> None:
         logger.info("Stage3 AWAC/IQL buffer generation is dry-run only; no model or dataset was loaded.")
         return
 
+    if sg_fps_archive_version >= 4 and require_policy_reachability:
+        if policy_samples_per_scene <= 0 or not _env_flag("ONLINE_USE_CURRENT_POLICY", False):
+            raise ValueError(
+                "A reachable SG-FPS v4 build requires ONLINE_POLICY_SAMPLES>0 and "
+                "ONLINE_USE_CURRENT_POLICY=true."
+            )
+        if not policy_checkpoint_path or not Path(policy_checkpoint_path).expanduser().is_file():
+            raise ValueError(
+                "A reachable SG-FPS v4 build requires POLICY_CHECKPOINT to identify the Stage2 "
+                "policy that defines the learning frontier."
+            )
+        if _env_flag("USE_FS_NORM", False) and not fs_norm_stats_path:
+            raise ValueError("USE_FS_NORM=true requires FS_NORM_STATS_PATH for policy proposal sampling.")
+
+    build_provenance: Dict[str, Any] = {
+        "policy_samples_per_scene": int(policy_samples_per_scene),
+        "policy_checkpoint_path": str(Path(policy_checkpoint_path).expanduser().resolve())
+        if policy_checkpoint_path
+        else "",
+        "policy_checkpoint_sha256": (
+            os.getenv("POLICY_CHECKPOINT_SHA256", "").strip()
+            or (_file_sha256(policy_checkpoint_path) if policy_checkpoint_path else "")
+        ),
+        "fs_norm_stats_path": str(Path(fs_norm_stats_path).expanduser().resolve()) if fs_norm_stats_path else "",
+        "fs_norm_stats_sha256": (
+            os.getenv("FS_NORM_STATS_SHA256", "").strip()
+            or (_file_sha256(fs_norm_stats_path) if fs_norm_stats_path else "")
+        ),
+        "build_seed": int(cfg.get("seed", 0)),
+    }
+
     with open_dict(cfg.agent):
         cfg.agent.stage3_objective = "none"
         cfg.agent.offline_rl_enabled = True
         cfg.agent.offline_rl_build_candidates_online = True
         cfg.agent.offline_rl_elite_buffer_path = str(buffer_dir)
+        cfg.agent.offline_rl_init_reference_policy = _env_flag("ONLINE_USE_OLD_POLICY", True)
+        cfg.agent.offline_rl_keep_il_candidate = _env_flag("ONLINE_USE_OLD_POLICY", True)
         cfg.agent.offline_rl_strict_reward_submetrics = _env_flag("AWAC_STRICT_REWARD_SUBMETRICS", True)
         cfg.agent.offline_rl_missing_submetric_policy = os.getenv("AWAC_MISSING_SUBMETRIC_POLICY", "error")
         cfg.agent.offline_rl_use_batched_pdm_scoring = _env_flag("AWAC_USE_BATCHED_PDM_SCORING", True)
@@ -1065,6 +1156,36 @@ def main(cfg: DictConfig) -> None:
             cfg.agent.reference_policy_checkpoint = os.environ["IL_CHECKPOINT"]
         if os.getenv("POLICY_CHECKPOINT"):
             cfg.agent.checkpoint_path = os.environ["POLICY_CHECKPOINT"]
+            cfg.agent.allow_random_init = False
+        if os.getenv("USE_FS_NORM") is not None:
+            cfg.agent.use_fs_norm = _env_flag("USE_FS_NORM", False)
+        if fs_norm_stats_path:
+            cfg.agent.fs_norm_stats_path = fs_norm_stats_path
+            cfg.agent.fs_norm_min_version = _env_int("FS_NORM_MIN_VERSION", 2)
+            cfg.agent.fs_norm_require_archive_match = False
+            cfg.agent.fs_norm_output_clip = _env_float("FS_NORM_OUTPUT_CLIP", 12.0)
+            cfg.agent.fs_norm_output_clip_mode = os.getenv("FS_NORM_OUTPUT_CLIP_MODE", "stats_bounds")
+        if os.getenv("USE_PLANNING_TOKEN_ADAPTER") is not None:
+            cfg.agent.use_planning_token_adapter = _env_flag("USE_PLANNING_TOKEN_ADAPTER", False)
+        cfg.agent.planning_num_tokens = _env_int("PLANNING_NUM_TOKENS", int(cfg.agent.planning_num_tokens))
+        cfg.agent.planning_num_heads = _env_int("PLANNING_NUM_HEADS", int(cfg.agent.planning_num_heads))
+        cfg.agent.planning_condition_layers = os.getenv(
+            "PLANNING_CONDITION_LAYERS",
+            str(cfg.agent.planning_condition_layers),
+        )
+        cfg.agent.planning_gate_init = _env_float("PLANNING_GATE_INIT", float(cfg.agent.planning_gate_init))
+        cfg.agent.planning_context_gate_init = _env_float(
+            "PLANNING_CONTEXT_GATE_INIT",
+            float(cfg.agent.planning_context_gate_init),
+        )
+        cfg.agent.planning_condition_dropout = _env_float(
+            "PLANNING_CONDITION_DROPOUT",
+            float(cfg.agent.planning_condition_dropout),
+        )
+        if os.getenv("USE_JEPA") is not None:
+            cfg.agent.use_jepa = _env_flag("USE_JEPA", False)
+        if os.getenv("USE_VGGT") is not None:
+            cfg.agent.use_vggt = _env_flag("USE_VGGT", False)
         if os.getenv("VLM_PATH"):
             cfg.agent.vlm_path = os.environ["VLM_PATH"]
         if os.getenv("METRIC_CACHE_DIR"):
@@ -1171,6 +1292,7 @@ def main(cfg: DictConfig) -> None:
             "external_candidate_count": 0,
             "external_anchor_semantic_dropped": 0,
             "support_tag_counts": Counter(),
+            "build_config": {},
         },
     }
     with summary_csv.open("w", newline="") as f:
@@ -1219,6 +1341,9 @@ def main(cfg: DictConfig) -> None:
                     support_top_m=sg_fps_support_top_m,
                     expand_external_candidates=expand_external_candidates,
                     external_expansion_max_per_scene=external_expansion_max_per_scene,
+                    use_raw_internal_candidates=use_raw_internal_candidates,
+                    archive_version=sg_fps_archive_version,
+                    build_provenance=build_provenance,
                 )
                 aggregate["sg_fps"]["scene_count"] += int(sg_summary["scene_count"])
                 aggregate["sg_fps"]["candidate_count"] += int(sg_summary["candidate_count"])
@@ -1227,6 +1352,8 @@ def main(cfg: DictConfig) -> None:
                     sg_summary.get("external_anchor_semantic_dropped", 0)
                 )
                 aggregate["sg_fps"]["support_tag_counts"].update(sg_summary["support_tag_counts"])
+                if not aggregate["sg_fps"]["build_config"]:
+                    aggregate["sg_fps"]["build_config"] = dict(sg_summary.get("build_config", {}))
             else:
                 _save_records(
                     buffer_dir,
@@ -1239,7 +1366,7 @@ def main(cfg: DictConfig) -> None:
                 )
             for row in _iter_summary_rows(tokens, awac_batch):
                 if write_sg_fps_v3:
-                    row["record_version"] = 3
+                    row["record_version"] = int(sg_fps_archive_version)
                 writer.writerow(row)
                 aggregate["num_scenes"] += 1
                 for key in (
@@ -1272,7 +1399,7 @@ def main(cfg: DictConfig) -> None:
         "has_valid_candidate_ratio": aggregate["sums"]["has_valid_candidate"] / n,
         "best_valid_source_distribution": dict(aggregate["best_valid_sources"]),
         "selected_valid_ratio_mean": aggregate["sums"]["selected_valid_ratio"] / n,
-        "record_version": 3 if write_sg_fps_v3 else 2,
+        "record_version": int(sg_fps_archive_version) if write_sg_fps_v3 else 2,
         "sg_fps_v3": {
             "enabled": bool(write_sg_fps_v3),
             "scene_count": int(aggregate["sg_fps"]["scene_count"]),
@@ -1281,6 +1408,7 @@ def main(cfg: DictConfig) -> None:
             "external_anchor_semantic_dropped": int(aggregate["sg_fps"]["external_anchor_semantic_dropped"]),
             "support_tag_counts": dict(aggregate["sg_fps"]["support_tag_counts"]),
             "external_candidate_roots": external_candidate_roots,
+            "build_config": aggregate["sg_fps"]["build_config"],
         },
     }
     summary_json.write_text(json.dumps(global_summary, indent=2, sort_keys=True), encoding="utf-8")
@@ -1290,7 +1418,8 @@ def main(cfg: DictConfig) -> None:
     if dry_run:
         logger.info("DRY_RUN=true; elite records were not written.")
     else:
-        logger.info("%s records written under %s", "SG-FPS v3 support" if write_sg_fps_v3 else "AWAC elite", buffer_dir)
+        label = f"SG-FPS v{sg_fps_archive_version} support" if write_sg_fps_v3 else "AWAC elite"
+        logger.info("%s records written under %s", label, buffer_dir)
     if skip_existing_records:
         logger.info("Skipped %d existing AWAC elite records.", skipped_existing)
     if merge_existing_records:

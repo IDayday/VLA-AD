@@ -151,6 +151,18 @@ def _parse_key_epoch_interval() -> int:
     return interval
 
 
+def _env_enabled(name: str, default: bool = False) -> bool:
+    raw = os.getenv(name)
+    if raw is None:
+        return bool(default)
+    value = raw.strip().lower()
+    if value in {"1", "true", "yes", "on"}:
+        return True
+    if value in {"0", "false", "no", "off"}:
+        return False
+    raise ValueError(f"{name} must be a boolean value, got {raw!r}")
+
+
 class StepCheckpointCallback(pl.Callback):
     """Save exact global-step checkpoints for staged PDM evaluation."""
 
@@ -1432,6 +1444,12 @@ def main(cfg: DictConfig) -> None:
     key_steps = _parse_key_steps()
     key_epochs = _parse_key_epochs()
     key_epoch_interval = _parse_key_epoch_interval()
+    disable_checkpointing = _env_enabled("RECOGDRIVE_DISABLE_CHECKPOINTING")
+    step_checkpoints_only = _env_enabled("RECOGDRIVE_STEP_CHECKPOINTS_ONLY")
+    if disable_checkpointing and step_checkpoints_only:
+        raise ValueError(
+            "RECOGDRIVE_DISABLE_CHECKPOINTING and RECOGDRIVE_STEP_CHECKPOINTS_ONLY are mutually exclusive."
+        )
     trainer_params = cfg.trainer.params
     limit_val_batches = trainer_params.get("limit_val_batches", 1.0)
     has_validation = not (
@@ -1439,30 +1457,42 @@ def main(cfg: DictConfig) -> None:
         or limit_val_batches == 0.0
         or str(limit_val_batches).strip().lower() in {"0", "0.0", "false", "none"}
     )
-    if has_validation:
-        checkpoint_callback = pl.callbacks.ModelCheckpoint(
-            monitor="val/loss_epoch",
-            mode='min',
-            save_top_k=5,
-            every_n_epochs=1,
-            save_last=True,
-        )
+    callbacks: List[pl.Callback] = [ReCogDriveTrainingProgressCallback()]
+    if not disable_checkpointing:
+        if not step_checkpoints_only:
+            if has_validation:
+                checkpoint_callback = pl.callbacks.ModelCheckpoint(
+                    monitor="val/loss_epoch",
+                    mode='min',
+                    save_top_k=5,
+                    every_n_epochs=1,
+                    save_last=True,
+                )
+            else:
+                checkpoint_callback = pl.callbacks.ModelCheckpoint(
+                    monitor=None,
+                    save_top_k=-1,
+                    every_n_epochs=1,
+                    save_last=True,
+                )
+            callbacks.append(checkpoint_callback)
+        callbacks.append(StepCheckpointCallback(Path(cfg.output_dir), key_steps))
+        if not step_checkpoints_only and (key_epochs or key_epoch_interval > 0):
+            callbacks.append(
+                EpochCheckpointCallback(Path(cfg.output_dir), key_epochs, every_n_epochs=key_epoch_interval)
+            )
+        if step_checkpoints_only:
+            logger.warning(
+                "RECOGDRIVE_STEP_CHECKPOINTS_ONLY=true: only explicitly requested global-step checkpoints "
+                "will be written."
+            )
     else:
-        checkpoint_callback = pl.callbacks.ModelCheckpoint(
-            monitor=None,
-            save_top_k=-1,
-            every_n_epochs=1,
-            save_last=True,
-        )
-    callbacks = [
-        checkpoint_callback,
-        StepCheckpointCallback(Path(cfg.output_dir), key_steps),
-        ReCogDriveTrainingProgressCallback(),
-    ]
-    if key_epochs or key_epoch_interval > 0:
-        callbacks.append(EpochCheckpointCallback(Path(cfg.output_dir), key_epochs, every_n_epochs=key_epoch_interval))
+        logger.warning("RECOGDRIVE_DISABLE_CHECKPOINTING=true: no model checkpoints will be written.")
     write_run_reports(cfg, agent, loader_mode, key_steps, key_epochs, key_epoch_interval, data_report)
-    trainer = pl.Trainer(**cfg.trainer.params, callbacks=callbacks)
+    trainer_kwargs = dict(cfg.trainer.params)
+    if disable_checkpointing or step_checkpoints_only:
+        trainer_kwargs["enable_checkpointing"] = False
+    trainer = pl.Trainer(**trainer_kwargs, callbacks=callbacks)
 
     resume_ckpt_path = cfg.get("resume_ckpt_path", None)
     if resume_ckpt_path:

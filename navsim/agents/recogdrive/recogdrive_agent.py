@@ -534,6 +534,7 @@ class ReCogDriveAgent(AbstractAgent):
         fs_norm_output_clip: float = -1.0,
         fs_norm_output_clip_mode: str = "scalar",
         fs_norm_min_version: int = 1,
+        fs_norm_require_archive_match: bool = False,
         x0_aux_weight: float = 0.0,
         delta_aux_weight: float = 0.0,
         geo_aux_weight: float = 0.0,
@@ -1385,6 +1386,7 @@ class ReCogDriveAgent(AbstractAgent):
         self.fs_norm_output_clip = float(fs_norm_output_clip)
         self.fs_norm_output_clip_mode = str(fs_norm_output_clip_mode)
         self.fs_norm_min_version = int(fs_norm_min_version)
+        self.fs_norm_require_archive_match = bool(fs_norm_require_archive_match)
         self.x0_aux_weight = float(x0_aux_weight)
         self.delta_aux_weight = float(delta_aux_weight)
         self.geo_aux_weight = float(geo_aux_weight)
@@ -1876,6 +1878,7 @@ class ReCogDriveAgent(AbstractAgent):
         cfg.fs_norm_output_clip = self.fs_norm_output_clip
         cfg.fs_norm_output_clip_mode = self.fs_norm_output_clip_mode
         cfg.fs_norm_min_version = self.fs_norm_min_version
+        cfg.fs_norm_require_archive_match = self.fs_norm_require_archive_match
         cfg.x0_aux_weight = self.x0_aux_weight
         cfg.delta_aux_weight = self.delta_aux_weight
         cfg.geo_aux_weight = self.geo_aux_weight

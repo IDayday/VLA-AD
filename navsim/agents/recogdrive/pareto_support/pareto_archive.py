@@ -263,13 +263,20 @@ def is_valid_candidate(components: Mapping[str, Any], feas: Mapping[str, Any], r
     return is_valid_metrics({**dict(components), **dict(feas)}, ref_components, cfg)
 
 
-def pareto_front_mask(values: np.ndarray, valid_mask: np.ndarray) -> np.ndarray:
+def pareto_front_mask(
+    values: np.ndarray,
+    valid_mask: np.ndarray,
+    *,
+    eps: float = 0.0,
+) -> np.ndarray:
     values = np.asarray(values, dtype=np.float64)
     valid_mask = np.asarray(valid_mask, dtype=np.bool_)
     if values.ndim != 2:
         raise ValueError(f"values must have shape [K, D], got {values.shape}.")
     if valid_mask.shape != (values.shape[0],):
         raise ValueError(f"valid_mask must have shape [K], got {valid_mask.shape}.")
+    if eps < 0.0:
+        raise ValueError(f"eps must be non-negative, got {eps}.")
     front = np.zeros(values.shape[0], dtype=np.bool_)
     valid_idx = np.flatnonzero(valid_mask)
     for idx in valid_idx:
@@ -277,7 +284,10 @@ def pareto_front_mask(values: np.ndarray, valid_mask: np.ndarray) -> np.ndarray:
         if others.size == 0:
             front[idx] = True
             continue
-        dominates = np.all(values[others] >= values[idx], axis=1) & np.any(values[others] > values[idx], axis=1)
+        dominates = np.all(values[others] >= values[idx] - eps, axis=1) & np.any(
+            values[others] > values[idx] + eps,
+            axis=1,
+        )
         front[idx] = not bool(np.any(dominates))
     return front
 
@@ -295,6 +305,218 @@ def _pareto_values_legacy(candidates: Sequence[CandidateRecord]) -> np.ndarray:
             ]
         )
     return np.asarray(rows, dtype=np.float32)
+
+
+def _is_derived_external(source: str) -> bool:
+    lower = str(source).lower()
+    is_external = lower.startswith(("ddv2", "driveor", "drivor", "diffusiondrivev2"))
+    return is_external and (":failure_expand_" in lower or ":trust_region_" in lower)
+
+
+def _is_scene_conditioned_proposal(source: str) -> bool:
+    lower = str(source).lower()
+    return lower.startswith(
+        ("ddv2", "driveor", "drivor", "diffusiondrivev2", "current_policy", "policy")
+    ) and not _is_derived_external(lower)
+
+
+def _is_current_policy_proposal(source: str) -> bool:
+    lower = str(source).lower()
+    return lower == "policy" or lower.startswith("policy:") or lower.startswith("current_policy")
+
+
+def trajectory_snsad_distance(lhs: np.ndarray, rhs: np.ndarray) -> float:
+    lhs = np.asarray(lhs, dtype=np.float32)
+    rhs = np.asarray(rhs, dtype=np.float32)
+    n = min(lhs.shape[0], rhs.shape[0])
+    if n <= 0:
+        return float("inf")
+    delta_xy = lhs[:n, :2] - rhs[:n, :2]
+    xy_distance = np.linalg.norm(delta_xy, axis=-1)
+    heading = np.abs(_wrap_angle_np(lhs[:n, 2] - rhs[:n, 2]))
+    components = np.asarray(
+        (
+            xy_distance[-1] / 3.0,
+            xy_distance.mean() / 1.5,
+            np.abs(delta_xy[:, 0]).mean() / 1.5,
+            np.abs(delta_xy[:, 1]).mean() / 0.8,
+            heading.mean() / 0.35,
+        ),
+        dtype=np.float32,
+    )
+    weights = np.asarray((0.30, 0.30, 0.15, 0.15, 0.10), dtype=np.float32)
+    return float(np.dot(components, weights))
+
+
+def _select_mode_pareto_v4(
+    candidates: list[CandidateRecord],
+    ref: dict,
+    cfg: Any,
+) -> list[CandidateRecord]:
+    """Select a compact, GT-anchored set of learnable behavior modes.
+
+    Unlike the v3 quota selector, this contract does not interpret source or
+    quota frequency as a teacher probability. Safety and quality are gates;
+    Pareto candidates are selected for scene-normalized objective coverage first,
+    with trajectory-space novelty used as a secondary criterion.
+    """
+
+    top_m = int(cfg_value(cfg, "support_top_m", 4))
+    if top_m <= 0:
+        return []
+    gt_candidates = [candidate for candidate in candidates if _source_matches(candidate.source, ("gt",))]
+    if len(gt_candidates) != 1:
+        raise ValueError(f"mode_pareto_v4 requires exactly one GT candidate, found {len(gt_candidates)}.")
+    gt = gt_candidates[0]
+    gt_index = next(index for index, candidate in enumerate(candidates) if candidate is gt)
+    gt_traj = np.asarray(gt.trajectory, dtype=np.float32)
+    gt_reward = float(gt.reward)
+    max_ade = float(cfg_value(cfg, "support_v4_max_gt_ade_m", 1.5))
+    max_fde = float(cfg_value(cfg, "support_v4_max_gt_fde_m", 4.0))
+    mode_threshold = float(cfg_value(cfg, "support_v4_mode_distance_threshold", 0.25))
+    reward_gain_cap = float(cfg_value(cfg, "support_v4_reward_gain_cap", 0.05))
+    max_reward_drop = float(cfg_value(cfg, "support_v4_max_gt_reward_drop", 0.05))
+    pareto_eps = float(cfg_value(cfg, "support_v4_pareto_eps", 0.01))
+    exclude_derived_external = bool(cfg_value(cfg, "support_v4_exclude_derived_external", True))
+    require_policy_reachability = bool(cfg_value(cfg, "support_v4_require_policy_reachability", False))
+    max_policy_snsad = float(cfg_value(cfg, "support_v4_max_policy_snsad", 0.50))
+    if max_ade <= 0.0 or max_fde <= 0.0:
+        raise ValueError("mode_pareto_v4 GT-relative distance bounds must be positive.")
+    if min(mode_threshold, reward_gain_cap, max_reward_drop, pareto_eps, max_policy_snsad) < 0.0:
+        raise ValueError("mode_pareto_v4 thresholds and reward bounds must be non-negative.")
+
+    policy_indices = [
+        index for index, candidate in enumerate(candidates) if _is_current_policy_proposal(candidate.source)
+    ]
+    if require_policy_reachability and not policy_indices:
+        raise ValueError(
+            "mode_pareto_v4 requires current-policy proposals when "
+            "support_v4_require_policy_reachability=True."
+        )
+    policy_reachability = np.full((len(candidates),), np.inf, dtype=np.float32)
+    if policy_indices:
+        for index, candidate in enumerate(candidates):
+            policy_reachability[index] = min(
+                trajectory_snsad_distance(candidate.trajectory, candidates[policy_index].trajectory)
+                for policy_index in policy_indices
+            )
+
+    evaluator_valid = np.asarray(
+        [is_valid_candidate(candidate.components, candidate.feas, ref, cfg) for candidate in candidates],
+        dtype=np.bool_,
+    )
+    quality = np.asarray(
+        [support_quality_pass(candidate, gt_traj, cfg, ref_reward=gt_reward) for candidate in candidates],
+        dtype=np.bool_,
+    )
+    eligible = evaluator_valid & quality
+    gt_ade = np.zeros((len(candidates),), dtype=np.float32)
+    gt_fde = np.zeros((len(candidates),), dtype=np.float32)
+    for index, candidate in enumerate(candidates):
+        trajectory = np.asarray(candidate.trajectory, dtype=np.float32)
+        n = min(trajectory.shape[0], gt_traj.shape[0])
+        if n <= 0:
+            eligible[index] = False
+            gt_ade[index] = np.inf
+            gt_fde[index] = np.inf
+            continue
+        distance = np.linalg.norm(trajectory[:n, :2] - gt_traj[:n, :2], axis=-1)
+        gt_ade[index] = float(distance.mean())
+        gt_fde[index] = float(distance[-1])
+        if candidate is not gt:
+            eligible[index] &= bool(gt_ade[index] <= max_ade and gt_fde[index] <= max_fde)
+            eligible[index] &= bool(float(candidate.reward) >= gt_reward - max_reward_drop)
+            if require_policy_reachability:
+                eligible[index] &= bool(policy_reachability[index] <= max_policy_snsad)
+            if exclude_derived_external and _is_derived_external(candidate.source):
+                eligible[index] = False
+        candidate.support_tag = ""
+        setattr(candidate, "_sg_fps_teacher_eligible", bool(eligible[index] or candidate is gt))
+        setattr(candidate, "_sg_fps_gt_ade", float(gt_ade[index]))
+        setattr(candidate, "_sg_fps_gt_fde", float(gt_fde[index]))
+        setattr(candidate, "_sg_fps_source_conditioned", _is_scene_conditioned_proposal(candidate.source))
+        setattr(candidate, "_sg_fps_policy_reachability_snsad", float(policy_reachability[index]))
+        setattr(candidate, "_sg_fps_objective_novelty", 0.0)
+        setattr(candidate, "_sg_fps_mode_id", -1)
+
+    # NC/DAC/DDC/comfort remain hard gates. GT participates in the Pareto
+    # comparison when it passes those gates, so a clearly worse alternative is
+    # never retained merely to fill a support quota.
+    pareto_values = np.asarray(
+        [
+            [
+                _component_value(candidate.components, "ego_progress", "ep"),
+                _component_value(candidate.components, "time_to_collision_within_bound", "ttc"),
+                _component_value(candidate.components, "history_comfort", "comfort", default=1.0),
+            ]
+            for candidate in candidates
+        ],
+        dtype=np.float32,
+    )
+    front = pareto_front_mask(pareto_values, eligible, eps=pareto_eps)
+    for candidate, is_front in zip(candidates, front):
+        setattr(candidate, "_sg_fps_pareto_front", bool(is_front))
+
+    ranked_indices = [
+        index
+        for index, (ok, is_front) in enumerate(zip(eligible, front))
+        if index != gt_index and ok and is_front
+    ]
+
+    # Cover the scene's Pareto geometry instead of sorting the front back into
+    # a scalar-reward list. Normalization is scene-relative, so scenes with a
+    # naturally narrow objective range are not penalized. Trajectory novelty
+    # breaks ties when evaluator components are saturated.
+    coverage_indices = np.asarray([gt_index, *ranked_indices], dtype=np.int64)
+    coverage_values = np.nan_to_num(
+        pareto_values[coverage_indices], nan=0.0, posinf=1.0, neginf=0.0
+    )
+    objective_min = coverage_values.min(axis=0)
+    objective_span = coverage_values.max(axis=0) - objective_min
+    objective_span = np.where(objective_span > 1e-6, objective_span, 1.0)
+    normalized_objectives = (
+        np.nan_to_num(pareto_values, nan=0.0, posinf=1.0, neginf=0.0) - objective_min
+    ) / objective_span
+
+    selected = [gt]
+    selected_indices = [gt_index]
+    gt.support_tag = "gt_anchor"
+    setattr(gt, "_sg_fps_mode_id", 0)
+    remaining = set(ranked_indices)
+    while remaining and len(selected) < top_m:
+        choices: list[tuple[tuple[float, float, float, float, int], int, float]] = []
+        for index in remaining:
+            trajectory_novelty = min(
+                trajectory_snsad_distance(candidates[index].trajectory, candidates[chosen].trajectory)
+                for chosen in selected_indices
+            )
+            if trajectory_novelty < mode_threshold:
+                continue
+            objective_novelty = min(
+                float(np.abs(normalized_objectives[index] - normalized_objectives[chosen]).mean())
+                for chosen in selected_indices
+            )
+            gain = float(candidates[index].reward) - gt_reward
+            capped_gain = min(max(gain, -reward_gain_cap), reward_gain_cap)
+            key = (
+                objective_novelty,
+                trajectory_novelty,
+                capped_gain,
+                -float(gt_ade[index]),
+                -int(index),
+            )
+            choices.append((key, index, objective_novelty))
+        if not choices:
+            break
+        _, index, objective_novelty = max(choices, key=lambda item: item[0])
+        remaining.remove(index)
+        candidate = candidates[index]
+        candidate.support_tag = "mode_pareto"
+        setattr(candidate, "_sg_fps_objective_novelty", objective_novelty)
+        setattr(candidate, "_sg_fps_mode_id", len(selected))
+        selected.append(candidate)
+        selected_indices.append(index)
+    return selected
 
 
 def _append_unique(
@@ -574,6 +796,8 @@ def select_feasible_pareto_support(candidates: list[CandidateRecord], ref: dict,
         "feas": float(cfg_value(cfg, "fp_feas_weight", 0.05)),
     }
     strategy = str(cfg_value(cfg, "support_selection_strategy", "quota")).lower()
+    if strategy in {"mode_pareto_v4", "v4", "learnable_modes"}:
+        return _select_mode_pareto_v4(candidates, ref, cfg)
     if strategy in {"quality_pareto", "pareto_diverse", "quality"}:
         return _select_quality_pareto_support(candidates, ref, cfg, weights)
 
@@ -648,19 +872,37 @@ def build_archive_record(
 ) -> dict[str, Any]:
     ref = dict(ref or {})
     cfg = cfg or {}
+    strategy = str(cfg_value(cfg, "support_selection_strategy", "quota"))
     ref_traj = next((np.asarray(c.trajectory, dtype=np.float32) for c in candidates if _source_matches(c.source, ("gt",))), None)
     ref_reward = next((float(c.reward) for c in candidates if _source_matches(c.source, ("gt",))), None)
     all_values = _pareto_values_legacy(candidates) if candidates else np.zeros((0, 4), dtype=np.float32)
     valid_mask = np.asarray([is_valid_candidate(c.components, c.feas, ref, cfg) for c in candidates], dtype=np.bool_)
     quality_mask = np.asarray([support_quality_pass(c, ref_traj, cfg, ref_reward=ref_reward) for c in candidates], dtype=np.bool_)
     front_mask = pareto_front_mask(all_values, valid_mask) if candidates else np.zeros((0,), dtype=np.bool_)
+    if strategy.lower() in {"mode_pareto_v4", "v4", "learnable_modes"}:
+        front_mask = np.asarray(
+            [bool(getattr(candidate, "_sg_fps_pareto_front", False)) for candidate in candidates],
+            dtype=np.bool_,
+        )
     utilities = np.asarray([compute_utility(c.components, _feas_cost(c.feas), dict(cfg or {})) for c in candidates], dtype=np.float32)
-    selected_tag_by_fp = {
-        trajectory_fingerprint(c.trajectory): str(c.support_tag or "support")
-        for c in selected
-    }
-    selected_fps = set(selected_tag_by_fp)
-    selected_mask = np.asarray([trajectory_fingerprint(c.trajectory) in selected_fps for c in candidates], dtype=np.bool_)
+    if strategy.lower() in {"mode_pareto_v4", "v4", "learnable_modes"}:
+        selected_tag_by_id = {id(candidate): str(candidate.support_tag or "support") for candidate in selected}
+        selected_mask = np.asarray([id(candidate) in selected_tag_by_id for candidate in candidates], dtype=np.bool_)
+        support_tags = [selected_tag_by_id.get(id(candidate), "") for candidate in candidates]
+    else:
+        selected_tag_by_fp = {
+            trajectory_fingerprint(candidate.trajectory): str(candidate.support_tag or "support")
+            for candidate in selected
+        }
+        selected_fps = set(selected_tag_by_fp)
+        selected_mask = np.asarray(
+            [trajectory_fingerprint(candidate.trajectory) in selected_fps for candidate in candidates],
+            dtype=np.bool_,
+        )
+        support_tags = [
+            selected_tag_by_fp.get(trajectory_fingerprint(candidate.trajectory), "")
+            for candidate in candidates
+        ]
     rewards = np.asarray([float(c.reward) for c in candidates], dtype=np.float32)
     selection_score = np.asarray([float(c.selection_score) for c in candidates], dtype=np.float32)
     raw_best_idx = int(np.argmax(rewards)) if rewards.size else 0
@@ -703,8 +945,59 @@ def build_archive_record(
         "driving_direction_compliance",
         "traffic_light_compliance",
     )
-    return {
-        "version": 3,
+    archive_version = int(cfg_value(cfg, "support_archive_version", 3))
+    mode_ids = np.asarray([int(getattr(candidate, "_sg_fps_mode_id", -1)) for candidate in candidates], dtype=np.int64)
+    teacher_eligible = np.asarray(
+        [bool(getattr(candidate, "_sg_fps_teacher_eligible", False)) for candidate in candidates],
+        dtype=np.bool_,
+    )
+    source_conditioned = np.asarray(
+        [bool(getattr(candidate, "_sg_fps_source_conditioned", False)) for candidate in candidates],
+        dtype=np.bool_,
+    )
+    gt_relative_ade = np.asarray(
+        [float(getattr(candidate, "_sg_fps_gt_ade", anchor_distance[index] if index < len(anchor_distance) else 0.0)) for index, candidate in enumerate(candidates)],
+        dtype=np.float32,
+    )
+    gt_relative_fde = np.asarray(
+        [float(getattr(candidate, "_sg_fps_gt_fde", 0.0)) for candidate in candidates],
+        dtype=np.float32,
+    )
+    policy_reachability_snsad = np.asarray(
+        [float(getattr(candidate, "_sg_fps_policy_reachability_snsad", np.inf)) for candidate in candidates],
+        dtype=np.float32,
+    )
+    pareto_objective_novelty = np.asarray(
+        [float(getattr(candidate, "_sg_fps_objective_novelty", 0.0)) for candidate in candidates],
+        dtype=np.float32,
+    )
+    build_metadata = dict(cfg_value(cfg, "support_build_metadata", {}) or {})
+    build_metadata.update(
+        {
+            "selection_strategy": strategy,
+            "support_top_m": int(cfg_value(cfg, "support_top_m", 12)),
+        }
+    )
+    if archive_version >= 4:
+        build_metadata.update(
+            {
+                "teacher_contract": "gt_anchor_plus_uniform_reachable_pareto_modes",
+                "mode_selection_order": "scene_normalized_objective_fps_then_snsad",
+                "max_gt_ade_m": float(cfg_value(cfg, "support_v4_max_gt_ade_m", 1.5)),
+                "max_gt_fde_m": float(cfg_value(cfg, "support_v4_max_gt_fde_m", 4.0)),
+                "mode_distance_threshold": float(cfg_value(cfg, "support_v4_mode_distance_threshold", 0.25)),
+                "reward_gain_cap": float(cfg_value(cfg, "support_v4_reward_gain_cap", 0.05)),
+                "max_gt_reward_drop": float(cfg_value(cfg, "support_v4_max_gt_reward_drop", 0.05)),
+                "pareto_eps": float(cfg_value(cfg, "support_v4_pareto_eps", 0.01)),
+                "exclude_derived_external": bool(cfg_value(cfg, "support_v4_exclude_derived_external", True)),
+                "policy_reachability_required": bool(
+                    cfg_value(cfg, "support_v4_require_policy_reachability", False)
+                ),
+                "max_policy_snsad": float(cfg_value(cfg, "support_v4_max_policy_snsad", 0.50)),
+            }
+        )
+    record = {
+        "version": archive_version,
         "token": str(token),
         "candidates": np.stack([np.asarray(c.trajectory, dtype=np.float32) for c in candidates], axis=0)
         if candidates
@@ -724,10 +1017,7 @@ def build_archive_record(
             key: np.asarray([float(c.feas.get(key, 0.0)) for c in candidates], dtype=np.float32)
             for key in ("feas_cost", "early_kink_rate", "tail_reverse_rate", "curvature_violation_rate")
         },
-        "support_tags": [
-            selected_tag_by_fp.get(trajectory_fingerprint(c.trajectory), "")
-            for c in candidates
-        ],
+        "support_tags": support_tags,
         "support_indices": selected_indices.astype(np.int64).tolist(),
         "support_quality": {
             key: np.asarray(
@@ -758,6 +1048,20 @@ def build_archive_record(
         "best_selected_source": str(candidates[selected_best_idx].source) if candidates else "",
         "has_valid_candidate": bool(np.any(valid_mask)),
     }
+    if archive_version >= 4:
+        record.update(
+            {
+                "mode_ids": mode_ids,
+                "teacher_eligible_mask": teacher_eligible,
+                "source_conditioned_mask": source_conditioned,
+                "gt_relative_ade": gt_relative_ade,
+                "gt_relative_fde": gt_relative_fde,
+                "policy_reachability_snsad": policy_reachability_snsad,
+                "pareto_objective_novelty": pareto_objective_novelty,
+                "build_metadata": build_metadata,
+            }
+        )
+    return record
 
 
 def _candidate_metrics(candidate: TrajectoryCandidate) -> dict[str, float]:

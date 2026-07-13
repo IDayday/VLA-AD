@@ -605,7 +605,7 @@ class OfflineRLConfig:
     # its historical reward-dependent scene weighting for checkpoint parity.
     dpsi_scene_normalize_weights: bool = True
     dpsi_use_adaptive_beta: bool = True
-    dpsi_target_distribution: Literal["legacy", "mode_balanced"] = "legacy"
+    dpsi_target_distribution: Literal["legacy", "mode_balanced", "frontier_v4"] = "legacy"
     dpsi_mode_density_bandwidth: float = 0.40
     # Paired randomness is a variance-reduction estimator for alternative
     # targets from the same scene. The residual budget uses it to compare
@@ -774,12 +774,13 @@ def _compute_dpsi_support_profile(
     real = selected_real_mask.bool()
     valid_real = real & selected_valid_mask.bool()
     target_distribution = str(cfg.dpsi_target_distribution).strip().lower()
-    if target_distribution not in {"legacy", "mode_balanced"}:
+    if target_distribution not in {"legacy", "mode_balanced", "frontier_v4"}:
         raise ValueError(
-            "dpsi_target_distribution must be 'legacy' or 'mode_balanced', "
+            "dpsi_target_distribution must be 'legacy', 'mode_balanced', or 'frontier_v4', "
             f"got {cfg.dpsi_target_distribution!r}."
         )
     use_mode_balance = target_distribution == "mode_balanced"
+    use_frontier_v4 = target_distribution == "frontier_v4"
     support_count = real.float().sum(dim=1)
     pairwise_distance = selected_rewards.new_zeros((B,), dtype=dtype)
     source_entropy = selected_rewards.new_zeros((B,), dtype=dtype)
@@ -818,14 +819,23 @@ def _compute_dpsi_support_profile(
     mode_support_mask = valid_real.clone()
     empty_valid = ~mode_support_mask.any(dim=1)
     mode_support_mask[empty_valid] = real[empty_valid]
-    if use_mode_balance:
+    if use_mode_balance or use_frontier_v4:
         mode_profile = _compute_dpsi_mode_balance(
             selected_trajs,
             mode_support_mask,
             float(cfg.dpsi_mode_density_bandwidth),
         )
-        beta_from_modes = beta_max * mode_profile["mode_capacity"]
-        beta = beta_from_modes
+        if use_mode_balance:
+            beta_from_modes = beta_max * mode_profile["mode_capacity"]
+            beta = beta_from_modes
+        else:
+            has_non_gt_support = valid_real & (selected_source_code != 1)
+            beta_from_modes = torch.where(
+                has_non_gt_support.any(dim=1),
+                selected_rewards.new_full((B,), beta_max, dtype=dtype),
+                selected_rewards.new_zeros((B,), dtype=dtype),
+            )
+            beta = beta_from_modes
     else:
         mode_profile = {
             "mode_density_weights": selected_rewards.new_zeros(selected_rewards.shape, dtype=dtype),
@@ -840,12 +850,12 @@ def _compute_dpsi_support_profile(
             beta = beta_max * count_score * dist_score * entropy_score
         else:
             beta = torch.full((B,), beta_max, device=device, dtype=dtype)
-    if not use_mode_balance:
+    if not use_mode_balance and not use_frontier_v4:
         beta = torch.where(low_support, beta * 0.25, beta)
         beta = torch.where(high_gt_saturated, torch.zeros_like(beta), beta)
     strong = best_selected_minus_gt >= float(cfg.dpsi_strong_improver_margin)
     # Geometric mode capacity and legacy reward shortcuts are separate contracts.
-    if not use_mode_balance:
+    if not use_mode_balance and not use_frontier_v4:
         beta = torch.where(strong, torch.maximum(beta, beta.new_full(beta.shape, 0.4)), beta)
     beta = beta.clamp(min=0.0, max=beta_max)
     warmup = int(cfg.dpsi_beta_warmup_epochs)
@@ -864,7 +874,7 @@ def _compute_dpsi_support_profile(
         torch.minimum(scene_weight, scene_weight.new_ones(())),
         scene_weight,
     )
-    if use_mode_balance and bool(cfg.dpsi_scene_normalize_weights):
+    if (use_mode_balance and bool(cfg.dpsi_scene_normalize_weights)) or use_frontier_v4:
         scene_weight = torch.ones_like(scene_weight)
 
     profile = {
@@ -876,7 +886,11 @@ def _compute_dpsi_support_profile(
         "strong_improver": strong,
         "high_gt_saturated": high_gt_saturated,
         "low_support": low_support,
-        "multimodal_profile_score": mode_profile["mode_capacity"] if use_mode_balance else count_score * dist_score * entropy_score,
+        "multimodal_profile_score": (
+            mode_profile["mode_capacity"]
+            if use_mode_balance or use_frontier_v4
+            else count_score * dist_score * entropy_score
+        ),
         "beta_profile": beta,
         "beta_from_modes": beta_from_modes,
         "scene_weight": scene_weight,
@@ -894,10 +908,11 @@ def _compute_dpsi_support_profile(
         "dpsi_strong_improver_ratio": strong.float().mean(),
         "dpsi_scene_weight_mean": scene_weight.mean(),
         "dpsi_scene_uniform_weighting": selected_rewards.new_tensor(
-            float(use_mode_balance and bool(cfg.dpsi_scene_normalize_weights)),
+            float((use_mode_balance and bool(cfg.dpsi_scene_normalize_weights)) or use_frontier_v4),
             dtype=dtype,
         ),
         "dpsi_mode_balance_enabled": selected_rewards.new_tensor(float(use_mode_balance), dtype=dtype),
+        "dpsi_frontier_v4_enabled": selected_rewards.new_tensor(float(use_frontier_v4), dtype=dtype),
         "dpsi_mode_effective_count_mean": mode_profile["effective_mode_count"].mean(),
         "dpsi_mode_capacity_mean": mode_profile["mode_capacity"].mean(),
         "dpsi_mode_density_ess_mean": mode_profile["density_ess"].mean(),
@@ -917,20 +932,61 @@ def _build_asmi_weights(
     il_reward: torch.Tensor,
     support_profile: Dict[str, torch.Tensor],
     cfg: OfflineRLConfig,
+    selected_mode_id: torch.Tensor | None = None,
+    selected_teacher_eligible: torch.Tensor | None = None,
 ) -> tuple[torch.Tensor, Dict[str, torch.Tensor]]:
     device = selected_rewards.device
     real = selected_real_mask.bool()
     valid = selected_valid_mask.bool()
     source_code = selected_source_code.to(device=device)
-    anchor_mask = real & ((source_code == 1) | (source_code == 2))
+    use_frontier_v4 = str(cfg.dpsi_target_distribution).strip().lower() == "frontier_v4"
+    anchor_mask = real & (source_code == 1) if use_frontier_v4 else real & ((source_code == 1) | (source_code == 2))
     for b in range(selected_rewards.shape[0]):
         if not bool(anchor_mask[b].any().item()):
+            if use_frontier_v4:
+                raise ValueError("frontier_v4 requires one selected GT anchor in every scene.")
             row = real[b] & valid[b]
             if not bool(row.any().item()):
                 row = real[b]
             if bool(row.any().item()):
                 idx = int(selected_rewards[b].masked_fill(~row, -torch.inf).argmax().item())
                 anchor_mask[b, idx] = True
+
+    if use_frontier_v4:
+        if selected_mode_id is None or selected_teacher_eligible is None:
+            raise ValueError("frontier_v4 requires archive mode_ids and teacher_eligible_mask tensors.")
+        mode_id = selected_mode_id.to(device=device, dtype=torch.long)
+        teacher_eligible = selected_teacher_eligible.to(device=device, dtype=torch.bool)
+        if mode_id.shape != selected_rewards.shape or teacher_eligible.shape != selected_rewards.shape:
+            raise ValueError("frontier_v4 mode and teacher masks must match selected_rewards [B, M].")
+        support_mask = real & valid & teacher_eligible & (~anchor_mask) & (mode_id > 0)
+        support_raw = torch.zeros_like(selected_rewards, dtype=torch.float32)
+        for b in range(selected_rewards.shape[0]):
+            for mode in torch.unique(mode_id[b, support_mask[b]]).tolist():
+                members = support_mask[b] & (mode_id[b] == int(mode))
+                support_raw[b, members] = 1.0 / members.float().sum().clamp_min(1.0)
+        q_anchor = anchor_mask.float() / anchor_mask.float().sum(dim=1, keepdim=True).clamp_min(1.0)
+        support_count = support_raw.sum(dim=1, keepdim=True)
+        q_support = support_raw / support_count.clamp_min(1e-6)
+        beta = support_profile["beta_profile"].to(device=device, dtype=torch.float32)[:, None]
+        beta = torch.where(support_count > 0.0, beta, torch.zeros_like(beta))
+        weights = (1.0 - beta) * q_anchor + beta * q_support
+        weights = torch.where(real, weights, torch.zeros_like(weights))
+        total = weights.sum().clamp_min(1e-6)
+        effective_count = weights.square().sum(dim=1).clamp_min(1e-6).reciprocal()
+        diagnostics = {
+            "dpsi_anchor_weight_mean": weights.masked_fill(~anchor_mask, 0.0).sum(dim=1).mean(),
+            "dpsi_pareto_weight_mean": weights.masked_fill(anchor_mask | (~real), 0.0).sum(dim=1).mean(),
+            "dpsi_effective_target_count_mean": effective_count.mean(),
+            "dpsi_row_weight_sum_mean": weights.sum(dim=1).mean(),
+            "dpsi_zero_row_ratio": weights.sum(dim=1).le(0.0).float().mean(),
+            "dpsi_external_weight_ratio": weights[((source_code == 3) | (source_code == 7)) & real].sum() / total,
+            "dpsi_gt_weight_ratio": weights[(source_code == 1) & real].sum() / total,
+            "dpsi_il_weight_ratio": weights[(source_code == 2) & real].sum() / total,
+            "dpsi_frontier_support_scene_ratio": support_mask.any(dim=1).float().mean(),
+            "dpsi_frontier_mode_count_mean": support_raw.sum(dim=1).mean(),
+        }
+        return weights, diagnostics
 
     base_weight = selected_support_weight.to(device=device, dtype=torch.float32).clamp(min=0.0)
     base_weight = torch.where(real, base_weight, torch.zeros_like(base_weight))
@@ -1025,12 +1081,15 @@ def _sample_asmi_targets(
     training: bool,
 ) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor, Dict[str, torch.Tensor]]:
     B, M, H, D = selected_trajs.shape
+    use_frontier_v4 = str(cfg.dpsi_target_distribution).strip().lower() == "frontier_v4"
     use_unbiased_systematic = (
         str(cfg.dpsi_target_distribution).strip().lower() == "mode_balanced" and bool(training)
     )
     warm = int(cfg.dpsi_beta_warmup_epochs)
     target_m = int(cfg.dpsi_target_sample_m_after_warmup) if current_epoch >= warm else int(cfg.dpsi_target_sample_m)
     target_m = max(1, target_m)
+    if use_frontier_v4:
+        target_m = 2
     if not use_unbiased_systematic:
         target_m = min(target_m, M)
     out_trajs = selected_trajs.new_zeros((B, target_m, H, D))
@@ -1048,7 +1107,25 @@ def _sample_asmi_targets(
             available = torch.nonzero(selected_real_mask[b], as_tuple=False).flatten()
         if available.numel() == 0:
             continue
-        if use_unbiased_systematic:
+        if use_frontier_v4:
+            gt_available = available[selected_source_code[b, available] == 1]
+            if gt_available.numel() == 0:
+                raise ValueError("frontier_v4 sampling requires a positive-weight GT anchor.")
+            gt_index = gt_available[torch.argmax(weights[b, gt_available])]
+            support_available = available[selected_source_code[b, available] != 1]
+            if support_available.numel() > 0:
+                support_probability = weights[b, support_available].float().clamp_min(0.0)
+                if bool(training) and bool((support_probability.sum() > 0.0).item()):
+                    support_position = torch.multinomial(
+                        support_probability / support_probability.sum().clamp_min(1e-12),
+                        1,
+                    )[0]
+                else:
+                    support_position = torch.argmax(support_probability)
+                keep = torch.stack((gt_index, support_available[support_position]))
+            else:
+                keep = gt_index.reshape(1)
+        elif use_unbiased_systematic:
             probabilities = weights[b, available].float().clamp(min=0.0)
             if not bool((probabilities.sum() > 0.0).item()):
                 probabilities = torch.ones_like(probabilities)
@@ -1105,7 +1182,13 @@ def _sample_asmi_targets(
         out_trajs[b, :n] = selected_trajs[b, keep]
         raw = weights[b, keep].float()
         row_sum = weights[b].sum().clamp(min=1e-6)
-        if use_unbiased_systematic:
+        if use_frontier_v4:
+            gt_mass = weights[b].masked_fill(selected_source_code[b] != 1, 0.0).sum()
+            support_mass = weights[b].masked_fill(selected_source_code[b] == 1, 0.0).sum()
+            out_weights[b, 0] = gt_mass
+            if n > 1:
+                out_weights[b, 1] = support_mass
+        elif use_unbiased_systematic:
             out_weights[b, :n] = row_sum / float(max(n, 1))
         else:
             out_weights[b, :n] = raw / raw.sum().clamp(min=1e-6) * row_sum
@@ -1531,6 +1614,7 @@ class ReCogDriveDiffusionPlannerConfig(PretrainedConfig):
     fs_norm_output_clip: float = -1.0
     fs_norm_output_clip_mode: str = "scalar"
     fs_norm_min_version: int = 1
+    fs_norm_require_archive_match: bool = False
     x0_aux_weight: float = 0.0
     delta_aux_weight: float = 0.0
     geo_aux_weight: float = 0.0
@@ -1690,10 +1774,15 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 stats_archive = Path(stats.archive_path).expanduser().resolve()
                 configured_archive = Path(support_archive_path).expanduser().resolve()
                 if stats_archive != configured_archive:
-                    raise ValueError(
+                    message = (
                         "FS-Norm stats archive_path does not match the configured support archive: "
-                        f"{stats_archive} != {configured_archive}."
+                        f"{stats_archive} != {configured_archive}. FS-Norm defines the model action "
+                        "coordinate system; keep the checkpoint's stats when fine-tuning, or rebuild "
+                        "both the model and stats from scratch."
                     )
+                    if bool(getattr(config, "fs_norm_require_archive_match", False)):
+                        raise ValueError(message)
+                    warnings.warn(message, UserWarning, stacklevel=2)
             stats.clip = float(getattr(config, "fs_norm_clip", stats.clip))
             self.fs_norm_transform = FSNormTransform(stats)
 
@@ -2293,9 +2382,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 raise ValueError(
                     "DPSI paired-target randomness/residual budget requires offline_rl enabled with use_dpsi=True."
                 )
-            if str(cfg.dpsi_target_distribution).strip().lower() != "mode_balanced":
+            if str(cfg.dpsi_target_distribution).strip().lower() not in {"mode_balanced", "frontier_v4"}:
                 raise ValueError(
-                    "DPSI paired-target randomness/residual budget requires dpsi_target_distribution='mode_balanced'."
+                    "DPSI paired-target randomness/residual budget requires a mode_balanced or frontier_v4 target distribution."
                 )
         if bool(cfg.dpsi_residual_budget_enabled):
             if not bool(cfg.dpsi_pair_target_randomness):
@@ -2308,6 +2397,23 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 )
             if min(int(cfg.dpsi_target_sample_m), int(cfg.dpsi_target_sample_m_after_warmup)) < 2:
                 raise ValueError("DPSI residual budget requires at least two sampled targets per scene.")
+        if str(cfg.dpsi_target_distribution).strip().lower() == "frontier_v4":
+            conflicts = []
+            if not bool(cfg.dpsi_pair_target_randomness):
+                conflicts.append("dpsi_pair_target_randomness")
+            if not bool(cfg.dpsi_residual_budget_enabled):
+                conflicts.append("dpsi_residual_budget_enabled")
+            if bool(cfg.dpsi_use_reward_margin_weight):
+                conflicts.append("dpsi_use_reward_margin_weight")
+            if bool(cfg.dpsi_use_source_weight):
+                conflicts.append("dpsi_use_source_weight")
+            if int(cfg.dpsi_target_sample_m) != 2 or int(cfg.dpsi_target_sample_m_after_warmup) != 2:
+                conflicts.append("dpsi_target_sample_m/dpsi_target_sample_m_after_warmup")
+            if conflicts:
+                raise ValueError(
+                    "frontier_v4 requires paired GT+mode sampling, residual budgeting, and no legacy tag/source/reward "
+                    f"weighting; conflicting fields={conflicts}."
+                )
         if int(cfg.elite_top_m) <= 0:
             raise ValueError("offline_rl_cfg.elite_top_m must be positive.")
         if int(cfg.elite_min_candidates) <= 0:
@@ -9703,6 +9809,56 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         if bool(getattr(cfg, "use_dpsi", False)) and bool(getattr(cfg, "dpsi_filter_to_support_indices", True)):
             filtered_records = []
             for record in records:
+                if str(getattr(cfg, "dpsi_target_distribution", "legacy")).strip().lower() == "frontier_v4":
+                    version = int(record.get("version", 0))
+                    required = {
+                        "mode_ids",
+                        "teacher_eligible_mask",
+                        "policy_reachability_snsad",
+                        "pareto_objective_novelty",
+                        "build_metadata",
+                    }
+                    missing = sorted(required.difference(record))
+                    if version < 4 or missing:
+                        raise ValueError(
+                            "frontier_v4 requires an SG-FPS v4 archive with explicit mode metadata; "
+                            f"token={record.get('token', '')!r}, version={version}, missing={missing}."
+                        )
+                    build_metadata = dict(record.get("build_metadata", {}) or {})
+                    contract_errors = []
+                    if build_metadata.get("selection_strategy") != "mode_pareto_v4":
+                        contract_errors.append("selection_strategy=mode_pareto_v4")
+                    if (
+                        build_metadata.get("teacher_contract")
+                        != "gt_anchor_plus_uniform_reachable_pareto_modes"
+                    ):
+                        contract_errors.append(
+                            "teacher_contract=gt_anchor_plus_uniform_reachable_pareto_modes"
+                        )
+                    if (
+                        build_metadata.get("mode_selection_order")
+                        != "scene_normalized_objective_fps_then_snsad"
+                    ):
+                        contract_errors.append(
+                            "mode_selection_order=scene_normalized_objective_fps_then_snsad"
+                        )
+                    if not bool(build_metadata.get("raw_internal_candidates", False)):
+                        contract_errors.append("raw_internal_candidates=true")
+                    if bool(build_metadata.get("expand_external_candidates", True)):
+                        contract_errors.append("expand_external_candidates=false")
+                    if not bool(build_metadata.get("policy_reachability_required", False)):
+                        contract_errors.append("policy_reachability_required=true")
+                    if int(build_metadata.get("policy_samples_per_scene", 0)) <= 0:
+                        contract_errors.append("policy_samples_per_scene>0")
+                    if not str(build_metadata.get("policy_checkpoint_sha256", "")):
+                        contract_errors.append("policy_checkpoint_sha256=<non-empty>")
+                    if not str(build_metadata.get("fs_norm_stats_sha256", "")):
+                        contract_errors.append("fs_norm_stats_sha256=<non-empty>")
+                    if contract_errors:
+                        raise ValueError(
+                            "frontier_v4 refuses migrated/preselected support archives; rebuild from raw candidates. "
+                            f"token={record.get('token', '')!r}, unmet contract={contract_errors}."
+                        )
                 if "support_indices" not in record:
                     raise KeyError(
                         f"DPSI requires support_indices in v3 archive for token={record.get('token', '')!r}."
@@ -9718,6 +9874,19 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         f"DPSI support_indices out of range for token={record.get('token', '')!r}: "
                         f"candidate_count={candidate_count}, support_indices={support_indices.tolist()}."
                     )
+                if str(getattr(cfg, "dpsi_target_distribution", "legacy")).strip().lower() == "frontier_v4":
+                    mode_ids = np.asarray(record["mode_ids"], dtype=np.int64).reshape(-1)
+                    reachability = np.asarray(record["policy_reachability_snsad"], dtype=np.float32).reshape(-1)
+                    non_gt_indices = support_indices[mode_ids[support_indices] != 0]
+                    max_policy_snsad = float(build_metadata["max_policy_snsad"])
+                    if non_gt_indices.size and (
+                        not np.isfinite(reachability[non_gt_indices]).all()
+                        or bool(np.any(reachability[non_gt_indices] > max_policy_snsad + 1e-6))
+                    ):
+                        raise ValueError(
+                            "frontier_v4 selected a mode outside the current-policy learning frontier; "
+                            f"token={record.get('token', '')!r}."
+                        )
                 gt_anchor_injected = False
                 if bool(getattr(cfg, "dpsi_residual_budget_enabled", False)):
                     sources = [str(source) for source in record["sources"]]
@@ -9740,7 +9909,20 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                         )
                         gt_anchor_injected = True
                 filtered = dict(record)
-                for key in ("candidates", "rewards", "anchor_distance", "valid_mask", "selection_score"):
+                for key in (
+                    "candidates",
+                    "rewards",
+                    "anchor_distance",
+                    "valid_mask",
+                    "selection_score",
+                    "mode_ids",
+                    "teacher_eligible_mask",
+                    "source_conditioned_mask",
+                    "gt_relative_ade",
+                    "gt_relative_fde",
+                    "policy_reachability_snsad",
+                    "pareto_objective_novelty",
+                ):
                     if key in filtered:
                         filtered[key] = np.asarray(filtered[key])[support_indices]
                 filtered["sources"] = [str(record["sources"][int(i)]) for i in support_indices.tolist()]
@@ -9768,6 +9950,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         selected_selection_score = torch.zeros((B, max_m), device=device, dtype=torch.float32)
         selected_support_weight = torch.zeros((B, max_m), device=device, dtype=torch.float32)
         selected_support_tag_code = torch.zeros((B, max_m), device=device, dtype=torch.long)
+        selected_mode_id = torch.full((B, max_m), -1, device=device, dtype=torch.long)
+        selected_teacher_eligible = torch.zeros((B, max_m), device=device, dtype=torch.bool)
+        selected_source_conditioned = torch.zeros((B, max_m), device=device, dtype=torch.bool)
+        selected_policy_reachability = torch.zeros((B, max_m), device=device, dtype=torch.float32)
+        selected_objective_novelty = torch.zeros((B, max_m), device=device, dtype=torch.float32)
         selected_components = {
             key: torch.zeros((B, max_m), device=device, dtype=torch.float32)
             for key in REQUIRED_COMPONENT_KEYS
@@ -9867,6 +10054,24 @@ class ReCogDriveDiffusionPlanner(nn.Module):
                 device=device,
                 dtype=torch.long,
             )
+            if "mode_ids" in record:
+                selected_mode_id[b, :m] = torch.as_tensor(record["mode_ids"], device=device, dtype=torch.long)
+            if "teacher_eligible_mask" in record:
+                selected_teacher_eligible[b, :m] = torch.as_tensor(
+                    record["teacher_eligible_mask"], device=device, dtype=torch.bool
+                )
+            if "source_conditioned_mask" in record:
+                selected_source_conditioned[b, :m] = torch.as_tensor(
+                    record["source_conditioned_mask"], device=device, dtype=torch.bool
+                )
+            if "policy_reachability_snsad" in record:
+                selected_policy_reachability[b, :m] = torch.as_tensor(
+                    record["policy_reachability_snsad"], device=device, dtype=torch.float32
+                )
+            if "pareto_objective_novelty" in record:
+                selected_objective_novelty[b, :m] = torch.as_tensor(
+                    record["pareto_objective_novelty"], device=device, dtype=torch.float32
+                )
             gt_reward[b] = float(record["gt_reward"])
             il_reward[b] = float(record["il_reward"])
             has_valid = bool(valid_mask.any().detach().cpu().item()) if valid_mask_recomputed else bool(
@@ -9906,6 +10111,11 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             "selected_source_index": selected_source_index,
             "selected_support_weight": selected_support_weight,
             "selected_support_tag_code": selected_support_tag_code,
+            "selected_mode_id": selected_mode_id,
+            "selected_teacher_eligible": selected_teacher_eligible,
+            "selected_source_conditioned": selected_source_conditioned,
+            "selected_policy_reachability": selected_policy_reachability,
+            "selected_objective_novelty": selected_objective_novelty,
             "valid_candidate_ratio": valid_real.float().sum() / real_count,
             "has_valid_candidate_ratio": has_valid_candidate.float().mean(),
             "fallback_candidate_ratio": fallback_candidate.float().mean(),
@@ -10031,9 +10241,18 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             cfg,
         )
         selected["candidate_rewards"] = rewards
+        selected["candidate_trajs"] = candidates
         selected["candidate_components"] = components
         selected["candidate_sources"] = sources
         selected["candidate_anchor_distance"] = anchor_distance
+        if str(cfg.select_by) == "pdms":
+            selected["candidate_selection_score"] = rewards.float()
+        else:
+            selected["candidate_selection_score"] = (
+                rewards.float()
+                - float(cfg.prior_distance_weight) * anchor_distance.float()
+                - float(cfg.jerk_penalty_weight) * self._trajectory_jerk_penalty(candidates).float()
+            )
         return selected
 
     def _load_grpo_buffer_guidance_batch(
@@ -10921,6 +11140,8 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             awac_batch["il_reward"],
             profile,
             cfg,
+            selected_mode_id=awac_batch.get("selected_mode_id"),
+            selected_teacher_eligible=awac_batch.get("selected_teacher_eligible"),
         )
         target_trajs, target_weights, target_mask, sample_diag = _sample_asmi_targets(
             awac_batch["selected_trajs"],
@@ -10966,6 +11187,16 @@ class ReCogDriveDiffusionPlanner(nn.Module):
         selected_rewards = awac_batch["selected_rewards"]
         denom = selected_real.float().sum().clamp(min=1.0)
         selected_reward_mean = (selected_rewards * selected_real.float()).sum() / denom
+        selected_non_gt = selected_real & (awac_batch["selected_source_code"] != 1)
+        if bool(selected_non_gt.any().detach().cpu().item()):
+            policy_reachability_values = awac_batch["selected_policy_reachability"][selected_non_gt]
+            policy_reachability_mean = policy_reachability_values.mean().to(total_loss)
+            policy_reachability_max = policy_reachability_values.max().to(total_loss)
+            objective_novelty_mean = awac_batch["selected_objective_novelty"][selected_non_gt].mean().to(total_loss)
+        else:
+            policy_reachability_mean = total_loss.new_zeros(())
+            policy_reachability_max = total_loss.new_zeros(())
+            objective_novelty_mean = total_loss.new_zeros(())
         zero = total_loss.new_zeros(())
         out = {
             "loss": total_loss,
@@ -11039,6 +11270,9 @@ class ReCogDriveDiffusionPlanner(nn.Module):
             ].detach(),
             "dpsi_sampled_weight_sum_mean": target_weights.sum(dim=1).mean().detach(),
             "dpsi_sampled_real_ratio": target_mask.float().mean().detach(),
+            "dpsi_policy_reachability_mean": policy_reachability_mean.detach(),
+            "dpsi_policy_reachability_max": policy_reachability_max.detach(),
+            "dpsi_pareto_objective_novelty_mean": objective_novelty_mean.detach(),
             "valid_candidate_ratio": awac_batch["valid_candidate_ratio"].to(total_loss).detach(),
             "selected_valid_ratio": (
                 ((awac_batch["selected_valid_mask"] & selected_real).float().sum())

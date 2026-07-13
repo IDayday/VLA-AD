@@ -376,3 +376,69 @@ frontier 决定曝光顺序，residual/safety budget 决定当前可释放质量
 因此当前最准确的结论不是“数据本身不好”或“训练方法不好”二选一，而是：**候选库可用，但
 teacher 分布缺少概率语义和 learnability calibration；静态多目标训练又没有按模型学习状态控制
 这些难目标的实际梯度预算。**
+
+## 9. SG-FPS v4 implementation update
+
+The data-level cause has now been isolated and corrected. The v3 builder first reduced 33 internal
+candidates to about 12 with a scalar AWAC score before combining them with external candidates. A
+512-scene raw rebuild showed that 54.32% of the non-GT modes selected by the corrected contract had
+been removed from the v3 candidate pool; 50.59% of scenes recovered at least one such mode.
+
+The new `mode_pareto_v4` path removes that preselection, disables external mechanical expansion,
+keeps one GT anchor, and selects at most three non-GT modes using hard safety, GT-relative trust
+bounds, GT-inclusive epsilon-Pareto filtering, and SNSAD mode separation. Stage2 uses a fixed
+per-scene mode mass, uniform probability per explicit mode, paired noise, and a residual-gradient
+budget. Migrated v3 shadow archives are rejected by the production loader.
+
+The complete contract, artifacts, promotion gates, and commands are documented in
+`docs/SG_FPS_V4_Data_And_Training_Contract.md`.
+
+## 10. Reachable Pareto data and gradient-budget conclusion
+
+后续实验把“数据是否正确”“模型是否学得动”“采样分布是否变宽”拆成了三个独立问题。
+
+### 10.1 数据侧修复
+
+最终 v4 不再按 scalar reward 对 Pareto front 做最后一次 top-k，而是按场景内归一化的
+`[EP, TTC, comfort]` 做最远点覆盖，再用轨迹 SNSAD 打破饱和指标的平局。每条非 GT teacher
+还必须位于 A5 八次随机 rollout 的最近 SNSAD `0.50` 内。128-scene 重构的 multi-mode ratio
+为 96.09%，平均 2.094 条 non-GT mode，policy reachability 为 mean 0.359 / p90 0.477 / max 0.499，
+严格 validator 为零错误。
+
+FS-Norm 实验同时确认：FS stats 是 checkpoint 的动作坐标系，不是随 teacher archive 更新的数据
+统计。用新 v4 stats 直接微调 A5 会造成 representation reconstruction 明显漂移；保留 A5 原始
+stats 后训练恢复正常。因此 fine-tune 默认允许 archive provenance 与 FS stats provenance 不同并
+明确 warning，只有从头训练才要求两者一致。
+
+### 10.2 可学习性不是问题，但原预算会饿死模式
+
+同一 v4 数据上的 16-batch 固定随机性 replay 中，step100 相对 A5：total loss 平均下降
+0.00356（15/16 batch 改善），non-GT denoising loss 下降 0.00617（14/16），trajectory loss
+16/16 改善。teacher 与当前 policy 并未断开。
+
+真正的问题是 residual budget 的反馈方向。名义 non-GT target mass 约 24%，cap=0.25 时实际
+non-GT weight 只有约 8%。GT 先变容易后，relative residual ratio 上升，预算继续压低 mode
+weight，形成“GT 越容易 -> mode 越少 -> 策略越窄”的正反馈。100-step rollout 的表现正好符合
+该机制：precision 和 GT ADE 改善，但 dispersion ratio 下降 0.04795，pairwise ADE 下降
+0.01141m，kernel mode coverage 也显著下降。
+
+### 10.3 当前有效修复
+
+在同一 128 scenes、同一初始化、同一 global batch 和 seed 上：
+
+| 设置 | recall AUC vs A5 | F1 AUC | SNSAD | dispersion ratio | mean GT ADE |
+|---|---:|---:|---:|---:|---:|
+| cap 0.25 + trajectory/feasibility aux | +0.00151 | +0.00320 | -0.00304 | -0.04795 | -0.02790m |
+| cap 0.45 + auxiliary | +0.00498 | +0.00454 | +0.00134 | -0.00487 | -0.01836m |
+| cap 0.45 + no x0 auxiliary | +0.00722 | +0.00571 | +0.00321 | -0.00218 | -0.01386m |
+
+最后一行的 recall、F1、SNSAD、GT ADE 的 paired bootstrap 95% CI 均不跨零，dispersion 变化
+不显著。它说明提高可达 mode 的梯度预算能阻止收缩；trajectory/feasibility x0 auxiliary 在这个
+多模态目标上是次要 mean-seeking 因素，移除后 support recall、kernel coverage、dispersion 和
+SNSAD 均显著优于相同 cap 的 auxiliary 版本。
+
+因此 v4 launcher 当前采用：`beta_max=0.25`、40-epoch exposure warmup、residual cap `0.45`、
+trajectory/feasibility auxiliary 为 0，保留 epsilon prediction、FS-Norm、PTA 和 hard output bounds。
+这不是以无约束宽度换安全，而是先通过数据的 safety/reachability gate 缩小 teacher hardness，再
+给予通过 gate 的 Pareto mode 足够梯度。完整 103k rebuild 和长训仍必须经过 held-out NAVTEST、
+support-aligned coverage 和 Stage3 BPAE 三重晋级，不能由该 128-scene train-subset probe 直接替代。

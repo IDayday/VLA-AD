@@ -192,6 +192,99 @@ def test_residual_budget_injects_gt_before_support_filter_without_changing_basel
     assert budget["selected_anchor_distance"][0, -1].item() == 0.0
 
 
+def _frontier_v4_record(*, raw_internal_candidates: bool) -> dict:
+    record = _record(k=3)
+    record.update(
+        version=4,
+        sources=["gt", "progress_endpoint", "ddv2"],
+        support_tags=["gt_anchor", "mode_pareto", "mode_pareto"],
+        support_indices=[0, 1, 2],
+        mode_ids=np.asarray([0, 1, 2], dtype=np.int64),
+        teacher_eligible_mask=np.ones((3,), dtype=np.bool_),
+        source_conditioned_mask=np.asarray([False, False, True], dtype=np.bool_),
+        policy_reachability_snsad=np.asarray([0.1, 0.2, 0.3], dtype=np.float32),
+        pareto_objective_novelty=np.asarray([0.0, 0.5, 0.25], dtype=np.float32),
+        build_metadata={
+            "selection_strategy": "mode_pareto_v4",
+            "teacher_contract": "gt_anchor_plus_uniform_reachable_pareto_modes",
+            "mode_selection_order": "scene_normalized_objective_fps_then_snsad",
+            "raw_internal_candidates": raw_internal_candidates,
+            "expand_external_candidates": False,
+            "policy_reachability_required": True,
+            "max_policy_snsad": 0.75,
+            "policy_samples_per_scene": 8,
+            "policy_checkpoint_sha256": "checkpoint-sha",
+            "fs_norm_stats_sha256": "stats-sha",
+        },
+    )
+    return record
+
+
+def test_frontier_v4_loader_rejects_shadow_preselected_archive() -> None:
+    record = _frontier_v4_record(raw_internal_candidates=False)
+    planner = ReCogDriveDiffusionPlanner.__new__(ReCogDriveDiffusionPlanner)
+
+    def load(self, root, token, cfg):
+        return record
+
+    planner._load_elite_record_cached = MethodType(load, planner)
+    action_input = BatchFeature(data={"action": torch.zeros((1, 8, 3), dtype=torch.float32)})
+    cfg = OfflineRLConfig(
+        enabled=True,
+        support_archive_path="/tmp/support",
+        use_dpsi=True,
+        dpsi_target_distribution="frontier_v4",
+    )
+
+    with pytest.raises(ValueError, match="rebuild from raw candidates"):
+        planner._load_awac_buffer_candidates(action_input, ["tok"], {}, cfg)
+
+
+def test_frontier_v4_loader_accepts_raw_archive_contract() -> None:
+    record = _frontier_v4_record(raw_internal_candidates=True)
+    planner = ReCogDriveDiffusionPlanner.__new__(ReCogDriveDiffusionPlanner)
+
+    def load(self, root, token, cfg):
+        return record
+
+    planner._load_elite_record_cached = MethodType(load, planner)
+    action_input = BatchFeature(data={"action": torch.zeros((1, 8, 3), dtype=torch.float32)})
+    cfg = OfflineRLConfig(
+        enabled=True,
+        support_archive_path="/tmp/support",
+        use_dpsi=True,
+        dpsi_target_distribution="frontier_v4",
+    )
+
+    batch = planner._load_awac_buffer_candidates(action_input, ["tok"], {}, cfg)
+
+    assert torch.equal(batch["selected_mode_id"][0], torch.tensor([0, 1, 2]))
+    assert batch["selected_teacher_eligible"].all()
+    assert torch.allclose(batch["selected_policy_reachability"][0], torch.tensor([0.1, 0.2, 0.3]))
+    assert torch.allclose(batch["selected_objective_novelty"][0], torch.tensor([0.0, 0.5, 0.25]))
+
+
+def test_frontier_v4_loader_rejects_mode_outside_policy_frontier() -> None:
+    record = _frontier_v4_record(raw_internal_candidates=True)
+    record["policy_reachability_snsad"][1] = 0.8
+    planner = ReCogDriveDiffusionPlanner.__new__(ReCogDriveDiffusionPlanner)
+
+    def load(self, root, token, cfg):
+        return record
+
+    planner._load_elite_record_cached = MethodType(load, planner)
+    action_input = BatchFeature(data={"action": torch.zeros((1, 8, 3), dtype=torch.float32)})
+    cfg = OfflineRLConfig(
+        enabled=True,
+        support_archive_path="/tmp/support",
+        use_dpsi=True,
+        dpsi_target_distribution="frontier_v4",
+    )
+
+    with pytest.raises(ValueError, match="outside the current-policy learning frontier"):
+        planner._load_awac_buffer_candidates(action_input, ["tok"], {}, cfg)
+
+
 def test_dpsi_tag_weights():
     cfg = OfflineRLConfig()
     weight = ReCogDriveDiffusionPlanner._dpsi_weight_for_tag
@@ -271,6 +364,101 @@ def test_mode_balance_matches_snsad_density_contract():
     numpy_weights = density_balanced_support_weights(numpy_distance, bandwidth=0.4)
 
     assert np.allclose(stats["mode_density_weights"][0].numpy(), numpy_weights, atol=1e-6)
+
+
+def test_frontier_v4_weights_modes_not_duplicate_rows() -> None:
+    cfg = OfflineRLConfig(
+        dpsi_target_distribution="frontier_v4",
+        dpsi_beta_max=0.25,
+        dpsi_beta_warmup_epochs=40,
+        dpsi_use_reward_margin_weight=False,
+        dpsi_use_source_weight=False,
+        dpsi_pair_target_randomness=True,
+        dpsi_residual_budget_enabled=True,
+        dpsi_target_sample_m=2,
+        dpsi_target_sample_m_after_warmup=2,
+    )
+    trajs = _traj_row([0.0, 1.0, 1.0, 3.0])
+    rewards = torch.tensor([[0.9, 0.9, 1.0, 0.95]])
+    source = torch.tensor([[1, 7, 7, 4]])
+    mask = torch.ones_like(rewards, dtype=torch.bool)
+    profile, _ = _compute_dpsi_support_profile(
+        trajs,
+        rewards,
+        mask,
+        source,
+        torch.tensor([0.9]),
+        torch.tensor([0.9]),
+        mask,
+        cfg,
+        current_epoch=40,
+    )
+    weights, diagnostics = _build_asmi_weights(
+        rewards,
+        mask,
+        mask,
+        source,
+        torch.zeros_like(rewards),
+        torch.tensor([0.9]),
+        torch.tensor([0.9]),
+        profile,
+        cfg,
+        selected_mode_id=torch.tensor([[0, 1, 1, 2]]),
+        selected_teacher_eligible=mask,
+    )
+
+    assert weights[0, 0].item() == pytest.approx(0.75)
+    assert weights[0, 1:3].sum().item() == pytest.approx(0.125)
+    assert weights[0, 3].item() == pytest.approx(0.125)
+    assert diagnostics["dpsi_frontier_mode_count_mean"].item() == pytest.approx(2.0)
+
+
+def test_frontier_v4_sampler_always_pairs_gt_and_one_mode() -> None:
+    cfg = OfflineRLConfig(
+        dpsi_target_distribution="frontier_v4",
+        dpsi_use_reward_margin_weight=False,
+        dpsi_use_source_weight=False,
+        dpsi_pair_target_randomness=True,
+        dpsi_residual_budget_enabled=True,
+        dpsi_target_sample_m=2,
+        dpsi_target_sample_m_after_warmup=2,
+    )
+    trajs = _traj_row([0.0, 1.0, 2.0])
+    weights = torch.tensor([[0.75, 0.125, 0.125]])
+    mask = torch.ones_like(weights, dtype=torch.bool)
+    source = torch.tensor([[1, 7, 4]])
+    rewards = torch.tensor([[0.9, 0.95, 0.94]])
+
+    _, sampled_weights, sampled_mask, diagnostics = _sample_asmi_targets(
+        trajs,
+        weights,
+        mask,
+        mask,
+        source,
+        rewards,
+        cfg,
+        current_epoch=40,
+        training=True,
+    )
+
+    assert sampled_mask.tolist() == [[True, True]]
+    assert sampled_weights[0].tolist() == pytest.approx([0.75, 0.25])
+    assert diagnostics["dpsi_sampled_anchor_ratio"].item() == 1.0
+
+
+def test_frontier_v4_config_rejects_legacy_weighting() -> None:
+    cfg = OfflineRLConfig(
+        enabled=True,
+        use_dpsi=True,
+        dpsi_target_distribution="frontier_v4",
+        dpsi_pair_target_randomness=True,
+        dpsi_residual_budget_enabled=True,
+        dpsi_target_sample_m=2,
+        dpsi_target_sample_m_after_warmup=2,
+    )
+
+    with pytest.raises(ValueError, match="legacy tag/source/reward weighting"):
+        ReCogDriveDiffusionPlanner._validate_offline_rl_config(cfg)
 
 
 def test_legacy_target_distribution_does_not_run_mode_balance(monkeypatch):

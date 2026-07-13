@@ -87,13 +87,27 @@ def reselect_record(record: dict[str, Any], cfg: dict[str, Any]) -> tuple[dict[s
     if not candidates:
         stats["empty_records"] += 1
         return record, dict(stats)
-    selected = select_feasible_pareto_support(candidates, _reference_components(candidates), cfg)
+    selection_cfg = dict(cfg)
+    source_metadata = dict(record.get("build_metadata", {}) or {})
+    if int(record.get("version", 0)) >= 4 and source_metadata:
+        preserved_metadata = dict(source_metadata)
+        preserved_metadata["reselected_from_raw_v4"] = bool(source_metadata.get("raw_internal_candidates", False))
+        selection_cfg["support_build_metadata"] = preserved_metadata
+        selection_cfg.setdefault(
+            "support_v4_require_policy_reachability",
+            bool(source_metadata.get("policy_reachability_required", False)),
+        )
+        selection_cfg.setdefault(
+            "support_v4_max_policy_snsad",
+            float(source_metadata.get("max_policy_snsad", 0.50)),
+        )
+    selected = select_feasible_pareto_support(candidates, _reference_components(candidates), selection_cfg)
     rebuilt = build_archive_record(
         str(record.get("token", candidates[0].token)),
         candidates,
         selected,
         ref=_reference_components(candidates),
-        cfg=cfg,
+        cfg=selection_cfg,
     )
     old_tags = [str(tag) for tag in record.get("support_tags", [])]
     new_tags = [str(tag) for tag in rebuilt.get("support_tags", [])]
@@ -126,7 +140,7 @@ def _output_path(input_root: Path, output_root: Path | None, source_path: Path) 
 def main() -> None:
     parser = argparse.ArgumentParser(
         description=(
-            "Reselect SG-FPS v3 support tags from already evaluator-labeled candidates. "
+            "Reselect SG-FPS support from already evaluator-labeled candidates. "
             "This does not change trajectories or evaluator metrics."
         )
     )
@@ -140,6 +154,7 @@ def main() -> None:
     parser.add_argument("--max-records", type=int, default=0)
     parser.add_argument("--rank", type=int, default=0)
     parser.add_argument("--world-size", type=int, default=1)
+    parser.add_argument("--archive-version", type=int, default=3)
     parser.add_argument("--support-top-m", type=int, default=12)
     parser.add_argument("--ddc-min-absolute", type=float, default=0.95)
     parser.add_argument("--ddc-drop-tolerance", type=float, default=0.01)
@@ -163,7 +178,11 @@ def main() -> None:
         default="absolute",
     )
     parser.add_argument("--comfort-drop-tolerance", type=float, default=0.05)
-    parser.add_argument("--selection-strategy", choices=["quota", "quality_pareto"], default="quota")
+    parser.add_argument(
+        "--selection-strategy",
+        choices=["quota", "quality_pareto", "mode_pareto_v4"],
+        default="quota",
+    )
     parser.add_argument("--enable-train-quality-gate", action="store_true")
     parser.add_argument("--min-non-gt-pdms", type=float, default=0.0)
     parser.add_argument(
@@ -193,11 +212,25 @@ def main() -> None:
     parser.add_argument("--pareto-count", type=int, default=5)
     parser.add_argument("--score-diversity-weight", type=float, default=0.5)
     parser.add_argument("--min-trajectory-diversity-score", type=float, default=0.0)
+    parser.add_argument("--v4-max-gt-ade-m", type=float, default=1.5)
+    parser.add_argument("--v4-max-gt-fde-m", type=float, default=4.0)
+    parser.add_argument("--v4-mode-distance-threshold", type=float, default=0.25)
+    parser.add_argument("--v4-reward-gain-cap", type=float, default=0.05)
+    parser.add_argument("--v4-max-gt-reward-drop", type=float, default=0.05)
+    parser.add_argument("--v4-pareto-eps", type=float, default=0.01)
+    parser.add_argument("--v4-exclude-derived-external", action=argparse.BooleanOptionalAction, default=True)
+    parser.add_argument(
+        "--v4-require-policy-reachability",
+        action=argparse.BooleanOptionalAction,
+        default=None,
+    )
+    parser.add_argument("--v4-max-policy-snsad", type=float, default=None)
     parser.add_argument("--dry-run", action="store_true")
     args = parser.parse_args()
 
     cfg = {
         "support_top_m": int(args.support_top_m),
+        "support_archive_version": int(args.archive_version),
         "fpv3_ddc_min_absolute": float(args.ddc_min_absolute),
         "fpv3_ddc_drop_tolerance": float(args.ddc_drop_tolerance),
         "fpv3_feas_cost_max": float(args.feas_cost_max),
@@ -234,7 +267,24 @@ def main() -> None:
         "support_pareto_count": int(args.pareto_count),
         "support_score_diversity_weight": float(args.score_diversity_weight),
         "support_min_trajectory_diversity_score": float(args.min_trajectory_diversity_score),
+        "support_v4_max_gt_ade_m": float(args.v4_max_gt_ade_m),
+        "support_v4_max_gt_fde_m": float(args.v4_max_gt_fde_m),
+        "support_v4_mode_distance_threshold": float(args.v4_mode_distance_threshold),
+        "support_v4_reward_gain_cap": float(args.v4_reward_gain_cap),
+        "support_v4_max_gt_reward_drop": float(args.v4_max_gt_reward_drop),
+        "support_v4_pareto_eps": float(args.v4_pareto_eps),
+        "support_v4_exclude_derived_external": bool(args.v4_exclude_derived_external),
+        "support_build_metadata": {
+            "migration": "shadow_reselect_without_rescoring",
+            "raw_internal_candidates": False,
+            "expand_external_candidates": True,
+            "source_archive_path": str(args.support_archive_path),
+        },
     }
+    if args.v4_require_policy_reachability is not None:
+        cfg["support_v4_require_policy_reachability"] = bool(args.v4_require_policy_reachability)
+    if args.v4_max_policy_snsad is not None:
+        cfg["support_v4_max_policy_snsad"] = float(args.v4_max_policy_snsad)
     root = Path(args.support_archive_path)
     output_root = Path(args.output_support_archive_path) if args.output_support_archive_path else None
     if output_root is not None and not output_root.suffix:

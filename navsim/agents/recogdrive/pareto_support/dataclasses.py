@@ -33,6 +33,8 @@ SUPPORT_CATEGORIES = {
     "ddc_repair",
     "smooth_feasible",
     "vector_pareto",
+    "mode_pareto",
+    "mode_support",
     "diversity_max",
     "diversity_max_valid",
     "hard_negative",

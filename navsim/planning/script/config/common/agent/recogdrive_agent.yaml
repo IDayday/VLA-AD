@@ -630,6 +630,7 @@ fs_norm_target_clip: -1.0
 fs_norm_output_clip: -1.0
 fs_norm_output_clip_mode: scalar
 fs_norm_min_version: 1
+fs_norm_require_archive_match: false
 x0_aux_weight: 0.0
 delta_aux_weight: 0.0
 geo_aux_weight: 0.0

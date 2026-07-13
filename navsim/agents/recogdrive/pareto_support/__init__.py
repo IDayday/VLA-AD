@@ -23,6 +23,7 @@ from .pareto_archive import (
     pareto_front_mask,
     select_feasible_pareto_support,
     support_semantic_pass,
+    trajectory_snsad_distance,
 )
 from .external_generators import (
     BaseTrajectoryGenerator,
@@ -63,6 +64,7 @@ __all__ = [
     "pareto_front_mask",
     "select_feasible_pareto_support",
     "support_semantic_pass",
+    "trajectory_snsad_distance",
     "BaseTrajectoryGenerator",
     "DDV2Generator",
     "DriveORGenerator",

@@ -75,6 +75,9 @@ cmd=(
 if [[ -n "${FS_NORM_STATS_PATH:-}" ]]; then
   cmd+=("agent.fs_norm_stats_path=${FS_NORM_STATS_PATH}")
 fi
+if [[ -n "${FS_NORM_REQUIRE_ARCHIVE_MATCH:-}" ]]; then
+  cmd+=("agent.fs_norm_require_archive_match=${FS_NORM_REQUIRE_ARCHIVE_MATCH}")
+fi
 if [[ "${HYDRA_EXPERIMENT}" == *"fs_norm"* || "${HYDRA_EXPERIMENT}" == "pta_fs_dit_stage2_103k" ]]; then
   cmd+=("agent.fs_norm_target_clip=${FS_NORM_TARGET_CLIP:-0.0}")
   cmd+=("agent.fs_norm_output_clip=${FS_NORM_OUTPUT_CLIP:-12.0}")
@@ -101,7 +104,10 @@ optional_overrides=(
   "DPSI_TARGET_DISTRIBUTION:agent.offline_rl_dpsi_target_distribution"
   "DPSI_MODE_DENSITY_BANDWIDTH:agent.offline_rl_dpsi_mode_density_bandwidth"
   "DPSI_USE_SOURCE_WEIGHT:agent.offline_rl_dpsi_use_source_weight"
+  "DPSI_USE_REWARD_MARGIN_WEIGHT:agent.offline_rl_dpsi_use_reward_margin_weight"
+  "DPSI_SCENE_NORMALIZE_WEIGHTS:agent.offline_rl_dpsi_scene_normalize_weights"
   "DPSI_BETA_MAX:agent.offline_rl_dpsi_beta_max"
+  "DPSI_BETA_WARMUP_EPOCHS:agent.offline_rl_dpsi_beta_warmup_epochs"
   "DPSI_PAIR_TARGET_RANDOMNESS:agent.offline_rl_dpsi_pair_target_randomness"
   "DPSI_RESIDUAL_BUDGET_ENABLED:agent.offline_rl_dpsi_residual_budget_enabled"
   "DPSI_NON_GT_RESIDUAL_MASS_CAP:agent.offline_rl_dpsi_non_gt_residual_mass_cap"
