@@ -194,6 +194,36 @@ def load_fs_norm_stats(path: str, *, map_location: str | torch.device = "cpu") -
 
 
 def save_fs_norm_stats(path: str, stats: FSNormStats) -> None:
+    path_obj = Path(path)
+    if path_obj.suffix == ".npz":
+        def array_or_empty(value: Optional[torch.Tensor]) -> np.ndarray:
+            if value is None:
+                return np.asarray([], dtype=np.float32)
+            return value.detach().cpu().numpy().astype(np.float32, copy=False)
+
+        np.savez(
+            path_obj,
+            mean=array_or_empty(stats.mean),
+            std=array_or_empty(stats.std),
+            median=array_or_empty(stats.median),
+            mad=array_or_empty(stats.mad),
+            delta_min=array_or_empty(stats.delta_min),
+            delta_max=array_or_empty(stats.delta_max),
+            clip_lower=array_or_empty(stats.clip_lower),
+            clip_upper=array_or_empty(stats.clip_upper),
+            use_robust=np.asarray(int(stats.use_robust), dtype=np.int64),
+            clip=np.asarray(float(stats.clip), dtype=np.float32),
+            version=np.asarray(int(stats.version), dtype=np.int64),
+            representation=np.asarray(str(stats.representation)),
+            p0=np.asarray(stats.p0, dtype=np.float32),
+            scene_balanced=np.asarray(int(stats.scene_balanced), dtype=np.int64),
+            heading_center_zero=np.asarray(int(stats.heading_center_zero), dtype=np.int64),
+            num_scenes=np.asarray(int(stats.num_scenes), dtype=np.int64),
+            num_supports=np.asarray(int(stats.num_supports), dtype=np.int64),
+            archive_path=np.asarray(str(stats.archive_path)),
+            archive_fingerprint=np.asarray(str(stats.archive_fingerprint)),
+        )
+        return
     payload = {
         "mean": stats.mean.detach().cpu(),
         "std": stats.std.detach().cpu(),
@@ -215,4 +245,4 @@ def save_fs_norm_stats(path: str, stats: FSNormStats) -> None:
         "archive_path": str(stats.archive_path),
         "archive_fingerprint": str(stats.archive_fingerprint),
     }
-    torch.save(payload, path)
+    torch.save(payload, path_obj)
