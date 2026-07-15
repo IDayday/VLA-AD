@@ -224,7 +224,7 @@ directory for provenance.  It never contributes records, scores, reward,
 checkpoint selection, or final metric aggregation; if it is unavailable, the
 splitter falls back to geometric route length.
 
-Using the historical total of about 24,987 simulated seconds and the stable
-16-worker ratio gives a planning estimate of roughly 6 hours of active rollout,
-or approximately 6-7 hours including CARLA setup, route transitions, and any
-automatic retry.  Treat this as an ETA, not an evaluation result.
+Using the historical total of about 24,987 simulated seconds and the measured
+16-worker ratio gives a planning estimate of roughly 6-7 hours of active
+rollout, or approximately 7-8 hours including CARLA setup, route transitions,
+and any automatic retry.  Treat this as an ETA, not an evaluation result.
