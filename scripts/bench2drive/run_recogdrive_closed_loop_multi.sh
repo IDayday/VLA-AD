@@ -21,13 +21,16 @@ TIMEOUT=${TIMEOUT:-600}
 FORCE_SPLIT=${FORCE_SPLIT:-0}
 MAX_WORKER_RESTARTS=${MAX_WORKER_RESTARTS:-20}
 WORKER_RETRY_DELAY=${WORKER_RETRY_DELAY:-10}
+WORKER_STALL_TIMEOUT=${WORKER_STALL_TIMEOUT:-240}
 CONDA_BIN=${CONDA_BIN:-/root/miniconda3/bin/conda}
 NAVSIM_CONDA_ENV=${NAVSIM_CONDA_ENV:-navsim}
 START_INFERENCE_SERVERS=${START_INFERENCE_SERVERS:-0}
 KEEP_INFERENCE_SERVERS=${KEEP_INFERENCE_SERVERS:-0}
 SERVER_HOST=${SERVER_HOST:-127.0.0.1}
 BASE_SERVER_PORT=${BASE_SERVER_PORT:-8765}
+# Maximum cold-start time.  Workers launch as soon as every server is healthy.
 SERVER_STARTUP_SECONDS=${SERVER_STARTUP_SECONDS:-90}
+SERVER_HEALTH_POLL_SECONDS=${SERVER_HEALTH_POLL_SECONDS:-2}
 SERVER_LOG_DIR=${SERVER_LOG_DIR:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_closed_loop/server_logs}
 SERVER_PROFILE_EVERY=${SERVER_PROFILE_EVERY:-100}
 PRECISION=${PRECISION:-bf16}
@@ -37,6 +40,9 @@ SERVER_CONFIG=${SERVER_CONFIG:-${VLA_AD_ROOT}/configs/bench2drive_recogdrive_sta
 SERVER_CONTRACT=${SERVER_CONTRACT:-closest-public}
 GENERATED_TEAM_CONFIG_DIR=${GENERATED_TEAM_CONFIG_DIR:-${VLA_AD_ROOT}/outputs/bench2drive_recogdrive_closed_loop/generated_team_configs}
 USE_PER_WORKER_SERVER_URLS=${USE_PER_WORKER_SERVER_URLS:-${START_INFERENCE_SERVERS}}
+WORKER_START_DELAY=${WORKER_START_DELAY:-10}
+SPLIT_STRATEGY=${SPLIT_STRATEGY:-contiguous}
+SPLIT_COST_JSON=${SPLIT_COST_JSON:-}
 
 if [[ "${SERVER_CONTRACT}" == "closest-public" ]]; then
   if [[ -z "${PLANNER_CHECKPOINT}" || -z "${VLM_PATH}" ]]; then
@@ -155,6 +161,8 @@ run_eval_worker() {
   local rc=0
   local evaluator_pid=""
   local log_offset=1
+  local last_log_size=0
+  local last_log_change=0
 
   cleanup_worker_processes() {
     if [[ -n "${evaluator_pid}" ]] && kill -0 "${evaluator_pid}" 2>/dev/null; then
@@ -165,7 +173,17 @@ run_eval_worker() {
       done
       kill -KILL "${evaluator_pid}" 2>/dev/null || true
     fi
-    pkill -KILL -f "${CARLA_ROOT}/.*-graphicsadapter=${gpu_rank}" 2>/dev/null || true
+    # Multiple workers may intentionally share a GPU.  Killing by
+    # -graphicsadapter would terminate every sibling CARLA instance on that
+    # device, so clean only the RPC-port range reserved for this worker.
+    ps -eo pid=,args= | while read -r candidate_pid candidate_args; do
+      if [[ "${candidate_args}" =~ CarlaUE4.*-carla-rpc-port=([0-9]+) ]]; then
+        candidate_port=${BASH_REMATCH[1]}
+        if (( candidate_port >= port && candidate_port < port + 150 )); then
+          kill -KILL "${candidate_pid}" 2>/dev/null || true
+        fi
+      fi
+    done
   }
   trap 'cleanup_worker_processes; exit 130' INT
   trap 'cleanup_worker_processes; exit 143' TERM
@@ -176,6 +194,8 @@ run_eval_worker() {
       echo "routes=${routes} checkpoint=${checkpoint_endpoint} gpu=${gpu_rank} port=${port} tm_port=${tm_port}"
     } >> "${log_path}"
     log_offset=$(( $(stat -c %s "${log_path}") + 1 ))
+    last_log_size=$((log_offset - 1))
+    last_log_change=${SECONDS}
 
     CUDA_VISIBLE_DEVICES="${gpu_rank}" python "${LEADERBOARD_ROOT}/leaderboard/leaderboard_evaluator.py" \
       --routes="${routes}" \
@@ -193,12 +213,24 @@ run_eval_worker() {
     evaluator_pid=$!
 
     while kill -0 "${evaluator_pid}" 2>/dev/null; do
+      current_log_size=$(stat -c %s "${log_path}" 2>/dev/null || echo "${last_log_size}")
+      if (( current_log_size > last_log_size )); then
+        last_log_size=${current_log_size}
+        last_log_change=${SECONDS}
+      elif (( WORKER_STALL_TIMEOUT > 0 && SECONDS - last_log_change >= WORKER_STALL_TIMEOUT )); then
+        echo "===== worker task=${task_id} stalled with no log progress for ${WORKER_STALL_TIMEOUT}s; terminating evaluator pid=${evaluator_pid} =====" >> "${log_path}"
+        kill "${evaluator_pid}" 2>/dev/null || true
+        break
+      fi
       if tail -c +"${log_offset}" "${log_path}" 2>/dev/null | \
         rg -q 'LowLevelFatalError|Segmentation fault \(core dumped\)|Engine crash handling finished'; then
         echo "===== worker task=${task_id} detected CARLA crash; terminating evaluator pid=${evaluator_pid} =====" >> "${log_path}"
         kill "${evaluator_pid}" 2>/dev/null || true
         break
       fi
+      # Scan only newly appended output, retaining a small overlap so a line
+      # split across writes cannot hide a crash signature.
+      log_offset=$(( current_log_size > 512 ? current_log_size - 511 : 1 ))
       sleep 5
     done
 
@@ -227,7 +259,7 @@ run_eval_worker() {
 }
 
 export VLA_AD_ROOT BENCH2DRIVE_ROOT CARLA_ROOT SAVE_PATH
-export CARLA_SERVER="${CARLA_ROOT}/CarlaUE4.sh"
+export CARLA_SERVER="${CARLA_SERVER:-${CARLA_ROOT}/CarlaUE4.sh}"
 export PYTHONPATH="${PYTHONPATH:-}:${CARLA_ROOT}/PythonAPI:${CARLA_ROOT}/PythonAPI/carla:${CARLA_ROOT}/PythonAPI/carla/dist/carla-0.9.15-py3.7-linux-x86_64.egg:${BENCH2DRIVE_ROOT}/leaderboard:${BENCH2DRIVE_ROOT}/leaderboard/team_code:${BENCH2DRIVE_ROOT}/scenario_runner:${VLA_AD_ROOT}/bench2drive_eval/team_code:${VLA_AD_ROOT}"
 export SCENARIO_RUNNER_ROOT="${BENCH2DRIVE_ROOT}/scenario_runner"
 export LEADERBOARD_ROOT="${BENCH2DRIVE_ROOT}/leaderboard"
@@ -261,8 +293,27 @@ if [ "${START_INFERENCE_SERVERS}" = "1" ]; then
     ) &
     SERVER_PIDS+=("$!")
   done
-  echo "Waiting ${SERVER_STARTUP_SECONDS}s for inference servers to load models before health checks"
-  sleep "${SERVER_STARTUP_SECONDS}"
+  echo "Waiting up to ${SERVER_STARTUP_SECONDS}s for inference servers to become healthy"
+  server_start_deadline=$((SECONDS + SERVER_STARTUP_SECONDS))
+  while true; do
+    ready_count=0
+    for ((i=0; i<worker_count; i++)); do
+      SERVER_PORT=$(server_port_for_worker "${i}")
+      if check_server_health "${SERVER_HOST}" "${SERVER_PORT}" >/dev/null 2>&1; then
+        ready_count=$((ready_count + 1))
+      fi
+    done
+    if (( ready_count == worker_count )); then
+      echo "All ${worker_count} inference servers are healthy after ${SECONDS}s"
+      break
+    fi
+    if (( SECONDS >= server_start_deadline )); then
+      echo "Timed out after ${SERVER_STARTUP_SECONDS}s: ${ready_count}/${worker_count} inference servers healthy" >&2
+      exit 1
+    fi
+    echo "Inference server readiness: ${ready_count}/${worker_count}"
+    sleep "${SERVER_HEALTH_POLL_SECONDS}"
+  done
   for ((i=0; i<worker_count; i++)); do
     SERVER_PORT=$(server_port_for_worker "${i}")
     if ! check_server_health "${SERVER_HOST}" "${SERVER_PORT}"; then
@@ -273,7 +324,7 @@ if [ "${START_INFERENCE_SERVERS}" = "1" ]; then
   done
 fi
 
-SPLIT_FLAG="${BASE_ROUTES}_${TASK_NUM}_${ALGO}_${PLANNER_TYPE}_split_done.flag"
+SPLIT_FLAG="${BASE_ROUTES}_${TASK_NUM}_${ALGO}_${PLANNER_TYPE}_${SPLIT_STRATEGY}_split_done.flag"
 MISSING_SPLIT=0
 for task_id in "${TASK_LIST[@]}"; do
   if [ ! -f "${BASE_ROUTES}_${task_id}_${ALGO}_${PLANNER_TYPE}.xml" ]; then
@@ -281,7 +332,24 @@ for task_id in "${TASK_LIST[@]}"; do
   fi
 done
 if [ "${FORCE_SPLIT}" = "1" ] || [ ! -f "${SPLIT_FLAG}" ] || [ "${MISSING_SPLIT}" = "1" ]; then
-  python tools/split_xml.py "${BASE_ROUTES}" "${TASK_NUM}" "${ALGO}" "${PLANNER_TYPE}"
+  case "${SPLIT_STRATEGY}" in
+    contiguous)
+      python tools/split_xml.py "${BASE_ROUTES}" "${TASK_NUM}" "${ALGO}" "${PLANNER_TYPE}"
+      ;;
+    balanced)
+      BALANCED_SPLIT_ARGS=()
+      if [[ -n "${SPLIT_COST_JSON}" ]]; then
+        BALANCED_SPLIT_ARGS+=(--cost-json "${SPLIT_COST_JSON}")
+      fi
+      python "${VLA_AD_ROOT}/scripts/bench2drive/split_xml_balanced.py" \
+        "${BASE_ROUTES}" "${TASK_NUM}" "${ALGO}" "${PLANNER_TYPE}" \
+        "${BALANCED_SPLIT_ARGS[@]}"
+      ;;
+    *)
+      echo "Unsupported SPLIT_STRATEGY=${SPLIT_STRATEGY}; choose contiguous or balanced" >&2
+      exit 2
+      ;;
+  esac
   touch "${SPLIT_FLAG}"
 fi
 
@@ -312,7 +380,9 @@ for ((i=0; i<length; i++)); do
     "${WORKER_TEAM_CONFIG}" \
     "${LOG_PATH}" &
   EVAL_PIDS+=("$!")
-  sleep 10
+  if (( i + 1 < length )) && [[ "${WORKER_START_DELAY}" != "0" ]]; then
+    sleep "${WORKER_START_DELAY}"
+  fi
 done
 
 WAIT_RC=0

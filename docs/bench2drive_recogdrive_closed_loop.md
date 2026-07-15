@@ -96,15 +96,38 @@ export CARLA_ROOT=/path/to/CARLA_0.9.15
 
 ## Full 220-Route Evaluation
 
+For the local 8x80 GB host, use the checked launcher.  Its measured stable
+default is 16 workers (two independent CARLA/server stacks per GPU), with
+round-robin GPU launch order, four CPU threads per inference server, workload-
+balanced route shards, health-driven model startup, and a stalled-worker
+watchdog:
+
+```bash
+PLANNER_CHECKPOINT=/path/to/stage2/latest.ckpt \
+VLM_PATH=/path/to/completed/stage1 \
+bash scripts/bench2drive/launch_local_b2d220_eval.sh
+```
+
+When the evaluator is run by root, the local launcher automatically selects
+`/mnt/project/CARLA_0.9.15_nonroot`.  That root contains a `CarlaUE4.sh`
+wrapper which drops only the Unreal process to a non-root UID; the Python
+evaluator remains in `b2d_eval` as root.
+
+The lower-level equivalent remains available for other host layouts:
+
 ```bash
 export BENCH2DRIVE_ROOT=/path/to/Bench2Drive
 export CARLA_ROOT=/path/to/CARLA_0.9.15
-export GPU_RANK_LIST="0 1 2 3 4 5 6 7"
-export TASK_LIST="0 1 2 3 4 5 6 7"
-export TASK_NUM=8
+export GPU_RANK_LIST="0 1 2 3 4 5 6 7 0 1 2 3 4 5 6 7"
+export TASK_LIST="0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15"
+export TASK_NUM=16
 export START_INFERENCE_SERVERS=1
-export SERVER_GPU_RANK_LIST="0 1 2 3 4 5 6 7"
-export SERVER_STARTUP_SECONDS=90
+export SERVER_GPU_RANK_LIST="${GPU_RANK_LIST}"
+export SERVER_STARTUP_SECONDS=300  # maximum; health checks normally finish earlier
+export WORKER_START_DELAY=3
+export WORKER_STALL_TIMEOUT=240
+export SPLIT_STRATEGY=balanced
+export OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4
 /root/miniconda3/bin/conda run --no-capture-output -n b2d_eval \
   bash scripts/bench2drive/run_recogdrive_closed_loop_multi.sh
 ```
@@ -160,6 +183,48 @@ Do not speed up Bench2Drive by changing CARLA synchronous mode, fixed delta, rou
 - do not cache a prompt across changed speed/acceleration/command state
 - keep VLM/planner/control updates at the fixed formal frequency
 - avoid debug image/meta writes during scored runs
-- run one inference server per active model GPU, or add request batching before increasing CARLA workers
+- use one inference server per active worker; sharing the current threaded predictor between workers is unsafe without explicit request batching and cache isolation
 
 The server prints average timing every `--profile-every` requests. Use this to decide whether the next bottleneck is VLM feature extraction, planner inference, CARLA rendering, or HTTP/image I/O.
+
+### Measured local optimum (2026-07-15)
+
+All rows below kept the formal six-camera `closest-public` contract unchanged:
+20 Hz synchronous CARLA, 10 Hz inference, visual refresh every two inference
+steps, four history poses, horizon 6, DDIM 5, BF16, all 220 routes, and normal
+metric writes.
+
+| layout | CPU threads/server | aggregate sim/wall ratio | server mean request | stability | decision |
+|---|---:|---:|---:|---|---|
+| 8 workers, one/GPU, contiguous split | unconstrained | 0.356 | 1.450 s | stable but slow | reject |
+| 16 workers, two/GPU | 4 | 1.154-1.174 | 0.726 s | no probe crashes | **formal default** |
+| 24 workers, three/GPU | 4 | 1.21-1.43 projected | not retained | repeated CARLA RenderThread timeouts in both grouped and round-robin probes | reject |
+
+The 16-worker layout delivered about 10.75 successful inference requests/s and
+3.2-3.3x the aggregate simulation throughput of the original 8-worker run.
+The main gain was not merely adding workers: unconstrained PyTorch/OpenMP
+created 70-134 threads per server and severe preprocessing contention.  Capping
+each server at four threads reduced the cumulative `visual_features` timing
+from 1.341 s/request to 0.582 s/request.  At 16 workers the host used roughly
+30-32 GB of each 80 GB GPU and about 31% aggregate CPU, leaving safety margin
+for route-dependent peaks.
+
+Probe artifacts:
+
+- 8-worker baseline: `outputs/bench2drive_recogdrive_closed_loop/local_final_220route_20260715T005000Z`
+- stable 16-worker probe: `outputs/bench2drive_recogdrive_closed_loop/local_final_220route_16shard_probe_20260715T012440Z`
+- rejected 24-worker probes: `local_final_220route_24shard_probe_20260715T014108Z` and `local_final_220route_24shard_rr_probe_20260715T014937Z`
+
+The official contiguous splitter balances only route count.  On these 220
+routes, a 16-way contiguous split had 776-2466 historical simulation seconds
+per shard.  `split_xml_balanced.py` optionally reads a prior complete route
+JSON and uses only `meta.duration_game` as a scheduling cost, reducing that
+range to 1546-1568 seconds.  The prior JSON is copied into each new output
+directory for provenance.  It never contributes records, scores, reward,
+checkpoint selection, or final metric aggregation; if it is unavailable, the
+splitter falls back to geometric route length.
+
+Using the historical total of about 24,987 simulated seconds and the stable
+16-worker ratio gives a planning estimate of roughly 6 hours of active rollout,
+or approximately 6-7 hours including CARLA setup, route transitions, and any
+automatic retry.  Treat this as an ETA, not an evaluation result.
