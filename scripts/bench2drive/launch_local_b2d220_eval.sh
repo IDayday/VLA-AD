@@ -120,6 +120,9 @@ GIT_COMMIT=$(cd "${VLA_AD_ROOT}" && git rev-parse HEAD)
   echo "split_strategy=${SPLIT_STRATEGY:-balanced}"
   echo "split_cost_json=${SPLIT_COST_JSON}"
   echo "omp_num_threads=${OMP_NUM_THREADS:-4}"
+  echo "server_startup_timeout=${SERVER_STARTUP_SECONDS:-300}"
+  echo "worker_start_delay=${WORKER_START_DELAY:-10}"
+  echo "worker_stall_timeout=${WORKER_STALL_TIMEOUT:-240}"
 } > "${OUT}/launch_env.txt"
 
 export BENCH2DRIVE_ROOT CARLA_ROOT VLA_AD_ROOT
@@ -133,7 +136,7 @@ export BASE_SERVER_PORT=${BASE_SERVER_PORT:-18765}
 export SERVER_STARTUP_SECONDS=${SERVER_STARTUP_SECONDS:-300}
 export SERVER_HEALTH_POLL_SECONDS=${SERVER_HEALTH_POLL_SECONDS:-2}
 export SERVER_PROFILE_EVERY=${SERVER_PROFILE_EVERY:-200}
-export WORKER_START_DELAY=${WORKER_START_DELAY:-3}
+export WORKER_START_DELAY=${WORKER_START_DELAY:-10}
 export WORKER_STALL_TIMEOUT=${WORKER_STALL_TIMEOUT:-240}
 export FORCE_SPLIT=${FORCE_SPLIT:-1}
 export SPLIT_STRATEGY=${SPLIT_STRATEGY:-balanced}

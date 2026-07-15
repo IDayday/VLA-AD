@@ -124,7 +124,7 @@ export TASK_NUM=16
 export START_INFERENCE_SERVERS=1
 export SERVER_GPU_RANK_LIST="${GPU_RANK_LIST}"
 export SERVER_STARTUP_SECONDS=300  # maximum; health checks normally finish earlier
-export WORKER_START_DELAY=3
+export WORKER_START_DELAY=10
 export WORKER_STALL_TIMEOUT=240
 export SPLIT_STRATEGY=balanced
 export OMP_NUM_THREADS=4 MKL_NUM_THREADS=4 OPENBLAS_NUM_THREADS=4
@@ -197,7 +197,7 @@ metric writes.
 | layout | CPU threads/server | aggregate sim/wall ratio | server mean request | stability | decision |
 |---|---:|---:|---:|---|---|
 | 8 workers, one/GPU, contiguous split | unconstrained | 0.356 | 1.450 s | stable but slow | reject |
-| 16 workers, two/GPU | 4 | 1.154-1.174 | 0.726 s | no probe crashes | **formal default** |
+| 16 workers, two/GPU | 4 | 1.154-1.174 | 0.726 s | stable probe; worker supervisor recovers isolated cold-start failures | **formal default** |
 | 24 workers, three/GPU | 4 | 1.21-1.43 projected | not retained | repeated CARLA RenderThread timeouts in both grouped and round-robin probes | reject |
 
 The 16-worker layout delivered about 10.75 successful inference requests/s and
