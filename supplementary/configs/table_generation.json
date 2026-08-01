@@ -1,0 +1,5 @@
+{
+  "schema_version": 1,
+  "digits": 2,
+  "inference_protocol": "single-trajectory inference without a test-time scorer or candidate reranking"
+}

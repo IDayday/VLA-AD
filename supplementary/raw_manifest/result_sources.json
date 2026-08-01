@@ -1,0 +1,10 @@
+{
+  "schema_version": 1,
+  "sources": [
+    {"id": "v1_final", "path": "supplementary/derived/source_adapters/v1_final.csv"},
+    {"id": "v1_anchor", "path": "supplementary/derived/source_adapters/v1_anchor.csv"},
+    {"id": "v2_final", "path": "supplementary/derived/source_adapters/v2_final.csv"},
+    {"id": "paper_hard658_pair", "path": "supplementary/derived/source_adapters/hard658.csv"}
+  ],
+  "evidence_note": "Adapters are generated deterministically from audited raw files. The 658-scene adapter contains the paper-aligned scalar-GRPO versus historical Pareto-v2 pair and intentionally excludes later checkpoint columns."
+}

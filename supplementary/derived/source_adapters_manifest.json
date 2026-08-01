@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "analysis_seed": 2027,
+  "policy": "metrics are copied without imputation; hard658 excludes the later 91.45 checkpoint",
+  "inputs": [
+    {
+      "id": "v1_final",
+      "path": "outputs/ampt_pdms914505_navtest_submission_20260730/full_navtest_pdms.csv",
+      "sha256": "86687acc035a64d3e6a3381f9fee224cd492121c3da4fda78eb07e112c2cb3e1"
+    },
+    {
+      "id": "v1_anchor",
+      "path": "outputs/pdms914487_numeric_anchor_reverse_old_residual_conflict_only_top20_graft0025_full_navtest_seed20260726_20260727/epoch_000_step_252/candidate/local_sharded_aggregated.csv",
+      "sha256": "20749f3ff1a2e0e3d10a28e4370e55873d07d426e1e94cdfd6b036ebeff0bce2"
+    },
+    {
+      "id": "v2_final",
+      "path": "outputs/fair_ec_pdms914153_navtest_20260727/raw_path_temporal_cap2_final_score/navsim_v2_navtest_epdms.csv",
+      "sha256": "9caa0a51989c226a01c653f5cdf6d8fd33fe9db6e72c649ff03f11371d3fe7cc"
+    },
+    {
+      "id": "hard658",
+      "path": "outputs/navtest_hard_stable_zero658_recogdrive_stage3_vs_pdms914505_20260727/per_token_comparison.csv",
+      "sha256": "3db1c13560cf9f77427eb6f8762b70cbc974e39f80937af38165fb97371b0d0d"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "supplementary/derived/source_adapters/v1_final.csv",
+      "rows": 12138,
+      "sha256": "249ad53bd88fb42b6e24d61fcb4ea540df357acb00e279f67a6f918a5785fd01"
+    },
+    {
+      "path": "supplementary/derived/source_adapters/v1_anchor.csv",
+      "rows": 12138,
+      "sha256": "6e09a8399a00a2ac096429716ecd8ab5a9ecc519eb63ff60424606026ba54006"
+    },
+    {
+      "path": "supplementary/derived/source_adapters/v2_final.csv",
+      "rows": 12146,
+      "sha256": "017438778b93e2d88866fac9321c7745cfffeaf8d935f6b3e5eb321552f74c12"
+    },
+    {
+      "path": "supplementary/derived/source_adapters/hard658.csv",
+      "rows": 1316,
+      "sha256": "dc7d8396e18d6bca5c5e4836e7d3c2250a5dcbf9fae682ff02fdef2024878bc0"
+    }
+  ]
+}

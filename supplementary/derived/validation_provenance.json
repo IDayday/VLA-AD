@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-08-01T02:45:36.263406+00:00",
+  "status": "valid",
+  "analysis_seed": 2027,
+  "analysis_seed_scope": "resampling and plotting only; not a training seed",
+  "command": "supplementary/scripts/validate_dataset.py",
+  "git": {
+    "commit": "ba5908d84534f28f4087b68f963390af497dca41",
+    "dirty": true
+  },
+  "environment": {
+    "python": "3.9.25",
+    "platform": "Linux-5.10.0-136.12.0.88.4.ctl3.x86_64-x86_64-with-glibc2.35",
+    "numpy": "1.26.4",
+    "pandas": "2.3.3",
+    "pyarrow": "21.0.0",
+    "matplotlib": "3.9.4",
+    "scipy": "1.13.1"
+  },
+  "inputs": [
+    {
+      "path": "supplementary/derived/canonical_scene_metrics.parquet",
+      "bytes": 896817,
+      "sha256": "010814a9b9f63575b517b9c541c1e54ec81b74ccba681af4d09d791c637cf244"
+    },
+    {
+      "path": "supplementary/configs/validation.json",
+      "bytes": 2125,
+      "sha256": "b2ecbdb1896138d3ecbcfd551a6943711bf70468c5767253fd024a03af08b8fe"
+    },
+    {
+      "path": "supplementary/audit/result_source_map.csv",
+      "bytes": 11540,
+      "sha256": "8c11a9ba019afaf68849adbd2624c2cf4c87c4150a0a1863bbbdbc6e907ad10b"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "supplementary/derived/data_validation_report.md",
+      "bytes": 2652,
+      "sha256": "4f5323789bcfc2db4504d4ad18b8b71b1f8493a404e8c9106d290f17506a2b2d"
+    },
+    {
+      "path": "supplementary/derived/data_validation_status.json",
+      "bytes": 2888,
+      "sha256": "3c54c637035035c87995f3f8a97a61c92ea8e292390874a3dba21ba7447a6849"
+    }
+  ],
+  "notes": [
+    "No candidate-count/acceptance-rate matching checks are configured.",
+    "No traceable claim row matched the canonical data."
+  ]
+}

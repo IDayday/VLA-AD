@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "comparisons": [
+    {
+      "id": "apr_final_vs_paired_anchor_pdms",
+      "label_a": "paired APR anchor",
+      "label_b": "paper-final AMPT",
+      "metric": "aggregate_score",
+      "selector_a": {"benchmark": "NAVSIM v1", "method": "AMPT", "stage": "APR", "variant": "paired_anchor"},
+      "selector_b": {"benchmark": "NAVSIM v1", "method": "AMPT", "stage": "APR", "variant": "paper_final"},
+      "pair_on": ["scene_id", "seed"],
+      "higher_is_better": true
+    },
+    {
+      "id": "paper_hard658_pdms",
+      "label_a": "scalar GRPO",
+      "label_b": "AMPT recovery checkpoint",
+      "metric": "aggregate_score",
+      "selector_a": {"benchmark": "NAVSIM v1", "method": "scalar GRPO", "variant": "scalar_grpo"},
+      "selector_b": {"benchmark": "NAVSIM v1", "method": "AMPT", "variant": "paper_recovery_checkpoint"},
+      "pair_on": ["scene_id"],
+      "higher_is_better": true
+    }
+  ],
+  "protected_pass_columns": ["feasible", "reference_guard_pass"],
+  "evidence_note": "The hard-658 selector deliberately uses the historical checkpoint paired with the paper's 367/440 analysis; the later 91.45 hard-set columns are not canonicalized."
+}

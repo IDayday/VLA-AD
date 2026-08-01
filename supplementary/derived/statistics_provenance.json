@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-08-01T02:46:00.757957+00:00",
+  "status": "complete",
+  "analysis_seed": 2027,
+  "analysis_seed_scope": "resampling and plotting only; not a training seed",
+  "command": "supplementary/scripts/compute_statistics.py",
+  "git": {
+    "commit": "ba5908d84534f28f4087b68f963390af497dca41",
+    "dirty": true
+  },
+  "environment": {
+    "python": "3.9.25",
+    "platform": "Linux-5.10.0-136.12.0.88.4.ctl3.x86_64-x86_64-with-glibc2.35",
+    "numpy": "1.26.4",
+    "pandas": "2.3.3",
+    "pyarrow": "21.0.0",
+    "matplotlib": "3.9.4",
+    "scipy": "1.13.1"
+  },
+  "inputs": [
+    {
+      "path": "supplementary/derived/canonical_scene_metrics.parquet",
+      "bytes": 896817,
+      "sha256": "010814a9b9f63575b517b9c541c1e54ec81b74ccba681af4d09d791c637cf244"
+    },
+    {
+      "path": "supplementary/derived/data_validation_status.json",
+      "bytes": 2888,
+      "sha256": "3c54c637035035c87995f3f8a97a61c92ea8e292390874a3dba21ba7447a6849"
+    },
+    {
+      "path": "supplementary/configs/statistical_comparisons.json",
+      "bytes": 1185,
+      "sha256": "2a3f35ef6d534a1f99a6b39c3b67430ebe22ecd68224b4b8974f0417cc9fc137"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "supplementary/derived/stats.json",
+      "bytes": 26362,
+      "sha256": "0b31e3e954f562bc5cde182ab44e83d70d6ba14364ff86af38ee88f58701d2b2"
+    },
+    {
+      "path": "supplementary/derived/statistics/method_summaries.csv",
+      "bytes": 7883,
+      "sha256": "13098e938b9b8b35a40ea62d79a121bafbdf246ac6a4bc5dfeb48045f710cd1b"
+    },
+    {
+      "path": "supplementary/derived/statistics/paired_comparisons.csv",
+      "bytes": 915,
+      "sha256": "4cf2fc575bf71db42b5f98f1ea2981595bb1904262019d99f758f68601a0d48f"
+    },
+    {
+      "path": "supplementary/derived/statistics/recovery_summaries.csv",
+      "bytes": 684,
+      "sha256": "1165ec5949c57831fcd16ea5a7b69af333267104952c1b6f6543cc93ef9041d7"
+    },
+    {
+      "path": "supplementary/derived/statistics/positive_credit_summaries.csv",
+      "bytes": 181,
+      "sha256": "d6d37c4a039eefed03b0b0a431a0f06d3699b524d33e275a911b13770f191d34"
+    }
+  ],
+  "notes": []
+}

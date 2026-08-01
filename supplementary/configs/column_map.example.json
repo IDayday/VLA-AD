@@ -1,0 +1,9 @@
+{
+  "scene_token": "scene_id",
+  "pdm_score": "aggregate_score",
+  "no_at_fault_collisions": "NC",
+  "drivable_area_compliance": "DAC",
+  "time_to_collision_within_bound": "TTC",
+  "ego_progress": "EP",
+  "comfort": "C"
+}

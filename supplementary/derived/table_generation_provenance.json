@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-08-01T02:46:16.761337+00:00",
+  "status": "complete",
+  "analysis_seed": 2027,
+  "analysis_seed_scope": "resampling and plotting only; not a training seed",
+  "command": "supplementary/scripts/generate_tables.py",
+  "git": {
+    "commit": "ba5908d84534f28f4087b68f963390af497dca41",
+    "dirty": true
+  },
+  "environment": {
+    "python": "3.9.25",
+    "platform": "Linux-5.10.0-136.12.0.88.4.ctl3.x86_64-x86_64-with-glibc2.35",
+    "numpy": "1.26.4",
+    "pandas": "2.3.3",
+    "pyarrow": "21.0.0",
+    "matplotlib": "3.9.4",
+    "scipy": "1.13.1"
+  },
+  "inputs": [
+    {
+      "path": "supplementary/derived/stats.json",
+      "bytes": 26362,
+      "sha256": "0b31e3e954f562bc5cde182ab44e83d70d6ba14364ff86af38ee88f58701d2b2"
+    },
+    {
+      "path": "supplementary/derived/data_validation_status.json",
+      "bytes": 2888,
+      "sha256": "3c54c637035035c87995f3f8a97a61c92ea8e292390874a3dba21ba7447a6849"
+    },
+    {
+      "path": "supplementary/configs/table_generation.json",
+      "bytes": 146,
+      "sha256": "ad35039cbac15577b6e79d77e2f71019b0416e0f1a43bfd118514c5f22f6a8f0"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "supplementary/tables/generated/statistical_method_summary.csv",
+      "bytes": 522,
+      "sha256": "930571b4059713528b62247967a264dd7919588c67e06ff831d3dc3bcecdbe63"
+    },
+    {
+      "path": "supplementary/tables/generated/statistical_method_summary.tex",
+      "bytes": 1133,
+      "sha256": "844e2b9033614ee8cc8b1f85b4ee04c858ad8f7fdfedbd289b77eb05d5db1057"
+    },
+    {
+      "path": "supplementary/tables/generated/paired_comparisons.csv",
+      "bytes": 355,
+      "sha256": "36b9e43b598406f607f67bc6498485a5bb3b6a7660abd0973a4180dc0fbe5daf"
+    },
+    {
+      "path": "supplementary/tables/generated/paired_comparisons.tex",
+      "bytes": 892,
+      "sha256": "5ac5a3e89443846199a714126f36c5fd79108149b4151b7fca9ebad9b8562343"
+    },
+    {
+      "path": "supplementary/tables/generated/failure_transitions.csv",
+      "bytes": 240,
+      "sha256": "b3f0fb4ab7e095d61c990ad195a1884d5871d6ee6a3baf13de2282138e762ef3"
+    },
+    {
+      "path": "supplementary/tables/generated/failure_transitions.tex",
+      "bytes": 758,
+      "sha256": "b6c0c128ae5db615cf6fbfc068e824224b3786b9409b7452030504bd1f47ec2b"
+    },
+    {
+      "path": "supplementary/tables/generated/positive_credit_diagnostics.csv",
+      "bytes": 124,
+      "sha256": "f79a7af816afbf4483473843efe7e110a9124ecec9ca733d2547c61d5986ff4b"
+    },
+    {
+      "path": "supplementary/tables/generated/positive_credit_diagnostics.tex",
+      "bytes": 592,
+      "sha256": "a8527d254683bb8058a889c3e3fbca5b4577443445b78a1e52986b2384879fcc"
+    }
+  ],
+  "notes": [
+    "CSV and LaTeX cells were rendered from the same dataframes.",
+    "No manually entered experimental values are used by this command."
+  ]
+}

@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "style": {
+    "font_family": "DejaVu Serif",
+    "font_size": 8.0,
+    "label_size": 8.0,
+    "title_size": 8.5,
+    "legend_size": 7.0,
+    "tick_size": 7.0
+  },
+  "figures": [],
+  "evidence_note": "No placeholder plot is generated. Add a declarative plot only when its input columns are traceable."
+}

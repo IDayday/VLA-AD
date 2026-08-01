@@ -1,0 +1,39 @@
+benchmark,split,method,stage,variant,round,metric,mean,std_across_runs,scene_bootstrap_ci_low,scene_bootstrap_ci_high,q10,cvar10,n_records,n_scenes,n_runs,run_evidence,ci_scope
+NAVSIM v1,navtest,AMPT,APR,paired_anchor,,aggregate_score,0.9144969338834185,,0.9110908942471637,0.9178672499576899,0.8410068504900603,0.4665592635657527,12138,12138,1,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,APR,paired_anchor,,NC,0.9852941176470589,,0.9831108914153897,0.9873949579831933,1.0,0.9852941176470589,12138,12138,1,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,APR,paired_anchor,,DAC,0.9799802273850716,,0.9773438787279618,0.9824518042511122,1.0,0.9799802273850716,12138,12138,1,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,APR,paired_anchor,,DDC,0.9765200197726149,,0.9740484429065744,0.9788680177953535,1.0,0.9765200197726149,12138,12138,1,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,APR,paired_anchor,,TTC,0.9602076124567474,,0.956665018948756,0.9636678200692042,1.0,0.9602076124567474,12138,12138,1,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,APR,paired_anchor,,EP,0.8671810194837611,,0.8635565040609515,0.8708584131177669,0.6645836724584744,0.36735132053889186,12138,12138,1,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,APR,paired_anchor,,C,1.0,,1.0,1.0,1.0,1.0,12138,12138,1,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,APR,paper_final,3,aggregate_score,0.9145046521395536,,0.9110517132355721,0.9179941696550051,0.8408810558766538,0.46555609591123676,12138,12138,1,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,APR,paper_final,3,NC,0.9852941176470589,,0.9831108914153897,0.9873537650354259,1.0,0.9852941176470589,12138,12138,1,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,APR,paper_final,3,DAC,0.979897841489537,,0.9773438787279618,0.9823694183555776,1.0,0.979897841489537,12138,12138,1,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,APR,paper_final,3,DDC,0.9764788268248475,,0.9740484429065744,0.9788268248475861,1.0,0.9764788268248475,12138,12138,1,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,APR,paper_final,3,TTC,0.960042840665678,,0.9565826330532213,0.9635030482781348,1.0,0.960042840665678,12138,12138,1,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,APR,paper_final,3,EP,0.8674798204376025,,0.8637730798270783,0.8712031873081076,0.6649462593428953,0.36708879620097473,12138,12138,1,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,APR,paper_final,3,C,1.0,,1.0,1.0,1.0,1.0,12138,12138,1,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,FF-PGRPO,paper_recovery_checkpoint,,aggregate_score,0.6144505411317958,,0.5807592579052179,0.6481320765235428,0.0,0.0,658,658,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,FF-PGRPO,paper_recovery_checkpoint,,NC,0.8814589665653495,,0.8563829787234043,0.9057750759878419,0.0,0.0,658,658,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,FF-PGRPO,paper_recovery_checkpoint,,DAC,0.7781155015197568,,0.7462006079027356,0.8100303951367781,0.0,0.0,658,658,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,FF-PGRPO,paper_recovery_checkpoint,,DDC,0.9521276595744681,,0.9369110942249242,0.9665653495440729,1.0,0.9521276595744681,658,658,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,FF-PGRPO,paper_recovery_checkpoint,,TTC,0.8161094224924013,,0.7857142857142857,0.8449848024316109,0.0,0.0,658,658,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,FF-PGRPO,paper_recovery_checkpoint,,EP,0.5932223321509602,,0.5607580155030389,0.6258388972688909,0.0,0.0,658,658,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,AMPT,FF-PGRPO,paper_recovery_checkpoint,,C,1.0,,1.0,1.0,1.0,1.0,658,658,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,scalar GRPO,FF-PGRPO,scalar_grpo,,aggregate_score,0.5100829559680895,,0.47452845220256074,0.5454104561177757,0.0,0.0,658,658,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,scalar GRPO,FF-PGRPO,scalar_grpo,,NC,0.8381458966565349,,0.8092705167173252,0.8662613981762918,0.0,0.0,658,658,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,scalar GRPO,FF-PGRPO,scalar_grpo,,DAC,0.7051671732522796,,0.6702127659574468,0.7401215805471124,0.0,0.0,658,658,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,scalar GRPO,FF-PGRPO,scalar_grpo,,DDC,0.9566869300911854,,0.9414893617021277,0.9711246200607903,1.0,0.9566869300911854,658,658,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,scalar GRPO,FF-PGRPO,scalar_grpo,,TTC,0.770516717325228,,0.7386018237082067,0.8024316109422492,0.0,0.0,658,658,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,scalar GRPO,FF-PGRPO,scalar_grpo,,EP,0.49562766575198625,,0.4609219188742842,0.5297894270516682,0.0,0.0,658,658,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v1,navtest,scalar GRPO,FF-PGRPO,scalar_grpo,,C,0.9984802431610942,,0.9954407294832827,1.0,1.0,0.9984802431610942,658,658,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v2,navtest,AMPT,APR,paper_final,3,aggregate_score,0.8911677435925486,,0.8874077730502794,0.8948706404792098,0.8058555471311326,0.3793636834449503,12146,12146,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v2,navtest,AMPT,APR,paper_final,3,NC,0.9842334925078216,,0.9819693726329656,0.9863329491190516,1.0,0.9842334925078216,12146,12146,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v2,navtest,AMPT,APR,paper_final,3,DAC,0.9769471430923761,,0.974312530874362,0.9795817553103903,1.0,0.9769471430923761,12146,12146,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v2,navtest,AMPT,APR,paper_final,3,DDC,0.989955540918821,,0.988391239914375,0.9913963444755475,1.0,0.989955540918821,12146,12146,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v2,navtest,AMPT,APR,paper_final,3,TLC,0.997118392886547,,0.9961304133047917,0.9980240408364894,1.0,0.997118392886547,12146,12146,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v2,navtest,AMPT,APR,paper_final,3,TTC,0.9766178165651244,,0.9738185410834843,0.9792524287831385,1.0,0.9766178165651244,12146,12146,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v2,navtest,AMPT,APR,paper_final,3,EP,0.8944757726427539,,0.8920347331922168,0.8968425035309335,0.6995634682924804,0.5842996583616237,12146,12146,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v2,navtest,AMPT,APR,paper_final,3,LK,0.9173390416598057,,0.9123991437510292,0.9221966079367693,1.0,0.9173390416598057,12146,12146,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v2,navtest,AMPT,APR,paper_final,3,HC,0.9709369339700313,,0.9678906635929524,0.9739008727152972,1.0,0.9709369339700313,12146,12146,0,insufficient,scene-level; does not replace multi-run uncertainty
+NAVSIM v2,navtest,AMPT,APR,paper_final,3,EC,0.8773904382470119,,0.8709163346613545,0.8836653386454183,0.0,0.0,10040,10040,0,insufficient,scene-level; does not replace multi-run uncertainty

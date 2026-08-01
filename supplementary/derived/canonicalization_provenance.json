@@ -1,0 +1,199 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-08-01T02:45:34.040223+00:00",
+  "status": "complete",
+  "analysis_seed": 2027,
+  "analysis_seed_scope": "resampling and plotting only; not a training seed",
+  "command": "supplementary/scripts/canonicalize_results.py",
+  "git": {
+    "commit": "ba5908d84534f28f4087b68f963390af497dca41",
+    "dirty": true
+  },
+  "environment": {
+    "python": "3.9.25",
+    "platform": "Linux-5.10.0-136.12.0.88.4.ctl3.x86_64-x86_64-with-glibc2.35",
+    "numpy": "1.26.4",
+    "pandas": "2.3.3",
+    "pyarrow": "21.0.0",
+    "matplotlib": "3.9.4",
+    "scipy": "1.13.1"
+  },
+  "inputs": [
+    {
+      "path": "supplementary/derived/source_adapters/hard658.csv",
+      "bytes": 372792,
+      "sha256": "dc7d8396e18d6bca5c5e4836e7d3c2250a5dcbf9fae682ff02fdef2024878bc0"
+    },
+    {
+      "path": "supplementary/derived/source_adapters/v1_anchor.csv",
+      "bytes": 3716251,
+      "sha256": "6e09a8399a00a2ac096429716ecd8ab5a9ecc519eb63ff60424606026ba54006"
+    },
+    {
+      "path": "supplementary/derived/source_adapters/v1_final.csv",
+      "bytes": 2441242,
+      "sha256": "249ad53bd88fb42b6e24d61fcb4ea540df357acb00e279f67a6f918a5785fd01"
+    },
+    {
+      "path": "supplementary/derived/source_adapters/v2_final.csv",
+      "bytes": 2888124,
+      "sha256": "017438778b93e2d88866fac9321c7745cfffeaf8d935f6b3e5eb321552f74c12"
+    },
+    {
+      "path": "supplementary/raw_manifest/result_sources.json",
+      "bytes": 634,
+      "sha256": "6dbdc5d96794f5f240e6d5b303cab5c275ccfd492de50f6274d53fdcf0c672cd"
+    },
+    {
+      "path": "supplementary/raw_manifest/result_inputs.txt",
+      "bytes": 317,
+      "sha256": "8bbf66ec56c050762c852f2ab35d8d3d985fa789681bed81a23e96de51e47c2e"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "supplementary/derived/canonical_scene_metrics.csv",
+      "bytes": 12028111,
+      "sha256": "cf4953ec9bf95a507a4f119aedf0fe835345ce4bfde64a56f2e426e654c43600"
+    },
+    {
+      "path": "supplementary/derived/canonical_scene_metrics.parquet",
+      "bytes": 896817,
+      "sha256": "010814a9b9f63575b517b9c541c1e54ec81b74ccba681af4d09d791c637cf244"
+    },
+    {
+      "path": "supplementary/derived/canonicalization_report.md",
+      "bytes": 1438,
+      "sha256": "eb9d2ea4b51040647ada12b134a83cc27d7e07968bbfb5142597925d678d6706"
+    }
+  ],
+  "notes": [],
+  "sources": [
+    {
+      "source_id": "paper_hard658_pair",
+      "source_file": "supplementary/derived/source_adapters/hard658.csv",
+      "input_rows": 1316,
+      "output_rows": 1316,
+      "status": "ingested",
+      "column_mapping": {
+        "scene_id": "scene_id",
+        "split": "split",
+        "benchmark": "benchmark",
+        "method": "method",
+        "stage": "stage",
+        "variant": "variant",
+        "seed": "seed",
+        "round": "round",
+        "sample_index": "sample_index",
+        "teacher_source": "teacher_source",
+        "teacher_status": "teacher_status",
+        "aggregate_score": "aggregate_score",
+        "NC": "NC",
+        "DAC": "DAC",
+        "DDC": "DDC",
+        "EP": "EP",
+        "TTC": "TTC",
+        "C": "C",
+        "feasible": "feasible",
+        "zero_score": "zero_score",
+        "initial_failure": "initial_failure",
+        "recovered": "recovered",
+        "new_failure": "new_failure"
+      },
+      "notes": []
+    },
+    {
+      "source_id": "v1_anchor",
+      "source_file": "supplementary/derived/source_adapters/v1_anchor.csv",
+      "input_rows": 12138,
+      "output_rows": 12138,
+      "status": "ingested",
+      "column_mapping": {
+        "scene_id": "scene_id",
+        "split": "split",
+        "benchmark": "benchmark",
+        "method": "method",
+        "stage": "stage",
+        "variant": "variant",
+        "seed": "seed",
+        "round": "round",
+        "sample_index": "sample_index",
+        "teacher_source": "teacher_source",
+        "teacher_status": "teacher_status",
+        "aggregate_score": "aggregate_score",
+        "NC": "NC",
+        "DAC": "DAC",
+        "DDC": "DDC",
+        "EP": "EP",
+        "TTC": "TTC",
+        "C": "C",
+        "feasible": "feasible",
+        "zero_score": "zero_score"
+      },
+      "notes": []
+    },
+    {
+      "source_id": "v1_final",
+      "source_file": "supplementary/derived/source_adapters/v1_final.csv",
+      "input_rows": 12138,
+      "output_rows": 12138,
+      "status": "ingested",
+      "column_mapping": {
+        "scene_id": "scene_id",
+        "split": "split",
+        "benchmark": "benchmark",
+        "method": "method",
+        "stage": "stage",
+        "variant": "variant",
+        "seed": "seed",
+        "round": "round",
+        "sample_index": "sample_index",
+        "teacher_source": "teacher_source",
+        "teacher_status": "teacher_status",
+        "aggregate_score": "aggregate_score",
+        "NC": "NC",
+        "DAC": "DAC",
+        "DDC": "DDC",
+        "EP": "EP",
+        "TTC": "TTC",
+        "C": "C",
+        "feasible": "feasible",
+        "zero_score": "zero_score"
+      },
+      "notes": []
+    },
+    {
+      "source_id": "v2_final",
+      "source_file": "supplementary/derived/source_adapters/v2_final.csv",
+      "input_rows": 12146,
+      "output_rows": 12146,
+      "status": "ingested",
+      "column_mapping": {
+        "scene_id": "scene_id",
+        "split": "split",
+        "benchmark": "benchmark",
+        "method": "method",
+        "stage": "stage",
+        "variant": "variant",
+        "seed": "seed",
+        "round": "round",
+        "sample_index": "sample_index",
+        "teacher_source": "teacher_source",
+        "teacher_status": "teacher_status",
+        "aggregate_score": "aggregate_score",
+        "NC": "NC",
+        "DAC": "DAC",
+        "DDC": "DDC",
+        "TLC": "TLC",
+        "EP": "EP",
+        "TTC": "TTC",
+        "LK": "LK",
+        "HC": "HC",
+        "EC": "EC",
+        "feasible": "feasible",
+        "zero_score": "zero_score"
+      },
+      "notes": []
+    }
+  ]
+}

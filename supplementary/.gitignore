@@ -1,0 +1,10 @@
+scripts/__pycache__/
+derived/source_adapters/*.csv
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.toc

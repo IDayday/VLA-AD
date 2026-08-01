@@ -1,0 +1,110 @@
+{
+  "schema_version": 1,
+  "status": "valid",
+  "input": "supplementary/derived/canonical_scene_metrics.parquet",
+  "input_sha256": "010814a9b9f63575b517b9c541c1e54ec81b74ccba681af4d09d791c637cf244",
+  "rows": 37738,
+  "unique_scenes": 12146,
+  "finding_counts": {
+    "pass": 14,
+    "warning": 2
+  },
+  "findings": [
+    {
+      "severity": "pass",
+      "check": "schema",
+      "message": "All required canonical columns are present.",
+      "count": null
+    },
+    {
+      "severity": "pass",
+      "check": "scene_id",
+      "message": "Every row has an explicit scene identifier.",
+      "count": null
+    },
+    {
+      "severity": "pass",
+      "check": "duplicates",
+      "message": "No duplicate canonical identity keys.",
+      "count": null
+    },
+    {
+      "severity": "pass",
+      "check": "metric_ranges",
+      "message": "All observed metrics lie in [0.0, 100.0].",
+      "count": null
+    },
+    {
+      "severity": "pass",
+      "check": "state_logic",
+      "message": "Observed state and credit flags are internally consistent.",
+      "count": null
+    },
+    {
+      "severity": "pass",
+      "check": "aggregate_formula:navsim_v1_pdms",
+      "message": "Formula matches 25592 comparable rows.",
+      "count": null
+    },
+    {
+      "severity": "pass",
+      "check": "aggregate_formula:navsim_v2_epdms",
+      "message": "Formula matches 10040 comparable rows.",
+      "count": null
+    },
+    {
+      "severity": "pass",
+      "check": "scene_count:v1_final_scored",
+      "message": "Observed expected 12138 scenes.",
+      "count": null
+    },
+    {
+      "severity": "pass",
+      "check": "scene_count:v1_paired_anchor",
+      "message": "Observed expected 12138 scenes.",
+      "count": null
+    },
+    {
+      "severity": "pass",
+      "check": "scene_count:v2_final",
+      "message": "Observed expected 12146 scenes.",
+      "count": null
+    },
+    {
+      "severity": "pass",
+      "check": "scene_count:hard658_scalar",
+      "message": "Observed expected 658 scenes.",
+      "count": null
+    },
+    {
+      "severity": "pass",
+      "check": "scene_count:hard658_paper_ampt",
+      "message": "Observed expected 658 scenes.",
+      "count": null
+    },
+    {
+      "severity": "pass",
+      "check": "scene_set:final_vs_anchor_full_navtest",
+      "message": "All selectors share 12138 scenes.",
+      "count": null
+    },
+    {
+      "severity": "pass",
+      "check": "scene_set:paper_hard658_pair",
+      "message": "All selectors share 658 scenes.",
+      "count": null
+    },
+    {
+      "severity": "warning",
+      "check": "candidate_matching",
+      "message": "No candidate-count/acceptance-rate matching checks are configured.",
+      "count": null
+    },
+    {
+      "severity": "warning",
+      "check": "paper_claim_means",
+      "message": "No traceable claim row matched the canonical data.",
+      "count": null
+    }
+  ]
+}

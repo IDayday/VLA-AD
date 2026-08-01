@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "aggregate_formulas": [
+    {
+      "name": "navsim_v1_pdms",
+      "selector": {"benchmark": "NAVSIM v1"},
+      "expression": "NC * DAC * (5 * EP + 5 * TTC + 2 * C) / 12",
+      "tolerance": 1e-10,
+      "source": "navsim v1 scorer implementation"
+    },
+    {
+      "name": "navsim_v2_epdms",
+      "selector": {"benchmark": "NAVSIM v2"},
+      "expression": "NC * DAC * DDC * TLC * (5 * EP + 5 * TTC + 2 * LK + 2 * HC + 2 * EC) / 16",
+      "tolerance": 1e-10,
+      "source": "official NAVSIM v2 scorer and metrics documentation"
+    }
+  ],
+  "expected_scene_counts": [
+    {"name": "v1_final_scored", "selector": {"benchmark": "NAVSIM v1", "method": "AMPT", "variant": "paper_final"}, "expected_unique_scenes": 12138},
+    {"name": "v1_paired_anchor", "selector": {"benchmark": "NAVSIM v1", "method": "AMPT", "variant": "paired_anchor"}, "expected_unique_scenes": 12138},
+    {"name": "v2_final", "selector": {"benchmark": "NAVSIM v2", "method": "AMPT", "variant": "paper_final"}, "expected_unique_scenes": 12146},
+    {"name": "hard658_scalar", "selector": {"benchmark": "NAVSIM v1", "method": "scalar GRPO", "variant": "scalar_grpo"}, "expected_unique_scenes": 658},
+    {"name": "hard658_paper_ampt", "selector": {"benchmark": "NAVSIM v1", "method": "AMPT", "variant": "paper_recovery_checkpoint"}, "expected_unique_scenes": 658}
+  ],
+  "matched_scene_sets": [
+    {
+      "name": "final_vs_anchor_full_navtest",
+      "selectors": [
+        {"benchmark": "NAVSIM v1", "method": "AMPT", "variant": "paper_final"},
+        {"benchmark": "NAVSIM v1", "method": "AMPT", "variant": "paired_anchor"}
+      ]
+    },
+    {
+      "name": "paper_hard658_pair",
+      "selectors": [
+        {"benchmark": "NAVSIM v1", "method": "scalar GRPO", "variant": "scalar_grpo"},
+        {"benchmark": "NAVSIM v1", "method": "AMPT", "variant": "paper_recovery_checkpoint"}
+      ]
+    }
+  ],
+  "candidate_match_checks": [],
+  "evidence_note": "Candidate-count matching cannot be validated because candidate manifests for the paper's supervision variants were not located; this remains an explicit warning."
+}

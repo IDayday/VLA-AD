@@ -1,0 +1,4 @@
+# One repository-relative scene-level result path or glob per line.
+# Prefer result_sources.json when a source needs explicit metadata or column mapping.
+# Aggregate-only tables without scene identifiers are intentionally not canonicalized.
+# Inputs are declared with evidence-backed metadata in result_sources.json.
