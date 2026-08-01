@@ -1,0 +1,18 @@
+# Missing Evidence and Bounded Reproduction Plan
+
+No cell in the supplement is left empty. A value is either **reported**, **reproduced**, **deterministically reconstructed**, or a **proposed reproduction setting**. Proposed settings are execution parameters, never presented as measured outcomes.
+
+| Missing evidence | Locations searched | Treatment in supplement | Required experiment / suggested command |
+|---|---|---|---|
+| Scene-level exports and seeds for GT/Score/Pareto/PC-MTS | `outputs/`, experiment reports, paper tables, Git history | Retain paper point estimates; label `n=1 reported`; derive only arithmetic deltas | `ALLOW_TRAIN=1 supplementary/launch/run_p0_pcmts.sh --execute` |
+| Candidate counts, matched acceptance rates, rollout-bank diagnostics | curriculum reports, candidate/teacher files, historical V7 code | Use audited APR source counts only; present PC-MTS filtering protocol without fabricated outcomes | same P0-1/P0-2 launcher, then canonicalize its scene and candidate exports |
+| Multi-seed variance for the three required comparisons | all CSV/JSON/TensorBoard/W&B exports | State that seed variance is unavailable; show scene-paired intervals only where the raw paired set exists | launch scripts define seeds 2027/2028/2029 as proposed reproduction seeds |
+| Per-rollout positive-credit traces for FF-PGRPO | Core-Pareto logs and tests in Git history | Give exact implemented definition and an instrumentation schema; do not assign a measured violation rate | `ALLOW_TRAIN=1 supplementary/launch/run_p0_ffpgrpo.sh --execute` |
+| Exact PC-MTS bank size, K, calibration quantile, perturbation count | paper, current tree, historical curriculum code/configs | Fill the reproducibility config with proposed values 16/3/0.95/8, clearly tagged `proposed` | dry-run is printed by `supplementary/launch/run_p0_pcmts.sh` |
+| Full optimizer schedule for GT-only and PC-MTS | paper implementation paragraph, repository launch/config history | Use proposed reproduction schedule in the hyperparameter table and distinguish it from verified APR settings | run the generated SFT launcher and archive resolved config |
+| APR source-ablation and step-matched controls | CAPRI/APR runbooks and outputs | Summarize the verified fixed-teacher continuation as diagnostic evidence; configure remaining controls without invented scores | `ALLOW_TRAIN=1 supplementary/launch/run_p0_apr.sh --execute` |
+| Qualitative renderer inputs (camera frames, command labels, plotted trajectories) | scene-level metric CSVs and result directories | Provide mechanism-organized quantitative case table from traceable scene IDs; omit camera imagery rather than exposing unverified panels | use listed scene IDs with the repository's renderer after assets are staged |
+| End-to-end wall time and storage for all four stages | manifests and system logs | Report hardware and measured branch settings; write `not recorded` in audit-facing tables and an operational estimate command in README | collect `/usr/bin/time -v` and `du -sb` in future launches |
+| Exact NAVSIM package/scorer Git SHA for the paper tables | environment logs and evaluator configs | Record current software manifest and scorer file hashes; avoid claiming an unverified release tag | archive `git rev-parse HEAD` for the evaluation worktree at rerun time |
+
+The missing items do not prevent compilation or reproduction of the analyses backed by the two final scene exports and the fixed 658-scene comparison. They do prevent claims of multi-seed stability for the 0.1--0.3 point APR increments.
