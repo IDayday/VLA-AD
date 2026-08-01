@@ -14,9 +14,13 @@ method_names:
   stage_3: APR
 randomness:
   analysis_seed:
+    value: 2027
+    evidence: proposed_unrun
+    source: supplementary pipeline default; controls only bootstrap resampling and plotting
+  verified_evaluation_seed:
     value: 20260726
     evidence: verified
-    source: outputs/pdms914497_reverse_conflict_residual_trust105_scale14p3_full_navtest_seed20260726_20260727/paired_analysis.json
+    source: outputs/ampt_pdms914505_navtest_submission_20260730/submission_provenance.json
   proposed_training_seeds:
     value: [20260726, 20260727, 20260728]
     evidence: proposed_unrun
@@ -123,6 +127,10 @@ p0_ffpgrpo:
     evidence: reported_and_verified
     paper_source: docs/AuthorKit27 (7).pdf
     archive_source: outputs/stage3_grpo_core_pareto_s16_lr1e4_b2acc4_20e_local8_20260616T020136Z/core_pareto_launch_config.txt
+  proposed_anchor_local_layout:
+    value: {anchors: 8, rollouts_per_anchor: 2}
+    evidence: proposed_unrun
+    rationale: preserves the paper's 16 scene rollouts while making the historical [B,K,R] tensor contract explicit
   epochs_for_paper_protocol:
     value: 10
     evidence: reported

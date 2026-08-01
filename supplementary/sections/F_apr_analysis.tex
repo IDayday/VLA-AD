@@ -1,0 +1,118 @@
+\section{APR Analyses: Dynamic, Policy-Relative Teachers}
+\label{sec:apr-analysis}
+
+APR addresses a moving-target problem.  A trajectory that is a useful local
+teacher for the current policy can become redundant after refinement, while a
+previously distant candidate can enter the policy's compatible neighborhood.
+The relevant question is therefore not whether additional optimization steps
+help, but whether rebuilding and re-auditing the teacher set provides useful
+targets while retaining already safe behavior.
+
+\subsection{Round-wise behavior and protected components}
+\label{sec:apr-rounds}
+
+The main paper reports a monotonic sequence of 91.10, 91.21, 91.37, and 91.45
+PDMS from Round 0 through Round 3, corresponding to gains of $+0.11$, $+0.16$,
+and $+0.08$.  In the stage ablation, adding APR to the PC-MTS+FF-PGRPO policy
+raises PDMS from 91.1 to 91.4 and EP from 86.0 to 86.7, while the displayed NC,
+DAC, TTC, and comfort values remain 98.5, 98.0, 96.0, and 100, respectively.
+This pattern is aligned with APR's design: local teacher updates increase
+progress without visible regression in the protected components at the
+reported precision.
+
+Each round value is a reported checkpoint summary; its run/seed aggregation is
+not stated.  No across-seed
+standard deviation is available, and the 0.08--0.16 point increments are not
+claimed to be independently significant.  Moreover, the archived experiment
+history contains accepted and rejected branches rather than a single complete
+three-round hash chain; the four values above are therefore treated as the
+paper's round-level summary, not as permission to infer missing intermediate
+measurements.
+
+\input{tables/generated/apr_rounds.tex}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/generated/apr_rounds.pdf}
+  \caption{Paper-reported NAVSIM v1 progression across APR rounds.  The final
+  point is reproduced at scene level, but the small round increments are from
+  one reported sequence and carry no across-seed error bar.}
+  \label{fig:apr-rounds}
+\end{figure}
+
+\subsection{Teacher audit and post-interpolation evaluation}
+\label{sec:apr-teacher-audit}
+
+One traceable APR teacher-construction pass starts from 39,261 strict external
+trajectories: 25,402 (64.7\%) from one driving-policy source and 13,859
+(35.3\%) from a second source.  After interpolation with coefficient 0.25 and
+exact re-evaluation, 28,910 targets remain, an acceptance rate of 73.6\%; the
+remaining 10,351 are rejected.  These counts are from one audited navtrain
+construction pass and are not presented as the source proportions of every
+APR round.  They nevertheless establish an important operational fact:
+interpolation is followed by evaluator-based admission, and the check is
+non-vacuous---more than one quarter of the pre-audit union does not enter the
+distillation set.
+
+\input{tables/generated/apr_teacher_pool_audited.tex}
+
+Teacher status is defined relative to the current policy.  A candidate is
+\emph{accepted} when its evaluated local target is feasible, exceeds the
+current single prediction by the required margin, preserves protected
+metrics, and stays inside the current rollout neighborhood.  An accepted
+teacher becomes \emph{expired} if it fails those tests after the policy is
+updated.  A previously rejected candidate is \emph{newly activated} if it
+passes after the rollout bank and current prediction are regenerated.  These
+definitions prevent lifecycle counts from being conflated with raw pool size.
+
+The interpolation search is descending: larger moves are evaluated first and
+the first admissible move is retained.  Every accepted target stores the
+teacher, current prediction, interpolation coefficient, post-interpolation
+score, protected-metric deltas, compatibility distance, and evaluator hash.
+No-interpolation and no-post-evaluation controls remove different safeguards:
+the former jumps directly to the teacher, whereas the latter retains a local
+trajectory without verifying that interpolation preserved feasibility.
+
+\subsection{Step-matched controls}
+\label{sec:apr-controls}
+
+The release defines eight variants from the same Round-0 checkpoint and
+matches the total number of optimizer updates: extra training on the existing
+mixture, one-shot distillation, repeated use of a fixed teacher set, dynamic
+teachers, dynamic teachers without interpolation, without post-interpolation
+re-evaluation, without policy retention, and full APR.  The dynamic-teacher
+and full-APR variants rebuild predictions, rollout banks, and teacher audits at
+the same three round boundaries reported in the paper.  The fixed-teacher
+variant repeats the Round-1 set without re-ranking it; the extra-training
+control receives the same update count but no new teacher target.  This design
+separates four possible explanations: more updates, teacher supervision in
+general, teacher-set rebuilding, and the interpolation/retention safeguards.
+
+For every round, the required report contains PDMS and all components,
+regressed scenes, new failures, accepted/expired/newly activated teachers,
+mean and median verified teacher advantage, interpolation-coefficient
+distribution, and scene coverage.  A checkpoint is promoted only if its
+single-trajectory aggregate score improves and protected metrics pass the
+same non-regression audit; otherwise the previous checkpoint remains the
+dynamic anchor.  Training ends after three promoted rounds or when no audited
+local target remains.  These controls are configured but not represented as
+measured results in this supplement, because running them would require new
+training.
+
+Optional task-vector consolidation is kept separate from teacher discovery.
+The implementation can mask low-salience coordinates, require directional
+agreement, bound each branch norm and the total displacement from the current
+anchor, and then evaluate the merged checkpoint.  The best-branch, simple
+average, task-arithmetic, and TIES-style controls are required before assigning
+an independent gain to merging~\cite{taskarithmetic2023,ties2023}.  In the
+absence of a stable, step-matched gain, merging should be read as a conservative
+checkpoint-consolidation detail, not as the source of APR's teacher lifecycle.
+
+The present evidence therefore supports two bounded statements: the reported
+APR rounds are monotonic and preserve the displayed safety/compliance metrics,
+and an audited construction pass materially filters proposed local targets
+after re-evaluation.  The step-matched variants above are the necessary test
+for the stronger causal claim that dynamic rebuilding, rather than additional
+training alone, explains the full increment.
+
+\input{tables/generated/apr_fixed_teacher_diagnostic.tex}

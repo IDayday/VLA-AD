@@ -1,0 +1,5 @@
+step,source,count,acceptance_definition,evidence
+source selection,DriVor,25402,source-specific strict candidates,archived APR runbook
+source selection,DiffusionDriveV2,13859,source-specific strict candidates,archived APR runbook
+strict union,merged sources,39261,feasible and component-protected before interpolation,deterministic sum of audited source counts
+post-interpolation audit,accepted teachers,28910,alpha 0.25 then exact re-evaluation,archived APR runbook

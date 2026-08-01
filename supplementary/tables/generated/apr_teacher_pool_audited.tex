@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Audited APR teacher-pool construction on NAVSIM navtrain. Counts are from one archived teacher audit; the 28,910 accepted teachers follow interpolation and exact re-evaluation. Higher acceptance is not inherently better because guards constrain quality.}
+\label{tab:apr_teacher_pool}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+step & source & count & acceptance\_definition & evidence \\
+\midrule
+source selection & DriVor & 25402 & source-specific strict candidates & archived APR runbook \\
+source selection & DiffusionDriveV2 & 13859 & source-specific strict candidates & archived APR runbook \\
+strict union & merged sources & 39261 & feasible and component-protected before interpolation & deterministic sum of audited source counts \\
+post-interpolation audit & accepted teachers & 28910 & alpha 0.25 then exact re-evaluation & archived APR runbook \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}

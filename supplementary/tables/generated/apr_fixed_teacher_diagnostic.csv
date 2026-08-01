@@ -1,0 +1,5 @@
+policy_or_epoch,pdms,interpretation,evidence
+dynamic-teacher anchor,91.2766,accepted dynamic-teacher checkpoint,archived APR runbook
+fixed-set continuation epoch 0,91.2526,below dynamic-teacher anchor,archived APR runbook
+fixed-set continuation epoch 1,91.2311,further below dynamic-teacher anchor,archived APR runbook
+paper APR round 3,91.45,compressed round-level paper report,paper reported

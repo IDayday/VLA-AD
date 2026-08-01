@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\small
+\caption{APR fixed-teacher diagnostic on NAVSIM v1. The archived fixed-set continuation decreases from its 91.2766 anchor, whereas the 91.45 endpoint is the paper's compressed dynamic-round report; the rows are diagnostic rather than a step-matched causal ablation.}
+\label{tab:apr_fixed_teacher}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lccc}
+\toprule
+policy\_or\_epoch & pdms & interpretation & evidence \\
+\midrule
+dynamic-teacher anchor & 91.2766 & accepted dynamic-teacher checkpoint & archived APR runbook \\
+fixed-set continuation epoch 0 & 91.2526 & below dynamic-teacher anchor & archived APR runbook \\
+fixed-set continuation epoch 1 & 91.2311 & further below dynamic-teacher anchor & archived APR runbook \\
+paper APR round 3 & 91.45 & compressed round-level paper report & paper reported \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}

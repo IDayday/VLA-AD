@@ -15,18 +15,18 @@ Main Table 3,AMPT,LK,91.7,NAVSIM v2 navtest,not recorded,outputs/fair_ec_pdms914
 Main Table 3,AMPT,HC,97.1,NAVSIM v2 navtest,not recorded,outputs/fair_ec_pdms914153_navtest_20260727/raw_path_temporal_cap2_final_score/navsim_v2_navtest_epdms.csv,history_comfort mean,reproduced,12146 scene rows
 Main Table 3,AMPT,EC,87.7,NAVSIM v2 navtest,not recorded,outputs/fair_ec_pdms914153_navtest_20260727/raw_path_temporal_cap2_final_score/navsim_v2_navtest_epdms.csv,two_frame_extended_comfort mean,reproduced,12146 scene rows
 Main Table 3,AMPT,EPDMS,89.1,NAVSIM v2 navtest,not recorded,outputs/fair_ec_pdms914153_navtest_20260727/raw_path_temporal_cap2_final_score/navsim_v2_navtest_epdms.csv,score mean,reproduced,raw mean 0.8911677436; paper reports one decimal
-Main Table 2,GT,IL PDMS,86.4,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 2 / paper claim TAB2_GT_IL,reported,single reported run; scene export not located
-Main Table 2,GT,post-GRPO PDMS,90.3,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 2 / paper claim TAB2_GT_GRPO,reported,single reported run; scene export not located
-Main Table 2,Score,IL PDMS,87.2,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 2 / paper claim TAB2_SCORE_IL,reported,single reported run; scene export not located
-Main Table 2,Score,post-GRPO PDMS,85.8,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 2 / paper claim TAB2_SCORE_GRPO,reported,single reported run; scene export not located
-Main Table 2,Pareto,IL PDMS,87.5,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 2 / paper claim TAB2_PARETO_IL,reported,single reported run; scene export not located
-Main Table 2,Pareto,post-GRPO PDMS,86.7,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 2 / paper claim TAB2_PARETO_GRPO,reported,single reported run; scene export not located
-Main Table 2,PC-MTS,IL PDMS,86.9,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 2 / paper claim TAB2_PCMTS_IL,reported,single reported run; scene export not located
-Main Table 2,PC-MTS,post-GRPO PDMS,91.1,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 2 / paper claim TAB2_PCMTS_GRPO,reported,single reported run; scene export not located
+Main Table 2,GT,IL PDMS,86.4,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 2 / paper claim TAB2_GT_IL,reported,reported point estimate; run/seed aggregation not stated; scene export not located
+Main Table 2,GT,post-GRPO PDMS,90.3,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 2 / paper claim TAB2_GT_GRPO,reported,reported point estimate; run/seed aggregation not stated; scene export not located
+Main Table 2,Score,IL PDMS,87.2,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 2 / paper claim TAB2_SCORE_IL,reported,reported point estimate; run/seed aggregation not stated; scene export not located
+Main Table 2,Score,post-GRPO PDMS,85.8,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 2 / paper claim TAB2_SCORE_GRPO,reported,reported point estimate; run/seed aggregation not stated; scene export not located
+Main Table 2,Pareto,IL PDMS,87.5,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 2 / paper claim TAB2_PARETO_IL,reported,reported point estimate; run/seed aggregation not stated; scene export not located
+Main Table 2,Pareto,post-GRPO PDMS,86.7,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 2 / paper claim TAB2_PARETO_GRPO,reported,reported point estimate; run/seed aggregation not stated; scene export not located
+Main Table 2,PC-MTS,IL PDMS,86.9,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 2 / paper claim TAB2_PCMTS_IL,reported,reported point estimate; run/seed aggregation not stated; scene export not located
+Main Table 2,PC-MTS,post-GRPO PDMS,91.1,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 2 / paper claim TAB2_PCMTS_GRPO,reported,reported point estimate; run/seed aggregation not stated; scene export not located
 Main Table 4,GT-only,PDMS,86.5,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 4 row 1,reported,protocol distinction from Table 2 GT 86.4 is not documented
-Main Table 4,PC-MTS,PDMS,86.9,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 4 row 2,reported,single reported run
-Main Table 4,PC-MTS plus scalar GRPO,PDMS,91.0,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 4 row 3,reported,single reported run
-Main Table 4,PC-MTS plus FF-PGRPO,PDMS,91.1,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 4 row 4,reported,single reported run
+Main Table 4,PC-MTS,PDMS,86.9,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 4 row 2,reported,reported point estimate; run/seed aggregation not stated
+Main Table 4,FF-PGRPO only,PDMS,91.0,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 4 row 3,reported,reported point estimate; run/seed aggregation not stated
+Main Table 4,PC-MTS plus FF-PGRPO,PDMS,91.1,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 4 row 4,reported,reported point estimate; run/seed aggregation not stated
 Main Table 4,AMPT,PDMS,91.4,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 4 row 5,reported,rounded result reproduced by the final scene export
 Main Table 5,APR round 0,PDMS,91.10,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 5 round 0,reported,compressed round summary; not a clean contiguous checkpoint lineage in archived runbook
 Main Table 5,APR round 1,PDMS,91.21,NAVSIM v1,not stated,docs/AuthorKit27 (7).pdf,Table 5 round 1,reported,compressed round summary
@@ -49,6 +49,9 @@ APR audited launch,APR,learning rate,5e-7,training,not stated,outputs/pdms91_ext
 APR audited launch,APR,min learning rate,2.5e-7,training,not stated,outputs/pdms91_external_merged_soft025_retention1_awac1_3ep_s10_lr5e7_rlzt3g1to4_20260726/launch_manifest.txt,MIN_LR,reproduced,audited APR branch setting
 APR audited launch,APR,epochs,3,training,not stated,outputs/pdms91_external_merged_soft025_retention1_awac1_3ep_s10_lr5e7_rlzt3g1to4_20260726/launch_manifest.txt,ACTUAL_MAX_EPOCHS,reproduced,one audited APR distillation run
 APR audited launch,APR,batch size per GPU,8,training,not stated,outputs/pdms91_external_merged_soft025_retention1_awac1_3ep_s10_lr5e7_rlzt3g1to4_20260726/launch_manifest.txt,BATCH_SIZE,reproduced,4 GPUs in this branch; global batch 32
-APR audited launch,APR,precision,bfloat16,training,not stated,outputs/pdms91_external_merged_soft025_retention1_awac1_3ep_s10_lr5e7_lrzt3g1to4_20260726/launch_manifest.txt,PRECISION,reproduced,path typo retained only in old note; verified manifest uses BF16
+APR audited launch,APR,precision,bfloat16,training,not stated,outputs/pdms91_external_merged_soft025_retention1_awac1_3ep_s10_lr5e7_rlzt3g1to4_20260726/launch_manifest.txt,PRECISION,reproduced,verified manifest uses BF16
 APR teacher audit,external teacher union,raw selected trajectories,39261,navtrain,not stated,git history ca3a54e:docs/CAPRI_PDMS_Paper_Highlight_zh.md,Drivor 25402 plus DDV2 13859,reproduced,strict source union before merge and interpolation
 APR teacher audit,APR,accepted teachers,28910,navtrain,not stated,git history ca3a54e:docs/CAPRI_PDMS_Paper_Highlight_zh.md,post-rescore accepted count,reproduced,after alpha 0.25 interpolation and re-evaluation
+APR fixed-teacher diagnostic,dynamic-teacher anchor,PDMS,91.2766,NAVSIM v1,not stated,git history 4341a817:docs/PDMS_Current_Base_Policy_Iteration_Runbook_zh.md,lines 60 and 416-417,reproduced,anchor used by archived continuation diagnostic
+APR fixed-teacher diagnostic,fixed-teacher continuation epoch 1,PDMS,91.2526,NAVSIM v1,not stated,git history 4341a817:docs/PDMS_Current_Base_Policy_Iteration_Runbook_zh.md,lines 416-417,reproduced,below dynamic-teacher anchor
+APR fixed-teacher diagnostic,fixed-teacher continuation epoch 2,PDMS,91.2311,NAVSIM v1,not stated,git history 4341a817:docs/PDMS_Current_Base_Policy_Iteration_Runbook_zh.md,lines 416-417,reproduced,below dynamic-teacher anchor

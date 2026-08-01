@@ -1,0 +1,5 @@
+round,pdms,gain_points,evidence,runs
+0,91.1,0.0,paper reported,reported point; run/seed aggregation not stated
+1,91.21,0.11,paper reported,reported point; run/seed aggregation not stated
+2,91.37,0.16,paper reported,reported point; run/seed aggregation not stated
+3,91.45,0.08,paper reported / final score scene-reproduced,reported point + 12138 final scenes; run aggregation not stated
