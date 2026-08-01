@@ -12,6 +12,11 @@ The later 91.45 checkpoint is also present in that audit and yields 415 positive
 
 The final aggregated CSV contains 12,139 rows, but one token is literally `average`; the remaining 12,138 are real scene tokens. Its adjacent `aggregate_summary.json` and `paired_analysis.json` therefore correctly record 12,138 paired scenes. The canonical adapter explicitly removes the summary row, and formula validation is performed on the 12,138 scene rows.
 
+The scene mean is 91.450465 points. Main Table 1 prints 91.4 at one decimal,
+whereas Table 5 prints 91.45 at two decimals. The supplement preserves both
+paper displays and reports the reproduced mean at higher precision; it does not
+rewrite either main-paper cell.
+
 ## 3. FF-PGRPO epoch count
 
 The paper states 10 GRPO epochs. The archived `core_pareto_launch_config.txt` for one historical run records `max_epochs=20`. These may be different ablation/final runs; no manifest was found that proves the paper result used the 20-epoch launch. The supplement therefore uses 10 as the reported paper protocol and labels 20 as an archived non-canonical run.
@@ -27,3 +32,11 @@ Main Table 5 reports 91.10, 91.21, 91.37, and 91.45. Archived APR runbooks conta
 ## 6. Abstract wording
 
 `440/658 - 367/658 = 11.09` percentage points. The abstract phrase “11.1% higher” should read “11.1 percentage points higher” to match the body and avoid confusing absolute and relative improvement.
+
+## 7. Camera protocol
+
+The paper describes a multi-view camera input, while one audited APR resolved
+command records `cam_type=single`. The exact final-checkpoint training manifest
+is incomplete, so the supplement preserves the paper-level architecture and
+discloses the resolved-command conflict rather than asserting that every result
+row used either camera setting.

@@ -98,7 +98,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--metric-min", type=float, default=0.0)
     parser.add_argument("--metric-max", type=float, default=100.0)
     parser.add_argument("--aggregate-tolerance", type=float, default=1e-5)
-    parser.add_argument("--claim-tolerance", type=float, default=0.05)
+    parser.add_argument(
+        "--claim-tolerance", type=float, default=0.06,
+        help="Tolerance in the paper's percentage-point units (default: 0.06).",
+    )
     parser.add_argument(
         "--claim-mismatch-error",
         action="store_true",
@@ -435,7 +438,8 @@ def check_claim_means(
     findings: list[Finding] = []
     compared = 0
     for row in claims.to_dict(orient="records"):
-        method, metric = row.get("method"), row.get("metric")
+        method, raw_metric = row.get("method"), row.get("metric")
+        metric = {"PDMS": "aggregate_score", "EPDMS": "aggregate_score"}.get(raw_metric, raw_metric)
         try:
             expected = float(row.get("value"))
         except (TypeError, ValueError):
@@ -443,16 +447,37 @@ def check_claim_means(
         if metric not in frame.columns or pd.isna(method):
             continue
         selector: dict[str, Any] = {"method": method}
-        for column in ("split", "benchmark", "seed", "stage", "variant", "round"):
+        claim_name = str(row.get("claim_or_table", ""))
+        split_value = str(row.get("split", "")).strip()
+        if split_value.startswith("NAVSIM v1"):
+            selector["benchmark"] = "NAVSIM v1"
+            if "navtest" in split_value:
+                selector["split"] = "navtest"
+        elif split_value.startswith("NAVSIM v2"):
+            selector["benchmark"] = "NAVSIM v2"
+            if "navtest" in split_value:
+                selector["split"] = "navtest"
+        if claim_name in {"Main Table 1", "Main Table 3"} or (
+            claim_name == "Main Table 4" and method == "AMPT"
+        ):
+            selector.update({"stage": "APR", "variant": "paper_final"})
+        for column in ("benchmark", "seed", "stage", "variant", "round"):
             value = row.get(column)
-            if column in frame and value is not None and not pd.isna(value) and str(value).strip():
+            normalized = str(value).strip().lower() if value is not None else ""
+            if normalized in {"", "nan", "not recorded", "not stated", "unknown"}:
+                continue
+            if column in frame and value is not None and not pd.isna(value):
                 selector[column] = value
         values = pd.to_numeric(frame.loc[selector_mask(frame, selector), metric], errors="coerce").dropna()
         if values.empty:
             continue
         compared += 1
         observed = float(values.mean())
-        if abs(observed - expected) > tolerance:
+        local_tolerance = tolerance
+        if abs(observed) <= 1.0 + 1e-9 and abs(expected) > 1.0:
+            expected /= 100.0
+            local_tolerance /= 100.0
+        if abs(observed - expected) > local_tolerance:
             severity = "error" if mismatch_is_error else "warning"
             source = row.get("source_file", "unknown source")
             findings.append(

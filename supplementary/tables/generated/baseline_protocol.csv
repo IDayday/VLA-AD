@@ -1,0 +1,5 @@
+method,backbone,sensors,training_data,inference_candidates,test_time_scorer,result_identity
+AMPT,InternVL3-2B + ReCogDrive diffusion planner,multi-view in paper; one audited APR command resolves single camera,NAVSIM plus offline candidate/teacher pools,1,no,locally reproduced v1/v2 final rows; camera-manifest discrepancy disclosed
+ReCogDrive,not disclosed in current PDF,not disclosed in current PDF,not disclosed in current PDF,1,no,paper reported
+DiffusionDriveV2,not disclosed in current PDF,not disclosed in current PDF,not disclosed in current PDF,1,no,paper reported
+Drive-JEPA,not disclosed in current PDF,not disclosed in current PDF,not disclosed in current PDF,1,no,paper reported

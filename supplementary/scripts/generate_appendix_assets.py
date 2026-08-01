@@ -11,6 +11,8 @@ from __future__ import annotations
 import argparse
 import json
 import math
+import shlex
+import sys
 from pathlib import Path
 from statistics import NormalDist
 from typing import Any
@@ -23,6 +25,8 @@ from pipeline_common import (
     ANALYSIS_SEED,
     atomic_write_json,
     atomic_write_text,
+    environment_versions,
+    git_revision,
     repository_root,
     sha256_file,
     supplementary_root,
@@ -43,11 +47,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--stats", type=Path, default=supp / "derived/stats.json")
     parser.add_argument(
         "--hard658", type=Path,
-        default=root / "outputs/navtest_hard_stable_zero658_recogdrive_stage3_vs_pdms914505_20260727/per_token_comparison.csv",
+        default=supp / "derived/source_adapters/hard658.csv",
     )
     parser.add_argument(
         "--qualitative-manifest", type=Path,
-        default=root / "outputs/ampt9145_vs_recogdrive_rl_ddv2_navtest_cases_20260728/visualizations/manifest.csv",
+        default=supp / "figures/sources/qualitative_manifest.csv",
+    )
+    parser.add_argument(
+        "--scene-metadata", type=Path,
+        default=supp / "tables/sources/hard658_case_commands.csv",
+        help="Scene metadata used only to recover navigation commands for audited case IDs.",
     )
     parser.add_argument("--table-dir", type=Path, default=supp / "tables/generated")
     parser.add_argument("--figure-dir", type=Path, default=supp / "figures/generated")
@@ -124,7 +133,33 @@ def validate_reported_sources(source_dir: Path) -> None:
         raise ValueError("APR gains do not equal consecutive reported scores")
 
 
+def normalize_hard658_pair(hard: pd.DataFrame) -> pd.DataFrame:
+    """Return the historical pair in the original wide audit shape."""
+    if {"orig_PDMS", "old_v2_PDMS", "token"}.issubset(hard.columns):
+        return hard.copy()
+    required = {"scene_id", "variant", "aggregate_score", "NC", "DAC", "DDC", "EP", "TTC", "C", "root_cause_group"}
+    missing = required - set(hard.columns)
+    if missing:
+        raise ValueError(f"hard-658 adapter lacks columns: {sorted(missing)}")
+    scalar = hard.loc[hard["variant"].eq("scalar_grpo")].copy()
+    ampt = hard.loc[hard["variant"].eq("paper_recovery_checkpoint")].copy()
+    if scalar["scene_id"].nunique() != 658 or ampt["scene_id"].nunique() != 658:
+        raise ValueError("hard-658 adapter must contain 658 scenes for each historical method")
+    metrics = ["aggregate_score", "NC", "DAC", "DDC", "EP", "TTC", "C"]
+    scalar = scalar[["scene_id", "root_cause_group", *metrics]].set_index("scene_id")
+    ampt = ampt[["scene_id", *metrics]].set_index("scene_id")
+    joined = scalar.join(ampt, how="inner", lsuffix="_orig", rsuffix="_old")
+    wide = pd.DataFrame({"token": joined.index.astype(str), "root_cause_group": joined["root_cause_group"]})
+    suffix = {"aggregate_score": "PDMS", "C": "Comfort"}
+    for metric in metrics:
+        name = suffix.get(metric, metric)
+        wide[f"orig_{name}"] = joined[f"{metric}_orig"].to_numpy()
+        wide[f"old_v2_{name}"] = joined[f"{metric}_old"].to_numpy()
+    return wide.reset_index(drop=True)
+
+
 def hard658_tables(hard: pd.DataFrame, rng: np.random.Generator) -> dict[str, pd.DataFrame]:
+    hard = normalize_hard658_pair(hard)
     before = pd.to_numeric(hard["orig_PDMS"], errors="raise").to_numpy()
     after = pd.to_numeric(hard["old_v2_PDMS"], errors="raise").to_numpy()
     before_positive, after_positive = before > 1e-12, after > 1e-12
@@ -187,38 +222,34 @@ def hard658_tables(hard: pd.DataFrame, rng: np.random.Generator) -> dict[str, pd
     return {"transition": transition, "recovery": recovery, "recovery_gain": recovery_gain, "cause": cause}
 
 
-def failure_case_table(hard: pd.DataFrame, qualitative_manifest: Path) -> pd.DataFrame:
-    before = hard["orig_PDMS"].gt(1e-12)
-    after = hard["old_v2_PDMS"].gt(1e-12)
-    hard = hard.copy()
-    hard["transition"] = np.select(
-        [~before & after, before & ~after, ~before & ~after],
-        ["repaired", "regressed", "persistent failure"], default="retained positive",
-    )
-    desired = ["repaired", "repaired", "regressed", "persistent failure", "retained positive"]
-    chosen = []
-    used: set[str] = set()
-    for kind in desired:
-        candidates = hard.loc[hard["transition"].eq(kind)].sort_values(["root_cause_group", "token"])
-        row = next((record for _, record in candidates.iterrows() if str(record["token"]) not in used), None)
-        if row is None:
-            raise ValueError(f"no hard-658 case available for {kind}")
-        used.add(str(row["token"]))
-        chosen.append(row)
-    command_map: dict[str, str] = {}
-    if qualitative_manifest.exists():
-        manifest = pd.read_csv(qualitative_manifest)
-        command_map = dict(zip(manifest["token"].astype(str), manifest["command"].astype(str)))
+def failure_case_table(hard: pd.DataFrame, scene_metadata: Path) -> pd.DataFrame:
+    """Recompute the five mechanism-organized cases selected in the audit."""
+    hard = normalize_hard658_pair(hard)
+    selections = [
+        ("00fcad6d092c5e8e", "repaired", "Collision/TTC failure repaired without protected regression."),
+        ("03aa8a0576a25b63", "repaired", "Drivable-area failure repaired while NC and TTC remain feasible."),
+        ("1148c72f141c532d", "partial repair", "Both hard failures repaired; TTC remains the limiting component."),
+        ("00016f8b45c25a1d", "persistent", "DAC/progress failure persists under both audited checkpoints."),
+        ("4b4a268bee4c5ab5", "regressed", "A DAC regression creates a new zero and motivates retention."),
+    ]
+    metadata = pd.read_csv(scene_metadata)
+    id_column = "token" if "token" in metadata else "scene_id"
+    command_map = dict(zip(metadata[id_column].astype(str), metadata["command"].astype(str)))
+
+    def pair(row: pd.Series, suffix: str, digits: int = 3) -> str:
+        return f"{float(row[f'orig_{suffix}']):.{digits}f} -> {float(row[f'old_v2_{suffix}']):.{digits}f}"
+
     rows = []
-    for row in chosen:
-        token = str(row["token"])
+    indexed = hard.assign(token=hard["token"].astype(str)).set_index("token", drop=False)
+    for token, outcome, diagnosis in selections:
+        if token not in indexed.index or token not in command_map:
+            raise ValueError(f"audited qualitative case lacks metric/command evidence: {token}")
+        row = indexed.loc[token]
         rows.append(
-            {"Scene ID": token, "Command": command_map.get(token, "not archived"),
-             "Failure type": str(row["root_cause_group"]).replace("_", " "),
-             "Scalar PDMS": f"{100 * float(row['orig_PDMS']):.1f}",
-             "AMPT PDMS": f"{100 * float(row['old_v2_PDMS']):.1f}",
-             "Outcome": str(row["transition"]),
-             "Diagnosis": "hard feasibility remains limiting" if row["transition"] == "persistent failure" else "credit assignment changes feasibility state"}
+            {"Scene ID": token, "Command": command_map[token], "Outcome": outcome,
+             "PDMS": pair(row, "PDMS"), "NC": pair(row, "NC"), "DAC": pair(row, "DAC"),
+             "TTC": pair(row, "TTC"), "EP": pair(row, "EP"), "DDC": pair(row, "DDC"),
+             "Diagnosis": diagnosis}
         )
     return pd.DataFrame(rows)
 
@@ -236,7 +267,8 @@ def reproduced_results(canonical: pd.DataFrame) -> pd.DataFrame:
         ]
         if subset["scene_id"].nunique() != expected:
             raise ValueError(f"{benchmark}: expected {expected} final scenes")
-        row: dict[str, Any] = {"Benchmark": benchmark, "Scenes": expected, "Inference": "1 trajectory", "Runs": "1 inference seed"}
+        run_identity = "1 archived inference seed" if benchmark == "NAVSIM v1" else "1 export; seed not recorded"
+        row: dict[str, Any] = {"Benchmark": benchmark, "Scenes": expected, "Inference": "1 trajectory", "Runs": run_identity}
         for metric in metrics:
             label = "PDMS" if benchmark.endswith("v1") and metric == "aggregate_score" else ("EPDMS" if metric == "aggregate_score" else metric)
             row[label] = f"{100 * pd.to_numeric(subset[metric], errors='coerce').mean():.2f}"
@@ -339,7 +371,7 @@ def plot_metric_profiles(canonical: pd.DataFrame) -> plt.Figure:
     return fig
 
 
-def qualitative_contact_sheet(path: Path) -> plt.Figure | None:
+def qualitative_contact_sheet(path: Path) -> tuple[plt.Figure, list[Path]] | None:
     if not path.exists():
         return None
     manifest = pd.read_csv(path)
@@ -349,14 +381,24 @@ def qualitative_contact_sheet(path: Path) -> plt.Figure | None:
     if len(selected) != 3:
         return None
     fig, axes = plt.subplots(3, 1, figsize=(6.9, 8.9))
+    image_inputs: list[Path] = []
+    repo = repository_root().resolve()
     for ax, (_, row) in zip(axes, selected.iterrows()):
         image_path = Path(str(row["front_bev_path"]))
+        if not image_path.is_absolute():
+            image_path = repo / image_path
+        image_path = image_path.resolve()
+        try:
+            image_path.relative_to(repo)
+        except ValueError as exc:
+            raise ValueError(f"qualitative image must be inside repository: {image_path}") from exc
         if not image_path.is_file():
             raise FileNotFoundError(image_path)
+        image_inputs.append(image_path)
         ax.imshow(plt.imread(image_path))
         ax.axis("off")
     fig.tight_layout(pad=.2)
-    return fig
+    return fig, image_inputs
 
 
 def main() -> int:
@@ -376,9 +418,9 @@ def main() -> int:
     source_specs = {
         "candidate_source_statistics": ("Candidate-source and audit budgets for PC-MTS on the NAVSIM training universe. Counts tagged proposed are reproduction settings rather than observations; higher/lower is not applicable.", "tab:candidate_sources", True),
         "metric_partition": ("NAVSIM v1/v2 metric partition used by PC-MTS and FF-PGRPO. Hard feasibility is tested before protected non-regression and Pareto quality.", "tab:metric_partition", False),
-        "supervision_mismatch_reported": ("Supervision--optimization comparison on NAVSIM v1 under single-trajectory inference. All four rows are one paper-reported run; higher PDMS and GRPO change are better, and no variance is implied.", "tab:supervision_mismatch", False),
-        "stage_ablation_reported": ("Stage-wise NAVSIM v1 ablation under single-trajectory inference. Higher is better. Rows are one paper-reported run; only the final AMPT row is independently reproduced from 12,138 scene scores.", "tab:stage_ablation", True),
-        "apr_rounds_reported": ("Paper-reported NAVSIM v1 APR progression under single-trajectory inference. Higher is better. These are one-run round summaries without a training-seed confidence interval.", "tab:apr_rounds", False),
+        "supervision_mismatch_reported": ("Supervision--optimization comparison on NAVSIM v1 under single-trajectory inference. All four rows are paper-reported point estimates whose run/seed aggregation is not stated; higher PDMS and GRPO change are better, and no variance is implied.", "tab:supervision_mismatch", False),
+        "stage_ablation_reported": ("Stage-wise NAVSIM v1 ablation under single-trajectory inference. Higher is better. Rows are paper-reported point estimates whose run/seed aggregation is not stated; only the final AMPT row is independently reproduced from 12,138 scene scores.", "tab:stage_ablation", True),
+        "apr_rounds_reported": ("Paper-reported NAVSIM v1 APR progression under single-trajectory inference. Higher is better. Run/seed aggregation is not stated and no training-seed confidence interval is available.", "tab:apr_rounds", False),
         "stage_hyperparameters": ("Stage-wise training protocol. Reported/reproduced settings are distinguished from bounded reproduction settings; `not recorded' is an explicit provenance value, not a blank. Inference always emits one trajectory.", "tab:stage_hyperparameters", True),
         "baseline_protocol": ("Fair-comparison protocol for main-paper baselines. All methods use one inference candidate and no test-time scorer in the paper table; unreported backbone/sensor/data details are not inferred. Result identity distinguishes reported from reproduced.", "tab:baseline_protocol", True),
         "apr_teacher_pool_audited": ("Audited APR teacher-pool construction on NAVSIM navtrain. Counts are from one archived teacher audit; the 28,910 accepted teachers follow interpolation and exact re-evaluation. Higher acceptance is not inherently better because guards constrain quality.", "tab:apr_teacher_pool", False),
@@ -395,7 +437,7 @@ def main() -> int:
         label="tab:failure_transition"))
     outputs.extend(write_table(
         hard_tables["recovery"], "failure_recovery", args.table_dir,
-        caption="Recovery on the same 658 NAVSIM v1 scenes under one archived comparison. Rates use Wilson 95% intervals over scenes; this interval does not represent training-seed uncertainty. Higher recovery is better.",
+        caption="Recovery on the same 658 NAVSIM v1 scenes under one archived comparison. Rates use Wilson 95\\% intervals over scenes; this interval does not represent training-seed uncertainty. Higher recovery is better.",
         label="tab:failure_recovery"))
     outputs.extend(write_table(
         hard_tables["recovery_gain"], "failure_net_gain", args.table_dir,
@@ -405,11 +447,11 @@ def main() -> int:
         hard_tables["cause"], "failure_cause_breakdown", args.table_dir,
         caption="Failure-type decomposition for the fixed 658 NAVSIM v1 scenes. Repairs and regressions use the scalar-GRPO to AMPT transition; net repairs sum to 73. One archived comparison; higher net repair is better.",
         label="tab:failure_causes"))
-    cases = failure_case_table(hard, args.qualitative_manifest)
+    cases = failure_case_table(hard, args.scene_metadata)
     outputs.extend(write_table(
         cases, "failure_cases", args.table_dir,
-        caption="Mechanism-organized examples from the fixed 658-scene set. Scene IDs and PDMS values are reproduced from the archived comparison; command is explicitly marked when not present in the qualitative manifest. These selected cases are not an unbiased benchmark sample.",
-        label="tab:failure_cases", wide=True))
+        caption="Mechanism-organized examples from the fixed 658-scene set. Scene IDs and PDMS values are reproduced from the archived comparison; commands are joined from audited scene metadata. These selected cases are not an unbiased benchmark sample.",
+        label="tab:hard658-cases", wide=True))
     verified = reproduced_results(canonical)
     outputs.extend(write_table(
         verified, "reproduced_main_results", args.table_dir,
@@ -428,18 +470,31 @@ def main() -> int:
     ):
         outputs.extend(save_figure(fig, stem, args.figure_dir, args.dpi))
     contact = qualitative_contact_sheet(args.qualitative_manifest)
+    qualitative_inputs: list[Path] = []
     if contact is not None:
-        outputs.extend(save_figure(contact, "qualitative_selected_cases", args.figure_dir, args.dpi))
+        contact_figure, qualitative_inputs = contact
+        outputs.extend(save_figure(contact_figure, "qualitative_selected_cases", args.figure_dir, args.dpi))
 
     payload = {
         "schema_version": 1,
         "status": "complete",
         "analysis_seed": args.seed,
         "analysis_seed_scope": "bootstrap resampling and deterministic plotting only",
+        "command": " ".join(shlex.quote(part) for part in [sys.executable, *sys.argv]),
+        "git": git_revision(repository_root()),
+        "environment": environment_versions(),
         "hard658_policy": "paper-aligned scalar GRPO versus historical AMPT recovery checkpoint; later 91.45 hard-set columns excluded",
         "inputs": [
             {"path": path.relative_to(repository_root()).as_posix(), "sha256": sha256_file(path)}
-            for path in [args.canonical, args.stats, args.hard658, *sorted(args.source_dir.glob("*.csv"))]
+            for path in [
+                args.canonical,
+                args.stats,
+                args.hard658,
+                args.scene_metadata,
+                args.qualitative_manifest,
+                *qualitative_inputs,
+                *sorted(args.source_dir.glob("*.csv")),
+            ]
         ],
         "outputs": [
             {"path": path.relative_to(repository_root()).as_posix(), "sha256": sha256_file(path)} for path in outputs

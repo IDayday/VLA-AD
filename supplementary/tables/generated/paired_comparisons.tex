@@ -1,0 +1,14 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Paired scene-level comparisons under single-trajectory inference without a test-time scorer or candidate reranking. Each row reports observed runs and paired scenes. Positive differences favor method B for higher-is-better metrics; confidence intervals use the method stated in stats.json.}
+\label{tab:supp_paired_comparisons}
+\begin{tabular}{lrrrrrrrrrrr}
+\toprule
+Comparison & Metric & A & B & Mean A & Mean B & Delta (B-A) & Paired CI & Effect dz & Runs & Scenes & Evidence \\
+\midrule
+apr\_final\_vs\_paired\_anchor\_pdms & aggregate\_score & paired APR anchor & paper-final AMPT & 0.91 & 0.91 & 0.00 & [-0.00, 0.00] & 0.00 & 1 & 12138 & insufficient \\
+paper\_hard658\_pdms & aggregate\_score & scalar GRPO & AMPT recovery checkpoint & 0.51 & 0.61 & 0.10 & [0.08, 0.13] & 0.29 & 0 & 658 & insufficient \\
+\bottomrule
+\end{tabular}
+\end{table}

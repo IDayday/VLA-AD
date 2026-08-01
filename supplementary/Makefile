@@ -24,10 +24,29 @@ all: manifest checks
 pipeline: tables figures
 
 audit:
-	$(PYTHON) scripts/build_inventory.py --seed $(SEED)
+	$(PYTHON) scripts/build_inventory.py --seed $(SEED) \
+		--scan-root docs --scan-root configs --scan-root scripts \
+		--scan-root reports --scan-root navsim \
+		--scan-root outputs/ampt_pdms914505_navtest_submission_20260730 \
+		--scan-root outputs/pdms914487_numeric_anchor_reverse_old_residual_conflict_only_top20_graft0025_full_navtest_seed20260726_20260727/epoch_000_step_252/candidate/local_sharded_aggregated.csv \
+		--scan-root outputs/fair_ec_pdms914153_navtest_20260727 \
+		--scan-root outputs/navtest_hard_stable_zero658_recogdrive_stage3_vs_pdms914505_20260727 \
+		--scan-root outputs/stage3_grpo_core_pareto_s16_lr1e4_b2acc4_20e_local8_20260616T020136Z
 
 prepare:
-	$(PYTHON) scripts/prepare_verified_sources.py --seed $(SEED)
+	@if test -f ../outputs/ampt_pdms914505_navtest_submission_20260730/full_navtest_pdms.csv \
+		&& test -f ../outputs/pdms914487_numeric_anchor_reverse_old_residual_conflict_only_top20_graft0025_full_navtest_seed20260726_20260727/epoch_000_step_252/candidate/local_sharded_aggregated.csv \
+		&& test -f ../outputs/fair_ec_pdms914153_navtest_20260727/raw_path_temporal_cap2_final_score/navsim_v2_navtest_epdms.csv \
+		&& test -f ../outputs/navtest_hard_stable_zero658_recogdrive_stage3_vs_pdms914505_20260727/per_token_comparison.csv; then \
+		$(PYTHON) scripts/prepare_verified_sources.py --seed $(SEED); \
+	elif test -f derived/source_adapters/v1_final.csv \
+		&& test -f derived/source_adapters/v1_anchor.csv \
+		&& test -f derived/source_adapters/v2_final.csv \
+		&& test -f derived/source_adapters/hard658.csv; then \
+		echo "Raw archive unavailable; using the packaged, hashed source adapters."; \
+	else \
+		echo "Neither the raw archive nor all packaged source adapters are available" >&2; exit 2; \
+	fi
 
 canonical: prepare
 	$(PYTHON) scripts/canonicalize_results.py --seed $(SEED)
@@ -73,10 +92,26 @@ checks: manifest
 		scripts/prepare_verified_sources.py scripts/generate_appendix_assets.py \
 		scripts/build_reproduction_manifest.py; do \
 		$(PYTHON) "$$script" --help >/dev/null || exit 2; \
-	done
+		done
+	@for script in launch/*.sh; do \
+		bash -n "$$script" || exit 2; \
+		"./$$script" --help >/dev/null || exit 2; \
+		"./$$script" >/dev/null || exit 2; \
+		done
+	@bash -n make_supplement.sh
+	@./make_supplement.sh --help >/dev/null
+	@if launch/run_p0_pcmts.sh --execute >/dev/null 2>&1; then \
+		echo "Training gate unexpectedly allowed --execute without ALLOW_TRAIN=1" >&2; exit 2; \
+	fi
 	@if rg -n '/mnt/project|/mnt/navsim|internal server|TBD|TODO' --glob '*.tex' .; then \
 		echo "Forbidden placeholder or internal path found in LaTeX" >&2; exit 2; \
 	fi
 	@if test -f supplementary.log && rg -n 'undefined references|Citation .* undefined|Reference .* undefined' supplementary.log; then \
 		echo "Undefined citation/reference found in LaTeX log" >&2; exit 2; \
+	fi
+	@if rg -n '\\bIPR\\b' supplementary.tex sections --glob '*.tex'; then \
+		echo "Legacy IPR naming found in final LaTeX" >&2; exit 2; \
+	fi
+	@if test -f supplementary.log && rg -n 'Float too large|Overfull \\hbox \(([2-9][0-9]|[1-9][0-9]{2})' supplementary.log; then \
+		echo "Material LaTeX overflow found" >&2; exit 2; \
 	fi

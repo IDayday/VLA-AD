@@ -1,0 +1,275 @@
+{
+  "schema_version": 1,
+  "status": "complete",
+  "analysis_seed": 2027,
+  "analysis_seed_scope": "bootstrap resampling and deterministic plotting only",
+  "command": "/root/miniconda3/envs/navsim/bin/python3 scripts/generate_appendix_assets.py --seed 2027 --dpi 300",
+  "git": {
+    "commit": "356d2aec7bfce29393c0903d8174aec9ffa8aa2b",
+    "dirty": true
+  },
+  "environment": {
+    "python": "3.9.25",
+    "platform": "Linux-5.10.0-136.12.0.88.4.ctl3.x86_64-x86_64-with-glibc2.35",
+    "numpy": "1.26.4",
+    "pandas": "2.3.3",
+    "pyarrow": "21.0.0",
+    "matplotlib": "3.9.4",
+    "scipy": "1.13.1",
+    "torch": "2.5.1+cu124",
+    "lightning": null,
+    "pytorch_lightning": "2.6.0",
+    "hydra_core": "1.2.0",
+    "omegaconf": "2.3.0",
+    "navsim_distribution": null,
+    "torch_cuda_build": "12.4",
+    "cuda_available": "true",
+    "pdflatex": "pdfTeX 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian)",
+    "bibtex": "BibTeX 0.99d (TeX Live 2022/dev/Debian)"
+  },
+  "hard658_policy": "paper-aligned scalar GRPO versus historical AMPT recovery checkpoint; later 91.45 hard-set columns excluded",
+  "inputs": [
+    {
+      "path": "supplementary/derived/canonical_scene_metrics.parquet",
+      "sha256": "010814a9b9f63575b517b9c541c1e54ec81b74ccba681af4d09d791c637cf244"
+    },
+    {
+      "path": "supplementary/derived/stats.json",
+      "sha256": "26bd87d5d4b268ef35a8eada7fcfaf2143529f9fea345627c8e40ab2223e16a0"
+    },
+    {
+      "path": "supplementary/derived/source_adapters/hard658.csv",
+      "sha256": "dc7d8396e18d6bca5c5e4836e7d3c2250a5dcbf9fae682ff02fdef2024878bc0"
+    },
+    {
+      "path": "supplementary/tables/sources/hard658_case_commands.csv",
+      "sha256": "12db49ab5e8a49af019ae3e0cef2ffe8c17e729fed66583200f2f85c2e65af48"
+    },
+    {
+      "path": "supplementary/figures/sources/qualitative_manifest.csv",
+      "sha256": "c7f91d624acdf70bb64bfe67348d8fd230058e73f62d98f48d84f719b4a288fd"
+    },
+    {
+      "path": "supplementary/figures/sources/f9a9b5ee707e501e_front_bev.png",
+      "sha256": "429e99e53aa9bd72904d750d189dda9e5955cb505e439ef8ea78e82dd2bffe07"
+    },
+    {
+      "path": "supplementary/figures/sources/f9ed38d9ddfa531e_front_bev.png",
+      "sha256": "46c9a1f59688fd7f97c1db19d58ba5e5f6850f1e0078f98f8427cd3bae42265d"
+    },
+    {
+      "path": "supplementary/figures/sources/74cc0056b2c05248_front_bev.png",
+      "sha256": "14317b561987339ffe5e636fa59db5e1f3a68e7ad0ec1f6b5b016550c4725e15"
+    },
+    {
+      "path": "supplementary/tables/sources/apr_fixed_teacher_diagnostic.csv",
+      "sha256": "2a14d966a24bffdbac077347c940f85fb8fd3610b64420742fa600a502409854"
+    },
+    {
+      "path": "supplementary/tables/sources/apr_rounds_reported.csv",
+      "sha256": "d74f22e72eecc5f6d55cb6e18dd7ab9e629877eb2faa7501db3ba959c80082e0"
+    },
+    {
+      "path": "supplementary/tables/sources/apr_teacher_pool_audited.csv",
+      "sha256": "7cc9c7cdee80be02e34cb0de4440d64a472516e299dc6c8ae94b3e36424199e2"
+    },
+    {
+      "path": "supplementary/tables/sources/baseline_protocol.csv",
+      "sha256": "c593c21ea524d4bbf2ba0a9c6e6bfa7c612addb4ed67d8a5caeea3d5e369738c"
+    },
+    {
+      "path": "supplementary/tables/sources/candidate_source_statistics.csv",
+      "sha256": "ed9dbea425f72d6cd478a988b416b6ec1ac450bfcd17f207d2e44b157b95035e"
+    },
+    {
+      "path": "supplementary/tables/sources/hard658_case_commands.csv",
+      "sha256": "12db49ab5e8a49af019ae3e0cef2ffe8c17e729fed66583200f2f85c2e65af48"
+    },
+    {
+      "path": "supplementary/tables/sources/metric_partition.csv",
+      "sha256": "be24c26ff6514586c81124731642d34ab3f1ee81b7b51baf9af2fd3d1ec229fa"
+    },
+    {
+      "path": "supplementary/tables/sources/stage_ablation_reported.csv",
+      "sha256": "dbf0578f69f4254155d73ee947d23f4387381f2ba3a4cbbc274d6624c3fc5d94"
+    },
+    {
+      "path": "supplementary/tables/sources/stage_hyperparameters.csv",
+      "sha256": "3af131077e1f4518cd9fb9f39c0ba5ab231f1a60095c0d2a5176673c1c77563c"
+    },
+    {
+      "path": "supplementary/tables/sources/supervision_mismatch_reported.csv",
+      "sha256": "bd3b29aacc2a876b82d033f6abc1e832ea8319556ee7bc81620c60abf114b476"
+    }
+  ],
+  "outputs": [
+    {
+      "path": "supplementary/tables/generated/candidate_source_statistics.csv",
+      "sha256": "ed9dbea425f72d6cd478a988b416b6ec1ac450bfcd17f207d2e44b157b95035e"
+    },
+    {
+      "path": "supplementary/tables/generated/candidate_source_statistics.tex",
+      "sha256": "7b811bd85cb74e00735d8de8ec32849bda3beaa69a719404ff92ba38f59b80dd"
+    },
+    {
+      "path": "supplementary/tables/generated/metric_partition.csv",
+      "sha256": "113571d82de1508b2a597a0efeb0a36e571eaccc54823ae11b9f4e58bc57fcae"
+    },
+    {
+      "path": "supplementary/tables/generated/metric_partition.tex",
+      "sha256": "0e1530697cd43afb5323e20e6f73ef3d998aa38472919db231b40da762cf2b6d"
+    },
+    {
+      "path": "supplementary/tables/generated/supervision_mismatch.csv",
+      "sha256": "bd3b29aacc2a876b82d033f6abc1e832ea8319556ee7bc81620c60abf114b476"
+    },
+    {
+      "path": "supplementary/tables/generated/supervision_mismatch.tex",
+      "sha256": "b3a1ab673ff473ece1727e154a8dad35667ba96887e603a833da35cd44fd4f22"
+    },
+    {
+      "path": "supplementary/tables/generated/stage_ablation.csv",
+      "sha256": "dbf0578f69f4254155d73ee947d23f4387381f2ba3a4cbbc274d6624c3fc5d94"
+    },
+    {
+      "path": "supplementary/tables/generated/stage_ablation.tex",
+      "sha256": "4004c2f09970bed679db85e87076a6b50f3e57b3a9e04fe58602a50d923b3644"
+    },
+    {
+      "path": "supplementary/tables/generated/apr_rounds.csv",
+      "sha256": "f2fff9ac01f2513b18270f95bd716a1fe621702e9cda6c2164fe935defadfb0f"
+    },
+    {
+      "path": "supplementary/tables/generated/apr_rounds.tex",
+      "sha256": "2d280405e2bd6f64df5cd550653ad2612581806fe2889a3f291e8511dd1dddf7"
+    },
+    {
+      "path": "supplementary/tables/generated/stage_hyperparameters.csv",
+      "sha256": "47ff3df1325e27ae9cce0ac1caaa9a8ac91d6eb9c94bfb4e688870abc69994ce"
+    },
+    {
+      "path": "supplementary/tables/generated/stage_hyperparameters.tex",
+      "sha256": "edab65d57a4e9bbbd46df7731bb6d53dac6a78e77f13dab2d4081e64c8ff9567"
+    },
+    {
+      "path": "supplementary/tables/generated/baseline_protocol.csv",
+      "sha256": "6f9aa642ac9fcd04dbb56bf5646be817eab9fe664b8367de7907490bc90df101"
+    },
+    {
+      "path": "supplementary/tables/generated/baseline_protocol.tex",
+      "sha256": "c7f4827e3a072d8b976153f8cebe2ab5de6f9d02a17d6a674f78104e7dd81275"
+    },
+    {
+      "path": "supplementary/tables/generated/apr_teacher_pool_audited.csv",
+      "sha256": "7cc9c7cdee80be02e34cb0de4440d64a472516e299dc6c8ae94b3e36424199e2"
+    },
+    {
+      "path": "supplementary/tables/generated/apr_teacher_pool_audited.tex",
+      "sha256": "1a45e6467aeac5b3e8ca6bfb1657decadaffd1acf9eafee4835fe913bd3857ce"
+    },
+    {
+      "path": "supplementary/tables/generated/apr_fixed_teacher_diagnostic.csv",
+      "sha256": "ba5e661b0641292b30f210c0ce4b38d4619e5bc62506a1c26b69a1e9b992c9d8"
+    },
+    {
+      "path": "supplementary/tables/generated/apr_fixed_teacher_diagnostic.tex",
+      "sha256": "94b960554dea0d0564c57eeb550910f2624c433e70aa40e046b52d3c3b9042ef"
+    },
+    {
+      "path": "supplementary/tables/generated/failure_transition.csv",
+      "sha256": "63e85cf558fa7d561f04305facf5d1e03661e8b8a7b018f40cfedbe8f51d2baf"
+    },
+    {
+      "path": "supplementary/tables/generated/failure_transition.tex",
+      "sha256": "f2c43a1df63ef6225ece56b0fb65de8ac493b84c847e850d21ebb6c6b44b3ef9"
+    },
+    {
+      "path": "supplementary/tables/generated/failure_recovery.csv",
+      "sha256": "18b1801742d2c0ae643118a36d7310bf3d86efcdba39c968e85f31532d72d3b1"
+    },
+    {
+      "path": "supplementary/tables/generated/failure_recovery.tex",
+      "sha256": "454f16c4c331838b2682c330a88179566776da8f5929155b6a82be0ed63375bb"
+    },
+    {
+      "path": "supplementary/tables/generated/failure_net_gain.csv",
+      "sha256": "e7dddf8752c3e5755332f822ea7c1fa95879a398488ba2ff1fcf917958ed6566"
+    },
+    {
+      "path": "supplementary/tables/generated/failure_net_gain.tex",
+      "sha256": "b6e6a185caca064499688a4e86049a3b4c80da2ed94c4a85156c172ca8abc833"
+    },
+    {
+      "path": "supplementary/tables/generated/failure_cause_breakdown.csv",
+      "sha256": "b678b9a36f7574bc08f630fb11d0c2909938c2e37ad4f8784854987f6aef24b0"
+    },
+    {
+      "path": "supplementary/tables/generated/failure_cause_breakdown.tex",
+      "sha256": "2a274102cda4d1a857ea7106240ed94ff4379b41e7b80252ec6b81245206088c"
+    },
+    {
+      "path": "supplementary/tables/generated/failure_cases.csv",
+      "sha256": "5259269a4526cd639408da9611a5b761d67fb064d61820b17385edbd21b6a90f"
+    },
+    {
+      "path": "supplementary/tables/generated/failure_cases.tex",
+      "sha256": "674e1ade802017754eacd86e9f3458e5658310b29e738eb23e5763f3db065538"
+    },
+    {
+      "path": "supplementary/tables/generated/reproduced_main_results.csv",
+      "sha256": "e25bfc7a26293ae7e261ef1d6b0ddb5506b4761f8520c0868e84e5b8d84ff9e4"
+    },
+    {
+      "path": "supplementary/tables/generated/reproduced_main_results.tex",
+      "sha256": "997ec26a3ca38c8b25dc38c068d00edf9e2e83d517a43c767138ac2ccbb68c7b"
+    },
+    {
+      "path": "supplementary/figures/generated/supervision_mismatch.pdf",
+      "sha256": "69ed3f6a2bfd23d284fa6862ca53a14dfb9318bf1585eb460897dea3cecb275a"
+    },
+    {
+      "path": "supplementary/figures/generated/supervision_mismatch.png",
+      "sha256": "abbf7a23916516afcd2e629fd4d5d82239c5efd0dcd6f4f6c1dee8fc513a4005"
+    },
+    {
+      "path": "supplementary/figures/generated/apr_rounds.pdf",
+      "sha256": "e48fcdc78dc14c690080d7df958097335b6c3c073d4eeff7b290876a12d82b6e"
+    },
+    {
+      "path": "supplementary/figures/generated/apr_rounds.png",
+      "sha256": "8aee7f73ab7862526df7510122b103f03f6ec19a5fe72bcb9aaac4258cc3766d"
+    },
+    {
+      "path": "supplementary/figures/generated/failure_transition.pdf",
+      "sha256": "1eb8081a9d15dbb5a46d86c4fb5fe6baac58510d3c08df079e73067b79244213"
+    },
+    {
+      "path": "supplementary/figures/generated/failure_transition.png",
+      "sha256": "fc70c4bb34a41cf564915eb1e4dfafc785444357288b3b02667d41d1eae8f081"
+    },
+    {
+      "path": "supplementary/figures/generated/failure_cause_recovery.pdf",
+      "sha256": "2cffc7783a10f77f38e460a62019b615854763868486fcfc3d03bdbdc7235925"
+    },
+    {
+      "path": "supplementary/figures/generated/failure_cause_recovery.png",
+      "sha256": "25a52b07b00db97f5c27b1433bb0dfcd273d27433a0acf09b847afb82efd6747"
+    },
+    {
+      "path": "supplementary/figures/generated/ampt_metric_profiles.pdf",
+      "sha256": "1d43f0f2b4dfb3af7e330a0cee7b1d445bf27092ea1178d6d3a2fd7526baa388"
+    },
+    {
+      "path": "supplementary/figures/generated/ampt_metric_profiles.png",
+      "sha256": "f6086120c4ad4d3018a93947a8c8f5a006ebdb4943c74ccebd9aa81cf2347350"
+    },
+    {
+      "path": "supplementary/figures/generated/qualitative_selected_cases.pdf",
+      "sha256": "5b9e9986e437cf54c3f33f605a7dad46d37204acf6b36fb58b29e14e54558e66"
+    },
+    {
+      "path": "supplementary/figures/generated/qualitative_selected_cases.png",
+      "sha256": "b66250322566520081d7bf57387d7085eb71979d31dd4f067cc067bea9949acd"
+    }
+  ]
+}

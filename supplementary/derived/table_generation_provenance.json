@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "created_utc": "2026-08-01T03:31:35.562037+00:00",
+  "created_utc": "2026-08-01T03:49:50.057039+00:00",
   "status": "complete",
   "analysis_seed": 2027,
   "analysis_seed_scope": "resampling and plotting only; not a training seed",
   "command": "scripts/generate_tables.py --seed 2027",
   "git": {
-    "commit": "34e8d7998c588e0bc30d50fb1a74e220d300dfa4",
+    "commit": "356d2aec7bfce29393c0903d8174aec9ffa8aa2b",
     "dirty": true
   },
   "environment": {
@@ -36,8 +36,8 @@
     },
     {
       "path": "supplementary/derived/data_validation_status.json",
-      "bytes": 2888,
-      "sha256": "3c54c637035035c87995f3f8a97a61c92ea8e292390874a3dba21ba7447a6849"
+      "bytes": 2875,
+      "sha256": "62e159f7a3603e438d2ca8916cb79d7598ca1ca7e6ca2f839b0bf08e5abd31ed"
     },
     {
       "path": "supplementary/configs/table_generation.json",

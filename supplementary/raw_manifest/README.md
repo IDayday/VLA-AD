@@ -25,3 +25,9 @@ has this form:
 Training/evaluation seeds must be present in the source or explicitly verified
 before being added as defaults. The canonicalizer records source-relative paths,
 row keys, hashes, mappings, and commands in `derived/`.
+
+For artifact portability, the four audited source adapters are packaged under
+`derived/source_adapters/`. They contain only deterministic column mappings and
+state labels from the raw sources; their manifest retains the original raw
+paths and SHA-256 hashes. `make prepare` regenerates them when the raw archive is
+available and otherwise uses the packaged copies.

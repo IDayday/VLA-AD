@@ -1,5 +1,5 @@
 method,il_pdms,post_scalar_grpo_pdms,grpo_change_points,evidence,runs
-GT,86.4,90.3,3.9,paper reported,1 reported
-Score,87.2,85.8,-1.4,paper reported,1 reported
-Pareto,87.5,86.7,-0.8,paper reported,1 reported
-PC-MTS,86.9,91.1,4.2,paper reported,1 reported
+GT,86.4,90.3,3.9,paper reported,reported point; run/seed aggregation not stated
+Score,87.2,85.8,-1.4,paper reported,reported point; run/seed aggregation not stated
+Pareto,87.5,86.7,-0.8,paper reported,reported point; run/seed aggregation not stated
+PC-MTS,86.9,91.1,4.2,paper reported,reported point; run/seed aggregation not stated

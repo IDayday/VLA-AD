@@ -1,0 +1,239 @@
+\section{Algorithms}
+\label{sec:algorithms}
+
+The three procedures below are separated deliberately.  PC-MTS constructs a
+supervision distribution before policy optimization; FF-PGRPO assigns credit
+inside one rollout group; and APR rebuilds policy-relative teachers between
+training rounds.  Combining them into one loop would obscure both their
+different inputs and the interfaces tested by the implementation.  A code
+comment names the closest audited historical function; ``paper contract''
+marks a step for which no end-to-end final-checkpoint call graph was retained.
+
+\paragraph{Algorithm 1: Policy-Compatible Multi-Trajectory Supervision.}
+\label{alg:pcmts}
+\begin{quote}
+\small
+\textbf{Input:} logged scenes $\mathcal D=\{(o_s,\tau_s^0,c_s)\}$; candidate
+sources $\{\mathcal C_s^{(m)}\}$; frozen GT policy $\pi_{\mathrm{GT}}$;
+offline evaluator $E$; compatibility and robustness configuration $\xi$.
+
+\textbf{Output:} accepted per-scene target sets $\{\mathcal T_s\}$ and the
+initialized policy $\pi_{\mathrm{initial}}$.
+
+\begin{enumerate}
+  \item Load source manifests, preserve source identity, form
+  $\mathcal C_s=\cup_m\mathcal C_s^{(m)}$, merge geometric near-duplicates,
+  and mark
+  $\tau_s^0$ immutable.  \emph{Implementation:}
+  \path{41a8613:navsim/agents/recogdrive/curriculum/proposals.py:load_scene_proposals},
+  \path{deduplicate_proposals}; immutable retention is enforced by
+  \path{builder.py:finalize_scene_record}.
+
+  \item Evaluate every complete candidate with $E$; reject candidates that
+  fail hard feasibility, the aggregate-quality threshold, intent checks, or
+  reference-relative protected guards.  \emph{Implementation:}
+  \path{41a8613:navsim/agents/recogdrive/curriculum/builder.py:build_scene_intermediate},
+  \path{safety.py:absolute_feasibility} and
+  \path{relative_nonregression}.
+
+  \item Compute the component-wise Pareto front among survivors and apply the
+  fixed source/role quota.  Do not allow a continuous metric to restore a
+  candidate removed by a hard gate.  \emph{Implementation:} component-wise
+  Pareto filtering is the paper contract; the audited tree exposes the later
+  role/quota step at
+  \path{41a8613:navsim/agents/recogdrive/curriculum/quota_selector.py:role_aware_quota_select},
+  but no separately named Pareto-front function.
+
+  \item Sample the policy rollout cloud $\mathcal R_s$ from frozen
+  $\pi_{\mathrm{GT}}$.  Fit robust distance scales and command-specific
+  quantiles using leave-one-out rollout queries.  Enforce log-disjoint
+  calibration/query scenes in the proposed rerun; the archived manifest proves
+  leave-one-out only.  \emph{Implementation:}
+  \path{41a8613:navsim/agents/recogdrive/curriculum/builder.py:_policy_cloud_for_scene},
+  \path{reachability.py:fit_reachability_calibration}.
+
+  \item For each Pareto survivor $\tau$, compute its calibrated nearest-policy
+  distance $d_{\mathrm{PC}}(\tau,\mathcal R_s)$ and retain it only when the
+  relevant command threshold is met.  The archived branch implements $K=1$;
+  the proposed rerun sets $K$ through $\xi$.  \emph{Implementation:}
+  \path{41a8613:navsim/agents/recogdrive/curriculum/reachability.py:physical_distance_components},
+  \path{evaluate_reachability}.
+
+  \item Draw temporally correlated residual trajectories around every
+  compatibility-passing candidate, score each perturbation with $E$, and keep
+  the center candidate only if the required fraction remains feasible and
+  guard-passing.  \emph{Implementation:}
+  \path{41a8613:navsim/agents/recogdrive/curriculum/robustness.py:CorrelatedErrorModel.sample_perturbations},
+  \path{evaluate_robustness_tube}.
+
+  \item Set $\mathcal T_s=\{\tau_s^0\}\cup\mathcal A_s$.  If no non-GT
+  candidate survives, set $\mathcal T_s=\{\tau_s^0\}$; never borrow a target
+  from another scene.  \emph{Implementation:}
+  \path{41a8613:navsim/agents/recogdrive/curriculum/builder.py:finalize_scene_record}.
+
+  \item At each visit to $s$, sample exactly one member of $\mathcal T_s$
+  according to the fixed GT/candidate mixture and then sample one diffusion
+  timestep.  \emph{Implementation:}
+  \path{41a8613:navsim/agents/recogdrive/stage2_role_sampler.py},
+  \path{stage2_bridge.py}.
+
+  \item Fine-tune a copy of $\pi_{\mathrm{GT}}$ with the unchanged diffusion
+  noise-prediction loss and return it as $\pi_{\mathrm{initial}}$.
+  \emph{Implementation:}
+  \path{41a8613:navsim/agents/recogdrive/first_drive_v7_planner.py}.
+\end{enumerate}
+\end{quote}
+
+\paragraph{Algorithm 2: Feasibility-First Pareto GRPO Credit Assignment.}
+\label{alg:ffpgrpo}
+\begin{quote}
+\small
+\textbf{Input:} scene $o_s$; policy $\pi_\theta$; the paper's $G=16$ sampled
+denoising chains and final trajectories $\{(z_i,\tau_i)\}_{i=1}^{G}$; logged,
+retained, and current-policy reference candidates; evaluator $E$; credit
+configuration $\zeta$.
+
+\textbf{Output:} trajectory advantages $\{A_i\}$ and the regularized
+FF-PGRPO loss.
+
+\begin{enumerate}
+  \item Convert exact evaluator outputs for every $\tau_i$ to hard-feasibility,
+  continuous-quality, protected-guard, and violation-severity tensors.
+  \emph{Implementation:}
+  \path{41a8613:navsim/agents/recogdrive/stage3_metric_adapter.py}.
+
+  \item Rank complete logged, retained, and current-policy rows
+  lexicographically by validity, hard feasibility, reference guard,
+  robustness, core eligibility, PDMS, distance, and fixed source priority;
+  choose the first row $r_s$.  Never take a different trajectory for each
+  reference component.  Record whether a safe recovery reference is
+  available.  \emph{Implementation:}
+  \path{41a8613:navsim/agents/recogdrive/stage3_reference_selector.py:CoherentReferenceSelector.select},
+  \path{gather_reference_rows}.
+
+  \item Classify the rollout group as \textsc{all-safe}, \textsc{mixed}, or
+  \textsc{no-safe}.  For safe rollouts, evaluate coherent-reference guards and
+  admissible Pareto membership.  The audited function consumes anchor-local
+  $[B,K,R]$ tensors; the final $K\times R$ layout is unresolved, so the proposed
+  rerun seals $K=8,R=2$ to preserve $G=16$.  \emph{Implementation:}
+  \path{41a8613:navsim/agents/recogdrive/stage3_ff_pareto.py:classify_group_state},
+  \path{anchor_local_pareto}.
+
+  \item If the state is \textsc{all-safe}, form $\widehat A_i$ from only the
+  continuous score terms.  If it is \textsc{mixed}, form $\widehat A_i$ from
+  aggregate quality plus EP-floor and joint EP--TTC shaping.  Preserve the
+  scene grouping during normalization.  \emph{Implementation:}
+  \path{41a8613:navsim/agents/recogdrive/stage3_ff_pareto.py:FeasibilityFirstCreditAssigner.compute}.
+
+  \item For an \textsc{all-safe} or \textsc{mixed} group, set positive credit
+  only for safe, guard-passing, Pareto trajectories; clamp safe dominated or
+  guard-failing trajectories to non-positive credit; and apply an additional
+  unsafe penalty to infeasible trajectories.  \emph{Implementation:}
+  \path{41a8613:navsim/agents/recogdrive/stage3_ff_pareto.py:FeasibilityFirstCreditAssigner.compute}.
+
+  \item For a \textsc{no-safe} group, rank negative violation severity and
+  assign only non-positive credit.  Downweight the group and, if $r_s$ is a
+  valid recovery reference, add weak diffusion supervision toward $r_s$.
+  \emph{Implementation:}
+  \path{41a8613:navsim/agents/recogdrive/stage3_ff_pareto.py:FeasibilityFirstCreditAssigner.compute};
+  the exact final recovery-loss integration is not retained.
+
+  \item Apply sign-preserving RMS scaling and symmetric clipping.  Assert that
+  no positive-credit rollout is infeasible, dominated, reference-regressing,
+  or drawn from a no-safe group; log both numerator and denominator of every
+  violation rate.  \emph{Implementation:}
+  \path{41a8613:navsim/agents/recogdrive/stage3_ff_pareto.py:rms_scale_without_mean_centering},
+  \path{stage3_positive_credit_contract.py:assert_positive_credit_contract}.
+
+  \item Broadcast $A_i$ over the transitions of chain $z_i$, compute the
+  planner's discounted transition-wise mean, and optimize it with KL/BC and
+  optional recovery losses.  No evaluator or group operation is exported to
+  inference.  \emph{Implementation:} the historical transition reduction is in
+  \path{41a8613:navsim/agents/recogdrive/first_drive_v7_planner.py}; the audited
+  commit does not expose a verified end-to-end call from that planner to
+  \path{FeasibilityFirstCreditAssigner}.
+\end{enumerate}
+\end{quote}
+
+\paragraph{Algorithm 3: Adaptive Pareto-Guided Policy Refinement.}
+\label{alg:apr}
+\begin{quote}
+\small
+\textbf{Input:} FF-PGRPO policy $\pi_0$; multi-source teacher pool
+$\mathcal P$; evaluator $E$; interpolation list $\mathcal L$; number of rounds
+$R=3$; audit and promotion configuration $\eta$.
+
+\textbf{Output:} promoted single-trajectory policy $\pi_R$ and a round-wise
+teacher lifecycle manifest derived by joining teacher hashes.
+
+\begin{enumerate}
+  \item At round $r$, run $\pi_r$ once on every training scene and cache the
+  prediction, score components, trajectory geometry, and rollout-neighborhood
+  calibration as the dynamic anchor.  \emph{Implementation:} policy inference
+  and evaluator exports precede
+  \path{fb96a03:scripts/stage3/build_pdms_teacher_refinement_schedule.py:make_refinement_schedule},
+  which consumes rather than creates those cached predictions.
+
+  \item Load and deduplicate candidates from historical policies, independent
+  GRPO seeds, structured expansion, and safety/progress/regularity specialists.
+  Retain source and trajectory hashes in every record.  \emph{Implementation:}
+  \path{ab9124c:scripts/stage3/build_pdms_external_safety_repair_teacher_buffer.py:choose_external_safety_teachers}.
+
+  \item Relative to the current prediction, reject a candidate unless it is
+  feasible, clears the score margin, and preserves protected metrics.  Rank
+  survivors by verified gain and then by smaller behavioral distance,
+  curvature, and jerk; select at most one teacher for the scene.  These last
+  quantities are preferences, not claimed historical hard gates.
+  \emph{Implementation:}
+  \path{fb96a03:scripts/stage3/build_pdms_strict_teacher_buffer.py:_strict_teacher_upgrade},
+  \path{build_teacher_record}.
+
+  \item For the selected teacher $t_s$, test
+  $p_s+\alpha(t_s-p_s)$ in descending $\alpha\in\mathcal L$.  Score every
+  interpolation with $E$ and choose the largest one that remains feasible,
+  improves score, preserves guards, and remains policy compatible.  If none
+  passes, create no teacher target for $s$.  \emph{Implementation:} the audited
+  script evaluates one supplied $\alpha$ per invocation; descending search is
+  the proposed outer orchestration around
+  \path{ab9124c:scripts/stage3/build_pdms_blended_teacher_reference.py:blend_trajectory},
+  \path{_score_one}, \path{accept_scored_teacher}.
+
+  \item Assign each verified target the clipped exponential advantage weight
+  and construct a teacher/retention schedule that records source identity.
+  Scenes without
+  an accepted target contribute only their current prediction as retention.
+  \emph{Implementation:} weighting is in
+  \path{ab9124c:navsim/agents/recogdrive/recogdrive_diffusion_planner.py};
+  retention sampling is in
+  \path{fb96a03:scripts/stage3/build_pdms_teacher_refinement_schedule.py:make_refinement_schedule}.
+
+  \item Fine-tune the diffusion planner with weighted teacher loss, retention
+  loss, and KL/distillation control.  If specialist branches are enabled,
+  train each from the same dynamic anchor and with the same step budget.
+  \emph{Implementation:}
+  \path{ab9124c:scripts/stage3/launch_pdms91_external_teacher_retention_3ep.sh}.
+
+  \item Optionally consolidate accepted specialist branches using salient,
+  direction-consistent coordinates and an anchor-relative norm bound; also
+  retain every unmerged branch as a promotion candidate.  \emph{Implementation:}
+  \path{64f5531:scripts/stage3/merge_conflict_free_anchored_task_vector.py:conflict_free_anchored_graft}.
+
+  \item Evaluate all candidates with single-trajectory inference.  Promote
+  only a candidate that improves aggregate validation score without violating
+  protected-component tolerances; otherwise keep $\pi_r$.  Record the input,
+  output, and evaluator hashes.  \emph{Implementation:}
+  \path{ba5908d:navsim/planning/script/run_pdm_score_from_submission.py:run_pdm_score}
+  for NAVSIM v1 and
+  \path{ab9124c:scripts/evaluation/score_recogdrive_predictions_navsim_v2.py:main}
+  for NAVSIM v2.
+
+  \item Rebuild the pool relative to the promoted policy.  Mark teachers that
+  no longer pass as expired and previously rejected candidates that now pass as
+  newly activated by joining source/trajectory hashes across consecutive
+  manifests.  Stop after $R$ rounds or earlier if the teacher set is empty
+  or no checkpoint passes promotion.  Return the last promoted policy, not the
+  numerically largest unguarded branch.  \emph{Implementation:} the historical
+  scripts rebuild each round but do not emit lifecycle labels; the proposed
+  manifest join supplies them.  No monolithic APR entry point is claimed.
+\end{enumerate}
+\end{quote}

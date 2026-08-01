@@ -1,0 +1,130 @@
+\section{Additional Related Work, Fair Comparison, and Limitations}
+\label{sec:related-limitations}
+
+\subsection{Related perspectives}
+
+\textbf{Support-aware policy improvement.}
+Conservative offline policy-improvement methods limit updates in regions where
+the behavior data provide weak support.  SPIBB constrains uncertain decisions
+to the baseline policy~\cite{spibb2019}, while BEAR regularizes a learned policy
+toward the behavior distribution~\cite{bear2019}.  PC-MTS shares the support
+intuition but applies it before optimization: it filters trajectory-level
+supervision using samples from the frozen learner, with command-conditional
+calibration and a local feasibility test.  It is not a general monotonic-
+improvement guarantee; its role is to avoid moving the imitation policy into a
+region where downstream rollout optimization has poor local support.
+
+\textbf{Multi-objective and Pareto optimization.}
+Multi-objective reinforcement learning studies policies under vector-valued
+returns and alternative preference models~\cite{roijers2013}.  AMPT does not
+seek a global set of Pareto-optimal policies.  PC-MTS uses a scene-local Pareto
+filter for supervision, and FF-PGRPO uses a hierarchy: hard feasibility and
+coherent-reference guards are evaluated before a rollout can receive positive
+Pareto credit.  This order is essential when an aggregate score can compensate
+for a protected regression.
+
+\textbf{Advantage-weighted behavior learning.}
+Advantage-weighted regression turns estimated advantages into weights for
+supervised policy updates~\cite{awr2021}.  APR is related at the loss level,
+but its weights are attached only after a candidate is compared with the
+current single-trajectory prediction, locally interpolated, and re-evaluated.
+Teacher admission and policy retention are therefore as important as the
+weighting function itself.
+
+\textbf{Model merging.}
+Task arithmetic combines model displacements relative to a shared
+anchor~\cite{taskarithmetic2023}, and TIES resolves redundancy and sign
+conflicts before merging~\cite{ties2023}.  AMPT may use an anchor-constrained
+variant to consolidate APR branches, but merging is optional and is separated
+from teacher selection.  Passing parameter-space norm and sign checks does not
+imply behavioral safety; every merged checkpoint must still undergo the same
+single-trajectory evaluator audit.
+
+\subsection{Fair-comparison boundary}
+\label{sec:fair-comparison}
+
+AMPT uses one predicted trajectory at inference.  Policy rollout banks,
+candidate pools, coherent references, group sampling, specialist policies, and
+the offline evaluator are training-only; there is no test-time scorer,
+best-of-$N$ selection, or candidate reranking.  This contract is present in the
+paper and is independently supported by the v1 submission provenance.
+
+The released v1 scene export contains 12,138 successfully scored scenes from
+12,146 predictions; the eight unscored predictions are disclosed rather than
+imputed.  The v2 export contains 12,146 successful scene scores.  Its EC
+aggregation follows the official evaluator, although a direct EC value is
+present for 10,040 rows.  Scene-bootstrap intervals resample these scored
+scenes and are explicitly labeled as scene uncertainty; they are not a
+substitute for independent training runs.
+
+The baseline rows in the main tables are treated as \emph{reported} unless a
+local scene export and matching protocol are available.  AMPT's v1/v2 rows are
+reproduced from scene-level outputs, but protocol matching is not established
+for every external baseline.  Moreover, the audited v1 provenance records use
+of navtest for checkpoint selection.  We therefore avoid a strict held-out
+state-of-the-art claim and report protocol fields---backbone, sensors, training
+data, inference candidates, and test-time scoring---alongside each comparison.
+
+The 658-scene result uses the recovery checkpoint and checkpoint pair specified
+by the main-paper analysis.  It is a fixed-subset diagnostic, not a claim that
+every later checkpoint must induce the same transitions.  Reporting the full
+$2\times2$ matrix in Eq.~\ref{eq:hard658-transition} makes the gross and net
+notions of recovery explicit.
+
+\subsection{Limitations}
+\label{sec:limitations}
+
+\textbf{Finite support estimates.}
+Compatibility is estimated from a finite rollout bank.  Sparse commands or
+multi-modal scenes can make a genuinely useful target appear distant, and the
+calibrated neighborhood is only as representative as the frozen policy
+samples.  Increasing bank size improves coverage but raises offline inference
+and storage cost.
+
+\textbf{Evaluator bias and non-reactive evaluation.}
+All three stages use an offline NAVSIM evaluator for filtering, credit, or
+teacher validation.  Systematic evaluator errors can therefore be amplified
+across stages.  NAVSIM's non-reactive agents also cannot reveal how other road
+users would respond to the learned trajectory; feasibility under this scorer
+is not a closed-loop safety guarantee.
+
+\textbf{Candidate-pool ceiling.}
+APR can select and localize only behaviors represented in its multi-source
+pool.  If no source proposes a valid maneuver, rebuilding the pool changes no
+target.  The persistent case in Table~\ref{tab:hard658-cases} establishes
+persistence under two audited checkpoints, but cannot diagnose this pool
+ceiling without a per-scene candidate manifest.
+
+\textbf{Locality can reject long-horizon value.}
+The policy-compatibility filter intentionally favors learnable local targets.
+It may reject a distant behavior that is initially difficult to imitate but
+would be valuable after a longer curriculum.  Policy-dependent teacher-value
+and cross-policy selection experiments are therefore important follow-ups.
+
+\textbf{Benchmark-specific hierarchy.}
+The ordering of NC/DAC feasibility, DDC/TLC guards, progress floors, and
+continuous Pareto objectives reflects NAVSIM metrics.  Transferring AMPT to a
+new benchmark requires revalidating the hierarchy and calibration thresholds,
+not merely renaming metric fields.
+
+\textbf{No behavioral semantics for parameter merging.}
+Task-vector masks, direction agreement, and norm constraints bound parameter
+movement but do not provide a semantic or safety guarantee.  If its independent
+gain is not stable across seeds and step-matched controls, merging should
+remain an implementation detail.
+
+\textbf{Statistical scope.}
+The supervision comparison, stage ablation, and APR round table are available
+as reported point estimates rather than three-seed aggregates.  Small APR
+increments must not be described as stable until the configured multi-seed
+controls are run.  The paired 658-scene interval establishes a robust scene-
+level net transition for one checkpoint pair, but does not measure training-
+seed variation.
+
+These limitations narrow rather than alter the paper's central claim.  The
+currently traceable evidence establishes the supervision--optimization
+reversal, a large feasibility-oriented stage gain, monotonic reported APR
+rounds with preserved displayed safety components, and positive net recovery
+on a fixed hard set.  Candidate-count matching, rollout-level credit traces,
+step-matched APR controls, and multi-seed reruns are the remaining experiments
+needed for stronger causal and stability claims.

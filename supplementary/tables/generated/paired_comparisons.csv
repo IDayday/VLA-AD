@@ -1,0 +1,3 @@
+Comparison,Metric,A,B,Mean A,Mean B,Delta (B-A),Paired CI,Effect dz,Runs,Scenes,Evidence
+apr_final_vs_paired_anchor_pdms,aggregate_score,paired APR anchor,paper-final AMPT,0.91,0.91,0.00,"[-0.00, 0.00]",0.00,1,12138,insufficient
+paper_hard658_pdms,aggregate_score,scalar GRPO,AMPT recovery checkpoint,0.51,0.61,0.10,"[0.08, 0.13]",0.29,0,658,insufficient

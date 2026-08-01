@@ -1,0 +1,312 @@
+\section{Additional Method Details}
+\label{sec:additional-method}
+
+This appendix makes explicit the contracts that connect the three training
+stages.  This is important because the central claim of AMPT is not that a
+trajectory with a high offline score is automatically a useful target, but
+that supervision, rollout credit, and policy-relative refinement must agree on
+what the current policy can safely learn.  We use three provenance labels
+throughout.  \emph{Paper-reported} denotes a value stated in the main paper,
+\emph{scene-level reproduced} denotes a value recomputed from an archived
+per-scene evaluator export, and \emph{proposed reproduction} denotes a fully
+specified setting for rerunning an experiment whose resolved training manifest
+was not retained.  The last category is a protocol, not an observed result.
+
+\subsection{Policy-Compatible Multi-Trajectory Supervision}
+\label{sec:pc-mts-details}
+
+\paragraph{Candidate construction and source balancing.}
+For a scene $s$, let $\tau_s^0$ be the logged trajectory and let
+$\mathcal C_s=\cup_m\mathcal C_s^{(m)}$ be the union of candidates supplied by
+the configured proposal generators.  PC-MTS is source agnostic: a source may
+be another policy seed, a structured trajectory expander, or a specialist
+planner, but source identity is retained in the manifest and geometric near-
+duplicates are merged before scoring.  The logged target is immutable and
+is never removed.  A final Stage-1 source-count manifest was not found.  To
+make the controlled reconstruction executable without presenting invented
+counts as measurements, our \emph{proposed reproduction} caps every non-GT
+source at eight candidates per scene before filtering.  When comparing Score,
+Pareto, and PC-MTS, we use the same source
+cap and retain the same number of non-GT candidates by taking the best valid
+items under the corresponding rule.  Thus a difference cannot be attributed
+to exposing one variant to a larger target set.
+
+\input{tables/generated/candidate_source_statistics.tex}
+
+\paragraph{Quality, feasibility, and Pareto filtering.}
+Every complete trajectory is scored by the same offline evaluator used for
+training diagnostics.  We first require hard feasibility, then a sufficient
+aggregate score, and only then form the scene-wise component Pareto front.  A
+candidate $a$ dominates $b$ only if it is no worse on every active Pareto
+objective and is strictly better on at least one.  This order matters: a high
+progress value cannot compensate for collision or leaving the drivable area.
+The paper does not archive the numerical Stage-1 aggregate cutoff.  In the
+\emph{proposed reproduction}, a training-split quantile is selected once so
+that comparison variants are matched to the minimum retained count, followed
+by a source-balanced top-$k$ tie break.  The sealed cutoff is applied
+identically to all splits and is never used to synthesize a reported score.
+
+The benchmark-specific partition is summarized below.  On NAVSIM v1, NC and
+DAC are hard gates; DDC is protected; and EP, TTC, and comfort are optimized
+inside the admissible region.  On NAVSIM v2, NC, DAC, DDC, and TLC are the
+multiplicative compliance gates.  The historical metric adapter uses EP, TTC,
+and a composite $Q=(\mathrm{LK}+\mathrm{HC}+\mathrm{EC})/3$ as its three
+continuous Pareto axes; the official EPDMS report still exposes LK, HC, and EC
+separately.  For binary scorer outputs the \emph{proposed reproduction}
+requires a value of one up to $10^{-6}$.  The archived safety contract uses
+reference-relative tolerances of $0.01$ for DDC/comfort and $0.02$ for TTC/EP;
+TLC remains a hard v2 gate.  These are historical implementation values, not a
+claim about the unresolved configuration of the paper checkpoint.
+
+\input{tables/generated/metric_partition.tex}
+
+\paragraph{Policy compatibility.}
+Let $\mathcal R_s=\{\rho_j\}_{j=1}^{M}$ be rollouts sampled from the frozen
+GT-only policy under the same command as the candidate.  We standardize
+waypoint displacement with per-timestep, command-conditioned robust scales
+fitted on the calibration split, and write the resulting trajectory distance
+as $d(\tau,\rho)$.  The archived implementation additionally exposes final
+displacement, heading, and velocity diagnostics, but the proposed controlled
+comparison changes only the normalized waypoint statistic.  The compatibility
+statistic is
+\begin{equation}
+ d_{\mathrm{PC}}(\tau,\mathcal R_s)
+ =\frac{1}{K}\sum_{\rho\in\operatorname{NN}_{K}(\tau;\mathcal R_s)}
+ d(\tau,\rho).
+\end{equation}
+The threshold $q_c$ is the command-specific quantile of leave-one-out policy
+rollout distances on calibration scenes.  The archived code proves
+leave-one-out calibration within each policy cloud, but its retained manifest
+does not prove driving-log-level independence.  The proposed reconstruction
+therefore enforces log-disjoint calibration and query scenes.  The paper states the general
+$K$-nearest statistic but does not report $M$, $K$, or $q_c$.  The archived
+implementation realizes the valid $K=1$ special case.  Our \emph{proposed
+reproduction} uses $M=16$, $K=3$, and $q_c$ at the 95th percentile, with
+command groups merged into a global fallback only when a command group has
+fewer than 16 calibration observations.  This choice is also the center point
+of the supplied sensitivity grid, rather than a retrospectively selected
+result.
+
+\paragraph{Local feasibility tube.}
+Compatibility to one rollout neighborhood does not by itself establish that a
+target is robust to small prediction errors.  For every candidate that passes
+the previous gates, PC-MTS adds correlated perturbations to $(x,y,\psi)$ and
+the implied velocity sequence.  The perturbations are sampled from normalized
+policy residuals, smoothed over time, and projected back to the command-consistent
+trajectory representation before exact re-evaluation.  This changes whole
+trajectory segments rather than independently jittering waypoints.  The
+archived implementation supports 16 or 32 perturbations; the \emph{proposed
+reproduction} uses eight lower-cost perturbations, preserves the empirical
+temporal covariance of policy residuals, and accepts a candidate when at least
+six of eight perturbations pass
+the hard feasibility gates and the protected guards.  The P1 configuration
+evaluates 4/8/16 perturbations and does not tune the threshold on the test
+split.
+
+\paragraph{Target sampling and fallback.}
+After filtering, the training set for scene $s$ is
+$\mathcal T_s=\{\tau_s^0\}\cup\mathcal A_s$, where $\mathcal A_s$ contains
+accepted candidates.  A training update draws exactly one target for the
+scene, so scenes with many proposals do not receive larger gradients.  The
+\emph{proposed reproduction} draws the logged target with probability $0.5$
+and otherwise samples uniformly from $\mathcal A_s$; if $\mathcal A_s$ is
+empty, it deterministically uses $\tau_s^0$.  Candidate identity is sampled
+before the diffusion timestep, so all noisy versions in that update correspond
+to a single coherent target.  Fine-tuning uses the same denoising objective as
+GT-only training and produces $\pi_{\mathrm{initial}}$.
+
+\paragraph{Implementation correspondence.}
+The source-balanced builder and immutable-GT path are implemented at
+\path{41a8613:navsim/agents/recogdrive/curriculum/builder.py}
+and \path{41a8613:navsim/agents/recogdrive/curriculum/proposals.py}.
+Physical distance and calibrated reachability are at
+\path{41a8613:navsim/agents/recogdrive/curriculum/reachability.py};
+the feasibility and correlated-perturbation checks are at
+\path{41a8613:navsim/agents/recogdrive/curriculum/safety.py} and
+\path{41a8613:navsim/agents/recogdrive/curriculum/robustness.py}.
+These are historical mechanism-level implementations; the audit does not claim
+that this commit is a complete hash-identical release of the final checkpoint.
+
+\subsection{Feasibility-First Pareto GRPO}
+\label{sec:ff-pgrpo-details}
+
+\paragraph{A coherent scene reference.}
+FF-PGRPO compares a rollout with one executable reference trajectory, never
+with an envelope assembled from different trajectories.  The ordered source
+set is: the logged trajectory, a retained PC-MTS candidate, and the current
+single-trajectory prediction.  The paper-level rule selects the highest-scoring
+feasible row.  The audited historical selector makes this precise by ranking
+validity, hard feasibility, reference guard, robustness, core eligibility,
+PDMS, distance to the current prediction, and source priority lexicographically.
+Thus no higher score can bypass an earlier safety/eligibility tier.  If none is feasible, the
+logged trajectory is retained only as a weak recovery target when it passes
+the evaluator's basic physical checks.  Otherwise no recovery target is used
+and every sampled rollout receives non-positive credit.  A component-wise
+envelope is invalid because its NC, progress, and TTC values may come from
+mutually incompatible plans; positive credit relative to such a synthetic
+point would have no executable safety witness.
+
+\paragraph{Group states and admissibility.}
+For each scene the paper reports a group of $G=16$ policy rollouts.  We assign
+the group to one of three states.  An \emph{all-feasible} group contains only
+rollouts that satisfy hard feasibility; its quality statistic normalizes the
+continuous score components because the binary gates are constant.  A
+\emph{mixed} group contains both feasible and infeasible rollouts; feasibility
+is applied first and feasible trajectories must additionally pass the coherent
+reference guards.  An \emph{all-infeasible} group contains no feasible
+rollout; it is not allowed to create a positive advantage by merely ranking
+unsafe samples against one another.
+
+For NAVSIM v1, admissibility requires NC and DAC and protects DDC, TTC, and an
+EP floor relative to the coherent reference.  NAVSIM v2 additionally treats
+DDC and TLC as hard compliance checks.  The archived safety-contract defaults
+use $\mathrm{DDC}(\tau)\geq\mathrm{DDC}(r)-0.01$,
+$\mathrm{TTC}(\tau)\geq\mathrm{TTC}(r)-0.02$, and
+$\mathrm{EP}(\tau)\geq\mathrm{EP}(r)-0.02$.  The joint EP--TTC guard prevents
+the optimizer from receiving positive credit for increasing safety merely by
+stopping, or for increasing progress by collapsing the collision margin.
+
+\paragraph{Credit assignment.}
+Within a group that contains a feasible rollout, let $\widehat A_i$ be a
+quality-shaped, group-relative score and let $P_i$ indicate membership in the
+admissible Pareto front.  FF-PGRPO assigns
+\begin{equation}
+ A_i=\begin{cases}
+ \max(\widehat A_i,0),
+   & \substack{\text{feasible, guard-passing,}\\\text{and Pareto-positive}},\\
+ \min(\widehat A_i,0),
+   & \substack{\text{feasible but not}\\\text{admissible Pareto}},\\
+ -\lambda_{\mathrm{unsafe}}+\min(\widehat A_i,0),
+   & \text{infeasible}.
+ \end{cases}
+\end{equation}
+Thus aggregate quality controls magnitude, whereas feasibility, a coherent
+reference, and non-domination control the sign.  For mixed groups the quality
+term also includes the EP-floor and joint EP--TTC penalties.  The historical
+implementation preserves signs with RMS scaling rather than mean centering and
+uses an archived default clip of $[-3,3]$; the \emph{proposed reproduction}
+uses the predeclared sensitivity setting $[-5,5]$.
+
+For an all-infeasible group, violation severity is the normalized sum of hard
+gate deficits and protected-metric deficits.  Credit is the non-positive
+within-group rank of negative severity, shifted by the unsafe penalty.  The
+group loss is downweighted to $0.25$; when a valid recovery reference exists,
+a diffusion recovery term with coefficient $0.25$ is added.  The proposed
+regularization uses KL weight $0.02$ and anneals the BC coefficient linearly
+from $0.10$ to $0.05$ over the first five epochs.  These numerical values are
+historical implementation defaults and proposed rerun values, not recovered
+resolved parameters for the paper's final FF-PGRPO run.
+
+\paragraph{Diffusion credit and inference.}
+One trajectory-level advantage is broadcast to every transition in that
+trajectory's denoising chain.  The audited planner uses a discounted
+transition-wise mean, while the paper objective writes the chain likelihood in
+accumulated form; the proposed reconstruction preserves the planner reduction
+and logs it in the resolved manifest.  This avoids assigning mutually
+inconsistent metric credit to intermediate noisy states that are not executable
+plans.  At inference, AMPT runs one denoising chain and emits one trajectory.
+Group sampling, the Pareto computation, the reference selector, the offline
+evaluator, and candidate reranking are absent from test time.
+
+\paragraph{Implementation correspondence.}
+Group classification, Pareto gating, violation ranking, sign-preserving
+normalization, and clipping are at
+\path{41a8613:navsim/agents/recogdrive/stage3_ff_pareto.py}.
+The coherent-row API is at
+\path{41a8613:navsim/agents/recogdrive/stage3_reference_selector.py},
+and positive-credit assertions are at
+\path{41a8613:navsim/agents/recogdrive/stage3_positive_credit_contract.py}.
+The archived tensor layout is anchor-local; the paper-level protocol is the
+union of 16 scene rollouts.  Because a final resolved layout manifest was not
+found, we do not infer the number of anchors from a class default.
+
+\subsection{Adaptive Pareto-Guided Policy Refinement}
+\label{sec:apr-details}
+
+\paragraph{Dynamic multi-source pool.}
+At APR round $r$, the current policy $\pi_r$ supplies one local prediction for
+every scene.  Candidate teachers come from historical policy checkpoints,
+independent GRPO seeds, structured trajectory expansion, and safety-,
+progress-, and regularity-oriented specialists.  Source labels survive
+deduplication so per-source acceptance can be audited, but final three-round
+source proportions were not archived.  The audited initial construction keeps
+its observed 25,402/13,859 source mixture.  The proposed source-ablation reports
+each source separately instead of claiming an unrecorded balancing rule.
+
+\paragraph{Teacher audit.}
+For a policy prediction $p_s$ and candidate teacher $t$, APR first requires
+feasibility and an aggregate margin $R(t)-R(p_s)\geq m_R$.  It then applies
+absolute and reference-relative protected guards.  Behavioral distance,
+curvature, and jerk rank otherwise admissible teachers; they are preferences,
+not claimed historical hard thresholds.  In the audited APR branch,
+$m_R=0$ with a strict positive comparison, DDC has absolute floor 0.99 and
+maximum drop 0.01, TTC has absolute floor 0.95 and maximum drop 0.02, and the
+jerk coefficient 0.005 is a soft training regularizer.  At the interpolation
+audit, the proposed reconstruction additionally applies the command-conditioned
+95th-percentile compatibility calibration from PC-MTS.
+
+\paragraph{Local interpolation and exact re-evaluation.}
+An accepted teacher is not copied directly.  APR evaluates
+\begin{equation}
+ \tau_{s,\alpha}=p_s+\alpha(t-p_s)
+\end{equation}
+for a descending list of interpolation coefficients.  The first (largest)
+coefficient that remains feasible, improves the aggregate score, preserves
+protected metrics, and passes the current compatibility test becomes the local
+target.  Every interpolated trajectory is scored anew; endpoint scores are
+never linearly interpolated.  One audited branch used $\alpha=0.25$.  The
+\emph{proposed reproduction} fixes the descending list to
+$[1.0,0.75,0.50,0.25]$, which includes that audited setting and tests the
+teacher endpoint before progressively more conservative steps.  If all
+coefficients fail, the teacher is
+rejected for the current round rather than kept with a smaller unscored step.
+
+\paragraph{Weighted distillation, retention, and lifecycle.}
+For verified gain $\Delta_s=R(\tau_{s,\alpha})-R(p_s)>0$, the target weight is
+\begin{equation}
+ w_s=\min\{5,\exp(\Delta_s/0.05)\}.
+\end{equation}
+The temperature $0.05$ and clip 5 are present in an audited APR training
+branch.  The same diffusion denoising loss is applied to weighted local
+targets, while current predictions provide retention targets with audited
+weight 1.0.  At most the top one positive-advantage target is used per scene; a
+scene without a valid teacher contributes retention only.  After training, the
+candidate checkpoint is promoted only if aggregate validation score increases
+and none of the protected aggregate components regresses beyond the audit
+tolerances.  The promoted checkpoint becomes the dynamic anchor, its
+predictions and rollout bank are regenerated, and the complete teacher pool is
+audited again.  A previously accepted teacher is defined as \emph{expired} when
+it loses its margin or guard, while a previously rejected one is \emph{newly
+activated} when it passes under the new policy.  Historical scripts rebuild
+round files but do not persist these labels; the proposed pipeline obtains them
+by joining teacher hashes across consecutive round manifests.  The paper reports three
+rounds.  The proposed stop rule is the earlier of three promotions, an empty
+teacher set, or no checkpoint passing the promotion rule; it does not turn a
+small unverified score fluctuation into a promotion.
+
+\paragraph{Optional branch consolidation.}
+Safety, progress, and regularity branches may be consolidated after their
+teacher updates.  This is an optional checkpoint operation, not a substitute
+for teacher auditing.  The audited anchor-constrained variant keeps the top
+20\% salient coordinates of each base-relative task vector, removes
+coordinates with inconsistent directions, clips every branch displacement to
+the norm of its accepted branch, and caps total displacement at $1.05$ times
+the largest accepted branch displacement.  The anchor is the current promoted
+policy and is therefore updated across rounds.  If no merge candidate passes
+the same evaluation guard as an ordinary APR checkpoint, the best accepted
+single branch is retained.
+
+\paragraph{Implementation correspondence.}
+Teacher audits are implemented at
+\path{fb96a03:scripts/stage3/build_pdms_strict_teacher_buffer.py}
+and \path{fb96a03:scripts/stage3/build_pdms_safety_repair_teacher_buffer.py}.
+Interpolation and exact rescoring are at
+\path{ab9124c:scripts/stage3/build_pdms_blended_teacher_reference.py},
+with local safety-tube checks at
+\path{ab9124c:scripts/stage3/filter_pdms_teacher_reference_by_safety_tube.py}.
+Retention schedules are built by
+\path{fb96a03:scripts/stage3/build_pdms_teacher_refinement_schedule.py},
+and the optional merge is at
+\path{64f5531:scripts/stage3/merge_conflict_free_anchored_task_vector.py}.
+APR is an orchestrated sequence of these audited operations; the repository
+does not contain a single monolithic \texttt{APR.run} entry point.

@@ -1,0 +1,33 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Stage-wise training protocol. Reported/reproduced settings are distinguished from bounded reproduction settings; `not recorded' is an explicit provenance value, not a blank. Inference always emits one trajectory.}
+\label{tab:stage_hyperparameters}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccc}
+\toprule
+field & GT-only & PC-MTS & FF-PGRPO & APR & status \\
+\midrule
+Target & logged GT & one sampled GT/candidate & sampled policy trajectories & audited teacher + policy retention & mixed provenance \\
+Epochs & 200 & 200 & 10 & 3 per audited branch; 3 paper rounds & paper reported / APR branch reproduced \\
+Optimizer & AdamW & AdamW & AdamW & AdamW & historical implementation / reproduction setting \\
+Peak learning rate & 1e-4 & 1e-4 & 1e-4 & 5e-7 & historical configs / APR reproduced \\
+Minimum learning rate & 1e-6 & 1e-6 & 1e-6 & 2.5e-7 & historical configs / APR reproduced \\
+Weight decay & 1e-4 & 1e-4 & 1e-4 & 1e-4 & historical / proposed for APR \\
+Batch per GPU & 8 & 8 & 2 & 8 & historical / FF and APR manifests \\
+GPUs & 8 & 8 & 8 & 4 & paper reports 8 overall; APR branch used 4 \\
+Gradient accumulation & 2 & 2 & 4 & 1 & historical / FF and APR manifests \\
+Effective batch & 128 & 128 & 64 & 32 & deterministic from rows above \\
+Precision & bf16-mixed & bf16-mixed & bf16-mixed & bf16-mixed & historical / APR reproduced \\
+Warmup epochs & 3 & 3 & not recorded & 0 & historical / APR reproduced \\
+Gradient clipping & 1.0 & 1.0 & 1.0 & 1.0 & historical / proposed where unresolved \\
+Rollouts per scene & not applicable & 16 support rollouts & 16 & 8 offline candidates & proposed PC-MTS; paper FF; APR manifest \\
+Advantage temperature & not applicable & not applicable & group normalized & 0.05 & APR reproduced \\
+Advantage/weight clip & not applicable & not applicable & 3.0 & 5.0 & historical FF default / APR reproduced \\
+BC or retention weight & not applicable & not applicable & 0.10 to 0.05 & 1.0 retention & archived FF / APR reproduced \\
+Reference KL & not applicable & not applicable & 0.02 & 0.02 prior distance & archived FF / APR reproduced \\
+Inference trajectories & 1 & 1 & 1 & 1 & paper and submission provenance \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}

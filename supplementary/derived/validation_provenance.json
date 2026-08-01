@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "created_utc": "2026-08-01T02:45:36.263406+00:00",
+  "created_utc": "2026-08-01T03:49:25.534932+00:00",
   "status": "valid",
   "analysis_seed": 2027,
   "analysis_seed_scope": "resampling and plotting only; not a training seed",
-  "command": "supplementary/scripts/validate_dataset.py",
+  "command": "scripts/validate_dataset.py --seed 2027",
   "git": {
-    "commit": "ba5908d84534f28f4087b68f963390af497dca41",
+    "commit": "356d2aec7bfce29393c0903d8174aec9ffa8aa2b",
     "dirty": true
   },
   "environment": {
@@ -16,7 +16,17 @@
     "pandas": "2.3.3",
     "pyarrow": "21.0.0",
     "matplotlib": "3.9.4",
-    "scipy": "1.13.1"
+    "scipy": "1.13.1",
+    "torch": "2.5.1+cu124",
+    "lightning": null,
+    "pytorch_lightning": "2.6.0",
+    "hydra_core": "1.2.0",
+    "omegaconf": "2.3.0",
+    "navsim_distribution": null,
+    "torch_cuda_build": "12.4",
+    "cuda_available": "true",
+    "pdflatex": "pdfTeX 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian)",
+    "bibtex": "BibTeX 0.99d (TeX Live 2022/dev/Debian)"
   },
   "inputs": [
     {
@@ -31,24 +41,23 @@
     },
     {
       "path": "supplementary/audit/result_source_map.csv",
-      "bytes": 11540,
-      "sha256": "8c11a9ba019afaf68849adbd2624c2cf4c87c4150a0a1863bbbdbc6e907ad10b"
+      "bytes": 12595,
+      "sha256": "20c5482b64e48308818f650110d8e9fb64bae24abe20a4a7c272c1c1f2d1791d"
     }
   ],
   "outputs": [
     {
       "path": "supplementary/derived/data_validation_report.md",
-      "bytes": 2652,
-      "sha256": "4f5323789bcfc2db4504d4ad18b8b71b1f8493a404e8c9106d290f17506a2b2d"
+      "bytes": 2639,
+      "sha256": "b0069b9dc896ceca7562060c4d772fe4653717b7383594add75a34e6f3de6750"
     },
     {
       "path": "supplementary/derived/data_validation_status.json",
-      "bytes": 2888,
-      "sha256": "3c54c637035035c87995f3f8a97a61c92ea8e292390874a3dba21ba7447a6849"
+      "bytes": 2875,
+      "sha256": "62e159f7a3603e438d2ca8916cb79d7598ca1ca7e6ca2f839b0bf08e5abd31ed"
     }
   ],
   "notes": [
-    "No candidate-count/acceptance-rate matching checks are configured.",
-    "No traceable claim row matched the canonical data."
+    "No candidate-count/acceptance-rate matching checks are configured."
   ]
 }

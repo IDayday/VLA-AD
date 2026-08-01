@@ -6,8 +6,8 @@
   "rows": 37738,
   "unique_scenes": 12146,
   "finding_counts": {
-    "pass": 14,
-    "warning": 2
+    "pass": 15,
+    "warning": 1
   },
   "findings": [
     {
@@ -101,9 +101,9 @@
       "count": null
     },
     {
-      "severity": "warning",
+      "severity": "pass",
       "check": "paper_claim_means",
-      "message": "No traceable claim row matched the canonical data.",
+      "message": "All 17 matched claims agree within 0.06.",
       "count": null
     }
   ]

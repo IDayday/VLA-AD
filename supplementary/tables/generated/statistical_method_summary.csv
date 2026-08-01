@@ -1,0 +1,6 @@
+Benchmark,Split,Method,Stage / variant,Mean ± run std,Scene-bootstrap CI,Q10,CVaR-10,Runs,Scenes
+NAVSIM v1,navtest,AMPT,APR / paired_anchor,0.91,"[0.91, 0.92]",0.84,0.47,1,12138
+NAVSIM v1,navtest,AMPT,APR / paper_final,0.91,"[0.91, 0.92]",0.84,0.47,1,12138
+NAVSIM v1,navtest,AMPT,FF-PGRPO / paper_recovery_checkpoint,0.61,"[0.58, 0.65]",0.00,0.00,0,658
+NAVSIM v1,navtest,scalar GRPO,FF-PGRPO / scalar_grpo,0.51,"[0.47, 0.55]",0.00,0.00,0,658
+NAVSIM v2,navtest,AMPT,APR / paper_final,0.89,"[0.89, 0.89]",0.81,0.38,0,12146

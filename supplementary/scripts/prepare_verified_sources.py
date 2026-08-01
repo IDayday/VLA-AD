@@ -14,7 +14,16 @@ from pathlib import Path
 
 import pandas as pd
 
-from pipeline_common import ANALYSIS_SEED, atomic_write_json, repository_root, sha256_file, supplementary_root
+from pipeline_common import (
+    ANALYSIS_SEED,
+    atomic_write_json,
+    command_display,
+    environment_versions,
+    git_revision,
+    repository_root,
+    sha256_file,
+    supplementary_root,
+)
 
 
 DEFAULT_INPUTS = {
@@ -172,6 +181,9 @@ def main() -> int:
     manifest = {
         "schema_version": 1,
         "analysis_seed": args.seed,
+        "command": command_display(),
+        "git": git_revision(repository_root()),
+        "environment": environment_versions(),
         "policy": "metrics are copied without imputation; hard658 excludes the later 91.45 checkpoint",
         "inputs": [{"id": key, "path": path.relative_to(repository_root()).as_posix(), "sha256": sha256_file(path)} for key, path in paths.items()],
         "outputs": outputs,

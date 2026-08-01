@@ -9,6 +9,7 @@ it must never be interpreted as a training or evaluation seed.
 from __future__ import annotations
 
 import hashlib
+import importlib.metadata
 import json
 import logging
 import os
@@ -367,6 +368,36 @@ def environment_versions() -> dict[str, str | None]:
             versions[name] = getattr(module, "__version__", "unknown")
         except ImportError:
             versions[name] = None
+    for distribution, label in (
+        ("torch", "torch"),
+        ("lightning", "lightning"),
+        ("pytorch-lightning", "pytorch_lightning"),
+        ("hydra-core", "hydra_core"),
+        ("omegaconf", "omegaconf"),
+        ("navsim", "navsim_distribution"),
+    ):
+        try:
+            versions[label] = importlib.metadata.version(distribution)
+        except importlib.metadata.PackageNotFoundError:
+            versions[label] = None
+    try:
+        import torch
+
+        versions["torch_cuda_build"] = str(torch.version.cuda)
+        versions["cuda_available"] = str(torch.cuda.is_available()).lower()
+    except ImportError:
+        versions["torch_cuda_build"] = None
+        versions["cuda_available"] = None
+    for command in ("pdflatex", "bibtex"):
+        try:
+            completed = subprocess.run(
+                [command, "--version"], check=False, capture_output=True,
+                text=True, timeout=10,
+            )
+            first_line = (completed.stdout or completed.stderr).splitlines()
+            versions[command] = first_line[0] if first_line else None
+        except (FileNotFoundError, subprocess.SubprocessError):
+            versions[command] = None
     return versions
 
 

@@ -17,11 +17,22 @@ in the source manifest so provenance remains visible.
 
 ## Evidence contract
 
-The scripts never create an experimental score, scene identifier, training or
-evaluation seed, feasibility flag, candidate count, or hyperparameter. If no
-verified scene-level source is registered, canonicalization emits a typed,
-zero-row CSV and Parquet dataset and marks the analysis `pending`. This is a
-valid pipeline state, not a result.
+The pipeline never invents an **observed** score, scene identifier, training
+seed, feasibility flag, or candidate outcome.  Every manuscript value carries
+one of three identities:
+
+- **reported**: printed in the submitted paper but lacking a complete local
+  scene/run manifest;
+- **reproduced**: recomputed from an audited repository artifact;
+- **proposed-unrun**: a bounded value chosen to make a missing control
+  executable, never presented as an experimental result.
+
+The proposed PC-MTS values (bank 16, K=3, calibration quantile 0.95, eight
+correlated perturbations, 6/8 pass threshold) and the three proposed training
+seeds are therefore concrete rather than blank, but remain visibly distinct
+from measured outcomes.  If a registered scene source is absent,
+canonicalization marks the affected analysis `pending`; it does not convert a
+proposed value into a measurement.
 
 The default analysis seed is `2027`. It is used only for deterministic bootstrap
 resampling and plotting; it is never written into the canonical `seed` column.
@@ -136,6 +147,12 @@ Validation states are:
 
 Warnings identify missing checks or evidence without turning them into values.
 
+The checked configuration currently enforces 12,138 NAVSIM v1 final scenes,
+12,138 paired-anchor scenes, 12,146 NAVSIM v2 scenes, and both 658-row hard-set
+methods.  It validates the v1 PDMS and v2 EPDMS formulas and exact scene-set
+matching.  Candidate-count matching remains a warning because the paper-run
+candidate manifests were not found.
+
 ## Statistics
 
 ```bash
@@ -180,11 +197,22 @@ Captions state the inference protocol, direction of improvement, and the run and
 scene reporting convention. Empty evidence produces a factual no-record table,
 not a numeric placeholder.
 
-Figures are declarative (`configs/figure_generation.json`) and support scatter,
-line, bar, histogram, stacked-fraction, and failure-transition-matrix plots.
-Every successful specification writes a vector PDF and a 300-dpi PNG using a
-colorblind-friendly palette. If source rows are unavailable, no blank image is
-created; `derived/figure_generation_report.md` records the pending figure.
+`scripts/generate_appendix_assets.py` builds the evidence-backed paper figures:
+the supervision mismatch, APR progression, v1/v2 metric profiles, the fixed
+658-scene transition, its cause decomposition, and the audited qualitative
+contact sheet.  Every figure is written as vector PDF and 300-dpi PNG with a
+colorblind-friendly palette.  The generic declarative figure driver remains
+available for future registered analyses; unavailable data never produces a
+blank plot.
+
+The 658-scene adapter is deliberately locked to the historical paper pair:
+Scalar GRPO has 367 positive outcomes and the paper recovery checkpoint has
+440.  Its transition is 198 persistent failures, 93 repairs, 20 new failures,
+and 347 retained successes, for net repair 73.  The later 91.45 checkpoint's
+hard-set columns are excluded from canonicalization and used only in the
+discrepancy audit.  That final policy appears separately in the reproduced
+full-benchmark row and in a clearly labeled qualitative contact sheet; neither
+contributes to the 658-scene statistics.
 
 ## One-command build
 
@@ -213,3 +241,64 @@ make pipeline SEED=17 BOOTSTRAP_SAMPLES=10000
 Do not manually edit files in `tables/generated/`, `figures/generated/`, or
 `derived/`; change the registered evidence or declarative configuration and
 rerun the pipeline instead.
+
+## Compiling or including the appendix
+
+Standalone compilation is part of `make all` and writes
+`supplementary.pdf`.  To include the body in the AAAI manuscript, define the
+guard before inputting the entry point from the repository root:
+
+```tex
+\def\AMPTMainPaper{1}
+\input{supplementary/supplementary.tex}
+```
+
+The main manuscript must load `amsmath`, `amssymb`, `booktabs`, `graphicx`,
+`url`, and `hyperref`, and must make the six entries in `supplementary.bib`
+available to its bibliography.  The guarded mode contributes Appendix A--H
+only; it does not add a second document class, title, or bibliography.
+
+## Dry-run experiment controls
+
+No launcher starts training by default.  Each prints the resolved variant,
+evidence status, proposed seeds, and resource envelope:
+
+```bash
+supplementary/launch/run_p0_pcmts.sh --variant full_pcmts
+supplementary/launch/run_p0_ffpgrpo.sh --variant full_ffpgrpo --epochs 10
+supplementary/launch/run_p0_apr.sh --variant full_apr --round 1
+supplementary/launch/run_p1_diagnostics.sh --suite compatibility_metrics
+```
+
+Execution requires both `--execute` and `ALLOW_TRAIN=1`, plus explicit
+checkpoint/cache/output roots and a user-supplied command from the restored
+audited implementation.  The launchers otherwise exit after preflight.  The
+paper-reported resource envelope is 8 A800 GPUs for imitation/FF-PGRPO and the
+audited APR branch uses 4 A800 GPUs; wall time and storage were not measured.
+
+## Audited inputs and principal outputs
+
+The active adapters are built from the two final scene exports, the paired v1
+anchor, and the historical 658-scene comparison listed in
+`raw_manifest/result_sources.json`.  Exact paths, keys, and hashes are recorded
+in `audit/result_source_map.csv`, `raw_manifest/result_sources.json`, and
+`reproduction_manifest.json`.
+
+The compact source adapters are included in `derived/source_adapters/`, so a
+fresh checkout can rebuild the canonical table and manuscript even when the
+large raw `outputs/` archive is not distributed.  When all four audited raw
+files are present, `make prepare` regenerates and hash-checks the adapters;
+otherwise it uses the packaged versions and reports that fallback explicitly.
+
+Principal deliverables are:
+
+- `supplementary.pdf` and the standalone/guarded `supplementary.tex`;
+- `derived/canonical_scene_metrics.parquet` plus its CSV mirror;
+- `derived/stats.json` and `derived/data_validation_report.md`;
+- CSV/LaTeX table pairs in `tables/generated/`;
+- vector/300-dpi figure pairs in `figures/generated/`;
+- evidence audits, `MISSING_EVIDENCE.md`, and `MAIN_TEXT_SUGGESTIONS.md`.
+
+`make checks` smoke-tests every CLI `--help`, searches final LaTeX for internal
+paths/placeholders, rejects undefined citations/references, and refreshes the
+hash/software manifest.  It performs no training.

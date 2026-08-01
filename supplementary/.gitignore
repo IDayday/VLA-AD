@@ -1,5 +1,4 @@
 scripts/__pycache__/
-derived/source_adapters/*.csv
 *.aux
 *.bbl
 *.blg

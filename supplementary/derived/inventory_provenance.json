@@ -1,0 +1,52 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-08-01T03:43:19.205233+00:00",
+  "status": "complete",
+  "analysis_seed": 2027,
+  "analysis_seed_scope": "resampling and plotting only; not a training seed",
+  "command": "scripts/build_inventory.py --seed 2027 --scan-root docs --scan-root configs --scan-root scripts --scan-root reports --scan-root navsim --scan-root outputs/ampt_pdms914505_navtest_submission_20260730 --scan-root outputs/pdms914487_numeric_anchor_reverse_old_residual_conflict_only_top20_graft0025_full_navtest_seed20260726_20260727/epoch_000_step_252/candidate/local_sharded_aggregated.csv --scan-root outputs/fair_ec_pdms914153_navtest_20260727 --scan-root outputs/navtest_hard_stable_zero658_recogdrive_stage3_vs_pdms914505_20260727 --scan-root outputs/stage3_grpo_core_pareto_s16_lr1e4_b2acc4_20e_local8_20260616T020136Z",
+  "git": {
+    "commit": "356d2aec7bfce29393c0903d8174aec9ffa8aa2b",
+    "dirty": true
+  },
+  "environment": {
+    "python": "3.9.25",
+    "platform": "Linux-5.10.0-136.12.0.88.4.ctl3.x86_64-x86_64-with-glibc2.35",
+    "numpy": "1.26.4",
+    "pandas": "2.3.3",
+    "pyarrow": "21.0.0",
+    "matplotlib": "3.9.4",
+    "scipy": "1.13.1",
+    "torch": "2.5.1+cu124",
+    "lightning": null,
+    "pytorch_lightning": "2.6.0",
+    "hydra_core": "1.2.0",
+    "omegaconf": "2.3.0",
+    "navsim_distribution": null,
+    "torch_cuda_build": "12.4",
+    "cuda_available": "true",
+    "pdflatex": "pdfTeX 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian)",
+    "bibtex": "BibTeX 0.99d (TeX Live 2022/dev/Debian)"
+  },
+  "inputs": [],
+  "outputs": [
+    {
+      "path": "supplementary/audit/file_inventory_auto.md",
+      "bytes": 592404,
+      "sha256": "545c86628d8929017de80b7a06ce317c180d7d14967590237e523ece631833d9"
+    },
+    {
+      "path": "supplementary/raw_manifest/repository_inventory.json",
+      "bytes": 2080461,
+      "sha256": "d094eae07da6d8c9f8ceab4c0b619ffd576f4bdfcdac19b8fbd6d09516917bb7"
+    },
+    {
+      "path": "supplementary/raw_manifest/file_hashes.jsonl",
+      "bytes": 1844886,
+      "sha256": "04268193d9c5d2160afbdd91ca440cf878f118828ffab4a8ce873a48bd5aa921"
+    }
+  ],
+  "notes": [
+    "Per-file input paths and SHA-256 values are stored in the inventory outputs."
+  ]
+}

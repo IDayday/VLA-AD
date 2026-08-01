@@ -1,0 +1,74 @@
+% Define \AMPTMainPaper before \input{supplementary/supplementary.tex} to
+% include only the appendix body from an existing manuscript preamble.
+\ifdefined\AMPTMainPaper
+  \makeatletter
+  \def\input@path{{supplementary/}{supplementary/sections/}}
+  \makeatother
+  \graphicspath{{supplementary/}}
+  \appendix
+  \input{supplementary/sections/A_method_details}
+  \input{supplementary/sections/B_algorithms}
+  \input{supplementary/sections/C_implementation}
+  \input{supplementary/sections/D_pcmts_analysis}
+  \input{supplementary/sections/E_ffpgrpo_analysis}
+  \input{supplementary/sections/F_apr_analysis}
+  \input{supplementary/sections/G_failure_qualitative}
+  \input{supplementary/sections/H_related_limitations}
+  \expandafter\endinput
+\fi
+
+\documentclass[10pt,twocolumn]{article}
+\usepackage[letterpaper,margin=0.72in]{geometry}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{microtype}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\setlength{\columnsep}{0.22in}
+\setlength{\textfloatsep}{7pt plus 2pt minus 2pt}
+\setlength{\floatsep}{6pt plus 2pt minus 2pt}
+\setlength{\intextsep}{6pt plus 2pt minus 2pt}
+
+\newcommand{\method}{AMPT}
+\newcommand{\pc}{PC-MTS}
+\newcommand{\ff}{FF-PGRPO}
+\newcommand{\apr}{APR}
+\newcommand{\reported}{\textsuperscript{R}}
+\newcommand{\reproduced}{\textsuperscript{S}}
+\newcommand{\proposed}{\textsuperscript{P}}
+
+\title{Supplementary Material for\\
+\textit{Aligning Multi-Trajectory Supervision with Policy Optimization for VLA Driving}}
+\author{Anonymous Submission}
+\date{}
+
+\begin{document}
+\maketitle
+\begin{abstract}
+This supplement specifies the three stages of Aligned Multi-Trajectory Policy
+Training (AMPT), records implementation and evaluation provenance, and expands
+the supervision, credit-assignment, policy-refinement, and failure-recovery
+analyses.  Superscripts R, S, and P denote paper-reported, scene-level
+reproduced, and proposed-but-unrun reproduction settings, respectively.  This
+distinction prevents a proposed control from being mistaken for an observed
+result.  Unless stated otherwise, evaluation emits one trajectory and performs
+neither test-time scoring nor candidate reranking.
+\end{abstract}
+
+\appendix
+\input{sections/A_method_details}
+\input{sections/B_algorithms}
+\input{sections/C_implementation}
+\input{sections/D_pcmts_analysis}
+\input{sections/E_ffpgrpo_analysis}
+\input{sections/F_apr_analysis}
+\input{sections/G_failure_qualitative}
+\input{sections/H_related_limitations}
+
+\bibliographystyle{plain}
+\bibliography{supplementary}
+\end{document}

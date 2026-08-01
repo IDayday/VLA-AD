@@ -1,6 +1,30 @@
 {
   "schema_version": 1,
   "analysis_seed": 2027,
+  "command": "scripts/prepare_verified_sources.py --seed 2027",
+  "git": {
+    "commit": "356d2aec7bfce29393c0903d8174aec9ffa8aa2b",
+    "dirty": true
+  },
+  "environment": {
+    "python": "3.9.25",
+    "platform": "Linux-5.10.0-136.12.0.88.4.ctl3.x86_64-x86_64-with-glibc2.35",
+    "numpy": "1.26.4",
+    "pandas": "2.3.3",
+    "pyarrow": "21.0.0",
+    "matplotlib": "3.9.4",
+    "scipy": "1.13.1",
+    "torch": "2.5.1+cu124",
+    "lightning": null,
+    "pytorch_lightning": "2.6.0",
+    "hydra_core": "1.2.0",
+    "omegaconf": "2.3.0",
+    "navsim_distribution": null,
+    "torch_cuda_build": "12.4",
+    "cuda_available": "true",
+    "pdflatex": "pdfTeX 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian)",
+    "bibtex": "BibTeX 0.99d (TeX Live 2022/dev/Debian)"
+  },
   "policy": "metrics are copied without imputation; hard658 excludes the later 91.45 checkpoint",
   "inputs": [
     {

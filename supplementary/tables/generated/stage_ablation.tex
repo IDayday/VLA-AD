@@ -4,15 +4,15 @@
 \caption{Stage-wise NAVSIM v1 ablation under single-trajectory inference. Higher is better. Rows are paper-reported point estimates whose run/seed aggregation is not stated; only the final AMPT row is independently reproduced from 12,138 scene scores.}
 \label{tab:stage_ablation}
 \resizebox{\textwidth}{!}{%
-\begin{tabular}{lcccccccccccc}
+\begin{tabular}{lccccccccccc}
 \toprule
-configuration & pcmts & scalar\_grpo & ff\_pgrpo & apr & NC & DAC & TTC & C & EP & PDMS & evidence & runs \\
+configuration & pcmts & ff\_pgrpo & apr & NC & DAC & TTC & C & EP & PDMS & evidence & runs \\
 \midrule
-GT-only & no & no & no & no & 98.1 & 94.7 & 94.2 & 100.0 & 80.9 & 86.5 & paper reported & reported point; run/seed aggregation not stated \\
-PC-MTS & yes & no & no & no & 98.2 & 95.2 & 94.5 & 100.0 & 81.3 & 86.9 & paper reported & reported point; run/seed aggregation not stated \\
-FF-PGRPO only & no & no & yes & no & 98.4 & 98.0 & 95.8 & 100.0 & 85.93 & 91.0 & paper reported & reported point; run/seed aggregation not stated \\
-PC-MTS + FF-PGRPO & yes & no & yes & no & 98.5 & 98.0 & 96.0 & 100.0 & 86.0 & 91.1 & paper reported & reported point; run/seed aggregation not stated \\
-Full AMPT & yes & no & yes & yes & 98.5 & 98.0 & 96.0 & 100.0 & 86.7 & 91.4 & paper reported / final row scene-reproduced & reported point + 12138 final scenes; run aggregation not stated \\
+GT-only & no & no & no & 98.1 & 94.7 & 94.2 & 100.0 & 80.9 & 86.5 & paper reported & reported point; run/seed aggregation not stated \\
+PC-MTS & yes & no & no & 98.2 & 95.2 & 94.5 & 100.0 & 81.3 & 86.9 & paper reported & reported point; run/seed aggregation not stated \\
+FF-PGRPO only & no & yes & no & 98.4 & 98.0 & 95.8 & 100.0 & 85.93 & 91.0 & paper reported & reported point; run/seed aggregation not stated \\
+PC-MTS + FF-PGRPO & yes & yes & no & 98.5 & 98.0 & 96.0 & 100.0 & 86.0 & 91.1 & paper reported & reported point; run/seed aggregation not stated \\
+Full AMPT & yes & yes & yes & 98.5 & 98.0 & 96.0 & 100.0 & 86.7 & 91.4 & paper reported / final row scene-reproduced & reported point + 12138 final scenes; run aggregation not stated \\
 \bottomrule
 \end{tabular}%
 }

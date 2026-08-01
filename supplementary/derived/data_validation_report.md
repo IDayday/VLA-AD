@@ -5,7 +5,7 @@
 - Canonical rows: 37738
 - Unique scenes: 12146
 - Errors: 0
-- Warnings: 2
+- Warnings: 1
 - Input SHA-256: `010814a9b9f63575b517b9c541c1e54ec81b74ccba681af4d09d791c637cf244`
 
 
@@ -28,7 +28,7 @@
 | pass | scene_set:final_vs_anchor_full_navtest |  | All selectors share 12138 scenes. |
 | pass | scene_set:paper_hard658_pair |  | All selectors share 658 scenes. |
 | warning | candidate_matching |  | No candidate-count/acceptance-rate matching checks are configured. |
-| warning | paper_claim_means |  | No traceable claim row matched the canonical data. |
+| pass | paper_claim_means |  | All 17 matched claims agree within 0.06. |
 
 ## Seed and round coverage
 

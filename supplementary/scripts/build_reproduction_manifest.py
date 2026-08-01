@@ -26,7 +26,10 @@ DEFAULT_INCLUDE_DIRS = [
     "configs",
     "raw_manifest",
     "derived",
+    "audit",
+    "tables/sources",
     "tables/generated",
+    "figures/sources",
     "figures/generated",
     "launch",
     "sections",
@@ -73,9 +76,13 @@ def main() -> int:
             raise ValueError(f"include directory escapes supplementary root: {name}") from exc
         if not directory.exists():
             continue
-        files.update(path for path in directory.rglob("*") if path.is_file())
+        files.update(
+            path for path in directory.rglob("*")
+            if path.is_file() and "__pycache__" not in path.parts and path.suffix != ".pyc"
+        )
     for name in (
         "supplementary.tex",
+        "supplementary.bib",
         "supplementary.pdf",
         "README.md",
         "MISSING_EVIDENCE.md",
@@ -86,6 +93,9 @@ def main() -> int:
         path = supp / name
         if path.is_file():
             files.add(path)
+    completion_report = repo / "supplementary_completion_report.md"
+    if completion_report.is_file():
+        files.add(completion_report)
     files.discard(args.output.resolve())
 
     records = [
