@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ampt-evaluation"
+version = "1.0.0"
+description = "Anonymous evaluation-only release for AMPT on NAVSIM"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "Apache-2.0"}
+dependencies = [
+  "numpy>=1.24",
+  "pandas>=2.0",
+  "PyYAML>=6.0",
+  "torch>=2.1",
+  "hydra-core>=1.2",
+  "transformers>=4.37",
+]
+
+[project.scripts]
+ampt-score-navsim-v2 = "ampt_stage3.score_navsim_v2:main"
+ampt-submission-to-predictions = "ampt_stage3.submission_to_manifest:main"
+ampt-validate-checkpoint = "ampt_stage3.validate_checkpoint:main"
+ampt-verify-results = "ampt_stage3.verify_results:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

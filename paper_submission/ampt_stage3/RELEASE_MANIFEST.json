@@ -1,0 +1,152 @@
+{
+  "files": [
+    {
+      "bytes": 11348,
+      "path": "LICENSE",
+      "sha256": "01ca9910fa3d9cee3005c07c6b1533585973afc32aecbbc92d9128adcaac3365"
+    },
+    {
+      "bytes": 1015,
+      "path": "Makefile",
+      "sha256": "340a6e9483ee059f62f50d97666019310e79f58b7f3301e2d51e215bd29f44f1"
+    },
+    {
+      "bytes": 8212,
+      "path": "README.md",
+      "sha256": "28bc4f501f5f635e3fb657a318225a2f0f0d33496493f8469121342cb45420a6"
+    },
+    {
+      "bytes": 454,
+      "path": "THIRD_PARTY_NOTICES.md",
+      "sha256": "021ee86b1ff5d6b92f251484b9b747ead7151515a91557f928a5edecf33145e7"
+    },
+    {
+      "bytes": 627,
+      "path": "VALIDATED_ENVIRONMENT.md",
+      "sha256": "9dd0cc2444be012696e6176186b8fcabea26de40897c9a8122e4682fafbf4775"
+    },
+    {
+      "bytes": 642,
+      "path": "configs/eval_navsim_v1.yaml",
+      "sha256": "1a309dae832f7c49323b7e3a4e247d5bfd3e07f909d2a5900da3552c79b7220f"
+    },
+    {
+      "bytes": 772,
+      "path": "configs/eval_navsim_v2.yaml",
+      "sha256": "97dabaf063833595c020668359ae791919e6091c87a45249de2ad2c1b2f28925"
+    },
+    {
+      "bytes": 699,
+      "path": "configs/release_scope.json",
+      "sha256": "1bd8e034864458c54c871fe13a747a8f38b2377de593472c77798de929fe35a3"
+    },
+    {
+      "bytes": 860,
+      "path": "pyproject.toml",
+      "sha256": "992e7769b8ed7d76cab844b86177693308ed7f99f5bc5e41851aa89ec951aa27"
+    },
+    {
+      "bytes": 275,
+      "path": "requirements.txt",
+      "sha256": "8d864ebe82dad9db5952a5c4a780e39c55aaf6236070581b8c67b0548359a1b8"
+    },
+    {
+      "bytes": 378,
+      "path": "scripts/build_package.sh",
+      "sha256": "abdd561053824f3d0fa99aafca1788d18f5480d53bdb47000f368bc10509dc96"
+    },
+    {
+      "bytes": 2238,
+      "path": "scripts/evaluate_navsim_v1.sh",
+      "sha256": "df263e38d5f0df42ea97eadcb32d3eb7f36b64afc7d1a5798c2216ec7545b3a2"
+    },
+    {
+      "bytes": 1520,
+      "path": "scripts/evaluate_navsim_v2.sh",
+      "sha256": "3d4578a5b22f38a975d1d609502664ce7b3e87789dc187ae23f022655ea93786"
+    },
+    {
+      "bytes": 2367,
+      "path": "scripts/export_single_trajectory_predictions.sh",
+      "sha256": "808c42ce43d743e84cb3e688aff1231c848b92f7080e3cb1adf775e2fea75c75"
+    },
+    {
+      "bytes": 1673,
+      "path": "scripts/verify_reproduction.sh",
+      "sha256": "63bd664838ad149b2b89b91705809e2aaeb60cf1bd2ef62e8300cb08f60fbbff"
+    },
+    {
+      "bytes": 143,
+      "path": "src/ampt_stage3/__init__.py",
+      "sha256": "3528c8bb6c43f4558eb97fc07512973a739ebff131bbba3dfcbfb4aca7f052cf"
+    },
+    {
+      "bytes": 2963,
+      "path": "src/ampt_stage3/build_release.py",
+      "sha256": "8ddb715aef21f9ee43420bcee00560f798710a935348b427417ec2d34181a4a6"
+    },
+    {
+      "bytes": 3346,
+      "path": "src/ampt_stage3/checkpoint.py",
+      "sha256": "4fdb7d8b1dee682304d45ed44885a51b535d5a700f5d3d09f673d935fd4bc8a5"
+    },
+    {
+      "bytes": 1449,
+      "path": "src/ampt_stage3/eval_agent.py",
+      "sha256": "c2600920cb8a68b85117f34a2cdfacaee6dcc95a0e42b43fb682bf22ec8ef3d6"
+    },
+    {
+      "bytes": 22979,
+      "path": "src/ampt_stage3/score_navsim_v2.py",
+      "sha256": "ab765f577a9d9e0d92d510010834bd264105e127d0266337abc366b0b6d9d777"
+    },
+    {
+      "bytes": 483,
+      "path": "src/ampt_stage3/seeding.py",
+      "sha256": "a137d1bf268f62761f5c914cc426a18f8ee2e1e83df716a24cdd9dcd26a74417"
+    },
+    {
+      "bytes": 1812,
+      "path": "src/ampt_stage3/submission_to_manifest.py",
+      "sha256": "25978beea7a9a0013003b092e0f3853dc4015c2ff6e9fc65de0a619e47e4f5ed"
+    },
+    {
+      "bytes": 728,
+      "path": "src/ampt_stage3/validate_checkpoint.py",
+      "sha256": "e4624978a3e64486ceaaf4fcdb0f1d2f71445fe39b92323a8f7b0cd603320868"
+    },
+    {
+      "bytes": 6515,
+      "path": "src/ampt_stage3/verify_results.py",
+      "sha256": "361e95e5436e8c4f837c936c64ac1abe972ee72fee4fe6f9410f5e0a1a800306"
+    },
+    {
+      "bytes": 2609,
+      "path": "tests/audit_release_scope.py",
+      "sha256": "55662aabe51439ef0f859eefa9c477cd16cbec45dde1760caff9dc07979abf00"
+    },
+    {
+      "bytes": 207,
+      "path": "tests/conftest.py",
+      "sha256": "f5edac04b5ac3e7b6cb31d830eedf08cdc00ca66842091e93a392804becb0ade"
+    },
+    {
+      "bytes": 658,
+      "path": "tests/test_checkpoint.py",
+      "sha256": "a1eb47f79c5d3bdd01c9f073479eab7b5ccfbd4f14f2b910f47768e68405886b"
+    },
+    {
+      "bytes": 401,
+      "path": "tests/test_seeding.py",
+      "sha256": "d5f5385364e61e410485feb07458d79ccc46f5fd1044059bca802d7f305f1484"
+    },
+    {
+      "bytes": 1476,
+      "path": "tests/test_verify_results.py",
+      "sha256": "499f261b807e5b72dc4ac75e3ea87e2a5ae711e3c67ccb895c3bfcf1f3454cb6"
+    }
+  ],
+  "release": "AMPT Evaluation (Anonymous)",
+  "schema_version": 1,
+  "scope": "evaluation and result verification only"
+}

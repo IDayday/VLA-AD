@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "release_mode": "anonymous_double_blind",
+  "included": [
+    "read-only ReCogDrive evaluation checkpoint validation",
+    "deterministic single-trajectory inference",
+    "NAVSIM v1 evaluation",
+    "official NAVSIM v2 EPDMS evaluation",
+    "result and artifact integrity verification"
+  ],
+  "excluded": [
+    "all model training and optimization",
+    "PC-MTS data construction",
+    "FF-PGRPO training",
+    "APR training and teacher construction",
+    "candidate generation",
+    "test-time metric-based candidate reranking",
+    "model weights, predictions, benchmark data, and result files",
+    "author, affiliation, email, host, and private path metadata"
+  ]
+}

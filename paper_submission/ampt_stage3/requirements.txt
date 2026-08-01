@@ -1,0 +1,10 @@
+numpy>=1.24
+pandas>=2.0
+PyYAML>=6.0
+torch>=2.1
+hydra-core>=1.2
+transformers>=4.37
+
+# Install this overlay inside the public ReCogDrive/NAVSIM environment. The
+# benchmark, nuPlan, model, data, and evaluator-specific dependencies are not
+# vendored in this anonymous archive.

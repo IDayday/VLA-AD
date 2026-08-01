@@ -1,0 +1,27 @@
+schema_version: 1
+benchmark: NAVSIM-v2
+split: navtest
+evaluation_seed: 20260726
+seed_mode: blake2b_per_token_little_endian_u32
+inference_trajectories_per_scene: 1
+test_time_scorer: false
+reranking: false
+aggregate_metric: EPDMS
+required_components: [NC, DAC, DDC, TLC, TTC, EP, LK, HC, EC]
+official_scorer_required: true
+official_scorer_revision: 0a380a9063d7162ec93d0f51e9990ebac585f720
+expected_predictions: 12146
+expected_scored_scenes: 12146
+extended_comfort_available: 10040
+absolute_tolerance: 5.0e-6
+expected:
+  EPDMS: 0.8911677435925488
+  NC: 0.9842334925078216
+  DAC: 0.9769471430923761
+  DDC: 0.989955540918821
+  TLC: 0.997118392886547
+  TTC: 0.9766178165651244
+  EP: 0.8944757726427539
+  LK: 0.9173390416598057
+  HC: 0.9709369339700313
+  EC: 0.8773904382470119

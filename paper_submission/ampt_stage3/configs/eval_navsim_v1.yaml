@@ -1,0 +1,21 @@
+schema_version: 1
+benchmark: NAVSIM-v1
+split: navtest
+evaluation_seed: 20260726
+seed_mode: blake2b_per_token_little_endian_u32
+inference_trajectories_per_scene: 1
+test_time_scorer: false
+reranking: false
+aggregate_metric: PDMS
+required_components: [NC, DAC, DDC, TTC, EP, C]
+expected_predictions: 12146
+expected_scored_scenes: 12138
+absolute_tolerance: 5.0e-6
+expected:
+  score: 0.9145046521395536
+  no_at_fault_collisions: 0.9852941176470589
+  drivable_area_compliance: 0.979897841489537
+  driving_direction_compliance: 0.9764788268248475
+  time_to_collision_within_bound: 0.960042840665678
+  ego_progress: 0.8674798204376025
+  comfort: 1.0
