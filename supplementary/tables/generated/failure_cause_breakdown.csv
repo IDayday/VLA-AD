@@ -1,0 +1,4 @@
+Failure type,Scenes,Repairs,Regressions,Net repair
+DAC-only/all-fail,480,59,14,45
+collision-only/all-fail,165,32,6,26
+collision + DAC,13,2,0,2

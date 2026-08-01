@@ -1,0 +1,16 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Recovery on the same 658 NAVSIM v1 scenes under one archived comparison. Rates use Wilson 95\% intervals over scenes; this interval does not represent training-seed uncertainty. Higher recovery is better.}
+\label{tab:failure_recovery}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lcccccc}
+\toprule
+Method & Positive & Zero & Recovery rate (\%) & Wilson 95\% CI (\%) & Runs & Scenes \\
+\midrule
+Scalar GRPO & 367 & 291 & 55.8 & [52.0, 59.5] & 1 archived comparison & 658 \\
+AMPT recovery checkpoint & 440 & 218 & 66.9 & [63.2, 70.4] & 1 archived comparison & 658 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}

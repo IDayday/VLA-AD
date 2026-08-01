@@ -1,0 +1,19 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Mechanism-organized examples from the fixed 658-scene set. Scene IDs and PDMS values are reproduced from the archived comparison; commands are joined from audited scene metadata. These selected cases are not an unbiased benchmark sample.}
+\label{tab:hard658-cases}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccccccc}
+\toprule
+Scene ID & Command & Outcome & PDMS & NC & DAC & TTC & EP & DDC & Diagnosis \\
+\midrule
+00fcad6d092c5e8e & left & repaired & 0.000 -> 1.000 & 0.000 -> 1.000 & 1.000 -> 1.000 & 0.000 -> 1.000 & 0.000 -> 1.000 & 1.000 -> 1.000 & Collision/TTC failure repaired without protected regression. \\
+03aa8a0576a25b63 & right & repaired & 0.000 -> 0.963 & 1.000 -> 1.000 & 0.000 -> 1.000 & 1.000 -> 1.000 & 0.000 -> 0.912 & 1.000 -> 1.000 & Drivable-area failure repaired while NC and TTC remain feasible. \\
+1148c72f141c532d & left & partial repair & 0.000 -> 0.583 & 0.000 -> 1.000 & 0.000 -> 1.000 & 0.000 -> 0.000 & 0.000 -> 1.000 & 1.000 -> 1.000 & Both hard failures repaired; TTC remains the limiting component. \\
+00016f8b45c25a1d & left & persistent & 0.000 -> 0.000 & 1.000 -> 1.000 & 0.000 -> 0.000 & 1.000 -> 1.000 & 0.000 -> 0.000 & 0.000 -> 0.000 & DAC/progress failure persists under both audited checkpoints. \\
+4b4a268bee4c5ab5 & left & regressed & 1.000 -> 0.000 & 1.000 -> 1.000 & 1.000 -> 0.000 & 1.000 -> 1.000 & 1.000 -> 0.000 & 1.000 -> 1.000 & A DAC regression creates a new zero and motivates retention. \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}

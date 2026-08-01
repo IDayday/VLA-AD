@@ -1,0 +1,3 @@
+Benchmark,Method,Recovered,Persistent,Retained successes,New failures,Net vs initial,Recovery rate,Wilson CI,Runs,Scenes
+NAVSIM v1,AMPT,440,218,0,0,440,0.67,"[0.63, 0.70]",0,658
+NAVSIM v1,scalar GRPO,367,291,0,0,367,0.56,"[0.52, 0.60]",0,658

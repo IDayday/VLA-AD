@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "created_utc": "2026-08-01T02:46:00.757957+00:00",
+  "created_utc": "2026-08-01T03:31:32.514487+00:00",
   "status": "complete",
   "analysis_seed": 2027,
   "analysis_seed_scope": "resampling and plotting only; not a training seed",
-  "command": "supplementary/scripts/compute_statistics.py",
+  "command": "scripts/compute_statistics.py --seed 2027 --bootstrap-samples 10000 --confidence 0.95",
   "git": {
-    "commit": "ba5908d84534f28f4087b68f963390af497dca41",
+    "commit": "34e8d7998c588e0bc30d50fb1a74e220d300dfa4",
     "dirty": true
   },
   "environment": {
@@ -16,7 +16,17 @@
     "pandas": "2.3.3",
     "pyarrow": "21.0.0",
     "matplotlib": "3.9.4",
-    "scipy": "1.13.1"
+    "scipy": "1.13.1",
+    "torch": "2.5.1+cu124",
+    "lightning": null,
+    "pytorch_lightning": "2.6.0",
+    "hydra_core": "1.2.0",
+    "omegaconf": "2.3.0",
+    "navsim_distribution": null,
+    "torch_cuda_build": "12.4",
+    "cuda_available": "true",
+    "pdflatex": "pdfTeX 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian)",
+    "bibtex": "BibTeX 0.99d (TeX Live 2022/dev/Debian)"
   },
   "inputs": [
     {
@@ -38,8 +48,8 @@
   "outputs": [
     {
       "path": "supplementary/derived/stats.json",
-      "bytes": 26362,
-      "sha256": "0b31e3e954f562bc5cde182ab44e83d70d6ba14364ff86af38ee88f58701d2b2"
+      "bytes": 26502,
+      "sha256": "26bd87d5d4b268ef35a8eada7fcfaf2143529f9fea345627c8e40ab2223e16a0"
     },
     {
       "path": "supplementary/derived/statistics/method_summaries.csv",
@@ -53,8 +63,8 @@
     },
     {
       "path": "supplementary/derived/statistics/recovery_summaries.csv",
-      "bytes": 684,
-      "sha256": "1165ec5949c57831fcd16ea5a7b69af333267104952c1b6f6543cc93ef9041d7"
+      "bytes": 767,
+      "sha256": "6a84b0fbcf113c8a7d41991ee4259801e2bc6956147d28a147533dfb76343327"
     },
     {
       "path": "supplementary/derived/statistics/positive_credit_summaries.csv",

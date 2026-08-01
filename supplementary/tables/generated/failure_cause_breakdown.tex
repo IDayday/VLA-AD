@@ -1,0 +1,17 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Failure-type decomposition for the fixed 658 NAVSIM v1 scenes. Repairs and regressions use the scalar-GRPO to AMPT transition; net repairs sum to 73. One archived comparison; higher net repair is better.}
+\label{tab:failure_causes}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+Failure type & Scenes & Repairs & Regressions & Net repair \\
+\midrule
+DAC-only/all-fail & 480 & 59 & 14 & 45 \\
+collision-only/all-fail & 165 & 32 & 6 & 26 \\
+collision + DAC & 13 & 2 & 0 & 2 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}

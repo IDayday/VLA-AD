@@ -176,7 +176,7 @@ def recovery_table(records: list[dict[str, Any]], digits: int) -> pd.DataFrame:
                 "Persistent": integer(row.get("persistent_failures")),
                 "Retained successes": integer(row.get("retained_successes")),
                 "New failures": integer(row.get("new_failures")),
-                "Net recovery": integer(row.get("net_recovery")),
+                "Net vs initial": integer(row.get("net_change_vs_initial_policy")),
                 "Recovery rate": display(row.get("recovery_rate"), digits),
                 "Wilson CI": interval(row, "recovery_ci_low", "recovery_ci_high", digits),
                 "Runs": integer(row.get("n_runs")),
@@ -192,7 +192,7 @@ def recovery_table(records: list[dict[str, Any]], digits: int) -> pd.DataFrame:
             "Persistent",
             "Retained successes",
             "New failures",
-            "Net recovery",
+            "Net vs initial",
             "Recovery rate",
             "Wilson CI",
             "Runs",
@@ -270,6 +270,13 @@ def main() -> int:
     )
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
+    # Remove the pre-audit name whose method-wise rows could be mistaken for
+    # the paired Scalar-GRPO-to-AMPT transition (the latter has net repair 73).
+    for legacy_name in ("failure_transitions.csv", "failure_transitions.tex"):
+        legacy = args.output_dir / legacy_name
+        if legacy.is_file():
+            legacy.unlink()
+
     definitions: list[tuple[str, pd.DataFrame, str, str]] = [
         (
             "statistical_method_summary",
@@ -289,12 +296,13 @@ def main() -> int:
             "tab:supp_paired_comparisons",
         ),
         (
-            "failure_transitions",
+            "gross_recovery_from_initial",
             recovery_table(stats.get("recovery_summaries", []), digits),
-            "Failure-state transitions on the benchmark shown under "
-            f"{inference}. Recovery and net recovery are higher-is-better; new and persistent "
-            "failures are lower-is-better. Rates use Wilson intervals and rows state runs/scenes.",
-            "tab:supp_failure_transitions",
+            "Method-wise recovery relative to the initial hard-set construction policy under "
+            f"{inference}. These gross rows are not the paired Scalar-GRPO-to-AMPT transition; "
+            "that transition is reported separately as 93 repairs, 20 new failures, and net 73. "
+            "Rates use Wilson intervals and rows state runs/scenes.",
+            "tab:supp_gross_recovery_initial",
         ),
         (
             "positive_credit_diagnostics",

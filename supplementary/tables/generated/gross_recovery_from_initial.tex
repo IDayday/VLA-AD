@@ -1,0 +1,14 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Method-wise recovery relative to the initial hard-set construction policy under single-trajectory inference without a test-time scorer or candidate reranking. These gross rows are not the paired Scalar-GRPO-to-AMPT transition; that transition is reported separately as 93 repairs, 20 new failures, and net 73. Rates use Wilson intervals and rows state runs/scenes.}
+\label{tab:supp_gross_recovery_initial}
+\begin{tabular}{lrrrrrrrrrr}
+\toprule
+Benchmark & Method & Recovered & Persistent & Retained successes & New failures & Net vs initial & Recovery rate & Wilson CI & Runs & Scenes \\
+\midrule
+NAVSIM v1 & AMPT & 440 & 218 & 0 & 0 & 440 & 0.67 & [0.63, 0.70] & 0 & 658 \\
+NAVSIM v1 & scalar GRPO & 367 & 291 & 0 & 0 & 367 & 0.56 & [0.52, 0.60] & 0 & 658 \\
+\bottomrule
+\end{tabular}
+\end{table}

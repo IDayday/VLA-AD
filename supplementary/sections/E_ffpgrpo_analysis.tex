@@ -1,0 +1,101 @@
+\section{FF-PGRPO Analyses: Feasibility Before Positive Credit}
+\label{sec:ffpgrpo-analysis}
+
+Aggregate reward can hide an unsafe trade: progress or comfort may increase
+enough to give positive standardized advantage even when collision avoidance,
+drivable-area compliance, or a protected reference metric regresses.  The
+purpose of FF-PGRPO is therefore not merely to reshape the scalar score, but to
+change which rollouts are eligible for positive credit.
+
+\subsection{What the stage ablation establishes}
+\label{sec:ffpgrpo-stage-ablation}
+
+On NAVSIM v1, the no-stage baseline in the main ablation has 86.5 PDMS, 98.1
+NC, 94.7 DAC, 94.2 TTC, and 80.9 EP.  Applying FF-PGRPO without PC-MTS reaches
+91.0 PDMS, with 98.4 NC, 98.0 DAC, 95.8 TTC, and 85.93 EP.  With PC-MTS as the
+initialization, FF-PGRPO reaches 91.1 PDMS, 98.5 NC, 98.0 DAC, 96.0 TTC, and
+86.0 EP before APR.  The improvement is therefore not produced by sacrificing
+the displayed hard-safety components for progress: DAC improves by 3.3 points
+and TTC by 1.6 points in the FF-PGRPO-only row, while EP increases by 5.03
+points.  These are paper-reported point estimates whose run/seed aggregation
+is not stated, so the small 0.1-point
+difference between the two FF-PGRPO rows is not presented as a stable gain.
+
+\input{tables/generated/stage_ablation.tex}
+
+This result is consistent with the proposed ordering---recover feasibility,
+then optimize continuous quality---but an aggregate stage ablation cannot
+directly reveal the sign of individual rollout credits.  The fixed hard-scene
+transition in Section~\ref{sec:hard658} provides scene-level evidence, and the
+instrumentation below defines the rollout-level test.
+
+\subsection{Credit diagnostics}
+\label{sec:ffpgrpo-credit-diagnostics}
+
+For rollout $i$, let $A_i>0$ denote positive assigned advantage and let
+$V_i=1$ denote a violation of any hard-feasibility, protected-reference, or
+admissible-Pareto condition.  We report
+\begin{equation}
+  \mathrm{PCVR} =
+  \frac{\sum_i \mathbb{1}[A_i>0]V_i}
+       {\sum_i \mathbb{1}[A_i>0]},
+  \label{eq:positive-credit-violation}
+\end{equation}
+and separately count reference-regressing and Pareto-dominated positive
+credits.  A denominator of zero is reported as ``no positive credits,'' not as
+zero violation.  FF-PGRPO's implementation makes a violating rollout
+ineligible for positive credit and exposes assertions for this contract.  The
+archived training run, however, does not contain the per-rollout trace needed
+to quote an observed PCVR; we do not convert a code invariant into a fabricated
+measured rate.
+
+The stepwise mechanism ablation adds: (i) the hard feasibility gate, (ii) the
+coherent-reference guard, (iii) the Pareto positive-credit gate, and (iv) the
+all-infeasible recovery rule.  Every variant logs group state
+(all-feasible/mixed/all-infeasible), feasibility rate, positive and negative
+advantage means, PCVR, reference-regressing positive-credit rate,
+dominated-positive-credit rate, zero-to-feasible repair, positive-to-zero
+regression, and updates until the first feasible rollout.  The coherent
+reference is always one executable trajectory.  The historical
+component-wise envelope remains only as an ablation because combining the best
+value of each metric from different trajectories may describe no realizable
+plan and can make every sampled rollout appear to regress.
+
+The low-cost diagnostic run uses the paper's group size of 16 and stops at 300
+updates; the final run uses the reported 10 epochs.  All variants share the
+same sampled rollout tensors when credit is recomputed offline, which makes
+the initial credit-assignment comparison independent of policy drift.  New
+training is required only for the subsequent learning curves and remains
+disabled unless explicitly enabled.
+
+\subsection{Hard-scene evidence for feasibility-first recovery}
+\label{sec:ffpgrpo-hard-evidence}
+
+The manuscript recovery checkpoint is evaluated on the same 658-scene set as
+scalar GRPO.  Scalar GRPO produces a positive score in 367 scenes (55.8\%,
+95\% Wilson CI 52.0--59.5\%), whereas the AMPT recovery checkpoint is positive
+in 440 scenes (66.9\%, CI 63.2--70.4\%).  The comparison uses a single
+trajectory per scene and neither method uses test-time sampling, scoring, or
+reranking.  Crucially, the paired transition is not merely a difference of
+gross counts: 93 scalar-GRPO zeros become positive, 20 scalar-GRPO positives
+become zero, 347 successes are retained, and 198 failures persist.  Net
+recovery is therefore $93-20=73$ scenes, or 11.1 percentage points.  A
+10,000-resample scene-paired bootstrap (analysis seed 2027) gives a 95\% CI of
+8.1--14.3 percentage points for this paired change.  This interval quantifies
+scene variation for this fixed checkpoint pair; it does not replace missing
+multi-seed training uncertainty.
+
+The subset mean PDMS increases from 0.5101 to 0.6145.  The corresponding
+component means change from 0.8381 to 0.8815 for NC, 0.7052 to 0.7781 for DAC,
+0.7705 to 0.8161 for TTC, and 0.4956 to 0.5932 for EP; comfort increases from
+0.9985 to 1.0000, while DDC changes from 0.9567 to 0.9521.  This last decrease
+is why protected metrics must be reported next to aggregate recovery rather
+than summarized as universal component-wise improvement.  The complete
+transition and failure-type decomposition are given in
+Section~\ref{sec:hard658}.
+
+The aggregate ablation, paired hard-scene transition, and positive-credit
+instrumentation serve complementary roles.  The first shows the overall stage
+gain, the second verifies that recovery is net positive rather than purchased
+entirely with new failures, and the third is the predeclared test of the
+claimed credit-assignment mechanism.

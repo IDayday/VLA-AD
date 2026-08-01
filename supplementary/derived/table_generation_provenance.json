@@ -1,12 +1,12 @@
 {
   "schema_version": 1,
-  "created_utc": "2026-08-01T02:46:16.761337+00:00",
+  "created_utc": "2026-08-01T03:31:35.562037+00:00",
   "status": "complete",
   "analysis_seed": 2027,
   "analysis_seed_scope": "resampling and plotting only; not a training seed",
-  "command": "supplementary/scripts/generate_tables.py",
+  "command": "scripts/generate_tables.py --seed 2027",
   "git": {
-    "commit": "ba5908d84534f28f4087b68f963390af497dca41",
+    "commit": "34e8d7998c588e0bc30d50fb1a74e220d300dfa4",
     "dirty": true
   },
   "environment": {
@@ -16,13 +16,23 @@
     "pandas": "2.3.3",
     "pyarrow": "21.0.0",
     "matplotlib": "3.9.4",
-    "scipy": "1.13.1"
+    "scipy": "1.13.1",
+    "torch": "2.5.1+cu124",
+    "lightning": null,
+    "pytorch_lightning": "2.6.0",
+    "hydra_core": "1.2.0",
+    "omegaconf": "2.3.0",
+    "navsim_distribution": null,
+    "torch_cuda_build": "12.4",
+    "cuda_available": "true",
+    "pdflatex": "pdfTeX 3.141592653-2.6-1.40.22 (TeX Live 2022/dev/Debian)",
+    "bibtex": "BibTeX 0.99d (TeX Live 2022/dev/Debian)"
   },
   "inputs": [
     {
       "path": "supplementary/derived/stats.json",
-      "bytes": 26362,
-      "sha256": "0b31e3e954f562bc5cde182ab44e83d70d6ba14364ff86af38ee88f58701d2b2"
+      "bytes": 26502,
+      "sha256": "26bd87d5d4b268ef35a8eada7fcfaf2143529f9fea345627c8e40ab2223e16a0"
     },
     {
       "path": "supplementary/derived/data_validation_status.json",
@@ -57,14 +67,14 @@
       "sha256": "5ac5a3e89443846199a714126f36c5fd79108149b4151b7fca9ebad9b8562343"
     },
     {
-      "path": "supplementary/tables/generated/failure_transitions.csv",
-      "bytes": 240,
-      "sha256": "b3f0fb4ab7e095d61c990ad195a1884d5871d6ee6a3baf13de2282138e762ef3"
+      "path": "supplementary/tables/generated/gross_recovery_from_initial.csv",
+      "bytes": 242,
+      "sha256": "840d0645900481750f0df57547898cf6fbda7f908b97cd3c9c6be41f2950347e"
     },
     {
-      "path": "supplementary/tables/generated/failure_transitions.tex",
-      "bytes": 758,
-      "sha256": "b6c0c128ae5db615cf6fbfc068e824224b3786b9409b7452030504bd1f47ec2b"
+      "path": "supplementary/tables/generated/gross_recovery_from_initial.tex",
+      "bytes": 842,
+      "sha256": "7dff43049ea81bbf4cce684c4db575f59d9678694adabc9815083af9a0dad451"
     },
     {
       "path": "supplementary/tables/generated/positive_credit_diagnostics.csv",

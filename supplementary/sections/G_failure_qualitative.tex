@@ -1,0 +1,131 @@
+\section{Failure Recovery and Qualitative Diagnostics}
+\label{sec:failure-qualitative}
+
+Qualitative evidence is most useful when organized by a mechanism and tied to
+scene-level metrics.  We therefore analyze the fixed hard set first, then give
+traceable examples of recovered, persistent, and newly introduced failures.
+All quantitative hard-set results and the mechanism-organized case table use
+the same historical checkpoint pair as the main paper's 367-versus-440
+recovery claim.  The final full-benchmark visualization is separately labeled
+and is not used in the 658-scene recovery analysis.
+
+\subsection{Construction of the fixed 658-scene set}
+\label{sec:hard658}
+
+The set contains 658 NAVSIM v1 scenes for which the initial ReCogDrive policy
+obtained exactly zero PDMS in all five construction samples because of an
+at-fault collision (NC), drivable-area violation (DAC), or both.  The set is
+fixed before comparing the scalar-GRPO and AMPT recovery checkpoints.  Under
+single-trajectory evaluation, scalar GRPO is positive on 367 and zero on 291
+scenes; the AMPT recovery checkpoint is positive on 440 and zero on 218.
+
+The paired $2\times2$ transition is
+\begin{equation}
+\begin{array}{c|cc|c}
+ & \multicolumn{2}{c|}{\text{AMPT recovery checkpoint}} & \\
+\text{scalar GRPO} & \text{zero} & \text{positive} & \text{row total} \\
+\hline
+\text{zero}     & 198 & 93  & 291 \\
+\text{positive} & 20  & 347 & 367 \\
+\hline
+\text{column total} & 218 & 440 & 658
+\end{array}.
+\label{eq:hard658-transition}
+\end{equation}
+Hence 93 failures are repaired, 347 successes are retained, 198 failures
+persist, and 20 new failures appear.  The net change is $93-20=73$, exactly the
+difference between the gross positive counts $440-367$.  This distinction is
+important: 440/658 is the gross recovery rate relative to the policy used to
+construct the hard set, whereas 93 and 20 describe the paired transition from
+scalar GRPO to the AMPT recovery checkpoint.  The resulting 11.1-percentage-
+point paired improvement has a scene-bootstrap 95\% CI of 8.1--14.3 points
+(10,000 resamples, seed 2027).  It is a net improvement rather than an exchange
+of an equal number of old and new failures.
+
+\input{tables/generated/failure_recovery.tex}
+\input{tables/generated/failure_net_gain.tex}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/generated/failure_transition.pdf}
+  \caption{Scalar-GRPO to AMPT transition on the fixed 658-scene set.  The
+  off-diagonal cells expose both 93 repairs and 20 regressions, rather than
+  reporting gross recovery alone.}
+  \label{fig:failure-transition}
+\end{figure}
+
+The original hard-set taxonomy contains 480 DAC-only scenes, 165 collision-
+only scenes, 13 scenes failing both, and no residual ``other'' category.  The
+paired repairs/new failures are 59/14 for DAC-only, 32/6 for collision-only,
+and 2/0 for the joint category, giving net changes of 45, 26, and 2 scenes.
+The gains are therefore not concentrated in only one failure type, although
+the small joint category is descriptive rather than statistically decisive.
+
+\input{tables/generated/failure_cause_breakdown.tex}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=\linewidth]{figures/generated/failure_cause_recovery.pdf}
+  \caption{Repairs and regressions by the fixed hard-set cause taxonomy.  The
+  net changes are 45 DAC, 26 collision, and 2 joint cases, totaling 73.}
+  \label{fig:failure-causes}
+\end{figure}
+
+\subsection{Traceable scene cases}
+\label{sec:traceable-cases}
+
+Table~\ref{tab:hard658-cases} selects cases by transition type, not by visual
+appeal.  Navigation commands come from the corresponding NAVSIM scene
+metadata; scores and components come from the fixed paired evaluation.  The
+table uses full scene identifiers so every row can be regenerated.  Component
+pairs are scalar-GRPO $\rightarrow$ AMPT-recovery values.
+
+\input{tables/generated/failure_cases.tex}
+
+The first two cases are consistent with feasibility-oriented recovery: a hard
+component changes from zero to one and positive PDMS returns.  Scene-level
+before/after metrics do not identify the temporal order of training updates.
+The third shows why ``recovered'' does not mean component-wise perfect.  The
+fourth remains a DAC/progress failure under both audited checkpoints; without a
+candidate/rollout manifest, the metrics do not identify whether pool coverage,
+policy support, or optimization is responsible.  The fifth prevents
+survivorship bias in the qualitative analysis and
+motivates APR retention; it is one of the 20 positive-to-zero transitions
+already charged against net recovery.
+
+\subsection{Mechanism-centered visualization protocol}
+\label{sec:qualitative-protocol}
+
+The supplied renderer groups panels by decision rather than by scene
+similarity.  A PC-MTS panel overlays an accepted candidate, a rejected distant
+candidate, the logged trajectory, and the frozen-policy rollout neighborhood.
+An FF-PGRPO mixed-group panel distinguishes unsafe, feasible-but-dominated,
+and admissible Pareto-positive rollouts and prints their assigned advantages;
+an all-infeasible panel shows the coherent recovery reference.  An APR panel
+shows the current prediction, raw teacher, evaluated interpolant, and the
+accepted/expired/newly-activated lifecycle state.  Every rendered panel reads
+the scene id, command, component scores, and method name from its manifest and
+uses a common legend: blue for the current prediction, green for an accepted
+or positively credited trajectory, orange for a dominated/expired trajectory,
+red for an unsafe trajectory, and black dashed for the coherent reference.
+
+This protocol is also a safeguard against overinterpretation.  A camera/BEV
+image is emitted only when the frame, command, all trajectories, and evaluator
+record share the same scene identifier.  The metric-only cases in
+Table~\ref{tab:hard658-cases} remain quantitative case studies if those visual
+assets are unavailable; no unrelated camera frame or hand-drawn trajectory is
+substituted merely to complete a panel.
+
+\begin{figure*}[t]
+  \centering
+  \includegraphics[width=0.92\textwidth]{figures/generated/qualitative_selected_cases.png}
+  \caption{Three selected full-benchmark NAVSIM v1 cases (left, straight, and
+  right commands) rendered from the separately audited final-AMPT manifest.
+  Each row contains the complete front frame, bird's-eye view, scene ID,
+  command, color legend, PDMS, and trajectory error.  These examples are not
+  members of, and contribute no statistics to, the historical 658-scene
+  recovery comparison; they illustrate final-policy behavior only.}
+  \label{fig:qualitative-selected}
+\end{figure*}
+
+\clearpage
