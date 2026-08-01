@@ -1,0 +1,18 @@
+\begin{table}[t]
+\centering
+\small
+\caption{Supervision--optimization comparison on NAVSIM v1 under single-trajectory inference. All four rows are one paper-reported run; higher PDMS and GRPO change are better, and no variance is implied.}
+\label{tab:supervision_mismatch}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lccccc}
+\toprule
+method & il\_pdms & post\_scalar\_grpo\_pdms & grpo\_change\_points & evidence & runs \\
+\midrule
+GT & 86.4 & 90.3 & 3.9 & paper reported & 1 reported \\
+Score & 87.2 & 85.8 & -1.4 & paper reported & 1 reported \\
+Pareto & 87.5 & 86.7 & -0.8 & paper reported & 1 reported \\
+PC-MTS & 86.9 & 91.1 & 4.2 & paper reported & 1 reported \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}

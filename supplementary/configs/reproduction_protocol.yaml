@@ -1,0 +1,326 @@
+# Reproduction protocol for the AMPT supplementary experiments.
+#
+# Evidence labels are part of the protocol and must be preserved in any export:
+#   verified       value recovered from a repository artifact or launch manifest
+#   reported       value stated in the submitted paper, without a complete local run manifest
+#   proposed_unrun value selected for a controlled experiment that has not been run
+#   not_measured   quantity for which no defensible measurement exists
+schema_version: 1
+protocol_id: ampt_supplementary_2026-08-01
+method_names:
+  framework: AMPT
+  stage_1: PC-MTS
+  stage_2: FF-PGRPO
+  stage_3: APR
+randomness:
+  analysis_seed:
+    value: 20260726
+    evidence: verified
+    source: outputs/pdms914497_reverse_conflict_residual_trust105_scale14p3_full_navtest_seed20260726_20260727/paired_analysis.json
+  proposed_training_seeds:
+    value: [20260726, 20260727, 20260728]
+    evidence: proposed_unrun
+    rationale: three consecutive, explicit seeds anchored at the audited evaluation seed
+  deterministic_algorithms:
+    value: true
+    evidence: proposed_unrun
+  bootstrap_resamples:
+    value: 10000
+    evidence: proposed_unrun
+
+shared_protocol:
+  architecture:
+    value: InternVL3-2B with the ReCogDrive diffusion planner
+    evidence: reported
+    source: docs/AuthorKit27 (7).pdf
+  inference_candidates:
+    value: 1
+    evidence: verified
+    source: outputs/pdms91_external_merged_soft025_retention1_awac1_3ep_s10_lr5e7_rlzt3g1to4_20260726/launch_manifest.txt
+  test_time_scorer:
+    value: false
+    evidence: reported
+    source: docs/AuthorKit27 (7).pdf
+  matched_controls:
+    initialization: identical within each seed
+    optimizer_and_schedule: identical within each comparison family
+    candidate_source_mixture: identical within each PC-MTS comparison
+    accepted_candidate_count: matched to the minimum retained count within each comparison
+    non_gt_sampling_probability:
+      value: 0.5
+      evidence: proposed_unrun
+    targets_per_scene_per_update:
+      value: 1
+      evidence: reported
+      source: docs/AuthorKit27 (7).pdf
+  result_units:
+    stored_scene_metrics: normalized_0_to_1
+    paper_tables: percentage_0_to_100
+  expensive_training_gate:
+    required_environment: ALLOW_TRAIN=1
+    required_cli_flag: --execute
+    default: dry-run
+
+p0_pcmts:
+  status: proposed_unrun
+  launcher: supplementary/launch/run_p0_pcmts.sh
+  variants:
+    - score_only
+    - score_plus_pareto
+    - score_pareto_compatibility
+    - full_pcmts
+  supervised_epochs:
+    value: 200
+    evidence: reported
+    source: docs/AuthorKit27 (7).pdf
+  rollout_bank_size:
+    value: 16
+    evidence: proposed_unrun
+  knn_k:
+    value: 3
+    evidence: proposed_unrun
+  command_conditioned_calibration_quantile:
+    value: 0.95
+    evidence: proposed_unrun
+  local_perturbations_per_candidate:
+    value: 8
+    evidence: proposed_unrun
+  local_feasibility_pass_fraction:
+    value: 0.75
+    evidence: proposed_unrun
+    interpretation: at least 6 of 8 perturbations pass the hard-feasibility checks
+  normalization:
+    value: per-time-step xy displacement normalized by training-split robust scale
+    evidence: proposed_unrun
+  empty_candidate_fallback:
+    value: ground_truth_only
+    evidence: reported
+    source: docs/AuthorKit27 (7).pdf
+  fixed_budget_grpo_steps:
+    value: 300
+    evidence: proposed_unrun
+  resources:
+    gpu_type:
+      value: A800
+      evidence: reported
+    gpu_count:
+      value: 8
+      evidence: reported
+    wall_clock: not_measured
+    storage: not_measured
+
+p0_ffpgrpo:
+  status: reported_protocol_with_archived_epoch_conflict
+  launcher: supplementary/launch/run_p0_ffpgrpo.sh
+  variants:
+    - scalar_grpo
+    - hard_feasibility_gate
+    - coherent_reference_guard
+    - pareto_positive_credit_gate
+    - full_ffpgrpo
+  group_size:
+    value: 16
+    evidence: reported_and_verified
+    paper_source: docs/AuthorKit27 (7).pdf
+    archive_source: outputs/stage3_grpo_core_pareto_s16_lr1e4_b2acc4_20e_local8_20260616T020136Z/core_pareto_launch_config.txt
+  epochs_for_paper_protocol:
+    value: 10
+    evidence: reported
+    source: docs/AuthorKit27 (7).pdf
+  archived_max_epochs:
+    value: 20
+    evidence: verified
+    source: outputs/stage3_grpo_core_pareto_s16_lr1e4_b2acc4_20e_local8_20260616T020136Z/core_pareto_launch_config.txt
+    conflict_policy: reproduce both labels; do not claim the 20-epoch archive is the paper's 10-epoch run
+  learning_rate:
+    value: 1.0e-4
+    evidence: verified
+  batch_size_per_gpu:
+    value: 2
+    evidence: verified
+  gradient_accumulation:
+    value: 4
+    evidence: verified
+  gpu_count:
+    value: 8
+    evidence: verified
+  effective_batch_size:
+    value: 64
+    evidence: verified
+  bc_coefficient:
+    value: [0.10, 0.05]
+    evidence: verified
+    schedule: linear_decay
+  reference_kl_coefficient:
+    value: 0.02
+    evidence: verified
+  hard_feasibility:
+    navsim_v1: [NC, DAC]
+    navsim_v2: [NC, DAC, DDC, TLC]
+    evidence: reported
+  protected_guards: [EP_floor, DDC_guard, TTC_tradeoff_guard]
+  coherent_reference_order: [ground_truth, retained_candidate, current_policy_prediction]
+  all_infeasible_group_weight:
+    value: 0.25
+    evidence: proposed_unrun
+  advantage_clip:
+    value: [-5.0, 5.0]
+    evidence: proposed_unrun
+  resources:
+    gpu_type:
+      value: A800
+      evidence: reported
+    gpu_count:
+      value: 8
+      evidence: verified
+    wall_clock: not_measured
+    storage: not_measured
+  hard_658_scene_analysis:
+    use_for_supplement: true
+    initial_scenes: 658
+    scalar_grpo_positive: 367
+    paper_ampt_positive: 440
+    persistent_failures_after_paper_ampt: 218
+    zero_to_positive: 93
+    positive_to_zero: 20
+    net_recovery: 73
+    evidence: verified
+    source: outputs/navtest_hard_stable_zero658_recogdrive_stage3_vs_pdms914505_20260727/summary.json
+    checkpoint_role: historical_paper_core_pareto_branch
+    exclude_from_this_analysis: final_pdms_91_45_branch
+    exclusion_reason: the paper's 440-scene claim and net gain of 73 are tied to the historical comparison, not the later 91.45 checkpoint
+
+p0_apr:
+  status: verified_single_run_plus_proposed_controls
+  launcher: supplementary/launch/run_p0_apr.sh
+  variants:
+    - extra_training_only
+    - one_shot_distillation
+    - repeated_fixed_teacher_set
+    - dynamic_teachers
+    - no_interpolation
+    - no_post_interpolation_evaluation
+    - no_policy_retention
+    - full_apr
+  rounds:
+    value: 3
+    evidence: reported
+  learning_rate:
+    value: 5.0e-7
+    evidence: verified
+  minimum_learning_rate:
+    value: 2.5e-7
+    evidence: verified
+  epochs_per_audited_run:
+    value: 3
+    evidence: verified
+  scheduler_epochs:
+    value: 10
+    evidence: verified
+  gpu_count:
+    value: 4
+    evidence: verified
+  batch_size_per_gpu:
+    value: 8
+    evidence: verified
+  global_batch_size:
+    value: 32
+    evidence: verified
+  gradient_accumulation:
+    value: 1
+    evidence: verified
+  precision:
+    value: bf16-mixed
+    evidence: verified
+  optimizer:
+    value: AdamW
+    evidence: verified
+    source: navsim/agents/recogdrive/recogdrive_agent.py
+    note: verified from the implementation default; the paper PDF itself does not name the optimizer
+  advantage_temperature:
+    value: 0.05
+    evidence: verified
+  maximum_advantage_weight:
+    value: 5.0
+    evidence: verified
+  policy_retention_weight:
+    value: 1.0
+    evidence: verified
+  prior_distance_weight:
+    value: 0.02
+    evidence: verified
+  jerk_penalty_weight:
+    value: 0.005
+    evidence: verified
+  low_noise_timestep_fraction:
+    value: 0.35
+    evidence: verified
+  target_top_k:
+    value: 1
+    evidence: verified
+  target_min_advantage:
+    value: 0.0
+    evidence: verified
+  ddc_guard:
+    absolute_floor: 0.99
+    maximum_relative_drop: 0.01
+    evidence: verified
+  ttc_guard:
+    absolute_floor: 0.95
+    maximum_relative_drop: 0.02
+    evidence: verified
+  proposed_interpolation_alphas:
+    value: [1.0, 0.75, 0.5, 0.25]
+    evidence: proposed_unrun
+    search_order: descending
+  resources:
+    gpu_type:
+      value: A800
+      evidence: reported
+    gpu_count:
+      value: 4
+      evidence: verified
+    wall_clock: not_measured
+    storage: not_measured
+
+p1_diagnostics:
+  status: proposed_unrun
+  launcher: supplementary/launch/run_p1_diagnostics.sh
+  suites:
+    compatibility_metrics:
+      variants: [candidate_to_gt_ade_fde, deterministic_policy_distance, minimum_rollout_bank_distance, average_knn_distance, calibrated_knn]
+      matched_acceptance_rate: true
+    pcmts_sensitivity:
+      rollout_bank_size: [8, 16, 32]
+      knn_k: [1, 3, 5]
+      calibration_quantile: [0.90, 0.95, 0.975]
+      perturbation_count: [4, 8, 16]
+      local_feasibility_pass_fraction: [0.625, 0.75, 0.875]
+    group_dynamics:
+      logging_interval_steps: 25
+      evidence: proposed_unrun
+      metrics: [all_feasible_rate, mixed_rate, all_infeasible_rate, feasible_rollout_rate, mean_positive_advantage, mean_negative_advantage]
+    coherent_reference:
+      variants: [ground_truth, current_policy, highest_score_feasible, nearest_safe, no_reference, component_wise_envelope]
+    apr_teacher_sources:
+      leave_one_out: [historical_policy, grpo_seeds, structured_expansion, safety_specialist, progress_specialist, structure_specialist]
+  resources:
+    pcmts_and_ffpgrpo_gpu_count: 8
+    apr_gpu_count: 4
+    gpu_type: A800
+    aggregate_wall_clock: not_measured
+    aggregate_storage: not_measured
+
+execution_contract:
+  current_tree_note: PC-MTS curriculum builders, historical FF-PGRPO credit assignment, and APR teacher builders are not all present in the current checkout
+  restore_policy: restore the audited implementation commit or worktree before supplying a command to a launcher
+  external_command_environment:
+    pcmts: AMPT_PCMTS_COMMAND
+    ffpgrpo: AMPT_FFPGRPO_COMMAND
+    apr: AMPT_APR_COMMAND
+    p1: AMPT_P1_COMMAND
+  required_inputs:
+    checkpoint_root: AMPT_CHECKPOINT_ROOT
+    cache_root: AMPT_CACHE_ROOT
+    output_root: AMPT_OUTPUT_ROOT
+  safety: launchers refuse execution unless both gates pass and method-specific source checks succeed

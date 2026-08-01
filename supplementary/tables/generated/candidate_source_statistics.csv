@@ -1,0 +1,5 @@
+source,role,per_scene_budget,scene_universe,retention_or_use,status
+Logged trajectory,immutable fallback and retention target,1,"103,288 expected navtrain scenes",always retained,paper-described / historical contract
+Frozen-policy rollout bank,compatibility support estimate,16,"103,288-scene reproduction universe",distance calibration only,proposed reproduction setting
+Multi-source candidate proposals,quality and Pareto targets,8 per source,"103,288-scene reproduction universe",subject to quality/Pareto/compatibility gates,proposed reproduction budget
+Correlated local perturbations,local feasibility audit,8 per retained proposal,same candidate scenes,pass-rate threshold 0.75,proposed reproduction setting

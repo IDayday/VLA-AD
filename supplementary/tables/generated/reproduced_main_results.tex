@@ -1,0 +1,16 @@
+\begin{table*}[t]
+\centering
+\small
+\caption{Scene-level reproduction of the AMPT main results under one-trajectory inference without test-time scoring or reranking. All metrics are percentages and higher is better. NAVSIM v1 has 12,138 scored scenes; v2 has 12,146.}
+\label{tab:reproduced_main}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{lccccccccccccccc}
+\toprule
+Benchmark & Scenes & Inference & Runs & NC & DAC & TTC & C & EP & PDMS & DDC & TLC & LK & HC & EC & EPDMS \\
+\midrule
+NAVSIM v1 & 12138 & 1 trajectory & 1 inference seed & 98.53 & 97.99 & 96.00 & 100.00 & 86.75 & 91.45 & not recorded & not recorded & not recorded & not recorded & not recorded & not recorded \\
+NAVSIM v2 & 12146 & 1 trajectory & 1 inference seed & 98.42 & 97.69 & 97.66 & not recorded & 89.45 & not recorded & 99.00 & 99.71 & 91.73 & 97.09 & 87.74 & 89.12 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}

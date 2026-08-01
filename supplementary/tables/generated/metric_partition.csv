@@ -1,0 +1,3 @@
+benchmark,hard_feasibility,protected_guards,pareto_quality,aggregate
+NAVSIM v1,"NC, DAC",DDC; non-regression in TTC and feasibility,"EP, TTC, C",PDMS
+NAVSIM v2,"NC, DAC, DDC, TLC",DDC/TLC feasibility; non-regression in TTC,"EP, TTC, LK, HC, EC",EPDMS
