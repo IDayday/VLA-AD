@@ -5,7 +5,7 @@
     "scene_sha256": "694dcbb3fcfc0713cf1d63d95566cedaa2f999931c675d138229404c62c7a21f",
     "checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443"
   },
-  "completed_utc": "2026-09-13T08:14:11Z",
+  "completed_utc": "2026-09-13T10:34:41Z",
   "train_tokens": 700,
   "holdout_tokens": 300,
   "token_overlap": 0,
@@ -14,5 +14,7 @@
   "overlapping_logs": 132,
   "holdout_scenes_sharing_a_train_log": 195,
   "split_changed": false,
-  "note": "Required token-hash split. A diagnostic holdout from new updates, with possible historical-pretraining and log overlap; never described as independent Navtest performance."
+  "frozen_GT_distance_threshold_calibration": "V1 official-IL rollout-to-GT thresholds used all 1000 diagnostic scenes, including the later V3 holdout. Kept unchanged as requested; this is preexisting calibration exposure.",
+  "global_no_leakage_claim_permitted": false,
+  "note": "Required token-hash split. No new optimizer updates use holdout tokens, but historical pretraining, log overlap and frozen GT-threshold calibration prevent treating this as an independently untouched test set."
 }

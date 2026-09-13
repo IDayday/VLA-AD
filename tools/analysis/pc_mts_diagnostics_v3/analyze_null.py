@@ -2,6 +2,7 @@ from common_v3 import *
 def main():
     raw=pd.read_parquet(OUT/'metrics/A_raw_candidates.parquet');rows=[];holdout=set(tokens('holdout'))
     for token,g in raw.groupby('token',sort=False):
+        assert np.array_equal(g.raw_index.to_numpy(),np.arange(CFG['raw_candidates'])), 'Raw-to-position row alignment'
         a=np.load(OUT/'cache/null_support'/f'{token}.npz');domain=g.unique.to_numpy()&(g.q_holdout.to_numpy()>=95)&(g.PDMS.to_numpy()>=g.PDMS.quantile(.75));prom=domain&(a['q_holdout']<95)
         eligible=prom&g.hard_safe.to_numpy()&(g.PDMS.to_numpy()>=g.reference_PDMS.to_numpy()-1e-8)
         rows.append(dict(token=token,split='holdout' if token in holdout else 'train',old_high_quality_far=int(domain.sum()),null_promoted_count=int(prom.sum()),null_promotion_rate=float(prom.sum()/domain.sum()) if domain.any() else np.nan,null_newly_eligible_rate=float(eligible.sum()/domain.sum()) if domain.any() else np.nan))

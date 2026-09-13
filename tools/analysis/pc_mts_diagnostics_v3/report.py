@@ -13,7 +13,9 @@ def main():
     fstatus='SUPPORTED' if fgt.ci_low>0 and f_safe.ci_low>=0 and f_quality.ci_low>=0 and (seed_deltas>0).all() else 'PARTIALLY SUPPORTED' if fgt.ci_low>0 else 'NOT SUPPORTED'
     null=pd.read_csv(OUT/'metrics/G_promotion_vs_null.csv');gn=null[(null.scope=='holdout-300')&(null.metric=='promotion_minus_null')&null.run.str.startswith('grpo_final')]
     assert len(gn)==2 and set(sg.index)==set(CFG['training']['seeds']), 'Both prespecified seeds must be reported'
-    gstatus='SUPPORTED' if (gn.ci_low>0).all() and (sg.conditional_pc>0).all() else 'PARTIALLY SUPPORTED' if (gn['mean']>0).any() else 'NOT SUPPORTED'
+    migration_status='SUPPORTED' if (gn.ci_low>0).all() else 'PARTIALLY SUPPORTED' if (gn.ci_low>0).any() else 'NOT SUPPORTED'
+    stronger_policy=bool((sg.conditional_pc>0).all())
+    gstatus=migration_status if stronger_policy else 'NOT SUPPORTED'
     cstatus='SUPPORTED' if all(cp[cp.metric.isin(['diffusion_loss','E_rec'])].cluster_ci_low>0) and all(fe[fe.predictor=='r_knn'].ci_low>0) else 'PARTIALLY SUPPORTED'
     conflict=d[d.metric=='cosine'].iloc[0];dstatus='SUPPORTED' if conflict.cluster_ci_high<0 else 'NOT SUPPORTED'
     text=[]
@@ -60,16 +62,28 @@ def main():
     add('Conditional减去baseline的scene-paired final差值：\n\n'+tab(ep[ep.metric.isin(['PDMS','feasible_rate','center_shift','IL_retention_loss'])],['method','metric','mean','median','ci_low','ci_high','win_fraction']))
     add('本轮实际结果呈现quality–safety取舍：Conditional位移和IL retention loss更小，安全率高于Score/Pareto，但相对GT-only的PDMS差仅约0.014 point，区间包含0，没有证明更多quality headroom。Score/Pareto-MTS的Spread-AUC反而比GT-only更大，Conditional/Old-PC更小。因此“多候选SFT必然压缩分布”也不成立；V1的历史观察不能泛化成所有candidate selection规则的必然机制。')
     add('Full-300每个scene都参与结果；训练中zero-parent的GT fallback次数和实际source权重公开在训练审计与`S_actual_training_source_weights.csv`。IL retention loss是在固定IL-native targets上的原生diffusion loss；它与真正的holdout PDMS分开报告。CRN_policy_change_ADE是同噪声轨迹变化代理，不是KL。')
-    add('\n## 8. Experiment F — Short original-GRPO causal test\n')
+    add('\n## 8. Experiment F — Short GRPO：原生loss与统一V3训练配置\n')
     add('全部6种SFT initialization、两个seeds均进入同一个original archived forward_grpo；GT-SFT→GRPO没有省略。训练reward原生权重EP/TTC/comfort=10/5/2；评测为5/5/2。所有run使用相同LR=1e-4、100 updates、group=8、effective scene batch=8、BC coefficient=0.1，以及共同冻结official-IL reference。没有引入LFP或替换advantage算法。标量reward/完整loss与batched logging hook的四场景parity通过后才启动更新。')
+    add('这里复用了原始GRPO的loss、rollout、reward与advantage实现；V3的统一optimizer wrapper是预先固定的小预算实验配置。归档官方训练入口使用AdamW betas=(0.9,0.95)、weight decay=1e-4、10-epoch cosine调度，2B脚本的batch=8/GPU×8 GPU；V3使用betas=(0.9,0.999)、weight decay=0.01、100-step constant LR和global effective batch=8。所有V3方法完全共享这些设置，但本轮不是历史完整训练recipe的逐项复现。这些差异是后续排查普遍退化的候选原因，尚未被逐项因果隔离。')
+    add('原生forward_grpo直接将group-normalized advantage与当前policy log-prob相乘，没有在这里另外加入PPO importance ratio。old_policy用于BC teacher chains；本轮共同冻结official IL用于该BC reference。')
     add('一个解释边界：原始GRPO的training sampling std floor为0.04、noise clip为5；R/Q和diagnostic evaluation使用eval std floor 0.0001、noise clip 1。该差别对所有initialization相同且本轮没有修改。在最后denoising step，0.04 normalized std对应约1.3348 m纵向/0.84 m横向的裁剪前噪声尺度。因此evaluation-bank support并不直接等于GRPO训练探索分布；它可能限制静态compatibility对GRPO gain的预测力，这属于待进一步隔离的解释，不是事后改变recipe的理由。')
     add(tab(f[f.step==100],['method','seed','PDMS','feasible_rate','EP','NC','DAC','TTC','DDC','Spread_AUC','Hit8']))
     add('Conditional相对各baseline的gain efficiency差值（每scene配对；gain以各自SFT step0为基准）：\n\n'+tab(eff,['method','metric','mean','median','ci_low','ci_high','win_fraction']))
     add('各seed的实际gain与gain AUC：\n\n'+tab(seed_gains,['method','seed','gain_AUC','gain_per_100_steps']))
+    negative_runs=int((seed_gains.gain_per_100_steps<0).sum())
+    add(f'本次 **{negative_runs}/{len(seed_gains)} 个run的final GRPO gain为负**。这首先是所固定短程recipe下的普遍退化现象，不能只归咎于某种candidate initialization，也不能将本次短程失败推广为所有GRPO训练均失败。未在看到结果后修改LR、sampling floor、reward或训练步数。')
+    ep_steps=f.groupby(['method','step']).EP.mean().unstack()
+    if bool((ep_steps[100]<ep_steps[0]).all()):add('六种方法的final EP也均低于各自SFT起点。此次主要现象是quality、progress与safety共同退化，之后部分恢复；它没有呈现一个统一的“EP超过起点、以safety下降换取progress”的成功优化过程。因此不能宣称Conditional已解决该EP–safety取舍问题。')
     add('关键GT-SFT→GRPO对照的final quality/safety差值：\n\n'+tab(fp[(fp.method=='gt_only')&fp.metric.isin(['PDMS','feasible_rate','hard_failure','EP','TTC','Hit8'])],['metric','mean','median','ci_low','ci_high','win_fraction']))
     add(f'对“Conditional-PC提升downstream GRPO gain且保留quality/safety tradeoff”的综合状态为 **{fstatus}**。相对GT-SFT→GRPO，gain差值 **{fgt["mean"]:.5f}** point，95% CI **[{fgt.ci_low:.5f}, {fgt.ci_high:.5f}]**；final PDMS差值 **{f_quality["mean"]:.5f}**，feasible-rate差值 **{f_safe["mean"]:.5f}**。')
     if fstatus!='SUPPORTED':add('**PC-MTS优于GT-SFT→GRPO的必要性尚未得到充分支持。** 静态更容易拟合或更小位移不能替代这个关键对照；不得只引用对Score/Pareto的结果回避GT baseline。')
+    auc=eff[(eff.method=='gt_only')&(eff.metric=='gain_AUC')].iloc[0]
+    add(f'Conditional相对GT的gain AUC差为{auc["mean"]:.5f}，CI [{auc.ci_low:.5f}, {auc.ci_high:.5f}]。当两者AUC均为负时，正的AUC差仅表示这几个固定快照之间平均退化较轻，不等于获得了正学习收益，也不能替代final gain检验。')
+    logstats=pd.read_csv(OUT/'metrics/S_log_cluster_final_comparisons.csv');logauc=logstats[(logstats.stage=='F_gain')&(logstats.method=='gt_only')&(logstats.metric=='gain_AUC')].iloc[0]
+    add(f'同一AUC差的log-cluster sensitivity区间为[{logauc.log_cluster_ci_low:.5f}, {logauc.log_cluster_ci_high:.5f}]；它保留共享驾驶日志带来的相关性。')
     add('PIA严格定义为count(A>0且infeasible)/count(infeasible)，没有infeasible rollout时记为未定义，不能伪记为0。每个rollout的7项原始指标、reward、group、advantage与feasibility均保存。Fig6同时显示gain、feasible rate、预先指定的EP–feasible轨迹和PIA；未依据结果选择最有利safety指标。')
+    pia=pd.read_csv(OUT/'metrics/S_training_PIA_scene_paired.csv')
+    add('完整短程训练PIA的scene-paired count-ratio bootstrap（正差值表示Conditional的PIA更高，不能称为更好）：\n\n'+tab(pia,['method','conditional_PIA_rate','baseline_PIA_rate','mean_count_ratio_difference','median_scene_rate_difference','ci_low','ci_high']))
     snapshots=pd.read_csv(OUT/'metrics/S_all_fixed_snapshot_paired.csv')
     add('预设early=10时，Conditional相对GT-SFT→GRPO的差值如下；所有其余固定快照的配对区间也保存在`S_all_fixed_snapshot_paired.csv`，不只报告final或最好的一步：\n\n'+tab(snapshots[(snapshots.stage=='F')&(snapshots.step==10)&(snapshots.method=='gt_only')],['metric','mean','median','ci_low','ci_high','win_fraction']))
     add('\n## 9. Progressive-support diagnostic\n')
@@ -77,18 +91,20 @@ def main():
     add(tab(g[g.metric.isin(['frontier_promotion_rate','newly_eligible_PC_rate','current_reference_gain'])],['run','scope','metric','n','mean','median','ci_low','ci_high']))
     add('**补充的unchanged-policy校准对照：** 在A–E完成后、任何G measurement产生前，单独冻结`calibration_control.yaml`及其hash；未改变primary YAML、阈值、split或seed。保持official-IL权重不变，重新独立采R128/Q128，测量仅由有限bank重采样产生的q跨阈值。该对照作为新增supplementary报告，不冒称属于最初primary预注册。')
     add(tab(null[null.scope=='holdout-300'],['run','metric','n','mean','ci_low','ci_high']))
-    add(f'扣除unchanged-policy turnover后，关于更强policy的frontier迁移状态为 **{gstatus}**。未定义promotion rate的场景（raw bank没有旧high-quality Far候选）仍保留scene记录，表中n明确给出可计算分母。')
+    add(f'扣除unchanged-policy turnover后，纯粹的support位置迁移状态为 **{migration_status}**；“policy变强后的有用frontier扩张”状态为 **{gstatus}**。未定义promotion rate的场景（raw bank没有旧high-quality Far候选）仍保留scene记录，表中n明确给出可计算分母。')
+    if not stronger_policy:add('两个Conditional短程GRPO checkpoint并未同时获得正quality gain，因此“优化后policy变强”这一前提没有成立。即使q跨阈值显著超过unchanged-policy null，也只能说明弱化或位移后的policy改变了候选几何兼容性，不能将其描述为质量驱动的有效support expansion。')
     add('这只检验Far(old)→compatible(new)的support迁移。迁移可能同时包含中心移动、旧Core遗忘或support宽度改变；`S_progressive_support_retention.csv`保留这些诊断。因此即使观测到promotion，也不等于已验证compute-matched multi-round progressive PC-MTS。该更强结论为 **UNTESTED**。')
     add('\n## 10. 十个研究问题与保守论文表述\n')
     add('1. **SUPPORTED（过滤行为）**：Global-Pareto-first确实排除了compatible candidates；是否“错误”还取决于下游utility，不能仅由rescue定义推出。\n2. **PARTIALLY SUPPORTED**：strict unique覆盖明显提高；但在同一962场景上候选PDMS下降，因此“不牺牲quality”的更强说法不成立。\n3. **SUPPORTED（有限frontier）**：Boundary在部分场景有正headroom；compatibility tax和低覆盖场景同时存在。\n4. **SUPPORTED（非可替代性证据）**：控制GT-distance后r_knn仍预测原生学习难度；GT-distance与policy support不能直接等同。')
-    add(f'5. **{cstatus}**：同scene/source/quality匹配与固定效应结果支持support-distance和loss/reconstruction difficulty相关。\n6. **{dstatus}**：gradient norm更大不意味着更强有害interference；alignment的区间包含零。\n7. **PARTIALLY SUPPORTED**：Micro-SFT产生明确的位移/retention差异，但quality/safety存在取舍，且实际training pools仍是source/quality/support属性的组合处理，不能把全部效应唯一归因于support distance。\n8. **{fstatus}**：统一GRPO的关键GT baseline结论见Section8，不能以step0最高替代gain证据。\n9. **{gstatus}（仅限support迁移）**：Full-1000、holdout-300与unchanged-policy null均见Section9；不宣称完成多轮训练验证。\n10. **UNTESTED（更强多轮/外部泛化结论）**：没有compute-matched多轮实验，且holdout并非独立未接触测试集。')
+    add(f'5. **{cstatus}**：同scene/source/quality匹配与固定效应结果支持support-distance和loss/reconstruction difficulty相关。\n6. **{dstatus}**：gradient norm更大不意味着更强有害interference；alignment的区间包含零。\n7. **PARTIALLY SUPPORTED**：Micro-SFT产生明确的位移/retention差异，但quality/safety存在取舍，且实际training pools仍是source/quality/support属性的组合处理，不能把全部效应唯一归因于support distance。\n8. **{fstatus}**：统一GRPO的关键GT baseline结论见Section8，不能以step0最高替代gain证据。\n9. **{gstatus}（变强后的有效扩张）**：纯几何support迁移另为{migration_status}；Full-1000、holdout-300与unchanged-policy null均见Section9，不将弱化policy的重定位解释为有用扩张。\n10. **UNTESTED（更强多轮/外部泛化结论）**：没有compute-matched多轮实验，且holdout并非独立未接触测试集。')
     add('建议论文首先表述为：“离线轨迹质量不足以刻画其对给定起始planner的监督可学习性。在受控候选空间中，policy-support兼容性提供了超出GT distance与离线分数的原生拟合难度信息；在兼容集合内排序可避免global Pareto gate过滤局部可达候选。其是否改善后续优化，需要以相同初始化预算、GT-SFT→GRPO对照及真实quality/safety结果限定。”')
     add('应放弃或暂缓：所有高分轨迹都同样适合作为监督；更大梯度必然意味着更强冲突；Pareto在本数据上必然提供独立多目标收益；兼容性约束没有质量代价；本轮静态结果已证明多轮训练有效。是否可将PC-MTS写为论文核心性能贡献，必须同时满足下游GT对照和独立基准验证，不能仅凭A–D的结果。')
     add('\n## 11. 可复核产物与审计\n')
+    add('A–E阶段性结果已先行推送于commit `058cbf37b3a33d649943f149f125a3dd559d8a08`，当时F评测仍在运行；原阶段性说明保存在[INTERIM_RESULTS_20260913.md](../outputs/pc_mts_diagnostics_v3/report/INTERIM_RESULTS_20260913.md)。本报告在后续实验完成后更新，原阶段性commit保留。')
     add('主配置、split与hash：`configs/pc_mts_diagnostics_v3/primary.yaml`、`manifests/protocol_frozen.json`、`manifests/splits.json`。原始配对、全部dominator与每scene比较均在`metrics/`，大型rollout/checkpoint保留服务器不进入git。`manifests/CACHE_INDEX.json`记录缓存/权重hash；`INITIALIZATION_TENSOR_AUDIT.json`验证实际tensor初始化一致。')
     add('数值无改动的两项实现修复已单独审计：C的query_id由object数组转换成Unicode，所有数值数组逐bit一致；A的strict_candidate_count统一计数范围，原始schema保留，parent ids、严格已选数量和全部主比较未变。没有修改阈值、alpha、split、seed、模型rollout数值或根据结果筛scene。')
     for i in range(1,8):
         name=next((OUT/'figures').glob(f'Fig-V3-{i}_*.png')).stem;add(f'Fig-V3-{i}: [PNG](../outputs/pc_mts_diagnostics_v3/figures/{name}.png) / [PDF](../outputs/pc_mts_diagnostics_v3/figures/{name}.pdf)；[绘图表](../outputs/pc_mts_diagnostics_v3/metrics/{name}_plot_data.csv)（复合图其他输入见相应A–G tables）。\n\n![Fig-V3-{i}](../outputs/pc_mts_diagnostics_v3/figures/{name}.png)')
     add('\nSUPPORTED、PARTIALLY SUPPORTED、NOT SUPPORTED、UNTESTED分别对应数据支持、有限支持、当前未获支持、尚未实际检验；NOT SUPPORTED不等于已证明普遍无效。')
-    REPORT.write_text('\n\n'.join(text)+'\n');save(OUT/'manifests/report_identity.json',dict(identity=identity(),report=str(REPORT),sha256=sha(REPORT),downstream_GT_comparison_status=fstatus,learnability_status=cstatus,gradient_conflict_status=dstatus));print(REPORT,flush=True)
+    REPORT.write_text('\n\n'.join(text)+'\n');save(OUT/'manifests/report_identity.json',dict(identity=identity(),report=str(REPORT),sha256=sha(REPORT),downstream_GT_comparison_status=fstatus,learnability_status=cstatus,gradient_conflict_status=dstatus,support_migration_status=migration_status,stronger_policy_expansion_status=gstatus,negative_GRPO_runs=negative_runs));print(REPORT,flush=True)
 if __name__=='__main__':main()

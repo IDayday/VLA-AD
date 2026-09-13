@@ -1,0 +1,44 @@
+{
+  "identity": {
+    "base_commit": "f499be15d693a6910593ec2c8f081c249cdbf871",
+    "config_sha256": "e0decb6e64854f06f29ce81af3031c74149eb6d1b9041f2b0a1bd79cf85cceaf",
+    "scene_sha256": "694dcbb3fcfc0713cf1d63d95566cedaa2f999931c675d138229404c62c7a21f",
+    "checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443"
+  },
+  "audited_utc": "2026-09-13T10:09:23Z",
+  "timing": "Contextual audit after F results; no optimizer or sampling changes",
+  "source_files": [
+    {
+      "path": "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/official_recogdrive/navsim/agents/recogdrive/recogdrive_agent.py",
+      "sha256": "de468d8dc514e883f3c1dcb8f2dde480f7c6b38fe8fa563feebb51d7e64240ce"
+    },
+    {
+      "path": "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/official_recogdrive/scripts/training/run_recogdrive_train_multi_node_rl_2b.sh",
+      "sha256": "036438df25c2946e16871bd0a2587eeec3da7dc07f0cf10d08c4f58fd5e4c381"
+    }
+  ],
+  "archived_optimizer": {
+    "lr": 0.0001,
+    "betas": [
+      0.9,
+      0.95
+    ],
+    "weight_decay": 0.0001,
+    "scheduler": "10 epoch WarmupCosLR, no warmup",
+    "per_gpu_batch": 8,
+    "gpus": 8
+  },
+  "v3_frozen_optimizer": {
+    "lr": 0.0001,
+    "betas": [
+      0.9,
+      0.999
+    ],
+    "weight_decay": 0.01,
+    "scheduler": "constant, 100 optimizer updates",
+    "global_effective_scene_batch": 8
+  },
+  "native_loss_unchanged": true,
+  "historical_full_recipe_reproduction_claim": false,
+  "note": "Original old_policy supplies BC teacher chains; the native loss here has no PPO importance ratio. Potential causes of common degradation remain unisolated."
+}

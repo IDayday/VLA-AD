@@ -1,0 +1,156 @@
+{
+  "identity": {
+    "base_commit": "f499be15d693a6910593ec2c8f081c249cdbf871",
+    "config_sha256": "e0decb6e64854f06f29ce81af3031c74149eb6d1b9041f2b0a1bd79cf85cceaf",
+    "scene_sha256": "694dcbb3fcfc0713cf1d63d95566cedaa2f999931c675d138229404c62c7a21f",
+    "checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443"
+  },
+  "completed_utc": "2026-09-13T10:37:27Z",
+  "scene_count": 1000,
+  "raw_candidate_count": 192000,
+  "primary_unique_parent_slots_across_methods": 84791,
+  "unique_weight_checks": [
+    {
+      "method": "gt_only",
+      "seed": 1701,
+      "SFT_scene_updates": 1600,
+      "unique_training_tokens": 700,
+      "GT_fallback_updates": 0,
+      "GRPO_rollouts": 6400,
+      "GRPO_groups": 800
+    },
+    {
+      "method": "gt_only",
+      "seed": 2903,
+      "SFT_scene_updates": 1600,
+      "unique_training_tokens": 700,
+      "GT_fallback_updates": 0,
+      "GRPO_rollouts": 6400,
+      "GRPO_groups": 800
+    },
+    {
+      "method": "score",
+      "seed": 1701,
+      "SFT_scene_updates": 1600,
+      "unique_training_tokens": 700,
+      "GT_fallback_updates": 0,
+      "GRPO_rollouts": 6400,
+      "GRPO_groups": 800
+    },
+    {
+      "method": "score",
+      "seed": 2903,
+      "SFT_scene_updates": 1600,
+      "unique_training_tokens": 700,
+      "GT_fallback_updates": 0,
+      "GRPO_rollouts": 6400,
+      "GRPO_groups": 800
+    },
+    {
+      "method": "pareto",
+      "seed": 1701,
+      "SFT_scene_updates": 1600,
+      "unique_training_tokens": 700,
+      "GT_fallback_updates": 0,
+      "GRPO_rollouts": 6400,
+      "GRPO_groups": 800
+    },
+    {
+      "method": "pareto",
+      "seed": 2903,
+      "SFT_scene_updates": 1600,
+      "unique_training_tokens": 700,
+      "GT_fallback_updates": 0,
+      "GRPO_rollouts": 6400,
+      "GRPO_groups": 800
+    },
+    {
+      "method": "gt_distance",
+      "seed": 1701,
+      "SFT_scene_updates": 1600,
+      "unique_training_tokens": 700,
+      "GT_fallback_updates": 0,
+      "GRPO_rollouts": 6400,
+      "GRPO_groups": 800
+    },
+    {
+      "method": "gt_distance",
+      "seed": 2903,
+      "SFT_scene_updates": 1600,
+      "unique_training_tokens": 700,
+      "GT_fallback_updates": 0,
+      "GRPO_rollouts": 6400,
+      "GRPO_groups": 800
+    },
+    {
+      "method": "old_pc",
+      "seed": 1701,
+      "SFT_scene_updates": 1600,
+      "unique_training_tokens": 700,
+      "GT_fallback_updates": 0,
+      "GRPO_rollouts": 6400,
+      "GRPO_groups": 800
+    },
+    {
+      "method": "old_pc",
+      "seed": 2903,
+      "SFT_scene_updates": 1600,
+      "unique_training_tokens": 700,
+      "GT_fallback_updates": 0,
+      "GRPO_rollouts": 6400,
+      "GRPO_groups": 800
+    },
+    {
+      "method": "conditional_pc",
+      "seed": 1701,
+      "SFT_scene_updates": 1600,
+      "unique_training_tokens": 700,
+      "GT_fallback_updates": 60,
+      "GRPO_rollouts": 6400,
+      "GRPO_groups": 800
+    },
+    {
+      "method": "conditional_pc",
+      "seed": 2903,
+      "SFT_scene_updates": 1600,
+      "unique_training_tokens": 700,
+      "GT_fallback_updates": 59,
+      "GRPO_rollouts": 6400,
+      "GRPO_groups": 800
+    }
+  ],
+  "holdout_scene_rows_per_stage": 14400,
+  "all_64_rollouts": true,
+  "all_snapshots_not_best_selected": true,
+  "primary_config_unchanged": true,
+  "cache_file_count": 59260,
+  "cache_index_sha256": "8f8411bbaaa646ce9a5794095b1b8bbd33c84d51b5f64a2e1456d0b80d05da73",
+  "statistical_replicates": 3000,
+  "figures": 7,
+  "PNG_and_PDF": true,
+  "global_no_leakage_claim": false,
+  "provenance_caveats": {
+    "identity": {
+      "base_commit": "f499be15d693a6910593ec2c8f081c249cdbf871",
+      "config_sha256": "e0decb6e64854f06f29ce81af3031c74149eb6d1b9041f2b0a1bd79cf85cceaf",
+      "scene_sha256": "694dcbb3fcfc0713cf1d63d95566cedaa2f999931c675d138229404c62c7a21f",
+      "checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443"
+    },
+    "completed_utc": "2026-09-13T10:34:41Z",
+    "train_tokens": 700,
+    "holdout_tokens": 300,
+    "token_overlap": 0,
+    "train_logs": 421,
+    "holdout_logs": 223,
+    "overlapping_logs": 132,
+    "holdout_scenes_sharing_a_train_log": 195,
+    "split_changed": false,
+    "frozen_GT_distance_threshold_calibration": "V1 official-IL rollout-to-GT thresholds used all 1000 diagnostic scenes, including the later V3 holdout. Kept unchanged as requested; this is preexisting calibration exposure.",
+    "global_no_leakage_claim_permitted": false,
+    "note": "Required token-hash split. No new optimizer updates use holdout tokens, but historical pretraining, log overlap and frozen GT-threshold calibration prevent treating this as an independently untouched test set."
+  },
+  "corrections": [
+    "C identifier serialization only, numerical arrays bit-identical",
+    "A count column scope clarified, selected parents and primary comparisons unchanged"
+  ]
+}

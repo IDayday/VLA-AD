@@ -11,6 +11,7 @@ def main():
     raw=pd.read_parquet(OUT/'metrics/A_raw_candidates.parquet');records=[];promoted=[];holdout=set(tokens('holdout'))
     for run in runs:
         for token,g in raw.groupby('token',sort=False):
+            assert np.array_equal(g.raw_index.to_numpy(),np.arange(CFG['raw_candidates'])), 'Raw-to-position row alignment'
             a=np.load(OUT/'cache/progressive'/run/f'{token}.npz');qnew=a['q_holdout'];rnew=a['r_knn'];ref=float(np.load(OUT/'cache/progressive_scores'/run/f'{token}.npz')['reference'][0,6]*100);oldfar=g.q_holdout.to_numpy()>=95;hq=g.PDMS.to_numpy()>=g.PDMS.quantile(.75);domain=oldfar&hq&g.unique.to_numpy();promotion=domain&(qnew<95);eligible=promotion&g.hard_safe.to_numpy()&(g.PDMS.to_numpy()>=ref-1e-8)
             records.append(dict(run=run,token=token,split='holdout' if token in holdout else 'train',old_high_quality_far=int(domain.sum()),promoted_count=int(promotion.sum()),newly_eligible_count=int(eligible.sum()),frontier_promotion_rate=float(promotion.sum()/domain.sum()) if domain.any() else np.nan,newly_eligible_PC_rate=float(eligible.sum()/domain.sum()) if domain.any() else np.nan,current_reference_PDMS=ref,old_reference_PDMS=g.reference_PDMS.iloc[0],current_reference_gain=ref-g.reference_PDMS.iloc[0]))
             for i in np.flatnonzero(promotion):

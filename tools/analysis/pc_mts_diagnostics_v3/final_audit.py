@@ -6,6 +6,12 @@ def main(skip_hash=False):
     for phase in ['A','B','C','D','E','F','F_recipe','G','G_null','native']:
         assert (OUT/'manifests'/f'audit_{phase}.json').exists(),phase
     frozen=read(OUT/'manifests/protocol_frozen.json');assert sha(CONFIG_PATH)==frozen['yaml_sha256'];assert set(tokens('train')).isdisjoint(tokens('holdout'))
+    original_weights=[]
+    for model in v1.models():
+        path=Path(model['checkpoint_path']);actual=sha(path)
+        assert actual==model['sha256'], ('Original checkpoint changed',model['name'])
+        original_weights.append(dict(name=model['name'],path=str(path),sha256=actual,bytes=path.stat().st_size))
+    save(OUT/'manifests/ORIGINAL_CHECKPOINTS_UNCHANGED.json',dict(identity=identity(),checkpoints=original_weights))
     assert subprocess.check_output(['git','branch','--show-current'],cwd=ROOT,text=True).strip()=='analysis/pc-mts-policy-diagnostics-v3-20260913'
     changed=subprocess.check_output(['git','diff',CFG['base_commit'],'--name-only'],cwd=ROOT,text=True).splitlines();assert all('pc_mts_diagnostics_v3' in p or 'PC_MTS_POLICY_DIAGNOSTICS_V3_' in p for p in changed),changed
     raw=pd.read_parquet(OUT/'metrics/A_raw_candidates.parquet');assert len(raw)==192000 and raw.token.nunique()==1000

@@ -1,0 +1,37 @@
+{
+  "identity": {
+    "base_commit": "f499be15d693a6910593ec2c8f081c249cdbf871",
+    "config_sha256": "e0decb6e64854f06f29ce81af3031c74149eb6d1b9041f2b0a1bd79cf85cceaf",
+    "scene_sha256": "694dcbb3fcfc0713cf1d63d95566cedaa2f999931c675d138229404c62c7a21f",
+    "checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443"
+  },
+  "completed_utc": "2026-09-13T10:34:36Z",
+  "scenes": 1000,
+  "R": 128,
+  "Q": 128,
+  "unchanged_checkpoint": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+  "predeclared_additive_control": {
+    "sha256": "6016e6a3c20bc3c1feccd352e16f3b6fed4e0cd9547a2b20aa5231e81f40d0be",
+    "config": {
+      "version": "v3_supplementary_calibration_control",
+      "status": "additive_control_predeclared_before_any_G_measurement_after_A_to_E",
+      "purpose": "distinguish_parameter_update_promotion_from_finite_RQ_calibration_turnover",
+      "changes_to_primary_protocol": "none",
+      "checkpoint": "unchanged_frozen_official_IL",
+      "scenes": "same_full_1000_and_same_holdout_300",
+      "reference_R": 128,
+      "calibration_Q": 128,
+      "sampling": "identical_native_DDIM_5_eta1_eval_floor_0.0001",
+      "seed_namespace": "v3_progressive_official_il_null",
+      "old_Far": "q_old_ge_95",
+      "high_quality": "unchanged_raw_scene_PDMS_75th_percentile",
+      "promotion": "unchanged_q_new_lt_95",
+      "inference": "3000_scene_paired_bootstrap_updated_policy_minus_null_turnover"
+    },
+    "frozen_utc": "2026-09-13T09:07:09Z",
+    "no_G_outcomes_exist": true,
+    "primary_config_sha256": "e0decb6e64854f06f29ce81af3031c74149eb6d1b9041f2b0a1bd79cf85cceaf",
+    "reason": "Finite R/Q resampling may move q across 95 even without weight updates; supplementary null control, not a primary threshold change."
+  },
+  "primary_G_unchanged": true
+}

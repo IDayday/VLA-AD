@@ -37,13 +37,18 @@ def training():
         d=pd.read_csv(OUT/'metrics/E_seed_means.csv');fig,ax=plt.subplots(1,2,figsize=(12,4))
         for method,g in d.groupby('method'):
             for sd,h in g.groupby('seed'):
-                h=h.sort_values('step');gain=h.PDMS-h.PDMS.iloc[0];ax[0].plot(h.center_shift,gain,'o-',color=COLORS[method],alpha=.7,label=LABELS[method] if sd==1701 else None);ax[1].plot(h.step,h.IL_retention_loss/h.IL_retention_loss.iloc[0],'o-',color=COLORS[method],alpha=.7)
-        ax[0].set(xlabel='Center shift from official IL (m)',ylabel='Holdout PDMS gain (points)');ax[1].set(xlabel='Micro-SFT optimizer update',ylabel='IL-native retention loss / step0');ax[0].legend(fontsize=8);fig.tight_layout();output(fig,'5','Micro_SFT_shift',d)
+                h=h.sort_values('step');gain=h.PDMS-h.PDMS.iloc[0];style='o-' if sd==1701 else 's--';ax[0].plot(h.center_shift,gain,style,color=COLORS[method],alpha=.7,label=LABELS[method] if sd==1701 else None);ax[1].plot(h.step,h.IL_retention_loss/h.IL_retention_loss.iloc[0],style,color=COLORS[method],alpha=.7)
+        ax[0].set(xlabel='Center shift from official IL (m)',ylabel='Holdout PDMS gain (points)');ax[1].set(xlabel='Micro-SFT optimizer update',ylabel='IL-native retention loss / step0');ax[0].legend(fontsize=8)
+        from matplotlib.lines import Line2D
+        ax[1].legend(handles=[Line2D([0],[0],color='#555',marker='o',label='Seed 1701'),Line2D([0],[0],color='#555',marker='s',linestyle='--',label='Seed 2903')],fontsize=8)
+        fig.tight_layout();output(fig,'5','Micro_SFT_shift',d)
     if (OUT/'metrics/F_gain_bootstrap.csv').exists():
         gain=pd.read_csv(OUT/'metrics/F_gain_bootstrap.csv');safety=pd.read_csv(OUT/'metrics/F_seed_means.csv');pia=pd.read_csv(OUT/'metrics/F_training_safety_dynamics.csv');fig,ax=plt.subplots(2,2,figsize=(12,8))
         for method in CFG['training']['methods']:
             g=gain[(gain.method==method)&(gain.metric=='PDMS_gain')];c=COLORS[method];ax[0,0].plot(g.step,g['mean'],'o-',color=c,label=LABELS[method]);ax[0,0].fill_between(g.step,g.ci_low,g.ci_high,color=c,alpha=.1)
             g=safety[safety.method==method].groupby('step').mean(numeric_only=True);ax[0,1].plot(g.index,g.feasible_rate,'o-',color=c);ax[1,0].plot(g.EP,g.feasible_rate,'o-',color=c)
+            xy=g[['EP','feasible_rate']].to_numpy()
+            for i in range(len(xy)-1):ax[1,0].annotate('',xy=xy[i+1],xytext=xy[i],arrowprops=dict(arrowstyle='->',color=c,lw=1,alpha=.8))
             g=pia[pia.method==method].groupby('step')[['positive_infeasible_count','infeasible_count']].sum();num=g.positive_infeasible_count.rolling(10,min_periods=1).sum();den=g.infeasible_count.rolling(10,min_periods=1).sum();ax[1,1].plot(g.index,num/den.replace(0,np.nan),color=c)
         ax[0,0].set(xlabel='GRPO optimizer update',ylabel='Holdout PDMS gain from SFT initialization');ax[0,1].set(xlabel='GRPO optimizer update',ylabel='Holdout feasible rate');ax[1,0].set(xlabel='Holdout EP',ylabel='Holdout feasible rate');ax[1,1].set(xlabel='GRPO optimizer update',ylabel='Positive infeasible advantage rate (10-step window)');ax[0,0].legend(fontsize=8);fig.tight_layout();output(fig,'6','GRPO_gain_safety',gain)
     if (OUT/'metrics/G_promotion_bootstrap.csv').exists():
