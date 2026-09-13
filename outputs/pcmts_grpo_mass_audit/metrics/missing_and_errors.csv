@@ -1,0 +1,9 @@
+token,stage,status,error
+7fe310f364355e2d,raw_log_timing,TIMESTAMP_IRREGULAR_NATIVE_CONTRACT_RETAINED,Raw log future timestamps deviate from nominal .5 s; native frame-indexed GT and all1000 scenes retained
+66e564907f5f5601,raw_log_timing,TIMESTAMP_IRREGULAR_NATIVE_CONTRACT_RETAINED,Raw log future timestamps deviate from nominal .5 s; native frame-indexed GT and all1000 scenes retained
+8c4982f5d16e51a8,raw_log_timing,TIMESTAMP_IRREGULAR_NATIVE_CONTRACT_RETAINED,Raw log future timestamps deviate from nominal .5 s; native frame-indexed GT and all1000 scenes retained
+f6d7cbb8505f5782,raw_log_timing,TIMESTAMP_IRREGULAR_NATIVE_CONTRACT_RETAINED,Raw log future timestamps deviate from nominal .5 s; native frame-indexed GT and all1000 scenes retained
+3acaadb297b15413,raw_log_timing,TIMESTAMP_IRREGULAR_NATIVE_CONTRACT_RETAINED,Raw log future timestamps deviate from nominal .5 s; native frame-indexed GT and all1000 scenes retained
+7405ff66092d51da,raw_log_timing,TIMESTAMP_IRREGULAR_NATIVE_CONTRACT_RETAINED,Raw log future timestamps deviate from nominal .5 s; native frame-indexed GT and all1000 scenes retained
+1499e758c6855a74,raw_log_timing,TIMESTAMP_IRREGULAR_NATIVE_CONTRACT_RETAINED,Raw log future timestamps deviate from nominal .5 s; native frame-indexed GT and all1000 scenes retained
+e9b0d4743b3f5256,raw_log_timing,TIMESTAMP_IRREGULAR_NATIVE_CONTRACT_RETAINED,Raw log future timestamps deviate from nominal .5 s; native frame-indexed GT and all1000 scenes retained

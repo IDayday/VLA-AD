@@ -1,0 +1,48 @@
+{
+  "source": "ddv2",
+  "model_name": "DiffusionDriveV2 selector",
+  "checkpoint_path": "/mnt/project/external/DiffusionDriveV2/ckpts/diffusiondrivev2_sel.ckpt",
+  "checkpoint_sha256": "452c4e0dd328c49b981f3fd5ed13eb1c6a2b0f3a9486adf43b40a5645ed543b1",
+  "code_root": "/mnt/project/external/DiffusionDriveV2-canonical-1cd12a1",
+  "code_commit": "1cd12a1e155c34dcc471261835444c8d5587580b",
+  "runtime_files": {
+    "/mnt/project/external/DiffusionDriveV2-canonical-1cd12a1/navsim/agents/diffusiondrivev2/diffusiondrivev2_model_sel.py": "2218e4ee79f5952f4edf474c3c2796f91f0cdaf593b3ce987cec5729e1c310b6",
+    "/mnt/project/external/DiffusionDriveV2-canonical-1cd12a1/navsim/agents/diffusiondrivev2/diffusiondrivev2_sel_agent.py": "fe11bf6ce8757cb702fb5589f3dabd4a0b07b857024dc07496a9aac37306ce6f",
+    "/mnt/project/external/DiffusionDriveV2-canonical-1cd12a1/navsim/agents/diffusiondrivev2/modules/blocks.py": "c9b9da8dd624258d5c0217643bbd14283a7d6e86f6f3fdbdc7dbb2346f91b60e",
+    "/mnt/project/external/DiffusionDriveV2-canonical-1cd12a1/navsim/agents/diffusiondrivev2/modules/conditional_unet1d.py": "0d6d589fb29d6e076b77bddbb3d7ab6b86c216c29e13391fb532d661a13f5cf7",
+    "/mnt/project/external/DiffusionDriveV2-canonical-1cd12a1/navsim/agents/diffusiondrivev2/modules/multimodal_loss.py": "699d732b1c8d858ed8b5cd72f31607ed433e031c12441c46baac697a463283fd",
+    "/mnt/project/external/DiffusionDriveV2-canonical-1cd12a1/navsim/agents/diffusiondrivev2/transfuser_backbone.py": "b5c4fcf322d617835457e4177d3ced4bb33d14a7a93eafdf2417ef8ef7fcaf2c"
+  },
+  "config_path": "/mnt/project/external/DiffusionDriveV2-canonical-1cd12a1/navsim/planning/script/config/common/agent/diffusiondrivev2_sel_agent.yaml",
+  "config_sha256": "e65ac3abfd978e18bf7a1b7922e4ef982e48d8d9e0b818b9ffa1a76044752d7d",
+  "resolved_config": {
+    "_target_": "navsim.agents.diffusiondrivev2.diffusiondrivev2_sel_agent.Diffusiondrivev2_Sel_Agent",
+    "_convert_": "all",
+    "config": {
+      "_target_": "navsim.agents.diffusiondrivev2.diffusiondrivev2_sel_config.TransfuserConfig",
+      "_convert_": "all",
+      "trajectory_sampling": {
+        "_target_": "nuplan.planning.simulation.trajectory.trajectory_sampling.TrajectorySampling",
+        "_convert_": "all",
+        "time_horizon": 4,
+        "interval_length": 0.5
+      },
+      "latent": false,
+      "bkb_path": "/mnt/project/external/DiffusionDriveV2/ckpts/resnet34.a1_in1k/pytorch_model.bin",
+      "plan_anchor_path": "/mnt/project/external/DiffusionDriveV2/kmeans_navsim_traj_20.npy"
+    },
+    "checkpoint_path": "/mnt/project/external/DiffusionDriveV2/ckpts/diffusiondrivev2_sel.ckpt",
+    "lr": 0.0002
+  },
+  "input_modalities": "SensorConfig(cam_f0=[3], cam_l0=[3], cam_l1=[3], cam_l2=[3], cam_r0=[3], cam_r1=[3], cam_r2=[3], cam_b0=[3], lidar_pc=[3])",
+  "output_frame": "ego local XY meters, heading radians",
+  "horizon_s": 4,
+  "interval_s": 0.5,
+  "includes_t0": false,
+  "pre_scorer": true,
+  "proposal_selection": "fixed protocol/source/index SHA256 ranking; never A/B or scores",
+  "original_files_modified": false,
+  "checkpoint_unused_keys": [
+    "_transfuser_model._trajectory_head.vocab"
+  ]
+}

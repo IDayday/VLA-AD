@@ -1,0 +1,7 @@
+{
+  "status": "NOT_SUPPORTED",
+  "coverage_CI_positive_vs_all_baselines": false,
+  "training_improvement": "UNTESTED",
+  "report": "/mnt/project/VLA-AD/reports/PC_MTS_GRPO_MASS_AUDIT_1000_20260913.md",
+  "report_sha256": "016e2fccfec9d6afb7dd47933f5480d3c197fc6de16e70c1cd1d3642983d049b"
+}

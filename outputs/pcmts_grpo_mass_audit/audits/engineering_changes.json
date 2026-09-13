@@ -1,0 +1,37 @@
+{
+  "recorded_at": "2026-09-13T15:43:35.166670+00:00",
+  "changes": [
+    {
+      "type": "dependency_restore",
+      "details": "Read-only historical cloudpickle cache; isolated OpenCV 4.8.1.78 target in new namespace, no shared environment modification."
+    },
+    {
+      "type": "external_loading",
+      "details": "Local supported ResNet34 pretrained file; DDV2 training-only unused vocab key explicitly audited. Every active tensor equal to checkpoint."
+    },
+    {
+      "type": "batch_acceleration",
+      "details": "Eight native groups per call after eight-scene exact batched-forward parity; <=5.73e-6 FP32 unbatched rounding. Existing caches retained; only own sampler processes restarted."
+    },
+    {
+      "type": "atomic_reader_fix",
+      "details": "Score watcher ignores temporary NPZ names and accepts only manifest token stems. Resume reused completed scores."
+    },
+    {
+      "type": "raw_log_timestamp_audit",
+      "details": "Eight logs contain >25 ms deviations from nominal 0.5 s. Native get_future_trajectory is frame-indexed. Preserve native GT, flag exact tokens/intervals; no threshold or scene replacement."
+    },
+    {
+      "type": "resource_only_rebalance",
+      "details": "After first six native workers finished, stopped only two owned rank6/rank7 PIDs and redistributed 78 incomplete fixed tokens across eight GPUs with unchanged per-token streams. Completed atomic caches retained; interrupted workers lack tail process state audits."
+    },
+    {
+      "type": "reporting_and_resume_audit",
+      "details": "Explicit NA for unavailable local gains/matches; scientific notation for tiny nonzero probabilities; preserve existing pre-B selection seal on resume. No selections or scientific parameters changed."
+    }
+  ],
+  "scientific_thresholds_changed": false,
+  "scenes_replaced": false,
+  "sources_changed": false,
+  "B_results_inspected_before_selection_freeze": false
+}

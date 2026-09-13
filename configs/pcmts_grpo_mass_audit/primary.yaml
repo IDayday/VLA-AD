@@ -1,0 +1,71 @@
+version: pcmts_grpo_mass_audit_1000_20260913
+baseline_commit: d4922a8207960636773767aa9d664c6a1d9bb7b5
+actual_parent_commit: 9e020af0512689f60d3e6562c564d3b1c538c434
+scene_count: 1000
+scene_manifest_source: outputs/pc_mts_diagnostics/manifests/scenes_1000.json
+methods: [score, pareto, gt_geometry, grpo_mass_pc]
+pool_size: 16
+seed: 2026091305
+precision_primary: fp32
+optimizer_updates: 0
+rollouts:
+  selection_A: 1024
+  evaluation_B: 1024
+  native_candidates_C: 64
+  group_size: 8
+  group_size_source: archived_forward_grpo_sample_time_default_and_formal_stage3_launcher
+  streams_disjoint: true
+  native_entry: forward_grpo_current_policy_sample_chain
+  network_state: native_train_then_set_frozen_modules_to_eval_mode
+  seed_protocol: independent_64bit_group_generator_ordered_member_and_denoising_step_draws
+raw_bank:
+  gt_exact: 1
+  gt_structured_perturbations: 128
+  ddv2_max_candidates: 64
+  drivor_max_candidates: 64
+  current_policy_native_C: 64
+  common_emergency_extra_batches: 2
+  candidates_per_emergency_batch: 128
+  external_proposal_selection: lowest_SHA256_of_protocol_source_native_proposal_index
+  exact_dedup_decimals: 6
+  external_ddv2_checkpoint: /mnt/project/external/DiffusionDriveV2/ckpts/diffusiondrivev2_sel.ckpt
+  external_drivor_checkpoint: /mnt/project/external/DrivoR/weights/releases/drivor_Nav1_25epochs.pth
+perturbations:
+  implementation: tools/analysis/pc_mts_diagnostics_v2/perturbations.py:perturb
+  family_quotas: {lateral: 26, progress: 26, curvature: 26, endpoint: 26, spline: 24}
+  amplitudes_max_point_displacement_m: [0.05, 0.15, 0.30, 0.50, 1.0, 2.0, 3.0]
+  directions: [-1, 1]
+  assignment: family_local_index_amplitude_floor_i_over_2_mod_7_sign_i_mod_2
+  seeded_shape: true
+  initial_pose: implicit_ego_origin_unchanged
+  emergency_trigger: total_valid_unique_raw_count_less_than_16_only
+neighborhood:
+  primary_ADE_m: 0.5
+  sensitivity_ADE_m: [0.25, 1.0]
+  minimum_selection_mass: 0.03
+  sensitivity_selection_mass: [0.01, 0.05]
+selection:
+  hard_constraints: [NC, DAC]
+  quality_floor: mean_PDMS_of_independent_C_rollouts
+  pareto_objectives: [EP, TTC, DDC]
+  gt_geometry_max_ADE_m: 1.0
+  gt_geometry_sensitivity_ADE_m: [0.5, 2.0]
+  near_duplicate_reporting_ADE_m: [0.02, 0.10]
+  score_tie_tolerance_points: 0.01
+  tie_break: maximum_minimum_ADE_to_selected_then_candidate_id
+  fallback_order: [method_constraint_relaxed, quality_floor_relaxed, safety_relaxed_diagnostic_only]
+analysis:
+  quality_tolerance_points: 1.0
+  conservative_feasibility: [NC, DAC, TTC, DDC]
+  minimum_local_hits_primary: 10
+  descriptive_local_gain_threshold_points: 0.5
+  bootstrap_replicates: 3000
+  matching_PDMS_gap_points: 0.25
+  matching: maximum_cardinality_minimum_total_gap_same_scene_exact_source_NC_DAC_class_without_replacement
+  primary_endpoints: [mean_candidate_p_B, PoolMass, candidate_PDMS, strict_16_scene_fraction]
+  multiple_testing: Holm_3_comparisons_times_4_endpoints
+  supplementary_example_selection: smallest_token_hash_in_each_of_five_prespecified_types_including_fallback_and_PC_nonwin
+  missing_quality: NA_full_denominator_and_event_probability_bounds
+representation: {frame: ego_local_x_forward_y_left, units: meters_radians, points: 8, interval_s: 0.5, horizon_s: 4, includes_t0: false}
+scoring: {implementation: NAVSIM_v1_PDM_scalar_equivalent_batch, reporting_scale: 100, evaluation_weights: {EP: 5, TTC: 5, Comfort: 2}, training_weights: {EP: 10, TTC: 5, Comfort: 2}}
+resources: {max_gpu_total: 8, processes_per_gpu: 1, cpu_workers: 96, blas_threads: 1, loader_workers_per_gpu: 4, pressure_tasks: forbidden}

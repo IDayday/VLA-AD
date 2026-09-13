@@ -1,0 +1,18 @@
+{
+  "host": "training-vla-zt-worker-0",
+  "recorded_at": "2026-09-13T15:45:32.937728+00:00",
+  "gpus": "index, name, uuid, memory.total [MiB], memory.used [MiB], utilization.gpu [%]\n0, NVIDIA A800-SXM4-80GB, GPU-f679bff0-a4a2-ae4f-0b85-74c519b45a9c, 81920 MiB, 3400 MiB, 84 %\n1, NVIDIA A800-SXM4-80GB, GPU-562375d4-b1d6-f0d9-a68d-5a81e5272907, 81920 MiB, 3400 MiB, 84 %\n2, NVIDIA A800-SXM4-80GB, GPU-b8a35758-a506-a8a1-dca7-499c485068fc, 81920 MiB, 3400 MiB, 84 %\n3, NVIDIA A800-SXM4-80GB, GPU-72a7d08b-16b7-7c64-a324-a08e043c6006, 81920 MiB, 3400 MiB, 84 %\n4, NVIDIA A800-SXM4-80GB, GPU-f35ae00b-0c9c-c01c-efba-e527cdd32f76, 81920 MiB, 3400 MiB, 84 %\n5, NVIDIA A800-SXM4-80GB, GPU-cba744b9-96c8-c3e2-f836-2f0126c038a0, 81920 MiB, 3400 MiB, 84 %\n6, NVIDIA A800-SXM4-80GB, GPU-017ee82b-e9ff-1f6c-547e-ca2ccf3363ac, 81920 MiB, 3382 MiB, 77 %\n7, NVIDIA A800-SXM4-80GB, GPU-621b6ab5-d5ba-4219-b7ca-8b9f84479900, 81920 MiB, 3382 MiB, 83 %\n",
+  "cpu_workers": 96,
+  "inference_processes_per_gpu": 1,
+  "max_gpus": 8,
+  "blas_threads": 1,
+  "versions": {
+    "torch": "2.5.1+cu124",
+    "pytorch-lightning": "2.6.0",
+    "numpy": "1.26.4",
+    "pandas": "2.3.3",
+    "scipy": "1.13.1",
+    "transformers": "4.57.6"
+  },
+  "allocated_new_pressure_tasks": 0
+}

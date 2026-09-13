@@ -1,0 +1,31 @@
+{
+  "records": [
+    {
+      "token": "c84f1984d6e459d4",
+      "native_count": 800,
+      "kept": 64,
+      "unique": 64
+    },
+    {
+      "token": "fa72914538895375",
+      "native_count": 800,
+      "kept": 64,
+      "unique": 64
+    },
+    {
+      "token": "095eafbb5c8f5b02",
+      "native_count": 800,
+      "kept": 64,
+      "unique": 64
+    },
+    {
+      "token": "957d3c9491ba5b5b",
+      "native_count": 800,
+      "kept": 64,
+      "unique": 64
+    }
+  ],
+  "failures": [],
+  "seconds": 1.4280421733856201,
+  "completed_at": "2026-09-13T15:27:11.810277+00:00"
+}

@@ -1,0 +1,126 @@
+{
+  "runs": [
+    {
+      "pid": 473438,
+      "rank": 0,
+      "command": [
+        "/root/miniconda3/envs/navsim/bin/python",
+        "-u",
+        "/mnt/project/VLA-AD/tools/analysis/pcmts_grpo_mass_audit/sample_native.py",
+        "--rank",
+        "0",
+        "--world",
+        "8",
+        "--token-file",
+        "/mnt/project/VLA-AD/outputs/pcmts_grpo_mass_audit/manifests/rebalanced_remaining_tokens.json"
+      ]
+    },
+    {
+      "pid": 473439,
+      "rank": 1,
+      "command": [
+        "/root/miniconda3/envs/navsim/bin/python",
+        "-u",
+        "/mnt/project/VLA-AD/tools/analysis/pcmts_grpo_mass_audit/sample_native.py",
+        "--rank",
+        "1",
+        "--world",
+        "8",
+        "--token-file",
+        "/mnt/project/VLA-AD/outputs/pcmts_grpo_mass_audit/manifests/rebalanced_remaining_tokens.json"
+      ]
+    },
+    {
+      "pid": 473440,
+      "rank": 2,
+      "command": [
+        "/root/miniconda3/envs/navsim/bin/python",
+        "-u",
+        "/mnt/project/VLA-AD/tools/analysis/pcmts_grpo_mass_audit/sample_native.py",
+        "--rank",
+        "2",
+        "--world",
+        "8",
+        "--token-file",
+        "/mnt/project/VLA-AD/outputs/pcmts_grpo_mass_audit/manifests/rebalanced_remaining_tokens.json"
+      ]
+    },
+    {
+      "pid": 473441,
+      "rank": 3,
+      "command": [
+        "/root/miniconda3/envs/navsim/bin/python",
+        "-u",
+        "/mnt/project/VLA-AD/tools/analysis/pcmts_grpo_mass_audit/sample_native.py",
+        "--rank",
+        "3",
+        "--world",
+        "8",
+        "--token-file",
+        "/mnt/project/VLA-AD/outputs/pcmts_grpo_mass_audit/manifests/rebalanced_remaining_tokens.json"
+      ]
+    },
+    {
+      "pid": 473442,
+      "rank": 4,
+      "command": [
+        "/root/miniconda3/envs/navsim/bin/python",
+        "-u",
+        "/mnt/project/VLA-AD/tools/analysis/pcmts_grpo_mass_audit/sample_native.py",
+        "--rank",
+        "4",
+        "--world",
+        "8",
+        "--token-file",
+        "/mnt/project/VLA-AD/outputs/pcmts_grpo_mass_audit/manifests/rebalanced_remaining_tokens.json"
+      ]
+    },
+    {
+      "pid": 473443,
+      "rank": 5,
+      "command": [
+        "/root/miniconda3/envs/navsim/bin/python",
+        "-u",
+        "/mnt/project/VLA-AD/tools/analysis/pcmts_grpo_mass_audit/sample_native.py",
+        "--rank",
+        "5",
+        "--world",
+        "8",
+        "--token-file",
+        "/mnt/project/VLA-AD/outputs/pcmts_grpo_mass_audit/manifests/rebalanced_remaining_tokens.json"
+      ]
+    },
+    {
+      "pid": 473444,
+      "rank": 6,
+      "command": [
+        "/root/miniconda3/envs/navsim/bin/python",
+        "-u",
+        "/mnt/project/VLA-AD/tools/analysis/pcmts_grpo_mass_audit/sample_native.py",
+        "--rank",
+        "6",
+        "--world",
+        "8",
+        "--token-file",
+        "/mnt/project/VLA-AD/outputs/pcmts_grpo_mass_audit/manifests/rebalanced_remaining_tokens.json"
+      ]
+    },
+    {
+      "pid": 473445,
+      "rank": 7,
+      "command": [
+        "/root/miniconda3/envs/navsim/bin/python",
+        "-u",
+        "/mnt/project/VLA-AD/tools/analysis/pcmts_grpo_mass_audit/sample_native.py",
+        "--rank",
+        "7",
+        "--world",
+        "8",
+        "--token-file",
+        "/mnt/project/VLA-AD/outputs/pcmts_grpo_mass_audit/manifests/rebalanced_remaining_tokens.json"
+      ]
+    }
+  ],
+  "remaining_scene_count": 78,
+  "started_at": "2026-09-13T15:53:43.853682+00:00"
+}

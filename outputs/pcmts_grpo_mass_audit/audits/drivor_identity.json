@@ -1,0 +1,139 @@
+{
+  "source": "drivor",
+  "model_name": "DrivoR NAVSIM-v1 25 epochs",
+  "checkpoint_path": "/mnt/project/external/DrivoR/weights/releases/drivor_Nav1_25epochs.pth",
+  "checkpoint_sha256": "e1a678f201e4f1ab93d117caad42782cd7ead293bdced2b5f80212bc92426ae3",
+  "code_root": "/mnt/project/external/DrivoR",
+  "code_commit": "f02665403df799c1b4ddd8b0d34e073f0555c13a",
+  "runtime_files": {
+    "/mnt/project/external/DrivoR/navsim/agents/drivoR/drivor_agent.py": "642177c163998265cdda5f6ed17c2cf5f94246bb7a205757f161d579dc20dbf5",
+    "/mnt/project/external/DrivoR/navsim/agents/drivoR/drivor_model.py": "bd530b606970fb72bd657363924cbbd4f5f072f8560f8a1cd3d39ee0bd91f59d",
+    "/mnt/project/external/DrivoR/navsim/agents/drivoR/layers/image_encoder/dinov2_lora.py": "a19495aa1113285743a96e1b13c5e3ca298c48f70f8dd3d702842f87388f5f4b",
+    "/mnt/project/external/DrivoR/navsim/agents/drivoR/layers/image_encoder/grid_mask.py": "8d71227423ae300c8d1abffacca04ca7209444a1a4c61a4b0dd473b1d280aa96",
+    "/mnt/project/external/DrivoR/navsim/agents/drivoR/layers/utils/mlp.py": "34fcc55770aaace06f3bf89049b3ebe28c844c5c675f3736209cd93c73153a96",
+    "/mnt/project/external/DrivoR/navsim/agents/drivoR/score_module/scorer.py": "f8f3c467d67cf6d593c06cbff71471749ccd92e14cbcc86a12b4a813ec3a4b54",
+    "/mnt/project/external/DrivoR/navsim/agents/drivoR/timm_layers.py": "67ee3646479af7166aedb821d57f72960e67a95cfd91b6a4411b2fa1719aad11",
+    "/mnt/project/external/DrivoR/navsim/agents/drivoR/transformer_decoder.py": "06207e844e801a6d8c16ccbcb7194d9c039cd13567f7b3b6b8ab0b3633ffe43f"
+  },
+  "config_path": "/mnt/project/external/DrivoR/navsim/planning/script/config/common/agent/drivoR.yaml",
+  "config_sha256": "e8c82ed61465a30a898ac953be52778560dc37cb8668ed238e146bb25f9c3e81",
+  "resolved_config": {
+    "_target_": "navsim.agents.drivoR.drivor_agent.DrivoRAgent",
+    "config": {
+      "b2d": false,
+      "shared_refiner": false,
+      "ref_num": 4,
+      "scorer_ref_num": 4,
+      "proposal_num": 64,
+      "num_poses": 8,
+      "num_scene_tokens": 16,
+      "one_token_per_traj": true,
+      "full_history_status": false,
+      "long_trajectory_additional_poses": -1,
+      "noc": 1.0,
+      "dac": 1.0,
+      "ddc": 0.0,
+      "ttc": 5.0,
+      "ep": 5.0,
+      "comfort": 2.0,
+      "tf_d_model": 256,
+      "tf_d_ffn": 1024,
+      "cam_f0": [
+        3
+      ],
+      "cam_l0": [
+        3
+      ],
+      "cam_l1": [],
+      "cam_l2": [],
+      "cam_r0": [
+        3
+      ],
+      "cam_r1": [],
+      "cam_r2": [],
+      "cam_b0": [
+        3
+      ],
+      "lidar_pc": [],
+      "image_size": [
+        1148,
+        672
+      ],
+      "image_backbone": {
+        "model_name": "timm/vit_small_patch14_reg4_dinov2.lvd142m",
+        "model_weights": "weights/vit_small_patch14_reg4_dinov2.lvd142m/model.safetensors",
+        "use_lora": true,
+        "finetune": false,
+        "lora_rank": 32,
+        "focus_front_cam": false,
+        "use_feature_pooling": false,
+        "compress_fc": false
+      },
+      "lidar_min_x": -35,
+      "lidar_max_x": 35,
+      "lidar_min_y": -35,
+      "lidar_max_y": 35,
+      "lidar_image_size": [
+        518,
+        518
+      ],
+      "lidar_hist_max_per_pixel": 5,
+      "lidar_max_height": 100.0,
+      "lidar_split_height": 0.2,
+      "lidar_use_ground_plane": true,
+      "lidar_backbone": {
+        "model_name": "timm/vit_small_patch14_reg4_dinov2.lvd142m",
+        "model_weights": "weights/vit_small_patch14_reg4_dinov2.lvd142m/model.safetensors",
+        "use_lora": true,
+        "finetune": false,
+        "lora_rank": 32,
+        "in_chans": 2
+      },
+      "double_score": false,
+      "agent_pred": false,
+      "area_pred": false,
+      "bev_map": false,
+      "bev_agent": false,
+      "refiner_num_heads": 1,
+      "refiner_ls_values": 0.0,
+      "trajectory_sampling": {
+        "_target_": "nuplan.planning.simulation.trajectory.trajectory_sampling.TrajectorySampling",
+        "time_horizon": 4,
+        "interval_length": 0.5
+      }
+    },
+    "loss": {
+      "_target_": "navsim.agents.drivoR.layers.losses.drivor_loss.DrivoRLoss",
+      "trajectory_weight": 1.0,
+      "inter_weight": 0.0,
+      "sub_score_weight": 0.0,
+      "final_score_weight": 1.0,
+      "pred_ce_weight": 1.0,
+      "pred_l1_weight": 0.1,
+      "pred_area_weight": 2.0,
+      "prev_weight": 0.0,
+      "agent_class_weight": 1.0,
+      "agent_box_weight": 0.1,
+      "bev_semantic_weight": 1.0,
+      "div_weight": 0.0
+    },
+    "checkpoint_path": "/mnt/project/external/DrivoR/weights/releases/drivor_Nav1_25epochs.pth",
+    "lr_args": {
+      "name": "AdamW",
+      "base_lr": 0.0005,
+      "base_batch_size": 64
+    },
+    "scheduler_args": null,
+    "batch_size": 1,
+    "num_gpus": 1,
+    "progress_bar": false
+  },
+  "input_modalities": "SensorConfig(cam_f0=[3], cam_l0=[3], cam_l1=[], cam_l2=[], cam_r0=[3], cam_r1=[], cam_r2=[], cam_b0=[3], lidar_pc=[])",
+  "output_frame": "ego local XY meters, heading radians",
+  "horizon_s": 4,
+  "interval_s": 0.5,
+  "includes_t0": false,
+  "pre_scorer": true,
+  "proposal_selection": "fixed protocol/source/index SHA256 ranking; never A/B or scores",
+  "original_files_modified": false
+}

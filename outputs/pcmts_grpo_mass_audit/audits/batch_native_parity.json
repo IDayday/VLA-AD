@@ -1,0 +1,74 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "token": "67b08ea8fc9956b0",
+      "native_batched_max_abs": 0.0,
+      "unbatched_fp32_rounding_max_abs": 4.291534423828125e-06,
+      "batch_seconds": 0.4516444206237793,
+      "single_seconds": 1.4711692333221436,
+      "group_count": 8
+    },
+    {
+      "token": "f07db0b393fd522e",
+      "native_batched_max_abs": 0.0,
+      "unbatched_fp32_rounding_max_abs": 3.814697265625e-06,
+      "batch_seconds": 0.4567396640777588,
+      "single_seconds": 1.456017017364502,
+      "group_count": 8
+    },
+    {
+      "token": "36f37eab352d5150",
+      "native_batched_max_abs": 0.0,
+      "unbatched_fp32_rounding_max_abs": 4.291534423828125e-06,
+      "batch_seconds": 0.4518730640411377,
+      "single_seconds": 1.4310498237609863,
+      "group_count": 8
+    },
+    {
+      "token": "488e4248a8985e5a",
+      "native_batched_max_abs": 0.0,
+      "unbatched_fp32_rounding_max_abs": 3.814697265625e-06,
+      "batch_seconds": 0.4534599781036377,
+      "single_seconds": 1.4467031955718994,
+      "group_count": 8
+    },
+    {
+      "token": "26e0f72c031b5f07",
+      "native_batched_max_abs": 0.0,
+      "unbatched_fp32_rounding_max_abs": 5.7220458984375e-06,
+      "batch_seconds": 0.4550461769104004,
+      "single_seconds": 1.4464280605316162,
+      "group_count": 8
+    },
+    {
+      "token": "8b0773eaa2375bbf",
+      "native_batched_max_abs": 0.0,
+      "unbatched_fp32_rounding_max_abs": 5.7220458984375e-06,
+      "batch_seconds": 0.4552907943725586,
+      "single_seconds": 1.448413372039795,
+      "group_count": 8
+    },
+    {
+      "token": "9430278b77c05446",
+      "native_batched_max_abs": 0.0,
+      "unbatched_fp32_rounding_max_abs": 3.814697265625e-06,
+      "batch_seconds": 0.45383286476135254,
+      "single_seconds": 1.4532535076141357,
+      "group_count": 8
+    },
+    {
+      "token": "076f5a91273050e6",
+      "native_batched_max_abs": 0.0,
+      "unbatched_fp32_rounding_max_abs": 4.291534423828125e-06,
+      "batch_seconds": 0.45360779762268066,
+      "single_seconds": 1.4477598667144775,
+      "group_count": 8
+    }
+  ],
+  "batch_groups": 8,
+  "weights_unchanged": true,
+  "noise_protocol_identical": true,
+  "notes": "Exact parity with actual native forward_grpo at B=8 G=8. Single-group GEMM roundoff explicitly quantified; no model or noise setting changed.",
+  "completed_at": "2026-09-13T15:21:30.014886+00:00"
+}

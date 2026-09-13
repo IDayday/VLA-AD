@@ -1,0 +1,10 @@
+{
+  "scenes": 125,
+  "state_before": "fd5fe3dcf9adcc56c2e8d3dc97fcc939cbc86cfe50d9f44c17ff631debf3a195",
+  "state_after": "fd5fe3dcf9adcc56c2e8d3dc97fcc939cbc86cfe50d9f44c17ff631debf3a195",
+  "seconds": 1774.1675627231598,
+  "rank": 5,
+  "world": 8,
+  "gpu_peak_bytes": 2827608576,
+  "host": "training-vla-zt-worker-0"
+}

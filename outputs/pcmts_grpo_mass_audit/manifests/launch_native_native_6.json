@@ -1,0 +1,18 @@
+[
+  {
+    "pid": 472518,
+    "rank": 6,
+    "command": [
+      "/root/miniconda3/envs/navsim/bin/python",
+      "-u",
+      "/mnt/project/VLA-AD/tools/analysis/pcmts_grpo_mass_audit/sample_native.py",
+      "--rank",
+      "6",
+      "--world",
+      "8"
+    ],
+    "log": "/mnt/project/VLA-AD/outputs/pcmts_grpo_mass_audit/logs/native__rank6.log",
+    "host": "training-vla-zt-worker-0",
+    "started_at": "2026-09-13T15:36:21.511827+00:00"
+  }
+]

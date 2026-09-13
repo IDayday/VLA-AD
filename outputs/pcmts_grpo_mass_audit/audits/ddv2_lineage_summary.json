@@ -1,0 +1,7 @@
+{
+  "candidate_count": 64000,
+  "native_augmented_count": 48000,
+  "not_GT_perturbations": true,
+  "max_lineage_rounding_error": 7.52054751274045e-06,
+  "data_unchanged": true
+}

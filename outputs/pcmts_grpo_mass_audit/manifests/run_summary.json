@@ -1,0 +1,17 @@
+{
+  "status": "COMPLETE",
+  "scenes": 1000,
+  "missing_scenes": 0,
+  "error_scenes": 0,
+  "raw_log_timestamp_flagged_scenes": 8,
+  "raw_candidates": 321000,
+  "probability_samples": 2048000,
+  "C_samples": 64000,
+  "optimizer_updates": 0,
+  "protocol_hash": "8efa1f665de651cb0926f658cdd7946a98f066439c063dd724564cc845aa7c0a",
+  "cache_manifest_hash": "47441a8a26955c93df0008f2573be19a6cfab5f0eda12cae2beb54278cb151cb",
+  "completed_at": "2026-09-13T15:59:25.183330+00:00",
+  "review_completed_at": "2026-09-13T16:12:16.891644+00:00",
+  "test_audit_hash": "7f5778b64da41258ef4a73a67cdfd1f26ac81e183cab75dd3b5701161fa78691",
+  "publication_review_hash": "dfc9406b78588902024d916b0283aed4a3513dd5b1ccd14fe1f2f0a4c080c282"
+}

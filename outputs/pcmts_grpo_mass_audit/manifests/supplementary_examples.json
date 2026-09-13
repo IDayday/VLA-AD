@@ -1,0 +1,33 @@
+[
+  {
+    "category": "covered_external_gain",
+    "status": "MISSING_NO_QUALIFYING_EXAMPLE",
+    "qualifying_scene_count": 0
+  },
+  {
+    "category": "covered_external_redundant",
+    "status": "MISSING_NO_QUALIFYING_EXAMPLE",
+    "qualifying_scene_count": 0
+  },
+  {
+    "category": "external_quality_low_coverage",
+    "status": "AVAILABLE",
+    "token": "8c1a989cd94c5c12",
+    "qualifying_scene_count": 1000,
+    "selection": "minimum fixed token hash within prespecified category"
+  },
+  {
+    "category": "strict_shortage_or_fallback",
+    "status": "AVAILABLE",
+    "token": "8c1a989cd94c5c12",
+    "qualifying_scene_count": 1000,
+    "selection": "minimum fixed token hash within prespecified category"
+  },
+  {
+    "category": "PC_nonwin",
+    "status": "AVAILABLE",
+    "token": "8c1a989cd94c5c12",
+    "qualifying_scene_count": 1000,
+    "selection": "minimum fixed token hash within prespecified category"
+  }
+]

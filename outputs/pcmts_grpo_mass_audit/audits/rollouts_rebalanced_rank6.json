@@ -1,0 +1,11 @@
+{
+  "scenes": 9,
+  "state_before": "fd5fe3dcf9adcc56c2e8d3dc97fcc939cbc86cfe50d9f44c17ff631debf3a195",
+  "state_after": "fd5fe3dcf9adcc56c2e8d3dc97fcc939cbc86cfe50d9f44c17ff631debf3a195",
+  "seconds": 136.735844373703,
+  "rank": 6,
+  "world": 8,
+  "gpu_peak_bytes": 2827608576,
+  "host": "training-vla-zt-worker-0",
+  "token_file": "/mnt/project/VLA-AD/outputs/pcmts_grpo_mass_audit/manifests/rebalanced_remaining_tokens.json"
+}

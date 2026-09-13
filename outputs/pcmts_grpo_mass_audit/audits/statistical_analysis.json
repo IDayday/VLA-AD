@@ -1,0 +1,9 @@
+{
+  "bootstrap_replicates": 3000,
+  "primary_family_size": 12,
+  "primary_pool": "operational",
+  "scene_equal": true,
+  "local_gain_nonpaired_descriptive_only": true,
+  "matched_pairs_not_using_B": true,
+  "completed_at": "2026-09-13T15:57:40.969302+00:00"
+}

@@ -1,0 +1,124 @@
+{
+  "status": "PASS",
+  "completed_at": "2026-09-13T16:12:16.889042+00:00",
+  "tests_passed": true,
+  "scientific_config_unchanged": true,
+  "code_hashes": {
+    "tools/analysis/pcmts_grpo_mass_audit/analyze_B.py": "7ead0a74ee4243cddc629f811b72e98869d4b40086624fbe598535ae8e5c3623",
+    "tools/analysis/pcmts_grpo_mass_audit/audit.py": "28d4468393d52724132a9e1971b07e509fdff9dba4ca9e47e9b539798d99ff12",
+    "tools/analysis/pcmts_grpo_mass_audit/batch_native.py": "9a7bf45468a7b318d6475ce8ca2bbfbcc6b6cc6fbb2b5d31eb6ee498b401a5be",
+    "tools/analysis/pcmts_grpo_mass_audit/build_raw.py": "4efab5665c0ec8ee7e026d72db78f7b02798d04fa16348b9636b0d7d78ed191b",
+    "tools/analysis/pcmts_grpo_mass_audit/common_mass.py": "39a7de564a478ee2f47225439d998fe15730eb02f39a5631bd3708829624a568",
+    "tools/analysis/pcmts_grpo_mass_audit/coordinate_audit.py": "cee16ac687a821903f5640104e3829b9c9c25768a13f138100e4b7bb65a59994",
+    "tools/analysis/pcmts_grpo_mass_audit/ddv2_lineage.py": "9b705e623b6bd5a95238674702f3dbb326496936cead138b00716411b16ddde9",
+    "tools/analysis/pcmts_grpo_mass_audit/examples.py": "3aa5b24e04b186bb622a7f5285f8588203a5bb1b28acf08a92f2a9412cb68692",
+    "tools/analysis/pcmts_grpo_mass_audit/external_candidates.py": "5b3bc2f24bffd2389752effed156ca9e898de9bd22238babf2d0dbfca30d31f9",
+    "tools/analysis/pcmts_grpo_mass_audit/figures.py": "861b9666662b49941b6bab450203642327efdbed5e0891032b4aa9c209a037e1",
+    "tools/analysis/pcmts_grpo_mass_audit/final_review.py": "f176a46ee0877c86b524bfc7196c1bd3b7e8120229695fb1a5938079295865b9",
+    "tools/analysis/pcmts_grpo_mass_audit/finalize.py": "b5029ca658486f212fd2ae5808365da36a5fdb36e407e9290996258a403abab7",
+    "tools/analysis/pcmts_grpo_mass_audit/launch.py": "b7d4f017a14e765bba049284bf62d45b97d5ecec8a2691df0bb3d76ffe3452f7",
+    "tools/analysis/pcmts_grpo_mass_audit/orchestrate.py": "2614b8944366becd492dda8ef13fa9d9aff207a8b722274bbfd4388f6218ec9e",
+    "tools/analysis/pcmts_grpo_mass_audit/preflight.py": "16f0ecf9a32ae92266697b62b7a4f78f392352ace93877b581af0f3114f52d71",
+    "tools/analysis/pcmts_grpo_mass_audit/rebalance.py": "bfb1c540e7bafb5c5a8eae32163446b34657d756301291389ed5d4f5911396db",
+    "tools/analysis/pcmts_grpo_mass_audit/sample_native.py": "60c9fa041172e3217d9094df0db7de4eb597d39b62bc594ae4f54c3499fee6b5",
+    "tools/analysis/pcmts_grpo_mass_audit/score_watch.py": "5788bf249bf954a360b9d4f542ece9a3873eb6ea30fcd3a0bdf5e06a1316ef11",
+    "tools/analysis/pcmts_grpo_mass_audit/select_pools.py": "51c8bd6780068c9d071283062a9f36546c5197cdb9dc983cf18fb352582ead43",
+    "tools/analysis/pcmts_grpo_mass_audit/summarize.py": "e2b42251c12c61f9e8f41ae7e0a53a60491e0d630228df4ab9ad816732757435",
+    "tools/analysis/pcmts_grpo_mass_audit/tests/test_contracts.py": "af09a052d76192c53045c8dd5600c073d8cd6c4af5725f2e05e0784b12988c15",
+    "tools/analysis/pcmts_grpo_mass_audit/write_report.py": "bbcdd437166ebed94d3c93b0098cdcfa868586033fa729807dff3fe8578a5d09"
+  },
+  "figure_hashes": {
+    "outputs/pcmts_grpo_mass_audit/figures/Fig1_quality_sampling_coverage.png": "182d2fe812e5982452c6a6abe5e088eef8ae1469d44d089cf70c294c01776d09",
+    "outputs/pcmts_grpo_mass_audit/figures/Fig1_quality_sampling_coverage.svg": "966484bf919d2b5b276caf697be3a847be9d21e9ea81d2df2b163eff2be6ddc6",
+    "outputs/pcmts_grpo_mass_audit/figures/Fig1_quality_sampling_coverage.pdf": "3cf2a49a2de82c4e89b3b967d96b8d7ff5effec7eb3f35822f7878366a05fe91",
+    "outputs/pcmts_grpo_mass_audit/figures/Fig2_independent_confirmation.png": "9826a93fca7deb6c7ed36f47496239e7b0e56fb0c39b39aa906f040a3c249ac6",
+    "outputs/pcmts_grpo_mass_audit/figures/Fig2_independent_confirmation.svg": "6a6fedec0740c5c70fb22bc5c6866665129002e7f51596161138214425eb7ce8",
+    "outputs/pcmts_grpo_mass_audit/figures/Fig2_independent_confirmation.pdf": "ab9939ca12c9f78a1e2818c22bb07e305a80eea9b20e6d793b4b0969e7947c71",
+    "outputs/pcmts_grpo_mass_audit/figures/Fig3_strict_coverage_fallback.png": "43c2af68a08da3abf8eccf49bc704c05184ed6bd7b46d9a80ece23d9c45c598f",
+    "outputs/pcmts_grpo_mass_audit/figures/Fig3_strict_coverage_fallback.svg": "8fe56ca022abb227db209af5a2a3799651ac1b69cb3c4b2282a872e20c8e128f",
+    "outputs/pcmts_grpo_mass_audit/figures/Fig3_strict_coverage_fallback.pdf": "e587eb18e0f96632bc25df581ed597dd5f4efcace90cd0c14a8a20977a30a79d",
+    "outputs/pcmts_grpo_mass_audit/figures/Fig4_sources_and_no_native.png": "565ecffb5a7014eeae910b126357a868bd10974b4210c2b4c0a618fc341dc0e7",
+    "outputs/pcmts_grpo_mass_audit/figures/Fig4_sources_and_no_native.svg": "00822268247805b5557132afbfbeaa4fb490c013fe0f03a0c04ba48d3bab062d",
+    "outputs/pcmts_grpo_mass_audit/figures/Fig4_sources_and_no_native.pdf": "32a01e99fbc2a3801d242cbbeac323609529dc54f4d8b0df1053a74e658ad681",
+    "outputs/pcmts_grpo_mass_audit/figures/Fig5_pool_coverage_expert_gain.png": "cccdc80d82643b304e7d9afdf4e8d5048d421a9c389228306c9e20ef1d007db2",
+    "outputs/pcmts_grpo_mass_audit/figures/Fig5_pool_coverage_expert_gain.svg": "23fd616f500baaa1ccbd61e6fe63c01470770d35468cfb1ddf53e430c1023ae7",
+    "outputs/pcmts_grpo_mass_audit/figures/Fig5_pool_coverage_expert_gain.pdf": "f55904788826fa3c70aa7e80eb92f63de72f4f4a89df53562cf44c1895ac958a",
+    "outputs/pcmts_grpo_mass_audit/figures/Fig6_matching_and_sensitivity.png": "936abd23cc2aa911186469262328973702e400614ce6c8f7277c360c1c948ddc",
+    "outputs/pcmts_grpo_mass_audit/figures/Fig6_matching_and_sensitivity.svg": "4153a8fff236f87d1c68ae463bbb08932b838a8f7a45a2ecfa40891f179faaeb",
+    "outputs/pcmts_grpo_mass_audit/figures/Fig6_matching_and_sensitivity.pdf": "a3d9e119366435128e135cce8783f362239292cde6e38336f1e5fac8c0d0d245"
+  },
+  "worker_state_checks": [
+    {
+      "path": "outputs/pcmts_grpo_mass_audit/audits/rollouts_rank0.json",
+      "scenes": 125,
+      "state_unchanged": true
+    },
+    {
+      "path": "outputs/pcmts_grpo_mass_audit/audits/rollouts_rank1.json",
+      "scenes": 125,
+      "state_unchanged": true
+    },
+    {
+      "path": "outputs/pcmts_grpo_mass_audit/audits/rollouts_rank2.json",
+      "scenes": 125,
+      "state_unchanged": true
+    },
+    {
+      "path": "outputs/pcmts_grpo_mass_audit/audits/rollouts_rank3.json",
+      "scenes": 125,
+      "state_unchanged": true
+    },
+    {
+      "path": "outputs/pcmts_grpo_mass_audit/audits/rollouts_rank4.json",
+      "scenes": 125,
+      "state_unchanged": true
+    },
+    {
+      "path": "outputs/pcmts_grpo_mass_audit/audits/rollouts_rank5.json",
+      "scenes": 125,
+      "state_unchanged": true
+    },
+    {
+      "path": "outputs/pcmts_grpo_mass_audit/audits/rollouts_rebalanced_rank0.json",
+      "scenes": 10,
+      "state_unchanged": true
+    },
+    {
+      "path": "outputs/pcmts_grpo_mass_audit/audits/rollouts_rebalanced_rank1.json",
+      "scenes": 10,
+      "state_unchanged": true
+    },
+    {
+      "path": "outputs/pcmts_grpo_mass_audit/audits/rollouts_rebalanced_rank2.json",
+      "scenes": 10,
+      "state_unchanged": true
+    },
+    {
+      "path": "outputs/pcmts_grpo_mass_audit/audits/rollouts_rebalanced_rank3.json",
+      "scenes": 10,
+      "state_unchanged": true
+    },
+    {
+      "path": "outputs/pcmts_grpo_mass_audit/audits/rollouts_rebalanced_rank4.json",
+      "scenes": 10,
+      "state_unchanged": true
+    },
+    {
+      "path": "outputs/pcmts_grpo_mass_audit/audits/rollouts_rebalanced_rank5.json",
+      "scenes": 10,
+      "state_unchanged": true
+    },
+    {
+      "path": "outputs/pcmts_grpo_mass_audit/audits/rollouts_rebalanced_rank6.json",
+      "scenes": 9,
+      "state_unchanged": true
+    },
+    {
+      "path": "outputs/pcmts_grpo_mass_audit/audits/rollouts_rebalanced_rank7.json",
+      "scenes": 9,
+      "state_unchanged": true
+    }
+  ],
+  "preempted_worker_limit": "Original rank6/rank7 were stopped only for resource redistribution and do not have final process-level hash audits. Their completed atomic banks were retained. Native frozen parameters, no optimizer/active BN/dropout, eight-scene parity and all 14 completed worker state checks support unchanged policy.",
+  "new_weight_updates": 0
+}

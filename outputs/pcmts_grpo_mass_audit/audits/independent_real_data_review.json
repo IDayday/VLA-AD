@@ -1,0 +1,77 @@
+{
+  "status": "PASS",
+  "completed_at": "2026-09-13T16:10:11.850177+00:00",
+  "checks": [
+    {
+      "token": "67b08ea8fc9956b0",
+      "candidates": 321,
+      "B_samples": 1024,
+      "probability_max_abs": 0.0
+    },
+    {
+      "token": "f07db0b393fd522e",
+      "candidates": 321,
+      "B_samples": 1024,
+      "probability_max_abs": 0.0
+    },
+    {
+      "token": "36f37eab352d5150",
+      "candidates": 321,
+      "B_samples": 1024,
+      "probability_max_abs": 0.0
+    },
+    {
+      "token": "488e4248a8985e5a",
+      "candidates": 321,
+      "B_samples": 1024,
+      "probability_max_abs": 0.0
+    },
+    {
+      "token": "26e0f72c031b5f07",
+      "candidates": 321,
+      "B_samples": 1024,
+      "probability_max_abs": 0.0
+    },
+    {
+      "token": "8b0773eaa2375bbf",
+      "candidates": 321,
+      "B_samples": 1024,
+      "probability_max_abs": 0.0
+    },
+    {
+      "token": "9430278b77c05446",
+      "candidates": 321,
+      "B_samples": 1024,
+      "probability_max_abs": 0.0
+    },
+    {
+      "token": "076f5a91273050e6",
+      "candidates": 321,
+      "B_samples": 1024,
+      "probability_max_abs": 0.0
+    }
+  ],
+  "diagnostics": {
+    "raw_candidates": 321000,
+    "raw_scenes": 1000,
+    "pc_score_identical_ordered_selections": 1000,
+    "pc_empty_strict_scenes": 1000,
+    "max_hits_A": 2,
+    "max_hits_B": 2,
+    "raw_A_mass_qualified": 0,
+    "raw_B_at_least_10_hits": 0,
+    "raw_zero_hit_A_fraction": 0.994785046728972,
+    "raw_zero_hit_B_fraction": 0.995202492211838,
+    "nearest_ADE_B_quantiles": {
+      "0": 0.3371298460299386,
+      "0.25": 0.6910331707410854,
+      "0.5": 0.8161448886923395,
+      "0.75": 1.0917011480214465,
+      "0.9": 2.0936393687564103,
+      "0.95": 3.673087827979054,
+      "0.99": 9.14798460173468,
+      "1": 32.26453429686758
+    }
+  },
+  "selection_manifest_hash": "b8d0cdc5c68eed4c3ef758abe36e1eae3cc703415a9dae2e0a23546e89440355"
+}

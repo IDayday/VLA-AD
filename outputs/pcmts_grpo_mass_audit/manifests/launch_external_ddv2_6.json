@@ -1,0 +1,17 @@
+[
+  {
+    "pid": 471767,
+    "rank": 6,
+    "command": [
+      "/root/miniconda3/envs/navsim/bin/python",
+      "-u",
+      "/mnt/project/VLA-AD/tools/analysis/pcmts_grpo_mass_audit/external_candidates.py",
+      "ddv2",
+      "--rank",
+      "6"
+    ],
+    "log": "/mnt/project/VLA-AD/outputs/pcmts_grpo_mass_audit/logs/external_ddv2_rank6.log",
+    "host": "training-vla-zt-worker-0",
+    "started_at": "2026-09-13T15:28:53.853735+00:00"
+  }
+]

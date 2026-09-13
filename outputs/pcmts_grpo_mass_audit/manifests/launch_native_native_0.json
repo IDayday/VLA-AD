@@ -1,0 +1,98 @@
+[
+  {
+    "pid": 470151,
+    "rank": 0,
+    "command": [
+      "/root/miniconda3/envs/navsim/bin/python",
+      "-u",
+      "/mnt/project/VLA-AD/tools/analysis/pcmts_grpo_mass_audit/sample_native.py",
+      "--rank",
+      "0",
+      "--world",
+      "8"
+    ],
+    "log": "/mnt/project/VLA-AD/outputs/pcmts_grpo_mass_audit/logs/native__rank0.log",
+    "host": "training-vla-zt-worker-0",
+    "started_at": "2026-09-13T15:22:55.820309+00:00"
+  },
+  {
+    "pid": 470152,
+    "rank": 1,
+    "command": [
+      "/root/miniconda3/envs/navsim/bin/python",
+      "-u",
+      "/mnt/project/VLA-AD/tools/analysis/pcmts_grpo_mass_audit/sample_native.py",
+      "--rank",
+      "1",
+      "--world",
+      "8"
+    ],
+    "log": "/mnt/project/VLA-AD/outputs/pcmts_grpo_mass_audit/logs/native__rank1.log",
+    "host": "training-vla-zt-worker-0",
+    "started_at": "2026-09-13T15:22:55.823417+00:00"
+  },
+  {
+    "pid": 470153,
+    "rank": 2,
+    "command": [
+      "/root/miniconda3/envs/navsim/bin/python",
+      "-u",
+      "/mnt/project/VLA-AD/tools/analysis/pcmts_grpo_mass_audit/sample_native.py",
+      "--rank",
+      "2",
+      "--world",
+      "8"
+    ],
+    "log": "/mnt/project/VLA-AD/outputs/pcmts_grpo_mass_audit/logs/native__rank2.log",
+    "host": "training-vla-zt-worker-0",
+    "started_at": "2026-09-13T15:22:55.826125+00:00"
+  },
+  {
+    "pid": 470154,
+    "rank": 3,
+    "command": [
+      "/root/miniconda3/envs/navsim/bin/python",
+      "-u",
+      "/mnt/project/VLA-AD/tools/analysis/pcmts_grpo_mass_audit/sample_native.py",
+      "--rank",
+      "3",
+      "--world",
+      "8"
+    ],
+    "log": "/mnt/project/VLA-AD/outputs/pcmts_grpo_mass_audit/logs/native__rank3.log",
+    "host": "training-vla-zt-worker-0",
+    "started_at": "2026-09-13T15:22:55.828764+00:00"
+  },
+  {
+    "pid": 470155,
+    "rank": 4,
+    "command": [
+      "/root/miniconda3/envs/navsim/bin/python",
+      "-u",
+      "/mnt/project/VLA-AD/tools/analysis/pcmts_grpo_mass_audit/sample_native.py",
+      "--rank",
+      "4",
+      "--world",
+      "8"
+    ],
+    "log": "/mnt/project/VLA-AD/outputs/pcmts_grpo_mass_audit/logs/native__rank4.log",
+    "host": "training-vla-zt-worker-0",
+    "started_at": "2026-09-13T15:22:55.831454+00:00"
+  },
+  {
+    "pid": 470156,
+    "rank": 5,
+    "command": [
+      "/root/miniconda3/envs/navsim/bin/python",
+      "-u",
+      "/mnt/project/VLA-AD/tools/analysis/pcmts_grpo_mass_audit/sample_native.py",
+      "--rank",
+      "5",
+      "--world",
+      "8"
+    ],
+    "log": "/mnt/project/VLA-AD/outputs/pcmts_grpo_mass_audit/logs/native__rank5.log",
+    "host": "training-vla-zt-worker-0",
+    "started_at": "2026-09-13T15:22:55.834012+00:00"
+  }
+]
