@@ -1,0 +1,51 @@
+{
+  "nonexperimental": true,
+  "policy": "AGENT.md section 1.1",
+  "devices": [
+    {
+      "index": 0,
+      "uuid": "GPU-f9371c55-5054-e42c-71bf-f1314992af79",
+      "action": "restore_disposable_idle_pressure",
+      "pid": 1841565
+    },
+    {
+      "index": 1,
+      "uuid": "GPU-42e1151c-5d53-6fcc-39a7-6ca10eec54f6",
+      "action": "restore_disposable_idle_pressure",
+      "pid": 1841566
+    },
+    {
+      "index": 2,
+      "uuid": "GPU-72a4835c-963d-0534-e867-0fbdbb2cbdf2",
+      "action": "restore_disposable_idle_pressure",
+      "pid": 1841567
+    },
+    {
+      "index": 3,
+      "uuid": "GPU-659076b8-990e-4ef1-2a38-c2aea273ab0c",
+      "action": "restore_disposable_idle_pressure",
+      "pid": 1841568
+    },
+    {
+      "index": 4,
+      "uuid": "GPU-89896b99-8541-74ca-2e23-cd59843a102a",
+      "action": "restore_disposable_idle_pressure",
+      "pid": 1841569
+    },
+    {
+      "index": 5,
+      "uuid": "GPU-7b4dce95-2581-1a46-2a50-7a1ac5498b5f",
+      "action": "leave_existing_occupants_untouched"
+    },
+    {
+      "index": 6,
+      "uuid": "GPU-23c150c4-0b05-986a-bf55-cdd3f4fec999",
+      "action": "leave_existing_occupants_untouched"
+    },
+    {
+      "index": 7,
+      "uuid": "GPU-1d07169b-659c-d3b9-43c5-c897e137ab6e",
+      "action": "leave_existing_occupants_untouched"
+    }
+  ]
+}

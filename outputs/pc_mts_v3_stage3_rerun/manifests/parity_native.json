@@ -1,0 +1,104 @@
+{
+  "config_sha256": "33248540dea64a7dd5876245bf94cdddf81d327e7f73997b6046ac0d48e8989b",
+  "split_sha256": "66782333a8e46ee83d76d98fe93138de83781c690daec2490ce1078ea56e759e",
+  "base_commit": "d4922a8207960636773767aa9d664c6a1d9bb7b5",
+  "checks": [
+    {
+      "token": "5e7d1f34a80c5e46",
+      "precision": "fp32",
+      "loss_errors": {
+        "loss": 0.0,
+        "reward": 0.0,
+        "policy_loss": 0.0,
+        "bc_loss": 0.0
+      },
+      "gradient_max_abs": 1.280568540096283e-09
+    },
+    {
+      "token": "5e7d1f34a80c5e46",
+      "precision": "16-mixed",
+      "loss_errors": {
+        "loss": 0.0,
+        "reward": 0.0,
+        "policy_loss": 0.0,
+        "bc_loss": 0.0
+      },
+      "gradient_max_abs": 0.0
+    },
+    {
+      "token": "3f159d73e87a5e06",
+      "precision": "fp32",
+      "loss_errors": {
+        "loss": 0.0,
+        "reward": 0.0,
+        "policy_loss": 0.0,
+        "bc_loss": 0.0
+      },
+      "gradient_max_abs": 1.1641532182693481e-09
+    },
+    {
+      "token": "3f159d73e87a5e06",
+      "precision": "16-mixed",
+      "loss_errors": {
+        "loss": 0.0,
+        "reward": 0.0,
+        "policy_loss": 0.0,
+        "bc_loss": 0.0
+      },
+      "gradient_max_abs": 0.0
+    },
+    {
+      "token": "f97414b6f4a15866",
+      "precision": "fp32",
+      "loss_errors": {
+        "loss": 0.0,
+        "reward": 0.0,
+        "policy_loss": 0.0,
+        "bc_loss": 0.0
+      },
+      "gradient_max_abs": 1.3969838619232178e-09
+    },
+    {
+      "token": "f97414b6f4a15866",
+      "precision": "16-mixed",
+      "loss_errors": {
+        "loss": 0.0,
+        "reward": 0.0,
+        "policy_loss": 0.0,
+        "bc_loss": 0.0
+      },
+      "gradient_max_abs": 0.0
+    },
+    {
+      "token": "4fa9113617d254d4",
+      "precision": "fp32",
+      "loss_errors": {
+        "loss": 0.0,
+        "reward": 0.0,
+        "policy_loss": 0.0,
+        "bc_loss": 0.0
+      },
+      "gradient_max_abs": 6.984919309616089e-10
+    },
+    {
+      "token": "4fa9113617d254d4",
+      "precision": "16-mixed",
+      "loss_errors": {
+        "loss": 0.0,
+        "reward": 0.0,
+        "policy_loss": 0.0,
+        "bc_loss": 0.0
+      },
+      "gradient_max_abs": 0.0
+    }
+  ],
+  "batched_forward_loss": -0.014636672101914883,
+  "batch_scene_count": 8,
+  "initialization_equal": true,
+  "reference_equal": true,
+  "trainable_parameters": 34329219,
+  "native_forward_unchanged": true,
+  "auxiliary_head_disabled_and_frozen_by_native_code": true,
+  "optimizer_steps_in_audit": 0,
+  "peak_gpu_bytes": 36398239744
+}

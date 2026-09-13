@@ -1,0 +1,14 @@
+{
+  "config_sha256": "33248540dea64a7dd5876245bf94cdddf81d327e7f73997b6046ac0d48e8989b",
+  "split_sha256": "66782333a8e46ee83d76d98fe93138de83781c690daec2490ce1078ea56e759e",
+  "base_commit": "d4922a8207960636773767aa9d664c6a1d9bb7b5",
+  "checkpoint_sha256": "3427151225bd1a7366fcdbefbc2712e4a9a1baae556e71d8c55eaf39b81a5b20",
+  "CRN_namespace": "v3_diagnostic_holdout64",
+  "rollouts": 64,
+  "precision": "fp32",
+  "scenes": 75,
+  "shard": 1,
+  "shards": 4,
+  "seconds": 132.00734186172485,
+  "host": "training-vla-zt-worker-0"
+}

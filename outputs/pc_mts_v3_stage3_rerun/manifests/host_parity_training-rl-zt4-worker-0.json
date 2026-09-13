@@ -1,0 +1,45 @@
+{
+  "config_sha256": "33248540dea64a7dd5876245bf94cdddf81d327e7f73997b6046ac0d48e8989b",
+  "split_sha256": "66782333a8e46ee83d76d98fe93138de83781c690daec2490ce1078ea56e759e",
+  "base_commit": "d4922a8207960636773767aa9d664c6a1d9bb7b5",
+  "host": "training-rl-zt4-worker-0",
+  "checks": [
+    {
+      "token": "23e39302332152b2",
+      "reference_max_abs": 0.0,
+      "CRN_max_abs": null,
+      "CRN_score_max_abs": null,
+      "reference_score_max_abs": 0.0,
+      "trajectory_sha256": "57c1483eef44996aae82af847f8acafada911affe11f442f43d1e10691e284f3"
+    },
+    {
+      "token": "411a748874035630",
+      "reference_max_abs": 0.0,
+      "CRN_max_abs": null,
+      "CRN_score_max_abs": null,
+      "reference_score_max_abs": 0.0,
+      "trajectory_sha256": "6310451073488819c21de2b2360e12c9606482524bf7012198b76e41b45b3338"
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "reference_max_abs": 0.0,
+      "CRN_max_abs": 0.0,
+      "CRN_score_max_abs": 0.0,
+      "reference_score_max_abs": 0.0,
+      "trajectory_sha256": "b2c5e167f2d10d0e43303dbae7024bd3f63e2fe1a914e78845eec03f4d7126c5"
+    },
+    {
+      "token": "40808270ce205b83",
+      "reference_max_abs": 0.0,
+      "CRN_max_abs": null,
+      "CRN_score_max_abs": null,
+      "reference_score_max_abs": 0.0,
+      "trajectory_sha256": "8e1c051ee8d9fda8de95e3378af0badbc4e46180c42241fe86d7ff430d999ff1"
+    }
+  ],
+  "torch_version": "2.5.1+cu124",
+  "cuda": "12.4",
+  "planner_source_sha256": "c349bf196611034ebcdfb3dd30fe02e1ac8ee4fc6a76d65934b70dbf583d994a",
+  "precision": "fp32",
+  "evaluation_definition": "unchanged V3 frozen evaluator class and CRN path"
+}

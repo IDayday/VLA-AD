@@ -1,0 +1,54 @@
+{
+  "nonexperimental": true,
+  "policy": "AGENT.md section 1.1",
+  "devices": [
+    {
+      "index": 0,
+      "uuid": "GPU-12938c11-0c31-8107-84f7-af3cf3ae8bac",
+      "action": "restore_disposable_idle_pressure",
+      "pid": 2168297
+    },
+    {
+      "index": 1,
+      "uuid": "GPU-d73dd5b9-bc56-5c9b-39d7-e5e1ede93daf",
+      "action": "restore_disposable_idle_pressure",
+      "pid": 2168418
+    },
+    {
+      "index": 2,
+      "uuid": "GPU-5e1befe6-f3d0-21b8-dd30-824d052bcda8",
+      "action": "restore_disposable_idle_pressure",
+      "pid": 2168518
+    },
+    {
+      "index": 3,
+      "uuid": "GPU-d7523ec1-534d-6946-fd71-feb28cf494ae",
+      "action": "restore_disposable_idle_pressure",
+      "pid": 2168660
+    },
+    {
+      "index": 4,
+      "uuid": "GPU-39870a11-a216-3acb-9d6e-6779932c2af0",
+      "action": "restore_disposable_idle_pressure",
+      "pid": 2168804
+    },
+    {
+      "index": 5,
+      "uuid": "GPU-77bc4cc1-49b5-f723-0dac-e9fdd4f124bc",
+      "action": "restore_disposable_idle_pressure",
+      "pid": 2168938
+    },
+    {
+      "index": 6,
+      "uuid": "GPU-e8ee0d23-02c1-613e-5015-33beced422db",
+      "action": "restore_disposable_idle_pressure",
+      "pid": 2169098
+    },
+    {
+      "index": 7,
+      "uuid": "GPU-6bf9e4eb-72ec-4c9e-382b-908a6679dfc7",
+      "action": "restore_disposable_idle_pressure",
+      "pid": 2169238
+    }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "config_sha256": "33248540dea64a7dd5876245bf94cdddf81d327e7f73997b6046ac0d48e8989b",
+  "split_sha256": "66782333a8e46ee83d76d98fe93138de83781c690daec2490ce1078ea56e759e",
+  "base_commit": "d4922a8207960636773767aa9d664c6a1d9bb7b5",
+  "checkpoint_sha256": "12349e2f4bdfdd1f71939743c36bfee3df6b9fcc118135f8b258bba4dbc2cc40",
+  "CRN_namespace": "v3_diagnostic_holdout64",
+  "rollouts": 64,
+  "precision": "fp32",
+  "scenes": 75,
+  "shard": 2,
+  "shards": 4,
+  "seconds": 124.94570016860962,
+  "host": "training-rl-zt4-worker-0"
+}

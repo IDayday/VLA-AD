@@ -1,0 +1,4 @@
+{
+  "reason": "Disposable GPU pressure did not yield on remote host; OOM before any optimizer update. No result inspected or parameter changed.",
+  "restart": "same initialization/seed/config from step0"
+}

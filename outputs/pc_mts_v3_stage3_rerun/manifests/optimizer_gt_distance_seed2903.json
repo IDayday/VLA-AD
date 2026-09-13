@@ -1,0 +1,18 @@
+{
+  "config_sha256": "33248540dea64a7dd5876245bf94cdddf81d327e7f73997b6046ac0d48e8989b",
+  "split_sha256": "66782333a8e46ee83d76d98fe93138de83781c690daec2490ce1078ea56e759e",
+  "base_commit": "d4922a8207960636773767aa9d664c6a1d9bb7b5",
+  "betas": [
+    0.9,
+    0.95
+  ],
+  "weight_decay": 0.0001,
+  "lr": 0.0001,
+  "interval": "epoch",
+  "trainable_parameters": 34329219,
+  "batch_per_rank": 8,
+  "world_size": 8,
+  "accumulation": 1,
+  "precision": "<pytorch_lightning.plugins.precision.amp.MixedPrecision object at 0x7f751c670100>",
+  "sampler": "<class 'torch.utils.data.distributed.DistributedSampler'>"
+}

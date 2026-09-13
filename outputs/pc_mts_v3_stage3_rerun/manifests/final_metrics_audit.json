@@ -1,0 +1,210 @@
+{
+  "config_sha256": "33248540dea64a7dd5876245bf94cdddf81d327e7f73997b6046ac0d48e8989b",
+  "split_sha256": "66782333a8e46ee83d76d98fe93138de83781c690daec2490ce1078ea56e759e",
+  "base_commit": "d4922a8207960636773767aa9d664c6a1d9bb7b5",
+  "runs": [
+    {
+      "method": "official_il",
+      "seed": 1701,
+      "rollouts": 56320,
+      "unique_tokens": 700,
+      "groups": 7040,
+      "checkpoint_hashes": {
+        "0": "ce0b77cfdbbc26bf14e219e4ad0551311646767e9af2dadc58f58f7ea278f105",
+        "10": "1c1ac015eaa9756e10154dfd51411dc91779cd6ea9edc5f6be3576454754288f",
+        "50": "eb06769cf4cfec34aa3b3a05d5adb81ca3b3f24b2ad19d4446c3bfc72df0a55c",
+        "100": "12349e2f4bdfdd1f71939743c36bfee3df6b9fcc118135f8b258bba4dbc2cc40",
+        "110": "492d6210af3579e4999980fb74851681ab433f6558efd1e563cb9e95779fde2c"
+      }
+    },
+    {
+      "method": "official_il",
+      "seed": 2903,
+      "rollouts": 56320,
+      "unique_tokens": 700,
+      "groups": 7040,
+      "checkpoint_hashes": {
+        "0": "87571024d336fe619de9a231b423b8b8f874c18a33c34afdcce64bd8ed819d1a",
+        "10": "728adf4d99a545802416b96b72bca879b22f4d49b9f8578c4c5d81ad2b483d71",
+        "50": "c1f9b3419a93664becffbf577193ed234159c1f4be9ab3b02c3011b290ff5858",
+        "100": "6d6f49ed1ee65749fccfebe501f2eec27b6d5ed85c1d4daadc0b933bb33e913c",
+        "110": "0053efb1d9ae2998d95c72bc869870b56d9516dc371f54e518c34af6d7572240"
+      }
+    },
+    {
+      "method": "gt_only",
+      "seed": 1701,
+      "rollouts": 56320,
+      "unique_tokens": 700,
+      "groups": 7040,
+      "checkpoint_hashes": {
+        "0": "60c947978e88bd783426305afd1f0528e9ba8cb605d9c72f92d2b410ed33b739",
+        "10": "6698c7a35e09e240899e1cead6470cdcb112af1b4f8c1380e3904c372fd6d400",
+        "50": "9b5ae3fcb66bb83c9aeb90f4521785709df7319fe80b16b2486e31b839b124ea",
+        "100": "d018bce59a2194f72f569b41bfd8c1d0abfc00b8fe0176401b8076f17ed14c97",
+        "110": "8c4880cdfc7d8a7a6e6209b796d5ec9f52d1dee6b76e7994f73b7a096e2e57a0"
+      }
+    },
+    {
+      "method": "gt_only",
+      "seed": 2903,
+      "rollouts": 56320,
+      "unique_tokens": 700,
+      "groups": 7040,
+      "checkpoint_hashes": {
+        "0": "859b9e6c73b54eaf5102770bc8f0d0bb3c19e093b30eacb3ddf7f3cd219436b1",
+        "10": "55081c24cf4f04554e687821e4a9664c369cfe2ec2553d5827a016309551d8ae",
+        "50": "2ac7db09dbf38ef6b1707bce756f24acf3ecbd214f4153d05b1d9271e5b45e1f",
+        "100": "23968ba56798f91ad8b575cb438f8f294c793401bbfb565eddff268c21c91fa4",
+        "110": "9b96ed1d5bf3656ca7b5796e8920c21c357013b312f2e594fe558240ec57a206"
+      }
+    },
+    {
+      "method": "score",
+      "seed": 1701,
+      "rollouts": 56320,
+      "unique_tokens": 700,
+      "groups": 7040,
+      "checkpoint_hashes": {
+        "0": "ae82f66614713785ca7dda0857526bce383e872877b893aceddc57654ae8dedf",
+        "10": "a6a6d1f5e97cc641dca45c231ee7ee399228240e54bf61bd92fccc0b33f619b5",
+        "50": "30c0d8fa355572c76e71013f17fdaf79a3e85d3e2cbc8c8531b9bcb2cc77aff5",
+        "100": "3427151225bd1a7366fcdbefbc2712e4a9a1baae556e71d8c55eaf39b81a5b20",
+        "110": "9087a11aba3d33ba6486b35f153fb67ddfb9dcc4b6cfc6bd4684b5c8cf84b8b3"
+      }
+    },
+    {
+      "method": "score",
+      "seed": 2903,
+      "rollouts": 56320,
+      "unique_tokens": 700,
+      "groups": 7040,
+      "checkpoint_hashes": {
+        "0": "cfd79e4fdf9fa1731be019f81ab168bfd1c6053a25cafcf5b6dd255ddcebfc9d",
+        "10": "dfb6e42902375674c25d9d9243accbcd2ed78294a3bd46db584a6e87ccb93de5",
+        "50": "da75c829cf3ecf7946a9288d72e7e1d24c2c602672feac3a0bdf3db2b3d0f4d7",
+        "100": "f03b32fdf7eafaa1bff93b545a549ca334d7c5de21e9f4d18d9a86a2f0e79895",
+        "110": "db06dff74e8220f7fb250bccb7fcd0c1922cb3ba7a4dbcc018bbe3749c72ef92"
+      }
+    },
+    {
+      "method": "pareto",
+      "seed": 1701,
+      "rollouts": 56320,
+      "unique_tokens": 700,
+      "groups": 7040,
+      "checkpoint_hashes": {
+        "0": "661cdb97c2523bb1329335cceca7bcde66a7b63f0160a361a4fe53c20fd8305a",
+        "10": "a3a8c13c1e27d756aca26de9c69811efd74d73ae1d118bd87b6fe45b61b9dc91",
+        "50": "d71c985266ee990cdb06170d83a02cd938745c4b90df4f94a7f3f1ee4e60e748",
+        "100": "0369317fec950fabd134c05d0faf037df8a87abefa5d08a26eb32b3194bae3bb",
+        "110": "6c1b76c7052c02b131dd7608c2450cc9620f5723cd85e21105ae55a0170969f9"
+      }
+    },
+    {
+      "method": "pareto",
+      "seed": 2903,
+      "rollouts": 56320,
+      "unique_tokens": 700,
+      "groups": 7040,
+      "checkpoint_hashes": {
+        "0": "2dc15d143a05ea332057da78e0f04ea8e289944b7881e7ae6ab902caea7e0053",
+        "10": "ea72c860976299b0ebc2055347158e7022001f83177ba88246c8726b2d4ad70a",
+        "50": "8b2ee98779b06bb8136159a591d358c41392aca4e8393846af71136b46602110",
+        "100": "cd4528f786acb1ff864be11d9ce150b3ab5819710a0399483cb1a5dcaaa412de",
+        "110": "83870921ce82768a486f8e73826a2d3fa2362079261e41312fdd42d8a8301249"
+      }
+    },
+    {
+      "method": "gt_distance",
+      "seed": 1701,
+      "rollouts": 56320,
+      "unique_tokens": 700,
+      "groups": 7040,
+      "checkpoint_hashes": {
+        "0": "f177e9e040eed30dd574ecbf7d336113de1500deb40f1ce68811110383aeec6e",
+        "10": "033970d5855772c5b204f0882e61865a313b7de5c40bcef5954160fb9b5150d4",
+        "50": "f9483ff293acb26c2f9710a88404fa72f477a1dfe3235425f4f274c883fbf8dd",
+        "100": "495e7ef89f95162f83ee395b9b5f19465dd19bd2eb52c97dc1cb73b7e295ae7e",
+        "110": "0bd618f2b00b27531862fd99421c3f0b7081f33cbdc780e4cf71a4d435db7c3c"
+      }
+    },
+    {
+      "method": "gt_distance",
+      "seed": 2903,
+      "rollouts": 56320,
+      "unique_tokens": 700,
+      "groups": 7040,
+      "checkpoint_hashes": {
+        "0": "4e31e33d7386933872deb6ffa7b9340fd98ef60773d7517b5a40d0ca259136fb",
+        "10": "6d42d972a051ab95b837c5642d2ae8db6168167d4bbc96e90a9c0aec4db814c8",
+        "50": "a3de72dbd2df958b662f324dbb3d98a960c10857c6d2a71e2c42f8d05961d39b",
+        "100": "99328747fed44d4051c2ae4fc286a51e927fcbf1624ff1800974cc3d7aac875a",
+        "110": "7459af7ce64b0268164468a6d75b52d4e84a78768bbb4c2af5a34deced78eecb"
+      }
+    },
+    {
+      "method": "old_pc",
+      "seed": 1701,
+      "rollouts": 56320,
+      "unique_tokens": 700,
+      "groups": 7040,
+      "checkpoint_hashes": {
+        "0": "50022df3c686ff48946d1d303c716f6985418b2b2aac9294b0b27e4bfe8fdab6",
+        "10": "de0d433217475326423a03e5321ba789233c0037f2f9e0533d22749ab943fbcf",
+        "50": "50339758563625009757455315b4268acbfe3fbecf16c3fad5caf709aeb7bf94",
+        "100": "b122cc39b2cbaf6610a172dca77c7068f863be75c535efeabfb3485f0c31f5ec",
+        "110": "1a8187b7d5a2202b709a8b2aadb71ab6a9e26bdc01ce90c91af13ff09f544f2f"
+      }
+    },
+    {
+      "method": "old_pc",
+      "seed": 2903,
+      "rollouts": 56320,
+      "unique_tokens": 700,
+      "groups": 7040,
+      "checkpoint_hashes": {
+        "0": "bd91de92e068de8e79c491afca303e674a04c47024617f33e6e8ec5d84e9a564",
+        "10": "418914c90d7f6cb53479398722262531c5e4e70771d83c1aaf1127aaea65cbe3",
+        "50": "991be2ffe7cac27923943b70b5d246a4c2ae60d63066fdf108d19dced49dd626",
+        "100": "768437f9648ae59afa09033ba5a4d6fce128a25c61986bd8f821d86467823a72",
+        "110": "bb1bfd324c52045cf4ba30838ac11a318a46cc2cc2857dbdee7581bac6b4a1a4"
+      }
+    },
+    {
+      "method": "conditional_pc",
+      "seed": 1701,
+      "rollouts": 56320,
+      "unique_tokens": 700,
+      "groups": 7040,
+      "checkpoint_hashes": {
+        "0": "a6c08e052c9af648a5f7750b40d407544a5814545758f481785ee906bbe1ec84",
+        "10": "0c529d412781e5d3e656fdf1d41e4a7e217ada8b0b6bab2c0902007b8a20e1fd",
+        "50": "214af61cd3f2f74712dc90bbcf11101659375c8294f4f17e82e12bb6c4386f47",
+        "100": "fce42507d5949b588e16a10dff6449687b2859bf06c88e54235fadcbe2b04b51",
+        "110": "b27ddc875aa8e24757d8ff29afa2f348b9f65fb8328f9eb41713928054f76b62"
+      }
+    },
+    {
+      "method": "conditional_pc",
+      "seed": 2903,
+      "rollouts": 56320,
+      "unique_tokens": 700,
+      "groups": 7040,
+      "checkpoint_hashes": {
+        "0": "85eddcbf4dd53138ec5a301e7aa6ef9882d565e3518c68f2272c689ce67eab89",
+        "10": "42917798ccdbc5b7c5fdc386c8da3c660e7ccd36c4907303b26b6654540e0f86",
+        "50": "f3fe74e8c6e39e7bf0052827071ae362b4e55a59c79ab97e9104cc833544d276",
+        "100": "2c3766bd75fb345cdd2918305f30a09776ea4901aefe192e855c377730c63859",
+        "110": "2858cc2cd26584177aaa017470cb219da9828b5630dc77732045dfa46e2820ed"
+      }
+    }
+  ],
+  "scene_rows": 21000,
+  "new_evaluation_rollouts": 1075200,
+  "all_fixed_endpoints": true,
+  "training_CRN_and_order_identical_across_methods": true,
+  "holdout_tokens_used_for_updates": false,
+  "holdout_scope": "diagnostic holdout from new updates; not claimed unseen in original IL pretraining",
+  "previous_results_modified": false
+}

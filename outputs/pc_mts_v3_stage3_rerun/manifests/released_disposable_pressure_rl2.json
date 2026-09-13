@@ -1,0 +1,47 @@
+[
+  {
+    "pid": 761441,
+    "args": [
+      "/mnt/project/DriveVLA-M0-stage2/reproduction_diagnostics/envs/navsim_py39_exact/bin/python",
+      "/mnt/project/gpu_stress.py",
+      "--gpus",
+      "0",
+      "--memory-gb",
+      "75",
+      "--status-interval",
+      "60",
+      "--yield-check-interval",
+      "2"
+    ]
+  },
+  {
+    "pid": 761442,
+    "args": [
+      "/mnt/project/DriveVLA-M0-stage2/reproduction_diagnostics/envs/navsim_py39_exact/bin/python",
+      "/mnt/project/gpu_stress.py",
+      "--gpus",
+      "0",
+      "--memory-gb",
+      "75",
+      "--status-interval",
+      "60",
+      "--yield-check-interval",
+      "2"
+    ]
+  },
+  {
+    "pid": 761443,
+    "args": [
+      "/mnt/project/DriveVLA-M0-stage2/reproduction_diagnostics/envs/navsim_py39_exact/bin/python",
+      "/mnt/project/gpu_stress.py",
+      "--gpus",
+      "0",
+      "--memory-gb",
+      "75",
+      "--status-interval",
+      "60",
+      "--yield-check-interval",
+      "2"
+    ]
+  }
+]

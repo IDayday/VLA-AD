@@ -1,0 +1,24 @@
+{
+  "config_sha256": "33248540dea64a7dd5876245bf94cdddf81d327e7f73997b6046ac0d48e8989b",
+  "split_sha256": "66782333a8e46ee83d76d98fe93138de83781c690daec2490ce1078ea56e759e",
+  "base_commit": "d4922a8207960636773767aa9d664c6a1d9bb7b5",
+  "frozen_utc": "2026-09-13T12:59:44Z",
+  "source_sha256": {
+    "scripts/training/run_recogdrive_train_multi_node_rl_2b.sh": "036438df25c2946e16871bd0a2587eeec3da7dc07f0cf10d08c4f58fd5e4c381",
+    "navsim/planning/script/run_training_recogdrive_rl.py": "351f6fb0098b9809878900d7e01c25692f710cd3516efeb8b00c6d22d6cc8b7a",
+    "navsim/planning/script/config/training/default_training.yaml": "96a8da84269ac92a4bf9f397b038a32da096a4d88d44181362992d9c56499d72",
+    "navsim/planning/script/config/common/agent/recogdrive_agent.yaml": "064584ec4e7222ece17b9368fb4d23e1bfa8f9920e297354f240ab1025ea001f",
+    "navsim/agents/recogdrive/recogdrive_agent.py": "7bffc6e7050a4cd7b32cd6a8a490f9bfedb013ebaa8f67796badfba7c22e32f0",
+    "navsim/agents/recogdrive/recogdrive_diffusion_planner.py": "47000d0d7e1c432ec8d4dd8bb84cdd80b263d921dbd3e45ec6acad7dbe60260b",
+    "navsim/agents/recogdrive/utils/lr_scheduler.py": "8d5b400dbb37e7cd39f1e07d0a681e782e02d8ffe9db64bc214828d0ad2bf3dc",
+    "navsim/planning/training/agent_lightning_module.py": "a2d0bec189368dcfe3eb212e614bc82ec14387e1edf6ebb8e5e804b900c73abe"
+  },
+  "train_scenes": 700,
+  "holdout_scenes": 300,
+  "ddp_samples_per_rank": 88,
+  "steps_per_epoch": 11,
+  "total_updates": 110,
+  "padding_samples_per_epoch": 4,
+  "holdout_used_in_updates": false,
+  "hardware_execution_only_may_change": true
+}

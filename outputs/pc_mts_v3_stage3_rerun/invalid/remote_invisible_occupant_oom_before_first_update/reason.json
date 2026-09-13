@@ -1,0 +1,5 @@
+{
+  "reason": "GPU 5-7 remain occupied by processes outside this container PID namespace. Leave them untouched. Transfer this unstarted run to another eight-GPU host; use only free GPU 0-4 here for evaluation.",
+  "optimizer_updates": 0,
+  "configuration_changed": false
+}

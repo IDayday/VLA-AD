@@ -1,0 +1,23 @@
+{
+  "config_sha256": "33248540dea64a7dd5876245bf94cdddf81d327e7f73997b6046ac0d48e8989b",
+  "split_sha256": "66782333a8e46ee83d76d98fe93138de83781c690daec2490ce1078ea56e759e",
+  "base_commit": "d4922a8207960636773767aa9d664c6a1d9bb7b5",
+  "host": "training-vla-zt-worker-0",
+  "python": "3.9.25 (main, Nov  3 2025, 22:33:05) \n[GCC 11.2.0]",
+  "executable": "/root/miniconda3/envs/navsim/bin/python",
+  "torch": "2.5.1+cu124",
+  "cuda": "12.4",
+  "lightning": "2.6.0",
+  "transformers": "4.57.6",
+  "numpy": "1.26.4",
+  "devices": [
+    "0, GPU-f679bff0-a4a2-ae4f-0b85-74c519b45a9c, NVIDIA A800-SXM4-80GB",
+    "1, GPU-562375d4-b1d6-f0d9-a68d-5a81e5272907, NVIDIA A800-SXM4-80GB",
+    "2, GPU-b8a35758-a506-a8a1-dca7-499c485068fc, NVIDIA A800-SXM4-80GB",
+    "3, GPU-72a7d08b-16b7-7c64-a324-a08e043c6006, NVIDIA A800-SXM4-80GB",
+    "4, GPU-f35ae00b-0c9c-c01c-efba-e527cdd32f76, NVIDIA A800-SXM4-80GB",
+    "5, GPU-cba744b9-96c8-c3e2-f836-2f0126c038a0, NVIDIA A800-SXM4-80GB",
+    "6, GPU-017ee82b-e9ff-1f6c-547e-ca2ccf3363ac, NVIDIA A800-SXM4-80GB",
+    "7, GPU-621b6ab5-d5ba-4219-b7ca-8b9f84479900, NVIDIA A800-SXM4-80GB"
+  ]
+}
