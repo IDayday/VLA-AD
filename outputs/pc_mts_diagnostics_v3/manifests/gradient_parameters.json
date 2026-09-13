@@ -1,0 +1,189 @@
+{
+  "identity": {
+    "base_commit": "f499be15d693a6910593ec2c8f081c249cdbf871",
+    "config_sha256": "e0decb6e64854f06f29ce81af3031c74149eb6d1b9041f2b0a1bd79cf85cceaf",
+    "scene_sha256": "694dcbb3fcfc0713cf1d63d95566cedaa2f999931c675d138229404c62c7a21f",
+    "checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443"
+  },
+  "parameters": [
+    {
+      "name": "model.transformer_blocks.15.norm1.weight",
+      "shape": [
+        384
+      ],
+      "count": 384
+    },
+    {
+      "name": "model.transformer_blocks.15.attn.to_q.weight",
+      "shape": [
+        384,
+        384
+      ],
+      "count": 147456
+    },
+    {
+      "name": "model.transformer_blocks.15.attn.to_q.bias",
+      "shape": [
+        384
+      ],
+      "count": 384
+    },
+    {
+      "name": "model.transformer_blocks.15.attn.to_k.weight",
+      "shape": [
+        384,
+        384
+      ],
+      "count": 147456
+    },
+    {
+      "name": "model.transformer_blocks.15.attn.to_k.bias",
+      "shape": [
+        384
+      ],
+      "count": 384
+    },
+    {
+      "name": "model.transformer_blocks.15.attn.to_v.weight",
+      "shape": [
+        384,
+        384
+      ],
+      "count": 147456
+    },
+    {
+      "name": "model.transformer_blocks.15.attn.to_v.bias",
+      "shape": [
+        384
+      ],
+      "count": 384
+    },
+    {
+      "name": "model.transformer_blocks.15.attn.q_norm.weight",
+      "shape": [
+        48
+      ],
+      "count": 48
+    },
+    {
+      "name": "model.transformer_blocks.15.attn.k_norm.weight",
+      "shape": [
+        48
+      ],
+      "count": 48
+    },
+    {
+      "name": "model.transformer_blocks.15.attn.to_out.0.weight",
+      "shape": [
+        384,
+        384
+      ],
+      "count": 147456
+    },
+    {
+      "name": "model.transformer_blocks.15.attn.to_out.0.bias",
+      "shape": [
+        384
+      ],
+      "count": 384
+    },
+    {
+      "name": "model.transformer_blocks.15.norm2.weight",
+      "shape": [
+        384
+      ],
+      "count": 384
+    },
+    {
+      "name": "model.transformer_blocks.15.ffn.w12.weight",
+      "shape": [
+        768,
+        384
+      ],
+      "count": 294912
+    },
+    {
+      "name": "model.transformer_blocks.15.ffn.w12.bias",
+      "shape": [
+        768
+      ],
+      "count": 768
+    },
+    {
+      "name": "model.transformer_blocks.15.ffn.w3.weight",
+      "shape": [
+        384,
+        384
+      ],
+      "count": 147456
+    },
+    {
+      "name": "model.transformer_blocks.15.ffn.w3.bias",
+      "shape": [
+        384
+      ],
+      "count": 384
+    },
+    {
+      "name": "model.transformer_blocks.15.adaLN_modulation.1.weight",
+      "shape": [
+        2304,
+        384
+      ],
+      "count": 884736
+    },
+    {
+      "name": "model.transformer_blocks.15.adaLN_modulation.1.bias",
+      "shape": [
+        2304
+      ],
+      "count": 2304
+    },
+    {
+      "name": "action_decoder.fc1.weight",
+      "shape": [
+        1024,
+        512
+      ],
+      "count": 524288
+    },
+    {
+      "name": "action_decoder.fc1.bias",
+      "shape": [
+        1024
+      ],
+      "count": 1024
+    },
+    {
+      "name": "action_decoder.norm.weight",
+      "shape": [
+        1024
+      ],
+      "count": 1024
+    },
+    {
+      "name": "action_decoder.norm.bias",
+      "shape": [
+        1024
+      ],
+      "count": 1024
+    },
+    {
+      "name": "action_decoder.fc2.weight",
+      "shape": [
+        3,
+        1024
+      ],
+      "count": 3072
+    },
+    {
+      "name": "action_decoder.fc2.bias",
+      "shape": [
+        3
+      ],
+      "count": 3
+    }
+  ],
+  "total": 2453219,
+  "selection": "last of 16 native DiT blocks plus trajectory action_decoder"
+}

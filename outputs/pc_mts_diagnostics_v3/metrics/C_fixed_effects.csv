@@ -1,0 +1,7 @@
+outcome,predictor,coefficient,ci_low,ci_high,n,scenes,sources,scene_FE,source_FE,controls,inference,absorption_iterations,standardized_effect
+diffusion_loss,r_knn,0.0011467686136817465,0.0005775198452445087,0.0017226212246590881,8000,1000,22,True,True,"r_knn,PDMS,d_GT","3000 Rademacher wild scene-cluster bootstrap, fixed design",15,0.010446712189546027
+diffusion_loss,PDMS,8.774052558661702e-05,-0.0001308401530691179,0.000301375508475865,8000,1000,22,True,True,"r_knn,PDMS,d_GT","3000 Rademacher wild scene-cluster bootstrap, fixed design",15,0.001061380102598703
+diffusion_loss,d_GT,-0.00612778177599696,-0.02101990454486631,0.008541886508993039,8000,1000,22,True,True,"r_knn,PDMS,d_GT","3000 Rademacher wild scene-cluster bootstrap, fixed design",15,-0.0025437983624787422
+E_rec,r_knn,0.031138371861685242,0.028375577539270495,0.033985184464525746,8000,1000,22,True,True,"r_knn,PDMS,d_GT","3000 Rademacher wild scene-cluster bootstrap, fixed design",15,0.28366106728864515
+E_rec,PDMS,0.0007102651617533982,0.00033850140027736757,0.0010831632952421895,8000,1000,22,True,True,"r_knn,PDMS,d_GT","3000 Rademacher wild scene-cluster bootstrap, fixed design",15,0.008591939758896223
+E_rec,d_GT,-0.05071562539187228,-0.1181953069858265,0.017970252310538205,8000,1000,22,True,True,"r_knn,PDMS,d_GT","3000 Rademacher wild scene-cluster bootstrap, fixed design",15,-0.021053348428508728

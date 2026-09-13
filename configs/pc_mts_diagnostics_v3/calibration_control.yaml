@@ -1,0 +1,14 @@
+version: v3_supplementary_calibration_control
+status: additive_control_predeclared_before_any_G_measurement_after_A_to_E
+purpose: distinguish_parameter_update_promotion_from_finite_RQ_calibration_turnover
+changes_to_primary_protocol: none
+checkpoint: unchanged_frozen_official_IL
+scenes: same_full_1000_and_same_holdout_300
+reference_R: 128
+calibration_Q: 128
+sampling: identical_native_DDIM_5_eta1_eval_floor_0.0001
+seed_namespace: v3_progressive_official_il_null
+old_Far: q_old_ge_95
+high_quality: unchanged_raw_scene_PDMS_75th_percentile
+promotion: unchanged_q_new_lt_95
+inference: 3000_scene_paired_bootstrap_updated_policy_minus_null_turnover

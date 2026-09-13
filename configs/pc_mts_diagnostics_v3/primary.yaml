@@ -1,0 +1,112 @@
+version: v3_primary_20260913
+base_commit: f499be15d693a6910593ec2c8f081c249cdbf871
+seed: 2026091303
+scene_count: 1000
+raw_candidates: 192
+bootstrap_replicates: 3000
+precision: fp32
+hardware: {gpu_processes: 8, loader_workers_per_gpu: 4, cpu_workers: 96, blas_threads: 1, stop_unrelated_processes: false}
+selection:
+  pool_size: 16
+  hard_constraints: [NC, DAC]
+  conservative_constraints: [NC, DAC, TTC, DDC]
+  equality_tolerance: 1.0e-8
+  q_max_exclusive: 95
+  boundary_min_inclusive: 50
+  quality_margin_primary_points: 0
+  quality_margin_secondary_points: -1
+  local_feasibility: 0.75
+  objectives: [EP, TTC, DDC]
+  conditional_fronts: all_in_rank_order_within_boundary_then_core
+  core_order: descending_q_then_conditional_rank_then_PDMS
+  diversity_min_ADE_m: 0.02
+  diversity_rule: prefer_nonredundant_within_same_front_and_PDMS_ties_0.01_point
+  primary_fillers: forbidden
+  raw_uniqueness: exact_XYH_float32_bytes_keep_lowest_raw_index
+  zero_parent_training: explicit_GT_target_fallback_not_strict_PC_success
+  additional_ablations: [quality_ranking_only, global_front2_vs_conditional_front2_same_eligibility]
+frontier:
+  q_thresholds: [50, 60, 70, 80, 90, 95, 97.5, 100]
+  comparison: strict_less_than_except_100_includes_all
+  primary_feasible: NC_DAC_TTC_DDC_all_one
+  supplementary_feasible: NC_DAC_one
+  top_k: 4
+  top_k_requires_full_k: true
+  oracle_gaps_points: [0.25, 0.5, 1]
+matching:
+  primary_gap_points: 0.25
+  supplementary_gap_points: 0.5
+  exact_source: GT_or_IL_native_or_individual_external_checkpoint_or_bridge_alpha_and_anchor_checkpoint
+  hard_class: discrete_NC_DAC_tuple
+  algorithm: boundary_far_maximum_cardinality_minimum_total_PDMS_gap_then_remaining_core_far
+  replacement: false
+learnability:
+  scope: all_primary_and_sensitivity_pairs_plus_8_hash_selected_raw_candidates_per_scene
+  regression_raw_candidates_per_scene: 8
+  representative_timesteps: [20, 50, 80]
+  representative_repeats: 2
+  native_uniform_timestep_draws: 8
+  diffusion_parameterization: epsilon
+  native_timestep_distribution: uniform_integer_0_to_99
+  reconstruction_timesteps: [20, 40, 80]
+  reconstruction_repeats: 2
+  epsilon_calibration: independent_V2_Q_95percentile_reconstruction_error_compute_missing_with_V3_namespace
+  common_noise: per_pair_same_timestep_epsilon_seed
+  fixed_effect_controls: [PDMS, d_GT, exact_source, scene]
+gradient:
+  scenes: 256
+  parameters: last_DiT_block_and_action_decoder_exact_no_sketch
+  common_candidate_count_cap: 4
+  reference_targets: mean_IL_native_and_GT_with_GT_weight_0.25
+  native_uniform_timestep_draws: 2
+  matched_pair_cap_per_scene: 2
+  eta: 1.0e-5
+training:
+  seeds: [1701, 2903]
+  train_scenes: 700
+  holdout_scenes: 300
+  scene_split: sha256_token_namespace_v3_scene_split
+  methods: [gt_only, score, pareto, gt_distance, old_pc, conditional_pc]
+  effective_scene_batch: 8
+  micro_scene_batch: 1
+  candidate_slots: 16
+  gt_retention_coefficient: 0.25
+  parent_weight: inverse_multiplicity_normalized_over_unique_parents
+  optimizer: AdamW
+  betas: [0.9, 0.999]
+  weight_decay: 0.01
+  gradient_clip_norm: 1
+  trainable: complete_native_action_head_excluding_old_policy
+  micro_sft: {steps: 200, snapshots: [0, 20, 100, 200], lr: 1.0e-5, scheduler: cosine, warmup_steps: 10}
+  grpo:
+    steps: 100
+    snapshots: [0, 10, 50, 100]
+    lr: 1.0e-4
+    scheduler: constant
+    group_size: 8
+    recipe: original_official_forward_grpo_unchanged
+    reference: common_frozen_official_IL
+    bc_coefficient: 0.1
+    safety_plot: feasible_rate_and_NC_TTC_separate
+    advantage_feasibility: NC_DAC_TTC_DDC_all_one
+  evaluation:
+    rollouts: 64
+    sampler: DDIM_5_eta1_temperature1
+    batch: 16
+    common_random_numbers: same_namespace_for_all_methods_seeds_snapshots
+    hit_K: [1, 8, 16, 64]
+    hit_delta_points: 1
+    fitting_noise_draws: 4
+progressive:
+  scenes: 1000
+  seeds: [1701, 2903]
+  checkpoints: [sft_final, grpo_middle, grpo_final]
+  reference_R: 128
+  query_Q: 128
+  high_quality: raw_scene_PDMS_75th_percentile
+  newly_eligible: hard_safety_and_q_below95_and_PDMS_ge_current_reference
+  reference_PDMS: deterministic_seed0_stochastic_native_rollout_as_V2
+supplementary:
+  q_max: [90, 95, 97.5]
+  quality_margin_points: [0, -0.5, -1]
+  local_feasibility: [0.5, 0.75]

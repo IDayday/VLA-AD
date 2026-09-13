@@ -1,0 +1,46 @@
+{
+  "identity": {
+    "base_commit": "f499be15d693a6910593ec2c8f081c249cdbf871",
+    "config_sha256": "e0decb6e64854f06f29ce81af3031c74149eb6d1b9041f2b0a1bd79cf85cceaf",
+    "scene_sha256": "694dcbb3fcfc0713cf1d63d95566cedaa2f999931c675d138229404c62c7a21f",
+    "checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443"
+  },
+  "completed_utc": "2026-09-13T09:29:44Z",
+  "files": 63258,
+  "errors": [],
+  "preexisting_runtime_log_appends": [
+    {
+      "path": "outputs/pc_mts_diagnostics_v2/logs/pressure_restored_0.log",
+      "bytes": 1507
+    },
+    {
+      "path": "outputs/pc_mts_diagnostics_v2/logs/pressure_restored_1.log",
+      "bytes": 1747
+    },
+    {
+      "path": "outputs/pc_mts_diagnostics_v2/logs/pressure_restored_2.log",
+      "bytes": 1747
+    },
+    {
+      "path": "outputs/pc_mts_diagnostics_v2/logs/pressure_restored_3.log",
+      "bytes": 1747
+    },
+    {
+      "path": "outputs/pc_mts_diagnostics_v2/logs/pressure_restored_4.log",
+      "bytes": 1747
+    },
+    {
+      "path": "outputs/pc_mts_diagnostics_v2/logs/pressure_restored_5.log",
+      "bytes": 1747
+    },
+    {
+      "path": "outputs/pc_mts_diagnostics_v2/logs/pressure_restored_6.log",
+      "bytes": 1747
+    },
+    {
+      "path": "outputs/pc_mts_diagnostics_v2/logs/pressure_restored_7.log",
+      "bytes": 1747
+    }
+  ],
+  "all_original_byte_prefixes_preserved": true
+}

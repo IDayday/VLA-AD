@@ -1,0 +1,45 @@
+{
+  "identity": {
+    "base_commit": "f499be15d693a6910593ec2c8f081c249cdbf871",
+    "config_sha256": "e0decb6e64854f06f29ce81af3031c74149eb6d1b9041f2b0a1bd79cf85cceaf",
+    "scene_sha256": "694dcbb3fcfc0713cf1d63d95566cedaa2f999931c675d138229404c62c7a21f",
+    "checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443"
+  },
+  "stage": "grpo",
+  "method": "score",
+  "seed": 2903,
+  "steps": 100,
+  "scene_updates": 800,
+  "distinct_train_scenes": 700,
+  "snapshots": [
+    0,
+    10,
+    50,
+    100
+  ],
+  "initial_checkpoint_sha256": "334f582a1c5d2555abd335f86e6b86c4b71ea1af91ea699398df3deb114c18e6",
+  "final_checkpoint_sha256": "5080df6eae8ede9912ca5a50dd0b05d0e506a0f6db6ad37def02c7a37bff6ec8",
+  "peak_gpu_bytes": 7622297600,
+  "seconds": 750.6456959247589,
+  "explicit_GT_fallback_updates": 0,
+  "reference_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+  "train_tokens_sha256": "4e407639ff285eeac15c4e287ffff31ed0e24c912dc7f2353dc6925362ba5960",
+  "holdout_tokens_sha256": "b40ffdd0d4724152b7f0f0be0c67d50cda671894703bc9576770f8f60df8153b",
+  "effective_scene_batch": 8,
+  "candidate_slots": 16,
+  "grpo_recipe": {
+    "denoised_clip_value": 1.0,
+    "eval_randn_clip_value": 1.0,
+    "randn_clip_value": 5.0,
+    "final_action_clip_value": 1.0,
+    "eps_clip_value": null,
+    "eval_min_sampling_denoising_std": 0.0001,
+    "min_sampling_denoising_std": 0.04,
+    "min_logprob_denoising_std": 0.1,
+    "clip_advantage_lower_quantile": 0.0,
+    "clip_advantage_upper_quantile": 1.0,
+    "gamma_denoising": 0.6
+  },
+  "trainable_parameter_count": 34329219,
+  "native_loss": "original forward_grpo with logging-only reward hook"
+}

@@ -1,0 +1,17 @@
+{
+  "identity": {
+    "base_commit": "f499be15d693a6910593ec2c8f081c249cdbf871",
+    "config_sha256": "e0decb6e64854f06f29ce81af3031c74149eb6d1b9041f2b0a1bd79cf85cceaf",
+    "scene_sha256": "694dcbb3fcfc0713cf1d63d95566cedaa2f999931c675d138229404c62c7a21f",
+    "checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443"
+  },
+  "checkpoint_sha256": "2877807e20feabea9849775e93c224a16e54173e9cf038dda76a6f454d6ec0fe",
+  "CRN_namespace": "v3_diagnostic_holdout64",
+  "rollouts": 64,
+  "stage": "sft",
+  "run": "gt_only_seed2903",
+  "step": 20,
+  "scenes": 300,
+  "seconds": 364.60812735557556,
+  "peak_gpu_bytes": 546087936
+}

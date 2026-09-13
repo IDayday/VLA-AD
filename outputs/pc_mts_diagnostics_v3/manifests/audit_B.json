@@ -1,0 +1,24 @@
+{
+  "identity": {
+    "base_commit": "f499be15d693a6910593ec2c8f081c249cdbf871",
+    "config_sha256": "e0decb6e64854f06f29ce81af3031c74149eb6d1b9041f2b0a1bd79cf85cceaf",
+    "scene_sha256": "694dcbb3fcfc0713cf1d63d95566cedaa2f999931c675d138229404c62c7a21f",
+    "checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443"
+  },
+  "completed_utc": "2026-09-13T07:50:07Z",
+  "scene_count": 1000,
+  "raw_candidate_count": 192000,
+  "raw_table_sha256": "c263251de47bc2188b79633d4d81f48cf658f6d56f04f296e993135f03cecf5e",
+  "q_thresholds": [
+    50,
+    60,
+    70,
+    80,
+    90,
+    95,
+    97.5,
+    100
+  ],
+  "all_raw_before_method_selection": true,
+  "outcome_conditioned_scene_filtering": false
+}
