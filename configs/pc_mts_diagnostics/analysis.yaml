@@ -1,0 +1,68 @@
+seed: 20260913
+num_scenes: 1000
+split: navtrain
+num_rollouts: 64
+sampler: ddim
+diffusion_steps: 5
+eta: 1.0
+temperature: 1.0
+cfg: null
+precision: fp32
+inference_batch: 16
+loader_workers: 4
+cpu_workers: 96
+raw_gt_count: 32
+raw_model_count: 24
+expanded_model_count: 24
+pool_size: 16
+knn: 5
+core_upper: 50
+ood_lower: 95
+gt_quantiles:
+- 0.8
+- 0.9
+- 0.95
+pareto_components:
+- ego_progress
+- time_to_collision_within_bound
+- driving_direction_compliance
+pareto_eps: 0.0
+pareto_qualified_max_front: 1
+score_tie_tolerance_points: 0.01
+redundancy_threshold_m: 0.02
+pc_quality: feasible_and_pdms_at_least_IL_reference
+feasible: NC=1 and DAC=1 and TTC=1 and DDC=1
+hard_failure: NC<1 or DAC<1
+selection_perturbation_amplitudes:
+- 0.03
+- 0.06
+selection_directions_per_amplitude: 2
+evaluation_perturbation_amplitudes:
+- 0.02
+- 0.05
+- 0.1
+- 0.2
+evaluation_directions_per_amplitude: 3
+gt_perturbation_amplitudes:
+- 0.03
+- 0.05
+- 0.1
+- 0.2
+- 0.35
+pc_local_feasible: 0.75
+pc_fallback:
+- local_0.50
+- q_lower_40
+- q_upper_99
+- tiny_filler
+- exact_duplicate
+tiny_filler_max_displacement_m: 0.01
+group_size: 8
+reference: official_IL_default_sampler_seed_0_single_trajectory
+reward_deltas_points:
+- 0
+- 1
+- 2
+bootstrap_replicates: 3000
+normalization: native_checkpoint_internal_transform_then_common_physical_XY_metres
+output_dir: outputs/pc_mts_diagnostics

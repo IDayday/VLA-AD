@@ -1,0 +1,2472 @@
+你现在位于项目目录：
+
+VLA-AD
+
+请在当前项目中完成一套完整的：
+
+Multi-Trajectory Supervision → Policy Distribution → GRPO Readiness
+
+机制分析实验。
+
+============================================================
+一、任务目标与最重要的实验原则
+============================================================
+
+我们现在有 5 个真实 checkpoint：
+
+1. official IL / GT-only SFT
+2. multi-trajectory SFT，最终 PDMS ≈ 86.92
+3. multi-trajectory SFT，最终 PDMS ≈ 87.51
+4. original GRPO，PDMS ≈ 90.41
+5. final APR，PDMS ≈ 91.45
+
+注意：
+
+【不要再试图把 86.92 / 87.51 两个 checkpoint 强行解释成
+Score / Pareto / GT-distance / PC-MTS 中的某一种。】
+
+如果历史 metadata 能明确恢复训练方法，可以记录；
+如果不能，就保持：
+
+MTS-86.92
+MTS-87.51
+
+这 5 个 checkpoint 只用于：
+
+A. policy rollout distribution 分析
+B. post-SFT / post-RL rollout quality 分析
+C. GRPO-readiness 分析
+
+------------------------------------------------------------
+
+另起一条完全独立的候选轨迹分析线。
+
+重新构建一个：
+
+COMMON RAW CANDIDATE RESERVOIR
+
+然后从完全相同的 raw candidate reservoir 中分别使用：
+
+M1. Score-only
+M2. Pareto
+M3. Pareto + GT-distance
+M4. PC-MTS
+
+四种规则，
+
+每个 scene 最终得到：
+
+16 trajectories / method / scene
+
+这些候选池：
+
+【不用于重新训练上述 checkpoint】
+
+只用于研究：
+
+1. 候选相对于 GT 的位置；
+2. 候选相对于 GT-SFT policy distribution 的位置；
+3. 候选的局部鲁棒性；
+4. 不同 selection rule 是否天然产生不同类型的 supervision。
+
+这是本实验最重要的逻辑隔离。
+
+============================================================
+二、计算资源
+============================================================
+
+服务器：
+
+8 × GPU
+128 × CPU
+
+整个实验必须尽可能并行。
+
+优先复用项目已有：
+
+distributed inference
+torchrun
+DDP inference
+multiprocessing evaluator
+
+如果现有项目没有合适接口，再新增 analysis-only wrapper。
+
+推荐计算模式：
+
+------------------------------------------------------------
+GPU inference stage
+------------------------------------------------------------
+
+使用：
+
+8 GPU processes
+
+推荐：
+
+torchrun --nproc_per_node=8
+
+每个 rank 按 scene shard 分配任务。
+
+不要 8 卡同时加载 5 个不同 checkpoint。
+
+推荐：
+
+一次处理一个 checkpoint：
+
+checkpoint A
+→ 8 GPU 分 8 个 scene shards
+
+完成后：
+
+checkpoint B
+→ 8 GPU
+
+依次进行。
+
+优点：
+
+- 所有 GPU 负载均衡；
+- checkpoint 只加载一次 / GPU；
+- 不发生频繁 model reload；
+- inference protocol 完全一致。
+
+每 GPU：
+
+DataLoader num_workers = 4
+
+即：
+
+8 × 4 = 32 CPU loader workers
+
+------------------------------------------------------------
+CPU evaluation stage
+------------------------------------------------------------
+
+GPU rollout 全部先落盘。
+
+随后单独运行 evaluator：
+
+ProcessPoolExecutor / multiprocessing
+
+默认：
+
+--cpu-workers 96
+
+并设置：
+
+OMP_NUM_THREADS=1
+MKL_NUM_THREADS=1
+OPENBLAS_NUM_THREADS=1
+
+防止 96 个进程内部再次多线程。
+
+保留约 32 个 CPU core 给：
+
+I/O
+系统
+dataloader
+主进程
+
+如果 benchmark 显示 evaluator 内存压力较大，则：
+
+96 → 80 → 64
+
+但不要默认单进程跑 evaluator。
+
+============================================================
+三、建立新的分析分支
+============================================================
+
+新建：
+
+analysis/pc-mts-policy-diagnostics-20260913
+
+所有代码尽量新增到：
+
+tools/analysis/pc_mts_diagnostics/
+
+不要修改核心训练实现。
+
+建议目录：
+
+tools/analysis/pc_mts_diagnostics/
+    discover_assets.py
+    build_scene_manifest.py
+    distributed_rollout.py
+    evaluate_cached_rollouts.py
+    analyze_policy_distribution.py
+    build_candidate_reservoir.py
+    select_candidate_pools.py
+    evaluate_local_robustness.py
+    analyze_grpo_readiness.py
+    make_figures.py
+    run_all.py
+
+configs/pc_mts_diagnostics/
+    checkpoints.yaml
+    analysis.yaml
+
+outputs/pc_mts_diagnostics/
+    manifests/
+    rollouts/
+    evaluator/
+    raw_candidates/
+    candidate_pools/
+    local_robustness/
+    metrics/
+    figures/
+    report/
+
+============================================================
+四、第一步：资产审计
+============================================================
+
+先不要直接运行正式实验。
+
+搜索当前 VLA-AD：
+
+- 5 个 checkpoint
+- 历史 candidate bank
+- trajectory perturbation
+- Pareto selection
+- GRPO implementation
+- NAVSIM evaluator
+- rollout sampler
+- Diffusion / DiT inference config
+
+重点关键词：
+
+90.41
+91.45
+86.92
+87.51
+
+candidate
+candidate_bank
+trajectory_bank
+multi_trajectory
+mts
+pareto
+perturb
+augmentation
+rollout
+
+先使用：
+
+git grep
+
+git log --all
+
+find
+
+搜索：
+
+*.pt
+*.pth
+*.ckpt
+*.npz
+*.pkl
+*.json
+*.jsonl
+*.parquet
+*.csv
+
+最终生成：
+
+outputs/pc_mts_diagnostics/manifests/checkpoint_manifest.yaml
+
+字段：
+
+name
+category
+checkpoint_path
+config_path
+reported_pdms
+training_method
+git_commit
+metadata_source
+notes
+
+category 只允许：
+
+gt_sft
+multi_sft
+rl_optimized
+
+============================================================
+五、固定 1000 个场景
+============================================================
+
+主实验使用：
+
+N_SCENE = 1000
+
+NAVSIM train ≈ 103k scenes。
+
+所有实验必须使用完全相同的：
+
+1000 scene tokens
+
+不能每个实验重新抽样。
+
+------------------------------------------------------------
+采样要求
+------------------------------------------------------------
+
+固定：
+
+seed = 20260913
+
+尽量按照项目已有 route / command 划分：
+
+straight
+left
+right
+other
+
+做 stratified sampling。
+
+如果存在 scene difficulty metadata：
+
+不要根据最终模型 score 筛选。
+
+------------------------------------------------------------
+保存
+------------------------------------------------------------
+
+outputs/pc_mts_diagnostics/manifests/scenes_1000.json
+
+同时支持：
+
+--num-scenes 2000
+
+但主论文分析先固定 1000。
+
+============================================================
+六、Exp-0：五个真实 checkpoint 的 policy distribution
+============================================================
+
+核心研究问题：
+
+GT-SFT、multi-SFT、GRPO、APR
+
+在同一个 scene 下随机采样出的轨迹分布：
+
+究竟是：
+
+更宽？
+
+更窄？
+
+更多模态？
+
+还是仅仅 distribution center 发生了移动？
+
+我们特别希望验证：
+
+H0-A：
+SFT policy 可能具有较宽 stochastic support。
+
+H0-B：
+经过 GRPO / APR 后 policy 可能更加集中、更“尖”。
+
+但：
+
+【这是 hypothesis，不允许写进代码成为预设结论。】
+
+============================================================
+6.1 Rollout protocol
+============================================================
+
+对 5 个 checkpoint：
+
+official-IL
+MTS-86.92
+MTS-87.51
+GRPO-90.41
+APR-91.45
+
+每个：
+
+1000 scenes
+×
+64 stochastic rollouts / scene
+
+总计：
+
+5 × 1000 × 64
+=
+320,000 trajectories
+
+要求：
+
+所有模型完全相同：
+
+diffusion sampler
+diffusion steps
+temperature
+eta
+CFG
+trajectory representation
+normalization
+
+并使用：
+
+相同 scene
+相同 64 noise seeds
+
+避免采样噪声造成不公平比较。
+
+保存原始 trajectory，
+暂时不要只保存 evaluator score。
+
+============================================================
+6.2 用什么指标衡量“宽 / 尖”
+============================================================
+
+【不要用 PDMS 判断分布宽度。】
+
+轨迹几何分布与轨迹质量必须分开。
+
+定义：
+
+d(τ_i, τ_j)
+
+=
+mean_t ||p_i(t) - p_j(t)||_2
+
+单位：
+
+meter
+
+同时计算 FDE。
+
+------------------------------------------------------------
+Metric A：Mean Pairwise ADE
+------------------------------------------------------------
+
+D_pair(scene)
+
+=
+2/[M(M-1)]
+Σ_i<j d(τ_i, τ_j)
+
+这是最直观的总体 spread。
+
+------------------------------------------------------------
+Metric B：Time-wise Spatial Spread
+------------------------------------------------------------
+
+每个 timestep：
+
+Σ_t
+=
+covariance of [x_t, y_t]
+
+定义：
+
+s_t
+=
+sqrt(trace(Σ_t))
+
+保存完整：
+
+s_1 ... s_T
+
+定义：
+
+Spread-AUC
+=
+mean_t s_t
+
+这个指标特别适合判断：
+
+轨迹是否随着未来时间逐渐发散。
+
+------------------------------------------------------------
+Metric C：R50 / R90
+------------------------------------------------------------
+
+先找到：
+
+trajectory medoid
+
+然后计算所有 rollout 到 medoid 的距离。
+
+保存：
+
+R50
+R90
+
+其中：
+
+R90
+
+非常适合表示：
+
+90% probability mass 的几何半径。
+
+------------------------------------------------------------
+Metric D：Endpoint spread
+------------------------------------------------------------
+
+终点：
+
+[x_T, y_T]
+
+计算：
+
+endpoint covariance trace
+
+endpoint R90
+
+用于看长期行为分叉。
+
+------------------------------------------------------------
+Metric E：Flattened covariance effective rank
+------------------------------------------------------------
+
+trajectory flatten：
+
+[x1,y1,x2,y2,...]
+
+求 covariance eigenvalues：
+
+λ_i
+
+p_i = λ_i / Σλ_i
+
+effective_rank
+
+=
+exp(-Σ p_i log p_i)
+
+意义：
+
+分布不仅“多宽”，还在多少独立方向上变化。
+
+------------------------------------------------------------
+Metric F：Center shift
+------------------------------------------------------------
+
+必须严格区分：
+
+distribution narrowing
+
+和
+
+distribution shift。
+
+对于每个 scene：
+
+找到每个 checkpoint 的 rollout medoid。
+
+计算：
+
+d(
+medoid_checkpoint,
+medoid_official_IL
+)
+
+叫：
+
+CenterShift-from-IL
+
+因此可能出现：
+
+Spread ↓
+CenterShift ↑
+
+这表示：
+
+policy 变尖了，
+但中心也移动了。
+
+------------------------------------------------------------
+Metric G：Useful diversity
+------------------------------------------------------------
+
+为了防止：
+
+“Score很差的轨迹很多 → spread很大”
+
+被错误解释成好的 diversity，
+
+再计算：
+
+D_feasible
+
+=
+仅在 feasible trajectories 之间
+计算 mean pairwise distance
+
+以及：
+
+D_high_quality
+
+=
+仅在：
+feasible
+且 reward >= scene reference
+的 trajectory 中计算 pairwise distance
+
+这个指标后面非常重要。
+
+============================================================
+6.3 Exp-0 图
+============================================================
+
+至少生成：
+
+Fig-0a
+5 checkpoint Spread-AUC violin + box
+
+Fig-0b
+Mean Pairwise ADE
+
+Fig-0c
+R90
+
+Fig-0d
+Time-wise spread curve：
+
+x = future timestep
+y = spatial spread s_t
+
+5 models
+mean + bootstrap 95% CI
+
+Fig-0e
+CenterShift vs Spread
+
+x = CenterShift-from-IL
+y = Spread-AUC / Spread_IL
+
+Fig-0f
+Effective rank
+
+Fig-0g
+随机预注册的代表 scene trajectory overlays
+
+不要根据结果挑“最好看的”。
+
+预先定义：
+
+2 straight
+2 left/right
+2 high-curvature
+
+共 6 scene。
+
+============================================================
+七、重新构建统一 Raw Candidate Reservoir
+============================================================
+
+因为历史 candidate 很可能无法完全恢复，
+
+这次明确构建：
+
+RECONSTRUCTED ANALYSIS CANDIDATE RESERVOIR
+
+报告中不要宣称：
+
+“这是历史训练原始数据”。
+
+============================================================
+7.1 每场景 raw reservoir = 96
+============================================================
+
+每个 scene：
+
+96 raw trajectories
+
+组成：
+
+32 GT-derived
++
+64 model-generated
+
+------------------------------------------------------------
+A. GT-derived：32
+------------------------------------------------------------
+
+包括：
+
+1 × exact GT
++
+31 × smooth structured perturbations
+
+禁止：
+
+每个 waypoint iid Gaussian noise。
+
+必须使用：
+
+trajectory-level smooth deformation。
+
+可以采用：
+
+lateral offset basis
+longitudinal progress scaling
+turn-radius / curvature scaling
+endpoint shift
+low-frequency spline deformation
+small combinations
+
+扰动幅度必须覆盖：
+
+very small
+small
+medium
+
+而不是全部 0.01m。
+
+建议 nominal amplitude：
+
+0.03m
+0.05m
+0.10m
+0.20m
+0.35m
+
+注意：
+
+0.01m 只用于最终 filler，
+不用于主 candidate generation。
+
+------------------------------------------------------------
+B. Model-generated：64
+------------------------------------------------------------
+
+不要使用 official IL，
+因为 official IL 是 policy-support reference。
+
+使用：
+
+MTS-86.92：16
+MTS-87.51：16
+GRPO-90.41：16
+APR-91.45：16
+
+完全相同 scene。
+
+固定不同 noise seed。
+
+于是每个 scene：
+
+96 raw candidates
+
+且所有四种 selection rule：
+
+必须面对完全相同的 96 条轨迹。
+
+============================================================
+7.2 如果候选不足
+============================================================
+
+先在 50 scene smoke test 上统计：
+
+PC-MTS 最终不足16条的 scene ratio。
+
+如果：
+
+> 5%
+
+不要立刻 duplicate。
+
+优先扩大 reservoir：
+
+每个非IL checkpoint：
+
+16 → 24
+
+这样：
+
+32 GT-derived
++
+96 model-generated
+
+=
+128 raw candidates
+
+只有扩大 reservoir 后仍不足，
+才允许 filler。
+
+============================================================
+八、四种 Candidate Pool 怎么定义
+============================================================
+
+这部分非常重要。
+
+四种方法必须体现四种不同 inductive bias。
+
+但是：
+
+【所有规则必须在看最终结果之前固定。】
+
+禁止根据最终分析图反复改 threshold，
+直到图符合我们的假设。
+
+============================================================
+M1：Score-only
+============================================================
+
+目的：
+
+模拟最简单的：
+
+“高 PDMS 就学”。
+
+规则：
+
+从 common raw reservoir 中：
+
+直接按 PDMS descending
+
+选择：
+
+top-16
+
+除了：
+
+NaN
+格式错误
+evaluator无法执行
+
+不额外加入：
+
+GT-distance
+policy-distance
+local robustness
+
+------------------------------------------------------------
+预先假设
+------------------------------------------------------------
+
+Score pool 可能：
+
+Candidate PDMS 最高
+
+但：
+
+policy OOD 比例较高
+local robustness 较差
+pairwise diversity 较大
+
+这只是 hypothesis。
+
+============================================================
+M2：Pareto
+============================================================
+
+目的：
+
+模拟：
+
+“不能只看 scalar PDMS，
+进一步保证各子目标没有明显冲突。”
+
+首先检查项目历史 Pareto implementation。
+
+如果有：
+
+严格复用。
+
+如果没有：
+
+从 NAVSIM evaluator 自动读取实际 component metrics。
+
+不要凭空命名不存在的 component。
+
+对所有：
+
+需要 maximize 的连续 component
+
+进行：
+
+non-dominated sorting
+
+得到：
+
+Front-1
+Front-2
+...
+
+按：
+
+Front-1
+→ Front-2
+→ ...
+
+依次填充到16条。
+
+同一 front：
+
+先按 PDMS descending
+
+若 PDMS 接近：
+
+使用 trajectory diversity greedy tie-break。
+
+------------------------------------------------------------
+重要
+------------------------------------------------------------
+
+Pareto：
+
+【不使用】
+
+GT distance
+
+和：
+
+IL policy distance
+
+所以它仍然只是：
+
+outcome-space quality selection。
+
+------------------------------------------------------------
+预先假设
+------------------------------------------------------------
+
+相较 Score：
+
+multi-objective balance 更好
+
+OOD ratio 可能降低
+
+但仍可能存在 policy-far trajectories。
+
+============================================================
+M3：Pareto + GT-distance
+============================================================
+
+目的：
+
+模拟我们曾经做过的：
+
+“候选质量不错，同时不要离 GT 太远。”
+
+基础：
+
+先进行 Pareto ranking。
+
+再限制：
+
+d_GT(τ)
+
+=
+mean_t ||τ(t) - GT(t)||_2
+
+------------------------------------------------------------
+不要人为拍脑袋写固定0.5m
+------------------------------------------------------------
+
+使用 official IL rollout 自动校准 threshold。
+
+对于：
+
+official IL policy
+
+计算：
+
+d(rollout, GT)
+
+按 command 分组。
+
+Primary threshold：
+
+δ_GT(command)
+
+=
+80th percentile
+
+of official-IL rollout-to-GT distance
+
+也就是说：
+
+candidate 必须位于：
+
+“GT-SFT 正常 rollout 到 GT 距离的典型范围”
+
+之内。
+
+------------------------------------------------------------
+如果不足16条
+------------------------------------------------------------
+
+依次放宽：
+
+80%
+→
+90%
+→
+95%
+
+仍不足：
+
+才允许 filler。
+
+------------------------------------------------------------
+为什么这里选80%
+------------------------------------------------------------
+
+这个 baseline 就是故意表示：
+
+“保持在 GT 附近”。
+
+不能设置成99%，
+否则与不加约束几乎没有区别。
+
+同时在报告里额外做：
+
+80 / 90 / 95 percentile
+
+sensitivity analysis。
+
+Primary result 固定80%。
+
+------------------------------------------------------------
+预先假设
+------------------------------------------------------------
+
+我们预期：
+
+OOD ratio 显著降低
+
+但大量 candidate 可能进入：
+
+policy Core
+
+所以：
+
+安全 / 稳定
+
+但：
+
+expansion utility 较低。
+
+============================================================
+M4：PC-MTS
+============================================================
+
+目的：
+
+不是：
+
+“离GT最近”
+
+而是：
+
+找到：
+
+SFT policy
+低概率但仍然可达的
+高质量 boundary behavior。
+
+Reference policy：
+
+official GT-only IL/SFT checkpoint。
+
+============================================================
+8.4.1 构建 IL effective support
+============================================================
+
+复用 Exp-0：
+
+64 official-IL rollouts / scene
+
+定义：
+
+K = 5
+
+每个 IL rollout：
+
+ρ_i
+
+计算：
+
+d_self(ρ_i)
+
+=
+mean distance
+to its 5 nearest
+other IL rollouts
+
+得到：
+
+D_self(scene)
+
+============================================================
+8.4.2 Candidate policy distance
+============================================================
+
+对 candidate：
+
+τ
+
+计算：
+
+d_PC(τ)
+
+=
+mean distance
+to its 5 nearest
+IL rollouts
+
+再计算：
+
+q_policy(τ)
+
+=
+percentile of d_PC(τ)
+under D_self(scene)
+
+============================================================
+8.4.3 三个 policy region
+============================================================
+
+固定：
+
+Core：
+
+q < 50%
+
+Boundary：
+
+50% <= q < 95%
+
+OOD：
+
+q >= 95%
+
+这些 threshold：
+
+在所有主实验中固定。
+
+============================================================
+8.4.4 PC-MTS candidate eligibility
+============================================================
+
+candidate 必须：
+
+1. Pareto qualified
+2. 50 <= q_policy < 95
+3. 基本 quality 合格
+4. local feasibility 合格
+
+============================================================
+8.4.5 Selection-stage local feasibility
+============================================================
+
+这里只用：
+
+4 个轻量 perturbations / candidate
+
+幅度只用：
+
+0.03m
+0.06m
+
+不同 smooth direction。
+
+要求：
+
+local feasible ratio >= 0.75
+
+注意：
+
+这里的 perturbation seed
+
+必须和后面 Exp-2 evaluation seed 完全不同。
+
+防止 evaluation leakage。
+
+============================================================
+8.4.6 PC-MTS最终选16条
+============================================================
+
+在 eligible candidate 中：
+
+优先：
+
+PDMS descending
+
+同时使用 greedy redundancy suppression。
+
+如果一个 candidate 与已选 trajectory：
+
+过度重复，
+
+优先选下一条。
+
+目标是：
+
+高质量
+
++
+Boundary
+
++
+局部可行
+
++
+不过度重复
+
+而不是：
+
+q 越接近95越好。
+
+============================================================
+重要
+============================================================
+
+PC-MTS 不允许：
+
+直接把 q_policy
+作为越大越好的 score。
+
+因为：
+
+95附近已经接近 OOD。
+
+PC-MTS 寻找的是：
+
+reachable but underrepresented
+
+而不是：
+
+maximum-distance behavior。
+
+============================================================
+九、保证每个 pool 恰好16条
+============================================================
+
+所有方法：
+
+16 trajectories / scene。
+
+但是 filler 必须严格记录。
+
+------------------------------------------------------------
+Score
+------------------------------------------------------------
+
+正常情况下直接 top16。
+
+------------------------------------------------------------
+Pareto
+------------------------------------------------------------
+
+Front-1 不足：
+
+Front-2
+Front-3
+
+直到16。
+
+------------------------------------------------------------
+GT-distance
+------------------------------------------------------------
+
+80%
+→90%
+→95%
+
+仍不足：
+
+tiny perturbation filler。
+
+------------------------------------------------------------
+PC-MTS
+------------------------------------------------------------
+
+Primary：
+
+q ∈ [50,95)
+local feasible >= .75
+
+不足：
+
+Step 1：
+local threshold .75 → .50
+
+Step 2：
+q lower bound 50 → 40
+上界仍95
+
+Step 3：
+允许 q <99
+但必须显式：
+
+fallback_level = 3
+
+------------------------------------------------------------
+最后才允许 tiny filler
+------------------------------------------------------------
+
+对已经接受的高质量 trajectory：
+
+做最大 displacement：
+
+<= 0.01m
+
+smooth perturbation。
+
+重新 evaluator。
+
+仍不足：
+
+允许 exact duplicate。
+
+必须保存：
+
+is_fill
+fill_parent_id
+fallback_level
+
+------------------------------------------------------------
+报告必须同时统计
+------------------------------------------------------------
+
+ALL-16
+
+和：
+
+UNIQUE-NON-FILL
+
+避免 filler 影响 diversity 结论。
+
+============================================================
+十、Candidate Pool 本身也要先验证是否真的形成差异
+============================================================
+
+因为这四种 pool 的目的就是体现不同 selection bias，
+
+构建完以后先检查：
+
+每种方法：
+
+Candidate PDMS
+d_GT
+q_policy
+Core %
+Boundary %
+OOD %
+Pairwise Diversity
+Unique Ratio
+Filler Ratio
+
+如果四种 pool 几乎完全一样：
+
+不要直接进入后续实验。
+
+先检查：
+
+raw reservoir diversity 是否不足
+
+selection implementation 是否错误
+
+但：
+
+【不能为了得到想要的图而事后改规则。】
+
+只允许修：
+
+implementation bug
+
+或：
+
+raw candidate reservoir 明显缺乏 diversity。
+
+============================================================
+十一、Exp-1：候选相对 SFT policy 的位置
+============================================================
+
+数据：
+
+1000 scenes
+×
+16 candidates
+×
+4 methods
+
+=
+64,000 selected candidates
+
+Reference：
+
+official IL rollout cloud。
+
+============================================================
+11.1 Metrics
+============================================================
+
+每条 candidate 保存：
+
+PDMS
+all component scores
+
+d_GT
+
+d_PC
+
+q_policy
+
+region:
+Core / Boundary / OOD
+
+nearest_IL_distance
+
+distance_to_IL_medoid
+
+source
+
+============================================================
+11.2 Pool-level metrics
+============================================================
+
+每 scene / method：
+
+Core fraction
+Boundary fraction
+OOD fraction
+
+median q
+
+median d_GT
+
+median PDMS
+
+pairwise trajectory diversity
+
+boundary-quality mass：
+
+fraction(
+Boundary
+AND
+PDMS > scene median raw-candidate PDMS
+)
+
+这个指标可以表示：
+
+“处于 policy boundary 且质量确实较好”的比例。
+
+============================================================
+11.3 重点分析
+============================================================
+
+特别验证：
+
+GT-near
+
+是否真的等价于：
+
+policy-near。
+
+画：
+
+x = d_GT
+y = q_policy
+
+如果散点很分散，
+
+说明：
+
+GT Euclidean proximity
+不能代替
+policy manifold compatibility。
+
+============================================================
+11.4 Figures
+============================================================
+
+Fig-1a
+
+四种方法：
+
+Core / Boundary / OOD
+
+stacked bar。
+
+Fig-1b
+
+q_policy ECDF / violin。
+
+Fig-1c
+
+x = q_policy
+y = PDMS
+
+scatter / hexbin。
+
+Fig-1d
+
+x = d_GT
+y = q_policy
+
+Fig-1e
+
+candidate pool pairwise diversity
+
+============================================================
+十二、Exp-2：单点高分 vs 局部稳健高质量
+============================================================
+
+研究问题：
+
+高 PDMS candidate
+
+是否只是：
+
+narrow reward spike？
+
+============================================================
+12.1 Held-out perturbation
+============================================================
+
+这里禁止复用 PC-MTS selection 阶段的 perturbations。
+
+每条 selected candidate：
+
+生成：
+
+12 held-out perturbations
+
+四档：
+
+0.02m
+0.05m
+0.10m
+0.20m
+
+每档：
+
+3 个 smooth perturbation directions
+
+合计：
+
+12。
+
+仍然必须：
+
+temporal coherent
+low-frequency
+trajectory-level deformation
+
+禁止：
+
+iid waypoint noise。
+
+============================================================
+12.2 Metrics
+============================================================
+
+每条 candidate：
+
+Original PDMS
+
+Local Mean PDMS
+
+Local Median PDMS
+
+Local P10 PDMS
+
+Local CVaR-20
+
+其中：
+
+CVaR-20
+=
+最差20% perturbations 的平均PDMS
+
+Local Feasible Rate
+
+Local Hard Failure Rate
+
+Local Drop
+
+=
+Original PDMS - Local Mean
+
+Robustness slope
+
+=
+PDMS 对 perturbation amplitude
+的下降斜率
+
+============================================================
+12.3 为什么加入 CVaR
+============================================================
+
+平均值可能掩盖：
+
+少数非常严重的失败。
+
+CVaR-20 用于回答：
+
+“候选稍微偏离以后，
+最差尾部有多危险？”
+
+这比只报 mean 更适合安全驾驶。
+
+============================================================
+12.4 Figures
+============================================================
+
+Fig-2a
+
+Original PDMS
+vs
+Local Mean PDMS
+
+Fig-2b
+
+Local Feasible Rate
+
+Fig-2c
+
+Local Drop
+
+Fig-2d
+
+Local CVaR-20
+
+Fig-2e
+
+Perturbation amplitude
+vs
+Mean PDMS
+
+四条方法曲线。
+
+Fig-2f
+
+Original PDMS
+vs
+Local Mean PDMS
+
+二维 scatter
+
+并报告 correlation。
+
+============================================================
+十三、Exp-3：真实 checkpoint 的 rollout / GRPO friendliness
+============================================================
+
+这里重新回到：
+
+5 个真实 checkpoint。
+
+不要和四种 candidate pool 一一对应。
+
+分三类：
+
+GT-only SFT：
+official IL
+
+Multi-Trajectory SFT：
+MTS-86.92
+MTS-87.51
+
+RL optimized：
+GRPO-90.41
+APR-91.45
+
+============================================================
+13.1 基础 rollout quality
+============================================================
+
+复用：
+
+1000 × 64
+
+rollout cache。
+
+每 scene / checkpoint 统计：
+
+Mean PDMS
+Median PDMS
+P10
+P25
+P75
+P90
+
+Feasible Rate
+
+Hard Failure Rate
+
+Oracle@8
+Oracle@16
+Oracle@32
+Oracle@64
+
+Mean-to-Oracle Gap
+
+=
+Oracle64 - MeanPDMS
+
+这个 gap 很重要。
+
+例如：
+
+Oracle 很高
+Mean 很低
+
+代表：
+
+“存在极高分尾部，
+但大部分 rollout 并不好。”
+
+============================================================
+13.2 GRPO group
+============================================================
+
+固定：
+
+G = 8
+
+64 rollout 按固定 seed 顺序：
+
+分成：
+
+8 groups × 8
+
+禁止重新排列寻找最好group。
+
+============================================================
+13.3 Reference
+============================================================
+
+每个 scene 建立：
+
+R_ref(scene)
+
+优先使用：
+
+official IL
+标准 deterministic/default-seed
+evaluation trajectory。
+
+禁止使用：
+
+IL Oracle@64
+
+作为 reference。
+
+============================================================
+13.4 p_plus
+============================================================
+
+计算：
+
+p_plus(Δ)
+
+=
+P(
+feasible
+AND
+R > R_ref + Δ
+)
+
+使用：
+
+Δ = 0
+Δ = 1
+Δ = 2
+
+单位：
+
+PDMS point。
+
+============================================================
+13.5 实际 Hit@8
+============================================================
+
+禁止只用：
+
+1-(1-p)^8
+
+估计。
+
+使用真实8轨迹 group。
+
+定义：
+
+Hit@8(Δ)
+
+=
+P(
+group中至少有一条
+feasible trajectory
+
+且：
+
+R > R_ref + Δ
+)
+
+============================================================
+13.6 All-Infeasible Group Rate
+============================================================
+
+统计：
+
+P(
+8 trajectories 全部 infeasible
+)
+
+以及：
+
+Mostly-Infeasible Rate：
+
+P(
+feasible_count <= 2
+)
+
+============================================================
+13.7 GRPO advantage pathology
+============================================================
+
+读取项目：
+
+原版 GRPO exact advantage implementation。
+
+不要自行发明版本。
+
+对于每个真实8轨迹group：
+
+复现原版 GRPO advantage。
+
+统计：
+
+Unsafe Positive Advantage Rate
+
+=
+
+#(
+infeasible
+AND
+advantage > 0
+)
+/
+#(
+advantage > 0
+)
+
+这个指标非常重要。
+
+它直接判断：
+
+“失败轨迹是否因为
+只是比其它失败轨迹稍好，
+而被GRPO正向强化。”
+
+同时统计：
+
+Feasible Positive Advantage Rate
+
+=
+
+#(
+feasible
+AND
+advantage > 0
+)
+/
+#(
+advantage > 0
+)
+
+============================================================
+13.8 Group reward structure
+============================================================
+
+每个 group：
+
+reward std
+
+best - median
+
+best - worst
+
+feasible_count
+
+positive_advantage_count
+
+feasible_positive_count
+
+============================================================
+13.9 Useful Diversity
+============================================================
+
+不要只报告所有 rollout 的 spread。
+
+同时计算：
+
+D_all
+
+D_feasible
+
+D_positive
+
+其中：
+
+D_positive
+
+只对：
+
+feasible
+AND
+reward > R_ref
+
+的 rollout 算 pairwise distance。
+
+我们真正关心的是：
+
+【高质量可行轨迹的多样性】
+
+而不是：
+
+垃圾轨迹带来的 diversity。
+
+============================================================
+十四、Exp-3最重要的图
+============================================================
+
+Fig-3a
+
+x = checkpoint
+
+Feasible Rate
++
+Mean PDMS
+
+Fig-3b
+
+Mean PDMS
+vs
+Oracle@64
+
+用于识别：
+
+high oracle / low mean。
+
+Fig-3c
+
+Hit@8：
+
+Δ=0
+Δ=1
+Δ=2
+
+Fig-3d
+
+All-infeasible
++
+Mostly-infeasible group ratio
+
+Fig-3e
+
+Unsafe Positive Advantage Rate
+
+Fig-3f
+
+Spread-AUC
+vs
+Hit@8(Δ=1)
+
+这张图特别重要。
+
+理想关系不是：
+
+越宽越好。
+
+而可能是：
+
+太窄：
+Hit低
+
+适中：
+Hit高、Feasible高
+
+太宽：
+大量失败
+
+Fig-3g
+
+D_all
+vs
+D_feasible
+vs
+D_positive
+
+区分：
+
+“有用多样性”
+
+和：
+
+“失败造成的虚假多样性”。
+
+============================================================
+十五、统计方法
+============================================================
+
+所有 model comparison：
+
+scene 是统计 unit。
+
+禁止把：
+
+1000×64 trajectories
+
+当成64000个独立样本直接做显著性检验。
+
+使用：
+
+scene-level aggregation。
+
+对于主要 pair：
+
+MTS-86.92 vs IL
+MTS-87.51 vs IL
+GRPO vs IL
+APR vs IL
+APR vs GRPO
+
+计算：
+
+mean difference
+median difference
+bootstrap 95% CI
+Wilcoxon signed-rank
+effect size
+
+所有主要图：
+
+bootstrap over scenes。
+
+============================================================
+十六、预先假设
+============================================================
+
+以下 hypothesis：
+
+只能写进报告的 Hypotheses section。
+
+不能写成代码 assertion。
+
+------------------------------------------------------------
+H1
+------------------------------------------------------------
+
+GT-only SFT / MTS-SFT
+
+可能具有更宽 rollout distribution。
+
+GRPO / APR
+
+可能更加 concentrated。
+
+------------------------------------------------------------
+H2
+------------------------------------------------------------
+
+Score candidate pool：
+
+可能具有最高单点 PDMS，
+
+但：
+
+policy OOD ratio
+和 local fragility
+
+更高。
+
+------------------------------------------------------------
+H3
+------------------------------------------------------------
+
+Pareto：
+
+能够改善 multi-objective quality，
+
+但：
+
+不能保证 policy compatibility。
+
+------------------------------------------------------------
+H4
+------------------------------------------------------------
+
+Pareto + GT-distance：
+
+能够降低 OOD，
+
+但：
+
+候选可能大量进入 policy Core，
+
+导致 novelty / expansion 较弱。
+
+------------------------------------------------------------
+H5
+------------------------------------------------------------
+
+PC-MTS：
+
+应该更多集中在：
+
+policy Boundary
+
+同时：
+
+OOD较少
+Local Feasible较高
+Local CVaR较高。
+
+------------------------------------------------------------
+H6
+------------------------------------------------------------
+
+MTS checkpoint 是否适合后续GRPO，
+
+不应该只看：
+
+Mean PDMS
+或者 Oracle@64。
+
+更关键的是：
+
+Feasible Rate
+Hit@8
+Unsafe Positive Advantage
+Useful Diversity
+
+之间的组合。
+
+============================================================
+十七、严禁的做法
+============================================================
+
+1. 不要根据最终结果反复调整 q threshold。
+
+2. 不要调 GT-distance threshold，
+直到 GT-distance pool “看起来像Core”。
+
+Primary：
+80 percentile
+
+固定。
+
+3. 不要调 PC-MTS threshold，
+直到 Boundary比例最高。
+
+Primary：
+
+50 <= q <95
+
+固定。
+
+4. 不要删除不支持 hypothesis 的 scene。
+
+5. 不要用最终APR表现选择1000 scene。
+
+6. 不要把 reconstructed candidate
+写成 historical training candidate。
+
+7. 不要为了让PC-MTS更好看，
+给它独享更强 candidate source。
+
+四种方法：
+
+必须来自同一个 raw reservoir。
+
+============================================================
+十八、性能与缓存
+============================================================
+
+所有 expensive stage 必须缓存。
+
+文件要带：
+
+scene_manifest_hash
+checkpoint_hash/path
+config_hash
+seed
+
+如果存在完全匹配cache：
+
+直接 resume。
+
+------------------------------------------------------------
+GPU rollout
+------------------------------------------------------------
+
+推荐命令形式：
+
+torchrun \
+  --standalone \
+  --nproc_per_node=8 \
+  tools/analysis/pc_mts_diagnostics/distributed_rollout.py \
+  --config configs/pc_mts_diagnostics/analysis.yaml \
+  --checkpoint official_il \
+  --num-scenes 1000 \
+  --num-rollouts 64
+
+依次5个checkpoint。
+
+------------------------------------------------------------
+CPU evaluator
+------------------------------------------------------------
+
+例如：
+
+python tools/analysis/pc_mts_diagnostics/evaluate_cached_rollouts.py \
+  --input ... \
+  --workers 96
+
+------------------------------------------------------------
+Candidate external generation
+------------------------------------------------------------
+
+同样8 GPU并行。
+
+============================================================
+十九、Smoke Test
+============================================================
+
+正式1000 scene前必须跑：
+
+20 scenes。
+
+设置：
+
+5 checkpoints
+8 rollout / scene
+
+candidate raw reservoir：
+
+16 GT-derived
++
+4 × 4 model-generated
+=
+32
+
+每method最终：
+
+8 candidates
+
+检查：
+
+trajectory representation
+checkpoint load
+metric一致性
+multiprocessing安全
+cache
+candidate source
+q_policy
+local perturbation
+figure pipeline
+
+通过以后：
+
+再运行 full config。
+
+============================================================
+二十、Benchmark
+============================================================
+
+正式运行前：
+
+使用50 scene
+
+分别 benchmark：
+
+GPU inference throughput
+
+CPU evaluator throughput
+
+记录：
+
+trajectory/s
+scene/min
+GPU utilization
+CPU utilization
+RAM
+GPU memory
+
+根据 benchmark：
+
+可以调整：
+
+batch size
+cpu workers
+
+但不能改变：
+
+实验采样数量和定义。
+
+============================================================
+二十一、最终输出
+============================================================
+
+最终生成：
+
+reports/
+PC_MTS_POLICY_DISTRIBUTION_DIAGNOSTICS_20260913.md
+
+报告结构：
+
+1. Experimental Setup
+2. Checkpoint Manifest
+3. Scene Sampling
+4. Parallelization and Compute
+5. Policy Distribution Width / Sharpness
+6. Reconstructed Candidate Reservoir
+7. Four Candidate Selection Rules
+8. Candidate Pool Sanity Check
+9. Exp-1 Policy-relative Candidate Position
+10. Exp-2 Local Robustness
+11. Exp-3 Rollout & GRPO Readiness
+12. Statistical Tests
+13. Hypothesis Validation
+14. Limitations
+15. Conclusions
+
+============================================================
+二十二、最终必须提供的核心表
+============================================================
+
+TABLE A — Policy Distribution
+
+Checkpoint
+Category
+Mean PDMS
+Feasible Rate
+Pairwise ADE
+Spread-AUC
+R90
+Endpoint Spread
+Effective Rank
+CenterShift-from-IL
+Oracle@64
+Useful Diversity
+
+------------------------------------------------------------
+
+TABLE B — Candidate Pools
+
+Method
+Candidate PDMS
+d_GT
+q_policy
+Core %
+Boundary %
+OOD %
+Pool Diversity
+Filler %
+Unique %
+
+------------------------------------------------------------
+
+TABLE C — Local Robustness
+
+Method
+Original PDMS
+Local Mean
+Local P10
+Local CVaR20
+Local Feasible Rate
+Local Drop
+Robustness Slope
+
+------------------------------------------------------------
+
+TABLE D — GRPO Readiness
+
+Checkpoint
+Feasible Rate
+Mean PDMS
+Oracle@64
+Oracle-Mean Gap
+p_plus@0
+p_plus@1
+p_plus@2
+Hit@8@0
+Hit@8@1
+Hit@8@2
+All-Infeasible Group %
+Mostly-Infeasible Group %
+Unsafe Positive Advantage %
+Feasible Positive Advantage %
+D_all
+D_feasible
+D_positive
+
+============================================================
+二十三、验收条件
+============================================================
+
+任务完成必须满足：
+
+[ ] 项目目录 VLA-AD 中完成
+[ ] 独立 analysis branch
+[ ] 5 checkpoint manifest 完成
+[ ] 1000 scene manifest 固定
+[ ] 8 GPU distributed rollout 实现
+[ ] CPU multiprocess evaluator 实现
+[ ] 5×1000×64 rollout 完成
+[ ] policy distribution width/sharpness分析完成
+[ ] 96/128 common raw candidate reservoir完成
+[ ] 四种candidate selection rule实现正确
+[ ] 每method每scene恰好16条
+[ ] filler/fallback全部有metadata
+[ ] candidate pool sanity check完成
+[ ] Exp-1完成
+[ ] Exp-2使用held-out perturbation完成
+[ ] Exp-3 GRPO exact advantage诊断完成
+[ ] paired scene-level statistics完成
+[ ] PNG图完成
+[ ] PDF图完成
+[ ] CSV/Parquet完成
+[ ] Markdown report完成
+[ ] smoke test完成
+[ ] benchmark记录完成
+[ ] 不修改原训练结果
+[ ] 所有结果来自真实计算，不是人工构造
+[ ] 最后单独git commit
+
+============================================================
+二十四、最终回复格式
+============================================================
+
+完成后只需要总结：
+
+1. branch + commit
+2. 五个checkpoint真实路径
+3. scene manifest
+4. 是否找到历史candidate
+5. reconstructed raw candidate具体组成
+6. 8-GPU实际运行命令
+7. CPU evaluator命令
+8. wall-clock time
+9. 四种candidate pool核心统计
+10. 五个checkpoint distribution统计
+11. local robustness结果
+12. GRPO-readiness结果
+13. 哪些 hypothesis 被支持
+14. 哪些 hypothesis 不被支持
+15. figures目录
+16. report路径
+
+如果正式1000-scene任务因为运行时间还未完成：
+
+不要虚构结果。
+
+明确报告：
+
+completed / running / pending
+
+以及当前进度。

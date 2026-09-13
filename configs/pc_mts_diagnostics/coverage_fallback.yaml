@@ -1,0 +1,24 @@
+version: pc_coverage_v1
+authorization: 想办法为每个场景构建16条候选轨迹，继续开展实验分析
+trigger: zero_accepted_parents_after_original_PC_MTS_fallbacks
+preserve_existing_nonempty_pools: true
+reservoir: same_frozen_common_raw_candidates
+selection: descending_PDMS_with_existing_soft_redundancy_suppression
+policy_percentile_used_as_reward: false
+heldout_scores_used_for_selection: false
+tiers:
+  - level: 6
+    rule: remove_q_only_keep_front1_feasible_reference_and_local_at_least_0.5
+  - level: 7
+    rule: feasible_and_local_at_least_0.5
+  - level: 8
+    rule: feasible
+  - level: 9
+    rule: NC_equals_1_and_DAC_equals_1
+last_resort: rescore_exact_duplicates_of_best_accepted_raw_candidate_if_fewer_than_pool_size
+reporting:
+  - full_1000_scene_ALL_16
+  - UNIQUE_NON_FILL_includes_real_coverage_candidates
+  - QUALIFIED_NON_FILL_excludes_coverage_candidates_and_fillers
+  - original_eligible_and_coverage_scene_strata_separately
+  - fallback_level_and_original_PC_failure_rate

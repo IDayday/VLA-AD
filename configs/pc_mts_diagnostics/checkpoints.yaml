@@ -1,0 +1,143 @@
+- name: official_il
+  label: Official IL
+  category: gt_sft
+  checkpoint_path: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt
+  sha256: 4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443
+  config_path: null
+  reported_pdms: null
+  training_method: released GT-only IL
+  git_commit: 8a200077601ef33414469cfbe9fd095e322cccb6
+  metadata_source: Official released IL; do not substitute local A0 reproduction score
+  notes: Native learned normalization and adapter retained; common output is XY metres,
+    heading radians.
+  code_root: /mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/official_recogdrive
+  config:
+    use_expert_features: false
+    use_planning_token_adapter: false
+    use_fs_norm: false
+    vlm_size: small
+    sampling_method: ddim
+    num_inference_steps: 5
+- name: mts_8692
+  label: MTS-86.92
+  category: multi_sft
+  checkpoint_path: /mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_v6_full103k_from_random_20260713T1706Z/epoch_165.ckpt
+  sha256: bf7183e1bbc49fd4ee1f275d293be944996dde4bc9518b82c03fdd0300fa6ff2
+  config_path: /mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_v6_full103k_from_random_20260713T1706Z/train_args.json
+  reported_pdms: 86.92391718739543
+  training_method: multi-trajectory supervision; no mapping to reconstructed M1-M4
+  git_commit: ab9124c08100d3f14e6ca45da19e40e3d5a5c3fb
+  metadata_source: /mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_v6_full103k_from_random_20260713T1706Z/train_args.json
+  notes: Native learned normalization and adapter retained; common output is XY metres,
+    heading radians.
+  code_root: /mnt/project/VLA-AD-worktrees/a5-epdms-stage3
+  config:
+    use_expert_features: false
+    use_planning_token_adapter: true
+    use_fs_norm: true
+    vlm_size: small
+    sampling_method: ddim
+    num_inference_steps: 5
+    fs_norm_clip: 5.0
+    fs_norm_min_version: 2
+    fs_norm_output_clip: 12.0
+    fs_norm_output_clip_mode: stats_bounds
+    fs_norm_require_archive_match: true
+    fs_norm_stats_path: /mnt/project/VLA-AD_last_vla_dev/outputs/sg_fps_v6_full_training_20260713T1648Z/fs_norm/fs_norm_stats_v2_standard.npz
+    fs_norm_target_clip: 0.0
+    fs_norm_use_robust: false
+    planning_condition_dropout: 0.1
+    planning_condition_layers: cross_attention
+    planning_context_gate_init: 0.05
+    planning_gate_init: 0.05
+    planning_num_heads: 8
+    planning_num_tokens: 16
+    use_expert_gates: true
+    use_expert_type_embedding: true
+    use_jepa: false
+    use_last_rd: false
+    use_last_vla: false
+    use_two_expert_slots: false
+    use_vggt: false
+    use_vggt_geometry_tokens: true
+- name: mts_8751
+  label: MTS-87.51
+  category: multi_sft
+  checkpoint_path: /mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_a5_full103k_standardv2_clean_20260710T091344Z/epoch_155.ckpt
+  sha256: 79257dffba07792c77835aadd31e05bdab8c2f9afec75bc9772bac772a32e4b7
+  config_path: /mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_a5_full103k_standardv2_clean_20260710T091344Z/train_args.json
+  reported_pdms: 87.51984244441522
+  training_method: multi-trajectory supervision; no mapping to reconstructed M1-M4
+  git_commit: ab9124c08100d3f14e6ca45da19e40e3d5a5c3fb
+  metadata_source: /mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_a5_full103k_standardv2_clean_20260710T091344Z/train_args.json
+  notes: Native learned normalization and adapter retained; common output is XY metres,
+    heading radians.
+  code_root: /mnt/project/VLA-AD-worktrees/a5-epdms-stage3
+  config:
+    use_expert_features: false
+    use_planning_token_adapter: true
+    use_fs_norm: true
+    vlm_size: small
+    sampling_method: ddim
+    num_inference_steps: 5
+    fs_norm_clip: 5.0
+    fs_norm_min_version: 2
+    fs_norm_output_clip: 12.0
+    fs_norm_output_clip_mode: stats_bounds
+    fs_norm_stats_path: /mnt/project/VLA-AD_last_vla_dev/outputs/pta_fs_dit_fs_stats_full103k_20260710T084637Z/fs_norm_stats_v2_standard.npz
+    fs_norm_target_clip: 0.0
+    fs_norm_use_robust: false
+    planning_condition_dropout: 0.1
+    planning_condition_layers: cross_attention
+    planning_context_gate_init: 0.05
+    planning_gate_init: 0.05
+    planning_num_heads: 8
+    planning_num_tokens: 16
+    use_expert_gates: true
+    use_expert_type_embedding: true
+    use_jepa: false
+    use_last_rd: false
+    use_last_vla: false
+    use_two_expert_slots: false
+    use_vggt: false
+    use_vggt_geometry_tokens: true
+- name: grpo_9041
+  label: GRPO-90.41
+  category: rl_optimized
+  checkpoint_path: /mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/outputs/pdms_eval_stage3_ckpt_watcher_20260609T093852Z/ckpts/epoch8_step11970.ckpt
+  sha256: b51951abbba86e9661fc82f85406d09ae26c6eff6aa3651a40462363866fb326
+  config_path: null
+  reported_pdms: 90.41989766469273
+  training_method: original GRPO
+  git_commit: 8a200077601ef33414469cfbe9fd095e322cccb6
+  metadata_source: /mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/outputs/pdms_eval_stage3_ckpt_watcher_20260609T093852Z/pdms_summary.csv
+  notes: Native learned normalization and adapter retained; common output is XY metres,
+    heading radians.
+  code_root: /mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/official_recogdrive
+  config:
+    use_expert_features: false
+    use_planning_token_adapter: false
+    use_fs_norm: false
+    vlm_size: small
+    sampling_method: ddim
+    num_inference_steps: 5
+- name: apr_9145
+  label: APR-91.45
+  category: rl_optimized
+  checkpoint_path: /mnt/project/VLA-AD/outputs/pdms914497_reverse_conflict_residual_trust105_scale14p3_20260727/reverse_conflict_residual_scale14p3.ckpt
+  sha256: aeea278ce1bcc473b42ade97c0705bcc674dea315a051f18e1fe0173582d3274
+  config_path: null
+  reported_pdms: 91.450465
+  training_method: APR / residual-merged policy
+  git_commit: ab9124c08100d3f14e6ca45da19e40e3d5a5c3fb
+  metadata_source: 'Prior audit: final submission / checkpoint manifest'
+  notes: Native learned normalization and adapter retained; common output is XY metres,
+    heading radians.
+  code_root: /mnt/project/VLA-AD-worktrees/a5-epdms-stage3
+  config:
+    use_expert_features: false
+    use_planning_token_adapter: false
+    use_fs_norm: false
+    vlm_size: small
+    sampling_method: ddim
+    num_inference_steps: 5
