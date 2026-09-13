@@ -1,0 +1,11 @@
+{
+  "command": [
+    "/root/miniconda3/envs/navsim/bin/python",
+    "tools/analysis/pc_mts_diagnostics_v2/score.py",
+    "raw_candidates",
+    "--smoke",
+    "--validate"
+  ],
+  "returncode": 0,
+  "wall_seconds": 3.5567753314971924
+}

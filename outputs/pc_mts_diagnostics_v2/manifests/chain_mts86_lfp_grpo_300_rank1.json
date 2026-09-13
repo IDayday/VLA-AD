@@ -1,0 +1,62 @@
+{
+  "identity": {
+    "v1_commit": "2dd4b55fc658e6182aaf857bf3267b652c873cc7",
+    "scene_manifest_hash": "f46fc7cd38329aed7e52ff749544caf4c90a8d43780c00f886fc99b3d6b407a6",
+    "config_hash": "ced475943ade74a4cab12e442ca41f0f7e96c24d32cfe8235f14ddb3f425a4c5"
+  },
+  "snapshot": {
+    "name": "mts86_lfp_grpo_300",
+    "role": "early",
+    "step": 300,
+    "reuse_V1": null,
+    "model": {
+      "name": "mts86_lfp_grpo_300",
+      "label": "MTS-86.92",
+      "category": "multi_sft",
+      "checkpoint_path": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage3_lfp_grpo_v1_v6_epoch165_formal_20260715T145650Z/hydra/training_recogdrive_agent/stage3_lfp_grpo_v1_v6_epoch165_formal_20260715T145650Z/step_checkpoints/step-step=300.ckpt",
+      "sha256": "2a3b3ee14c24bf38e5cfeebe2923f7830e786ed74fae472b04e2e8ede37e82f0",
+      "config_path": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage3_lfp_grpo_v1_v6_epoch165_formal_20260715T145650Z/hydra/training_recogdrive_agent/stage3_lfp_grpo_v1_v6_epoch165_formal_20260715T145650Z/code/hydra/config.yaml",
+      "reported_pdms": null,
+      "training_method": "multi-trajectory supervision; no mapping to reconstructed M1-M4",
+      "git_commit": "ab9124c08100d3f14e6ca45da19e40e3d5a5c3fb",
+      "metadata_source": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_v6_full103k_from_random_20260713T1706Z/train_args.json",
+      "notes": "Native learned normalization and adapter retained; common output is XY metres, heading radians.",
+      "code_root": "/mnt/project/VLA-AD-worktrees/a5-epdms-stage3",
+      "config": {
+        "use_expert_features": false,
+        "use_planning_token_adapter": true,
+        "use_fs_norm": true,
+        "vlm_size": "small",
+        "sampling_method": "ddim",
+        "num_inference_steps": 5,
+        "fs_norm_clip": 5.0,
+        "fs_norm_min_version": 2,
+        "fs_norm_output_clip": 12.0,
+        "fs_norm_output_clip_mode": "stats_bounds",
+        "fs_norm_require_archive_match": true,
+        "fs_norm_stats_path": "/mnt/project/VLA-AD_last_vla_dev/outputs/sg_fps_v6_full_training_20260713T1648Z/fs_norm/fs_norm_stats_v2_standard.npz",
+        "fs_norm_target_clip": 0.0,
+        "fs_norm_use_robust": false,
+        "planning_condition_dropout": 0.1,
+        "planning_condition_layers": "cross_attention",
+        "planning_context_gate_init": 0.05,
+        "planning_gate_init": 0.05,
+        "planning_num_heads": 8,
+        "planning_num_tokens": 16,
+        "use_expert_gates": true,
+        "use_expert_type_embedding": true,
+        "use_jepa": false,
+        "use_last_rd": false,
+        "use_last_vla": false,
+        "use_two_expert_slots": false,
+        "use_vggt": false,
+        "use_vggt_geometry_tokens": true
+      }
+    }
+  },
+  "seed_stream": "Exact first32 V1 policy streams; common random numbers with step0",
+  "rank": 1,
+  "count": 38,
+  "new_count": 38,
+  "seconds": 22.126474380493164
+}

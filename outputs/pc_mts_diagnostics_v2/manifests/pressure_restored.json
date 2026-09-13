@@ -1,0 +1,36 @@
+{
+  "jobs": [
+    {
+      "pid": 89382,
+      "cuda_visible_devices": "GPU-f679bff0-a4a2-ae4f-0b85-74c519b45a9c"
+    },
+    {
+      "pid": 89383,
+      "cuda_visible_devices": "GPU-562375d4-b1d6-f0d9-a68d-5a81e5272907"
+    },
+    {
+      "pid": 89384,
+      "cuda_visible_devices": "GPU-b8a35758-a506-a8a1-dca7-499c485068fc"
+    },
+    {
+      "pid": 89385,
+      "cuda_visible_devices": "GPU-72a7d08b-16b7-7c64-a324-a08e043c6006"
+    },
+    {
+      "pid": 89386,
+      "cuda_visible_devices": "GPU-f35ae00b-0c9c-c01c-efba-e527cdd32f76"
+    },
+    {
+      "pid": 89387,
+      "cuda_visible_devices": "GPU-cba744b9-96c8-c3e2-f836-2f0126c038a0"
+    },
+    {
+      "pid": 89388,
+      "cuda_visible_devices": "GPU-017ee82b-e9ff-1f6c-547e-ca2ccf3363ac"
+    },
+    {
+      "pid": 89389,
+      "cuda_visible_devices": "GPU-621b6ab5-d5ba-4219-b7ca-8b9f84479900"
+    }
+  ]
+}

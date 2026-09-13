@@ -1,0 +1,16 @@
+{
+  "identity": {
+    "v1_commit": "2dd4b55fc658e6182aaf857bf3267b652c873cc7",
+    "scene_manifest_hash": "f46fc7cd38329aed7e52ff749544caf4c90a8d43780c00f886fc99b3d6b407a6",
+    "config_hash": "ced475943ade74a4cab12e442ca41f0f7e96c24d32cfe8235f14ddb3f425a4c5"
+  },
+  "candidate_rows": 64000,
+  "pool_rows": 4000,
+  "full_scenes": 1000,
+  "contrastive_scenes": 276,
+  "denoising_scenes": 500,
+  "denoising_contrastive_scenes": 132,
+  "pc_unqualified_scene_count": 588,
+  "pc_fill_count": 9625,
+  "pc_OOD_filler_count": 0
+}

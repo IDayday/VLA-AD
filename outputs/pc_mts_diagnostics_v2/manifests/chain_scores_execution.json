@@ -1,0 +1,9 @@
+{
+  "command": [
+    "/root/miniconda3/envs/navsim/bin/python",
+    "/mnt/project/VLA-AD/tools/analysis/pc_mts_diagnostics_v2/historical_chains.py",
+    "--score"
+  ],
+  "returncode": 0,
+  "wall_seconds": 15.689481973648071
+}

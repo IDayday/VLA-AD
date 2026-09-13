@@ -1,0 +1,41 @@
+{
+  "identity": {
+    "v1_commit": "2dd4b55fc658e6182aaf857bf3267b652c873cc7",
+    "scene_manifest_hash": "f46fc7cd38329aed7e52ff749544caf4c90a8d43780c00f886fc99b3d6b407a6",
+    "config_hash": "ced475943ade74a4cab12e442ca41f0f7e96c24d32cfe8235f14ddb3f425a4c5"
+  },
+  "scene_count": 20,
+  "candidate_count": 3840,
+  "sources": {
+    "GT": 640,
+    "IL-native": 640,
+    "External-MTS": 640,
+    "External-RL": 640,
+    "Bridge-0.2": 320,
+    "Bridge-0.4": 320,
+    "Bridge-0.6": 320,
+    "Bridge-0.8": 320
+  },
+  "bridge": {
+    "anchor_pairs": 320,
+    "strict_monotonic_fraction": 1.0,
+    "nondecreasing_fraction": 1.0,
+    "alpha08_greater02_fraction": 1.0,
+    "median_ratio_08_02": 2.63399005875838,
+    "mean_r_knn_by_alpha": {
+      "0.2": 3.353371730461581,
+      "0.4": 5.507610525151935,
+      "0.6": 7.714385214300249,
+      "0.8": 9.94594611053849
+    },
+    "median_r_knn_by_alpha": {
+      "0.2": 2.5198860843273123,
+      "0.4": 3.8732093780823824,
+      "0.6": 5.223241874088774,
+      "0.8": 6.547607061123781
+    },
+    "definition": "Same-anchor bridge, alpha fixed before outcomes; KNN can change nearest neighbours."
+  },
+  "contrastive_scene_count": 7,
+  "selection_has_not_run": true
+}

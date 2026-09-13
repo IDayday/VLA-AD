@@ -1,0 +1,8 @@
+gate,mean_candidates,zero_scenes,at_least16_scenes
+boundary,20.202,0,680
+boundary_feasible,19.053,38,630
+boundary_feasible_quality,18.803,38,611
+boundary_feasible_front,7.141,596,228
+boundary_feasible_front_quality,7.141,596,228
+primary,7.116,597,227
+core_all_quality,5.58,626,183

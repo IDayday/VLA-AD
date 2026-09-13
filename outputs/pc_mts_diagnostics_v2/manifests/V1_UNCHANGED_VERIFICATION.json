@@ -1,0 +1,49 @@
+{
+  "files_checked": 29130,
+  "exact_hash_unchanged": 29122,
+  "all_scientific_results_unchanged": true,
+  "all_original_file_contents_preserved": true,
+  "runtime_log_appends": [
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/pressure_restore_gpu6.log",
+      "status": "preexisting_runtime_log_append_only",
+      "appended_bytes": 162
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/pressure_restore_gpu2.log",
+      "status": "preexisting_runtime_log_append_only",
+      "appended_bytes": 162
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/pressure_restore_gpu3.log",
+      "status": "preexisting_runtime_log_append_only",
+      "appended_bytes": 162
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/pressure_restore_gpu7.log",
+      "status": "preexisting_runtime_log_append_only",
+      "appended_bytes": 162
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/pressure_restore_gpu4.log",
+      "status": "preexisting_runtime_log_append_only",
+      "appended_bytes": 162
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/pressure_restore_gpu1.log",
+      "status": "preexisting_runtime_log_append_only",
+      "appended_bytes": 162
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/pressure_restore_gpu0.log",
+      "status": "preexisting_runtime_log_append_only",
+      "appended_bytes": 162
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/pressure_restore_gpu5.log",
+      "status": "preexisting_runtime_log_append_only",
+      "appended_bytes": 162
+    }
+  ],
+  "note": "Eight preexisting V1 pressure jobs each appended 162 bytes of status output before they were stopped. Original byte prefixes match sealed hashes. No V1 file was truncated or rewritten. Restored jobs now log only under V2."
+}

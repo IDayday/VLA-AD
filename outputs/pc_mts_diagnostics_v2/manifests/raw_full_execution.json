@@ -1,0 +1,8 @@
+{
+  "command": [
+    "/root/miniconda3/envs/navsim/bin/python",
+    "tools/analysis/pc_mts_diagnostics_v2/build_reservoir.py"
+  ],
+  "returncode": 0,
+  "wall_seconds": 5.365236043930054
+}

@@ -1,0 +1,18 @@
+{
+  "identity": {
+    "v1_commit": "2dd4b55fc658e6182aaf857bf3267b652c873cc7",
+    "scene_manifest_hash": "f46fc7cd38329aed7e52ff749544caf4c90a8d43780c00f886fc99b3d6b407a6",
+    "config_hash": "ced475943ade74a4cab12e442ca41f0f7e96c24d32cfe8235f14ddb3f425a4c5"
+  },
+  "IL_spread_quartile_bounds": [
+    0.10632687520823893,
+    0.12059553370894605,
+    0.13577137935122272
+  ],
+  "GT_heading_tertile_bounds": [
+    0.022159174332553544,
+    0.27334895057333775
+  ],
+  "difficulty_definition": "Official IL stochastic Spread-AUC, not outcomes from APR",
+  "heading_definition": "Total absolute unwrapped GT heading variation including origin heading 0"
+}

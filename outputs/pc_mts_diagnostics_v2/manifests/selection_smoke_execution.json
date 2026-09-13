@@ -1,0 +1,9 @@
+{
+  "command": [
+    "/root/miniconda3/envs/navsim/bin/python",
+    "tools/analysis/pc_mts_diagnostics_v2/select_pools.py",
+    "--smoke"
+  ],
+  "returncode": 0,
+  "wall_seconds": 5.618623495101929
+}

@@ -1,0 +1,130 @@
+{
+  "identity": {
+    "v1_commit": "2dd4b55fc658e6182aaf857bf3267b652c873cc7",
+    "scene_manifest_hash": "f46fc7cd38329aed7e52ff749544caf4c90a8d43780c00f886fc99b3d6b407a6",
+    "config_hash": "ced475943ade74a4cab12e442ca41f0f7e96c24d32cfe8235f14ddb3f425a4c5"
+  },
+  "rows": [
+    {
+      "token": "2a2403c9b08b53ac",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "dc76a771066b5553",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "cde84b97e6505437",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a3e94bd829b75673",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "6e5e2d80ec915e15",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "7b20cfb388a15b3d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "116f3217b5875595",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b940d77be0d45ec9",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "190b153cfd3b5302",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "a566b5f3bd0c5522",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "cf430322beb852ca",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2314cd5f97c5596c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4fa6a8e71f4a5984",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8b0773eaa2375bbf",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9ed0f61a7d9551dd",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e91a2d26f30e5b34",
+      "primary_eligible_count": 6,
+      "qualified_raw_count": 15,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "e671280656f55009",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e4bc6fc5aeb15a9b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9263d47ef82d5a88",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b003c9652cb05ffd",
+      "primary_eligible_count": 61,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    }
+  ],
+  "scene_count": 20
+}

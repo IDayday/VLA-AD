@@ -1,0 +1,18 @@
+{
+  "namespaces": {
+    "v2_il_support_R": {
+      "count": 128000,
+      "digest": "578c465dbc3873992347b41b7ad806ffbcceb8f576763b11c172445115325879"
+    },
+    "v2_il_support_Q": {
+      "count": 128000,
+      "digest": "3b08ee2c91c7be699b276df5c0f62ee4df6ffc649fbb62a2123a193cb08a3f0d"
+    },
+    "v2_candidate_il": {
+      "count": 32000,
+      "digest": "65dbab2e71d145a0a30aaf9887124a36846ae1314a590580af0918b0f3fe3077"
+    }
+  },
+  "global_initial_seed_overlap": 0,
+  "seed_bits": 63
+}

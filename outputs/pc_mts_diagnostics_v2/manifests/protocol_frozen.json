@@ -1,0 +1,103 @@
+{
+  "identity": {
+    "v1_commit": "2dd4b55fc658e6182aaf857bf3267b652c873cc7",
+    "scene_manifest_hash": "f46fc7cd38329aed7e52ff749544caf4c90a8d43780c00f886fc99b3d6b407a6",
+    "config_hash": "ced475943ade74a4cab12e442ca41f0f7e96c24d32cfe8235f14ddb3f425a4c5"
+  },
+  "config": {
+    "version": "v2_primary_20260913",
+    "seed": 20260913,
+    "scene_count": 1000,
+    "denoising_scene_count": 500,
+    "chain_scene_count": 300,
+    "chain_rollouts": 32,
+    "support_R": 128,
+    "calibration_Q": 128,
+    "candidate_IL": 32,
+    "external_per_model": 16,
+    "external_source": "first_16_independent_external_rollouts_from_V1",
+    "gt_count": 32,
+    "gt_amplitudes_m": [
+      0.03,
+      0.08,
+      0.15,
+      0.3,
+      0.5
+    ],
+    "bridge_anchors_per_source": 4,
+    "bridge_alphas": [
+      0.2,
+      0.4,
+      0.6,
+      0.8
+    ],
+    "raw_count": 192,
+    "pool_size": 16,
+    "knn": 5,
+    "covariance": "sklearn_LedoitWolf",
+    "covariance_eigenvalue_floor_m2": 1e-10,
+    "distance_ratio_denominator_floor_m": 1e-08,
+    "sampler": "DDIM",
+    "diffusion_steps": 5,
+    "eta": 1.0,
+    "temperature": 1.0,
+    "cfg": null,
+    "precision": "fp32",
+    "inference_batch": 16,
+    "gpu_processes": 8,
+    "loader_workers_per_gpu": 4,
+    "cpu_workers": 96,
+    "selection_amplitudes_m": [
+      0.03,
+      0.06
+    ],
+    "selection_directions_per_amplitude": 2,
+    "heldout_amplitudes_m": [
+      0.05,
+      0.15,
+      0.3,
+      0.5
+    ],
+    "heldout_families": [
+      "lateral",
+      "curvature",
+      "progress"
+    ],
+    "heldout_directions": [
+      -1,
+      1
+    ],
+    "pc_front_max": 2,
+    "pc_reference_margin_points": 1.0,
+    "pc_q_interval": [
+      50,
+      95
+    ],
+    "pc_local_primary": 0.75,
+    "pc_local_relaxed": 0.5,
+    "pc_core_fallback": "q_below_50_descending_then_PDMS_keep_quality_and_local_0.50",
+    "pc_zero_parent_extension": "keep_q_below_95_relax_quality_choose_core_or_boundary_then_fill_and_mark_unqualified",
+    "pc_zero_compatible_extension": "nearest_IL_native_candidate_then_fill_mark_OOD_and_unqualified",
+    "tiny_filler_max_displacement_m": 0.01,
+    "gt_threshold_source": "frozen_V1_command_80_90_95_percentiles",
+    "contrastive_core_min": 16,
+    "contrastive_far_min": 16,
+    "contrastive_boundary_min": 8,
+    "contrastive_quality_quantile": 0.75,
+    "contrastive_near_definition": "q_below_50",
+    "robust_radius_max_drop_points": 2.0,
+    "robust_radius_min_feasible_fraction": 0.6666666666666666,
+    "robust_radius_requires_all_smaller_amplitudes_pass": true,
+    "normalized_drop_definition": "signed_PDMS_point_drop_divided_by_100",
+    "robustness_auc_definition": "trapezoid_integral_over_amplitude_including_origin_zero_divided_by_max_amplitude",
+    "denoising_requested_schedule_fractions": [
+      0.2,
+      0.5,
+      0.8
+    ],
+    "denoising_noise_repeats": 2,
+    "denoising_reverse": "native_DDIM_to_zero_eta0_no_reverse_noise",
+    "denoising_epsilon": "per_scene_Q_pooled_reconstruction_ADE_95th_percentile",
+    "bootstrap_replicates": 3000
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "identity": {
+    "v1_commit": "2dd4b55fc658e6182aaf857bf3267b652c873cc7",
+    "scene_manifest_hash": "f46fc7cd38329aed7e52ff749544caf4c90a8d43780c00f886fc99b3d6b407a6",
+    "config_hash": "ced475943ade74a4cab12e442ca41f0f7e96c24d32cfe8235f14ddb3f425a4c5"
+  },
+  "protocol": {
+    "reason": "The initial three held-out families passed seeds but did not consume them. Fix seed use for independent local validation only.",
+    "shape": "Before max-XY amplitude normalization, multiply displacement at u by 1+0.1*z*sin(pi*u), z~Uniform(-1,1) from the assigned independent probe seed.",
+    "amplitudes": [
+      0.05,
+      0.15,
+      0.3,
+      0.5
+    ],
+    "families": [
+      "lateral",
+      "curvature",
+      "progress"
+    ],
+    "directions": [
+      -1,
+      1
+    ],
+    "selection": "No selection, bridge alpha, q threshold, contrastive rule or checkpoint rollout changed.",
+    "archive": "Original deterministic heldout and evaluator/heldout retained; initial derived tables/report copied to audit_archives/deterministic_shape_initial.",
+    "rule": "Single implementation correction fixed before seeded robustness evaluation; no coefficient search or outcome tuning."
+  }
+}

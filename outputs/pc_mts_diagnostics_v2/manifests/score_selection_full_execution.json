@@ -1,0 +1,9 @@
+{
+  "command": [
+    "/root/miniconda3/envs/navsim/bin/python",
+    "tools/analysis/pc_mts_diagnostics_v2/score.py",
+    "selection_local"
+  ],
+  "returncode": 0,
+  "wall_seconds": 57.52388525009155
+}

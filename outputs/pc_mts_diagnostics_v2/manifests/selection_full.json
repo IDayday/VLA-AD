@@ -1,0 +1,6010 @@
+{
+  "identity": {
+    "v1_commit": "2dd4b55fc658e6182aaf857bf3267b652c873cc7",
+    "scene_manifest_hash": "f46fc7cd38329aed7e52ff749544caf4c90a8d43780c00f886fc99b3d6b407a6",
+    "config_hash": "ced475943ade74a4cab12e442ca41f0f7e96c24d32cfe8235f14ddb3f425a4c5"
+  },
+  "rows": [
+    {
+      "token": "23e39302332152b2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "411a748874035630",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "40808270ce205b83",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "86208267d61253c0",
+      "primary_eligible_count": 20,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "f8268857204e554e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1bf169a6aaf65858",
+      "primary_eligible_count": 22,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "3764407c90d65df3",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "38cfd81687975661",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "42e6895442ab5601",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b34272d337d350d2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b23ede9a183b5b71",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "fff951eab9f45288",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4fa9113617d254d4",
+      "primary_eligible_count": 21,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "988785170de957da",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "046b1cc13f0d5f9d",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "d7fbd35a0f315447",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "951957b841e05cfa",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "61db822891625c3b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "759e9e451eba5b47",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9c05edf9d6e85716",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "467bbee636b65c84",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4f6409df56a85592",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "16ddb1838af755e3",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2ce59f70a15b5ddf",
+      "primary_eligible_count": 19,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "461fb854eaa3583e",
+      "primary_eligible_count": 21,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "8b800af555d35794",
+      "primary_eligible_count": 26,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "2ab1b3941f7153cb",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4bc510a669d8549f",
+      "primary_eligible_count": 3,
+      "qualified_raw_count": 3,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "3387bab95d41528a",
+      "primary_eligible_count": 8,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "e5acc98f52f458cc",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "3e9026530c475726",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2ae0a44cc4de5c4a",
+      "primary_eligible_count": 24,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "cc94486698ff58d1",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "969763763ce754a4",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ff6ab495a139534e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "70248e0bb43a503b",
+      "primary_eligible_count": 27,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "2a2403c9b08b53ac",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "854169aa74e95251",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "93a9927586995095",
+      "primary_eligible_count": 23,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "af62d866653053f6",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "17d296a87fb45380",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "5370751917315916",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "adaf33e4ba555709",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1aa0acb229945e9b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "fad9e78a17825042",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4eaf32face4b5ece",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "2db045daf25c5bb7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b23f3d728c08529f",
+      "primary_eligible_count": 37,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "dc76a771066b5553",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d76b0458667c59a2",
+      "primary_eligible_count": 12,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "8cf3b1868b2f5262",
+      "primary_eligible_count": 4,
+      "qualified_raw_count": 7,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "990bd9b32e5d5f60",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "6320ecb991675a39",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "66243e185353563a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "cde84b97e6505437",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d968f9c81b945be1",
+      "primary_eligible_count": 27,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "0a87bb919dbb58b6",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "fe5811497ace53af",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1734440b807a58ef",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "480434fc72d455af",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "cb8e247140d55ab2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "095770e79ccf5d82",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "d7f25a0ac141583a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4b0df2804f165dda",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "ab6ba1da1dd8592b",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 7,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "3feb7781f83754a7",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "6f471ee76c595c92",
+      "primary_eligible_count": 34,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "32516745ea1b59ef",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "a65dd6d24f575771",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9ce305abb88f5ad0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "7af6867add5b5f2c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b65e09c4d8125da0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "cbe1e93e188f5490",
+      "primary_eligible_count": 2,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "6ca6a1a4f3dc5d85",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0ee58e583be85ffb",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a28a2771a9fa5c1d",
+      "primary_eligible_count": 21,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "488e4248a8985e5a",
+      "primary_eligible_count": 12,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "0beb530925b9514b",
+      "primary_eligible_count": 24,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "29b53c57c19b57fe",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2639525675535145",
+      "primary_eligible_count": 21,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9a83782a2cf85611",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "cd01f21ff39d541a",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "facaaf8c0e8c5c65",
+      "primary_eligible_count": 12,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "88757fb00fda507b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e9f4daa7d910568c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d6bb0cea4dbd5b44",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "efad2708409b5834",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "3a4cfdd4bfa55a5e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e926ec6a69cc575c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b6093d9c703e54b1",
+      "primary_eligible_count": 11,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "d58eb13402485ae7",
+      "primary_eligible_count": 12,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "f1aa5d5ed7c65114",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4ea3d4068eda5cc5",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "6c0dbda0d8e45ae9",
+      "primary_eligible_count": 34,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b4322d76ebf8569f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "acfc271e3c3d58fa",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b222df74b8155735",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "415d6cd62f3b5c1c",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b28e9b2fa67452a7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "bd8dea7f7efc5343",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8224627048195e4f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "3225bfcbea245dd7",
+      "primary_eligible_count": 27,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "114a9052bd6851a2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "f80fe289f8135602",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "983b7ed08a4b5a88",
+      "primary_eligible_count": 19,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "34dd4c6fb6245b9a",
+      "primary_eligible_count": 2,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "5895d1e3cb355fb9",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "14b505fe90ef5fb8",
+      "primary_eligible_count": 12,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "1ce58516c7675036",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b1e88b8722105d53",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "410fac99463459e6",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "5207306ed1a05de8",
+      "primary_eligible_count": 11,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "8ba3bff293265674",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "69560676d53a56c9",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "cef0adbb58ad5ca1",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c5dcabed55395a6e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8b839595c4105c65",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "f32a0e56a5b75884",
+      "primary_eligible_count": 3,
+      "qualified_raw_count": 3,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "972eb434cfd159e8",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "505c44ea52485f9d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c0b07b38110a556f",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "7fe310f364355e2d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "efdd48896e7a5f15",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e47d448a999b5595",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "6c0b6e4fdf005a81",
+      "primary_eligible_count": 20,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "071d2ff38b4855ed",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b450f88783c15dea",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "7b3902956ebc561d",
+      "primary_eligible_count": 27,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "dc73cea57e105ebd",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b87bd020396b5670",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ba1a894e5a6350d2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "ddbfb3b2a05c5918",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "a93ffd0f36b65714",
+      "primary_eligible_count": 33,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "2b2663b56a6555a2",
+      "primary_eligible_count": 5,
+      "qualified_raw_count": 7,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "f9b32e71bedb5996",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "886df3cce3a95a83",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "160a7c3cbeee5f8b",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "24fab0f19fd35cd6",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b63b325909a058c9",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9b500f26b0f8560e",
+      "primary_eligible_count": 21,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "c9ba785129c35b36",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "aac1853286fb586a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "022fef6d66485384",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "51480b09db315e89",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "5d3ce016a8a256cf",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "60691b9dd3355992",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0056ae51961f5a18",
+      "primary_eligible_count": 35,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "80d5ce364722516b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "f0ff3b146af85463",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "6f2a7bf7cf275dd3",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "1090fdb8b57850f6",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a3fa79234a9d5d7d",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "36c6cbf6c8a25415",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8fe647ed2b7a5aee",
+      "primary_eligible_count": 10,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "5abdbfe1845e59c5",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4af11dadd34359fe",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ad25b37aaad95a6b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d5201097ad6e5d67",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "f96a48c3bcd45c50",
+      "primary_eligible_count": 10,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "3f36d5316f0d5a94",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b6bba53a1bef520e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "7b840b044a6a5e8d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "22a09b0100175b62",
+      "primary_eligible_count": 11,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "39fd3f2e5f005306",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "497e7be0400158a9",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "6a53dd2411825857",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "fb9dcf5b46d65616",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "39fe00229f7b5ac4",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "63dcb963cece5b7d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "88f9b4f87b6b5bd5",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "90f5bf5743cf5df0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "52caccf1b3b95e4e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1b064a029c0e513a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "50790f7ba9405c67",
+      "primary_eligible_count": 24,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "0bc3c50e1292529c",
+      "primary_eligible_count": 58,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ad906e8bb5375747",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0a76d212e8fe5898",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "77d96cb44005501c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "12ed1a1d4ae657d1",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a3e94bd829b75673",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d7d94b48775a52d4",
+      "primary_eligible_count": 23,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "7640be138ae05408",
+      "primary_eligible_count": 25,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "f82c33508e915106",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "3138ce4847ee5007",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "25822d3d04305af8",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ba642ba3c9a65fe7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e34f51206f0e53db",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "5da31ca5ce165787",
+      "primary_eligible_count": 12,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9a90853892925989",
+      "primary_eligible_count": 58,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "09c3d9dbca6455e5",
+      "primary_eligible_count": 36,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "42231e5449d3576a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "bf78c475adfb5eb1",
+      "primary_eligible_count": 31,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "2fbab9ffc3fe5a5d",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "7fe6e7ce9cb7559d",
+      "primary_eligible_count": 24,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ebb4d3e033ae55e2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "f1d60841a46d53a5",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8419b5d5eab75027",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9c16cb6c4f94521c",
+      "primary_eligible_count": 9,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "35e2f788f41851c0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "54d3068f889b58ee",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e1ee982450c85213",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4a8b4dff75c15a8a",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "1819e1b106b354ad",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4ecdbea836725622",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b9bcc9d0efaf5c7e",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "253b856b49ef52d2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "68e39232887c5e4a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2e2bb8bb71265998",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e34a1f5fb71c54da",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1d10ae25c61f50c4",
+      "primary_eligible_count": 35,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "2af1778054cf51a4",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0f276bab4fa85df0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "6cc16446dbe45353",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "26043d2de718532d",
+      "primary_eligible_count": 11,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "e72eb72ebdc25a8a",
+      "primary_eligible_count": 12,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "c852239b5ac95394",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "3c297001ef2d5acb",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "123b77fa26425ac1",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "f97414b6f4a15866",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "957d3c9491ba5b5b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0c9d055f4ccc5d64",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "cbaf3221997c55be",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a02463c8a92d56ce",
+      "primary_eligible_count": 24,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "d91a4c7d1d9e5647",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "742b1d2c6cf156c6",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8b3e9121fd57540f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "bdf3b83064235e17",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ab000bda9ccf5150",
+      "primary_eligible_count": 48,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "e165b9b4eb5f5cf4",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "dcb23119258e58ec",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "f0328bdcd0e15d3a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c6538928de9c552b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "56da0490b78b5033",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8fc454e70d1554b7",
+      "primary_eligible_count": 39,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "3eceeb425c3a560b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "5e7d1f34a80c5e46",
+      "primary_eligible_count": 9,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ef4f3026ae1b56a3",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d92fd7e6c01d503b",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "1381f484e75c565a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "7b79090489c95c0b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "f0d107fb359953ff",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e0c845f2d87555b3",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9e454d3b139c5a3d",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "468894d189a75353",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9252ad8efde85a85",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "d99a3bc24ff75a68",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "1d45b9d20e9d5f92",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "39fc09d325a05606",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "75341958391d5aba",
+      "primary_eligible_count": 11,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "e65ea4e886535732",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a9134306f1575f88",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "3609537de0105997",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "90c4cd28f0e55d46",
+      "primary_eligible_count": 12,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "8a022198e6885aed",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "f6f213b156de552d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1cb9fa36aea25d6a",
+      "primary_eligible_count": 29,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "e15983da12955abf",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8635030755615376",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "86fbc624ea435e56",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "66e564907f5f5601",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "808ff2e869ff5d92",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1b53682e2df854e1",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "dd175b6e08565a4e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8e475454489d5f5b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "dc2d27a848115b56",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "3783e56bc9ef5e85",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d45a215505f05382",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4775f8e1a53d5c6f",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "802c127f63f955ed",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "f102259e52d35ac5",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "db5aa5f382f25aaa",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "598efc24965e57ba",
+      "primary_eligible_count": 49,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "3e83f47571b05337",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "f36236f06fb556a0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "ed717de405885939",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a8b0833c7a065b81",
+      "primary_eligible_count": 27,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "f426002d6e275e78",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "3382fe7a030150df",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a0283fb79a975f2c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "45e7e76381d85846",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9cac2a2e22c25964",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "f86b2f13b23d5470",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "6e5e2d80ec915e15",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b5d7c17fe5375141",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 13,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "bae3d8ac0ee85cad",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "4833c4f6d87f5021",
+      "primary_eligible_count": 7,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "a507cbf8c4055960",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "331e21d3c8d65bae",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c5f7460ee0da513a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "7eb9b36921b25d5b",
+      "primary_eligible_count": 2,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "8d76cc7ca097546b",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "7b20cfb388a15b3d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "87a04f063e505051",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "e4fda5ede9c657f1",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "163693e2ba175db3",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "007505437ed45b53",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b1199a48987b5f73",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a1bcc195c8e85f37",
+      "primary_eligible_count": 3,
+      "qualified_raw_count": 3,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "99c663a7b4e15514",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2b9bcbd586b55042",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "113b14c30cc25989",
+      "primary_eligible_count": 45,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b37b1679fd745ac9",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a4b7b2795e615efb",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c75edb67a65b5a33",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "fbec1eb4b33955e2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c1ae700926d4577c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "eba5b88270db545e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0481ff72500154f2",
+      "primary_eligible_count": 22,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "70d9d2c73e4155d4",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "685c110d6a615ff8",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b1483be2f1e35882",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "de0fb293bb4859e7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "335528f321b45d88",
+      "primary_eligible_count": 37,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "e5ba0fd6afc15419",
+      "primary_eligible_count": 26,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "07bd6c8c7de152a6",
+      "primary_eligible_count": 29,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "0b9f2aceebbf5003",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "e8991ab64afb5db6",
+      "primary_eligible_count": 12,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "66c135a6ec7f53c4",
+      "primary_eligible_count": 10,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "1fe597d0fb1454dc",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "fefa00cc3fe65b70",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "fddb21da30bb54c2",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "aceba8d21dfe5d03",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "ac940ab1e16558e9",
+      "primary_eligible_count": 11,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "4ac0a91fc4dd5ca9",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "cdec4cc7781e5d4d",
+      "primary_eligible_count": 8,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "01034b2411ce5ea0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "fb7f5f4fd1a25f13",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "dcea502e05ca5eb5",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "28b79e32839a543b",
+      "primary_eligible_count": 21,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "2b07bad4bce156cd",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "66d778b97714583a",
+      "primary_eligible_count": 29,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "a8c9f51e547a5fed",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "7a0635b7942859c6",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "84b13f58e18551a8",
+      "primary_eligible_count": 20,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "87ec42ef94f75f0c",
+      "primary_eligible_count": 7,
+      "qualified_raw_count": 15,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "feae0b42dda25c87",
+      "primary_eligible_count": 25,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b663343f65cd5e92",
+      "primary_eligible_count": 10,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "71495dbc0a3255dc",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "244f412a59375c65",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "5c1f98237d1852b9",
+      "primary_eligible_count": 12,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9eddebd4be385650",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b53636b863815077",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1ef92a1e554b567c",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "019cfd828c3f5b7c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "55a649760430531d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "377d9bb5bb125691",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a40383b62c8b5f0a",
+      "primary_eligible_count": 19,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "6822dc0570565ef4",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "6b5978b04dc85323",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "28c5133d23575e81",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0726ca723042500c",
+      "primary_eligible_count": 7,
+      "qualified_raw_count": 12,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "e1b339d45b635f03",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "60e4b765d65a534a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "cb8ed00b6b6e5650",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "f11aede9f6665b09",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8ae2f982585058f2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "ee81b62009285462",
+      "primary_eligible_count": 11,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "8783e69e8b9d5d5c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9566c9689988532d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a49f197b94e15a20",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d4b1d28cb67b5618",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9fd73df50f1d5a2b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "40bdcf910bed5013",
+      "primary_eligible_count": 38,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "c72fac839d7b5bdf",
+      "primary_eligible_count": 2,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "23cb188abddf5851",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a488a24ace4e5a0e",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "a2e11073e3025626",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "56df5b5a7f8d5964",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9f7eb558c5125bca",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b7520d4aabdb522f",
+      "primary_eligible_count": 29,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "c97d721af0475e45",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2c87600ce5a15f76",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "5d0d7322ddea55ce",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "fad3b25206405469",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "117be7ce4bae59d9",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "36f37eab352d5150",
+      "primary_eligible_count": 26,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ada4bd96b21350f3",
+      "primary_eligible_count": 27,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "116f3217b5875595",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "2ce54722e81a5726",
+      "primary_eligible_count": 28,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "f0e8b02b16cc5161",
+      "primary_eligible_count": 26,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "4db513bb187a5415",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "f679ed3e8e975575",
+      "primary_eligible_count": 9,
+      "qualified_raw_count": 13,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "bc9f53029a6b5c52",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "8fcd3f59e5d35e62",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "895b56e6e7d1506f",
+      "primary_eligible_count": 11,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "f22f6cb0966f5ddf",
+      "primary_eligible_count": 2,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "8d16e85f8f505b74",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "3e58b4e75b4d5910",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a68174740e5d53d2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9c83725ca24453f5",
+      "primary_eligible_count": 19,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "af80a080342354b5",
+      "primary_eligible_count": 30,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "7592a60634a65972",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "312f7d68b7845c0f",
+      "primary_eligible_count": 23,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "2ad520fb925f5ace",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d69754f18e1b5816",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1514fa6cda205491",
+      "primary_eligible_count": 27,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "65c6face44dc5242",
+      "primary_eligible_count": 20,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "116b808c2f825f23",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0502652852d456e7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d139b76f0b1e5791",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e6a85ef20b3054c4",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "d2b1e07b5d38547e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "56faab1d1228542e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a5aa2c07692a5f9b",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ccb3b418f0a45229",
+      "primary_eligible_count": 33,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9e326c77e25f526d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a11285de52f553a7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b3b328a0d89255ea",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "ab7c0c62ea5d56df",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "822b5a4a2e075ace",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "6ee8095e2d8b599c",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "e536a7424867539d",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "228bc7a51ce85114",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b386322960ff5784",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1779dc029c945352",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "e66f72e612d05320",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8a7b81e3d8ec589e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "79d01df5793f5d1a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "78273a4b69465c1f",
+      "primary_eligible_count": 20,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "e9c9a2873a275365",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "063ebdc4cd7e5bd9",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "40b18724a90f5919",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "7f6ac29877365766",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2617f0cd70705817",
+      "primary_eligible_count": 25,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9356731128d95d59",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d68f1142da63586f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8c4982f5d16e51a8",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "75b56424b7eb5ac6",
+      "primary_eligible_count": 26,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "12264b570ba358e9",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2320cdddd8465622",
+      "primary_eligible_count": 10,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "5fec23f5a5d052cd",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a3d8003852145a71",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "fadbd438f57e5612",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "23ba8f4aee055e34",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "edf80e77e2e65098",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "ec646e4956125fcf",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9069684898175278",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c83e41bd3afa534c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c3fa71763867515b",
+      "primary_eligible_count": 7,
+      "qualified_raw_count": 14,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "43916f0a6f7f5717",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e8bd03529c905c16",
+      "primary_eligible_count": 23,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "130e725a1594571f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "03d9c9a7f1655e53",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "3c84060e9d245ad7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "440da7a31b255ef9",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8deb3aea4c075024",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "fa72914538895375",
+      "primary_eligible_count": 30,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "095453a7aea65260",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b5a136c8bff95db6",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "16cf679d9cd35d85",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0424e5fd9a5c5e60",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "97de4a69dec65c80",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e5a8e75d4450516b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4669e83db7965ed0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "00bbc908bd5758e6",
+      "primary_eligible_count": 24,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "97f64f5b130055b0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "101da9987c395ba4",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e20db842c987530f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d14c834404a75404",
+      "primary_eligible_count": 41,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b20465ed49f953d3",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "f6741cbf60265367",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4df92e2616c75be7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b3a6f577c20d5eb3",
+      "primary_eligible_count": 11,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "d7c39e8608e25e88",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "db42252e1f655f26",
+      "primary_eligible_count": 23,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b4375fa743295bd8",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "5b620dbb3b4d5892",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9a78f0e3d0335345",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "576835726a7c57d4",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "23c842d3f001597a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "db4611f3cf8a5db7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "bed1f99d06215f1b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "770e1697a0255dc8",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "339d5c1111125971",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4a5cb683d82059f0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "6be7246860e057c8",
+      "primary_eligible_count": 22,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "4c31e06f0fc858a0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "ac2dfd95a1e55c5e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "664b084487e05ba0",
+      "primary_eligible_count": 12,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b4206de96b755fb8",
+      "primary_eligible_count": 6,
+      "qualified_raw_count": 13,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "2fd40c15042e53d4",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "fc2be4c9cc135538",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9ac1e7123b245486",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "bca73d6fa8f85d39",
+      "primary_eligible_count": 12,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "f57d194633ae5571",
+      "primary_eligible_count": 29,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "99d1ae48071a5aec",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "008a9f9434c75b99",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "dc89cd046c135fae",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b5d3d18e7d115933",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "7da1df98fb8e5af0",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "af816d6041dd5257",
+      "primary_eligible_count": 7,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ec765c8fe97a51bd",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4c188096aeb950bc",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "392e034cb2a55053",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "be6fe40f664154d7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a400f271c6cd51f6",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "e93e621b5e14563f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2e976da85a8b5e5b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2f4462b637dc5044",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b548689d07d15535",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "f696561dbf6055df",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "7bb8d2878b1f53cb",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "bff852b39f62557d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b940d77be0d45ec9",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "5050ddd89f6850ea",
+      "primary_eligible_count": 37,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "31c9a3082fa15d55",
+      "primary_eligible_count": 12,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "48f80f817e0656d9",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "602d680df54553a2",
+      "primary_eligible_count": 30,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "cc8872f4a1fb5895",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "09d7ac879b745ba7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1f22c13b337250e8",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "df16f52f5bea51cc",
+      "primary_eligible_count": 10,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "de8c2538d4305d9d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9c7f841d11e6542d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "89a7b788217c5f67",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "3d53eff55b2855c2",
+      "primary_eligible_count": 2,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "8fb50dd1fb5552df",
+      "primary_eligible_count": 20,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "1dda1a63c5735182",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "006cbccbfae95262",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "cea771061cb25651",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "053ae221b0d351f5",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "edfca2d846ee5acf",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "278907212b495e23",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "449f34ad438e59d2",
+      "primary_eligible_count": 19,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "8c1a989cd94c5c12",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "48d4fcc3437755a8",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "13f740d88bf75471",
+      "primary_eligible_count": 2,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "8eb1bf4722515ad3",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "21249a2d4eb25ed6",
+      "primary_eligible_count": 28,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "3d44a52acf525ec7",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9fad4614acc251d6",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "727278e9914354b1",
+      "primary_eligible_count": 21,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9d722cf10d7f5bd1",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "14d0749e1fc85004",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ee05069c50295595",
+      "primary_eligible_count": 23,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "5e7dad82583e5536",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2c772a570884587c",
+      "primary_eligible_count": 28,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "aee904e6c2c35a90",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0264cfbeb1705e5f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "279ff8e3850c54e2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "7c767d74b5fb5b5e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "5daaf9b25cb558f9",
+      "primary_eligible_count": 8,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "864f5df8a94a508e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "df51d2fef8c25f56",
+      "primary_eligible_count": 20,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ac5b4b33a03c57fe",
+      "primary_eligible_count": 22,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "99adfd4cd925504d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1cba0de871fc5bfb",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "f84ac4472da55b91",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "bcc74e9eaae05ca4",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4fe8a056f88154d5",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "16ff52ac5d085cac",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "584a14a3e42050c4",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4a5834900788560a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e6046882cf485f3a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "873f4bc746a55d13",
+      "primary_eligible_count": 22,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "96886b2d240e5275",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "190b153cfd3b5302",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "e1b0455379fd5adf",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "a801ebe0c8a55faf",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "8caca31e4dc357be",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a8263f179cca558d",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "22dddd249c8e5fe4",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "bcd578c19d9857ea",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c4c0b5cb93d85645",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0fae6a22120d5bc2",
+      "primary_eligible_count": 11,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9d67b6d20a0256c3",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "548d6bf7b63459e7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0f44c6e6440654d0",
+      "primary_eligible_count": 25,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "85fb576381c15527",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "d79d2c9951f35626",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "980c4467fdf156c4",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "11ceee170b09535e",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "c550cadc4a515e6b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4fdf21ae819f5cf9",
+      "primary_eligible_count": 32,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9af521b071b75ede",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "94fd2d5eaaff5125",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "3bfe55c892ef5093",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "76c61e8e77975178",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "6aa0f931a89f5d9a",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "7f3aa59671c45291",
+      "primary_eligible_count": 36,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "c17be2d2a6f65008",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 7,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "f6d7cbb8505f5782",
+      "primary_eligible_count": 20,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "59b4fffb7aef599d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "5c722cde25ba50d9",
+      "primary_eligible_count": 20,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "248aeb1af182529b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8dff3247e7415c0d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "df244d376fd85a93",
+      "primary_eligible_count": 2,
+      "qualified_raw_count": 5,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "06f781885ea25f20",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "dabc9a6d5e755758",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "666ee535a52a5acc",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "afe0ef0cd35b57f7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b7d4e7ebc5c75968",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "bc5eb52653bc5031",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "6793006a7d995092",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9e7acfb214dd58eb",
+      "primary_eligible_count": 19,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "6cda2f0cbda156bd",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "beea15c8657d59a2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1971c4278e675b9d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c7009bf1a2025be7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c37c94fa634f5265",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "caaf3bef91ac58a3",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "89c4479f74c05538",
+      "primary_eligible_count": 35,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "7f35bb1a29c1549f",
+      "primary_eligible_count": 19,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b46befc3e5a756ec",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "f06dec0352685bd7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9956d04c0d275e7d",
+      "primary_eligible_count": 25,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "edb7e230c20f542a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "bbe9d736a2595720",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8f7d5b80e1f85c3c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "3c9433a90ab05621",
+      "primary_eligible_count": 10,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b37c26e5cdf853d5",
+      "primary_eligible_count": 22,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "6dfe97d2aff95bf6",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9e66bc21c0d4507d",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "121fdf5f01785268",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9349bacb4a225ae3",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "704c2533b66353b5",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4ffc3aacc76d5d43",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "ea808fbdaf2a5375",
+      "primary_eligible_count": 12,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "e47dc9b07dd857a3",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0d38caf0c7c650e8",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "3ac61ac2f2b652b7",
+      "primary_eligible_count": 21,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "0d9f56cc8fa15657",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "296345c58a77547f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "94e9664fcf2d5f9e",
+      "primary_eligible_count": 35,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "a880ac22dd045d21",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "5b3770f00cb55569",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "36c5c837df3259f8",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "665c2a0c88735b1f",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "24d4a97bf17f5883",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "acb286057ba859da",
+      "primary_eligible_count": 24,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "4f0df6de49515352",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "482b5439cb6c5350",
+      "primary_eligible_count": 32,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "a84fec66330e5157",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "02ef12eeec9c5667",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "076f5a91273050e6",
+      "primary_eligible_count": 32,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "a566b5f3bd0c5522",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "fe1348a14b7f5fda",
+      "primary_eligible_count": 27,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "cf430322beb852ca",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "05986621844f54a2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "37ab6257bb545b45",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1526e5b224665c7e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "66df470c3c2c5b62",
+      "primary_eligible_count": 20,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ce800a53730f5ae7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "7ff20da52e205bf0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9c9fd38ec0485088",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "ec90c27de29a594c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "86c52dfec8425716",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0f54c1a676a954ce",
+      "primary_eligible_count": 4,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "a86e7f16bd64596a",
+      "primary_eligible_count": 7,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "cb397fd17507594b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c84f1984d6e459d4",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "8b744d45e7945aa5",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "68f3beae8cd25dba",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "aff2feebf9cb5afb",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "6e7bf5900d7f594f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "7da6b01adf435bd5",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4934fe6008f8564b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c0c2ed50261f54e5",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0cb726068f4d5c59",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "fead2572a884512c",
+      "primary_eligible_count": 26,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "c82e95254649534e",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "2581d16dc1aa557e",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "74356ec7c3d15e10",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a77cad5e29a5585e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "711cc9425e2f5aff",
+      "primary_eligible_count": 10,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "2314cd5f97c5596c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "dc932b3cf2ba5b1b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "675f0d4dff9c5318",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9fe72fe991c859f0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "f6a1a2760a7b57a4",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "6176348b971f52c5",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "1decf76c77be59c8",
+      "primary_eligible_count": 27,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "91e6cce9eb7d5765",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d360abe45ec55059",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "45cace6f6d275159",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9551d9bffa515426",
+      "primary_eligible_count": 24,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "6f95e882286e5388",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "fcc0457324f15902",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "aa58d1ab2faa5746",
+      "primary_eligible_count": 30,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "5d711f77d42054d6",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "fa00af6ecc8a5cb4",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "bf6158f005f956ae",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "67b08ea8fc9956b0",
+      "primary_eligible_count": 29,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "5cfcccdb3e3c539b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "288f0194b6d45858",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4094b79867cd5f7b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "abd994ef714a595c",
+      "primary_eligible_count": 22,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "4668501db7065e02",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "289087a782995ef0",
+      "primary_eligible_count": 25,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "0eea4103d56352dd",
+      "primary_eligible_count": 54,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b790a763e1ee538e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "6ca255559e0350a5",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "6848c7497a065ae0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8a5bb66e9bb65101",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4fa6a8e71f4a5984",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "77ded26c7a9654ad",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "5d83ddd5ec3c5326",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "7a03013d34b355c1",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0b2061c2aced52de",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "945dcb42cd645cc2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "66d5a6841d835e3a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1035d1c56f0f5ba9",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "98ad6d2817355b99",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "293fd2580df350a8",
+      "primary_eligible_count": 20,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "6864977b221059e4",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "161154cbf4245a3d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "023664205ae95402",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "cd07f4279fa35240",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "7ae1fa9094f355c5",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b7b9f31751e459f0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "94cf3d2feed759ac",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9f4e94fa77b555dd",
+      "primary_eligible_count": 26,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "5985ea459f145e5c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "624789926abe5dac",
+      "primary_eligible_count": 40,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "adb657c849df5d9e",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "095f95bdbf1054d0",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "d117940fcb945ac1",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "ef023f6f394f5be8",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "451631b82dd757e4",
+      "primary_eligible_count": 19,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b25e5caac7645be6",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "277898ef740c5ab1",
+      "primary_eligible_count": 29,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "de94e95519d85f21",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "cec9570f9fd3504b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "654a0ce9f6305cee",
+      "primary_eligible_count": 19,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "672173aac8685233",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "74bf7898a5565ef7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4393df900c6557cb",
+      "primary_eligible_count": 22,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "059fb1d0f20e58d6",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b76fdedd0d1d5f46",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "005a44fa33b55e7b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "cdf23d07ec42535e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "5bb0b67e360f5a85",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d5b5493184c257bd",
+      "primary_eligible_count": 24,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "a85370bd50145fbc",
+      "primary_eligible_count": 55,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "6b0de122978c5d6c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9257645ceccb550b",
+      "primary_eligible_count": 21,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "5d03327b42d153b1",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "f53ce90fba735a76",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "89ba731076de572c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d49e1049666e5596",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "30e1141fbb1e5009",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "377ceb5650355d8b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "93aa103155cd5295",
+      "primary_eligible_count": 12,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "1dbae60fb78c532a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "50fefa46fcc855fb",
+      "primary_eligible_count": 19,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "baef6630583c5f87",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8b0773eaa2375bbf",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "80e2038fd0555030",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d341827e6b485782",
+      "primary_eligible_count": 24,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "d6f1d7ade74c5d53",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "0827c1c05e0e5596",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 3,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "e9cd4fda706e5516",
+      "primary_eligible_count": 24,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "bae5037e472250dc",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "3e7e4bd1053d5d92",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "bc6cd32ccb1b5427",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "a4c4b9cae9f356bb",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1e8cca8760da5948",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c7e306be08105b70",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "26e0f72c031b5f07",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "56e525076cab5f42",
+      "primary_eligible_count": 12,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "4ce4021236435fc2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "3ae8bec3c87f599a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "de9dfb594099510e",
+      "primary_eligible_count": 23,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ba1ace8df74d5f7b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "502320eeaec55d1f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2dd169c11ca55cf5",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "14bd7947aab75ae6",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "3acaadb297b15413",
+      "primary_eligible_count": 2,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "4667b479001e52d3",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "7f15d26426a65449",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "70fb14aa330a5e1a",
+      "primary_eligible_count": 30,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "390944a5467b51c5",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "de37d906807d5da4",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9ed0f61a7d9551dd",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "772bea477f415d7e",
+      "primary_eligible_count": 27,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "cf05fb873d635a08",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "6ef435e921f9538a",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "e60a241cf8df5ae6",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "430843d30f9258ed",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "05f01335f6e15d86",
+      "primary_eligible_count": 2,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "4be639c52c2656db",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "3f67a285648156d8",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d193c14478495b74",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "be62b590e24a520d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "ee2a0378652e53d0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "adf177418b8a5f6f",
+      "primary_eligible_count": 21,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "8ba72029d7d75a0c",
+      "primary_eligible_count": 29,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "a893fc739c0b567c",
+      "primary_eligible_count": 54,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ade775b8413358d6",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "cf26456f21fc55cc",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "f5134ec4baf153c9",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "09961e24208b5972",
+      "primary_eligible_count": 19,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "7e6335968cbb5318",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "ac20d4e2400c58a9",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "f503e5d4f2815027",
+      "primary_eligible_count": 54,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "43df192ed9125ff3",
+      "primary_eligible_count": 19,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b63a589b5dcf521d",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "0996ce03d2325a75",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "5da5fed529065c9a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4d4d070cb9095f94",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "14096d0f331a594a",
+      "primary_eligible_count": 20,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "432cf993a4685755",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c668fc93191352f5",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a73551f67ae95c4d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "928010107cd35cdd",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "f4ab14a89bb7500e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "dc28a01b78d45b17",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "3f159d73e87a5e06",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "bdfa1f8523c25328",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "12115c5ca1215fb7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c402a7eb498a5736",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c94d20755cae51cf",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c44b12de78555426",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "50e0c2fe698655a9",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e91a2d26f30e5b34",
+      "primary_eligible_count": 6,
+      "qualified_raw_count": 15,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "c8b4c92530f15b8e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "3d2dded3370e5d2f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1361ba1955125852",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b78f23cd3a155154",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "25652aabb1615c8d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "3623f8728153513d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9288a151789f507b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e671280656f55009",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "48cf36e2f3e15071",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4acdad2d68815972",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b35fe1e3a6d857e7",
+      "primary_eligible_count": 11,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "095eafbb5c8f5b02",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "6f3254ac0fb25c0e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "846947c0d14c5705",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "da088bb9d4fb5d0e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2d6b6f9cbf895767",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2b6a3141bbd95909",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "c565fc593f9e5fad",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "2b62f0fd336e5ce1",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4521af05098b5726",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4cf79f853daa5e18",
+      "primary_eligible_count": 11,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "91c9748ec36d552e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b74282046c9b5e26",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9b2f62944222523c",
+      "primary_eligible_count": 30,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b4e37918a3075f27",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "172b3176b06c5658",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "29c1d95389d45573",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "03925cda82c35516",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8f24138692dc51a0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e4bc6fc5aeb15a9b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "58e62444275353ac",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b4929fe228725c94",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9703fd67a8ba55e3",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "21ef5641389c54b2",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "1672f5b30038519f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "50865b0784fc566d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a4cf3a412034565a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1295232b65bf5f8d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "7ecb22e3bba55b12",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "6b7469c8e2195492",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "5ed66db305a55f73",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0b8065082f3a5b3b",
+      "primary_eligible_count": 34,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "40d00a52b5345430",
+      "primary_eligible_count": 27,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "2c274b54e82b55e7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2f7f18f806515128",
+      "primary_eligible_count": 2,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "daaed109e7eb5f66",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "de9806cb0a2c53a3",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "cd3f3ec4f0dc515f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "481b84c931245f5d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "6aeb37c47f385f06",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "165b4475bd6b5188",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c5a1a4e21a4952b7",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "aac897560e0f5dab",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1e66e2bddb1d5b49",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "dfdc23aed4e95e49",
+      "primary_eligible_count": 33,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "49a1e581f3a35a49",
+      "primary_eligible_count": 19,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9263d47ef82d5a88",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c216554d4bd6519f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0354be0727e25157",
+      "primary_eligible_count": 2,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "26dfdbfcecfe50bd",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "cc3160abbcbb543a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "fc696e1d378654d4",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "3fa2f81cff025162",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1d0a4f1f6cbd5e38",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "eff59f39f085525f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "984be293f9195416",
+      "primary_eligible_count": 22,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b235c02d47915476",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "3ac7810599d457a1",
+      "primary_eligible_count": 30,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "682378d23c335e89",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "73b4b5fcc5e55858",
+      "primary_eligible_count": 11,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "6f31d072740b5885",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "305b1bf4e7f45522",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "42d309d92a3a59c0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "af16ba268df55dca",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2ae8ac90c0ae5c8d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b512bc2c568d5b7a",
+      "primary_eligible_count": 23,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "7405ff66092d51da",
+      "primary_eligible_count": 14,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "23724912b8f153f0",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "6522fd9a31d25eb2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c6fcfafbbe7a59f8",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "5dbd0aba5f315388",
+      "primary_eligible_count": 9,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "958b596dd699594a",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "350714230cb55761",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "775b0dd554395fa3",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "635be215dc9d58c3",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1499e758c6855a74",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e9b0d4743b3f5256",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "3ff6652d6dec55da",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "3c30c0c940045ac2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b9e0dc94c7725924",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0506b1697fb05337",
+      "primary_eligible_count": 22,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "7cfa2141cf77549d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "089107cd2d6354e0",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "b03c039a00bd5792",
+      "primary_eligible_count": 10,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "064bbfac76a95dae",
+      "primary_eligible_count": 15,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ad8019f55bc554de",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "073c4d0738b45047",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b29e1677139a5f6b",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c615107923dc5602",
+      "primary_eligible_count": 36,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ffb15604a2a25cb8",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "4124b6e12f8b5f0d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a3298b678d225d61",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "e20b77b0ed075fb6",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "71452581394b54da",
+      "primary_eligible_count": 2,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "54399d56e69f5a2c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2bdd7e6fdc0e5977",
+      "primary_eligible_count": 36,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "2f875dc108ed572f",
+      "primary_eligible_count": 20,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "91513086606a567e",
+      "primary_eligible_count": 33,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "80dfd05ab759518f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d5e7dc43eb5c57cd",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "13014abb5b115ee2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9430278b77c05446",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "97e38fdccf915283",
+      "primary_eligible_count": 19,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "8787fbb12fed5433",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a460f60f07f05098",
+      "primary_eligible_count": 19,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "570334268a395022",
+      "primary_eligible_count": 23,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "16a705e621675626",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "377030639621540e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2e94974489245ae6",
+      "primary_eligible_count": 24,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "dc2a30b4130f5ab4",
+      "primary_eligible_count": 19,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "11f415ea61f95bbb",
+      "primary_eligible_count": 6,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "7fd57c3a03465a0a",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "bfabfb64124e5563",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "0dff173b10b75b6a",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "efd13cf71f83504e",
+      "primary_eligible_count": 12,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "86a8eb25b4045aba",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "04f77fbd6bf3505a",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 1,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "69cd8ef1721f550d",
+      "primary_eligible_count": 33,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "738c5da7a06d554c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "a57d242401f951f5",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "d57a735214e65851",
+      "primary_eligible_count": 29,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9bbb66957b9d5e1c",
+      "primary_eligible_count": 18,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ccb7a68f3e0a57fc",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "05c91985246d58a6",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2d1c26e4b5895e96",
+      "primary_eligible_count": 2,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "1f71cdf4e4c65299",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1b7a2afa56df5d20",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "1f37959067985e67",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "f07db0b393fd522e",
+      "primary_eligible_count": 9,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "fa4cc4b0188c5b79",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "eb2ede89ad9b5a6e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "bc4345e13302535e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "66568e650e4d57e7",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "74ae55238ee5525d",
+      "primary_eligible_count": 2,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "a124b877d2b35519",
+      "primary_eligible_count": 13,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "1c6a5ee8a5785b0e",
+      "primary_eligible_count": 22,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ed47cee1c67e5d43",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "838c6ba50bd25cd5",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "089b0ec6d7d35c09",
+      "primary_eligible_count": 11,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "9dedf462b1c0528f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "61987c90d8635129",
+      "primary_eligible_count": 1,
+      "qualified_raw_count": 2,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "bbbae26a26605b08",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8142f060944c56fd",
+      "primary_eligible_count": 21,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "2c76b8e2d1d85701",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "8a0b4dd476055911",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b8adc82de5ae50e2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "025b2d4de25c5036",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "9a7fc4d0041650fc",
+      "primary_eligible_count": 17,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "ad1af1160bd05ef7",
+      "primary_eligible_count": 10,
+      "qualified_raw_count": 14,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "d4185f4edc7e54e5",
+      "primary_eligible_count": 21,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "1b1311d50d47553f",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "573ac67fb17a5a71",
+      "primary_eligible_count": 4,
+      "qualified_raw_count": 4,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "da8c9449da6854ed",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "7f2409d7f6705308",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "94ae5d67804c539d",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4f9a94c1302e56d8",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "ed54b128881a5278",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "21c8e0c8fe5f5495",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "24ab9ae0499950e9",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0d24b5cc9f005fe0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "c3cb403773505798",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b696a6cffd3a5700",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "0a02ef840f2d5d8e",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "ee0d56667d9755c2",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "575564a1b87c5502",
+      "primary_eligible_count": 12,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "7e5d78b37ed653b1",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "b003c9652cb05ffd",
+      "primary_eligible_count": 61,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "a9e5ed5e52b555bb",
+      "primary_eligible_count": 8,
+      "qualified_raw_count": 8,
+      "zero_qualified_parent": false
+    },
+    {
+      "token": "a2c048ba29a85ad0",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "90cee81074335c3c",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "f40040c002375188",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "7ff1d8c18a215751",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "2eaf758421aa5190",
+      "primary_eligible_count": 0,
+      "qualified_raw_count": 0,
+      "zero_qualified_parent": true
+    },
+    {
+      "token": "4bfb866afaf35777",
+      "primary_eligible_count": 16,
+      "qualified_raw_count": 16,
+      "zero_qualified_parent": false
+    }
+  ],
+  "scene_count": 1000
+}

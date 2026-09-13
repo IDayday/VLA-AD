@@ -1,0 +1,8 @@
+{
+  "command": [
+    "/root/miniconda3/envs/navsim/bin/python",
+    "tools/analysis/pc_mts_diagnostics_v2/select_pools.py"
+  ],
+  "returncode": 0,
+  "wall_seconds": 21.51478123664856
+}

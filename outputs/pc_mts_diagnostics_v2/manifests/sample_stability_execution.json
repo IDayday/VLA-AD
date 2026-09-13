@@ -1,0 +1,8 @@
+{
+  "command": [
+    "/root/miniconda3/envs/navsim/bin/python",
+    "tools/analysis/pc_mts_diagnostics_v2/sample_stability.py"
+  ],
+  "returncode": 0,
+  "wall_seconds": 14.458256483078003
+}

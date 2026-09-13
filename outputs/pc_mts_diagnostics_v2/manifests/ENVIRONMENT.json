@@ -1,0 +1,20 @@
+{
+  "python": "3.9.25 (main, Nov  3 2025, 22:33:05) \n[GCC 11.2.0]",
+  "packages": {
+    "torch": "2.5.1+cu124",
+    "numpy": "1.26.4",
+    "scipy": "1.13.1",
+    "pandas": "2.3.3",
+    "matplotlib": "3.9.4",
+    "scikit-learn": "1.5.2",
+    "joblib": "1.4.2",
+    "threadpoolctl": "3.5.0"
+  },
+  "threads": {
+    "OMP": 1,
+    "MKL": 1,
+    "OPENBLAS": 1
+  },
+  "gpu_processes": 8,
+  "cpu_evaluator_workers": 96
+}

@@ -1,0 +1,14 @@
+{
+  "command": [
+    "/root/miniconda3/envs/navsim/bin/python",
+    "-m",
+    "torch.distributed.run",
+    "--standalone",
+    "--nproc_per_node=8",
+    "/mnt/project/VLA-AD/tools/analysis/pc_mts_diagnostics_v2/historical_chains.py",
+    "--snapshot",
+    "mts87_lfp_grpo_8100"
+  ],
+  "returncode": 0,
+  "wall_seconds": 37.736836433410645
+}

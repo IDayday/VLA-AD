@@ -1,0 +1,4 @@
+metric,comparison,n_scenes,delta,CI95_low,CI95_high,positive_scene_fraction
+pdms,pc_mts - pareto,1,0.0,0.0,0.0,0.0
+robust_radius,pc_mts - pareto,1,0.11000000000000004,0.11000000000000004,0.11000000000000004,1.0
+local_feasible,pc_mts - pareto,1,0.03750000000000009,0.03750000000000009,0.03750000000000009,1.0

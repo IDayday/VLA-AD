@@ -1,0 +1,14 @@
+{
+  "identity": {
+    "v1_commit": "2dd4b55fc658e6182aaf857bf3267b652c873cc7",
+    "scene_manifest_hash": "f46fc7cd38329aed7e52ff749544caf4c90a8d43780c00f886fc99b3d6b407a6",
+    "config_hash": "ced475943ade74a4cab12e442ca41f0f7e96c24d32cfe8235f14ddb3f425a4c5"
+  },
+  "user_steering": "Official GT-IL policy distribution must use 64 trajectories per scene",
+  "primary": "All five checkpoints use the immutable V1 1000 x64 rollouts",
+  "sensitivity": "100 common-index permutations, without-replacement prefixes16/32/64; no new model inference",
+  "subsample_intervals": "Conditional sensitivity to cached-rollout choice; not population confidence intervals",
+  "scene_CI": "Separate paired-scene bootstrap,3000 replicates",
+  "historical_chain": "300 scenes x32 paired rollouts is a separate longitudinal analysis under the originally specified chain protocol",
+  "candidate_pool": "16 selected trajectories per method remains a selection-rule diagnostic; not an estimate of each neural policy support"
+}

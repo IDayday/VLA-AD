@@ -1,0 +1,58 @@
+[
+  {
+    "token": "2a2403c9b08b53ac",
+    "max_abs_error": 0.0,
+    "trajectories": 4,
+    "fields": [
+      "no_at_fault_collisions",
+      "drivable_area_compliance",
+      "ego_progress",
+      "time_to_collision_within_bound",
+      "comfort",
+      "driving_direction_compliance",
+      "score"
+    ]
+  },
+  {
+    "token": "dc76a771066b5553",
+    "max_abs_error": 0.0,
+    "trajectories": 4,
+    "fields": [
+      "no_at_fault_collisions",
+      "drivable_area_compliance",
+      "ego_progress",
+      "time_to_collision_within_bound",
+      "comfort",
+      "driving_direction_compliance",
+      "score"
+    ]
+  },
+  {
+    "token": "cde84b97e6505437",
+    "max_abs_error": 0.0,
+    "trajectories": 4,
+    "fields": [
+      "no_at_fault_collisions",
+      "drivable_area_compliance",
+      "ego_progress",
+      "time_to_collision_within_bound",
+      "comfort",
+      "driving_direction_compliance",
+      "score"
+    ]
+  },
+  {
+    "token": "a3e94bd829b75673",
+    "max_abs_error": 0.0,
+    "trajectories": 4,
+    "fields": [
+      "no_at_fault_collisions",
+      "drivable_area_compliance",
+      "ego_progress",
+      "time_to_collision_within_bound",
+      "comfort",
+      "driving_direction_compliance",
+      "score"
+    ]
+  }
+]

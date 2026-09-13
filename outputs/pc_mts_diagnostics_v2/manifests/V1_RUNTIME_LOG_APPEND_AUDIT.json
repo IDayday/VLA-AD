@@ -1,0 +1,66 @@
+[
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/pressure_restore_gpu6.log",
+    "original_bytes": 26916,
+    "current_bytes": 27078,
+    "original_prefix_unchanged": true,
+    "appended_bytes": 162,
+    "appended_text": "[gpu 0] iters=3998528, approx=224.17 TFLOP/s, allocated=75.01 GiB, free=3.73 GiB\n[gpu 0] iters=4010192, approx=213.57 TFLOP/s, allocated=75.01 GiB, free=3.73 GiB\n"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/pressure_restore_gpu2.log",
+    "original_bytes": 26914,
+    "current_bytes": 27076,
+    "original_prefix_unchanged": true,
+    "appended_bytes": 162,
+    "appended_text": "[gpu 0] iters=3902432, approx=213.60 TFLOP/s, allocated=75.01 GiB, free=3.73 GiB\n[gpu 0] iters=3914048, approx=212.76 TFLOP/s, allocated=75.01 GiB, free=3.73 GiB\n"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/pressure_restore_gpu3.log",
+    "original_bytes": 26915,
+    "current_bytes": 27077,
+    "original_prefix_unchanged": true,
+    "appended_bytes": 162,
+    "appended_text": "[gpu 0] iters=4001025, approx=212.15 TFLOP/s, allocated=75.01 GiB, free=3.73 GiB\n[gpu 0] iters=4011888, approx=199.04 TFLOP/s, allocated=75.01 GiB, free=3.73 GiB\n"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/pressure_restore_gpu7.log",
+    "original_bytes": 26914,
+    "current_bytes": 27076,
+    "original_prefix_unchanged": true,
+    "appended_bytes": 162,
+    "appended_text": "[gpu 0] iters=3917569, approx=206.95 TFLOP/s, allocated=75.01 GiB, free=3.73 GiB\n[gpu 0] iters=3928352, approx=197.57 TFLOP/s, allocated=75.01 GiB, free=3.73 GiB\n"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/pressure_restore_gpu4.log",
+    "original_bytes": 26915,
+    "current_bytes": 27077,
+    "original_prefix_unchanged": true,
+    "appended_bytes": 162,
+    "appended_text": "[gpu 0] iters=3983104, approx=209.27 TFLOP/s, allocated=75.01 GiB, free=3.73 GiB\n[gpu 0] iters=3993968, approx=199.01 TFLOP/s, allocated=75.01 GiB, free=3.73 GiB\n"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/pressure_restore_gpu1.log",
+    "original_bytes": 26915,
+    "current_bytes": 27077,
+    "original_prefix_unchanged": true,
+    "appended_bytes": 162,
+    "appended_text": "[gpu 0] iters=3973456, approx=208.47 TFLOP/s, allocated=75.01 GiB, free=3.73 GiB\n[gpu 0] iters=3984560, approx=203.27 TFLOP/s, allocated=75.01 GiB, free=3.73 GiB\n"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/pressure_restore_gpu0.log",
+    "original_bytes": 26913,
+    "current_bytes": 27075,
+    "original_prefix_unchanged": true,
+    "appended_bytes": 162,
+    "appended_text": "[gpu 0] iters=3881488, approx=205.74 TFLOP/s, allocated=75.01 GiB, free=3.73 GiB\n[gpu 0] iters=3892048, approx=193.47 TFLOP/s, allocated=75.01 GiB, free=3.73 GiB\n"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/pressure_restore_gpu5.log",
+    "original_bytes": 26913,
+    "current_bytes": 27075,
+    "original_prefix_unchanged": true,
+    "appended_bytes": 162,
+    "appended_text": "[gpu 0] iters=3898064, approx=220.99 TFLOP/s, allocated=75.01 GiB, free=3.73 GiB\n[gpu 0] iters=3909840, approx=215.63 TFLOP/s, allocated=75.01 GiB, free=3.73 GiB\n"
+  }
+]

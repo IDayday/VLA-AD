@@ -1,0 +1,65 @@
+[
+  {
+    "chain": "official_il_grpo",
+    "name": "official_il_grpo_1330",
+    "global_step": 1330,
+    "epoch": 0,
+    "sha256": "e983e6ad068b41ee327b5817307ed677af9a85849c03eec63159ff955383e1f6"
+  },
+  {
+    "chain": "official_il_grpo",
+    "name": "official_il_grpo_6650",
+    "global_step": 6650,
+    "epoch": 4,
+    "sha256": "1fa3d07c70e735cefe08ac59dbd0343644b005bb9e737cc1a3c68af9dd8e2636"
+  },
+  {
+    "chain": "official_il_grpo",
+    "name": "official_il_grpo_13300",
+    "global_step": 13300,
+    "epoch": 9,
+    "sha256": "57d782a2ea3977e3905016ba41aba0f3279f500e7e59c633c60288bded7018c9"
+  },
+  {
+    "chain": "mts86_lfp_grpo",
+    "name": "mts86_lfp_grpo_300",
+    "global_step": 300,
+    "epoch": 0,
+    "sha256": "2a3b3ee14c24bf38e5cfeebe2923f7830e786ed74fae472b04e2e8ede37e82f0"
+  },
+  {
+    "chain": "mts86_lfp_grpo",
+    "name": "mts86_lfp_grpo_1800",
+    "global_step": 1800,
+    "epoch": 1,
+    "sha256": "a0e7e10c3f53a8c090846da22f3ff05422caed76b3f15e984d95ef2cf7c69fcf"
+  },
+  {
+    "chain": "mts86_lfp_grpo",
+    "name": "mts86_lfp_grpo_3300",
+    "global_step": 3300,
+    "epoch": 2,
+    "sha256": "2ae6d21a554427a43b36e561b5899dd1878cf4672c4287c39acb47d03e2dc42a"
+  },
+  {
+    "chain": "mts87_lfp_grpo",
+    "name": "mts87_lfp_grpo_300",
+    "global_step": 300,
+    "epoch": 0,
+    "sha256": "caf3aa73fdb3172e1b6257629914f66966ea980c9d0b7fe9e86c077aa49d162d"
+  },
+  {
+    "chain": "mts87_lfp_grpo",
+    "name": "mts87_lfp_grpo_4200",
+    "global_step": 4200,
+    "epoch": 2,
+    "sha256": "f3d4679c0bc304b9eeb45811352160887fefb4f7dd17f8c0d43f6fb538cba606"
+  },
+  {
+    "chain": "mts87_lfp_grpo",
+    "name": "mts87_lfp_grpo_8100",
+    "global_step": 8100,
+    "epoch": 5,
+    "sha256": "8116c5574b78cfefce4836995617396fffeec42d98d921a2e463e5bdf12e9c3a"
+  }
+]

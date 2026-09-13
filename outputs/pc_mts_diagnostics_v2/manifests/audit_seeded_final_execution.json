@@ -1,0 +1,8 @@
+{
+  "command": [
+    "/root/miniconda3/envs/navsim/bin/python",
+    "tools/analysis/pc_mts_diagnostics_v2/audit.py"
+  ],
+  "returncode": 0,
+  "wall_seconds": 15.253862142562866
+}

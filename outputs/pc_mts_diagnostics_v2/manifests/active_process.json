@@ -1,0 +1,10 @@
+{
+  "pid": 106031,
+  "command": [
+    "/root/miniconda3/envs/navsim/bin/python",
+    "tools/analysis/pc_mts_diagnostics_v2/prepare.py",
+    "--verify"
+  ],
+  "stage": "V1_final_immutability",
+  "started": 1789282988.9553072
+}

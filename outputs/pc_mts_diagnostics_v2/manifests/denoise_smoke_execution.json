@@ -1,0 +1,13 @@
+{
+  "command": [
+    "/root/miniconda3/envs/navsim/bin/python",
+    "-m",
+    "torch.distributed.run",
+    "--standalone",
+    "--nproc_per_node=8",
+    "tools/analysis/pc_mts_diagnostics_v2/denoising.py",
+    "--smoke"
+  ],
+  "returncode": 0,
+  "wall_seconds": 75.08312726020813
+}

@@ -1,0 +1,18 @@
+{
+  "v1_commit": "2dd4b55fc658e6182aaf857bf3267b652c873cc7",
+  "scene_manifest_hash": "f46fc7cd38329aed7e52ff749544caf4c90a8d43780c00f886fc99b3d6b407a6",
+  "config_hash": "ced475943ade74a4cab12e442ca41f0f7e96c24d32cfe8235f14ddb3f425a4c5",
+  "checkpoint_hash": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+  "protocol": "new_IL_R128_Q128_native32",
+  "rank": 6,
+  "scenes": 125,
+  "new_scenes": 123,
+  "wall_seconds": 472.7023026943207,
+  "checks": [
+    {
+      "token": "1bf169a6aaf65858",
+      "replay_max_error": 0.0
+    }
+  ],
+  "peak_gpu_memory": 540590080
+}

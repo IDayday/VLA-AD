@@ -1,0 +1,7016 @@
+{
+  "identity": {
+    "v1_commit": "2dd4b55fc658e6182aaf857bf3267b652c873cc7",
+    "scene_manifest_hash": "f46fc7cd38329aed7e52ff749544caf4c90a8d43780c00f886fc99b3d6b407a6",
+    "config_hash": "ced475943ade74a4cab12e442ca41f0f7e96c24d32cfe8235f14ddb3f425a4c5"
+  },
+  "rows": [
+    {
+      "token": "23e39302332152b2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "411a748874035630",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "40808270ce205b83",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "86208267d61253c0",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "f8268857204e554e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "1bf169a6aaf65858",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "3764407c90d65df3",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "38cfd81687975661",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "42e6895442ab5601",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "b34272d337d350d2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "b23ede9a183b5b71",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "fff951eab9f45288",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "4fa9113617d254d4",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "988785170de957da",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "046b1cc13f0d5f9d",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "d7fbd35a0f315447",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "951957b841e05cfa",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "61db822891625c3b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "759e9e451eba5b47",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "9c05edf9d6e85716",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "467bbee636b65c84",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "4f6409df56a85592",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "16ddb1838af755e3",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "2ce59f70a15b5ddf",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "461fb854eaa3583e",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "8b800af555d35794",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "2ab1b3941f7153cb",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "4bc510a669d8549f",
+      "pc_fills": 13,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "3387bab95d41528a",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000012
+    },
+    {
+      "token": "e5acc98f52f458cc",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "3e9026530c475726",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "2ae0a44cc4de5c4a",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "cc94486698ff58d1",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "969763763ce754a4",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "ff6ab495a139534e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "70248e0bb43a503b",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "2a2403c9b08b53ac",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "854169aa74e95251",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "93a9927586995095",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "af62d866653053f6",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "17d296a87fb45380",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "5370751917315916",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "adaf33e4ba555709",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "1aa0acb229945e9b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "fad9e78a17825042",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "4eaf32face4b5ece",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "2db045daf25c5bb7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "b23f3d728c08529f",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "dc76a771066b5553",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000029
+    },
+    {
+      "token": "d76b0458667c59a2",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "8cf3b1868b2f5262",
+      "pc_fills": 9,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "990bd9b32e5d5f60",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "6320ecb991675a39",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "66243e185353563a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "cde84b97e6505437",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "d968f9c81b945be1",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "0a87bb919dbb58b6",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "fe5811497ace53af",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "1734440b807a58ef",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "480434fc72d455af",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "cb8e247140d55ab2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "095770e79ccf5d82",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "d7f25a0ac141583a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "4b0df2804f165dda",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "ab6ba1da1dd8592b",
+      "pc_fills": 9,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "3feb7781f83754a7",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "6f471ee76c595c92",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "32516745ea1b59ef",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000012
+    },
+    {
+      "token": "a65dd6d24f575771",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "9ce305abb88f5ad0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "7af6867add5b5f2c",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "b65e09c4d8125da0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "cbe1e93e188f5490",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "6ca6a1a4f3dc5d85",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "0ee58e583be85ffb",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "a28a2771a9fa5c1d",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000007
+    },
+    {
+      "token": "488e4248a8985e5a",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "0beb530925b9514b",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "29b53c57c19b57fe",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "2639525675535145",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "9a83782a2cf85611",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "cd01f21ff39d541a",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000001
+    },
+    {
+      "token": "facaaf8c0e8c5c65",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "88757fb00fda507b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "e9f4daa7d910568c",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "d6bb0cea4dbd5b44",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "efad2708409b5834",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "3a4cfdd4bfa55a5e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "e926ec6a69cc575c",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000013
+    },
+    {
+      "token": "b6093d9c703e54b1",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "d58eb13402485ae7",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "f1aa5d5ed7c65114",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000003
+    },
+    {
+      "token": "4ea3d4068eda5cc5",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "6c0dbda0d8e45ae9",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "b4322d76ebf8569f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "acfc271e3c3d58fa",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "b222df74b8155735",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "415d6cd62f3b5c1c",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "b28e9b2fa67452a7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "bd8dea7f7efc5343",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "8224627048195e4f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "3225bfcbea245dd7",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "114a9052bd6851a2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "f80fe289f8135602",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "983b7ed08a4b5a88",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "34dd4c6fb6245b9a",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "5895d1e3cb355fb9",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "14b505fe90ef5fb8",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "1ce58516c7675036",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "b1e88b8722105d53",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "410fac99463459e6",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "5207306ed1a05de8",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000001
+    },
+    {
+      "token": "8ba3bff293265674",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "69560676d53a56c9",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "cef0adbb58ad5ca1",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "c5dcabed55395a6e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000031
+    },
+    {
+      "token": "8b839595c4105c65",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000012
+    },
+    {
+      "token": "f32a0e56a5b75884",
+      "pc_fills": 13,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "972eb434cfd159e8",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "505c44ea52485f9d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "c0b07b38110a556f",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "7fe310f364355e2d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000029
+    },
+    {
+      "token": "efdd48896e7a5f15",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "e47d448a999b5595",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "6c0b6e4fdf005a81",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "071d2ff38b4855ed",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "b450f88783c15dea",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "7b3902956ebc561d",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "dc73cea57e105ebd",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "b87bd020396b5670",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "ba1a894e5a6350d2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "ddbfb3b2a05c5918",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "a93ffd0f36b65714",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "2b2663b56a6555a2",
+      "pc_fills": 9,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "f9b32e71bedb5996",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "886df3cce3a95a83",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "160a7c3cbeee5f8b",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000013
+    },
+    {
+      "token": "24fab0f19fd35cd6",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "b63b325909a058c9",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "9b500f26b0f8560e",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "c9ba785129c35b36",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "aac1853286fb586a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "022fef6d66485384",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000007
+    },
+    {
+      "token": "51480b09db315e89",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "5d3ce016a8a256cf",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "60691b9dd3355992",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "0056ae51961f5a18",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "80d5ce364722516b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "f0ff3b146af85463",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "6f2a7bf7cf275dd3",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "1090fdb8b57850f6",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "a3fa79234a9d5d7d",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "36c6cbf6c8a25415",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "8fe647ed2b7a5aee",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "5abdbfe1845e59c5",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "4af11dadd34359fe",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000013
+    },
+    {
+      "token": "ad25b37aaad95a6b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000037
+    },
+    {
+      "token": "d5201097ad6e5d67",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "f96a48c3bcd45c50",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "3f36d5316f0d5a94",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "b6bba53a1bef520e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "7b840b044a6a5e8d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "22a09b0100175b62",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "39fd3f2e5f005306",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000001
+    },
+    {
+      "token": "497e7be0400158a9",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "6a53dd2411825857",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "fb9dcf5b46d65616",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "39fe00229f7b5ac4",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "63dcb963cece5b7d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "88f9b4f87b6b5bd5",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "90f5bf5743cf5df0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "52caccf1b3b95e4e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "1b064a029c0e513a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "50790f7ba9405c67",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "0bc3c50e1292529c",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "ad906e8bb5375747",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "0a76d212e8fe5898",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "77d96cb44005501c",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "12ed1a1d4ae657d1",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "a3e94bd829b75673",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000013
+    },
+    {
+      "token": "d7d94b48775a52d4",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "7640be138ae05408",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "f82c33508e915106",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "3138ce4847ee5007",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "25822d3d04305af8",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000013
+    },
+    {
+      "token": "ba642ba3c9a65fe7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "e34f51206f0e53db",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "5da31ca5ce165787",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "9a90853892925989",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "09c3d9dbca6455e5",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "42231e5449d3576a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000012
+    },
+    {
+      "token": "bf78c475adfb5eb1",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "2fbab9ffc3fe5a5d",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "7fe6e7ce9cb7559d",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "ebb4d3e033ae55e2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "f1d60841a46d53a5",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "8419b5d5eab75027",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000026
+    },
+    {
+      "token": "9c16cb6c4f94521c",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "35e2f788f41851c0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000012
+    },
+    {
+      "token": "54d3068f889b58ee",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "e1ee982450c85213",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "4a8b4dff75c15a8a",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "1819e1b106b354ad",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "4ecdbea836725622",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "b9bcc9d0efaf5c7e",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "253b856b49ef52d2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "68e39232887c5e4a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "2e2bb8bb71265998",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "e34a1f5fb71c54da",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "1d10ae25c61f50c4",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "2af1778054cf51a4",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "0f276bab4fa85df0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "6cc16446dbe45353",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "26043d2de718532d",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "e72eb72ebdc25a8a",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "c852239b5ac95394",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "3c297001ef2d5acb",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "123b77fa26425ac1",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "f97414b6f4a15866",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "957d3c9491ba5b5b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "0c9d055f4ccc5d64",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "cbaf3221997c55be",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "a02463c8a92d56ce",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "d91a4c7d1d9e5647",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "742b1d2c6cf156c6",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "8b3e9121fd57540f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "bdf3b83064235e17",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "ab000bda9ccf5150",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "e165b9b4eb5f5cf4",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "dcb23119258e58ec",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "f0328bdcd0e15d3a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "c6538928de9c552b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "56da0490b78b5033",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "8fc454e70d1554b7",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "3eceeb425c3a560b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "5e7d1f34a80c5e46",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "ef4f3026ae1b56a3",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "d92fd7e6c01d503b",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "1381f484e75c565a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "7b79090489c95c0b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000012
+    },
+    {
+      "token": "f0d107fb359953ff",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "e0c845f2d87555b3",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "9e454d3b139c5a3d",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "468894d189a75353",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "9252ad8efde85a85",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "d99a3bc24ff75a68",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "1d45b9d20e9d5f92",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "39fc09d325a05606",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "75341958391d5aba",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "e65ea4e886535732",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "a9134306f1575f88",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "3609537de0105997",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "90c4cd28f0e55d46",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "8a022198e6885aed",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "f6f213b156de552d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "1cb9fa36aea25d6a",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000013
+    },
+    {
+      "token": "e15983da12955abf",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "8635030755615376",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "86fbc624ea435e56",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "66e564907f5f5601",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "808ff2e869ff5d92",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "1b53682e2df854e1",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "dd175b6e08565a4e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "8e475454489d5f5b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "dc2d27a848115b56",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "3783e56bc9ef5e85",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "d45a215505f05382",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "4775f8e1a53d5c6f",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "802c127f63f955ed",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "f102259e52d35ac5",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "db5aa5f382f25aaa",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "598efc24965e57ba",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "3e83f47571b05337",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000023
+    },
+    {
+      "token": "f36236f06fb556a0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "ed717de405885939",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "a8b0833c7a065b81",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "f426002d6e275e78",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "3382fe7a030150df",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "a0283fb79a975f2c",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "45e7e76381d85846",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "9cac2a2e22c25964",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "f86b2f13b23d5470",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "6e5e2d80ec915e15",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "b5d7c17fe5375141",
+      "pc_fills": 3,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "bae3d8ac0ee85cad",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "4833c4f6d87f5021",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "a507cbf8c4055960",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "331e21d3c8d65bae",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "c5f7460ee0da513a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "7eb9b36921b25d5b",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "8d76cc7ca097546b",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "7b20cfb388a15b3d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "87a04f063e505051",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "e4fda5ede9c657f1",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "163693e2ba175db3",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "007505437ed45b53",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "b1199a48987b5f73",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "a1bcc195c8e85f37",
+      "pc_fills": 13,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "99c663a7b4e15514",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "2b9bcbd586b55042",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "113b14c30cc25989",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "b37b1679fd745ac9",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "a4b7b2795e615efb",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "c75edb67a65b5a33",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000031
+    },
+    {
+      "token": "fbec1eb4b33955e2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "c1ae700926d4577c",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "eba5b88270db545e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "0481ff72500154f2",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "70d9d2c73e4155d4",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "685c110d6a615ff8",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "b1483be2f1e35882",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000007
+    },
+    {
+      "token": "de0fb293bb4859e7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "335528f321b45d88",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "e5ba0fd6afc15419",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000021
+    },
+    {
+      "token": "07bd6c8c7de152a6",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "0b9f2aceebbf5003",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "e8991ab64afb5db6",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "66c135a6ec7f53c4",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "1fe597d0fb1454dc",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "fefa00cc3fe65b70",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "fddb21da30bb54c2",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "aceba8d21dfe5d03",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "ac940ab1e16558e9",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "4ac0a91fc4dd5ca9",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "cdec4cc7781e5d4d",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000031
+    },
+    {
+      "token": "01034b2411ce5ea0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "fb7f5f4fd1a25f13",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "dcea502e05ca5eb5",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "28b79e32839a543b",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "2b07bad4bce156cd",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "66d778b97714583a",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "a8c9f51e547a5fed",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000013
+    },
+    {
+      "token": "7a0635b7942859c6",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "84b13f58e18551a8",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "87ec42ef94f75f0c",
+      "pc_fills": 1,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "feae0b42dda25c87",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "b663343f65cd5e92",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "71495dbc0a3255dc",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "244f412a59375c65",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "5c1f98237d1852b9",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "9eddebd4be385650",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "b53636b863815077",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "1ef92a1e554b567c",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "019cfd828c3f5b7c",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "55a649760430531d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "377d9bb5bb125691",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "a40383b62c8b5f0a",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "6822dc0570565ef4",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "6b5978b04dc85323",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "28c5133d23575e81",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "0726ca723042500c",
+      "pc_fills": 4,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "e1b339d45b635f03",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "60e4b765d65a534a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "cb8ed00b6b6e5650",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "f11aede9f6665b09",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "8ae2f982585058f2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "ee81b62009285462",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000022
+    },
+    {
+      "token": "8783e69e8b9d5d5c",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "9566c9689988532d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "a49f197b94e15a20",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "d4b1d28cb67b5618",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "9fd73df50f1d5a2b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "40bdcf910bed5013",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "c72fac839d7b5bdf",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "23cb188abddf5851",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "a488a24ace4e5a0e",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "a2e11073e3025626",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "56df5b5a7f8d5964",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "9f7eb558c5125bca",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "b7520d4aabdb522f",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "c97d721af0475e45",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "2c87600ce5a15f76",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "5d0d7322ddea55ce",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "fad3b25206405469",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "117be7ce4bae59d9",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "36f37eab352d5150",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "ada4bd96b21350f3",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "116f3217b5875595",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "2ce54722e81a5726",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "f0e8b02b16cc5161",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "4db513bb187a5415",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "f679ed3e8e975575",
+      "pc_fills": 3,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "bc9f53029a6b5c52",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "8fcd3f59e5d35e62",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "895b56e6e7d1506f",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "f22f6cb0966f5ddf",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000013
+    },
+    {
+      "token": "8d16e85f8f505b74",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "3e58b4e75b4d5910",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "a68174740e5d53d2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000037
+    },
+    {
+      "token": "9c83725ca24453f5",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "af80a080342354b5",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "7592a60634a65972",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "312f7d68b7845c0f",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "2ad520fb925f5ace",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "d69754f18e1b5816",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "1514fa6cda205491",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "65c6face44dc5242",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "116b808c2f825f23",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "0502652852d456e7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "d139b76f0b1e5791",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "e6a85ef20b3054c4",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "d2b1e07b5d38547e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "56faab1d1228542e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "a5aa2c07692a5f9b",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "ccb3b418f0a45229",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "9e326c77e25f526d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "a11285de52f553a7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "b3b328a0d89255ea",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "ab7c0c62ea5d56df",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "822b5a4a2e075ace",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "6ee8095e2d8b599c",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "e536a7424867539d",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "228bc7a51ce85114",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "b386322960ff5784",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "1779dc029c945352",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "e66f72e612d05320",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "8a7b81e3d8ec589e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "79d01df5793f5d1a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "78273a4b69465c1f",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "e9c9a2873a275365",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "063ebdc4cd7e5bd9",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "40b18724a90f5919",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "7f6ac29877365766",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "2617f0cd70705817",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "9356731128d95d59",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "d68f1142da63586f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "8c4982f5d16e51a8",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "75b56424b7eb5ac6",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "12264b570ba358e9",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "2320cdddd8465622",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "5fec23f5a5d052cd",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000031
+    },
+    {
+      "token": "a3d8003852145a71",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "fadbd438f57e5612",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "23ba8f4aee055e34",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "edf80e77e2e65098",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "ec646e4956125fcf",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "9069684898175278",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "c83e41bd3afa534c",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "c3fa71763867515b",
+      "pc_fills": 2,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "43916f0a6f7f5717",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "e8bd03529c905c16",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "130e725a1594571f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000031
+    },
+    {
+      "token": "03d9c9a7f1655e53",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "3c84060e9d245ad7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "440da7a31b255ef9",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "8deb3aea4c075024",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "fa72914538895375",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "095453a7aea65260",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "b5a136c8bff95db6",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "16cf679d9cd35d85",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "0424e5fd9a5c5e60",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "97de4a69dec65c80",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "e5a8e75d4450516b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000029
+    },
+    {
+      "token": "4669e83db7965ed0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "00bbc908bd5758e6",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "97f64f5b130055b0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "101da9987c395ba4",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "e20db842c987530f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "d14c834404a75404",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "b20465ed49f953d3",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "f6741cbf60265367",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "4df92e2616c75be7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "b3a6f577c20d5eb3",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "d7c39e8608e25e88",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "db42252e1f655f26",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "b4375fa743295bd8",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "5b620dbb3b4d5892",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "9a78f0e3d0335345",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "576835726a7c57d4",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "23c842d3f001597a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "db4611f3cf8a5db7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "bed1f99d06215f1b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000013
+    },
+    {
+      "token": "770e1697a0255dc8",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "339d5c1111125971",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "4a5cb683d82059f0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "6be7246860e057c8",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000013
+    },
+    {
+      "token": "4c31e06f0fc858a0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "ac2dfd95a1e55c5e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "664b084487e05ba0",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "b4206de96b755fb8",
+      "pc_fills": 3,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "2fd40c15042e53d4",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "fc2be4c9cc135538",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "9ac1e7123b245486",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "bca73d6fa8f85d39",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "f57d194633ae5571",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "99d1ae48071a5aec",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "008a9f9434c75b99",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "dc89cd046c135fae",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "b5d3d18e7d115933",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "7da1df98fb8e5af0",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000012
+    },
+    {
+      "token": "af816d6041dd5257",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "ec765c8fe97a51bd",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "4c188096aeb950bc",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "392e034cb2a55053",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "be6fe40f664154d7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "a400f271c6cd51f6",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "e93e621b5e14563f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "2e976da85a8b5e5b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "2f4462b637dc5044",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "b548689d07d15535",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "f696561dbf6055df",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "7bb8d2878b1f53cb",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "bff852b39f62557d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "b940d77be0d45ec9",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "5050ddd89f6850ea",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "31c9a3082fa15d55",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000028
+    },
+    {
+      "token": "48f80f817e0656d9",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "602d680df54553a2",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "cc8872f4a1fb5895",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "09d7ac879b745ba7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "1f22c13b337250e8",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000001
+    },
+    {
+      "token": "df16f52f5bea51cc",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "de8c2538d4305d9d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "9c7f841d11e6542d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "89a7b788217c5f67",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "3d53eff55b2855c2",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "8fb50dd1fb5552df",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "1dda1a63c5735182",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "006cbccbfae95262",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "cea771061cb25651",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "053ae221b0d351f5",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "edfca2d846ee5acf",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "278907212b495e23",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000031
+    },
+    {
+      "token": "449f34ad438e59d2",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "8c1a989cd94c5c12",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "48d4fcc3437755a8",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "13f740d88bf75471",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "8eb1bf4722515ad3",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "21249a2d4eb25ed6",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "3d44a52acf525ec7",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "9fad4614acc251d6",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "727278e9914354b1",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000013
+    },
+    {
+      "token": "9d722cf10d7f5bd1",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "14d0749e1fc85004",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "ee05069c50295595",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "5e7dad82583e5536",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "2c772a570884587c",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "aee904e6c2c35a90",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "0264cfbeb1705e5f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000012
+    },
+    {
+      "token": "279ff8e3850c54e2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "7c767d74b5fb5b5e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "5daaf9b25cb558f9",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "864f5df8a94a508e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "df51d2fef8c25f56",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "ac5b4b33a03c57fe",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "99adfd4cd925504d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "1cba0de871fc5bfb",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "f84ac4472da55b91",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "bcc74e9eaae05ca4",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "4fe8a056f88154d5",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "16ff52ac5d085cac",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "584a14a3e42050c4",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "4a5834900788560a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "e6046882cf485f3a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "873f4bc746a55d13",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "96886b2d240e5275",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "190b153cfd3b5302",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "e1b0455379fd5adf",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "a801ebe0c8a55faf",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "8caca31e4dc357be",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "a8263f179cca558d",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "22dddd249c8e5fe4",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "bcd578c19d9857ea",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "c4c0b5cb93d85645",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000012
+    },
+    {
+      "token": "0fae6a22120d5bc2",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "9d67b6d20a0256c3",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "548d6bf7b63459e7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "0f44c6e6440654d0",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "85fb576381c15527",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "d79d2c9951f35626",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "980c4467fdf156c4",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "11ceee170b09535e",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "c550cadc4a515e6b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "4fdf21ae819f5cf9",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "9af521b071b75ede",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "94fd2d5eaaff5125",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "3bfe55c892ef5093",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "76c61e8e77975178",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "6aa0f931a89f5d9a",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000007
+    },
+    {
+      "token": "7f3aa59671c45291",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "c17be2d2a6f65008",
+      "pc_fills": 9,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "f6d7cbb8505f5782",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "59b4fffb7aef599d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "5c722cde25ba50d9",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000001
+    },
+    {
+      "token": "248aeb1af182529b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "8dff3247e7415c0d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "df244d376fd85a93",
+      "pc_fills": 11,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "06f781885ea25f20",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "dabc9a6d5e755758",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "666ee535a52a5acc",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "afe0ef0cd35b57f7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "b7d4e7ebc5c75968",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "bc5eb52653bc5031",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "6793006a7d995092",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "9e7acfb214dd58eb",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "6cda2f0cbda156bd",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "beea15c8657d59a2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000013
+    },
+    {
+      "token": "1971c4278e675b9d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "c7009bf1a2025be7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "c37c94fa634f5265",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "caaf3bef91ac58a3",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "89c4479f74c05538",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "7f35bb1a29c1549f",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "b46befc3e5a756ec",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "f06dec0352685bd7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "9956d04c0d275e7d",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "edb7e230c20f542a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "bbe9d736a2595720",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "8f7d5b80e1f85c3c",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "3c9433a90ab05621",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "b37c26e5cdf853d5",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "6dfe97d2aff95bf6",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "9e66bc21c0d4507d",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "121fdf5f01785268",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "9349bacb4a225ae3",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "704c2533b66353b5",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "4ffc3aacc76d5d43",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "ea808fbdaf2a5375",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "e47dc9b07dd857a3",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "0d38caf0c7c650e8",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "3ac61ac2f2b652b7",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "0d9f56cc8fa15657",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "296345c58a77547f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "94e9664fcf2d5f9e",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "a880ac22dd045d21",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "5b3770f00cb55569",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "36c5c837df3259f8",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "665c2a0c88735b1f",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "24d4a97bf17f5883",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "acb286057ba859da",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "4f0df6de49515352",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000023
+    },
+    {
+      "token": "482b5439cb6c5350",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "a84fec66330e5157",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "02ef12eeec9c5667",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "076f5a91273050e6",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "a566b5f3bd0c5522",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000031
+    },
+    {
+      "token": "fe1348a14b7f5fda",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "cf430322beb852ca",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000029
+    },
+    {
+      "token": "05986621844f54a2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "37ab6257bb545b45",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "1526e5b224665c7e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000031
+    },
+    {
+      "token": "66df470c3c2c5b62",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "ce800a53730f5ae7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "7ff20da52e205bf0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "9c9fd38ec0485088",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "ec90c27de29a594c",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "86c52dfec8425716",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "0f54c1a676a954ce",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "a86e7f16bd64596a",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "cb397fd17507594b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "c84f1984d6e459d4",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "8b744d45e7945aa5",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000001
+    },
+    {
+      "token": "68f3beae8cd25dba",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "aff2feebf9cb5afb",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "6e7bf5900d7f594f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "7da6b01adf435bd5",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000003
+    },
+    {
+      "token": "4934fe6008f8564b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "c0c2ed50261f54e5",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "0cb726068f4d5c59",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "fead2572a884512c",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "c82e95254649534e",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "2581d16dc1aa557e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "74356ec7c3d15e10",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "a77cad5e29a5585e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "711cc9425e2f5aff",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "2314cd5f97c5596c",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "dc932b3cf2ba5b1b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "675f0d4dff9c5318",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "9fe72fe991c859f0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "f6a1a2760a7b57a4",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "6176348b971f52c5",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "1decf76c77be59c8",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "91e6cce9eb7d5765",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "d360abe45ec55059",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "45cace6f6d275159",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000003
+    },
+    {
+      "token": "9551d9bffa515426",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "6f95e882286e5388",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "fcc0457324f15902",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000023
+    },
+    {
+      "token": "aa58d1ab2faa5746",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "5d711f77d42054d6",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "fa00af6ecc8a5cb4",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "bf6158f005f956ae",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "67b08ea8fc9956b0",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "5cfcccdb3e3c539b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000007
+    },
+    {
+      "token": "288f0194b6d45858",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "4094b79867cd5f7b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "abd994ef714a595c",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "4668501db7065e02",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "289087a782995ef0",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000013
+    },
+    {
+      "token": "0eea4103d56352dd",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000007
+    },
+    {
+      "token": "b790a763e1ee538e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000023
+    },
+    {
+      "token": "6ca255559e0350a5",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "6848c7497a065ae0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000007
+    },
+    {
+      "token": "8a5bb66e9bb65101",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "4fa6a8e71f4a5984",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "77ded26c7a9654ad",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "5d83ddd5ec3c5326",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "7a03013d34b355c1",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "0b2061c2aced52de",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "945dcb42cd645cc2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "66d5a6841d835e3a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "1035d1c56f0f5ba9",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "98ad6d2817355b99",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "293fd2580df350a8",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "6864977b221059e4",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "161154cbf4245a3d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "023664205ae95402",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "cd07f4279fa35240",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "7ae1fa9094f355c5",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "b7b9f31751e459f0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "94cf3d2feed759ac",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "9f4e94fa77b555dd",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "5985ea459f145e5c",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "624789926abe5dac",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "adb657c849df5d9e",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "095f95bdbf1054d0",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "d117940fcb945ac1",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "ef023f6f394f5be8",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "451631b82dd757e4",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "b25e5caac7645be6",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "277898ef740c5ab1",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "de94e95519d85f21",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "cec9570f9fd3504b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "654a0ce9f6305cee",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000001
+    },
+    {
+      "token": "672173aac8685233",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "74bf7898a5565ef7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "4393df900c6557cb",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "059fb1d0f20e58d6",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "b76fdedd0d1d5f46",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "005a44fa33b55e7b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "cdf23d07ec42535e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "5bb0b67e360f5a85",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "d5b5493184c257bd",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "a85370bd50145fbc",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "6b0de122978c5d6c",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "9257645ceccb550b",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "5d03327b42d153b1",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "f53ce90fba735a76",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "89ba731076de572c",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "d49e1049666e5596",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "30e1141fbb1e5009",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "377ceb5650355d8b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "93aa103155cd5295",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "1dbae60fb78c532a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "50fefa46fcc855fb",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "baef6630583c5f87",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "8b0773eaa2375bbf",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "80e2038fd0555030",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "d341827e6b485782",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "d6f1d7ade74c5d53",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "0827c1c05e0e5596",
+      "pc_fills": 13,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "e9cd4fda706e5516",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "bae5037e472250dc",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "3e7e4bd1053d5d92",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "bc6cd32ccb1b5427",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "a4c4b9cae9f356bb",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "1e8cca8760da5948",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "c7e306be08105b70",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "26e0f72c031b5f07",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "56e525076cab5f42",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "4ce4021236435fc2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "3ae8bec3c87f599a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "de9dfb594099510e",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "ba1ace8df74d5f7b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "502320eeaec55d1f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "2dd169c11ca55cf5",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "14bd7947aab75ae6",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "3acaadb297b15413",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "4667b479001e52d3",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000031
+    },
+    {
+      "token": "7f15d26426a65449",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "70fb14aa330a5e1a",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "390944a5467b51c5",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "de37d906807d5da4",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "9ed0f61a7d9551dd",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "772bea477f415d7e",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "cf05fb873d635a08",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "6ef435e921f9538a",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "e60a241cf8df5ae6",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "430843d30f9258ed",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000029
+    },
+    {
+      "token": "05f01335f6e15d86",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "4be639c52c2656db",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000001
+    },
+    {
+      "token": "3f67a285648156d8",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "d193c14478495b74",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "be62b590e24a520d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "ee2a0378652e53d0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "adf177418b8a5f6f",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "8ba72029d7d75a0c",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000007
+    },
+    {
+      "token": "a893fc739c0b567c",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "ade775b8413358d6",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "cf26456f21fc55cc",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "f5134ec4baf153c9",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "09961e24208b5972",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "7e6335968cbb5318",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "ac20d4e2400c58a9",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "f503e5d4f2815027",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000007
+    },
+    {
+      "token": "43df192ed9125ff3",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "b63a589b5dcf521d",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "0996ce03d2325a75",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "5da5fed529065c9a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "4d4d070cb9095f94",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "14096d0f331a594a",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "432cf993a4685755",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000013
+    },
+    {
+      "token": "c668fc93191352f5",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000013
+    },
+    {
+      "token": "a73551f67ae95c4d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "928010107cd35cdd",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "f4ab14a89bb7500e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "dc28a01b78d45b17",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "3f159d73e87a5e06",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000007
+    },
+    {
+      "token": "bdfa1f8523c25328",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "12115c5ca1215fb7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000031
+    },
+    {
+      "token": "c402a7eb498a5736",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "c94d20755cae51cf",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "c44b12de78555426",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "50e0c2fe698655a9",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "e91a2d26f30e5b34",
+      "pc_fills": 1,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "c8b4c92530f15b8e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "3d2dded3370e5d2f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "1361ba1955125852",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "b78f23cd3a155154",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "25652aabb1615c8d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "3623f8728153513d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "9288a151789f507b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000031
+    },
+    {
+      "token": "e671280656f55009",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "48cf36e2f3e15071",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "4acdad2d68815972",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "b35fe1e3a6d857e7",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "095eafbb5c8f5b02",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000012
+    },
+    {
+      "token": "6f3254ac0fb25c0e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "846947c0d14c5705",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "da088bb9d4fb5d0e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "2d6b6f9cbf895767",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "2b6a3141bbd95909",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000001
+    },
+    {
+      "token": "c565fc593f9e5fad",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "2b62f0fd336e5ce1",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "4521af05098b5726",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "4cf79f853daa5e18",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "91c9748ec36d552e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "b74282046c9b5e26",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000007
+    },
+    {
+      "token": "9b2f62944222523c",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "b4e37918a3075f27",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "172b3176b06c5658",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "29c1d95389d45573",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "03925cda82c35516",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "8f24138692dc51a0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000007
+    },
+    {
+      "token": "e4bc6fc5aeb15a9b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "58e62444275353ac",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "b4929fe228725c94",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "9703fd67a8ba55e3",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "21ef5641389c54b2",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "1672f5b30038519f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "50865b0784fc566d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "a4cf3a412034565a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "1295232b65bf5f8d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "7ecb22e3bba55b12",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "6b7469c8e2195492",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "5ed66db305a55f73",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "0b8065082f3a5b3b",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "40d00a52b5345430",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "2c274b54e82b55e7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "2f7f18f806515128",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "daaed109e7eb5f66",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "de9806cb0a2c53a3",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "cd3f3ec4f0dc515f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "481b84c931245f5d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "6aeb37c47f385f06",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "165b4475bd6b5188",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "c5a1a4e21a4952b7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "aac897560e0f5dab",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "1e66e2bddb1d5b49",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "dfdc23aed4e95e49",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "49a1e581f3a35a49",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "9263d47ef82d5a88",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "c216554d4bd6519f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "0354be0727e25157",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "26dfdbfcecfe50bd",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "cc3160abbcbb543a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000037
+    },
+    {
+      "token": "fc696e1d378654d4",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "3fa2f81cff025162",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "1d0a4f1f6cbd5e38",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "eff59f39f085525f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "984be293f9195416",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "b235c02d47915476",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "3ac7810599d457a1",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "682378d23c335e89",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000003
+    },
+    {
+      "token": "73b4b5fcc5e55858",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "6f31d072740b5885",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "305b1bf4e7f45522",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000003
+    },
+    {
+      "token": "42d309d92a3a59c0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "af16ba268df55dca",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "2ae8ac90c0ae5c8d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "b512bc2c568d5b7a",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "7405ff66092d51da",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "23724912b8f153f0",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "6522fd9a31d25eb2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "c6fcfafbbe7a59f8",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "5dbd0aba5f315388",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "958b596dd699594a",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "350714230cb55761",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000012
+    },
+    {
+      "token": "775b0dd554395fa3",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "635be215dc9d58c3",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "1499e758c6855a74",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "e9b0d4743b3f5256",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "3ff6652d6dec55da",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "3c30c0c940045ac2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "b9e0dc94c7725924",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.500000000000003
+    },
+    {
+      "token": "0506b1697fb05337",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "7cfa2141cf77549d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "089107cd2d6354e0",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "b03c039a00bd5792",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "064bbfac76a95dae",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "ad8019f55bc554de",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "073c4d0738b45047",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "b29e1677139a5f6b",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "c615107923dc5602",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000014
+    },
+    {
+      "token": "ffb15604a2a25cb8",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "4124b6e12f8b5f0d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "a3298b678d225d61",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "e20b77b0ed075fb6",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "71452581394b54da",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "54399d56e69f5a2c",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "2bdd7e6fdc0e5977",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "2f875dc108ed572f",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "91513086606a567e",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "80dfd05ab759518f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "d5e7dc43eb5c57cd",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "13014abb5b115ee2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000031
+    },
+    {
+      "token": "9430278b77c05446",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "97e38fdccf915283",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "8787fbb12fed5433",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "a460f60f07f05098",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "570334268a395022",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000022
+    },
+    {
+      "token": "16a705e621675626",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "377030639621540e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "2e94974489245ae6",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "dc2a30b4130f5ab4",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "11f415ea61f95bbb",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "7fd57c3a03465a0a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000031
+    },
+    {
+      "token": "bfabfb64124e5563",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "0dff173b10b75b6a",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "efd13cf71f83504e",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "86a8eb25b4045aba",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "04f77fbd6bf3505a",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "69cd8ef1721f550d",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "738c5da7a06d554c",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "a57d242401f951f5",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "d57a735214e65851",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "9bbb66957b9d5e1c",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "ccb7a68f3e0a57fc",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000012
+    },
+    {
+      "token": "05c91985246d58a6",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "2d1c26e4b5895e96",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "1f71cdf4e4c65299",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000006
+    },
+    {
+      "token": "1b7a2afa56df5d20",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "1f37959067985e67",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "f07db0b393fd522e",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "fa4cc4b0188c5b79",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000032
+    },
+    {
+      "token": "eb2ede89ad9b5a6e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "bc4345e13302535e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "66568e650e4d57e7",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000003
+    },
+    {
+      "token": "74ae55238ee5525d",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "a124b877d2b35519",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.500000000000001
+    },
+    {
+      "token": "1c6a5ee8a5785b0e",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    },
+    {
+      "token": "ed47cee1c67e5d43",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "838c6ba50bd25cd5",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "089b0ec6d7d35c09",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "9dedf462b1c0528f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "61987c90d8635129",
+      "pc_fills": 14,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000011
+    },
+    {
+      "token": "bbbae26a26605b08",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "8142f060944c56fd",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "2c76b8e2d1d85701",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "8a0b4dd476055911",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "b8adc82de5ae50e2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "025b2d4de25c5036",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000008
+    },
+    {
+      "token": "9a7fc4d0041650fc",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "ad1af1160bd05ef7",
+      "pc_fills": 2,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "d4185f4edc7e54e5",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "1b1311d50d47553f",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "573ac67fb17a5a71",
+      "pc_fills": 12,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "da8c9449da6854ed",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "7f2409d7f6705308",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "94ae5d67804c539d",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "4f9a94c1302e56d8",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "ed54b128881a5278",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "21c8e0c8fe5f5495",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "24ab9ae0499950e9",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "0d24b5cc9f005fe0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000034
+    },
+    {
+      "token": "c3cb403773505798",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "b696a6cffd3a5700",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000033
+    },
+    {
+      "token": "0a02ef840f2d5d8e",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000018
+    },
+    {
+      "token": "ee0d56667d9755c2",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000019
+    },
+    {
+      "token": "575564a1b87c5502",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000001
+    },
+    {
+      "token": "7e5d78b37ed653b1",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "b003c9652cb05ffd",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000016
+    },
+    {
+      "token": "a9e5ed5e52b555bb",
+      "pc_fills": 8,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000017
+    },
+    {
+      "token": "a2c048ba29a85ad0",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000004
+    },
+    {
+      "token": "90cee81074335c3c",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "f40040c002375188",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000036
+    },
+    {
+      "token": "7ff1d8c18a215751",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "2eaf758421aa5190",
+      "pc_fills": 15,
+      "pc_OOD": 0,
+      "pc_unqualified": 16,
+      "max_amplitude": 0.5000000000000009
+    },
+    {
+      "token": "4bfb866afaf35777",
+      "pc_fills": 0,
+      "pc_OOD": 0,
+      "pc_unqualified": 0,
+      "max_amplitude": 0.5000000000000002
+    }
+  ],
+  "full_scenes": 1000,
+  "raw_count": 192000,
+  "selected_count": 64000,
+  "heldout_count": 1536000,
+  "new_official_IL_count": 288000,
+  "denoising_scene_count": 500,
+  "status": "All scene-level array, native score, selection, bridge, calibration, amplitude, and epsilon checks passed"
+}

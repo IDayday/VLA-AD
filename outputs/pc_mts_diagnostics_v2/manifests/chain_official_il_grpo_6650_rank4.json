@@ -1,0 +1,40 @@
+{
+  "identity": {
+    "v1_commit": "2dd4b55fc658e6182aaf857bf3267b652c873cc7",
+    "scene_manifest_hash": "f46fc7cd38329aed7e52ff749544caf4c90a8d43780c00f886fc99b3d6b407a6",
+    "config_hash": "ced475943ade74a4cab12e442ca41f0f7e96c24d32cfe8235f14ddb3f425a4c5"
+  },
+  "snapshot": {
+    "name": "official_il_grpo_6650",
+    "role": "middle",
+    "step": 6650,
+    "reuse_V1": null,
+    "model": {
+      "name": "official_il_grpo_6650",
+      "label": "Official IL",
+      "category": "gt_sft",
+      "checkpoint_path": "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/outputs/stage3_rl_2b_official_chunkcache_retry_20260608T225423Z/navsim_exp/training_recogdrive_agent/stage3_rl_2b_official_chunkcache_retry_20260608T225423Z/lightning_logs/version_0/checkpoints/epoch=4-step=6650.ckpt",
+      "sha256": "1fa3d07c70e735cefe08ac59dbd0343644b005bb9e737cc1a3c68af9dd8e2636",
+      "config_path": "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/outputs/stage3_rl_2b_official_chunkcache_retry_20260608T225423Z/navsim_exp/training_recogdrive_agent/stage3_rl_2b_official_chunkcache_retry_20260608T225423Z/code/hydra/config.yaml",
+      "reported_pdms": null,
+      "training_method": "released GT-only IL",
+      "git_commit": "8a200077601ef33414469cfbe9fd095e322cccb6",
+      "metadata_source": "Official released IL; do not substitute local A0 reproduction score",
+      "notes": "Native learned normalization and adapter retained; common output is XY metres, heading radians.",
+      "code_root": "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/official_recogdrive",
+      "config": {
+        "use_expert_features": false,
+        "use_planning_token_adapter": false,
+        "use_fs_norm": false,
+        "vlm_size": "small",
+        "sampling_method": "ddim",
+        "num_inference_steps": 5
+      }
+    }
+  },
+  "seed_stream": "Exact first32 V1 policy streams; common random numbers with step0",
+  "rank": 4,
+  "count": 37,
+  "new_count": 37,
+  "seconds": 17.399527549743652
+}

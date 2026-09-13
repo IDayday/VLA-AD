@@ -1,0 +1,41 @@
+{
+  "identity": {
+    "v1_commit": "2dd4b55fc658e6182aaf857bf3267b652c873cc7",
+    "scene_manifest_hash": "f46fc7cd38329aed7e52ff749544caf4c90a8d43780c00f886fc99b3d6b407a6",
+    "config_hash": "ced475943ade74a4cab12e442ca41f0f7e96c24d32cfe8235f14ddb3f425a4c5"
+  },
+  "scene_count": 1000,
+  "candidate_count": 192000,
+  "sources": {
+    "GT": 32000,
+    "IL-native": 32000,
+    "External-MTS": 32000,
+    "External-RL": 32000,
+    "Bridge-0.2": 16000,
+    "Bridge-0.4": 16000,
+    "Bridge-0.6": 16000,
+    "Bridge-0.8": 16000
+  },
+  "bridge": {
+    "anchor_pairs": 16000,
+    "strict_monotonic_fraction": 0.9996875,
+    "nondecreasing_fraction": 0.9996875,
+    "alpha08_greater02_fraction": 0.999875,
+    "median_ratio_08_02": 2.9384348615708604,
+    "mean_r_knn_by_alpha": {
+      "0.2": 3.5627829840522365,
+      "0.4": 5.998032315748228,
+      "0.6": 8.489119993815605,
+      "0.8": 11.00393654301813
+    },
+    "median_r_knn_by_alpha": {
+      "0.2": 2.867791054740353,
+      "0.4": 4.626107576433661,
+      "0.6": 6.463427126539322,
+      "0.8": 8.314337005939446
+    },
+    "definition": "Same-anchor bridge, alpha fixed before outcomes; KNN can change nearest neighbours."
+  },
+  "contrastive_scene_count": 276,
+  "selection_has_not_run": false
+}
