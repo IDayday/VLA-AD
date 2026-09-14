@@ -1,0 +1,810 @@
+{
+  "created_at": "2026-09-14T01:59:35.084827+00:00",
+  "repository_commit": "96b3317be2e057be2f6df54547e4a838d691f9b1",
+  "scope": "Read-only historical checkpoint lookup; no inference or training; no original artifacts changed",
+  "official_il_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+  "official_il_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+  "psi_run": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z",
+  "psi_inventory_rows": 61,
+  "psi_verified_saved_checkpoints": [
+    {
+      "checkpoint_id": "epoch_011",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.051ac3312a848b36eeeaccc3935e03582f9acc89737a99672349a5887faa0aff.3941396.tmp",
+      "sha256": "051ac3312a848b36eeeaccc3935e03582f9acc89737a99672349a5887faa0aff",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 10,
+      "global_step": 7315,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 87.67243811626906
+    },
+    {
+      "checkpoint_id": "epoch_026",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.0b542f3fe1a46100a6b093e88e06d5e7e40e659d1ca06afe7d1952228f6cedf5.4060073.tmp",
+      "sha256": "0b542f3fe1a46100a6b093e88e06d5e7e40e659d1ca06afe7d1952228f6cedf5",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 25,
+      "global_step": 17290,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 85.45144681884284
+    },
+    {
+      "checkpoint_id": "epoch_036",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.0ddb9c43e280eaaf85b8a13a310c7aa9c3ec3a7bf612032548603b37b49fde59.4153842.tmp",
+      "sha256": "0ddb9c43e280eaaf85b8a13a310c7aa9c3ec3a7bf612032548603b37b49fde59",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 35,
+      "global_step": 23940,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 84.76388964655487
+    },
+    {
+      "checkpoint_id": "epoch_005",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.16616fc741875a44ecc457306e9206d0c5666004efa4cb21309eaacedda18054.3886485.tmp",
+      "sha256": "16616fc741875a44ecc457306e9206d0c5666004efa4cb21309eaacedda18054",
+      "hash_matches_inventory": true,
+      "bytes": 459747144,
+      "epoch_zero_based": 4,
+      "global_step": 3325,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 84.71439853914286
+    },
+    {
+      "checkpoint_id": "epoch_017",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.1e54dc6fc8d7184d7c4ba21e4dde31eab82d29d48fc98b166ddfe8a88c0b2de8.3988519.tmp",
+      "sha256": "1e54dc6fc8d7184d7c4ba21e4dde31eab82d29d48fc98b166ddfe8a88c0b2de8",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 16,
+      "global_step": 11305,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 86.1948243894061
+    },
+    {
+      "checkpoint_id": "epoch_037",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.220bd7f5b13c8821deeaff5972c313a318c9fd0f21caa14f73b20d64cd9f5d48.4161040.tmp",
+      "sha256": "220bd7f5b13c8821deeaff5972c313a318c9fd0f21caa14f73b20d64cd9f5d48",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 36,
+      "global_step": 24605,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 84.98532608421387
+    },
+    {
+      "checkpoint_id": "epoch_024",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.35f1d6b159dfaa708671b42ec303c35311c486df7fa78bc2de665c51398719d7.4043604.tmp",
+      "sha256": "35f1d6b159dfaa708671b42ec303c35311c486df7fa78bc2de665c51398719d7",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 23,
+      "global_step": 15960,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 82.87423297478843
+    },
+    {
+      "checkpoint_id": "epoch_049",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.384089766d0db0cffed8f5892bb1fe356c1d9a96a95147b5165f5131c977d064.81782.tmp",
+      "sha256": "384089766d0db0cffed8f5892bb1fe356c1d9a96a95147b5165f5131c977d064",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 48,
+      "global_step": 32585,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 84.83908185068047
+    },
+    {
+      "checkpoint_id": "epoch_012",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.3cc36f19cda3b8d9217eb8221c26599239f15f752f381a94f52ec579852de1d6.3947855.tmp",
+      "sha256": "3cc36f19cda3b8d9217eb8221c26599239f15f752f381a94f52ec579852de1d6",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 11,
+      "global_step": 7980,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 84.92523835026059
+    },
+    {
+      "checkpoint_id": "epoch_016",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.3e0137c726f3806eb79c011c07b1a0580e02b3a6e201bc91be3d1818b16dd784.3979186.tmp",
+      "sha256": "3e0137c726f3806eb79c011c07b1a0580e02b3a6e201bc91be3d1818b16dd784",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 15,
+      "global_step": 10640,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 85.01360667005132
+    },
+    {
+      "checkpoint_id": "epoch_007",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.42c634658d0ed06c0ddb9e33aaf85648e863aa229103829044e40bed9d95a36c.3903588.tmp",
+      "sha256": "42c634658d0ed06c0ddb9e33aaf85648e863aa229103829044e40bed9d95a36c",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 6,
+      "global_step": 4655,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 82.08096192884307
+    },
+    {
+      "checkpoint_id": "epoch_020",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.443d12a818fda264f29dd0b875c727564d4a34064c9913499a8f71c6cb5c5cd4.4011165.tmp",
+      "sha256": "443d12a818fda264f29dd0b875c727564d4a34064c9913499a8f71c6cb5c5cd4",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 19,
+      "global_step": 13300,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 83.75703337622078
+    },
+    {
+      "checkpoint_id": "epoch_033",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.52ecca1afbb520dd9d5f2257b604ae9c2dddd8b89697921dc405bd96894beed2.4126937.tmp",
+      "sha256": "52ecca1afbb520dd9d5f2257b604ae9c2dddd8b89697921dc405bd96894beed2",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 32,
+      "global_step": 21945,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 84.46363290667804
+    },
+    {
+      "checkpoint_id": "epoch_041",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.6057f23ab877c54cd1ab7ff50499657ad0d7e8c146a8a702c936ebe4b64961fb.11672.tmp",
+      "sha256": "6057f23ab877c54cd1ab7ff50499657ad0d7e8c146a8a702c936ebe4b64961fb",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 40,
+      "global_step": 27265,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 85.33311135897839
+    },
+    {
+      "checkpoint_id": "epoch_009",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.81feb6d10a228b9a5aa7fea2e6daf73868693faf07b4e172e6af3cee70bc75b3.3925829.tmp",
+      "sha256": "81feb6d10a228b9a5aa7fea2e6daf73868693faf07b4e172e6af3cee70bc75b3",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 8,
+      "global_step": 5985,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 80.0029527394774
+    },
+    {
+      "checkpoint_id": "epoch_025",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.877d4e1f823536a5d13e35692ddf0c9fd6a651cbf7ba7a4ed61ebe71b40c2b23.4053193.tmp",
+      "sha256": "877d4e1f823536a5d13e35692ddf0c9fd6a651cbf7ba7a4ed61ebe71b40c2b23",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 24,
+      "global_step": 16625,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 80.70029840562852
+    },
+    {
+      "checkpoint_id": "epoch_021",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.8816a20511944f314d1a80316ca81aac3c3ddc0425cf0eed77901c4da9d852de.4020455.tmp",
+      "sha256": "8816a20511944f314d1a80316ca81aac3c3ddc0425cf0eed77901c4da9d852de",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 20,
+      "global_step": 13965,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 84.8898057270842
+    },
+    {
+      "checkpoint_id": "epoch_008",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.8a54516a5e7d90d78ef6c44cf6feb3d6104906a18718679f82243539830051c3.3910343.tmp",
+      "sha256": "8a54516a5e7d90d78ef6c44cf6feb3d6104906a18718679f82243539830051c3",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 7,
+      "global_step": 5320,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 85.3379538636985
+    },
+    {
+      "checkpoint_id": "epoch_004",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.9eae7fa3bba1fb1f0317329d792ec775bd5b9f56891de8d6314fc24e48897847.3878643.tmp",
+      "sha256": "9eae7fa3bba1fb1f0317329d792ec775bd5b9f56891de8d6314fc24e48897847",
+      "hash_matches_inventory": true,
+      "bytes": 459746697,
+      "epoch_zero_based": 3,
+      "global_step": 2660,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 83.79741078054657
+    },
+    {
+      "checkpoint_id": "epoch_010",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.a648022fb8fc3126dec5b37e2f01d7ee058d1c258e1d73642c98d3a5f7e28d7a.3933588.tmp",
+      "sha256": "a648022fb8fc3126dec5b37e2f01d7ee058d1c258e1d73642c98d3a5f7e28d7a",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 9,
+      "global_step": 6650,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 87.48095169153595
+    },
+    {
+      "checkpoint_id": "epoch_002",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.b5f6b23f9a4d538b036c781715d6d3d4d16673dcfa1c4fb927da5f280bddef3e.3862970.tmp",
+      "sha256": "b5f6b23f9a4d538b036c781715d6d3d4d16673dcfa1c4fb927da5f280bddef3e",
+      "hash_matches_inventory": true,
+      "bytes": 459745931,
+      "epoch_zero_based": 1,
+      "global_step": 1330,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 83.79292109132712
+    },
+    {
+      "checkpoint_id": "epoch_039",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.be77effd1f9c462a0a5efe1f1d94111cdbe789652527f51283d82eac44386411.4178285.tmp",
+      "sha256": "be77effd1f9c462a0a5efe1f1d94111cdbe789652527f51283d82eac44386411",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 38,
+      "global_step": 25935,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 85.36771398380112
+    },
+    {
+      "checkpoint_id": "epoch_014",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.bf25d1adbd7e64560fe013b679af7d9fb397e9e33589af6d4e4b99a4229abbd3.3963602.tmp",
+      "sha256": "bf25d1adbd7e64560fe013b679af7d9fb397e9e33589af6d4e4b99a4229abbd3",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 13,
+      "global_step": 9310,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 86.29474617633285
+    },
+    {
+      "checkpoint_id": "epoch_034",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.bf7a6bf6afbd4212561f50e92cffc4062a928f321d58f00c0c3356beab810a65.4136782.tmp",
+      "sha256": "bf7a6bf6afbd4212561f50e92cffc4062a928f321d58f00c0c3356beab810a65",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 33,
+      "global_step": 22610,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 84.85004967356821
+    },
+    {
+      "checkpoint_id": "epoch_044",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.c12fcaf6467cd712055e17c79b306c4f8452f86b38d7fbc9dd1015fcdb6fa55b.36308.tmp",
+      "sha256": "c12fcaf6467cd712055e17c79b306c4f8452f86b38d7fbc9dd1015fcdb6fa55b",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 43,
+      "global_step": 29260,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 84.9654449902656
+    },
+    {
+      "checkpoint_id": "epoch_018",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.c885c6841d7edbbfd9420fbd0c9c9852f9cd66dacd7d51e6f06327a3c043c52a.3995134.tmp",
+      "sha256": "c885c6841d7edbbfd9420fbd0c9c9852f9cd66dacd7d51e6f06327a3c043c52a",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 17,
+      "global_step": 11970,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 86.44278204750405
+    },
+    {
+      "checkpoint_id": "epoch_013",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.c95f3a9f48960eb7c30773b4cabb0feb699f68ddba41d73282fa15be4f866997.3957075.tmp",
+      "sha256": "c95f3a9f48960eb7c30773b4cabb0feb699f68ddba41d73282fa15be4f866997",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 12,
+      "global_step": 8645,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 78.63377755404419
+    },
+    {
+      "checkpoint_id": "epoch_059",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.d78df93ee82ddeeffe3a9054772b79e119fb63f4e2bd98a298095d14d29406e9.179902.tmp",
+      "sha256": "d78df93ee82ddeeffe3a9054772b79e119fb63f4e2bd98a298095d14d29406e9",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 58,
+      "global_step": 39235,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 84.43419094246536
+    },
+    {
+      "checkpoint_id": "epoch_042",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.e6c35503b1c72d727da919ccbb96926ac9176b8941627a5ae13c48ea20b76b6b.18767.tmp",
+      "sha256": "e6c35503b1c72d727da919ccbb96926ac9176b8941627a5ae13c48ea20b76b6b",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 41,
+      "global_step": 27930,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 82.3031960543361
+    },
+    {
+      "checkpoint_id": "epoch_015",
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/.f426363216c8f96226c844aa7f1f0380822c399a5a7a369d8a902c0dbcbe690c.3972764.tmp",
+      "sha256": "f426363216c8f96226c844aa7f1f0380822c399a5a7a369d8a902c0dbcbe690c",
+      "hash_matches_inventory": true,
+      "bytes": 459747336,
+      "epoch_zero_based": 14,
+      "global_step": 9975,
+      "state_dict_keys": 555,
+      "historical_navtest_pdms_points": 83.64665372437912
+    }
+  ],
+  "psi_training_data_report": {
+    "loader_mode": "official-cache-loader",
+    "train": {
+      "num_records": 85109,
+      "stage2_pareto_require_index": true,
+      "stage2_pareto_support_index_path": "/mnt/project/VLA-AD/outputs/psi_drive/support_index/stage2_pareto_support_clean_full.pt",
+      "stage2_pareto_support_index_records": 103288,
+      "stage2_target_source": "pareto_support",
+      "unique_sample_tokens": 85109,
+      "wrapped_dataset": "CacheOnlyDataset"
+    },
+    "val": {
+      "num_records": 18179,
+      "stage2_target_source": "gt",
+      "wrapped_dataset": "CacheOnlyDataset"
+    }
+  },
+  "psi_loading_log": {
+    "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/logs/train.log",
+    "line": 53,
+    "loaded_keys": 347,
+    "missing_non_expert_keys": 208,
+    "strict": false
+  },
+  "v3_snapshots": [
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/conditional_pc_seed1701/step0000.pt",
+      "bytes": 137434011,
+      "method": "conditional_pc",
+      "seed": 1701,
+      "step": 0,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "93364b8a446470b2dfb394758d144978e5d7bebba6015e06b3b45dd901e621ba"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/conditional_pc_seed1701/step0020.pt",
+      "bytes": 412341582,
+      "method": "conditional_pc",
+      "seed": 1701,
+      "step": 20,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "bc7046f5e7cdcd456b94bb52c8a85e24e767c06bbdb1be7e370f063de426b77a"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/conditional_pc_seed1701/step0100.pt",
+      "bytes": 412341582,
+      "method": "conditional_pc",
+      "seed": 1701,
+      "step": 100,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "33d6ef2782c81f9629227960051e223a1e3a89411a98dfd0f0fbdba3be71e922"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/conditional_pc_seed1701/step0200.pt",
+      "bytes": 412341582,
+      "method": "conditional_pc",
+      "seed": 1701,
+      "step": 200,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "aa741643079f800fa659dfcd037d3f06b17e9dd825389be77bafb9bb97c1b9c3",
+      "verified_sha256": "aa741643079f800fa659dfcd037d3f06b17e9dd825389be77bafb9bb97c1b9c3"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/conditional_pc_seed2903/step0000.pt",
+      "bytes": 137434011,
+      "method": "conditional_pc",
+      "seed": 2903,
+      "step": 0,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "2d610f6a0e3e3e08edfb3075d642e49c9d93b6fd720969064b6c65e4319e0272"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/conditional_pc_seed2903/step0020.pt",
+      "bytes": 412341582,
+      "method": "conditional_pc",
+      "seed": 2903,
+      "step": 20,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "57b7f24f69c919bf5404dd15b75d004fdfe8826022c9fdc4eccb18e461540c96"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/conditional_pc_seed2903/step0100.pt",
+      "bytes": 412341582,
+      "method": "conditional_pc",
+      "seed": 2903,
+      "step": 100,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "c4ff8623f5f2fb71906462c4c654f20d6955e7a9e5687e432b8de77a55fbb843"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/conditional_pc_seed2903/step0200.pt",
+      "bytes": 412341582,
+      "method": "conditional_pc",
+      "seed": 2903,
+      "step": 200,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "07fe195cc1a3dadf260177032c01ffe5ab6617e9a0ace33ac68781bc8eba56cd"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/gt_distance_seed1701/step0000.pt",
+      "bytes": 137434011,
+      "method": "gt_distance",
+      "seed": 1701,
+      "step": 0,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "66c204eb2aaac568a167d4b52dcd5bdb9d15b8ff9fd6faff44f2f76a44039e21"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/gt_distance_seed1701/step0020.pt",
+      "bytes": 412341582,
+      "method": "gt_distance",
+      "seed": 1701,
+      "step": 20,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "07c1fef555fa3a9b9f344afec325afc557f58a33ae7ae5a84dffa0ab26442256"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/gt_distance_seed1701/step0100.pt",
+      "bytes": 412341582,
+      "method": "gt_distance",
+      "seed": 1701,
+      "step": 100,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "d5752094c22c7638484ef7fcaa5445980f2430ebf8a0690baf0ff5a4c758dd91"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/gt_distance_seed1701/step0200.pt",
+      "bytes": 412341582,
+      "method": "gt_distance",
+      "seed": 1701,
+      "step": 200,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "1b2247d9ffce01413b40c695335d5d838619efb736d9b5cbd06a8457953bc87a"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/gt_distance_seed2903/step0000.pt",
+      "bytes": 137434011,
+      "method": "gt_distance",
+      "seed": 2903,
+      "step": 0,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "f21c962efd224d2ff0e1d6de0c2a132c951b9cbe6c0cb992f28ec46b205eaf6f"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/gt_distance_seed2903/step0020.pt",
+      "bytes": 412341582,
+      "method": "gt_distance",
+      "seed": 2903,
+      "step": 20,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "82d32dba42937754530ef402578586afe0a493de19bb98cbf5b6fde7a2b7bfba"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/gt_distance_seed2903/step0100.pt",
+      "bytes": 412341582,
+      "method": "gt_distance",
+      "seed": 2903,
+      "step": 100,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "4f5c8a96dd2bdf6c8361570768404771b724d66ae7589aa9fe5fa0349c5bb112"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/gt_distance_seed2903/step0200.pt",
+      "bytes": 412341582,
+      "method": "gt_distance",
+      "seed": 2903,
+      "step": 200,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "2b657f97c4aec871cf29144cd2b4338910d1538410b6ea93f51d22a94d895391"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/gt_only_seed1701/step0000.pt",
+      "bytes": 137434011,
+      "method": "gt_only",
+      "seed": 1701,
+      "step": 0,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "77f3016dd52b42c3474290e1569875e8529a465d02cc0491cbaed21253ca3003"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/gt_only_seed1701/step0020.pt",
+      "bytes": 412341582,
+      "method": "gt_only",
+      "seed": 1701,
+      "step": 20,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "8eaf71de843c3425dd6f501c45280d3e65fcb8a2f54e3418157788db25bee715"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/gt_only_seed1701/step0100.pt",
+      "bytes": 412341582,
+      "method": "gt_only",
+      "seed": 1701,
+      "step": 100,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "b1ee2211c9c1b6a729289b11678df731756bcce8e9d6d9d49eee397b4e358a8d"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/gt_only_seed1701/step0200.pt",
+      "bytes": 412341582,
+      "method": "gt_only",
+      "seed": 1701,
+      "step": 200,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "5b283f15875e520195109bb16c225789bd7e20a3d600f86d39abeaec9f96e5c0"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/gt_only_seed2903/step0000.pt",
+      "bytes": 137434011,
+      "method": "gt_only",
+      "seed": 2903,
+      "step": 0,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "508174f33f1484295e1717fff8de4b96787877a4f787387e548b376c27c8dd22"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/gt_only_seed2903/step0020.pt",
+      "bytes": 412341582,
+      "method": "gt_only",
+      "seed": 2903,
+      "step": 20,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "2877807e20feabea9849775e93c224a16e54173e9cf038dda76a6f454d6ec0fe"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/gt_only_seed2903/step0100.pt",
+      "bytes": 412341582,
+      "method": "gt_only",
+      "seed": 2903,
+      "step": 100,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "4c274f10273ef8b632da87bf8e64f1c4bbb9a3bcdb3260f5862eb021c9849d7b"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/gt_only_seed2903/step0200.pt",
+      "bytes": 412341582,
+      "method": "gt_only",
+      "seed": 2903,
+      "step": 200,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "7179e1b7896e2c6407e22456eb8566240d0ebc703cf4c9f401654faf5c63976c"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/old_pc_seed1701/step0000.pt",
+      "bytes": 137434011,
+      "method": "old_pc",
+      "seed": 1701,
+      "step": 0,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "894b9398379eb0f7d648f0516f3819299fe1d91effd5966ac29c6fe28d031d46"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/old_pc_seed1701/step0020.pt",
+      "bytes": 412341582,
+      "method": "old_pc",
+      "seed": 1701,
+      "step": 20,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "2a99a0f669ce2a98ee237dccce86c486296210b211b073dfcabadf76134d3677"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/old_pc_seed1701/step0100.pt",
+      "bytes": 412341582,
+      "method": "old_pc",
+      "seed": 1701,
+      "step": 100,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "3790c53a657320c98440b765066117ab405d7143194fc2f170f7c6c1b98cc53f"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/old_pc_seed1701/step0200.pt",
+      "bytes": 412341582,
+      "method": "old_pc",
+      "seed": 1701,
+      "step": 200,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "0dda2e7a4a5b4722d2161784afaf9f7007d18c9e3850bc76de163b308d290dc1"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/old_pc_seed2903/step0000.pt",
+      "bytes": 137434011,
+      "method": "old_pc",
+      "seed": 2903,
+      "step": 0,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "7d62f08709d2ecce2e36b9aefd62f551fa925e932adaa9aa2825d9f5a9caf216"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/old_pc_seed2903/step0020.pt",
+      "bytes": 412341582,
+      "method": "old_pc",
+      "seed": 2903,
+      "step": 20,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "927c124ceaab8883ce1705e52a4398607290cd172181566403d48dab41323d53"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/old_pc_seed2903/step0100.pt",
+      "bytes": 412341582,
+      "method": "old_pc",
+      "seed": 2903,
+      "step": 100,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "b172ac52eb029315786247be182d4120dfcd5680e9324d55be3f387cb48dd052"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/old_pc_seed2903/step0200.pt",
+      "bytes": 412341582,
+      "method": "old_pc",
+      "seed": 2903,
+      "step": 200,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "4ae5ff1cda3b1d8cd5ad9758f7af815dd65e14da0eb3e2c568430786c9d2ed16"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/pareto_seed1701/step0000.pt",
+      "bytes": 137434011,
+      "method": "pareto",
+      "seed": 1701,
+      "step": 0,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "1be396a5c884a7f3c511a606f5f2c3de55dbc1bc649df59f057bb4680140a5be"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/pareto_seed1701/step0020.pt",
+      "bytes": 412341582,
+      "method": "pareto",
+      "seed": 1701,
+      "step": 20,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "1b20c1ee55b1b13a666803eb4c81dc8807db22a7788767df6b15f269950f9030"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/pareto_seed1701/step0100.pt",
+      "bytes": 412341582,
+      "method": "pareto",
+      "seed": 1701,
+      "step": 100,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "da046aaa36e6c05833746f986d0a4cbb4ccc3af92c5758c914f7a2eabcc2c064"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/pareto_seed1701/step0200.pt",
+      "bytes": 412341582,
+      "method": "pareto",
+      "seed": 1701,
+      "step": 200,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "80f44314c9770f7defab5bfbcc81db1ab1d20cc72722288d86337742970be6c4"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/pareto_seed2903/step0000.pt",
+      "bytes": 137434011,
+      "method": "pareto",
+      "seed": 2903,
+      "step": 0,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "9c26867371ad85667c82a2b229b35c67a57e8fe03a5ffd9c9290288476d00d1b"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/pareto_seed2903/step0020.pt",
+      "bytes": 412341582,
+      "method": "pareto",
+      "seed": 2903,
+      "step": 20,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "f3f1fd0208fd3f7f8ec724a9589518937ca1a35684e184741b2060578dd645cd"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/pareto_seed2903/step0100.pt",
+      "bytes": 412341582,
+      "method": "pareto",
+      "seed": 2903,
+      "step": 100,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "4f23077cb0bf83cc77c65757fe0a2e1146b5da756c7e3e6cc5b199a250bf9243"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/pareto_seed2903/step0200.pt",
+      "bytes": 412341582,
+      "method": "pareto",
+      "seed": 2903,
+      "step": 200,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "7c63ff530ed1d1e46dc31070282905b3d42dca0e441b0e7819d5da197716b24c"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/score_seed1701/step0000.pt",
+      "bytes": 137434011,
+      "method": "score",
+      "seed": 1701,
+      "step": 0,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "d0dd2ee524a09a52e495a938a814fb980b3532a8ece07cc7935b7436f8c05d2d"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/score_seed1701/step0020.pt",
+      "bytes": 412341582,
+      "method": "score",
+      "seed": 1701,
+      "step": 20,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "e0709c226d9e04ea4f56949adcf663bda7e6d3e6daf05928f3db655d10afe487"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/score_seed1701/step0100.pt",
+      "bytes": 412341582,
+      "method": "score",
+      "seed": 1701,
+      "step": 100,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "a42a40b511568a7aa9b06063b93324fe11a8a3ebbdd08c4b23c21583576093ea"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/score_seed1701/step0200.pt",
+      "bytes": 412341582,
+      "method": "score",
+      "seed": 1701,
+      "step": 200,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "3c2b975ee316ce3b1778bff652ac4bd5562df69a216bae36af75e5d822253d22",
+      "verified_sha256": "3c2b975ee316ce3b1778bff652ac4bd5562df69a216bae36af75e5d822253d22"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/score_seed2903/step0000.pt",
+      "bytes": 137434011,
+      "method": "score",
+      "seed": 2903,
+      "step": 0,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "b74e51ef18a566b0b4cca3b459a5dc1d42934cda2c92838244a86aa5b93319b0"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/score_seed2903/step0020.pt",
+      "bytes": 412341582,
+      "method": "score",
+      "seed": 2903,
+      "step": 20,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "3338574ace43434127f534d1fc3c084d37ba00b89132a9ab3beeb0b6652c8c17"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/score_seed2903/step0100.pt",
+      "bytes": 412341582,
+      "method": "score",
+      "seed": 2903,
+      "step": 100,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "3c85f262ae72843e35e681e3902f2949ad0f24ff587effed79089fb228f28982"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/checkpoints/sft/score_seed2903/step0200.pt",
+      "bytes": 412341582,
+      "method": "score",
+      "seed": 2903,
+      "step": 200,
+      "initial_checkpoint_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "recorded_sha256": "334f582a1c5d2555abd335f86e6b86c4b71ea1af91ea699398df3deb114c18e6"
+    }
+  ],
+  "v3_candidate_methods": [
+    "score",
+    "pareto",
+    "gt_distance",
+    "old_pc",
+    "conditional_pc"
+  ],
+  "v3_final_count": 10,
+  "other_july_runs_status": "Official-IL initialized DPSI candidate-SFT configs and historical evaluation records found; no retained weight entity verified in searched run directories."
+}
