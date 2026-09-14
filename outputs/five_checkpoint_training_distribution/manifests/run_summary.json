@@ -1,0 +1,78 @@
+{
+  "status": "COMPLETE",
+  "scene_count": 1000,
+  "missing_scenes": 0,
+  "models": 5,
+  "existing_primary_rollouts": 320000,
+  "actual_teacher_records": 2000,
+  "actual_selected_teachers": 12800,
+  "new_NAVSIM_scores": 716800,
+  "new_scores_by_type": {
+    "official_il__mts_8692__new_center_old_residual": 64000,
+    "official_il__mts_8692__old_center_new_residual": 64000,
+    "official_il__mts_8751__new_center_old_residual": 64000,
+    "official_il__mts_8751__old_center_new_residual": 64000,
+    "official_il__grpo_9041__new_center_old_residual": 64000,
+    "official_il__grpo_9041__old_center_new_residual": 64000,
+    "official_il__apr_9145__new_center_old_residual": 64000,
+    "official_il__apr_9145__old_center_new_residual": 64000,
+    "grpo_9041__apr_9145__new_center_old_residual": 64000,
+    "grpo_9041__apr_9145__old_center_new_residual": 64000,
+    "official_il__grpo_width_only": 64000,
+    "teacher__mts_8692": 2551,
+    "teacher__mts_8751": 10249
+  },
+  "historical_chain_scenes": 300,
+  "historical_chain_draws_per_checkpoint": 32,
+  "replay_draws": 640,
+  "optimizer_updates": 0,
+  "config_sha256": "f0a5ab7d74a077dd58bcf5fbb38361ba79eb1ee79af39164ab5932fe3574d98a",
+  "old_files_verified": 799,
+  "old_geometry_unchanged": true,
+  "checkpoint_hashes_unchanged": true,
+  "scene_paired_bootstrap": 3000,
+  "log_cluster_bootstrap": 3000,
+  "source_identity": "Two real historical training archives; no mapping to reconstructed Score/Pareto/PC pools",
+  "data_scope": "Navtrain internal descriptive mechanism analysis; MTS training-data overlap is intentional, no untouched generalization claim",
+  "replay_bitwise_status": {
+    "official_il": true,
+    "mts_8692": true,
+    "mts_8751": true,
+    "grpo_9041": true,
+    "apr_9145": true
+  },
+  "replay_max_abs_error": {
+    "official_il": 0.0,
+    "mts_8692": 0.0,
+    "mts_8751": 0.0,
+    "grpo_9041": 0.0,
+    "apr_9145": 0.0
+  },
+  "replay_max_PDMS_point_difference": 0.0,
+  "engineering_fixes": [
+    "log_name\u2192log parser key; selected-GT-absent scenes use existing exact-GT score as reference without adding training targets",
+    "Initial replay set all requires_grad flags false and differed from cache by \u22643.815e-6. Restoring the V1 final float cast alone did not remove it; preserving original module requires_grad flags restored exact bitwise equality for all five models. Inference_mode and absent optimizer prevent updates; weights/buffers verified unchanged. Initial audits retained; no tolerance relaxed or scientific cache replaced.",
+    "Report rendering optional tabulate dependency unavailable; used a local Markdown table formatter instead of changing the environment."
+  ],
+  "code_hashes": {
+    "/mnt/project/VLA-AD-worktrees/a5-epdms-stage3/navsim/agents/recogdrive/recogdrive_diffusion_planner.py": "d286a322563210fc0528214ecb26d0af7a281657906396ad6f24ecfafa5a7f5e",
+    "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/official_recogdrive/navsim/agents/recogdrive/recogdrive_diffusion_planner.py": "c349bf196611034ebcdfb3dd30fe02e1ac8ee4fc6a76d65934b70dbf583d994a",
+    "/mnt/project/VLA-AD-worktrees/a5-epdms-stage3/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_scorer.py": "02ab075017d4edb1c8bba6476ef1674b84d43dbca0f599df87cfe052b2dd5211",
+    "/mnt/project/VLA-AD-worktrees/a5-epdms-stage3/navsim/evaluate/pdm_score_batch.py": "01104927f506dd74e65e52ed6e29efab988b025cff48cf6bbd98604392055b9f"
+  },
+  "new_code_hashes": {
+    "tools/analysis/five_checkpoint_training_distribution/audit.py": "7accc9fe8bc7a02461cd73b7c1deca9e4872a85b924d612c6ea3b0dfe527d4cf",
+    "tools/analysis/five_checkpoint_training_distribution/common_fd.py": "fb68ac63d08b831879ceb596cb356ca301ab7bebd0b3c6a7835642e34ed37d6f",
+    "tools/analysis/five_checkpoint_training_distribution/test_mechanisms.py": "fef44ebfd52497718f63bd9e067eb7c3ed92536d1ce60907c640bd8d8c08d950",
+    "tools/analysis/five_checkpoint_training_distribution/replay_smoke.py": "8a8c5336e83ffd508661caaae22114b49d4a6f9e573107ee7944c6d5be4222b2",
+    "tools/analysis/five_checkpoint_training_distribution/teacher_audit.py": "2e6836015f13357d9ee175d025b7da358b52fa44f2c17661b80298d9afb9be1e",
+    "tools/analysis/five_checkpoint_training_distribution/analyze.py": "f48dbd8da797a2acf5047d87c86b4a6e1f46f8dfb983e0a4cefb7cf492f0c950",
+    "tools/analysis/five_checkpoint_training_distribution/figures.py": "beb604d7ac7b4732ec801a271ac0e88218dfdaec1bd822c4d54b1c28737693e3",
+    "tools/analysis/five_checkpoint_training_distribution/pack_metrics.py": "5f41942eb4ef410ac7a979d6d7d9b00381f2c1ac9cab2323c83e221fd3d5e312",
+    "tools/analysis/five_checkpoint_training_distribution/report.py": "b5fc96ca953eb905cc278d84aa313b1d14e8147175f3543d85105bfa3370cf2d",
+    "tools/analysis/five_checkpoint_training_distribution/prepare.py": "fbf66e5b5528ff4af3ad654b82b7e05de984c00c70f9e17505fae79c7d7a1625",
+    "tools/analysis/five_checkpoint_training_distribution/score_counterfactuals.py": "035e8b99507cc53bdfaba739966404e996aed16452ada02dc03870509eecc053"
+  },
+  "report_path": "reports/FIVE_CHECKPOINT_TRAINING_DISTRIBUTION_20260913.md",
+  "report_sha256": "92b356a95f1492e531e5e5f383709b251b1b226eb9092b75551622ec14a1fa4d"
+}

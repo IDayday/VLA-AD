@@ -1,0 +1,22 @@
+{
+  "config_sha256": "f0a5ab7d74a077dd58bcf5fbb38361ba79eb1ee79af39164ab5932fe3574d98a",
+  "timestamp_utc": "2026-09-13T23:36:34.781312+00:00",
+  "parent_commit": "7dd3a700830aace6f399e35faf923def48a28699",
+  "scene_manifest_sha256": "694dcbb3fcfc0713cf1d63d95566cedaa2f999931c675d138229404c62c7a21f",
+  "scene_digest": "f46fc7cd38329aed7e52ff749544caf4c90a8d43780c00f886fc99b3d6b407a6",
+  "scene_count": 1000,
+  "examples": [
+    "5d711f77d42054d6",
+    "25652aabb1615c8d",
+    "bff852b39f62557d",
+    "1fe597d0fb1454dc",
+    "2ae8ac90c0ae5c8d",
+    "0a76d212e8fe5898"
+  ],
+  "native_teacher_helper_path": "/mnt/project/VLA-AD-worktrees/a5-epdms-stage3/navsim/agents/recogdrive/recogdrive_diffusion_planner.py",
+  "native_teacher_helper_sha256": "d286a322563210fc0528214ecb26d0af7a281657906396ad6f24ecfafa5a7f5e",
+  "status": "Exploratory follow-up: V1 outcomes already known; new analyses fixed before their execution",
+  "unchanged_weights": true,
+  "optimizer_updates": 0,
+  "protected_file_count": 799
+}

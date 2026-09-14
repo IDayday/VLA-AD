@@ -1,0 +1,122 @@
+[
+  {
+    "token": "23e39302332152b2",
+    "max_abs_error": 0.0,
+    "trajectories": 4,
+    "fields": [
+      "no_at_fault_collisions",
+      "drivable_area_compliance",
+      "ego_progress",
+      "time_to_collision_within_bound",
+      "comfort",
+      "driving_direction_compliance",
+      "score"
+    ],
+    "old_cache_max_abs_error": 0.0
+  },
+  {
+    "token": "411a748874035630",
+    "max_abs_error": 0.0,
+    "trajectories": 4,
+    "fields": [
+      "no_at_fault_collisions",
+      "drivable_area_compliance",
+      "ego_progress",
+      "time_to_collision_within_bound",
+      "comfort",
+      "driving_direction_compliance",
+      "score"
+    ],
+    "old_cache_max_abs_error": 0.0
+  },
+  {
+    "token": "79ebfc1d85bf5a51",
+    "max_abs_error": 0.0,
+    "trajectories": 4,
+    "fields": [
+      "no_at_fault_collisions",
+      "drivable_area_compliance",
+      "ego_progress",
+      "time_to_collision_within_bound",
+      "comfort",
+      "driving_direction_compliance",
+      "score"
+    ],
+    "old_cache_max_abs_error": 0.0
+  },
+  {
+    "token": "40808270ce205b83",
+    "max_abs_error": 0.0,
+    "trajectories": 4,
+    "fields": [
+      "no_at_fault_collisions",
+      "drivable_area_compliance",
+      "ego_progress",
+      "time_to_collision_within_bound",
+      "comfort",
+      "driving_direction_compliance",
+      "score"
+    ],
+    "old_cache_max_abs_error": 0.0
+  },
+  {
+    "token": "86208267d61253c0",
+    "max_abs_error": 0.0,
+    "trajectories": 4,
+    "fields": [
+      "no_at_fault_collisions",
+      "drivable_area_compliance",
+      "ego_progress",
+      "time_to_collision_within_bound",
+      "comfort",
+      "driving_direction_compliance",
+      "score"
+    ],
+    "old_cache_max_abs_error": 0.0
+  },
+  {
+    "token": "f8268857204e554e",
+    "max_abs_error": 0.0,
+    "trajectories": 4,
+    "fields": [
+      "no_at_fault_collisions",
+      "drivable_area_compliance",
+      "ego_progress",
+      "time_to_collision_within_bound",
+      "comfort",
+      "driving_direction_compliance",
+      "score"
+    ],
+    "old_cache_max_abs_error": 0.0
+  },
+  {
+    "token": "1bf169a6aaf65858",
+    "max_abs_error": 0.0,
+    "trajectories": 4,
+    "fields": [
+      "no_at_fault_collisions",
+      "drivable_area_compliance",
+      "ego_progress",
+      "time_to_collision_within_bound",
+      "comfort",
+      "driving_direction_compliance",
+      "score"
+    ],
+    "old_cache_max_abs_error": 0.0
+  },
+  {
+    "token": "3764407c90d65df3",
+    "max_abs_error": 0.0,
+    "trajectories": 4,
+    "fields": [
+      "no_at_fault_collisions",
+      "drivable_area_compliance",
+      "ego_progress",
+      "time_to_collision_within_bound",
+      "comfort",
+      "driving_direction_compliance",
+      "score"
+    ],
+    "old_cache_max_abs_error": 0.0
+  }
+]

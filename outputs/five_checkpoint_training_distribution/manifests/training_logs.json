@@ -1,0 +1,22 @@
+[
+  {
+    "model": "mts_8692",
+    "files": [
+      {
+        "path": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_v6_full103k_from_random_20260713T1706Z/lightning_logs/version_0/events.out.tfevents.1783962456.training-vla-zt2-worker-0.522316.0",
+        "sha256": "5f0b03f649ada4cb5739feb02eea1bc123765cbec6dd4bd262ebcae89532a665"
+      }
+    ],
+    "selected_epoch": 165
+  },
+  {
+    "model": "mts_8751",
+    "files": [
+      {
+        "path": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_a5_full103k_standardv2_clean_20260710T091344Z/lightning_logs/version_0/events.out.tfevents.1783674993.training-vla-zt2-worker-0.2037633.0",
+        "sha256": "8aafbd075c9d0faceb207f881cf2e92a2aa1b3f02c77f7300b1ec542f65524b2"
+      }
+    ],
+    "selected_epoch": 155
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "native_file": "/mnt/project/VLA-AD-worktrees/a5-epdms-stage3/navsim/agents/recogdrive/recogdrive_diffusion_planner.py",
+  "sha256": "d286a322563210fc0528214ecb26d0af7a281657906396ad6f24ecfafa5a7f5e",
+  "helper_execution": "AST-extracted unchanged native dataclass/functions/source methods; no planner or optimizer constructed",
+  "historical_code_limitation": "Training run retained Hydra config and TensorBoard; byte-identical historical Python snapshot not found. Weight reconstruction uses audited available implementation, cross-checked with actual logged diagnostics.",
+  "residual_budget": "Per-target errors during historical optimization are not recoverable. Per-scene expected weights are PRE-budget; actual post-budget evidence comes only from historical TensorBoard.",
+  "scenes": 1000,
+  "records": 2000,
+  "selected_rows": 12800
+}

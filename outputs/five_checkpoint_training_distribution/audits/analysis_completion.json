@@ -1,0 +1,20 @@
+{
+  "scenes": 1000,
+  "models": 5,
+  "rollouts": 320000,
+  "policy_rows": 5000,
+  "teacher_records": 2000,
+  "new_scored_scenes": 1000,
+  "missing": 0,
+  "optimizer_updates": 0,
+  "engineering_fixes": [
+    {
+      "issue": "Initial parser used log_name but frozen scene manifest uses log",
+      "action": "Corrected key and reran teacher extraction; no data or protocol change"
+    },
+    {
+      "issue": "Some actual A5 selected supports do not contain GT; selected-GT averaging produced NA",
+      "action": "Reference GT score now reuses verified exact-GT NAVSIM cache for every scene; no GT added to actual support; missing-GT flag retained"
+    }
+  ]
+}

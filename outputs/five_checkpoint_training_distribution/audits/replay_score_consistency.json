@@ -1,0 +1,282 @@
+[
+  {
+    "token": "23e39302332152b2",
+    "model": "official_il",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "23e39302332152b2",
+    "model": "mts_8692",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "23e39302332152b2",
+    "model": "mts_8751",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "23e39302332152b2",
+    "model": "grpo_9041",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "23e39302332152b2",
+    "model": "apr_9145",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "411a748874035630",
+    "model": "official_il",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "411a748874035630",
+    "model": "mts_8692",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "411a748874035630",
+    "model": "mts_8751",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "411a748874035630",
+    "model": "grpo_9041",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "411a748874035630",
+    "model": "apr_9145",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "79ebfc1d85bf5a51",
+    "model": "official_il",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "79ebfc1d85bf5a51",
+    "model": "mts_8692",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "79ebfc1d85bf5a51",
+    "model": "mts_8751",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "79ebfc1d85bf5a51",
+    "model": "grpo_9041",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "79ebfc1d85bf5a51",
+    "model": "apr_9145",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "40808270ce205b83",
+    "model": "official_il",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "40808270ce205b83",
+    "model": "mts_8692",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "40808270ce205b83",
+    "model": "mts_8751",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "40808270ce205b83",
+    "model": "grpo_9041",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "40808270ce205b83",
+    "model": "apr_9145",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "86208267d61253c0",
+    "model": "official_il",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "86208267d61253c0",
+    "model": "mts_8692",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "86208267d61253c0",
+    "model": "mts_8751",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "86208267d61253c0",
+    "model": "grpo_9041",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "86208267d61253c0",
+    "model": "apr_9145",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "f8268857204e554e",
+    "model": "official_il",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "f8268857204e554e",
+    "model": "mts_8692",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "f8268857204e554e",
+    "model": "mts_8751",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "f8268857204e554e",
+    "model": "grpo_9041",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "f8268857204e554e",
+    "model": "apr_9145",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "1bf169a6aaf65858",
+    "model": "official_il",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "1bf169a6aaf65858",
+    "model": "mts_8692",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "1bf169a6aaf65858",
+    "model": "mts_8751",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "1bf169a6aaf65858",
+    "model": "grpo_9041",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "1bf169a6aaf65858",
+    "model": "apr_9145",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "3764407c90d65df3",
+    "model": "official_il",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "3764407c90d65df3",
+    "model": "mts_8692",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "3764407c90d65df3",
+    "model": "mts_8751",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "3764407c90d65df3",
+    "model": "grpo_9041",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  },
+  {
+    "token": "3764407c90d65df3",
+    "model": "apr_9145",
+    "max_component_error": 0.0,
+    "PDMS_point_error": 0.0,
+    "conservative_feasible_labels_equal": true
+  }
+]

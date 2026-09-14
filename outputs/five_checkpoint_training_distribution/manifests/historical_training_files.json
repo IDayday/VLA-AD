@@ -1,0 +1,42 @@
+[
+  {
+    "model": "mts_8692",
+    "path": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_v6_full103k_from_random_20260713T1706Z/train_args.json",
+    "sha256": "32e4daac8c37544f94950b857625747fe9e3cbafaaaf1d85aea90d5541017dce"
+  },
+  {
+    "model": "mts_8692",
+    "path": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_v6_full103k_from_random_20260713T1706Z/commands.log",
+    "sha256": "2e4ca0355cefb4474ea763b0157731bf024e6a53a7b10dd11ee71c3cf7b501bf"
+  },
+  {
+    "model": "mts_8692",
+    "path": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_v6_full103k_from_random_20260713T1706Z/run_training_recogdrive.log",
+    "sha256": "34aa3db8153c7f3329f38539c5b260dc0f2f1c8a73194488fd460176972f60a7"
+  },
+  {
+    "model": "mts_8692",
+    "path": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_v6_full103k_from_random_20260713T1706Z/trainable_parameter_counts.json",
+    "sha256": "799fe62709de619320a70dfcf6390c64b854cf0d7129f6f2b04de114d174b2a1"
+  },
+  {
+    "model": "mts_8751",
+    "path": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_a5_full103k_standardv2_clean_20260710T091344Z/train_args.json",
+    "sha256": "bc8a9d330f6ad3147d3046b63c9013419ed6e8b64a16bbd43590fde369909d1f"
+  },
+  {
+    "model": "mts_8751",
+    "path": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_a5_full103k_standardv2_clean_20260710T091344Z/commands.log",
+    "sha256": "5bf97de4b5bc10bf56eb13383dc7525f21d52149d18c03c9d59c9f80f76fb9c0"
+  },
+  {
+    "model": "mts_8751",
+    "path": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_a5_full103k_standardv2_clean_20260710T091344Z/run_training_recogdrive.log",
+    "sha256": "6f8f559beaceaddad8c587c85c41c04b1d56c920a49771463f4fda3e9286eb08"
+  },
+  {
+    "model": "mts_8751",
+    "path": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_a5_full103k_standardv2_clean_20260710T091344Z/trainable_parameter_counts.json",
+    "sha256": "799fe62709de619320a70dfcf6390c64b854cf0d7129f6f2b04de114d174b2a1"
+  }
+]

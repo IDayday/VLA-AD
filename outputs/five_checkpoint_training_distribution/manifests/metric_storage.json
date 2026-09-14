@@ -1,0 +1,180 @@
+[
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/counterfactual_scene.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/counterfactual_scene.parquet",
+    "source_sha256": "75bc80e64bcb586ceb932915fc5e5b545ab0c2b313971fb0e635f81b7299e497",
+    "sha256": "be5fa3278a2d983cc7060d8cf1113aa777a918cf2ba4e9e2903d8e125a88d1d7",
+    "rows": 51000,
+    "columns": [
+      "token",
+      "log",
+      "contrast",
+      "metric",
+      "old",
+      "new_center_old_residual",
+      "old_center_new_residual",
+      "new",
+      "total_gain",
+      "center_contribution",
+      "residual_shape_contribution"
+    ]
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/counterfactual_summary.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/counterfactual_summary.csv",
+    "sha256": "7d8012e9741201c95b2538ef03772be2950e13fcaac5e080292459f75d635a79"
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/historical_grpo_paired.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/historical_grpo_paired.csv",
+    "sha256": "161f51fb7892d610d0ec0172b24f61a0e2c228e40e813a29e864b4b5ccb26901"
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/historical_grpo_scene.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/historical_grpo_scene.csv",
+    "sha256": "e45cea7cc4cf3062f90d3a46908b0dae90db2c3dc6a5dde463bfb1ce21135a54"
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/historical_grpo_summary.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/historical_grpo_summary.csv",
+    "sha256": "fd5def60b075a70fa7d2ee13a0b47f73f3d990036e880d4919de6c5c92139cf2"
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/historical_training_at_checkpoint.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/historical_training_at_checkpoint.csv",
+    "sha256": "6bab1d6129493160994a143c661fcab88d4f48569f80e53cf553ff7a3c8b7560"
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/historical_training_curves.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/historical_training_curves.csv",
+    "sha256": "73052480d61c0d257a6ff65ce195ac27f8d69436ac3714d38ac81ce2c51b5615"
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/paired_comparisons.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/paired_comparisons.csv",
+    "sha256": "3ce77fd18401a62972e9432769cadf0aa0b42d65c0f43b4cb33a8f3909339913"
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/policy_scene.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/policy_scene.csv",
+    "sha256": "3c0cce1040c4c98afa185f63004728f3e9a4b25408ec85e9587cba321abfb4f7"
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/policy_stratification.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/policy_stratification.csv",
+    "sha256": "7087736ef9142f061152ff3664ea0a5a5a469e02a5157c7efca177868ec455a1"
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/policy_summary.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/policy_summary.csv",
+    "sha256": "1f333eaffc7ae95cef58a988c91047629c5b3357264d0bca520ffbf77b600f2c"
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/policy_time_scene.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/policy_time_scene.parquet",
+    "source_sha256": "596fbb0020fa23764f3070f860356a6df19404bdc32d07e0c55faf579b108217",
+    "sha256": "ac075498763448404371b397f6796d20ec8bbf18e67b35bddbe6510fea8da0f4",
+    "rows": 40000,
+    "columns": [
+      "token",
+      "log",
+      "command",
+      "model",
+      "GT_heading_change",
+      "time_s",
+      "spread",
+      "longitudinal_std",
+      "lateral_std",
+      "center_ADE_at_time"
+    ]
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/sample_count_reliability.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/sample_count_reliability.csv",
+    "sha256": "51522f16739a4c5fbc4129295cdebe49623e92baf8ede802ec39be47f34b107d"
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/teacher_availability_stratification.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/teacher_availability_stratification.csv",
+    "sha256": "3df2756397fa1095b851e2a36a558c4e5383f431a7b4640080fb4c76d641a1c0"
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/teacher_candidates.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/teacher_candidates.parquet",
+    "source_sha256": "1c977426eba2fd9f74746e36dad1e1aab466ab19415a12e421295bd603b1e439",
+    "sha256": "cbeb3cc8d7c528b9f1c4337e398c8c56631b7b45da78167d739befcd2251a8d0",
+    "rows": 12800,
+    "columns": [
+      "model",
+      "token",
+      "raw_index",
+      "source",
+      "source_bucket",
+      "support_tag",
+      "source_code",
+      "archive_valid",
+      "historical_reward",
+      "nominal_weight",
+      "expected_weight_pre_budget",
+      "trajectory_hash",
+      "archive_path",
+      "archive_sha256"
+    ]
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/teacher_candidates_scored.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/teacher_candidates_scored.parquet",
+    "source_sha256": "fab32655f68dbd564850e4467e1ced12d8bc6ff4991f61614cfdc6a294d9f713",
+    "sha256": "604fcf480282417fc08a3c98a4ef37b9575194838c73f0c7a4fab4874153b04d",
+    "rows": 12800,
+    "columns": [
+      "model",
+      "token",
+      "raw_index",
+      "source",
+      "source_bucket",
+      "support_tag",
+      "source_code",
+      "archive_valid",
+      "historical_reward",
+      "nominal_weight",
+      "expected_weight_pre_budget",
+      "trajectory_hash",
+      "archive_path",
+      "archive_sha256",
+      "PDMS",
+      "feasible",
+      "GT_distance"
+    ]
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/teacher_coverage_paired.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/teacher_coverage_paired.csv",
+    "sha256": "e273d953f8ca19a21c9d538a422e909596fb563ebd4685b1a031d4ab34d3e642"
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/teacher_output_scene.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/teacher_output_scene.csv",
+    "sha256": "01e4aad8b073565b1ec60c99550418c3f38cdc53015a0f9ef98fda4f0298cfba"
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/teacher_output_summary.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/teacher_output_summary.csv",
+    "sha256": "930c4184493f0eb249aa24e507cf0f04e94293e6c90bfa968e05bca71b550b90"
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/teacher_raw_sources.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/teacher_raw_sources.csv",
+    "sha256": "54b2762643dd46b3bede23d8bf6e0e419e75c9fc369935771b542b8087c700cb"
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/teacher_scene.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/teacher_scene.csv",
+    "sha256": "742bc4e2fe0dc6e256c46bab57406b3534acd4fef6383caddbe738d74903542d"
+  },
+  {
+    "source": "outputs/five_checkpoint_training_distribution/metrics/teacher_source_summary.csv",
+    "published": "outputs/five_checkpoint_training_distribution/metrics/teacher_source_summary.csv",
+    "sha256": "2a362ee4421cc3048b914b60ff1fdd80ad6f006b9dbfdd5974a38022c4b74ad7"
+  }
+]

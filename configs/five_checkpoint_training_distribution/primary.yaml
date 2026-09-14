@@ -1,0 +1,36 @@
+version: five_checkpoint_training_distribution_20260913
+analysis_status: exploratory_followup_with_new_analyses_frozen_before_execution
+seed: 2026091306
+scene_manifest: outputs/pc_mts_diagnostics/manifests/scenes_1000.json
+scene_count: 1000
+models: [official_il, mts_8692, mts_8751, grpo_9041, apr_9145]
+rollouts_per_scene_per_model: 64
+reuse_existing_rollouts: true
+sampling: {method: DDIM, steps: 5, eta: 1, temperature: 1, precision: fp32, state: eval}
+sampling_scope: evaluation_distribution_not_native_GRPO_training_sampler
+optimizer_updates: 0
+bootstrap_replicates: 3000
+bootstrap_units: [scene_paired, log_cluster]
+quality_reference: official_il_64_rollout_mean_plus_1_PDMS_point
+quality_requires: [NC, DAC, TTC, DDC]
+hit_k: 8
+hit_protocol: eight_fixed_consecutive_blocks_of_eight_eval_draws_not_GRPO_groups
+teacher_coverage_ADE_m: [0.25, 0.5, 1.0]
+compression_strata: [official_il_spread_quartile, command, gt_heading_change_tertile, actual_teacher_count]
+teacher_weight_scope: native_pre_residual_budget_weights_at_selected_checkpoint_epoch
+teacher_weight_sampling_expectation: exact_without_replacement_enumeration_for_legacy
+teacher_scoring: unified_NAVSIM_v1_rescore_of_actual_selected_support
+counterfactual:
+  contrasts: [[official_il, mts_8692], [official_il, mts_8751], [official_il, grpo_9041], [official_il, apr_9145], [grpo_9041, apr_9145]]
+  definition: swap_per_scene_mean_XY_and_circular_heading_center_with_centered_64_sample_residuals
+  heading: wrapped_circular_mean_plus_wrapped_residual
+  scorer: true_NAVSIM_v1_not_score_interpolation
+  attribution: two_factor_ShAPley_center_and_residual_shape
+  interpretation: geometric_offline_intervention_not_training_causal_effect
+  width_only_control: official_il_center_and_residual_shape_scaled_to_GRPO_XY_Spread_AUC
+  width_only_heading: retain_official_il_heading
+historical_chain: {name: official_il_grpo, scenes: 300, rollouts: 32, steps: [0, 1330, 6650, 11970, 13300]}
+figures: [width_and_quality, actual_teacher_and_weights, teacher_to_output, center_residual_counterfactual, historical_GRPO_evolution, scene_stratification]
+example_selection: lowest_token_hash_per_command_two_scenes_each_before_new_results
+cpu_workers: 96
+prohibited: [weight_updates, old_result_mutation, outcome_based_scene_selection, equating_more_targets_with_more_modes]

@@ -1,0 +1,10 @@
+{
+  "original_training_checkpoint": "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/outputs/stage3_rl_2b_official_chunkcache_retry_20260608T225423Z/navsim_exp/training_recogdrive_agent/stage3_rl_2b_official_chunkcache_retry_20260608T225423Z/lightning_logs/version_0/checkpoints/epoch=8-step=11970.ckpt",
+  "sha256": "b51951abbba86e9661fc82f85406d09ae26c6eff6aa3651a40462363866fb326",
+  "requested_checkpoint": "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/outputs/pdms_eval_stage3_ckpt_watcher_20260609T093852Z/ckpts/epoch8_step11970.ckpt",
+  "same_file_content": true,
+  "initial_policy": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+  "reference_policy": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+  "config_path": "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/outputs/stage3_rl_2b_official_chunkcache_retry_20260608T225423Z/navsim_exp/training_recogdrive_agent/stage3_rl_2b_official_chunkcache_retry_20260608T225423Z/code/hydra/config.yaml",
+  "config_sha256": "f3e8b5ffe8a5b09fcc4a8cd6487b692d67be466c753f9666c1200efd381cbb51"
+}

@@ -1,0 +1,56 @@
+{
+  "model": "mts_8692",
+  "checkpoint_sha256": "bf7183e1bbc49fd4ee1f275d293be944996dde4bc9518b82c03fdd0300fa6ff2",
+  "runtime_path": "/mnt/project/VLA-AD-worktrees/a5-epdms-stage3/navsim/agents/recogdrive/recogdrive_diffusion_planner.py",
+  "runtime_sha256": "d286a322563210fc0528214ecb26d0af7a281657906396ad6f24ecfafa5a7f5e",
+  "scene_count": 8,
+  "rollouts_per_scene": 16,
+  "max_abs_error": 3.814697265625e-06,
+  "checks": [
+    {
+      "token": "23e39302332152b2",
+      "max_abs_error": 3.814697265625e-06,
+      "feature_hash": "71733a54b0e61297ecd1b698c125c60528e4b4ad0839f1d93c3e51b771b2c7a6"
+    },
+    {
+      "token": "411a748874035630",
+      "max_abs_error": 9.5367431640625e-07,
+      "feature_hash": "4e4ffcb3b3ba20c1de182ecea1d4c474f6716f3396f4d6cbb50f585e718dcc55"
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "max_abs_error": 1.9073486328125e-06,
+      "feature_hash": "82c144b63a3c2de5a14ef09d0f402c9cf7300482f8723ae8a53268f8b974410e"
+    },
+    {
+      "token": "40808270ce205b83",
+      "max_abs_error": 1.9073486328125e-06,
+      "feature_hash": "bfe3f186e21e72e432cbf042bbb233eb24edff74b0d1aac44469b8a34b14815c"
+    },
+    {
+      "token": "86208267d61253c0",
+      "max_abs_error": 9.5367431640625e-07,
+      "feature_hash": "8f109444c3a650c88cc95450a988c546d1fffa7ff7103162626464f57ba39831"
+    },
+    {
+      "token": "f8268857204e554e",
+      "max_abs_error": 3.814697265625e-06,
+      "feature_hash": "592c25d0173fba2928ec6b7806d5193e0bc7aea309e66e7e27e8b5f2e7a7e345"
+    },
+    {
+      "token": "1bf169a6aaf65858",
+      "max_abs_error": 9.5367431640625e-07,
+      "feature_hash": "85a0451d70c6b82fa2424ed501e9cbde078dad6dff87fffa035cbee6a618636b"
+    },
+    {
+      "token": "3764407c90d65df3",
+      "max_abs_error": 9.5367431640625e-07,
+      "feature_hash": "ae0ddc4b2a970abae7e3d09edc4c86e951d95510ae1f72f3ab691a879270ecf5"
+    }
+  ],
+  "parameters_and_buffers_unchanged": true,
+  "optimizer_updates": 0,
+  "network_state": "eval",
+  "dtype": "fp32",
+  "protocol": "Exact V1 evaluation CRN first16 replay, not GRPO train sampling"
+}
