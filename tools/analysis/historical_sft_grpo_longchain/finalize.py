@@ -48,6 +48,7 @@ def main():
         figures=figures,engineering_corrections=[
             'Historical watcher TSV column named PDMS is fractional; fixed conversion to points before publication, reran analysis and figures, added regression test. No historical file edited.',
             'Training phase bins renamed to explicit step intervals; different runs have different epoch lengths.',
+            'Zero-score win fraction uses decreases as beneficial; PDMS and other metrics use increases. Regression-tested.',
             'V6 source commit alone was insufficient; applied saved patch and recorded active function differences.'],
         limitations=['Single training seed per historical run','Original/PSI evaluations not common-random-number paired',
                      'Historical Navtest peak selection is descriptive','A5/V6 formal runs stopped before configured 10 epochs',

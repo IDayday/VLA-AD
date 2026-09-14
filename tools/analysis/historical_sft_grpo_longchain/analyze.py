@@ -129,12 +129,13 @@ def compare(base, after, label, clusters, seed_protocol):
     table=[]
     for k,m in enumerate(cols):
         scale=1 if m=='PDMS' else 100
+        benefit=-1 if m=='zero_score' else 1
         table.append(dict(comparison=label,metric=m,unit='points' if m=='PDMS' else 'percentage_points',
             baseline_mean=float(a[m].mean()*scale),after_mean=float(b[m].mean()*scale),
             mean_difference=float(d[m].mean()*scale),median_difference=float(d[m].median()*scale),
             ci_low=float(ci[0,k]*scale),ci_high=float(ci[1,k]*scale),
-            token_win_fraction=float((d[m]>1e-10).mean()),
-            scene_win_fraction=float((d[m].groupby(groups).mean()>1e-10).mean()),
+            token_win_fraction=float((benefit*d[m]>1e-10).mean()),
+            scene_win_fraction=float((benefit*d[m].groupby(groups).mean()>1e-10).mean()),
             n_tokens=len(keys),n_scene_clusters=groups.nunique(),seed_protocol=seed_protocol))
     regress=(b[['NC','DAC','TTC']]<a[['NC','DAC','TTC']]-1e-10).any(axis=1)
     delta=d['PDMS'];tail_count=max(1,int(np.ceil(.05*len(keys))))

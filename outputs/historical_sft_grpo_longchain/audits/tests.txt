@@ -9,6 +9,6 @@ test_safety_tail_exact_partition (test_analysis.AccountingTests) ... ok
 test_units_and_genuine_zero (test_analysis.AccountingTests) ... ok
 
 ----------------------------------------------------------------------
-Ran 9 tests in 0.101s
+Ran 9 tests in 0.122s
 
 OK

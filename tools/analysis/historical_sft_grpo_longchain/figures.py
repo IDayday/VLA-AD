@@ -14,6 +14,8 @@ labels=['Official IL → original GRPO','IL → candidate SFT → SR-PGRPO','Ran
 def finish(fig,name,data):
     fig.tight_layout()
     for ext in ['png','pdf','svg']:fig.savefig(F/(name+'.'+ext),dpi=180,bbox_inches='tight')
+    svg=F/(name+'.svg')
+    svg.write_text('\n'.join(line.rstrip() for line in svg.read_text().splitlines())+'\n')
     data.to_csv(F/(name+'.csv'),index=False);plt.close(fig)
 
 def main():

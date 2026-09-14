@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "timestamp": "2026-09-14T03:39:48.627260+00:00",
+  "timestamp": "2026-09-14T03:42:58.554144+00:00",
   "analysis_parent_commit": "304a35e0fe372b9258d42ebf023917b6370810e3",
   "branch": "analysis/historical-sft-grpo-longchain-audit-20260914",
   "optimizer_updates": 0,
@@ -24,16 +24,16 @@
   "log_cluster_sensitivity": "UNAVAILABLE: common log-name mapping not recovered",
   "figures": {
     "Fig-H2_progress_and_safety.svg": {
-      "sha256": "c6af556fbba00ed1e64915e1d2068639cd2ff6e5f91b2379f502b9bc6b985719",
-      "bytes": 30449
+      "sha256": "f9b6961d7d5d0c19f98d1140cdac8c2058536b8d6deacda29e49b5a3fc0e508e",
+      "bytes": 30283
     },
     "Fig-H2_progress_and_safety.png": {
       "sha256": "0b0d2bc8c2c0d443fdae03963a944c640b984934e3c1205cd9ebb27840c13c44",
       "bytes": 118845
     },
     "Fig-H1_historical_curves.svg": {
-      "sha256": "3ecb43282276e8a56919bb31a3ff9978a6d649df20b875f2ac2b7166244df671",
-      "bytes": 80041
+      "sha256": "cbb5618da7daf94821945525076ced5c509fb241cb2657981318f544374987e4",
+      "bytes": 79695
     },
     "Fig-H1_historical_curves.csv": {
       "sha256": "8104cfdfb964f7c3c999c5b83b79f3faae190ba6a7e3d34a1d71fad55ca6471b",
@@ -68,13 +68,14 @@
       "bytes": 120837
     },
     "Fig-H3_formal_training_diagnostics.svg": {
-      "sha256": "cbf7b33bb6a154117464c1554f91665d4487d1a1cabdf52f25728c35eabf1759",
-      "bytes": 45884
+      "sha256": "2da6c3fd4a640f639ef41484a2b946d13e1abeff881497ac7f5a9a2fd8541b02",
+      "bytes": 45718
     }
   },
   "engineering_corrections": [
     "Historical watcher TSV column named PDMS is fractional; fixed conversion to points before publication, reran analysis and figures, added regression test. No historical file edited.",
     "Training phase bins renamed to explicit step intervals; different runs have different epoch lengths.",
+    "Zero-score win fraction uses decreases as beneficial; PDMS and other metrics use increases. Regression-tested.",
     "V6 source commit alone was insufficient; applied saved patch and recorded active function differences."
   ],
   "limitations": [

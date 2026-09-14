@@ -33,7 +33,8 @@ class AccountingTests(unittest.TestCase):
         self.assertEqual(r['n_scene_clusters'],2);self.assertLess(r['ci_low'],20);self.assertGreater(r['ci_high'],20)
     def test_safety_tail_exact_partition(self):
         a=normalize_rows(fixture([.9,.8]));f=fixture([0,.9]);f.loc[0,'NC']=0;b=normalize_rows(f)
-        _,z=compare(a,b,'test',pd.Series(['a','b'],index=a.index),'fixture')
+        t,z=compare(a,b,'test',pd.Series(['a','b'],index=a.index),'fixture')
+        self.assertEqual(next(r for r in t if r['metric']=='zero_score')['token_win_fraction'],0)
         self.assertEqual(z['new_zero_scores'],1);self.assertEqual(z['NC_regressions'],1)
         self.assertAlmostEqual(z['safety_regression_contribution'],-45)
         self.assertAlmostEqual(z['nonregression_contribution'],5);self.assertAlmostEqual(z['total_delta'],-40)
