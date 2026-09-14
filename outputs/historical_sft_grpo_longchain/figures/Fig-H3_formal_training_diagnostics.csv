@@ -1,0 +1,12 @@
+run,tag,phase,step,mean,n
+a5_lfp,train/lfp_delta_scalar_mean_epoch,epoch_observation,1613,0.0169867556542158,1
+a5_lfp,train/lfp_delta_scalar_mean_epoch,epoch_observation,3227,0.0241329427808523,1
+a5_lfp,train/lfp_delta_scalar_mean_epoch,epoch_observation,4841,0.0307819563895463,1
+a5_lfp,train/lfp_delta_scalar_mean_epoch,epoch_observation,6455,0.0344042815268039,1
+a5_lfp,train/lfp_delta_scalar_mean_epoch,epoch_observation,8069,0.0375713072717189,1
+v6_lfp,train/lfp_delta_scalar_mean_epoch,epoch_observation,1613,0.0028361722361296,1
+v6_lfp,train/lfp_delta_scalar_mean_epoch,epoch_observation,3227,0.0049360003322362,1
+v6_lfp,train/lfp_group_pairwise_ade_m_mean_epoch,epoch_observation,1613,0.4199811816215515,1
+v6_lfp,train/lfp_group_pairwise_ade_m_mean_epoch,epoch_observation,3227,0.3657422065734863,1
+v6_lfp,train/lfp_group_scalar_span_mean_epoch,epoch_observation,1613,0.1178343221545219,1
+v6_lfp,train/lfp_group_scalar_span_mean_epoch,epoch_observation,3227,0.1578082144260406,1

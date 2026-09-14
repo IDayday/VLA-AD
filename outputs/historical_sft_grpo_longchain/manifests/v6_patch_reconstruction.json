@@ -1,0 +1,23 @@
+{
+  "patch_sha256": "1bfd9276b4c4a952718dcf2c239ec1953024998731d1782c9da2e60d54b885ac",
+  "patch_applied": true,
+  "active_loss_and_credit": {
+    "forward_lfp_grpo": {
+      "AST_hash_before": "30fdeef1a010e93635d94188999e349900ecc3d3ef7c2b25c34224a3f40af4b3",
+      "AST_hash_after": "dfc57ac3414e1dc1a3cff06c7dba55442ec3d0a6b8afee187afb98a214b3f042",
+      "unchanged": false
+    },
+    "compute_lfp_advantages": {
+      "AST_hash_before": "ab2c8fe7dddd6c90c8818bab07a4d7f03f84943586d9faa948e257f7440e5f83",
+      "AST_hash_after": "ab2c8fe7dddd6c90c8818bab07a4d7f03f84943586d9faa948e257f7440e5f83",
+      "unchanged": true
+    }
+  },
+  "patched_files": {
+    "recogdrive_diffusion_planner.py": "f19465c55543592ff47f21dba62d01ab4470fbadd01c07ffa019c1f2709de703",
+    "stage3_lfp_grpo.py": "6b2ee8699ed918a39c4bc7aed835b03137dd1213f401dffb9549072c299f751b",
+    "stage3_metric_adapter.py": "b43f36a37da21b9109ae4354fe23899330ee467d2fa2e88e74220bb171561220",
+    "recogdrive_agent.py": "37e3d2ebcb7b46111fb0195c107201766f0f2fe6a2494ff070f9e5f86df252fd",
+    "fs_norm.py": "fcc3c3524a0aca74c6fc1a4fda5fc095ab452e7d655f517497a6fc6d5e83cf14"
+  }
+}

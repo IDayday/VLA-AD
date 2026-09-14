@@ -1,0 +1,14 @@
+{
+  "jobs": [
+    {
+      "command": "cd /mnt/project/VLA-AD_last_vla_dev && OUT_ROOT=/mnt/project/VLA-AD/outputs/sft_only_navsim_stage3_original_grpo_from_stage2_epoch200_20260708T014559Z/train CACHE_MODE=offline KILL_GPU_STRESS=0 GPUS=8 GPUS_PER_NODE=8 METRIC_CACHE_DIR=/mnt/project/VLA-AD/cache/metric_cache_train_full HIDDEN_CACHE_DIR=/mnt/project/VLA-AD/cache/sft_only_navsim_stage1_hidden_navtrain_2b IL_CHECKPOINT=/mnt/project/VLA-AD/outputs/sft_only_navsim_stage2_a0_official_aligned_20260707/a0_official_aligned_sftonly_navsim_stage1/latest.ckpt VLM_PATH=/mnt/project/VLA-AD_last_vla_dev/outputs/sft_only_navsim/hf_eval_model MAX_EPOCHS=10 LR=1e-4 STAGE3_OBJECTIVE=none BATCH_SIZE=8 ACCUMULATE_GRAD_BATCHES=1 GRPO_SAMPLE_TIME=8 BC_ANNEAL=false BC_COEFF_START=0.10 BC_COEFF_END=0.10 BC_ANNEAL_EPOCHS=10 REFERENCE_KL_COEFF=0.02 GRPO_USE_GSPO_RATIO=false GRPO_BEHAVIOR_POLICY_SYNC_INTERVAL=4 GRPO_BEHAVIOR_POLICY_SAMPLE=true GRPO_ADVANTAGE_MODE=safe_zscore GRPO_REWARD_MODE=safe_diffgrpo USE_TWO_EXPERT_SLOTS=false GRPO_SCHEDULER_EPOCHS=10 LIMIT_VAL_BATCHES=0 LOG_EVERY_N_STEPS=20 OFFLINE_RL_ENABLED=false CHECKPOINT_EVERY_N_EPOCHS=1 CHECKPOINT_EVERY_N_TRAIN_STEPS=0 GRPO_BUFFER_GUIDANCE_ENABLED=false PYTHON_BIN=/root/miniconda3/envs/navsim/bin/python bash /mnt/project/VLA-AD_last_vla_dev/scripts/training/run_recogdrive_stage3_rl_2b_local.sh",
+      "gpu": "0,1,2,3,4,5,6,7",
+      "name": "stage3_rl_2b"
+    }
+  ],
+  "jobs_tsv": "/mnt/project/VLA-AD/outputs/sft_only_navsim_stage3_original_grpo_from_stage2_epoch200_20260708T014559Z/jobs.tsv",
+  "launcher_pid": 4030818,
+  "out_root": "/mnt/project/VLA-AD/outputs/sft_only_navsim_stage3_original_grpo_from_stage2_epoch200_20260708T014559Z",
+  "stagger_seconds": 15.0,
+  "started_at": "2026-07-08T01:45:59+00:00"
+}

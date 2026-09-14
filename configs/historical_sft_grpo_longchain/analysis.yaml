@@ -1,0 +1,25 @@
+scope: historical_long_training_only
+historical_period: [2026-06-08, 2026-07-24]
+optimizer_updates: 0
+new_rollouts: 0
+exclude_recent_training_and_diagnostics: true
+primary_families:
+  - official_il_to_original_grpo
+  - official_il_to_psi_candidate_sft_to_sr_pgrpo
+  - random_multitarget_to_lfp_grpo
+random_multitarget_runs: [a5_epoch155, v6_epoch165]
+supplementary_audits:
+  - sft_only_july08_wrong_vlm_evaluation
+  - official_il_to_historical_core_pareto_grpo
+bootstrap_replicates: 3000
+bootstrap_seed: 2026091401
+primary_sampling_unit: valid_benchmark_sample_token
+primary_bootstrap_cluster: historical_scene_token
+sensitivity_bootstrap_cluster: log_name_if_recoverable
+quality_unit: PDMS_points_0_to_100
+conservative_feasibility: [NC, DAC, TTC, DDC]
+safety_tail_attribution: any_decrease_in_NC_DAC_TTC
+top_negative_tail_fraction: 0.05
+do_not_average_different_evaluation_protocols: true
+do_not_replace_released_il_with_local_a0: true
+historical_peak_is_descriptive_not_untouched_test_selection: true

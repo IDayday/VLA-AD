@@ -1,0 +1,16 @@
+[
+  {
+    "run": "a5_lfp",
+    "role": "SFT_parent_and_GRPO_reference",
+    "path": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_a5_full103k_standardv2_clean_20260710T091344Z/epoch_155.ckpt",
+    "exists": true,
+    "sha256": "79257dffba07792c77835aadd31e05bdab8c2f9afec75bc9772bac772a32e4b7"
+  },
+  {
+    "run": "v6_lfp",
+    "role": "SFT_parent_and_GRPO_reference",
+    "path": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_v6_full103k_from_random_20260713T1706Z/epoch_165.ckpt",
+    "exists": true,
+    "sha256": "bf7183e1bbc49fd4ee1f275d293be944996dde4bc9518b82c03fdd0300fa6ff2"
+  }
+]

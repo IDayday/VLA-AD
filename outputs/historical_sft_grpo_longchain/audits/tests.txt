@@ -1,0 +1,14 @@
+test_already_scaled_input_rejected (test_analysis.AccountingTests) ... ok
+test_cluster_bootstrap_constant_and_reproducible (test_analysis.AccountingTests) ... ok
+test_cluster_ratio_not_equal_cluster_means (test_analysis.AccountingTests) ... ok
+test_comparison_pairs_tokens_not_row_position (test_analysis.AccountingTests) ... ok
+test_duplicate_benchmark_token_rejected (test_analysis.AccountingTests) ... ok
+test_error_is_not_zero (test_analysis.AccountingTests) ... ok
+test_historical_watcher_named_PDMS_is_fraction (test_analysis.AccountingTests) ... ok
+test_safety_tail_exact_partition (test_analysis.AccountingTests) ... ok
+test_units_and_genuine_zero (test_analysis.AccountingTests) ... ok
+
+----------------------------------------------------------------------
+Ran 9 tests in 0.101s
+
+OK

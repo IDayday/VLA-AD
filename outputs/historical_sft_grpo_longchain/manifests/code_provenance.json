@@ -1,0 +1,89 @@
+{
+  "files": [
+    {
+      "run": "a5",
+      "commit": "f350e56408584c0d375b1ff10744da2750442580",
+      "path": "navsim/agents/recogdrive/recogdrive_diffusion_planner.py",
+      "sha256": "d46e0c7f18f48df0bc1edd1f8937594e2fd66e57f066381962e8d5964281080b",
+      "patched_in_saved_diff": "not_proven_byte_exact"
+    },
+    {
+      "run": "a5",
+      "commit": "f350e56408584c0d375b1ff10744da2750442580",
+      "path": "navsim/agents/recogdrive/stage3_lfp_grpo.py",
+      "sha256": "fae3e4bc30d14da6f91c678853b4640bf36ef380c9a8d494e34839d43b44d72f",
+      "patched_in_saved_diff": "not_proven_byte_exact"
+    },
+    {
+      "run": "a5",
+      "commit": "f350e56408584c0d375b1ff10744da2750442580",
+      "path": "navsim/agents/recogdrive/stage3_metric_adapter.py",
+      "sha256": "b43f36a37da21b9109ae4354fe23899330ee467d2fa2e88e74220bb171561220",
+      "patched_in_saved_diff": "not_proven_byte_exact"
+    },
+    {
+      "run": "a5",
+      "commit": "f350e56408584c0d375b1ff10744da2750442580",
+      "path": "navsim/agents/recogdrive/recogdrive_agent.py",
+      "sha256": "2925d1f144311bce095d460846b47ead8a7c6be11c2edef8d5affa8c1143b43b",
+      "patched_in_saved_diff": "not_proven_byte_exact"
+    },
+    {
+      "run": "a5",
+      "commit": "f350e56408584c0d375b1ff10744da2750442580",
+      "path": "navsim/agents/recogdrive/fs_norm.py",
+      "sha256": "7ad171f28d417152dfad803fde23cec19a65acec0621dccc20137012a85dd351",
+      "patched_in_saved_diff": "not_proven_byte_exact"
+    },
+    {
+      "run": "v6",
+      "commit": "7ced3afdfd2d45ab52b08066380b9651d8e18388",
+      "path": "navsim/agents/recogdrive/recogdrive_diffusion_planner.py",
+      "sha256": "d57e485492e289123e788d57f8b1eb466c59439d1bfa7c8a3b496c89a2bd79df",
+      "patched_in_saved_diff": true
+    },
+    {
+      "run": "v6",
+      "commit": "7ced3afdfd2d45ab52b08066380b9651d8e18388",
+      "path": "navsim/agents/recogdrive/stage3_lfp_grpo.py",
+      "sha256": "eabc54f14fdb4272d6e7c4aa814f200955817cfb6fa61f75240617fb08357ee2",
+      "patched_in_saved_diff": true
+    },
+    {
+      "run": "v6",
+      "commit": "7ced3afdfd2d45ab52b08066380b9651d8e18388",
+      "path": "navsim/agents/recogdrive/stage3_metric_adapter.py",
+      "sha256": "b43f36a37da21b9109ae4354fe23899330ee467d2fa2e88e74220bb171561220",
+      "patched_in_saved_diff": false
+    },
+    {
+      "run": "v6",
+      "commit": "7ced3afdfd2d45ab52b08066380b9651d8e18388",
+      "path": "navsim/agents/recogdrive/recogdrive_agent.py",
+      "sha256": "c32db84e8729bd6efc025639c879dc72362879469c173cc2a7f7894e2aefb82a",
+      "patched_in_saved_diff": true
+    },
+    {
+      "run": "v6",
+      "commit": "7ced3afdfd2d45ab52b08066380b9651d8e18388",
+      "path": "navsim/agents/recogdrive/fs_norm.py",
+      "sha256": "7ad171f28d417152dfad803fde23cec19a65acec0621dccc20137012a85dd351",
+      "patched_in_saved_diff": true
+    }
+  ],
+  "v6_patch_files": [
+    "docs/stage2_full_training_v6.md",
+    "navsim/agents/recogdrive/fs_norm.py",
+    "navsim/agents/recogdrive/recogdrive_agent.py",
+    "navsim/agents/recogdrive/recogdrive_diffusion_planner.py",
+    "navsim/agents/recogdrive/stage3_lfp_grpo.py",
+    "navsim/planning/script/config/common/agent/recogdrive_agent.yaml",
+    "navsim/planning/script/run_training_recogdrive.py",
+    "navsim/planning/training/agent_lightning_module.py",
+    "scripts/training/run_recogdrive_stage3_rl_2b_local.sh",
+    "scripts/training/run_sg_fps_asmi_stage2_103k.sh",
+    "scripts/training/sg_fps/run_train_lfp_grpo_v1.sh",
+    "scripts/training/sg_fps/run_train_pta_fs_dit_full_training_v6.sh"
+  ],
+  "note": "A5 commit alone cannot prove absence of uncommitted runtime edits. PSI recoverable source caveat remains."
+}

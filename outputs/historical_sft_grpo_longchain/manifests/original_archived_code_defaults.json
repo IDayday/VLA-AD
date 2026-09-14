@@ -1,0 +1,14 @@
+{
+  "source_files": {
+    "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/official_recogdrive/navsim/agents/recogdrive/recogdrive_diffusion_planner.py": "c349bf196611034ebcdfb3dd30fe02e1ac8ee4fc6a76d65934b70dbf583d994a",
+    "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/official_recogdrive/navsim/agents/recogdrive/recogdrive_agent.py": "de468d8dc514e883f3c1dcb8f2dde480f7c6b38fe8fa563feebb51d7e64240ce"
+  },
+  "group_size_default": 8,
+  "BC_coefficient_default": 0.1,
+  "sampling_floor_default": 0.04,
+  "logprob_floor_default": 0.1,
+  "scheduler_epochs": 10,
+  "scheduler_min_lr": 0,
+  "warmup_epochs": 0,
+  "note": "These values are read from the historical archived implementation, not absent Hydra fields."
+}
