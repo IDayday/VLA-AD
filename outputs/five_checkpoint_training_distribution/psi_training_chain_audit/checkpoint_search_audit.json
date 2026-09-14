@@ -1,0 +1,20 @@
+{
+  "files_statted": 219552,
+  "missing_paths": 0,
+  "matching_size_entities": [
+    {
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_random_init_full103k_gt_supp_20260625T162149Z/checkpoint_store/objects/.112b5c66efa5c2fc5bd4428202d7f1e0504d4a3f1e0c87336b22a778332c709b.1543379.tmp",
+      "bytes": 459745356,
+      "sha256": "112b5c66efa5c2fc5bd4428202d7f1e0504d4a3f1e0c87336b22a778332c709b",
+      "matches_stage3_inventory": false
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_random_init_full103k_gt_supp_20260625T162149Z/checkpoint_store/objects/.a4d15b72ad6bf1474a2ea4c507a9f68197c19442d6d7c06b12b10437e83ece2d.1551296.tmp",
+      "bytes": 459745995,
+      "sha256": "a4d15b72ad6bf1474a2ea4c507a9f68197c19442d6d7c06b12b10437e83ece2d",
+      "matches_stage3_inventory": false
+    }
+  ],
+  "exact_grpo_hash_matches": 0,
+  "scope": "Current/old output roots, checkpoint root and container backup, excluding cache/cache_*/raw_candidates/rollouts/support_v3/node_modules/.git/site-packages directories; native pt/ckpt/tmp/safetensors files. Original remote evaluator host training-rl-zt3 run weight directories separately checked: no entities."
+}

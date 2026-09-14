@@ -1,0 +1,190 @@
+{
+  "SFT": {
+    "run_path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z",
+    "train_args_sha256": "c98440490f92c4604bb13bf53b935beb30f43def70ad2857ca4b2407ffcc820b",
+    "agent": {
+      "checkpoint_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "lr": 5e-05,
+      "train_backbone": false,
+      "sampling_method": "ddim",
+      "grpo": false,
+      "stage3_objective": "none",
+      "scheduler_epochs": 200,
+      "scheduler_min_lr": 1e-06,
+      "scheduler_warmup_epochs": 3,
+      "grpo_scheduler_epochs": 20,
+      "grpo_scheduler_min_lr": 1e-05,
+      "grpo_scheduler_warmup_epochs": 0,
+      "grpo_sample_time": 8,
+      "grpo_use_support_relative": false,
+      "grpo_use_core_pareto": false,
+      "grpo_support_index_path": "",
+      "grpo_use_rms_advantage_scale": true,
+      "grpo_reapply_final_caps": true,
+      "reference_policy_checkpoint": "",
+      "reference_kl_coeff": 0.0,
+      "bc_anneal": false,
+      "bc_coeff_start": 0.1,
+      "bc_coeff_end": 0.1,
+      "bc_anneal_epochs": 1,
+      "use_expert_features": false,
+      "use_last_vla": false,
+      "use_jepa": false,
+      "use_vggt": false,
+      "use_last_rd": false
+    },
+    "trainer": {
+      "params": {
+        "accelerator": "gpu",
+        "accumulate_grad_batches": 1,
+        "check_val_every_n_epoch": 1,
+        "default_root_dir": "${output_dir}",
+        "devices": 8,
+        "fast_dev_run": false,
+        "gradient_clip_algorithm": "norm",
+        "gradient_clip_val": 1.0,
+        "limit_train_batches": 1.0,
+        "limit_val_batches": 1.0,
+        "log_every_n_steps": 50,
+        "max_epochs": 60,
+        "num_nodes": 1,
+        "num_sanity_val_steps": 0,
+        "precision": "16-mixed",
+        "strategy": "ddp",
+        "val_check_interval": 1.0
+      }
+    },
+    "dataloader": {
+      "params": {
+        "batch_size": 16,
+        "num_workers": 8,
+        "pin_memory": true,
+        "prefetch_factor": 2
+      }
+    },
+    "data_report": {
+      "loader_mode": "official-cache-loader",
+      "train": {
+        "num_records": 85109,
+        "stage2_pareto_require_index": true,
+        "stage2_pareto_support_index_path": "/mnt/project/VLA-AD/outputs/psi_drive/support_index/stage2_pareto_support_clean_full.pt",
+        "stage2_pareto_support_index_records": 103288,
+        "stage2_target_source": "pareto_support",
+        "unique_sample_tokens": 85109,
+        "wrapped_dataset": "CacheOnlyDataset"
+      },
+      "val": {
+        "num_records": 18179,
+        "stage2_target_source": "gt",
+        "wrapped_dataset": "CacheOnlyDataset"
+      }
+    },
+    "stage2_target_source": "pareto_support",
+    "stage2_pareto_support_index_path": "/mnt/project/VLA-AD/outputs/psi_drive/support_index/stage2_pareto_support_clean_full.pt",
+    "seed": 0,
+    "optimizer": {
+      "type": "AdamW",
+      "betas": [
+        0.9,
+        0.95
+      ],
+      "weight_decay": 0.0001
+    },
+    "precision": "16-mixed"
+  },
+  "SR_PGRPO": {
+    "run_path": "/mnt/project/VLA-AD/outputs/psi_drive_stage3_sr_pgrpo_epoch011_b2acc4_20e_20260627T135941Z",
+    "train_args_sha256": "d8fb65fe533eae27f8da8050c4393281d51c956b76d52851e6b41fc233f64cf3",
+    "agent": {
+      "checkpoint_path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/051ac3312a848b36eeeaccc3935e03582f9acc89737a99672349a5887faa0aff.ckpt",
+      "lr": 0.0001,
+      "train_backbone": false,
+      "sampling_method": "ddim",
+      "grpo": true,
+      "stage3_objective": "grpo",
+      "scheduler_epochs": 200,
+      "scheduler_min_lr": 1e-06,
+      "scheduler_warmup_epochs": 3,
+      "grpo_scheduler_epochs": 20,
+      "grpo_scheduler_min_lr": 1e-05,
+      "grpo_scheduler_warmup_epochs": 0,
+      "grpo_sample_time": 16,
+      "grpo_use_support_relative": true,
+      "grpo_use_core_pareto": true,
+      "grpo_support_index_path": "/mnt/project/VLA-AD/outputs/psi_drive/support_index/stage2_pareto_support_clean_full_gt_supplemented_20260625T162351Z.pt",
+      "grpo_use_rms_advantage_scale": true,
+      "grpo_reapply_final_caps": true,
+      "reference_policy_checkpoint": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/checkpoint_store/objects/051ac3312a848b36eeeaccc3935e03582f9acc89737a99672349a5887faa0aff.ckpt",
+      "reference_kl_coeff": 0.02,
+      "bc_anneal": true,
+      "bc_coeff_start": 0.1,
+      "bc_coeff_end": 0.05,
+      "bc_anneal_epochs": 5,
+      "use_expert_features": false,
+      "use_last_vla": false,
+      "use_jepa": false,
+      "use_vggt": false,
+      "use_last_rd": false
+    },
+    "trainer": {
+      "params": {
+        "accelerator": "gpu",
+        "accumulate_grad_batches": 4,
+        "check_val_every_n_epoch": 1,
+        "default_root_dir": "${output_dir}",
+        "devices": 8,
+        "fast_dev_run": false,
+        "gradient_clip_algorithm": "norm",
+        "gradient_clip_val": 1.0,
+        "limit_train_batches": 1.0,
+        "limit_val_batches": 1.0,
+        "log_every_n_steps": 50,
+        "max_epochs": 20,
+        "num_nodes": 1,
+        "num_sanity_val_steps": 0,
+        "precision": "16-mixed",
+        "strategy": "ddp",
+        "val_check_interval": 1.0
+      }
+    },
+    "dataloader": {
+      "params": {
+        "batch_size": 2,
+        "num_workers": 8,
+        "pin_memory": true,
+        "prefetch_factor": 2
+      }
+    },
+    "data_report": {
+      "cache_train_all_records": false,
+      "loader_mode": "official-cache-loader-log-split",
+      "train": {
+        "num_records": 85109,
+        "stage2_target_source": "gt",
+        "unique_sample_tokens": 85109,
+        "wrapped_dataset": "CacheOnlyDataset"
+      },
+      "train_unique_sample_token_count": 85109,
+      "train_val_overlap_count": 0,
+      "val": {
+        "num_records": 18179,
+        "stage2_target_source": "gt",
+        "unique_sample_tokens": 18179,
+        "wrapped_dataset": "CacheOnlyDataset"
+      },
+      "val_unique_sample_token_count": 18179
+    },
+    "stage2_target_source": "gt",
+    "stage2_pareto_support_index_path": "",
+    "seed": 0,
+    "optimizer": {
+      "type": "AdamW",
+      "betas": [
+        0.9,
+        0.95
+      ],
+      "weight_decay": 0.0001
+    },
+    "precision": "16-mixed"
+  }
+}

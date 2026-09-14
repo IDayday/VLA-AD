@@ -1,0 +1,67 @@
+{
+  "index_path": "/mnt/project/VLA-AD/outputs/psi_drive/support_index/stage2_pareto_support_clean_full.pt",
+  "sha256": "b3009a61d93a0760288685660c59d950788fe98f1dab62a8de59a68ba3570498",
+  "total_records": 103288,
+  "training_buffer_available_rows": 85109,
+  "training_support_count": {
+    "2": 31232,
+    "3": 7039,
+    "1": 46838
+  },
+  "mean_training_support_count": 1.53237612943402,
+  "gt_in_support_training_fraction": 0.4118953342184728,
+  "expected_sampled_source_fraction": {
+    "gt": 0.3193422515479229,
+    "endpoint_lateral": 0.019749968340223505,
+    "il": 0.08941592858195659,
+    "policy": 0.2912706057583366,
+    "progress_endpoint": 0.19622425362682241,
+    "progress_speed": 0.04886439738980509,
+    "timing_delay": 0.009739863012729203,
+    "progress_gamma": 0.012814155983192878,
+    "lateral_offset": 0.0051257799169351055,
+    "timing_slow_first": 0.007452795842075728
+  },
+  "method_note": "Expected target sampling mass from stored support_weights, not an observed finite training-draw ledger",
+  "full_summary": {
+    "version": 1,
+    "source_mode": "clean",
+    "num_records": 103288,
+    "unique_tokens": 103288,
+    "support_count_hist": {
+      "1": 65017,
+      "2": 31232,
+      "3": 7039
+    },
+    "source_hist": {
+      "endpoint_lateral": 6045,
+      "gt": 35056,
+      "gt_fallback": 18179,
+      "il": 25448,
+      "lateral_offset": 802,
+      "policy": 31648,
+      "progress_endpoint": 22063,
+      "progress_gamma": 1762,
+      "progress_speed": 5332,
+      "timing_delay": 1120,
+      "timing_slow_first": 1143
+    },
+    "fallback_counts": {
+      "gt_fallback": 69,
+      "gt_fallback_error:FileNotFoundError": 18179
+    },
+    "descriptor_stats": {
+      "buffer_records": 85109,
+      "descriptor_count": 812663,
+      "gt_descriptor_fallback": 18179
+    },
+    "quality_band": 0.02,
+    "min_descriptor_distance": 0.75,
+    "weights": {
+      "best": 0.5,
+      "gt": 0.2,
+      "other": 0.3
+    },
+    "git_commit": "d2a09e03e42e069d617f5b8dd74a1e39fb4a0d04"
+  }
+}

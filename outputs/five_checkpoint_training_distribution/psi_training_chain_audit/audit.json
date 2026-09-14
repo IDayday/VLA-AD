@@ -1,0 +1,99 @@
+{
+  "created_at": "2026-09-14T02:19:39.495311+00:00",
+  "repository_commit": "1f7c6015d00224f91c2e240b095997bd16517b83",
+  "read_only_original_artifacts": true,
+  "optimizer_updates": 0,
+  "sft_parent_sha256": "051ac3312a848b36eeeaccc3935e03582f9acc89737a99672349a5887faa0aff",
+  "stage3_config_parent_matches_sft_hash": true,
+  "stage3_snapshot_records": 88,
+  "stage3_historical_evaluations_done": 88,
+  "stage3_current_indexed_weight_entities": 0,
+  "stage3_remote_original_evaluator_check": {
+    "host": "training-rl-zt3",
+    "run_exists": true,
+    "weight_entities": 0
+  },
+  "sft_base_state_audit": {
+    "official_keys": 347,
+    "sft_non_cot_keys": 347,
+    "key_sets_equal": true,
+    "shape_mismatches": 0,
+    "additional_cot_state_keys": 208,
+    "cot_trainable_parameters": 0,
+    "use_last_vla": false
+  },
+  "historical_best": {
+    "checkpoint_id": "step_00021000",
+    "train_step": 21000,
+    "sha256": "f865bdc6a70500b49106fc39919afecfe83f04d9b7cac7e9f204e19bddca090d",
+    "historical_pdms_points": 90.89398148469343,
+    "historical_gain_over_sft_points": 3.2215433684243635,
+    "NC": 0.9786208601087494,
+    "DAC": 0.9753666172351293,
+    "TTC": 0.9465315537979898,
+    "EP": 0.8764688974314814,
+    "historical_source_path": "/mnt/project/VLA-AD/outputs/psi_drive_stage3_sr_pgrpo_epoch011_b2acc4_20e_20260627T135941Z/checkpoints/raw/step_00021000.ckpt",
+    "historical_object_path": "/mnt/project/VLA-AD/outputs/psi_drive_stage3_sr_pgrpo_epoch011_b2acc4_20e_20260627T135941Z/checkpoint_store/objects/f865bdc6a70500b49106fc39919afecfe83f04d9b7cac7e9f204e19bddca090d.ckpt",
+    "current_indexed_entity_exists": false
+  },
+  "historical_eval_num_valid": 12138,
+  "historical_eval_rows_including_summary": 12139,
+  "code_provenance_note": "Run metadata records d2a09e03, which does not contain PSI changes. Source recovered from later PSI commit 870d716; not claimed to be a byte-exact runtime source snapshot. Run configs, data, logs, optimizer/scheduler states are direct artifacts.",
+  "recovered_code_sources": [
+    {
+      "path": "navsim/agents/recogdrive/pareto_support.py",
+      "sha256": "37ca444cc4c0cb5de58c9c51673040c4686d677950ece2a592d4cd441439c6e5",
+      "git_commit": "870d7167b17889dbdc89d1517f428cd8d8ee083d"
+    },
+    {
+      "path": "navsim/agents/recogdrive/recogdrive_diffusion_planner.py",
+      "sha256": "bc6d9c27acd91e7c879e0d0c0b93dd67d0cf0c7bfa516c57a020ed6eb8c2e1c4",
+      "git_commit": "870d7167b17889dbdc89d1517f428cd8d8ee083d"
+    },
+    {
+      "path": "navsim/agents/recogdrive/recogdrive_agent.py",
+      "sha256": "3dd7d60dd254d33982db6eb87153f863167191f07dfe5075be00737b943e9f87",
+      "git_commit": "870d7167b17889dbdc89d1517f428cd8d8ee083d"
+    },
+    {
+      "path": "navsim/agents/recogdrive/recogdrive_dit.py",
+      "sha256": "9c0d7039d5f7f896a4a0a8f4ff0c1441ea31f2855a561c8c0a3dd7c2ca792740",
+      "git_commit": "870d7167b17889dbdc89d1517f428cd8d8ee083d"
+    },
+    {
+      "path": "navsim/planning/script/run_training_recogdrive.py",
+      "sha256": "3f05a1bd6dfb3effc0591ba773b16488db490744b43f4fadff8e6dbb27c4794a",
+      "git_commit": "870d7167b17889dbdc89d1517f428cd8d8ee083d"
+    },
+    {
+      "path": "scripts/build_stage2_pareto_support_index.py",
+      "sha256": "faba848895f38a7821cea008035c3433777255183f963d986635b094901b9b49",
+      "git_commit": "870d7167b17889dbdc89d1517f428cd8d8ee083d"
+    },
+    {
+      "path": "reports/psi_drive/stage2_apsd_clean_run_20260624T214438Z.md",
+      "sha256": "cbbc89131a3c6ea1d9787a4ff9598a6a5207350e0b9e5c0bc5a98b1b0b0f5aae",
+      "git_commit": "870d7167b17889dbdc89d1517f428cd8d8ee083d"
+    },
+    {
+      "path": "reports/psi_drive/stage3_sr_pgrpo_epoch011_navtest_status_20260701.md",
+      "sha256": "c31ef90e22b1faa1d52b09e0e784c83d8a9782db460c50c52148672aba3bb8dc",
+      "git_commit": "870d7167b17889dbdc89d1517f428cd8d8ee083d"
+    },
+    {
+      "path": "configs/psi_drive/stage3_sr_pgrpo.yaml",
+      "sha256": "e59824de7fc762e7f6282a1a3032e3059d22fdc2ad7c63ab01b06c9bfd8b0b16",
+      "git_commit": "870d7167b17889dbdc89d1517f428cd8d8ee083d"
+    },
+    {
+      "path": "configs/psi_drive/stage2_apsd_clean.yaml",
+      "sha256": "9ef818317d8845746bad78e81076dc8de3a74f42f038469384225d8207a56cb4",
+      "git_commit": "870d7167b17889dbdc89d1517f428cd8d8ee083d"
+    }
+  ],
+  "limitations": [
+    "Stage3 weight entities are not yet recovered; saved paths and evaluation records do not imply current availability.",
+    "Parent epoch11 was selected using historical Navtest; not an untouched-test checkpoint selection.",
+    "SR-PGRPO changes advantage logic, so this is not a matched original-GRPO initialization-only comparison."
+  ]
+}
