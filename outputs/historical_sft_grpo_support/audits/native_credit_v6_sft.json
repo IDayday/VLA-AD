@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "protocol_hash": "b247ef3284558fefae52ca15d9ae26203cfff6518d7ed9413f053c7f22369c41",
+  "runtime_hash": "6b2ee8699ed918a39c4bc7aed835b03137dd1213f401dffb9549072c299f751b",
+  "reference_path": "/mnt/project/VLA-AD_last_vla_dev/outputs/lfp_reference_v1_full_v6_epoch165_20260715T145650Z/reference_v1_full.pt",
+  "reference_hash": "14282af709680615847a8596896985c56b2c1218e8e417c2bfe186f57a08b05c",
+  "groups": 8000,
+  "batch_size": 64,
+  "last_batch_size": 40,
+  "scope": "Native archived LFP advantage function on fixed token-hash diagnostic batches. Actual historical minibatches/curriculum and optimizer updates are not replayed.",
+  "PSI": "UNTESTED native SR credit assignment: universal vanilla proxy is not substituted."
+}

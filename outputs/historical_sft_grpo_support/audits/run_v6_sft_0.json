@@ -1,0 +1,8 @@
+{
+  "protocol_hash": "b247ef3284558fefae52ca15d9ae26203cfff6518d7ed9413f053c7f22369c41",
+  "count": 500,
+  "state_before": "e6a092e1544814425d1d35a9846a3c37055969bd33c2eefa0bb0d7e17ca2320a",
+  "state_after": "e6a092e1544814425d1d35a9846a3c37055969bd33c2eefa0bb0d7e17ca2320a",
+  "seconds": 1599.176987171173,
+  "peak_gpu_bytes": 1300638208
+}

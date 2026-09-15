@@ -1,0 +1,62 @@
+{
+  "status": "PASS",
+  "protocol_hash": "b247ef3284558fefae52ca15d9ae26203cfff6518d7ed9413f053c7f22369c41",
+  "checks": [
+    {
+      "token": "23e39302332152b2",
+      "protocol": "eval",
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "23e39302332152b2",
+      "protocol": "native_grpo",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "23e39302332152b2",
+      "protocol": "floor_only",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "23e39302332152b2",
+      "protocol": "clip_only",
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "23e39302332152b2",
+      "protocol": "floor_and_clip",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "411a748874035630",
+      "protocol": "eval",
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "411a748874035630",
+      "protocol": "native_grpo",
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "411a748874035630",
+      "protocol": "floor_only",
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "411a748874035630",
+      "protocol": "clip_only",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "411a748874035630",
+      "protocol": "floor_and_clip",
+      "max_abs_error": 5.7220458984375e-06
+    }
+  ],
+  "state_unchanged": true,
+  "group_size": 16,
+  "batch_groups": 4,
+  "noise_draws_per_group": 6,
+  "precision": "fp32",
+  "tolerance": 0.0001
+}

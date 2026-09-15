@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "protocol_hash": "b247ef3284558fefae52ca15d9ae26203cfff6518d7ed9413f053c7f22369c41",
+  "scenes": 1000,
+  "native_forward_checks": [],
+  "state_before": "e6a092e1544814425d1d35a9846a3c37055969bd33c2eefa0bb0d7e17ca2320a",
+  "state_after": "e6a092e1544814425d1d35a9846a3c37055969bd33c2eefa0bb0d7e17ca2320a",
+  "optimizer_updates": 0,
+  "scope": "Teacher fitting uses future supervision only as loss target. All rollouts use observation-only action input. Raw loss units differ across legacy and FS parameterizations."
+}

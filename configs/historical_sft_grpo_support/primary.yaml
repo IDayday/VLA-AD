@@ -1,0 +1,26 @@
+scene_count: 1000
+scene_manifest: outputs/pc_mts_diagnostics/manifests/scenes_1000.json
+seed: 2026091501
+precision: fp32
+optimizer_updates: 0
+group_size: 16
+groups_per_scene: 4
+primary_models: [official_il, psi_sft, a5_sft, v6_sft]
+historical_followups: [original_grpo_11970, a5_grpo_300, a5_grpo_4842, v6_grpo_300, v6_grpo_3300]
+protocols: [eval, native_grpo]
+teacher_ADE_m: [0.25, 0.5, 1.0]
+teacher_ADE_primary_m: 0.5
+teacher_draw_counts: [16, 64]
+teacher_loss_noise_draws: 4
+teacher_loss_timesteps: native_uniform
+factorial_scene_count: 256
+factorial_protocols: [floor_only, clip_only, floor_and_clip]
+bootstrap_replicates: 3000
+bootstrap_unit: scene
+bootstrap_sensitivity: log_cluster
+near_duplicate_ADE_m: 0.10
+conservative_feasibility: [NC, DAC, TTC, DDC]
+quality_improvement_points: 1.0
+analysis_scope: historical_checkpoints_current_read_only_sampling_no_new_training
+original_group_size_note: Original formal run used G8; G16 is the user-requested standardized diagnostic, explicitly not a replay of historical G8 advantages.
+missing_PSI_GRPO_note: Historical PSI GRPO entities unavailable; do not substitute APR or recent quicktest models.

@@ -1,0 +1,21 @@
+{
+  "scientific_parameters_changed": false,
+  "items": [
+    {
+      "type": "dependency_recovery",
+      "detail": "V6 saved patch imports absent trajectory_anchors; restored existing worktree dependency with SHA and disabled-anchor configuration; original source untouched"
+    },
+    {
+      "type": "atomic_cache_scan",
+      "detail": "Exclude temporary .PID.tmp.npz files before token lookup; completed caches unchanged"
+    },
+    {
+      "type": "reward_formula",
+      "detail": "Scalar evaluator smoke found DDC is diagnostic, zero-weight, and not a multiplicative NAVSIM-v1 factor; corrected derived10/5/2 reward before main statistics; standard scorer outputs were always real and unchanged"
+    },
+    {
+      "type": "equivalent_batching",
+      "detail": "Independent4xG16 batches preserve all6 native noise draws per group; per-model parity checks bound FP32 GEMM roundoff below1e-4; no sampling settings changed"
+    }
+  ]
+}

@@ -1,0 +1,20 @@
+{
+  "protocol_hash": "b247ef3284558fefae52ca15d9ae26203cfff6518d7ed9413f053c7f22369c41",
+  "scene_count": 1000,
+  "group_rows": 84288,
+  "teacher_policy_rows": 122040,
+  "models": [
+    "official_il",
+    "a5_sft",
+    "v6_sft",
+    "original_grpo_11970",
+    "psi_sft",
+    "a5_grpo_300",
+    "a5_grpo_4842",
+    "v6_grpo_300",
+    "v6_grpo_3300"
+  ],
+  "bootstrap_replicates": 3000,
+  "primary_teacher_scope": "common835 train",
+  "no_new_training": true
+}

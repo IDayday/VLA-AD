@@ -1,0 +1,269 @@
+{
+  "status": "PASS",
+  "model": "psi_sft",
+  "protocol_hash": "b247ef3284558fefae52ca15d9ae26203cfff6518d7ed9413f053c7f22369c41",
+  "checkpoint_hash": "051ac3312a848b36eeeaccc3935e03582f9acc89737a99672349a5887faa0aff",
+  "runtime": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/psi/navsim/agents/recogdrive/recogdrive_diffusion_planner.py",
+  "runtime_hash": "bc6d9c27acd91e7c879e0d0c0b93dd67d0cf0c7bfa516c57a020ed6eb8c2e1c4",
+  "checks": [
+    {
+      "token": "23e39302332152b2",
+      "native_entry_vs_extraction_max_abs": 0.0,
+      "chain_max_abs": 0.0,
+      "eval_repeat_max_abs": 0.0,
+      "unique_members": 16
+    },
+    {
+      "token": "411a748874035630",
+      "native_entry_vs_extraction_max_abs": 0.0,
+      "chain_max_abs": 0.0,
+      "eval_repeat_max_abs": 0.0,
+      "unique_members": 16
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "native_entry_vs_extraction_max_abs": 0.0,
+      "chain_max_abs": 0.0,
+      "eval_repeat_max_abs": 0.0,
+      "unique_members": 16
+    },
+    {
+      "token": "40808270ce205b83",
+      "native_entry_vs_extraction_max_abs": 0.0,
+      "chain_max_abs": 0.0,
+      "eval_repeat_max_abs": 0.0,
+      "unique_members": 16
+    }
+  ],
+  "state_before": "3c7e79b3d53f11c2981a0f8460d40e85d065a4241c9f7a496f9164bd1675b809",
+  "state_after": "3c7e79b3d53f11c2981a0f8460d40e85d065a4241c9f7a496f9164bd1675b809",
+  "optimizer_updates": 0,
+  "group_size": 16,
+  "steps": 5,
+  "per_step_std": [
+    {
+      "timestep": 80,
+      "std_min": 0.7377548813819885,
+      "std_max": 0.7377548813819885
+    },
+    {
+      "timestep": 60,
+      "std_min": 0.5139675140380859,
+      "std_max": 0.5139675140380859
+    },
+    {
+      "timestep": 40,
+      "std_min": 0.2951086163520813,
+      "std_max": 0.2951086163520813
+    },
+    {
+      "timestep": 20,
+      "std_min": 0.03999999910593033,
+      "std_max": 0.03999999910593033
+    },
+    {
+      "timestep": 0,
+      "std_min": 0.03999999910593033,
+      "std_max": 0.03999999910593033
+    }
+  ],
+  "eval_std_floor": 0.0001,
+  "native_std_floor": 0.04,
+  "eval_noise_clip": 1.0,
+  "native_noise_clip": 5.0,
+  "logprob_std_floor": 0.1,
+  "dropout": [
+    {
+      "name": "model.transformer_blocks.0.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.0.cot_cross_attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.1.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.1.cot_cross_attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.2.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.2.cot_cross_attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.3.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.3.cot_cross_attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.4.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.4.cot_cross_attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.5.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.5.cot_cross_attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.6.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.6.cot_cross_attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.7.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.7.cot_cross_attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.8.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.8.cot_cross_attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.9.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.9.cot_cross_attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.10.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.10.cot_cross_attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.11.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.11.cot_cross_attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.12.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.12.cot_cross_attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.13.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.13.cot_cross_attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.14.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.14.cot_cross_attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.15.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.15.cot_cross_attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "his_traj_encoder.drop1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "his_traj_encoder.drop2",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "ego_status_encoder.drop1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "ego_status_encoder.drop2",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "action_decoder.drop1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "action_decoder.drop2",
+      "p": 0.0,
+      "training": true
+    }
+  ],
+  "capture": "actual forward entry interrupted after current-policy sample_chain; before reward/advantage/optimizer",
+  "state": "train with native frozen-module eval; no mutable BN"
+}

@@ -1,0 +1,128 @@
+[
+  {
+    "script": "batched.py",
+    "model": "original_grpo_11970",
+    "rank": 0,
+    "world": 2,
+    "gpu": 1,
+    "returncode": 0,
+    "log": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/logs/batched_original_grpo_11970_0.log"
+  },
+  {
+    "script": "batched.py",
+    "model": "original_grpo_11970",
+    "rank": 1,
+    "world": 2,
+    "gpu": 0,
+    "returncode": 0,
+    "log": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/logs/batched_original_grpo_11970_1.log"
+  },
+  {
+    "script": "batched.py",
+    "model": "a5_grpo_300",
+    "rank": 0,
+    "world": 2,
+    "gpu": 3,
+    "returncode": 0,
+    "log": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/logs/batched_a5_grpo_300_0.log"
+  },
+  {
+    "script": "batched.py",
+    "model": "a5_grpo_300",
+    "rank": 1,
+    "world": 2,
+    "gpu": 2,
+    "returncode": 0,
+    "log": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/logs/batched_a5_grpo_300_1.log"
+  },
+  {
+    "script": "fitting.py",
+    "model": "official_il",
+    "rank": 0,
+    "world": 1,
+    "gpu": 3,
+    "returncode": 0,
+    "log": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/logs/fitting_official_il_0.log"
+  },
+  {
+    "script": "fitting.py",
+    "model": "psi_sft",
+    "rank": 0,
+    "world": 1,
+    "gpu": 2,
+    "returncode": 0,
+    "log": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/logs/fitting_psi_sft_0.log"
+  },
+  {
+    "script": "batched.py",
+    "model": "a5_grpo_4842",
+    "rank": 0,
+    "world": 2,
+    "gpu": 5,
+    "returncode": 0,
+    "log": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/logs/batched_a5_grpo_4842_0.log"
+  },
+  {
+    "script": "batched.py",
+    "model": "a5_grpo_4842",
+    "rank": 1,
+    "world": 2,
+    "gpu": 4,
+    "returncode": 0,
+    "log": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/logs/batched_a5_grpo_4842_1.log"
+  },
+  {
+    "script": "batched.py",
+    "model": "v6_grpo_300",
+    "rank": 0,
+    "world": 2,
+    "gpu": 1,
+    "returncode": 0,
+    "log": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/logs/batched_v6_grpo_300_0.log"
+  },
+  {
+    "script": "batched.py",
+    "model": "v6_grpo_300",
+    "rank": 1,
+    "world": 2,
+    "gpu": 7,
+    "returncode": 0,
+    "log": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/logs/batched_v6_grpo_300_1.log"
+  },
+  {
+    "script": "batched.py",
+    "model": "v6_grpo_3300",
+    "rank": 0,
+    "world": 2,
+    "gpu": 6,
+    "returncode": 0,
+    "log": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/logs/batched_v6_grpo_3300_0.log"
+  },
+  {
+    "script": "batched.py",
+    "model": "v6_grpo_3300",
+    "rank": 1,
+    "world": 2,
+    "gpu": 0,
+    "returncode": 0,
+    "log": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/logs/batched_v6_grpo_3300_1.log"
+  },
+  {
+    "script": "fitting.py",
+    "model": "a5_sft",
+    "rank": 0,
+    "world": 1,
+    "gpu": 3,
+    "returncode": 0,
+    "log": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/logs/fitting_a5_sft_0.log"
+  },
+  {
+    "script": "fitting.py",
+    "model": "v6_sft",
+    "rank": 0,
+    "world": 1,
+    "gpu": 2,
+    "returncode": 0,
+    "log": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/logs/fitting_v6_sft_0.log"
+  }
+]

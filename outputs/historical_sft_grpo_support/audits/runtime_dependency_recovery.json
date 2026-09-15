@@ -1,0 +1,8 @@
+[
+  {
+    "source": "/mnt/project/VLA-AD-worktrees/v6/navsim/agents/recogdrive/trajectory_anchors.py",
+    "destination": "outputs/historical_sft_grpo_support/runtime/v6/navsim/agents/recogdrive/trajectory_anchors.py",
+    "sha256": "3c8b132a7a756d18697b127a6d039ddfc454b6092899e11ec0a4cfd84f59e912",
+    "reason": "Saved patch imports untracked dependency absent in git archive; recovered existing V6 worktree; no original modified"
+  }
+]

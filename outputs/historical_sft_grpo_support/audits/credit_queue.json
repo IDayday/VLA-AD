@@ -1,0 +1,26 @@
+[
+  {
+    "model": "a5_sft",
+    "returncode": 0
+  },
+  {
+    "model": "v6_sft",
+    "returncode": 0
+  },
+  {
+    "model": "a5_grpo_300",
+    "returncode": 0
+  },
+  {
+    "model": "a5_grpo_4842",
+    "returncode": 0
+  },
+  {
+    "model": "v6_grpo_300",
+    "returncode": 0
+  },
+  {
+    "model": "v6_grpo_3300",
+    "returncode": 0
+  }
+]

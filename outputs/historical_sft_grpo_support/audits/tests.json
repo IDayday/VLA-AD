@@ -1,0 +1,18 @@
+{
+  "command": [
+    "/root/miniconda3/envs/navsim/bin/python",
+    "-m",
+    "unittest",
+    "discover",
+    "-s",
+    "tools/analysis/historical_sft_grpo_support",
+    "-p",
+    "test_*.py",
+    "-v"
+  ],
+  "timestamp_utc": "2026-09-15T01:09:47.685490+00:00",
+  "exit_code": 0,
+  "status": "PASS",
+  "output": "test_bootstrap_pairs_not_pooled_teachers (test_support.SupportTests) ... ok\ntest_diagnostic_ddc_does_not_multiply_native_v1_reward (test_support.SupportTests) ... ok\ntest_exact_16_group_stats_and_unsafe_tail (test_support.SupportTests) ... ok\ntest_frozen_configuration (test_support.SupportTests) ... ok\ntest_full_native_entry_parity_and_no_update (test_support.SupportTests) ... ok\ntest_group_seeds_are_disjoint (test_support.SupportTests) ... ok\ntest_heading_not_used_as_xy_distance (test_support.SupportTests) ... ok\ntest_joint_safety_requires_all_four (test_support.SupportTests) ... ok\ntest_natural_duplicate_rollouts_keep_frequency (test_support.SupportTests) ... ok\ntest_no_safe_best_is_na_not_zero (test_support.SupportTests) ... ok\ntest_teacher_rows_resolve_actual_tensor (test_support.SupportTests) ... ok\ntest_training_membership_never_relabelled (test_support.SupportTests) ... ok\ntest_training_reward_is_not_standard_pdms (test_support.SupportTests) ... ok\n\n----------------------------------------------------------------------\nRan 13 tests in 0.128s\n\nOK\n",
+  "output_sha256": "652cc9cddd154dc8f810e5e94ce77ccbba583dc1be28230f974d596ffa08e769"
+}

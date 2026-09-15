@@ -1,0 +1,7 @@
+{
+  "sft_path": "/mnt/project/VLA-AD/outputs/five_checkpoint_training_distribution/metrics/historical_training_at_checkpoint.csv",
+  "sft_hash": "6bab1d6129493160994a143c661fcab88d4f48569f80e53cf553ff7a3c8b7560",
+  "grpo_path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_longchain/metrics/training_scalars.parquet",
+  "grpo_hash": "43d9de712f267636d6f221676909e706ad8e10b08e97b9bf5064762b33327b7d",
+  "scope": "Actual historical complete-epoch log summaries. Do not treat as uniformly sampled new1000 scenes or compare KL scales across different implementations."
+}

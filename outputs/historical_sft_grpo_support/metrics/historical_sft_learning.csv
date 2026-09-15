@@ -1,0 +1,14 @@
+model,epoch,optimizer_step,metric,value,wall_time
+mts_8692,165,133961,train/diffusion_loss_epoch,0.0252071507275104,1784058400.707505
+mts_8692,165,133961,train/selected_target_is_gt_ratio_epoch,0.8249920606613159,1784058400.7173696
+mts_8692,165,133961,train/dpsi_non_gt_target_loss_epoch,0.0597083754837513,1784058400.7341852
+mts_8692,165,133961,train/dpsi_non_gt_to_gt_loss_ratio_epoch,4.668444633483887,1784058400.734972
+mts_8692,165,133961,train/dpsi_non_gt_exposure_ratio_epoch,0.4829762578010559,1784058400.7432344
+mts_8692,165,133961,train/dpsi_non_gt_residual_mass_ratio_pre_budget_epoch,0.6743731498718262,1784058400.744084
+mts_8692,165,133961,train/dpsi_non_gt_residual_mass_ratio_post_budget_epoch,0.3319155275821686,1784058400.7449954
+mts_8692,165,133961,train/dpsi_non_gt_target_weight_ratio_pre_budget_epoch,0.4680747091770172,1784058400.7458737
+mts_8692,165,133961,train/dpsi_non_gt_target_weight_ratio_post_budget_epoch,0.175007939338684,1784058400.7467127
+mts_8692,165,133961,train/dpsi_gt_weight_ratio_epoch,0.5319253206253052,1784058401.054789
+mts_8751,155,125891,train/diffusion_loss_epoch,0.0328310318291187,1783752447.0379035
+mts_8751,155,125891,train/selected_target_is_gt_ratio_epoch,0.8727977275848389,1783752447.0471644
+mts_8751,155,125891,train/dpsi_gt_weight_ratio_epoch,0.7349621653556824,1783752447.08164

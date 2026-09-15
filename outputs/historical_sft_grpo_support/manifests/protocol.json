@@ -1,0 +1,9 @@
+{
+  "config_sha256": "b247ef3284558fefae52ca15d9ae26203cfff6518d7ed9413f053c7f22369c41",
+  "scene_sha256": "0b1eef080fe05408d225a26a2126868d796a61e416af0b68430e5fcde99cca76",
+  "models_sha256": "cdacd4be228bb795b26064fde584104b1f85d64e3dd8f36eddc522540150e0ea",
+  "parent_commit": "4716261be46b2bc3283a80f89377bb6eaf7dc3fa",
+  "timestamp": 1789430796.2972815,
+  "no_new_training": true,
+  "source_reconstruction_caveat": "PSI code is recoverable later commit; A5 runtime uncommitted changes not proven absent; V6 saved patch applied."
+}
