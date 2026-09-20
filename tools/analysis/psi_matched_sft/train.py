@@ -46,6 +46,7 @@ def main(args):
     opt=torch.optim.AdamW(params,lr=cfg['lr'],betas=tuple(cfg['betas']),weight_decay=cfg['weight_decay'])
     ds=TrainingData(method,runseed);loader=DataLoader(ds,batch_size=cfg['microbatch'],num_workers=4,collate_fn=collate,persistent_workers=True,prefetch_factor=2)
     it=iter(loader);logs=[];ledger=[];start=time.time();initial=legacy.state_hash(p);snapshots=[]
+    buffer_before={n:hashlib.sha256(v.detach().cpu().numpy().tobytes()).hexdigest() for n,v in p.named_buffers()}
     for step in range(1,cfg['updates']+1):
         warm=cfg['warmup_updates'];f=step/warm if step<=warm else .5*(1+math.cos(math.pi*(step-warm)/(cfg['updates']-warm)))
         lr=cfg['lr']*f if step<=warm else cfg['min_lr']+(cfg['lr']-cfg['min_lr'])*f
@@ -67,6 +68,7 @@ def main(args):
         if step%64==0:table(f'training_{name}.csv',logs)
     table(f'training_{name}.csv',logs);table(f'ledger_{name}.parquet',ledger)
     assert not {x['token'] for x in ledger}&{s['token'] for s in scenes('holdout')}
-    save(OUT/'audits'/f'train_{name}.json',dict(status='PASS',protocol_hash=identity(),method=method,seed=runseed,updates=cfg['updates'],supervised_scene_presentations=len(ledger),unique_train_tokens=len({x['token'] for x in ledger}),initial_state_hash=initial,final_state_hash=legacy.state_hash(p),initial_checkpoint_sha256=m['sha256'],trainable_parameter_count=sum(v.numel() for v in params),trainable_names=names,native_loss_audit=audit,checkpoints=snapshots,seconds=time.time()-start,peak_memory_bytes=torch.cuda.max_memory_allocated()))
+    buffer_after={n:hashlib.sha256(v.detach().cpu().numpy().tobytes()).hexdigest() for n,v in p.named_buffers()};assert buffer_before==buffer_after
+    save(OUT/'audits'/f'train_{name}.json',dict(status='PASS',protocol_hash=identity(),method=method,seed=runseed,updates=cfg['updates'],supervised_scene_presentations=len(ledger),unique_train_tokens=len({x['token'] for x in ledger}),initial_state_hash=initial,final_state_hash=legacy.state_hash(p),initial_checkpoint_sha256=m['sha256'],trainable_parameter_count=sum(v.numel() for v in params),trainable_names=names,native_loss_audit=audit,buffers_unchanged=True,buffer_hashes=buffer_after,checkpoints=snapshots,seconds=time.time()-start,peak_memory_bytes=torch.cuda.max_memory_allocated()))
 if __name__=='__main__':
     a=argparse.ArgumentParser();a.add_argument('method',choices=CFG['methods']);a.add_argument('seed',type=int);main(a.parse_args())

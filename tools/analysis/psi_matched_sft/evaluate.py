@@ -43,25 +43,29 @@ def main(args):
     auditargs=argparse.Namespace(model=label)
     if args.rank==0:
         sample.smoke(auditargs,p,m);batched.check(auditargs,p,m)
+    from multiscene import sample_scenes,parity
+    multiscene_checks=parity(p,m,evalrows)
     before=legacy.state_hash(p);start=time.time();done=0
-    for s in rows:
-        t=s['token'];dest=OUT/'cache/rollouts'/label/f'{t}.npz'
-        meta=dict(protocol_hash=identity(),token=t,checkpoint_hash=m['sha256'],model=label,group_size=16,groups=4)
-        needs_rollout=not legacy.v1.valid_npz(dest,meta) and not (name=='official_il' and s['split']=='holdout')
-        fit=OUT/'cache/fitting'/label/f'{t}.npz';needs_fit=args.step!=128 and t in lossids and not fit.exists()
-        if not needs_rollout and not needs_fit:continue
-        vl,action=single_input(t)
-        if needs_rollout:
-            arrays={pr:batched.batched(p,m,vl,action,t,pr) for pr in CFG['evaluation']['protocols']}
-            npz(dest,meta,**arrays)
-        if needs_fit:
-            pool=read(OUT/'cache/selection'/f'{t}.json')['methods'];ids=sorted({i for v in pool.values() for i in v['indices']})
-            tr=np.load(OUT/'cache/raw'/f'{t}.npz')['trajectories'][ids]
-            p.train();p.set_frozen_modules_to_eval_mode();values=loss_values(p,vl,action,tr,t)
-            npz(fit,dict(meta,raw_indices=ids,draws=16,scope=s['split']),epsilon_mse=values)
-        done+=1
+    for start_index in range(0,len(rows),4):
+        chunk=rows[start_index:start_index+4];pending=[]
+        for s in chunk:
+            t=s['token'];dest=OUT/'cache/rollouts'/label/f'{t}.npz'
+            meta=dict(protocol_hash=identity(),token=t,checkpoint_hash=m['sha256'],model=label,group_size=16,groups=4)
+            if not legacy.v1.valid_npz(dest,meta) and not (name=='official_il' and s['split']=='holdout'):pending.append((s,dest,meta))
+        if pending:
+            toks=[s['token'] for s,_,_ in pending]
+            arrays={pr:sample_scenes(p,toks,pr) for pr in CFG['evaluation']['protocols']}
+            for i,(s,dest,meta) in enumerate(pending):npz(dest,dict(meta,scene_batch_size=len(pending),group_seeds=[legacy.seed(s['token'],g) for g in range(4)]),**{pr:v[i] for pr,v in arrays.items()})
+        for s in chunk:
+            t=s['token'];fit=OUT/'cache/fitting'/label/f'{t}.npz'
+            if args.step!=128 and t in lossids and not fit.exists():
+                vl,action=single_input(t);pool=read(OUT/'cache/selection'/f'{t}.json')['methods'];ids=sorted({i for v in pool.values() for i in v['indices']})
+                tr=np.load(OUT/'cache/raw'/f'{t}.npz')['trajectories'][ids]
+                p.train();p.set_frozen_modules_to_eval_mode();values=loss_values(p,vl,action,tr,t)
+                npz(fit,dict(protocol_hash=identity(),token=t,checkpoint_hash=m['sha256'],raw_indices=ids,draws=16,scope=s['split']),epsilon_mse=values)
+        done+=len(chunk)
         if done%20==0:print('EVAL',label,args.rank,done,len(rows),time.time()-start,flush=True)
     after=legacy.state_hash(p);assert before==after
-    save(OUT/'audits'/f'eval_{label}_{args.rank}.json',dict(status='PASS',protocol_hash=identity(),host=socket.gethostname(),torch_version=torch.__version__,model=label,count=len(rows),baseline_cache_parity=checks,state_before=before,state_after=after,checkpoint_hash=m['sha256'],seconds=time.time()-start,peak_gpu_bytes=torch.cuda.max_memory_allocated()))
+    save(OUT/'audits'/f'eval_{label}_{args.rank}.json',dict(status='PASS',protocol_hash=identity(),host=socket.gethostname(),torch_version=torch.__version__,model=label,count=len(rows),baseline_cache_parity=checks,multiscene_parity=multiscene_checks,state_before=before,state_after=after,checkpoint_hash=m['sha256'],seconds=time.time()-start,peak_gpu_bytes=torch.cuda.max_memory_allocated()))
 if __name__=='__main__':
     a=argparse.ArgumentParser();a.add_argument('name');a.add_argument('--step',type=int,default=512);a.add_argument('--rank',type=int,default=0);a.add_argument('--world',type=int,default=1);main(a.parse_args())

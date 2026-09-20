@@ -85,6 +85,9 @@ def main():
         rr=compare(f,['native_epsilon_loss','nearest_teacher_ADE','Hit64_0p5','Mass64_0p5','Hit64_1p0','Mass64_1p0'],f'teacher:{origin}:{kind}');tcomp+=rr
     table('teacher_paired.csv',tcomp)
     table('command_strata.csv',final.groupby(['split','protocol','method','command'])[METRICS].mean().reset_index())
+    earlytokens=set(sf[(sf.step==128)&(sf.split=='holdout')].token)
+    evolution=sf[(sf.split=='holdout')&sf.token.isin(earlytokens)]
+    table('matched1000_evolution.csv',evolution.groupby(['method','seed','step','protocol'])[METRICS].mean().reset_index())
     save(OUT/'audits/analysis_complete.json',dict(status='PASS',protocol_hash=identity(),scene_rows=len(sf),group_rows=len(gf),teacher_rows=len(tf),bootstrap_replicates=3000,seed_count=2,primary_denominator=5000))
     print(summary.query('split=="holdout"')[['method','protocol','mean_PDMS','feasible_rate','pairwise_ADE64','centroid_displacement']].to_string(index=False),flush=True)
 if __name__=='__main__':main()
