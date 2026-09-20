@@ -12,10 +12,11 @@ def loc(name,token,score=False):
         if p.exists():return p
     return OUT/('cache/scores/rollouts' if score else 'cache/rollouts')/name/f'{token}.npz'
 
-def analyze_scene(s):
+def analyze_scene(s,require_final=True,only_step=None):
     t=s['token'];sr=[];gr=[];teachers=[]
     names=[('official_il','official_il',0,0)]+[(f'{m}_seed{r}_step{step:04d}',m,r,step) for m in CFG['methods'] for r in CFG['train_seeds'] for step in [128,512] if loc(f'{m}_seed{r}_step{step:04d}',t).exists()]
-    if s['split']=='holdout':assert len([n for n in names if n[3]==512])==8
+    if s['split']=='holdout' and require_final:assert len([n for n in names if n[3]==512])==8
+    if only_step is not None:names=[n for n in names if n[3] in [0,only_step]]
     with np.load(loc('official_il',t)) as f:ref={p:f[p] for p in CFG['evaluation']['protocols']}
     with np.load(loc('official_il',t,True)) as f:refs={p:f[p] for p in CFG['evaluation']['protocols']}
     threshold=refs['eval'][...,6].mean()*100+1

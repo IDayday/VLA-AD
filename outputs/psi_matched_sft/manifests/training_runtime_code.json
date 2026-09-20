@@ -1,0 +1,9 @@
+{
+  "training_source": "/mnt/project/VLA-AD-worktrees/psi-matched-sft-20260920/tools/analysis/psi_matched_sft/train.py",
+  "sha256": "b17f2969d6fef5c6c98d5c9f88fad5b6f62bbc6cfe51b95b8b64cbb63260492c",
+  "mtime": 1789929486.0,
+  "earliest_job_start": 1789929712.4648933,
+  "source_precedes_all_training_jobs": true,
+  "parent_code_commit": "158e790",
+  "uncommitted_audit_instrumentation_at_launch": true
+}
