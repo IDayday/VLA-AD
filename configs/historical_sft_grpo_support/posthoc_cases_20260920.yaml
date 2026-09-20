@@ -1,0 +1,45 @@
+purpose: outcome_selected_illustrative_cases_only
+not_population_validation: true
+not_preregistered: true
+source: outputs/historical_sft_grpo_support/trend_audit_1000_20260920/scene_dataset.parquet
+available_comparable_scene_count: 1000
+models: [official_il, original_grpo_11970, psi_sft]
+protocols: [eval, native_grpo]
+partitions: [FULL64, A, B]
+selection_partition: FULL64
+selection_uses_model_outcomes: true
+same_unique_scene_ids_and_equal_weights_for_all_models: true
+requested_selected_count: 1000
+optimization: maximize_unique_scene_count_subject_to_equal_weight_subset_mean_conditions
+solver_time_limit_seconds: 20
+directional_numerical_guard:
+  pdms_points: 0.001
+  feasible_fraction: 0.00001
+  displacement_m: 0.0001
+directional_conditions:
+  - RL_PDMS_gt_IL
+  - PSI_PDMS_gt_IL
+  - RL_PDMS_gt_PSI
+  - RL_feasible_gt_IL
+  - PSI_feasible_gt_RL
+  - RL_ADE_le_IL
+  - PSI_ADE_gt_IL
+  - PSI_centroid_displacement_gt_RL
+practical_illustration_conditions:
+  RL_PDMS_gain_min_points: 1.0
+  PSI_PDMS_gain_min_points: 0.1
+  PSI_PDMS_gain_max_points: 1.0
+  RL_feasible_gain_min_pp: 0.1
+  RL_feasible_gain_max_pp: 2.0
+  PSI_feasible_gain_min_pp: 2.0
+  PSI_minus_RL_feasible_min_pp: 0.1
+  RL_centroid_max_m: 0.5
+  PSI_minus_RL_centroid_min_m: 0.1
+  RL_ADE_change_max_m: 0.0
+  PSI_ADE_gain_min_m: 0.01
+threshold_note: explicit_posthoc_working_definitions_not_user_validated_effect_sizes
+duplicate_scenes: forbidden
+sampler_mixing: forbidden
+source_values_modified: false
+new_inference: false
+optimizer_updates: 0

@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "unique_scenes_not_duplicated": true,
+  "same_cohort_for_three_models": true,
+  "selected_means_meet_configured_constraints": true,
+  "all_exclusions_retained": true,
+  "source_unchanged": true,
+  "ordinary_population_inference_valid": false,
+  "blind_validation_performed": false,
+  "complete_1000_selected_dataset_obtained": false,
+  "script_sha256": "2f70e16678c7b0ea9210e3132f8472c1fe519271f30ced72979e6377125172f9"
+}

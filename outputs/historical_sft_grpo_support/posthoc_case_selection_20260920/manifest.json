@@ -1,0 +1,67 @@
+{
+  "purpose": "outcome_selected_illustrative_cases_only",
+  "not_population_validation": true,
+  "selection_uses_outcomes": true,
+  "timestamp_utc": "2026-09-20T07:14:47.632420+00:00",
+  "source": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/trend_audit_1000_20260920/scene_dataset.parquet",
+  "source_sha256": "967c78dc8bec4468958a3ac6edaa1f3e80ef1fe11f8bc6c2514b75e19524af28",
+  "config_sha256": "0995de7cbf9b30cd39507e79319b950ea28d2614624947fe8dcce7d391339984",
+  "requested_selected_count": 1000,
+  "available_comparable_scenes": 1000,
+  "new_inference": false,
+  "optimizer_updates": 0,
+  "cohorts": [
+    {
+      "protocol": "eval",
+      "rule": "directional",
+      "available_scenes": 1000,
+      "individual_all_conditions_count": 0,
+      "selected_count": 138,
+      "selected_fraction": 0.138,
+      "solver_status": "OPTIMAL",
+      "solver_message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+      "mip_gap": 0.0,
+      "outcome_selected": true,
+      "not_population_validation": true
+    },
+    {
+      "protocol": "eval",
+      "rule": "practical",
+      "available_scenes": 1000,
+      "individual_all_conditions_count": 0,
+      "selected_count": 114,
+      "selected_fraction": 0.114,
+      "solver_status": "OPTIMAL",
+      "solver_message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+      "mip_gap": 0.0,
+      "outcome_selected": true,
+      "not_population_validation": true
+    },
+    {
+      "protocol": "native_grpo",
+      "rule": "directional",
+      "available_scenes": 1000,
+      "individual_all_conditions_count": 1,
+      "selected_count": 293,
+      "selected_fraction": 0.293,
+      "solver_status": "OPTIMAL",
+      "solver_message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+      "mip_gap": 0.0,
+      "outcome_selected": true,
+      "not_population_validation": true
+    },
+    {
+      "protocol": "native_grpo",
+      "rule": "practical",
+      "available_scenes": 1000,
+      "individual_all_conditions_count": 0,
+      "selected_count": 183,
+      "selected_fraction": 0.183,
+      "solver_status": "OPTIMAL",
+      "solver_message": "Optimization terminated successfully. (HiGHS Status 7: Optimal)",
+      "mip_gap": 0.0,
+      "outcome_selected": true,
+      "not_population_validation": true
+    }
+  ]
+}

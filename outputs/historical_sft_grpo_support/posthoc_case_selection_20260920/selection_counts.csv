@@ -1,0 +1,5 @@
+protocol,rule,available_scenes,individual_all_conditions_count,selected_count,selected_fraction,solver_status,solver_message,mip_gap,outcome_selected,not_population_validation
+eval,directional,1000,0,138,0.138,OPTIMAL,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.0,True,True
+eval,practical,1000,0,114,0.114,OPTIMAL,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.0,True,True
+native_grpo,directional,1000,1,293,0.293,OPTIMAL,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.0,True,True
+native_grpo,practical,1000,0,183,0.183,OPTIMAL,Optimization terminated successfully. (HiGHS Status 7: Optimal),0.0,True,True
