@@ -38,7 +38,7 @@ def main(args):
     probe=scenes('train')[:512];lossids={s['token'] for s in early+probe}
     if args.step==128:rows=early
     else:rows=evalrows+probe
-    rows=rows[args.rank::args.world];p.requires_grad_(False)
+    rows=execution_shard(rows,args.rank,args.world);p.requires_grad_(False)
     label=f'{name}_step{args.step:04d}' if name!='official_il' else name
     auditargs=argparse.Namespace(model=label)
     if args.rank==0:

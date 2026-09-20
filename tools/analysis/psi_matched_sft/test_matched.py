@@ -2,6 +2,12 @@ import unittest
 from common_matched import *
 from candidates import front_ranks,select_arrays,psi_kernel
 class MatchedTests(unittest.TestCase):
+    def test_execution_shards(self):
+        for n in [1000,5512]:
+            shards=[execution_shard(list(range(n)),r,4) for r in range(4)]
+            merged=[x for rows in shards for x in rows]
+            self.assertEqual(sorted(merged),list(range(n)))
+            self.assertEqual(len(merged),len(set(merged)))
     def test_split(self):
         tr=scenes('train');ev=scenes('holdout')
         self.assertEqual(len(tr),3072);self.assertEqual(len(ev),5000)

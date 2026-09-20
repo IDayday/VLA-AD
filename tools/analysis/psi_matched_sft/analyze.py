@@ -51,16 +51,17 @@ def analyze_scene(s):
     return sr,gr,teachers
 
 def compare(frame,metrics,label):
-    rows=[]
-    for (split,pr),f in frame.groupby(['split','protocol']):
-        # Average corresponding training seeds within each scene first.
-        avg=f.groupby(['method','token','log'],as_index=False)[metrics].mean()
-        for left,right in [('psi',m) for m in ['il_sft','score','pareto']]+[(m,'official_il') for m in CFG['methods']]:
-            a=avg[avg.method==left].set_index('token');b=avg[avg.method==right].set_index('token');ix=a.index.intersection(b.index)
-            for metric in metrics:
-                v=hist.bootstrap_difference(a.loc[ix,metric]-b.loc[ix,metric],a.loc[ix,'log'],f'{label}/{split}/{pr}/{left}/{right}/{metric}')
-                rows.append(dict(analysis=label,split=split,protocol=pr,left=left,right=right,metric=metric,**v))
-    return rows
+    pending=[]
+    with concurrent.futures.ThreadPoolExecutor(4) as pool:
+        for (split,pr),f in frame.groupby(['split','protocol']):
+            # Average corresponding training seeds within each scene first.
+            avg=f.groupby(['method','token','log'],as_index=False)[metrics].mean()
+            for left,right in [('psi',m) for m in ['il_sft','score','pareto']]+[(m,'official_il') for m in CFG['methods']]:
+                a=avg[avg.method==left].set_index('token');b=avg[avg.method==right].set_index('token');ix=a.index.intersection(b.index)
+                for metric in metrics:
+                    task=pool.submit(hist.bootstrap_difference,(a.loc[ix,metric]-b.loc[ix,metric]).to_numpy(),a.loc[ix,'log'].to_numpy(),f'{label}/{split}/{pr}/{left}/{right}/{metric}')
+                    pending.append((dict(analysis=label,split=split,protocol=pr,left=left,right=right,metric=metric),task))
+        return [dict(meta,**task.result()) for meta,task in pending]
 
 def main():
     assert (OUT/'audits/data_ready.json').exists();identity()

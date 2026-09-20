@@ -68,3 +68,10 @@ def single_input(t):
     from transformers.feature_extraction_utils import BatchFeature
     def action(n):return BatchFeature(data={k:v.expand(n,*v.shape[1:]) for k,v in a.items()})
     return vl,action
+
+def execution_shard(rows,rank,world):
+    """Balance measured host throughput only; union remains the frozen cohort."""
+    if world==4:
+        buckets=[[0,1],[2],[3,4],[5]][rank]
+        return [r for i,r in enumerate(rows) if i%6 in buckets]
+    return rows[rank::world]

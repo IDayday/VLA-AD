@@ -98,7 +98,7 @@ PSI score = PDMS + 0.3(core-reference core) - 0.5 slow violation - 0.2 tradeoff 
 
 ## 8. 为什么必须分开普通eval和GRPO采样
 
-两者同一权重，但原实现采样floor/clip不同：eval floor0.0001、noise clip±1；native GRPO floor0.04、clip±5；logprob floor0.1是独立参数。GRPO组内宽度与尾部风险因此不能从普通eval宽度直接外推。这里只调用真实forward_grpo采样、在reward/advantage/optimizer前截取；没有GRPO权重更新。G16是统一诊断group，历史成功训练原本用G8，不冒称重放历史G8更新。
+两者同一权重，但原实现采样floor/clip不同：eval floor0.0001、noise clip±1；native GRPO floor0.04、clip±5；logprob floor0.1是独立参数。在当前legacy归一化下，native最后一步0.04的噪声floor对应约1.3348m的X标准差、0.84m的Y标准差（裁剪前）；这也解释了为何0.5m/8点ADE邻域中的有限次命中可能极低。GRPO组内宽度与尾部风险因此不能从普通eval宽度直接外推。这里只调用真实forward_grpo采样、在reward/advantage/optimizer前截取；没有GRPO权重更新。G16是统一诊断group，历史成功训练原本用G8，不冒称重放历史G8更新。
 
 ## 9. 证据范围与暂不能成立的因果表述
 
@@ -117,6 +117,7 @@ PSI score = PDMS + 0.3(core-reference core) - 0.5 slow violation - 0.2 tradeoff 
 - 图：`outputs/psi_matched_sft/figures/Fig2_scene_paired_differences.*`
 - 图：`outputs/psi_matched_sft/figures/Fig3_common_supervision_absorption.*`
 - 图：`outputs/psi_matched_sft/figures/Fig4_fixed1000_training_evolution.*`
+- 图：`outputs/psi_matched_sft/figures/Fig5_scene_distribution_ECDF.*`
 - 图同时保存PNG/PDF/SVG/CSV。代码：`tools/analysis/psi_matched_sft/`。
 - checkpoint、raw rollouts、特征与大缓存仅保存在本地独立namespace，不提交Git。
 '''
