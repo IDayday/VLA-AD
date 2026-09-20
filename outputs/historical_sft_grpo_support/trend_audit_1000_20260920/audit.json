@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "full1000_preserved": true,
+  "all_6000_input_cache_files_verified_during_analysis": true,
+  "18_model_protocol_partition_cells_each_1000": true,
+  "all_group_indices_retained": true,
+  "rates_denominators_validated": true,
+  "half_aggregation_reproduces_full64": true,
+  "source_files_unchanged": true,
+  "native_geometric_coverage_at_0p5m_saturated": true,
+  "source_sha256": "fa864879933eba61f74d4601599815853630551227098a68b9b2575df2451ee5"
+}

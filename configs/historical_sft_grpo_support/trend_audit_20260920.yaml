@@ -1,0 +1,30 @@
+analysis_type: retrospective_hypothesis_audit
+prior_aggregate_results_already_known: true
+scene_source: outputs/historical_sft_grpo_support/manifests/scenes.json
+scene_count: 1000
+scene_selection: reuse_frozen_manifest_without_outcome_filtering
+models: [official_il, original_grpo_11970, psi_sft]
+protocols: [eval, native_grpo]
+groups_per_scene: 4
+group_size: 16
+sample_halves: {A: [0, 1], B: [2, 3]}
+sampling_replication_note: independent_RNG_groups_from_preexisting_bank_not_new_unseen_data
+primary_metrics: [pairwise_ADE, center_shift_m, feasible_rate, mean_PDMS]
+center_reference: official_il_same_sampler
+feasible_definition: NC_DAC_TTC_DDC_all_equal_1
+primary_scope: FULL1000
+descriptive_strata: [driving_command, original_PSI_train_validation_identity]
+bootstrap_replicates: 3000
+bootstrap_seed: 2026092001
+bootstrap_unit: scene
+bootstrap_sensitivity: log_cluster
+supplementary_novelty:
+  definition: minimum_ADE_to_opposite_half_of_official_IL_exceeds_radius
+  primary_radius_m: 0.5
+  sensitivity_radius_m: [0.25, 1.0]
+  denominator: all_64_target_draws
+  require_feasible: true
+  initial_policy_finite_sample_null: opposite_halves_of_official_IL
+  interpretation: finite_bank_geometric_noncoverage_not_semantic_modes_or_unreachability
+inference: reuse_frozen_fp32_cache
+optimizer_updates: 0
