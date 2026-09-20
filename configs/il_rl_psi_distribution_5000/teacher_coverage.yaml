@@ -1,0 +1,13 @@
+analysis_role: supplemental_extension_of_historical_teacher_coverage
+scene_manifest: same_frozen_5000
+teacher_source: historical_PSI_support_index_unchanged
+primary_ADE_m: 0.5
+sensitivity_ADE_m: [0.25, 1.0]
+rollout_counts: [16, 64]
+minimum_teacher_weight: 0
+primary_membership: historical_PSI_train_logs_only
+primary_teacher_kind: non_GT_positive_weight
+primary_aggregation: equal_scenes_mean_of_teacher_hit64
+additional_aggregation: historical_support_weighted_within_scene
+diffusion_loss_recomputed: false
+outcome_conditioned_filtering: false

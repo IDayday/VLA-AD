@@ -1,0 +1,14 @@
+{
+  "timestamp_utc": "2026-09-20T08:07:31.843106+00:00",
+  "config_sha256": "14e4bc2ae1c1dfe8791fd29f5781e95c338365c6d25b4bf5e3f52f69b8e11f71",
+  "scene_hash": "a9ee4f3e8af6a332fcaf4f448e6c7dea970f2ff80a9ec589b8bd9ba319f9bf07",
+  "support_identity": {
+    "path": "/mnt/project/VLA-AD/outputs/psi_drive/support_index/stage2_pareto_support_clean_full.pt",
+    "sha256": "b3009a61d93a0760288685660c59d950788fe98f1dab62a8de59a68ba3570498",
+    "common_train_scenes": 835,
+    "full1000": 1000
+  },
+  "train_args_path": "/mnt/project/VLA-AD/outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/train_args.json",
+  "train_args_sha256": "c98440490f92c4604bb13bf53b935beb30f43def70ad2857ca4b2407ffcc820b",
+  "no_new_diffusion_loss": true
+}

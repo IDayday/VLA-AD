@@ -1,0 +1,28 @@
+{
+  "timestamp_utc": "2026-09-20T07:39:37.813847+00:00",
+  "parent_commit": "636a07668d7e5446a082562a4fd6e2cfe87f2a83",
+  "config_sha256": "d03c25ee4c7c99a9b662bb702933cd77bcb74bab17e5cd126230407da79a36fd",
+  "scene_manifest_sha256": "a9ee4f3e8af6a332fcaf4f448e6c7dea970f2ff80a9ec589b8bd9ba319f9bf07",
+  "models_sha256": "b8349cb21e1839bdd63fe7c5041cb11145a8ce6153dc4f9cac5b5c424c02bcfb",
+  "reused_code": {
+    "/mnt/project/VLA-AD/tools/analysis/historical_sft_grpo_support/common_support.py": "2efc592e070863d4d88e99a7ed3a15407488b2179468aa38e8639fd5cfaeaa33",
+    "/mnt/project/VLA-AD/tools/analysis/historical_sft_grpo_support/sample.py": "c4a6785b551e67ccb7a223ad3bd5618a3e9bd9f83f721526c64f53dd663d1491",
+    "/mnt/project/VLA-AD/tools/analysis/historical_sft_grpo_support/batched.py": "a2294a9add87bd5fcfba41fa1c34d14dcc9c9050788a62b2f647c838b0d95374",
+    "/mnt/project/VLA-AD/tools/analysis/historical_sft_grpo_support/score.py": "fec5a09d466d0e6a830fc08d34bbc7e9542755da79e1297d1c04f0c6cca77ecb",
+    "/mnt/project/VLA-AD/tools/analysis/historical_sft_grpo_support/analyze.py": "a6ba877d78373bf9a40c680b3d870467928ac5f6318cc7573dedb49ed03bf4a9",
+    "/mnt/project/VLA-AD/tools/analysis/pc_mts_diagnostics/common.py": "696572fca9c756991bf3b39f4a991c7470d6c844b9b56e71dac5953b5422230a",
+    "/mnt/project/VLA-AD/tools/analysis/pc_mts_diagnostics/build_scene_manifest.py": "25287f709f342bc9e1917582421fbc4cd4c4d3794da7842b0083cf68a5032899",
+    "/mnt/project/VLA-AD/tools/analysis/pc_mts_diagnostics/distributed_rollout.py": "6138df1eda5613497f5d62c35835a0f90d6aa20ed2f64a5b5138349ae135f618",
+    "/mnt/project/VLA-AD/tools/analysis/pc_mts_diagnostics/evaluate_cached_rollouts.py": "3b0bd791988d92302be0a1f0ef02187271d79b9797c484dcd72ba83c2ef1c5b2"
+  },
+  "old_protocol": {
+    "config_sha256": "b247ef3284558fefae52ca15d9ae26203cfff6518d7ed9413f053c7f22369c41",
+    "scene_sha256": "0b1eef080fe05408d225a26a2126868d796a61e416af0b68430e5fcde99cca76",
+    "models_sha256": "cdacd4be228bb795b26064fde584104b1f85d64e3dd8f36eddc522540150e0ea",
+    "parent_commit": "4716261be46b2bc3283a80f89377bb6eaf7dc3fa",
+    "timestamp": 1789430796.2972815,
+    "no_new_training": true,
+    "source_reconstruction_caveat": "PSI code is recoverable later commit; A5 runtime uncommitted changes not proven absent; V6 saved patch applied."
+  },
+  "old_cache_inventory_sha256": "6edee44b7a46fbf8dcfbdf0ad1f32871ff52be2a9ad666a51a4797e67b375fe7"
+}
