@@ -20,7 +20,7 @@ Execution order:
 2. `features.py` via 8-GPU torchrun; `candidates.py` uses persistent CPU workers.
 3. `audit.py` and `test_matched.py` validate scoring, identities and selection.
 4. `orchestrate.py` waits for preparations, trains eight runs, evaluates fixed
-   checkpoints using three disjoint server shards and persistent NAVSIM scoring.
+   checkpoints using four disjoint server shards and persistent NAVSIM scoring.
 5. `finalize.py` waits for completion, then analyzes, plots, audits and reports.
 
 `multiscene.py` batches four scenes with four independent G16 groups each.

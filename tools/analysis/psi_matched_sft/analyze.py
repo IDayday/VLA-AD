@@ -42,7 +42,8 @@ def analyze_scene(s):
                     ids=[i for i in pool['indices'] if kind=='ALL' or (kind=='GT' and i==0) or (kind=='NON_GT' and i!=0)]
                     if not ids:continue
                     weights=np.array([pool['weights'][pool['indices'].index(i)] for i in ids]);weights/=weights.sum()
-                    rec=dict(key,teacher_origin=origin,kind=kind,teacher_count=len(ids),native_epsilon_loss=float(np.array([loss[i] for i in ids])@weights) if all(i in loss for i in ids) else np.nan,nearest_teacher_ADE=float(dist[ids].min(1)@weights))
+                    target_center=np.einsum('i,ijk->jk',weights,raw[ids])
+                    rec=dict(key,teacher_origin=origin,kind=kind,teacher_count=len(ids),native_epsilon_loss=float(np.array([loss[i] for i in ids])@weights) if all(i in loss for i in ids) else np.nan,nearest_teacher_ADE=float(dist[ids].min(1)@weights),teacher_center_ADE=float(legacy.distance(target_center[None],flat.mean(0)[None])[0,0]),rollout_nearest_target_ADE=float(dist[ids].min(0).mean()))
                     for radius in [.5,1.]:
                         suffix=str(radius).replace('.','p');hit=dist[ids]<=radius
                         rec['Hit64_'+suffix]=float(hit.any(1)@weights);rec['Mass64_'+suffix]=float(hit.mean(1)@weights)

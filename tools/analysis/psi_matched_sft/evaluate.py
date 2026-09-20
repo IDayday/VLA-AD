@@ -55,7 +55,7 @@ def main(args):
         if pending:
             toks=[s['token'] for s,_,_ in pending]
             arrays={pr:sample_scenes(p,toks,pr) for pr in CFG['evaluation']['protocols']}
-            for i,(s,dest,meta) in enumerate(pending):npz(dest,dict(meta,scene_batch_size=len(pending),group_seeds=[legacy.seed(s['token'],g) for g in range(4)]),**{pr:v[i] for pr,v in arrays.items()})
+            for i,(s,dest,meta) in enumerate(pending):npz(dest,dict(meta,generation_host=socket.gethostname(),scene_batch_size=len(pending),group_seeds=[legacy.seed(s['token'],g) for g in range(4)]),**{pr:v[i] for pr,v in arrays.items()})
         for s in chunk:
             t=s['token'];fit=OUT/'cache/fitting'/label/f'{t}.npz'
             if args.step!=128 and t in lossids and not fit.exists():

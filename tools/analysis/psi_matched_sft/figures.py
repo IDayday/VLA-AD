@@ -48,4 +48,15 @@ def main():
                 ax.plot([],[],color=COLORS[method],label=LABELS[method])
             ax.set_title(pr+' / '+label);ax.set_xlabel('SFT optimizer updates');ax.grid(alpha=.2)
     axs[0,0].legend(fontsize=8);finish(fig,'Fig4_fixed1000_training_evolution',ev)
+    sf=pd.read_parquet(OUT/'metrics/scene_metrics.parquet');sf=sf[(sf.split=='holdout')&((sf.step==512)|(sf.method=='official_il'))]
+    ecdf=sf.groupby(['token','method','protocol'],as_index=False)[['pairwise_ADE64','centroid_displacement']].mean()
+    fig,axs=plt.subplots(2,2,figsize=(11,8))
+    for i,pr in enumerate(['eval','native_grpo']):
+        for j,metric in enumerate(['pairwise_ADE64','centroid_displacement']):
+            ax=axs[i,j]
+            for m in methods:
+                if metric=='centroid_displacement' and m=='official_il':continue
+                vals=np.sort(ecdf[(ecdf.method==m)&(ecdf.protocol==pr)][metric].to_numpy());ax.plot(vals,np.arange(1,len(vals)+1)/len(vals),label=LABELS[m],color=COLORS[m])
+            ax.set_title(pr+' / '+metric);ax.set_xlabel('Meters (full observed range)');ax.set_ylabel('Fraction of scenes');ax.grid(alpha=.2)
+    axs[0,0].legend(fontsize=8);finish(fig,'Fig5_scene_distribution_ECDF',ecdf)
 if __name__=='__main__':main()

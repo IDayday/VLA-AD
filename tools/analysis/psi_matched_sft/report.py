@@ -13,6 +13,10 @@ def main():
     teacher=pd.read_parquet(OUT/'metrics/teacher_scene_metrics.parquet');teacher=teacher[(teacher.protocol=='eval')&((teacher.step==512)|(teacher.method=='official_il'))&(teacher.teacher_origin=='psi')&(teacher.kind=='NON_GT')]
     teacher=teacher.groupby(['split','method','token'],as_index=False)[['native_epsilon_loss','Hit64_0p5','Mass64_0p5','nearest_teacher_ADE']].mean()
     ts=teacher.groupby(['split','method']).agg(scenes=('token','size'),loss_scenes=('native_epsilon_loss','count'),epsilon_MSE=('native_epsilon_loss','mean'),Hit64=('Hit64_0p5','mean'),mass64=('Mass64_0p5','mean'),nearest_ADE=('nearest_teacher_ADE','mean')).reset_index()
+    allteacher=pd.read_parquet(OUT/'metrics/teacher_scene_metrics.parquet')
+    gt=allteacher[(allteacher.protocol=='eval')&((allteacher.step==512)|(allteacher.method=='official_il'))&(allteacher.teacher_origin=='il_sft')&(allteacher.kind=='GT')]
+    gt=gt.groupby(['split','method','token'],as_index=False)[['native_epsilon_loss','Hit64_0p5','nearest_teacher_ADE']].mean()
+    gt=gt.groupby(['split','method']).agg(loss_scenes=('native_epsilon_loss','count'),GT_epsilon_MSE=('native_epsilon_loss','mean'),GT_Hit64=('Hit64_0p5','mean'),GT_nearest_ADE=('nearest_teacher_ADE','mean')).reset_index()
     seeds=pd.read_csv(OUT/'metrics/summary_by_seed.csv');seeds=seeds[(seeds.split=='holdout')&(seeds.step==512)][['method','seed','protocol','mean_PDMS_mean','feasible_rate_mean','centroid_displacement_mean','pairwise_ADE64_mean']]
     text=f'''# PSI、Score、Pareto与GT-only的等预算IL续训实验
 
@@ -84,6 +88,10 @@ PSI score = PDMS + 0.3(core-reference core) - 0.5 slow violation - 0.2 tradeoff 
 
 {md(ts)}
 
+相同GT目标上的保留情况（所有方法都评价同一个GT，避免GT仅在部分PSI选集中出现造成分母混淆）：
+
+{md(gt)}
+
 覆盖指标在全部5000 holdout及固定512个train probe计算；native epsilon loss在固定1000 holdout及512 train probe上，16个共同noise/timestep draws。无non-GT teacher的scene不进入该teacher分母，表中公开scenes/loss_scenes。Hit64是64次中至少一条ADE≤0.5m，不是概率或可学习性的充分判据；mass64是64次中的附近频率。`teacher_summary.csv`同时包含各来源自己的teacher、GT与共同跨方法teacher比较。
 
 训练loss降低、输出覆盖增加、可行高质量样本增加是三个不同检验。即使noise-MSE更低，64次没采到也只能说明本采样预算和邻域下低覆盖，不能断言永远生成不了。`target_presentations.parquet`记录目标究竟被实际抽到训练多少次，零次不伪称学过。
@@ -102,7 +110,7 @@ PSI score = PDMS + 0.3(core-reference core) - 0.5 slow violation - 0.2 tradeoff 
 
 ## 10. 审计与产物
 
-全部新增测试通过；原生loss/梯度smoke通过；scalar/batch NAVSIM评分差0；native抽取和跨scene批处理通过FP32 parity；三台服务器逐一核验旧IL CRN缓存；训练初始化hash一致、梯度预算一致、冻结buffer未变；eval权重/状态未变；旧V1/V2/V3指标和报告hash未变。
+全部新增测试通过；原生loss/梯度smoke通过；scalar/batch NAVSIM评分差0；native抽取和跨scene批处理通过FP32 parity；四台服务器逐一核验旧IL CRN缓存；训练初始化hash一致、梯度预算一致、冻结buffer未变；eval权重/状态未变；旧V1/V2/V3指标和报告hash未变。
 
 - 报告：`reports/PSI_MATCHED_SFT_20260920.md`
 - 图：`outputs/psi_matched_sft/figures/Fig1_matched_distribution_quality.*`
