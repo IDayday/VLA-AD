@@ -1,0 +1,6 @@
+{
+  "code_commit": "158e7907462d266a4475f90b8471bf5bb353d39f",
+  "runtime_code_audit": "outputs/psi_matched_sft/audits/initial.json",
+  "protocol_hash": "86be187b0a1c3b4a95257da0d35891cd78119817ca5f06e4000a69be70f6b605",
+  "training_not_started_yet": true
+}

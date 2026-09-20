@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "protocol_hash": "86be187b0a1c3b4a95257da0d35891cd78119817ca5f06e4000a69be70f6b605",
+  "fixed_train_probe_scenes": 512,
+  "rows": 17668,
+  "posthoc_descriptive": true,
+  "changes_to_selection_or_training": false,
+  "statement": "Finite-bank coverage of actually presented targets; not an impossibility claim."
+}

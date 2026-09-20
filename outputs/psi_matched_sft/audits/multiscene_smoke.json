@@ -1,0 +1,46 @@
+{
+  "checks": [
+    {
+      "token": "23e39302332152b2",
+      "protocol": "eval",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "411a748874035630",
+      "protocol": "eval",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "protocol": "eval",
+      "max_abs_error": 4.291534423828125e-06
+    },
+    {
+      "token": "40808270ce205b83",
+      "protocol": "eval",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "23e39302332152b2",
+      "protocol": "native_grpo",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "411a748874035630",
+      "protocol": "native_grpo",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "protocol": "native_grpo",
+      "max_abs_error": 4.76837158203125e-06
+    },
+    {
+      "token": "40808270ce205b83",
+      "protocol": "native_grpo",
+      "max_abs_error": 7.62939453125e-06
+    }
+  ],
+  "scenes_per_batch": 4,
+  "sampler_unchanged": true
+}

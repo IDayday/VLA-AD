@@ -1,0 +1,954 @@
+[
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/candidate_pool_scene.csv",
+    "sha256": "ed5db0d72a468fedb681b4167b577752b849fcd72bbd59d23227b8d70abade31"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/pool_overlap.csv",
+    "sha256": "7c5e3fef98dc8b16df7fd943559a70cb6f7879ba1bf83acee5a4c1fe2a912672"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/candidate_records.csv",
+    "sha256": "246db3a1d40af850ddec8d43d75417b2836ed28c669edf2682abd610568bb539"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/local_robustness_paired_tests.csv",
+    "sha256": "e3fe65c18b924accec6bc95b4e0c8e96e274897f1f01d6e19d1b556a31657928"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/local_robustness_scene.csv",
+    "sha256": "a0d305b8469554c5d4a0fbc1bec5f853d921de936fc90fafa003a760b753e56f"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/table_a_d_scene.csv",
+    "sha256": "e3fead9e9a2987a5a6252656d9b7b690a2946ee5362d8011d63b73b5d1b88ea6"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/gt_threshold_sensitivity.csv",
+    "sha256": "1d48726b9e4e8806fdee005f9a06c91167d051e6a9bd29ca049d3a0bda8261ae"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/TABLE_D.csv",
+    "sha256": "06974c75da71160ad38ded635a4e71962ae448b8db170ec5d9a20eaacd6112ff"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/local_robustness_summary.csv",
+    "sha256": "f4ea3f2d94242ad1b9d59c2025c6553e0c8e76aab9f54e188e5aa80f300da7cf"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/grpo_groups.csv",
+    "sha256": "682b40b326718087ccd7e66495e72e13edc6e6393e5e61ebc9905a4a8b9cfdea"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/candidate_pools_paired_tests.csv",
+    "sha256": "96b83f316f1e333c8b586c78760ae53ad53d2b4e9c819396eb5970d21958bdc4"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/local_robustness_candidates.csv",
+    "sha256": "d0713c750d258b8d0c80e92f7228a4e7258ab4ac7ab667b9f08bd578634a4cac"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/policy_summary.csv",
+    "sha256": "32040bb5979d145a0564320cef58c57c69858c409646db402ee4376fde18d448"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/pc_eligibility_funnel.csv",
+    "sha256": "054dff8997413200d1cb6a69c70bee30eb3475676c7949296dcdc66e3648eae2"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/policy_paired_tests.csv",
+    "sha256": "648cbffe562b67965674d28fe7daa181c9ebce70269d8ac51ec3b3b9c37edaa7"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/policy_distribution.csv",
+    "sha256": "9f6c84050485aaf95d46ec060d88b868b9e746331005dfcd111759349b3793e3"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/TABLE_B.csv",
+    "sha256": "aa724456764ac0c18f072e1d14e4ccb9e65cf0c6c8f81c2f1c97a007119d1b24"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/gt_threshold_sensitivity_summary.csv",
+    "sha256": "437f2e9b6f327b6bd02ff38a43186b3b4df319e914ab9d2f2b5025ff78a65970"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/grpo_readiness.csv",
+    "sha256": "b39968621bc8d9dd1e51d696bf9dacf0180609081cd961df6692ffa2d65c5fc2"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/candidate_pools_summary.csv",
+    "sha256": "2aaa62ccc65ea754e6649a76940a7086fe66705074a5c7022a820489f9d44811"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/TABLE_C.csv",
+    "sha256": "06ffc4e156a4bb8f606e58b83a72e447dcf0a845960551b43824caf92818b0a4"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/TABLE_A.csv",
+    "sha256": "68d66ee4f5a8a2a008a1f4c23563e044f1f45d4d7fdbd13b44dd5bb5d245b863"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/candidate_pool_scene.parquet",
+    "sha256": "c463ce50f9f27c369b1f87e3a4cbcbd4cff2aeb08f374b1b4ae5cc66e194ba9d"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/local_robustness_candidates.parquet",
+    "sha256": "5d492ad7803aa606dd56ee54a356e032dae5dd82a93e2189d0656d3e42b3b2bd"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/grpo_readiness.parquet",
+    "sha256": "ff320ddedbd1d055858ae6ebfe4c88a8070979684116f56fa3945bb60fb598f5"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/local_robustness_scene.parquet",
+    "sha256": "d3077aa33a612cf2f4303b33ad28f93104b32d500a480f42498c54c6c48b81ad"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/candidate_records.parquet",
+    "sha256": "e2813d8ee64c001fec16c5bbe4cd36617b0bd2348adeb51cdc8cf79fe1458f29"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/grpo_groups.parquet",
+    "sha256": "40aeefad97d6ebfb774bce297a825735166901f8f8218cbc4cb54f6154e8519c"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/pool_overlap.parquet",
+    "sha256": "b013e70aee0aed186741f89864a452949150e7054192a3f27e3b82d327aec847"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics/metrics/policy_distribution.parquet",
+    "sha256": "23585e9eb81adb445f594544bf358ae8f34d86d34d89a75fba7924bbab1815a7"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_matched_cardinality_contrastive.csv",
+    "sha256": "885b7348aaeccb43f122043fd86f31e7a80d85400030991f2d6325af61efd55c"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/pc_eligibility_funnel_v2.csv",
+    "sha256": "0339a59a0d75d02f8c0bb1cb74d70e96641dafd1b488354b2fb31955f39e583b"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_qualified_full1000.csv",
+    "sha256": "dcc0d97c13092b6a95af271f3413e21f6063a445d5cb71fdbed4bdcf6ead5193"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_source_full1000_External-RL.csv",
+    "sha256": "1e1eae39dffe149a02c0430b9f37474fa95859999a66589ee76de1927afb4d68"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_source_contrastive_External-RL.csv",
+    "sha256": "1e1eae39dffe149a02c0430b9f37474fa95859999a66589ee76de1927afb4d68"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_source_contrastive_IL-native.csv",
+    "sha256": "9f3c6f280edb1bd020e72be9596459c6b9a48c13028645c96f5996db84c109b8"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/MTS_compression_bins.csv",
+    "sha256": "07e1b7fe2b61fdc72a45c754e88a89a958c3778c63ff13146136726293625394"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/robustness_curves_full1000.csv",
+    "sha256": "8652e0705471e3e9e16fdd6eaa280300581519de256ce396bd7a80122a6d1a09"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/seed_correction_sensitivity.csv",
+    "sha256": "c68656b1e6eea4a68f923bab6438f471ae97ae5b964f4e52d79aa417cf775e78"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/qualified_summary_contrastive.csv",
+    "sha256": "31afb6c403eb1090287905707aa7ddb880ac4304205190c3232033c084178628"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_source_full1000_Bridge-0.8.csv",
+    "sha256": "6aa08874552905346b4a70fd0c550af12959dd874cb006ae430f4a1b5dc60b38"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/matched_cardinality_summary_contrastive.csv",
+    "sha256": "b065b5844a069ed37fee00d2ba0ba2b370b113e742f52451009d09248ab4ebd4"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_source_contrastive_External-MTS.csv",
+    "sha256": "8bf83f55d971c4394b3c4e8742f362ea7aaa3ec7ef5587df8b0a0fb772e07e1c"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/calibration_scene_quantiles_full.csv",
+    "sha256": "e3b4bacfbf8e568ac3367eb29608f2aeadb229a079dbdf77df1e557f78bd50cf"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_source_full1000_GT.csv",
+    "sha256": "3f809d7bc075ede4e09811ee84e02e21f30d21b628896f7feced93fb43ac2885"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/nonfill_summary_full1000.csv",
+    "sha256": "2c8bf45f8b0eab14977d51ffef6c75d3e939d09bf256cd34698dd6b04ed1b0cb"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/pool_scene_contrastive.csv",
+    "sha256": "6e1940e6d35e3998e230febddf68d4171f94a8c9db16146a44521c2523456f70"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_source_contrastive_Bridge-0.8.csv",
+    "sha256": "e58a32f364c52c1e8db1fc8dcaf1c82377eb6c40025f0b35086b2e17d9cd0b3c"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/unqualified_scene_summary_full1000.csv",
+    "sha256": "fd9f9e74a61a6201db93bcbfd7e322b49add2cf8116ec9e333e1dde9f5c123f3"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/policy_stratification_scene.csv",
+    "sha256": "e584e532e1e7a6efab89737352b7ae30cb29f7c775f7539411a47a5dc48ca68e"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_source_contrastive_Bridge-0.6.csv",
+    "sha256": "82b119527fb442392f91e129c08ad8c3a0867f6e2f373355f506a31d074c4525"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/nonfill_summary_contrastive.csv",
+    "sha256": "41ce5a21a02a97e86792d24c982b79cdbf4e0eb64a732add21c263b2015a67cf"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/chain_gain_scene.csv",
+    "sha256": "0063cdf247683dcb285976802f41d6742e958e4ccfbbf658d03a98970fa68996"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/primary64_paired_scene_CI.csv",
+    "sha256": "f11521c00b64978bd268d4422bbc0bbd709ac1c97d4e9a8dab324c5520885636"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/policy_by_IL_spread_quartile.csv",
+    "sha256": "869ae5344a274ff963622dbc05408d16f72ee1880fe2474e69719ff5d438a860"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_source_full1000_IL-native.csv",
+    "sha256": "454bf5795d80f753d207925440bcd405468e74ee98ca079e03c668bedf0193ac"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/calibration_quantiles_full.csv",
+    "sha256": "1320b5b694bd9996afd5739b39eda51cedd428a3ce49c08ec87cd8efd97a06cf"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/V1_selected_distance_quantiles.csv",
+    "sha256": "ee4ed1528df315d232c1eaf371b3064404b0aca096d19ee384cc3c51bea60bf2"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/pc_eligibility_funnel_v2_summary.csv",
+    "sha256": "94ce4402929dfc9d7e028f79fdbe293bf31669663ee1f6538cb31643302bd2b8"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_full1000.csv",
+    "sha256": "2d1310b1fac72766c414f777e328734e3d6d0a229d0f4a8993e5ec133a661944"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_qualified_contrastive.csv",
+    "sha256": "22a578739c626ce7a1bce8514c57e670b980a1b31a25ff28ed83890904aab032"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/pool_geometry.csv",
+    "sha256": "20eff7fb5fd2aa924e4c2f9f519fe4d1b53bef2f4ca2ed7432682f1e290f9592"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/correlations.csv",
+    "sha256": "a67518cf93b2ba2c3bd73bb4fdb29da3967e38ee755c5b2b8beda2bd1d40bb5c"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/policy_by_command.csv",
+    "sha256": "4855ec9308db5fcb9dc580808195abdf4584f3c1f3ef01a3598960013527f704"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/raw_source_summary_full.csv",
+    "sha256": "a7cebddf881824ef26ecb0fc1fa70ed4435479fdef529baedd9d5237c9e3a041"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/robustness_curves_contrastive.csv",
+    "sha256": "b6d1b25a88ece39ac1a770cdb13b5da21ace230250d014cb6cb4f9dedc3fbc07"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/calibration_scene_quantiles_smoke.csv",
+    "sha256": "1941dd12e50345994d9236b6d7c9834e6afe5fba82e4f57bcb340a607d169fa4"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/sample_count_global_repeats.csv",
+    "sha256": "3d6c4c4834a65e27defb811cce305fd04850327f8d624123a9a5ae64e41bf23a"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_contrastive.csv",
+    "sha256": "397bcbb04a62da2195d23c1885070f0c397a7398e6125a1fa1b21e9f770f58c8"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/unqualified_scene_summary_contrastive.csv",
+    "sha256": "ea9a53e22e6f6a5ba5aeca4992439d9d5c2358b0e1fd25756c8a603d4bd8b5a5"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/contrastive_eligibility_full.csv",
+    "sha256": "bc345ee2f3dab4ceb5b7ff994c5e0866499b3e2118ad7c6a45026782d3c1663c"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_source_contrastive_Bridge-0.2.csv",
+    "sha256": "1aa552790fa0b346ad5262956ff004c97344d1d57adee97bd79e9aa99f642206"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/calibration_quantiles_smoke.csv",
+    "sha256": "18b13cbfeba1ae36302dce312e3919029af5c4fb7773af96c4b03a495e9df83b"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/raw_source_summary_smoke.csv",
+    "sha256": "f7b3bb633ee99a28e4dd518c5bdabd0053fa9a2dfb062cfaf80683a7b1eaf7f9"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_source_contrastive_GT.csv",
+    "sha256": "c279e1ae088e37aefb016b745f7a28036889d97cbab1852582ba72dac45d4b59"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/candidates.csv",
+    "sha256": "07a3dd68e09785a1695cd49bbc11b831848aefbeea550942813a639d24f87664"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/policy_global.csv",
+    "sha256": "056f66662f94fe2da9f5402f437aefca0057e1d4abdbd401b7b6e58bc8ef9c7a"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_source_contrastive_Bridge-0.4.csv",
+    "sha256": "1364be3afc496f623cefe603d6a38180959d88b1366686e5f34e50790cc4c48f"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/chain_evolution_summary.csv",
+    "sha256": "1ecddaa1d7cb2e0f2bb382a6202111b7027d59f2e667eb639382556d99bb294e"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_source_full1000_External-MTS.csv",
+    "sha256": "d58e51439900104e42560d7705564e1cbdd38b647ad231df96be57697c4c75fc"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_source_full1000_Bridge-0.4.csv",
+    "sha256": "e8cb9a086d60de18cac11afdf960748b75408484dea6bce85c596226db098f65"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/source_composition_contrastive.csv",
+    "sha256": "5ff0ea907dcd01a3ad9a77d6a17a499356288a3f0a01e1d7784bebcc74bf2f25"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/qualified_summary_full1000.csv",
+    "sha256": "f50e149e9d15cbe135b2f5e99cc5cba7c271c16bbefd357226f6ae4f6bd7320a"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/robustness_curves_scene.csv",
+    "sha256": "a00a163316688932b8ff2c7cfa1ac3aba367c23035c6ccc753ce67b2fa306c4f"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/pool_summary_contrastive.csv",
+    "sha256": "622df513973df5874757f7c0d7c33ad77762dddbe05f7a71ad94744754d1c34a"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_source_full1000_Bridge-0.2.csv",
+    "sha256": "2fe9de5a800cb57fc1aeb90a8ecec4274055bffd82e20606befffce9b2b557f8"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/contrastive_eligibility_smoke.csv",
+    "sha256": "e862740b640519df6006eac8b8161c7150df0ca49854c57b5db37cf3fef085ad"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/matched_cardinality_summary_full1000.csv",
+    "sha256": "e1f4fd13eefda055b736b0629211e59207c7e0fb463588fa547daf8818715112"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/chain_evolution_scene.csv",
+    "sha256": "20a9d6cfdd4526bcf3e73db46dfdb0082147ce6fb0876cda7ec9bf6bff6c057f"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_source_full1000_Bridge-0.6.csv",
+    "sha256": "dae2a5178c8ef358cc3a3a6f80a9552312a0d3882033b4f886293d77f1c22bcb"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/pool_scene_full1000.csv",
+    "sha256": "0ba4ff31947ee2d93104a0b4c4df443e204548b2cfe893ad01e8180c223507db"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/policy_by_GT_heading_tertile.csv",
+    "sha256": "43ca02822646fd801c940ff92f95b766e3fe3ac9bbac68ea8be7ebb1840362bc"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/sample_count_ranking_stability.csv",
+    "sha256": "7ca2889a0c68cfc1ada1a41e3e9373e3b63d378467fc1191f46c14975004b5cd"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/paired_matched_cardinality_full1000.csv",
+    "sha256": "e2d073d4f3cff7636222ae265008b8f6ee77e9c37baf9b6b6634a530b454350a"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/pool_summary_full1000.csv",
+    "sha256": "c9bba87fe607ca969500277d15cdafbfd6a151c727918533378740779bf24752"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/source_composition_full1000.csv",
+    "sha256": "a53c8df3d4f8cfff077d1f50016d81bb9bd03518746fd7856c0ea79bf869436f"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/sample_count_summary.csv",
+    "sha256": "ece09782e9317b4e13949e2444f37c343fa9293deb0e217de40579fdbaa6d1ae"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/policy_stratification_scene.parquet",
+    "sha256": "8757379a44fa29d201663c20e3a1a2d7e5b341a5226ca8454357ccd4639ce670"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/robustness_curves_scene.parquet",
+    "sha256": "9a5882b291f86d1f79a6fab031c7a5baeecca1c6a596470d333b03b47a84988d"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/raw_candidates_full.parquet",
+    "sha256": "ecb7d836ae9b448d123f009b670016ce19d5be6386c2b597404a1a5774216127"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/raw_candidates_smoke.parquet",
+    "sha256": "d870303f6f3df1f1e4b8ef0ebf66e99fb178526ea7fefca4a6c754fff822da73"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/matched_cardinality_summary_full1000.parquet",
+    "sha256": "1e680647bf3231c0366b6838faecc5383de16b9c86d80bcfa178f3c8062775d9"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/source_composition_full1000.parquet",
+    "sha256": "8359ef0a03d8502d7301b677610871f91339efab555b77b854490de466d8bc0c"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/policy_by_command.parquet",
+    "sha256": "14523edd5c13e5f8da21560a1671bad2587a78f92b0719a3d8b4a5d2e95de126"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/nonfill_summary_full1000.parquet",
+    "sha256": "17a81ff4401a7205ffd198cdbf1562fa508e9912da4402486f3575ef6e83ac35"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/pool_geometry.parquet",
+    "sha256": "f4201e6f7944282d081fe1f6fab85cce7136ea35734932c17251b11b008bf9ed"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/policy_global.parquet",
+    "sha256": "ff73eb91b7bdca972c99619acba675bd8c664fd0104e0920e893ec85a564de93"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/pool_scene_contrastive.parquet",
+    "sha256": "b1a7db04fa9ae12e3e0bf439ea3e052078566b5d558fa42bddc13ab6c4991337"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/sample_count_scene.parquet",
+    "sha256": "07ccc6ab97d9c2258457cdc84669c3bc5dd43fc2ee52e33daa7d9028dd97d0de"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/source_composition_contrastive.parquet",
+    "sha256": "a433190068da077d280cdc3cc0414e1f42cf689148cbd9d3188b8379fb9e9d71"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/nonfill_summary_contrastive.parquet",
+    "sha256": "b68d42663b3098ebc6d94d76ed1d40e233b5c2bb27c6596bd2165c9495dee181"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/robustness_curves_full1000.parquet",
+    "sha256": "1dedc92895f249cda7ebf94f58f3df3cade7fb9971e569e6bd726e2b565561fb"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/qualified_summary_contrastive.parquet",
+    "sha256": "1e576b09172edd45f8a91d907f959ddc8bc9d0ded1000a4aa498973e0b94ebea"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/robustness_curves_contrastive.parquet",
+    "sha256": "9a995380bb65416d30a9b2147d899fa1f22e9da89709d22e94f4ea3daf42eefa"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/matched_cardinality_summary_contrastive.parquet",
+    "sha256": "f90314bc795877a92af679503b1311163c615b7d217baf23a8f2f435b21e16d2"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/candidates.parquet",
+    "sha256": "d39aa9424eef42f0e72468d9a347b742b0ac8e8041bd71b91b6523c0a60e8873"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/chain_gain_scene.parquet",
+    "sha256": "aaf3e9bc4246081b55ad3e389f428cf156dc4554ecd5a25085bc66206a36b922"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/pool_summary_contrastive.parquet",
+    "sha256": "07de99f8834a6a5395288d6125dac621377d6120b2477e54fd6c92216afe183f"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/pool_summary_full1000.parquet",
+    "sha256": "e7beb97c5694251ca4dfc1c6d5d678ff2305f271debeb4614d04c5ef5e67e49d"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/chain_evolution_scene.parquet",
+    "sha256": "adff4aacdc20bbe458d7ffe4634b2d64d816586847b4db1c9c2c1ea5e4b1b078"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/correlations.parquet",
+    "sha256": "2f14f25ef01116e4f106cb454cbe842a2a535664358ac5efbe685f0eca61da34"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/chain_evolution_summary.parquet",
+    "sha256": "e401cddae5e8ea394d955811d1dbefbe9ce44ad4dd44f5a82cd2f4ef018c037d"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/pool_scene_full1000.parquet",
+    "sha256": "1ab2a8518884d8cac992a31553d09c67544d5c1002a03aaec207746bc1ab931c"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/policy_by_IL_spread_quartile.parquet",
+    "sha256": "62eb05c7f28b40280d837fdbcfa7e09be9dfcce87356b7e0dd016bf187823256"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/unqualified_scene_summary_contrastive.parquet",
+    "sha256": "476824ee1f8d0d24e36d831e3b3c9db6f905f0e3d0bd95f83c008be88764f3b9"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/qualified_summary_full1000.parquet",
+    "sha256": "f58515c62da4c250324c635c2479f56c0cdd7870d4c2d1544fc5603b2c8eca4f"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/policy_by_GT_heading_tertile.parquet",
+    "sha256": "5b390e20fe659ae3081f6735b05746008092fcb7a53336ac59d6f96737d51bd4"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/unqualified_scene_summary_full1000.parquet",
+    "sha256": "599f88b2e5de833e236ecec3067fba1795f10b665d69cf89753de8585ce2750e"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v2/metrics/MTS_compression_bins.parquet",
+    "sha256": "a3c3c378306b3dfc0fb96c024dc68ac8be66c38f71501bed51c0023706aa2ccd"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/Fig-V3-7_Frontier_promotion_plot_data.csv",
+    "sha256": "8c18836a92c3ab1bfd5130edb3ad03a8ef0f0908cf78793bd069789bb3048896"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_gain_bootstrap.csv",
+    "sha256": "2894fa8402e7a75a7e859d28aed27c4c26a8dc62042bee3634f4306bd08b2e08"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/sft_conditional_pc_2903_training.csv",
+    "sha256": "482a4d41e45cca1a654efd9267f7d959cd504e7a9749c6791076f3f89011054a"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/A_eligibility_funnel.csv",
+    "sha256": "167ca2564e5ff619e7683bedeef60c426c94d5ed8627dce8b1bff25a13091d3d"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/grpo_pareto_2903_training.csv",
+    "sha256": "fd74725a79f586fe812d9af1f336d08f911d120b53c6cdebdff5c9cbae824ef6"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/grpo_old_pc_2903_training.csv",
+    "sha256": "eada05dfa01fc15af0236db54c48b722eac88fff6e792d56cd184cf0e7585cf8"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/Fig-V3-5_Micro_SFT_shift_plot_data.csv",
+    "sha256": "28cd2485e83f73a0cd046cdc6bfd244e653f011ac963b1b2329e5582e1079383"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/grpo_gt_distance_2903_training.csv",
+    "sha256": "87d37538fc701859018bc9b28f6de2a3dff3fcb77106484bf5af713ae0d804ec"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/B_frontier_bootstrap.csv",
+    "sha256": "041bbcc79150a73070d6fc8c7035c682d6ef05430127e4ca231ce8ecddacfb0c"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/sft_conditional_pc_1701_training.csv",
+    "sha256": "c8f8f448a498785bf7fdc61dc2a245871e2e2e6c0eb95aa7fc8a0fab5421af29"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/Fig-V3-1_Gate_order_plot_data.csv",
+    "sha256": "f6cb11e23ed63bde54d73565e2d8ee2028894ec687ca1d7ce57323846ea91567"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_seed_gain_means.csv",
+    "sha256": "1cdc1b6f5f705779e2befba55f02d4f1c131f57954723d3b1bc15d594f360bd6"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/grpo_gt_only_2903_training.csv",
+    "sha256": "158631713b37b74bdc8a60b5c399b15062bb95447dbc4920411dbee209957857"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/E_holdout_bootstrap.csv",
+    "sha256": "578944ff941c6abd8559475377463b7146f47aaec8126f9a270299788e2df2d0"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/sft_pareto_1701_training.csv",
+    "sha256": "61bd5abc652b1270b1d42185596dac57e7b5282c61fdfc7d910ffe23364af16d"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_holdout_scene.csv",
+    "sha256": "119122ee14c3a9c02f6cabf041d506ab4993a0f30ece5365f357be78a7be7f0d"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/D_matched_bootstrap.csv",
+    "sha256": "63ade5dda63db664d614c245a8e2c32d4a5070e3bbc19bfb90204ada6c8cc669"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/C_native_diffusion_loss.csv",
+    "sha256": "76cb7981116ec402e3ca23c98a9e1146bb92fa0ba868bac943792080e4a43375"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/sft_gt_distance_1701_training.csv",
+    "sha256": "cf18a2ea165a1c2f448623ec6afc233fb759585140405cb7c0ae6fa84542a7eb"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/B_key_results.csv",
+    "sha256": "35d3a7805cb4ad84bbdfd2acdf1dd07fdb49b7e9c0534155b535173597893db1"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/C_pair_results.csv",
+    "sha256": "d530b895a18be7815e6d0f3663c657edc44b6fff861b29858390c918f73fa6e3"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/Fig-V3-3_Matched_learnability_plot_data.csv",
+    "sha256": "c423ac181480a0244c5c1a455fc36ad2e4880fe13a52b0a519ae941b9112b346"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_seed_means.csv",
+    "sha256": "bc1c2047ada4eff0d619f814645400ca30026d85cb14f1bbafde3785b6406ccf"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/D_scene_paired_comparisons.csv",
+    "sha256": "e7b9b3d6a843a0281371340abc02542e927774fb0d1e24e6bc490ec78c635d5b"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/E_gain_bootstrap.csv",
+    "sha256": "bf10546432ae336872e6e0be765dfa8c2406e09ad6cdd1c417d0d1c31b76795d"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/grpo_score_1701_training.csv",
+    "sha256": "370a85c0f12a75cc0c54895d41586a12103a2641c32a503289de9bbc7d7f0a3b"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/D_candidate_gradients.csv",
+    "sha256": "8c9206b958a3b048eff504c175a214ab4efc0328c6f081f3b26065b996176264"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/E_holdout_scene.csv",
+    "sha256": "62ca3e8aebeffd36114673f5ab6b5cf21b7e1386421a2fbaecdd1aaf93a4aae0"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/S_actual_training_source_weights.csv",
+    "sha256": "098f7f28e62dc9fbd3306631e9b8f579b054c4120a1e43ab21eb3561754e2b05"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/grpo_conditional_pc_2903_training.csv",
+    "sha256": "e53238d213ab0cbac04d35522af6eeeb6c90b9f31299e964cbe793213f9753d7"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/A_original_V2_qualification.csv",
+    "sha256": "3e6ce7f33dcf2edcbcfc1d30eb9bb37aebe755eb547d0143c7e97e950862b22d"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/sft_pareto_2903_training.csv",
+    "sha256": "5a16c9622c886dd70e5ec7a1d6b1f54091527bad16de06aa7aeeb180e5723b9c"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/Fig-V3-4_Gradient_interference_plot_data.csv",
+    "sha256": "73bf9d6454a624052269a6ecef7dd8fb415ddc7b0f57efedc01c2a0abd31a79d"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/C_paired_bootstrap.csv",
+    "sha256": "55f55391a7e0da8caa058546c6c81200e2e694b502f6b47da97306b6b17452d1"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/Fig-V3-2_Quality_compatibility_frontier_plot_data.csv",
+    "sha256": "45a0ee879ae705c8fb8b756fb815d49fd864dc3e93b280f1123963b2f019f5de"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_training_safety_dynamics.csv",
+    "sha256": "bd3bced174ddc35313adfa4e829b0e06a3b61a6019a783c9da1092ed4414891a"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/E_gain_scene.csv",
+    "sha256": "5306b79fbfc96b15aa78bb4b5bbc5d9c676ff3ec4040b894646215f19c53b3df"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/A_metric_discreteness.csv",
+    "sha256": "93f264c1f509c2a69ee02614b05bb60f503bcd97cc2ac6b8995ba09ceea8a6b5"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/grpo_old_pc_1701_training.csv",
+    "sha256": "343485c75fb03b7c6bd79ceace1371ab1645623e3b65b850b9218ed4ced40c5f"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/A_pure_gate_order.csv",
+    "sha256": "0a83cce2aec90a01f865cf713018485dcf02df243e77e4bd6ee37045db1b627b"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/S_training_PIA_scene_paired.csv",
+    "sha256": "6268e21b5baa502b203d334559c84dfb680a8da99195c2f065e654d339886e0b"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/S_progressive_support_retention.csv",
+    "sha256": "bc3605b77adecb6b1f07a78c940b3b13265209dc8bba5bfac8f4e68a140be1f3"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/D_matched_gradients.csv",
+    "sha256": "ab78948e69e7dafd8908718e80338e6c5bffeac8660ad505448da1316cc4ab7b"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/A_rescued_candidates.csv",
+    "sha256": "b4e28d47a6c378bf1c8ff5fd08fabd62178294cb551f4eb9f3f898919794feb2"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/D_method_bootstrap.csv",
+    "sha256": "42fd175c98d339c55dfad20f0fa0748c7fa89d1a5cd52288d277a4411643b72e"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_final_paired.csv",
+    "sha256": "c29ad4a2c2196517157922b9d4817b4786198ec760c1f88a6bae50cc36ab7899"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/A_selected_source_counts.csv",
+    "sha256": "4da5a920cc71d001d28b2f8e0eb8858aa00bba8cdf41c89a027be5848fe91bbf"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/sft_score_2903_training.csv",
+    "sha256": "f4c993e82c73c0412e0d2348b48cc9712c14b180a58a51ab8626488f811fc475"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/A_continuous_pool_metrics.csv",
+    "sha256": "c29cf2b878287dfea812cc1c2ce88d1a36998ef695143fa51bd87f297ff268b5"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/A_scene_paired_bootstrap.csv",
+    "sha256": "1732e1b15076b443a838488dcb5eddbf3f224659f9e64002931860ec7d449a73"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/G_promotion_vs_null.csv",
+    "sha256": "46f15ba5b8fc8380db032e07b3773f9cc8c1b69779a85ac4c797b096ce59537e"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/B_boundary_headroom.csv",
+    "sha256": "78c1aebb2e006e9348bd9692c6fcfa9684afad97e18ae12796069bbeddae5fb8"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/G_promotion_bootstrap.csv",
+    "sha256": "dae1ff318b041a66b990ada31e9e53a105fd3fbf760f11c6e39bec6bc30e2f5e"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/A_pool_summary.csv",
+    "sha256": "a2bb6d886b3658351efd48f79e418e63381e536607296891c9ead4012319308a"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/S_log_cluster_final_comparisons.csv",
+    "sha256": "9d829cfeb0913451627e8802fe3f30e41940fbf385db2dd7662c8fd174293635"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/grpo_pareto_1701_training.csv",
+    "sha256": "e6ed053e565ea8c6681c13767a20344cbdaa1bc6b3f9bea2f599eff57e732ea5"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_seed_averaged_scene.csv",
+    "sha256": "92d1d105b8608aeac8add8306b775634ca628fa2cc50ee4442fb763c0159b1b8"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/Fig-V3-6_GRPO_gain_safety_plot_data.csv",
+    "sha256": "54f74f5c54446f9f345d8dda59736105b4f33b9c83dbd8804524ba4b80517c74"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/A_quality_only_overlap.csv",
+    "sha256": "9f0d570d47366f6ca90a83cd2bb33783dd20a431ee274ad06fff14eb28c4d885"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/sft_score_1701_training.csv",
+    "sha256": "57c6ad62d92803e1821461cad6248b916847c51945d17d4fabc3c798cbff4763"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/grpo_conditional_pc_1701_training.csv",
+    "sha256": "2c188b9b82df1349f3d4c94979f6a7e9ce74ba6752a03141602690aebe4508db"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/D_region_summary.csv",
+    "sha256": "04215c16fc1e418b41e4fab195b79e95a5f69c2464a963844f1c36cdbc6c326e"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/grpo_gt_distance_1701_training.csv",
+    "sha256": "845eb434865842d9314a5dbd4e9623ff290b79b71fabbfc52d9ee90d5ae2f031"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/G_unchanged_policy_null.csv",
+    "sha256": "41cfab063b88c83d2dfab28ddf45cd952978605ff9ecf75aa1db78107f227635"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/grpo_gt_only_1701_training.csv",
+    "sha256": "90cee87b9845c9c090e4b264cfb7594cf8114e7086ee6387366dde2b39c4537d"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/S_all_fixed_snapshot_paired.csv",
+    "sha256": "ee05cb9367077bbb6da0b790a653ffe5732cdd82f6072e06ebc13fa6fe0ff647"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/E_seed_averaged_scene.csv",
+    "sha256": "64306f30ab4b4c3091b4cc99ba77c1c79e6385ca1b49925a73141a399c10bbcb"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_efficiency_paired.csv",
+    "sha256": "d032c19cc1fd74d6d0693e0bf0e5125b2fe33e5ab893631e31c1ea577f9044a3"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/S_GT_policy_distance_scene_correlations.csv",
+    "sha256": "ecb31df1721ad2cfc8a60891da1f805ab3b3e56786d62e3659e6fb686338b58b"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/sft_gt_distance_2903_training.csv",
+    "sha256": "21e97566e33afdd9fb9eb364ff3e8197e0331fd4331239041afd3402d8e0523c"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/A_pool_scene.csv",
+    "sha256": "3858208b07c121c977c0bbf238cd3121642096fbe4d9860e0619061f2f303a5c"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/E_seed_means.csv",
+    "sha256": "0a2cef0ce6aebd33e7244fd468442d8a37c728f5632e94f6a8078e86b52bd592"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/C_pair_manifest.csv",
+    "sha256": "42d8c3b95e2e3ac89869f45a6d08140dcd851a97f7b5273c34c4c7694954af7a"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/E_final_paired.csv",
+    "sha256": "ef911e758a482cbd130c0ec2f33f042796370c9cec73e390d7130e9b15351cc3"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_holdout_bootstrap.csv",
+    "sha256": "bc3a7c4226658ea6cbc16a34e518f28942f0cc9141ec27a025adb1ae8fcdd802"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/C_fixed_effects.csv",
+    "sha256": "bf3fbd5f21eabad92634434407f60531b315f999a671d981ec8f81b7c66ee3b2"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/sft_old_pc_1701_training.csv",
+    "sha256": "95384f064f0588d6db3f0d5bf76c485159753e3e9f0e2e11f69e9daa04cf7c60"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_learning_efficiency_scene.csv",
+    "sha256": "2ecaeb0ef4f48da33a184b016473b8ce92b023b40a0d098133014e804ba7ba11"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/sft_gt_only_2903_training.csv",
+    "sha256": "d98296134f6c2dc004890316e5afd2967ab2d7be559d43aadb5d7bbd7a9b94c9"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/sft_old_pc_2903_training.csv",
+    "sha256": "875f6fbb0e90ecb47cff5048cc1ecc323bf327f42f968d283e1e3d05893dfc7d"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/G_scene_promotion.csv",
+    "sha256": "07546523cce4340a590961c4d9ae392361c58daa5237c04c3e151483fb40083d"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/grpo_score_2903_training.csv",
+    "sha256": "90d371fb2ed09eb9ab4cac12c2836821839df20f058b5eccc91a3f58ce455795"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_gain_scene.csv",
+    "sha256": "7abd821f2d6e8ab8bb3b9bc45ef9695bde968a840b378a30154d0e3a4520891a"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/sft_gt_only_1701_training.csv",
+    "sha256": "170b67a5faaa228de1b3afce5f98cfaad25e9b02be7aa55965fd4978e88a045a"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/D_method_scene.csv",
+    "sha256": "7fdf853bf8f1c1ed727b60bfeba48919985032db741e6edf718039f88b6dcc11"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/B_frontier_scene.csv",
+    "sha256": "57d8c67d30e1bd2f6a15ca6c4745dc019d5c18c588359a90378187874a5a02b8"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_rollouts_gt_distance_2903.parquet",
+    "sha256": "c89abec6e0f47dc2237d0f7250d7978e81bba0a5a1fc75c68bd6ec7bca2f317e"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/G_promoted_candidates.parquet",
+    "sha256": "e7df6ca17e74de877a634e52412481ab52058111ef18195a5b46a7215bab45ef"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_rollouts_old_pc_1701.parquet",
+    "sha256": "729da7daa9218e673f2c0d0dcf0cc7c24c9d447b50b97fbefab8419cb4fea0fa"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_rollouts_score_2903.parquet",
+    "sha256": "458b041a767c2292ec3f17e62665166f490756bbb47927e3b15193fcccc6c0bb"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_rollouts_conditional_pc_1701.parquet",
+    "sha256": "12c7f7bd5aeb2efa0dbf6cb38e5d4cea6c127f1b32ee3471a1d91e40c347e656"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_rollouts_conditional_pc_2903.parquet",
+    "sha256": "370c94f30367fafffe433f01c4c8f4412d939d1e206a1d0c50bdf54460b08bd9"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_rollouts_old_pc_2903.parquet",
+    "sha256": "68678f20df92a055091276c6af9868382065c087a1eaff5b66a92beb1fd0698d"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_rollouts_gt_only_1701.parquet",
+    "sha256": "bcbc6ce5a2d218867722aa49c2b07cdf93503bbdda621656c02fc8d1bc16f396"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/A_rescued_dominators.parquet",
+    "sha256": "697db35a011159ddcda658a89915576c3fe33ee6c88012252df1adbaadb88dc6"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_rollouts_pareto_1701.parquet",
+    "sha256": "0d0a73fdd4c1292cdbe35ee117e0ddf9525826ef084cd2d625d30ad9aab99245"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/C_query_manifest.parquet",
+    "sha256": "1311c09fd721c199f2f156c071d0b4760f4b499ec9d1ea1f0877ab5172181b36"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/C_candidate_measurements.parquet",
+    "sha256": "486c1ffd47705effa9fd95e4539c44397d173a165b56fcc1b0a9dfe78a06cb74"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_rollouts_score_1701.parquet",
+    "sha256": "b944a521d00f9e62abeea48cec5bdccaea6344739d5128d63b3a6c50c3be4b4a"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_rollouts_gt_distance_1701.parquet",
+    "sha256": "d5b03faac0c8670f140a37acfa717730d9b1c28c753e39e92dff3d3119147692"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_rollouts_pareto_2903.parquet",
+    "sha256": "af685246268cef6b0d7d037509f830ce14eca9d9d4ec40366b01cb16270c9b8f"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/A_threshold_sensitivity.parquet",
+    "sha256": "38b38f3fa12636bb33c60f7bf5936d29ed0b9440553505ba52839d660c99b4d2"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/F_rollouts_gt_only_2903.parquet",
+    "sha256": "891a85c9b885d8aa91425886106144622c111ba079adaad566eb604ec94b1f41"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/outputs/pc_mts_diagnostics_v3/metrics/A_raw_candidates.parquet",
+    "sha256": "c263251de47bc2188b79633d4d81f48cf658f6d56f04f296e993135f03cecf5e"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/reports/PC_MTS_V3_FORMAL_STAGE3_GRPO_RERUN_20260913.md",
+    "sha256": "509150ffc3dbbdde0f67ff55e1b9d7aacece4147d0d4a7ccda1abe6d55a36167"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/reports/PC_MTS_POLICY_DISTRIBUTION_DIAGNOSTICS_20260913.md",
+    "sha256": "88393d1d8f7b739bf49f4740a839f2861ee11c2c7ddd2dc05f32dd12f67c6142"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/reports/PC_MTS_POLICY_DIAGNOSTICS_V3_20260913.md",
+    "sha256": "edec914b4022946229e5cff52e0fb5622524950bee575516bd981e8d2a23f9ca"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/reports/PC_MTS_POLICY_DIAGNOSTICS_V2_20260913.md",
+    "sha256": "75141d80ee3ddccc58b93c8e0f3f1feb297da205ed0e2cd193c48e37b5c3fc40"
+  },
+  {
+    "path": "/mnt/project/VLA-AD/reports/PC_MTS_GRPO_MASS_AUDIT_1000_20260913.md",
+    "sha256": "016e2fccfec9d6afb7dd47933f5480d3c197fc6de16e70c1cd1d3642983d049b"
+  }
+]

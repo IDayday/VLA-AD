@@ -1,0 +1,77 @@
+{
+  "status": "PASS",
+  "protocol_hash": "86be187b0a1c3b4a95257da0d35891cd78119817ca5f06e4000a69be70f6b605",
+  "host": "training-rl-zt4-worker-0",
+  "torch_version": "2.5.1+cu124",
+  "model": "il_sft_seed1701_step0512",
+  "count": 919,
+  "baseline_cache_parity": [
+    {
+      "token": "23e39302332152b2",
+      "protocol": "eval",
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "23e39302332152b2",
+      "protocol": "native_grpo",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "411a748874035630",
+      "protocol": "eval",
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "411a748874035630",
+      "protocol": "native_grpo",
+      "max_abs_error": 3.814697265625e-06
+    }
+  ],
+  "multiscene_parity": [
+    {
+      "token": "23e39302332152b2",
+      "protocol": "eval",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "411a748874035630",
+      "protocol": "eval",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "protocol": "eval",
+      "max_abs_error": 4.291534423828125e-06
+    },
+    {
+      "token": "40808270ce205b83",
+      "protocol": "eval",
+      "max_abs_error": 7.62939453125e-06
+    },
+    {
+      "token": "23e39302332152b2",
+      "protocol": "native_grpo",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "411a748874035630",
+      "protocol": "native_grpo",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "protocol": "native_grpo",
+      "max_abs_error": 4.76837158203125e-06
+    },
+    {
+      "token": "40808270ce205b83",
+      "protocol": "native_grpo",
+      "max_abs_error": 7.62939453125e-06
+    }
+  ],
+  "state_before": "49c39cb7737dcbb7988df02fedad053ae0170fd0ccd13d30d7512536b53f591e",
+  "state_after": "49c39cb7737dcbb7988df02fedad053ae0170fd0ccd13d30d7512536b53f591e",
+  "checkpoint_hash": "c5df9ec5f0c9ad3af319ce9795b5809aaac09c34f30c579b9ee3b1b7a9ad5cb5",
+  "seconds": 711.0233917236328,
+  "peak_gpu_bytes": 10538819072
+}

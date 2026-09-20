@@ -1,0 +1,189 @@
+{
+  "status": "PASS",
+  "model": "psi_seed2903_step0128",
+  "protocol_hash": "86be187b0a1c3b4a95257da0d35891cd78119817ca5f06e4000a69be70f6b605",
+  "checkpoint_hash": "bd00b3683da7ee44b00eb8dd242d19739bd2eec907bdb81f64c59448e11585f1",
+  "runtime": "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/official_recogdrive/navsim/agents/recogdrive/recogdrive_diffusion_planner.py",
+  "runtime_hash": "c349bf196611034ebcdfb3dd30fe02e1ac8ee4fc6a76d65934b70dbf583d994a",
+  "checks": [
+    {
+      "token": "23e39302332152b2",
+      "native_entry_vs_extraction_max_abs": 0.0,
+      "chain_max_abs": 0.0,
+      "eval_repeat_max_abs": 0.0,
+      "unique_members": 16
+    },
+    {
+      "token": "411a748874035630",
+      "native_entry_vs_extraction_max_abs": 0.0,
+      "chain_max_abs": 0.0,
+      "eval_repeat_max_abs": 0.0,
+      "unique_members": 16
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "native_entry_vs_extraction_max_abs": 0.0,
+      "chain_max_abs": 0.0,
+      "eval_repeat_max_abs": 0.0,
+      "unique_members": 16
+    },
+    {
+      "token": "40808270ce205b83",
+      "native_entry_vs_extraction_max_abs": 0.0,
+      "chain_max_abs": 0.0,
+      "eval_repeat_max_abs": 0.0,
+      "unique_members": 16
+    }
+  ],
+  "state_before": "20be67f5c6b8f03f0fcec31c2552168933aae1182b05444047d13df5f9c46cdf",
+  "state_after": "20be67f5c6b8f03f0fcec31c2552168933aae1182b05444047d13df5f9c46cdf",
+  "optimizer_updates": 0,
+  "group_size": 16,
+  "steps": 5,
+  "per_step_std": [
+    {
+      "timestep": 80,
+      "std_min": 0.7377548813819885,
+      "std_max": 0.7377548813819885
+    },
+    {
+      "timestep": 60,
+      "std_min": 0.5139675140380859,
+      "std_max": 0.5139675140380859
+    },
+    {
+      "timestep": 40,
+      "std_min": 0.2951086163520813,
+      "std_max": 0.2951086163520813
+    },
+    {
+      "timestep": 20,
+      "std_min": 0.03999999910593033,
+      "std_max": 0.03999999910593033
+    },
+    {
+      "timestep": 0,
+      "std_min": 0.03999999910593033,
+      "std_max": 0.03999999910593033
+    }
+  ],
+  "eval_std_floor": 0.0001,
+  "native_std_floor": 0.04,
+  "eval_noise_clip": 1.0,
+  "native_noise_clip": 5.0,
+  "logprob_std_floor": 0.1,
+  "dropout": [
+    {
+      "name": "model.transformer_blocks.0.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.1.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.2.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.3.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.4.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.5.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.6.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.7.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.8.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.9.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.10.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.11.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.12.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.13.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.14.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "model.transformer_blocks.15.attn.to_out.1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "his_traj_encoder.drop1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "his_traj_encoder.drop2",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "ego_status_encoder.drop1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "ego_status_encoder.drop2",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "action_decoder.drop1",
+      "p": 0.0,
+      "training": true
+    },
+    {
+      "name": "action_decoder.drop2",
+      "p": 0.0,
+      "training": true
+    }
+  ],
+  "capture": "actual forward entry interrupted after current-policy sample_chain; before reward/advantage/optimizer",
+  "state": "train with native frozen-module eval; no mutable BN"
+}

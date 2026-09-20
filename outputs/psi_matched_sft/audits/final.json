@@ -1,0 +1,16 @@
+{
+  "status": "PASS",
+  "protocol_hash": "86be187b0a1c3b4a95257da0d35891cd78119817ca5f06e4000a69be70f6b605",
+  "train_scenes": 3072,
+  "holdout_scenes": 5000,
+  "training_runs": 8,
+  "seed_count": 2,
+  "updates_per_run": 512,
+  "identical_scene_order_within_seed": true,
+  "old_results_unchanged": true,
+  "reused_baseline_files_verified": 10000,
+  "new_cache_files_verified": 52608,
+  "no_GRPO_updates": true,
+  "missing_scenes": 0,
+  "final_model_scene_protocol_cells": 80000
+}

@@ -1,0 +1,55 @@
+{
+  "status": "PASS",
+  "host": "training-vla-zt3-worker-0",
+  "torch_version": "2.5.1+cu124",
+  "checks": [
+    {
+      "token": "23e39302332152b2",
+      "protocol": "eval",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "411a748874035630",
+      "protocol": "eval",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "protocol": "eval",
+      "max_abs_error": 4.291534423828125e-06
+    },
+    {
+      "token": "40808270ce205b83",
+      "protocol": "eval",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "23e39302332152b2",
+      "protocol": "native_grpo",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "411a748874035630",
+      "protocol": "native_grpo",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "protocol": "native_grpo",
+      "max_abs_error": 4.76837158203125e-06
+    },
+    {
+      "token": "40808270ce205b83",
+      "protocol": "native_grpo",
+      "max_abs_error": 7.62939453125e-06
+    },
+    {
+      "protocol": "eval",
+      "cache_parity_error": 3.814697265625e-06
+    },
+    {
+      "protocol": "native_grpo",
+      "cache_parity_error": 5.7220458984375e-06
+    }
+  ]
+}

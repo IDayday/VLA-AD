@@ -18,9 +18,13 @@ def main():
     gt=gt.groupby(['split','method','token'],as_index=False)[['native_epsilon_loss','Hit64_0p5','nearest_teacher_ADE']].mean()
     gt=gt.groupby(['split','method']).agg(loss_scenes=('native_epsilon_loss','count'),GT_epsilon_MSE=('native_epsilon_loss','mean'),GT_Hit64=('Hit64_0p5','mean'),GT_nearest_ADE=('nearest_teacher_ADE','mean')).reset_index()
     seeds=pd.read_csv(OUT/'metrics/summary_by_seed.csv');seeds=seeds[(seeds.split=='holdout')&(seeds.step==512)][['method','seed','protocol','mean_PDMS_mean','feasible_rate_mean','centroid_displacement_mean','pairwise_ADE64_mean']]
+    interpretation=OUT/'report/interpretation.md'
+    interpretation=interpretation.read_text() if interpretation.exists() else '详细结果解读待完成最终人工复核。'
     text=f'''# PSI、Score、Pareto与GT-only的等预算IL续训实验
 
 状态：实际训练、采样、NAVSIM评分及审计完成。结论仅针对本次预算与共享候选库；不代表完整训练性能，也不是 downstream GRPO 更新实验。
+
+{interpretation}
 
 ## 1. 这次真正控制了什么
 
@@ -50,7 +54,7 @@ def main():
 
 PSI score = PDMS + 0.3(core-reference core) - 0.5 slow violation - 0.2 tradeoff violation + 0.2 Pareto-front indicator。core=(5EP+5TTC+2Comfort)/12。score的0.02 band不是纯PDMS的2分band。
 
-三种候选方法统一使用原PSI权重函数：best质量0.5、被选GT质量0.2、其他目标共享0.3；GT未被选则其0.2给best；无其他目标时0.3也给best；单目标权重1。不同选集会产生不同实际GT质量，这是selection bundle的组成部分，不能声称实际GT比例完全相同。目标描述符均值/方差只从3072训练场景计算。
+三种候选方法统一使用原PSI权重函数：best权重0.5、被选GT权重0.2、其他目标共享0.3；GT未被选则其0.2给best；无其他目标时0.3也给best；单目标权重1。不同选集会产生不同实际GT监督比例，这是selection bundle的组成部分，不能声称实际GT比例完全相同。目标描述符均值/方差只从3072训练场景计算。
 
 **数据恢复限制**：历史PSI完整AWAC raw库已缺失，只有历史最终support index仍在。因此本次是原PSI选择机制在共享可恢复raw库上的前瞻受控对照，不能冒称重新训练了原始历史PSI数据。
 
@@ -68,7 +72,15 @@ PSI score = PDMS + 0.3(core-reference core) - 0.5 slow violation - 0.2 tradeoff 
 
 先在场景内平均64次采样，再对5000场景等权；最后平均两训练seed。Pairwise ADE64为64条两两XY-ADE；centroid displacement为同sampler下相对初始IL的平均轨迹中心ADE。min/max PDMS是每真实G16内min/max后平均，不是全数据极值。联合可行定义为NC/DAC/TTC/DDC全1。
 
+沿用原诊断代码的Spread_AUC定义：每个G16内、每个未来时刻计算sqrt(var(x)+var(y))（样本方差ddof=1），对8个时刻取均值，再平均4组；它是离散等权spread摘要，不是额外拟合连续曲线的积分。单位为米。
+
 `metrics/summary.csv`与`summary_denominators.csv`；原始场景/组表为`scene_metrics.parquet`与`group16_metrics.parquet`。
+
+质量分量及组内尾部（同一5000场景、同一两seed平均；分量均为0–100）：
+
+{md(hold[['method','protocol','EP','NC','DAC','TTC','DDC','Comfort','std_PDMS','CVaR25_PDMS','Hit8']])}
+
+CVaR25为每个真实G16中最低4条PDMS的均值，再场景等权；Hit8为真实G16的固定连续8条子组中至少一条同时满足联合可行与PDMS≥初始IL普通eval场景均分+1的比例。阈值在所有方法/采样器中一致；超过100分的阈值保留在分母，不事后换阈值。
 
 ## 5. PSI相对三个微调baseline的场景配对差
 
@@ -96,14 +108,17 @@ PSI score = PDMS + 0.3(core-reference core) - 0.5 slow violation - 0.2 tradeoff 
 
 训练loss降低、输出覆盖增加、可行高质量样本增加是三个不同检验。即使noise-MSE更低，64次没采到也只能说明本采样预算和邻域下低覆盖，不能断言永远生成不了。`target_presentations.parquet`记录目标究竟被实际抽到训练多少次，零次不伪称学过。
 
+额外的训练后描述性审计 `parent_absorption_summary.csv` 在预先固定的512个训练probe场景中，逐parent连接真实训练ledger，只对实际至少被监督一次的parent报告64次输出零命中率，并同时给出场景等权及parent计数版本。该补充审计在训练后增加，不冒称预注册主终点；未改变目标、训练、场景或checkpoint选择。
+
 ## 8. 为什么必须分开普通eval和GRPO采样
 
 两者同一权重，但原实现采样floor/clip不同：eval floor0.0001、noise clip±1；native GRPO floor0.04、clip±5；logprob floor0.1是独立参数。在当前legacy归一化下，native最后一步0.04的噪声floor对应约1.3348m的X标准差、0.84m的Y标准差（裁剪前）；这也解释了为何0.5m/8点ADE邻域中的有限次命中可能极低。GRPO组内宽度与尾部风险因此不能从普通eval宽度直接外推。这里只调用真实forward_grpo采样、在reward/advantage/optimizer前截取；没有GRPO权重更新。G16是统一诊断group，历史成功训练原本用G8，不冒称重放历史G8更新。
 
 ## 9. 证据范围与暂不能成立的因果表述
 
-- SUPPORTED：本轮直接干预了相同IL初始化之后的监督选择，预算、loss、网络和随机流一致；因此可讨论本次selection bundle对SFT输出的影响。
+- 受控干预范围：本轮直接改变相同IL初始化之后的监督选择，预算、loss、网络和随机流一致；因此可讨论本次selection bundle对SFT输出的影响。实验设计通过审计本身并不等于PSI优越性得到支持。
 - 不得把结果分解成“单独diversity门槛”“单独quality band”“单独目标数量”的因果贡献：这些在PSI bundle中同时不同；需后续消融才能拆分。
+- Pairwise ADE和centroid displacement是轨迹几何统计；增大本身不能证明产生了新的驾驶语义模式，也不能证明新增行为安全或有用。
 - UNTESTED：downstream GRPO训练是否因此更稳/收益更高。本轮只测native GRPO rollout分布，未做GRPO更新。
 - UNTESTED：这套方法是否在完整训练规模和独立Navtest优于所有baseline，或是否具有普遍必要性。两seed、3072训练场景的受控结果不能替代正式规模复验。
 - 最终支持/反对PSI的定量判定应同时读取第4–7节，不允许因负结果改阈值、换scene或按得分挑snapshot。

@@ -1,0 +1,30 @@
+{
+  "status": "COMPLETE",
+  "branch": "analysis/psi-matched-sft-20260920",
+  "actual_parent_commit": "a6ed0fb6decc974b047bd01bb7a13857d77dfba5",
+  "protocol_hash": "86be187b0a1c3b4a95257da0d35891cd78119817ca5f06e4000a69be70f6b605",
+  "train_scenes": 3072,
+  "heldout_scenes": 5000,
+  "train_probes": 512,
+  "training_seeds": [
+    1701,
+    2903
+  ],
+  "SFT_updates_per_run": 512,
+  "SFT_runs": 8,
+  "GRPO_updates": 0,
+  "final_eval_rollouts_per_scene_per_sampler": 64,
+  "final_eval_samplers": [
+    "eval",
+    "native_grpo"
+  ],
+  "final_eval_group_size": 16,
+  "new_rollouts_scored_including_probes_and_early": 6733824,
+  "missing_scenes": 0,
+  "scoring_errors": 0,
+  "primary_necessity_verdict": "NOT_SUPPORTED",
+  "historical_original_raw_bank": "MISSING",
+  "large_weights_and_caches_excluded_from_git": true,
+  "report_path": "reports/PSI_MATCHED_SFT_20260920.md",
+  "timestamp_utc": "2026-09-20T19:47:41.290104+00:00"
+}

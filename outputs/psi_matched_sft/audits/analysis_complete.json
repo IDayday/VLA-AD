@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "protocol_hash": "86be187b0a1c3b4a95257da0d35891cd78119817ca5f06e4000a69be70f6b605",
+  "scene_rows": 115216,
+  "group_rows": 460864,
+  "teacher_rows": 1050352,
+  "bootstrap_replicates": 3000,
+  "seed_count": 2,
+  "primary_denominator": 5000
+}

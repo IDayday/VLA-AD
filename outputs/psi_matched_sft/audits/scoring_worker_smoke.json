@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "results": [
+    {
+      "status": "OK",
+      "source": "/mnt/project/VLA-AD-worktrees/psi-matched-sft-20260920/outputs/psi_matched_sft/cache/rollouts/official_il/b4acec64161d5ef1.npz"
+    },
+    {
+      "status": "OK",
+      "source": "/mnt/project/VLA-AD-worktrees/psi-matched-sft-20260920/outputs/psi_matched_sft/cache/rollouts/official_il/46003b81ab1a5229.npz"
+    }
+  ]
+}

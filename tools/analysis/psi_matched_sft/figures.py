@@ -29,15 +29,21 @@ def main():
             vals=g.mean_difference.to_numpy()*factor;lo=g.ci_low.to_numpy()*factor;hi=g.ci_high.to_numpy()*factor
             ax.errorbar(vals,range(3),xerr=[vals-lo,hi-vals],fmt='o',color=COLORS['psi'],capsize=4);ax.axvline(0,color='grey',ls='--');ax.set_yticks(range(3),['GT-only','Score','Pareto']);ax.set_title(pr+' / '+label);ax.grid(alpha=.2)
     finish(fig,'Fig2_scene_paired_differences',comp)
-    tf=pd.read_parquet(OUT/'metrics/teacher_scene_metrics.parquet');tf=tf[(tf.protocol=='eval')&((tf.step==512)|(tf.method=='official_il'))&(tf.teacher_origin=='psi')&(tf.kind=='NON_GT')]
+    alltf=pd.read_parquet(OUT/'metrics/teacher_scene_metrics.parquet')
+    alltf=alltf[(alltf.protocol=='eval')&((alltf.step==512)|(alltf.method=='official_il'))]
+    tf=alltf[(alltf.teacher_origin=='psi')&(alltf.kind=='NON_GT')]
     # First average seeds within a scene; then average scenes. Equal-scene comparisons.
     t=tf.groupby(['split','method','token'],as_index=False)[['native_epsilon_loss','Hit64_0p5','nearest_teacher_ADE']].mean()
-    fig,axs=plt.subplots(2,3,figsize=(13,7))
+    gt=alltf[(alltf.teacher_origin=='il_sft')&(alltf.kind=='GT')]
+    gt=gt.groupby(['split','method','token'],as_index=False)[['native_epsilon_loss','Hit64_0p5','nearest_teacher_ADE']].mean()
+    fig,axs=plt.subplots(2,4,figsize=(17,8))
     for i,split in enumerate(['train','holdout']):
-        for j,(metric,label,scale) in enumerate([('native_epsilon_loss','Common PSI teacher epsilon MSE',1),('Hit64_0p5','Common PSI teacher Hit64 @ 0.5m (%)',100),('nearest_teacher_ADE','Nearest sampled trajectory ADE (m)',1)]):
-            g=t[t.split==split].groupby('method')[metric].mean().reindex(methods)*scale;ax=axs[i,j]
+        for j,(data,metric,label,scale) in enumerate([(t,'native_epsilon_loss','Common PSI teacher epsilon MSE',1),(t,'Hit64_0p5','Common PSI teacher Hit64 @ 0.5m (%)',100),(gt,'native_epsilon_loss','Common GT epsilon MSE',1),(gt,'Hit64_0p5','Common GT Hit64 @ 0.5m (%)',100)]):
+            g=data[data.split==split].groupby('method')[metric].mean().reindex(methods)*scale;ax=axs[i,j]
             ax.bar(range(5),g,color=[COLORS[m] for m in methods]);ax.set_xticks(range(5),['IL','GT SFT','Score','Pareto','PSI'],rotation=30);ax.set_title(split+' / '+label);ax.grid(axis='y',alpha=.2)
-    finish(fig,'Fig3_common_supervision_absorption',t)
+    fig.suptitle('Candidate absorption and GT retention: identical targets for every model',y=1.02)
+    fig.text(.5,-.015,'Common PSI: train 492, holdout 4728 scenes (943 loss probes). GT: train 512, holdout 5000 (1000 loss probes).',ha='center',fontsize=10)
+    finish(fig,'Fig3_common_supervision_absorption',pd.concat([t.assign(target_set='common_PSI_non_GT'),gt.assign(target_set='common_GT')],ignore_index=True))
     ev=pd.read_csv(OUT/'metrics/matched1000_evolution.csv');fig,axs=plt.subplots(2,3,figsize=(13,7))
     for i,pr in enumerate(['eval','native_grpo']):
         for j,(metric,label,scale) in enumerate([('mean_PDMS','Mean PDMS',1),('feasible_rate','Feasible rate (%)',100),('centroid_displacement','Centroid displacement (m)',1)]):
@@ -47,7 +53,9 @@ def main():
                     g=ev[(ev.method==method)&(ev.seed==r)&(ev.protocol==pr)].sort_values('step');ax.plot([0]+list(g.step),np.r_[base,g[metric]]*scale,color=COLORS[method],alpha=.55,lw=1,ls='-' if r==1701 else '--')
                 ax.plot([],[],color=COLORS[method],label=LABELS[method])
             ax.set_title(pr+' / '+label);ax.set_xlabel('SFT optimizer updates');ax.grid(alpha=.2)
-    axs[0,0].legend(fontsize=8);finish(fig,'Fig4_fixed1000_training_evolution',ev)
+    axs[0,0].legend(fontsize=8)
+    fig.suptitle('Same frozen 1000 scenes | solid: seed 1701; dashed: seed 2903 | fixed snapshots',y=1.02)
+    finish(fig,'Fig4_fixed1000_training_evolution',ev)
     sf=pd.read_parquet(OUT/'metrics/scene_metrics.parquet');sf=sf[(sf.split=='holdout')&((sf.step==512)|(sf.method=='official_il'))]
     ecdf=sf.groupby(['token','method','protocol'],as_index=False)[['pairwise_ADE64','centroid_displacement']].mean()
     fig,axs=plt.subplots(2,2,figsize=(11,8))

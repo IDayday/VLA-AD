@@ -1,0 +1,12 @@
+{
+  "status": "PASS",
+  "cells": 10000,
+  "max_errors": {
+    "pairwise_ADE64": 0.0,
+    "centroid_displacement": 0.0,
+    "mean_PDMS": 0.0,
+    "feasible_rate": 0.0,
+    "min_PDMS": 0.0,
+    "max_PDMS": 0.0
+  }
+}

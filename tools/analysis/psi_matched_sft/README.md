@@ -22,6 +22,10 @@ Execution order:
 4. `orchestrate.py` waits for preparations, trains eight runs, evaluates fixed
    checkpoints using four disjoint server shards and persistent NAVSIM scoring.
 5. `finalize.py` waits for completion, then analyzes, plots, audits and reports.
+6. `parent_absorption.py` adds an explicitly descriptive post-training audit of
+   actually presented parents on the previously frozen 512 training probes.
+   Re-run `report.py` after placing the reviewed quantitative interpretation in
+   `outputs/psi_matched_sft/report/interpretation.md`.
 
 `multiscene.py` batches four scenes with four independent G16 groups each.
 Every group retains its original random stream. Per-host parity must pass
@@ -36,3 +40,9 @@ zero hits. Negative results never change thresholds, scenes or checkpoint choice
 
 Large local checkpoints/features/rollouts are excluded from version control.
 Published target tables retain actual trajectories, source hashes and parent IDs.
+
+Primary figures have CSV, PNG, PDF and SVG forms. `selected_source_composition.csv`
+separates unique-parent counts from actual intended supervision weight. PSI changes
+the target-count/quality/diversity/source bundle; this experiment does not isolate
+one of those factors as the sole cause of a result. A sampler diagnostic is not a
+downstream GRPO training intervention.

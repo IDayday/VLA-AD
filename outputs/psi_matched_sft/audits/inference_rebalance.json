@@ -1,0 +1,8 @@
+{
+  "reason": "Measured inference throughput differs across hosts; balance execution shards2:1:2:1, preserving all frozen scenes/seeds/weights and completed caches. No optimization updates restarted.",
+  "old_evaluate_sha256": "b63dfc658cf7e4fdfe3d122153f57998e07a78aa1d8f2d971d546834b451ac45",
+  "completed_banks": 13140,
+  "time": 1789931556.1694765,
+  "stopped_coordinator": 2442508,
+  "stopped_own_scoring_group": 2443117
+}

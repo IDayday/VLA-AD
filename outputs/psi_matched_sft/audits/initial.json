@@ -1,0 +1,79 @@
+{
+  "status": "PASS",
+  "protocol_hash": "86be187b0a1c3b4a95257da0d35891cd78119817ca5f06e4000a69be70f6b605",
+  "scoring_parity": [
+    {
+      "token": "23e39302332152b2",
+      "max_abs_error": 0.0,
+      "trajectories": 4,
+      "fields": [
+        "no_at_fault_collisions",
+        "drivable_area_compliance",
+        "ego_progress",
+        "time_to_collision_within_bound",
+        "comfort",
+        "driving_direction_compliance",
+        "score"
+      ]
+    },
+    {
+      "token": "411a748874035630",
+      "max_abs_error": 0.0,
+      "trajectories": 4,
+      "fields": [
+        "no_at_fault_collisions",
+        "drivable_area_compliance",
+        "ego_progress",
+        "time_to_collision_within_bound",
+        "comfort",
+        "driving_direction_compliance",
+        "score"
+      ]
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "max_abs_error": 0.0,
+      "trajectories": 4,
+      "fields": [
+        "no_at_fault_collisions",
+        "drivable_area_compliance",
+        "ego_progress",
+        "time_to_collision_within_bound",
+        "comfort",
+        "driving_direction_compliance",
+        "score"
+      ]
+    },
+    {
+      "token": "40808270ce205b83",
+      "max_abs_error": 0.0,
+      "trajectories": 4,
+      "fields": [
+        "no_at_fault_collisions",
+        "drivable_area_compliance",
+        "ego_progress",
+        "time_to_collision_within_bound",
+        "comfort",
+        "driving_direction_compliance",
+        "score"
+      ]
+    }
+  ],
+  "code": {
+    "/mnt/project/VLA-AD-worktrees/psi-matched-sft-20260920/tools/analysis/psi_matched_sft/audit.py": "7ba3493b3cd4a1bad22e36b341646107cfedddc976bba0076e9c0886ac359d98",
+    "/mnt/project/VLA-AD-worktrees/psi-matched-sft-20260920/tools/analysis/psi_matched_sft/test_matched.py": "fc448b2b49ee3b32e886c18596e4224dc5e5a1821b7c9c931419c99fa1b555aa",
+    "/mnt/project/VLA-AD-worktrees/psi-matched-sft-20260920/tools/analysis/psi_matched_sft/train.py": "30b0a1cc9297e9cfdecba5c92306fd79a5b9ae6ee2fce3b4ecb75eff62bf408b",
+    "/mnt/project/VLA-AD-worktrees/psi-matched-sft-20260920/tools/analysis/psi_matched_sft/score.py": "e27be7efad334c0d080531943c3339d9c8a28700e92c08f46b794eaf11051370",
+    "/mnt/project/VLA-AD-worktrees/psi-matched-sft-20260920/tools/analysis/psi_matched_sft/analyze.py": "8a16287831841a7bd8978fc638fd7f62b17888017e91b0a9b2384e18c1c9c42d",
+    "/mnt/project/VLA-AD-worktrees/psi-matched-sft-20260920/tools/analysis/psi_matched_sft/features.py": "3196bdde06553795dd3383fda1d9c88c40f90bc96c846823df9d7e745f0014c9",
+    "/mnt/project/VLA-AD-worktrees/psi-matched-sft-20260920/tools/analysis/psi_matched_sft/orchestrate.py": "d90fd5808b51497a1539863c532ab162c0a62b505d91abd65b6de4775cf4a3e1",
+    "/mnt/project/VLA-AD-worktrees/psi-matched-sft-20260920/tools/analysis/psi_matched_sft/common_matched.py": "8c22cb0447080e1dedd21a5841c7d4f5d0836dd6fe85a72a2a663052b3ccc4a0",
+    "/mnt/project/VLA-AD-worktrees/psi-matched-sft-20260920/tools/analysis/psi_matched_sft/evaluate.py": "117c735aac1b8887b2d6ba7cc691940a3de31eba8f3e81dacbceae69a3b4e980",
+    "/mnt/project/VLA-AD-worktrees/psi-matched-sft-20260920/tools/analysis/psi_matched_sft/candidates.py": "f6277c1aec0ab718d611f347ec0608053fe2d06eec3fc91809c2cd8df1b55a71",
+    "/mnt/project/VLA-AD-worktrees/psi-matched-sft-20260920/tools/analysis/psi_matched_sft/prepare.py": "af992acc2c043641a652c2cc21828fa455512da730bddbd8ef213fc64e8c9622",
+    "/mnt/project/VLA-AD-worktrees/a5-epdms-stage3/navsim/evaluate/pdm_score_batch.py": "01104927f506dd74e65e52ed6e29efab988b025cff48cf6bbd98604392055b9f",
+    "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/psi/navsim/agents/recogdrive/pareto_support.py": "37ca444cc4c0cb5de58c9c51673040c4686d677950ece2a592d4cd441439c6e5"
+  },
+  "protected_file_count": 238,
+  "holdout_not_entering_optimizer": true
+}

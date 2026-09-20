@@ -1,0 +1,7 @@
+{
+  "status": "PASS",
+  "step": 128,
+  "scenes": 1000,
+  "not_checkpoint_selection": true,
+  "primary_final_step": 512
+}

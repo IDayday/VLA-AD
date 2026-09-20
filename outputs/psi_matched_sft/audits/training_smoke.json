@@ -1,0 +1,10 @@
+{
+  "native_loss": 0.0012388767208904028,
+  "manual_epsilon_MSE": 0.0012388767208904028,
+  "abs_error": 0.0,
+  "trainable": 34329219,
+  "gradient_norm": 0.29618924856185913,
+  "loss": 0.003442388027906418,
+  "optimizer_updates": 0,
+  "peak_gpu_bytes": 3106997248
+}
