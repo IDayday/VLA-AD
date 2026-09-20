@@ -1,0 +1,51 @@
+version: 1
+seed: 2026091501
+split_seed: 2026092007
+methods: [il_sft, score, pareto, psi]
+train_seeds: [1701, 2903]
+train_scene_count: 3072
+evaluation_scene_count: 5000
+split: training_tokens_from_historical_train_logs_excluding_all_5000_evaluation_logs
+shared_raw_bank: archived_v6_raw_43_candidates_before_v6_selection
+historical_psi_original_raw_bank: MISSING
+candidate_note: Prospective matched selection ablation using original PSI algorithm on shared available raw bank; not replay of historical PSI dataset.
+reuse_v6_selection_masks: false
+rescore: NAVSIM_v1
+common_eligibility: finite_NC1_DAC1_DDC_relative_guard_EP_reference_floor
+reference: GT_if_no_exact_deterministic_IL_source
+pareto_objectives: [EP, TTC, Comfort]
+max_targets: 3
+target_weights: {best: 0.5, gt_if_selected: 0.2, other: 0.3}
+psi_quality_band: 0.02
+psi_min_descriptor_distance: 0.75
+descriptor_calibration: training_raw_candidates_only
+training:
+  updates: 512
+  effective_batch: 128
+  microbatch: 16
+  accumulation: 8
+  lr: 0.00005
+  min_lr: 0.000001
+  warmup_updates: 96
+  optimizer: AdamW
+  betas: [0.9, 0.95]
+  weight_decay: 0.0001
+  gradient_clip: 1.0
+  snapshots: [128, 512]
+  precision: fp32
+  trainable: original_IL_action_head_native_trainable_parameters
+  loss: native_uniform_timestep_epsilon_MSE_one_weighted_target_per_scene
+  extra_GT_retention_loss: 0
+evaluation:
+  protocols: [eval, native_grpo]
+  groups: 4
+  group_size: 16
+  final_scenes: 5000
+  early_scenes: 1000
+  training_probe_scenes: 512
+  teacher_loss_draws: 16
+  teacher_hit_ADE_m: [0.5, 1.0]
+  bootstrap_replicates: 3000
+  sensitivity: log_cluster
+optimizer_updates_GRPO: 0
+outcome_conditioned_selection: false
