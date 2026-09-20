@@ -1,0 +1,26 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "token": "23e39302332152b2",
+      "protocol": "eval",
+      "max_abs_error": 0.0
+    },
+    {
+      "token": "23e39302332152b2",
+      "protocol": "native_grpo",
+      "max_abs_error": 0.0
+    },
+    {
+      "token": "411a748874035630",
+      "protocol": "eval",
+      "max_abs_error": 0.0
+    },
+    {
+      "token": "411a748874035630",
+      "protocol": "native_grpo",
+      "max_abs_error": 0.0
+    }
+  ],
+  "cache_source": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support"
+}

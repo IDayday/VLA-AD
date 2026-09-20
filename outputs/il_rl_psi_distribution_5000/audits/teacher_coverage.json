@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "scenes": 5000,
+  "training_scenes": 4111,
+  "validation_scenes": 889,
+  "training_scenes_with_non_gt": 3677,
+  "support_sha256": "b3009a61d93a0760288685660c59d950788fe98f1dab62a8de59a68ba3570498",
+  "train_val_labels_checked_against_actual_log_lists": true,
+  "teacher_conditioning": false,
+  "no_new_native_diffusion_loss": true
+}

@@ -4,6 +4,7 @@ import analyze as historical
 import concurrent.futures
 
 PRIMARY=['pairwise_ADE','pairwise_ADE64','centroid_displacement','feasible_rate','mean_PDMS','min_PDMS','max_PDMS','CVaR25_PDMS','Spread_AUC','hard_failure_rate','zero_score_rate','std_PDMS','no_safe_group','best_safe_PDMS','Hit16','GT_center_distance']
+DESCRIPTIVE=['EP','NC','DAC','TTC','DDC','Comfort','centroid_abs_dx','centroid_abs_dy','centroid_endpoint_dx','centroid_endpoint_dy','CRN_policy_shift']
 
 def one(scene):
     token=scene['token'];bank={};scores={}
@@ -24,6 +25,8 @@ def one(scene):
             row=dict(**key,**{k:historical.mean_or_nan([r[k] for r in rows if np.isfinite(r[k])]) for k in metric_keys})
             flat=t.reshape(64,8,3);ref=bank['official_il'][protocol].reshape(64,8,3)
             row.update(centroid_displacement=float(distance(flat.mean(0)[None],ref.mean(0)[None])[0,0]),pairwise_ADE64=pair_mean(flat),CRN_policy_shift=float(np.linalg.norm(flat[...,:2]-ref[...,:2],axis=-1).mean()),GT_center_distance=float(distance(flat.mean(0)[None],np.asarray(scene['gt'])[None])[0,0]),HQ_threshold=threshold)
+            delta=flat.mean(0)-ref.mean(0)
+            row.update(centroid_abs_dx=float(abs(delta[:,0]).mean()),centroid_abs_dy=float(abs(delta[:,1]).mean()),centroid_endpoint_dx=float(delta[-1,0]),centroid_endpoint_dy=float(delta[-1,1]))
             for g in [0,1]:
                 # Two 32-sample halves: diagnostic sampling stability, never selection.
                 sl=slice(g*32,(g+1)*32)
@@ -51,13 +54,33 @@ def main():
     sf.to_parquet(OUT/'metrics/scene_metrics.parquet',index=False)
     gf.to_parquet(OUT/'metrics/group16_metrics.parquet',index=False)
     summarize(sf)
+    membership_summary(sf)
+
+def membership_summary(sf):
+    args=read(MAIN/'outputs/psi_drive_stage2_apsd_clean_8gpu_20260624T214438Z/train_args.json')
+    trainlogs=set(args['train_logs']);vallogs=set(args['val_logs']);assert not trainlogs&vallogs
+    assert sf.log.isin(trainlogs|vallogs).all()
+    sf=sf.assign(psi_membership=np.where(sf.log.isin(trainlogs),'PSI_TRAIN','PSI_VALIDATION'))
+    rows=[];comparisons=[]
+    for scope,data in [('FULL5000',sf),('NEW4000',sf[sf.cohort=='NEW4000']),('OLD1000',sf[sf.cohort=='OLD1000'])]:
+        for (membership,model,protocol),g in data.groupby(['psi_membership','model','protocol']):
+            rows.append(dict(scope=scope,psi_membership=membership,model=model,protocol=protocol,scenes=len(g),**{k:g[k].mean() for k in PRIMARY+DESCRIPTIVE}))
+        for membership in ['PSI_TRAIN','PSI_VALIDATION']:
+            for protocol in CFG['protocols']:
+                sub=data[(data.psi_membership==membership)&(data.protocol==protocol)]
+                base=sub[sub.model=='official_il'].set_index('token')
+                for model in CFG['primary_models'][1:]:
+                    current=sub[sub.model==model].set_index('token').loc[base.index]
+                    for metric in ['pairwise_ADE64','centroid_displacement','feasible_rate','mean_PDMS']:
+                        comparisons.append(dict(scope=scope,psi_membership=membership,model=model,protocol=protocol,metric=metric,**historical.bootstrap_difference(current[metric]-base[metric],base.log,f'membership/{scope}/{membership}/{model}/{protocol}/{metric}')))
+    csv('psi_membership_distribution_summary.csv',rows);csv('psi_membership_distribution_comparisons.csv',comparisons)
 
 def summarize(sf):
     summaries=[];comparisons=[];strata=[];sampling=[]
     for scope,subset in [('FULL5000',sf),('NEW4000',sf[sf.cohort=='NEW4000']),('OLD1000',sf[sf.cohort=='OLD1000'])]:
         for (model,protocol),g in subset.groupby(['model','protocol']):
             r=dict(scope=scope,model=model,protocol=protocol,scenes=len(g),groups=len(g)*4,rollouts=len(g)*64)
-            for metric in PRIMARY:
+            for metric in PRIMARY+DESCRIPTIVE:
                 r[metric]=g[metric].mean();r[metric+'_median']=g[metric].median();r[metric+'_defined_scenes']=int(g[metric].notna().sum())
             summaries.append(r)
         for protocol in CFG['protocols']:

@@ -1,0 +1,22 @@
+{
+  "host": "training-vla-zt-worker-0",
+  "python": "3.9.25 (main, Nov  3 2025, 22:33:05) \n[GCC 11.2.0]",
+  "torch": "2.5.1+cu124",
+  "cuda": "12.4",
+  "numpy": "1.26.4",
+  "pandas": "2.3.3",
+  "scipy": "1.13.1",
+  "gpu_inventory": "0, NVIDIA A800-SXM4-80GB, 81920 MiB\n1, NVIDIA A800-SXM4-80GB, 81920 MiB\n2, NVIDIA A800-SXM4-80GB, 81920 MiB\n3, NVIDIA A800-SXM4-80GB, 81920 MiB\n4, NVIDIA A800-SXM4-80GB, 81920 MiB\n5, NVIDIA A800-SXM4-80GB, 81920 MiB\n6, NVIDIA A800-SXM4-80GB, 81920 MiB\n7, NVIDIA A800-SXM4-80GB, 81920 MiB\n",
+  "cpu_workers": 80,
+  "gpu_workers": 8,
+  "loader_workers_per_gpu": 4,
+  "precision": "fp32",
+  "optimizer_updates": 0,
+  "stress_cleanup": {
+    "user_explicitly_authorized": true,
+    "process_group": 1846519,
+    "verified_command": "python gpu_stress.py",
+    "signal": "SIGTERM",
+    "unrelated_training_not_terminated": true
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "host": "training-vla-zt-worker-0",
+  "protocol_hash": "d03c25ee4c7c99a9b662bb702933cd77bcb74bab17e5cd126230407da79a36fd",
+  "count": 500,
+  "checks": [],
+  "seconds": 676.8205533027649,
+  "peak_gpu_memory_bytes": 10633478144
+}

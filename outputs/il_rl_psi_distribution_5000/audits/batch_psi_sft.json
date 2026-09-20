@@ -1,0 +1,32 @@
+{
+  "status": "PASS",
+  "protocol_hash": "d03c25ee4c7c99a9b662bb702933cd77bcb74bab17e5cd126230407da79a36fd",
+  "checks": [
+    {
+      "token": "23e39302332152b2",
+      "protocol": "eval",
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "23e39302332152b2",
+      "protocol": "native_grpo",
+      "max_abs_error": 6.198883056640625e-06
+    },
+    {
+      "token": "411a748874035630",
+      "protocol": "eval",
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "411a748874035630",
+      "protocol": "native_grpo",
+      "max_abs_error": 5.7220458984375e-06
+    }
+  ],
+  "state_unchanged": true,
+  "group_size": 16,
+  "batch_groups": 4,
+  "noise_draws_per_group": 6,
+  "precision": "fp32",
+  "tolerance": 0.0001
+}

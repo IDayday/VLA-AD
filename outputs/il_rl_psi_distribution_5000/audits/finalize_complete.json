@@ -1,0 +1,10 @@
+{
+  "status": "PASS",
+  "timestamp_utc": "2026-09-20T08:36:41.756891+00:00",
+  "report_sha256": "dd08cd9e811863270bcbe53dc8104af4c22f0c9cdb409871142ecc29e170a3e4",
+  "unit_tests_passed": 10,
+  "scene_count": 5000,
+  "rollouts": 1920000,
+  "primary_config_unchanged": true,
+  "report_rendering_repaired": true
+}

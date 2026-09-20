@@ -1,0 +1,223 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "model": "official_il",
+      "protocol": "eval",
+      "metric": "pairwise_ADE",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "protocol": "eval",
+      "metric": "feasible_rate",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "protocol": "eval",
+      "metric": "mean_PDMS",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "protocol": "eval",
+      "metric": "min_PDMS",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "protocol": "eval",
+      "metric": "max_PDMS",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "protocol": "eval",
+      "metric": "Spread_AUC",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "protocol": "native_grpo",
+      "metric": "pairwise_ADE",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "protocol": "native_grpo",
+      "metric": "feasible_rate",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "protocol": "native_grpo",
+      "metric": "mean_PDMS",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "protocol": "native_grpo",
+      "metric": "min_PDMS",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "protocol": "native_grpo",
+      "metric": "max_PDMS",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "protocol": "native_grpo",
+      "metric": "Spread_AUC",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "protocol": "eval",
+      "metric": "pairwise_ADE",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "protocol": "eval",
+      "metric": "feasible_rate",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "protocol": "eval",
+      "metric": "mean_PDMS",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "protocol": "eval",
+      "metric": "min_PDMS",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "protocol": "eval",
+      "metric": "max_PDMS",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "protocol": "eval",
+      "metric": "Spread_AUC",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "protocol": "native_grpo",
+      "metric": "pairwise_ADE",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "protocol": "native_grpo",
+      "metric": "feasible_rate",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "protocol": "native_grpo",
+      "metric": "mean_PDMS",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "protocol": "native_grpo",
+      "metric": "min_PDMS",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "protocol": "native_grpo",
+      "metric": "max_PDMS",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "protocol": "native_grpo",
+      "metric": "Spread_AUC",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "psi_sft",
+      "protocol": "eval",
+      "metric": "pairwise_ADE",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "psi_sft",
+      "protocol": "eval",
+      "metric": "feasible_rate",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "psi_sft",
+      "protocol": "eval",
+      "metric": "mean_PDMS",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "psi_sft",
+      "protocol": "eval",
+      "metric": "min_PDMS",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "psi_sft",
+      "protocol": "eval",
+      "metric": "max_PDMS",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "psi_sft",
+      "protocol": "eval",
+      "metric": "Spread_AUC",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "psi_sft",
+      "protocol": "native_grpo",
+      "metric": "pairwise_ADE",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "psi_sft",
+      "protocol": "native_grpo",
+      "metric": "feasible_rate",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "psi_sft",
+      "protocol": "native_grpo",
+      "metric": "mean_PDMS",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "psi_sft",
+      "protocol": "native_grpo",
+      "metric": "min_PDMS",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "psi_sft",
+      "protocol": "native_grpo",
+      "metric": "max_PDMS",
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "psi_sft",
+      "protocol": "native_grpo",
+      "metric": "Spread_AUC",
+      "max_abs_error": 0.0
+    }
+  ],
+  "source_path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/metrics/group16_summary.csv",
+  "source_sha256": "20b3d565f80bfe04e68c073fed9f78bdc976d0594347ef1dca007200381f0bb2"
+}

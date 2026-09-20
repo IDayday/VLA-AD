@@ -1,0 +1,9 @@
+{
+  "protocol_hash": "d03c25ee4c7c99a9b662bb702933cd77bcb74bab17e5cd126230407da79a36fd",
+  "host": "training-vla-zt-worker-0",
+  "count": 500,
+  "state_before": "6a2b3785e3950a06573ba84a107eed7ec0663c93096e82965548aba66279362c",
+  "state_after": "6a2b3785e3950a06573ba84a107eed7ec0663c93096e82965548aba66279362c",
+  "seconds": 478.2205934524536,
+  "peak_gpu_memory_bytes": 2687281152
+}

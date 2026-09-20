@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "host": "training-vla-zt-worker-0",
+  "protocol_hash": "d03c25ee4c7c99a9b662bb702933cd77bcb74bab17e5cd126230407da79a36fd",
+  "count": 4,
+  "checks": [
+    {
+      "token": "23e39302332152b2",
+      "max_abs_errors": {
+        "history_trajectory": 0.0,
+        "high_command_one_hot": 0.0,
+        "last_hidden_state": 0.0,
+        "status_feature": 0.0
+      }
+    },
+    {
+      "token": "411a748874035630",
+      "max_abs_errors": {
+        "history_trajectory": 0.0,
+        "high_command_one_hot": 0.0,
+        "last_hidden_state": 0.0,
+        "status_feature": 0.0
+      }
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "max_abs_errors": {
+        "history_trajectory": 0.0,
+        "high_command_one_hot": 0.0,
+        "last_hidden_state": 0.0,
+        "status_feature": 0.0
+      }
+    },
+    {
+      "token": "40808270ce205b83",
+      "max_abs_errors": {
+        "history_trajectory": 0.0,
+        "high_command_one_hot": 0.0,
+        "last_hidden_state": 0.0,
+        "status_feature": 0.0
+      }
+    }
+  ],
+  "seconds": 12.075200319290161,
+  "peak_gpu_memory_bytes": 10633478144
+}

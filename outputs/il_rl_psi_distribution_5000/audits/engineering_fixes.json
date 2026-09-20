@@ -1,0 +1,16 @@
+{
+  "report_rendering_only": {
+    "reason": "Optional tabulate package missing; replaced pandas.to_markdown with local Markdown renderer without modifying shared environment.",
+    "affected_artifacts": [
+      "report_5000.py",
+      "IL_RL_PSI_DISTRIBUTION_5000_20260920.md"
+    ],
+    "inference_or_metric_changes": false,
+    "rerun": "Report rendering succeeded",
+    "report_script_sha256": "4d93101a5a3d2eeefc6565e154fc638b655df491816f2c5d7166c8b5c357068b"
+  },
+  "primary_config_unchanged": true,
+  "primary_config_sha256": "d03c25ee4c7c99a9b662bb702933cd77bcb74bab17e5cd126230407da79a36fd",
+  "figure_label_layout": "Separate annotation offsets and label colors; no changes to data, selection, or plot ranges.",
+  "svg_formatting": "Strip Matplotlib trailing line whitespace only; preserve vector coordinates and newline separators."
+}

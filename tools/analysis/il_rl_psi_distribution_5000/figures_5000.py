@@ -10,7 +10,9 @@ COLORS={'official_il':'#64748b','original_grpo_11970':'#1874b5','psi_sft':'#cc72
 def finish(fig,name,source):
     out=OUT/'figures';out.mkdir(exist_ok=True)
     fig.tight_layout()
-    for ext in ['png','pdf','svg']:fig.savefig(out/f'{name}.{ext}',dpi=180,bbox_inches='tight')
+    for ext in ['png','pdf','svg']:
+        path=out/f'{name}.{ext}';fig.savefig(path,dpi=180,bbox_inches='tight')
+        if ext=='svg':path.write_text('\n'.join(line.rstrip() for line in path.read_text().splitlines())+'\n')
     source.to_csv(out/f'{name}.csv',index=False);plt.close(fig)
 
 def main():
@@ -36,7 +38,7 @@ def main():
         for i,m in enumerate(CFG['primary_models']):
             vals=[data.loc[m,k] for k in ['min_PDMS','mean_PDMS','max_PDMS']]
             ax.plot(range(3),vals,'o-',color=COLORS[m],label=LABELS[m])
-            for x,v in enumerate(vals):ax.annotate(f'{v:.2f}',(x,v),xytext=(3,(-12 if i==2 else 5)),textcoords='offset points',fontsize=8)
+            for x,v in enumerate(vals):ax.annotate(f'{v:.2f}',(x,v),xytext=(3,[3,15,-14][i]),textcoords='offset points',fontsize=8,color=COLORS[m])
         ax.set_xticks(range(3),['Group minimum','Group mean','Group maximum'])
         ax.set_ylabel('PDMS (0–100 points)');ax.set_ylim(0,103);ax.set_title(protocol);ax.legend(fontsize=8)
     fig.suptitle('Quality tails: statistics within each real G16 group, then scene-equal means')

@@ -1,0 +1,69 @@
+{
+  "status": "PASS",
+  "verified_old_files": 6000,
+  "old_files_unchanged": true,
+  "checks": [
+    {
+      "token": "23e39302332152b2",
+      "max_abs_error": 0.0,
+      "trajectories": 4,
+      "fields": [
+        "no_at_fault_collisions",
+        "drivable_area_compliance",
+        "ego_progress",
+        "time_to_collision_within_bound",
+        "comfort",
+        "driving_direction_compliance",
+        "score"
+      ],
+      "fresh_vs_imported_score_max_abs_error": 0.0
+    },
+    {
+      "token": "411a748874035630",
+      "max_abs_error": 0.0,
+      "trajectories": 4,
+      "fields": [
+        "no_at_fault_collisions",
+        "drivable_area_compliance",
+        "ego_progress",
+        "time_to_collision_within_bound",
+        "comfort",
+        "driving_direction_compliance",
+        "score"
+      ],
+      "fresh_vs_imported_score_max_abs_error": 0.0
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "max_abs_error": 0.0,
+      "trajectories": 4,
+      "fields": [
+        "no_at_fault_collisions",
+        "drivable_area_compliance",
+        "ego_progress",
+        "time_to_collision_within_bound",
+        "comfort",
+        "driving_direction_compliance",
+        "score"
+      ],
+      "fresh_vs_imported_score_max_abs_error": 0.0
+    },
+    {
+      "token": "40808270ce205b83",
+      "max_abs_error": 0.0,
+      "trajectories": 4,
+      "fields": [
+        "no_at_fault_collisions",
+        "drivable_area_compliance",
+        "ego_progress",
+        "time_to_collision_within_bound",
+        "comfort",
+        "driving_direction_compliance",
+        "score"
+      ],
+      "fresh_vs_imported_score_max_abs_error": 0.0
+    }
+  ],
+  "evaluator_runtime_path": "/mnt/project/VLA-AD-worktrees/a5-epdms-stage3/navsim/evaluate/pdm_score_batch.py",
+  "evaluator_runtime_sha256": "01104927f506dd74e65e52ed6e29efab988b025cff48cf6bbd98604392055b9f"
+}

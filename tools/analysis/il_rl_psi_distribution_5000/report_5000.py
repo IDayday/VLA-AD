@@ -4,6 +4,16 @@ import time
 
 NAMES={'official_il':'Initial GT-IL','original_grpo_11970':'Original GRPO (90.41 checkpoint)','psi_sft':'PSI candidate-SFT'}
 
+def table_md(frame,floatfmt='.4f'):
+    """Small dependency-free Markdown renderer; preserve NA and numeric units."""
+    def value(v):
+        if pd.isna(v):return 'NA'
+        if isinstance(v,(float,np.floating)):return format(v,floatfmt)
+        return str(v).replace('|','\\|').replace('\n',' ')
+    rows=['| '+' | '.join(map(str,frame.columns))+' |','| '+' | '.join(['---']*len(frame.columns))+' |']
+    rows+=['| '+' | '.join(value(v) for v in row)+' |' for row in frame.itertuples(index=False,name=None)]
+    return '\n'.join(rows)
+
 def main():
     audit=read(OUT/'audits/final.json');assert audit['status']=='PASS'
     start=time.time()
@@ -27,7 +37,7 @@ def main():
         d=full[full.protocol==sampler].copy();table=[]
         for _,r in d.iterrows():
             table.append({'Policy':NAMES[r.model],'Pairwise ADE64 (m)':r.pairwise_ADE64,'Centroid displacement (m)':r.centroid_displacement,'Feasible (%)':r.feasible_rate*100,'Mean PDMS':r.mean_PDMS})
-        lines+=['',f'### {sampler}','',pd.DataFrame(table).to_markdown(index=False,floatfmt='.4f')]
+        lines+=['',f'### {sampler}','',pd.DataFrame(table).pipe(table_md,floatfmt='.4f')]
     lines+=['','来源：`metrics/summary.csv`，scope=FULL5000，各行分母5000场景／320000条轨迹。组内16条Pairwise ADE另存`pairwise_ADE`字段；主表使用更充分的64条估计。','', '## 配对差值与置信区间','',
         '差值方向为当前checkpoint−Official IL。95% CI来自3000次scene-paired bootstrap；log-cluster CI对整段日志重采样。下面的概率相关差值以百分点呈现。']
     for sampler in CFG['protocols']:
@@ -36,15 +46,21 @@ def main():
         for _,r in selected[selected.metric.isin(['pairwise_ADE64','centroid_displacement','feasible_rate','mean_PDMS','min_PDMS','max_PDMS'])].iterrows():
             scale=100 if r.metric=='feasible_rate' else 1
             table.append({'Checkpoint':NAMES[r.model],'Metric':r.metric,'Mean Δ':r.mean_difference*scale,'Median Δ':r.median_difference*scale,'95% CI':f'[{r.ci_low*scale:.4f}, {r.ci_high*scale:.4f}]','Log-cluster CI':f'[{r.log_cluster_ci_low*scale:.4f}, {r.log_cluster_ci_high*scale:.4f}]','Scene Δ>0 (%)':r.win_fraction*100,'N':r.n})
-        lines+=['',f'### {sampler} 配对比较','',pd.DataFrame(table).to_markdown(index=False,floatfmt='.4f')]
+        lines+=['',f'### {sampler} 配对比较','',pd.DataFrame(table).pipe(table_md,floatfmt='.4f')]
     lines+=['','来源：`metrics/paired_comparisons.csv`。Δ>0仅表示数值增加，并非所有指标上都意味着更好；几何宽度与中心位移尤其不能直接按大小判优。','', '## GRPO组内的质量分布','',
         '下表每个最小值／最大值均先在真实16条组内求，再对4组和5000场景平均。它们不是整批数据的单个极值。']
     tail=full[['model','protocol','min_PDMS','mean_PDMS','max_PDMS','std_PDMS','CVaR25_PDMS','no_safe_group']].copy();tail['no_safe_group']*=100
     tail.rename(columns={'no_safe_group':'No-safe group (%)'},inplace=True)
-    lines+=['',tail.to_markdown(index=False,floatfmt='.4f'),'', '来源：`metrics/group16_metrics.parquet`（120000组）与`metrics/summary.csv`。组内没有安全轨迹时best-safe PDMS记NA，并报告该类组比例。', '', '## 新增4000场景是否复现原结论','']
+    lines+=['',tail.pipe(table_md,floatfmt='.4f'),'', '来源：`metrics/group16_metrics.parquet`（120000组）与`metrics/summary.csv`。组内没有安全轨迹时best-safe PDMS记NA，并报告该类组比例。', '', '## 新增4000场景是否复现原结论','']
+    components=full[['model','protocol','EP','NC','DAC','TTC','DDC','Comfort','centroid_abs_dx','centroid_abs_dy']]
+    lines[-3:-3]=['','补充描述：各组件均分（0–100）及ego坐标系X/Y平均绝对中心偏移（m）；不把X/Y偏移直接等同于沿道路进度／横向偏移。','',components.pipe(table_md,floatfmt='.4f'),'']
     rep=cmp[(cmp.reference=='official_il')&cmp.metric.isin(['pairwise_ADE64','feasible_rate','mean_PDMS'])].copy()
-    lines+=[rep[['scope','protocol','model','metric','mean_difference','ci_low','ci_high','n']].to_markdown(index=False,floatfmt='.5f'),'',
+    lines+=[rep[['scope','protocol','model','metric','mean_difference','ci_low','ci_high','n']].pipe(table_md,floatfmt='.5f'),'',
         '这一表中的feasible_rate仍为0–1单位，乘100即百分点。NEW4000来自事前抽样，不因模型输赢而筛选。FULL5000包含旧1000，不能把它当作完全独立复现；独立token复核应看NEW4000。']
+    member=pd.read_csv(OUT/'metrics/psi_membership_distribution_summary.csv')
+    lines+=['','### PSI历史训练／验证身份分层（补充）','',
+        member[member.scope=='FULL5000'][['psi_membership','model','protocol','scenes','pairwise_ADE64','centroid_displacement','feasible_rate','mean_PDMS']].pipe(table_md,floatfmt='.5f'),
+        '', '这里的验证身份只针对PSI历史run，不表示这些场景对所有模型都是未见数据。完整配对CI见`psi_membership_distribution_comparisons.csv`。']
     def get(model,pr,metric):
         return cmp[(cmp.scope=='FULL5000')&(cmp.model==model)&(cmp.protocol==pr)&(cmp.reference=='official_il')&(cmp.metric==metric)].iloc[0]
     teacher_summary=pd.read_csv(OUT/'metrics/psi_teacher_summary.csv')
@@ -54,8 +70,8 @@ def main():
     lines+=['','## 真实PSI监督轨迹的采样覆盖（5000场景补充复核）','',
         f"依据原train_args中的train/val log名单核验：{teacher_audit['training_scenes']}个PSI训练场景、{teacher_audit['validation_scenes']}个验证场景；其中{teacher_audit['training_scenes_with_non_gt']}个训练场景具有正权重非GT教师。教师张量与权重直接读取原support index，其SHA256与历史审计一致。",
         '', '下表只统计实际训练场景内的正权重非GT监督。对每条教师，64次rollout中至少一条XY ADE≤0.5m即命中；先在场景内平均教师命中，再对场景等权平均。表中命中率／mass为0–1单位；这不是native diffusion loss，也不是精确轨迹生成概率。',
-        '',tt[['model','protocol','scenes','teachers','hit64_0p5','hit16_0p5','mass64_0p5','nearest_ADE','weighted_hit64_0p5']].to_markdown(index=False,floatfmt='.5f'),
-        '', '相对IL的Hit@64配对差值：', '',tc[['model','protocol','mean_difference','ci_low','ci_high','log_cluster_ci_low','log_cluster_ci_high','n']].to_markdown(index=False,floatfmt='.5f'),
+        '',tt[['model','protocol','scenes','teachers','hit64_0p5','hit16_0p5','mass64_0p5','nearest_ADE','weighted_hit64_0p5']].pipe(table_md,floatfmt='.5f'),
+        '', '相对IL的Hit@64配对差值：', '',tc[['model','protocol','mean_difference','ci_low','ci_high','log_cluster_ci_low','log_cluster_ci_high','n']].pipe(table_md,floatfmt='.5f'),
         '', '完整结果含GT教师、验证场景、0.25/1.0m敏感性、旧1000／新4000拆分，见`psi_teacher_summary.csv`、`psi_teacher_comparisons.csv`。64次未命中仅表示有限采样下没有观测到，不能推断概率为零、严格不可达或不可学。',
         '','## 可以支持什么，不能支持什么','']
     for model in CFG['primary_models'][1:]:
@@ -86,6 +102,15 @@ def main():
         '- 图4：`figures/Fig4_scene_distribution_ECDF.{png,pdf,svg,csv}`；显示完整场景分布范围，不截尾。',
         '- 最终完整性：`audits/final.json`；全部输入／输出hash：`manifests/observations.json`、`cache_hashes.json`。',
         '', '统计和图形只读取实际缓存，没有生成理想结果，没有按checkpoint表现更换场景，没有修改旧实验数据。','']
+    lines[4:4]=[
+        '## 证据支持的解释','',
+        '**SUPPORTED：原版GRPO主要改善真实组内采样的质量和低分尾部，没有明显收窄其几何宽度。** Native GRPO下均分+9.834 points（95% CI [9.502,10.174]），可行率+8.018个百分点；宽度差−0.00014m（CI跨0）。组内最低分+9.222，最高分仅+1.086，说明收益不只是偶尔采到更高的峰值。新增4000独立token复现。',
+        '', '**PARTIALLY_SUPPORTED：PSI SFT拓宽了采样轨迹范围，并小幅提高普通推理均分；扩大部分同时包含失败轨迹。** Eval均分+0.691 [0.323,1.066]，ADE64由0.1455升到0.3066m，但可行率−1.407个百分点。Native采样均分−3.229 [−3.455,−2.994]、可行率−6.285个百分点、宽度+0.2607m。这些方向在新增4000中均复现。',
+        '', '**NOT_SUPPORTED：这组PSI SFT带来更高可行率，以及比GRPO更大的中心位移。** Eval中心位移PSI=0.4295m，GRPO=0.5014m；PSI−GRPO=−0.0719m，CI [−0.0785,−0.0649]。Native下两者约0.49–0.50m，PSI也没有更大。不能把“更宽”与“中心移动更大”混为一谈，也不能把约0.5m位移直接命名为语义mode不变。',
+        '', '**PARTIALLY_SUPPORTED：PSI更接近部分训练教师，但监督覆盖改善较弱。** 在3677个确有非GT监督的训练场景中，平均最近ADE下降0.1440m；Eval Hit@64（0.5m）由9.50%升到10.17%，差+0.671个百分点 [0.064,1.269]。新增4000中的2910个相应场景只提升0.355个百分点 [−0.292,1.031]，独立复核未排除零差异。同时teacher邻域的平均采样mass由6.40%降到5.33%。更接近教师、至少命中一次、频繁复现教师是三个不同概念。',
+        '', '**诊断限制：0.5m教师命中在native sampler中全部为零，不能用于区分三个checkpoint。** 这不代表数学概率为零。事前固定的1.0m敏感性下Hit@64为IL 19.49%、GRPO 20.75%、PSI 14.25%；主阈值没有被替换。Native更强的逐步噪声会显著改变有限采样下的近邻命中，不能把未命中直接当作未学会。',
+        '', '**安全维度并非全部同向改善。** GRPO的joint feasibility上升，但DDC均值下降：Eval 98.393→97.476、Native 97.054→95.535。其主要安全收益来自DAC和TTC；PSI普通推理均分提高伴随EP提高，而NC/DAC/TTC/DDC均值均下降。Native下PSI的TTC由83.631降到78.551，是需要关注的变化。',
+        '', '**UNTESTED：上述分布变化是否单独造成后续GRPO成败。** 本轮没有进行权重更新，也没有找到PSI历史GRPO实体；这些数据不能替代相同GRPO recipe、相同更新预算下的初始化对照。PSI训练／验证身份分层都出现native可行率与均分下降，说明观察到的现象不只出现在其训练场景；但这仍不是损失函数、监督来源与后续优化之间的完整因果证明。','']
     report=WORK/'reports/IL_RL_PSI_DISTRIBUTION_5000_20260920.md';report.write_text('\n'.join(lines));print(report)
 
 if __name__=='__main__':main()
