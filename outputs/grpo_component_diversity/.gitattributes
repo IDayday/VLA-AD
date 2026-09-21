@@ -1,0 +1,3 @@
+# Preserve Matplotlib SVG formatting and the exact archived code excerpt.
+figures/*.svg -whitespace
+audits/native_advantage_excerpt.py.txt -whitespace

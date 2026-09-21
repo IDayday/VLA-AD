@@ -5,7 +5,7 @@
 ## 主要发现
 
 **SUPPORTED：质量改善并不需要几何变宽或失败模式增多。** G16的采样PDMS 69.06→78.93，可行率69.28%→77.36%；但pairwise ADE 1.99327→1.99339m，其配对CI跨0。安全结果对的不一致率36.88%→29.37%，是更少失败结果差异，与质量改善同时发生。
-**NOT SUPPORTED：GRPO一致改善所有安全子项。** DAC 85.80→93.69，TTC 83.66→87.28，但DDC 97.02→95.53。在存在安全替代的情况下，训练reward仍选择不安全winner的组占全部5000场景的2.54%→4.60%。这些方向在all-blocks敏感性与log-cluster CI中也保留。
+**NOT SUPPORTED：GRPO一致改善所有安全子项。** DAC 85.80→93.69，TTC 83.66→87.28，但DDC 97.02→95.53。存在安全替代、但固定first-argmax的最高reward样本不安全的组占全部5000场景的2.54%→4.60%。这些方向在all-blocks敏感性与log-cluster CI中也保留。这里不是GRPO执行了winner选择；它只是对组内reward排名的诊断。
 **SUPPORTED：GRPO之后仍有可区分的改进方向，但不是越多越好。** 71.34%的G16组包含EP相差至少5点的安全样本；安全子集best-minus-mean EP为7.25点。DAC/TTC/Comfort在34.74%/53.42%/99.10%的组内同时出现满分与非满分，可提供不同的改进对照。Headroom减少也可能是平均质量已提高，并非必然代表探索能力变差。
 **PARTIALLY SUPPORTED：现有reward能够区分大部分安全/进度差异，但并未完整覆盖评价目标。** DDC是被忽略的目标；EP与TTC之间允许补偿。Cov(A,x)和正advantage分配揭示这些局限，但没有梯度或训练干预证据可以把全部DDC下降归因于某一项权重。
 
@@ -39,6 +39,8 @@ Pairwise ADE是两次输出的平均几何距离，适合描述分散程度；�
 | 有安全替代但reward winner不安全的组 (%) | 2.5400 | 4.6000 | +2.0600 [+1.5800, +2.6200] | 5000 |
 
 表来自 `metrics/method_summary.csv`（grouping=prefix,G=16）和 `paired_comparisons.csv`。条件指标各自均值的分母可能不同，因此差值使用共同有定义场景，不能直接拿两个条件均值相减当作同一总体因果效应。所有主结果场景覆盖仍是5000；缺少安全成员的组不被删除。各指标有 `_n` 字段，完整中位数、log-cluster CI、scene win fraction及主检验族Holm调整见CSV。
+
+补充并列审计：最高分统计使用固定first-argmax。去掉并列，只计 `max_unsafe_reward > max_safe_reward + 1e-8`，IL为1.86%，GRPO为3.52%（各5000场景）。安全与不安全样本并列最高的场景另列，分别为1.68%/2.62%。见 `reward_winner_tie_audit.csv`；未修改预先固定的主指标。
 
 ### 各分项
 

@@ -19,7 +19,7 @@ def main():
     il=q.loc[CFG['models'][0]];rl=q.loc[CFG['models'][1]]
     findings=['## 主要发现','',
         f"**SUPPORTED：质量改善并不需要几何变宽或失败模式增多。** G16的采样PDMS {il.mean_PDMS:.2f}→{rl.mean_PDMS:.2f}，可行率{il.feasible_rate*100:.2f}%→{rl.feasible_rate*100:.2f}%；但pairwise ADE {il.mean_pairwise_ADE:.5f}→{rl.mean_pairwise_ADE:.5f}m，其配对CI跨0。安全结果对的不一致率{il.safety_pattern_disagreement*100:.2f}%→{rl.safety_pattern_disagreement*100:.2f}%，是更少失败结果差异，与质量改善同时发生。",
-        f"**NOT SUPPORTED：GRPO一致改善所有安全子项。** DAC {il.DAC_mean*100:.2f}→{rl.DAC_mean*100:.2f}，TTC {il.TTC_mean*100:.2f}→{rl.TTC_mean*100:.2f}，但DDC {il.DDC_mean*100:.2f}→{rl.DDC_mean*100:.2f}。在存在安全替代的情况下，训练reward仍选择不安全winner的组占全部5000场景的{il.unsafe_reward_winner_with_safe_alternative*100:.2f}%→{rl.unsafe_reward_winner_with_safe_alternative*100:.2f}%。这些方向在all-blocks敏感性与log-cluster CI中也保留。",
+        f"**NOT SUPPORTED：GRPO一致改善所有安全子项。** DAC {il.DAC_mean*100:.2f}→{rl.DAC_mean*100:.2f}，TTC {il.TTC_mean*100:.2f}→{rl.TTC_mean*100:.2f}，但DDC {il.DDC_mean*100:.2f}→{rl.DDC_mean*100:.2f}。存在安全替代、但固定first-argmax的最高reward样本不安全的组占全部5000场景的{il.unsafe_reward_winner_with_safe_alternative*100:.2f}%→{rl.unsafe_reward_winner_with_safe_alternative*100:.2f}%。这些方向在all-blocks敏感性与log-cluster CI中也保留。这里不是GRPO执行了winner选择；它只是对组内reward排名的诊断。",
         f"**SUPPORTED：GRPO之后仍有可区分的改进方向，但不是越多越好。** {rl.safe_EP_opportunity*100:.2f}%的G16组包含EP相差至少5点的安全样本；安全子集best-minus-mean EP为{rl.safe_EP_headroom*100:.2f}点。DAC/TTC/Comfort在{rl.DAC_mixed*100:.2f}%/{rl.TTC_mixed*100:.2f}%/{rl.Comfort_mixed*100:.2f}%的组内同时出现满分与非满分，可提供不同的改进对照。Headroom减少也可能是平均质量已提高，并非必然代表探索能力变差。",
         '**PARTIALLY SUPPORTED：现有reward能够区分大部分安全/进度差异，但并未完整覆盖评价目标。** DDC是被忽略的目标；EP与TTC之间允许补偿。Cov(A,x)和正advantage分配揭示这些局限，但没有梯度或训练干预证据可以把全部DDC下降归因于某一项权重。','']
     lines[4:4]=findings
@@ -30,6 +30,8 @@ def main():
     lines += [table(['指标','IL','GRPO','配对差及scene-bootstrap 95% CI','共同定义场景'],rows),'',
     '表来自 `metrics/method_summary.csv`（grouping=prefix,G=16）和 `paired_comparisons.csv`。条件指标各自均值的分母可能不同，因此差值使用共同有定义场景，不能直接拿两个条件均值相减当作同一总体因果效应。所有主结果场景覆盖仍是5000；缺少安全成员的组不被删除。各指标有 `_n` 字段，完整中位数、log-cluster CI、scene win fraction及主检验族Holm调整见CSV。','',
     '### 各分项','']
+    ties=pd.read_csv(OUT/'metrics/reward_winner_tie_audit.csv').groupby('model').mean(numeric_only=True)
+    lines[-2:-2]=[f"补充并列审计：最高分统计使用固定first-argmax。去掉并列，只计 `max_unsafe_reward > max_safe_reward + 1e-8`，IL为{ties.loc[CFG['models'][0],'strict_unsafe_winner']*100:.2f}%，GRPO为{ties.loc[CFG['models'][1],'strict_unsafe_winner']*100:.2f}%（各5000场景）。安全与不安全样本并列最高的场景另列，分别为{ties.loc[CFG['models'][0],'safe_unsafe_tie_at_max']*100:.2f}%/{ties.loc[CFG['models'][1],'safe_unsafe_tie_at_max']*100:.2f}%。见 `reward_winner_tie_audit.csv`；未修改预先固定的主指标。",'']
     rows=[]
     for n in ['NC','DAC','EP','TTC','DDC','Comfort']:
         rows.append([n]+[f'{q.loc[m,n+"_mean"]*100:.3f}' for m in CFG['models']]+[f'{q.loc[m,n+"_mixed"]*100:.3f}' for m in CFG['models']]+[f'{q.loc[m,"covariance_adv_"+n]:+.5f}' for m in CFG['models']])
