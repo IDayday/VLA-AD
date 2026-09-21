@@ -1,0 +1,25 @@
+{
+  "timestamp_utc": "2026-09-21T15:47:39.156657+00:00",
+  "config_sha256": "70166e0a763b1ff149ce1865eae584a4825ef2a4cd22fb2e254f1385e17a9e31",
+  "scenes_sha256": "a9ee4f3e8af6a332fcaf4f448e6c7dea970f2ff80a9ec589b8bd9ba319f9bf07",
+  "parent_commit": "a6ed0fb6decc974b047bd01bb7a13857d77dfba5",
+  "inherited_cache_inventory": "/mnt/project/VLA-AD-worktrees/il-rl-psi-5000-20260920/outputs/il_rl_psi_distribution_5000/manifests/cache_hashes.json",
+  "inherited_cache_inventory_sha256": "3e198f18c0a368db3d6a788772e5b8475962c758094dbe670d131de7e133c212",
+  "reused_sampling_code": {
+    "/mnt/project/VLA-AD/tools/analysis/historical_sft_grpo_support/common_support.py": "2efc592e070863d4d88e99a7ed3a15407488b2179468aa38e8639fd5cfaeaa33",
+    "/mnt/project/VLA-AD/tools/analysis/historical_sft_grpo_support/sample.py": "c4a6785b551e67ccb7a223ad3bd5618a3e9bd9f83f721526c64f53dd663d1491"
+  },
+  "new_random_groups": [
+    4,
+    5,
+    6,
+    7
+  ],
+  "old_random_groups": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "note": "Nested group-size diagnostics; native G parity required. Not historical optimizer minibatch replay. No new fitting."
+}

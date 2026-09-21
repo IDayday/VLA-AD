@@ -1,0 +1,35 @@
+scene_count: 5000
+models: [official_il, original_grpo_11970]
+sampling_seed: 2026091501
+analysis_seed: 2026092101
+sampler: archived_native_forward_grpo
+precision: fp32
+optimizer_updates: 0
+rollouts_per_scene_per_model: 128
+reuse_groups: [0, 1, 2, 3]
+new_groups: [4, 5, 6, 7]
+independent_noise_block_size: 16
+group_sizes: [8, 16, 32, 64, 128]
+primary_grouping: nested_first_G_samples
+secondary_grouping: all_nonoverlapping_blocks_of_G_within_128
+conservative_feasibility: [NC, DAC, TTC, DDC]
+score_columns: [NC, DAC, EP, TTC, Comfort, DDC, PDMS]
+evaluation_weights: {EP: 5, TTC: 5, Comfort: 2, DDC: 0}
+training_weights: {EP: 10, TTC: 5, Comfort: 2, DDC: 0}
+score_multiplier: [NC, DAC]
+advantage_std_ddof: 1
+advantage_epsilon: 0.00000001
+positive_advantage_tolerance: 0.00000001
+primary_group_size: 16
+bootstrap_replicates: 3000
+bootstrap_unit: scene
+bootstrap_sensitivity: log_cluster
+component_pass_tolerance: 0.00000001
+safe_EP_headroom_threshold: 0.05
+reward_near_tie_points: 1.0
+outcome_EP_difference_threshold: 0.05
+geometric_width: [mean_pairwise_ADE, median_pairwise_ADE, pairwise_P90_ADE, medoid_radius_P50, medoid_radius_P90, covariance_effective_rank]
+primary_metrics: [mean_PDMS, feasible_rate, safety_pattern_disagreement, safe_EP_headroom, safe_EP_opportunity, positive_infeasible_rate, covariance_adv_TTC, zero_advantage_group]
+outcome_patterns: exact_NC_DAC_TTC_DDC_values_no_semantic_mode_claim
+no_result_conditioned_filtering: true
+scope: internal_5000_scene_read_only_mechanism_diagnostic_not_untouched_navtest

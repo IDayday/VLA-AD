@@ -1,0 +1,130 @@
+{
+  "status": "PASS",
+  "checks": [
+    {
+      "token": "23e39302332152b2",
+      "G": 8,
+      "max_abs_error": 4.76837158203125e-06
+    },
+    {
+      "token": "23e39302332152b2",
+      "G": 16,
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "23e39302332152b2",
+      "G": 32,
+      "max_abs_error": 4.76837158203125e-06
+    },
+    {
+      "token": "23e39302332152b2",
+      "G": 64,
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "23e39302332152b2",
+      "G": 128,
+      "max_abs_error": 0.0
+    },
+    {
+      "token": "23e39302332152b2",
+      "G": "old64_cache",
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "411a748874035630",
+      "G": 8,
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "411a748874035630",
+      "G": 16,
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "411a748874035630",
+      "G": 32,
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "411a748874035630",
+      "G": 64,
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "411a748874035630",
+      "G": 128,
+      "max_abs_error": 0.0
+    },
+    {
+      "token": "411a748874035630",
+      "G": "old64_cache",
+      "max_abs_error": 5.7220458984375e-06
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "G": 8,
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "G": 16,
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "G": 32,
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "G": 64,
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "G": 128,
+      "max_abs_error": 0.0
+    },
+    {
+      "token": "79ebfc1d85bf5a51",
+      "G": "old64_cache",
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "40808270ce205b83",
+      "G": 8,
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "40808270ce205b83",
+      "G": 16,
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "40808270ce205b83",
+      "G": 32,
+      "max_abs_error": 3.814697265625e-06
+    },
+    {
+      "token": "40808270ce205b83",
+      "G": 64,
+      "max_abs_error": 7.62939453125e-06
+    },
+    {
+      "token": "40808270ce205b83",
+      "G": 128,
+      "max_abs_error": 0.0
+    },
+    {
+      "token": "40808270ce205b83",
+      "G": "old64_cache",
+      "max_abs_error": 7.62939453125e-06
+    }
+  ],
+  "state_unchanged": true,
+  "precision": "fp32",
+  "no_dropout": true,
+  "group_exchangeability": "same observation, independent Gaussian draws; native output tested at all five G",
+  "checkpoint_hash": "b51951abbba86e9661fc82f85406d09ae26c6eff6aa3651a40462363866fb326"
+}

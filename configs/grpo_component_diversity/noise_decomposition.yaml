@@ -1,0 +1,9 @@
+supplementary: true
+scene_count: 64
+selection: smallest_SHA256_of_token_with_namespace_noise_decomposition_20260921
+models: [official_il, original_grpo_11970]
+draws_per_scene: 128
+seed_protocol: same_frozen_primary_128_draws
+intervention: none_read_only_capture_final_p_mean_variance_mean
+mean_reporting: denormalize_clamp_mean_with_native_final_action_clip
+note: pre_final_noise_conditional_mean_is_not_an_evaluated_or_deployed_policy

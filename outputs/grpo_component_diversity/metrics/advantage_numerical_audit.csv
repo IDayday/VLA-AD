@@ -1,0 +1,11 @@
+model,G,groups,constant_reward_groups,cuda_nonzero_constant_groups,cpu_nonzero_constant_groups,cpu_cuda_large_difference_groups,max_cpu_cuda_difference,single_vs_batched_cuda_max_error,scope
+official_il,8,80000,1013,0,26,26,5.9604644775390625,0.0,Numerical edge audit only; primary CUDA arrays unchanged.
+official_il,16,40000,99,0,1,1,5.9604644775390625,0.0,Numerical edge audit only; primary CUDA arrays unchanged.
+official_il,32,20000,20,0,0,0,3.0994415283203125e-06,0.0,Numerical edge audit only; primary CUDA arrays unchanged.
+official_il,64,10000,5,0,0,0,2.86102294921875e-06,0.0,Numerical edge audit only; primary CUDA arrays unchanged.
+official_il,128,5000,2,0,0,0,2.9802322387695312e-06,0.0,Numerical edge audit only; primary CUDA arrays unchanged.
+original_grpo_11970,8,80000,1313,0,11,11,5.9604644775390625,0.0,Numerical edge audit only; primary CUDA arrays unchanged.
+original_grpo_11970,16,40000,130,0,0,0,0.00010466575622558594,0.0,Numerical edge audit only; primary CUDA arrays unchanged.
+original_grpo_11970,32,20000,22,0,0,0,3.0994415283203125e-06,0.0,Numerical edge audit only; primary CUDA arrays unchanged.
+original_grpo_11970,64,10000,5,0,0,0,3.337860107421875e-06,0.0,Numerical edge audit only; primary CUDA arrays unchanged.
+original_grpo_11970,128,5000,1,0,0,0,2.86102294921875e-06,0.0,Numerical edge audit only; primary CUDA arrays unchanged.

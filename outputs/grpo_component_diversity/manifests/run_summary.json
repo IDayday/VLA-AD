@@ -1,0 +1,54 @@
+{
+  "status": "PASS",
+  "scene_count": 5000,
+  "log_count": 991,
+  "missing_scenes": 0,
+  "models": [
+    "official_il",
+    "original_grpo_11970"
+  ],
+  "rollouts": 1280000,
+  "new_rollouts": 640000,
+  "group_sizes": [
+    8,
+    16,
+    32,
+    64,
+    128
+  ],
+  "prefix_rows": 50000,
+  "all_disjoint_group_rows": 310000,
+  "old_cache_files_verified": 20000,
+  "old_protected_files_unchanged": 238,
+  "input_files_verified": 40000,
+  "distinct_scene_group_seeds": 40000,
+  "optimizer_updates": 0,
+  "protocol_hash": "70166e0a763b1ff149ce1865eae584a4825ef2a4cd22fb2e254f1385e17a9e31",
+  "analysis_code_unchanged": false,
+  "documented_engineering_fixes": [
+    {
+      "path": "tools/analysis/grpo_component_diversity/analyze_components.py",
+      "before_sha256": "a4d01e9766d0f0cba14f39422d2b20f2ec8f7a09c27a6eee163b9958aaaecdb0",
+      "after_sha256": "8ec4799051e0c7c6bae1008fad69ca5c4e5f6e1c80e68a3ad7ef6052700565c5",
+      "timestamp": 1790006543.516275,
+      "reason": "Pandas boolean columns cannot be subtracted. Cast event indicators to float 0/1 before scene-paired subtraction. Raw per-group metrics and thresholds unchanged.",
+      "rerun": "summary and bootstrap only"
+    }
+  ],
+  "thresholds_and_metric_definitions_unchanged": true,
+  "tests_returncode": 0,
+  "report": "reports/GRPO_COMPONENT_DIVERSITY_5000_20260921.md",
+  "completed_at": 1790006765.0700347,
+  "branch": "analysis/grpo-component-diversity-5000-20260921",
+  "historical_training_group_size": 8,
+  "diagnostic_group_sizes": [
+    8,
+    16,
+    32,
+    64,
+    128
+  ],
+  "primary_prefix_and_all_blocks_complete": true,
+  "native_cuda_advantages": true,
+  "recovery": "Aggregation-only boolean dtype error corrected; all final analyses and tests passed; old launch log retained."
+}

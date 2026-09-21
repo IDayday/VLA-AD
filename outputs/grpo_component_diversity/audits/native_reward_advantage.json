@@ -1,0 +1,522 @@
+{
+  "status": "PASS",
+  "protocol_hash": "70166e0a763b1ff149ce1865eae584a4825ef2a4cd22fb2e254f1385e17a9e31",
+  "runtime_code_path": "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/official_recogdrive/navsim/agents/recogdrive/recogdrive_diffusion_planner.py",
+  "native_excerpt_sha256": "976d5a2d9bbf0e1376ac75521b29ee63bf8df00213919739f8dea56bdf214f5d",
+  "scorer_path": "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/official_recogdrive/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_scorer.py",
+  "scorer_sha256": "02ab075017d4edb1c8bba6476ef1674b84d43dbca0f599df87cfe052b2dd5211",
+  "scoring_checks": [
+    {
+      "model": "official_il",
+      "token": "23e39302332152b2",
+      "member": 0,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "23e39302332152b2",
+      "member": 0,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "23e39302332152b2",
+      "member": 15,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "23e39302332152b2",
+      "member": 15,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "23e39302332152b2",
+      "member": 64,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "23e39302332152b2",
+      "member": 64,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "23e39302332152b2",
+      "member": 127,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "23e39302332152b2",
+      "member": 127,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "411a748874035630",
+      "member": 0,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "411a748874035630",
+      "member": 0,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "411a748874035630",
+      "member": 15,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "411a748874035630",
+      "member": 15,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "411a748874035630",
+      "member": 64,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "411a748874035630",
+      "member": 64,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "411a748874035630",
+      "member": 127,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "411a748874035630",
+      "member": 127,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "79ebfc1d85bf5a51",
+      "member": 0,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "79ebfc1d85bf5a51",
+      "member": 0,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "79ebfc1d85bf5a51",
+      "member": 15,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "79ebfc1d85bf5a51",
+      "member": 15,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "79ebfc1d85bf5a51",
+      "member": 64,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "79ebfc1d85bf5a51",
+      "member": 64,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "79ebfc1d85bf5a51",
+      "member": 127,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "79ebfc1d85bf5a51",
+      "member": 127,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "40808270ce205b83",
+      "member": 0,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "40808270ce205b83",
+      "member": 0,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "40808270ce205b83",
+      "member": 15,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "40808270ce205b83",
+      "member": 15,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "40808270ce205b83",
+      "member": 64,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "40808270ce205b83",
+      "member": 64,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "40808270ce205b83",
+      "member": 127,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "official_il",
+      "token": "40808270ce205b83",
+      "member": 127,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "23e39302332152b2",
+      "member": 0,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "23e39302332152b2",
+      "member": 0,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "23e39302332152b2",
+      "member": 15,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "23e39302332152b2",
+      "member": 15,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "23e39302332152b2",
+      "member": 64,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "23e39302332152b2",
+      "member": 64,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "23e39302332152b2",
+      "member": 127,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "23e39302332152b2",
+      "member": 127,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "411a748874035630",
+      "member": 0,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "411a748874035630",
+      "member": 0,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "411a748874035630",
+      "member": 15,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "411a748874035630",
+      "member": 15,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "411a748874035630",
+      "member": 64,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "411a748874035630",
+      "member": 64,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "411a748874035630",
+      "member": 127,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "411a748874035630",
+      "member": 127,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "79ebfc1d85bf5a51",
+      "member": 0,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "79ebfc1d85bf5a51",
+      "member": 0,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "79ebfc1d85bf5a51",
+      "member": 15,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "79ebfc1d85bf5a51",
+      "member": 15,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "79ebfc1d85bf5a51",
+      "member": 64,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "79ebfc1d85bf5a51",
+      "member": 64,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "79ebfc1d85bf5a51",
+      "member": 127,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "79ebfc1d85bf5a51",
+      "member": 127,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "40808270ce205b83",
+      "member": 0,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "40808270ce205b83",
+      "member": 0,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "40808270ce205b83",
+      "member": 15,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "40808270ce205b83",
+      "member": 15,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "40808270ce205b83",
+      "member": 64,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "40808270ce205b83",
+      "member": 64,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "40808270ce205b83",
+      "member": 127,
+      "EP_weight": 5,
+      "max_abs_error": 0.0
+    },
+    {
+      "model": "original_grpo_11970",
+      "token": "40808270ce205b83",
+      "member": 127,
+      "EP_weight": 10,
+      "max_abs_error": 0.0
+    }
+  ],
+  "advantage_checks": [
+    {
+      "model": "official_il",
+      "G": 8,
+      "cpu_vs_cuda_max_abs": 5.9604644775390625,
+      "native_code_sha256": "c349bf196611034ebcdfb3dd30fe02e1ac8ee4fc6a76d65934b70dbf583d994a"
+    },
+    {
+      "model": "official_il",
+      "G": 16,
+      "cpu_vs_cuda_max_abs": 5.9604644775390625,
+      "native_code_sha256": "c349bf196611034ebcdfb3dd30fe02e1ac8ee4fc6a76d65934b70dbf583d994a"
+    },
+    {
+      "model": "official_il",
+      "G": 32,
+      "cpu_vs_cuda_max_abs": 3.0994415283203125e-06,
+      "native_code_sha256": "c349bf196611034ebcdfb3dd30fe02e1ac8ee4fc6a76d65934b70dbf583d994a"
+    },
+    {
+      "model": "official_il",
+      "G": 64,
+      "cpu_vs_cuda_max_abs": 2.86102294921875e-06,
+      "native_code_sha256": "c349bf196611034ebcdfb3dd30fe02e1ac8ee4fc6a76d65934b70dbf583d994a"
+    },
+    {
+      "model": "official_il",
+      "G": 128,
+      "cpu_vs_cuda_max_abs": 2.9802322387695312e-06,
+      "native_code_sha256": "c349bf196611034ebcdfb3dd30fe02e1ac8ee4fc6a76d65934b70dbf583d994a"
+    },
+    {
+      "model": "original_grpo_11970",
+      "G": 8,
+      "cpu_vs_cuda_max_abs": 5.9604644775390625,
+      "native_code_sha256": "c349bf196611034ebcdfb3dd30fe02e1ac8ee4fc6a76d65934b70dbf583d994a"
+    },
+    {
+      "model": "original_grpo_11970",
+      "G": 16,
+      "cpu_vs_cuda_max_abs": 0.00010466575622558594,
+      "native_code_sha256": "c349bf196611034ebcdfb3dd30fe02e1ac8ee4fc6a76d65934b70dbf583d994a"
+    },
+    {
+      "model": "original_grpo_11970",
+      "G": 32,
+      "cpu_vs_cuda_max_abs": 3.0994415283203125e-06,
+      "native_code_sha256": "c349bf196611034ebcdfb3dd30fe02e1ac8ee4fc6a76d65934b70dbf583d994a"
+    },
+    {
+      "model": "original_grpo_11970",
+      "G": 64,
+      "cpu_vs_cuda_max_abs": 3.337860107421875e-06,
+      "native_code_sha256": "c349bf196611034ebcdfb3dd30fe02e1ac8ee4fc6a76d65934b70dbf583d994a"
+    },
+    {
+      "model": "original_grpo_11970",
+      "G": 128,
+      "cpu_vs_cuda_max_abs": 2.86102294921875e-06,
+      "native_code_sha256": "c349bf196611034ebcdfb3dd30fe02e1ac8ee4fc6a76d65934b70dbf583d994a"
+    }
+  ],
+  "advantage_source": "Unmodified AST statements from archived forward_grpo executed in FP32 on CUDA; before denoising discounts, logprob clipping and BC. No backward/update.",
+  "group_size_note": "Hypothetical diagnostic groups; original successful training used G8."
+}

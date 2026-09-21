@@ -1,0 +1,19 @@
+{
+  "gpu": "index, name, memory.used [MiB], memory.total [MiB], utilization.gpu [%]\n0, NVIDIA A800-SXM4-80GB, 0 MiB, 81920 MiB, 0 %\n1, NVIDIA A800-SXM4-80GB, 0 MiB, 81920 MiB, 0 %\n2, NVIDIA A800-SXM4-80GB, 0 MiB, 81920 MiB, 0 %\n3, NVIDIA A800-SXM4-80GB, 0 MiB, 81920 MiB, 0 %\n4, NVIDIA A800-SXM4-80GB, 0 MiB, 81920 MiB, 0 %\n5, NVIDIA A800-SXM4-80GB, 0 MiB, 81920 MiB, 0 %\n6, NVIDIA A800-SXM4-80GB, 0 MiB, 81920 MiB, 0 %\n7, NVIDIA A800-SXM4-80GB, 0 MiB, 81920 MiB, 0 %\n",
+  "cpu_count": 128,
+  "stopped_authorized_pressure_process": {
+    "pid": 2601186,
+    "command": "python gpu_stress.py",
+    "children": [
+      2601286,
+      2601287,
+      2601288,
+      2601289,
+      2601290,
+      2601291,
+      2601292,
+      2601293,
+      2601294
+    ]
+  }
+}

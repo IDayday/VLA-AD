@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "scenes": 5000,
+  "rows": 310000,
+  "models": [
+    "official_il",
+    "original_grpo_11970"
+  ],
+  "groups": [
+    8,
+    16,
+    32,
+    64,
+    128
+  ],
+  "protocol_hash": "70166e0a763b1ff149ce1865eae584a4825ef2a4cd22fb2e254f1385e17a9e31"
+}

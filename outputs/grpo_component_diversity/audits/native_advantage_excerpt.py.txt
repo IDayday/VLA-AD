@@ -1,0 +1,8 @@
+        rewards_matrix = rewards.view(B, G)
+        mean_r = rewards_matrix.mean(dim=1, keepdim=True)
+        std_r = rewards_matrix.std(dim=1, keepdim=True) + 1e-8
+        advantages = ((rewards_matrix - mean_r) / std_r).view(-1).detach()
+        
+        adv_min = torch.quantile(advantages, self.clip_advantage_lower_quantile)
+        adv_max = torch.quantile(advantages, self.clip_advantage_upper_quantile)
+        advantages = advantages.clamp(min=adv_min, max=adv_max)

@@ -1,0 +1,16 @@
+{
+  "timestamp": 1790006030.2519584,
+  "files": {
+    "tools/analysis/grpo_component_diversity/native_audit.py": "bb6d5fdaf874775e25a9b867101520a3868330fbb4941a303d3876b4ce05c3fb",
+    "tools/analysis/grpo_component_diversity/sample_extra.py": "e0f92dfde410bd7b08af60d0cb5078eb57748e6fccfdab9b33b2380099fb7c7c",
+    "tools/analysis/grpo_component_diversity/metrics.py": "2306eb5a783ecdc8ae46ec4c3656003d05a98dbcd812e791ef3c35a1ed5e6045",
+    "tools/analysis/grpo_component_diversity/launch.py": "ec89c47c341798c5abc3f8d2de899fee77a26413122e16ecd4373a88e1b0739b",
+    "tools/analysis/grpo_component_diversity/noise_decomposition.py": "8d0156c1075496be72fe0fdb8bd64183e5eabdbf0e58ddb202c35abc34836dff",
+    "tools/analysis/grpo_component_diversity/shared.py": "6a2ad1849fbcd64789a7d4653c8e7073b767bea3742a77583c089c8c40e85e0a",
+    "tools/analysis/grpo_component_diversity/analyze_components.py": "a4d01e9766d0f0cba14f39422d2b20f2ec8f7a09c27a6eee163b9958aaaecdb0",
+    "tools/analysis/grpo_component_diversity/test_components.py": "ae64896ef1bd0b7026e1cb68e9b300e8cd9ed6e93edca16d9133e9b029718907",
+    "tools/analysis/grpo_component_diversity/prepare.py": "049bcf95a2b59f79308722fe9e44c44673114dbb3d68d7c4c04a183967989b88",
+    "tools/analysis/grpo_component_diversity/score_extra.py": "c2c44e7ccf3c719c42cb237386190add91ef7ca63f00b9aa58dd9ba8ffd46562"
+  },
+  "note": "Analysis definitions fixed before inspecting new component-level results; inherited scalar summaries were already known."
+}
