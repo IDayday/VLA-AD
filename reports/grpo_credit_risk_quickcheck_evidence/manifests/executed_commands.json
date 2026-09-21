@@ -1,0 +1,215 @@
+{
+  "note": "Recorded executed command forms from this session, retries/failures retain distinct logs; no exact execution timestamps invented",
+  "commands": [
+    {
+      "stage": "stage1_smoke",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/prepare.py",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "stage1_smoke",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/features.py --smoke",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "stage1_smoke",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/sample.py --model a5_sft --smoke",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "stage1_smoke",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/sample.py --model a5_grpo_300 --smoke",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "stage1_smoke",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/score_nominal.py --smoke",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "stage1_smoke",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/verify_smoke.py",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "features",
+      "command": "CUDA_VISIBLE_DEVICES=0 python tools/analysis/grpo_credit_risk_quickcheck/features.py --rank 0 --world 4",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "features",
+      "command": "CUDA_VISIBLE_DEVICES=1 python tools/analysis/grpo_credit_risk_quickcheck/features.py --rank 1 --world 4",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "features",
+      "command": "CUDA_VISIBLE_DEVICES=2 python tools/analysis/grpo_credit_risk_quickcheck/features.py --rank 2 --world 4",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "features",
+      "command": "CUDA_VISIBLE_DEVICES=3 python tools/analysis/grpo_credit_risk_quickcheck/features.py --rank 3 --world 4",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "sampling",
+      "command": "CUDA_VISIBLE_DEVICES=0 python tools/analysis/grpo_credit_risk_quickcheck/sample.py --model a5_sft --rank 0 --world 4",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "sampling",
+      "command": "CUDA_VISIBLE_DEVICES=1 python tools/analysis/grpo_credit_risk_quickcheck/sample.py --model a5_sft --rank 1 --world 4",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "sampling",
+      "command": "CUDA_VISIBLE_DEVICES=2 python tools/analysis/grpo_credit_risk_quickcheck/sample.py --model a5_sft --rank 2 --world 4",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "sampling",
+      "command": "CUDA_VISIBLE_DEVICES=3 python tools/analysis/grpo_credit_risk_quickcheck/sample.py --model a5_sft --rank 3 --world 4",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "sampling",
+      "command": "CUDA_VISIBLE_DEVICES=4 python tools/analysis/grpo_credit_risk_quickcheck/sample.py --model a5_grpo_300 --rank 0 --world 4",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "sampling",
+      "command": "CUDA_VISIBLE_DEVICES=5 python tools/analysis/grpo_credit_risk_quickcheck/sample.py --model a5_grpo_300 --rank 1 --world 4",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "sampling",
+      "command": "CUDA_VISIBLE_DEVICES=6 python tools/analysis/grpo_credit_risk_quickcheck/sample.py --model a5_grpo_300 --rank 2 --world 4",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "sampling",
+      "command": "CUDA_VISIBLE_DEVICES=7 python tools/analysis/grpo_credit_risk_quickcheck/sample.py --model a5_grpo_300 --rank 3 --world 4",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "analysis",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/score_nominal.py --workers 32",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "analysis",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/credit.py",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "analysis",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/analyze_credit.py",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "analysis",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/matching.py",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "analysis",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/audit_runtime.py",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "analysis",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/risk_probe.py --split calibration --workers 24",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "analysis",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/risk_probe.py --split confirmation --workers 24",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "analysis",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/analyze_risk.py",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "analysis",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/freeze_tiny.py",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "stage3_shared",
+      "command": "CUDA_VISIBLE_DEVICES=0 python tools/analysis/grpo_credit_risk_quickcheck/tiny_shared.py --seed 2026092111",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "stage3_shared",
+      "command": "CUDA_VISIBLE_DEVICES=1 python tools/analysis/grpo_credit_risk_quickcheck/tiny_shared.py --seed 2026092112",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "stage3_loss_check",
+      "command": "CUDA_VISIBLE_DEVICES=0 python tools/analysis/grpo_credit_risk_quickcheck/verify_tiny_loss.py",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "stage3_invalid_stopped",
+      "command": "CUDA_VISIBLE_DEVICES=0 python tools/analysis/grpo_credit_risk_quickcheck/tiny_train.py --seed 2026092111 --arm A --stop-step 1",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "stage3_invalid_stopped",
+      "command": "CUDA_VISIBLE_DEVICES=1 python tools/analysis/grpo_credit_risk_quickcheck/tiny_train.py --seed 2026092111 --arm B --stop-step 1",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "stage3_invalid_stopped",
+      "command": "CUDA_VISIBLE_DEVICES=2 python tools/analysis/grpo_credit_risk_quickcheck/tiny_train.py --seed 2026092111 --arm C --stop-step 1",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "stage3_invalid_stopped",
+      "command": "CUDA_VISIBLE_DEVICES=3 python tools/analysis/grpo_credit_risk_quickcheck/tiny_train.py --seed 2026092111 --arm D --stop-step 1",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "stage3_invalid_stopped",
+      "command": "CUDA_VISIBLE_DEVICES=4 python tools/analysis/grpo_credit_risk_quickcheck/tiny_train.py --seed 2026092112 --arm A --stop-step 1",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "stage3_invalid_stopped",
+      "command": "CUDA_VISIBLE_DEVICES=5 python tools/analysis/grpo_credit_risk_quickcheck/tiny_train.py --seed 2026092112 --arm B --stop-step 1",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "stage3_invalid_stopped",
+      "command": "CUDA_VISIBLE_DEVICES=6 python tools/analysis/grpo_credit_risk_quickcheck/tiny_train.py --seed 2026092112 --arm C --stop-step 1",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "stage3_invalid_stopped",
+      "command": "CUDA_VISIBLE_DEVICES=7 python tools/analysis/grpo_credit_risk_quickcheck/tiny_train.py --seed 2026092112 --arm D --stop-step 1",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "readonly_finalization",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/audit_failed_update.py",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "readonly_finalization",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/test_probe.py",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "readonly_finalization",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/finalize_evidence.py",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    },
+    {
+      "stage": "readonly_finalization",
+      "command": "python tools/analysis/grpo_credit_risk_quickcheck/write_report.py",
+      "cwd": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921"
+    }
+  ]
+}

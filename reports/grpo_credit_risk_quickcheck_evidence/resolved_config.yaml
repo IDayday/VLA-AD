@@ -1,0 +1,126 @@
+version: 1
+models:
+- a5_sft
+- a5_grpo_300
+main_chain: A5 epoch155 -> formal LFP r4 step300
+early_checkpoint_selection: fixed earliest formal step300 before new results
+checkpoint_selection_uses_current_results: false
+training_group_size: 16
+groups_per_scene: 2
+deployment_groups_per_scene: 2
+deployment_draws_per_group: 16
+native_precision: autocast_float16_with_fp32_parameters (archived 16-mixed)
+deployment_precision: float32 (repository evaluation standard)
+vlm_precision: bfloat16 using archived feature builder
+historical_hidden_cache_missing: true
+observation_policy: Rebuild from 4 observed frames with archived VLM builder; not
+  byte-identical recovery of deleted historical hidden cache.
+old_fp32_trajectory_cache_reuse: false
+read_only: true
+optimizer_updates: 0
+seed: 2026092107
+bootstrap_replicates: 3000
+bootstrap_unit: log_cluster_paired_scene_equal
+smoke_scenes: 16
+formal_scenes: 512
+positive_credit_epsilon: 1.0e-08
+component_equality_atol: 1.0e-06
+tolerances:
+  scalar_batch: 1.0e-08
+  batch_companions: 1.0e-08
+  native_capture: 0.0
+  parameter_buffer_hash: exact
+  repeated_sampling: 0.0
+train_scalar_weights:
+  EP: 10.0
+  TTC: 5.0
+  Comfort: 2.0
+  DDC: 0.0
+official_scalar_weights:
+  EP: 5.0
+  TTC: 5.0
+  Comfort: 2.0
+  DDC: 0.0
+shadow_ep_constant: 1.0
+advantage_batch_size: 64
+advantage_batch_semantics: Fixed hash batches of 64 newly sampled scenes; equivalent
+  DDP global reduction, NOT historical minibatches or historical advantages.
+matching:
+  primary_model: a5_sft
+  protocol: native_grpo
+  require_NC_DAC_TTC_1: true
+  DDC: actual LFP GT-relative threshold
+  min_pdms: 0.95
+  max_pdms_difference: 0.01
+  progress_tolerance_m: 0.5
+  progress_sensitivities_m:
+  - 0.25
+  - 1.0
+  max_pairs_per_scene: 2
+  pair_selection: fixed hash, nonoverlapping candidate IDs; within original G16 groups
+    primary; merged G32 coverage descriptive
+  exclude_low_progress_branch_from_primary: true
+margins:
+  object_clearance: time-aligned official footprints, exclude red-light pseudo-objects,
+    cap unavailable at null
+  road_margin: signed footprint clearance to union of official drivable semantic layers
+  selector: min(object_clearance capped at 10m, signed road clearance capped at 10m);
+    null when both unavailable
+perturbations:
+  selection_n: 8
+  evaluation_n: 8
+  streams:
+  - selection_v1
+  - evaluation_v1
+  - training_v1
+  candidate_amplitudes:
+  - lateral_m: 0.05
+    longitudinal_m: 0.2
+  - lateral_m: 0.1
+    longitudinal_m: 0.5
+  primary_choice_rule: Use smaller amplitude if calibration numerical/dynamics pass
+    >=99%; otherwise BLOCKED; no risk-based amplitude selection and no confirmation-based
+    increase
+  basis: b(u)=16*u^2*(1-u)^2, b(0)=b(1)=b'(0)=b'(1)=0; local path-tangent/Frenet frame;
+    analytic derivative-consistent heading
+  dynamics:
+    max_speed_mps: 40.0
+    max_acceleration_mps2: 12.0
+    max_jerk_mps3: 40.0
+    max_yaw_rate_rps: 2.0
+    allow_baseline_exceedance_if_not_worse: true
+  primary_risk: mean(NC<1 or DAC<1 or TTC<1)
+  external_probe_trigger: confirmation within-group eligible scenes<50 OR high-score-group
+    coverage<0.10
+  external_max_scenes_per_split: 64
+  external_max_candidates: 6
+update_gate:
+  min_confirmation_scenes: 50
+  min_high_score_group_coverage: 0.1
+  risk_ci_upper_lt: 0.0
+  nominal_pdms_ci_lower_ge: -0.005
+  require_no_NC_DAC_reverse_harm: true
+  require_identity_and_smoke: true
+tiny_update:
+  start: a5_sft
+  arms:
+  - A
+  - B
+  - C
+  - D
+  seeds:
+  - 2026092111
+  - 2026092112
+  steps:
+  - 0
+  - 1
+  - 8
+  lambda_risk: 1.0
+  ep_weight_arm_B: 0.5
+  lr: 1.0e-05
+  global_batch: 64
+  per_gpu_batch: 8
+  world_size: 8
+  optimizer: actual archived AdamW recipe
+  only_if: WITHIN_GROUP_SIGNAL and identity/scoring gate PASS
+  no_automatic_additional_experiments: true

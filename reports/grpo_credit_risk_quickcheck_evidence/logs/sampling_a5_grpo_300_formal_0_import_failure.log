@@ -1,0 +1,28 @@
+/root/miniconda3/envs/navsim/lib/python3.9/site-packages/timm/models/layers/__init__.py:49: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers
+  warnings.warn(f"Importing from {__name__} is deprecated, please import via timm.layers", FutureWarning)
+Traceback (most recent call last):
+  File "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/sample.py", line 82, in <module>
+    p=argparse.ArgumentParser();p.add_argument('--model',required=True);p.add_argument('--smoke',action='store_true');p.add_argument('--rank',type=int,default=0);p.add_argument('--world',type=int,default=1);main(p.parse_args())
+  File "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/sample.py", line 52, in main
+    p,m=load(a.model);before=state_hash(p);checks=[];rows=scenes(smoke=a.smoke)[a.rank::a.world]
+  File "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/sample.py", line 11, in load
+    p=load_planner(dict(m,path=m['checkpoint_path'],config=dict(m['config'],grpo=False))).requires_grad_(False)
+  File "/mnt/project/VLA-AD/scripts/evaluation/distribution_audit/run.py", line 74, in load_planner
+    from navsim.agents.recogdrive.recogdrive_diffusion_planner import ReCogDriveDiffusionPlanner, ReCogDriveDiffusionPlannerConfig
+  File "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/recogdrive_diffusion_planner.py", line 36, in <module>
+    from navsim.common.dataclasses import Trajectory
+  File "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/common/dataclasses.py", line 17, in <module>
+    from nuplan.common.maps.abstract_map import AbstractMap
+  File "/root/miniconda3/envs/navsim/lib/python3.9/site-packages/nuplan/common/maps/abstract_map.py", line 10, in <module>
+    from nuplan.common.maps.abstract_map_objects import (
+  File "/root/miniconda3/envs/navsim/lib/python3.9/site-packages/nuplan/common/maps/abstract_map_objects.py", line 9, in <module>
+    from nuplan.common.maps.maps_datatypes import IntersectionType, LaneConnectorType, StopLineType
+  File "/root/miniconda3/envs/navsim/lib/python3.9/site-packages/nuplan/common/maps/maps_datatypes.py", line 7, in <module>
+    import geopandas as gpd
+  File "/root/miniconda3/envs/navsim/lib/python3.9/site-packages/geopandas/__init__.py", line 3, in <module>
+    from geopandas.geoseries import GeoSeries
+  File "/root/miniconda3/envs/navsim/lib/python3.9/site-packages/geopandas/geoseries.py", line 19, in <module>
+    from geopandas.explore import _explore_geoseries
+  File "/root/miniconda3/envs/navsim/lib/python3.9/site-packages/geopandas/explore.py", line 3, in <module>
+    from statistics import mean
+ImportError: cannot import name 'mean' from 'statistics' (/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/statistics.py)

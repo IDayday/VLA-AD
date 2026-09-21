@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "state_before": "e611ab78f6818430d2820bc91f91128e0dc81ad19f2026a27b70e86631514208",
+  "state_after": "e611ab78f6818430d2820bc91f91128e0dc81ad19f2026a27b70e86631514208",
+  "checks": [],
+  "optimizer_steps": 0,
+  "backward_calls": 0,
+  "group_size": 16,
+  "actual_entry": "forward_grpo -> forward_lfp_grpo -> sample_chain",
+  "runtime_sha256": "d46e0c7f18f48df0bc1edd1f8937594e2fd66e57f066381962e8d5964281080b",
+  "scenes": 128,
+  "native_precision": "autocast_float16",
+  "deployment_precision": "float32",
+  "seconds": 146.17657017707825
+}

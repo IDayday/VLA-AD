@@ -1,0 +1,1 @@
+Committed evidence snapshot. Canonical replay caches and step0 checkpoints remain at /mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck. Large feature/model caches are indexed, not copied into git. Eight first-step optimizer attempts are INVALID_STOPPED; step8 and updated-policy evaluations are NOT_RUN.

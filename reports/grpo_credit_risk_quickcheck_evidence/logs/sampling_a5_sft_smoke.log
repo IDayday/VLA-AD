@@ -1,0 +1,4 @@
+/root/miniconda3/envs/navsim/lib/python3.9/site-packages/timm/models/layers/__init__.py:49: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers
+  warnings.warn(f"Importing from {__name__} is deprecated, please import via timm.layers", FutureWarning)
+SAMPLE a5_sft 1 16 4.341103553771973
+SAMPLE a5_sft 9 16 19.637744665145874

@@ -1,0 +1,45 @@
+/root/miniconda3/envs/navsim/lib/python3.9/site-packages/timm/models/layers/__init__.py:49: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers
+  warnings.warn(f"Importing from {__name__} is deprecated, please import via timm.layers", FutureWarning)
+BACKWARD 2026092111 A 1 1 {'policy': 0.06630238890647888, 'kl': 0.0, 'logprob_mean': 1.0078775882720947, 'logprob_min': -6.827019214630127, 'logprob_max': 2.2999372482299805}
+BACKWARD 2026092111 A 1 17 {'policy': -0.41835543513298035, 'kl': 3.6025244298798498e-06, 'logprob_mean': 0.9881700277328491, 'logprob_min': -6.9596757888793945, 'logprob_max': 2.2999324798583984}
+BACKWARD 2026092111 A 1 33 {'policy': 0.11406882852315903, 'kl': 2.953962393803522e-06, 'logprob_mean': 0.9798171520233154, 'logprob_min': -6.332141876220703, 'logprob_max': 2.299935817718506}
+BACKWARD 2026092111 A 1 49 {'policy': -0.0402599573135376, 'kl': 1.6986242599159596e-06, 'logprob_mean': 1.004353404045105, 'logprob_min': -5.563795566558838, 'logprob_max': 2.299936294555664}
+Traceback (most recent call last):
+  File "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/tiny_train.py", line 45, in main
+    records.append(record);save(dest/'steps.json',records);save(dest/'cost.json',counts)
+  File "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/common.py", line 31, in save
+    t.write_text(json.dumps(x,indent=2,allow_nan=False,default=enc)+'\n');t.replace(p)
+  File "/root/miniconda3/envs/navsim/lib/python3.9/json/__init__.py", line 234, in dumps
+    return cls(
+  File "/root/miniconda3/envs/navsim/lib/python3.9/json/encoder.py", line 201, in encode
+    chunks = list(chunks)
+  File "/root/miniconda3/envs/navsim/lib/python3.9/json/encoder.py", line 429, in _iterencode
+    yield from _iterencode_list(o, _current_indent_level)
+  File "/root/miniconda3/envs/navsim/lib/python3.9/json/encoder.py", line 325, in _iterencode_list
+    yield from chunks
+  File "/root/miniconda3/envs/navsim/lib/python3.9/json/encoder.py", line 397, in _iterencode_dict
+    yield _floatstr(value)
+  File "/root/miniconda3/envs/navsim/lib/python3.9/json/encoder.py", line 239, in floatstr
+    raise ValueError(
+ValueError: Out of range float values are not JSON compliant: nan
+
+Traceback (most recent call last):
+  File "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/tiny_train.py", line 53, in <module>
+    p=argparse.ArgumentParser();p.add_argument('--seed',type=int,required=True);p.add_argument('--arm',choices=list('ABCD'),required=True);p.add_argument('--stop-step',type=int,default=8);p.add_argument('--resume',action='store_true');main(p.parse_args())
+  File "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/tiny_train.py", line 45, in main
+    records.append(record);save(dest/'steps.json',records);save(dest/'cost.json',counts)
+  File "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/common.py", line 31, in save
+    t.write_text(json.dumps(x,indent=2,allow_nan=False,default=enc)+'\n');t.replace(p)
+  File "/root/miniconda3/envs/navsim/lib/python3.9/json/__init__.py", line 234, in dumps
+    return cls(
+  File "/root/miniconda3/envs/navsim/lib/python3.9/json/encoder.py", line 201, in encode
+    chunks = list(chunks)
+  File "/root/miniconda3/envs/navsim/lib/python3.9/json/encoder.py", line 429, in _iterencode
+    yield from _iterencode_list(o, _current_indent_level)
+  File "/root/miniconda3/envs/navsim/lib/python3.9/json/encoder.py", line 325, in _iterencode_list
+    yield from chunks
+  File "/root/miniconda3/envs/navsim/lib/python3.9/json/encoder.py", line 397, in _iterencode_dict
+    yield _floatstr(value)
+  File "/root/miniconda3/envs/navsim/lib/python3.9/json/encoder.py", line 239, in floatstr
+    raise ValueError(
+ValueError: Out of range float values are not JSON compliant: nan

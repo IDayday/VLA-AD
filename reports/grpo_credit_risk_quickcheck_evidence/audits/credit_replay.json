@@ -1,0 +1,11 @@
+{
+  "status": "PASS",
+  "native_equivalence": "exact float32 tensor equality for all groups",
+  "group_size": 16,
+  "batch_size": 64,
+  "scope": "new sample credit, not recovered historical training advantages",
+  "optimizer_steps": 0,
+  "shadow_constant": 1.0,
+  "shadow_fixed": "replace candidate/reference EP by 1, rebuild scalar AND nonlinear margin, retain original eligibility and normalization moments",
+  "shadow_full": "replace candidate/reference EP by 1; recompute full archived LFP chain"
+}

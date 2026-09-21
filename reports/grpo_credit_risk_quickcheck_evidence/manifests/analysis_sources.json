@@ -1,0 +1,110 @@
+[
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/analyze_credit.py",
+    "sha256": "907e94480c0acaf11008805dbd2afdd6385cd6be5912a9c7af3d92ae5df1802a"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/analyze_risk.py",
+    "sha256": "15d689d7e458cbfe2c82fa3399ca10900da8bb0221f68514d24eadcfa3347397"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/audit_failed_update.py",
+    "sha256": "7e9fb24474f7fe768b537d6ea02f80918897ea0deecfb0b582a2964e6ef87547"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/audit_runtime.py",
+    "sha256": "197bd6f63b39fd32642c2d489257d5117e2288832e7e5d8c473e289ca9cfe7b0"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/clustered_stats.py",
+    "sha256": "fcf42ed863acbb7fc11f396cf411ae6927da7e0387b7985dede73ffd7547635b"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/common.py",
+    "sha256": "ccaef8a79fe64968876f281c5c65278952e04154e69c33937d9f6e52ec49f9c9"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/credit.py",
+    "sha256": "6eb9a0873cec133b4257a7a08be6bf41144001df9655a8a64f0ca5b836af99d3"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/features.py",
+    "sha256": "81f11fd71df82ee1087b80c8b55c58d7feb43c1d45778f34a372cead3cba9f6c"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/finalize_evidence.py",
+    "sha256": "1d326d342b3bbb8c6369fcc33772d54fe18122ebe51fff49093f0b117a26b57a"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/freeze_tiny.py",
+    "sha256": "5ea03d1133da09b036253b12706d34bb7ea65fb9c3cf7e1b38e8a487f7b13a11"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/matching.py",
+    "sha256": "bd9219cbfb21b550abd65584bbf927016998cc5efbcbcaf7da34aa273f061a9b"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/pairwise_credit.py",
+    "sha256": "499a66e36a0e60b56f54ed0a0686054cbd45ac88d159fc8c0af201664ebf5f5f"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/perturb.py",
+    "sha256": "f0cdc80c70771c7117f20150034ef694dc1ea1a0c10d2d06be633696809b33e3"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/prepare.py",
+    "sha256": "51f1015145a9f4057283b5ff55695f93e39fc4db0eefcd7d05538f72d1cc6e95"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/risk_probe.py",
+    "sha256": "a96fb91979c841d6e4ffcf29a3268e75426c43ecfa070da0947284635f37854f"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/sample.py",
+    "sha256": "2bdad09708800cc64e254c767bd48e41a776665b74aede97bf1eb326d64c6589"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/score_nominal.py",
+    "sha256": "3d4aea24e1202681d65c19ff78dd18c7cbe5e4bc6e4cb253b006d26e9f134d3b"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/scoring.py",
+    "sha256": "139138228721296bc0a5a5a29a5c570048796d64eac19e2592e69b689bffecf5"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/test_probe.py",
+    "sha256": "6e4cc2835bb05034ba7f564b3439f35227596dfe0b09bfded455735e1b144b72"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/tiny_eval.py",
+    "sha256": "0180a8edef4443b8f3a942e32acc0476962e117f5e6e04f94ea95994c2c4cd4b"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/tiny_norm_control.py",
+    "sha256": "a74fda9b1372e4da9c5ce432d0c5fd5bc3066592c28ead88f2f46e1ee21159ac"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/tiny_shared.py",
+    "sha256": "b7d2585831b22c437ae654d3328a7cafb84dd0eee2235bf37482ab6014aa7d3f"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/tiny_support.py",
+    "sha256": "75d3a03a61c3fbf835845f960d012d5fcb51a8dc8f059d10e23914b57b2db7b3"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/tiny_train.py",
+    "sha256": "c0b3a14f11e9fc5f20260fb9a5671fe900f79dceb6acb291e63bf86dc227ff91"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/verify_smoke.py",
+    "sha256": "e94ed84141a379590a8903bbec2a8584bc479223541e8715b5bda2298505ac20"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/verify_tiny_loss.py",
+    "sha256": "71320713dc0e5a6b8db71fecd8c2577c794f53ffb1395f301d8d1657ba47b1cb"
+  },
+  {
+    "path": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/write_report.py",
+    "sha256": "2736dde04f48c919f49529dd66c71313facd56c4daca0daff276e2d380e3632e"
+  }
+]

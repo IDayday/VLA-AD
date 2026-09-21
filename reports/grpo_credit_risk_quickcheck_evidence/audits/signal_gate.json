@@ -1,0 +1,90 @@
+{
+  "status": "WITHIN_GROUP_SIGNAL",
+  "checks": {
+    "A_risk_ci_upper_lt0": true,
+    "A_nominal_pdms_ci_lower_ge_minus005": true,
+    "A_no_clear_NC_DAC_reverse_harm": true,
+    "B_risk_ci_upper_lt0": true,
+    "B_nominal_pdms_ci_lower_ge_minus005": true,
+    "B_no_clear_NC_DAC_reverse_harm": true,
+    "at_least50_native_confirmation_scenes": true,
+    "high_score_group_coverage_ge10pct": true,
+    "progress_constraint_preserved": true,
+    "identity_scoring_pass": true,
+    "calibration_freeze_pass": true
+  },
+  "values": {
+    "A_evaluation_risk": {
+      "mean": -0.003984899328859061,
+      "low": -0.007705479452054794,
+      "high": -0.0008801277947404702,
+      "scenes": 149.0,
+      "logs": 112.0
+    },
+    "A_nominal_PDMS": {
+      "mean": -0.0005407874258900071,
+      "low": -0.0007050817048836269,
+      "high": -0.0003945142801227899,
+      "scenes": 149.0,
+      "logs": 112.0
+    },
+    "A_evaluation_NC_fail": {
+      "mean": -0.0012583892617449664,
+      "low": -0.0035971223021582736,
+      "high": 0.0,
+      "scenes": 149.0,
+      "logs": 112.0
+    },
+    "A_evaluation_DAC_fail": {
+      "mean": -0.002936241610738255,
+      "low": -0.00625,
+      "high": -0.00043096067548417546,
+      "scenes": 149.0,
+      "logs": 112.0
+    },
+    "B_evaluation_risk": {
+      "mean": -0.004823825503355705,
+      "low": -0.009156607723486703,
+      "high": -0.0014580918874172177,
+      "scenes": 149.0,
+      "logs": 112.0
+    },
+    "B_nominal_PDMS": {
+      "mean": 4.1273086507679976e-05,
+      "low": 0.0,
+      "high": 0.00010742414001419993,
+      "scenes": 149.0,
+      "logs": 112.0
+    },
+    "B_evaluation_NC_fail": {
+      "mean": -0.0014681208053691276,
+      "low": -0.003981103469304784,
+      "high": 0.0,
+      "scenes": 149.0,
+      "logs": 112.0
+    },
+    "B_evaluation_DAC_fail": {
+      "mean": -0.003145973154362416,
+      "low": -0.006465709667487685,
+      "high": -0.0005971337579617834,
+      "scenes": 149.0,
+      "logs": 112.0
+    }
+  },
+  "thresholds": {
+    "min_confirmation_scenes": 50,
+    "min_high_score_group_coverage": 0.1,
+    "risk_ci_upper_lt": 0.0,
+    "nominal_pdms_ci_lower_ge": -0.005,
+    "require_no_NC_DAC_reverse_harm": true,
+    "require_identity_and_smoke": true
+  },
+  "valid_confirmation_scenes": 149,
+  "confirmation_logs": 112,
+  "all_group_coverage": 0.572265625,
+  "high_score_group_coverage": 0.8517441860465116,
+  "optimizer": "ELIGIBLE_PENDING_RUN",
+  "evaluation_valid_draws": 4704,
+  "NC_DAC_harm_rule": "clear reverse harm means paired 95% CI entirely above zero; all mean differences also reported",
+  "counts": "pairs and perturbations are not independent scene sample sizes"
+}

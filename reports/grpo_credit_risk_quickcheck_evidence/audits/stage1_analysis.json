@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "scenes": 512,
+  "logs": {
+    "calibration": 162,
+    "confirmation": 174
+  },
+  "positive_mass": "sum(max(A,0)); neither gradient contribution nor causal attribution",
+  "strict_ep_only": "feasible subset: other components and ALL actual gates identical; EP varies",
+  "component_only": "descriptive relaxation allows EP-dependent progress/Pareto gate changes",
+  "linear_decomposition": "only feasible equal multiplicative gates; nonlinear reference margin reported separately; no forced linear percentage",
+  "official_control": "descriptive existing reports only; no extra sampling"
+}

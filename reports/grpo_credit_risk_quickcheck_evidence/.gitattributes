@@ -1,0 +1,3 @@
+# Preserve archived source and the pre-existing user diff byte-for-byte.
+source_snapshots/** -whitespace
+manifests/initial_tracked_diff.patch -whitespace

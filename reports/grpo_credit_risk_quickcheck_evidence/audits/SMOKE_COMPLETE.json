@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "checks": {
+    "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/audits/features_smoke_0.json": "ccc3f3363195b062abeebcf33c3909245966394ec65651a60350a720c492ed15",
+    "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/audits/sampling_a5_sft_smoke_0.json": "72588ad4208784ff8a4cfa4504454722d00606ef963149f0e94ff9d403976849",
+    "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/audits/sampling_a5_grpo_300_smoke_0.json": "0b37a8928b9527ba3a16305cfea4a2d48f135f0db265bb82854ef3d21d5f6b89",
+    "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/audits/scoring_smoke.json": "6f75e37e8172399cd671b33851bacf94852ae23c0b5a2d8a65b4fc0965d93de3"
+  },
+  "scenes": 16,
+  "optimizer_steps": 0,
+  "current_reconstructed_identity": "PASS",
+  "historical_bit_exact_identity": "NOT_PROVABLE: original hidden cache and dirty diff unavailable",
+  "historical_precision": "BF16 VLM compute -> FP32 feature storage; FP16 autocast action head native GRPO; FP32 deployment",
+  "numerical_tolerance": 1e-08
+}

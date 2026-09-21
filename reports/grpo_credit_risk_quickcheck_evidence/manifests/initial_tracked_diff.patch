@@ -1,0 +1,58 @@
+diff --git a/.gitignore b/.gitignore
+index 9481bd5..1e3f880 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -22,3 +22,7 @@ modelscope_cache/
+ outputs/
+ wandb/
+ lightning_logs/
++
++# Downloaded SimScale archives and extracted experiment inputs
++/data/simscale/downloads/
++/data/simscale/recogdrive_pdm0_33k/
+diff --git a/navsim/planning/metric_caching/metric_cache_processor.py b/navsim/planning/metric_caching/metric_cache_processor.py
+index 4613596..5e60fc6 100644
+--- a/navsim/planning/metric_caching/metric_cache_processor.py
++++ b/navsim/planning/metric_caching/metric_cache_processor.py
+@@ -31,6 +31,7 @@ class MetricCacheProcessor:
+         self,
+         cache_path: Optional[str],
+         force_feature_computation: bool,
++        observation_time_horizon: float = 5.0,
+     ):
+         """
+         Initialize class.
+@@ -39,6 +40,7 @@ class MetricCacheProcessor:
+         """
+         self._cache_path = pathlib.Path(cache_path) if cache_path else None
+         self._force_feature_computation = force_feature_computation
++        self._observation_time_horizon = observation_time_horizon
+ 
+         # TODO: Add to some config
+         self._future_sampling = TrajectorySampling(num_poses=50, interval_length=0.1)
+@@ -98,7 +100,7 @@ class MetricCacheProcessor:
+         # TODO: add to config
+         state_size = 6  # (time, x, y, heading, velo_x, velo_y)
+ 
+-        time_horizon = 5.0  # [s]
++        time_horizon = self._observation_time_horizon  # [s]; standard NAVSIM defaults to 5.0
+         resolution_step = 0.5  # [s]
+         interpolate_step = 0.1  # [s]
+ 
+@@ -197,9 +199,14 @@ class MetricCacheProcessor:
+             interpolated_detection_tracks.append(DetectionsTracks(TrackedObjects(interpolated_tracks)))
+ 
+         # convert to pdm observation
++        observation_sampling = TrajectorySampling(time_horizon=time_horizon, interval_length=interpolate_step)
++        observation_proposal_sampling = TrajectorySampling(
++            num_poses=observation_sampling.num_poses - int(1 / interpolate_step),
++            interval_length=interpolate_step,
++        )
+         pdm_observation = PDMObservation(
+-            self._future_sampling,
+-            self._proposal_sampling,
++            observation_sampling,
++            observation_proposal_sampling,
+             self._map_radius,
+             observation_sample_res=1,
+         )

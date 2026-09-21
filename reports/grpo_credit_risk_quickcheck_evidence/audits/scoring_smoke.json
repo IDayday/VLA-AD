@@ -1,0 +1,1526 @@
+{
+  "status": "PASS",
+  "results": [
+    {
+      "token": "008a9f9434c75b99",
+      "status": "PASS",
+      "checks": [
+        {
+          "model": "a5_sft",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 13.833790400701382
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 13.833790400701382
+            }
+          ]
+        },
+        {
+          "model": "a5_sft",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 13.833790400701382
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 13.833790400701382
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 13.833790400701382
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 13.833790400701382
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 13.833790400701382
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 13.833790400701382
+            }
+          ]
+        }
+      ],
+      "metric_cache_sha256": "93ff819fe6156fc7518a53ad56508e2a31265d64c8872a173ddff988ab399b28"
+    },
+    {
+      "token": "a4c4b9cae9f356bb",
+      "status": "PASS",
+      "checks": [
+        {
+          "model": "a5_sft",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 26.741662918454693
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 26.741662918454693
+            }
+          ]
+        },
+        {
+          "model": "a5_sft",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 26.741662918454693
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 26.741662918454693
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 26.741662918454693
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 26.741662918454693
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 26.741662918454693
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 26.741662918454693
+            }
+          ]
+        }
+      ],
+      "metric_cache_sha256": "75daf72eeed3c73c273a5ef7c02db012077b27604027f5f3e12dc59a7e3a3733"
+    },
+    {
+      "token": "288f0194b6d45858",
+      "status": "PASS",
+      "checks": [
+        {
+          "model": "a5_sft",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 26.095404887359635
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 26.095404887359635
+            }
+          ]
+        },
+        {
+          "model": "a5_sft",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 26.095404887359635
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 26.095404887359635
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 26.095404887359635
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 26.095404887359635
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 26.095404887359635
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 26.095404887359635
+            }
+          ]
+        }
+      ],
+      "metric_cache_sha256": "83af9f7de2a2a9571ca36d8adc14192f1fd7b4d4143e8d3199775738bb95255d"
+    },
+    {
+      "token": "2617f0cd70705817",
+      "status": "PASS",
+      "checks": [
+        {
+          "model": "a5_sft",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 18.766903020812045
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 18.766903020812045
+            }
+          ]
+        },
+        {
+          "model": "a5_sft",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 18.766903020812045
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 18.766903020812045
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 18.766903020812045
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 18.766903020812045
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 18.766903020812045
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 18.766903020812045
+            }
+          ]
+        }
+      ],
+      "metric_cache_sha256": "dbf6560707c2dbd06cac3c703f5a362e1299de80e2fe482a2b47f922f259413b"
+    },
+    {
+      "token": "bae5037e472250dc",
+      "status": "PASS",
+      "checks": [
+        {
+          "model": "a5_sft",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 14.913662336376206
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 14.913662336376206
+            }
+          ]
+        },
+        {
+          "model": "a5_sft",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 14.913662336376206
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 14.913662336376206
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 14.913662336376206
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 14.913662336376206
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 14.913662336376206
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 14.913662336376206
+            }
+          ]
+        }
+      ],
+      "metric_cache_sha256": "a1e52b3338d97741c385c6517bd54f59abf34649152f442a877ad2d6c5b207ae"
+    },
+    {
+      "token": "2c274b54e82b55e7",
+      "status": "PASS",
+      "checks": [
+        {
+          "model": "a5_sft",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 22.55437095376054
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 22.55437095376054
+            }
+          ]
+        },
+        {
+          "model": "a5_sft",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 22.55437095376054
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 22.55437095376054
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 22.55437095376054
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 22.55437095376054
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 22.55437095376054
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 22.55437095376054
+            }
+          ]
+        }
+      ],
+      "metric_cache_sha256": "0bb12a2a035f9b29bb9e54796c8e84d4623212429c6cb1255cc9757eade5179e"
+    },
+    {
+      "token": "8ae2f982585058f2",
+      "status": "PASS",
+      "checks": [
+        {
+          "model": "a5_sft",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 32.751940300869904
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 32.751940300869904
+            }
+          ]
+        },
+        {
+          "model": "a5_sft",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 32.751940300869904
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 32.751940300869904
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 32.751940300869904
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 32.751940300869904
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 32.751940300869904
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 32.751940300869904
+            }
+          ]
+        }
+      ],
+      "metric_cache_sha256": "67019b84b16b24e986a585592e0ba9138d8810881c3986e1e60b775f91ac1668"
+    },
+    {
+      "token": "7da6b01adf435bd5",
+      "status": "PASS",
+      "checks": [
+        {
+          "model": "a5_sft",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 35.98361548362029
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 35.98361548362029
+            }
+          ]
+        },
+        {
+          "model": "a5_sft",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 35.98361548362029
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 35.98361548362029
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 35.98361548362029
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 35.98361548362029
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 35.98361548362029
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 35.98361548362029
+            }
+          ]
+        }
+      ],
+      "metric_cache_sha256": "682c5d03090ad2c945a17923ec02f02789842a7b84ec3dfabbe367d96f118586"
+    },
+    {
+      "token": "cc8872f4a1fb5895",
+      "status": "PASS",
+      "checks": [
+        {
+          "model": "a5_sft",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 24.74012565795591
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 24.74012565795591
+            }
+          ]
+        },
+        {
+          "model": "a5_sft",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 24.74012565795591
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 24.74012565795591
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 24.74012565795591
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 24.74012565795591
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 24.74012565795591
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 24.74012565795591
+            }
+          ]
+        }
+      ],
+      "metric_cache_sha256": "5a6b84f3b355e13dea8a49585c8ae50fd5fb37ee236f969e991608acd80f678c"
+    },
+    {
+      "token": "e9cd4fda706e5516",
+      "status": "PASS",
+      "checks": [
+        {
+          "model": "a5_sft",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 7.36516299664374
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 7.36516299664374
+            }
+          ]
+        },
+        {
+          "model": "a5_sft",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 7.36516299664374
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 7.36516299664374
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 7.36516299664374
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 7.36516299664374
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 7.36516299664374
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 7.36516299664374
+            }
+          ]
+        }
+      ],
+      "metric_cache_sha256": "f62a5bfb78fa3af17454c26d8d2cbc9c85fdf76eaf5869e537a4d33b1bebcb80"
+    },
+    {
+      "token": "a893fc739c0b567c",
+      "status": "PASS",
+      "checks": [
+        {
+          "model": "a5_sft",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 10.442991058940173
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 10.442991058940173
+            }
+          ]
+        },
+        {
+          "model": "a5_sft",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 10.442991058940173
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 10.442991058940173
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 10.442991058940173
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 10.442991058940173
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 10.442991058940173
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 10.442991058940173
+            }
+          ]
+        }
+      ],
+      "metric_cache_sha256": "5800466e6af9afa0602f132b0116b0d9c838f2c4a71408717f7bf4a1f3265d7f"
+    },
+    {
+      "token": "e9c9a2873a275365",
+      "status": "PASS",
+      "checks": [
+        {
+          "model": "a5_sft",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 15.602679441789576
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 15.602679441789576
+            }
+          ]
+        },
+        {
+          "model": "a5_sft",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 15.602679441789576
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 15.602679441789576
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 15.602679441789576
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 15.602679441789576
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 15.602679441789576
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 15.602679441789576
+            }
+          ]
+        }
+      ],
+      "metric_cache_sha256": "f287916317da12de43c4bda0451fdca0af517cd6f4ad5a818ed1ea8cbf0921d0"
+    },
+    {
+      "token": "570334268a395022",
+      "status": "PASS",
+      "checks": [
+        {
+          "model": "a5_sft",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 28.87576110507075
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 28.87576110507075
+            }
+          ]
+        },
+        {
+          "model": "a5_sft",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 28.87576110507075
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 28.87576110507075
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 28.87576110507075
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 28.87576110507075
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 28.87576110507075
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 28.87576110507075
+            }
+          ]
+        }
+      ],
+      "metric_cache_sha256": "cbd03111c34100de68429c77204ee7d0320f6001d846d80ccfb26a9dee8ade27"
+    },
+    {
+      "token": "de0fb293bb4859e7",
+      "status": "PASS",
+      "checks": [
+        {
+          "model": "a5_sft",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 7.986793620977721
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 7.986793620977721
+            }
+          ]
+        },
+        {
+          "model": "a5_sft",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 7.986793620977721
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 7.986793620977721
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 7.986793620977721
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 7.986793620977721
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 7.986793620977721
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 7.986793620977721
+            }
+          ]
+        }
+      ],
+      "metric_cache_sha256": "4b7320d4c4d1a1fc0b48b9b21ac29bb2f3032dca6f8589567041047ce900dc38"
+    },
+    {
+      "token": "39fe00229f7b5ac4",
+      "status": "PASS",
+      "checks": [
+        {
+          "model": "a5_sft",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 23.826691116345167
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 23.826691116345167
+            }
+          ]
+        },
+        {
+          "model": "a5_sft",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 23.826691116345167
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 23.826691116345167
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 23.826691116345167
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 23.826691116345167
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 23.826691116345167
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 23.826691116345167
+            }
+          ]
+        }
+      ],
+      "metric_cache_sha256": "7ecd6f5ca8ac179fb59195d47e89a64ea1a5b1aeeda4c7bdd259da8ceb779843"
+    },
+    {
+      "token": "b1199a48987b5f73",
+      "status": "PASS",
+      "checks": [
+        {
+          "model": "a5_sft",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 5.520731124119656
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 5.520731124119656
+            }
+          ]
+        },
+        {
+          "model": "a5_sft",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 5.520731124119656
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 5.520731124119656
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "native_grpo",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 5.520731124119656
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 5.520731124119656
+            }
+          ]
+        },
+        {
+          "model": "a5_grpo_300",
+          "protocol": "deployment",
+          "checks": [
+            {
+              "training_weights": false,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 5.520731124119656
+            },
+            {
+              "training_weights": true,
+              "scalar_batch_error": 0.0,
+              "fast_standard_error": 0.0,
+              "companion_error": 0.0,
+              "raw_progress_exact": true,
+              "baseline_raw_progress": 5.520731124119656
+            }
+          ]
+        }
+      ],
+      "metric_cache_sha256": "7952f7327f4a5aecf0682ddfded54aaf0d3cab3fcc4222b4a76bfa2836c12360"
+    }
+  ],
+  "errors": []
+}

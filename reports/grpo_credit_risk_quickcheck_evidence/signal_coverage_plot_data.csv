@@ -1,0 +1,4 @@
+split,model,protocol,scope,tolerance_m,scenes,matched_scene,matched_groups,total_groups,high_score_groups,matched_high_score_groups,candidate_pairs,full_score_pairs,all_group_coverage,high_score_group_coverage,status,generated_candidates
+confirmation,a5_sft,native_grpo,merged_two_groups,0.5,256,152.0,301.0,512.0,344.0,297.0,52643.0,36382.0,0.587890625,0.8633720930232558,MEASURED,
+confirmation,a5_sft,native_grpo,within_group,0.5,256,149.0,293.0,512.0,344.0,293.0,25469.0,17613.0,0.572265625,0.8517441860465116,MEASURED,
+confirmation,external,constructed,external_constructed,0.5,64,,,,,,,,,,NOT_RUN_TRIGGER_FALSE,0.0

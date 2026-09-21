@@ -1,0 +1,10 @@
+/root/miniconda3/envs/navsim/lib/python3.9/site-packages/timm/models/layers/__init__.py:49: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers
+  warnings.warn(f"Importing from {__name__} is deprecated, please import via timm.layers", FutureWarning)
+Traceback (most recent call last):
+  File "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/sample.py", line 80, in <module>
+    p=argparse.ArgumentParser();p.add_argument('--model',required=True);p.add_argument('--smoke',action='store_true');p.add_argument('--rank',type=int,default=0);p.add_argument('--world',type=int,default=1);main(p.parse_args())
+  File "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/sample.py", line 58, in main
+    vl,action=inputs(t);arrays={}
+  File "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/sample.py", line 24, in inputs
+    assert f['_metadata']['observation_only'] and f['_metadata']['precision']=='torch.bfloat16'
+AssertionError

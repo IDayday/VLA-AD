@@ -1,0 +1,1853 @@
+{
+  "status": "PASS",
+  "state_before": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+  "state_after": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+  "optimizer_steps": 0,
+  "records": [
+    {
+      "token": "8caca31e4dc357be",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/8caca31e4dc357be.pt",
+      "sha256": "4ee7bb69be4a70a171c10fe18067c585bf786d784e20f2d11ac667f7a490008b",
+      "metadata": {
+        "token": "8caca31e4dc357be",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "71452581394b54da",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/71452581394b54da.pt",
+      "sha256": "7e1bdb3a59dc3151eabb7a7ae1e4a7b2d257b101e7b56680c616a3e7c415dc5f",
+      "metadata": {
+        "token": "71452581394b54da",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "a11285de52f553a7",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/a11285de52f553a7.pt",
+      "sha256": "b4e848125655598e55668536a48944f28c351b3d793bc5ddbd91eb9f3479ac1b",
+      "metadata": {
+        "token": "a11285de52f553a7",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "cd3f3ec4f0dc515f",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/cd3f3ec4f0dc515f.pt",
+      "sha256": "71fbf628e4b6261ce2285f36f65973ed7791fa854082fa5c391f17a97f61297d",
+      "metadata": {
+        "token": "cd3f3ec4f0dc515f",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "339d5c1111125971",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/339d5c1111125971.pt",
+      "sha256": "a69f724692506a871757a810350da9a8b297dbcdcc75bd3498972888b8b311fb",
+      "metadata": {
+        "token": "339d5c1111125971",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "23e39302332152b2",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/23e39302332152b2.pt",
+      "sha256": "5e5afd183ec868bdef79727299a60d5d5daa9f9272c3e42115b17c785ed4ba1f",
+      "metadata": {
+        "token": "23e39302332152b2",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "808ff2e869ff5d92",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/808ff2e869ff5d92.pt",
+      "sha256": "d14c4ac6e752d5b391ef250f907abccf5b2ecd2880d0778c9d7b4aa632b9922d",
+      "metadata": {
+        "token": "808ff2e869ff5d92",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "f36236f06fb556a0",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/f36236f06fb556a0.pt",
+      "sha256": "5aad04db56040145a39823db431957a1a2e70e98ce629d88dcc404c4491ea7a7",
+      "metadata": {
+        "token": "f36236f06fb556a0",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "d193c14478495b74",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/d193c14478495b74.pt",
+      "sha256": "f6f1a4c94915db132dc992b2603db44df9108677ec1ada6651b966a36f64c51d",
+      "metadata": {
+        "token": "d193c14478495b74",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "7fe6e7ce9cb7559d",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/7fe6e7ce9cb7559d.pt",
+      "sha256": "19a476948b48153e2e90f67d08172b592e498558b24aa3c3a3ad65308780eefc",
+      "metadata": {
+        "token": "7fe6e7ce9cb7559d",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "6864977b221059e4",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/6864977b221059e4.pt",
+      "sha256": "aaf9cc67ea56126b0dc89494469fc17c1699040491591b4bcb26bed36f73a83a",
+      "metadata": {
+        "token": "6864977b221059e4",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "94cf3d2feed759ac",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/94cf3d2feed759ac.pt",
+      "sha256": "fb609842e5fb5382de1323a05d3f11b6cc9d85208d99a155a0fd1b8e5a5946da",
+      "metadata": {
+        "token": "94cf3d2feed759ac",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "a9134306f1575f88",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/a9134306f1575f88.pt",
+      "sha256": "931e77ed83d1cad037a8f7541da08289638edb4f4e77bdc09e0fc6c595406b07",
+      "metadata": {
+        "token": "a9134306f1575f88",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "a02463c8a92d56ce",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/a02463c8a92d56ce.pt",
+      "sha256": "400964f4cf3524f4f738aebf6c41a8cd0083ded6787155c491ec9b6afc7537b7",
+      "metadata": {
+        "token": "a02463c8a92d56ce",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "8b3e9121fd57540f",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/8b3e9121fd57540f.pt",
+      "sha256": "855e6f7d4869fff3c22d7210d7002864593cf056868d5d10cb0a4d65598bb583",
+      "metadata": {
+        "token": "8b3e9121fd57540f",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "025b2d4de25c5036",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/025b2d4de25c5036.pt",
+      "sha256": "204a49a10b64a4c131ae3f969dceeee9291523db56536fd753a822bb3d0b4b1c",
+      "metadata": {
+        "token": "025b2d4de25c5036",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "99adfd4cd925504d",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/99adfd4cd925504d.pt",
+      "sha256": "8205bb854ace047025d0e2ac03b1e2165b8084de275359f5f3612c1271cca054",
+      "metadata": {
+        "token": "99adfd4cd925504d",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "f6741cbf60265367",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/f6741cbf60265367.pt",
+      "sha256": "e260b8c9f688512be70c8d973cc9873b11079da0ac48543a49b38e101231371c",
+      "metadata": {
+        "token": "f6741cbf60265367",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "8142f060944c56fd",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/8142f060944c56fd.pt",
+      "sha256": "4ca4f9989f65eb7e8b2af27af8c772f20df1d5d70d23d2e16a5710d060f03fdc",
+      "metadata": {
+        "token": "8142f060944c56fd",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "8b800af555d35794",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/8b800af555d35794.pt",
+      "sha256": "50a2016ed2a9bd7a17f9d81a5782b9f85858513698b2b45087b9b202b0945db4",
+      "metadata": {
+        "token": "8b800af555d35794",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "caaf3bef91ac58a3",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/caaf3bef91ac58a3.pt",
+      "sha256": "9d467b89126c672141d93c3c0b0ffda2b195d4bb4b387d6a07b6b49477363f9b",
+      "metadata": {
+        "token": "caaf3bef91ac58a3",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "d4b1d28cb67b5618",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/d4b1d28cb67b5618.pt",
+      "sha256": "4952d3290533e220cdcdc1239d72de6811d949af3d5eb1f67a8bf4d13e777517",
+      "metadata": {
+        "token": "d4b1d28cb67b5618",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "0b2061c2aced52de",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/0b2061c2aced52de.pt",
+      "sha256": "cddb7a2b5d670ee10dd44d4ad9bf57d113c2bff6b02e8bb147e03e87b009d06c",
+      "metadata": {
+        "token": "0b2061c2aced52de",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "7b20cfb388a15b3d",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/7b20cfb388a15b3d.pt",
+      "sha256": "150348223dba296db31f668128acd53523dbbbd2dd21e08672d55c95139c96d2",
+      "metadata": {
+        "token": "7b20cfb388a15b3d",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "8eb1bf4722515ad3",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/8eb1bf4722515ad3.pt",
+      "sha256": "ab4156525dc84c6020e75e66fd14d782769d0faa340e7f7f45f4dd13bf431376",
+      "metadata": {
+        "token": "8eb1bf4722515ad3",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "2f7f18f806515128",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/2f7f18f806515128.pt",
+      "sha256": "11834e1242c259ab0bd3c651593a6f30f7dda832304197a781b2f9189990990e",
+      "metadata": {
+        "token": "2f7f18f806515128",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "b63a589b5dcf521d",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/b63a589b5dcf521d.pt",
+      "sha256": "97db7951f3063848f589d3b70649689dfe0fc9e3529c70f718f3b4d8cc748cba",
+      "metadata": {
+        "token": "b63a589b5dcf521d",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "3e83f47571b05337",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/3e83f47571b05337.pt",
+      "sha256": "2c7d0c1622c7ff514fcb17610e84f4504ebb472a35e1a72a99e7e526e8df8b46",
+      "metadata": {
+        "token": "3e83f47571b05337",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "019cfd828c3f5b7c",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/019cfd828c3f5b7c.pt",
+      "sha256": "4f08a32a27d97b0baa26f7d313ed750db3fc0dffff1176b7d42847b506c08469",
+      "metadata": {
+        "token": "019cfd828c3f5b7c",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "50e0c2fe698655a9",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/50e0c2fe698655a9.pt",
+      "sha256": "e0cae5fafbebf37756c374a750cc18f5eb81501519bd1f5431d6ae99d4c826dc",
+      "metadata": {
+        "token": "50e0c2fe698655a9",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "f696561dbf6055df",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/f696561dbf6055df.pt",
+      "sha256": "4f793484d3482242c3fce7e67fb91bf2d6c24e7b042864c6bc73a18e24f57535",
+      "metadata": {
+        "token": "f696561dbf6055df",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "e60a241cf8df5ae6",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/e60a241cf8df5ae6.pt",
+      "sha256": "10ec098adcf0e4a8a09c3fd111969cb12d279601e4bfe09b6f26cd8e27458d6d",
+      "metadata": {
+        "token": "e60a241cf8df5ae6",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "84b13f58e18551a8",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/84b13f58e18551a8.pt",
+      "sha256": "cf667be59ce01792fcdc9d6aec828af00916d476617876b83f6598ca0b46e038",
+      "metadata": {
+        "token": "84b13f58e18551a8",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "c9ba785129c35b36",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/c9ba785129c35b36.pt",
+      "sha256": "4005b7b9ea2f4ea6f12f8b9b9709f2faacced72784496fc57e745f2c613fdab5",
+      "metadata": {
+        "token": "c9ba785129c35b36",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "3c9433a90ab05621",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/3c9433a90ab05621.pt",
+      "sha256": "b3db31d558778ac0df2c11ca328dafa0cc59b8ef9bab4d3854992726d4aa761a",
+      "metadata": {
+        "token": "3c9433a90ab05621",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "9ce305abb88f5ad0",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/9ce305abb88f5ad0.pt",
+      "sha256": "1169396bb7fb861f94b6f5d59e163ea28db27bf4911586697ae74f72620e298a",
+      "metadata": {
+        "token": "9ce305abb88f5ad0",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "6aa0f931a89f5d9a",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/6aa0f931a89f5d9a.pt",
+      "sha256": "25d52c4799ca656241617d9b8bac704ac471cb25c2508ed0727b9024f03df730",
+      "metadata": {
+        "token": "6aa0f931a89f5d9a",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "4ffc3aacc76d5d43",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/4ffc3aacc76d5d43.pt",
+      "sha256": "8e8464c2fd617af6480e993432ef487325696859a65b3d74a0444b038661d677",
+      "metadata": {
+        "token": "4ffc3aacc76d5d43",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "23ba8f4aee055e34",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/23ba8f4aee055e34.pt",
+      "sha256": "473882973ba55c437dca84aca6e112592e874c12beec83add1297a98d0221d38",
+      "metadata": {
+        "token": "23ba8f4aee055e34",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "5cfcccdb3e3c539b",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/5cfcccdb3e3c539b.pt",
+      "sha256": "1c90a4fe5808ea174192c237cb93d9670c5a86f30e1a5e8bf1ee5c14d71c3c31",
+      "metadata": {
+        "token": "5cfcccdb3e3c539b",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "1035d1c56f0f5ba9",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/1035d1c56f0f5ba9.pt",
+      "sha256": "a3ade359d0992aba448669f196697c7a525c9e3083054a94d8a7bafa7fd2d9ee",
+      "metadata": {
+        "token": "1035d1c56f0f5ba9",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "846947c0d14c5705",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/846947c0d14c5705.pt",
+      "sha256": "cbe25550f3a8c561aba415d77e339bd2b6cee95a380229d6a5f860702866a938",
+      "metadata": {
+        "token": "846947c0d14c5705",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "45cace6f6d275159",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/45cace6f6d275159.pt",
+      "sha256": "90f5196c518a18f2a6131a1fc122fead787a90313ce036352a3cb5b5d755029b",
+      "metadata": {
+        "token": "45cace6f6d275159",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "461fb854eaa3583e",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/461fb854eaa3583e.pt",
+      "sha256": "d8cb38473c574519b1d45d72bd607d95fd880fa95ff249daef719c91ba3345ee",
+      "metadata": {
+        "token": "461fb854eaa3583e",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "bdfa1f8523c25328",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/bdfa1f8523c25328.pt",
+      "sha256": "045ceec847c381c61f83c399cfa834204a773c19cd6ed1562a510afdec9a702e",
+      "metadata": {
+        "token": "bdfa1f8523c25328",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "c97d721af0475e45",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/c97d721af0475e45.pt",
+      "sha256": "8a97c5052461cd8d6c096fceaea61bd21f334dd57304b3b08167b12abcd83df1",
+      "metadata": {
+        "token": "c97d721af0475e45",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "74bf7898a5565ef7",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/74bf7898a5565ef7.pt",
+      "sha256": "0f7d9268089b134b8e2d77091a00436111b100d0e66b6115e6626b344e7de1c1",
+      "metadata": {
+        "token": "74bf7898a5565ef7",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "7c767d74b5fb5b5e",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/7c767d74b5fb5b5e.pt",
+      "sha256": "3473e22b79bb4444e1bbbca4d62060c044d0f2354f28a46ad26021a9bf17da5f",
+      "metadata": {
+        "token": "7c767d74b5fb5b5e",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "b7b9f31751e459f0",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/b7b9f31751e459f0.pt",
+      "sha256": "24bb2d953e594446eeeeeedbf1f7abaee1e970defa49d75b172ca4b4fd2b4931",
+      "metadata": {
+        "token": "b7b9f31751e459f0",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "9c7f841d11e6542d",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/9c7f841d11e6542d.pt",
+      "sha256": "8f2dedd37f62aa9ce8816607198d3c8339f75f06a086d43d14ce58003498085a",
+      "metadata": {
+        "token": "9c7f841d11e6542d",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "b235c02d47915476",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/b235c02d47915476.pt",
+      "sha256": "cedeaebb5579278218becc40f1f58d56fdf2ae8d5fc03e7604c8ca8c28212914",
+      "metadata": {
+        "token": "b235c02d47915476",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "a40383b62c8b5f0a",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/a40383b62c8b5f0a.pt",
+      "sha256": "e961fd67855c01823d5d428eb2330e6bb2ed61c4c6c1257379223c6322060efc",
+      "metadata": {
+        "token": "a40383b62c8b5f0a",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "42e6895442ab5601",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/42e6895442ab5601.pt",
+      "sha256": "df2e02becf8592a691038abc3abf9a2b98b8c4a1278106ad2b55889734aac963",
+      "metadata": {
+        "token": "42e6895442ab5601",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "440da7a31b255ef9",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/440da7a31b255ef9.pt",
+      "sha256": "f6143698dfac53c4594ee091140c808d819e21df48ba184c14a1d99d1bb91c70",
+      "metadata": {
+        "token": "440da7a31b255ef9",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "1aa0acb229945e9b",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/1aa0acb229945e9b.pt",
+      "sha256": "9fc497c17d00db803a48d424d0248f6b1d3ec9b1c5638e23beb7a678b40e15c9",
+      "metadata": {
+        "token": "1aa0acb229945e9b",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "2e94974489245ae6",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/2e94974489245ae6.pt",
+      "sha256": "1b1638ec7678f991f79f84d0f464e6abde830d6f3d1c449d231cc5f5459999d2",
+      "metadata": {
+        "token": "2e94974489245ae6",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "9288a151789f507b",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/9288a151789f507b.pt",
+      "sha256": "52e5a43ed8fc392a88037ee1f12f9a783491e1336dac2431f978c36872931ac1",
+      "metadata": {
+        "token": "9288a151789f507b",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "480434fc72d455af",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/480434fc72d455af.pt",
+      "sha256": "3e0989cc55c3f4925d5dc226eb69cb8d3772bf857b18ba418db91850ab21976f",
+      "metadata": {
+        "token": "480434fc72d455af",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "12264b570ba358e9",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/12264b570ba358e9.pt",
+      "sha256": "e2d087be5e5440cbcd982fb6f9757d528892779689c60b71db56c76bb340a26c",
+      "metadata": {
+        "token": "12264b570ba358e9",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "f6a1a2760a7b57a4",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/f6a1a2760a7b57a4.pt",
+      "sha256": "470f754b6eb074d625631405f5c939fed2b3302d24197b91c689438ad9695e69",
+      "metadata": {
+        "token": "f6a1a2760a7b57a4",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "fff951eab9f45288",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/fff951eab9f45288.pt",
+      "sha256": "6c1b949c468be70b58bcb46b4a775f70078460c3e76bf255bcce1aebf430e18b",
+      "metadata": {
+        "token": "fff951eab9f45288",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "af16ba268df55dca",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/af16ba268df55dca.pt",
+      "sha256": "3ebf7a016bb7d71643adf6921ee9eaac03bc2a6519e988e4b5d3f2af739f6510",
+      "metadata": {
+        "token": "af16ba268df55dca",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "5ed66db305a55f73",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/5ed66db305a55f73.pt",
+      "sha256": "0339835b3e313b3b989c1acc7a5bb5e12b233817e300b8b712dfd71f367c1d4b",
+      "metadata": {
+        "token": "5ed66db305a55f73",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "3c30c0c940045ac2",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/3c30c0c940045ac2.pt",
+      "sha256": "a91f7e9209732e2a6b111837c209cc466937bca8df90ec7d613f1fbcfe2a314f",
+      "metadata": {
+        "token": "3c30c0c940045ac2",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "23724912b8f153f0",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/23724912b8f153f0.pt",
+      "sha256": "e906f5ff13139576db5f9245349a13d69281396e6c968ffcafbebe69fdebf71e",
+      "metadata": {
+        "token": "23724912b8f153f0",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "3fa2f81cff025162",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/3fa2f81cff025162.pt",
+      "sha256": "e031dcb0af45023535e3e912a8a6defe78ccf3601c932e7f004aa6932584b752",
+      "metadata": {
+        "token": "3fa2f81cff025162",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "ed54b128881a5278",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/ed54b128881a5278.pt",
+      "sha256": "1acd526b583efe9f05adc9a7cce15ff3a8b344b8f7896a9c1752c174a9d68e8a",
+      "metadata": {
+        "token": "ed54b128881a5278",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "3bfe55c892ef5093",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/3bfe55c892ef5093.pt",
+      "sha256": "a027d6f22f472591c730ffff5f3f0d8c588ed5f6eed0fe4cf4bd7bd7a99e24ca",
+      "metadata": {
+        "token": "3bfe55c892ef5093",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "1819e1b106b354ad",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/1819e1b106b354ad.pt",
+      "sha256": "eb9434ae29ac7988d67d7614345aaff133473b36af714a2865249b3a3b33caca",
+      "metadata": {
+        "token": "1819e1b106b354ad",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "88757fb00fda507b",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/88757fb00fda507b.pt",
+      "sha256": "a13056386e9a826001fea9c1d568c3cc291128429caef24ebd7093fe1d2d0767",
+      "metadata": {
+        "token": "88757fb00fda507b",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "415d6cd62f3b5c1c",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/415d6cd62f3b5c1c.pt",
+      "sha256": "44bb57e1840925fbe0346120ecb913e829100b0a3a5951eed27f1d7e5946aa09",
+      "metadata": {
+        "token": "415d6cd62f3b5c1c",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "685c110d6a615ff8",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/685c110d6a615ff8.pt",
+      "sha256": "da42fb793270b0a8f79e807f58c13bfd6725e09982d37a093e2d608d3eccc678",
+      "metadata": {
+        "token": "685c110d6a615ff8",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "4124b6e12f8b5f0d",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/4124b6e12f8b5f0d.pt",
+      "sha256": "58eee00385d6f55e078218c378bfcf6d04092a9a54e3e024033e08c8446b95fa",
+      "metadata": {
+        "token": "4124b6e12f8b5f0d",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "61db822891625c3b",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/61db822891625c3b.pt",
+      "sha256": "1c4aa32e4a78cb1d4f1bc401980f70b2f9f8ff1618bffbd2857d504dc5b2fc58",
+      "metadata": {
+        "token": "61db822891625c3b",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "4f6409df56a85592",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/4f6409df56a85592.pt",
+      "sha256": "95bc22aa38f0628da41db695a45aaf6437bc0cec18c7850d383b42719c026fb6",
+      "metadata": {
+        "token": "4f6409df56a85592",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "738c5da7a06d554c",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/738c5da7a06d554c.pt",
+      "sha256": "4d83f5acf0a19ce5957a02d79918722c9f8034b290f0da098da376e220770543",
+      "metadata": {
+        "token": "738c5da7a06d554c",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "2af1778054cf51a4",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/2af1778054cf51a4.pt",
+      "sha256": "864d918bef3a220254599e467b9eea47a16ea775107951dcd040001ab5417ccd",
+      "metadata": {
+        "token": "2af1778054cf51a4",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "fe1348a14b7f5fda",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/fe1348a14b7f5fda.pt",
+      "sha256": "01e4d744c0ae0921fb9a85e1aa9d59af5275011e2c86bb1d5dbed8037ff70e56",
+      "metadata": {
+        "token": "fe1348a14b7f5fda",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "34dd4c6fb6245b9a",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/34dd4c6fb6245b9a.pt",
+      "sha256": "edbd66cf40fa9c204cf866f61364dc4b232773dde570b59e990c40efafd92b28",
+      "metadata": {
+        "token": "34dd4c6fb6245b9a",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "5d0d7322ddea55ce",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/5d0d7322ddea55ce.pt",
+      "sha256": "0c9c6ca5040e07e4fe865456ece57b6a979a20a6b737a19e7b94645a6845a77d",
+      "metadata": {
+        "token": "5d0d7322ddea55ce",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "bcc74e9eaae05ca4",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/bcc74e9eaae05ca4.pt",
+      "sha256": "d0e043d622ea54db13750be5d66829fa239ab7eb9e7faee85d3e2e08720781fb",
+      "metadata": {
+        "token": "bcc74e9eaae05ca4",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "f503e5d4f2815027",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/f503e5d4f2815027.pt",
+      "sha256": "00da87580c4e3e33bfafa7683d4247ab428c76bb9f2e32f996198c46aef39c88",
+      "metadata": {
+        "token": "f503e5d4f2815027",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "114a9052bd6851a2",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/114a9052bd6851a2.pt",
+      "sha256": "618d8dc9f8fafba22ef61683d50aa370feb060d9d15150df1ab652a51b878449",
+      "metadata": {
+        "token": "114a9052bd6851a2",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "1381f484e75c565a",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/1381f484e75c565a.pt",
+      "sha256": "790723f8aa450807bd060984bcb7d3870960c93c3443de362de05b2bc13a76d5",
+      "metadata": {
+        "token": "1381f484e75c565a",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "24d4a97bf17f5883",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/24d4a97bf17f5883.pt",
+      "sha256": "b6e783e84214e5fd207b5ea2853f8c0a979d11c64d22e1a0e8ecbe6d051a76e4",
+      "metadata": {
+        "token": "24d4a97bf17f5883",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "1cba0de871fc5bfb",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/1cba0de871fc5bfb.pt",
+      "sha256": "c574898f7c3ec45246838bc7b47bcc7c338d430825eb458b8cc8f2eede37aa00",
+      "metadata": {
+        "token": "1cba0de871fc5bfb",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "5abdbfe1845e59c5",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/5abdbfe1845e59c5.pt",
+      "sha256": "abf428d88d96d17ba45324c5727ad93e205849b0d16b4224792ba98ff2b1b68a",
+      "metadata": {
+        "token": "5abdbfe1845e59c5",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "0f44c6e6440654d0",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/0f44c6e6440654d0.pt",
+      "sha256": "b84f4ffe637eef3f351354fcc70d6090b25d3316ce8f470bf0eeb14005ac50c7",
+      "metadata": {
+        "token": "0f44c6e6440654d0",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "b450f88783c15dea",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/b450f88783c15dea.pt",
+      "sha256": "7d857fcaa05691f17813b4dda13ecc60014b99a71d48121b9d722b24c6e5197d",
+      "metadata": {
+        "token": "b450f88783c15dea",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "7fe310f364355e2d",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/7fe310f364355e2d.pt",
+      "sha256": "202f3bac5bb24a65d9381a26a8ceaa2bf99f624b6a505089aba7559f75c8808e",
+      "metadata": {
+        "token": "7fe310f364355e2d",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "bc9f53029a6b5c52",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/bc9f53029a6b5c52.pt",
+      "sha256": "1e8c1ebeb06c1795092a7769102148e1c86638706f1c55a6998c97e1830c9d99",
+      "metadata": {
+        "token": "bc9f53029a6b5c52",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "cf05fb873d635a08",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/cf05fb873d635a08.pt",
+      "sha256": "3afae24d6357438ee2258d7156cf53d5bebd3a427657e040d0f243e76440678d",
+      "metadata": {
+        "token": "cf05fb873d635a08",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "e165b9b4eb5f5cf4",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/e165b9b4eb5f5cf4.pt",
+      "sha256": "40a0ee45d102946552c1e0964b97f80bdb00cc62aa4390cf3e922be5619663cc",
+      "metadata": {
+        "token": "e165b9b4eb5f5cf4",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "e1ee982450c85213",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/e1ee982450c85213.pt",
+      "sha256": "07e3f6e98d6feb3368a188da3e059db2b80a8d540694caf75243bfc7cb471002",
+      "metadata": {
+        "token": "e1ee982450c85213",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "0cb726068f4d5c59",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/0cb726068f4d5c59.pt",
+      "sha256": "08355351004866be66fcb045323f816d94225574deec79f33734fe5eb1344dc3",
+      "metadata": {
+        "token": "0cb726068f4d5c59",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "77d96cb44005501c",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/77d96cb44005501c.pt",
+      "sha256": "afb5bee10cd23ef2111fe1f503b52ed9b88b8b20e0720833891460c65110d35b",
+      "metadata": {
+        "token": "77d96cb44005501c",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "db42252e1f655f26",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/db42252e1f655f26.pt",
+      "sha256": "e6d38ad5a96d0d72b0b3fbd44388e36972ca23dd094a2175a9b9f424b7895a56",
+      "metadata": {
+        "token": "db42252e1f655f26",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "8d76cc7ca097546b",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/8d76cc7ca097546b.pt",
+      "sha256": "1f67afa8988dbe9d458ad3dfefb850e88b941d1dbee48ee16338942d968b5be9",
+      "metadata": {
+        "token": "8d76cc7ca097546b",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "94e9664fcf2d5f9e",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/94e9664fcf2d5f9e.pt",
+      "sha256": "51d6c63aee702e95f81a9eaed4bdb2c31a46c45973fa10961af025d59c7856cb",
+      "metadata": {
+        "token": "94e9664fcf2d5f9e",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "5d83ddd5ec3c5326",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/5d83ddd5ec3c5326.pt",
+      "sha256": "c291a6780d6aec24c908de97d4d5d5fb6417e3000636d1dc9726440f90e57efe",
+      "metadata": {
+        "token": "5d83ddd5ec3c5326",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "4fa6a8e71f4a5984",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/4fa6a8e71f4a5984.pt",
+      "sha256": "54a4fae8328812669a63d6789c28df7bf0f71980efb98f1775a4c53990a2eb22",
+      "metadata": {
+        "token": "4fa6a8e71f4a5984",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "1f22c13b337250e8",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/1f22c13b337250e8.pt",
+      "sha256": "7bb2013e7e81d48d1b61437179feef2a5011551bef68ca90a02cfaa918a560f2",
+      "metadata": {
+        "token": "1f22c13b337250e8",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "49a1e581f3a35a49",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/49a1e581f3a35a49.pt",
+      "sha256": "3b7bd2975b70182dcf7555356536c8cca2eee232ca79e8c0f3b2a4affb688d91",
+      "metadata": {
+        "token": "49a1e581f3a35a49",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "75b56424b7eb5ac6",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/75b56424b7eb5ac6.pt",
+      "sha256": "cc9a114a97a4dded76e7f99c05be22f568562699f6455cc9fd933ab1a4489970",
+      "metadata": {
+        "token": "75b56424b7eb5ac6",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "e1b0455379fd5adf",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/e1b0455379fd5adf.pt",
+      "sha256": "c9c07d3f57fe14fceb57569d63da989371002022068cfd505b5bdfbf8b6ca9e6",
+      "metadata": {
+        "token": "e1b0455379fd5adf",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "a28a2771a9fa5c1d",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/a28a2771a9fa5c1d.pt",
+      "sha256": "e9e57c94ed41c1e9c06c87188169dfe18c82b86df326ad58450814e881019f1e",
+      "metadata": {
+        "token": "a28a2771a9fa5c1d",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "c75edb67a65b5a33",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/c75edb67a65b5a33.pt",
+      "sha256": "7cfc3d3e87862e1c26720f424211dc9efb7fc386cf2ce69864b2835c6cc93d6f",
+      "metadata": {
+        "token": "c75edb67a65b5a33",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "a3fa79234a9d5d7d",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/a3fa79234a9d5d7d.pt",
+      "sha256": "c466b2504bde3f9a145f55592df84a16e8f9decb76c0928309e615b79e28b850",
+      "metadata": {
+        "token": "a3fa79234a9d5d7d",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "9956d04c0d275e7d",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/9956d04c0d275e7d.pt",
+      "sha256": "d029e7907847d9f0b957871225b04148f3305a74f65727318328f454f5821107",
+      "metadata": {
+        "token": "9956d04c0d275e7d",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "12ed1a1d4ae657d1",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/12ed1a1d4ae657d1.pt",
+      "sha256": "7a328b87f5c2f78290baab6559976392a0669be2e43c472315481498dee949ee",
+      "metadata": {
+        "token": "12ed1a1d4ae657d1",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "2639525675535145",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/2639525675535145.pt",
+      "sha256": "24677884782e1fe9532626cbb5e561430817784316029f7aa2d1ecad1c9e6561",
+      "metadata": {
+        "token": "2639525675535145",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "0506b1697fb05337",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/0506b1697fb05337.pt",
+      "sha256": "bec6ca5ba5bdb17d737929b8f9c3d00e68f48171d83972a801a103f68216dccc",
+      "metadata": {
+        "token": "0506b1697fb05337",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "ccb3b418f0a45229",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/ccb3b418f0a45229.pt",
+      "sha256": "ddb96bfea659c957a230d482eb450995313a4909a9593cf418f7d1271955fe80",
+      "metadata": {
+        "token": "ccb3b418f0a45229",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "1b064a029c0e513a",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/1b064a029c0e513a.pt",
+      "sha256": "85cc2c7bbc47860a4deb1a1f5e06bddfe3d5c3094eb9f360a9bd990591cf5996",
+      "metadata": {
+        "token": "1b064a029c0e513a",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "75341958391d5aba",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/75341958391d5aba.pt",
+      "sha256": "d9fab51f9db9bd824c787a9a50f4c11980de33c60c6f24fa9593a45eece695ac",
+      "metadata": {
+        "token": "75341958391d5aba",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "7eb9b36921b25d5b",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/7eb9b36921b25d5b.pt",
+      "sha256": "54e48b256600c1213303e7c6d402c3a9dde0cc19a786a8b83a5ad443dacecf41",
+      "metadata": {
+        "token": "7eb9b36921b25d5b",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "efd13cf71f83504e",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/efd13cf71f83504e.pt",
+      "sha256": "5528a8660c4f50c672e0783f54b20d5d4c3ff27a65a562cb75bbeb0fc0118bce",
+      "metadata": {
+        "token": "efd13cf71f83504e",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "8fc454e70d1554b7",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/8fc454e70d1554b7.pt",
+      "sha256": "ccc191b99717d5c3a80cbb004aeee56b52e3c0a89e3fca886262da98f57baef1",
+      "metadata": {
+        "token": "8fc454e70d1554b7",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "6ef435e921f9538a",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/6ef435e921f9538a.pt",
+      "sha256": "e09eccc3101d5139efd882c5f2b8d5c37883bc482886097007dab9cd6a0f397b",
+      "metadata": {
+        "token": "6ef435e921f9538a",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "55a649760430531d",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/55a649760430531d.pt",
+      "sha256": "389e9e317355b15b8dee7564a3d871a5dd0b98fe814c465cdab0d23284afbd77",
+      "metadata": {
+        "token": "55a649760430531d",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "7592a60634a65972",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/7592a60634a65972.pt",
+      "sha256": "c91f3750fac2c1e0cc09a9e0c14091344b8af2cd80372e7c34bc799fabfdc610",
+      "metadata": {
+        "token": "7592a60634a65972",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "bcd578c19d9857ea",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/bcd578c19d9857ea.pt",
+      "sha256": "52df50069bd5808f3785864812019fdaca761c25e03d8908742bdaee9ca49794",
+      "metadata": {
+        "token": "bcd578c19d9857ea",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    },
+    {
+      "token": "c83e41bd3afa534c",
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/cache/features/c83e41bd3afa534c.pt",
+      "sha256": "59a9ae5df590fb340fba1d9117f3dff4d4b20eb7afa31507c38069bc85da2fa5",
+      "metadata": {
+        "token": "c83e41bd3afa534c",
+        "observation_only": true,
+        "observed_frames": 4,
+        "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+        "vlm_state_sha256": "6928172c78c24c3029731dc255900ffbb5f35b0eecde084ee18e6c6f74f924f0",
+        "feature_builder_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+        "precision": "torch.float32",
+        "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5"
+      }
+    }
+  ]
+}

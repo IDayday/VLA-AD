@@ -1,0 +1,22 @@
+`torch_dtype` is deprecated! Use `dtype` instead!
+/root/miniconda3/envs/navsim/lib/python3.9/site-packages/timm/models/layers/__init__.py:49: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers
+  warnings.warn(f"Importing from {__name__} is deprecated, please import via timm.layers", FutureWarning)
+Initializing backbone of type: 'internvl' from path: '/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B'
+InternVL model configured.
+Backbone 'internvl' loaded successfully on device 'cuda:0'.
+FEATURE 1 125 1.0211067199707031
+FEATURE 9 125 3.369354248046875
+FEATURE 17 125 5.644615411758423
+FEATURE 25 125 7.946896553039551
+FEATURE 33 125 10.254621744155884
+FEATURE 41 125 12.558937072753906
+FEATURE 49 125 14.853586912155151
+FEATURE 57 125 17.101441144943237
+FEATURE 65 125 19.33435583114624
+FEATURE 73 125 21.672722816467285
+FEATURE 81 125 23.905282497406006
+FEATURE 89 125 26.122998237609863
+FEATURE 97 125 28.36483669281006
+FEATURE 105 125 30.588940858840942
+FEATURE 113 125 32.830992221832275
+FEATURE 121 125 35.14581632614136

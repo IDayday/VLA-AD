@@ -1,0 +1,13 @@
+{
+  "stage1": "PASS_READONLY",
+  "stage2": "WITHIN_GROUP_SIGNAL",
+  "stage3": "INVALID_STOPPED_AFTER_ONE_UPDATE_PER_ARM_SEED",
+  "stage3_optimizer_updates": 8,
+  "stage3_valid_comparisons": 0,
+  "step8": "NOT_RUN",
+  "scenes_changed": false,
+  "amplitudes_changed": false,
+  "automatic_retries": false,
+  "canonical_checkpoints_modified": false,
+  "report": "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/reports/GRPO_CREDIT_RISK_QUICKCHECK.md"
+}

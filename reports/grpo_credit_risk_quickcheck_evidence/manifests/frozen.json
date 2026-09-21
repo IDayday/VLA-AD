@@ -1,0 +1,12 @@
+{
+  "unix": 1790007433.9053037,
+  "branch": "analysis/grpo-credit-risk-quickcheck-20260921",
+  "base_commit": "884ea1d0f67c60821d61033d61efb10916d16929",
+  "config_sha256": "04aa0175821753e36e8c0ed42814611a60bf53417b15b8fa594e33456d12c0f5",
+  "scene_manifest_sha256": "122a7fa83746f543e6c74a6d156da1a3839fa1d5b5412d2cb4cd56a5b9988b7e",
+  "runtime_commit": "f350e56408584c0d375b1ff10744da2750442580",
+  "historical_dirty_diff_missing": true,
+  "runtime_limit": "Archived git source matches recovered sampler/advantage. Original A5 uncommitted edits and original deleted hidden-cache bytes cannot be proven.",
+  "current_run_selection": "Recent actual runs found were SimScale SFT/LoRA and original-GRPO diagnostic probes, not a more specifically identified failing GRPO training chain; fallback A5 r4 selected as instructed.",
+  "agents_note": "Root AGENTS.md absent; AGENT.md read; user read-only and isolated-worktree instructions override unrelated training/pressure defaults."
+}

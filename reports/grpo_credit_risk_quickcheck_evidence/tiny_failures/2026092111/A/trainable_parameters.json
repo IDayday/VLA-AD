@@ -1,0 +1,1854 @@
+{
+  "model.timestep_encoder.timestep_embedder.linear_1.weight": [
+    384,
+    256
+  ],
+  "model.timestep_encoder.timestep_embedder.linear_1.bias": [
+    384
+  ],
+  "model.timestep_encoder.timestep_embedder.linear_2.weight": [
+    384,
+    384
+  ],
+  "model.timestep_encoder.timestep_embedder.linear_2.bias": [
+    384
+  ],
+  "model.transformer_blocks.0.planning_gate_logit": [],
+  "model.transformer_blocks.0.norm1.weight": [
+    384
+  ],
+  "model.transformer_blocks.0.attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.0.attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.0.attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.0.attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.0.attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.0.attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.0.attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.0.attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.0.attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.0.attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.0.planning_cross_attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.0.planning_cross_attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.0.planning_cross_attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.0.planning_cross_attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.0.planning_cross_attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.0.planning_cross_attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.0.planning_cross_attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.0.planning_cross_attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.0.planning_cross_attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.0.planning_cross_attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.0.planning_out_proj.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.0.planning_out_proj.bias": [
+    384
+  ],
+  "model.transformer_blocks.0.norm2.weight": [
+    384
+  ],
+  "model.transformer_blocks.0.ffn.w12.weight": [
+    768,
+    384
+  ],
+  "model.transformer_blocks.0.ffn.w12.bias": [
+    768
+  ],
+  "model.transformer_blocks.0.ffn.w3.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.0.ffn.w3.bias": [
+    384
+  ],
+  "model.transformer_blocks.0.adaLN_modulation.1.weight": [
+    2304,
+    384
+  ],
+  "model.transformer_blocks.0.adaLN_modulation.1.bias": [
+    2304
+  ],
+  "model.transformer_blocks.1.planning_gate_logit": [],
+  "model.transformer_blocks.1.norm1.weight": [
+    384
+  ],
+  "model.transformer_blocks.1.attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.1.attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.1.attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.1.attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.1.attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.1.attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.1.attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.1.attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.1.attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.1.attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.1.planning_cross_attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.1.planning_cross_attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.1.planning_cross_attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.1.planning_cross_attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.1.planning_cross_attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.1.planning_cross_attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.1.planning_cross_attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.1.planning_cross_attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.1.planning_cross_attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.1.planning_cross_attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.1.planning_out_proj.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.1.planning_out_proj.bias": [
+    384
+  ],
+  "model.transformer_blocks.1.norm2.weight": [
+    384
+  ],
+  "model.transformer_blocks.1.ffn.w12.weight": [
+    768,
+    384
+  ],
+  "model.transformer_blocks.1.ffn.w12.bias": [
+    768
+  ],
+  "model.transformer_blocks.1.ffn.w3.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.1.ffn.w3.bias": [
+    384
+  ],
+  "model.transformer_blocks.1.adaLN_modulation.1.weight": [
+    2304,
+    384
+  ],
+  "model.transformer_blocks.1.adaLN_modulation.1.bias": [
+    2304
+  ],
+  "model.transformer_blocks.2.planning_gate_logit": [],
+  "model.transformer_blocks.2.norm1.weight": [
+    384
+  ],
+  "model.transformer_blocks.2.attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.2.attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.2.attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.2.attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.2.attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.2.attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.2.attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.2.attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.2.attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.2.attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.2.planning_cross_attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.2.planning_cross_attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.2.planning_cross_attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.2.planning_cross_attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.2.planning_cross_attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.2.planning_cross_attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.2.planning_cross_attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.2.planning_cross_attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.2.planning_cross_attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.2.planning_cross_attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.2.planning_out_proj.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.2.planning_out_proj.bias": [
+    384
+  ],
+  "model.transformer_blocks.2.norm2.weight": [
+    384
+  ],
+  "model.transformer_blocks.2.ffn.w12.weight": [
+    768,
+    384
+  ],
+  "model.transformer_blocks.2.ffn.w12.bias": [
+    768
+  ],
+  "model.transformer_blocks.2.ffn.w3.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.2.ffn.w3.bias": [
+    384
+  ],
+  "model.transformer_blocks.2.adaLN_modulation.1.weight": [
+    2304,
+    384
+  ],
+  "model.transformer_blocks.2.adaLN_modulation.1.bias": [
+    2304
+  ],
+  "model.transformer_blocks.3.planning_gate_logit": [],
+  "model.transformer_blocks.3.norm1.weight": [
+    384
+  ],
+  "model.transformer_blocks.3.attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.3.attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.3.attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.3.attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.3.attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.3.attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.3.attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.3.attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.3.attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.3.attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.3.planning_cross_attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.3.planning_cross_attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.3.planning_cross_attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.3.planning_cross_attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.3.planning_cross_attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.3.planning_cross_attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.3.planning_cross_attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.3.planning_cross_attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.3.planning_cross_attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.3.planning_cross_attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.3.planning_out_proj.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.3.planning_out_proj.bias": [
+    384
+  ],
+  "model.transformer_blocks.3.norm2.weight": [
+    384
+  ],
+  "model.transformer_blocks.3.ffn.w12.weight": [
+    768,
+    384
+  ],
+  "model.transformer_blocks.3.ffn.w12.bias": [
+    768
+  ],
+  "model.transformer_blocks.3.ffn.w3.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.3.ffn.w3.bias": [
+    384
+  ],
+  "model.transformer_blocks.3.adaLN_modulation.1.weight": [
+    2304,
+    384
+  ],
+  "model.transformer_blocks.3.adaLN_modulation.1.bias": [
+    2304
+  ],
+  "model.transformer_blocks.4.planning_gate_logit": [],
+  "model.transformer_blocks.4.norm1.weight": [
+    384
+  ],
+  "model.transformer_blocks.4.attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.4.attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.4.attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.4.attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.4.attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.4.attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.4.attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.4.attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.4.attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.4.attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.4.planning_cross_attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.4.planning_cross_attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.4.planning_cross_attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.4.planning_cross_attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.4.planning_cross_attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.4.planning_cross_attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.4.planning_cross_attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.4.planning_cross_attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.4.planning_cross_attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.4.planning_cross_attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.4.planning_out_proj.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.4.planning_out_proj.bias": [
+    384
+  ],
+  "model.transformer_blocks.4.norm2.weight": [
+    384
+  ],
+  "model.transformer_blocks.4.ffn.w12.weight": [
+    768,
+    384
+  ],
+  "model.transformer_blocks.4.ffn.w12.bias": [
+    768
+  ],
+  "model.transformer_blocks.4.ffn.w3.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.4.ffn.w3.bias": [
+    384
+  ],
+  "model.transformer_blocks.4.adaLN_modulation.1.weight": [
+    2304,
+    384
+  ],
+  "model.transformer_blocks.4.adaLN_modulation.1.bias": [
+    2304
+  ],
+  "model.transformer_blocks.5.planning_gate_logit": [],
+  "model.transformer_blocks.5.norm1.weight": [
+    384
+  ],
+  "model.transformer_blocks.5.attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.5.attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.5.attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.5.attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.5.attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.5.attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.5.attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.5.attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.5.attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.5.attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.5.planning_cross_attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.5.planning_cross_attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.5.planning_cross_attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.5.planning_cross_attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.5.planning_cross_attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.5.planning_cross_attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.5.planning_cross_attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.5.planning_cross_attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.5.planning_cross_attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.5.planning_cross_attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.5.planning_out_proj.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.5.planning_out_proj.bias": [
+    384
+  ],
+  "model.transformer_blocks.5.norm2.weight": [
+    384
+  ],
+  "model.transformer_blocks.5.ffn.w12.weight": [
+    768,
+    384
+  ],
+  "model.transformer_blocks.5.ffn.w12.bias": [
+    768
+  ],
+  "model.transformer_blocks.5.ffn.w3.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.5.ffn.w3.bias": [
+    384
+  ],
+  "model.transformer_blocks.5.adaLN_modulation.1.weight": [
+    2304,
+    384
+  ],
+  "model.transformer_blocks.5.adaLN_modulation.1.bias": [
+    2304
+  ],
+  "model.transformer_blocks.6.planning_gate_logit": [],
+  "model.transformer_blocks.6.norm1.weight": [
+    384
+  ],
+  "model.transformer_blocks.6.attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.6.attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.6.attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.6.attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.6.attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.6.attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.6.attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.6.attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.6.attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.6.attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.6.planning_cross_attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.6.planning_cross_attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.6.planning_cross_attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.6.planning_cross_attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.6.planning_cross_attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.6.planning_cross_attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.6.planning_cross_attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.6.planning_cross_attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.6.planning_cross_attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.6.planning_cross_attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.6.planning_out_proj.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.6.planning_out_proj.bias": [
+    384
+  ],
+  "model.transformer_blocks.6.norm2.weight": [
+    384
+  ],
+  "model.transformer_blocks.6.ffn.w12.weight": [
+    768,
+    384
+  ],
+  "model.transformer_blocks.6.ffn.w12.bias": [
+    768
+  ],
+  "model.transformer_blocks.6.ffn.w3.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.6.ffn.w3.bias": [
+    384
+  ],
+  "model.transformer_blocks.6.adaLN_modulation.1.weight": [
+    2304,
+    384
+  ],
+  "model.transformer_blocks.6.adaLN_modulation.1.bias": [
+    2304
+  ],
+  "model.transformer_blocks.7.planning_gate_logit": [],
+  "model.transformer_blocks.7.norm1.weight": [
+    384
+  ],
+  "model.transformer_blocks.7.attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.7.attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.7.attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.7.attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.7.attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.7.attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.7.attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.7.attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.7.attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.7.attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.7.planning_cross_attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.7.planning_cross_attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.7.planning_cross_attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.7.planning_cross_attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.7.planning_cross_attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.7.planning_cross_attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.7.planning_cross_attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.7.planning_cross_attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.7.planning_cross_attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.7.planning_cross_attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.7.planning_out_proj.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.7.planning_out_proj.bias": [
+    384
+  ],
+  "model.transformer_blocks.7.norm2.weight": [
+    384
+  ],
+  "model.transformer_blocks.7.ffn.w12.weight": [
+    768,
+    384
+  ],
+  "model.transformer_blocks.7.ffn.w12.bias": [
+    768
+  ],
+  "model.transformer_blocks.7.ffn.w3.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.7.ffn.w3.bias": [
+    384
+  ],
+  "model.transformer_blocks.7.adaLN_modulation.1.weight": [
+    2304,
+    384
+  ],
+  "model.transformer_blocks.7.adaLN_modulation.1.bias": [
+    2304
+  ],
+  "model.transformer_blocks.8.planning_gate_logit": [],
+  "model.transformer_blocks.8.norm1.weight": [
+    384
+  ],
+  "model.transformer_blocks.8.attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.8.attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.8.attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.8.attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.8.attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.8.attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.8.attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.8.attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.8.attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.8.attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.8.planning_cross_attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.8.planning_cross_attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.8.planning_cross_attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.8.planning_cross_attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.8.planning_cross_attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.8.planning_cross_attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.8.planning_cross_attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.8.planning_cross_attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.8.planning_cross_attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.8.planning_cross_attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.8.planning_out_proj.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.8.planning_out_proj.bias": [
+    384
+  ],
+  "model.transformer_blocks.8.norm2.weight": [
+    384
+  ],
+  "model.transformer_blocks.8.ffn.w12.weight": [
+    768,
+    384
+  ],
+  "model.transformer_blocks.8.ffn.w12.bias": [
+    768
+  ],
+  "model.transformer_blocks.8.ffn.w3.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.8.ffn.w3.bias": [
+    384
+  ],
+  "model.transformer_blocks.8.adaLN_modulation.1.weight": [
+    2304,
+    384
+  ],
+  "model.transformer_blocks.8.adaLN_modulation.1.bias": [
+    2304
+  ],
+  "model.transformer_blocks.9.planning_gate_logit": [],
+  "model.transformer_blocks.9.norm1.weight": [
+    384
+  ],
+  "model.transformer_blocks.9.attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.9.attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.9.attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.9.attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.9.attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.9.attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.9.attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.9.attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.9.attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.9.attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.9.planning_cross_attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.9.planning_cross_attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.9.planning_cross_attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.9.planning_cross_attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.9.planning_cross_attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.9.planning_cross_attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.9.planning_cross_attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.9.planning_cross_attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.9.planning_cross_attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.9.planning_cross_attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.9.planning_out_proj.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.9.planning_out_proj.bias": [
+    384
+  ],
+  "model.transformer_blocks.9.norm2.weight": [
+    384
+  ],
+  "model.transformer_blocks.9.ffn.w12.weight": [
+    768,
+    384
+  ],
+  "model.transformer_blocks.9.ffn.w12.bias": [
+    768
+  ],
+  "model.transformer_blocks.9.ffn.w3.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.9.ffn.w3.bias": [
+    384
+  ],
+  "model.transformer_blocks.9.adaLN_modulation.1.weight": [
+    2304,
+    384
+  ],
+  "model.transformer_blocks.9.adaLN_modulation.1.bias": [
+    2304
+  ],
+  "model.transformer_blocks.10.planning_gate_logit": [],
+  "model.transformer_blocks.10.norm1.weight": [
+    384
+  ],
+  "model.transformer_blocks.10.attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.10.attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.10.attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.10.attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.10.attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.10.attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.10.attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.10.attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.10.attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.10.attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.10.planning_cross_attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.10.planning_cross_attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.10.planning_cross_attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.10.planning_cross_attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.10.planning_cross_attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.10.planning_cross_attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.10.planning_cross_attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.10.planning_cross_attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.10.planning_cross_attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.10.planning_cross_attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.10.planning_out_proj.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.10.planning_out_proj.bias": [
+    384
+  ],
+  "model.transformer_blocks.10.norm2.weight": [
+    384
+  ],
+  "model.transformer_blocks.10.ffn.w12.weight": [
+    768,
+    384
+  ],
+  "model.transformer_blocks.10.ffn.w12.bias": [
+    768
+  ],
+  "model.transformer_blocks.10.ffn.w3.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.10.ffn.w3.bias": [
+    384
+  ],
+  "model.transformer_blocks.10.adaLN_modulation.1.weight": [
+    2304,
+    384
+  ],
+  "model.transformer_blocks.10.adaLN_modulation.1.bias": [
+    2304
+  ],
+  "model.transformer_blocks.11.planning_gate_logit": [],
+  "model.transformer_blocks.11.norm1.weight": [
+    384
+  ],
+  "model.transformer_blocks.11.attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.11.attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.11.attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.11.attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.11.attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.11.attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.11.attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.11.attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.11.attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.11.attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.11.planning_cross_attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.11.planning_cross_attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.11.planning_cross_attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.11.planning_cross_attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.11.planning_cross_attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.11.planning_cross_attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.11.planning_cross_attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.11.planning_cross_attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.11.planning_cross_attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.11.planning_cross_attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.11.planning_out_proj.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.11.planning_out_proj.bias": [
+    384
+  ],
+  "model.transformer_blocks.11.norm2.weight": [
+    384
+  ],
+  "model.transformer_blocks.11.ffn.w12.weight": [
+    768,
+    384
+  ],
+  "model.transformer_blocks.11.ffn.w12.bias": [
+    768
+  ],
+  "model.transformer_blocks.11.ffn.w3.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.11.ffn.w3.bias": [
+    384
+  ],
+  "model.transformer_blocks.11.adaLN_modulation.1.weight": [
+    2304,
+    384
+  ],
+  "model.transformer_blocks.11.adaLN_modulation.1.bias": [
+    2304
+  ],
+  "model.transformer_blocks.12.planning_gate_logit": [],
+  "model.transformer_blocks.12.norm1.weight": [
+    384
+  ],
+  "model.transformer_blocks.12.attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.12.attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.12.attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.12.attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.12.attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.12.attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.12.attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.12.attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.12.attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.12.attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.12.planning_cross_attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.12.planning_cross_attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.12.planning_cross_attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.12.planning_cross_attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.12.planning_cross_attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.12.planning_cross_attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.12.planning_cross_attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.12.planning_cross_attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.12.planning_cross_attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.12.planning_cross_attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.12.planning_out_proj.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.12.planning_out_proj.bias": [
+    384
+  ],
+  "model.transformer_blocks.12.norm2.weight": [
+    384
+  ],
+  "model.transformer_blocks.12.ffn.w12.weight": [
+    768,
+    384
+  ],
+  "model.transformer_blocks.12.ffn.w12.bias": [
+    768
+  ],
+  "model.transformer_blocks.12.ffn.w3.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.12.ffn.w3.bias": [
+    384
+  ],
+  "model.transformer_blocks.12.adaLN_modulation.1.weight": [
+    2304,
+    384
+  ],
+  "model.transformer_blocks.12.adaLN_modulation.1.bias": [
+    2304
+  ],
+  "model.transformer_blocks.13.planning_gate_logit": [],
+  "model.transformer_blocks.13.norm1.weight": [
+    384
+  ],
+  "model.transformer_blocks.13.attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.13.attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.13.attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.13.attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.13.attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.13.attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.13.attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.13.attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.13.attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.13.attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.13.planning_cross_attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.13.planning_cross_attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.13.planning_cross_attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.13.planning_cross_attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.13.planning_cross_attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.13.planning_cross_attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.13.planning_cross_attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.13.planning_cross_attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.13.planning_cross_attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.13.planning_cross_attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.13.planning_out_proj.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.13.planning_out_proj.bias": [
+    384
+  ],
+  "model.transformer_blocks.13.norm2.weight": [
+    384
+  ],
+  "model.transformer_blocks.13.ffn.w12.weight": [
+    768,
+    384
+  ],
+  "model.transformer_blocks.13.ffn.w12.bias": [
+    768
+  ],
+  "model.transformer_blocks.13.ffn.w3.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.13.ffn.w3.bias": [
+    384
+  ],
+  "model.transformer_blocks.13.adaLN_modulation.1.weight": [
+    2304,
+    384
+  ],
+  "model.transformer_blocks.13.adaLN_modulation.1.bias": [
+    2304
+  ],
+  "model.transformer_blocks.14.planning_gate_logit": [],
+  "model.transformer_blocks.14.norm1.weight": [
+    384
+  ],
+  "model.transformer_blocks.14.attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.14.attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.14.attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.14.attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.14.attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.14.attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.14.attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.14.attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.14.attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.14.attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.14.planning_cross_attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.14.planning_cross_attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.14.planning_cross_attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.14.planning_cross_attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.14.planning_cross_attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.14.planning_cross_attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.14.planning_cross_attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.14.planning_cross_attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.14.planning_cross_attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.14.planning_cross_attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.14.planning_out_proj.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.14.planning_out_proj.bias": [
+    384
+  ],
+  "model.transformer_blocks.14.norm2.weight": [
+    384
+  ],
+  "model.transformer_blocks.14.ffn.w12.weight": [
+    768,
+    384
+  ],
+  "model.transformer_blocks.14.ffn.w12.bias": [
+    768
+  ],
+  "model.transformer_blocks.14.ffn.w3.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.14.ffn.w3.bias": [
+    384
+  ],
+  "model.transformer_blocks.14.adaLN_modulation.1.weight": [
+    2304,
+    384
+  ],
+  "model.transformer_blocks.14.adaLN_modulation.1.bias": [
+    2304
+  ],
+  "model.transformer_blocks.15.planning_gate_logit": [],
+  "model.transformer_blocks.15.norm1.weight": [
+    384
+  ],
+  "model.transformer_blocks.15.attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.15.attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.15.attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.15.attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.15.attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.15.attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.15.attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.15.attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.15.attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.15.attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.15.planning_cross_attn.to_q.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.15.planning_cross_attn.to_q.bias": [
+    384
+  ],
+  "model.transformer_blocks.15.planning_cross_attn.to_k.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.15.planning_cross_attn.to_k.bias": [
+    384
+  ],
+  "model.transformer_blocks.15.planning_cross_attn.to_v.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.15.planning_cross_attn.to_v.bias": [
+    384
+  ],
+  "model.transformer_blocks.15.planning_cross_attn.q_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.15.planning_cross_attn.k_norm.weight": [
+    48
+  ],
+  "model.transformer_blocks.15.planning_cross_attn.to_out.0.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.15.planning_cross_attn.to_out.0.bias": [
+    384
+  ],
+  "model.transformer_blocks.15.planning_out_proj.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.15.planning_out_proj.bias": [
+    384
+  ],
+  "model.transformer_blocks.15.norm2.weight": [
+    384
+  ],
+  "model.transformer_blocks.15.ffn.w12.weight": [
+    768,
+    384
+  ],
+  "model.transformer_blocks.15.ffn.w12.bias": [
+    768
+  ],
+  "model.transformer_blocks.15.ffn.w3.weight": [
+    384,
+    384
+  ],
+  "model.transformer_blocks.15.ffn.w3.bias": [
+    384
+  ],
+  "model.transformer_blocks.15.adaLN_modulation.1.weight": [
+    2304,
+    384
+  ],
+  "model.transformer_blocks.15.adaLN_modulation.1.bias": [
+    2304
+  ],
+  "model.final_layer.norm_final.weight": [
+    384
+  ],
+  "model.final_layer.linear.weight": [
+    512,
+    384
+  ],
+  "model.final_layer.linear.bias": [
+    512
+  ],
+  "model.final_layer.modulation_proj.1.weight": [
+    768,
+    384
+  ],
+  "model.final_layer.modulation_proj.1.bias": [
+    768
+  ],
+  "planning_adapter.queries": [
+    16,
+    384
+  ],
+  "planning_adapter.context_gate_logit": [],
+  "planning_adapter.vlm_norm.weight": [
+    384
+  ],
+  "planning_adapter.vlm_norm.bias": [
+    384
+  ],
+  "planning_adapter.query_norm.weight": [
+    384
+  ],
+  "planning_adapter.query_norm.bias": [
+    384
+  ],
+  "planning_adapter.state_mlp.0.weight": [
+    23
+  ],
+  "planning_adapter.state_mlp.0.bias": [
+    23
+  ],
+  "planning_adapter.state_mlp.1.weight": [
+    1024,
+    23
+  ],
+  "planning_adapter.state_mlp.1.bias": [
+    1024
+  ],
+  "planning_adapter.state_mlp.3.weight": [
+    384,
+    1024
+  ],
+  "planning_adapter.state_mlp.3.bias": [
+    384
+  ],
+  "planning_adapter.cross_attn.in_proj_weight": [
+    1152,
+    384
+  ],
+  "planning_adapter.cross_attn.in_proj_bias": [
+    1152
+  ],
+  "planning_adapter.cross_attn.out_proj.weight": [
+    384,
+    384
+  ],
+  "planning_adapter.cross_attn.out_proj.bias": [
+    384
+  ],
+  "planning_adapter.ffn_norm.weight": [
+    384
+  ],
+  "planning_adapter.ffn_norm.bias": [
+    384
+  ],
+  "planning_adapter.ffn_in.weight": [
+    2048,
+    384
+  ],
+  "planning_adapter.ffn_in.bias": [
+    2048
+  ],
+  "planning_adapter.ffn_out.weight": [
+    384,
+    1024
+  ],
+  "planning_adapter.ffn_out.bias": [
+    384
+  ],
+  "his_traj_encoder.fc1.weight": [
+    1024,
+    12
+  ],
+  "his_traj_encoder.fc1.bias": [
+    1024
+  ],
+  "his_traj_encoder.norm.weight": [
+    1024
+  ],
+  "his_traj_encoder.norm.bias": [
+    1024
+  ],
+  "his_traj_encoder.fc2.weight": [
+    384,
+    1024
+  ],
+  "his_traj_encoder.fc2.bias": [
+    384
+  ],
+  "ego_status_encoder.fc1.weight": [
+    1024,
+    8
+  ],
+  "ego_status_encoder.fc1.bias": [
+    1024
+  ],
+  "ego_status_encoder.norm.weight": [
+    1024
+  ],
+  "ego_status_encoder.norm.bias": [
+    1024
+  ],
+  "ego_status_encoder.fc2.weight": [
+    384,
+    1024
+  ],
+  "ego_status_encoder.fc2.bias": [
+    384
+  ],
+  "action_encoder.fc1.weight": [
+    384,
+    3
+  ],
+  "action_encoder.fc1.bias": [
+    384
+  ],
+  "action_encoder.fc2.weight": [
+    384,
+    768
+  ],
+  "action_encoder.fc2.bias": [
+    384
+  ],
+  "action_encoder.fc3.weight": [
+    384,
+    384
+  ],
+  "action_encoder.fc3.bias": [
+    384
+  ],
+  "feature_encoder.weight": [
+    384,
+    1536
+  ],
+  "feature_encoder.bias": [
+    384
+  ],
+  "fusion_projector.weight": [
+    384,
+    1152
+  ],
+  "fusion_projector.bias": [
+    384
+  ],
+  "action_decoder.fc1.weight": [
+    1024,
+    512
+  ],
+  "action_decoder.fc1.bias": [
+    1024
+  ],
+  "action_decoder.norm.weight": [
+    1024
+  ],
+  "action_decoder.norm.bias": [
+    1024
+  ],
+  "action_decoder.fc2.weight": [
+    3,
+    1024
+  ],
+  "action_decoder.fc2.bias": [
+    3
+  ],
+  "position_embedding.weight": [
+    8,
+    384
+  ],
+  "eta.eta_logit": [
+    1
+  ]
+}

@@ -1,0 +1,5 @@
+model,protocol,positive_mass,ep_only_strict_mass,ep_only_components_mass,strict_share,component_share
+a5_grpo_300,deployment,1327.8676,0.0,712.6637,0.0,0.53669786
+a5_grpo_300,native_grpo,1639.9574,0.0,637.6356,0.0,0.3888123
+a5_sft,deployment,602.4671,0.0,511.3977,0.0,0.8488392
+a5_sft,native_grpo,1551.6816,0.0,1331.1733,0.0,0.8578908

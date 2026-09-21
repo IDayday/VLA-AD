@@ -1,0 +1,13 @@
+stage,scope,sampled_candidates,nominal_candidate_scores,perturbation_candidate_scores,optimizer_updates
+stage1_primary,"two checkpoints,512 scenes,two native groups16 and two deployment pools16",65536,131072,0,0
+stage1_smoke_extra,repeat/capture draws plus repeated nominal and scoring-equivalence calls; PDM baseline excluded from candidate counts,1536,6784,0,0
+stage2_matched_pairs,1192 distinct selected candidates; 8 selection +8 evaluation,0,1192,19072,0
+stage3_shared_step1,"two seeds shared by all four arms; costs are amortized, not charged four times",2048,4096,16384,0
+stage3_update_attempt,"seed=2026092111,arm=A; shared step1 cache reused; INVALID_STOPPED",0,0,0,1
+stage3_update_attempt,"seed=2026092111,arm=B; shared step1 cache reused; INVALID_STOPPED",0,0,0,1
+stage3_update_attempt,"seed=2026092111,arm=C; shared step1 cache reused; INVALID_STOPPED",0,0,0,1
+stage3_update_attempt,"seed=2026092111,arm=D; shared step1 cache reused; INVALID_STOPPED",0,0,0,1
+stage3_update_attempt,"seed=2026092112,arm=A; shared step1 cache reused; INVALID_STOPPED",0,0,0,1
+stage3_update_attempt,"seed=2026092112,arm=B; shared step1 cache reused; INVALID_STOPPED",0,0,0,1
+stage3_update_attempt,"seed=2026092112,arm=C; shared step1 cache reused; INVALID_STOPPED",0,0,0,1
+stage3_update_attempt,"seed=2026092112,arm=D; shared step1 cache reused; INVALID_STOPPED",0,0,0,1

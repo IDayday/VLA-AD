@@ -1,0 +1,10 @@
+/root/miniconda3/envs/navsim/lib/python3.9/site-packages/timm/models/layers/__init__.py:49: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers
+  warnings.warn(f"Importing from {__name__} is deprecated, please import via timm.layers", FutureWarning)
+Traceback (most recent call last):
+  File "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/sample.py", line 80, in <module>
+    p=argparse.ArgumentParser();p.add_argument('--model',required=True);p.add_argument('--smoke',action='store_true');p.add_argument('--rank',type=int,default=0);p.add_argument('--world',type=int,default=1);main(p.parse_args())
+  File "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/sample.py", line 50, in main
+    p,m=load(a.model);before=state_hash(p);checks=[];rows=scenes(smoke=a.smoke)[a.rank::a.world]
+  File "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/common.py", line 44, in state_hash
+    h.update(k.encode());h.update(str(v.dtype).encode());h.update(v.detach().cpu().contiguous().view(__import__('torch').uint8).numpy().tobytes())
+RuntimeError: self.dim() cannot be 0 to view Float as Byte (different element sizes)

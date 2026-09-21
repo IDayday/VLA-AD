@@ -1,0 +1,335 @@
+{
+  "status": "PASS",
+  "files": [
+    {
+      "path": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_a5_full103k_standardv2_clean_20260710T091344Z/epoch_155.ckpt",
+      "expected_sha256": "79257dffba07792c77835aadd31e05bdab8c2f9afec75bc9772bac772a32e4b7",
+      "actual_sha256": "79257dffba07792c77835aadd31e05bdab8c2f9afec75bc9772bac772a32e4b7"
+    },
+    {
+      "path": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage3_lfp_grpo_v1_exact_b8g16_epoch155_r4_20260712T083012Z/hydra/training_recogdrive_agent/stage3_lfp_grpo_v1_exact_b8g16_epoch155_r4_20260712T083012Z/step_checkpoints/step-step=300.ckpt",
+      "expected_sha256": "caf3aa73fdb3172e1b6257629914f66966ea980c9d0b7fe9e86c077aa49d162d",
+      "actual_sha256": "caf3aa73fdb3172e1b6257629914f66966ea980c9d0b7fe9e86c077aa49d162d"
+    },
+    {
+      "path": "/mnt/project/VLA-AD_last_vla_dev/outputs/pta_fs_dit_fs_stats_full103k_20260710T084637Z/fs_norm_stats_v2_standard.npz",
+      "expected_sha256": "b8249e5e3411bec29490250a3680cbbb6eab43e1213d815a6ffe60e9374e61f3",
+      "actual_sha256": "b8249e5e3411bec29490250a3680cbbb6eab43e1213d815a6ffe60e9374e61f3"
+    },
+    {
+      "path": "/mnt/project/VLA-AD_last_vla_dev/outputs/lfp_reference_v1_full_epoch155_20260712T005257Z/reference_v1_full.pt",
+      "expected_sha256": "99d16eacac60a6075266fdb5cc22fb06d93fa6ffaace42c7d7de03f2615808bb",
+      "actual_sha256": "99d16eacac60a6075266fdb5cc22fb06d93fa6ffaace42c7d7de03f2615808bb"
+    },
+    {
+      "path": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage3_lfp_grpo_v1_exact_b8g16_epoch155_r4_20260712T083012Z/hydra/training_recogdrive_agent/stage3_lfp_grpo_v1_exact_b8g16_epoch155_r4_20260712T083012Z/code/hydra/config.yaml",
+      "expected_sha256": "aa36ada596b78743af45d6be5ceed6633c6c0fd40995bd889d56972e3cd86e99",
+      "actual_sha256": "aa36ada596b78743af45d6be5ceed6633c6c0fd40995bd889d56972e3cd86e99"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/source_snapshots/AGENT.md",
+      "expected_sha256": "e1fbd51222140d0c4565c591e68c0e539899ccf575109fc60f672703ca7acc54",
+      "actual_sha256": "e1fbd51222140d0c4565c591e68c0e539899ccf575109fc60f672703ca7acc54"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/source_snapshots/il_rl_psi.md",
+      "expected_sha256": "dd08cd9e811863270bcbe53dc8104af4c22f0c9cdb409871142ecc29e170a3e4",
+      "actual_sha256": "dd08cd9e811863270bcbe53dc8104af4c22f0c9cdb409871142ecc29e170a3e4"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/source_snapshots/historical_longchain.md",
+      "expected_sha256": "5a75f5d6b59cbfecff488eec098de9c99c47ad16152156f474673c7a0b79f854",
+      "actual_sha256": "5a75f5d6b59cbfecff488eec098de9c99c47ad16152156f474673c7a0b79f854"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/source_snapshots/il_rl_psi_primary.yaml",
+      "expected_sha256": "d03c25ee4c7c99a9b662bb702933cd77bcb74bab17e5cd126230407da79a36fd",
+      "actual_sha256": "d03c25ee4c7c99a9b662bb702933cd77bcb74bab17e5cd126230407da79a36fd"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/grpo_credit_risk_quickcheck/source_snapshots/LFP_GRPO_STAGE3_RESEARCH_SUMMARY.md",
+      "expected_sha256": "f7ab970b330a2dae5ff734775c1d6113881f39528b8ed5722d9f0dbe6b3c065f",
+      "actual_sha256": "f7ab970b330a2dae5ff734775c1d6113881f39528b8ed5722d9f0dbe6b3c065f"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/pdas.py",
+      "expected_sha256": "523826dd9cda961b36ff0208f088e8b8982ccea4144906cc6ad9310a03dbf1ba",
+      "actual_sha256": "523826dd9cda961b36ff0208f088e8b8982ccea4144906cc6ad9310a03dbf1ba"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/recogdrive_features.py",
+      "expected_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094",
+      "actual_sha256": "d8ee742e10573c1f6405f05dd10aa9cba2ff026f175e1ca9a5642be386ad4094"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/offline_rl_buffer.py",
+      "expected_sha256": "eed88fb1daa4a8944ba9c9297a6d4166ba6b33a6e57f83ef319415e1949178f2",
+      "actual_sha256": "eed88fb1daa4a8944ba9c9297a6d4166ba6b33a6e57f83ef319415e1949178f2"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/recogdrive_backbone.py",
+      "expected_sha256": "09491080a4208c354fe3a4fd0bf3e59c94ed055e251883920ea23101dd8ab1ef",
+      "actual_sha256": "09491080a4208c354fe3a4fd0bf3e59c94ed055e251883920ea23101dd8ab1ef"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/expert_cache.py",
+      "expected_sha256": "08f34fcb450ef9bd03b9470d78591d5993a7dab65cc11adca1bdf8df76204d9b",
+      "actual_sha256": "08f34fcb450ef9bd03b9470d78591d5993a7dab65cc11adca1bdf8df76204d9b"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/trajectory_text_replay.py",
+      "expected_sha256": "d770ec9ffa82ddf14f1b3adad2470a22a305006510844049ad69cb915db1809f",
+      "actual_sha256": "d770ec9ffa82ddf14f1b3adad2470a22a305006510844049ad69cb915db1809f"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/recogdrive_agent.py",
+      "expected_sha256": "2925d1f144311bce095d460846b47ead8a7c6be11c2edef8d5affa8c1143b43b",
+      "actual_sha256": "2925d1f144311bce095d460846b47ead8a7c6be11c2edef8d5affa8c1143b43b"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/recogdrive_dit.py",
+      "expected_sha256": "e53d63f46eee099768a260f91fd7e5768624d57fa956acb4634036f4929c3543",
+      "actual_sha256": "e53d63f46eee099768a260f91fd7e5768624d57fa956acb4634036f4929c3543"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/stage3_frontier_curriculum.py",
+      "expected_sha256": "07dbbffcf629a839e0e1b4f1b1b39f72539ea0df56fecf3ab7cabf5a5ead8dba",
+      "actual_sha256": "07dbbffcf629a839e0e1b4f1b1b39f72539ea0df56fecf3ab7cabf5a5ead8dba"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/expert_fusion.py",
+      "expected_sha256": "446b636d1ab2be5a3028ce1fd9cbca4138d391ff9ff3825fae637cff868c8bc7",
+      "actual_sha256": "446b636d1ab2be5a3028ce1fd9cbca4138d391ff9ff3825fae637cff868c8bc7"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/stage3_reference_cache.py",
+      "expected_sha256": "e4fd7b69e04ca250b3480db07844c514d1790c2b26ed068c591178bc12437556",
+      "actual_sha256": "e4fd7b69e04ca250b3480db07844c514d1790c2b26ed068c591178bc12437556"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/last_vla_cot_planning.py",
+      "expected_sha256": "2459bbdbaf4a9164585bb7f5edb5c56e87cdb293cf17456659341275c12fb9fa",
+      "actual_sha256": "2459bbdbaf4a9164585bb7f5edb5c56e87cdb293cf17456659341275c12fb9fa"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/geometry_tokenizer.py",
+      "expected_sha256": "a58b9bfa098f9803880fee2cab98fd15a3fc434ba10242f35c820f1a83c2bfe8",
+      "actual_sha256": "a58b9bfa098f9803880fee2cab98fd15a3fc434ba10242f35c820f1a83c2bfe8"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/pareto_vector_scorer.py",
+      "expected_sha256": "95e2f0e4fba12032cc20f8143856abaff1fd63174445ab84528c90ffb9ed9127",
+      "actual_sha256": "95e2f0e4fba12032cc20f8143856abaff1fd63174445ab84528c90ffb9ed9127"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/two_expert_adapters.py",
+      "expected_sha256": "bd34c6c8a772a6309ae39d6409fbcc7120a95130f279d620dc7ffe7059f40355",
+      "actual_sha256": "bd34c6c8a772a6309ae39d6409fbcc7120a95130f279d620dc7ffe7059f40355"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/stage3_v2_official_evaluator.py",
+      "expected_sha256": "a745bbbfa6139c501cfc964766c05f10c3f4d8eafb86ebf84cdccf9e7588075d",
+      "actual_sha256": "a745bbbfa6139c501cfc964766c05f10c3f4d8eafb86ebf84cdccf9e7588075d"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/two_expert_vlm_sft.py",
+      "expected_sha256": "63e6715ed08902f9a356a51c80fca305d1238747e2130d3fbc6813822c02534c",
+      "actual_sha256": "63e6715ed08902f9a356a51c80fca305d1238747e2130d3fbc6813822c02534c"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/stage3_metric_adapter.py",
+      "expected_sha256": "b43f36a37da21b9109ae4354fe23899330ee467d2fa2e88e74220bb171561220",
+      "actual_sha256": "b43f36a37da21b9109ae4354fe23899330ee467d2fa2e88e74220bb171561220"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/recogdrive_diffusion_planner.py",
+      "expected_sha256": "d46e0c7f18f48df0bc1edd1f8937594e2fd66e57f066381962e8d5964281080b",
+      "actual_sha256": "d46e0c7f18f48df0bc1edd1f8937594e2fd66e57f066381962e8d5964281080b"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/planning_token_adapter.py",
+      "expected_sha256": "54bb7680573d575ddeb80909a1a4141bafe08b1b43142b9248e5d42cf825ad23",
+      "actual_sha256": "54bb7680573d575ddeb80909a1a4141bafe08b1b43142b9248e5d42cf825ad23"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/vlm_lora_utils.py",
+      "expected_sha256": "d89d68992ff9638cde0e8aa1a2edcf250ce10d2be3222edcddac0b659d9fd3fc",
+      "actual_sha256": "d89d68992ff9638cde0e8aa1a2edcf250ce10d2be3222edcddac0b659d9fd3fc"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/dynamic_tokenizer.py",
+      "expected_sha256": "2a19f3f277e97ed1d0cbd54ab87ebe8697a7a19b1d8b6a0b30b2350d51d53973",
+      "actual_sha256": "2a19f3f277e97ed1d0cbd54ab87ebe8697a7a19b1d8b6a0b30b2350d51d53973"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/offline_action_explorer.py",
+      "expected_sha256": "c6be7623161992dbb976f1f0ce8dc9cffde52423e1d17cf30a2afc147c9e8c7e",
+      "actual_sha256": "c6be7623161992dbb976f1f0ce8dc9cffde52423e1d17cf30a2afc147c9e8c7e"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/reference_relative_geometry.py",
+      "expected_sha256": "559cff259ca5439efdd511d234b467f51dceac8912bf8b494e7e625fe24b7997",
+      "actual_sha256": "559cff259ca5439efdd511d234b467f51dceac8912bf8b494e7e625fe24b7997"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/latent_spatiotemporal_planning.py",
+      "expected_sha256": "f5f5f510d5bdbef81a315067cdfa978d39a1a37452e274199473a6f82d49baf2",
+      "actual_sha256": "f5f5f510d5bdbef81a315067cdfa978d39a1a37452e274199473a6f82d49baf2"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/trajectory_normalization.py",
+      "expected_sha256": "feb9aced9846c0c1f3ed5c7ff610702caa127b15ce1f8525dfdc7e1bb126a5e9",
+      "actual_sha256": "feb9aced9846c0c1f3ed5c7ff610702caa127b15ce1f8525dfdc7e1bb126a5e9"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/fs_norm.py",
+      "expected_sha256": "7ad171f28d417152dfad803fde23cec19a65acec0621dccc20137012a85dd351",
+      "actual_sha256": "7ad171f28d417152dfad803fde23cec19a65acec0621dccc20137012a85dd351"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/candidate_funnel.py",
+      "expected_sha256": "dc6c0b70a2e0ab9ef2ea6a89f51e1942b473c85a38fe749fe7798719091f4e1a",
+      "actual_sha256": "dc6c0b70a2e0ab9ef2ea6a89f51e1942b473c85a38fe749fe7798719091f4e1a"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/expert_backends.py",
+      "expected_sha256": "00913992f9dbb1f910a7fa25c60c1d210ad7dc99cc71d46de97c450779711950",
+      "actual_sha256": "00913992f9dbb1f910a7fa25c60c1d210ad7dc99cc71d46de97c450779711950"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/trajectory_feasibility.py",
+      "expected_sha256": "ae8dc67c5210b998fdb8e1e01a97c25642b24bfd8aeaf590aa95ad145467c4bc",
+      "actual_sha256": "ae8dc67c5210b998fdb8e1e01a97c25642b24bfd8aeaf590aa95ad145467c4bc"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/stage3_lfp_grpo.py",
+      "expected_sha256": "fae3e4bc30d14da6f91c678853b4640bf36ef380c9a8d494e34839d43b44d72f",
+      "actual_sha256": "fae3e4bc30d14da6f91c678853b4640bf36ef380c9a8d494e34839d43b44d72f"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/expert_feature_provider.py",
+      "expected_sha256": "579a61e8c92c0dc23faaf23b98222dfd66affe3acd6ace6df4138411b449e33b",
+      "actual_sha256": "579a61e8c92c0dc23faaf23b98222dfd66affe3acd6ace6df4138411b449e33b"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/agents/recogdrive/two_expert_slots.py",
+      "expected_sha256": "54d22a0422b480ca137897eaca9e67f6d314d2591c019081365572b49cacf110",
+      "actual_sha256": "54d22a0422b480ca137897eaca9e67f6d314d2591c019081365572b49cacf110"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/evaluate/pdm_score.py",
+      "expected_sha256": "07c3fdf737388f4ee219bba4de5187a2140d8e6411151d686302666be5f063c8",
+      "actual_sha256": "07c3fdf737388f4ee219bba4de5187a2140d8e6411151d686302666be5f063c8"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/evaluate/pdm_score_batch.py",
+      "expected_sha256": "01104927f506dd74e65e52ed6e29efab988b025cff48cf6bbd98604392055b9f",
+      "actual_sha256": "01104927f506dd74e65e52ed6e29efab988b025cff48cf6bbd98604392055b9f"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_scorer.py",
+      "expected_sha256": "02ab075017d4edb1c8bba6476ef1674b84d43dbca0f599df87cfe052b2dd5211",
+      "actual_sha256": "02ab075017d4edb1c8bba6476ef1674b84d43dbca0f599df87cfe052b2dd5211"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/planning/simulation/planner/pdm_planner/scoring/fast_pdm_scorer.py",
+      "expected_sha256": "8d83392f2063883e8a813b0c960b234498b9ac2797771edcaf3fe5d53017c0e3",
+      "actual_sha256": "8d83392f2063883e8a813b0c960b234498b9ac2797771edcaf3fe5d53017c0e3"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/outputs/historical_sft_grpo_support/runtime/a5/navsim/planning/simulation/planner/pdm_planner/simulation/pdm_simulator.py",
+      "expected_sha256": "ae07b533ada10bc37e973e5685a46a7cafc51de8d922ed02add558452ff04807",
+      "actual_sha256": "ae07b533ada10bc37e973e5685a46a7cafc51de8d922ed02add558452ff04807"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/trainer_state.json",
+      "expected_sha256": "2aca801a23b10fde07397a7e2b91c869ed727d33d1fba1af326ad9e4fd9d6b26",
+      "actual_sha256": "2aca801a23b10fde07397a7e2b91c869ed727d33d1fba1af326ad9e4fd9d6b26"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/config.json",
+      "expected_sha256": "6c7249180e5312db63e2279d06232a920f077157d56491bb59de319ed37c8656",
+      "actual_sha256": "6c7249180e5312db63e2279d06232a920f077157d56491bb59de319ed37c8656"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/configuration_intern_vit.py",
+      "expected_sha256": "22dd687a5f142985407675fc6b1dc688c2ded93e54192543ecf28ef495a6efa8",
+      "actual_sha256": "22dd687a5f142985407675fc6b1dc688c2ded93e54192543ecf28ef495a6efa8"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/added_tokens.json",
+      "expected_sha256": "f2008ed2a42163fdfe6e1942bf8d1e901bb877384c5ad740a8ab7f31f857e91e",
+      "actual_sha256": "f2008ed2a42163fdfe6e1942bf8d1e901bb877384c5ad740a8ab7f31f857e91e"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/all_results.json",
+      "expected_sha256": "46c60e3d2fa48423bd9f1cd749d7704dc3bf60b8ba9d255785084941ee41199d",
+      "actual_sha256": "46c60e3d2fa48423bd9f1cd749d7704dc3bf60b8ba9d255785084941ee41199d"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/generation_config.json",
+      "expected_sha256": "69d76e6b0a3b31f0de871f8f5b968957e0532fd9b17214aabf151da4bdbe1804",
+      "actual_sha256": "69d76e6b0a3b31f0de871f8f5b968957e0532fd9b17214aabf151da4bdbe1804"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/vocab.json",
+      "expected_sha256": "87a257b04b17642a0688c98cd1df89c398bda4fee532d6f88b38a659ecb4ac8d",
+      "actual_sha256": "87a257b04b17642a0688c98cd1df89c398bda4fee532d6f88b38a659ecb4ac8d"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/README.md",
+      "expected_sha256": "4bcf87ecfbbb8e07a01b21415a970c8b53a5283bf6872b657040d3f45c9241f7",
+      "actual_sha256": "4bcf87ecfbbb8e07a01b21415a970c8b53a5283bf6872b657040d3f45c9241f7"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/configuration_internvl_chat.py",
+      "expected_sha256": "6524e6deae6c318543d1022a599f011120f5a970eaa25f1118e7f5d0e346710c",
+      "actual_sha256": "6524e6deae6c318543d1022a599f011120f5a970eaa25f1118e7f5d0e346710c"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/tokenizer_config.json",
+      "expected_sha256": "23c362651f75758f131d4798dd8fe3afe2c376063f5c514c5df46c20919db82c",
+      "actual_sha256": "23c362651f75758f131d4798dd8fe3afe2c376063f5c514c5df46c20919db82c"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/train_results.json",
+      "expected_sha256": "46c60e3d2fa48423bd9f1cd749d7704dc3bf60b8ba9d255785084941ee41199d",
+      "actual_sha256": "46c60e3d2fa48423bd9f1cd749d7704dc3bf60b8ba9d255785084941ee41199d"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/model.safetensors",
+      "expected_sha256": "79fb39297e322cd2d3dc68d4f23b86ff85806b336a4d5d0ed5db9b66e4034a3c",
+      "actual_sha256": "79fb39297e322cd2d3dc68d4f23b86ff85806b336a4d5d0ed5db9b66e4034a3c"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/training_args.bin",
+      "expected_sha256": "ba078bdcc512de38a957ed44dbb9be472252a66c4e1e74cedb7e7992def7138d",
+      "actual_sha256": "ba078bdcc512de38a957ed44dbb9be472252a66c4e1e74cedb7e7992def7138d"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/special_tokens_map.json",
+      "expected_sha256": "1f6bc2d8338493b8e0ad8da35655b592c0bc6d41e1deae60f3c57f21599045f2",
+      "actual_sha256": "1f6bc2d8338493b8e0ad8da35655b592c0bc6d41e1deae60f3c57f21599045f2"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/modeling_internvl_chat.py",
+      "expected_sha256": "5d8f26ccfeb8434c0bcc295050725add4b2f2b0ffb4d1ab550c877a648386597",
+      "actual_sha256": "5d8f26ccfeb8434c0bcc295050725add4b2f2b0ffb4d1ab550c877a648386597"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/merges.txt",
+      "expected_sha256": "455e0caaa06abffc663e9282dfe71dde07fd1991eaf24146bf08793c4dba4497",
+      "actual_sha256": "455e0caaa06abffc663e9282dfe71dde07fd1991eaf24146bf08793c4dba4497"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/modeling_intern_vit.py",
+      "expected_sha256": "1978e330ea5533dda4d1379096aded271fc741347fc48cb4924846b56a2a6a4b",
+      "actual_sha256": "1978e330ea5533dda4d1379096aded271fc741347fc48cb4924846b56a2a6a4b"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/conversation.py",
+      "expected_sha256": "b1b9f280e9cb9211e519e2b8071002b57cc742aadb2f49b05fa674ee3c7d83ee",
+      "actual_sha256": "b1b9f280e9cb9211e519e2b8071002b57cc742aadb2f49b05fa674ee3c7d83ee"
+    }
+  ]
+}

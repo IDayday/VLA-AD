@@ -1,0 +1,11 @@
+{
+  "primary_counts": "candidate evaluations excluding PDM baseline; smoke counts include repeated standard/fast/single/batch tests",
+  "ad_hoc_debug_scores": 6,
+  "ad_hoc_debug_scope": "2 nominal margin debug candidates + 2 original and 2 zero-deformation candidates",
+  "unit_test_model_data": "synthetic tensors only for unit assertions, never experimental evidence",
+  "updates_total": 8,
+  "updates_valid_for_arm_comparison": 0,
+  "step8": "NOT_RUN",
+  "updated_policy_evaluations": "NOT_RUN",
+  "norm_control": "NOT_RUN"
+}

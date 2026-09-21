@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "benchmark": "navsim_v1",
+  "stage2_checkpoint_path": "/mnt/project/VLA-AD_last_vla_dev/outputs/stage2_pta_fs_dit_a5_full103k_standardv2_clean_20260710T091344Z/epoch_155.ckpt",
+  "stage2_checkpoint_sha256": "79257dffba07792c77835aadd31e05bdab8c2f9afec75bc9772bac772a32e4b7",
+  "metric_cache_path": "/mnt/project/VLA-AD/cache/metric_cache_train_full",
+  "metric_cache_fingerprint": "902b5283ce8db00b35e5176d4cd033835cafd8a3e210bb323c875deab88367e4",
+  "scene_count": 103288,
+  "total_scene_count": 103288,
+  "dataset_token_hash": "59443fd4949fc1e086c0b4ee5c2a9126f18738acaafb06fed37b920ff6a6faee",
+  "creation_timestamp": "2026-07-12T01:24:46.920409+00:00",
+  "component_field_mapping": {
+    "ep": "ego_progress",
+    "ttc": "time_to_collision_within_bound",
+    "nc": "no_at_fault_collisions",
+    "dac": "drivable_area_compliance",
+    "ddc_guard_value": "driving_direction_compliance",
+    "scalar": "pdms",
+    "quality": "history_comfort"
+  },
+  "raw_ddc_availability_ratio": 0.0,
+  "ddc_gt_tolerance": 0.01,
+  "v2_require_tlc": true,
+  "source_num_shards": 8,
+  "merged_shards": [
+    "shard_0.pt",
+    "shard_1.pt",
+    "shard_2.pt",
+    "shard_3.pt",
+    "shard_4.pt",
+    "shard_5.pt",
+    "shard_6.pt",
+    "shard_7.pt"
+  ]
+}

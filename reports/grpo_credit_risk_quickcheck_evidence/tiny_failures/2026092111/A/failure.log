@@ -1,0 +1,18 @@
+Traceback (most recent call last):
+  File "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/tiny_train.py", line 45, in main
+    records.append(record);save(dest/'steps.json',records);save(dest/'cost.json',counts)
+  File "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/common.py", line 31, in save
+    t.write_text(json.dumps(x,indent=2,allow_nan=False,default=enc)+'\n');t.replace(p)
+  File "/root/miniconda3/envs/navsim/lib/python3.9/json/__init__.py", line 234, in dumps
+    return cls(
+  File "/root/miniconda3/envs/navsim/lib/python3.9/json/encoder.py", line 201, in encode
+    chunks = list(chunks)
+  File "/root/miniconda3/envs/navsim/lib/python3.9/json/encoder.py", line 429, in _iterencode
+    yield from _iterencode_list(o, _current_indent_level)
+  File "/root/miniconda3/envs/navsim/lib/python3.9/json/encoder.py", line 325, in _iterencode_list
+    yield from chunks
+  File "/root/miniconda3/envs/navsim/lib/python3.9/json/encoder.py", line 397, in _iterencode_dict
+    yield _floatstr(value)
+  File "/root/miniconda3/envs/navsim/lib/python3.9/json/encoder.py", line 239, in floatstr
+    raise ValueError(
+ValueError: Out of range float values are not JSON compliant: nan

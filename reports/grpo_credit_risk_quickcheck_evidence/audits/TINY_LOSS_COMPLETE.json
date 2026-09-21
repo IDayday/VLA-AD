@@ -1,0 +1,13 @@
+{
+  "status": "PASS",
+  "token": "8b800af555d35794",
+  "loss_equivalence_error": 0.0,
+  "logprob_formula_error": 0.0,
+  "loss_tolerance": 1e-08,
+  "logprob_float32_tolerance": 1e-05,
+  "original_KL": 0.0,
+  "original_loss": -0.04034808278083801,
+  "unchanged_state": true,
+  "optimizer_steps": 0,
+  "comparison": "real archived forward_grpo loss with same cached real actions and same globally computed original advantage vs extracted native loss/KL calls"
+}

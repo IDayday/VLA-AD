@@ -1,0 +1,8 @@
+/root/miniconda3/envs/navsim/lib/python3.9/site-packages/timm/models/layers/__init__.py:49: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers
+  warnings.warn(f"Importing from {__name__} is deprecated, please import via timm.layers", FutureWarning)
+Traceback (most recent call last):
+  File "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/audit_failed_update.py", line 21, in <module>
+    if __name__=='__main__':main()
+  File "/mnt/project/VLA-AD-worktrees/grpo-credit-risk-quickcheck-20260921/tools/analysis/grpo_credit_risk_quickcheck/audit_failed_update.py", line 16, in main
+    d=OUT/'tiny'/str(seedno)/arm;s=read(d/'status.json');old=read(d/'trainable_parameters.json');extras=sorted(set(old)-set(names));assert extras==['eta.eta_logit']
+AssertionError

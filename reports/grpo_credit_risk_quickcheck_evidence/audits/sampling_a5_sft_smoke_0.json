@@ -1,0 +1,208 @@
+{
+  "status": "PASS",
+  "state_before": "e611ab78f6818430d2820bc91f91128e0dc81ad19f2026a27b70e86631514208",
+  "state_after": "e611ab78f6818430d2820bc91f91128e0dc81ad19f2026a27b70e86631514208",
+  "checks": [
+    {
+      "token": "e9cd4fda706e5516",
+      "protocol": "native_grpo",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": 0.0
+    },
+    {
+      "token": "e9cd4fda706e5516",
+      "protocol": "deployment",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": null
+    },
+    {
+      "token": "a4c4b9cae9f356bb",
+      "protocol": "native_grpo",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": 0.0
+    },
+    {
+      "token": "a4c4b9cae9f356bb",
+      "protocol": "deployment",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": null
+    },
+    {
+      "token": "2c274b54e82b55e7",
+      "protocol": "native_grpo",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": 0.0
+    },
+    {
+      "token": "2c274b54e82b55e7",
+      "protocol": "deployment",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": null
+    },
+    {
+      "token": "bae5037e472250dc",
+      "protocol": "native_grpo",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": 0.0
+    },
+    {
+      "token": "bae5037e472250dc",
+      "protocol": "deployment",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": null
+    },
+    {
+      "token": "de0fb293bb4859e7",
+      "protocol": "native_grpo",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": 0.0
+    },
+    {
+      "token": "de0fb293bb4859e7",
+      "protocol": "deployment",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": null
+    },
+    {
+      "token": "570334268a395022",
+      "protocol": "native_grpo",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": 0.0
+    },
+    {
+      "token": "570334268a395022",
+      "protocol": "deployment",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": null
+    },
+    {
+      "token": "288f0194b6d45858",
+      "protocol": "native_grpo",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": 0.0
+    },
+    {
+      "token": "288f0194b6d45858",
+      "protocol": "deployment",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": null
+    },
+    {
+      "token": "a893fc739c0b567c",
+      "protocol": "native_grpo",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": 0.0
+    },
+    {
+      "token": "a893fc739c0b567c",
+      "protocol": "deployment",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": null
+    },
+    {
+      "token": "cc8872f4a1fb5895",
+      "protocol": "native_grpo",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": 0.0
+    },
+    {
+      "token": "cc8872f4a1fb5895",
+      "protocol": "deployment",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": null
+    },
+    {
+      "token": "8ae2f982585058f2",
+      "protocol": "native_grpo",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": 0.0
+    },
+    {
+      "token": "8ae2f982585058f2",
+      "protocol": "deployment",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": null
+    },
+    {
+      "token": "b1199a48987b5f73",
+      "protocol": "native_grpo",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": 0.0
+    },
+    {
+      "token": "b1199a48987b5f73",
+      "protocol": "deployment",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": null
+    },
+    {
+      "token": "e9c9a2873a275365",
+      "protocol": "native_grpo",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": 0.0
+    },
+    {
+      "token": "e9c9a2873a275365",
+      "protocol": "deployment",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": null
+    },
+    {
+      "token": "7da6b01adf435bd5",
+      "protocol": "native_grpo",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": 0.0
+    },
+    {
+      "token": "7da6b01adf435bd5",
+      "protocol": "deployment",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": null
+    },
+    {
+      "token": "39fe00229f7b5ac4",
+      "protocol": "native_grpo",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": 0.0
+    },
+    {
+      "token": "39fe00229f7b5ac4",
+      "protocol": "deployment",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": null
+    },
+    {
+      "token": "2617f0cd70705817",
+      "protocol": "native_grpo",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": 0.0
+    },
+    {
+      "token": "2617f0cd70705817",
+      "protocol": "deployment",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": null
+    },
+    {
+      "token": "008a9f9434c75b99",
+      "protocol": "native_grpo",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": 0.0
+    },
+    {
+      "token": "008a9f9434c75b99",
+      "protocol": "deployment",
+      "repeat_error": 0.0,
+      "native_entry_capture_error": null
+    }
+  ],
+  "optimizer_steps": 0,
+  "backward_calls": 0,
+  "group_size": 16,
+  "actual_entry": "forward_grpo -> forward_lfp_grpo -> sample_chain",
+  "runtime_sha256": "d46e0c7f18f48df0bc1edd1f8937594e2fd66e57f066381962e8d5964281080b",
+  "scenes": 16,
+  "native_precision": "autocast_float16",
+  "deployment_precision": "float32",
+  "seconds": 33.36159133911133
+}
