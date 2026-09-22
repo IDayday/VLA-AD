@@ -1,0 +1,166 @@
+{
+  "status": "PASS",
+  "timestamp": "2026-09-22T01:03:29.971370+00:00",
+  "analysis_parent_commit": "d62c37534f6abfb34b40a4de6cbb277d58e82afa",
+  "official_versions": [
+    {
+      "commit": "30212249d90bc6cd6248390365dd232d1c85c7d4",
+      "date": "2025-08-21T11:48:43Z",
+      "url": "https://raw.githubusercontent.com/xiaomi-research/recogdrive/30212249d90bc6cd6248390365dd232d1c85c7d4/navsim/agents/recogdrive/recogdrive_diffusion_planner.py",
+      "sha256": "38ed40385b6665cb0cfe6099be8bb4f95b8d010ed802d9c5ea248335858d07a8",
+      "weights": {
+        "progress_weight": 30.0,
+        "ttc_weight": 5.0,
+        "comfortable_weight": 2.0
+      }
+    },
+    {
+      "commit": "1bc43060d3d6af5ed03bf46cbd1ac227e7cb38b3",
+      "date": "2025-08-24T14:00:21Z",
+      "url": "https://raw.githubusercontent.com/xiaomi-research/recogdrive/1bc43060d3d6af5ed03bf46cbd1ac227e7cb38b3/navsim/agents/recogdrive/recogdrive_diffusion_planner.py",
+      "sha256": "4abf7313dad34587e1a819f24cc84d0c427fa098b5857d84fbe5a328a88a8f38",
+      "weights": {
+        "progress_weight": 30.0,
+        "ttc_weight": 5.0,
+        "comfortable_weight": 2.0
+      }
+    },
+    {
+      "commit": "e3d5810a3529271c5a546c2532d29ae390bc650c",
+      "date": "2025-10-04T18:45:59Z",
+      "url": "https://raw.githubusercontent.com/xiaomi-research/recogdrive/e3d5810a3529271c5a546c2532d29ae390bc650c/navsim/agents/recogdrive/recogdrive_diffusion_planner.py",
+      "sha256": "c349bf196611034ebcdfb3dd30fe02e1ac8ee4fc6a76d65934b70dbf583d994a",
+      "weights": {
+        "progress_weight": 10.0,
+        "ttc_weight": 5.0,
+        "comfortable_weight": 2.0
+      }
+    },
+    {
+      "commit": "8a200077601ef33414469cfbe9fd095e322cccb6",
+      "date": "2026-03-13T04:10:21Z",
+      "url": "https://raw.githubusercontent.com/xiaomi-research/recogdrive/8a200077601ef33414469cfbe9fd095e322cccb6/navsim/agents/recogdrive/recogdrive_diffusion_planner.py",
+      "sha256": "c349bf196611034ebcdfb3dd30fe02e1ac8ee4fc6a76d65934b70dbf583d994a",
+      "weights": {
+        "progress_weight": 10.0,
+        "ttc_weight": 5.0,
+        "comfortable_weight": 2.0
+      }
+    }
+  ],
+  "immutable_source_files": [
+    {
+      "path": "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/official_recogdrive/navsim/agents/recogdrive/recogdrive_diffusion_planner.py",
+      "sha256": "c349bf196611034ebcdfb3dd30fe02e1ac8ee4fc6a76d65934b70dbf583d994a",
+      "equals_upstream_commit": true
+    },
+    {
+      "path": "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/official_recogdrive/navsim/agents/recogdrive/recogdrive_agent.py",
+      "sha256": "de468d8dc514e883f3c1dcb8f2dde480f7c6b38fe8fa563feebb51d7e64240ce",
+      "equals_upstream_commit": true
+    },
+    {
+      "path": "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/official_recogdrive/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_scorer.py",
+      "sha256": "02ab075017d4edb1c8bba6476ef1674b84d43dbca0f599df87cfe052b2dd5211",
+      "equals_upstream_commit": true
+    }
+  ],
+  "run_path": "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/outputs/stage3_rl_2b_official_chunkcache_retry_20260608T225423Z",
+  "run_config_path": "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/outputs/stage3_rl_2b_official_chunkcache_retry_20260608T225423Z/navsim_exp/training_recogdrive_agent/stage3_rl_2b_official_chunkcache_retry_20260608T225423Z/code/hydra/config.yaml",
+  "run_config_sha256": "f3e8b5ffe8a5b09fcc4a8cd6487b692d67be466c753f9666c1200efd381cbb51",
+  "run_agent": {
+    "_target_": "navsim.agents.recogdrive.recogdrive_agent.ReCogDriveAgent",
+    "_convert_": "all",
+    "trajectory_sampling": {
+      "_target_": "nuplan.planning.simulation.trajectory.trajectory_sampling.TrajectorySampling",
+      "_convert_": "all",
+      "time_horizon": 4,
+      "interval_length": 0.5
+    },
+    "checkpoint_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+    "vlm_path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+    "cam_type": "single",
+    "vlm_type": "internvl",
+    "dit_type": "small",
+    "sampling_method": "ddim",
+    "cache_mode": false,
+    "cache_hidden_state": true,
+    "metric_cache_path": "/workspace/recogdrive_stage3_rl/cache/metric_cache_train_full",
+    "reference_policy_checkpoint": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+    "vlm_size": "small",
+    "train_backbone": false,
+    "grpo": true,
+    "lr": 0.0001
+  },
+  "run_overrides": [
+    "agent=recogdrive_agent",
+    "agent.lr=1e-4",
+    "agent.vlm_path=/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+    "agent.cam_type=single",
+    "agent.grpo=True",
+    "agent.cache_hidden_state=True",
+    "agent.vlm_type=internvl",
+    "agent.checkpoint_path=/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+    "agent.dit_type=small",
+    "agent.vlm_size=small",
+    "agent.sampling_method=ddim",
+    "agent.metric_cache_path=/workspace/recogdrive_stage3_rl/cache/metric_cache_train_full",
+    "agent.reference_policy_checkpoint=/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+    "trainer.params.max_epochs=10",
+    "trainer.params.num_nodes=1",
+    "trainer.params.devices=8",
+    "dataloader.params.batch_size=8",
+    "experiment_name=training_recogdrive_agent",
+    "experiment_uid=stage3_rl_2b_official_chunkcache_retry_20260608T225423Z",
+    "train_test_split=navtrain",
+    "cache_path=/mnt/project/VLA-AD/cache/last_vla_v2/decoupled_highcap_no_risk/train_full_highcap_chunks",
+    "+chunk_cache_path=/mnt/project/VLA-AD/cache/last_vla_v2/decoupled_highcap_no_risk/train_full_highcap_chunks:/workspace/recogdrive_stage3_rl/cache/last_vla_train_missing_252_backfill",
+    "use_cache_without_dataset=True",
+    "force_cache_computation=False",
+    "navsim_log_path=/mnt/navsim/trainval_navsim_logs/trainval",
+    "sensor_blobs_path=/mnt/navsim/trainval_sensor_blobs/trainval"
+  ],
+  "command_log_sha256": "f50a53de038e3da279771cd0082000022b15053abb5a23c0141e4d9f0a303f9b",
+  "root_scorer_present": false,
+  "runtime_factory_grpo_weights": {
+    "progress_weight": 10.0,
+    "ttc_weight": 5.0,
+    "comfortable_weight": 2.0,
+    "driving_direction_weight": 0.0,
+    "driving_direction_horizon": 1.0,
+    "driving_direction_compliance_threshold": 2.0,
+    "driving_direction_violation_threshold": 6.0,
+    "stopped_speed_threshold": 0.005,
+    "progress_distance_threshold": 5.0
+  },
+  "runtime_train_scorer_array": [
+    10.0,
+    5.0,
+    2.0,
+    0.0
+  ],
+  "default_scorer_weights": {
+    "progress_weight": 5.0,
+    "ttc_weight": 5.0,
+    "comfortable_weight": 2.0,
+    "driving_direction_weight": 0.0,
+    "driving_direction_horizon": 1.0,
+    "driving_direction_compliance_threshold": 2.0,
+    "driving_direction_violation_threshold": 6.0,
+    "stopped_speed_threshold": 0.005,
+    "progress_distance_threshold": 5.0
+  },
+  "checkpoint_paths": [
+    "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/outputs/stage3_rl_2b_official_chunkcache_retry_20260608T225423Z/navsim_exp/training_recogdrive_agent/stage3_rl_2b_official_chunkcache_retry_20260608T225423Z/lightning_logs/version_0/checkpoints/epoch=8-step=11970.ckpt",
+    "/mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/outputs/pdms_eval_stage3_ckpt_watcher_20260609T093852Z/ckpts/epoch8_step11970.ckpt"
+  ],
+  "checkpoint_hashes": [
+    "b51951abbba86e9661fc82f85406d09ae26c6eff6aa3651a40462363866fb326",
+    "b51951abbba86e9661fc82f85406d09ae26c6eff6aa3651a40462363866fb326"
+  ],
+  "checkpoint_hyperparameters_note": "Checkpoint lacks hyper_parameters and hparams.yaml is empty; attribution uses launcher, saved Hydra config, unchanged official agent/planner/scorer, and exact checkpoint identity. Not inferred from tensor values.",
+  "local_git_is_shallow": true,
+  "no_rollout_or_metric_changes": true,
+  "optimizer_updates": 0,
+  "script_sha256": "82325c314c0f38a813f1b5ad532df5a8b1b7dbf99ee97b06b9a6f49fc8697bdc"
+}
