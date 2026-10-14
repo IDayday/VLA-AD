@@ -1,0 +1,145 @@
+{
+  "created_utc": "2026-10-14T03:00:59.310531+00:00",
+  "status": "PASS",
+  "checks": [
+    {
+      "check": "first_round_navtrain_receipt",
+      "status": "PASS"
+    },
+    {
+      "check": "first_round_navtrain_full_csv",
+      "status": "PASS",
+      "scenes": 103288,
+      "logs": 1192,
+      "candidate_rows": 413152
+    },
+    {
+      "check": "first_round_navtrain_aggregation",
+      "status": "PASS"
+    },
+    {
+      "check": "refinement_navtrain_receipt",
+      "status": "PASS"
+    },
+    {
+      "check": "refinement_navtrain_same_parent_and_old_bank",
+      "status": "PASS"
+    },
+    {
+      "check": "first_round_navtest_receipt",
+      "status": "PASS"
+    },
+    {
+      "check": "first_round_navtest_full_csv",
+      "status": "PASS",
+      "scenes": 12146,
+      "logs": 136,
+      "candidate_rows": 48584
+    },
+    {
+      "check": "first_round_navtest_aggregation",
+      "status": "PASS"
+    },
+    {
+      "check": "refinement_navtest_receipt",
+      "status": "PASS"
+    },
+    {
+      "check": "refinement_navtest_same_parent_and_old_bank",
+      "status": "PASS"
+    },
+    {
+      "check": "refinement_scorer_population",
+      "status": "PASS"
+    },
+    {
+      "check": "refinement_scorer_oracle_matches",
+      "status": "PASS"
+    },
+    {
+      "check": "interaction_cohort_checksum",
+      "status": "PASS"
+    },
+    {
+      "check": "interaction_original_supervision_quality",
+      "status": "PASS"
+    },
+    {
+      "check": "interaction_first_endpoint",
+      "status": "PASS"
+    },
+    {
+      "check": "interaction_refinement_supervision_quality",
+      "status": "PASS"
+    },
+    {
+      "check": "interaction_refinement_endpoint",
+      "status": "PASS"
+    },
+    {
+      "check": "road_direction_cohort_checksum",
+      "status": "PASS"
+    },
+    {
+      "check": "road_direction_original_supervision_quality",
+      "status": "PASS"
+    },
+    {
+      "check": "road_direction_first_endpoint",
+      "status": "PASS"
+    },
+    {
+      "check": "road_direction_refinement_supervision_quality",
+      "status": "PASS"
+    },
+    {
+      "check": "road_direction_refinement_endpoint",
+      "status": "PASS"
+    },
+    {
+      "check": "progress_comfort_cohort_checksum",
+      "status": "PASS"
+    },
+    {
+      "check": "progress_comfort_original_supervision_quality",
+      "status": "PASS"
+    },
+    {
+      "check": "progress_comfort_first_endpoint",
+      "status": "PASS"
+    },
+    {
+      "check": "progress_comfort_refinement_supervision_quality",
+      "status": "PASS"
+    },
+    {
+      "check": "progress_comfort_refinement_endpoint",
+      "status": "PASS"
+    },
+    {
+      "check": "first_round_union",
+      "status": "PASS",
+      "union": 4504,
+      "interaction_road_overlap": 153
+    },
+    {
+      "check": "refinement_exclusive_union",
+      "status": "PASS",
+      "union": 18047,
+      "counts": {
+        "interaction": 53,
+        "road_direction": 102,
+        "progress_comfort": 17892
+      }
+    }
+  ],
+  "first_round_scene_csv_recomputed": {
+    "navtrain": 103288,
+    "navtest": 12146
+  },
+  "refinement_results": "archived JSON and completion receipts cross-checked; no fresh model inference/scoring/bootstrap",
+  "large_weight_checksums": "archived identities preserved, no fresh full-weight SHA256",
+  "new_optimizer_steps": 0,
+  "new_model_inference_calls": 0,
+  "new_official_score_calls": 0
+}

@@ -1,0 +1,202 @@
+{
+  "created_utc": "2026-10-14T03:00:59.310531+00:00",
+  "source_repository": "IDayday/VLA-AD",
+  "historical_branch": "analysis/multi-teacher-opd-20261004",
+  "historical_head": "82b753299b0df0302b2d767a3169d4635ce1219d",
+  "publication_base": "7cbb1e3eb6e9a32a173edf1d03e05e8d988acc09",
+  "scope": "summary only; does not publish historical implementation branch, weights or per-scene raw data",
+  "sources": {
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/drivor_simscale134k_four_teacher_full_v1/analysis/navtrain/RESULTS.json": {
+      "bytes": 3745,
+      "sha256": "186e8a333ae810ec459b740d0eb1e0d5b1cc18d6aa370f65d14c567403174ff6"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/drivor_simscale134k_four_teacher_full_v1/analysis/navtrain/COMPLETE.json": {
+      "bytes": 128,
+      "sha256": "1b7749672518324efa16e6950b1e5eacf3129eb769ae617d06723043cf0a8ecb"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/drivor_simscale134k_four_teacher_full_v1/analysis/navtrain/per_scene.csv": {
+      "bytes": 53021802,
+      "sha256": "598cb30e6ac938c312e844213b0aa9a7ce5ea3b7b16fecf50667ac114dd3a291"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/evaluation_specialists_v2/analysis/navtrain/RESULTS.json": {
+      "bytes": 9934,
+      "sha256": "6f799839e26834823824cde1e5bac42a0917135d477cd4e0ae9dc2bea60cdb29"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/evaluation_specialists_v2/analysis/navtrain/COMPLETE.json": {
+      "bytes": 81,
+      "sha256": "b20c342c93ad04d737b47a54e6e0bc6e57f9e813212c061ea3698923ddec3eb5"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/drivor_simscale134k_four_teacher_full_v1/analysis/navtest/RESULTS.json": {
+      "bytes": 3614,
+      "sha256": "4b3b50cb1b23606e381f18fd1ed4dcd92ace74c387e664d9909d1aa01f54ebd9"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/drivor_simscale134k_four_teacher_full_v1/analysis/navtest/COMPLETE.json": {
+      "bytes": 127,
+      "sha256": "1bd21fa948e9257a6bb59ee639e53f4d7e18fddfde75c761e21d3afadf4dd7b5"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/drivor_simscale134k_four_teacher_full_v1/analysis/navtest/per_scene.csv": {
+      "bytes": 6401651,
+      "sha256": "2fd01d51b7fdfd7d11a5afe517e5fd6e0f27e7ee8b487454a60ee56798384e93"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/evaluation_specialists_v2/analysis/navtest/RESULTS.json": {
+      "bytes": 9812,
+      "sha256": "ecc5ec31dc94a23223e597424b2652e6e46e7504f7b9bb8560459979143ab9f8"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/evaluation_specialists_v2/analysis/navtest/COMPLETE.json": {
+      "bytes": 79,
+      "sha256": "bfdfe70cb36e8f0d2cf188ffd7cdb0644b9febc379345da316bf985c7b50f80b"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/new_specialist_scorer_transfer_v3/analysis/RESULTS.json": {
+      "bytes": 249618,
+      "sha256": "33c799ebd5169ee47645303deb2b3f75933387e283ab41652aa2f7379e08ec47"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/new_specialist_scorer_transfer_v3/analysis/COMPLETE.json": {
+      "bytes": 117,
+      "sha256": "15fab80d10f0d4e13049503b3f8b0f49f9c92485b89cc3ba26be83a0fe199574"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/new_specialist_scorer_transfer_v3/progress_audit_20261007/RESULTS.json": {
+      "bytes": 828,
+      "sha256": "c0ad4f154f82fb9e8f136df8c9d9b9a2435869002394ea199de8e2f507ff02cf"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/expert_cohorts_v2/COMPLETE.json": {
+      "bytes": 2893,
+      "sha256": "613d3868c38b427846a47633418bc45f1a49370deb45a8b6d14c1535bc5d7b41"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_full_navtrain_audit/models.json": {
+      "bytes": 3303,
+      "sha256": "5a2262c55bd6044fe041f4a772a16806b441060ad8f1118c1ca3f48498dc3c66"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/models.json": {
+      "bytes": 11699,
+      "sha256": "0e5b1e9123903c6e52993a985930abccb847a740868743616e7d33d5e58b2de1"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/expert_cohorts_v2/interaction.json": {
+      "bytes": 5039357,
+      "sha256": "f1d201124fda7ba7a67bbed4aba65ead9e22213c37817a8e9e525b1796164a35"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/teacher_campaign_8gpu_v2_20261004/teachers/interaction/run_spec.json": {
+      "bytes": 20226,
+      "sha256": "f42e5352018c2f61cb5afe35d21e60bbb37fee9d825d82daad7afefafbb88a44"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/teacher_campaign_8gpu_v2_20261004/teachers/interaction/TRAINING_COMPLETE.json": {
+      "bytes": 247,
+      "sha256": "2a10f55ca1fd24e94933b3f7ceeb4351de30a2d963d822b6c39f6f0b598e48cf"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/inputs/interaction.json": {
+      "bytes": 91138,
+      "sha256": "dd2f1760a341cc487b44951ccaa3af5289260b5e9e10bd7cb10a5abee3766da8"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/teachers/interaction_specialist/run_spec.json": {
+      "bytes": 51149,
+      "sha256": "350d85029f6406bc64fa238b7e01e3333241ff3746c11bf864e11598574a4c60"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/teachers/interaction_specialist/TRAINING_COMPLETE.json": {
+      "bytes": 533,
+      "sha256": "43764ef39f790b88d7f0a3a9c4a365fbae121a72b4693dbdde782cbe2127888f"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/expert_cohorts_v2/road_direction.json": {
+      "bytes": 1306933,
+      "sha256": "820a9f93cfb7bb22f2467cbd10ff34f302fe8900d8b6baf55f3b07b6db3ea242"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/teacher_campaign_8gpu_v2_20261004/teachers/road_direction/run_spec.json": {
+      "bytes": 20247,
+      "sha256": "4451d4b0e9ffd0ea25a8f322ae569c5bfb15153c7ac5633973f06b3ed5c83c0c"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/teacher_campaign_8gpu_v2_20261004/teachers/road_direction/TRAINING_COMPLETE.json": {
+      "bytes": 247,
+      "sha256": "3c421f74c71ed555d67edf6ef0bf1aff504f1d98c92a79c7cde9d5d4ff3b406b"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/inputs/road_direction.json": {
+      "bytes": 186305,
+      "sha256": "fb5d171d79c4062a58fc8309219aa771e6c134bc1a0a0223068b06a15eeb11fa"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/teachers/road_direction_specialist/run_spec.json": {
+      "bytes": 51665,
+      "sha256": "fdddac7129e8f19572c07449ef858d489ebb182e5472b0bc52b79f018c65226d"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/teachers/road_direction_specialist/TRAINING_COMPLETE.json": {
+      "bytes": 539,
+      "sha256": "1daf34ef9edafe23e417946ab481b574b20557167c5e6ffef38726474757204e"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/expert_cohorts_v2/progress_comfort.json": {
+      "bytes": 2769137,
+      "sha256": "8260f57634fbc20433425a240404db01b0d0904d7c77348d22b48e2122002f7f"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/teacher_campaign_8gpu_v2_20261004/teachers/progress_comfort/run_spec.json": {
+      "bytes": 20261,
+      "sha256": "d6c39829cebab12337a35c89050ce5dc12b15429b6f5285f4c9278a5ec69bcc0"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/teacher_campaign_8gpu_v2_20261004/teachers/progress_comfort/TRAINING_COMPLETE.json": {
+      "bytes": 247,
+      "sha256": "5efb372aa56efe5de55f14055ad6f372efde4929fc896ef520977b3619dbf001"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/inputs/progress_comfort.json": {
+      "bytes": 31974625,
+      "sha256": "8987cef0b412b2dc52edffaba1e7d01cc6783f06380814f0ab288d4f7cb93a24"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/teachers/progress_comfort_specialist/run_spec.json": {
+      "bytes": 51823,
+      "sha256": "e38348c861b9ee19984677a87a341f02a7df4157ecaf6724501ceda09cb7d2c4"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/teachers/progress_comfort_specialist/TRAINING_COMPLETE.json": {
+      "bytes": 543,
+      "sha256": "a5039a389b260972ebce0308575166107b0c69150f94711b846791ca19cbdee7"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/drivor_simscale134k_four_teacher_full_v1/resolved_config.json": {
+      "bytes": 33100,
+      "sha256": "11e239f56190481f4ac11386735432515b8c468e53f3d6697f445bdae11f4d67"
+    },
+    "/mnt/project/VLA-AD-worktrees/multi-teacher-opd-20261004/docs/MULTI_TEACHER_SPECIALISTS_RUNBOOK_20261004.md": {
+      "bytes": 9700,
+      "sha256": "212f31547cf0592b090511b2e23d438d2905f3240a290c85a236f2bf0dc4a59c"
+    },
+    "/mnt/project/VLA-AD-worktrees/multi-teacher-opd-20261004/docs/MULTI_TEACHER_SPECIALIZATION_PLAN_20261004.md": {
+      "bytes": 11696,
+      "sha256": "9c767aca19808e30d3f6fb3290a78dd7169bd1629db0a87797a4bf6b66e106d0"
+    },
+    "/mnt/project/VLA-AD-worktrees/multi-teacher-opd-20261004/docs/DRIVOR_SIMSCALE_FOUR_TEACHER_EVAL_20261005.md": {
+      "bytes": 4531,
+      "sha256": "87b69aa8abe9b8760eab45d9d8b6c32fd928e0a83689248f0b2713771a85f363"
+    },
+    "/mnt/project/VLA-AD-worktrees/multi-teacher-opd-20261004/docs/TEACHER_ORACLE_AND_SCORER_RESULTS_20261007.md": {
+      "bytes": 13307,
+      "sha256": "e38aa43d5795f3edc9a21ebdb6b85285164fae746d1e44d6b0d36e15e86552fb"
+    },
+    "/mnt/project/VLA-AD-worktrees/multi-teacher-opd-20261004/reports/MULTI_TEACHER_CONTEXT_CLUSTER_AND_INTERIM_LABELS_20261004.md": {
+      "bytes": 14653,
+      "sha256": "3adf2849a3a2d9eb501aa339243377fde6c08cfe919101be656f83ba7a05fd5d"
+    },
+    "/mnt/project/VLA-AD-worktrees/multi-teacher-opd-20261004/tools/training/multi_teacher_opd/prepare_experts.py": {
+      "bytes": 6363,
+      "sha256": "8d8c8c8b5664913308df9923d03faf4844d5fa74a15fa2a01745ca67bd58ad9c"
+    },
+    "/mnt/project/VLA-AD-worktrees/multi-teacher-opd-20261004/tools/training/multi_teacher_opd/prepare_teacher_training.py": {
+      "bytes": 5487,
+      "sha256": "a14426732f323cef4078c2673524e1d911600bd7336da17b94d9cae93fa22880"
+    },
+    "/mnt/project/VLA-AD-worktrees/multi-teacher-opd-20261004/tools/training/multi_teacher_opd/train_teacher.py": {
+      "bytes": 15710,
+      "sha256": "ab9f3341694360a7ee10db2e8103d84c6cb422c942c4a486c6f88796fd655b5e"
+    },
+    "/mnt/project/VLA-AD-worktrees/multi-teacher-opd-20261004/tools/training/simscale_continual/rollout_batching.py": {
+      "bytes": 4050,
+      "sha256": "550679849a54ae57da505e974506668abf56721b89b8321671bad931afe8a67c"
+    },
+    "/mnt/project/VLA-AD-worktrees/multi-teacher-opd-20261004/tools/training/navsim_generator/prepare_training.py": {
+      "bytes": 11063,
+      "sha256": "f0108f2f6a8f684800003f65056243b9f21bcbceed9e832d116835299718018b"
+    },
+    "/mnt/project/VLA-AD-worktrees/multi-teacher-opd-20261004/tools/analysis/multi_teacher_opd/teacher_oracle_complementarity_campaign.py": {
+      "bytes": 20143,
+      "sha256": "f276f1b25dfb6d90421d7ccaf8dd4f67fccb40061296c73a4aaf8416f46ecd0d"
+    },
+    "/mnt/project/VLA-AD-worktrees/multi-teacher-opd-20261004/tools/training/multi_teacher_oracle_mcl/train.py": {
+      "bytes": 15345,
+      "sha256": "d0d57fe9463bd74695311690cd5d09add73c34a39e167d873159c1e31c220d0a"
+    },
+    "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/resolved_config.json": {
+      "bytes": 37920,
+      "sha256": "d3d7311c430552c2a5dd33b30894d86070deb7a18b2e9024bd7b63d44c35def5"
+    }
+  }
+}

@@ -1,0 +1,1503 @@
+{
+  "schema_version": 1,
+  "unit": "all *_01 metrics use [0,1]; *_100 use [0,100]",
+  "first_round": {
+    "navtrain": {
+      "report": {
+        "passed": true,
+        "split": "navtrain",
+        "scenes": 103288,
+        "logs": 1192,
+        "candidates": 4,
+        "selected_PDMS_01": 0.9591660495728254,
+        "baseline_PDMS_01": 0.9494843836481853,
+        "oracle4_PDMS_01": 0.9741713244450356,
+        "regret_01": 0.015005274872210029,
+        "delta_vs_RL_01": {
+          "mean": 0.009681665924640074,
+          "ci95": [
+            0.008296776114475537,
+            0.011161934686754759
+          ],
+          "scenes": 103288,
+          "logs": 1192,
+          "repetitions": 5000,
+          "seed": 20261005
+        },
+        "oracle_minus_selected_01": {
+          "mean": 0.015005274872210029,
+          "ci95": [
+            0.014313914795544882,
+            0.015743318859613546
+          ],
+          "scenes": 103288,
+          "logs": 1192,
+          "repetitions": 5000,
+          "seed": 20261005
+        },
+        "zero_rate": 0.004589110061188134,
+        "baseline_zero_rate": 0.010088296801177291,
+        "fraction_below_05": 0.005634730075129734,
+        "PDMS_quantiles_01": {
+          "0.01": 0.5833333333333334,
+          "0.05": 0.8680277868747722,
+          "0.1": 0.8993329787985254,
+          "0.5": 0.9903809811291191
+        },
+        "improved": 25702,
+        "regressed": 10317,
+        "tied": 67269,
+        "safe_to_failure": 390,
+        "failure_to_safe": 1357,
+        "selection_counts": {
+          "official_rl": 41662,
+          "progress_comfort_ema": 31248,
+          "interaction_ema": 15604,
+          "road_direction_ema": 14774
+        },
+        "component_means_01": {
+          "score": 0.9591660495728254,
+          "ego_progress": 0.9150973130881962,
+          "no_at_fault_collisions": 0.9982669816435598,
+          "drivable_area_compliance": 0.996950274959337,
+          "time_to_collision_within_bound": 0.9918770815583611,
+          "comfort": 0.9999419099992255,
+          "driving_direction_compliance": 0.9753311130044149
+        },
+        "component_delta_vs_RL_01": {
+          "score": {
+            "mean": 0.009681665924640074,
+            "ci95": [
+              0.008296776114475537,
+              0.011161934686754759
+            ],
+            "scenes": 103288,
+            "logs": 1192,
+            "repetitions": 5000,
+            "seed": 20261005
+          },
+          "ego_progress": {
+            "mean": 0.01158916759245294,
+            "ci95": [
+              0.010240812398040977,
+              0.012955149811836552
+            ],
+            "scenes": 103288,
+            "logs": 1192,
+            "repetitions": 5000,
+            "seed": 20261005
+          },
+          "no_at_fault_collisions": {
+            "mean": 0.0025898458678646117,
+            "ci95": [
+              0.0019498943674680165,
+              0.0032896859693744866
+            ],
+            "scenes": 103288,
+            "logs": 1192,
+            "repetitions": 5000,
+            "seed": 20261005
+          },
+          "drivable_area_compliance": {
+            "mean": 0.003107815041437534,
+            "ci95": [
+              0.0022671162763564815,
+              0.004062069449696856
+            ],
+            "scenes": 103288,
+            "logs": 1192,
+            "repetitions": 5000,
+            "seed": 20261005
+          },
+          "time_to_collision_within_bound": {
+            "mean": 0.006622260088296801,
+            "ci95": [
+              0.005224377338924036,
+              0.00815753929738527
+            ],
+            "scenes": 103288,
+            "logs": 1192,
+            "repetitions": 5000,
+            "seed": 20261005
+          },
+          "comfort": {
+            "mean": 3.872666718302223e-05,
+            "ci95": [
+              -1.017827587524989e-05,
+              0.00010741847232469343
+            ],
+            "scenes": 103288,
+            "logs": 1192,
+            "repetitions": 5000,
+            "seed": 20261005
+          },
+          "driving_direction_compliance": {
+            "mean": -0.00019847416931298892,
+            "ci95": [
+              -0.0013186996933649809,
+              0.0009873948438230363
+            ],
+            "scenes": 103288,
+            "logs": 1192,
+            "repetitions": 5000,
+            "seed": 20261005
+          }
+        },
+        "score_source": "Exact existing official NAVSIM-v1 single-trajectory PDM scores, not learned logits",
+        "population": "Full canonical navtrain",
+        "optimizer_steps": 0,
+        "limitation": "Frozen externally-trained K64 scorer applied jointly at K4; no Navtest calibration or oracle input. Navtrain overlaps teacher/scorer training."
+      },
+      "recomputed_policy_means_01": {
+        "official_rl": 0.9494843836481853,
+        "interaction_ema": 0.8943980372498308,
+        "road_direction_ema": 0.911481084824798,
+        "progress_comfort_ema": 0.9119496309551939
+      },
+      "recomputed_oracle_01": 0.9741713244450355,
+      "recomputed_selected_01": 0.9591660495728255,
+      "derived_oracle_gain_vs_base_01": 0.024686940796850187,
+      "derived_selected_gain_vs_base_01": 0.009681665924640148,
+      "derived_oracle_capture": 0.3921776296346704
+    },
+    "navtest": {
+      "report": {
+        "passed": true,
+        "split": "navtest",
+        "scenes": 12146,
+        "logs": 136,
+        "candidates": 4,
+        "selected_PDMS_01": 0.921648537701823,
+        "baseline_PDMS_01": 0.9055139522802339,
+        "oracle4_PDMS_01": 0.9516795578259198,
+        "regret_01": 0.030031020124096846,
+        "delta_vs_RL_01": {
+          "mean": 0.016134585421589114,
+          "ci95": [
+            0.012447926310052754,
+            0.02000436977396643
+          ],
+          "scenes": 12146,
+          "logs": 136,
+          "repetitions": 5000,
+          "seed": 20261005
+        },
+        "oracle_minus_selected_01": {
+          "mean": 0.030031020124096846,
+          "ci95": [
+            0.0265125869291174,
+            0.03392321823019377
+          ],
+          "scenes": 12146,
+          "logs": 136,
+          "repetitions": 5000,
+          "seed": 20261005
+        },
+        "zero_rate": 0.02725177013008398,
+        "baseline_zero_rate": 0.04075415774740655,
+        "fraction_below_05": 0.030133377243536968,
+        "PDMS_quantiles_01": {
+          "0.01": 0.0,
+          "0.05": 0.5833333333333334,
+          "0.1": 0.8601331539968471,
+          "0.5": 0.9679356905106333
+        },
+        "improved": 3144,
+        "regressed": 1528,
+        "tied": 7474,
+        "safe_to_failure": 130,
+        "failure_to_safe": 329,
+        "selection_counts": {
+          "official_rl": 4996,
+          "progress_comfort_ema": 3211,
+          "interaction_ema": 2068,
+          "road_direction_ema": 1871
+        },
+        "component_means_01": {
+          "score": 0.921648537701823,
+          "ego_progress": 0.8760301499993476,
+          "no_at_fault_collisions": 0.9892145562325045,
+          "drivable_area_compliance": 0.982710357319282,
+          "time_to_collision_within_bound": 0.9633624238432406,
+          "comfort": 1.0,
+          "driving_direction_compliance": 0.9670261814589165
+        },
+        "component_delta_vs_RL_01": {
+          "score": {
+            "mean": 0.016134585421589114,
+            "ci95": [
+              0.012447926310052754,
+              0.02000436977396643
+            ],
+            "scenes": 12146,
+            "logs": 136,
+            "repetitions": 5000,
+            "seed": 20261005
+          },
+          "ego_progress": {
+            "mean": 0.016932815471919997,
+            "ci95": [
+              0.0127310221464493,
+              0.021203138006267563
+            ],
+            "scenes": 12146,
+            "logs": 136,
+            "repetitions": 5000,
+            "seed": 20261005
+          },
+          "no_at_fault_collisions": {
+            "mean": 0.007739173390416598,
+            "ci95": [
+              0.005271985822417615,
+              0.010511580243656693
+            ],
+            "scenes": 12146,
+            "logs": 136,
+            "repetitions": 5000,
+            "seed": 20261005
+          },
+          "drivable_area_compliance": {
+            "mean": 0.005927877490531862,
+            "ci95": [
+              0.003064871995640521,
+              0.009068288970865453
+            ],
+            "scenes": 12146,
+            "logs": 136,
+            "repetitions": 5000,
+            "seed": 20261005
+          },
+          "time_to_collision_within_bound": {
+            "mean": 0.011526428453811955,
+            "ci95": [
+              0.008394985293488599,
+              0.014932407739344419
+            ],
+            "scenes": 12146,
+            "logs": 136,
+            "repetitions": 5000,
+            "seed": 20261005
+          },
+          "comfort": {
+            "mean": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ],
+            "scenes": 12146,
+            "logs": 136,
+            "repetitions": 5000,
+            "seed": 20261005
+          },
+          "driving_direction_compliance": {
+            "mean": -0.0004939897908776552,
+            "ci95": [
+              -0.004159279833323181,
+              0.0027267012090026123
+            ],
+            "scenes": 12146,
+            "logs": 136,
+            "repetitions": 5000,
+            "seed": 20261005
+          }
+        },
+        "score_source": "Exact existing official NAVSIM-v1 single-trajectory PDM scores, not learned logits",
+        "population": "Full canonical navtest",
+        "optimizer_steps": 0,
+        "limitation": "Frozen externally-trained K64 scorer applied jointly at K4; no Navtest calibration or oracle input. Navtrain overlaps teacher/scorer training."
+      },
+      "recomputed_policy_means_01": {
+        "official_rl": 0.9055139522802339,
+        "interaction_ema": 0.8532711947716193,
+        "road_direction_ema": 0.8556775130144005,
+        "progress_comfort_ema": 0.8465129148506346
+      },
+      "recomputed_oracle_01": 0.9516795578259198,
+      "recomputed_selected_01": 0.921648537701823,
+      "derived_oracle_gain_vs_base_01": 0.04616560554568594,
+      "derived_selected_gain_vs_base_01": 0.016134585421589076,
+      "derived_oracle_capture": 0.34949363776073794
+    }
+  },
+  "refinement": {
+    "navtrain": {
+      "split": "navtrain",
+      "scenes": 103288,
+      "logs": 1192,
+      "pools": {
+        "old_ema_K4": {
+          "oracle_PDMS_01": 0.9741713244450355,
+          "mean_candidate_PDMS_01": 0.916828284169502,
+          "zero_count": 111,
+          "wins": 0,
+          "losses": 0,
+          "ties": 103288,
+          "policies": [
+            "official_rl",
+            "interaction_ema",
+            "road_direction_ema",
+            "progress_comfort_ema"
+          ],
+          "candidate_count": 4,
+          "delta_vs_old_K4_01": {
+            "mean": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ],
+            "scenes": 103288,
+            "logs": 1192,
+            "repetitions": 5000,
+            "seed": 20261005
+          },
+          "mean_factors_01": {
+            "score": 0.9741713244450355,
+            "ego_progress": 0.9403676963661722,
+            "no_at_fault_collisions": 0.9997482766633103,
+            "drivable_area_compliance": 0.9991092866547905,
+            "time_to_collision_within_bound": 0.9988866083184881,
+            "comfort": 0.9999612733328169,
+            "driving_direction_compliance": 0.9753117496708233
+          },
+          "oracle_winner_count": {
+            "official_rl": 50895,
+            "interaction_ema": 2701,
+            "road_direction_ema": 3864,
+            "progress_comfort_ema": 45828
+          },
+          "low_score_below50_count": 126,
+          "leave_one_out_contribution_01": {
+            "official_rl": 0.005014630520279536,
+            "interaction_ema": 0.002715461464469935,
+            "road_direction_ema": 0.0025392145607998602,
+            "progress_comfort_ema": 0.009787859497341117
+          },
+          "unique_contributors": {
+            "official_rl": 5438,
+            "interaction_ema": 1939,
+            "road_direction_ema": 3104,
+            "progress_comfort_ema": 45828
+          }
+        },
+        "specialist_ema_K4": {
+          "oracle_PDMS_01": 0.9822156189112766,
+          "mean_candidate_PDMS_01": 0.9051143821633861,
+          "zero_count": 157,
+          "wins": 41388,
+          "losses": 6381,
+          "ties": 55519,
+          "policies": [
+            "official_rl",
+            "interaction_specialist_ema",
+            "road_direction_specialist_ema",
+            "progress_comfort_specialist_ema"
+          ],
+          "candidate_count": 4,
+          "delta_vs_old_K4_01": {
+            "mean": 0.008044294466241157,
+            "ci95": [
+              0.007610383734180009,
+              0.008466712860569303
+            ],
+            "scenes": 103288,
+            "logs": 1192,
+            "repetitions": 5000,
+            "seed": 20261005
+          },
+          "mean_factors_01": {
+            "score": 0.9822156189112766,
+            "ego_progress": 0.9612890918523707,
+            "no_at_fault_collisions": 0.9996950274959338,
+            "drivable_area_compliance": 0.9987123383161645,
+            "time_to_collision_within_bound": 0.997860351638138,
+            "comfort": 0.9999806366664085,
+            "driving_direction_compliance": 0.9770447680272636
+          },
+          "oracle_winner_count": {
+            "official_rl": 49827,
+            "interaction_specialist_ema": 3137,
+            "road_direction_specialist_ema": 13000,
+            "progress_comfort_specialist_ema": 37324
+          },
+          "low_score_below50_count": 177,
+          "leave_one_out_contribution_01": {
+            "official_rl": 0.005102289836460164,
+            "interaction_specialist_ema": 0.0039022926639032413,
+            "road_direction_specialist_ema": 0.0024151589536418683,
+            "progress_comfort_specialist_ema": 0.011771730031725837
+          },
+          "unique_contributors": {
+            "official_rl": 4106,
+            "interaction_specialist_ema": 2174,
+            "road_direction_specialist_ema": 7891,
+            "progress_comfort_specialist_ema": 37324
+          }
+        },
+        "specialist_raw_K4_diagnostic": {
+          "oracle_PDMS_01": 0.9819904429880139,
+          "mean_candidate_PDMS_01": 0.903761572849984,
+          "zero_count": 163,
+          "wins": 41080,
+          "losses": 6784,
+          "ties": 55424,
+          "policies": [
+            "official_rl",
+            "interaction_specialist_raw",
+            "road_direction_specialist_raw",
+            "progress_comfort_specialist_raw"
+          ],
+          "candidate_count": 4,
+          "delta_vs_old_K4_01": {
+            "mean": 0.007819118542978353,
+            "ci95": [
+              0.007375386184810438,
+              0.008241256688579097
+            ],
+            "scenes": 103288,
+            "logs": 1192,
+            "repetitions": 5000,
+            "seed": 20261005
+          },
+          "mean_factors_01": {
+            "score": 0.9819904429880139,
+            "ego_progress": 0.9608870949063438,
+            "no_at_fault_collisions": 0.9996998683293316,
+            "drivable_area_compliance": 0.9986445666485942,
+            "time_to_collision_within_bound": 0.9978119433041592,
+            "comfort": 0.9999806366664085,
+            "driving_direction_compliance": 0.9769285880257145
+          },
+          "oracle_winner_count": {
+            "official_rl": 49901,
+            "interaction_specialist_raw": 3221,
+            "road_direction_specialist_raw": 13924,
+            "progress_comfort_specialist_raw": 36242
+          },
+          "low_score_below50_count": 186,
+          "leave_one_out_contribution_01": {
+            "official_rl": 0.005057456325441362,
+            "interaction_specialist_raw": 0.0038774933003056745,
+            "road_direction_specialist_raw": 0.002342987831461994,
+            "progress_comfort_specialist_raw": 0.011506841679626692
+          },
+          "unique_contributors": {
+            "official_rl": 4169,
+            "interaction_specialist_raw": 2255,
+            "road_direction_specialist_raw": 8819,
+            "progress_comfort_specialist_raw": 36242
+          }
+        }
+      },
+      "single_teachers": {
+        "official_rl": {
+          "PDMS_01": 0.9494843836481855,
+          "zero_count": 1042,
+          "mean_factors_01": {
+            "score": 0.9494843836481855,
+            "ego_progress": 0.9035081454957434,
+            "no_at_fault_collisions": 0.9956771357756952,
+            "drivable_area_compliance": 0.9938424599178994,
+            "time_to_collision_within_bound": 0.9852548214700643,
+            "comfort": 0.9999031833320424,
+            "driving_direction_compliance": 0.9755295871737278
+          }
+        },
+        "official_il": {
+          "PDMS_01": 0.9131187642133948,
+          "zero_count": 2982,
+          "mean_factors_01": {
+            "score": 0.9131187642133948,
+            "ego_progress": 0.8530775188386074,
+            "no_at_fault_collisions": 0.9951349624351329,
+            "drivable_area_compliance": 0.9752246146696615,
+            "time_to_collision_within_bound": 0.9736949113159321,
+            "comfort": 0.9995352799938038,
+            "driving_direction_compliance": 0.9847078072961041
+          }
+        },
+        "supervision": {
+          "PDMS_01": 0.9492297897797307,
+          "zero_count": 0,
+          "mean_factors_01": {
+            "score": 0.9492297897797307,
+            "ego_progress": 0.8787711221462822,
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 0.9984509333126791,
+            "driving_direction_compliance": 0.9860632406475098
+          }
+        },
+        "interaction_specialist_raw": {
+          "PDMS_01": 0.8841788211342434,
+          "zero_count": 5003,
+          "mean_factors_01": {
+            "score": 0.8841788211342434,
+            "ego_progress": 0.8128362584052374,
+            "no_at_fault_collisions": 0.9903861048718148,
+            "drivable_area_compliance": 0.9598598094647974,
+            "time_to_collision_within_bound": 0.967324374564325,
+            "comfort": 0.9998063666640848,
+            "driving_direction_compliance": 0.9808641855781891
+          }
+        },
+        "interaction_specialist_ema": {
+          "PDMS_01": 0.885648495430568,
+          "zero_count": 4874,
+          "mean_factors_01": {
+            "score": 0.885648495430568,
+            "ego_progress": 0.8137548893371449,
+            "no_at_fault_collisions": 0.9908992332119898,
+            "drivable_area_compliance": 0.9606440244752537,
+            "time_to_collision_within_bound": 0.9686894895825265,
+            "comfort": 0.9998160483308807,
+            "driving_direction_compliance": 0.9808835489117806
+          }
+        },
+        "road_direction_specialist_raw": {
+          "PDMS_01": 0.8902563063804417,
+          "zero_count": 5879,
+          "mean_factors_01": {
+            "score": 0.8902563063804417,
+            "ego_progress": 0.8701521422039628,
+            "no_at_fault_collisions": 0.9815080164201069,
+            "drivable_area_compliance": 0.9592885911238479,
+            "time_to_collision_within_bound": 0.927242274029897,
+            "comfort": 0.9996514599953528,
+            "driving_direction_compliance": 0.97283324297111
+          }
+        },
+        "road_direction_specialist_ema": {
+          "PDMS_01": 0.8920024497525675,
+          "zero_count": 5707,
+          "mean_factors_01": {
+            "score": 0.8920024497525675,
+            "ego_progress": 0.8710806124885063,
+            "no_at_fault_collisions": 0.9822244597629928,
+            "drivable_area_compliance": 0.960314847804198,
+            "time_to_collision_within_bound": 0.92894624738595,
+            "comfort": 0.99968050499574,
+            "driving_direction_compliance": 0.9733560529780807
+          }
+        },
+        "progress_comfort_specialist_raw": {
+          "PDMS_01": 0.8911267802370659,
+          "zero_count": 5781,
+          "mean_factors_01": {
+            "score": 0.8911267802370659,
+            "ego_progress": 0.9125673525733752,
+            "no_at_fault_collisions": 0.9589206877856091,
+            "drivable_area_compliance": 0.983444349779258,
+            "time_to_collision_within_bound": 0.863827356517698,
+            "comfort": 0.9999128649988382,
+            "driving_direction_compliance": 0.9730510804740145
+          }
+        },
+        "progress_comfort_specialist_ema": {
+          "PDMS_01": 0.8933221998222236,
+          "zero_count": 5518,
+          "mean_factors_01": {
+            "score": 0.8933221998222236,
+            "ego_progress": 0.9155392924005097,
+            "no_at_fault_collisions": 0.9606537061420494,
+            "drivable_area_compliance": 0.9844028347920378,
+            "time_to_collision_within_bound": 0.8644469831926265,
+            "comfort": 0.999922546665634,
+            "driving_direction_compliance": 0.9734189838122531
+          }
+        }
+      },
+      "official_parent_max_abs_errors": {
+        "official_rl": 0.0,
+        "official_il": 0.0,
+        "supervision": 0.0
+      },
+      "scores_sha256": "52682f9027a0736f51626c2faabf22b6c0e09a211a5d110eeba7f0c19b237d9a",
+      "optimizer_steps": 0
+    },
+    "navtest": {
+      "split": "navtest",
+      "scenes": 12146,
+      "logs": 136,
+      "pools": {
+        "old_ema_K4": {
+          "oracle_PDMS_01": 0.9516795578259198,
+          "mean_candidate_PDMS_01": 0.8652438937292222,
+          "zero_count": 161,
+          "wins": 0,
+          "losses": 0,
+          "ties": 12146,
+          "policies": [
+            "official_rl",
+            "interaction_ema",
+            "road_direction_ema",
+            "progress_comfort_ema"
+          ],
+          "candidate_count": 4,
+          "delta_vs_old_K4_01": {
+            "mean": 0.0,
+            "ci95": [
+              0.0,
+              0.0
+            ],
+            "scenes": 12146,
+            "logs": 136,
+            "repetitions": 5000,
+            "seed": 20261005
+          },
+          "mean_factors_01": {
+            "score": 0.9516795578259198,
+            "ego_progress": 0.9151676527245818,
+            "no_at_fault_collisions": 0.9960892474888853,
+            "drivable_area_compliance": 0.989955540918821,
+            "time_to_collision_within_bound": 0.982875020582908,
+            "comfort": 1.0,
+            "driving_direction_compliance": 0.9658735386135353
+          },
+          "oracle_winner_count": {
+            "official_rl": 5175,
+            "interaction_ema": 592,
+            "road_direction_ema": 577,
+            "progress_comfort_ema": 5802
+          },
+          "low_score_below50_count": 174,
+          "leave_one_out_contribution_01": {
+            "official_rl": 0.011371479655010187,
+            "interaction_ema": 0.011507600765102015,
+            "road_direction_ema": 0.004245106437381258,
+            "progress_comfort_ema": 0.011946139419309332
+          },
+          "unique_contributors": {
+            "official_rl": 848,
+            "interaction_ema": 449,
+            "road_direction_ema": 489,
+            "progress_comfort_ema": 5802
+          }
+        },
+        "specialist_ema_K4": {
+          "oracle_PDMS_01": 0.9589313356431407,
+          "mean_candidate_PDMS_01": 0.847191385179116,
+          "zero_count": 170,
+          "wins": 5497,
+          "losses": 1053,
+          "ties": 5596,
+          "policies": [
+            "official_rl",
+            "interaction_specialist_ema",
+            "road_direction_specialist_ema",
+            "progress_comfort_specialist_ema"
+          ],
+          "candidate_count": 4,
+          "delta_vs_old_K4_01": {
+            "mean": 0.007251777817220835,
+            "ci95": [
+              0.0048189132966246365,
+              0.00966079153233149
+            ],
+            "scenes": 12146,
+            "logs": 136,
+            "repetitions": 5000,
+            "seed": 20261005
+          },
+          "mean_factors_01": {
+            "score": 0.9589313356431407,
+            "ego_progress": 0.9348811703954737,
+            "no_at_fault_collisions": 0.9946484439321588,
+            "drivable_area_compliance": 0.9906965256051375,
+            "time_to_collision_within_bound": 0.9801580767330809,
+            "comfort": 1.0,
+            "driving_direction_compliance": 0.9694137987814918
+          },
+          "oracle_winner_count": {
+            "official_rl": 5042,
+            "interaction_specialist_ema": 662,
+            "road_direction_specialist_ema": 1873,
+            "progress_comfort_specialist_ema": 4569
+          },
+          "low_score_below50_count": 180,
+          "leave_one_out_contribution_01": {
+            "official_rl": 0.010614235195778404,
+            "interaction_specialist_ema": 0.013730119203438121,
+            "road_direction_specialist_ema": 0.004958849559653015,
+            "progress_comfort_specialist_ema": 0.012760380206269475
+          },
+          "unique_contributors": {
+            "official_rl": 716,
+            "interaction_specialist_ema": 515,
+            "road_direction_specialist_ema": 1260,
+            "progress_comfort_specialist_ema": 4569
+          }
+        },
+        "specialist_raw_K4_diagnostic": {
+          "oracle_PDMS_01": 0.9589030392320502,
+          "mean_candidate_PDMS_01": 0.845357907559257,
+          "zero_count": 165,
+          "wins": 5430,
+          "losses": 1133,
+          "ties": 5583,
+          "policies": [
+            "official_rl",
+            "interaction_specialist_raw",
+            "road_direction_specialist_raw",
+            "progress_comfort_specialist_raw"
+          ],
+          "candidate_count": 4,
+          "delta_vs_old_K4_01": {
+            "mean": 0.007223481406130423,
+            "ci95": [
+              0.004696781174413225,
+              0.009772253556952305
+            ],
+            "scenes": 12146,
+            "logs": 136,
+            "repetitions": 5000,
+            "seed": 20261005
+          },
+          "mean_factors_01": {
+            "score": 0.9589030392320502,
+            "ego_progress": 0.9347308708978843,
+            "no_at_fault_collisions": 0.9948131071957846,
+            "drivable_area_compliance": 0.9910258521323893,
+            "time_to_collision_within_bound": 0.9797464185740161,
+            "comfort": 1.0,
+            "driving_direction_compliance": 0.969166803886053
+          },
+          "oracle_winner_count": {
+            "official_rl": 5069,
+            "interaction_specialist_raw": 668,
+            "road_direction_specialist_raw": 2030,
+            "progress_comfort_specialist_raw": 4379
+          },
+          "low_score_below50_count": 175,
+          "leave_one_out_contribution_01": {
+            "official_rl": 0.011106056502902873,
+            "interaction_specialist_raw": 0.013596638708059113,
+            "road_direction_specialist_raw": 0.005024676637205802,
+            "progress_comfort_specialist_raw": 0.012635354575308892
+          },
+          "unique_contributors": {
+            "official_rl": 750,
+            "interaction_specialist_raw": 522,
+            "road_direction_specialist_raw": 1418,
+            "progress_comfort_specialist_raw": 4379
+          }
+        }
+      },
+      "single_teachers": {
+        "official_rl": {
+          "PDMS_01": 0.9055139522802339,
+          "zero_count": 495,
+          "mean_factors_01": {
+            "score": 0.9055139522802339,
+            "ego_progress": 0.8590973345274276,
+            "no_at_fault_collisions": 0.9814753828420879,
+            "drivable_area_compliance": 0.9767824798287502,
+            "time_to_collision_within_bound": 0.9518359953894286,
+            "comfort": 1.0,
+            "driving_direction_compliance": 0.9675201712497942
+          }
+        },
+        "official_il": {
+          "PDMS_01": 0.8621890059984215,
+          "zero_count": 866,
+          "mean_factors_01": {
+            "score": 0.8621890059984215,
+            "ego_progress": 0.8063496847631685,
+            "no_at_fault_collisions": 0.9812695537625555,
+            "drivable_area_compliance": 0.9453317964762061,
+            "time_to_collision_within_bound": 0.9418738679400626,
+            "comfort": 0.9997530051045612,
+            "driving_direction_compliance": 0.9807343981557715
+          }
+        },
+        "supervision": {
+          "PDMS_01": 0.9455372918010584,
+          "zero_count": 0,
+          "mean_factors_01": {
+            "score": 0.9455372918010584,
+            "ego_progress": 0.869684692155242,
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 0.9990120204182447,
+            "driving_direction_compliance": 0.9882677424666557
+          }
+        },
+        "interaction_specialist_raw": {
+          "PDMS_01": 0.8372653828596954,
+          "zero_count": 1030,
+          "mean_factors_01": {
+            "score": 0.8372653828596954,
+            "ego_progress": 0.7664465357140113,
+            "no_at_fault_collisions": 0.9743536966902684,
+            "drivable_area_compliance": 0.9380866128766672,
+            "time_to_collision_within_bound": 0.9341346945496459,
+            "comfort": 0.9999176683681871,
+            "driving_direction_compliance": 0.9751770130083979
+          }
+        },
+        "interaction_specialist_ema": {
+          "PDMS_01": 0.8391835963865638,
+          "zero_count": 1009,
+          "mean_factors_01": {
+            "score": 0.8391835963865638,
+            "ego_progress": 0.7680475059865391,
+            "no_at_fault_collisions": 0.9757945002469949,
+            "drivable_area_compliance": 0.9385806026675448,
+            "time_to_collision_within_bound": 0.9359459904495308,
+            "comfort": 0.9999176683681871,
+            "driving_direction_compliance": 0.9750535155606784
+          }
+        },
+        "road_direction_specialist_raw": {
+          "PDMS_01": 0.8232609210106614,
+          "zero_count": 1418,
+          "mean_factors_01": {
+            "score": 0.8232609210106614,
+            "ego_progress": 0.8074528244989088,
+            "no_at_fault_collisions": 0.9592046764366869,
+            "drivable_area_compliance": 0.9194796640869422,
+            "time_to_collision_within_bound": 0.8866293429935781,
+            "comfort": 0.9996706734727482,
+            "driving_direction_compliance": 0.9589576815412482
+          }
+        },
+        "road_direction_specialist_ema": {
+          "PDMS_01": 0.8248560094365898,
+          "zero_count": 1397,
+          "mean_factors_01": {
+            "score": 0.8248560094365898,
+            "ego_progress": 0.8084385337578915,
+            "no_at_fault_collisions": 0.9600691585707228,
+            "drivable_area_compliance": 0.9205499753005104,
+            "time_to_collision_within_bound": 0.8876996542071464,
+            "comfort": 0.9996706734727482,
+            "driving_direction_compliance": 0.9596986662275646
+          }
+        },
+        "progress_comfort_specialist_raw": {
+          "PDMS_01": 0.8153913740864379,
+          "zero_count": 1502,
+          "mean_factors_01": {
+            "score": 0.8153913740864379,
+            "ego_progress": 0.8342259663758675,
+            "no_at_fault_collisions": 0.9163510620780504,
+            "drivable_area_compliance": 0.9564465667709534,
+            "time_to_collision_within_bound": 0.8079203029804051,
+            "comfort": 1.0,
+            "driving_direction_compliance": 0.962003951918327
+          }
+        },
+        "progress_comfort_specialist_ema": {
+          "PDMS_01": 0.8192119826130768,
+          "zero_count": 1460,
+          "mean_factors_01": {
+            "score": 0.8192119826130768,
+            "ego_progress": 0.8381137067186915,
+            "no_at_fault_collisions": 0.9175860365552445,
+            "drivable_area_compliance": 0.9589988473571546,
+            "time_to_collision_within_bound": 0.8105549151984193,
+            "comfort": 1.0,
+            "driving_direction_compliance": 0.9625391075251112
+          }
+        }
+      },
+      "official_parent_max_abs_errors": {
+        "official_rl": 0.0,
+        "official_il": 0.0,
+        "supervision": 0.0
+      },
+      "scores_sha256": "8e0c56c85239fcdaa6e03389d8f65d4fc9231d0cba0582e8c61351187e690b19",
+      "optimizer_steps": 0
+    }
+  },
+  "source_weights_rehashed_this_audit": false,
+  "refined_scorer_navtest": {
+    "scenes": 12146,
+    "logs": 136,
+    "informative_scenes": 10066,
+    "informative_logs": 135,
+    "PDMS_01": 0.9229931989154985,
+    "oracle_PDMS_01": 0.9589313356431407,
+    "regret_01": 0.035938136727642234,
+    "top1_all": 0.6195455293923926,
+    "top1_informative": 0.5409298629048281,
+    "top1_count": 7525,
+    "within_one_PDMS_point": 0.6778363247159559,
+    "zero_count": 357,
+    "delta_PDMS_01": {
+      "mean": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "scenes": 12146,
+      "logs": 136,
+      "repetitions": 5000,
+      "seed": 20261005
+    },
+    "delta_top1_all": {
+      "mean": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "scenes": 12146,
+      "logs": 136,
+      "repetitions": 5000,
+      "seed": 20261005
+    },
+    "delta_top1_informative": {
+      "mean": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "scenes": 10066,
+      "logs": 135,
+      "repetitions": 5000,
+      "seed": 20261005
+    },
+    "wins": 0,
+    "losses": 0,
+    "ties": 12146,
+    "safe_to_failure": 0,
+    "failure_to_safe": 0,
+    "EP_01": 0.8863638304555186,
+    "delta_EP_01": {
+      "mean": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "scenes": 12146,
+      "logs": 136,
+      "repetitions": 5000,
+      "seed": 20261005
+    },
+    "EP_fail_count": 7034,
+    "NC_01": 0.9869092705417422,
+    "delta_NC_01": {
+      "mean": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "scenes": 12146,
+      "logs": 136,
+      "repetitions": 5000,
+      "seed": 20261005
+    },
+    "NC_fail_count": 165,
+    "DAC_01": 0.9829573522147209,
+    "delta_DAC_01": {
+      "mean": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "scenes": 12146,
+      "logs": 136,
+      "repetitions": 5000,
+      "seed": 20261005
+    },
+    "DAC_fail_count": 207,
+    "TTC_01": 0.9568582249300182,
+    "delta_TTC_01": {
+      "mean": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "scenes": 12146,
+      "logs": 136,
+      "repetitions": 5000,
+      "seed": 20261005
+    },
+    "TTC_fail_count": 524,
+    "Comfort_01": 1.0,
+    "delta_Comfort_01": {
+      "mean": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "scenes": 12146,
+      "logs": 136,
+      "repetitions": 5000,
+      "seed": 20261005
+    },
+    "Comfort_fail_count": 0,
+    "DDC_01": 0.9690844722542401,
+    "delta_DDC_01": {
+      "mean": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "scenes": 12146,
+      "logs": 136,
+      "repetitions": 5000,
+      "seed": 20261005
+    },
+    "DDC_fail_count": 514,
+    "gain_mass_01": 0.0,
+    "loss_mass_01": 0.0,
+    "severe_drop_vs_baseline_count": 0,
+    "severe_regret_count": 663,
+    "severe_drop_rate_difference": {
+      "mean": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "scenes": 12146,
+      "logs": 136,
+      "repetitions": 5000,
+      "seed": 20261005
+    },
+    "zero_rate_difference": {
+      "mean": 0.0,
+      "ci95": [
+        0.0,
+        0.0
+      ],
+      "scenes": 12146,
+      "logs": 136,
+      "repetitions": 5000,
+      "seed": 20261005
+    },
+    "mean_bank_PDMS_01": 0.847191385179116,
+    "candidate_count": 4,
+    "unit": "0-1 raw metrics; tables multiplied by100",
+    "delta_vs_old_bank_frozen_01": {
+      "mean": 0.0013446612136754476,
+      "ci95": [
+        -0.0016893185773122303,
+        0.004358324724768155
+      ],
+      "scenes": 12146,
+      "logs": 136,
+      "repetitions": 5000,
+      "seed": 20261005
+    }
+  },
+  "refined_scorer_derived": {
+    "gain_vs_base_01": 0.017479246635264567,
+    "oracle_gain_vs_base_01": 0.0534173833629068,
+    "oracle_capture": 0.3272201956526798
+  },
+  "refined_scorer_navtrain": {
+    "status": "NOT_VERIFIED_IN_THIS_SUMMARY",
+    "PDMS_01": null
+  },
+  "scorer_old_vs_new_comparison": {
+    "scenes": 12146,
+    "logs": 136,
+    "old_bank_regret_01": 0.03003102012409685,
+    "new_bank_regret_01": 0.035938136727642234,
+    "regret_change_01": {
+      "mean": 0.005907116603545389,
+      "ci95": [
+        0.0036240288435672534,
+        0.008276945065330853
+      ],
+      "scenes": 12146,
+      "logs": 136,
+      "repetitions": 5000,
+      "seed": 20261005
+    },
+    "zero_rate_change": {
+      "mean": 0.002140622427136506,
+      "ci95": [
+        -0.0003358464748045245,
+        0.0046439885282510305
+      ],
+      "scenes": 12146,
+      "logs": 136,
+      "repetitions": 5000,
+      "seed": 20261005
+    },
+    "wins": 4080,
+    "losses": 1771,
+    "ties": 6295,
+    "old_zero": 331,
+    "new_zero": 357,
+    "old_factors_fail_count": {
+      "NC": 137,
+      "DAC": 210,
+      "TTC": 445
+    },
+    "new_factors_fail_count": {
+      "NC": 165,
+      "DAC": 207,
+      "TTC": 524
+    }
+  },
+  "model_sources": {
+    "base": {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt",
+      "sha256": "23fb949b10387efeff87e093703d5faf41b61b9e5ead16d4076661e3c7c08a20"
+    },
+    "teachers": {
+      "interaction": {
+        "first_round": {
+          "checkpoint": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/teacher_campaign_8gpu_v2_20261004/teachers/interaction/ema.ckpt",
+          "sha256": "a910153a354715a2de10b2f1cc90a506594b881e49e9e0e953b6d004462ce54f",
+          "parent": "rl",
+          "step": 10000,
+          "native_parity": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/teacher_campaign_8gpu_v2_20261004/teachers/interaction/NATIVE_PARITY_EMA.json",
+          "native_parity_sha256": "0c8a94a540f3bd5303127901733717697ceec57f05a727927f409bdb9fda87e1",
+          "exists_at_summary": true,
+          "bytes_at_summary": 139118677,
+          "weight_hash_source": "archived model registry; large weights not rehashed by this summary"
+        },
+        "refinement": {
+          "checkpoint": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/teachers/interaction_specialist/interaction/ema.ckpt",
+          "sha256": "96d083cdaf451fa657dc307442e9041f13a6f898aefada518690c6e05d25a2cf",
+          "parent": "rl",
+          "step": 4000,
+          "native_parity": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/teachers/interaction_specialist/interaction/NATIVE_PARITY_EMA.json",
+          "native_parity_sha256": "bb7400f8aa9e50c092d6b9a9d5bca679ea89251b027591e095b1b39fb1773b5f",
+          "exists_at_summary": true,
+          "bytes_at_summary": 139118741,
+          "weight_hash_source": "archived model registry; large weights not rehashed by this summary"
+        }
+      },
+      "road_direction": {
+        "first_round": {
+          "checkpoint": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/teacher_campaign_8gpu_v2_20261004/teachers/road_direction/ema.ckpt",
+          "sha256": "c69e654e587f161ffdf4277ad5125dd4f1614ae0218dc5a208c288c2a149ff71",
+          "parent": "rl",
+          "step": 10000,
+          "native_parity": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/teacher_campaign_8gpu_v2_20261004/teachers/road_direction/NATIVE_PARITY_EMA.json",
+          "native_parity_sha256": "bd491ed20f64e995fe765ebfbda3537ff620063133f7bcf7a70a14bcd952c1f4",
+          "exists_at_summary": true,
+          "bytes_at_summary": 139118677,
+          "weight_hash_source": "archived model registry; large weights not rehashed by this summary"
+        },
+        "refinement": {
+          "checkpoint": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/teachers/road_direction_specialist/road_direction/ema.ckpt",
+          "sha256": "90c5eee1e2f405f38d24d785bec07c80f1ba2818897028d1831044ce7b038d00",
+          "parent": "rl",
+          "step": 4000,
+          "native_parity": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/teachers/road_direction_specialist/road_direction/NATIVE_PARITY_EMA.json",
+          "native_parity_sha256": "6140e2ac57dcf0f15bce5d07d447b5779aaddfa92307aedc5fbff987f662f16e",
+          "exists_at_summary": true,
+          "bytes_at_summary": 139118741,
+          "weight_hash_source": "archived model registry; large weights not rehashed by this summary"
+        }
+      },
+      "progress_comfort": {
+        "first_round": {
+          "checkpoint": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/teacher_campaign_8gpu_v2_20261004/teachers/progress_comfort/ema.ckpt",
+          "sha256": "85543772d59e4cfbfe3fe9813fd543541708f2b4defcf5623347fe576d4a5055",
+          "parent": "rl",
+          "step": 10000,
+          "native_parity": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/teacher_campaign_8gpu_v2_20261004/teachers/progress_comfort/NATIVE_PARITY_EMA.json",
+          "native_parity_sha256": "6529a925acc50f6f010650893f33ef953888251c27c2ac6b0f5f9038f6437037",
+          "exists_at_summary": true,
+          "bytes_at_summary": 139118677,
+          "weight_hash_source": "archived model registry; large weights not rehashed by this summary"
+        },
+        "refinement": {
+          "checkpoint": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/teachers/progress_comfort_specialist/progress_comfort/ema.ckpt",
+          "sha256": "29ae79745a70bf19281343a8dd74e1a8092df64be56f9f23ffb2ab21b3b5eaa8",
+          "parent": "rl",
+          "step": 4000,
+          "native_parity": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v5/teachers/progress_comfort_specialist/progress_comfort/NATIVE_PARITY_EMA.json",
+          "native_parity_sha256": "a34ae01242bbf57aa5e4f0c6c89cc93bb2ceacba8022ef0e3fe699d19114b0e6",
+          "exists_at_summary": true,
+          "bytes_at_summary": 139118741,
+          "weight_hash_source": "archived model registry; large weights not rehashed by this summary"
+        }
+      }
+    },
+    "scorer": {
+      "checkpoint": "/mnt/project/external/DrivoR/weights/scaling/nav1_30epochs_with_134k_simscale_bis_103ktrainval.pth",
+      "checkpoint_sha256": "617e22c5ebcf8b24c542d42a470514b09c3cadce1a2630071d49f2d422d76672",
+      "drivor_commit": "f02665403df799c1b4ddd8b0d34e073f0555c13a",
+      "git_commit": "26999f930745cd3b0da15932d7a0f72866c762c9",
+      "candidate_order": [
+        "official_rl",
+        "interaction_ema",
+        "road_direction_ema",
+        "progress_comfort_ema"
+      ],
+      "selection": "joint K=4 native scorer; argmax; exact ties use fixed candidate order",
+      "aggregate": "NC*log(pNC)+DAC*log(pDAC)+DDC*log(pDDC)+log(TTC*pTTC+EP*pEP+Comfort*pComfort)",
+      "scorer_weights": {
+        "NC": 1,
+        "DAC": 1,
+        "DDC": 0,
+        "TTC": 5,
+        "EP": 5,
+        "Comfort": 2
+      },
+      "candidate_cardinality_shift": "Released model trained for K=64; current request uses K=4 jointly without padding. Candidate self-attention retained."
+    }
+  },
+  "training": {
+    "interaction": {
+      "first_round": {
+        "settings": {
+          "manifest": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/expert_cohorts_v2/interaction.json",
+          "targets": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/teacher_training_inputs_v2/interaction_targets.pt",
+          "bindings": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/teacher_training_inputs_v2/interaction_bindings.json",
+          "checkpoint": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt",
+          "vlm": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+          "device": "cuda",
+          "steps": 10000,
+          "global_batch": 64,
+          "micro_batch": 8,
+          "lr": 0.0001,
+          "rank": 128,
+          "alpha": 256.0,
+          "diffusion_weight": 1.0,
+          "direct_weight": 1.0,
+          "synthetic_weight": 2.0,
+          "beta": 0.05,
+          "ema": 0.999,
+          "seed": 20261004
+        },
+        "world_size": 8,
+        "trainable_parameters": 8650752,
+        "objective": "epsilon_MSE + native_DDIM_normalized_trajectory_Huber; synthetic labels weighted 2",
+        "training_signature": "ef88f7734f2fed1287925dea454825dd01320840c4b509038c193f6c2bd9e051",
+        "completion": {
+          "passed": true,
+          "steps_completed": 10000,
+          "target_steps": 10000,
+          "training_signature": "ef88f7734f2fed1287925dea454825dd01320840c4b509038c193f6c2bd9e051",
+          "world_size": 8,
+          "frozen_projection_normalization_schedule_unchanged": true
+        }
+      },
+      "refinement": {
+        "settings": {
+          "mode": "specialist",
+          "manifest": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v4/inputs/interaction.json",
+          "models": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v4/inputs/interaction_initializer.json",
+          "observation_checkpoint": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt",
+          "observation_parity": "/mnt/project/VLA-AD/outputs/navsim_generator_continual_20260927/parent_parity/COMPLETE.json",
+          "vlm": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+          "resumed": null,
+          "uninterrupted": null,
+          "observation_sha256": "23fb949b10387efeff87e093703d5faf41b61b9e5ead16d4076661e3c7c08a20",
+          "steps": 4000,
+          "global_batch": 64,
+          "micro_batch": 4,
+          "lr": 0.0001,
+          "rank": 128,
+          "alpha": 256.0,
+          "ema": 0.999,
+          "beta": 0.05,
+          "seed": 20261004,
+          "memory_fraction": 0.5,
+          "save_every": 500
+        },
+        "world_size": 2,
+        "trainable_parameters": 8650752,
+        "objective": "min_member(native_5step_DDIM_normalized_trajectory_Huber) per scene; fixed specialist has one member",
+        "optimizer": "fresh AdamW lr warmup100 cosine floor.1, wd0, global clip1",
+        "training_signature": "aced3d911f6ab5ecdd67ec404aec78cf22bca086c918be71d0853f4a1dbfda68",
+        "completion": {
+          "passed": true,
+          "steps_completed": 4000,
+          "target_steps": 4000,
+          "training_signature": "aced3d911f6ab5ecdd67ec404aec78cf22bca086c918be71d0853f4a1dbfda68",
+          "world_size": 2,
+          "all_non_LoRA_state_frozen": true,
+          "old_behavior_constraints": false,
+          "GD": false,
+          "models": [
+            "interaction"
+          ],
+          "reference_unchanged": true,
+          "initial_teacher_sha256": {
+            "interaction": "a910153a354715a2de10b2f1cc90a506594b881e49e9e0e953b6d004462ce54f"
+          },
+          "native_sampler_unchanged": true,
+          "actual_optimizer_updates": 1500
+        }
+      }
+    },
+    "road_direction": {
+      "first_round": {
+        "settings": {
+          "manifest": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/expert_cohorts_v2/road_direction.json",
+          "targets": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/teacher_training_inputs_v2/road_direction_targets.pt",
+          "bindings": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/teacher_training_inputs_v2/road_direction_bindings.json",
+          "checkpoint": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt",
+          "vlm": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+          "device": "cuda",
+          "steps": 10000,
+          "global_batch": 64,
+          "micro_batch": 8,
+          "lr": 0.0001,
+          "rank": 128,
+          "alpha": 256.0,
+          "diffusion_weight": 1.0,
+          "direct_weight": 1.0,
+          "synthetic_weight": 2.0,
+          "beta": 0.05,
+          "ema": 0.999,
+          "seed": 20261004
+        },
+        "world_size": 8,
+        "trainable_parameters": 8650752,
+        "objective": "epsilon_MSE + native_DDIM_normalized_trajectory_Huber; synthetic labels weighted 2",
+        "training_signature": "21d8bc22e1e6542dc5a9b3a3b22b5da86b01dc5ae4fc1e48a1ccdeec79a7b82e",
+        "completion": {
+          "passed": true,
+          "steps_completed": 10000,
+          "target_steps": 10000,
+          "training_signature": "21d8bc22e1e6542dc5a9b3a3b22b5da86b01dc5ae4fc1e48a1ccdeec79a7b82e",
+          "world_size": 8,
+          "frozen_projection_normalization_schedule_unchanged": true
+        }
+      },
+      "refinement": {
+        "settings": {
+          "mode": "specialist",
+          "manifest": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v4/inputs/road_direction.json",
+          "models": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v4/inputs/road_direction_initializer.json",
+          "observation_checkpoint": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt",
+          "observation_parity": "/mnt/project/VLA-AD/outputs/navsim_generator_continual_20260927/parent_parity/COMPLETE.json",
+          "vlm": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+          "resumed": null,
+          "uninterrupted": null,
+          "observation_sha256": "23fb949b10387efeff87e093703d5faf41b61b9e5ead16d4076661e3c7c08a20",
+          "steps": 4000,
+          "global_batch": 64,
+          "micro_batch": 4,
+          "lr": 0.0001,
+          "rank": 128,
+          "alpha": 256.0,
+          "ema": 0.999,
+          "beta": 0.05,
+          "seed": 20261004,
+          "memory_fraction": 0.5,
+          "save_every": 500
+        },
+        "world_size": 2,
+        "trainable_parameters": 8650752,
+        "objective": "min_member(native_5step_DDIM_normalized_trajectory_Huber) per scene; fixed specialist has one member",
+        "optimizer": "fresh AdamW lr warmup100 cosine floor.1, wd0, global clip1",
+        "training_signature": "140d7304c06e966d6104c1e58a8da59475a63c5fd59d261b764ca14ecd4fc4cf",
+        "completion": {
+          "passed": true,
+          "steps_completed": 4000,
+          "target_steps": 4000,
+          "training_signature": "140d7304c06e966d6104c1e58a8da59475a63c5fd59d261b764ca14ecd4fc4cf",
+          "world_size": 2,
+          "all_non_LoRA_state_frozen": true,
+          "old_behavior_constraints": false,
+          "GD": false,
+          "models": [
+            "road_direction"
+          ],
+          "reference_unchanged": true,
+          "initial_teacher_sha256": {
+            "road_direction": "c69e654e587f161ffdf4277ad5125dd4f1614ae0218dc5a208c288c2a149ff71"
+          },
+          "native_sampler_unchanged": true,
+          "actual_optimizer_updates": 1500
+        }
+      }
+    },
+    "progress_comfort": {
+      "first_round": {
+        "settings": {
+          "manifest": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/expert_cohorts_v2/progress_comfort.json",
+          "targets": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/teacher_training_inputs_v2/progress_comfort_targets.pt",
+          "bindings": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/teacher_training_inputs_v2/progress_comfort_bindings.json",
+          "checkpoint": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt",
+          "vlm": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+          "device": "cuda",
+          "steps": 10000,
+          "global_batch": 64,
+          "micro_batch": 8,
+          "lr": 0.0001,
+          "rank": 128,
+          "alpha": 256.0,
+          "diffusion_weight": 1.0,
+          "direct_weight": 1.0,
+          "synthetic_weight": 2.0,
+          "beta": 0.05,
+          "ema": 0.999,
+          "seed": 20261004
+        },
+        "world_size": 8,
+        "trainable_parameters": 8650752,
+        "objective": "epsilon_MSE + native_DDIM_normalized_trajectory_Huber; synthetic labels weighted 2",
+        "training_signature": "8c99eddcd3c5c4c7dddae9d0f29c341af51ffb97904e117f04b0c3fe08a4441f",
+        "completion": {
+          "passed": true,
+          "steps_completed": 10000,
+          "target_steps": 10000,
+          "training_signature": "8c99eddcd3c5c4c7dddae9d0f29c341af51ffb97904e117f04b0c3fe08a4441f",
+          "world_size": 8,
+          "frozen_projection_normalization_schedule_unchanged": true
+        }
+      },
+      "refinement": {
+        "settings": {
+          "mode": "specialist",
+          "manifest": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v4/inputs/progress_comfort.json",
+          "models": "/mnt/project/VLA-AD/outputs/multi_teacher_opd_20261004/research_iteration_v2/teacher_oracle_complementarity_v4/inputs/progress_comfort_initializer.json",
+          "observation_checkpoint": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt",
+          "observation_parity": "/mnt/project/VLA-AD/outputs/navsim_generator_continual_20260927/parent_parity/COMPLETE.json",
+          "vlm": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B",
+          "resumed": null,
+          "uninterrupted": null,
+          "observation_sha256": "23fb949b10387efeff87e093703d5faf41b61b9e5ead16d4076661e3c7c08a20",
+          "steps": 4000,
+          "global_batch": 64,
+          "micro_batch": 4,
+          "lr": 0.0001,
+          "rank": 128,
+          "alpha": 256.0,
+          "ema": 0.999,
+          "beta": 0.05,
+          "seed": 20261004,
+          "memory_fraction": 0.5,
+          "save_every": 500
+        },
+        "world_size": 2,
+        "trainable_parameters": 8650752,
+        "objective": "min_member(native_5step_DDIM_normalized_trajectory_Huber) per scene; fixed specialist has one member",
+        "optimizer": "fresh AdamW lr warmup100 cosine floor.1, wd0, global clip1",
+        "training_signature": "790c93fc7ddb138800e8273b86bb6c34790b0575d86b5b2fc62688735825d6c9",
+        "completion": {
+          "passed": true,
+          "steps_completed": 4000,
+          "target_steps": 4000,
+          "training_signature": "790c93fc7ddb138800e8273b86bb6c34790b0575d86b5b2fc62688735825d6c9",
+          "world_size": 2,
+          "all_non_LoRA_state_frozen": true,
+          "old_behavior_constraints": false,
+          "GD": false,
+          "models": [
+            "progress_comfort"
+          ],
+          "reference_unchanged": true,
+          "initial_teacher_sha256": {
+            "progress_comfort": "85543772d59e4cfbfe3fe9813fd543541708f2b4defcf5623347fe576d4a5055"
+          },
+          "native_sampler_unchanged": true,
+          "actual_optimizer_updates": 4000
+        }
+      }
+    }
+  },
+  "cohort_summary": {
+    "first_round_union": 4504,
+    "first_round_overlap_interaction_road": 153,
+    "refinement_union": 18047,
+    "refinement_exclusive": true,
+    "navtrain_preexisting_certified_correction_pool": 11967,
+    "quality_eligible_supplement": 2525,
+    "prepared_anchor_rows_not_used_by_specialist_trainer": 16384
+  }
+}
