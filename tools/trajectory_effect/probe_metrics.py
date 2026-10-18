@@ -11,6 +11,7 @@ def average_precision(y,score,weights=None):
     """Non-interpolated precision-recall integral, with score ties grouped."""
     y=np.asarray(y,dtype=np.float64).ravel();score=np.asarray(score).ravel()
     w=np.ones(len(y)) if weights is None else np.asarray(weights,dtype=float).ravel()
+    keep=w>0;y=y[keep];score=score[keep];w=w[keep]
     order=np.argsort(-score,kind='stable');y=y[order];score=score[order];w=w[order]
     positive=np.sum(y*w)
     if positive==0:return None

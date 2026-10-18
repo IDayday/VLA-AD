@@ -176,7 +176,7 @@ def evaluate(args):
 
 
 def merge_eval(name,split):
-    dest=run_dir(name);paths=list(dest.glob(f'eval_{split}_*.json'))
+    dest=run_dir(name);paths=[p for p in dest.glob(f'eval_{split}_*.json') if p.stem.removeprefix(f'eval_{split}_').isdigit()]
     values=[read(p) for p in paths]
     if not values or len(values)!=values[0]['shards'] or set(v['rank'] for v in values)!=set(range(values[0]['shards'])):
         raise ValueError(f'Incomplete probe evaluation: {name}/{split}')

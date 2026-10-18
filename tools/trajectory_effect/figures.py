@@ -3,7 +3,7 @@ from __future__ import annotations
 import numpy as np
 from .common import *
 
-FIGURES=SOURCE/'reports/trajectory_effect_validation_20261019/figures'
+FIGURES=REPORT_DIR/'figures'
 
 
 def setup():
@@ -31,7 +31,7 @@ def h1():
         y=np.array([r['metrics'][key]['estimate'] for r in rows]);lo=np.array([r['metrics'][key]['lower95'] for r in rows]);hi=np.array([r['metrics'][key]['upper95'] for r in rows])
         axes[1].bar(xs+offset,y,width=.21,label=key,color=color)
         axes[1].errorbar(xs+offset,y,yerr=np.maximum(np.stack([y-lo,hi-y]),0),fmt='none',color='black',lw=.8,capsize=2)
-    axes[1].set_xticks(xs,[r['family']+' / '+str(r['step']) for r in rows],rotation=35,ha='right');axes[1].set(ylabel='Normalized PDMS',title='Paired log bootstrap95% intervals');axes[1].legend()
+    axes[1].set_xticks(xs,[r['family']+' / '+str(r['step']) for r in rows],rotation=35,ha='right');axes[1].set(ylabel='Normalized PDMS',title='Paired log bootstrap 95% intervals');axes[1].legend()
     fig.tight_layout();fig.savefig(FIGURES/'h1_update_noise.png');plt.close(fig)
     fig,ax=plt.subplots(figsize=(6,5))
     for r in value['families']:
@@ -66,7 +66,8 @@ def gated_rl(reason):
 
 def cases(prefix='formal'):
     plt=setup()
-    from .scoring import load_cache
+    from .scoring import load_cache,Scoring
+    from navsim.planning.simulation.planner.pdm_planner.scoring.pdm_scorer import get_collision_type
     from .updates import trajectory_path,score_path,families
     from .bank import baseline_path,baseline_score_path
     from .probe_runner import merge_eval
@@ -103,6 +104,17 @@ def cases(prefix='formal'):
         for key in ['first_collision_s','first_dac_s','first_ttc_check_failure_s']:
             t=float(newscore[key][z]);event_times.append(t)
         finite=[t for t in event_times if np.isfinite(t)];event=min(finite) if finite else 0.
+        collision_objects=[]
+        if np.isfinite(event_times[0]):
+            diagnostic=Scoring();check=diagnostic.batch(cache,np.stack([old[z],new[z]]))
+            assert np.allclose(check['scores'][1],newscore['scores'][z],rtol=0,atol=1e-6)
+            tidx=int(round(event_times[0]/.1));sc=diagnostic.scorer;polygon=sc._ego_polygons[2,tidx]
+            for obj_token in cache.observation[tidx].intersects(polygon):
+                if obj_token not in cache.observation.unique_objects:continue
+                obj=cache.observation.unique_objects[obj_token]
+                kind_value=get_collision_type(sc._states[2,tidx],polygon,obj,cache.observation[tidx][obj_token])
+                collision_objects.append(dict(token=obj_token,object_type=str(obj.tracked_object_type),collision_type=str(kind_value),time_s=event_times[0],
+                    provenance='Derived intersection/classification at native first at-fault collision time; not a replay of prior non-fault exclusion history.'))
         for tidx,color,style in [(0,'#6c757d','-'),(int(round(event/.1)),'#e9a23b','--')]:
             occupancy=cache.observation[tidx]
             for tok in occupancy.tokens:
@@ -119,11 +131,13 @@ def cases(prefix='formal'):
         for j,(label,t) in enumerate(zip(labels,event_times)):
             axes[1].hlines(j,0,4,color='#dee2e6')
             if np.isfinite(t):axes[1].plot(t,j,'x',color='#e76f51',ms=9);axes[1].annotate(f'{t:.1f}s',(t,j),xytext=(4,5),textcoords='offset points')
+            else:axes[1].text(3.9,j+.08,'none within4s',ha='right',fontsize=8,color='#6c757d')
         axes[1].set_yticks(range(3),labels);axes[1].set(xlabel='Simulated elapsed time (s)',title=f'Scene mean delta_J={case["delta_J"]:+.4f}; seed{1101+z}')
-        axes[1].text(.02,-.3,'Dashed objects: logged future diagnostic only.\nTTC check failure is not time remaining to impact.',transform=axes[1].transAxes,fontsize=8)
+        axes[1].text(.02,-.3,f'Dashed objects: logged occupancy at{event:.1f}s, diagnostic only.\nTTC check failure is not time remaining to impact.',transform=axes[1].transAxes,fontsize=8)
         fig.tight_layout();fig.savefig(FIGURES/f'case_{kind}.png',bbox_inches='tight');plt.close(fig)
         details.append(dict(kind=kind,**case,shown_seed=1101+z,first_events_s={k:(t if np.isfinite(t) else None) for k,t in zip(labels,event_times)},
             old_components=oldscore['scores'][z].tolist(),new_components=newscore['scores'][z].tolist(),
+            collision_intersections=collision_objects,
             selection_rule='Threshold0.02 then token/family/step hash; displayed draw closest to scene mean delta',
             object_overlay='Current and event-time occupancy; future is diagnostic, never predictor input'))
     atomic_json(ROOT/'analysis/cases.json',details)

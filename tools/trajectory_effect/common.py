@@ -11,7 +11,8 @@ import time
 
 SOURCE = Path(__file__).resolve().parents[2]
 PROJECT = Path('/mnt/project/VLA-AD')
-ROOT = PROJECT / 'outputs/trajectory_effect_validation_20261019'
+ROOT = Path(os.environ.get('TRAJECTORY_EFFECT_RUN_ROOT',str(PROJECT / 'outputs/trajectory_effect_validation_20261019')))
+REPORT_DIR = (SOURCE/'reports/trajectory_effect_validation_20261019' if ROOT==PROJECT/'outputs/trajectory_effect_validation_20261019' else ROOT/'report')
 PYTHON = '/root/miniconda3/envs/navsim/bin/python'
 RL = PROJECT / 'checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt'
 IL = PROJECT / 'checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt'

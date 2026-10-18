@@ -54,6 +54,7 @@ if gpus:
   if int(row.split(',')[1])>100 or int(row.split(',')[2])>5: raise RuntimeError('Device became occupied: '+row)
 env=dict(os.environ,OMP_NUM_THREADS='1',OPENBLAS_NUM_THREADS='1',MKL_NUM_THREADS='1',PYTHONUNBUFFERED='1')
 env['CUDA_VISIBLE_DEVICES']=','.join(map(str,gpus))
+env['TRAJECTORY_EFFECT_RUN_ROOT']={str(ROOT)!r}
 f=open(job+'/worker.log','a')
 p=subprocess.Popen([{PYTHON!r},'-m','tools.trajectory_effect.dispatch','worker','--spec',job+'/spec.json'],cwd=source,env=env,stdout=f,stderr=subprocess.STDOUT,start_new_session=True)
 print(json.dumps(dict(pid=p.pid,start_ticks=int(Path('/proc/'+str(p.pid)+'/stat').read_text().split()[21]),host={host!r},job=job)))

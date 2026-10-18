@@ -23,5 +23,19 @@ def selection():
     select(None)
 
 
+def probes():
+    from types import SimpleNamespace
+    from .probe_metrics import analyze
+    from .probe_diagnostics import main as diagnostics
+    cfg,_=protocol()
+    for arm in cfg['probes']['arms']:
+        for seed in cfg['seeds']['training']:
+            dest=ROOT/'probes'/f'formal_{arm}_{seed}'
+            wait_file(dest/'config.json');world=read(dest/'config.json')['world_size']
+            for split in ['D_fit','D_cal','D_audit']+(['D_audit_shuffled'] if arm=='JE' else []):
+                for rank in range(world):wait_file(dest/f'eval_{split}_{rank}.json',timeout=7200)
+    analyze(SimpleNamespace(prefix='formal',split='D_audit'));diagnostics()
+
+
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('action',choices=['h1','selection']);a=p.parse_args();globals()[a.action]()
+    p=argparse.ArgumentParser();p.add_argument('action',choices=['h1','selection','probes']);a=p.parse_args();globals()[a.action]()
