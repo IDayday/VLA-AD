@@ -94,7 +94,7 @@ def replay(args):
     checkpoint=torch.load(path,map_location='cpu',weights_only=False)
     assert before_hash==read(run_dir(name)/'complete.json')['checkpoint_sha256']
     agent,head=build(args.arm,args.seed);head.load_state_dict(checkpoint['head']);head.eval()
-    initial_head=tensor_digest(head.state_dict())
+    initial_head=tensor_digest({n:v.cpu() for n,v in head.state_dict().items()})
     if agent is not None:
         if not isinstance(agent.action_head.vlm_pre_norm,torch.nn.Identity):
             raise ValueError('Feature hook would capture transformed rather than raw tokens')
@@ -181,7 +181,7 @@ def replay(args):
     if any(v['cached_token_max_error']>tolerance['zero_adapter_tokens'] for v in shared):errors.append('Zero adapter/native cache mismatch')
     if any(v['token_change_max']==0 or v['action_change_xy_RMS_m']==0 for v in shared):errors.append('Joint VLM did not change shared action features')
     if any(v['groups']['query']['difference_gradient_norm']==0 for v in gradients):errors.append('Trajectory query gradient disconnected')
-    assert tensor_digest(head.state_dict())==initial_head
+    assert tensor_digest({n:v.cpu() for n,v in head.state_dict().items()})==initial_head
     assert sha(path)==before_hash
     if agent is not None:
         current=dict(agent.backbone.named_parameters())
