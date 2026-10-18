@@ -132,7 +132,9 @@ def cases(prefix='formal'):
             axes[1].hlines(j,0,4,color='#dee2e6')
             if np.isfinite(t):axes[1].plot(t,j,'x',color='#e76f51',ms=9);axes[1].annotate(f'{t:.1f}s',(t,j),xytext=(4,5),textcoords='offset points')
             else:axes[1].text(3.9,j+.08,'none within4s',ha='right',fontsize=8,color='#6c757d')
-        axes[1].set_yticks(range(3),labels);axes[1].set(xlabel='Simulated elapsed time (s)',title=f'Scene mean delta_J={case["delta_J"]:+.4f}; seed{1101+z}')
+        title=f'Scene mean delta_J={case["delta_J"]:+.4f}; seed{1101+z}'
+        if 'predicted_delta_J' in case:title+=f'\nPredicted delta_J={case["predicted_delta_J"]:+.5f}'
+        axes[1].set_yticks(range(3),labels);axes[1].set(xlabel='Simulated elapsed time (s)',title=title)
         axes[1].text(.02,-.3,f'Dashed objects: logged occupancy at{event:.1f}s, diagnostic only.\nTTC check failure is not time remaining to impact.',transform=axes[1].transAxes,fontsize=8)
         fig.tight_layout();fig.savefig(FIGURES/f'case_{kind}.png',bbox_inches='tight');plt.close(fig)
         details.append(dict(kind=kind,**case,shown_seed=1101+z,first_events_s={k:(t if np.isfinite(t) else None) for k,t in zip(labels,event_times)},

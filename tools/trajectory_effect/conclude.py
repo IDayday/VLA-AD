@@ -22,7 +22,7 @@ def main():
     detail2=(reason2+f" 对应95%区间分别为[{100*c['JQ-vs-FQ']['lower95']:.3f},{100*c['JQ-vs-FQ']['upper95']:.3f}]%、"
         f"[{100*c['JE-vs-FE']['lower95']:.3f},{100*c['JE-vs-FE']['upper95']:.3f}]%、"
         f"[{100*c['JE-vs-JQ']['lower95']:.3f},{100*c['JE-vs-JQ']['upper95']:.3f}]%。"
-        '这些判断限定于本次观测、读出头、LoRA范围与训练预算；不证明所有VLM训练方式都无效，也不把非显著差异本身视为反证。普通Q与差值损失没有获得不同的真值信息。')
+        '这些判断限定于本次观测、读出头、LoRA范围与训练预算；不证明所有VLM训练方式都无效，也不把非显著差异本身视为反证。各组与零差值预测基线几乎相同，不支持冻结表征已充分的结论。普通Q与差值损失没有获得不同的真值信息。')
     admitted=h1['gate_B']=='PASS' and h2['gate_D']=='PASS'
     stage_E='PASS' if admitted else 'NOT_RUN_GATE'
     reason3=('阶段E尚需实际RL-Q/RL-E结果，后果预测精度不能替代策略优化证据。' if admitted else

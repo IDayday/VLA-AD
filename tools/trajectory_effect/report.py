@@ -9,7 +9,7 @@ from .probe_runner import merge_eval
 
 
 def ci(value,percent=False):
-    scale=100 if percent else 1;digits=2 if percent else 6
+    scale=100 if percent else 1;digits=5 if percent else 6
     return f"{scale*value['estimate']:.{digits}f} [{scale*value['lower95']:.{digits}f}, {scale*value['upper95']:.{digits}f}]"
 
 
@@ -54,7 +54,8 @@ def main():
     tune='\n'.join(f"| {a} | {v['head_lr']} | {v['lambda_diff']} |" for a,v in selection['selected'].items())
     case_data=read(ROOT/'analysis/cases.json');case_text=[]
     for case in case_data:
-        case_text.append(f"{case['kind']}：场景 `{case['token']}`，`{case['family']}` 步骤 {case['step']}，场景平均 ΔJ={case['delta_J']:+.6f}，展示种子 {case['shown_seed']}。事件记录：`{case['first_events_s']}`。\n\n![{case['kind']}](figures/case_{case['kind']}.png)")
+        prediction=f"预测 ΔJ={case['predicted_delta_J']:+.6f}。" if 'predicted_delta_J' in case else ''
+        case_text.append(f"{case['kind']}：场景 `{case['token']}`，`{case['family']}` 步骤 {case['step']}，场景平均 ΔJ={case['delta_J']:+.6f}，展示种子 {case['shown_seed']}。{prediction}事件记录：`{case['first_events_s']}`。\n\n![{case['kind']}](figures/case_{case['kind']}.png)")
     ridge=read(ROOT/'controls/ridge_complete.json');shuffle=read(ROOT/'analysis/observation_shuffle.json')
     init=read(ROOT/'analysis/probe_identity_audit.json');high=read(ROOT/'analysis/stable_high.json')
     code=subprocess.check_output(['git','rev-parse','HEAD'],cwd=SOURCE,text=True).strip()
@@ -75,7 +76,7 @@ def main():
 
 实际完成24个独立更新族、共{native_updates}次原生 GRPO 优化器更新，每族保存0/1/4步。12个初始族加一次预注册的12族确认扩容；自然分布与低分且奖励有差异的来源都保留。所有分支共享同一初始策略参数哈希，零更新最大误差均为0；没有接续累积不同更新族。
 
-预测实验完成15个校准运行（每个300步）以及五组×三个训练种子×2000步的正式训练。三个推理输入相同的首次损失在 FQ/FE/JQ/JE 间完全一致，见 [初始化核验]({ROOT}/analysis/probe_identity_audit.json)。全局批次4、单场景微批次1；不同并行度只分摊微批次并对全局样本均值求梯度。RL正式阶段状态为 `{decision['stage_E']}`，具体理由见下文。
+预测实验完成15个校准运行（每个300步）以及五组×三个训练种子×2000步的正式训练。每个训练种子的首次输入及损失在 FQ/FE/JQ/JE 间完全一致，见 [初始化核验]({ROOT}/analysis/probe_identity_audit.json)。全局批次4、单场景微批次1；不同并行度只分摊微批次并对全局样本均值求梯度。RL正式阶段状态为 `{decision['stage_E']}`，具体理由见下文。
 
 - 研究分支：`research/trajectory-effect-validation-20261019`；报告生成时代码：`{code}`。
 - 实际主起点：`{cfg['primary_start']['checkpoint']}`，SHA256 `{cfg['primary_start']['sha256']}`，epoch24/global_step8325。
@@ -85,6 +86,8 @@ def main():
 - 评分器、仿真器、缓存类型与基线身份见 [source_weights.json]({ROOT}/manifests/source_weights.json)；实际选用日志、图像和缓存的内容身份见 [input_content_identity.json]({ROOT}/manifests/input_content_identity.json)。原文件修改时间均早于协议锁定。
 
 主干是发布版 InternVL/Qwen2 2B VLM，动作头是原有 small LightningDiT，五步 DDIM 输出8×3轨迹（0.5–4秒，当前自车后轴坐标，x前/y左/heading弧度）。完整轨迹是联合动作。输入只含推理可见的当前前视图、四帧自车历史、状态和指令。读取的是动作头实际接收的完整VLM token，没有 teacher-forced 答案或真实未来。
+
+基准策略在本次审计集的五种子平均PDMS为0.9479255933（94.79256百分制分数点）。24族训练共768个实际采样组，其中9组奖励无差异；这些组和原生BC项均保留并记录，没有伪造advantage。
 
 联合更新范围锁定为28层语言注意力 Q/V 的 rank8、alpha16 LoRA，共1,089,536个参数；图像编码器及底座参数冻结。统一条件轨迹读出头为两层跨注意力、192维、六头，共1,270,465个参数。结论限定于该可训练范围和本次预算，不外推为全参数 VLM 的能力上限。
 
@@ -140,6 +143,8 @@ def main():
 
 候选按完整轨迹数值去重并保留全部来源，每场景至多32个固定分层轨迹对。绝对值项和差值项分别按样本数取均值；普通Q与差值监督使用相同真实标签。数据覆盖与小扰动掉分见 [candidate_coverage.json]({ROOT}/analysis/candidate_coverage.json)。人工扰动的反向后果不被当作真实参数更新退化的证明。
 
+全部94,935条新增候选还保留了逐轨迹连续跟踪误差，见 [candidate_tracking.npz]({ROOT}/analysis/candidate_tracking.npz)。未找到环境定义的“跟踪失败”阈值，因此没有新增事后分类阈值；不因误差、碰撞或越界删除监督。
+
 | 组别 | 校准后head学习率 | lambda_diff |
 |---|---:|---:|
 {tune}
@@ -157,6 +162,8 @@ def main():
 预注册实质性门槛为相对RMSE降低10%。JQ/FQ、JE/FE、JE/JQ分别回答普通价值监督下更新VLM、差值监督下更新VLM、以及差值监督自身的作用。{decision['H2']['detailed_interpretation']}
 
 严重下降子集的误差、漏检率和三分类混淆矩阵见 [主预测分析]({ROOT}/analysis/probes_formal_D_audit.json) 与 [检测指标区间]({ROOT}/analysis/probe_secondary_intervals.json)。fit/cal诊断单独保存，不替代保留log×保留更新族结果。
+
+本轮没有训练出有效的真实更新后果预测器。所有组的差值RMSE都与恒预测0的基线几乎相同；按锁定的±0.02阈值，所有组都把审计场景的平均变化判为近零。JE在严重退化子集上的RMSE为{ci(secondary['arms']['JE']['severe_RMSE'])}，观察到的漏检率为100%。全遗漏数据的经验bootstrap区间退化为[1,1]，不能解释为总体漏检率已被精确确定。fit/cal也呈现同样的近零分类模式，见 [fit_cal_diagnostics.json]({ROOT}/analysis/fit_cal_diagnostics.json)。因此，组间差距很小不能作为“冻结表征已充分”的证据；负面结论针对本次训练方法和预算所能获得的改进。
 
 真实基线分数+轨迹改变量+自车状态的 privileged 线性对照RMSE为{ridge['RMSE']:.6f}，MAE为{ridge['MAE']:.6f}；其优势不能归因于图像表征。按指令、速度与轨迹几何分组的图像置换结果见 [observation_shuffle.json]({ROOT}/analysis/observation_shuffle.json)：{shuffle['interpretation']}。该实验只检查输入依赖，不识别交通因素的因果作用。
 
