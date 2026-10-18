@@ -11,7 +11,8 @@ from .updates import families,targets,trajectory_path,score_path,wait_file
 
 def extra_path(token):return ROOT/'candidates/extra'/f'{token}.npz'
 def extra_score_path(token):return ROOT/'candidates/scores'/f'{token}.npz'
-def library_path(token):return ROOT/'candidates/library'/f'{token}.npz'
+def library_path(token,package='initial'):
+    return ROOT/'candidates'/('library' if package=='initial' else 'confirmation_library')/f'{token}.npz'
 
 
 def scales(args):
@@ -104,11 +105,11 @@ def select_pairs(token,scores,sources):
 
 def assemble(args):
     _,identity=protocol();rows=scene_rows(args.split)
-    related=[f for f in families() if 'D_'+f['split']==args.split]
+    related=[f for f in families() if 'D_'+f['split']==args.split and (args.package=='confirmation' or not f.get('confirmation'))]
     members={f['id']:{r['token'] for r in targets(f)} for f in related}
     summaries=[]
     for row in rows:
-        token=row['token'];dest=library_path(token);trajectories=[];labels=[];provenance=[];index={}
+        token=row['token'];dest=library_path(token,args.package);trajectories=[];labels=[];provenance=[];index={}
         def add(path,score_file,sources,n=None):
             wait_file(path);wait_file(score_file)
             ts=np.load(path)['trajectories'];ys=np.load(score_file)['scores']
@@ -138,7 +139,8 @@ def assemble(args):
         summaries.append(dict(token=token,candidates=len(ts),pairs=len(pairs),range=float(np.ptp(ys[:,-1])),
             both_signs=bool((delta>.02).any() and (delta<-.02).any()),zero_scores=int((ys[:,-1]<=1e-12).sum()),
             min_delta=float(delta.min()),max_delta=float(delta.max())))
-    atomic_json(ROOT/'candidates'/f'{args.split}_complete.json',dict(status='COMPLETE',protocol_sha256=identity,
+    prefix='confirmation_' if args.package=='confirmation' else ''
+    atomic_json(ROOT/'candidates'/f'{prefix}{args.split}_complete.json',dict(status='COMPLETE',protocol_sha256=identity,
         scenes=len(rows),summaries=summaries,nonzero_scenes=sum(s['range']>1e-6 for s in summaries),
         material_both_signs=sum(s['both_signs'] for s in summaries)))
 
@@ -146,7 +148,8 @@ def assemble(args):
 def main():
     p=argparse.ArgumentParser(__doc__);p.add_argument('action',choices=['scales','extract','score','assemble'])
     p.add_argument('--split',default='D_fit');p.add_argument('--rank',type=int,default=0);p.add_argument('--shards',type=int,default=1)
-    p.add_argument('--workers',type=int,default=8);args=p.parse_args();globals()[args.action](args)
+    p.add_argument('--workers',type=int,default=8);p.add_argument('--package',choices=['initial','confirmation'],default='initial')
+    args=p.parse_args();globals()[args.action](args)
 
 
 if __name__=='__main__':main()

@@ -15,7 +15,8 @@ def run_dir(name):return ROOT/'probes'/name
 
 
 def load_library(token):
-    value=np.load(library_path(token))
+    package='confirmation' if (ROOT/'confirmation/activation.json').exists() else 'initial'
+    value=np.load(library_path(token,package))
     return dict(trajectories=value['trajectories'],labels=value['labels'][:,-1],pairs=value['pairs'])
 
 
@@ -52,7 +53,9 @@ def train(args):
     from .runtime import configure,encode,action_input
     from .probes import effect_loss,vlm_parameters,vlm_state,joint_training_mode
     from .distributed import initialize,sum_values,average_gradients,finish
-    wait_file(ROOT/'candidates/D_fit_complete.json')
+    package='confirmation' if (ROOT/'confirmation/activation.json').exists() else 'initial'
+    manifest=ROOT/'candidates'/('confirmation_D_fit_complete.json' if package=='confirmation' else 'D_fit_complete.json')
+    wait_file(manifest)
     rank,world=initialize();configure();cfg,identity=protocol()
     assert args.steps==(300 if args.phase=='tuning' else 2000)
     if world not in (1,2,4):raise ValueError('World size must divide fixed global batch4')
@@ -61,7 +64,7 @@ def train(args):
     if args.arm in ('T','FE','JE') and args.lambda_diff<=0:raise ValueError('Effect arm requires the registered difference loss')
     actual=dict(arm=args.arm,seed=args.seed,steps=args.steps,head_lr=args.head_lr,vlm_lr=cfg['probes']['vlm_lr'],
         lambda_diff=args.lambda_diff,global_batch=4,microbatch=1,world_size=world,protocol_sha256=identity,
-        phase=args.phase,fit_library_manifest_sha256=sha(ROOT/'candidates/D_fit_complete.json'))
+        phase=args.phase,library_package=package,fit_library_manifest_sha256=sha(manifest))
     if rank==0:
         if (dest/'complete.json').exists():raise ValueError('Do not overwrite completed probe')
         atomic_json(dest/'config.json',actual);atomic_json(dest/'owner.json',runtime_identity())
@@ -127,7 +130,7 @@ def train(args):
 
 def evaluate(args):
     import torch
-    from .runtime import configure,encode,action_input
+    from .runtime import configure,encode,action_input,load_agent
     from .distributed import initialize,finish
     rank,world=initialize()
     if world>1:args.rank=rank;args.shards=world
@@ -137,11 +140,18 @@ def evaluate(args):
     agent,head=build(run['arm'],run['seed']);head.load_state_dict(checkpoint['head']);head.eval()
     joint=agent is not None
     if joint:load_adapter(agent,checkpoint['vlm']);agent.eval()
+    if args.shuffle and agent is None:agent=load_agent();agent.eval()
+    donors=read(ROOT/'manifests'/f'{args.split}_observation_shuffle.json')['donors'] if args.shuffle else None
     selected=[f for f in families() if 'D_'+f['split']==args.split]
     rows=targets(selected[0]);all_results=[];start=time.perf_counter()
     for i,row in enumerate(rows[args.rank::args.shards]):
         token=row['token'];payload=load_observation(token);inputs=action_input(payload['features'])
-        context=encode(agent,payload['features']) if joint else payload['tokens'].cuda()
+        if args.shuffle:
+            # Swap current image only; keep target ego history and command.
+            donor=load_observation(donors[token]);features=dict(payload['features'])
+            features['image_path_tensor']=donor['features']['image_path_tensor']
+            context=encode(agent,features)
+        else:context=encode(agent,payload['features']) if joint else payload['tokens'].cuda()
         old=np.load(baseline_path(token))['trajectories'][:5]
         old_scores=np.load(baseline_score_path(token))['scores'][:5,-1]
         arrays=[old];true=[]
@@ -156,7 +166,8 @@ def evaluate(args):
             prediction=delta_pred.reshape(len(selected),2,5).tolist(),target=true.reshape(len(selected),2,5).tolist(),
             base_score=old_scores.tolist(),predicted_base=pred[0].tolist()))
         if (i+1)%128==0:print('PROBE_EVAL',args.name,args.split,args.rank,i+1,flush=True)
-    atomic_json(dest/f'eval_{args.split}_{args.rank}.json',dict(status='COMPLETE',protocol_sha256=identity,
+    label=args.split+('_shuffled' if args.shuffle else '')
+    atomic_json(dest/f'eval_{label}_{args.rank}.json',dict(status='COMPLETE',protocol_sha256=identity,
         checkpoint_sha256=sha(dest/'checkpoint.pt'),rows=all_results,rank=args.rank,shards=args.shards,
         seconds=time.perf_counter()-start,owner=runtime_identity()))
     finish(world)
@@ -199,6 +210,7 @@ def main():
     p.add_argument('--steps',type=int,default=2000);p.add_argument('--head-lr',type=float,default=3e-4)
     p.add_argument('--lambda-diff',type=float,default=0.);p.add_argument('--phase',choices=['tuning','formal','confirmation'],default='formal')
     p.add_argument('--split',default='D_cal');p.add_argument('--rank',type=int,default=0);p.add_argument('--shards',type=int,default=1)
+    p.add_argument('--shuffle',action='store_true')
     args=p.parse_args()
     try:globals()[args.action](args)
     except Exception:

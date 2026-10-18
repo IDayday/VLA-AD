@@ -65,10 +65,13 @@ def worker(spec_path):
     owner=runtime_identity();owner['spec']=spec
     owner['source_hashes']={str(p.relative_to(SOURCE)):sha(p) for p in (SOURCE/'tools/trajectory_effect').glob('*.py')}
     atomic_json(dest/'owner.json',owner);start=time.time();results=[]
-    for command in spec['commands']:
+    for index,command in enumerate(spec['commands']):
         require_host()
         t=time.time();p=subprocess.Popen([PYTHON,'-m',*command],cwd=SOURCE)
-        atomic_json(dest/'child.json',dict(pid=p.pid,start_ticks=int(Path(f'/proc/{p.pid}/stat').read_text().split()[21]),command=command))
+        child=dict(pid=p.pid,start_ticks=int(Path(f'/proc/{p.pid}/stat').read_text().split()[21]),command=command,
+            commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=SOURCE,text=True).strip(),
+            source_hashes={str(p.relative_to(SOURCE)):sha(p) for p in (SOURCE/'tools/trajectory_effect').glob('*.py')})
+        atomic_json(dest/'child.json',child);atomic_json(dest/f'child_{index}.json',child)
         rc=p.wait();results.append(dict(command=command,returncode=rc,seconds=time.time()-t))
         if rc:break
     atomic_json(dest/'complete.json',dict(status='COMPLETE' if all(r['returncode']==0 for r in results) else 'FAILED',
