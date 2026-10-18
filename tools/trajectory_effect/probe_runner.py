@@ -8,7 +8,7 @@ import numpy as np
 from .common import *
 from .bank import load_observation,baseline_path,baseline_score_path
 from .candidates import library_path
-from .updates import families,targets,trajectory_path,score_path,set_seed,tensor_digest
+from .updates import families,targets,trajectory_path,score_path,set_seed,tensor_digest,wait_file
 
 
 def run_dir(name):return ROOT/'probes'/name
@@ -52,7 +52,9 @@ def train(args):
     from .runtime import configure,encode,action_input
     from .probes import effect_loss,vlm_parameters,vlm_state,joint_training_mode
     from .distributed import initialize,sum_values,average_gradients,finish
+    wait_file(ROOT/'candidates/D_fit_complete.json')
     rank,world=initialize();configure();cfg,identity=protocol()
+    assert args.steps==(300 if args.phase=='tuning' else 2000)
     if world not in (1,2,4):raise ValueError('World size must divide fixed global batch4')
     dest=run_dir(args.name);joint=args.arm in ('JQ','JE');start=time.perf_counter()
     if args.arm in ('FQ','JQ') and args.lambda_diff!=0:raise ValueError('Q control cannot receive difference loss')
@@ -126,6 +128,9 @@ def train(args):
 def evaluate(args):
     import torch
     from .runtime import configure,encode,action_input
+    from .distributed import initialize,finish
+    rank,world=initialize()
+    if world>1:args.rank=rank;args.shards=world
     configure();cfg,identity=protocol();dest=run_dir(args.name);run=read(dest/'config.json')
     if args.split=='D_audit' and run['phase']=='tuning':raise ValueError('Tuning cannot access audit')
     checkpoint=torch.load(dest/'checkpoint.pt',map_location='cpu',weights_only=False)
@@ -154,6 +159,7 @@ def evaluate(args):
     atomic_json(dest/f'eval_{args.split}_{args.rank}.json',dict(status='COMPLETE',protocol_sha256=identity,
         checkpoint_sha256=sha(dest/'checkpoint.pt'),rows=all_results,rank=args.rank,shards=args.shards,
         seconds=time.perf_counter()-start,owner=runtime_identity()))
+    finish(world)
 
 
 def merge_eval(name,split):
