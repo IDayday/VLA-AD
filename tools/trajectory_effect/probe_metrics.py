@@ -7,8 +7,19 @@ from .probe_runner import merge_eval,run_dir
 from .statistics import log_weights,interval
 
 
+def average_precision(y,score,weights=None):
+    """Non-interpolated precision-recall integral, with score ties grouped."""
+    y=np.asarray(y,dtype=np.float64).ravel();score=np.asarray(score).ravel()
+    w=np.ones(len(y)) if weights is None else np.asarray(weights,dtype=float).ravel()
+    order=np.argsort(-score,kind='stable');y=y[order];score=score[order];w=w[order]
+    positive=np.sum(y*w)
+    if positive==0:return None
+    ends=np.r_[np.flatnonzero(np.diff(score)),len(score)-1]
+    tp=np.cumsum(y*w)[ends];all_weight=np.cumsum(w)[ends]
+    return float(np.sum(np.diff(np.r_[0.,tp/positive])*(tp/all_weight)))
+
+
 def metrics(pred,target):
-    from sklearn.metrics import average_precision_score,confusion_matrix
     error=pred-target
     mean_p=pred.mean(-1);mean_t=target.mean(-1);drop=(mean_t<-.02);risk=-mean_p
     truth=np.where(mean_t<-.02,0,np.where(mean_t>.02,2,1))
@@ -23,10 +34,10 @@ def metrics(pred,target):
                 if actual.sum():recalls.append(float(actual[idx].sum()/actual.sum()))
     severe=mean_t<-.1
     return dict(MAE=float(abs(error).mean()),RMSE=float(np.sqrt((error**2).mean())),
-        degradation_PR_AUC_AP=float(average_precision_score(drop.ravel(),risk.ravel())) if drop.any() else None,
+        degradation_PR_AUC_AP=average_precision(drop,risk),
         degradation_prevalence=float(drop.mean()),top10pct_scene_recall=float(np.mean(recalls)) if recalls else None,
         confusion_labels=['material_drop','near_zero','material_improvement'],
-        confusion_matrix=confusion_matrix(truth.ravel(),guessed.ravel(),labels=[0,1,2]).tolist(),
+        confusion_matrix=np.bincount(truth.ravel()*3+guessed.ravel(),minlength=9).reshape(3,3).tolist(),
         severe_scene_count_per_seed=int(severe[0].sum()),
         severe_RMSE=float(np.sqrt((error[severe]**2).mean())) if severe.any() else None,
         severe_miss_rate=float((mean_p[severe]>=-.02).mean()) if severe.any() else None)

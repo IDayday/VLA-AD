@@ -143,6 +143,8 @@ def evaluate(args):
     if args.shuffle and agent is None:agent=load_agent();agent.eval()
     donors=read(ROOT/'manifests'/f'{args.split}_observation_shuffle.json')['donors'] if args.shuffle else None
     selected=[f for f in families() if 'D_'+f['split']==args.split]
+    from .updates import directory
+    for f in selected:wait_file(directory(f['id'])/'score_complete.json')
     rows=targets(selected[0]);all_results=[];start=time.perf_counter()
     for i,row in enumerate(rows[args.rank::args.shards]):
         token=row['token'];payload=load_observation(token);inputs=action_input(payload['features'])

@@ -44,19 +44,19 @@ def control_data(split):
 
 
 def ridge(args):
-    from sklearn.pipeline import make_pipeline
-    from sklearn.preprocessing import StandardScaler
-    from sklearn.linear_model import Ridge
     _,identity=protocol();train_x,train_y,_=control_data('D_fit');cal_x,cal_y,_=control_data('D_cal')
     choices=[];models=[]
+    x=train_x.reshape(-1,train_x.shape[-1]);y=train_y.ravel();mean=x.mean(0);std=x.std(0);std[std==0]=1.
+    z=(x-mean)/std;ym=y.mean()
     for alpha in [.1,1.,10.]:
-        model=make_pipeline(StandardScaler(),Ridge(alpha=alpha));model.fit(train_x.reshape(-1,train_x.shape[-1]),train_y.ravel())
-        pred=model.predict(cal_x.reshape(-1,cal_x.shape[-1]));choices.append(dict(alpha=alpha,cal_RMSE=float(np.sqrt(np.mean((pred-cal_y.ravel())**2)))));models.append(model)
+        coef=np.linalg.solve(z.T@z+alpha*np.eye(z.shape[1]),z.T@(y-ym))
+        pred=((cal_x.reshape(-1,cal_x.shape[-1])-mean)/std)@coef+ym
+        choices.append(dict(alpha=alpha,cal_RMSE=float(np.sqrt(np.mean((pred-cal_y.ravel())**2)))));models.append(coef)
     selected=min(range(3),key=lambda i:(choices[i]['cal_RMSE'],i));model=models[selected]
     # Choice is fixed before touching audit outcomes.
     atomic_json(ROOT/'controls/ridge_selection.json',dict(protocol_sha256=identity,choices=choices,selected=selected,
         privileged_input='True baseline PDMS; remaining features are numerical trajectory change and observable ego state.'))
-    x,y,records=control_data('D_audit');prediction=model.predict(x.reshape(-1,x.shape[-1])).reshape(y.shape)
+    x,y,records=control_data('D_audit');prediction=(((x.reshape(-1,x.shape[-1])-mean)/std)@model+ym).reshape(y.shape)
     atomic_npz(ROOT/'controls/ridge_audit.npz',dict(protocol_sha256=identity,records=records,selected_alpha=choices[selected]['alpha']),
         prediction=prediction,target=y)
     atomic_json(ROOT/'controls/ridge_complete.json',dict(status='COMPLETE',RMSE=float(np.sqrt(np.mean((prediction-y)**2))),

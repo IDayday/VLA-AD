@@ -53,6 +53,7 @@ def analyze(args):
     cfg,identity=protocol();summaries=[];scene_results=[];rng=np.random.default_rng(20261019)
     for f in families():
         if f['split']!='audit':continue
+        if args.initial and f.get('confirmation'):continue
         dest=ROOT/'confirmation/severe'/f['id'];selected=read(dest/'selection.json')
         old=[];new=[];logs=[]
         for item in selected['scenes']:
@@ -72,13 +73,15 @@ def analyze(args):
         summaries.append(dict(family=f['id'],scenes=len(old),logs=len(set(logs)),metrics=summary,
             remaining_material_drops=[int((delta[j].mean(-1)<-.02).sum()) for j in range(2)],
             remaining_severe_drops=[int((delta[j].mean(-1)<-.1).sum()) for j in range(2)]))
-    atomic_json(ROOT/'analysis/severe_confirmation.json',dict(protocol_sha256=identity,status='ANALYZED',families=summaries,
+    filename='severe_confirmation_initial.json' if args.initial else 'severe_confirmation.json'
+    atomic_json(ROOT/'analysis'/filename,dict(protocol_sha256=identity,status='ANALYZED',families=summaries,
         scenes=scene_results,scope='Selection on initial5 draws; validation on25 independent paired draws. Conditional subset, not unbiased population rate.'))
 
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('action',choices=['evaluate','analyze']);p.add_argument('--family')
-    p.add_argument('--rank',type=int,default=0);p.add_argument('--shards',type=int,default=1);args=p.parse_args();globals()[args.action](args)
+    p.add_argument('--rank',type=int,default=0);p.add_argument('--shards',type=int,default=1);p.add_argument('--initial',action='store_true')
+    args=p.parse_args();globals()[args.action](args)
 
 
 if __name__=='__main__':main()

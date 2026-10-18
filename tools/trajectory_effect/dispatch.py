@@ -34,6 +34,13 @@ def launch(spec):
     host = spec['host']
     if host not in policy['allowed_hosts'] or host in policy.get('global_dispatch_prohibitions', {}):
         raise PermissionError(host)
+    requested=set(spec.get('gpus',[spec['gpu']] if spec.get('gpu') is not None else []))
+    for old in (ROOT/'jobs').glob('*/launch.json'):
+        if (old.parent/'complete.json').exists():continue
+        old_spec=read(old.parent/'spec.json')
+        reserved=set(old_spec.get('gpus',[old_spec['gpu']] if old_spec.get('gpu') is not None else []))
+        if old_spec['host']==host and requested&reserved:
+            raise RuntimeError(f'Owned job still reserves device(s): {old.parent.name}, {requested&reserved}')
     path = ROOT/'jobs'/spec['name']/'spec.json'
     if path.exists(): raise ValueError(f'Job identity already exists: {path}')
     atomic_json(path, spec)
