@@ -1,0 +1,403 @@
+schema: trajectory_effect_validation_v1
+locked_utc: '2026-10-18T15:55:50.949006+00:00'
+primary_start:
+  name: released_RecogDrive_2B_RL
+  checkpoint: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt
+  sha256: 23fb949b10387efeff87e093703d5faf41b61b9e5ead16d4076661e3c7c08a20
+  epoch: 24
+  global_step: 8325
+  model_source_commit: 884ea1d0f67c60821d61033d61efb10916d16929
+  vlm: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B
+  vlm_sha256: 79fb39297e322cd2d3dc68d4f23b86ff85806b336a4d5d0ed5db9b66e4034a3c
+  new_training: true
+  optimizer: Common fresh AdamW state, not historical update reproduction
+  historical_optimizer_present: true
+  historical_exact_rng_sampler_resume_available: false
+secondary_start: null
+architecture:
+  backbone: InternVL vision + Qwen2 1.5B language, released 2B VLM
+  observation: Native current CAM_F0 image, four history ego poses, ego status and
+    command
+  action_head: Native small ReCogDrive LightningDiT with learned 1536->384 feature
+    projection
+  trajectory:
+    shape:
+    - 8
+    - 3
+    columns:
+    - x_m
+    - y_m
+    - heading_rad
+    times_s:
+    - 0.5
+    - 1.0
+    - 1.5
+    - 2.0
+    - 2.5
+    - 3.0
+    - 3.5
+    - 4.0
+    coordinates: current ego rear axle, x forward, y left; one complete trajectory
+      is one joint action
+  inference: native get_action, 5 DDIM denoising steps, deterministic=False, BF16
+    VLM/FP32 head, TF32 off, eval mode
+  inference_noise: SHA256(token, seed, inference), including native intermediate noise;
+    no shard ID
+  vlm_update_scope: Rank8 alpha16 zero-B FP32 LoRA on all 28 native language attention
+    q_proj/v_proj; vision and base weights frozen
+  vlm_update_parameters: 1089536
+  score_head: Full native 1536-dim tokens; width192 two 6-head cross-attention blocks
+    conditioned on full numerical trajectory and ego/history
+  score_head_parameters: 1270465
+metrics:
+  name: NAVSIM v1.1 PDMS, not EPDMS
+  analysis_units: '[0,1]; retain native [0,1] and derived percent points'
+  evaluator: Unchanged local canonical pdm_score; experiment batch aggregation reference/candidate
+    equivalent
+  evaluation_weights:
+    progress: 5
+    ttc: 5
+    comfort: 2
+    driving_direction: 0
+  native_rl_reward_weights:
+    progress: 10
+    ttc: 5
+    comfort: 2
+    driving_direction: 0
+  reward_note: Preserve existing GRPO training weights; all H1/H2/H3 endpoint labels
+    and comparisons use canonical evaluation weights5/5/2.
+  metric_cache_root: /mnt/project/container_backups/container_root_backup_20260709T073417Z/workspace/recogdrive_stage3_rl/cache/metric_cache_train_full
+  simulator: LQR tracker and bicycle simulation, 40 intervals of 0.1s
+  tolerance: 1.0e-06
+  zero_tolerance: 1.0e-12
+  discrete_components: exact equality
+  high_score_threshold: 0.9
+  material_drop: 0.02
+  near_zero_threshold: 0.01
+  severe_drop: 0.1
+  source_low_threshold: 0.9
+datasets:
+  splits:
+    D_fit:
+      scenes: 4115
+      logs: 50
+      driver_records: 44
+      sha256: e3292aae30586c02e6c0df62639a0dd3e9bfc58b55a6c5662ec4654e0bfaee1f
+    D_cal:
+      scenes: 518
+      logs: 4
+      driver_records: 4
+      sha256: 10488343ac654799c109e80bf09d26da6b49e4fc4210e7e3dba53c13c87a82c3
+    D_audit:
+      scenes: 1696
+      logs: 16
+      driver_records: 15
+      sha256: f9552d196d8973a6cfd1f182702b777198012f9fe60d51acee08c039e75eea53
+  membership_dir: /mnt/project/VLA-AD/outputs/trajectory_effect_validation_20261019/manifests
+  disjoint_units:
+  - token
+  - complete log
+  - parent date/time/vehicle record
+  audit_origin: /mnt/project/ddp-foresight-artifacts/20260928/student_dev_v1/index.json
+  fit_cal_origin: /mnt/project/VLA-AD/outputs/simscale_sft_20260918/manifests/navtrain.json
+  pretrained_exposure: All three are official navtrain; held out only from this added
+    training.
+  audit_usage: Final mechanism analysis only; no loss, threshold or checkpoint selection
+  navtest_usage: One final locked RL-Q/RL-E confirmation only after positive development
+    gates
+seeds:
+  training:
+  - 42
+  - 43
+  - 44
+  calibration: 41
+  update_families:
+  - 7300
+  - 7301
+  - 7302
+  - 7303
+  - 7304
+  - 7305
+  - 7306
+  - 7307
+  - 7308
+  - 7309
+  - 7310
+  - 7311
+  inference:
+  - 1101
+  - 1102
+  - 1103
+  - 1104
+  - 1105
+  independent_noise:
+  - 2101
+  - 2102
+  - 2103
+  - 2104
+  - 2105
+  candidates:
+  - 3101
+  - 3102
+  - 3103
+  - 3104
+  high_screen:
+  - 5101
+  - 5102
+  - 5103
+  - 5104
+  - 5105
+  severe_confirmation:
+  - 4101
+  - 4102
+  - 4103
+  - 4104
+  - 4105
+  - 4106
+  - 4107
+  - 4108
+  - 4109
+  - 4110
+  - 4111
+  - 4112
+  - 4113
+  - 4114
+  - 4115
+  - 4116
+  - 4117
+  - 4118
+  - 4119
+  - 4120
+  - 4121
+  - 4122
+  - 4123
+  - 4124
+  - 4125
+  bootstrap: 20261019
+updates:
+  initial_families: 12
+  family_split:
+    fit: 6
+    cal: 3
+    audit: 3
+  sources:
+  - natural D_fit
+  - baseline low and native on-policy reward-diverse D_fit
+  source_pool_partition: sha256(token, source_pool) modulo24; initial slots0..11,
+    optional confirmation12..23; disjoint across families
+  source_low_qualification_max_scenes_per_family: 32
+  source_batch_size: 8
+  group_size: 8
+  optimizer_updates: 4
+  save_steps:
+  - 0
+  - 1
+  - 4
+  reset: Fresh process/common checkpoint/model+buffers and fresh optimizer; family
+    seed fixes RNG and batches
+  objective: Unmodified forward_grpo with within-scene std-normalized advantages,
+    denoising discount0.6 and fixed IL reference BC0.1
+  optimizer:
+    name: AdamW
+    lr: 1.0e-05
+    weight_decay: 0.01
+    betas:
+    - 0.9
+    - 0.999
+    eps: 1.0e-08
+    clip_grad_norm: 1.0
+  zero_reward_variance: Keep every assigned family; record zero signal, do not invent
+    advantages or replace on-policy actions
+  evaluation_targets:
+    fit: 512
+    cal: 518
+    audit: 1696
+  target_selection: First min(N,split size) by sha256(token,target_subset); complete
+    split boundaries retained
+  all_family_results_retained: true
+candidates:
+  max_additional_per_scene: 15
+  baseline_and_real_updates_separate: true
+  sources:
+    own_policy_extra: 4
+    released_IL: 1
+    smooth_probes: 10
+  external_note: Released IL is a separate existing policy; retain its low-score outcomes
+    as well.
+  smooth_basis: Quadratic elapsed fraction; +/- longitudinal and lateral shifts at
+    two fit/cal update scales, +/- heading at larger scale
+  amplitude_selection: P50/P90 of per-trajectory RMS actual step4-minus-base coordinate
+    differences on fit/cal only; floor0.01m and0.001rad for numerical resolution
+  invalid_rejection: Only nonfinite or wrong shape/time/coordinate definition; keep
+    collisions/offroad/tracking difficulty
+  pairs: At most32 unique unordered pairs per scene, stratified by abs delta <0.02
+    or >=0.02 and candidate-source pair; orient both signs by fixed hash; never per-scene
+    normalize rewards
+  labels: Same canonical PDMS labels for all arms; delta is subtraction, not new truth
+  deduplication: Identical float32 whole trajectories within scene share one candidate;
+    retain all provenance
+probes:
+  arms:
+  - T
+  - FQ
+  - FE
+  - JQ
+  - JE
+  train_steps: 2000
+  microbatch: 1
+  global_batch: 4
+  tuning_seed: 41
+  tuning_steps: 300
+  tuning_configs_per_arm: 3
+  head_lr_candidates:
+  - 0.0001
+  - 0.0003
+  - 0.001
+  effect_lambda_candidates:
+  - 0.25
+  - 1.0
+  - 4.0
+  tuning_rule: FQ/JQ/T select head LR; FE/JE select common lambda by mean relative
+    RMSE on D_cal x cal families with fixed head LR3e-4. Three short slots each; then
+    lock. No audit access.
+  optimizer: AdamW weight_decay0.01, betas0.9/0.999, eps1e-8, grad clip1; constant
+    LR
+  vlm_lr: 0.0001
+  head_lr_effect: 0.0003
+  loss_absolute: mean((q-R)^2) over candidates
+  loss_difference: mean(((q_a-q_b)-(R_a-R_b))^2) over selected pairs
+  frozen_head_capacity: Identical full conditional attention head to joint arms
+  joint_encoding: Recompute native VLM forward/backward; verify nonzero LoRA gradients,
+    weight changes and shared action feature changes
+  primary_eval: D_audit target logs x audit update families, both step1/step4 retained
+    within family cluster
+  controls:
+  - zero prediction
+  - trajectory-only T
+  - privileged baseline score + trajectory RMS change + ego state linear/ridge diagnostic
+  - within-command/speed/trajectory-geometry grouped observation permutation
+  privileged_future: false
+  metrics:
+  - delta_R MAE
+  - delta_R RMSE
+  - material improvement/drop/near-zero confusion
+  - scene-mean degradation PR-AUC
+  - top10percent review degradation recall
+  - severe-subset RMSE and miss rate
+  no_diagnostic_weights_to_RL: true
+rl:
+  arms:
+  - RL-F
+  - RL-J
+  - RL-Q
+  - RL-E
+  updates: 500
+  save_steps:
+  - 0
+  - 100
+  - 250
+  - 500
+  global_batch: 8
+  group_size: 8
+  policy_optimizer: Same AdamW1e-5 as update families
+  vlm_lr: 1.0e-05
+  objective: Native forward_grpo plus beta times specified auxiliary loss; no reward/sampler/retention
+    changes
+  beta: 1.0
+  lambda_diff: Chosen once in D_cal probe stage
+  auxiliary_batch_size: 4
+  auxiliary_stream: Same scene/candidate/pair sequence and labels for Q and E
+  score_head_initialization: Common FQ frozen-VLM warmup300 steps on D_fit seed41,
+    copied to Q/E; no stageD joint weights
+  baseline_reset: All policies and LoRA reset to common RL checkpoint and zero adapters
+  on_policy: Every arm draws its own native chain from its own current pre-step policy;
+    shared scene/noise schedule only
+  candidate_gradients: Detached numerical candidates; gradients to score head and
+    shared VLM, not through action coordinates
+  matched_gain:
+    target: 0.002
+    tolerance: 0.001
+    rule: For each seed and arm choose smallest abs distance to0.002 among registered
+      steps with D_cal G in [0.002,0.003]; break ties by earlier step. If absent,
+      unmatched, never choose step0.
+    audit_gain_requirement: Both arms audit G>0; otherwise no effective-gain advantage
+      claim
+  same_budget: Compare identical steps, scene exposures and policy scoring budgets;
+    include auxiliary scoring cost
+  navtest: If development supports H3, evaluate locked matched-gain Q/E checkpoints,
+    all12146 scenes, 3 training x5 inference seeds; no retuning
+statistics:
+  unit: Complete log bootstrap with pooled scene weighting; do not average log means
+    equally
+  hierarchical: Paired resampling of training seeds, whole logs, inference seed indices;
+    update-family clusters resampled for actual-update prediction
+  bootstrap_replicates: 2000
+  interval: 0.95
+  primary_quantities:
+  - G=mean(delta_J)
+  - M_plus=mean(max(delta_J,0))
+  - M_minus=mean(max(-delta_J,0))
+  failures:
+  - positive->zero
+  - high->nearzero
+  - new NC/DAC/TTC/comfort/DDC violation
+  stable_high: Independent seeds5101..5105 all scores>=0.90; evaluate with1101..1105
+  h2_material_relative_rmse_reduction: 0.1
+  h3_material_M_minus_reduction: max(0.0005,0.10*RL-Q M_minus)
+  low_cluster_caution: Initial cal4 logs and audit3 update families produce limited
+    precision; report intervals and INCONCLUSIVE as needed
+gates:
+  A: All scalar/batch/noise/native-input checks pass; any violation INVALID until
+    fixed and affected outputs rebuilt
+  B: At least2 held-out families with nonzero parameter/output changes and >=20 material
+    scene drops spanning>=4 logs; fewer triggers only registered extension
+  D: Real-update held-out prediction improves over zero/T controls and generalizes.
+    If JE has no material advantage over JQ with sufficiently narrow interval, stop
+    effect-loss route.
+  E: Only continue after B and D gates; prediction improvement alone cannot establish
+    H3
+  decisions:
+  - SUPPORTED
+  - PARTIALLY_SUPPORTED
+  - NOT_SUPPORTED
+  - INCONCLUSIVE
+  - INVALID
+  non_significance: NOT_SUPPORTED only if interval excludes predeclared useful effect
+    or stable opposite effect; otherwise INCONCLUSIVE
+confirmation_extension:
+  max_uses: 1
+  triggers:
+  - Too few real material drops or reward-diverse source groups
+  - 95% comparison interval wider than twice the material-effect threshold
+  package: 12 additional independent families (6fit/3cal/3audit) with identical recipe;
+    same fixed target splits. Retrain all probe arms with same seeds and2000 updates
+    on expanded library. No method-specific expansion.
+  severe_recheck: Up to64 severe scenes per audit family selected by deterministic
+    hash within log strata;25 additional paired seeds. Included in this single extension
+    package.
+  no_change_to_architecture_objective_thresholds: true
+costs:
+  real_pilot:
+    inference_seconds: 160.33698964491487
+    scenes: 64
+    score_seconds: 9.926294583827257
+    score_workers: 8
+    GRPO_one_scene_update_seconds: 4.738697178661823
+    joint_one_scene_update_seconds: 0.47828930988907814
+    observation_bytes: 17141725
+  initial_gpu_hour_ceiling: 96
+  confirmation_gpu_hour_ceiling: 48
+  storage_ceiling_gib: 500
+  on_budget_exhaustion: Finish existing atomic records/checkpoints; report incomplete/INCONCLUSIVE,
+    no extra scientific expansion
+reporting:
+  main_report: reports/trajectory_effect_validation_20261019/REPORT_zh.md
+  cases: One improvement, degradation and prediction failure by preregistered threshold
+    then token hash; retain failures and no-update families
+  required_figures:
+  - Actual update vs independent-noise delta_J
+  - M_plus/M_minus/G
+  - T/FQ/FE/JQ/JE actual-update prediction
+  - Same-budget and matched-gain Q/E degeneration or explicitly gated/not-run panel
+  - Numerical trajectory/map/object/event examples
+  unavailable_stages: Explicit NOT_RUN_GATE status, never empty success tables
