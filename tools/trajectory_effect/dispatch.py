@@ -39,18 +39,22 @@ def launch(spec):
     atomic_json(path, spec)
     code = f"""import subprocess,os,json
 from pathlib import Path
-source={str(SOURCE)!r}; job={str(path.parent)!r}; gpu={spec.get('gpu')!r}
-if gpu is not None:
+source={str(SOURCE)!r}; job={str(path.parent)!r}; gpus={spec.get('gpus', [spec['gpu']] if spec.get('gpu') is not None else [])!r}
+if gpus:
  rows=subprocess.check_output(['nvidia-smi','--query-gpu=index,memory.used,utilization.gpu','--format=csv,noheader,nounits'],text=True).splitlines()
- row=next(x for x in rows if int(x.split(',')[0])==gpu)
- if int(row.split(',')[1])>100 or int(row.split(',')[2])>5: raise RuntimeError('Device became occupied: '+row)
+ for gpu in gpus:
+  row=next(x for x in rows if int(x.split(',')[0])==gpu)
+  if int(row.split(',')[1])>100 or int(row.split(',')[2])>5: raise RuntimeError('Device became occupied: '+row)
 env=dict(os.environ,OMP_NUM_THREADS='1',OPENBLAS_NUM_THREADS='1',MKL_NUM_THREADS='1',PYTHONUNBUFFERED='1')
-env['CUDA_VISIBLE_DEVICES']=str(gpu) if gpu is not None else ''
+env['CUDA_VISIBLE_DEVICES']=','.join(map(str,gpus))
 f=open(job+'/worker.log','a')
 p=subprocess.Popen([{PYTHON!r},'-m','tools.trajectory_effect.dispatch','worker','--spec',job+'/spec.json'],cwd=source,env=env,stdout=f,stderr=subprocess.STDOUT,start_new_session=True)
 print(json.dumps(dict(pid=p.pid,start_ticks=int(Path('/proc/'+str(p.pid)+'/stat').read_text().split()[21]),host={host!r},job=job)))
 """
-    result = run_remote(host, code)
+    try:result = run_remote(host, code)
+    except Exception as e:
+        atomic_json(path.parent/'admission_failure.json',dict(status='NOT_LAUNCHED',reason=str(e),time=time.time()))
+        raise
     atomic_json(path.parent/'launch.json', result)
     return result
 
