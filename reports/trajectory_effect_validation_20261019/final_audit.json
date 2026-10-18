@@ -1,0 +1,26 @@
+{
+  "protocol_sha256": "7177a32ff6fa1c0a78161f4e6aa1ebdd126796796330a3c1d47a1270710be6a7",
+  "independent_update_families": 24,
+  "native_optimizer_updates": 96,
+  "formal_probe_runs": 15,
+  "formal_probe_updates_each": 2000,
+  "hashed_inputs": 12728,
+  "changed_inputs_since_lock": 0,
+  "active_owned_jobs": [],
+  "job_statuses": {
+    "COMPLETE": 328,
+    "NOT_LAUNCHED": 1,
+    "FAILED": 1
+  },
+  "report_files": {
+    "delivery.json": "1c81533aaa6fffff19519e5eb18a2347aa1dca276267b466df0eeb8e66b9b6c5",
+    "REPORT_zh.md": "998f8ee562faf5b2e45aa8c9ffddf300b060f9ef35185f65c7a8ccdb591ffe4c",
+    "figures/rl_comparison_gate.png": "2cc16961db4f51e9853d033f6b0f89c5ff3ec1eb4ec75e3dc9b3d48f141198f9",
+    "figures/gain_degradation.png": "529f42474d7857c22fe3a66a7ac6f3f87e172b5eb3e5bfcc7e0f11abb2332558",
+    "figures/case_degradation.png": "7f14baee6dde0368fd46d34d9de3f539ab35a5b93773e75240569fbe06e3a03d",
+    "figures/consequence_prediction.png": "0329d99e5a8c67ef9f56535a881700f70285bba4f947b60121e533853a40eb0c",
+    "figures/case_prediction_failure.png": "3d157ab8904593fb3e03a3734c5a3bd1c78f6c608df90482a3dc3495595d1868",
+    "figures/h1_update_noise.png": "29cb90e9a00f996076ee815fa67d6863a398c90aaa39adf888806068aba31255",
+    "figures/case_improvement.png": "855d043eab3437d55e09f6fb355b57cc9345ee2a5e32763ff3b2ea1ee1261a2f"
+  }
+}

@@ -1,0 +1,107 @@
+{
+  "protocol_sha256": "7177a32ff6fa1c0a78161f4e6aa1ebdd126796796330a3c1d47a1270710be6a7",
+  "code_commit": "bed1997c81a5b38c57e62f8e779b8dc45910bde3",
+  "root": "/mnt/project/VLA-AD/outputs/trajectory_effect_validation_20261019",
+  "decisions": {
+    "protocol_sha256": "7177a32ff6fa1c0a78161f4e6aa1ebdd126796796330a3c1d47a1270710be6a7",
+    "H1": {
+      "status": "SUPPORTED",
+      "reason": "同一真实更新族 update_11 的总体增益区间高于0，同时独立25种子确认的严重下降子集仍为负；支持跨场景得失共存。",
+      "supporting_families": [
+        "update_11"
+      ]
+    },
+    "H2": {
+      "status": "NOT_SUPPORTED",
+      "reason": "JQ/FQ的RMSE相对降低-0.002%，JE/FE为-0.001%；JE/JQ为0.003%。差值监督的10%实质收益判断为NOT_SUPPORTED。",
+      "detailed_interpretation": "JQ/FQ的RMSE相对降低-0.002%，JE/FE为-0.001%；JE/JQ为0.003%。差值监督的10%实质收益判断为NOT_SUPPORTED。 对应95%区间分别为[-0.009,0.000]%、[-0.007,0.002]%、[-0.001,0.010]%。这些判断限定于本次观测、读出头、LoRA范围与训练预算；不证明所有VLM训练方式都无效，也不把非显著差异本身视为反证。各组与零差值预测基线几乎相同，不支持冻结表征已充分的结论。普通Q与差值损失没有获得不同的真值信息。",
+      "difference_supervision_status": "NOT_SUPPORTED"
+    },
+    "H3": {
+      "status": "INCONCLUSIVE",
+      "reason": "阶段B=INSUFFICIENT_EVENTS，阶段D=STOP_NO_MATERIAL_EFFECT；按锁定停止规则未启动500步RL对照，H3未被检验。",
+      "detailed_interpretation": "阶段B=INSUFFICIENT_EVENTS，阶段D=STOP_NO_MATERIAL_EFFECT；按锁定停止规则未启动500步RL对照，H3未被检验。 本轮原生GRPO短分支验证了真实更新后果，但不构成同数据RL-Q/RL-E的同预算或匹配增益比较。没有把较小更新或没有正向增益的低退化率计作方法优势。"
+    },
+    "stage_E": "NOT_RUN_GATE",
+    "gate_reason_en": "B: INSUFFICIENT_EVENTS; D: STOP_NO_MATERIAL_EFFECT",
+    "recommendation": "停止继续扩大当前差值辅助监督路线；保留真实退化和后果数据作为诊断资产。未验证的RL效果不能写成已被改善。",
+    "navtest_statement": "本轮未通过进入最终确认的开发门槛，未执行官方测试集确认。"
+  },
+  "h1_summary": {
+    "estimate": [
+      [
+        0.0006105646479134543,
+        0.0015720518540641934,
+        0.0009614872061507392,
+        0.00422562893081761
+      ],
+      [
+        0.0007402806537116511,
+        0.0032659324546982192,
+        0.0025256518009865686,
+        0.00805817610062893
+      ]
+    ],
+    "lower95": [
+      [
+        -0.00027374247012269305,
+        0.0006253163804665749,
+        0.00045735312325339585,
+        0.0010295698330074707
+      ],
+      [
+        -0.0010491165048835873,
+        0.0015755952881163215,
+        0.001382023722441533,
+        0.0033807510358191146
+      ]
+    ],
+    "upper95": [
+      [
+        0.0019601945068829754,
+        0.0033226150775670545,
+        0.001983373248005742,
+        0.006718977850059089
+      ],
+      [
+        0.003036608470729986,
+        0.00652593134940442,
+        0.004547717041683945,
+        0.012766503389647663
+      ]
+    ]
+  },
+  "h2_comparisons": {
+    "JQ-vs-FQ": {
+      "estimate": -2.1171559268834227e-05,
+      "lower95": -9.216661288837452e-05,
+      "upper95": 4.0299224819694e-06
+    },
+    "JE-vs-FE": {
+      "estimate": -1.054728373080584e-05,
+      "lower95": -6.608058934653214e-05,
+      "upper95": 2.3766752479826217e-05
+    },
+    "JE-vs-JQ": {
+      "estimate": 3.2670766910921674e-05,
+      "lower95": -5.902602816615093e-06,
+      "upper95": 0.00010090800018930601
+    },
+    "FE-vs-FQ": {
+      "estimate": 2.2046950528528678e-05,
+      "lower95": -1.7973259890586484e-05,
+      "upper95": 7.851459351801783e-05
+    },
+    "JE-vs-T": {
+      "estimate": -3.631958455325587e-05,
+      "lower95": -0.00011779257012950036,
+      "upper95": 4.9277548438212836e-05
+    },
+    "JE-vs-ZERO": {
+      "estimate": 5.0107157868547505e-05,
+      "lower95": -2.153958471280083e-05,
+      "upper95": 0.00014035319852324604
+    }
+  },
+  "report": "/mnt/project/VLA-AD/research/trajectory-effect-validation-20261019/reports/trajectory_effect_validation_20261019/REPORT_zh.md"
+}
