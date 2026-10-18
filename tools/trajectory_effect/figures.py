@@ -96,7 +96,7 @@ def cases(prefix='formal'):
         z=int(np.argmin(abs(np.array(case['paired_deltas'])-case['delta_J'])))
         ego=cache.ego_state.rear_axle;angle=ego.heading;rotation=np.array([[np.cos(angle),-np.sin(angle)],[np.sin(angle),np.cos(angle)]])
         def local(xy):return (np.asarray(xy)-np.array([ego.x,ego.y]))@rotation
-        fig,axes=plt.subplots(1,2,figsize=(11,4));ax=axes[0]
+        fig,axes=plt.subplots(1,3,figsize=(15,4));ax=axes[0]
         for polygon in cache.drivable_area_map._geometries:
             if polygon.geom_type=='Polygon':
                 xy=local(np.asarray(polygon.exterior.coords));ax.fill(xy[:,0],xy[:,1],color='#e9ecef',alpha=.35,lw=.3,edgecolor='#adb5bd')
@@ -128,16 +128,28 @@ def cases(prefix='formal'):
         xy=np.concatenate([old[z,:,:2],new[z,:,:2],[[0,0]]]);ax.set_xlim(xy[:,0].min()-8,xy[:,0].max()+8);ax.set_ylim(xy[:,1].min()-8,xy[:,1].max()+8)
         ax.set_aspect('equal');ax.set(xlabel='Ego x (m)',ylabel='Ego y (m)',title=kind+' / '+token);ax.legend(fontsize=7)
         labels=['collision','offroad','TTC check failure'];axes[1].set_xlim(-.1,4.1);axes[1].set_ylim(-.7,2.7)
+        old_event_times=[float(oldscore[key][z]) for key in ['first_collision_s','first_dac_s','first_ttc_check_failure_s']]
         for j,(label,t) in enumerate(zip(labels,event_times)):
             axes[1].hlines(j,0,4,color='#dee2e6')
-            if np.isfinite(t):axes[1].plot(t,j,'x',color='#e76f51',ms=9);axes[1].annotate(f'{t:.1f}s',(t,j),xytext=(4,5),textcoords='offset points')
-            else:axes[1].text(3.9,j+.08,'none within4s',ha='right',fontsize=8,color='#6c757d')
+            for value,offset,marker,color in [(old_event_times[j],-.15,'o','#457b9d'),(t,.15,'x','#e76f51')]:
+                if np.isfinite(value):
+                    axes[1].plot(value,j+offset,marker,color=color,ms=7)
+                    axes[1].annotate(f'{value:.1f}s',(value,j+offset),xytext=(4,2 if offset>0 else -9),textcoords='offset points',fontsize=8)
+                else:axes[1].text(3.9,j+offset,'none within4s',ha='right',va='center',fontsize=8,color=color)
         title=f'Scene mean delta_J={case["delta_J"]:+.4f}; seed{1101+z}'
         if 'predicted_delta_J' in case:title+=f'\nPredicted delta_J={case["predicted_delta_J"]:+.5f}'
         axes[1].set_yticks(range(3),labels);axes[1].set(xlabel='Simulated elapsed time (s)',title=title)
         axes[1].text(.02,-.3,f'Dashed objects: logged occupancy at{event:.1f}s, diagnostic only.\nTTC check failure is not time remaining to impact.',transform=axes[1].transAxes,fontsize=8)
+        indices=np.arange(5)
+        axes[2].plot(indices,oldscore['scores'][:5,-1],'o-',color='#457b9d',label='base')
+        axes[2].plot(indices,newscore['scores'][:5,-1],'x--',color='#e76f51',label='updated')
+        axes[2].axvline(z,color='#adb5bd',lw=.7,label='shown draw')
+        axes[2].set_xticks(indices,[str(1101+i) for i in indices],rotation=30)
+        axes[2].set(ylim=(-.05,1.05),xlabel='Paired inference seed',ylabel='Normalized PDMS',title=f'Shown draw delta_R={case["paired_deltas"][z]:+.4f}')
+        axes[2].legend(fontsize=8)
         fig.tight_layout();fig.savefig(FIGURES/f'case_{kind}.png',bbox_inches='tight');plt.close(fig)
-        details.append(dict(kind=kind,**case,shown_seed=1101+z,first_events_s={k:(t if np.isfinite(t) else None) for k,t in zip(labels,event_times)},
+        details.append(dict(kind=kind,**case,shown_seed=1101+z,shown_delta_R=float(case['paired_deltas'][z]),first_events_s={k:(t if np.isfinite(t) else None) for k,t in zip(labels,event_times)},
+            base_first_events_s={k:(t if np.isfinite(t) else None) for k,t in zip(labels,old_event_times)},
             old_components=oldscore['scores'][z].tolist(),new_components=newscore['scores'][z].tolist(),
             collision_intersections=collision_objects,
             selection_rule='Threshold0.02 then token/family/step hash; displayed draw closest to scene mean delta',

@@ -55,7 +55,7 @@ def main():
     case_data=read(ROOT/'analysis/cases.json');case_text=[]
     for case in case_data:
         prediction=f"预测 ΔJ={case['predicted_delta_J']:+.6f}。" if 'predicted_delta_J' in case else ''
-        case_text.append(f"{case['kind']}：场景 `{case['token']}`，`{case['family']}` 步骤 {case['step']}，场景平均 ΔJ={case['delta_J']:+.6f}，展示种子 {case['shown_seed']}。{prediction}事件记录：`{case['first_events_s']}`。\n\n![{case['kind']}](figures/case_{case['kind']}.png)")
+        case_text.append(f"{case['kind']}：场景 `{case['token']}`，`{case['family']}` 步骤 {case['step']}，场景平均 ΔJ={case['delta_J']:+.6f}，展示种子 {case['shown_seed']} 的 ΔR={case['shown_delta_R']:+.6f}。{prediction}更新后事件记录：`{case['first_events_s']}`；基准事件：`{case['base_first_events_s']}`。\n\n![{case['kind']}](figures/case_{case['kind']}.png)\n")
     ridge=read(ROOT/'controls/ridge_complete.json');shuffle=read(ROOT/'analysis/observation_shuffle.json')
     init=read(ROOT/'analysis/probe_identity_audit.json');high=read(ROOT/'analysis/stable_high.json')
     code=subprocess.check_output(['git','rev-parse','HEAD'],cwd=SOURCE,text=True).strip()
@@ -179,7 +179,7 @@ def main():
 
 ## 数值后果案例
 
-改善、退化与预测失败按预注册阈值再按哈希选择；展示的采样种子最接近该场景平均变化。图中原始轨迹与跟踪轨迹分开，地图及当前/事件时刻对象占用仅用于诊断。首次TTC检查失败时刻不是剩余碰撞时间。默认输出、原生分项/事件索引与额外派生的首次越界时刻在评分模块中分别标明。
+改善、退化与预测失败按预注册阈值再按哈希选择；展示的采样种子最接近该场景平均变化。图中原始轨迹与跟踪轨迹分开，同时展示五次成对得分；选中的单次ΔR可能为0，不能把场景平均变化归因于这一次输出。退化与预测失败规则选中了同一案例，不是两个独立证据。地图及当前/事件时刻对象占用仅用于诊断。首次TTC检查失败时刻不是剩余碰撞时间。默认输出、原生分项/事件索引与额外派生的首次越界时刻在评分模块中分别标明。
 
 {chr(10).join(case_text)}
 
