@@ -5,6 +5,11 @@ import argparse,concurrent.futures,multiprocessing
 from scripts.opd.common import *
 
 
+def validate_metadata(meta,checkpoint_identity,cfg,split,token):
+    if meta['checkpoint_sha256']!=checkpoint_identity or meta['config_sha256']!=digest(cfg):raise ValueError('Cached prediction model/config identity changed')
+    if meta['seeds']!=cfg['inference_seeds'] or meta['split']!=split or meta['token']!=token:raise ValueError('Cached prediction scene/seed identity changed')
+
+
 def score_task(task):
     row,path,dest=task
     from scripts.opd.scoring import Scoring,load_cache
@@ -65,8 +70,12 @@ def main():
         for i,row in enumerate(selected[a.rank::a.shards]):
             token=row['token'];predpath=dest/'predictions'/f'{token}.npz';scorepath=dest/'scores'/f'{token}.json'
             if scorepath.exists():
-                if read(scorepath)['predictions_sha256']!=sha(predpath):raise ValueError('Conflicting scored payload')
+                record=read(scorepath)
+                validate_metadata(record['model_metadata'],checkpoint_identity,cfg,a.split,token)
+                if record['predictions_sha256']!=sha(predpath):raise ValueError('Conflicting scored payload')
                 completed+=1;continue
+            if predpath.exists():
+                with np.load(predpath) as existing:validate_metadata(json.loads(str(existing['metadata'])),checkpoint_identity,cfg,a.split,token)
             if not predpath.exists():
                 tokens,inputs=conditioning(observation(row));arrays={}
                 for model,h in models.items():

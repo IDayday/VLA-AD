@@ -90,7 +90,7 @@ def cases():
         error=float(abs(scored['scores']-expected).max());assert error<=1e-6,error
         ego=cache.ego_state.rear_axle;angle=ego.heading;rotation=np.array([[np.cos(angle),-np.sin(angle)],[np.sin(angle),np.cos(angle)]])
         local=lambda xy:(np.asarray(xy)-[ego.x,ego.y])@rotation
-        fig,axes=plt.subplots(1,2,figsize=(12,4));ax=axes[0]
+        fig,axes=plt.subplots(1,3,figsize=(16,4));ax=axes[0]
         for polygon in cache.drivable_area_map._geometries:
             if polygon.geom_type=='Polygon':
                 xy=local(polygon.exterior.coords);ax.fill(xy[:,0],xy[:,1],color='#e9ecef',alpha=.5)
@@ -105,13 +105,22 @@ def cases():
             trajectory=arrays[j];ax.plot(trajectory[:,0],trajectory[:,1],'o-',color=color,ms=3,label=name)
             tracked=local(scored['simulated_states'][j,:,:2]);ax.plot(tracked[:,0],tracked[:,1],'--',color=color,lw=.8)
             axes[1].plot(config()['inference_seeds'],[b,t,s,e][j][i,:,-1],'o-',color=color,label=name)
+            for k,event_key in enumerate(event_keys):
+                moment=times[event_key][j]
+                if moment is not None:axes[2].plot(moment,k+(j-1.5)*.12,'o',color=color,ms=5,label=name if k==0 else None)
+                else:axes[2].text(4.05,k+(j-1.5)*.12,name+': none',color=color,fontsize=6,va='center')
         xy=np.concatenate([a[:,:2] for a in arrays]);ax.set_xlim(xy[:,0].min()-8,xy[:,0].max()+8);ax.set_ylim(xy[:,1].min()-8,xy[:,1].max()+8)
         ax.set_aspect('equal');ax.set(xlabel='Rear-axle x (m)',ylabel='Rear-axle y (m)',title=kind+' / '+token);ax.legend()
         axes[1].set(ylim=(-.05,1.05),xlabel='Paired inference seed',ylabel='PDMS',title=f'IL={bj[i]:.3f}, RL={tj[i]:.3f}, E3={sj[i]:.3f}, E5={ej[i]:.3f}');axes[1].legend()
+        axes[2].set(xlim=(-.1,5.2),ylim=(-.5,2.5),xlabel='Simulated elapsed time (s)',title='First native infractions / selected draw')
+        axes[2].set_yticks([0,1,2],['At-fault collision','Offroad','TTC check failure']);axes[2].grid(axis='x',alpha=.2)
         fig.text(.01,.01,f'Solid/dashed trajectories: requested/tracked. Object outlines: current and event-time {event:.1f}s (diagnostic future only). TTC failure is not physical time to impact.',fontsize=7)
         fig.tight_layout(rect=(0,.05,1,1));fig.savefig(REPORTS/'figures'/f'Fig7_{kind}.png');plt.close(fig)
+        path=ROOT/'diagnostics/case_states'/f'{kind}.npz';path.parent.mkdir(parents=True,exist_ok=True)
+        np.savez_compressed(path,simulated_states=scored['simulated_states'],requested_trajectories=arrays,scores=scored['scores'])
         details.append(dict(kind=kind,token=token,log=row['log_name'],seed=config()['inference_seeds'][z],scene_means=dict(IL=float(bj[i]),RL=float(tj[i]),E3=float(sj[i]),E5=float(ej[i])),
-            event_seconds=times,canonical_score_error=error,rule='First stable token hash among threshold-eligible cases; displayed draw closest to mean E3-minus-IL change'))
+            event_seconds=times,raw_progress_m=scored['progress_raw_m'].tolist(),reference_progress_m=scored['reference_progress_raw_m'],
+            extra_case_state_log=str(path),state_log_sha256=sha(path),canonical_score_error=error,rule='First stable token hash among threshold-eligible cases; displayed draw closest to mean E3-minus-IL change'))
     write(ROOT/'analysis/cases.json',details)
 
 

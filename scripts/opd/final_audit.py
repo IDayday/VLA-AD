@@ -60,7 +60,7 @@ def accounting():
 
 
 def tests():
-    required=['real_batch','real_grpo','real_resume_v2','real_ddp','real_online_vlm','real_parameter_perturbation','real_GT_parity','real_inference_cache','real_parallel_inference','real_shared_lock']
+    required=['real_batch','real_grpo','real_resume_v2','real_ddp','real_online_vlm','real_parameter_perturbation','real_GT_parity','real_inference_cache','real_parallel_inference','real_shared_lock','real_student_deployment']
     evidence={n:read(ROOT/'tests'/f'{n}.json') for n in required}
     assert all(v['passed'] for v in evidence.values())
     xml=ET.parse(ROOT/'tests/cpu.xml').getroot();suites=list(xml) if xml.tag=='testsuites' else [xml]
@@ -79,7 +79,7 @@ def tests():
         'T17':'audit/gates.json deterministic and native stochastic parity','T18':'tests/opd/test_losses.py degenerate and clipped Gaussian rejection',
         'T19':'tests/opd/test_rollout.py and E4/E5 anchor unchanged completion','T20':'tests/opd/test_gating.py and train global effective-count normalization',
         'T21':'tests/opd/test_losses.py zero mask and actual E5 zero-gate batches','T22':'audit/final_provenance.json official split/log/parent checks',
-        'T23':'tests/opd/test_eval_safety.py and pure head evaluation without teacher','T24':'tests/real_batch.json future poison and real_online_vlm exact native inputs',
+        'T23':'tests/real_student_deployment.json trained native online student, no teacher/anchor','T24':'tests/real_batch.json future poison and real_online_vlm exact native inputs',
         'T25':'tests/real_resume_v2.json exact actual parameters,optimizer,RNG','T26':'audit/gates.json same-noise repeated outputs',
         'T27':'tests/real_ddp.json actual2-GPU gradient reduction','T28':'tests/real_grpo.json exact zero-OPD native loss/gradient'}
     write(ROOT/'tests/final_matrix.json',dict(passed=True,CPU=counts,integration_evidence={k:sha(ROOT/'tests'/f'{k}.json') for k in required},tests={k:dict(status='PASS',evidence=v) for k,v in mapping.items()},

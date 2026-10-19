@@ -125,7 +125,12 @@ def formal(split='dev'):
             teacher_zero_student_positive=int(((rj[None]<=1e-12)&(j>1e-12)).sum()),
             both_zero_student_improved=int(((ij[None]<=1e-12)&(rj[None]<=1e-12)&(j>.02)).sum()))
     contrasts={}
-    for a,b in [('E3','E1'),('E3','E2'),('E4-A','E3'),('E4-B','E3'),('E4-C','E3'),('E5','E3'),('E5','E4-C')]:
+    pairs=[('E3','E1'),('E3','E2'),('E4-A','E3'),('E4-B','E3'),('E4-C','E3'),('E5','E3'),('E5','E4-C')]
+    choice=ROOT/'selection/navtest.json'
+    if choice.exists():
+        selected=('E5',read(choice)['E4_variant'])
+        if selected not in pairs:pairs.append(selected)
+    for a,b in pairs:
         if a not in arrays or b not in arrays:continue
         contrasts[a+'_vs_'+b]=compare(arrays[a],arrays[b],il,logs,stable,cfg['bootstrap_replicates'])
     write(ROOT/'analysis'/f'formal_{split}.json',dict(status='COMPLETE',split=split,scenes=len(il),logs=len(set(logs)),methods=result,contrasts=contrasts,

@@ -29,8 +29,11 @@ def main():
     if world>1:dist.broadcast(existing,src=0)
     if not a.resume and bool(existing):raise ValueError('Existing partial run requires explicit --resume')
     steps=a.steps or {'smoke':cfg['smoke_steps'],'tiny':cfg['tiny_steps'],'tune':cfg['tuning_steps'],'train':cfg['train_steps']}[a.stage]
-    lr=a.lr or cfg['lr'];anchor_weight=a.anchor_weight if a.anchor_weight is not None else cfg['lambda_anchor']
-    il_weight=a.il_weight if a.il_weight is not None else cfg['lambda_il']
+    defaults=read(ROOT/'calibration/gradient_scales.json')['weights'] if a.stage in ('tune','train') else dict(anchor=cfg['lambda_anchor'],il=cfg['lambda_il'])
+    chosen=read(ROOT/'selection/tuning.json')['selected'][a.exp] if a.stage=='train' else None
+    lr=a.lr if a.lr is not None else (chosen['lr'] if chosen else cfg['lr'])
+    anchor_weight=a.anchor_weight if a.anchor_weight is not None else defaults['anchor']
+    il_weight=a.il_weight if a.il_weight is not None else defaults['il']
     if a.stage in ('tune','train'):
         if read(ROOT/'analysis/G2.json')['status']!='PASS':raise ValueError('Real-data qualification has not passed')
         weights=read(ROOT/'calibration/gradient_scales.json')['weights']
