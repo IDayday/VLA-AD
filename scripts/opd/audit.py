@@ -27,7 +27,7 @@ def main():
     architecture=dict(parameters=sum(p.numel() for p in student.parameters() if p.requires_grad),
         flags={k:getattr(student.config,k) for k in ('use_expert_features','use_last_rd','use_bit_drive','use_risk_vla','use_action_aware_aux','sampling_method','num_inference_steps','input_embedding_dim','vlm_feature_dim','action_horizon','action_dim')},
         timesteps=student.ddim_t.tolist(),indices=list(range(student.ddim_steps)),
-        saved_sigma_buffer=student.ddim_sigmas.tolist(),eta_state={k:v.tolist() for k,v in student.eta.state_dict().items()},
+        saved_sigma_buffer=student.ddim_sigmas.tolist(),eta_state={k:(v.tolist() if torch.isfinite(v).all() else str(v)) for k,v in student.eta.state_dict().items()},
         sampler_note='get_action deterministic: sigma=0; stochastic: actual EtaFixed then minimum1e-4, clipped standard-normal noise[-1,1]; final latent clip[-1,1]. sample_chain used by GRPO has a distinct minimum0.04. Gaussian KL rejected for clipped kernels.')
     write(ROOT/'audit/architecture.json',architecture)
     checks=[];times=[]

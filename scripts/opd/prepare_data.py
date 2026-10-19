@@ -16,6 +16,13 @@ def main():
     for a in logs:
         for b in logs:
             if a!=b:assert not logs[a]&logs[b] and not parents[a]&parents[b]
+    from tools.training.simscale_sft.common import targets_from_frames
+    groups={};targets={}
+    for row in rows('train'):groups.setdefault(row['metadata_path'],[]).append(row)
+    for path,group in groups.items():
+        with open(path,'rb') as f:frames=pickle.load(f)
+        for row in group:targets[row['token']]=targets_from_frames(frames[row['start_idx']:row['start_idx']+row['frame_count']])
+    save(ROOT/'supervision/train_gt.pt',targets)
     write(ROOT/'manifests/identity.json',dict(splits={s:dict(scenes=len(rows(s)),logs=len(logs[s]),sha256=sha(ROOT/'manifests'/f'{s}.json')) for s in mapping},
         source=str(source),source_checkpoint='frozen VLM encoding; the action projection is not cached',
         caveat='All splits are official navtrain; held out from this new training, potentially seen by original pretraining'))

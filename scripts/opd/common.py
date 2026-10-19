@@ -1,4 +1,5 @@
 import hashlib,json,os,pickle,random,socket,subprocess,time
+from functools import lru_cache
 from pathlib import Path
 import numpy as np
 
@@ -43,13 +44,15 @@ def configure():
     torch.backends.cuda.matmul.allow_tf32=False;torch.backends.cudnn.allow_tf32=False;torch.backends.cudnn.benchmark=False
     torch.use_deterministic_algorithms(True)
 def rows(split):return read(ROOT/'manifests'/f'{split}.json')
-def observation(row):
+@lru_cache(maxsize=256)
+def observation_by_token(token):
     import torch
-    cfg=config();p=Path(cfg['observation_cache'])/f"{row['token']}.pt"
+    cfg=config();p=Path(cfg['observation_cache'])/f'{token}.pt'
     x=torch.load(p,map_location='cpu',weights_only=False)
-    if x['token']!=row['token'] or x.get('protocol_sha256')!=cfg['observation_cache_protocol']:raise ValueError('Unbound observation cache')
+    if x['token']!=token or x.get('protocol_sha256')!=cfg['observation_cache_protocol']:raise ValueError('Unbound observation cache')
     if set(x['features'])!={'history_trajectory','status_feature','high_command_one_hot','image_path_tensor'}:raise ValueError('Invalid cached inference inputs')
     return x
+def observation(row):return observation_by_token(row['token'])
 def conditioning(payload,device='cuda'):
     import torch
     from transformers.feature_extraction_utils import BatchFeature
@@ -57,7 +60,10 @@ def conditioning(payload,device='cuda'):
     status=f['status_feature'].to(device=device,dtype=torch.float32)
     return payload['tokens'].to(device=device,dtype=torch.float32),BatchFeature(dict(history_trajectory=history,his_traj=history.reshape(-1,12),
         status_feature=status,high_command_one_hot=f['high_command_one_hot'].to(device),state=torch.cat((status,history.reshape(-1,12)),1)))
+@lru_cache(maxsize=1)
+def gt_bank():
+    import torch
+    return torch.load(ROOT/'supervision/train_gt.pt',map_location='cpu',weights_only=False)
 def gt(row):
-    from tools.training.simscale_sft.common import targets_from_frames
-    with open(row['metadata_path'],'rb') as f:frames=pickle.load(f)
-    return targets_from_frames(frames[row['start_idx']:row['start_idx']+row['frame_count']])
+    if row['split']!='navtrain' or row['token'] not in gt_bank():raise ValueError('GT requested outside registered training membership')
+    return gt_bank()[row['token']]
