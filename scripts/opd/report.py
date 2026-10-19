@@ -122,6 +122,14 @@ def full():
     env_body+=f"\n## 最终资源与数据身份\n\n真实核验{hardware['unique_A800_devices']}张互异A800，主机为"+', '.join(hardware['hosts'])+'。逐主机CUDA/驱动/PyTorch环境与GPU UUID见tables/audit_hardware_hosts.json。原工作区未提交修改保留，研究在独立worktree中进行，原有ReCogDrive默认源码未改动。\n\n'
     env_body+='版本化索引位于configs/opd/splits，含训练4115、校准518、开发1696、官方测试12146个精确有序场景；206个源log的字节哈希已核验。driver_record保留车辆标识，另以更保守的capture timestamp检查跨用途重叠，均无交集。真实新目录重建已逐字段、逐顺序核验，不依赖旧研究输出manifest。原始数据、图像、GT及大缓存均不进git。\n'
     env_path.write_text(env_body)
+    matrix_path=ROOT/'tests/final_matrix.json'
+    if matrix_path.exists():
+        matrix=read(matrix_path);assert matrix['passed']
+        path=REPORTS/'03_algorithm_validation.md';body=path.read_text().split('\n## 最终分级验收')[0]
+        body+=f"\n## 最终分级验收\n\nCPU无权重测试：{matrix['CPU']}。T01–T28全部PASS，完整逐项证据与真实集成结果哈希见tables/tests_final_matrix.json。真实checkpoint/场景验证包含官方原始前向契约、两种采样分支、批量与逐场景、2卡DDP、OPD与GRPO连续/中断恢复、真实训练后学生独立在线推理。\n\n"
+        body+='G0/G1通过；七个256场景资格训练及518场景校准评测通过数值与预登记灾难性门禁G2。G3/G4矩阵真实完成，但研究结论按PDMS区间判断，并非数值测试通过就支持算法。G5仅真实工程集成通过；E5开发增益未过门槛，正式E6为NOT_RUN。\n\n'
+        body+='历史首轮G0任务中的GRPO低分诊断因E0标签尚未生成而失败，依赖调整后实际通过；原失败退出与CPU控制器交接保留在资源账目，没有放宽断言。30项CPU通过不替代真实评测，未运行的KL/时间步加权性能消融不列为研究成功。\n'
+        path.write_text(body)
     tuning=read(ROOT/'selection/tuning.json');gate=read(ROOT/'gates/static.json');admission=e6_admission();tables('dev')
     source=read(ROOT/'audit/official_model_sources.json');assert source['passed']
     audit_path=REPORTS/'02_checkpoint_audit.md';body=audit_path.read_text().split('\n## 官方模型来源')[0]
