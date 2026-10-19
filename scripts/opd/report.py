@@ -104,6 +104,13 @@ def tables(split):
 def full():
     REPORTS.mkdir(parents=True,exist_ok=True);d=read(ROOT/'analysis/formal_dev.json');b=read(ROOT/'analysis/baseline_dev.json');g=read(ROOT/'analysis/G2.json')
     tuning=read(ROOT/'selection/tuning.json');gate=read(ROOT/'gates/static.json');admission=e6_admission();tables('dev')
+    source=read(ROOT/'audit/official_model_sources.json');assert source['passed']
+    audit_path=REPORTS/'02_checkpoint_audit.md';body=audit_path.read_text().split('\n## 官方模型来源')[0]
+    body+='\n## 官方模型来源\n\n本地三个权重文件的实际SHA256均与公开发布文件的LFS SHA256完全相符；固定发布revision如下：\n\n'
+    for label,r in source['records'].items():body+=f"- {label}：[固定发布文件]({r['pinned_source']})，revision `{r['revision']}`，SHA256 `{r['sha256']}`。\n"
+    comparison=read(ROOT/'audit/RL_reference_comparison.json')
+    body+=f"\nIL/RL共有{comparison['IL_active_tensors']}个活动张量，{comparison['changed_active_tensors']}个活动张量不同；RL old_policy与IL逐张量完全相同。教师只加载活动头。历史VLM训练身份不能由仅动作头checkpoint证明，本研究显式采用同一冻结官方VLM。\n"
+    audit_path.write_text(body)
     has_test=(ROOT/'analysis/formal_navtest.json').exists()
     if has_test:tables('navtest')
     contrast=d['contrasts'];q1a=support(contrast['E3_vs_E1']['PDMS']);q1b=support(contrast['E3_vs_E2']['PDMS']);transfer=support(d['methods']['E3']['metrics']['G'])

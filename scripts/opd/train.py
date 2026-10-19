@@ -35,6 +35,8 @@ def main():
     anchor_weight=a.anchor_weight if a.anchor_weight is not None else defaults['anchor']
     il_weight=a.il_weight if a.il_weight is not None else defaults['il']
     if a.stage in ('tune','train'):
+        if sha(SOURCE/'configs/opd/protocol.yaml')!=read(ROOT/'protocol.lock.json')['sha256'] or sha(ROOT/'protocol.yaml')!=read(ROOT/'protocol.lock.json')['sha256']:
+            raise ValueError('Locked scientific protocol changed')
         if read(ROOT/'analysis/G2.json')['status']!='PASS':raise ValueError('Real-data qualification has not passed')
         weights=read(ROOT/'calibration/gradient_scales.json')['weights']
         if anchor_weight!=weights['anchor'] or il_weight!=weights['il']:raise ValueError('Locked auxiliary scale calibration changed')

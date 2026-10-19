@@ -1440,15 +1440,15 @@ splits:
     train:
       scenes: 4115
       logs: 50
-      sha256: e3292aae30586c02e6c0df62639a0dd3e9bfc58b55a6c5662ec4654e0bfaee1f
+      sha256: 3630e5eb39b8de72300edbe5544611df6d5991473e81c0249306ae7d763c8e55
     cal:
       scenes: 518
       logs: 4
-      sha256: 10488343ac654799c109e80bf09d26da6b49e4fc4210e7e3dba53c13c87a82c3
+      sha256: 158a70d820ca8d0eea8138eaef9f69556616f746bab077392fb683acd0dbc7e5
     dev:
       scenes: 1696
       logs: 16
-      sha256: f9552d196d8973a6cfd1f182702b777198012f9fe60d51acee08c039e75eea53
+      sha256: 7793321e859e13c6e5740031b69869e4954fb99c3a5b81d62ee1384224eafeb3
   source: /mnt/project/VLA-AD/outputs/trajectory_effect_validation_20261019/manifests
   source_checkpoint: frozen VLM encoding; the action projection is not cached
   caveat: All splits are official navtrain; held out from this new training, potentially
@@ -1466,8 +1466,50 @@ qualification:
   seed: 42
   G2_guard: Each method must have complete finite full D_cal scores; stop method if
     mean PDMS falls by0.10 versus IL. Independent phases admitted per-method.
+  measured_cost:
+    audit: 30.4198086168617
+    native_batch:
+      passed: true
+      scenes:
+      - cc9b708a380b5a8a
+      - aa43f9c9b3c455ae
+      - c69a254de93354b6
+      - f725a2d2887a585e
+      - 26a52620df02526b
+      - 5170c41411905efc
+      - 8c092e4cc00550ec
+      - 435f2d256b665354
+      native_future_poison_error: 0.0
+      max_state_error: 5.602836608886719e-06
+      max_mean_error: 5.5730342864990234e-06
+      max_trajectory_error: 4.291534423828125e-06
+      relative_gradient_error: 4.9905835675667985e-05
+      batched_loss: 5.0178179662907496e-05
+      scalar_loss: 5.0179097797808936e-05
+      batched_seconds: 2.8519373796880245
+      scalar_seconds: 6.773942204192281
+      peak_gpu_bytes: 6482605056
+      owner:
+        host: training-rl-zt2
+        pid: 1681861
+        start_ticks: 1379278767
+        code_sha: 3fa2fc68515be7f01190e45f35834b7c9b0d7d9d
+        time: 1792435123.3553224
+      scope: Batching validation; not PDMS evidence
+    parallel:
+      passed: true
+      scenes: 16
+      model_scene_pairs: 64
+      processes_per_gpu: 4
+      trajectory_max_error: 0.0
+      canonical_score_max_error: 0.0
+      serial_seconds: 62.34045219421387
+      parallel_seconds: 34.93228888511658
+      speedup: 1.7846082860254526
+      scope: Independent native batch1 outputs, corrected official observations, no
+        numerical changes
 tuning:
-  methods: &id001
+  methods:
   - E1
   - E2
   - E3
@@ -1481,10 +1523,19 @@ tuning:
   - 1.0e-05
   - 3.0e-05
   selection: Full D_cal mean PDMS, lower LR on exact ties
-  auxiliary_weights: Recompute with identical pre-registered fit-only gradient-scale
-    rule
+  auxiliary_weights:
+    anchor: 0.11228771859776292
+    il: 0.02078079810488177
+  auxiliary_calibration_record_sha256: dc61b467309340ec20db18162e116223332ffdcea82091adce58a94c06380d78
 formal:
-  methods: *id001
+  methods:
+  - E1
+  - E2
+  - E3
+  - E4-A
+  - E4-B
+  - E4-C
+  - E5
   seeds:
   - 42
   - 43

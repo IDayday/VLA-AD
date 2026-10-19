@@ -20,6 +20,14 @@ def resume():
     assert a['step']==b['step']==4 and all(fields.values()),fields
     write(ROOT/'tests/real_resume_v2.json',dict(passed=True,fields=fields,policy_probe_recording_enabled=True,scope='Continuous4 vs2+resume2; actual corrected observations'))
 
+def grpo_resume():
+    import torch
+    a,b=[torch.load(ROOT/'runs'/name/'latest.pt',map_location='cpu',weights_only=False) for name in ['E6_resume_full','E6_resume_split']]
+    fields={k:equivalent(a[k],b[k]) for k in ['full_student','optimizer','torch_rng','cuda_rng','numpy_rng','python_rng','forward_counts']}
+    assert a['step']==b['step']==4 and all(fields.values()),fields
+    assert a['forward_counts']['teacher_examples']>0 and a['forward_counts']['reference_examples']>0
+    write(ROOT/'tests/real_grpo_resume.json',dict(passed=True,fields=fields,forward_counts=a['forward_counts'],scope='Native DiffGRPO/OPD continuous4 vs2+resume2 actual optimizer updates, exact full state'))
+
 def ddp():
     import torch
     a,b=[torch.load(ROOT/'runs'/name/'latest.pt',map_location='cpu',weights_only=False) for name in ['ddp_smoke_single','ddp_smoke_fixed']]
@@ -85,4 +93,4 @@ def parallel():
     write(ROOT/'resources/evaluation_concurrency.json',dict(parity_passed=True,processes_per_gpu=4,trajectory_max_error=0.,canonical_score_max_error=0.,evidence=str(ROOT/'tests/real_parallel_inference.json'),enabled=time.time()))
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('action',choices=['resume','ddp','gt_parity','auxiliary','shared_lock','parallel']);a=p.parse_args();globals()[a.action]()
+    p=argparse.ArgumentParser();p.add_argument('action',choices=['resume','grpo_resume','ddp','gt_parity','auxiliary','shared_lock','parallel']);a=p.parse_args();globals()[a.action]()

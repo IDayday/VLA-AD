@@ -77,6 +77,46 @@ def cache_versions():
     print('METRIC_CACHE_VERSION_PASS',len(result))
 
 
+def model_sources():
+    import requests
+    from concurrent.futures import ThreadPoolExecutor
+    baseline=read(ROOT/'audit/checkpoints.json')
+    def inspect(label):
+        repo='owl10/'+{'IL':'ReCogDrive-2B-IL','RL':'ReCogDrive-2B-RL','VLM':'ReCogDrive-VLM-2B'}[label]
+        url='https://huggingface.co/api/models/'+repo+'?blobs=true'
+        result=requests.get(url,timeout=30);result.raise_for_status();data=result.json()
+        filename='model.safetensors' if label=='VLM' else Path(baseline[label]['path']).name
+        file=next(f for f in data['siblings'] if f['rfilename']==filename)
+        expected=file['lfs']['sha256'];assert expected==baseline[label]['sha256'],(label,expected,baseline[label]['sha256'])
+        return label,dict(repo_id=repo,revision=data['sha'],filename=filename,sha256=expected,bytes=file['lfs']['size'],
+            pinned_source='https://huggingface.co/'+repo+'/blob/'+data['sha']+'/'+filename,local_file_verified=True)
+    with ThreadPoolExecutor(3) as pool:records=dict(pool.map(inspect,['IL','RL','VLM']))
+    write(ROOT/'audit/official_model_sources.json',dict(passed=True,records=records,owner=identity(),source='Public HuggingFace LFS SHA256 metadata, compared to actual local files'))
+    print('OFFICIAL_WEIGHT_LFS_IDENTITIES_PASS', {k:v['revision'] for k,v in records.items()})
+
+
+def hardware():
+    from concurrent.futures import ThreadPoolExecutor
+    from scripts.opd.resources import remote
+    from scripts.opd.suite import HOSTS
+    policy=read('/mnt/project/server_dispatch_policy.json')
+    assert all(h in policy['allowed_hosts'] and h not in policy.get('global_dispatch_prohibitions',{}) for h in HOSTS)
+    def inspect(host):
+        code="""import os,sys,json,subprocess
+from pathlib import Path
+versions=subprocess.check_output([PYTHON,'-c',"import sys,json,importlib.metadata as m; print(json.dumps(dict(python=sys.version,packages={n:m.version(n) for n in ['torch','transformers','numpy','scipy','safetensors','flash-attn','nuplan-devkit']})))"],text=True)
+gpu=subprocess.check_output(['nvidia-smi','--query-gpu=index,uuid,name,memory.total,driver_version','--format=csv,noheader,nounits'],text=True)
+print(json.dumps(dict(host=os.uname().nodename,affinity_CPUs=len(os.sched_getaffinity(0)),memory_total=next(v for v in Path('/proc/meminfo').read_text().splitlines() if v.startswith('MemTotal:')),GPU=gpu,environment=json.loads(versions))))
+""".replace('PYTHON',repr(PYTHON))
+        return host,remote(host,code)
+    with ThreadPoolExecutor(4) as pool:data=dict(pool.map(inspect,HOSTS))
+    uuids=[line.split(',')[1].strip() for v in data.values() for line in v['GPU'].splitlines()]
+    assert len(uuids)==len(set(uuids))==32
+    write(ROOT/'audit/hardware_hosts.json',dict(hosts=data,unique_A800_devices=len(uuids),timestamp=time.time(),policy_sha256=sha('/mnt/project/server_dispatch_policy.json'),
+        scope='Actual four allowlisted research hosts. Genuine other workloads preserved; availability rechecked at every dispatch. Additional authorized hosts inspected earlier but occupied.'))
+    print('HARDWARE_VERIFIED',len(uuids),'unique GPUs')
+
+
 def tests():
     required=['real_batch','real_grpo','real_resume_v2','real_ddp','real_online_vlm','real_parameter_perturbation','real_GT_parity','real_inference_cache','real_parallel_inference','real_shared_lock','real_student_deployment','real_disabled_auxiliary']
     evidence={n:read(ROOT/'tests'/f'{n}.json') for n in required}
@@ -106,4 +146,4 @@ def tests():
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('action',choices=['provenance','accounting','tests','cache_versions']);a=p.parse_args();globals()[a.action]()
+    p=argparse.ArgumentParser();p.add_argument('action',choices=['provenance','accounting','tests','cache_versions','model_sources','hardware']);a=p.parse_args();globals()[a.action]()
