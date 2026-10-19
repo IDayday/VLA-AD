@@ -18,6 +18,13 @@ def support(v,material=.002):
     return 'INCONCLUSIVE'
 
 
+def mitigation(c):
+    reduction={k:-c['M_minus'][kk] for k,kk in [('estimate','estimate'),('lower95','upper95'),('upper95','lower95')]}
+    status=support(reduction,.0005)
+    if c['PDMS']['lower95']<-.002 and status=='SUPPORTED':status='INCONCLUSIVE'
+    return dict(status=status,M_minus_reduction=reduction,PDMS_difference=c['PDMS'])
+
+
 def evidence_sections(data):
     text='\n\n## 数值诊断、失败案例与解释边界\n\n'
     text+='先对每个策略、每个场景的五个推理种子求均值，再计算相对IL的G、M_plus、M_minus。先对每个策略截正/负，再跨训练种子平均。单次输出零分率与五次均值零分率分列。区间按完整log、训练种子和配对推理种子bootstrap，未经多重比较校正。\n\n'
@@ -118,12 +125,17 @@ def full():
     e3=d['methods']['E3']['metrics'];forget='SUPPORTED' if e3['M_minus']['lower95']>0 else 'INCONCLUSIVE'
     anchored={}
     for e in ['E4-A','E4-B','E4-C','E5']:
-        c=contrast[e+'_vs_E3'];reduction={k:-c['M_minus'][kk] for k,kk in [('estimate','estimate'),('lower95','upper95'),('upper95','lower95')]}
-        status=support(reduction,.0005)
-        if c['PDMS']['lower95']<-.002 and status=='SUPPORTED':status='INCONCLUSIVE'
-        anchored[e]=dict(status=status,M_minus_reduction=reduction,PDMS_difference=c['PDMS'])
+        anchored[e]=mitigation(contrast[e+'_vs_E3'])
     statuses=dict(Q1=q1,E3_vs_E1=q1a,E3_vs_E2=q1b,E3_transfer_vs_IL=transfer,Q2_OPD_forgetting=forget,
-        Q2_mitigation=anchored,Q3_teacher_ceiling=e6_status())
+        Q2_mitigation=anchored,Q3_teacher_ceiling=e6_status(),primary_scope='Fixed1696-scene dev main analysis; independent navtest confirmation reported separately')
+    if has_test:
+        td=read(ROOT/'analysis/formal_navtest.json');tc=td['contrasts']
+        confirmation=dict(E3_vs_E2=support(tc['E3_vs_E2']['PDMS']),E3_transfer_vs_IL=support(td['methods']['E3']['metrics']['G']),
+            mitigation={e:mitigation(tc[e+'_vs_E3']) for e in ['E4-A','E4-B','E4-C','E5'] if e+'_vs_E3' in tc})
+        statuses['navtest_confirmation']=confirmation
+        statuses['Q1_stable_extra_value']='SUPPORTED' if q1=='SUPPORTED' and confirmation['E3_vs_E2']=='SUPPORTED' and confirmation['E3_transfer_vs_IL']=='SUPPORTED' else (
+            'NOT_SUPPORTED' if q1b==confirmation['E3_vs_E2']=='NOT_SUPPORTED' else 'INCONCLUSIVE')
+        statuses['combined_decision_note']='Conservative cross-split consistency description, not a new significance test or pooled curve; original dev decisions and thresholds retained'
     write(ROOT/'analysis/conclusions.json',statuses)
     result_lines=['|实验|开发集 PDMS（95% CI）|相对 IL 的 G（95% CI）|M+|M−|单次零分比例|','|---|---:|---:|---:|---:|---:|']
     for n in ['E0-IL','E0-RL','E0-COPY']:
@@ -163,11 +175,13 @@ RL 相对 IL 的 M_minus={interval(b['paired_RL_vs_IL']['M_minus'])}，{b['teach
     if has_test:
         td=read(ROOT/'analysis/formal_navtest.json');tb=read(ROOT/'analysis/baseline_navtest.json')
         test_text=f"官方 navtest {td['scenes']} 场景、{td['logs']} 个 log；精确匹配仓库官方 token 清单。IL={tb['components']['E0-IL']['PDMS']:.6f}，RL={tb['components']['E0-RL']['PDMS']:.6f}。"+' '.join(f"{e} PDMS={interval(v['metrics']['PDMS'])}，G={interval(v['metrics']['G'])}。" for e,v in td['methods'].items())+' 修正批次所有候选在锁定cal选择后一次性确认，测试结果不反向修改方案。工程修正前曾查看无效v1测试基线均值；未查看v1方法测试聚合。此数据接触限制与修正原因在08报告披露。'
+        test_text+='\n\n关键测试配对差：'+'；'.join(f"{key}：PDMS差={interval(v['PDMS'])}，M_minus差={interval(v['M_minus'])}" for key,v in td['contrasts'].items())+'。'
+        test_text+=f"\n\n开发主分析与测试确认分别保留，不合并曲线。跨两个split的稳定额外价值描述为 **{statuses['Q1_stable_extra_value']}**；测试OPD/KD状态={statuses['navtest_confirmation']['E3_vs_E2']}。一致性描述沿用相同实质性门槛，不是新增显著性检验。"
     report=f"""# ReCogDrive On-Policy Distillation 完整研究报告
 
 ## 研究结论
 
-Q1（学生链 OPD 优于轨迹 SFT 和教师链 KD）：**{q1}**。E3−E1={interval(contrast['E3_vs_E1']['PDMS'])}；E3−E2={interval(contrast['E3_vs_E2']['PDMS'])}；E3 相对 IL 增益={interval(e3['G'])}。优势、绝对能力迁移和训练损失下降分别判断。
+Q1（固定开发集主分析：学生链 OPD 优于轨迹 SFT 和教师链 KD）：**{q1}**。E3−E1={interval(contrast['E3_vs_E1']['PDMS'])}；E3−E2={interval(contrast['E3_vs_E2']['PDMS'])}；E3 相对 IL 增益={interval(e3['G'])}。优势、绝对能力迁移和训练损失下降分别判断；独立测试确认及跨split稳定性在后文单列。
 
 Q2（已有 IL 能力受损）：**{forget}**。E3 的 M_minus={interval(e3['M_minus'])}，独立高分保持率={interval(e3['stable_high_retention'])}。Anchor/GT/gate 的具体缓解结论分别列于下表和遗忘报告，不由平均分替代。
 
