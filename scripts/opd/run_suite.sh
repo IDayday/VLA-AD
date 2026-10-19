@@ -4,7 +4,7 @@ cd "$(dirname "$0")/../.."
 OPD_PYTHON="${OPD_PYTHON:-/root/miniconda3/envs/navsim/bin/python}"
 case "${1:-check}" in
   check)
-    "$OPD_PYTHON" -m pytest tests/opd -q --junitxml=/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/tests/cpu.xml
+    "$OPD_PYTHON" -m pytest tests/opd -q --junitxml=${OPD_RUN_ROOT:-/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2}/tests/cpu.xml
     "$OPD_PYTHON" scripts/opd/final_audit.py tests
     ;;
   formal) "$OPD_PYTHON" scripts/opd/suite.py formal ;;

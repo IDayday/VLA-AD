@@ -2,7 +2,7 @@
 
 工作目录：`/mnt/project/VLA-AD/research/recogdrive-opd-20261020`。
 解释器：`/root/miniconda3/envs/navsim/bin/python`。
-产物根目录：`/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020`。权重、完整日志、候选与输入缓存不进 git。
+有效产物根目录：`/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2`。权重、完整日志、候选与输入缓存不进 git。
 
 ```bash
 PY=/root/miniconda3/envs/navsim/bin/python
@@ -32,7 +32,7 @@ $PY scripts/opd/calibrate.py
 $PY scripts/opd/suite.py formal
 $PY scripts/opd/analyze.py --suite E0-E6 --split dev
 $PY scripts/opd/inputs.py manifest
-$PY scripts/opd/inputs.py extract --split navtest --rank 0 --shards 14 --with-metrics
+$PY scripts/opd/inputs.py extract --split navtest --rank 0 --shards 32
 $PY scripts/opd/suite.py test
 $PY scripts/opd/train.py --exp E6 --stage smoke --variant IL_JOINT
 ```
@@ -42,3 +42,59 @@ $PY scripts/opd/train.py --exp E6 --stage smoke --variant IL_JOINT
 训练保存 optimizer、Python/NumPy/Torch/CUDA RNG、数据游标、完整场景顺序、实际学生链及固定噪声 probe。SIGUSR1 请求在当前更新完成后保存暂停；用同名参数加 `--resume` 恢复。已有完成标记的任务禁止覆盖。真实连续与中断恢复已独立比较参数和优化器状态。
 
 压力脚本仅可按 `/proc` 命令、PID 与 start ticks 确认为已知压力 worker 后停止；真实他人工作不可终止。调度前重新读取 `/mnt/project/server_dispatch_policy.json` 并检查 GPU 实际空闲，结束后恢复本任务添加的 pause 标记。资源操作不改变科学协议。
+
+## 官方前向契约与统一修正批次
+
+首轮父目录中的 v1 是INVALID，只保留审计历史。不要将其权重、gate、教师chain或hidden states放入official_v2。物理metric cache和训练GT可复用。`base.yaml`中的official_conditioning必须为true，缓存的observation_contract及protocol_sha256会强制校验。
+
+官方参考源码位于父目录references/official_recogdrive，HEAD必须是5831ee83c7a6a40bf6919715b96b0e9ba2b48335；仅审计使用。缺少时：
+
+```bash
+REF=/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/references/official_recogdrive
+git clone --filter=blob:none --no-checkout https://github.com/xiaomi-research/recogdrive "$REF"
+git -C "$REF" sparse-checkout set navsim/agents/recogdrive scripts/evaluation docs
+git -C "$REF" checkout 5831ee83c7a6a40bf6919715b96b0e9ba2b48335
+$PY scripts/opd/official_parity.py
+```
+
+Python3.9审计加载器只对官方模块推迟类型注解，不修改参考文件或数值运算。正式编码使用本仓库OPD显式兼容层，不依赖导入官方包。
+
+实际修正编排命令：
+
+```bash
+$PY scripts/opd/prepare_data.py --manifest-only
+$PY scripts/opd/inputs.py manifest
+# 每个rank必须有独立合法GPU分配；一份manifest的全部32个rank均执行
+$PY scripts/opd/inputs.py extract --split all --rank 0 --shards 32
+$PY scripts/opd/official_rerun.py
+$PY scripts/opd/suite.py confirm
+$PY scripts/opd/suite.py e6
+```
+
+`official_rerun.py`等待名为official_inputs_0..31的真实资源任务完成，依次运行真实G0/G1、DDP/resume/在线一致性、teacher bank和E0、tiny、梯度尺度、两槽位调参、21个正式训练。它通过resources.launch和每次读取的live策略分配任务；不能绕过现有完成标记覆盖已完成结果。输入任务的实际jobs/spec.json可直接复查命令。新复现根目录须先建立相同的baseline SHA身份、protocol.registration.json和calibration/registration.json，再按这些任务规格执行；它们都随报告小体积证据和锁定protocol交付，不能用旧实验结果当新证据。
+
+统计与最终审计：
+
+```bash
+$PY scripts/opd/analyze.py --phase baseline --split dev
+$PY scripts/opd/analyze.py --split dev
+$PY scripts/opd/analyze.py --phase baseline --split navtest
+$PY scripts/opd/analyze.py --split navtest
+$PY scripts/opd/additional_statistics.py --split dev
+$PY scripts/opd/diagnostics.py chains
+$PY scripts/opd/diagnostics.py gradients
+$PY scripts/opd/gate_diagnostics.py register
+$PY scripts/opd/gate_diagnostics.py analyze
+$PY scripts/opd/figures.py --split dev --cases
+$PY scripts/opd/figures.py --split navtest
+$PY scripts/opd/certify.py models
+$PY scripts/opd/certify.py evaluation --split dev
+$PY scripts/opd/certify.py evaluation --split navtest
+$PY scripts/opd/final_audit.py provenance
+$PY scripts/opd/final_audit.py cache_versions
+$PY scripts/opd/final_audit.py tests
+$PY scripts/opd/report.py
+$PY scripts/opd/export.py
+```
+
+训练描述集gate_diagnostics的评测需要先对注册manifest运行E3/E5三种子evaluate；不得把训练描述集混称dev泛化。完整每场景文件路径均由manifest和artifact_index给出。

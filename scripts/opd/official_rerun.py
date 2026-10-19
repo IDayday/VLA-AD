@@ -20,8 +20,11 @@ def bundle(name,commands):
 def qualify():
     for i in range(32):wait_job(f'official_inputs_{i}')
     call('scripts/opd/prepare_data.py')
-    run_queue([('G0_G1_audit',[
-        ['scripts/opd/audit.py'],['scripts/opd/validate.py','--mode','batch'],['scripts/opd/validate.py','--mode','grpo'],
+    if not (ROOT/'audit/gates.json').exists():
+        run_queue([('G0_G1_audit',[
+            ['scripts/opd/audit.py'],['scripts/opd/validate.py','--mode','batch']])])
+    assert read(ROOT/'audit/gates.json')['G0'] and read(ROOT/'audit/gates.json')['G1']
+    run_queue([('G0_G1_completion',[
         ['scripts/opd/validate.py','--mode','perturb'],['scripts/opd/verify_integrations.py','auxiliary']])])
     serial=['scripts/opd/evaluate.py','--exp','E0','--name','E0_serial_profile','--split','cal','--limit','16','--serial','--workers','1']
     parallel=bundle('profile_parallel',[['scripts/opd/evaluate.py','--exp','E0','--name','E0_parallel_profile','--split','cal',
@@ -58,6 +61,9 @@ def banks():
                 '--rank',str(rank*4+k),'--shards',str(groups*4),'--workers','1'] for k in range(4)])]))
     run_queue(tasks)
     call('scripts/opd/build_advantage_gate.py')
+    # This check deliberately selects a real low-scoring training observation;
+    # it depends on E0 labels and must not precede bank construction.
+    run_queue([('GRPO_real_low_score',[['scripts/opd/validate.py','--mode','grpo']])])
 
 def lock_protocol():
     import yaml
