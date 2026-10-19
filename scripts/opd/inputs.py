@@ -78,10 +78,17 @@ def metric(row):
 
 
 def prepare_manifest():
+    import yaml
     source=Path('/mnt/project/VLA-AD/outputs/simscale_sft_20260918/manifests/navtest.json');data=read(source)
+    official=SOURCE/'navsim/planning/script/config/common/train_test_split/scene_filter/navtest.yaml'
+    declared=yaml.safe_load(official.read_text())
+    assert len(data)==len(declared['tokens']) and {r['token'] for r in data}==set(declared['tokens'])
+    assert {r['log_name'] for r in data}<=set(declared['log_names'])
     registered=sum([rows(s) for s in ('train','cal','dev')],[])
     for key in ('token','log_name'):
         assert not ({r[key] for r in data}&{r[key] for r in registered})
+    parent=lambda r:r['log_name'].split('_')[0]
+    assert not ({parent(r) for r in data}&{parent(r) for r in registered})
     for r in data:
         assert r['split']=='navtest' and r['frame_count']==14 and r['observation_seconds']==5.
         r['observation_path']=str(ROOT/'observations/navtest'/f"{r['token']}.pt")
@@ -90,6 +97,7 @@ def prepare_manifest():
     if target.exists() and read(target)!=data:raise ValueError('Test population changed')
     write(target,data);write(ROOT/'manifests/navtest_identity.json',dict(source=str(source),source_sha256=sha(source),sha256=sha(target),
         scenes=len(data),logs=len({r['log_name'] for r in data}),purpose='Official fixed test inputs only; no gate, training or selection',
+        official_filter=str(official),official_filter_sha256=sha(official),exact_official_token_membership=True,
         historical_frames=4,privileged_metric_path_separate=True))
 
 

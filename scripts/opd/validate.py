@@ -128,5 +128,23 @@ def grpo():
         formal_E6=False,owner=identity(),scope='Real integration only; not a teacher-ceiling performance experiment'))
     print('REAL_GRPO_PASS',gn_grpo,gn_opd,norm,flush=True)
 
+
+def perturb():
+    import torch
+    from navsim.agents.recogdrive.opd.checkpoint_io import build_head,state_hash
+    from navsim.agents.recogdrive.opd.ddim_adapter import DDIMAdapter
+    from navsim.agents.recogdrive.opd.losses import transition_loss
+    configure();cfg=config();r=rows('train')[0];tokens,inputs=conditioning(observation(r))
+    s=build_head(cfg['student_init']);t=build_head(cfg['student_init'],frozen=True);before=state_hash(t)
+    seeds(8231);chain=DDIMAdapter(s).sample(tokens,inputs)
+    with torch.no_grad():target=DDIMAdapter(t).evaluate_chain(chain,tokens,inputs)
+    original=transition_loss(DDIMAdapter(s).evaluate_chain(chain,tokens,inputs),target)[0]
+    assert float(original)==0.
+    parameter=next(p for n,p in s.named_parameters() if p.requires_grad and n.startswith('model.') and p.ndim==2)
+    with torch.no_grad():parameter.add_(torch.randn_like(parameter)*.001)
+    changed=transition_loss(DDIMAdapter(s).evaluate_chain(chain,tokens,inputs),target)[0]
+    assert float(changed)>1e-12 and state_hash(t)==before
+    write(ROOT/'tests/real_parameter_perturbation.json',dict(passed=True,identical_loss=float(original),perturbed_loss=float(changed),teacher_unchanged=True,owner=identity()))
+
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--mode',choices=['batch','grpo','cache'],required=True);a=p.parse_args();globals()[a.mode]()
+    p=argparse.ArgumentParser();p.add_argument('--mode',choices=['batch','grpo','cache','perturb'],required=True);a=p.parse_args();globals()[a.mode]()

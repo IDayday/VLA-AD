@@ -107,7 +107,8 @@ def formal(split='dev'):
     cfg=config();il=bank(split,'E0','IL');rl=bank(split,'E0','RL');screen=bank(split,'E0','IL_screen')
     logs=[r['log_name'] for r in rows(split)];stable=(screen[...,-1]>=cfg['high_threshold']).all(-1)
     result={};arrays={}
-    for exp in EXPERIMENTS:
+    experiments=read(ROOT/'selection/navtest.json')['methods'] if split=='navtest' else EXPERIMENTS
+    for exp in experiments:
         value=np.stack([bank(split,f'train_{exp}_{seed}') for seed in cfg['train_seeds']]);arrays[exp]=value
         metrics=bootstrap(value,il,logs,stable,cfg['bootstrap_replicates'])
         j=value[...,-1].mean(-1);rj=rl[...,-1].mean(-1);ij=il[...,-1].mean(-1)
@@ -120,6 +121,7 @@ def formal(split='dev'):
             both_zero_student_improved=int(((ij[None]<=1e-12)&(rj[None]<=1e-12)&(j>.02)).sum()))
     contrasts={}
     for a,b in [('E3','E1'),('E3','E2'),('E4-A','E3'),('E4-B','E3'),('E4-C','E3'),('E5','E3'),('E5','E4-C')]:
+        if a not in arrays or b not in arrays:continue
         contrasts[a+'_vs_'+b]=compare(arrays[a],arrays[b],il,logs,stable,cfg['bootstrap_replicates'])
     write(ROOT/'analysis'/f'formal_{split}.json',dict(status='COMPLETE',split=split,scenes=len(il),logs=len(set(logs)),methods=result,contrasts=contrasts,
         interval_unit='Paired complete logs, independent training seeds, paired inference seeds. Pooled scene weighting; no scene/pair pseudoreplication.',
