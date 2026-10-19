@@ -49,7 +49,7 @@ def accounting():
         spec=read(p);end=p.parent/'complete.json';failure=p.parent/'admission_failure.json'
         record=dict(name=p.parent.name,host=spec['host'],gpus=spec['gpu'],commands=spec['commands'],spec_sha256=sha(p))
         if end.exists():
-            c=read(end);record.update(status=c['status'],seconds=c['seconds'],source_hashes=c['owner']['source_hashes'])
+            c=read(end);record.update(status=c['status'],seconds=c['seconds'],returncodes=[v['returncode'] for v in c['results']],source_hashes=c['owner']['source_hashes'])
         elif failure.exists():record.update(status='NOT_LAUNCHED',reason=read(failure))
         else:record['status']='RUNNING'
         record['rejected_admission_attempts']=[read(a) for a in sorted((p.parent/'admissions').glob('*.json'))]
@@ -76,8 +76,9 @@ def resource_summary():
     write(ROOT/'audit/resource_summary.json',dict(valid_v2_GPU_hours=current['reserved_GPU_hours'],invalid_v1_GPU_hours=old_hours,
         total_GPU_hours=current['reserved_GPU_hours']+old_hours,definition=current['definition'],
         valid_v2_job_status_counts=dict(Counter(v['status'] for v in current['jobs'])),failure_names=current['failures'],failures_remain_visible=True,
+        failure_records=[{k:r[k] for k in ['name','status','commands','returncodes'] if k in r} for r in current['jobs'] if r['status'] in ['FAILED','NOT_LAUNCHED']],
         restored_pressure_automation_hosts=[v['host'] for v in restored],restoration='Only owned pause markers removed; original controllers reobserve fresh30min utilization; no custom filler started',
-        failure_explanation='Original G0_G1_audit encountered a GRPO diagnostic before E0 labels existed; repaired dependency and passed. Other recorded failures are CPU controller handoffs, with original history preserved. Full commands, exit codes and source hashes remain in accounting.json.'))
+        failure_explanation='Original G0_G1_audit encountered a GRPO diagnostic before E0 labels existed; controller_official_bootstrap_sourcefix propagated that failure. Repaired dependency and passed GRPO_real_low_score. Other failed CPU controllers have -15 handoff exits; scientific children were preserved. Full commands, exit codes and source hashes remain in accounting.json.'))
 
 
 def cache_versions():
