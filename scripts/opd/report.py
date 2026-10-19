@@ -223,6 +223,8 @@ RL 相对 IL 的 M_minus={interval(b['paired_RL_vs_IL']['M_minus'])}，{b['teach
     resources=ROOT/'audit/resource_summary.json'
     if resources.exists():
         rs=read(resources);cost_text+=f"\n无效v1仍计入工程成本：{rs['invalid_v1_GPU_hours']:.2f} GPU小时，两批累计{rs['total_GPU_hours']:.2f} GPU小时，未超过预登记128小时上限。五台主机的本任务pause标记已移除，原压力自动化恢复观察；没有终止真实他人任务。失败与CPU编排交接记录在外部accounting.json中保留，已修复的问题不从历史中删除。\n"
+    storage=ROOT/'audit/storage.json'
+    if storage.exists():cost_text+=f"\n任务输出实测表观容量{read(storage)['GiB']:.2f} GiB，包含INVALID历史与有效重跑，低于500 GiB预算；既有外部原始数据、源权重及复用训练metric cache不在该容量口径内。\n"
     report=f"""# ReCogDrive On-Policy Distillation 研究报告{'' if has_test else '（测试确认进行中）'}
 
 ## 研究结论
