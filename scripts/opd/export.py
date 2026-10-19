@@ -61,7 +61,7 @@ def main():
                  'selection/tuning.json','selection/navtest.json','selection/E6_admission.json','selection/E6_budget.json','calibration/gradient_scales.json',
                  'diagnostics/chain_distributions.json','diagnostics/policy_refresh_probes.json','diagnostics/gradients.json','diagnostics/gate_results.json',
                  'analysis/secondary_anchor_vs_GT_dev.json','analysis/teacher_comparisons_dev.json','analysis/teacher_comparisons_navtest.json','analysis/reporting_scope_registration.json',
-                 'tests/real_split_bundle.json','tests/real_statistics_projection.json','audit/online_inference_cost.json']:
+                 'tests/real_split_bundle.json','tests/real_fresh_manifest.json','tests/real_statistics_projection.json','audit/online_inference_cost.json']:
         p=ROOT/path
         if p.exists():shutil.copyfile(p,dest/(path.replace('/','_')))
     versions=sorted({f"{d.metadata.get('Name','UNKNOWN')}=={d.version}" for d in importlib.metadata.distributions()})

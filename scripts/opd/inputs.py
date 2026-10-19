@@ -94,10 +94,11 @@ def prepare_manifest():
         assert not ({r[key] for r in data}&{r[key] for r in registered})
     parent=lambda r:r['log_name'].split('_')[0]
     assert not ({parent(r) for r in data}&{parent(r) for r in registered})
+    metric_root=Path(config().get('navtest_metric_cache',str(ROOT/'metric_cache/navtest')))
     for r in data:
         assert r['split']=='navtest' and r['frame_count']==14 and r['observation_seconds']==5.
         r['observation_path']=str(ROOT/'observations/navtest'/f"{r['token']}.pt")
-        r['metric_cache_path']=str(Path(config().get('navtest_metric_cache',str(ROOT/'metric_cache/navtest')))/f"{r['token']}.pkl")
+        r['metric_cache_path']=str(metric_root/f"{r['token']}.pkl")
     target=ROOT/'manifests/navtest.json'
     if target.exists():
         from scripts.opd.splits import INPUT_KEYS

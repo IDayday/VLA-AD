@@ -9,7 +9,7 @@ from scripts.opd.analyze import EXPERIMENTS,bank
 
 def interval(v,percent=False):
     f=100 if percent else 1
-    return f"{v['estimate']*f:.4f} [{v['lower95']*f:.4f}, {v['upper95']*f:.4f}]"
+    return f"{v['estimate']*f:.6f} [{v['lower95']*f:.6f}, {v['upper95']*f:.6f}]"
 
 
 def support(v,material=.002):
