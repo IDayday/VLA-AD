@@ -36,7 +36,7 @@ def evidence_sections(data):
     p=ROOT/'diagnostics/chain_distributions.json'
     if p.exists():
         v=read(p)['training_seeds'];state=np.mean([r['records'][-1]['state_RMS'] for r in v],0);response=np.mean([r['records'][-1]['teacher_response_RMS'] for r in v],0)
-        text+='实际E2/E3训练链在共同场景和初始噪声下配对；1000步处六个状态的平均RMS差（归一化空间）为 '+str(np.round(state,6).tolist())+'；五次教师响应RMS差为 '+str(np.round(response,6).tolist())+'。学生状态变化不自动意味着最终PDMS提高。\n\n'
+        text+='实际E2/E3训练链在共同场景和初始噪声下配对；第1000次更新所用rollout（更新前θ999）的六个状态平均RMS差（归一化空间）为 '+str(np.round(state,6).tolist())+'；五次教师响应RMS差为 '+str(np.round(response,6).tolist())+'。学生状态变化不自动意味着最终PDMS提高。\n\n'
     p=ROOT/'diagnostics/gradients.json'
     if p.exists():
         records=read(p)['records'];text+='固定16个校准输入上的OPD/Anchor梯度余弦中位数：'+', '.join(f"{e}={np.median([r['cosine'] for r in records if r['experiment']==e]):.3f}" for e in ['E3','E4-A','E4-B','E4-C','E5'])+'。这只描述seed42最终模型的局部梯度关系，不能解释为某交通因素的因果作用。训练loss/梯度按25步记录，全部学生链保存；未记录点不插补为实际观测。\n\n'

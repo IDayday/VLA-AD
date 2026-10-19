@@ -19,7 +19,7 @@ def chain_distributions():
             initial=float((a['states'][:,0]-b['states'][:,0]).abs().max());assert initial==0
             state_rms=(a['states']-b['states']).square().mean((0,2,3)).sqrt()
             response_rms=(a['teacher_means']-b['teacher_means']).square().mean((0,2,3)).sqrt()
-            result.append(dict(step=step,initial_noise_max_error=initial,scene_tokens=a['scene_tokens'],
+            result.append(dict(step=step,rollout_policy_completed_optimizer_updates=step-1,initial_noise_max_error=initial,scene_tokens=a['scene_tokens'],
                 state_RMS=(a['states']-b['states']).square().mean((0,2,3)).sqrt().tolist(),
                 teacher_response_RMS=response_rms.tolist(),
                 empirical_teacher_response_to_state_ratio=[float(y/x) if float(x)>1e-12 else None for x,y in zip(state_rms[:-1],response_rms)],

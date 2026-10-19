@@ -54,7 +54,7 @@ def figures(split):
         axes[1].plot(range(6),np.mean(y,0),'o-',label='State RMS')
         response=[r['records'][-1]['teacher_response_RMS'] for r in c['training_seeds']]
         axes[1].plot(range(5),np.mean(response,0),'s--',label='Teacher response RMS');axes[1].legend()
-        axes[1].set(xlabel='Chain state index',ylabel='Normalized RMS difference',title='Same inputs/noise; teacher numeric sensitivity, not calibrated reliability')
+        axes[1].set(xlabel='Chain state index',ylabel='Normalized RMS difference',title='Rollout entering update1000; response sensitivity, not reliability')
     else:axes[1].set_axis_off()
     axes[0].set(xlabel='DDIM timestep',ylabel='Teacher/student mean MSE',yscale='log');axes[0].legend()
     fig.tight_layout();fig.savefig(REPORTS/'figures'/f'Fig3_chain_discrepancy_{split}.png');plt.close(fig)
@@ -122,7 +122,7 @@ def cases():
             for k,event_key in enumerate(event_keys):
                 event_groups={}
                 for draw,moment_all in enumerate(full[event_key].reshape(4,5)[j]):
-                    if np.isfinite(moment_all):event_groups.setdefault(float(moment_all),[]).append(1101+draw)
+                    if np.isfinite(moment_all):event_groups.setdefault(float(moment_all),[]).append(config()['inference_seeds'][draw])
                 for moment_all,draws in event_groups.items():
                     axes[2].plot(moment_all,k+(j-1.5)*.12,'.',color=color,alpha=.4,ms=5)
                     label='all5' if len(draws)==5 else ','.join(map(str,draws))
@@ -134,10 +134,10 @@ def cases():
         ax.set_aspect('equal');ax.set(xlabel='Rear-axle x (m)',ylabel='Rear-axle y (m)',title=kind+' / '+token);ax.legend()
         axes[1].set(ylim=(-.05,1.05),xlabel='Paired inference seed',ylabel='PDMS',title=f'IL={bj[i]:.3f}, RL={tj[i]:.3f}, E3={sj[i]:.3f}, E5={ej[i]:.3f}');axes[1].legend()
         axes[1].set_xticks(config()['inference_seeds'],list(map(str,config()['inference_seeds'])))
-        axes[2].set(xlim=(-.1,5.2),ylim=(-.5,2.5),xlabel='Simulated elapsed time (s)',title='First infractions: all5 draws / selected highlight')
+        axes[2].set(xlim=(-.1,5.2),ylim=(-.5,2.5),xlabel='Simulated elapsed time (s)',title='First infractions within4s: all5 / selected highlight')
         axes[2].set_xticks([0,1,2,3,4]);axes[2].axvspan(4,5.2,color='#eeeeee',alpha=.3)
         axes[2].set_yticks([0,1,2],['At-fault collision','Offroad','TTC check failure']);axes[2].grid(axis='x',alpha=.2)
-        fig.text(.01,.01,f'Faint paths: all5 draws. Thick paths: registered draw closest to mean change; dashed: tracked. Objects: current / first event {event:.1f}s, diagnostic only. TTC check failure is not time to impact.',fontsize=7)
+        fig.text(.01,.01,f'Faint: all5 draws; thick: registered representative; dashed: tracked. Objects: current / first event {event:.1f}s, diagnostic only. Shading beyond4s is unscored. TTC check failure is not time to impact.',fontsize=7)
         fig.tight_layout(rect=(0,.05,1,1));fig.savefig(REPORTS/'figures'/f'Fig7_{kind}.png');plt.close(fig)
         path=ROOT/'diagnostics/case_states'/f'{kind}.npz';path.parent.mkdir(parents=True,exist_ok=True)
         np.savez_compressed(path,simulated_states=full['simulated_states'].reshape(4,5,*full['simulated_states'].shape[1:]),requested_trajectories=all_arrays,scores=full['scores'].reshape(4,5,7))
