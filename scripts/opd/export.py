@@ -50,7 +50,7 @@ def main():
         write(ROOT/'analysis'/f'failure_counts_{split}.json',dict(scope='Counts per trained policy, not independent scene repeats; zero means five-draw scene mean<=1e-12',methods=failures))
         shutil.copyfile(ROOT/'analysis'/f'failure_counts_{split}.json',dest/f'failure_counts_{split}.json')
     if seeds:csvwrite(dest/'individual_training_seed_results.csv',seeds)
-    for path in ['audit/final_provenance.json','audit/official_model_sources.json','audit/official_forward_parity.json','audit/correction_registration.json','audit/IL_RL_tensor_comparison.json','audit/RL_reference_comparison.json','audit/formal_model_certificate.json','audit/evaluation_certificate_dev.json','audit/evaluation_certificate_navtest.json','audit/hardware_hosts.json','tests/final_matrix.json','tests/real_parallel_inference.json',
+    for path in ['audit/final_provenance.json','audit/official_model_sources.json','audit/VLM_ancillary_release_comparison.json','audit/official_forward_parity.json','audit/correction_registration.json','audit/IL_RL_tensor_comparison.json','audit/RL_reference_comparison.json','audit/formal_model_certificate.json','audit/evaluation_certificate_dev.json','audit/evaluation_certificate_navtest.json','audit/hardware_hosts.json','tests/final_matrix.json','tests/real_parallel_inference.json','tests/real_new_host.json','tests/real_grpo_resume.json','resources/navtest_routing_lock.json',
                  'selection/tuning.json','selection/navtest.json','selection/E6_admission.json','selection/E6_budget.json','calibration/gradient_scales.json',
                  'diagnostics/chain_distributions.json','diagnostics/gradients.json','diagnostics/gate_results.json']:
         p=ROOT/path

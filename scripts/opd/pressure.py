@@ -8,7 +8,7 @@ from scripts.opd.common import *
 from scripts.opd.resources import remote
 
 TAG='recogdrive-opd-20261020-official-v2'
-HOSTS=['training-vla-zt','training-rl-zt2','training-vlawm-tsinghua-zt2','training-vlawm-tsinghua-zt3']
+HOSTS=['training-vla-zt','training-rl-zt2','training-vlawm-tsinghua-zt2','training-vlawm-tsinghua-zt3','training-vlawm-tsinghua-zt5']
 
 def operate(host,action):
     policy=read('/mnt/project/server_dispatch_policy.json')

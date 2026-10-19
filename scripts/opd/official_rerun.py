@@ -40,12 +40,15 @@ def qualify():
         ('resume_v2_split',[['scripts/opd/train.py','--exp','E3','--stage','smoke','--seed','73','--name','resume_v2_split','--stop-after','2'],
             ['scripts/opd/train.py','--exp','E3','--stage','smoke','--seed','73','--name','resume_v2_split','--resume']]),
         ('ddp_single',[['scripts/opd/train.py','--exp','E3','--stage','smoke','--seed','72','--name','ddp_smoke_single']]),
+        ('E6_resume_full',[['scripts/opd/train_grpo.py','--stage','smoke','--seed','74','--name','E6_resume_full']]),
+        ('E6_resume_split',[['scripts/opd/train_grpo.py','--stage','smoke','--seed','74','--name','E6_resume_split','--stop-after','2'],
+            ['scripts/opd/train_grpo.py','--stage','smoke','--seed','74','--name','E6_resume_split','--resume']]),
     ])
     if not (ROOT/'jobs/ddp_actual_two/launch.json').exists():
         launch('ddp_actual_two','training-rl-zt2',[0,1],[['-m','torch.distributed.run','--standalone','--nproc_per_node','2',
             'scripts/opd/train.py','--exp','E3','--stage','smoke','--seed','72','--name','ddp_smoke_fixed']])
     wait_job('ddp_actual_two')
-    for action in ['parallel','resume','ddp','gt_parity','shared_lock']:call('scripts/opd/verify_integrations.py',action)
+    for action in ['parallel','resume','grpo_resume','ddp','gt_parity','shared_lock']:call('scripts/opd/verify_integrations.py',action)
     smoke=read(ROOT/'runs/E6_IL_JOINT_42_smoke/complete.json');per=smoke['seconds']/smoke['optimizer_updates']
     fitting=[n for n in [100,250,500] if n*per*9/3600<=64]
     if not fitting:raise RuntimeError('No registered E6 budget fits measured throughput')

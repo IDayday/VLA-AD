@@ -92,5 +92,18 @@ def parallel():
         serial_seconds=serial,parallel_seconds=concurrent,speedup=serial/concurrent,scope='Independent native batch1 outputs, corrected official observations, no numerical changes'))
     write(ROOT/'resources/evaluation_concurrency.json',dict(parity_passed=True,processes_per_gpu=4,trajectory_max_error=0.,canonical_score_max_error=0.,evidence=str(ROOT/'tests/real_parallel_inference.json'),enabled=time.time()))
 
+def new_host():
+    errors=[];scores=[]
+    for row in rows('cal')[:16]:
+        old=ROOT/'evaluation/cal/E0';new=ROOT/'evaluation/cal/E0_zt5_qualification'
+        with np.load(old/'predictions'/f"{row['token']}.npz") as a,np.load(new/'predictions'/f"{row['token']}.npz") as b:
+            for key in ['IL','RL','COPY','IL_screen']:
+                errors.append(float(abs(a[key]-b[key]).max()))
+                x,y=[np.asarray(read(d/'scores'/f"{row['token']}.json")['scores'][key]['scores']) for d in [old,new]]
+                scores.append(float(abs(x-y).max()))
+    assert max(errors)==max(scores)==0.,(max(errors),max(scores))
+    write(ROOT/'tests/real_new_host.json',dict(passed=True,host='training-vlawm-tsinghua-zt5',scenes=16,model_scene_pairs=64,
+        trajectory_max_error=max(errors),canonical_score_max_error=max(scores),scope='Exact native4-process cross-host routing qualification; not a new method or additional inference draws'))
+
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('action',choices=['resume','grpo_resume','ddp','gt_parity','auxiliary','shared_lock','parallel']);a=p.parse_args();globals()[a.action]()
+    p=argparse.ArgumentParser();p.add_argument('action',choices=['resume','grpo_resume','ddp','gt_parity','auxiliary','shared_lock','parallel','new_host']);a=p.parse_args();globals()[a.action]()

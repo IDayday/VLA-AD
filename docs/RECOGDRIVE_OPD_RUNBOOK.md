@@ -98,3 +98,35 @@ $PY scripts/opd/export.py
 ```
 
 训练描述集gate_diagnostics的评测需要先对注册manifest运行E3/E5三种子evaluate；不得把训练描述集混称dev泛化。完整每场景文件路径均由manifest和artifact_index给出。
+
+## 完整独立重跑入口
+
+不要在已有完成结果的目录执行初始化。下面入口会实际严格加载本地三个权重、建立固定成员manifest、运行CPU测试并派发32个真实输入任务，不生成dummy缓存：
+
+```bash
+export OPD_RUN_ROOT=/mnt/project/VLA-AD/outputs/recogdrive_opd_reproduce_NEW
+$PY scripts/opd/pressure.py pause
+$PY scripts/opd/initialize.py --dispatch-inputs
+$PY scripts/opd/official_rerun.py
+$PY scripts/opd/suite.py confirm &
+CONFIRM_PID=$!
+$PY scripts/opd/suite.py e6 &
+E6_PID=$!
+wait "$CONFIRM_PID"
+wait "$E6_PID"
+```
+
+需要先有本仓库固定split源manifest、原始NAVSIM文件/地图、真实训练metric cache以及三个正式权重。`initialize.py --verify`核验现有根目录权重身份，不能将缺失核心权重标成通过。不同根目录不会覆盖正式结果。
+
+额外的tsinghua-zt5在本次运行中空出后，先完成16个真实校准场景、四模型条件、5次采样的跨主机一致性验证，轨迹和评分误差均为0，才接入。正式测试路由锁定为40张独立A800、每GPU4个原生batch1进程、E0为80个shard（20组），每个已训练策略20个shard（5组），主测试共80个GPU任务。它只改变分片，不增加候选、采样种子或改变数值路径。科学protocol SHA不变。
+
+新根目录默认只调度初始4台主机；只有执行zt5实际资格评测并生成`tests/real_new_host.json`后才允许第五台进入自动队列。可以不启用第五台，以原32-GPU路由复现相同数值结果。不要直接复制资格JSON冒充新检查。实际新增主机命令见`jobs/qualification_zt5/spec.json`，比较命令为：
+
+```bash
+$PY scripts/opd/verify_integrations.py new_host
+$PY scripts/opd/final_audit.py hardware
+$PY scripts/opd/final_audit.py model_sources
+$PY scripts/opd/verify_integrations.py grpo_resume
+```
+
+最后确认所有实际任务完成后才执行`pressure.py resume`；只移除本任务拥有的标记，原压力自动化重新按30分钟均值观察，不启动临时填卡程序。若其他操作者已更改标记，脚本拒绝覆盖。

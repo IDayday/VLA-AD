@@ -6,7 +6,7 @@ import argparse
 from scripts.opd.common import *
 from scripts.opd.resources import launch,remote
 
-HOSTS=['training-rl-zt2','training-vla-zt','training-vlawm-tsinghua-zt2','training-vlawm-tsinghua-zt3']
+HOSTS=['training-rl-zt2','training-vla-zt','training-vlawm-tsinghua-zt2','training-vlawm-tsinghua-zt3','training-vlawm-tsinghua-zt5']
 EXPS=['E1','E2','E3','E4-A','E4-B','E4-C','E5']
 
 
@@ -19,6 +19,8 @@ def slots():
     from concurrent.futures import ThreadPoolExecutor
     policy=read('/mnt/project/server_dispatch_policy.json')
     hosts=[h for h in HOSTS if h in policy['allowed_hosts'] and h not in policy.get('global_dispatch_prohibitions',{})]
+    qualification=ROOT/'tests/real_new_host.json'
+    if not qualification.exists() or not read(qualification)['passed']:hosts=[h for h in hosts if h!='training-vlawm-tsinghua-zt5']
     def inspect(host):
         try:
             data=remote(host,"""import subprocess,json
@@ -111,16 +113,19 @@ def final_test():
         if not Path(r['observation_path']).exists() or not Path(r['metric_cache_path']).exists():raise FileNotFoundError('Test input preparation incomplete')
     routing=read(ROOT/'resources/evaluation_concurrency.json')
     if not routing['parity_passed'] or routing['processes_per_gpu']!=4:raise ValueError('Four native process routing not qualified')
+    route_path=ROOT/'resources/navtest_routing_lock.json'
+    route=read(route_path) if route_path.exists() else dict(E0_groups=8,trained_groups=2)
+    if route.get('GPU_capacity',32)>32 and not read(ROOT/'tests/real_new_host.json')['passed']:raise ValueError('Additional host not qualified')
     tasks=[]
     def bundle(name,commands):
         path=ROOT/'resources/navtest_bundles'/f'{name}.json';write(path,commands)
         tasks.append((name,[['scripts/opd/parallel.py','--spec',str(path),'--concurrency','4','--receipt',str(path.with_suffix('.receipt.json'))]]))
-    for group in range(8):
-        bundle(f'navtest_E0_{group}',[['scripts/opd/evaluate.py','--exp','E0','--split','navtest','--rank',str(group*4+k),'--shards','32','--workers','1'] for k in range(4)])
+    for group in range(route['E0_groups']):
+        bundle(f'navtest_E0_{group}',[['scripts/opd/evaluate.py','--exp','E0','--split','navtest','--rank',str(group*4+k),'--shards',str(route['E0_groups']*4),'--workers','1'] for k in range(4)])
     for e in choice['methods']:
         for s in choice['training_seeds']:
-            for group in range(2):
-                bundle(f'navtest_{e}_{s}_{group}',[['scripts/opd/evaluate.py','--exp',e,'--seed',str(s),'--split','navtest','--rank',str(group*4+k),'--shards','8','--workers','1'] for k in range(4)])
+            for group in range(route['trained_groups']):
+                bundle(f'navtest_{e}_{s}_{group}',[['scripts/opd/evaluate.py','--exp',e,'--seed',str(s),'--split','navtest','--rank',str(group*4+k),'--shards',str(route['trained_groups']*4),'--workers','1'] for k in range(4)])
     run_queue(tasks,reserve_for_e6=True);write(ROOT/'suite/navtest_complete.json',dict(status='COMPLETE',jobs=len(tasks),time=time.time()))
 
 
@@ -159,11 +164,12 @@ def e6():
         if read(target)!=selection:raise ValueError('E6 final test selection changed')
     else:write(target,selection)
     tasks=[]
+    route_path=ROOT/'resources/navtest_routing_lock.json';groups=read(route_path)['trained_groups'] if route_path.exists() else 2
     for seed in config()['train_seeds']:
-        for group in range(2):
+        for group in range(groups):
             name=f'navtest_E6_{best}_{seed}_{group}';path=ROOT/'resources/navtest_bundles'/f'{name}.json'
             write(path,[['scripts/opd/evaluate.py','--exp','E6','--name',f'E6_{best}_{seed}_train','--split','navtest',
-                '--rank',str(group*4+k),'--shards','8','--workers','1'] for k in range(4)])
+                '--rank',str(group*4+k),'--shards',str(groups*4),'--workers','1'] for k in range(4)])
             tasks.append((name,[['scripts/opd/parallel.py','--spec',str(path),'--concurrency','4','--receipt',str(path.with_suffix('.receipt.json'))]]))
     run_queue(tasks)
     while not (ROOT/'suite/navtest_complete.json').exists():time.sleep(15)
