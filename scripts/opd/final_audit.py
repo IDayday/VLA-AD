@@ -87,7 +87,21 @@ def model_sources():
         result=requests.get(url,timeout=30);result.raise_for_status();data=result.json()
         filename='model.safetensors' if label=='VLM' else Path(baseline[label]['path']).name
         file=next(f for f in data['siblings'] if f['rfilename']==filename)
-        expected=file['lfs']['sha256'];assert expected==baseline[label]['sha256'],(label,expected,baseline[label]['sha256'])
+        expected=file['lfs']['sha256'];actual_path=Path(baseline[label]['path'])
+        actual_path=actual_path/filename if actual_path.is_dir() else actual_path
+        assert expected==baseline[label]['sha256']==sha(actual_path),(label,expected,baseline[label]['sha256'])
+        if label=='VLM':
+            ancillary=[]
+            for entry in data['siblings']:
+                path=Path(baseline[label]['path'])/entry['rfilename']
+                if path.suffix not in ['.py','.json','.txt']:continue
+                if not path.is_file():
+                    if entry['rfilename'] in ['all_results.json','train_results.json','trainer_state.json']:continue
+                    raise FileNotFoundError('Missing VLM source/tokenizer/config: '+str(path))
+                payload=path.read_bytes();blob=hashlib.sha1(b'blob '+str(len(payload)).encode()+b'\0'+payload).hexdigest()
+                ancillary.append(dict(file=entry['rfilename'],official_blob=entry['blobId'],actual_blob=blob,exact=blob==entry['blobId'],sha256=sha(path)))
+            assert ancillary and all(r['exact'] for r in ancillary),'Modified VLM inference source/config/tokenizer'
+            write(ROOT/'audit/VLM_ancillary_release_comparison.json',dict(revision=data['sha'],records=ancillary,all_exact=True))
         return label,dict(repo_id=repo,revision=data['sha'],filename=filename,sha256=expected,bytes=file['lfs']['size'],
             pinned_source='https://huggingface.co/'+repo+'/blob/'+data['sha']+'/'+filename,local_file_verified=True)
     with ThreadPoolExecutor(3) as pool:records=dict(pool.map(inspect,['IL','RL','VLM']))
