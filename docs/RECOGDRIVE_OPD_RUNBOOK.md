@@ -81,6 +81,8 @@ $PY scripts/opd/analyze.py --split dev
 $PY scripts/opd/analyze.py --phase baseline --split navtest
 $PY scripts/opd/analyze.py --split navtest
 $PY scripts/opd/additional_statistics.py --split dev
+$PY scripts/opd/parent_statistics.py --split dev
+$PY scripts/opd/parent_statistics.py --split navtest
 $PY scripts/opd/diagnostics.py chains
 $PY scripts/opd/diagnostics.py gradients
 $PY scripts/opd/gate_diagnostics.py register
@@ -98,6 +100,8 @@ $PY scripts/opd/export.py
 ```
 
 训练描述集gate_diagnostics的评测需要先对注册manifest运行E3/E5三种子evaluate；不得把训练描述集混称dev泛化。完整每场景文件路径均由manifest和artifact_index给出。
+
+`parent_statistics.py`是看到主dev/navtest结果后添加的事后相关性敏感性分析，所有既有方法与配对差均纳入，将NAVSIM log聚类改为父驾驶记录聚类；不追加模型推理、不改动主协议或主统计文件，也不作为新的选模依据。已有敏感性结果不允许覆盖。
 
 ## 完整独立重跑入口
 

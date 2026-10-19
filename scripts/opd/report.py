@@ -66,6 +66,16 @@ def evidence_sections(data):
     p=ROOT/'analysis/secondary_anchor_vs_GT_dev.json'
     if p.exists():
         v=read(p)['result'];text+=f"补充分析（看到开发集均值后添加，不是预登记主判定）：E4-C−E4-B的PDMS差={interval(v['PDMS'])}，M_minus差={interval(v['M_minus'])}。两者相同学习率、GT权重、初始化与数据，比较额外Anchor；没有新增训练或推理，不替代纯Anchor对照，也没有额外测试确认。\n\n"
+    text+='## 父驾驶记录相关性敏感性分析\n\n主分析按预登记的完整NAVSIM log聚类；同一父驾驶记录可能包含多个log。开发集16个log来自15条父记录，测试集136个log来自44条父记录。以下为看到主结果后添加的事后敏感性分析：只将聚类单位改为含车辆ID的完整父驾驶记录，保留相同模型、场景、种子、统计量与2000次bootstrap；所有已有方法和主配对差都纳入，不按结果选择。它不是独立复现，不改动原协议、主区间、选模或E6停止决定。\n\n'
+    for split in ['dev','navtest']:
+        p=ROOT/'analysis'/f'parent_record_sensitivity_{split}.json'
+        if not p.exists():continue
+        v=read(p);text+=f"{split} 父记录聚类：\n\n"
+        for e in v['methods']:text+=f"- {e} 相对IL的G={interval(v['methods'][e]['G'])}。\n"
+        for key in ['E3_vs_E2','E4-A_vs_E3','E5_vs_E4-C','E5_vs_E3']:
+            if key in v['contrasts']:
+                c=v['contrasts'][key];text+=f"- {key}：PDMS差={interval(c['PDMS'])}，M_minus差={interval(c['M_minus'])}。\n"
+        text+='\n'
     text+='## 图表\n\n'
     for file in sorted((REPORTS/'figures').glob('*.png')):text+=f'![{file.stem}](figures/{file.name})\n\n'
     return text
@@ -239,7 +249,7 @@ DDIM adapter 与原 get_action 的逐步状态、均值及最终轨迹误差为0
 
 {chr(10).join(result_lines)}
 
-95%区间按完整 log、训练种子与配对推理种子分层 bootstrap（2000次），保留相邻场景相关性；冻结E0基线不引入未知的历史训练种子变异。点估计为场景加权均值。实质性门槛PDMS0.002，退化幅度减少0.0005。校准只有4个log，超参数选择可能不稳定；三种子也不足以穷尽训练随机性。有限五次采样不证明单个场景的精确期望变化。
+95%主区间按完整NAVSIM log、训练种子与配对推理种子分层bootstrap（2000次），保留log内相邻场景相关性；冻结E0基线不引入未知的历史训练种子变异。点估计为场景加权均值。实质性门槛PDMS0.002，退化幅度减少0.0005。同父驾驶记录的跨log相关性在后文以明确事后的较粗聚类敏感性分析检查，不替换主结果。校准只有4个log，超参数选择可能不稳定；三种子也不足以穷尽训练随机性。有限五次采样不证明单个场景的精确期望变化。
 
 ## OPD 是否提供额外价值
 
