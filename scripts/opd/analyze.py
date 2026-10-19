@@ -71,7 +71,9 @@ def baseline(split):
         components={n:dict(zip(FIELDS,y.mean((0,1)).tolist())) for n,y in [('E0-IL',il),('E0-RL',rl),('E0-COPY',copy)]},
         paired_RL_vs_IL=bootstrap(rl[None],il,logs,stable),
         score_median={n:float(np.median(y[...,-1].mean(-1))) for n,y in [('IL',il),('RL',rl)]},
-        teacher_worse_scene_count=int((rl[...,-1].mean(-1)<il[...,-1].mean(-1)-.02).sum()))
+        teacher_worse_scene_count=int((rl[...,-1].mean(-1)<il[...,-1].mean(-1)-.02).sum()),
+        independent_five_draw_self_comparison=paired_quantities(screen[None],il,stable),
+        single_draw_IL_PDMS_std=float(il[...,-1].std(-1,ddof=1).mean()))
     write(ROOT/'analysis'/f'baseline_{split}.json',result);return result
 
 
@@ -115,6 +117,9 @@ def formal(split='dev'):
         groups={'A':(ij<.8)&(rj>=.8),'B':(ij>=.8)&(rj<.8),'C':(ij>=.8)&(rj>=.8),'D':(ij<.8)&(rj<.8)}
         result[exp]=dict(status='COMPLETE',training_seeds=cfg['train_seeds'],metrics=metrics,
             components=dict(zip(FIELDS,value.mean((0,1,2)).tolist())),median_PDMS=float(np.median(j)),
+            median_paired_change=float(np.median(j-ij[None])),
+            new_component_violations={field:dict(single_output_fraction=float(((value[...,k]<1-1e-12)&(il[None,...,k]>=1-1e-12)).mean()),
+                scene_fraction=float(((value[...,k].mean(-1)<1-1e-12)&(il[None,...,k].mean(-1)>=1-1e-12)).mean())) for k,field in enumerate(FIELDS[:-1]) if field!='EP'},
             categories={k:dict(scenes=int(m.sum()),PDMS=float(j[:,m].mean()) if m.any() else None,IL_PDMS=float(ij[m].mean()) if m.any() else None,RL_PDMS=float(rj[m].mean()) if m.any() else None) for k,m in groups.items()},
             teacher_positive_student_zero=int(((rj[None]>1e-12)&(j<=1e-12)).sum()),
             teacher_zero_student_positive=int(((rj[None]<=1e-12)&(j>1e-12)).sum()),
