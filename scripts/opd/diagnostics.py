@@ -17,14 +17,36 @@ def chain_distributions():
             a=torch.load(p,map_location='cpu',weights_only=False);b=torch.load(q,map_location='cpu',weights_only=False)
             assert a['scene_tokens']==b['scene_tokens'] and a['seeds']==b['seeds']
             initial=float((a['states'][:,0]-b['states'][:,0]).abs().max());assert initial==0
+            state_rms=(a['states']-b['states']).square().mean((0,2,3)).sqrt()
+            response_rms=(a['teacher_means']-b['teacher_means']).square().mean((0,2,3)).sqrt()
             result.append(dict(step=step,initial_noise_max_error=initial,scene_tokens=a['scene_tokens'],
                 state_RMS=(a['states']-b['states']).square().mean((0,2,3)).sqrt().tolist(),
-                teacher_response_RMS=(a['teacher_means']-b['teacher_means']).square().mean((0,2,3)).sqrt().tolist(),
+                teacher_response_RMS=response_rms.tolist(),
+                empirical_teacher_response_to_state_ratio=[float(y/x) if float(x)>1e-12 else None for x,y in zip(state_rms[:-1],response_rms)],
                 E2_discrepancy=(a['student_means']-a['teacher_means']).square().mean((0,2,3)).tolist(),
                 E3_discrepancy=(b['student_means']-b['teacher_means']).square().mean((0,2,3)).tolist()))
         all_seeds.append(dict(seed=seed,records=result))
     write(ROOT/'diagnostics/chain_distributions.json',dict(training_seeds=all_seeds,
         scope='Same actual training rows and initial noise; different teacher/student state distributions; no behavioral categories inferred'))
+    # Already-saved, first-scheduled fit probes: no extra policy sampling or
+    # favorable scene selection. One fixed draw per seed is descriptive only.
+    from scripts.opd.scoring import Scoring,load_cache
+    lookup={r['token']:r for r in rows('train')};probes=[]
+    for experiment in ['E2','E3']:
+        for seed in config()['train_seeds']:
+            path=ROOT/'runs'/f'train_{experiment}_{seed}'/'policy_probes'
+            original=torch.load(path/'0.pt',map_location='cpu',weights_only=False)
+            row=lookup[original['token']];scorer=Scoring();cache=load_cache(row['metric_cache_path'])
+            for step in [0,100,500,1000]:
+                source=path/f'{step}.pt';value=torch.load(source,map_location='cpu',weights_only=False)
+                assert value['token']==original['token'] and value['seed']==original['seed']
+                d=value['trajectory']-original['trajectory'];metrics=scorer.scalar(cache,value['trajectory'].numpy()[0])
+                probes.append(dict(experiment=experiment,training_seed=seed,step=step,token=row['token'],
+                    normalized_state_RMS=float((value['states']-original['states']).square().mean().sqrt()),
+                    xy_RMS_m=float(d[...,:2].square().mean().sqrt()),heading_RMS_rad=float(d[...,2].square().mean().sqrt()),
+                    score=metrics.tolist(),PDMS=float(metrics[-1]),source=str(source),source_sha256=sha(source)))
+    write(ROOT/'diagnostics/policy_refresh_probes.json',dict(records=probes,
+        scope='Already-saved first scheduled fit input per training seed, fixed independent noise6101; one draw, descriptive only, not held-out policy comparison',no_new_policy_queries=True))
 
 
 def gradients():

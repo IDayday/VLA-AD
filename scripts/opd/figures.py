@@ -51,7 +51,10 @@ def figures(split):
     chain=ROOT/'diagnostics/chain_distributions.json'
     if chain.exists():
         c=read(chain);y=[r['records'][-1]['state_RMS'] for r in c['training_seeds']]
-        axes[1].plot(range(6),np.mean(y,0),'o-');axes[1].set(xlabel='Chain state index',ylabel='E2/E3 state RMS',title='Same inputs and initial noise; final update')
+        axes[1].plot(range(6),np.mean(y,0),'o-',label='State RMS')
+        response=[r['records'][-1]['teacher_response_RMS'] for r in c['training_seeds']]
+        axes[1].plot(range(5),np.mean(response,0),'s--',label='Teacher response RMS');axes[1].legend()
+        axes[1].set(xlabel='Chain state index',ylabel='Normalized RMS difference',title='Same inputs/noise; teacher numeric sensitivity, not calibrated reliability')
     else:axes[1].set_axis_off()
     axes[0].set(xlabel='DDIM timestep',ylabel='Teacher/student mean MSE',yscale='log');axes[0].legend()
     fig.tight_layout();fig.savefig(REPORTS/'figures'/f'Fig3_chain_discrepancy_{split}.png');plt.close(fig)
