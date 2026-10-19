@@ -2,7 +2,7 @@
 import sys
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
-import csv,shutil,importlib.metadata
+import argparse,csv,shutil,importlib.metadata
 from scripts.opd.common import *
 from scripts.opd.analyze import bank,paired_quantities
 
@@ -57,6 +57,12 @@ def main():
         write(ROOT/'analysis'/f'failure_counts_{split}.json',dict(scope='Counts per trained policy, not independent scene repeats; zero scene means five-draw mean<=1e-12; output counters refer to single paired draws. New component violation means baseline≈1 and new<1, including fractional NC penalties; worsened includes further partial degradation.',methods=failures))
         shutil.copyfile(ROOT/'analysis'/f'failure_counts_{split}.json',dest/f'failure_counts_{split}.json')
     if seeds:csvwrite(dest/'individual_training_seed_results.csv',seeds)
+    metadata()
+
+
+def metadata():
+    """Refresh audit identities after report/accounting without rescoring banks."""
+    dest=REPORTS/'tables';dest.mkdir(parents=True,exist_ok=True)
     for path in ['audit/final_provenance.json','audit/official_model_sources.json','audit/VLM_ancillary_release_comparison.json','audit/official_forward_parity.json','audit/correction_registration.json','audit/IL_RL_tensor_comparison.json','audit/RL_reference_comparison.json','audit/formal_model_certificate.json','audit/evaluation_certificate_dev.json','audit/evaluation_certificate_navtest.json','audit/hardware_hosts.json','tests/final_matrix.json','tests/real_parallel_inference.json','tests/real_new_host.json','tests/real_grpo_resume.json','resources/navtest_routing_lock.json',
                  'selection/tuning.json','selection/navtest.json','selection/E6_admission.json','selection/E6_budget.json','calibration/gradient_scales.json',
                  'diagnostics/chain_distributions.json','diagnostics/policy_refresh_probes.json','diagnostics/gradients.json','diagnostics/gate_results.json',
@@ -78,4 +84,7 @@ def main():
         git_files={str(p.relative_to(REPORTS)):sha(p) for p in dest.glob('*') if p.name!='artifact_index.json'}))
 
 
-if __name__=='__main__':main()
+if __name__=='__main__':
+    p=argparse.ArgumentParser();p.add_argument('--metadata-only',action='store_true');a=p.parse_args()
+    if a.metadata_only:metadata()
+    else:main()
