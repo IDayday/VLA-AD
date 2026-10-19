@@ -97,6 +97,14 @@ def cache_versions():
     print('METRIC_CACHE_VERSION_PASS',len(result))
 
 
+def storage():
+    scope=ROOT.parent if (ROOT.parent/'INVALID.json').exists() else ROOT
+    command=['du','-sb',str(scope)];value=int(subprocess.check_output(command,text=True).split()[0])
+    write(ROOT/'audit/storage.json',dict(bytes=value,GiB=value/2**30,scope=str(scope),command=command,time=time.time(),
+        definition='Apparent bytes of task outputs, including INVALID history and valid rerun; no symlink traversal; existing external raw datasets, source weights and reused train metric caches excluded'))
+    print('TASK_OUTPUT_APPARENT_GiB',value/2**30)
+
+
 def model_sources():
     import requests
     from concurrent.futures import ThreadPoolExecutor
@@ -183,4 +191,4 @@ def tests():
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('action',choices=['provenance','accounting','tests','cache_versions','model_sources','hardware']);a=p.parse_args();globals()[a.action]()
+    p=argparse.ArgumentParser();p.add_argument('action',choices=['provenance','accounting','tests','cache_versions','model_sources','hardware','storage']);a=p.parse_args();globals()[a.action]()
