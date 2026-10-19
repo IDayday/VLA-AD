@@ -37,6 +37,9 @@ def main():
             for s in config()['train_seeds']:
                 v=bank(split,f'train_{e}_{s}');j=v[...,-1].mean(-1)
                 counts=dict(stable_high_to_low_count=int((stable&(j<.8)).sum()),stable_high_to_zero_count=int((stable&(j<=1e-12)).sum()),
+                    paired_stable_high_to_low_count=int((stable&(base_mean>=.8)&(j<.8)).sum()),
+                    paired_stable_high_material_drop_count=int((stable&(j-base_mean<-.02)).sum()),
+                    baseline_stable_group_low_count=int((stable&(base_mean<.8)).sum()),baseline_stable_group_zero_count=int((stable&(base_mean<=1e-12)).sum()),
                     positive_to_zero_count=int(((base_mean>1e-12)&(j<=1e-12)).sum()),zero_to_positive_count=int(((base_mean<=1e-12)&(j>1e-12)).sum()),
                     zero_output_count=int((v[...,-1]<=1e-12).sum()),teacher_positive_student_zero_count=int(((teacher_mean>1e-12)&(j<=1e-12)).sum()),
                     stable_high_zero_output_count=int((stable[:,None]&(v[...,-1]<=1e-12)).sum()),
@@ -56,7 +59,8 @@ def main():
     if seeds:csvwrite(dest/'individual_training_seed_results.csv',seeds)
     for path in ['audit/final_provenance.json','audit/official_model_sources.json','audit/VLM_ancillary_release_comparison.json','audit/official_forward_parity.json','audit/correction_registration.json','audit/IL_RL_tensor_comparison.json','audit/RL_reference_comparison.json','audit/formal_model_certificate.json','audit/evaluation_certificate_dev.json','audit/evaluation_certificate_navtest.json','audit/hardware_hosts.json','tests/final_matrix.json','tests/real_parallel_inference.json','tests/real_new_host.json','tests/real_grpo_resume.json','resources/navtest_routing_lock.json',
                  'selection/tuning.json','selection/navtest.json','selection/E6_admission.json','selection/E6_budget.json','calibration/gradient_scales.json',
-                 'diagnostics/chain_distributions.json','diagnostics/gradients.json','diagnostics/gate_results.json']:
+                 'diagnostics/chain_distributions.json','diagnostics/policy_refresh_probes.json','diagnostics/gradients.json','diagnostics/gate_results.json',
+                 'analysis/secondary_anchor_vs_GT_dev.json','analysis/teacher_comparisons_dev.json','analysis/teacher_comparisons_navtest.json','analysis/reporting_scope_registration.json']:
         p=ROOT/path
         if p.exists():shutil.copyfile(p,dest/(path.replace('/','_')))
     versions=sorted({f"{d.metadata.get('Name','UNKNOWN')}=={d.version}" for d in importlib.metadata.distributions()})

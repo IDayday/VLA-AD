@@ -21,8 +21,9 @@ def support(v,material=.002):
 def mitigation(c):
     reduction={k:-c['M_minus'][kk] for k,kk in [('estimate','estimate'),('lower95','upper95'),('upper95','lower95')]}
     status=support(reduction,.0005)
+    raw_status=status
     if c['PDMS']['lower95']<-.002 and status=='SUPPORTED':status='INCONCLUSIVE'
-    return dict(status=status,M_minus_reduction=reduction,PDMS_difference=c['PDMS'])
+    return dict(status=status,raw_M_minus_reduction_status=raw_status,M_minus_reduction=reduction,PDMS_difference=c['PDMS'])
 
 
 def evidence_sections(data):
@@ -62,6 +63,9 @@ def evidence_sections(data):
         text+='\nTTC检查失败时刻不是真实剩余碰撞时间。案例以重新评分的一致性检查为前提，完整跟踪状态为额外日志，越界时间由已有ego area派生。数值后果不转换成让行/抢行等意图标签。\n\n'
     p=ROOT/'analysis/teacher_comparisons_dev.json'
     if p.exists():text+='相对直接RL教师的PDMS差：'+ '; '.join(f"{e}: {interval(v['PDMS'])}" for e,v in read(p)['contrasts'].items())+'。\n\n'
+    p=ROOT/'analysis/secondary_anchor_vs_GT_dev.json'
+    if p.exists():
+        v=read(p)['result'];text+=f"补充分析（看到开发集均值后添加，不是预登记主判定）：E4-C−E4-B的PDMS差={interval(v['PDMS'])}，M_minus差={interval(v['M_minus'])}。两者相同学习率、GT权重、初始化与数据，比较额外Anchor；没有新增训练或推理，不替代纯Anchor对照，也没有额外测试确认。\n\n"
     text+='## 图表\n\n'
     for file in sorted((REPORTS/'figures').glob('*.png')):text+=f'![{file.stem}](figures/{file.name})\n\n'
     return text
@@ -90,7 +94,10 @@ def e6_status():
 def tables(split):
     data=read(ROOT/'analysis'/f'formal_{split}.json');base=read(ROOT/'analysis'/f'baseline_{split}.json');table=[]
     for n in ['E0-IL','E0-RL','E0-COPY']:
-        table.append(dict(experiment=n,status='COMPLETE',train_seeds=0,PDMS=base['components'][n]['PDMS'],**{k:base['components'][n][k] for k in ['NC','DAC','TTC','EP','Comfort']}))
+        record=dict(experiment=n,status='COMPLETE',train_seeds=0,PDMS=base['components'][n]['PDMS'],**{k:base['components'][n][k] for k in ['NC','DAC','TTC','EP','Comfort']})
+        if n=='E0-IL':record.update(G=0.,M_plus=0.,M_minus=0.)
+        else:record.update({k:base['paired_RL_vs_IL'][k]['estimate'] for k in ['G','M_plus','M_minus','zero_output_fraction']})
+        table.append(record)
     for e in EXPERIMENTS:
         if e not in data['methods']:
             table.append(dict(experiment=e,status='NOT_RUN'));continue
@@ -128,6 +135,8 @@ def full():
         anchored[e]=mitigation(contrast[e+'_vs_E3'])
     statuses=dict(Q1=q1,E3_vs_E1=q1a,E3_vs_E2=q1b,E3_transfer_vs_IL=transfer,Q2_OPD_forgetting=forget,
         Q2_mitigation=anchored,Q3_teacher_ceiling=e6_status(),primary_scope='Fixed1696-scene dev main analysis; independent navtest confirmation reported separately')
+    statuses['E5_transfer_vs_IL']=support(d['methods']['E5']['metrics']['G'])
+    statuses['E5_vs_matched_E4C']=mitigation(contrast['E5_vs_E4-C'])
     if has_test:
         td=read(ROOT/'analysis/formal_navtest.json');tc=td['contrasts']
         confirmation=dict(E3_vs_E2=support(tc['E3_vs_E2']['PDMS']),E3_transfer_vs_IL=support(td['methods']['E3']['metrics']['G']),
@@ -138,11 +147,13 @@ def full():
         statuses['combined_decision_note']='Conservative cross-split consistency description, not a new significance test or pooled curve; original dev decisions and thresholds retained'
     write(ROOT/'analysis/conclusions.json',statuses)
     result_lines=['|实验|开发集 PDMS（95% CI）|相对 IL 的 G（95% CI）|M+|M−|单次零分比例|','|---|---:|---:|---:|---:|---:|']
-    for n in ['E0-IL','E0-RL','E0-COPY']:
-        result_lines.append(f"|{n}|{b['components'][n]['PDMS']:.4f}|—|—|—|—|")
+    result_lines.append(f"|E0-IL|{b['components']['E0-IL']['PDMS']:.4f}|0（共同参照）|0|0|—|")
+    bm=b['paired_RL_vs_IL']
+    for n in ['E0-RL','E0-COPY']:
+        result_lines.append(f"|{n}|{interval(bm['PDMS'])}|{interval(bm['G'])}|{bm['M_plus']['estimate']:.4f}|{bm['M_minus']['estimate']:.4f}|{100*bm['zero_output_fraction']['estimate']:.2f}%|")
     for e,v in d['methods'].items():
         m=v['metrics'];result_lines.append(f"|{e}|{interval(m['PDMS'])}|{interval(m['G'])}|{m['M_plus']['estimate']:.4f}|{m['M_minus']['estimate']:.4f}|{100*m['zero_output_fraction']['estimate']:.2f}%|")
-    e6_text='已运行原生DiffGRPO/OPD四个真实optimizer updates；零OPD权重与原生loss/gradient精确一致，联合梯度有效且教师不变。它是工程集成证据，不是超过教师的性能证据。'
+    e6_text='已运行原生DiffGRPO/OPD四步真实集成训练、独立连续4步与2+恢复2步的一致性验证，以及单步梯度校验；零OPD权重与原生loss/gradient精确一致，联合梯度有效且教师不变。它们是工程集成证据，不是超过教师的性能证据。'
     if (ROOT/'analysis/E6_dev.json').exists():
         e6_text='正式E6结果：'
         for variant,r in read(ROOT/'analysis/E6_dev.json')['methods'].items():
@@ -168,7 +179,8 @@ RL 相对 IL 的 M_minus={interval(b['paired_RL_vs_IL']['M_minus'])}，{b['teach
     (REPORTS/'05_opd_ablation_results.md').write_text(ablation)
     forgetting=f"# 遗忘与选择性传递\n\nE3 的场景平均回报下降幅度 M_minus={interval(e3['M_minus'])}，明显下降比例={interval(e3['material_drop_fraction'])}。这里的下降是五次场景均值估计，不把每个场景标成已确定的期望退化。独立五种子 IL 自比较为 {b['independent_five_draw_self_comparison']}。\n\n"
     forgetting+=f"独立筛选的稳定高分集合有 {b['stable_high_count']} 个场景，筛选与评价种子不共用。E3 保持率={interval(e3['stable_high_retention'])}；高分到零分比例（分母为完整开发集）={interval(e3['stable_high_to_zero_fraction'])}。\n\n"
-    for e,v in anchored.items():forgetting+=f"{e}：M_minus 减少量={interval(v['M_minus_reduction'])}；平均 PDMS 差={interval(v['PDMS_difference'])}；联合结论 {v['status']}。减少量门槛0.0005，同时检查平均分损失是否超过0.002，不能靠少学获胜。\n\n"
+    for e,v in anchored.items():forgetting+=f"{e}：M_minus 减少量={interval(v['M_minus_reduction'])}，下降幅度减少状态={v['raw_M_minus_reduction_status']}；平均 PDMS 差={interval(v['PDMS_difference'])}；同时保留平均增益的联合结论 {v['status']}。减少量门槛0.0005，平均分非劣界0.002；较低退化伴随较小增益是交易关系，不直接计为同增益保护。\n\n"
+    forgetting+='含GT配方与E3的最终学习率不同，因此上述差异不能全部归因于GT监督。纯Anchor的E4-A/E3具有相同学习率。E5/E4-C具有相同学习率、GT与Anchor权重，是选择性分配的关键开发集对照；测试集仅确认预登记cal-best E4，不追加E4-C测试。\n\n'
     forgetting+='训练静态 gate 的类别及有效激活、逐类别实际暴露和最终变化见结构化 gate、训练 schedule 和逐场景结果。开发/测试上的 A–D 为诊断分层，不用于重新拟合 gate。NC/DAC/TTC 非退化约束不能解释为真实道路安全保证。\n'
     (REPORTS/'06_forgetting_analysis.md').write_text(forgetting)
     test_text='官方测试集正式确认尚未完成；不得将开发集结论表述为完整测试集成功。'
@@ -177,7 +189,8 @@ RL 相对 IL 的 M_minus={interval(b['paired_RL_vs_IL']['M_minus'])}，{b['teach
         test_text=f"官方 navtest {td['scenes']} 场景、{td['logs']} 个 log；精确匹配仓库官方 token 清单。IL={tb['components']['E0-IL']['PDMS']:.6f}，RL={tb['components']['E0-RL']['PDMS']:.6f}。"+' '.join(f"{e} PDMS={interval(v['metrics']['PDMS'])}，G={interval(v['metrics']['G'])}。" for e,v in td['methods'].items())+' 修正批次所有候选在锁定cal选择后一次性确认，测试结果不反向修改方案。工程修正前曾查看无效v1测试基线均值；未查看v1方法测试聚合。此数据接触限制与修正原因在08报告披露。'
         test_text+='\n\n关键测试配对差：'+'；'.join(f"{key}：PDMS差={interval(v['PDMS'])}，M_minus差={interval(v['M_minus'])}" for key,v in td['contrasts'].items())+'。'
         test_text+=f"\n\n开发主分析与测试确认分别保留，不合并曲线。跨两个split的稳定额外价值描述为 **{statuses['Q1_stable_extra_value']}**；测试OPD/KD状态={statuses['navtest_confirmation']['E3_vs_E2']}。一致性描述沿用相同实质性门槛，不是新增显著性检验。"
-    report=f"""# ReCogDrive On-Policy Distillation 完整研究报告
+    admission_reason='E5未建立预登记的正向开发集泛化收益；因此不扩展正式E6。该停止来自科学门槛，非GPU不足' if not admission['admitted'] else '预登记开发门槛通过，已按锁定预算执行E6'
+    report=f"""# ReCogDrive On-Policy Distillation 研究报告{'' if has_test else '（测试确认进行中）'}
 
 ## 研究结论
 
@@ -185,7 +198,7 @@ Q1（固定开发集主分析：学生链 OPD 优于轨迹 SFT 和教师链 KD�
 
 Q2（已有 IL 能力受损）：**{forget}**。E3 的 M_minus={interval(e3['M_minus'])}，独立高分保持率={interval(e3['stable_high_retention'])}。Anchor/GT/gate 的具体缓解结论分别列于下表和遗忘报告，不由平均分替代。
 
-Q3（进一步 DiffGRPO 超过 RL 教师）：**{statuses['Q3_teacher_ceiling']}**。{admission['reason']}。{e6_text}
+Q3（进一步 DiffGRPO 超过 RL 教师）：**{statuses['Q3_teacher_ceiling']}**。{admission_reason}。{e6_text}
 
 ## 模型与算法核验
 
@@ -203,7 +216,7 @@ DDIM adapter 与原 get_action 的逐步状态、均值及最终轨迹误差为0
 
 {chr(10).join(result_lines)}
 
-95%区间按完整 log、训练种子与配对推理种子分层 bootstrap（2000次），保留相邻场景相关性。点估计为场景加权均值。材料性门槛PDMS0.002，退化幅度减少0.0005。校准只有4个log，超参数选择可能不稳定；三种子也不足以穷尽训练随机性。有限五次采样不证明单个场景的精确期望变化。
+95%区间按完整 log、训练种子与配对推理种子分层 bootstrap（2000次），保留相邻场景相关性；冻结E0基线不引入未知的历史训练种子变异。点估计为场景加权均值。实质性门槛PDMS0.002，退化幅度减少0.0005。校准只有4个log，超参数选择可能不稳定；三种子也不足以穷尽训练随机性。有限五次采样不证明单个场景的精确期望变化。
 
 ## OPD 是否提供额外价值
 
@@ -216,6 +229,8 @@ E4/E5 保护结论：{'; '.join(f'{e}: {v["status"]}' for e,v in anchored.items(
 RL 教师平均优于 IL，开发集仍有 {b['teacher_worse_scene_count']} 场景的五次平均下降超过0.02。训练静态 gate 依据五次配对差值的LCB，z=1、margin0.03并检查逐样本NC/DAC/TTC；z=1不是95%置信保证。质量 A/B/C/D 与有效gate不是同一概念。只在A且gate通过时接受强教师监督，B/C保护IL，D不假定教师有效。GT/anchor/opd各有独立归一化；空gate不能自动变成无条件OPD。
 
 选择性监督改变有效训练暴露分布，可能偏向可修复但稀少的场景；静态gate依据原始IL，不保证更新后仍是最优选择。为避免将分布变化误当因果机制，使用共同初始化、相同训练场景/预算，并报告每类暴露、类别诊断和训练外表现。开发/测试类别图不参与训练选择。
+
+E5相对同学习率、同GT/Anchor权重的均匀监督E4-C，开发集PDMS差={interval(contrast['E5_vs_E4-C']['PDMS'])}，M_minus差={interval(contrast['E5_vs_E4-C']['M_minus'])}。当前选择性配方的额外价值状态为{statuses['E5_vs_matched_E4C']['status']}；相对IL的预设实质性增益状态为{statuses['E5_transfer_vs_IL']}。这不推翻所有门控方式，也不区分当前分配策略内部各机制的独立作用。最终测试没有临时追加未入选E4-C，对测试整体配方差异不作同组件gate因果归因。
 
 ## 最终测试确认
 
