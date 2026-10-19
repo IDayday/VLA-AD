@@ -17,7 +17,7 @@ def main():
     dest=REPORTS/'tables';dest.mkdir(parents=True,exist_ok=True)
     splits=[]
     for split in ['train','cal','dev','navtest']:
-        for r in rows(split):splits.append(dict(split=split,token=r['token'],log_name=r['log_name'],parent_driving_record=r['log_name'].split('_')[0]))
+        for r in rows(split):splits.append(dict(split=split,token=r['token'],log_name=r['log_name'],parent_driving_record=r.get('driver_record',r['log_name'].rsplit('_',2)[0]),capture_timestamp=r['log_name'].split('_')[0]))
     csvwrite(dest/'split_membership.csv',splits)
     g=read(ROOT/'gates/static.json');csvwrite(dest/'train_static_gate.csv',[dict(token=k,**v) for k,v in g['scenes'].items()])
     checkpoints=[]
@@ -60,7 +60,8 @@ def main():
     for path in ['audit/final_provenance.json','audit/official_model_sources.json','audit/VLM_ancillary_release_comparison.json','audit/official_forward_parity.json','audit/correction_registration.json','audit/IL_RL_tensor_comparison.json','audit/RL_reference_comparison.json','audit/formal_model_certificate.json','audit/evaluation_certificate_dev.json','audit/evaluation_certificate_navtest.json','audit/hardware_hosts.json','tests/final_matrix.json','tests/real_parallel_inference.json','tests/real_new_host.json','tests/real_grpo_resume.json','resources/navtest_routing_lock.json',
                  'selection/tuning.json','selection/navtest.json','selection/E6_admission.json','selection/E6_budget.json','calibration/gradient_scales.json',
                  'diagnostics/chain_distributions.json','diagnostics/policy_refresh_probes.json','diagnostics/gradients.json','diagnostics/gate_results.json',
-                 'analysis/secondary_anchor_vs_GT_dev.json','analysis/teacher_comparisons_dev.json','analysis/teacher_comparisons_navtest.json','analysis/reporting_scope_registration.json']:
+                 'analysis/secondary_anchor_vs_GT_dev.json','analysis/teacher_comparisons_dev.json','analysis/teacher_comparisons_navtest.json','analysis/reporting_scope_registration.json',
+                 'tests/real_split_bundle.json','tests/real_statistics_projection.json','audit/online_inference_cost.json']:
         p=ROOT/path
         if p.exists():shutil.copyfile(p,dest/(path.replace('/','_')))
     versions=sorted({f"{d.metadata.get('Name','UNKNOWN')}=={d.version}" for d in importlib.metadata.distributions()})

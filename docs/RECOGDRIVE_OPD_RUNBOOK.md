@@ -116,7 +116,14 @@ wait "$CONFIRM_PID"
 wait "$E6_PID"
 ```
 
-需要先有本仓库固定split源manifest、原始NAVSIM文件/地图、真实训练metric cache以及三个正式权重。`initialize.py --verify`核验现有根目录权重身份，不能将缺失核心权重标成通过。不同根目录不会覆盖正式结果。
+需要原始NAVSIM文件/地图以及三个正式权重。四个固定split的精确有序成员、每个场景的原始log/start index/物理缓存路径，以及206个源log的文件哈希，已以小体积索引提交在`configs/opd/splits/`。初始化会核验源log版本，优先复用真实metric cache，缺少时通过`inputs extract --with-metrics`生成；不依赖旧研究的输出manifest。`initialize.py --verify`核验现有根目录权重身份，不能将缺失核心权重标成通过。不同根目录不会覆盖正式结果。
+
+```bash
+$PY scripts/opd/splits.py verify_versions
+$PY scripts/opd/splits.py verify
+```
+
+第二条核验命令在输入manifest已建立后使用，检查重建索引与实际运行的所有输入字段和顺序完全一致。已经锁定的根目录中，`prepare_data.py`和`inputs.py manifest`只核验，不覆写。
 
 额外的tsinghua-zt5在本次运行中空出后，先完成16个真实校准场景、四模型条件、5次采样的跨主机一致性验证，轨迹和评分误差均为0，才接入。正式测试路由锁定为40张独立A800、每GPU4个原生batch1进程、E0为80个shard（20组），每个已训练策略20个shard（5组），主测试共80个GPU任务。它只改变分片，不增加候选、采样种子或改变数值路径。科学protocol SHA不变。
 

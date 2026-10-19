@@ -11,6 +11,8 @@ def main():
     p=argparse.ArgumentParser();p.add_argument('--verify',action='store_true');p.add_argument('--dispatch-inputs',action='store_true');a=p.parse_args()
     torch.set_num_threads(1);c=config();protocol=yaml.safe_load((SOURCE/'configs/opd/protocol.yaml').read_text())
     assert c['official_conditioning'] and protocol['version']==2
+    from scripts.opd.splits import BUNDLE,verify_versions
+    if (BUNDLE/'source_versions.json').exists():verify_versions()
     weights={}
     for label,key in [('IL','student_init'),('RL','teacher_init'),('COPY','teacher_init')]:
         head=build_head(c[key],device='cpu',frozen=True);value=sha(c[key]);expected=protocol['baseline']['RL' if label=='COPY' else label]['sha256']
@@ -53,7 +55,7 @@ def main():
         status='INPUTS_REQUIRED',scope='Real strict weights and CPU tests; no G0/G1 or research-performance claim'))
     if a.dispatch_inputs:
         from scripts.opd.suite import run_queue
-        run_queue([(f'official_inputs_{i}',[['scripts/opd/inputs.py','extract','--split','all','--rank',str(i),'--shards','32']]) for i in range(32)])
+        run_queue([(f'official_inputs_{i}',[['scripts/opd/inputs.py','extract','--split','all','--rank',str(i),'--shards','32','--with-metrics']]) for i in range(32)])
     print('INITIALIZED',ROOT)
 
 if __name__=='__main__':main()

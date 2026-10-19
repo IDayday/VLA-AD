@@ -7,10 +7,16 @@ from scripts.opd.common import *
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--config');p.add_argument('--manifest-only',action='store_true');a=p.parse_args();cfg=config(a.config)
+    from scripts.opd.splits import BUNDLE,population,verify
+    if (ROOT/'protocol.lock.json').exists():
+        verify();print('LOCKED_DATA_UNCHANGED: use a fresh OPD_RUN_ROOT to rebuild');return
     source=PROJECT/'outputs/trajectory_effect_validation_20261019/manifests';mapping={'train':'D_fit','cal':'D_cal','dev':'D_audit'};logs={};parents={}
     for split,old in mapping.items():
-        data=read(source/f'{old}.json')
-        assert all(r['split']=='navtrain' and Path(r['metric_cache_path']).is_file() for r in data)
+        data=population(split) if (BUNDLE/f'{split}.json').exists() else read(source/f'{old}.json')
+        assert all(r['split']=='navtrain' for r in data)
+        for r in data:
+            if not Path(r['metric_cache_path']).is_file():r['metric_cache_path']=str(ROOT/'metric_cache'/split/f"{r['token']}.pkl")
+        if not a.manifest_only:assert all(Path(r['metric_cache_path']).is_file() for r in data)
         if cfg.get('official_conditioning'):
             for r in data:r['observation_path']=str(ROOT/'observations'/split/f"{r['token']}.pt")
         logs[split]={r['log_name'] for r in data};parents[split]={r['driver_record'] for r in data}

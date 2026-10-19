@@ -82,7 +82,9 @@ def metric(row):
 
 def prepare_manifest():
     import yaml
-    source=Path('/mnt/project/VLA-AD/outputs/simscale_sft_20260918/manifests/navtest.json');data=read(source)
+    from scripts.opd.splits import BUNDLE,population
+    bundled=BUNDLE/'navtest.json';source=bundled if bundled.exists() else Path('/mnt/project/VLA-AD/outputs/simscale_sft_20260918/manifests/navtest.json')
+    data=population('navtest') if bundled.exists() else read(source)
     official=SOURCE/'navsim/planning/script/config/common/train_test_split/scene_filter/navtest.yaml'
     declared=yaml.safe_load(official.read_text())
     assert len(data)==len(declared['tokens']) and {r['token'] for r in data}==set(declared['tokens'])
@@ -97,7 +99,14 @@ def prepare_manifest():
         r['observation_path']=str(ROOT/'observations/navtest'/f"{r['token']}.pt")
         r['metric_cache_path']=str(Path(config().get('navtest_metric_cache',str(ROOT/'metric_cache/navtest')))/f"{r['token']}.pkl")
     target=ROOT/'manifests/navtest.json'
-    if target.exists() and read(target)!=data:raise ValueError('Test population changed')
+    if target.exists():
+        from scripts.opd.splits import INPUT_KEYS
+        existing=read(target)
+        if len(existing)!=len(data) or any(any(a[k]!=b[k] for k in INPUT_KEYS+['observation_path']) for a,b in zip(existing,data)):
+            raise ValueError('Test population changed')
+        if (ROOT/'protocol.lock.json').exists():
+            print('LOCKED_TEST_DATA_UNCHANGED');return
+        data=existing
     write(target,data);write(ROOT/'manifests/navtest_identity.json',dict(source=str(source),source_sha256=sha(source),sha256=sha(target),
         scenes=len(data),logs=len({r['log_name'] for r in data}),purpose='Official fixed test inputs only; no gate, training or selection',
         official_filter=str(official),official_filter_sha256=sha(official),exact_official_token_membership=True,
