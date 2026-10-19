@@ -18,8 +18,10 @@ def bundle(name,commands):
     return ['scripts/opd/parallel.py','--spec',str(path),'--concurrency','4','--receipt',str(path.with_suffix('.receipt.json'))]
 
 def qualify():
+    if (ROOT/'suite/G0_G1_complete.json').exists():return
     for i in range(32):wait_job(f'official_inputs_{i}')
-    call('scripts/opd/prepare_data.py')
+    if not all((ROOT/p).exists() for p in ['manifests/identity.json','manifests/token_lengths.json','supervision/train_gt.pt']):
+        call('scripts/opd/prepare_data.py')
     if not (ROOT/'audit/gates.json').exists():
         run_queue([('G0_G1_audit',[
             ['scripts/opd/audit.py'],['scripts/opd/validate.py','--mode','batch']])])
@@ -39,8 +41,9 @@ def qualify():
             ['scripts/opd/train.py','--exp','E3','--stage','smoke','--seed','73','--name','resume_v2_split','--resume']]),
         ('ddp_single',[['scripts/opd/train.py','--exp','E3','--stage','smoke','--seed','72','--name','ddp_smoke_single']]),
     ])
-    launch('ddp_actual_two','training-rl-zt2',[0,1],[['-m','torch.distributed.run','--standalone','--nproc_per_node','2',
-        'scripts/opd/train.py','--exp','E3','--stage','smoke','--seed','72','--name','ddp_smoke_fixed']])
+    if not (ROOT/'jobs/ddp_actual_two/launch.json').exists():
+        launch('ddp_actual_two','training-rl-zt2',[0,1],[['-m','torch.distributed.run','--standalone','--nproc_per_node','2',
+            'scripts/opd/train.py','--exp','E3','--stage','smoke','--seed','72','--name','ddp_smoke_fixed']])
     wait_job('ddp_actual_two')
     for action in ['parallel','resume','ddp','gt_parity','shared_lock']:call('scripts/opd/verify_integrations.py',action)
     smoke=read(ROOT/'runs/E6_IL_JOINT_42_smoke/complete.json');per=smoke['seconds']/smoke['optimizer_updates']
@@ -72,7 +75,9 @@ def lock_protocol():
     p['tuning']['auxiliary_calibration_record_sha256']=sha(ROOT/'calibration/gradient_scales.json')
     p['qualification']['measured_cost']=dict(audit=read(ROOT/'audit/gates.json')['seconds'],native_batch=read(ROOT/'tests/real_batch.json'),parallel=read(ROOT/'tests/real_parallel_inference.json'))
     text=yaml.safe_dump(p,sort_keys=False,allow_unicode=True);dest=SOURCE/'configs/opd/protocol.yaml'
-    if (ROOT/'protocol.lock.json').exists():raise ValueError('Protocol already locked')
+    if (ROOT/'protocol.lock.json').exists():
+        assert read(ROOT/'protocol.lock.json')['sha256']==sha(dest)==sha(ROOT/'protocol.yaml')
+        return
     dest.write_text(text);(ROOT/'protocol.yaml').write_text(text)
     write(ROOT/'protocol.lock.json',dict(status='LOCKED',sha256=sha(dest),time=time.time(),registration_sha256=sha(ROOT/'protocol.registration.json'),owner=identity()))
 
