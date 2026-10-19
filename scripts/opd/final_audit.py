@@ -39,7 +39,7 @@ def provenance():
         maps=dict(path='/mnt/navsim/maps',version='nuplan-maps-v1.0',metadata_sha256=sha('/mnt/navsim/maps/nuplan-maps-v1.0.json')),
         nonoverlap=['token','complete_log','parent_driving_record'],protocol_sha256=sha(SOURCE/'configs/opd/protocol.yaml'),
         meaning='Train/cal/dev are held out only from this new training, not proven unseen in original base training',owner=identity())
-    assert result['protocol_sha256']=='e02028b646a2745dca0b0a6f6eae7dff57119b3d12f8aeb0a3324a1f80c88968'
+    assert result['protocol_sha256']==read(ROOT/'protocol.lock.json')['sha256']
     write(ROOT/'audit/final_provenance.json',result);print('PROVENANCE_PASS',manifest)
 
 
