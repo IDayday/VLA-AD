@@ -61,6 +61,10 @@ class DDIMAdapter:
                 h.denorm_odo(x).detach().clone(),tuple(p._version for p in h.parameters()),id(h),deterministic,kernel)
 
     def evaluate_chain(self,chain,tokens,inputs,*,require_current=False):
+        h=self.head
+        if chain.states.shape!=(len(tokens),h.ddim_steps+1,8,3):raise ValueError('Invalid full-trajectory diffusion chain shape')
+        if not torch.equal(chain.timesteps.to(h.ddim_t),h.ddim_t) or not torch.equal(chain.indices.to(h.ddim_t),torch.arange(h.ddim_steps,device=h.ddim_t.device)):
+            raise ValueError('Chain timestep/index does not match native scheduler')
         if require_current and (chain.source!=id(self.head) or chain.versions!=tuple(p._version for p in self.head.parameters())):
             raise ValueError('Stale or nonstudent on-policy rollout')
         c=self.prepare_conditioning(tokens,inputs)

@@ -16,7 +16,7 @@ def objective(student,teacher,anchor,tokens,inputs,*,experiment='E3',target=None
     mask=torch.broadcast_to(torch.as_tensor(mask,device=device,dtype=torch.float32),(len(tokens),))
     protected=torch.broadcast_to(torch.as_tensor(protected,device=device,dtype=torch.float32),(len(tokens),))
     zero=sum(p.flatten()[0]*0 for p in student.parameters() if p.requires_grad)
-    opd=zero;anch=zero;il=zero;per_step=torch.zeros(1,5,device=device);chain=None
+    opd=zero;anch=zero;il=zero;per_step=torch.zeros(1,5,device=device);chain=None;student_means=None;teacher_means=None
     if experiment=='E1':
         if teacher_trajectory is None:raise ValueError('Teacher pseudo-GT missing')
         il=diffusion_loss(student,tokens,inputs,teacher_trajectory);counts['student_diffusion']=len(tokens)
@@ -31,9 +31,11 @@ def objective(student,teacher,anchor,tokens,inputs,*,experiment='E3',target=None
                     init=rollout_noise[0] if rollout_noise is not None else None,noises=rollout_noise[1] if rollout_noise is not None else None)
             counts['student_rollout']=5*len(tokens)
         pred=DDIMAdapter(student).evaluate_chain(chain,tokens,inputs,require_current=experiment!='E2')
+        student_means=pred.detach()
         counts['student_query']=5*len(tokens)
         if mask.any():
             target_means=frozen_query(teacher,chain,tokens,inputs);counts['teacher_query']=5*len(tokens)
+            teacher_means=target_means.detach()
             teacher_sigma=None
             if loss_type=='shared_variance_kl':
                 c=DDIMAdapter(teacher).prepare_conditioning(tokens,inputs)
@@ -49,7 +51,7 @@ def objective(student,teacher,anchor,tokens,inputs,*,experiment='E3',target=None
             if target is None:raise ValueError('Training GT missing')
             il=diffusion_loss(student,tokens,inputs,target);counts['student_diffusion']=len(tokens)
     counts.update({k+'_batch_calls':v//len(tokens) for k,v in list(counts.items())})
-    return dict(opd=opd,anchor=anch,il=il,per_step=per_step,chain=chain,forward_counts=counts)
+    return dict(opd=opd,anchor=anch,il=il,per_step=per_step,chain=chain,forward_counts=counts,student_means=student_means,teacher_means=teacher_means)
 
 
 def configure_native_grpo(head,rows,reference_path):

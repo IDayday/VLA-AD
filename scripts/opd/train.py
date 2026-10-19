@@ -22,6 +22,9 @@ def main():
     if not read(ROOT/'tests/cpu.json')['passed']:raise ValueError('Unit test gate is incomplete')
     name=a.name or f'{a.stage}_{a.exp}_{a.seed}';dest=ROOT/'runs'/name
     if (dest/'complete.json').exists():raise ValueError('Completed run cannot be overwritten')
+    existing=torch.tensor(int((dest/'config.json').exists()) if rank==0 else 0,device='cuda')
+    if world>1:dist.broadcast(existing,src=0)
+    if not a.resume and bool(existing):raise ValueError('Existing partial run requires explicit --resume')
     steps=a.steps or {'smoke':cfg['smoke_steps'],'tiny':cfg['tiny_steps'],'tune':cfg['tuning_steps'],'train':cfg['train_steps']}[a.stage]
     lr=a.lr or cfg['lr'];anchor_weight=a.anchor_weight if a.anchor_weight is not None else cfg['lambda_anchor']
     il_weight=a.il_weight if a.il_weight is not None else cfg['lambda_il']
@@ -29,7 +32,7 @@ def main():
         anchor_weight=anchor_weight,il_weight=il_weight,config_sha256=digest(cfg),data_sha256=sha(ROOT/'manifests/train.json'))
     seeds(a.seed);student=build_head(cfg['student_init']);teacher=build_head(cfg['teacher_init'],frozen=True)
     anchor=build_head(cfg['anchor_init'],frozen=True) if a.exp in ('E4-A','E4-C','E5') else None
-    teacher_before=state_hash(teacher);anchor_before=state_hash(anchor) if anchor else None
+    teacher_before=state_hash(teacher);anchor_before=state_hash(anchor) if anchor else None;initial_student=state_hash(student)
     params=[p for p in student.parameters() if p.requires_grad];opt=torch.optim.AdamW(params,lr=lr,weight_decay=cfg['weight_decay'])
     schedule=[];data=rows('train');rng=np.random.default_rng(a.seed)
     if a.stage in ('smoke','tiny'):data=sorted(data,key=lambda r:digest([r['token'],'tiny']))[:cfg['tiny_scenes']]
@@ -51,16 +54,26 @@ def main():
         state=torch.load(dest/'latest.pt',map_location='cpu',weights_only=False)
         if state['config']!=actual:raise ValueError('Resume configuration changed')
         restore(student,dest/'latest.pt');opt.load_state_dict(state['optimizer']);start_step=state['step'];history=state['history'];counts=state['forward_counts']
-        torch.set_rng_state(state['torch_rng']);torch.cuda.set_rng_state(state['cuda_rng'])
-    elif (dest/'config.json').exists():raise ValueError('Existing partial run requires explicit --resume')
+        own=state['rank_rng'][rank] if world>1 and 'rank_rng' in state else state
+        torch.set_rng_state(own['torch_rng']);torch.cuda.set_rng_state(own['cuda_rng'])
+        np.random.set_state(state['numpy_rng']);random.setstate(state['python_rng'])
+        counts=own.get('forward_counts',counts)
     if rank==0:write(dest/'config.json',dict(actual,owner=identity(),parameter_count=sum(p.numel() for p in params)))
+    if rank==0:write(dest/'training_schedule.json',[[data[i]['token'] for i in b] for b in schedule[:steps]])
     def checkpoint(step):
         state=dict(student={k:v.detach().cpu() for k,v in student.state_dict().items()},optimizer=opt.state_dict(),step=step,
             config=actual,history=history,forward_counts=counts,torch_rng=torch.get_rng_state(),cuda_rng=torch.cuda.get_rng_state(),
             numpy_rng=np.random.get_state(),python_rng=random.getstate(),cursor=step*cfg['global_batch'])
         if world>1:
-            states=[None]*world;dist.all_gather_object(states,dict(torch_rng=state['torch_rng'],cuda_rng=state['cuda_rng']));state['rank_rng']=states
+            states=[None]*world;dist.all_gather_object(states,dict(torch_rng=state['torch_rng'],cuda_rng=state['cuda_rng'],forward_counts=counts));state['rank_rng']=states
         if rank==0:
+            from navsim.agents.recogdrive.opd.ddim_adapter import DDIMAdapter
+            probe_row=data[schedule[0][0]];probe_tokens,probe_inputs=conditioning(observation(probe_row))
+            with torch.random.fork_rng(devices=[torch.cuda.current_device()]):
+                value=seed_for(probe_row['token'],6101,'policy_probe')
+                torch.random.default_generator.manual_seed(value);torch.cuda.default_generators[torch.cuda.current_device()].manual_seed(value)
+                probe=DDIMAdapter(student).sample(probe_tokens,probe_inputs)
+            save(dest/'policy_probes'/f'{step}.pt',dict(token=probe_row['token'],step=step,seed=6101,states=probe.states.cpu(),trajectory=probe.trajectory.cpu()))
             save(dest/'latest.pt',state)
             if step in cfg['endpoints'] or step==steps:save(dest/f'checkpoint_{step}.pt',state)
     if not a.resume:checkpoint(0)
@@ -79,7 +92,7 @@ def main():
             token=row['token'];z=int(digest([token,a.seed,step])[:8],16)%5;zs.append(z)
             if a.exp in ('E1','E2'):
                 bank=torch.load(ROOT/'teacher'/('final_trajectories' if a.exp=='E1' else 'chains')/f'{token}.pt',map_location='cpu',weights_only=False)
-                if bank['metadata']['config_sha256']!=digest(cfg):raise ValueError('Teacher cache configuration mismatch')
+                verify_teacher_cache(bank['metadata'],cfg)
                 old.append(dict(trajectory=bank['trajectories'][z:z+1]) if a.exp=='E1' else bank['chains'][z])
             generator=torch.Generator(device='cuda').manual_seed(seed_for(token,3101+z,'distill_chain'))
             initial.append(torch.randn((1,8,3),device='cuda',generator=generator))
@@ -99,6 +112,12 @@ def main():
         else:loss=cfg['lambda_opd']*out['opd']*local_valid/valid_count+anchor_weight*out['anchor']*local_protected/protected_count+il_weight*out['il']*len(local)/len(batch)
         if not torch.isfinite(loss):raise FloatingPointError('Nonfinite objective')
         (loss*world).backward()
+        if out['chain'] is not None:
+            save(dest/'rollouts'/f'{step+1}_{rank}.pt',dict(step=step+1,rank=rank,scene_tokens=[r['token'] for r in local],
+                seeds=[3101+z for z in zs],origin='frozen_teacher' if a.exp=='E2' else 'current_student',
+                states=out['chain'].states.cpu(),sigmas=out['chain'].sigmas.cpu(),timesteps=out['chain'].timesteps.cpu(),
+                student_means=out['student_means'].cpu(),teacher_means=out['teacher_means'].cpu() if out['teacher_means'] is not None else None,
+                effective_gate=mask.cpu(),protected_anchor=protect.cpu(),per_step_loss=out['per_step'].detach().cpu()))
         metrics[:4]=[float(out['opd'].detach())*local_valid,float(out['anchor'].detach())*local_protected,float(out['il'].detach())*len(local),float(loss.detach())]
         metrics[4:]=[local_valid,local_protected,len(local),0]
         per_step=out['per_step'].detach().mean(0).cpu().numpy()*len(local)
@@ -131,7 +150,10 @@ def main():
             return
     assert state_hash(teacher)==teacher_before and (anchor is None or state_hash(anchor)==anchor_before)
     assert all(p.grad is None for p in teacher.parameters()) and (anchor is None or all(p.grad is None for p in anchor.parameters()))
-    if rank==0:write(dest/'complete.json',dict(status='COMPLETE',config=actual,optimizer_updates=steps,
+    if world>1:
+        all_counts=[None]*world;dist.all_gather_object(all_counts,counts)
+        counts={k:sum(c.get(k,0) for c in all_counts) for k in set().union(*[set(c) for c in all_counts])}
+    if rank==0:write(dest/'complete.json',dict(status='COMPLETE',config=actual,optimizer_updates=steps,initial_student_sha256=initial_student,
         teacher_unchanged=True,anchor_unchanged=True,seconds=time.perf_counter()-start,peak_gpu_bytes=torch.cuda.max_memory_allocated(),
         teacher_forward_counts=counts,checkpoint_sha256=sha(dest/'latest.pt'),owner=identity()))
     if world>1:dist.barrier();dist.destroy_process_group()

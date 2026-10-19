@@ -29,6 +29,14 @@ def config(path=None):
     if 'extends' in c:
         base=config(path.parent/c.pop('extends'));base.update(c);c=base
     return c
+def teacher_signature(c):
+    return digest({k:c[k] for k in ('teacher_init','vlm','sampling_method','num_inference_steps','rollout_deterministic','rollout_kernel','observation_cache_protocol')})
+def verify_teacher_cache(meta,c):
+    if meta.get('teacher_config_sha256'):
+        if meta['teacher_config_sha256']!=teacher_signature(c):raise ValueError('Teacher cache sampler/model configuration mismatch')
+    elif meta['config_sha256']!=digest(config()) or teacher_signature(c)!=teacher_signature(config()):
+        raise ValueError('Unbound legacy teacher cache')
+    if meta['teacher_sha256']!=read(ROOT/'audit/checkpoints.json')['RL']['sha256']:raise ValueError('Teacher checkpoint identity mismatch')
 def identity():
     policy=read('/mnt/project/server_dispatch_policy.json');host=socket.gethostname().removesuffix('-worker-0')
     if host not in policy['allowed_hosts'] or host in policy.get('global_dispatch_prohibitions',{}):raise PermissionError(host)

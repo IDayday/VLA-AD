@@ -23,16 +23,18 @@ def launch(name,host,gpu,commands):
         if (p.parent/'complete.json').exists():continue
         if not (p.parent/'launch.json').exists():continue
         s=read(p)
-        if s['host']==host and s['gpu']==gpu:raise RuntimeError(f'GPU reserved by {p.parent.name}')
+        old=set(s['gpu'] if isinstance(s['gpu'],list) else ([] if s['gpu'] is None else [s['gpu']]))
+        requested=set(gpu if isinstance(gpu,list) else ([] if gpu is None else [gpu]))
+        if s['host']==host and old&requested:raise RuntimeError(f'GPU reserved by {p.parent.name}')
     write(dest/'spec.json',dict(name=name,host=host,gpu=gpu,commands=commands))
     code=f"""import os,json,subprocess
 from pathlib import Path
 rows=subprocess.check_output(['nvidia-smi','--query-gpu=index,memory.used,utilization.gpu','--format=csv,noheader,nounits'],text=True).splitlines()
-gpu={gpu!r}
-if gpu is not None:
+gpus={gpu if isinstance(gpu,list) else ([] if gpu is None else [gpu])!r}
+for gpu in gpus:
  row=next(x for x in rows if int(x.split(',')[0])==gpu)
  if int(row.split(',')[1])>100 or int(row.split(',')[2])>5:raise RuntimeError('GPU occupied '+row)
-env=dict(os.environ,CUDA_VISIBLE_DEVICES=str(gpu) if gpu is not None else '',OMP_NUM_THREADS='1',OPENBLAS_NUM_THREADS='1',MKL_NUM_THREADS='1',PYTHONUNBUFFERED='1')
+env=dict(os.environ,CUDA_VISIBLE_DEVICES=','.join(map(str,gpus)),OMP_NUM_THREADS='1',OPENBLAS_NUM_THREADS='1',MKL_NUM_THREADS='1',PYTHONUNBUFFERED='1')
 env['OPD_RUN_ROOT']={str(ROOT)!r}
 f=open({str(dest/'worker.log')!r},'a')
 p=subprocess.Popen([{PYTHON!r},'scripts/opd/resources.py','worker','--spec',{str(dest/'spec.json')!r}],cwd={str(SOURCE)!r},env=env,stdout=f,stderr=subprocess.STDOUT,start_new_session=True)

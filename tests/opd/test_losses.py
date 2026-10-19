@@ -33,3 +33,9 @@ def test_T08_T09_T19_targets_detached():
     anchor=torch.randn_like(x,requires_grad=True)
     loss=transition_loss(x,teacher)[0]+transition_loss(x,anchor)[0];loss.backward()
     assert x.grad.norm()>0 and teacher.grad is None and anchor.grad is None
+
+def test_timestep_weights_keep_explicit_scale():
+    x=torch.zeros(1,5,8,3);y=x+1
+    assert transition_loss(x,y,weights=torch.ones(5)*2)[0].item()==2
+    assert transition_loss(x,y,weights=torch.tensor([5.,0,0,0,0]))[0].item()==1
+    with pytest.raises(FloatingPointError):transition_loss(x,y,weights=torch.full((5,),float('nan')))

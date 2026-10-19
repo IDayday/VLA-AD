@@ -60,6 +60,42 @@ def batch():
     print('REAL_BATCH_PASS',max_state,max_mean,max_traj,relative,batched,scalar_seconds,flush=True)
 
 
+def cache():
+    import torch
+    from navsim.agents.recogdrive.opd.checkpoint_io import build_head
+    from navsim.agents.recogdrive.opd.inference_cache import native_inference_cache
+    from scripts.opd.scoring import Scoring,load_cache
+    cfg=config();configure();models=[build_head(cfg['student_init'],frozen=True),build_head(cfg['teacher_init'],frozen=True)]
+    errors=[];score_errors=[];times=[];stats=[]
+    selected=sorted(rows('train'),key=lambda r:digest([r['token'],'cache_parity']))[:32]+sorted(rows('cal'),key=lambda r:digest([r['token'],'cache_parity']))[:32]
+    for row in selected:
+        tokens,inputs=conditioning(observation(row))
+        for model in models:
+            arrays=[];begin=time.perf_counter()
+            for seed in cfg['inference_seeds']:
+                seeds(seed_for(row['token'],seed))
+                with torch.no_grad():arrays.append(model.get_action(tokens,inputs)['pred_traj'].cpu().numpy()[0])
+            plain=time.perf_counter()-begin;cached=[];begin=time.perf_counter()
+            with native_inference_cache(model) as counters:
+                for seed in cfg['inference_seeds']:
+                    seeds(seed_for(row['token'],seed))
+                    with torch.no_grad():cached.append(model.get_action(tokens,inputs)['pred_traj'].cpu().numpy()[0])
+            fast=time.perf_counter()-begin
+            error=float(abs(np.array(arrays)-cached).max());assert error==0,error
+            scorer=Scoring();metric=load_cache(row['metric_cache_path']);joint=scorer.batch(metric,np.array(arrays+cached))['scores']
+            scalar=np.stack([scorer.scalar(metric,t) for t in arrays]);e=float(abs(joint[:5]-scalar).max());assert e<=1e-6
+            assert np.array_equal(joint[:5,[0,1,3,4,5]],scalar[:,[0,1,3,4,5]])
+            assert np.array_equal(joint[:5],joint[5:])
+            errors.append(error);score_errors.append(e);times.append((plain,fast));stats.append(counters)
+    write(ROOT/'tests/real_inference_cache.json',dict(passed=True,scene_count=len(selected),model_scene_pairs=len(times),
+        trajectory_max_error=max(errors),canonical_scalar_score_max_error=max(score_errors),
+        plain_seconds=sum(t[0] for t in times),cached_seconds=sum(t[1] for t in times),
+        measured_sampling_speedup=sum(t[0] for t in times)/sum(t[1] for t in times),
+        cache_hits=sum(s['linear_hits'] for s in stats),cache_misses=sum(s['linear_misses'] for s in stats),owner=identity(),
+        scope='Native single-output sampler and canonical PDMS parity; no precision, batching, randomness or weight changes'))
+    print('CACHE_PARITY_PASS',max(errors),max(score_errors),sum(t[0] for t in times)/sum(t[1] for t in times),flush=True)
+
+
 def grpo():
     import torch
     from navsim.agents.recogdrive.opd.checkpoint_io import build_head,state_hash
@@ -93,4 +129,4 @@ def grpo():
     print('REAL_GRPO_PASS',gn_grpo,gn_opd,norm,flush=True)
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--mode',choices=['batch','grpo'],required=True);a=p.parse_args();globals()[a.mode]()
+    p=argparse.ArgumentParser();p.add_argument('--mode',choices=['batch','grpo','cache'],required=True);a=p.parse_args();globals()[a.mode]()

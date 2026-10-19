@@ -1,0 +1,1573 @@
+study: recogdrive_opd_20261020
+version: 1
+created_before_tuning_and_formal: true
+baseline:
+  IL:
+    path: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt
+    sha256: 4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443
+    load_report:
+      path: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt
+      missing: []
+      unexpected: []
+      shape_mismatch: []
+      ignored: []
+      restored_tensors: 347
+      dtypes:
+      - torch.float32
+      - torch.int64
+  RL:
+    path: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt
+    sha256: 23fb949b10387efeff87e093703d5faf41b61b9e5ead16d4076661e3c7c08a20
+    load_report:
+      path: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt
+      missing: []
+      unexpected: []
+      shape_mismatch: []
+      ignored:
+      - key: agent.action_head.old_policy.ddpm_betas
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_alphas
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_alphas_cumprod
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_alphas_cumprod_prev
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_sqrt_alphas_cumprod
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_sqrt_one_minus_alphas_cumprod
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_sqrt_recip_alphas_cumprod
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_sqrt_recipm1_alphas_cumprod
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_var
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_logvar_clipped
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_mu_coef1
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_mu_coef2
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddim_t_schedule
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddim_t
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddim_alphas
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddim_alphas_sqrt
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddim_alphas_prev
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddim_sqrt_one_minus_alphas
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddim_sigmas
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.timestep_encoder.timestep_embedder.linear_1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.timestep_encoder.timestep_embedder.linear_1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.timestep_encoder.timestep_embedder.linear_2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.timestep_encoder.timestep_embedder.linear_2.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.rotary_embedder.inv_freq
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.final_layer.norm_final.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.final_layer.linear.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.final_layer.linear.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.final_layer.modulation_proj.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.final_layer.modulation_proj.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.his_traj_encoder.fc1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.his_traj_encoder.fc1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.his_traj_encoder.norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.his_traj_encoder.norm.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.his_traj_encoder.fc2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.his_traj_encoder.fc2.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ego_status_encoder.fc1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ego_status_encoder.fc1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ego_status_encoder.norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ego_status_encoder.norm.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ego_status_encoder.fc2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ego_status_encoder.fc2.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_encoder.fc1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_encoder.fc1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_encoder.fc2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_encoder.fc2.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_encoder.fc3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_encoder.fc3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.feature_encoder.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.feature_encoder.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.fusion_projector.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.fusion_projector.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_decoder.fc1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_decoder.fc1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_decoder.norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_decoder.norm.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_decoder.fc2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_decoder.fc2.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.position_embedding.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.eta.eta_logit
+        reason: inactive RL/IL reference, never selected as active teacher
+      restored_tensors: 347
+      dtypes:
+      - torch.float32
+      - torch.int64
+  COPY:
+    path: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt
+    sha256: 23fb949b10387efeff87e093703d5faf41b61b9e5ead16d4076661e3c7c08a20
+    load_report:
+      path: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt
+      missing: []
+      unexpected: []
+      shape_mismatch: []
+      ignored:
+      - key: agent.action_head.old_policy.ddpm_betas
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_alphas
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_alphas_cumprod
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_alphas_cumprod_prev
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_sqrt_alphas_cumprod
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_sqrt_one_minus_alphas_cumprod
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_sqrt_recip_alphas_cumprod
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_sqrt_recipm1_alphas_cumprod
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_var
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_logvar_clipped
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_mu_coef1
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddpm_mu_coef2
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddim_t_schedule
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddim_t
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddim_alphas
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddim_alphas_sqrt
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddim_alphas_prev
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddim_sqrt_one_minus_alphas
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ddim_sigmas
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.timestep_encoder.timestep_embedder.linear_1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.timestep_encoder.timestep_embedder.linear_1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.timestep_encoder.timestep_embedder.linear_2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.timestep_encoder.timestep_embedder.linear_2.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.rotary_embedder.inv_freq
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.0.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.1.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.2.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.3.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.4.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.5.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.6.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.7.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.8.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.9.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.10.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.11.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.12.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.13.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.14.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.norm1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.to_q.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.to_q.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.to_k.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.to_k.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.to_v.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.to_v.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.q_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.k_norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.to_out.0.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.attn.to_out.0.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.norm2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.ffn.w12.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.ffn.w12.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.ffn.w3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.ffn.w3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.adaLN_modulation.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.transformer_blocks.15.adaLN_modulation.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.final_layer.norm_final.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.final_layer.linear.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.final_layer.linear.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.final_layer.modulation_proj.1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.model.final_layer.modulation_proj.1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.his_traj_encoder.fc1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.his_traj_encoder.fc1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.his_traj_encoder.norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.his_traj_encoder.norm.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.his_traj_encoder.fc2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.his_traj_encoder.fc2.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ego_status_encoder.fc1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ego_status_encoder.fc1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ego_status_encoder.norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ego_status_encoder.norm.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ego_status_encoder.fc2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.ego_status_encoder.fc2.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_encoder.fc1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_encoder.fc1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_encoder.fc2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_encoder.fc2.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_encoder.fc3.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_encoder.fc3.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.feature_encoder.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.feature_encoder.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.fusion_projector.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.fusion_projector.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_decoder.fc1.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_decoder.fc1.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_decoder.norm.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_decoder.norm.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_decoder.fc2.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.action_decoder.fc2.bias
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.position_embedding.weight
+        reason: inactive RL/IL reference, never selected as active teacher
+      - key: agent.action_head.old_policy.eta.eta_logit
+        reason: inactive RL/IL reference, never selected as active teacher
+      restored_tensors: 347
+      dtypes:
+      - torch.float32
+      - torch.int64
+  VLM:
+    path: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B
+    sha256: 79fb39297e322cd2d3dc68d4f23b86ff85806b336a4d5d0ed5db9b66e4034a3c
+    deployment_shared: true
+    limitation: IL/RL action-head checkpoints omit VLM tensors; original training
+      VLM cannot be proved from these files alone
+splits:
+  splits:
+    train:
+      scenes: 4115
+      logs: 50
+      sha256: e3292aae30586c02e6c0df62639a0dd3e9bfc58b55a6c5662ec4654e0bfaee1f
+    cal:
+      scenes: 518
+      logs: 4
+      sha256: 10488343ac654799c109e80bf09d26da6b49e4fc4210e7e3dba53c13c87a82c3
+    dev:
+      scenes: 1696
+      logs: 16
+      sha256: f9552d196d8973a6cfd1f182702b777198012f9fe60d51acee08c039e75eea53
+  source: /mnt/project/VLA-AD/outputs/trajectory_effect_validation_20261019/manifests
+  source_checkpoint: frozen VLM encoding; the action projection is not cached
+  caveat: All splits are official navtrain; held out from this new training, potentially
+    seen by original pretraining
+generation:
+  steps: 5
+  sampler: native stochastic DDIM get_action
+  objective: per-coordinate per-step transition-mean MSE; uniform weights; not Gaussian
+    KL
+  generation_level_on_policy: true
+  environment_level_on_policy: false
+qualification:
+  scenes: 256
+  updates: 100
+  seed: 42
+  G2_guard: Each method must have complete finite full D_cal scores; stop method if
+    mean PDMS falls by0.10 versus IL. Independent phases admitted per-method.
+tuning:
+  methods: &id001
+  - E1
+  - E2
+  - E3
+  - E4-A
+  - E4-B
+  - E4-C
+  - E5
+  seed: 41
+  updates: 100
+  lr_candidates:
+  - 1.0e-05
+  - 3.0e-05
+  selection: Full D_cal mean PDMS, lower LR on exact ties
+  auxiliary_weights:
+    anchor: 0.07111589145682723
+    il: 0.007555598472931785
+  auxiliary_calibration_record_sha256: 3128d220746a7633a917867dffa91d5b04d1c0ab09b7db13d8817e0f672e7915
+formal:
+  methods: *id001
+  seeds:
+  - 42
+  - 43
+  - 44
+  updates: 1000
+  global_batch: 8
+  optimizer: AdamW weight_decay1e-4, clip_grad_norm1, no AMP/TF32
+  same_schedule_across_methods: true
+  batching: Exact token-length buckets, shuffled each epoch; last small bucket wraps
+    within itself. Same exposure schedule across methods, no padding.
+  primary_checkpoint: Fixed final1000 for every method; saved100/500 are diagnostic
+    and not selected for primary comparison
+  initialization: Official IL for every method; no tiny/tuning weight transfer
+  E2: Frozen teacher cached chains,5 fixed coupled generation seeds per scene; teacher
+    re-queried at each visited state
+  E3: Fresh current student chain each batch; teacher queried on detached student
+    states
+  E5: Static paired5-seed gate,LCB z1 margin.03, safety NC/DAC/TTC cannot degrade
+    in any pair. Only eligible A gets OPD; B/C gets anchor; all get GT. D gets GT
+    only
+evaluation:
+  dev_scenes: 1696
+  dev_logs: 16
+  inference_seeds:
+  - 1101
+  - 1102
+  - 1103
+  - 1104
+  - 1105
+  independent_IL_high_screen_seeds:
+  - 5101
+  - 5102
+  - 5103
+  - 5104
+  - 5105
+  final_navtest: All official12146 scenes; E0-IL/RL/COPY plus E2,E3,E5 and D_cal-best
+    E4 variant, all3 training seeds and5 inference seeds. Fixed final1000. No test-based
+    selection. If formal E6 admitted, D_cal-best E6 initialization also gets one final
+    confirmation.
+  no_oracle: true
+  main_score: NAVSIM-v1 PDMS [0,1], canonical weights progress5/TTC5/comfort2; native
+    GRPO retains10/5/2
+statistics:
+  bootstrap_replicates: 2000
+  unit: Paired whole logs, training seeds and paired inference seeds; pooled scene
+    weighting
+  material_mean_PDMS_gain: 0.002
+  material_M_minus_reduction: 0.0005
+  anchor_gain_noninferiority_margin: 0.002
+  high: 0.8
+  zero: 1.0e-12
+  material_drop: 0.02
+  primary_fail: scene mean across5 scores is zero; separately report single-output
+    zero events
+  decision: SUPPORTED requires paired95% lower bound positive plus point above material
+    threshold. NOT_SUPPORTED requires CI upper bound below useful threshold; else
+    INCONCLUSIVE.
+E6:
+  formal_admission: All numerical gates pass, E5 dev gain over IL has95% lower bound>0
+    and point>=.002, no catastrophic G2 signal, resources fit the budget. Otherwise
+    code/tests and real integration only.
+  initializations:
+  - IL + native DiffGRPO,OPD0
+  - matching-seed E5 + native DiffGRPO,OPD0
+  - IL + native DiffGRPO + OPD annealed.1 to0
+  training_seeds:
+  - 42
+  - 43
+  - 44
+  group_size: 8
+  global_batch: 4
+  step_budget_rule: Before E6 performance inspection choose largest of100/250/500
+    updates fitting64 reserved GPU-hours from measured real smoke throughput; same
+    updates for all three initializations.
+  external_anchor: 0
+  native_BC: 0.1
+  teacher: Frozen actual RL active head; reuses native GRPO group states; no extra
+    full student rollout
+budgets:
+  first_phase_gpu_hour_ceiling: 128
+  E6_gpu_hour_ceiling: 64
+  storage_ceiling_gib: 500
+  confirmation_expansion: No outcome-directed extra modules or budget extension. Engineering
+    corrections rerun affected records with explicit failed/invalid history.
