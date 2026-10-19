@@ -33,7 +33,10 @@ def restore(model,path):
     missing=sorted(set(target)-set(mapped)-inactive)
     unexpected=sorted(set(mapped)-set(target))
     mismatch=[dict(key=k,checkpoint=list(mapped[k].shape),model=list(target[k].shape)) for k in set(mapped)&set(target) if mapped[k].shape!=target[k].shape]
-    report=dict(path=str(Path(path).resolve()),missing=missing,unexpected=unexpected,shape_mismatch=mismatch,ignored=ignored,
+    report=dict(path=str(Path(path).resolve()),missing=missing,missing_all=sorted(set(target)-set(mapped)),
+        missing_noncore=sorted((set(target)-set(mapped))&inactive),
+        missing_semantics='missing lists required core tensors; missing_all includes explicitly disabled auxiliary targets left unrestored',
+        unexpected=unexpected,shape_mismatch=mismatch,ignored=ignored,
         restored_tensors=len(set(mapped)&set(target)),dtypes=sorted({str(v.dtype) for v in mapped.values()}))
     model._opd_load_report=report
     if missing or unexpected or mismatch:raise ValueError(f'Strict checkpoint failure: {report}')

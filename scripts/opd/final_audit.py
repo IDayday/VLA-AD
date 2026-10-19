@@ -60,7 +60,7 @@ def accounting():
 
 
 def tests():
-    required=['real_batch','real_grpo','real_resume_v2','real_ddp','real_online_vlm','real_parameter_perturbation','real_GT_parity','real_inference_cache','real_parallel_inference','real_shared_lock','real_student_deployment']
+    required=['real_batch','real_grpo','real_resume_v2','real_ddp','real_online_vlm','real_parameter_perturbation','real_GT_parity','real_inference_cache','real_parallel_inference','real_shared_lock','real_student_deployment','real_disabled_auxiliary']
     evidence={n:read(ROOT/'tests'/f'{n}.json') for n in required}
     assert all(v['passed'] for v in evidence.values())
     xml=ET.parse(ROOT/'tests/cpu.xml').getroot();suites=list(xml) if xml.tag=='testsuites' else [xml]

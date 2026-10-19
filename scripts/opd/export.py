@@ -31,11 +31,20 @@ def main():
         p=ROOT/'analysis'/f'formal_{split}.json'
         if not p.exists():continue
         data=read(p);base=bank(split,'E0','IL');stable=(bank(split,'E0','IL_screen')[...,-1]>=.8).all(-1)
+        base_mean=base[...,-1].mean(-1);failures={}
         for e in data['methods']:
+            failures[e]={}
             for s in config()['train_seeds']:
-                v=bank(split,f'train_{e}_{s}');seeds.append(dict(split=split,experiment=e,training_seed=s,**paired_quantities(v[None],base,stable)))
+                v=bank(split,f'train_{e}_{s}');j=v[...,-1].mean(-1)
+                counts=dict(stable_high_to_low_count=int((stable&(j<.8)).sum()),stable_high_to_zero_count=int((stable&(j<=1e-12)).sum()),
+                    positive_to_zero_count=int(((base_mean>1e-12)&(j<=1e-12)).sum()),zero_to_positive_count=int(((base_mean<=1e-12)&(j>1e-12)).sum()),
+                    zero_output_count=int((v[...,-1]<=1e-12).sum()))
+                seeds.append(dict(split=split,experiment=e,training_seed=s,**paired_quantities(v[None],base,stable),**counts))
+                failures[e][str(s)]=dict(**counts,stable_high_to_zero_tokens=[r['token'] for r,m in zip(rows(split),stable&(j<=1e-12)) if m])
+        write(ROOT/'analysis'/f'failure_counts_{split}.json',dict(scope='Counts per trained policy, not independent scene repeats; zero means five-draw scene mean<=1e-12',methods=failures))
+        shutil.copyfile(ROOT/'analysis'/f'failure_counts_{split}.json',dest/f'failure_counts_{split}.json')
     if seeds:csvwrite(dest/'individual_training_seed_results.csv',seeds)
-    for path in ['audit/final_provenance.json','audit/IL_RL_tensor_comparison.json','audit/hardware_hosts.json','tests/final_matrix.json','tests/real_parallel_inference.json',
+    for path in ['audit/final_provenance.json','audit/IL_RL_tensor_comparison.json','audit/RL_reference_comparison.json','audit/formal_model_certificate.json','audit/evaluation_certificate_dev.json','audit/evaluation_certificate_navtest.json','audit/hardware_hosts.json','tests/final_matrix.json','tests/real_parallel_inference.json',
                  'selection/tuning.json','selection/navtest.json','selection/E6_admission.json','selection/E6_budget.json','calibration/gradient_scales.json',
                  'diagnostics/chain_distributions.json','diagnostics/gradients.json','diagnostics/gate_results.json']:
         p=ROOT/path
