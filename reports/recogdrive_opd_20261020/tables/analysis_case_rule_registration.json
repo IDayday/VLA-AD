@@ -1,0 +1,21 @@
+{
+  "source_sha256": "f290a32ebeadd4eadb66d4e50380e8a675877e6943cda48df1c7e6b3c2521e56",
+  "source": "scripts/opd/figures.py:cases",
+  "thresholds": {
+    "repair": 0.05,
+    "regression": -0.05,
+    "protected_E3": -0.05,
+    "protected_E5": -0.02,
+    "teacher_gap": 0.1,
+    "teacher_high": 0.8
+  },
+  "rule": "Token hash OPD_case_v1; training seed42; draw nearest scene mean E3-minus-IL; include all nonempty categories",
+  "registered_before_formal_results": true,
+  "owner": {
+    "host": "training-vla-zt",
+    "pid": 1283969,
+    "start_ticks": 1386723965,
+    "code_sha": "9624cff79463a423ecc54840f8969c5dc9f26283",
+    "time": 1792428626.601327
+  }
+}

@@ -1,0 +1,123 @@
+{
+  "split": "dev",
+  "scenes": 1696,
+  "logs": 16,
+  "copy_max_error": 0.0,
+  "stable_high_count": 1583,
+  "components": {
+    "E0-IL": {
+      "NC": 0.9996462264150944,
+      "DAC": 0.9733490566037736,
+      "EP": 0.8473074742884829,
+      "TTC": 0.9854952830188679,
+      "Comfort": 0.9988207547169812,
+      "DDC": 0.9887971698113207,
+      "PDMS": 0.9147831850415862
+    },
+    "E0-RL": {
+      "NC": 0.9974646226415095,
+      "DAC": 0.9939858490566038,
+      "EP": 0.8977964275442665,
+      "TTC": 0.9870283018867925,
+      "Comfort": 1.0,
+      "DDC": 0.9853773584905661,
+      "PDMS": 0.9485070293602381
+    },
+    "E0-COPY": {
+      "NC": 0.9974646226415095,
+      "DAC": 0.9939858490566038,
+      "EP": 0.8977964275442665,
+      "TTC": 0.9870283018867925,
+      "Comfort": 1.0,
+      "DDC": 0.9853773584905661,
+      "PDMS": 0.9485070293602381
+    }
+  },
+  "paired_RL_vs_IL": {
+    "PDMS": {
+      "estimate": 0.9485070293602424,
+      "lower95": 0.918638254156659,
+      "upper95": 0.9651808939649723,
+      "replicates": 2000
+    },
+    "G": {
+      "estimate": 0.033723844318657034,
+      "lower95": 0.020850242046167016,
+      "upper95": 0.05055442859770743,
+      "replicates": 2000
+    },
+    "M_plus": {
+      "estimate": 0.04310921386364939,
+      "lower95": 0.03049696710845609,
+      "upper95": 0.061532337551214476,
+      "replicates": 2000
+    },
+    "M_minus": {
+      "estimate": 0.00938536954499235,
+      "lower95": 0.005303347542958338,
+      "upper95": 0.015547314308291062,
+      "replicates": 2000
+    },
+    "material_drop_fraction": {
+      "estimate": 0.052476415094339625,
+      "lower95": 0.02954919188122533,
+      "upper95": 0.06920691735940188,
+      "replicates": 2000
+    },
+    "zero_scene_fraction": {
+      "estimate": 0.005306603773584905,
+      "lower95": 0.0,
+      "upper95": 0.018853918865490645,
+      "replicates": 2000
+    },
+    "zero_output_fraction": {
+      "estimate": 0.007429245283018868,
+      "lower95": 0.0003366126908400961,
+      "upper95": 0.022672398051658903,
+      "replicates": 2000
+    },
+    "positive_to_zero_fraction": {
+      "estimate": 0.00294811320754717,
+      "lower95": 0.0,
+      "upper95": 0.009536882363284678,
+      "replicates": 2000
+    },
+    "stable_high_to_zero_fraction": {
+      "estimate": 0.00294811320754717,
+      "lower95": 0.0,
+      "upper95": 0.00912640014800362,
+      "replicates": 2000
+    },
+    "stable_high_retention": {
+      "estimate": 0.98547062539482,
+      "lower95": 0.9730756743256743,
+      "upper95": 0.9936229036116566,
+      "replicates": 2000
+    },
+    "zero_to_positive_fraction": {
+      "estimate": 0.012382075471698114,
+      "lower95": 0.00620596930053883,
+      "upper95": 0.02993413197841952,
+      "replicates": 2000
+    }
+  },
+  "score_median": {
+    "IL": 0.946211256403451,
+    "RL": 0.9791453322919581
+  },
+  "teacher_worse_scene_count": 89,
+  "independent_five_draw_self_comparison": {
+    "PDMS": 0.9140191825541532,
+    "G": -0.0007640024874322615,
+    "M_plus": 0.004912669058776286,
+    "M_minus": 0.005676671546208546,
+    "material_drop_fraction": 0.022995283018867923,
+    "zero_scene_fraction": 0.01474056603773585,
+    "zero_output_fraction": 0.026768867924528306,
+    "positive_to_zero_fraction": 0.001768867924528302,
+    "stable_high_to_zero_fraction": 0.0,
+    "stable_high_retention": 1.0,
+    "zero_to_positive_fraction": 0.001768867924528302
+  },
+  "single_draw_IL_PDMS_std": 0.018537314935775064
+}

@@ -1,0 +1,180 @@
+{
+  "scenes": 20,
+  "warmup_scenes": 1,
+  "model": "E3 seed42 final1000",
+  "load_seconds": 10.363107858225703,
+  "summary": {
+    "online_image_VLM_planner_seconds": {
+      "mean": 0.3765120169147849,
+      "median": 0.37601342145353556,
+      "p95": 0.3816552861593664
+    },
+    "cached_input_prepare_seconds": {
+      "mean": 0.03505129897966981,
+      "median": 0.034396011382341385,
+      "p95": 0.03850553818047047
+    },
+    "cached_planner_seconds": {
+      "mean": 0.14871829189360142,
+      "median": 0.1480723051354289,
+      "p95": 0.1517485436052084
+    },
+    "canonical_scalar_score_seconds": {
+      "mean": 0.028996504098176955,
+      "median": 0.02888076100498438,
+      "p95": 0.03018522895872593
+    }
+  },
+  "records": [
+    {
+      "token": "694febdb81105aa6",
+      "online_image_VLM_planner_seconds": 0.38164736330509186,
+      "cached_input_prepare_seconds": 0.03456311486661434,
+      "cached_planner_seconds": 0.15023213811218739,
+      "canonical_scalar_score_seconds": 0.02938566915690899
+    },
+    {
+      "token": "55d627edf1c05c6c",
+      "online_image_VLM_planner_seconds": 0.3775117192417383,
+      "cached_input_prepare_seconds": 0.03617425635457039,
+      "cached_planner_seconds": 0.1527506187558174,
+      "canonical_scalar_score_seconds": 0.030321743339300156
+    },
+    {
+      "token": "e80eed1fab2c5cfd",
+      "online_image_VLM_planner_seconds": 0.37092637084424496,
+      "cached_input_prepare_seconds": 0.03591225668787956,
+      "cached_planner_seconds": 0.1499213632196188,
+      "canonical_scalar_score_seconds": 0.02919207699596882
+    },
+    {
+      "token": "0090af8e15415a95",
+      "online_image_VLM_planner_seconds": 0.37232753075659275,
+      "cached_input_prepare_seconds": 0.03351961635053158,
+      "cached_planner_seconds": 0.14722983911633492,
+      "canonical_scalar_score_seconds": 0.029081808403134346
+    },
+    {
+      "token": "02831f0823a75275",
+      "online_image_VLM_planner_seconds": 0.37154259718954563,
+      "cached_input_prepare_seconds": 0.03287839516997337,
+      "cached_planner_seconds": 0.14832652918994427,
+      "canonical_scalar_score_seconds": 0.02778044156730175
+    },
+    {
+      "token": "3fdaab2718695484",
+      "online_image_VLM_planner_seconds": 0.37230248004198074,
+      "cached_input_prepare_seconds": 0.046033378690481186,
+      "cached_planner_seconds": 0.1470512840896845,
+      "canonical_scalar_score_seconds": 0.027907367795705795
+    },
+    {
+      "token": "3c6c773db2f558e5",
+      "online_image_VLM_planner_seconds": 0.37076552771031857,
+      "cached_input_prepare_seconds": 0.03810933604836464,
+      "cached_planner_seconds": 0.1477812696248293,
+      "canonical_scalar_score_seconds": 0.027755293995141983
+    },
+    {
+      "token": "329eb6cc8c325f71",
+      "online_image_VLM_planner_seconds": 0.37504334561526775,
+      "cached_input_prepare_seconds": 0.03469898737967014,
+      "cached_planner_seconds": 0.1488103438168764,
+      "canonical_scalar_score_seconds": 0.030178043991327286
+    },
+    {
+      "token": "d3addd2ca8c15a58",
+      "online_image_VLM_planner_seconds": 0.3803354799747467,
+      "cached_input_prepare_seconds": 0.035563115030527115,
+      "cached_planner_seconds": 0.15050061233341694,
+      "canonical_scalar_score_seconds": 0.02867971360683441
+    },
+    {
+      "token": "be8cd276bd665f61",
+      "online_image_VLM_planner_seconds": 0.3796220850199461,
+      "cached_input_prepare_seconds": 0.03690611571073532,
+      "cached_planner_seconds": 0.14806381426751614,
+      "canonical_scalar_score_seconds": 0.028183164075016975
+    },
+    {
+      "token": "78bd4a0ea3e35682",
+      "online_image_VLM_planner_seconds": 0.37975058145821095,
+      "cached_input_prepare_seconds": 0.03422890789806843,
+      "cached_planner_seconds": 0.14783016592264175,
+      "canonical_scalar_score_seconds": 0.028050387278199196
+    },
+    {
+      "token": "dcc745e412fe5fbd",
+      "online_image_VLM_planner_seconds": 0.3754922989755869,
+      "cached_input_prepare_seconds": 0.03299465402960777,
+      "cached_planner_seconds": 0.14788000099360943,
+      "canonical_scalar_score_seconds": 0.02855627052485943
+    },
+    {
+      "token": "fdc30f8fc86655b0",
+      "online_image_VLM_planner_seconds": 0.3765345439314842,
+      "cached_input_prepare_seconds": 0.0341073852032423,
+      "cached_planner_seconds": 0.14736518822610378,
+      "canonical_scalar_score_seconds": 0.028404319658875465
+    },
+    {
+      "token": "6a9a24d0bacf5229",
+      "online_image_VLM_planner_seconds": 0.3753362726420164,
+      "cached_input_prepare_seconds": 0.03345894627273083,
+      "cached_planner_seconds": 0.147272739559412,
+      "canonical_scalar_score_seconds": 0.02835255302488804
+    },
+    {
+      "token": "a22e6b1ef8655ecf",
+      "online_image_VLM_planner_seconds": 0.3750570062547922,
+      "cached_input_prepare_seconds": 0.03229440934956074,
+      "cached_planner_seconds": 0.15169580280780792,
+      "canonical_scalar_score_seconds": 0.028545906767249107
+    },
+    {
+      "token": "11d448d26126557f",
+      "online_image_VLM_planner_seconds": 0.3801070563495159,
+      "cached_input_prepare_seconds": 0.03583735600113869,
+      "cached_planner_seconds": 0.14824794977903366,
+      "canonical_scalar_score_seconds": 0.02970287762582302
+    },
+    {
+      "token": "ef7fb7627f735a41",
+      "online_image_VLM_planner_seconds": 0.3818058203905821,
+      "cached_input_prepare_seconds": 0.031725408509373665,
+      "cached_planner_seconds": 0.14960039965808392,
+      "canonical_scalar_score_seconds": 0.030011551454663277
+    },
+    {
+      "token": "3c0e5824b0785582",
+      "online_image_VLM_planner_seconds": 0.3793152067810297,
+      "cached_input_prepare_seconds": 0.03298853524029255,
+      "cached_planner_seconds": 0.14808079600334167,
+      "canonical_scalar_score_seconds": 0.029834147542715073
+    },
+    {
+      "token": "1cf2faa6760b5e05",
+      "online_image_VLM_planner_seconds": 0.37955242395401,
+      "cached_input_prepare_seconds": 0.03308250196278095,
+      "cached_planner_seconds": 0.14789962954819202,
+      "canonical_scalar_score_seconds": 0.03016594424843788
+    },
+    {
+      "token": "09909af20007564a",
+      "online_image_VLM_planner_seconds": 0.3752646278589964,
+      "cached_input_prepare_seconds": 0.03594930283725262,
+      "cached_planner_seconds": 0.14782535284757614,
+      "canonical_scalar_score_seconds": 0.029840800911188126
+    }
+  ],
+  "online_cached_prediction_error": 0.0,
+  "peak_gpu_bytes": 5534397952,
+  "owner": {
+    "host": "training-vlawm-tsinghua-zt3",
+    "pid": 1329887,
+    "start_ticks": 1387729280,
+    "code_sha": "71f10f54d20b3297485bb52ad5dc0ed97557af85",
+    "time": 1792438521.4263718
+  },
+  "scope": "One deployed trajectory per observation; full native image loading/VLM/planner vs cached planner; model loading separate; measured on an active shared research server, not an isolated latency benchmark"
+}

@@ -1,0 +1,63 @@
+{
+  "passed": true,
+  "scenes": 1696,
+  "training_seeds": 3,
+  "inference_seeds": 5,
+  "bootstrap_replicates": 2000,
+  "max_error": 0.0,
+  "records": [
+    {
+      "experiment": "E1",
+      "max_error": 0.0
+    },
+    {
+      "experiment": "E2",
+      "max_error": 0.0
+    },
+    {
+      "experiment": "E3",
+      "max_error": 0.0
+    },
+    {
+      "experiment": "E4-A",
+      "max_error": 0.0
+    },
+    {
+      "experiment": "E4-B",
+      "max_error": 0.0
+    },
+    {
+      "experiment": "E4-C",
+      "max_error": 0.0
+    },
+    {
+      "experiment": "E5",
+      "max_error": 0.0
+    },
+    {
+      "contrast": "E3_vs_E1",
+      "max_error": 0.0
+    },
+    {
+      "contrast": "E3_vs_E2",
+      "max_error": 0.0
+    },
+    {
+      "contrast": "E4-A_vs_E3",
+      "max_error": 0.0
+    },
+    {
+      "contrast": "E4-B_vs_E3",
+      "max_error": 0.0
+    },
+    {
+      "contrast": "E4-C_vs_E3",
+      "max_error": 0.0
+    },
+    {
+      "contrast": "E5_vs_E3",
+      "max_error": 0.0
+    }
+  ],
+  "scope": "Actual complete dev outputs, all seven model metrics and six paired contrasts exactly equal pre-optimization results. Identical bootstrap draws; fewer irrelevant score-field copies."
+}

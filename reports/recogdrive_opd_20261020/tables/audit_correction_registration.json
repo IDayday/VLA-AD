@@ -1,0 +1,15 @@
+{
+  "status": "LOCKED_BEFORE_V2_TRAINING",
+  "record": "/mnt/project/VLA-AD/research/recogdrive-opd-20261020/reports/recogdrive_opd_20261020/08_baseline_contract_correction.md",
+  "upstream": "5831ee83c7a6a40bf6919715b96b0e9ba2b48335",
+  "evidence_sha256": "7e96696541e37a3e6a83cec79b3c03c92ada1fa0b2edf6a2768742a8e00562a4",
+  "old_protocol": {
+    "path": "/mnt/project/VLA-AD/research/recogdrive-opd-20261020/configs/opd/protocol.yaml",
+    "sha256": "e02028b646a2745dca0b0a6f6eae7dff57119b3d12f8aeb0a3324a1f80c88968",
+    "before_tuning": true,
+    "before_formal": true,
+    "source_code": "6656ce616f83bdf429eeca1813d57274aa701761"
+  },
+  "new_observation_contract": "98ce682857a3c0b5cc7ca521499db4d8a175444729b472465a15d6adb43f9093",
+  "time": 1792434682.3907483
+}

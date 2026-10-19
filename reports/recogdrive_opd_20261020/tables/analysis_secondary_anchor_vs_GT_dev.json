@@ -1,0 +1,42 @@
+{
+  "contrast": "E4-C minus E4-B",
+  "result": {
+    "PDMS": {
+      "estimate": -4.4762508330631334e-05,
+      "lower95": -0.0008141163587009614,
+      "upper95": 0.000816394361482611
+    },
+    "G": {
+      "estimate": -4.4762508330502965e-05,
+      "lower95": -0.0008141163587009497,
+      "upper95": 0.0008163943614827714
+    },
+    "M_minus": {
+      "estimate": -0.00012343294422206656,
+      "lower95": -0.0006347689272608013,
+      "upper95": 0.00023242539153996614
+    },
+    "stable_high_to_zero_fraction": {
+      "estimate": 0.0,
+      "lower95": -0.00026164825710331256,
+      "upper95": 0.0
+    }
+  },
+  "scope": "Secondary comparison added after viewing dev means; fixed existing models, no new training or queries, no final test, does not replace primary decisions",
+  "matched": [
+    "IL initialization",
+    "seed",
+    "scene/noise schedule",
+    "learning rate",
+    "GT weight",
+    "updates",
+    "capacity"
+  ],
+  "owner": {
+    "host": "training-vla-zt",
+    "pid": 1520460,
+    "start_ticks": 1387799292,
+    "code_sha": "3e1c71ad42c1de38efc1d6c353fce93a08fce5a5",
+    "time": 1792439402.264205
+  }
+}

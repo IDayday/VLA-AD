@@ -1,0 +1,111 @@
+{
+  "revision": "16873acca08e3c04ab229b3d973f39aeba9db68d",
+  "records": [
+    {
+      "file": "added_tokens.json",
+      "official_blob": "a02be3946d4dec26e9bb589339f0fe8372a909c3",
+      "actual_blob": "a02be3946d4dec26e9bb589339f0fe8372a909c3",
+      "exact": true,
+      "sha256": "f2008ed2a42163fdfe6e1942bf8d1e901bb877384c5ad740a8ab7f31f857e91e"
+    },
+    {
+      "file": "all_results.json",
+      "official_blob": "efa38a2f8109f7231a7608ee72e4d645c65a5f9f",
+      "actual_blob": "efa38a2f8109f7231a7608ee72e4d645c65a5f9f",
+      "exact": true,
+      "sha256": "46c60e3d2fa48423bd9f1cd749d7704dc3bf60b8ba9d255785084941ee41199d"
+    },
+    {
+      "file": "config.json",
+      "official_blob": "7bc95fa1f145071b2768ff6734deb230bfe46e7d",
+      "actual_blob": "7bc95fa1f145071b2768ff6734deb230bfe46e7d",
+      "exact": true,
+      "sha256": "6c7249180e5312db63e2279d06232a920f077157d56491bb59de319ed37c8656"
+    },
+    {
+      "file": "configuration_intern_vit.py",
+      "official_blob": "7e630c456eb9cf350e55bf850c3ff72f445a7e17",
+      "actual_blob": "7e630c456eb9cf350e55bf850c3ff72f445a7e17",
+      "exact": true,
+      "sha256": "22dd687a5f142985407675fc6b1dc688c2ded93e54192543ecf28ef495a6efa8"
+    },
+    {
+      "file": "configuration_internvl_chat.py",
+      "official_blob": "502772cc6e24e6d1fbc5bf91ce76c9b234101eaf",
+      "actual_blob": "502772cc6e24e6d1fbc5bf91ce76c9b234101eaf",
+      "exact": true,
+      "sha256": "6524e6deae6c318543d1022a599f011120f5a970eaa25f1118e7f5d0e346710c"
+    },
+    {
+      "file": "conversation.py",
+      "official_blob": "5a771766f21ce3aeeb99b286fb8d188b0038a547",
+      "actual_blob": "5a771766f21ce3aeeb99b286fb8d188b0038a547",
+      "exact": true,
+      "sha256": "b1b9f280e9cb9211e519e2b8071002b57cc742aadb2f49b05fa674ee3c7d83ee"
+    },
+    {
+      "file": "generation_config.json",
+      "official_blob": "babac55572610cf59da0e8a71a4203ed6f2a7ab9",
+      "actual_blob": "babac55572610cf59da0e8a71a4203ed6f2a7ab9",
+      "exact": true,
+      "sha256": "69d76e6b0a3b31f0de871f8f5b968957e0532fd9b17214aabf151da4bdbe1804"
+    },
+    {
+      "file": "merges.txt",
+      "official_blob": "8488ce08857fb9abc0dd05fd9f399d6d0234686f",
+      "actual_blob": "8488ce08857fb9abc0dd05fd9f399d6d0234686f",
+      "exact": true,
+      "sha256": "455e0caaa06abffc663e9282dfe71dde07fd1991eaf24146bf08793c4dba4497"
+    },
+    {
+      "file": "modeling_intern_vit.py",
+      "official_blob": "233b0293451a13c7b5211d65633deb73a13b240c",
+      "actual_blob": "233b0293451a13c7b5211d65633deb73a13b240c",
+      "exact": true,
+      "sha256": "1978e330ea5533dda4d1379096aded271fc741347fc48cb4924846b56a2a6a4b"
+    },
+    {
+      "file": "modeling_internvl_chat.py",
+      "official_blob": "cb83c575490fef0cf510d8a9d33746c140f71cf3",
+      "actual_blob": "cb83c575490fef0cf510d8a9d33746c140f71cf3",
+      "exact": true,
+      "sha256": "5d8f26ccfeb8434c0bcc295050725add4b2f2b0ffb4d1ab550c877a648386597"
+    },
+    {
+      "file": "special_tokens_map.json",
+      "official_blob": "e67eb69d73cb866f24ce4bfef6ab55ce52172efd",
+      "actual_blob": "e67eb69d73cb866f24ce4bfef6ab55ce52172efd",
+      "exact": true,
+      "sha256": "1f6bc2d8338493b8e0ad8da35655b592c0bc6d41e1deae60f3c57f21599045f2"
+    },
+    {
+      "file": "tokenizer_config.json",
+      "official_blob": "bfc429554b297e32a80268c4f178054071de280c",
+      "actual_blob": "bfc429554b297e32a80268c4f178054071de280c",
+      "exact": true,
+      "sha256": "23c362651f75758f131d4798dd8fe3afe2c376063f5c514c5df46c20919db82c"
+    },
+    {
+      "file": "train_results.json",
+      "official_blob": "efa38a2f8109f7231a7608ee72e4d645c65a5f9f",
+      "actual_blob": "efa38a2f8109f7231a7608ee72e4d645c65a5f9f",
+      "exact": true,
+      "sha256": "46c60e3d2fa48423bd9f1cd749d7704dc3bf60b8ba9d255785084941ee41199d"
+    },
+    {
+      "file": "trainer_state.json",
+      "official_blob": "3827cfb7e0cf1ae9ead512e8133797a595fff1ce",
+      "actual_blob": "3827cfb7e0cf1ae9ead512e8133797a595fff1ce",
+      "exact": true,
+      "sha256": "2aca801a23b10fde07397a7e2b91c869ed727d33d1fba1af326ad9e4fd9d6b26"
+    },
+    {
+      "file": "vocab.json",
+      "official_blob": "6bce3a0a3866c4791a74d83d78f6824c3af64ec3",
+      "actual_blob": "6bce3a0a3866c4791a74d83d78f6824c3af64ec3",
+      "exact": true,
+      "sha256": "87a257b04b17642a0688c98cd1df89c398bda4fee532d6f88b38a659ecb4ac8d"
+    }
+  ],
+  "all_exact": true
+}

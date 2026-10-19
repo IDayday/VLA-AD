@@ -1,0 +1,12 @@
+{
+  "bytes": 399381530528,
+  "GiB": 371.9530352652073,
+  "scope": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020",
+  "command": [
+    "du",
+    "-sb",
+    "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020"
+  ],
+  "time": 1792442014.79885,
+  "definition": "Apparent bytes of task outputs, including INVALID history and valid rerun; no symlink traversal; existing external raw datasets, source weights and reused train metric caches excluded"
+}

@@ -1,0 +1,406 @@
+{
+  "passed": true,
+  "policies": 21,
+  "records": [
+    {
+      "experiment": "E1",
+      "seed": 42,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "e685a13caa8db39a3299b83bcb80ab39d99f00671e09ef5dc959f4a197a9bb70",
+      "schedule_sha256": "ffb3b33febb756281ff52bce8568a401bf005399ef367a9e75f24ad9ae3a51b2",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E1",
+      "seed": 43,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "1388280a7e64f7e9d7b48740ba5523b6efa92cd943131b46fe6a8cdd36b8974c",
+      "schedule_sha256": "6f8b14b3c988296c688e39f6a2ee3d7ed9677230e4f899f018fcfa47399f842c",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E1",
+      "seed": 44,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "b7eed03eb0a8027ecc55d43ae0395dd3c02b2d763ec1d65a5d1f402224e3807f",
+      "schedule_sha256": "e53f02e95f0af58625ec203145c9005dd2355c7a91a29cca6d236eb13a6b0713",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E2",
+      "seed": 42,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "c5644b4d19eaa046b41c5934a1bc13d621a3c6452e1ed7d6db6fb90420882f2d",
+      "schedule_sha256": "ffb3b33febb756281ff52bce8568a401bf005399ef367a9e75f24ad9ae3a51b2",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E2",
+      "seed": 43,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "4dbc898ab39a0d625a5196f07b73bbd3efe5132edf2ad17d51f0cb5ab3d98ffe",
+      "schedule_sha256": "6f8b14b3c988296c688e39f6a2ee3d7ed9677230e4f899f018fcfa47399f842c",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E2",
+      "seed": 44,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "f41c85a4abf743fadf2a30ac517a76ae8f254f3507ee46942bb9ce23206be48f",
+      "schedule_sha256": "e53f02e95f0af58625ec203145c9005dd2355c7a91a29cca6d236eb13a6b0713",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E3",
+      "seed": 42,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "60d9fa8384848c9912fcfea1d669acfbbca39017977c6a2d066b5bb916eaf1a4",
+      "schedule_sha256": "ffb3b33febb756281ff52bce8568a401bf005399ef367a9e75f24ad9ae3a51b2",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E3",
+      "seed": 43,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "93d3f661395b85ff2130f9728b5e031289bfef379b71dc953f73253cee62d3d8",
+      "schedule_sha256": "6f8b14b3c988296c688e39f6a2ee3d7ed9677230e4f899f018fcfa47399f842c",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E3",
+      "seed": 44,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "7a5d3bc9854e03ac8f487574f203eacac2dd42627cc43dc5c755df0caa04e570",
+      "schedule_sha256": "e53f02e95f0af58625ec203145c9005dd2355c7a91a29cca6d236eb13a6b0713",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E4-A",
+      "seed": 42,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "e91813c2f4dae43654eb7b48ecbba5b862b1da332a2aadcdbbb9969a4e5e67f7",
+      "schedule_sha256": "ffb3b33febb756281ff52bce8568a401bf005399ef367a9e75f24ad9ae3a51b2",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E4-A",
+      "seed": 43,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "cb9f4b91fd50b529f18aad1ecc9d5a81275936b18a1d15d377ff6b52c491f907",
+      "schedule_sha256": "6f8b14b3c988296c688e39f6a2ee3d7ed9677230e4f899f018fcfa47399f842c",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E4-A",
+      "seed": 44,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "ce664f86d5374e96a7ba0fc52335b3d3aaf0e7d73e466b37e89f4728f3e08034",
+      "schedule_sha256": "e53f02e95f0af58625ec203145c9005dd2355c7a91a29cca6d236eb13a6b0713",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E4-B",
+      "seed": 42,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "ad55ea32f5c4913ee95e488ac441b0a5a532aa9cf50a0dd3247993f1849fa4b6",
+      "schedule_sha256": "ffb3b33febb756281ff52bce8568a401bf005399ef367a9e75f24ad9ae3a51b2",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E4-B",
+      "seed": 43,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "eafa3b3e8513fef40e25b6e22cbdf869a0d079663ce23c9cd6aae7b21faf454a",
+      "schedule_sha256": "6f8b14b3c988296c688e39f6a2ee3d7ed9677230e4f899f018fcfa47399f842c",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E4-B",
+      "seed": 44,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "50a8c37f1c476acbb46329577526939223952588019739dfb4020be7b796d185",
+      "schedule_sha256": "e53f02e95f0af58625ec203145c9005dd2355c7a91a29cca6d236eb13a6b0713",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E4-C",
+      "seed": 42,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "277091dff7133122f896185c4df70d70cb9d1a4afc3d16feca1c9ab7ef05d0c9",
+      "schedule_sha256": "ffb3b33febb756281ff52bce8568a401bf005399ef367a9e75f24ad9ae3a51b2",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E4-C",
+      "seed": 43,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "e79cdf0ed32162a36aee4c2fc02ef2623885d2b120d6cbca83d9d94fc551eee2",
+      "schedule_sha256": "6f8b14b3c988296c688e39f6a2ee3d7ed9677230e4f899f018fcfa47399f842c",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E4-C",
+      "seed": 44,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "180006aa95ef6d3529f8f8ecd32e92ede520c7ad6ce682f1bd1ff33bbe28c3ac",
+      "schedule_sha256": "e53f02e95f0af58625ec203145c9005dd2355c7a91a29cca6d236eb13a6b0713",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E5",
+      "seed": 42,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "cc511ac0ebd791a1a741baa03a5bcf2c25a142cc7f9546d1326bc3f1b88283d2",
+      "schedule_sha256": "ffb3b33febb756281ff52bce8568a401bf005399ef367a9e75f24ad9ae3a51b2",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E5",
+      "seed": 43,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "dda7dc471f55e3c59a85fbace88cea0897e6b43d04ade5d75202af94729215a9",
+      "schedule_sha256": "6f8b14b3c988296c688e39f6a2ee3d7ed9677230e4f899f018fcfa47399f842c",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    },
+    {
+      "experiment": "E5",
+      "seed": 44,
+      "initialization_exactly_official_IL": true,
+      "initial_optimizer_empty": true,
+      "changed_tensors": 326,
+      "checkpoint_sha256": "090d594bc4e067a677316963d3b2343b0de8d6eec49d6df30e01ec67651a8285",
+      "schedule_sha256": "e53f02e95f0af58625ec203145c9005dd2355c7a91a29cca6d236eb13a6b0713",
+      "optimizer_updates": 1000,
+      "inactive_noncore_targets": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "inactive_reason": "Explicitly disabled/frozen auxiliary module, absent from official checkpoints; never used by native inference or this training objective"
+    }
+  ],
+  "all_methods_share_schedule_per_seed": true
+}

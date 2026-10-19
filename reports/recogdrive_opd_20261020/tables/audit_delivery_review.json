@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "protocol_sha256": "4e49e7d2fcceee397fca64df3b5611d7f84c9915d0506fb796a307ecefa7b562",
+  "main_report_sha256": "e403056a22f7444c0fffaddff218f75f62a4db28a0b1949437d7a53da645c589",
+  "CPU": {
+    "tests": 30,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "T01_T28": "PASS",
+  "formal_policies": 21,
+  "navtest_scenes": 12146,
+  "navtest_model_banks": 13,
+  "all_figure_references_exist": true,
+  "all_exported_table_hashes_match": true,
+  "all_CSV_means_match_primary_JSON": true,
+  "original_native_baseline_files_unchanged": true,
+  "E6_formal": "NOT_RUN: registered scientific gate",
+  "resources_restored": 5,
+  "open_jobs": []
+}

@@ -1,0 +1,652 @@
+{
+  "status": "COMPLETE",
+  "split": "navtest",
+  "scenes": 12146,
+  "logs": 136,
+  "methods": {
+    "E2": {
+      "status": "COMPLETE",
+      "training_seeds": [
+        42,
+        43,
+        44
+      ],
+      "metrics": {
+        "PDMS": {
+          "estimate": 0.8688483484818389,
+          "lower95": 0.8537461795793903,
+          "upper95": 0.883689067934299,
+          "replicates": 2000
+        },
+        "G": {
+          "estimate": 0.005210189516044971,
+          "lower95": -0.004680501418202525,
+          "upper95": 0.01433052101440811,
+          "replicates": 2000
+        },
+        "M_plus": {
+          "estimate": 0.03764208575523526,
+          "lower95": 0.033115114154329856,
+          "upper95": 0.04240247750573429,
+          "replicates": 2000
+        },
+        "M_minus": {
+          "estimate": 0.032431896239190294,
+          "lower95": 0.024285856001619085,
+          "upper95": 0.04232580633418111,
+          "replicates": 2000
+        },
+        "material_drop_fraction": {
+          "estimate": 0.08082221856303859,
+          "lower95": 0.05555449743511605,
+          "upper95": 0.09190950440831924,
+          "replicates": 2000
+        },
+        "zero_scene_fraction": {
+          "estimate": 0.05521708106921346,
+          "lower95": 0.04744837047886316,
+          "upper95": 0.07266907335962466,
+          "replicates": 2000
+        },
+        "zero_output_fraction": {
+          "estimate": 0.07614029310060925,
+          "lower95": 0.06319699029968852,
+          "upper95": 0.0896530080682312,
+          "replicates": 2000
+        },
+        "positive_to_zero_fraction": {
+          "estimate": 0.02247653548493331,
+          "lower95": 0.016722460241961286,
+          "upper95": 0.03315666459281618,
+          "replicates": 2000
+        },
+        "stable_high_to_zero_fraction": {
+          "estimate": 0.011745979471979801,
+          "lower95": 0.008251254823180107,
+          "upper95": 0.02013664604479062,
+          "replicates": 2000
+        },
+        "stable_high_retention": {
+          "estimate": 0.9520304732390729,
+          "lower95": 0.9417835574352955,
+          "upper95": 0.9647920347223008,
+          "replicates": 2000
+        },
+        "zero_to_positive_fraction": {
+          "estimate": 0.01954004061693836,
+          "lower95": 0.01656078783055323,
+          "upper95": 0.025262882150080154,
+          "replicates": 2000
+        }
+      },
+      "components": {
+        "NC": 0.9736127120039519,
+        "DAC": 0.9478127229815029,
+        "EP": 0.8296954370523045,
+        "TTC": 0.9341127394478292,
+        "Comfort": 0.9999945112245459,
+        "DDC": 0.9741615895493715,
+        "PDMS": 0.8688483484818513
+      },
+      "median_PDMS": 0.9540960200241948,
+      "median_paired_change": 0.006617290674229559,
+      "new_component_violations": {
+        "NC": {
+          "single_output_fraction": 0.011120259070201439,
+          "scene_fraction": 0.015231351885394368
+        },
+        "DAC": {
+          "single_output_fraction": 0.021450134474998626,
+          "scene_fraction": 0.027388989516438884
+        },
+        "TTC": {
+          "single_output_fraction": 0.019995608979636644,
+          "scene_fraction": 0.028431856852736154
+        },
+        "Comfort": {
+          "single_output_fraction": 5.4887754541961686e-06,
+          "scene_fraction": 2.7443877270980843e-05
+        },
+        "DDC": {
+          "single_output_fraction": 0.011142214172018224,
+          "scene_fraction": 0.014847137603600636
+        }
+      },
+      "categories": {
+        "A": {
+          "scenes": 891,
+          "PDMS": 0.6395825659403753,
+          "IL_PDMS": 0.37754265683054666,
+          "RL_PDMS": 0.9485067648492841
+        },
+        "B": {
+          "scenes": 305,
+          "PDMS": 0.6914836308333362,
+          "IL_PDMS": 0.920800252602689,
+          "RL_PDMS": 0.4428660184467125
+        },
+        "C": {
+          "scenes": 10253,
+          "PDMS": 0.9343318734324366,
+          "IL_PDMS": 0.9450358661458562,
+          "RL_PDMS": 0.9579945133912722
+        },
+        "D": {
+          "scenes": 697,
+          "PDMS": 0.2762650913925411,
+          "IL_PDMS": 0.26264240878799316,
+          "RL_PDMS": 0.3006793397576208
+        }
+      },
+      "teacher_positive_student_zero": 1102,
+      "teacher_zero_student_positive": 287,
+      "both_zero_student_improved": 59
+    },
+    "E3": {
+      "status": "COMPLETE",
+      "training_seeds": [
+        42,
+        43,
+        44
+      ],
+      "metrics": {
+        "PDMS": {
+          "estimate": 0.8731242701852127,
+          "lower95": 0.8581631692266909,
+          "upper95": 0.8876312502749707,
+          "replicates": 2000
+        },
+        "G": {
+          "estimate": 0.009486111219418775,
+          "lower95": -4.344784293712328e-05,
+          "upper95": 0.018900737829276898,
+          "replicates": 2000
+        },
+        "M_plus": {
+          "estimate": 0.03909483791451036,
+          "lower95": 0.03471123238834631,
+          "upper95": 0.04368856962031887,
+          "replicates": 2000
+        },
+        "M_minus": {
+          "estimate": 0.029608726695091587,
+          "lower95": 0.02160868963602575,
+          "upper95": 0.03863506465719008,
+          "replicates": 2000
+        },
+        "material_drop_fraction": {
+          "estimate": 0.06839014215928427,
+          "lower95": 0.04885944302138086,
+          "upper95": 0.07741262690840857,
+          "replicates": 2000
+        },
+        "zero_scene_fraction": {
+          "estimate": 0.05804380042812449,
+          "lower95": 0.04834962272165742,
+          "upper95": 0.07396473080023577,
+          "replicates": 2000
+        },
+        "zero_output_fraction": {
+          "estimate": 0.07194137987814919,
+          "lower95": 0.05878963834988593,
+          "upper95": 0.08583810722480524,
+          "replicates": 2000
+        },
+        "positive_to_zero_fraction": {
+          "estimate": 0.02437016301663099,
+          "lower95": 0.01697451337698705,
+          "upper95": 0.03387537377361845,
+          "replicates": 2000
+        },
+        "stable_high_to_zero_fraction": {
+          "estimate": 0.013063285580986883,
+          "lower95": 0.008814392096711915,
+          "upper95": 0.02099234871651032,
+          "replicates": 2000
+        },
+        "stable_high_retention": {
+          "estimate": 0.9611659887662212,
+          "lower95": 0.9505946199893914,
+          "upper95": 0.9716522984437154,
+          "replicates": 2000
+        },
+        "zero_to_positive_fraction": {
+          "estimate": 0.018606948789725013,
+          "lower95": 0.01586883443963723,
+          "upper95": 0.025259343549444133,
+          "replicates": 2000
+        }
+      },
+      "components": {
+        "NC": 0.9751111477029475,
+        "DAC": 0.9506613974422307,
+        "EP": 0.8327251188027041,
+        "TTC": 0.9371590098249081,
+        "Comfort": 0.9999890224490916,
+        "DDC": 0.975069981887041,
+        "PDMS": 0.8731242701852251
+      },
+      "median_PDMS": 0.9559668305993363,
+      "median_paired_change": 0.006610984578242662,
+      "new_component_violations": {
+        "NC": {
+          "single_output_fraction": 0.009632800922114276,
+          "scene_fraction": 0.011553872331082935
+        },
+        "DAC": {
+          "single_output_fraction": 0.0199132773478237,
+          "scene_fraction": 0.021927657939513696
+        },
+        "TTC": {
+          "single_output_fraction": 0.0173335528843515,
+          "scene_fraction": 0.021022009989571325
+        },
+        "Comfort": {
+          "single_output_fraction": 1.0977550908392337e-05,
+          "scene_fraction": 5.4887754541961686e-05
+        },
+        "DDC": {
+          "single_output_fraction": 0.010274987650255227,
+          "scene_fraction": 0.011416652944728031
+        }
+      },
+      "categories": {
+        "A": {
+          "scenes": 891,
+          "PDMS": 0.6576910815460734,
+          "IL_PDMS": 0.37754265683054666,
+          "RL_PDMS": 0.9485067648492841
+        },
+        "B": {
+          "scenes": 305,
+          "PDMS": 0.7023588983320821,
+          "IL_PDMS": 0.920800252602689,
+          "RL_PDMS": 0.4428660184467125
+        },
+        "C": {
+          "scenes": 10253,
+          "PDMS": 0.9369156549387444,
+          "IL_PDMS": 0.9450358661458562,
+          "RL_PDMS": 0.9579945133912722
+        },
+        "D": {
+          "scenes": 697,
+          "PDMS": 0.2848622065047519,
+          "IL_PDMS": 0.26264240878799316,
+          "RL_PDMS": 0.3006793397576208
+        }
+      },
+      "teacher_positive_student_zero": 1197,
+      "teacher_zero_student_positive": 279,
+      "both_zero_student_improved": 47
+    },
+    "E5": {
+      "status": "COMPLETE",
+      "training_seeds": [
+        42,
+        43,
+        44
+      ],
+      "metrics": {
+        "PDMS": {
+          "estimate": 0.8559655647264339,
+          "lower95": 0.8392453050311265,
+          "upper95": 0.8711641048830194,
+          "replicates": 2000
+        },
+        "G": {
+          "estimate": -0.007672594239360022,
+          "lower95": -0.016293031799796097,
+          "upper95": -0.0015687172745291798,
+          "replicates": 2000
+        },
+        "M_plus": {
+          "estimate": 0.01890484407516354,
+          "lower95": 0.01539082776784404,
+          "upper95": 0.023133701127073004,
+          "replicates": 2000
+        },
+        "M_minus": {
+          "estimate": 0.02657743831452356,
+          "lower95": 0.01896663178208016,
+          "upper95": 0.035770406531933224,
+          "replicates": 2000
+        },
+        "material_drop_fraction": {
+          "estimate": 0.0647401064822438,
+          "lower95": 0.04662931054366205,
+          "upper95": 0.07054838275889871,
+          "replicates": 2000
+        },
+        "zero_scene_fraction": {
+          "estimate": 0.058428014709918215,
+          "lower95": 0.0512994978723443,
+          "upper95": 0.07658260895971265,
+          "replicates": 2000
+        },
+        "zero_output_fraction": {
+          "estimate": 0.07999890224490915,
+          "lower95": 0.06789302465189155,
+          "upper95": 0.09461409620289708,
+          "replicates": 2000
+        },
+        "positive_to_zero_fraction": {
+          "estimate": 0.018716724298808936,
+          "lower95": 0.011441385324822261,
+          "upper95": 0.029560522443902115,
+          "replicates": 2000
+        },
+        "stable_high_to_zero_fraction": {
+          "estimate": 0.007986168285855426,
+          "lower95": 0.003635018357795919,
+          "upper95": 0.01635351994660077,
+          "replicates": 2000
+        },
+        "stable_high_retention": {
+          "estimate": 0.9640712763896958,
+          "lower95": 0.9538202570823792,
+          "upper95": 0.9756512701643837,
+          "replicates": 2000
+        },
+        "zero_to_positive_fraction": {
+          "estimate": 0.012569295790109227,
+          "lower95": 0.00970862694435745,
+          "upper95": 0.01723333175113329,
+          "replicates": 2000
+        }
+      },
+      "components": {
+        "NC": 0.9793567155167682,
+        "DAC": 0.9379164608375872,
+        "EP": 0.8025327171263894,
+        "TTC": 0.9410231077446621,
+        "Comfort": 0.9997310500027444,
+        "DDC": 0.9771090619682749,
+        "PDMS": 0.8559655647264356
+      },
+      "median_PDMS": 0.9373234343481667,
+      "median_paired_change": 0.0,
+      "new_component_violations": {
+        "NC": {
+          "single_output_fraction": 0.005483286678741973,
+          "scene_fraction": 0.007107964213184039
+        },
+        "DAC": {
+          "single_output_fraction": 0.020676217135956968,
+          "scene_fraction": 0.02571491300290905
+        },
+        "TTC": {
+          "single_output_fraction": 0.011010483561117515,
+          "scene_fraction": 0.01429826005818102
+        },
+        "Comfort": {
+          "single_output_fraction": 7.13540809045502e-05,
+          "scene_fraction": 0.00016466326362588507
+        },
+        "DDC": {
+          "single_output_fraction": 0.007541577474065536,
+          "scene_fraction": 0.009907239694824085
+        }
+      },
+      "categories": {
+        "A": {
+          "scenes": 891,
+          "PDMS": 0.4768613096391382,
+          "IL_PDMS": 0.37754265683054666,
+          "RL_PDMS": 0.9485067648492841
+        },
+        "B": {
+          "scenes": 305,
+          "PDMS": 0.8406525577726012,
+          "IL_PDMS": 0.920800252602689,
+          "RL_PDMS": 0.4428660184467125
+        },
+        "C": {
+          "scenes": 10253,
+          "PDMS": 0.9270045703176324,
+          "IL_PDMS": 0.9450358661458562,
+          "RL_PDMS": 0.9579945133912722
+        },
+        "D": {
+          "scenes": 697,
+          "PDMS": 0.3022918689978019,
+          "IL_PDMS": 0.26264240878799316,
+          "RL_PDMS": 0.3006793397576208
+        }
+      },
+      "teacher_positive_student_zero": 1346,
+      "teacher_zero_student_positive": 414,
+      "both_zero_student_improved": 85
+    },
+    "E4-A": {
+      "status": "COMPLETE",
+      "training_seeds": [
+        42,
+        43,
+        44
+      ],
+      "metrics": {
+        "PDMS": {
+          "estimate": 0.8749418547103708,
+          "lower95": 0.8614794698367247,
+          "upper95": 0.8886690846958021,
+          "replicates": 2000
+        },
+        "G": {
+          "estimate": 0.011303695744576838,
+          "lower95": 0.0028140316319825004,
+          "upper95": 0.019546821763692813,
+          "replicates": 2000
+        },
+        "M_plus": {
+          "estimate": 0.03755246079690065,
+          "lower95": 0.03332802882240149,
+          "upper95": 0.042092626676471075,
+          "replicates": 2000
+        },
+        "M_minus": {
+          "estimate": 0.02624876505232382,
+          "lower95": 0.019441116134395486,
+          "upper95": 0.034069179330835815,
+          "replicates": 2000
+        },
+        "material_drop_fraction": {
+          "estimate": 0.06312091772325594,
+          "lower95": 0.04546784526437314,
+          "upper95": 0.07009462234746516,
+          "replicates": 2000
+        },
+        "zero_scene_fraction": {
+          "estimate": 0.05538174433283934,
+          "lower95": 0.04683082605071121,
+          "upper95": 0.06999784901382669,
+          "replicates": 2000
+        },
+        "zero_output_fraction": {
+          "estimate": 0.06914759317196335,
+          "lower95": 0.05729232720796957,
+          "upper95": 0.08149296572118046,
+          "replicates": 2000
+        },
+        "positive_to_zero_fraction": {
+          "estimate": 0.02157088753499094,
+          "lower95": 0.015159782346202,
+          "upper95": 0.029926541136590126,
+          "replicates": 2000
+        },
+        "stable_high_to_zero_fraction": {
+          "estimate": 0.011444096821999011,
+          "lower95": 0.0076819851712605575,
+          "upper95": 0.018528229132524852,
+          "replicates": 2000
+        },
+        "stable_high_retention": {
+          "estimate": 0.9649428626767383,
+          "lower95": 0.9557826656878032,
+          "upper95": 0.9746391721508679,
+          "replicates": 2000
+        },
+        "zero_to_positive_fraction": {
+          "estimate": 0.01846972940337011,
+          "lower95": 0.01586998958194545,
+          "upper95": 0.024744278780443354,
+          "replicates": 2000
+        }
+      },
+      "components": {
+        "NC": 0.9768840221746529,
+        "DAC": 0.9517042647785279,
+        "EP": 0.8322135865812385,
+        "TTC": 0.9397552006147428,
+        "Comfort": 0.9999615785718207,
+        "DDC": 0.975684724737911,
+        "PDMS": 0.8749418547103607
+      },
+      "median_PDMS": 0.9545764701493594,
+      "median_paired_change": 0.006026779829086892,
+      "new_component_violations": {
+        "NC": {
+          "single_output_fraction": 0.008019100938580603,
+          "scene_fraction": 0.010126790712991931
+        },
+        "DAC": {
+          "single_output_fraction": 0.018244689609748066,
+          "scene_fraction": 0.020390800812338766
+        },
+        "TTC": {
+          "single_output_fraction": 0.014775783522696087,
+          "scene_fraction": 0.018716724298808936
+        },
+        "Comfort": {
+          "single_output_fraction": 2.1955101816784674e-05,
+          "scene_fraction": 2.7443877270980843e-05
+        },
+        "DDC": {
+          "single_output_fraction": 0.009248586640320544,
+          "scene_fraction": 0.010099346835720951
+        }
+      },
+      "categories": {
+        "A": {
+          "scenes": 891,
+          "PDMS": 0.6547117685442622,
+          "IL_PDMS": 0.37754265683054666,
+          "RL_PDMS": 0.9485067648492841
+        },
+        "B": {
+          "scenes": 305,
+          "PDMS": 0.7341793701071994,
+          "IL_PDMS": 0.920800252602689,
+          "RL_PDMS": 0.4428660184467125
+        },
+        "C": {
+          "scenes": 10253,
+          "PDMS": 0.938329426443212,
+          "IL_PDMS": 0.9450358661458562,
+          "RL_PDMS": 0.9579945133912722
+        },
+        "D": {
+          "scenes": 697,
+          "PDMS": 0.2856230478253609,
+          "IL_PDMS": 0.26264240878799316,
+          "RL_PDMS": 0.3006793397576208
+        }
+      },
+      "teacher_positive_student_zero": 1120,
+      "teacher_zero_student_positive": 299,
+      "both_zero_student_improved": 56
+    }
+  },
+  "contrasts": {
+    "E3_vs_E2": {
+      "PDMS": {
+        "estimate": 0.004275921703373764,
+        "lower95": 0.0009441356507086024,
+        "upper95": 0.007224960051373118
+      },
+      "G": {
+        "estimate": 0.004275921703373804,
+        "lower95": 0.0009441356507085638,
+        "upper95": 0.0072249600513730455
+      },
+      "M_minus": {
+        "estimate": -0.0028231695440987074,
+        "lower95": -0.006217956534946399,
+        "upper95": 0.0012340434475330963
+      },
+      "stable_high_to_zero_fraction": {
+        "estimate": 0.0013173061090070819,
+        "lower95": -0.0015453818916290926,
+        "upper95": 0.0035030276396337463
+      }
+    },
+    "E4-A_vs_E3": {
+      "PDMS": {
+        "estimate": 0.0018175845251581224,
+        "lower95": -0.0005792006045275744,
+        "upper95": 0.0046075400111731425
+      },
+      "G": {
+        "estimate": 0.0018175845251580634,
+        "lower95": -0.0005792006045275531,
+        "upper95": 0.004607540011173211
+      },
+      "M_minus": {
+        "estimate": -0.0033599616427677677,
+        "lower95": -0.005509773430239851,
+        "upper95": -0.0014793070603362774
+      },
+      "stable_high_to_zero_fraction": {
+        "estimate": -0.0016191887589878714,
+        "lower95": -0.003281481100778406,
+        "upper95": -0.00014411685535889275
+      }
+    },
+    "E5_vs_E3": {
+      "PDMS": {
+        "estimate": -0.017158705458778734,
+        "lower95": -0.028356101572070906,
+        "upper95": -0.005610690796166095
+      },
+      "G": {
+        "estimate": -0.017158705458778796,
+        "lower95": -0.028356101572070903,
+        "upper95": -0.005610690796166128
+      },
+      "M_minus": {
+        "estimate": -0.0030312883805680285,
+        "lower95": -0.015844153527316256,
+        "upper95": 0.008441080602636928
+      },
+      "stable_high_to_zero_fraction": {
+        "estimate": -0.0050771172951314565,
+        "lower95": -0.013716265452085319,
+        "upper95": 0.003276770235714441
+      }
+    },
+    "E5_vs_E4-A": {
+      "PDMS": {
+        "estimate": -0.018976289983936856,
+        "lower95": -0.02952912696585882,
+        "upper95": -0.008717693367869175
+      },
+      "G": {
+        "estimate": -0.01897628998393686,
+        "lower95": -0.029529126965858746,
+        "upper95": -0.008717693367869183
+      },
+      "M_minus": {
+        "estimate": 0.00032867326219973916,
+        "lower95": -0.011000285539250313,
+        "upper95": 0.011003048573310751
+      },
+      "stable_high_to_zero_fraction": {
+        "estimate": -0.003457928536143585,
+        "lower95": -0.011374885959019695,
+        "upper95": 0.004521369887153292
+      }
+    }
+  },
+  "interval_unit": "Paired complete logs, independent training seeds, paired inference seeds. Pooled scene weighting; no scene/pair pseudoreplication.",
+  "high_subset": "Independent5 IL screening seeds, threshold0.8 in every screen draw; evaluate using a different5 seeds."
+}

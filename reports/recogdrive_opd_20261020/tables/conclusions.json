@@ -1,0 +1,118 @@
+{
+  "Q1": "INCONCLUSIVE",
+  "E3_vs_E1": "SUPPORTED",
+  "E3_vs_E2": "INCONCLUSIVE",
+  "E3_transfer_vs_IL": "SUPPORTED",
+  "Q2_OPD_forgetting": "SUPPORTED",
+  "Q2_mitigation": {
+    "E4-A": {
+      "status": "INCONCLUSIVE",
+      "raw_M_minus_reduction_status": "INCONCLUSIVE",
+      "M_minus_reduction": {
+        "estimate": 0.001507919592964438,
+        "lower95": -0.004007024149964809,
+        "upper95": 0.00549156615915627
+      },
+      "PDMS_difference": {
+        "estimate": -0.001021057703126882,
+        "lower95": -0.009186430623152936,
+        "upper95": 0.003457462799706065
+      }
+    },
+    "E4-B": {
+      "status": "INCONCLUSIVE",
+      "raw_M_minus_reduction_status": "SUPPORTED",
+      "M_minus_reduction": {
+        "estimate": 0.006883612712157163,
+        "lower95": 0.002343408783905862,
+        "upper95": 0.014046704442703015
+      },
+      "PDMS_difference": {
+        "estimate": -0.009050266581453137,
+        "lower95": -0.017268285750619543,
+        "upper95": -0.0006966396633563171
+      }
+    },
+    "E4-C": {
+      "status": "INCONCLUSIVE",
+      "raw_M_minus_reduction_status": "SUPPORTED",
+      "M_minus_reduction": {
+        "estimate": 0.0070070456563792296,
+        "lower95": 0.0024372042129488583,
+        "upper95": 0.014122244853355762
+      },
+      "PDMS_difference": {
+        "estimate": -0.009095029089783768,
+        "lower95": -0.017608676414693124,
+        "upper95": -0.0007774273482955954
+      }
+    },
+    "E5": {
+      "status": "INCONCLUSIVE",
+      "raw_M_minus_reduction_status": "INCONCLUSIVE",
+      "M_minus_reduction": {
+        "estimate": -0.006886602368434181,
+        "lower95": -0.022030355714349217,
+        "upper95": 0.002155755689903619
+      },
+      "PDMS_difference": {
+        "estimate": -0.025327999418611413,
+        "lower95": -0.048149579607412535,
+        "upper95": -0.012124275560790853
+      }
+    }
+  },
+  "Q3_teacher_ceiling": "NOT_RUN",
+  "primary_scope": "Fixed1696-scene dev main analysis; independent navtest confirmation reported separately",
+  "E5_transfer_vs_IL": "NOT_SUPPORTED",
+  "E5_vs_matched_E4C": {
+    "status": "NOT_SUPPORTED",
+    "raw_M_minus_reduction_status": "NOT_SUPPORTED",
+    "M_minus_reduction": {
+      "estimate": -0.01389364802481341,
+      "lower95": -0.03085352021152471,
+      "upper95": -0.005272521669801534
+    },
+    "PDMS_difference": {
+      "estimate": -0.016232970328827645,
+      "lower95": -0.03414679625660765,
+      "upper95": -0.0056936920644667195
+    }
+  },
+  "navtest_confirmation": {
+    "E3_vs_E2": "SUPPORTED",
+    "E3_transfer_vs_IL": "INCONCLUSIVE",
+    "mitigation": {
+      "E4-A": {
+        "status": "SUPPORTED",
+        "raw_M_minus_reduction_status": "SUPPORTED",
+        "M_minus_reduction": {
+          "estimate": 0.0033599616427677677,
+          "lower95": 0.0014793070603362774,
+          "upper95": 0.005509773430239851
+        },
+        "PDMS_difference": {
+          "estimate": 0.0018175845251581224,
+          "lower95": -0.0005792006045275744,
+          "upper95": 0.0046075400111731425
+        }
+      },
+      "E5": {
+        "status": "INCONCLUSIVE",
+        "raw_M_minus_reduction_status": "INCONCLUSIVE",
+        "M_minus_reduction": {
+          "estimate": 0.0030312883805680285,
+          "lower95": -0.008441080602636928,
+          "upper95": 0.015844153527316256
+        },
+        "PDMS_difference": {
+          "estimate": -0.017158705458778734,
+          "lower95": -0.028356101572070906,
+          "upper95": -0.005610690796166095
+        }
+      }
+    }
+  },
+  "Q1_stable_extra_value": "INCONCLUSIVE",
+  "combined_decision_note": "Conservative cross-split consistency description, not a new significance test or pooled curve; original dev decisions and thresholds retained"
+}

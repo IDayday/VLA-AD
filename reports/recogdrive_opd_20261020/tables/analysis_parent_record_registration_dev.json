@@ -1,0 +1,38 @@
+{
+  "scope": "POST_HOC sensitivity, registered after primary dev and navtest estimates were viewed; no new training/inference or selection",
+  "reason": "Multiple official NAVSIM logs share a parent driving record; examine residual cross-log dependence",
+  "primary_sha256": "cbb5bf2e487187965e6a0f5248bcd5b1919b157c833f452a302bffd9db71615f",
+  "protocol_sha256": "4e49e7d2fcceee397fca64df3b5611d7f84c9915d0506fb796a307ecefa7b562",
+  "all_methods": [
+    "E1",
+    "E2",
+    "E3",
+    "E4-A",
+    "E4-B",
+    "E4-C",
+    "E5"
+  ],
+  "all_contrasts": [
+    "E2_vs_E1",
+    "E3_vs_E1",
+    "E3_vs_E2",
+    "E4-A_vs_E3",
+    "E4-B_vs_E3",
+    "E4-C_vs_E3",
+    "E5_vs_E3",
+    "E5_vs_E4-C",
+    "E5_vs_E4-A"
+  ],
+  "cluster_unit": "Complete parent driving record including vehicle ID",
+  "parents": 15,
+  "logs": 16,
+  "scenes": 1696,
+  "replicates": 2000,
+  "owner": {
+    "host": "training-vla-zt",
+    "pid": 1564059,
+    "start_ticks": 1388010719,
+    "code_sha": "b31252e5366d23f4b28c166ca997e49268176530",
+    "time": 1792441494.1536314
+  }
+}

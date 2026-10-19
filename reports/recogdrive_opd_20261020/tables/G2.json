@@ -1,0 +1,55 @@
+{
+  "status": "PASS",
+  "results": {
+    "E1": {
+      "PDMS": 0.7986920087901459,
+      "Delta_PDMS": -0.05197902817806743,
+      "zero_output_fraction": 0.14749034749034748,
+      "catastrophic": false,
+      "finite_valid": true
+    },
+    "E2": {
+      "PDMS": 0.8400168352178219,
+      "Delta_PDMS": -0.010654201750391445,
+      "zero_output_fraction": 0.10463320463320464,
+      "catastrophic": false,
+      "finite_valid": true
+    },
+    "E3": {
+      "PDMS": 0.8399245037058708,
+      "Delta_PDMS": -0.01074653326234254,
+      "zero_output_fraction": 0.10463320463320464,
+      "catastrophic": false,
+      "finite_valid": true
+    },
+    "E4-A": {
+      "PDMS": 0.8394250560369096,
+      "Delta_PDMS": -0.01124598093130369,
+      "zero_output_fraction": 0.10463320463320464,
+      "catastrophic": false,
+      "finite_valid": true
+    },
+    "E4-B": {
+      "PDMS": 0.8204605021125307,
+      "Delta_PDMS": -0.03021053485568259,
+      "zero_output_fraction": 0.12162162162162163,
+      "catastrophic": false,
+      "finite_valid": true
+    },
+    "E4-C": {
+      "PDMS": 0.8185841251391602,
+      "Delta_PDMS": -0.0320869118290531,
+      "zero_output_fraction": 0.12355212355212356,
+      "catastrophic": false,
+      "finite_valid": true
+    },
+    "E5": {
+      "PDMS": 0.8154574047573986,
+      "Delta_PDMS": -0.03521363221081475,
+      "zero_output_fraction": 0.12702702702702703,
+      "catastrophic": false,
+      "finite_valid": true
+    }
+  },
+  "rule": "All seven fixed256-scene qualification runs and full D_cal eval must be valid; stop if mean PDMS drops by0.10"
+}

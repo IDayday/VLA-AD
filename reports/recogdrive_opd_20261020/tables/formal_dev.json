@@ -1,0 +1,1176 @@
+{
+  "status": "COMPLETE",
+  "split": "dev",
+  "scenes": 1696,
+  "logs": 16,
+  "methods": {
+    "E1": {
+      "status": "COMPLETE",
+      "training_seeds": [
+        42,
+        43,
+        44
+      ],
+      "metrics": {
+        "PDMS": {
+          "estimate": 0.8922666205335855,
+          "lower95": 0.8616713962245163,
+          "upper95": 0.9206662199758235,
+          "replicates": 2000
+        },
+        "G": {
+          "estimate": -0.02251656450799973,
+          "lower95": -0.05053742510843011,
+          "upper95": 0.00882415828881374,
+          "replicates": 2000
+        },
+        "M_plus": {
+          "estimate": 0.028596090169280355,
+          "lower95": 0.017392234324292342,
+          "upper95": 0.04835222010967384,
+          "replicates": 2000
+        },
+        "M_minus": {
+          "estimate": 0.05111265467728008,
+          "lower95": 0.028862878516836086,
+          "upper95": 0.07470312458270936,
+          "replicates": 2000
+        },
+        "material_drop_fraction": {
+          "estimate": 0.1306996855345912,
+          "lower95": 0.07504918502770791,
+          "upper95": 0.16536397953453547,
+          "replicates": 2000
+        },
+        "zero_scene_fraction": {
+          "estimate": 0.034001572327044025,
+          "lower95": 0.018409141177957535,
+          "upper95": 0.061582741153310604,
+          "replicates": 2000
+        },
+        "zero_output_fraction": {
+          "estimate": 0.0566430817610063,
+          "lower95": 0.03167901909830036,
+          "upper95": 0.08218928881845215,
+          "replicates": 2000
+        },
+        "positive_to_zero_fraction": {
+          "estimate": 0.027712264150943397,
+          "lower95": 0.012483221440249308,
+          "upper95": 0.052411139508149594,
+          "replicates": 2000
+        },
+        "stable_high_to_zero_fraction": {
+          "estimate": 0.01945754716981132,
+          "lower95": 0.007663720785257874,
+          "upper95": 0.04205378167075181,
+          "replicates": 2000
+        },
+        "stable_high_retention": {
+          "estimate": 0.9225100021057066,
+          "lower95": 0.8935947680635056,
+          "upper95": 0.9550432465068872,
+          "replicates": 2000
+        },
+        "zero_to_positive_fraction": {
+          "estimate": 0.00845125786163522,
+          "lower95": 0.002574346939560651,
+          "upper95": 0.023665427059227757,
+          "replicates": 2000
+        }
+      },
+      "components": {
+        "NC": 0.9900746855345912,
+        "DAC": 0.9517295597484277,
+        "EP": 0.8510475368045181,
+        "TTC": 0.9586084905660377,
+        "Comfort": 0.9998034591194969,
+        "DDC": 0.9798938679245283,
+        "PDMS": 0.8922666205335782
+      },
+      "median_PDMS": 0.9569532389448854,
+      "median_paired_change": 0.0,
+      "new_component_violations": {
+        "NC": {
+          "single_output_fraction": 0.010849056603773584,
+          "scene_fraction": 0.016705974842767295
+        },
+        "DAC": {
+          "single_output_fraction": 0.03675314465408805,
+          "scene_fraction": 0.0514937106918239
+        },
+        "TTC": {
+          "single_output_fraction": 0.031761006289308176,
+          "scene_fraction": 0.052083333333333336
+        },
+        "Comfort": {
+          "single_output_fraction": 3.930817610062893e-05,
+          "scene_fraction": 0.00019654088050314466
+        },
+        "DDC": {
+          "single_output_fraction": 0.012657232704402516,
+          "scene_fraction": 0.018867924528301886
+        }
+      },
+      "categories": {
+        "A": {
+          "scenes": 81,
+          "PDMS": 0.6435963854989653,
+          "IL_PDMS": 0.431229340070469,
+          "RL_PDMS": 0.9494484902667961
+        },
+        "B": {
+          "scenes": 25,
+          "PDMS": 0.5178274299897827,
+          "IL_PDMS": 0.9296036744179852,
+          "RL_PDMS": 0.4594232105390113
+        },
+        "C": {
+          "scenes": 1578,
+          "PDMS": 0.9151363443449843,
+          "IL_PDMS": 0.944752764362581,
+          "RL_PDMS": 0.9610601374447301
+        },
+        "D": {
+          "scenes": 12,
+          "PDMS": 0.3435036727846161,
+          "IL_PDMS": 0.20689593835151798,
+          "RL_PDMS": 0.310343077675104
+        }
+      },
+      "teacher_positive_student_zero": 154,
+      "teacher_zero_student_positive": 8,
+      "both_zero_student_improved": 2
+    },
+    "E2": {
+      "status": "COMPLETE",
+      "training_seeds": [
+        42,
+        43,
+        44
+      ],
+      "metrics": {
+        "PDMS": {
+          "estimate": 0.9297269371204134,
+          "lower95": 0.8933147025536204,
+          "upper95": 0.9497043539106313,
+          "replicates": 2000
+        },
+        "G": {
+          "estimate": 0.01494375207882817,
+          "lower95": 0.005739332958185736,
+          "upper95": 0.026174994804526834,
+          "replicates": 2000
+        },
+        "M_plus": {
+          "estimate": 0.02954825807723972,
+          "lower95": 0.0206888299001581,
+          "upper95": 0.04290889485627123,
+          "replicates": 2000
+        },
+        "M_minus": {
+          "estimate": 0.01460450599841155,
+          "lower95": 0.00833951033195151,
+          "upper95": 0.023299754407555464,
+          "replicates": 2000
+        },
+        "material_drop_fraction": {
+          "estimate": 0.04952830188679245,
+          "lower95": 0.026164513350559863,
+          "upper95": 0.05944848140506164,
+          "replicates": 2000
+        },
+        "zero_scene_fraction": {
+          "estimate": 0.01356132075471698,
+          "lower95": 0.004229186547607635,
+          "upper95": 0.033632601315954906,
+          "replicates": 2000
+        },
+        "zero_output_fraction": {
+          "estimate": 0.020754716981132074,
+          "lower95": 0.008724468331982212,
+          "upper95": 0.04291605822724435,
+          "replicates": 2000
+        },
+        "positive_to_zero_fraction": {
+          "estimate": 0.0072720125786163515,
+          "lower95": 0.002750114968472919,
+          "upper95": 0.017248243876254572,
+          "replicates": 2000
+        },
+        "stable_high_to_zero_fraction": {
+          "estimate": 0.0035377358490566034,
+          "lower95": 0.00046380944562710166,
+          "upper95": 0.010638500121349405,
+          "replicates": 2000
+        },
+        "stable_high_retention": {
+          "estimate": 0.9776795114761002,
+          "lower95": 0.9642371635896022,
+          "upper95": 0.9887761739604957,
+          "replicates": 2000
+        },
+        "zero_to_positive_fraction": {
+          "estimate": 0.00845125786163522,
+          "lower95": 0.0038479912299429616,
+          "upper95": 0.019125308061937622,
+          "replicates": 2000
+        }
+      },
+      "components": {
+        "NC": 0.9965998427672956,
+        "DAC": 0.9814072327044026,
+        "EP": 0.8824717319919521,
+        "TTC": 0.975746855345912,
+        "Comfort": 1.0,
+        "DDC": 0.988502358490566,
+        "PDMS": 0.9297269371204078
+      },
+      "median_PDMS": 0.9673410921298552,
+      "median_paired_change": 0.007059278924388457,
+      "new_component_violations": {
+        "NC": {
+          "single_output_fraction": 0.004088050314465409,
+          "scene_fraction": 0.006878930817610063
+        },
+        "DAC": {
+          "single_output_fraction": 0.008294025157232704,
+          "scene_fraction": 0.012775157232704403
+        },
+        "TTC": {
+          "single_output_fraction": 0.013718553459119497,
+          "scene_fraction": 0.021029874213836477
+        },
+        "Comfort": {
+          "single_output_fraction": 0.0,
+          "scene_fraction": 0.0
+        },
+        "DDC": {
+          "single_output_fraction": 0.0014150943396226414,
+          "scene_fraction": 0.00294811320754717
+        }
+      },
+      "categories": {
+        "A": {
+          "scenes": 81,
+          "PDMS": 0.7371611820477243,
+          "IL_PDMS": 0.431229340070469,
+          "RL_PDMS": 0.9494484902667961
+        },
+        "B": {
+          "scenes": 25,
+          "PDMS": 0.6798801269201258,
+          "IL_PDMS": 0.9296036744179852,
+          "RL_PDMS": 0.4594232105390113
+        },
+        "C": {
+          "scenes": 1578,
+          "PDMS": 0.9493344472755637,
+          "IL_PDMS": 0.944752764362581,
+          "RL_PDMS": 0.9610601374447301
+        },
+        "D": {
+          "scenes": 12,
+          "PDMS": 0.17167238637608173,
+          "IL_PDMS": 0.20689593835151798,
+          "RL_PDMS": 0.310343077675104
+        }
+      },
+      "teacher_positive_student_zero": 53,
+      "teacher_zero_student_positive": 11,
+      "both_zero_student_improved": 0
+    },
+    "E3": {
+      "status": "COMPLETE",
+      "training_seeds": [
+        42,
+        43,
+        44
+      ],
+      "metrics": {
+        "PDMS": {
+          "estimate": 0.9317787993506723,
+          "lower95": 0.8965265831458175,
+          "upper95": 0.9517625888410114,
+          "replicates": 2000
+        },
+        "G": {
+          "estimate": 0.01699561430908705,
+          "lower95": 0.007852681253497687,
+          "upper95": 0.02904725530310429,
+          "replicates": 2000
+        },
+        "M_plus": {
+          "estimate": 0.030241919728606962,
+          "lower95": 0.02108575933958645,
+          "upper95": 0.04369243763897405,
+          "replicates": 2000
+        },
+        "M_minus": {
+          "estimate": 0.013246305419519912,
+          "lower95": 0.007350524345042169,
+          "upper95": 0.020589661361478852,
+          "replicates": 2000
+        },
+        "material_drop_fraction": {
+          "estimate": 0.04304245283018868,
+          "lower95": 0.023721647179093985,
+          "upper95": 0.053298230809155814,
+          "replicates": 2000
+        },
+        "zero_scene_fraction": {
+          "estimate": 0.012382075471698112,
+          "lower95": 0.003624673201273364,
+          "upper95": 0.03191669952694741,
+          "replicates": 2000
+        },
+        "zero_output_fraction": {
+          "estimate": 0.01839622641509434,
+          "lower95": 0.006662002974831056,
+          "upper95": 0.03889315100469158,
+          "replicates": 2000
+        },
+        "positive_to_zero_fraction": {
+          "estimate": 0.006092767295597484,
+          "lower95": 0.0018465216350563528,
+          "upper95": 0.014692512020828462,
+          "replicates": 2000
+        },
+        "stable_high_to_zero_fraction": {
+          "estimate": 0.003144654088050314,
+          "lower95": 0.00040567004418105005,
+          "upper95": 0.009796811135760327,
+          "replicates": 2000
+        },
+        "stable_high_retention": {
+          "estimate": 0.9823120656980416,
+          "lower95": 0.970643863107444,
+          "upper95": 0.9901333768065391,
+          "replicates": 2000
+        },
+        "zero_to_positive_fraction": {
+          "estimate": 0.00845125786163522,
+          "lower95": 0.003700106686210145,
+          "upper95": 0.01968148410257442,
+          "replicates": 2000
+        }
+      },
+      "components": {
+        "NC": 0.9966588050314465,
+        "DAC": 0.9835691823899371,
+        "EP": 0.8841071874953926,
+        "TTC": 0.9760220125786163,
+        "Comfort": 1.0,
+        "DDC": 0.9879520440251572,
+        "PDMS": 0.9317787993506702
+      },
+      "median_PDMS": 0.9683076059510376,
+      "median_paired_change": 0.0067716082155537816,
+      "new_component_violations": {
+        "NC": {
+          "single_output_fraction": 0.004127358490566038,
+          "scene_fraction": 0.005699685534591195
+        },
+        "DAC": {
+          "single_output_fraction": 0.0066823899371069185,
+          "scene_fraction": 0.008254716981132075
+        },
+        "TTC": {
+          "single_output_fraction": 0.01328616352201258,
+          "scene_fraction": 0.01768867924528302
+        },
+        "Comfort": {
+          "single_output_fraction": 0.0,
+          "scene_fraction": 0.0
+        },
+        "DDC": {
+          "single_output_fraction": 0.0020047169811320755,
+          "scene_fraction": 0.00294811320754717
+        }
+      },
+      "categories": {
+        "A": {
+          "scenes": 81,
+          "PDMS": 0.7539254478392184,
+          "IL_PDMS": 0.431229340070469,
+          "RL_PDMS": 0.9494484902667961
+        },
+        "B": {
+          "scenes": 25,
+          "PDMS": 0.6858598975888069,
+          "IL_PDMS": 0.9296036744179852,
+          "RL_PDMS": 0.4594232105390113
+        },
+        "C": {
+          "scenes": 1578,
+          "PDMS": 0.9506574434497572,
+          "IL_PDMS": 0.944752764362581,
+          "RL_PDMS": 0.9610601374447301
+        },
+        "D": {
+          "scenes": 12,
+          "PDMS": 0.1620782683605508,
+          "IL_PDMS": 0.20689593835151798,
+          "RL_PDMS": 0.310343077675104
+        }
+      },
+      "teacher_positive_student_zero": 46,
+      "teacher_zero_student_positive": 10,
+      "both_zero_student_improved": 0
+    },
+    "E4-A": {
+      "status": "COMPLETE",
+      "training_seeds": [
+        42,
+        43,
+        44
+      ],
+      "metrics": {
+        "PDMS": {
+          "estimate": 0.9307577416475454,
+          "lower95": 0.89399213639366,
+          "upper95": 0.9511432055438508,
+          "replicates": 2000
+        },
+        "G": {
+          "estimate": 0.015974556605959894,
+          "lower95": 0.008423018326414284,
+          "upper95": 0.02550349307230619,
+          "replicates": 2000
+        },
+        "M_plus": {
+          "estimate": 0.02771294243251537,
+          "lower95": 0.01939810504090774,
+          "upper95": 0.040540328536157355,
+          "replicates": 2000
+        },
+        "M_minus": {
+          "estimate": 0.011738385826555474,
+          "lower95": 0.005934947145174908,
+          "upper95": 0.021045222543547557,
+          "replicates": 2000
+        },
+        "material_drop_fraction": {
+          "estimate": 0.04068396226415094,
+          "lower95": 0.023255703148199858,
+          "upper95": 0.051137102812287186,
+          "replicates": 2000
+        },
+        "zero_scene_fraction": {
+          "estimate": 0.013364779874213835,
+          "lower95": 0.0046816342430358775,
+          "upper95": 0.03363046146319826,
+          "replicates": 2000
+        },
+        "zero_output_fraction": {
+          "estimate": 0.01910377358490566,
+          "lower95": 0.006787553483199602,
+          "upper95": 0.042580088381215304,
+          "replicates": 2000
+        },
+        "positive_to_zero_fraction": {
+          "estimate": 0.006682389937106918,
+          "lower95": 0.002287907198557092,
+          "upper95": 0.017130111592875603,
+          "replicates": 2000
+        },
+        "stable_high_to_zero_fraction": {
+          "estimate": 0.0023584905660377358,
+          "lower95": 0.0,
+          "upper95": 0.008977013776319128,
+          "replicates": 2000
+        },
+        "stable_high_retention": {
+          "estimate": 0.9837860602232049,
+          "lower95": 0.9707896244046542,
+          "upper95": 0.992733307200176,
+          "replicates": 2000
+        },
+        "zero_to_positive_fraction": {
+          "estimate": 0.00805817610062893,
+          "lower95": 0.0037281347361075483,
+          "upper95": 0.01831519493043119,
+          "replicates": 2000
+        }
+      },
+      "components": {
+        "NC": 0.9979166666666667,
+        "DAC": 0.9818396226415095,
+        "EP": 0.8799440984117984,
+        "TTC": 0.9793632075471698,
+        "Comfort": 1.0,
+        "DDC": 0.9883254716981132,
+        "PDMS": 0.9307577416475433
+      },
+      "median_PDMS": 0.966197623364861,
+      "median_paired_change": 0.005900281552904396,
+      "new_component_violations": {
+        "NC": {
+          "single_output_fraction": 0.002712264150943396,
+          "scene_fraction": 0.004520440251572327
+        },
+        "DAC": {
+          "single_output_fraction": 0.0071933962264150945,
+          "scene_fraction": 0.00845125786163522
+        },
+        "TTC": {
+          "single_output_fraction": 0.010062893081761006,
+          "scene_fraction": 0.013168238993710692
+        },
+        "Comfort": {
+          "single_output_fraction": 0.0,
+          "scene_fraction": 0.0
+        },
+        "DDC": {
+          "single_output_fraction": 0.0014150943396226414,
+          "scene_fraction": 0.002161949685534591
+        }
+      },
+      "categories": {
+        "A": {
+          "scenes": 81,
+          "PDMS": 0.7160699944689406,
+          "IL_PDMS": 0.431229340070469,
+          "RL_PDMS": 0.9494484902667961
+        },
+        "B": {
+          "scenes": 25,
+          "PDMS": 0.7311027570785648,
+          "IL_PDMS": 0.9296036744179852,
+          "RL_PDMS": 0.4594232105390113
+        },
+        "C": {
+          "scenes": 1578,
+          "PDMS": 0.9506264381402321,
+          "IL_PDMS": 0.944752764362581,
+          "RL_PDMS": 0.9610601374447301
+        },
+        "D": {
+          "scenes": 12,
+          "PDMS": 0.1831143308335209,
+          "IL_PDMS": 0.20689593835151798,
+          "RL_PDMS": 0.310343077675104
+        }
+      },
+      "teacher_positive_student_zero": 55,
+      "teacher_zero_student_positive": 14,
+      "both_zero_student_improved": 1
+    },
+    "E4-B": {
+      "status": "COMPLETE",
+      "training_seeds": [
+        42,
+        43,
+        44
+      ],
+      "metrics": {
+        "PDMS": {
+          "estimate": 0.9227285327692192,
+          "lower95": 0.8885139925786378,
+          "upper95": 0.942368069604572,
+          "replicates": 2000
+        },
+        "G": {
+          "estimate": 0.007945347727633799,
+          "lower95": 0.0032848665606263826,
+          "upper95": 0.01601102810056479,
+          "replicates": 2000
+        },
+        "M_plus": {
+          "estimate": 0.014308040434996547,
+          "lower95": 0.008957946943480654,
+          "upper95": 0.02254645182513329,
+          "replicates": 2000
+        },
+        "M_minus": {
+          "estimate": 0.006362692707362749,
+          "lower95": 0.0026052448442500415,
+          "upper95": 0.009887565986332286,
+          "replicates": 2000
+        },
+        "material_drop_fraction": {
+          "estimate": 0.024764150943396224,
+          "lower95": 0.008544930668107329,
+          "upper95": 0.031447340792512816,
+          "replicates": 2000
+        },
+        "zero_scene_fraction": {
+          "estimate": 0.011595911949685534,
+          "lower95": 0.004888944199557301,
+          "upper95": 0.028474022756105288,
+          "replicates": 2000
+        },
+        "zero_output_fraction": {
+          "estimate": 0.02142295597484277,
+          "lower95": 0.010638080409178685,
+          "upper95": 0.04053171763930714,
+          "replicates": 2000
+        },
+        "positive_to_zero_fraction": {
+          "estimate": 0.0029481132075471696,
+          "lower95": 0.0005564598404748655,
+          "upper95": 0.007263508918930512,
+          "replicates": 2000
+        },
+        "stable_high_to_zero_fraction": {
+          "estimate": 0.00019654088050314464,
+          "lower95": 0.0,
+          "upper95": 0.0022595907800066206,
+          "replicates": 2000
+        },
+        "stable_high_retention": {
+          "estimate": 0.9915771741419247,
+          "lower95": 0.9839089112534113,
+          "upper95": 0.9975386213408877,
+          "replicates": 2000
+        },
+        "zero_to_positive_fraction": {
+          "estimate": 0.006092767295597484,
+          "lower95": 0.002458117052824529,
+          "upper95": 0.012833557258891423,
+          "replicates": 2000
+        }
+      },
+      "components": {
+        "NC": 0.9990172955974843,
+        "DAC": 0.9790880503144654,
+        "EP": 0.8621078623268049,
+        "TTC": 0.9814858490566037,
+        "Comfort": 0.9994496855345912,
+        "DDC": 0.988875786163522,
+        "PDMS": 0.9227285327692148
+      },
+      "median_PDMS": 0.9521916848300478,
+      "median_paired_change": 0.0,
+      "new_component_violations": {
+        "NC": {
+          "single_output_fraction": 0.0009827044025157233,
+          "scene_fraction": 0.0015723270440251573
+        },
+        "DAC": {
+          "single_output_fraction": 0.003380503144654088,
+          "scene_fraction": 0.004520440251572327
+        },
+        "TTC": {
+          "single_output_fraction": 0.006210691823899371,
+          "scene_fraction": 0.009827044025157232
+        },
+        "Comfort": {
+          "single_output_fraction": 3.930817610062893e-05,
+          "scene_fraction": 0.0
+        },
+        "DDC": {
+          "single_output_fraction": 0.00015723270440251572,
+          "scene_fraction": 0.00039308176100628933
+        }
+      },
+      "categories": {
+        "A": {
+          "scenes": 81,
+          "PDMS": 0.5766947071036796,
+          "IL_PDMS": 0.431229340070469,
+          "RL_PDMS": 0.9494484902667961
+        },
+        "B": {
+          "scenes": 25,
+          "PDMS": 0.8692321445360941,
+          "IL_PDMS": 0.9296036744179852,
+          "RL_PDMS": 0.4594232105390113
+        },
+        "C": {
+          "scenes": 1578,
+          "PDMS": 0.94668719058293,
+          "IL_PDMS": 0.944752764362581,
+          "RL_PDMS": 0.9610601374447301
+        },
+        "D": {
+          "scenes": 12,
+          "PDMS": 0.21934416232764264,
+          "IL_PDMS": 0.20689593835151798,
+          "RL_PDMS": 0.310343077675104
+        }
+      },
+      "teacher_positive_student_zero": 49,
+      "teacher_zero_student_positive": 17,
+      "both_zero_student_improved": 2
+    },
+    "E4-C": {
+      "status": "COMPLETE",
+      "training_seeds": [
+        42,
+        43,
+        44
+      ],
+      "metrics": {
+        "PDMS": {
+          "estimate": 0.9226837702608885,
+          "lower95": 0.8880703241879575,
+          "upper95": 0.9422189908730807,
+          "replicates": 2000
+        },
+        "G": {
+          "estimate": 0.007900585219303296,
+          "lower95": 0.0032099791928993917,
+          "upper95": 0.015860740787422098,
+          "replicates": 2000
+        },
+        "M_plus": {
+          "estimate": 0.014139844982443977,
+          "lower95": 0.009060433723613303,
+          "upper95": 0.02223770724782062,
+          "replicates": 2000
+        },
+        "M_minus": {
+          "estimate": 0.006239259763140682,
+          "lower95": 0.0025748081925621087,
+          "upper95": 0.009571753943857335,
+          "replicates": 2000
+        },
+        "material_drop_fraction": {
+          "estimate": 0.024371069182389935,
+          "lower95": 0.008575752964827828,
+          "upper95": 0.030209334803112546,
+          "replicates": 2000
+        },
+        "zero_scene_fraction": {
+          "estimate": 0.01139937106918239,
+          "lower95": 0.004743364915270391,
+          "upper95": 0.028420042084459807,
+          "replicates": 2000
+        },
+        "zero_output_fraction": {
+          "estimate": 0.02122641509433962,
+          "lower95": 0.010222866798787478,
+          "upper95": 0.04057765226508466,
+          "replicates": 2000
+        },
+        "positive_to_zero_fraction": {
+          "estimate": 0.0029481132075471696,
+          "lower95": 0.0005625642064702349,
+          "upper95": 0.007388351412098112,
+          "replicates": 2000
+        },
+        "stable_high_to_zero_fraction": {
+          "estimate": 0.00019654088050314464,
+          "lower95": 0.0,
+          "upper95": 0.002209545743273647,
+          "replicates": 2000
+        },
+        "stable_high_retention": {
+          "estimate": 0.9917877447883764,
+          "lower95": 0.9843967939100402,
+          "upper95": 0.9974390770045044,
+          "replicates": 2000
+        },
+        "zero_to_positive_fraction": {
+          "estimate": 0.006289308176100628,
+          "lower95": 0.00267282024595812,
+          "upper95": 0.013072343092488135,
+          "replicates": 2000
+        }
+      },
+      "components": {
+        "NC": 0.9989779874213837,
+        "DAC": 0.9793238993710692,
+        "EP": 0.8617920837147512,
+        "TTC": 0.9814858490566037,
+        "Comfort": 0.9994496855345912,
+        "DDC": 0.9888364779874214,
+        "PDMS": 0.9226837702608808
+      },
+      "median_PDMS": 0.951770339093001,
+      "median_paired_change": 0.0,
+      "new_component_violations": {
+        "NC": {
+          "single_output_fraction": 0.0010220125786163522,
+          "scene_fraction": 0.0015723270440251573
+        },
+        "DAC": {
+          "single_output_fraction": 0.0032625786163522014,
+          "scene_fraction": 0.004323899371069182
+        },
+        "TTC": {
+          "single_output_fraction": 0.006092767295597485,
+          "scene_fraction": 0.009827044025157232
+        },
+        "Comfort": {
+          "single_output_fraction": 3.930817610062893e-05,
+          "scene_fraction": 0.0
+        },
+        "DDC": {
+          "single_output_fraction": 0.0002358490566037736,
+          "scene_fraction": 0.00039308176100628933
+        }
+      },
+      "categories": {
+        "A": {
+          "scenes": 81,
+          "PDMS": 0.5768061724980674,
+          "IL_PDMS": 0.431229340070469,
+          "RL_PDMS": 0.9494484902667961
+        },
+        "B": {
+          "scenes": 25,
+          "PDMS": 0.8717632079083298,
+          "IL_PDMS": 0.9296036744179852,
+          "RL_PDMS": 0.4594232105390113
+        },
+        "C": {
+          "scenes": 1578,
+          "PDMS": 0.946539589981437,
+          "IL_PDMS": 0.944752764362581,
+          "RL_PDMS": 0.9610601374447301
+        },
+        "D": {
+          "scenes": 12,
+          "PDMS": 0.22640176680899746,
+          "IL_PDMS": 0.20689593835151798,
+          "RL_PDMS": 0.310343077675104
+        }
+      },
+      "teacher_positive_student_zero": 48,
+      "teacher_zero_student_positive": 17,
+      "both_zero_student_improved": 2
+    },
+    "E5": {
+      "status": "COMPLETE",
+      "training_seeds": [
+        42,
+        43,
+        44
+      ],
+      "metrics": {
+        "PDMS": {
+          "estimate": 0.9064507999320609,
+          "lower95": 0.8572935701846178,
+          "upper95": 0.9337507542669407,
+          "replicates": 2000
+        },
+        "G": {
+          "estimate": -0.00833238510952431,
+          "lower95": -0.023835322815581227,
+          "upper95": 0.0006294335471963566,
+          "replicates": 2000
+        },
+        "M_plus": {
+          "estimate": 0.01180052267842978,
+          "lower95": 0.007499124471400579,
+          "upper95": 0.01819334351619998,
+          "replicates": 2000
+        },
+        "M_minus": {
+          "estimate": 0.020132907787954093,
+          "lower95": 0.0109206011749251,
+          "upper95": 0.03703721611791707,
+          "replicates": 2000
+        },
+        "material_drop_fraction": {
+          "estimate": 0.0514937106918239,
+          "lower95": 0.028656726973997397,
+          "upper95": 0.07500265392781315,
+          "replicates": 2000
+        },
+        "zero_scene_fraction": {
+          "estimate": 0.02181603773584906,
+          "lower95": 0.009806622310772468,
+          "upper95": 0.050284593227750626,
+          "replicates": 2000
+        },
+        "zero_output_fraction": {
+          "estimate": 0.035849056603773584,
+          "lower95": 0.01644485078481076,
+          "upper95": 0.07059605965564279,
+          "replicates": 2000
+        },
+        "positive_to_zero_fraction": {
+          "estimate": 0.013364779874213835,
+          "lower95": 0.005205632650459028,
+          "upper95": 0.03132138839164481,
+          "replicates": 2000
+        },
+        "stable_high_to_zero_fraction": {
+          "estimate": 0.005699685534591195,
+          "lower95": 0.0007546319266263131,
+          "upper95": 0.01829120164300418,
+          "replicates": 2000
+        },
+        "stable_high_retention": {
+          "estimate": 0.9713623920825437,
+          "lower95": 0.9454756426218658,
+          "upper95": 0.9886528608329166,
+          "replicates": 2000
+        },
+        "zero_to_positive_fraction": {
+          "estimate": 0.006289308176100628,
+          "lower95": 0.0021751734948251395,
+          "upper95": 0.0145090500596102,
+          "replicates": 2000
+        }
+      },
+      "components": {
+        "NC": 0.9987617924528301,
+        "DAC": 0.9648584905660378,
+        "EP": 0.8421792909278266,
+        "TTC": 0.9829009433962265,
+        "Comfort": 0.9987814465408805,
+        "DDC": 0.988502358490566,
+        "PDMS": 0.906450799932059
+      },
+      "median_PDMS": 0.9454483739879631,
+      "median_paired_change": 0.0,
+      "new_component_violations": {
+        "NC": {
+          "single_output_fraction": 0.0014150943396226414,
+          "scene_fraction": 0.001768867924528302
+        },
+        "DAC": {
+          "single_output_fraction": 0.017059748427672956,
+          "scene_fraction": 0.021029874213836477
+        },
+        "TTC": {
+          "single_output_fraction": 0.00589622641509434,
+          "scene_fraction": 0.00884433962264151
+        },
+        "Comfort": {
+          "single_output_fraction": 0.00019654088050314466,
+          "scene_fraction": 0.00019654088050314466
+        },
+        "DDC": {
+          "single_output_fraction": 0.0010613207547169811,
+          "scene_fraction": 0.0013757861635220125
+        }
+      },
+      "categories": {
+        "A": {
+          "scenes": 81,
+          "PDMS": 0.5161982704873633,
+          "IL_PDMS": 0.431229340070469,
+          "RL_PDMS": 0.9494484902667961
+        },
+        "B": {
+          "scenes": 25,
+          "PDMS": 0.7867476384868642,
+          "IL_PDMS": 0.9296036744179852,
+          "RL_PDMS": 0.4594232105390113
+        },
+        "C": {
+          "scenes": 1578,
+          "PDMS": 0.9333553916620285,
+          "IL_PDMS": 0.944752764362581,
+          "RL_PDMS": 0.9610601374447301
+        },
+        "D": {
+          "scenes": 12,
+          "PDMS": 0.2520831475371989,
+          "IL_PDMS": 0.20689593835151798,
+          "RL_PDMS": 0.310343077675104
+        }
+      },
+      "teacher_positive_student_zero": 99,
+      "teacher_zero_student_positive": 15,
+      "both_zero_student_improved": 2
+    }
+  },
+  "contrasts": {
+    "E2_vs_E1": {
+      "PDMS": {
+        "estimate": 0.03746031658682791,
+        "lower95": 0.012256655044053825,
+        "upper95": 0.06337025478101822
+      },
+      "G": {
+        "estimate": 0.0374603165868279,
+        "lower95": 0.01225665504405383,
+        "upper95": 0.0633702547810183
+      },
+      "M_minus": {
+        "estimate": -0.03650814867886853,
+        "lower95": -0.05871131285271642,
+        "upper95": -0.01634684456687564
+      },
+      "stable_high_to_zero_fraction": {
+        "estimate": -0.015919811320754717,
+        "lower95": -0.038712048088796414,
+        "upper95": -0.003985210295717136
+      }
+    },
+    "E3_vs_E1": {
+      "PDMS": {
+        "estimate": 0.039512178817086796,
+        "lower95": 0.014203598617590288,
+        "upper95": 0.06447792084826715
+      },
+      "G": {
+        "estimate": 0.03951217881708678,
+        "lower95": 0.014203598617590397,
+        "upper95": 0.06447792084826709
+      },
+      "M_minus": {
+        "estimate": -0.03786634925776017,
+        "lower95": -0.059675840049470866,
+        "upper95": -0.017460664537335472
+      },
+      "stable_high_to_zero_fraction": {
+        "estimate": -0.016312893081761006,
+        "lower95": -0.039315918559578895,
+        "upper95": -0.003907307518489642
+      }
+    },
+    "E3_vs_E2": {
+      "PDMS": {
+        "estimate": 0.002051862230258883,
+        "lower95": -0.0007226768412972567,
+        "upper95": 0.0056379590759312505
+      },
+      "G": {
+        "estimate": 0.0020518622302588795,
+        "lower95": -0.0007226768412972831,
+        "upper95": 0.005637959075931268
+      },
+      "M_minus": {
+        "estimate": -0.0013582005788916381,
+        "lower95": -0.004588977636947552,
+        "upper95": 0.0010087751322900593
+      },
+      "stable_high_to_zero_fraction": {
+        "estimate": -0.0003930817610062892,
+        "lower95": -0.0034679957344985438,
+        "upper95": 0.00198788469572483
+      }
+    },
+    "E4-A_vs_E3": {
+      "PDMS": {
+        "estimate": -0.001021057703126882,
+        "lower95": -0.009186430623152936,
+        "upper95": 0.003457462799706065
+      },
+      "G": {
+        "estimate": -0.001021057703127156,
+        "lower95": -0.009186430623152737,
+        "upper95": 0.003457462799706034
+      },
+      "M_minus": {
+        "estimate": -0.001507919592964438,
+        "lower95": -0.00549156615915627,
+        "upper95": 0.004007024149964809
+      },
+      "stable_high_to_zero_fraction": {
+        "estimate": -0.0007861635220125784,
+        "lower95": -0.003874254681857626,
+        "upper95": 0.0020367143821091167
+      }
+    },
+    "E4-B_vs_E3": {
+      "PDMS": {
+        "estimate": -0.009050266581453137,
+        "lower95": -0.017268285750619543,
+        "upper95": -0.0006966396633563171
+      },
+      "G": {
+        "estimate": -0.009050266581453251,
+        "lower95": -0.01726828575061991,
+        "upper95": -0.0006966396633562426
+      },
+      "M_minus": {
+        "estimate": -0.006883612712157163,
+        "lower95": -0.014046704442703015,
+        "upper95": -0.002343408783905862
+      },
+      "stable_high_to_zero_fraction": {
+        "estimate": -0.0029481132075471696,
+        "lower95": -0.008966566499072341,
+        "upper95": 0.0
+      }
+    },
+    "E4-C_vs_E3": {
+      "PDMS": {
+        "estimate": -0.009095029089783768,
+        "lower95": -0.017608676414693124,
+        "upper95": -0.0007774273482955954
+      },
+      "G": {
+        "estimate": -0.009095029089783754,
+        "lower95": -0.017608676414693096,
+        "upper95": -0.0007774273482955114
+      },
+      "M_minus": {
+        "estimate": -0.0070070456563792296,
+        "lower95": -0.014122244853355762,
+        "upper95": -0.0024372042129488583
+      },
+      "stable_high_to_zero_fraction": {
+        "estimate": -0.0029481132075471696,
+        "lower95": -0.008966566499072341,
+        "upper95": 0.0
+      }
+    },
+    "E5_vs_E3": {
+      "PDMS": {
+        "estimate": -0.025327999418611413,
+        "lower95": -0.048149579607412535,
+        "upper95": -0.012124275560790853
+      },
+      "G": {
+        "estimate": -0.025327999418611358,
+        "lower95": -0.048149579607412465,
+        "upper95": -0.012124275560790878
+      },
+      "M_minus": {
+        "estimate": 0.006886602368434181,
+        "lower95": -0.002155755689903619,
+        "upper95": 0.022030355714349217
+      },
+      "stable_high_to_zero_fraction": {
+        "estimate": 0.0025550314465408804,
+        "lower95": -0.003059404760705881,
+        "upper95": 0.012386969733604078
+      }
+    },
+    "E5_vs_E4-C": {
+      "PDMS": {
+        "estimate": -0.016232970328827645,
+        "lower95": -0.03414679625660765,
+        "upper95": -0.0056936920644667195
+      },
+      "G": {
+        "estimate": -0.016232970328827603,
+        "lower95": -0.03414679625660748,
+        "upper95": -0.0056936920644666544
+      },
+      "M_minus": {
+        "estimate": 0.01389364802481341,
+        "lower95": 0.005272521669801534,
+        "upper95": 0.03085352021152471
+      },
+      "stable_high_to_zero_fraction": {
+        "estimate": 0.00550314465408805,
+        "lower95": 0.0,
+        "upper95": 0.017609373655583193
+      }
+    },
+    "E5_vs_E4-A": {
+      "PDMS": {
+        "estimate": -0.02430694171548453,
+        "lower95": -0.04219570269787486,
+        "upper95": -0.013091930015257798
+      },
+      "G": {
+        "estimate": -0.024306941715484205,
+        "lower95": -0.04219570269787489,
+        "upper95": -0.013091930015257805
+      },
+      "M_minus": {
+        "estimate": 0.008394521961398619,
+        "lower95": 0.0006869587282065928,
+        "upper95": 0.0230375667506872
+      },
+      "stable_high_to_zero_fraction": {
+        "estimate": 0.003341194968553459,
+        "lower95": -0.002978645476516602,
+        "upper95": 0.014159834909784143
+      }
+    }
+  },
+  "interval_unit": "Paired complete logs, independent training seeds, paired inference seeds. Pooled scene weighting; no scene/pair pseudoreplication.",
+  "high_subset": "Independent5 IL screening seeds, threshold0.8 in every screen draw; evaluate using a different5 seeds."
+}

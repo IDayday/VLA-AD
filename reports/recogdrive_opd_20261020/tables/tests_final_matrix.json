@@ -1,20 +1,29 @@
 {
   "passed": true,
   "CPU": {
-    "tests": 27,
+    "tests": 30,
     "failures": 0,
     "errors": 0,
     "skipped": 0
   },
   "integration_evidence": {
-    "real_batch": "01f116c58bb5979883d69df73c8f9b1dc302b4d8fda8bfc36684183f5f35c1b1",
-    "real_grpo": "cc28d26d5eaa4ac46ed1f0b3108049af47feafbbddbd68079f1142b9b000d33f",
-    "real_resume_v2": "8f320a175dd973d2bd82a5cd6809c4235232d8bcdb914b1a00935f7aeaf7fd05",
-    "real_ddp": "0c00bb5f0c0dd1baa0d9e7361b934bb07623e0a236981eb09fa4cf06140f207d",
-    "real_online_vlm": "9ffa2c93d02ceeb9872c4cd4a3fddcbca4b2aaa93c45821d2da7125e6e8cc797",
-    "real_parameter_perturbation": "5a9611484ca9f8811f2fe6645769c615ef5031168c9c5a44a2404766f5c64deb",
-    "real_GT_parity": "3f15b47671442f710a788d5fb9d92bf61e4ebe871d7560623c7c6aba052551d3",
-    "real_inference_cache": "040fd60439abf8b6a0e87fb2fbbb5264da17625319c4722c3a0c5009c9c325e2"
+    "real_batch": "38f69e9abf4bb42ff4c97cca78d3a9be89b5c22f27495341770c9c2a15e29443",
+    "real_grpo": "0067bd0720432eeafb3763ed7aa1ee6865086947cf997ba6cc26c67f41bd5072",
+    "real_resume_v2": "dc8ef7e537bf67483eec45c46230dda9b09bdbbc40badfabd4f4362fcea1c133",
+    "real_grpo_resume": "281d84d87ae01682280420b5f45c27d865d0e9d30797fa5d9a3a5cb02e1c6f06",
+    "real_ddp": "f5205ae9645373312c76b0ea22c56943861bd9accea1d7b3464556f4bdf33d1c",
+    "real_online_vlm": "0d36ed36136019d78941733ec9895c2d29d445ba44fcae565d45493e78a6ffe2",
+    "real_parameter_perturbation": "6ee16dafc27d54c144fe0e77e68961f847202cfe29ab380c663e897271452186",
+    "real_GT_parity": "cc9ccb2f61347d43e17fc4f2a31bfec622bab151884ceb01ae7be2366308b376",
+    "real_inference_cache": "d36af4b3627851c24aedf13ed35fee2d36ec148205e30483edbbfae8a0483d43",
+    "real_parallel_inference": "5665fe462defcc20fa0e1af62ffa9ad588f2af1958d8bcf0f33a0e92f105da5d",
+    "real_shared_lock": "d14aa38cc758e710d5a50e1d226231c32abdb67a117d0e25b59b9b7b012c07c4",
+    "real_student_deployment": "b1419fc9600c743fb95161ae6c7e250dc125b023c3df2e0cd379b0cd119b13f2",
+    "real_disabled_auxiliary": "139a96d69ccded62dfea84cbca78df8860565a83a46b9237f9996d4e51b1359f",
+    "real_statistics_projection": "a4dd671234d68204d0aab00cb53a0f0da8651c1d33f2589e0571984833558e1f",
+    "real_split_bundle": "8f96c51e21b49c9edfb36f784d3bbb9eba2b6b8185ca7ec6b193e564f935663e",
+    "real_fresh_manifest": "02152aa018aa455ca11c5c1963e96593a9926dfd4008e107a3f6a8ae421e05c6",
+    "real_new_host": "3633ac7ac66fad8ce6bbe7334b07559e8f03691f4ad3ca2f8976442e9eb53cef"
   },
   "tests": {
     "T01": {
@@ -107,7 +116,7 @@
     },
     "T23": {
       "status": "PASS",
-      "evidence": "tests/opd/test_eval_safety.py and pure head evaluation without teacher"
+      "evidence": "tests/real_student_deployment.json trained native online student, no teacher/anchor"
     },
     "T24": {
       "status": "PASS",
@@ -115,7 +124,7 @@
     },
     "T25": {
       "status": "PASS",
-      "evidence": "tests/real_resume_v2.json exact actual parameters,optimizer,RNG"
+      "evidence": "tests/real_resume_v2.json and real_grpo_resume.json exact actual full parameters,optimizer,RNG,counters"
     },
     "T26": {
       "status": "PASS",

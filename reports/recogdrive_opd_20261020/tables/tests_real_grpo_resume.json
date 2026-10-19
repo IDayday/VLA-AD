@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "fields": {
+    "full_student": true,
+    "optimizer": true,
+    "torch_rng": true,
+    "cuda_rng": true,
+    "numpy_rng": true,
+    "python_rng": true,
+    "forward_counts": true
+  },
+  "forward_counts": {
+    "student_batch_calls": 172,
+    "student_examples": 1840,
+    "reference_batch_calls": 80,
+    "reference_examples": 80,
+    "teacher_batch_calls": 60,
+    "teacher_examples": 480
+  },
+  "scope": "Native DiffGRPO/OPD continuous4 vs2+resume2 actual optimizer updates, exact full state"
+}

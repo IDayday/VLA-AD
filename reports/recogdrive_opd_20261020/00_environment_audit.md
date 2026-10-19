@@ -3,11 +3,11 @@
 ```json
 {
   "owner": {
-    "host": "training-vlawm-tsinghua-zt2",
-    "pid": 1861373,
-    "start_ticks": 1386428815,
-    "code_sha": "0e789a8a876bd32f078724c4331983fc1ab9f996",
-    "time": 1792425493.9735396
+    "host": "training-rl-zt2",
+    "pid": 1681556,
+    "start_ticks": 1379275463,
+    "code_sha": "3fa2fc68515be7f01190e45f35834b7c9b0d7d9d",
+    "time": 1792435070.5730386
   },
   "python": "3.9.25 (main, Nov  3 2025, 22:33:05) \n[GCC 11.2.0]",
   "versions": {
@@ -18,23 +18,23 @@
     "pytest": "8.4.2",
     "safetensors": "0.7.0"
   },
-  "gpu": "NVIDIA A800-SXM4-80GB, GPU-cdd3d7ed-6094-0ef4-282c-2de8dbf86e00, 81920 MiB\nNVIDIA A800-SXM4-80GB, GPU-c0a3d651-8691-b507-5df6-6c7f0cc6c897, 81920 MiB\nNVIDIA A800-SXM4-80GB, GPU-b66ce64d-2b82-4ad3-f917-6ce384dfd9b6, 81920 MiB\nNVIDIA A800-SXM4-80GB, GPU-220170c8-e900-2090-9c71-5eb562f2d0c0, 81920 MiB\nNVIDIA A800-SXM4-80GB, GPU-ccacd0ea-138e-cba3-bdaa-c5290f852915, 81920 MiB\nNVIDIA A800-SXM4-80GB, GPU-88994300-43aa-ec6a-973e-a92276b2a045, 81920 MiB\nNVIDIA A800-SXM4-80GB, GPU-cb83ff92-fe81-0597-9d9a-257bfe48cec3, 81920 MiB\nNVIDIA A800-SXM4-80GB, GPU-c40bf31b-444d-5efb-7156-90b71a4d70b3, 81920 MiB\n",
+  "gpu": "NVIDIA A800-SXM4-80GB, GPU-f9371c55-5054-e42c-71bf-f1314992af79, 81920 MiB\nNVIDIA A800-SXM4-80GB, GPU-42e1151c-5d53-6fcc-39a7-6ca10eec54f6, 81920 MiB\nNVIDIA A800-SXM4-80GB, GPU-72a4835c-963d-0534-e867-0fbdbb2cbdf2, 81920 MiB\nNVIDIA A800-SXM4-80GB, GPU-659076b8-990e-4ef1-2a38-c2aea273ab0c, 81920 MiB\nNVIDIA A800-SXM4-80GB, GPU-89896b99-8541-74ca-2e23-cd59843a102a, 81920 MiB\nNVIDIA A800-SXM4-80GB, GPU-7b4dce95-2581-1a46-2a50-7a1ac5498b5f, 81920 MiB\nNVIDIA A800-SXM4-80GB, GPU-23c150c4-0b05-986a-bf55-cdd3f4fec999, 81920 MiB\nNVIDIA A800-SXM4-80GB, GPU-1d07169b-659c-d3b9-43c5-c897e137ab6e, 81920 MiB\n",
   "data": {
     "splits": {
       "train": {
         "scenes": 4115,
         "logs": 50,
-        "sha256": "e3292aae30586c02e6c0df62639a0dd3e9bfc58b55a6c5662ec4654e0bfaee1f"
+        "sha256": "3630e5eb39b8de72300edbe5544611df6d5991473e81c0249306ae7d763c8e55"
       },
       "cal": {
         "scenes": 518,
         "logs": 4,
-        "sha256": "10488343ac654799c109e80bf09d26da6b49e4fc4210e7e3dba53c13c87a82c3"
+        "sha256": "158a70d820ca8d0eea8138eaef9f69556616f746bab077392fb683acd0dbc7e5"
       },
       "dev": {
         "scenes": 1696,
         "logs": 16,
-        "sha256": "f9552d196d8973a6cfd1f182702b777198012f9fe60d51acee08c039e75eea53"
+        "sha256": "7793321e859e13c6e5740031b69869e4954fb99c3a5b81d62ee1384224eafeb3"
       }
     },
     "source": "/mnt/project/VLA-AD/outputs/trajectory_effect_validation_20261019/manifests",
@@ -44,3 +44,9 @@
   "initial_HEAD": "884ea1d0f67c60821d61033d61efb10916d16929"
 }
 ```
+
+## 最终资源与数据身份
+
+真实核验40张互异A800，主机为training-rl-zt2, training-vla-zt, training-vlawm-tsinghua-zt2, training-vlawm-tsinghua-zt3, training-vlawm-tsinghua-zt5。逐主机CUDA/驱动/PyTorch环境与GPU UUID见tables/audit_hardware_hosts.json。原工作区未提交修改保留，研究在独立worktree中进行，原有ReCogDrive默认源码未改动。
+
+版本化索引位于configs/opd/splits，含训练4115、校准518、开发1696、官方测试12146个精确有序场景；206个源log的字节哈希已核验。driver_record保留车辆标识，另以更保守的capture timestamp检查跨用途重叠，均无交集。真实新目录重建已逐字段、逐顺序核验，不依赖旧研究输出manifest。原始数据、图像、GT及大缓存均不进git。

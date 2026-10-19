@@ -5,65 +5,65 @@
       "tokens": [
         "d3f543f1178d5fcc",
         "b28eadb9272c52ef",
+        "b41533fea9485052",
         "d5370a45f5485afc",
-        "c264db8a62225a42",
-        "d886acd986d7585c",
-        "487e3708e7905cde",
-        "e7efa298d30d5cec",
-        "91b2757714d0568c"
+        "7feee7f8724850ed",
+        "518d4cc8c6bb562e",
+        "a21d44f0d69e5e37",
+        "9c2b0e09bad551c8"
       ],
       "gradient_norms": {
-        "opd": 0.05845932059455066,
-        "anchor": 0.06969217319484802,
-        "il": 0.322239718314597
+        "opd": 0.05482513013971224,
+        "anchor": 0.0495196557160412,
+        "il": 0.1507781540522562
       },
       "gradient_cosine_with_opd": {
-        "anchor": 0.9551125002528347,
-        "il": 0.7805309499532936
+        "anchor": 0.6423874336581049,
+        "il": 0.2687455416990587
       },
       "losses": {
-        "opd": 7.519407517975196e-05,
-        "anchor": 5.010189124732278e-05,
-        "il": 0.001059629488736391
+        "opd": 5.463294655783102e-05,
+        "anchor": 3.2396939786849543e-05,
+        "il": 0.0008748002583160996
       }
     },
     {
       "tokens": [
-        "760276f0836d538d",
-        "1fcc2491ac145385",
-        "1e8d7ec6ef175b7f",
-        "65a859fa6bbd555d",
-        "34a32cceac9f5468",
-        "a4ca9dfbb3fc5dcf",
-        "33b5603612f75dfc",
-        "e1275c14fed050ab"
+        "30a0826897cb567f",
+        "b9227f56c83c5bbc",
+        "cadbde5c14815ea2",
+        "c264db8a62225a42",
+        "d886acd986d7585c",
+        "1d3dbbb767f051b6",
+        "fc3b2a56cdfd550b",
+        "487e3708e7905cde"
       ],
       "gradient_norms": {
-        "opd": 0.04894851195366125,
-        "anchor": 0.08133993840206089,
-        "il": 0.3885433714234595
+        "opd": 0.05874059910024508,
+        "anchor": 0.05161850138444501,
+        "il": 0.12246864009584436
       },
       "gradient_cosine_with_opd": {
-        "anchor": 0.943688275176035,
-        "il": -0.5759245252396135
+        "anchor": 0.8464663608674704,
+        "il": 0.5850187655569549
       },
       "losses": {
-        "opd": 6.346747977659106e-05,
-        "anchor": 4.9847043555928394e-05,
-        "il": 0.0018297851784154773
+        "opd": 5.496483572642319e-05,
+        "anchor": 3.279895463492721e-05,
+        "il": 0.0006994162104092538
       }
     }
   ],
   "weights": {
-    "anchor": 0.07111589145682723,
-    "il": 0.007555598472931785
+    "anchor": 0.11228771859776292,
+    "il": 0.02078079810488177
   },
   "owner": {
-    "host": "training-rl-zt2",
-    "pid": 1567375,
-    "start_ticks": 1378446549,
-    "code_sha": "6656ce616f83bdf429eeca1813d57274aa701761",
-    "time": 1792426798.761362
+    "host": "training-vlawm-tsinghua-zt3",
+    "pid": 1315562,
+    "start_ticks": 1387504869,
+    "code_sha": "8ea86acd1340d60541b081d24802b6d0dc099591",
+    "time": 1792436267.59084
   },
   "rule": "Use E3 tiny qualification checkpoint on fixed16 D_fit scenes. Set auxiliary median gradient to0.1(anchor)/0.05(GT) of OPD, clip anchor[.001,1],GT[1e-6,.05]. No cal/dev/test outcome selection.",
   "no_initialization_transfer": true

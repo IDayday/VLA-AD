@@ -1,0 +1,23 @@
+{
+  "passed": true,
+  "commands": [
+    [
+      "scripts/opd/prepare_data.py",
+      "--manifest-only"
+    ],
+    [
+      "scripts/opd/inputs.py",
+      "manifest"
+    ]
+  ],
+  "fresh_root": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/tests/fresh_manifest",
+  "counts": {
+    "train": 4115,
+    "cal": 518,
+    "dev": 1696,
+    "navtest": 12146
+  },
+  "exact_input_order_and_fields": true,
+  "new_observation_output_paths": true,
+  "scope": "Real scene-index reconstruction only; no dummy weights, observations or scores"
+}

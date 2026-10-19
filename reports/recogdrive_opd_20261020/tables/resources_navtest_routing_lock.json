@@ -1,0 +1,15 @@
+{
+  "status": "LOCKED_BEFORE_TEST",
+  "GPU_capacity": 40,
+  "processes_per_GPU": 4,
+  "E0_groups": 20,
+  "trained_groups": 5,
+  "E0_shards": 80,
+  "trained_policy_shards": 20,
+  "total_main_GPU_groups": 80,
+  "logical_processes_at_full_capacity": 160,
+  "qualification_sha256": "3633ac7ac66fad8ce6bbe7334b07559e8f03691f4ad3ca2f8976442e9eb53cef",
+  "scientific_contract_unchanged": true,
+  "scope": "Routing only: identical12146 tokens, same3 training seeds and5 draws, native batch1 FP32, no extra outputs or selection. Two balanced40GPU waves where resources permit.",
+  "time": 1792437011.0660715
+}

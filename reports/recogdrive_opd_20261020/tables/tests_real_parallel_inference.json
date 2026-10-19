@@ -1,17 +1,12 @@
 {
   "passed": true,
-  "scenes": 64,
-  "models": 4,
-  "model_scene_pairs": 256,
-  "draws_per_model": 5,
+  "scenes": 16,
+  "model_scene_pairs": 64,
+  "processes_per_gpu": 4,
   "trajectory_max_error": 0.0,
   "canonical_score_max_error": 0.0,
-  "same_native_batch1_sampler": true,
-  "same_FP32_and_TF32_false": true,
-  "physical_GPUs": 1,
-  "model_processes": 4,
-  "scope": "Scheduling only; exact native predictions vs completed E0 scalar bank",
-  "serial_seconds": 207.10992574691772,
-  "parallel_seconds": 95.99986791610718,
-  "measured_wall_speedup": 2.15739802817133
+  "serial_seconds": 62.34045219421387,
+  "parallel_seconds": 34.93228888511658,
+  "speedup": 1.7846082860254526,
+  "scope": "Independent native batch1 outputs, corrected official observations, no numerical changes"
 }

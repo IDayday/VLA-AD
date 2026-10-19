@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "counts": {
+    "train": 4115,
+    "cal": 518,
+    "dev": 1696,
+    "navtest": 12146
+  },
+  "exact_order_and_all_used_inputs": true,
+  "excluded": "Only unused descriptive fields and run-specific observation-cache outputs",
+  "source_version_manifest_sha256": "9a0c879e5601e01d423c778c614aca4c6d17251ae3069bfa70a295c6be8736d9"
+}

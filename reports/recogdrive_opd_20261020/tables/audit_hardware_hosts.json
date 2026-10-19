@@ -1,22 +1,98 @@
-[
-  {
-    "host": "training-vla-zt-worker-0",
-    "cpu_count": 128,
-    "gpu": "0, NVIDIA A800-SXM4-80GB, GPU-f679bff0-a4a2-ae4f-0b85-74c519b45a9c, 81920 MiB, 595.71.05\n1, NVIDIA A800-SXM4-80GB, GPU-562375d4-b1d6-f0d9-a68d-5a81e5272907, 81920 MiB, 595.71.05\n2, NVIDIA A800-SXM4-80GB, GPU-b8a35758-a506-a8a1-dca7-499c485068fc, 81920 MiB, 595.71.05\n3, NVIDIA A800-SXM4-80GB, GPU-72a7d08b-16b7-7c64-a324-a08e043c6006, 81920 MiB, 595.71.05\n4, NVIDIA A800-SXM4-80GB, GPU-f35ae00b-0c9c-c01c-efba-e527cdd32f76, 81920 MiB, 595.71.05\n5, NVIDIA A800-SXM4-80GB, GPU-cba744b9-96c8-c3e2-f836-2f0126c038a0, 81920 MiB, 595.71.05\n6, NVIDIA A800-SXM4-80GB, GPU-017ee82b-e9ff-1f6c-547e-ca2ccf3363ac, 81920 MiB, 595.71.05\n7, NVIDIA A800-SXM4-80GB, GPU-621b6ab5-d5ba-4219-b7ca-8b9f84479900, 81920 MiB, 595.71.05\n"
+{
+  "hosts": {
+    "training-rl-zt2": {
+      "host": "training-rl-zt2-worker-0",
+      "affinity_CPUs": 128,
+      "memory_total": "MemTotal:       1055924584 kB",
+      "GPU": "0, GPU-f9371c55-5054-e42c-71bf-f1314992af79, NVIDIA A800-SXM4-80GB, 81920, 550.54.14\n1, GPU-42e1151c-5d53-6fcc-39a7-6ca10eec54f6, NVIDIA A800-SXM4-80GB, 81920, 550.54.14\n2, GPU-72a4835c-963d-0534-e867-0fbdbb2cbdf2, NVIDIA A800-SXM4-80GB, 81920, 550.54.14\n3, GPU-659076b8-990e-4ef1-2a38-c2aea273ab0c, NVIDIA A800-SXM4-80GB, 81920, 550.54.14\n4, GPU-89896b99-8541-74ca-2e23-cd59843a102a, NVIDIA A800-SXM4-80GB, 81920, 550.54.14\n5, GPU-7b4dce95-2581-1a46-2a50-7a1ac5498b5f, NVIDIA A800-SXM4-80GB, 81920, 550.54.14\n6, GPU-23c150c4-0b05-986a-bf55-cdd3f4fec999, NVIDIA A800-SXM4-80GB, 81920, 550.54.14\n7, GPU-1d07169b-659c-d3b9-43c5-c897e137ab6e, NVIDIA A800-SXM4-80GB, 81920, 550.54.14\n",
+      "environment": {
+        "python": "3.9.25 (main, Nov  3 2025, 22:33:05) \n[GCC 11.2.0]",
+        "packages": {
+          "torch": "2.5.1+cu124",
+          "transformers": "4.57.6",
+          "numpy": "1.26.4",
+          "scipy": "1.13.1",
+          "safetensors": "0.7.0",
+          "flash-attn": "2.8.3",
+          "nuplan-devkit": "1.2.0"
+        }
+      }
+    },
+    "training-vla-zt": {
+      "host": "training-vla-zt-worker-0",
+      "affinity_CPUs": 128,
+      "memory_total": "MemTotal:       1055924592 kB",
+      "GPU": "0, GPU-f679bff0-a4a2-ae4f-0b85-74c519b45a9c, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n1, GPU-562375d4-b1d6-f0d9-a68d-5a81e5272907, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n2, GPU-b8a35758-a506-a8a1-dca7-499c485068fc, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n3, GPU-72a7d08b-16b7-7c64-a324-a08e043c6006, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n4, GPU-f35ae00b-0c9c-c01c-efba-e527cdd32f76, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n5, GPU-cba744b9-96c8-c3e2-f836-2f0126c038a0, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n6, GPU-017ee82b-e9ff-1f6c-547e-ca2ccf3363ac, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n7, GPU-621b6ab5-d5ba-4219-b7ca-8b9f84479900, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n",
+      "environment": {
+        "python": "3.9.25 (main, Nov  3 2025, 22:33:05) \n[GCC 11.2.0]",
+        "packages": {
+          "torch": "2.5.1+cu124",
+          "transformers": "4.57.6",
+          "numpy": "1.26.4",
+          "scipy": "1.13.1",
+          "safetensors": "0.7.0",
+          "flash-attn": "2.8.3",
+          "nuplan-devkit": "1.2.0"
+        }
+      }
+    },
+    "training-vlawm-tsinghua-zt2": {
+      "host": "training-vlawm-tsinghua-zt2-worker-0",
+      "affinity_CPUs": 128,
+      "memory_total": "MemTotal:       1055927568 kB",
+      "GPU": "0, GPU-cdd3d7ed-6094-0ef4-282c-2de8dbf86e00, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n1, GPU-c0a3d651-8691-b507-5df6-6c7f0cc6c897, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n2, GPU-b66ce64d-2b82-4ad3-f917-6ce384dfd9b6, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n3, GPU-220170c8-e900-2090-9c71-5eb562f2d0c0, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n4, GPU-ccacd0ea-138e-cba3-bdaa-c5290f852915, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n5, GPU-88994300-43aa-ec6a-973e-a92276b2a045, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n6, GPU-cb83ff92-fe81-0597-9d9a-257bfe48cec3, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n7, GPU-c40bf31b-444d-5efb-7156-90b71a4d70b3, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n",
+      "environment": {
+        "python": "3.9.25 (main, Nov  3 2025, 22:33:05) \n[GCC 11.2.0]",
+        "packages": {
+          "torch": "2.5.1+cu124",
+          "transformers": "4.57.6",
+          "numpy": "1.26.4",
+          "scipy": "1.13.1",
+          "safetensors": "0.7.0",
+          "flash-attn": "2.8.3",
+          "nuplan-devkit": "1.2.0"
+        }
+      }
+    },
+    "training-vlawm-tsinghua-zt3": {
+      "host": "training-vlawm-tsinghua-zt3-worker-0",
+      "affinity_CPUs": 128,
+      "memory_total": "MemTotal:       1055926932 kB",
+      "GPU": "0, GPU-ceb0d9a7-7b64-2fb1-cb83-962861ec73b9, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n1, GPU-9e303222-565f-9aee-caa7-625ee7f12096, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n2, GPU-37f16ed7-3b1b-4cb7-2462-70ef5abbd287, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n3, GPU-cab4a3fa-dc7f-0762-9b23-8e0e8959e57a, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n4, GPU-5d1dca72-ef65-13ce-ef85-2fde0bb2e62c, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n5, GPU-4604e9db-bf91-9dd3-1b79-deb94646aa63, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n6, GPU-3bad9a14-f891-5982-524b-b4a13a3cb734, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n7, GPU-e9cb846f-5ccf-504c-5537-e2da39e661fd, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n",
+      "environment": {
+        "python": "3.9.25 (main, Nov  3 2025, 22:33:05) \n[GCC 11.2.0]",
+        "packages": {
+          "torch": "2.5.1+cu124",
+          "transformers": "4.57.6",
+          "numpy": "1.26.4",
+          "scipy": "1.13.1",
+          "safetensors": "0.7.0",
+          "flash-attn": "2.8.3",
+          "nuplan-devkit": "1.2.0"
+        }
+      }
+    },
+    "training-vlawm-tsinghua-zt5": {
+      "host": "training-vlawm-tsinghua-zt5-worker-0",
+      "affinity_CPUs": 128,
+      "memory_total": "MemTotal:       1055927672 kB",
+      "GPU": "0, GPU-ba6629ed-35db-198b-d353-d6048cbdf36b, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n1, GPU-c976d64e-44ea-d8bd-a026-d1c1f14d4db6, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n2, GPU-e2a93cb8-47e2-0b2f-952e-bcfa5403ad24, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n3, GPU-28ad5baf-48e8-8ea7-2e0b-514cc7f2d690, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n4, GPU-a7b3b440-0f0e-d35e-508a-98b368e9a753, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n5, GPU-07454d91-a706-9214-2999-0ec63e16c489, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n6, GPU-69f7a391-b4e5-fefd-2b4e-721834060a20, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n7, GPU-a4a674df-d68f-fa69-13be-0f089a4cd6af, NVIDIA A800-SXM4-80GB, 81920, 595.71.05\n",
+      "environment": {
+        "python": "3.9.25 (main, Nov  3 2025, 22:33:05) \n[GCC 11.2.0]",
+        "packages": {
+          "torch": "2.5.1+cu124",
+          "transformers": "4.57.6",
+          "numpy": "1.26.4",
+          "scipy": "1.13.1",
+          "safetensors": "0.7.0",
+          "flash-attn": "2.8.3",
+          "nuplan-devkit": "1.2.0"
+        }
+      }
+    }
   },
-  {
-    "host": "training-rl-zt2-worker-0",
-    "cpu_count": 128,
-    "gpu": "0, NVIDIA A800-SXM4-80GB, GPU-f9371c55-5054-e42c-71bf-f1314992af79, 81920 MiB, 550.54.14\n1, NVIDIA A800-SXM4-80GB, GPU-42e1151c-5d53-6fcc-39a7-6ca10eec54f6, 81920 MiB, 550.54.14\n2, NVIDIA A800-SXM4-80GB, GPU-72a4835c-963d-0534-e867-0fbdbb2cbdf2, 81920 MiB, 550.54.14\n3, NVIDIA A800-SXM4-80GB, GPU-659076b8-990e-4ef1-2a38-c2aea273ab0c, 81920 MiB, 550.54.14\n4, NVIDIA A800-SXM4-80GB, GPU-89896b99-8541-74ca-2e23-cd59843a102a, 81920 MiB, 550.54.14\n5, NVIDIA A800-SXM4-80GB, GPU-7b4dce95-2581-1a46-2a50-7a1ac5498b5f, 81920 MiB, 550.54.14\n6, NVIDIA A800-SXM4-80GB, GPU-23c150c4-0b05-986a-bf55-cdd3f4fec999, 81920 MiB, 550.54.14\n7, NVIDIA A800-SXM4-80GB, GPU-1d07169b-659c-d3b9-43c5-c897e137ab6e, 81920 MiB, 550.54.14\n"
-  },
-  {
-    "host": "training-vlawm-tsinghua-zt2-worker-0",
-    "cpu_count": 128,
-    "gpu": "0, NVIDIA A800-SXM4-80GB, GPU-cdd3d7ed-6094-0ef4-282c-2de8dbf86e00, 81920 MiB, 595.71.05\n1, NVIDIA A800-SXM4-80GB, GPU-c0a3d651-8691-b507-5df6-6c7f0cc6c897, 81920 MiB, 595.71.05\n2, NVIDIA A800-SXM4-80GB, GPU-b66ce64d-2b82-4ad3-f917-6ce384dfd9b6, 81920 MiB, 595.71.05\n3, NVIDIA A800-SXM4-80GB, GPU-220170c8-e900-2090-9c71-5eb562f2d0c0, 81920 MiB, 595.71.05\n4, NVIDIA A800-SXM4-80GB, GPU-ccacd0ea-138e-cba3-bdaa-c5290f852915, 81920 MiB, 595.71.05\n5, NVIDIA A800-SXM4-80GB, GPU-88994300-43aa-ec6a-973e-a92276b2a045, 81920 MiB, 595.71.05\n6, NVIDIA A800-SXM4-80GB, GPU-cb83ff92-fe81-0597-9d9a-257bfe48cec3, 81920 MiB, 595.71.05\n7, NVIDIA A800-SXM4-80GB, GPU-c40bf31b-444d-5efb-7156-90b71a4d70b3, 81920 MiB, 595.71.05\n"
-  },
-  {
-    "host": "training-vlawm-tsinghua-zt3-worker-0",
-    "cpu_count": 128,
-    "gpu": "0, NVIDIA A800-SXM4-80GB, GPU-ceb0d9a7-7b64-2fb1-cb83-962861ec73b9, 81920 MiB, 595.71.05\n1, NVIDIA A800-SXM4-80GB, GPU-9e303222-565f-9aee-caa7-625ee7f12096, 81920 MiB, 595.71.05\n2, NVIDIA A800-SXM4-80GB, GPU-37f16ed7-3b1b-4cb7-2462-70ef5abbd287, 81920 MiB, 595.71.05\n3, NVIDIA A800-SXM4-80GB, GPU-cab4a3fa-dc7f-0762-9b23-8e0e8959e57a, 81920 MiB, 595.71.05\n4, NVIDIA A800-SXM4-80GB, GPU-5d1dca72-ef65-13ce-ef85-2fde0bb2e62c, 81920 MiB, 595.71.05\n5, NVIDIA A800-SXM4-80GB, GPU-4604e9db-bf91-9dd3-1b79-deb94646aa63, 81920 MiB, 595.71.05\n6, NVIDIA A800-SXM4-80GB, GPU-3bad9a14-f891-5982-524b-b4a13a3cb734, 81920 MiB, 595.71.05\n7, NVIDIA A800-SXM4-80GB, GPU-e9cb846f-5ccf-504c-5537-e2da39e661fd, 81920 MiB, 595.71.05\n"
-  }
-]
+  "unique_A800_devices": 40,
+  "timestamp": 1792437011.6221607,
+  "policy_sha256": "fa2f6d70aff3088f047b8bbe9e1fc7f411545c670320f64d92c0a027c7a25d24",
+  "scope": "Actual allowlisted research hosts. Genuine other workloads preserved; availability rechecked at every dispatch. Additional authorized hosts inspected but occupied; new host must separately pass exact native inference parity."
+}

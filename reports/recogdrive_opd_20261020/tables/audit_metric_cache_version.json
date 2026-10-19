@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "scenes": 18475,
+  "index": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/audit/metric_cache_index.json",
+  "index_sha256": "23b153deb11ce15e71668d34d87c45f2ffe6ef753886922d3a2d0fe3edcd8ce5",
+  "capture": "Post-run hash snapshot; every cache mtime precedes its baseline prediction; not falsely labeled as hashes captured at original cache creation",
+  "split_digests": {
+    "train": "4a951028d24fdf6156f83900b5cd26782e41f24c12ea9d0763fd8eb5a3cf30fb",
+    "cal": "f89cb80b9e2b8856bde8c1fab3356e46380ae73938bd12e3bc398080640b4484",
+    "dev": "0d5437000e2053e393d89203a41a90f183d8e2ad21b7fa32eb1c5908d61702b4",
+    "navtest": "103f57e3596fbb3e88716ebf2c23b5c85112f9c28211ff49240d351edc49316d"
+  }
+}

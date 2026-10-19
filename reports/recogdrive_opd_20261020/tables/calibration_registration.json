@@ -1,0 +1,12 @@
+{
+  "status": "LOCKED_BEFORE_CALIBRATION_RUN",
+  "rule": "From E3 tiny100 action head, fixed16 training scenes in largest identical-token-length bucket, hash gradient_scale_calibration. Auxiliary weights=0.1/0.05 times median OPD/aux gradient norms; anchor clip[.001,1],GT clip[1e-6,.05]. Then two equal LR slots1e-5/3e-5 for every arm100 steps, select on D_cal. Fixed original IL initialization for every subsequent method.",
+  "bootstrap_replicates": 2000,
+  "formal_updates": 1000,
+  "formal_train_seeds": [
+    42,
+    43,
+    44
+  ],
+  "primary_material_PDMS_gain": 0.002
+}

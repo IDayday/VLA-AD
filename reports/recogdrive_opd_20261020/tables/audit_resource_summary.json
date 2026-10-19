@@ -1,0 +1,153 @@
+{
+  "valid_v2_GPU_hours": 35.89693459981019,
+  "invalid_v1_GPU_hours": 40.4668281245894,
+  "total_GPU_hours": 76.36376272439958,
+  "definition": "Wall-clock GPU reservation including evaluation and startup; CPU-only controllers excluded; not a utilization estimate",
+  "valid_v2_job_status_counts": {
+    "COMPLETE": 225,
+    "FAILED": 8
+  },
+  "failure_names": [
+    "G0_G1_audit",
+    "controller_dynamic_E6",
+    "controller_dynamic_confirmation",
+    "controller_official_E6",
+    "controller_official_bootstrap",
+    "controller_official_bootstrap_dependencyfix",
+    "controller_official_bootstrap_sourcefix",
+    "controller_official_confirmation"
+  ],
+  "failures_remain_visible": true,
+  "failure_records": [
+    {
+      "name": "G0_G1_audit",
+      "status": "FAILED",
+      "commands": [
+        [
+          "scripts/opd/audit.py"
+        ],
+        [
+          "scripts/opd/validate.py",
+          "--mode",
+          "batch"
+        ],
+        [
+          "scripts/opd/validate.py",
+          "--mode",
+          "grpo"
+        ],
+        [
+          "scripts/opd/validate.py",
+          "--mode",
+          "perturb"
+        ],
+        [
+          "scripts/opd/verify_integrations.py",
+          "auxiliary"
+        ]
+      ],
+      "returncodes": [
+        0,
+        0,
+        1
+      ]
+    },
+    {
+      "name": "controller_dynamic_E6",
+      "status": "FAILED",
+      "commands": [
+        [
+          "scripts/opd/suite.py",
+          "e6"
+        ]
+      ],
+      "returncodes": [
+        -15
+      ]
+    },
+    {
+      "name": "controller_dynamic_confirmation",
+      "status": "FAILED",
+      "commands": [
+        [
+          "scripts/opd/suite.py",
+          "confirm"
+        ]
+      ],
+      "returncodes": [
+        -15
+      ]
+    },
+    {
+      "name": "controller_official_E6",
+      "status": "FAILED",
+      "commands": [
+        [
+          "scripts/opd/suite.py",
+          "e6"
+        ]
+      ],
+      "returncodes": [
+        -15
+      ]
+    },
+    {
+      "name": "controller_official_bootstrap",
+      "status": "FAILED",
+      "commands": [
+        [
+          "scripts/opd/official_rerun.py"
+        ]
+      ],
+      "returncodes": [
+        -15
+      ]
+    },
+    {
+      "name": "controller_official_bootstrap_dependencyfix",
+      "status": "FAILED",
+      "commands": [
+        [
+          "scripts/opd/official_rerun.py"
+        ]
+      ],
+      "returncodes": [
+        -15
+      ]
+    },
+    {
+      "name": "controller_official_bootstrap_sourcefix",
+      "status": "FAILED",
+      "commands": [
+        [
+          "scripts/opd/official_rerun.py"
+        ]
+      ],
+      "returncodes": [
+        1
+      ]
+    },
+    {
+      "name": "controller_official_confirmation",
+      "status": "FAILED",
+      "commands": [
+        [
+          "scripts/opd/suite.py",
+          "confirm"
+        ]
+      ],
+      "returncodes": [
+        -15
+      ]
+    }
+  ],
+  "restored_pressure_automation_hosts": [
+    "training-rl-zt2-worker-0",
+    "training-vla-zt-worker-0",
+    "training-vlawm-tsinghua-zt2-worker-0",
+    "training-vlawm-tsinghua-zt3-worker-0",
+    "training-vlawm-tsinghua-zt5-worker-0"
+  ],
+  "restoration": "Only owned pause markers removed; original controllers reobserve fresh30min utilization; no custom filler started",
+  "failure_explanation": "Original G0_G1_audit encountered a GRPO diagnostic before E0 labels existed; controller_official_bootstrap_sourcefix propagated that failure. Repaired dependency and passed GRPO_real_low_score. Other failed CPU controllers have -15 handoff exits; scientific children were preserved. Full commands, exit codes and source hashes remain in accounting.json."
+}

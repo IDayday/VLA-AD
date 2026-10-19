@@ -1,0 +1,22 @@
+{
+  "status": "LOCKED",
+  "E4_variant": "E4-A",
+  "calibration_PDMS": {
+    "E4-A": 0.8635173660556874,
+    "E4-B": 0.8501176857574038,
+    "E4-C": 0.8488600191499683
+  },
+  "methods": [
+    "E2",
+    "E3",
+    "E5",
+    "E4-A"
+  ],
+  "training_seeds": [
+    42,
+    43,
+    44
+  ],
+  "checkpoint": "fixed1000; no dev or navtest selection",
+  "population_sha256": "06c28588e92fef58ff05daedb0878490d25e12de3bce5cad2eb7228e562c3d80"
+}

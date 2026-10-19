@@ -1,0 +1,40 @@
+{
+  "passed": true,
+  "records": {
+    "IL": {
+      "repo_id": "owl10/ReCogDrive-2B-IL",
+      "revision": "0fa96f2159d5bc0f816ecd3818f00541db9db6ff",
+      "filename": "ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "bytes": 412357272,
+      "pinned_source": "https://huggingface.co/owl10/ReCogDrive-2B-IL/blob/0fa96f2159d5bc0f816ecd3818f00541db9db6ff/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "local_file_verified": true
+    },
+    "RL": {
+      "repo_id": "owl10/ReCogDrive-2B-RL",
+      "revision": "7346ede73f03ed577811024f1a5d16fb063a47b9",
+      "filename": "ReCogDrive_Diffusion_Planner_2B_RL.ckpt",
+      "sha256": "23fb949b10387efeff87e093703d5faf41b61b9e5ead16d4076661e3c7c08a20",
+      "bytes": 549805245,
+      "pinned_source": "https://huggingface.co/owl10/ReCogDrive-2B-RL/blob/7346ede73f03ed577811024f1a5d16fb063a47b9/ReCogDrive_Diffusion_Planner_2B_RL.ckpt",
+      "local_file_verified": true
+    },
+    "VLM": {
+      "repo_id": "owl10/ReCogDrive-VLM-2B",
+      "revision": "16873acca08e3c04ab229b3d973f39aeba9db68d",
+      "filename": "model.safetensors",
+      "sha256": "79fb39297e322cd2d3dc68d4f23b86ff85806b336a4d5d0ed5db9b66e4034a3c",
+      "bytes": 4178048344,
+      "pinned_source": "https://huggingface.co/owl10/ReCogDrive-VLM-2B/blob/16873acca08e3c04ab229b3d973f39aeba9db68d/model.safetensors",
+      "local_file_verified": true
+    }
+  },
+  "owner": {
+    "host": "training-vla-zt",
+    "pid": 1480337,
+    "start_ticks": 1387684710,
+    "code_sha": "409a31d1c98193669b58f0256d440c3fe98aff2f",
+    "time": 1792438239.3251731
+  },
+  "source": "Public HuggingFace LFS SHA256 metadata, compared to actual local files"
+}

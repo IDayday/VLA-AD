@@ -1,0 +1,510 @@
+{
+  "records": [
+    {
+      "experiment": "E2",
+      "training_seed": 42,
+      "step": 0,
+      "token": "549771158cff59c7",
+      "normalized_state_RMS": 0.0,
+      "xy_RMS_m": 0.0,
+      "heading_RMS_rad": 0.0,
+      "score": [
+        1.0,
+        1.0,
+        0.670969193801532,
+        1.0,
+        1.0,
+        1.0,
+        0.8629038307506383
+      ],
+      "PDMS": 0.8629038307506383,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E2_42/policy_probes/0.pt",
+      "source_sha256": "67bc22de413be56c8d0167afb59f66f4186e6e670877aae398c23701b8985795"
+    },
+    {
+      "experiment": "E2",
+      "training_seed": 42,
+      "step": 100,
+      "token": "549771158cff59c7",
+      "normalized_state_RMS": 0.023182474076747894,
+      "xy_RMS_m": 1.3153619766235352,
+      "heading_RMS_rad": 0.005942083895206451,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E2_42/policy_probes/100.pt",
+      "source_sha256": "b07fefe47a2af64d19e86e655929108ebe40c30f1f7663a46739df52857ce3fb"
+    },
+    {
+      "experiment": "E2",
+      "training_seed": 42,
+      "step": 500,
+      "token": "549771158cff59c7",
+      "normalized_state_RMS": 0.022252853959798813,
+      "xy_RMS_m": 1.276687741279602,
+      "heading_RMS_rad": 0.005750725977122784,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E2_42/policy_probes/500.pt",
+      "source_sha256": "58b01dc52dc962d23ee671fd5cfba517a2941d0d002a0debf9f39e318bee778d"
+    },
+    {
+      "experiment": "E2",
+      "training_seed": 42,
+      "step": 1000,
+      "token": "549771158cff59c7",
+      "normalized_state_RMS": 0.0166091900318861,
+      "xy_RMS_m": 1.0264259576797485,
+      "heading_RMS_rad": 0.004869180731475353,
+      "score": [
+        1.0,
+        1.0,
+        0.950992098002852,
+        1.0,
+        1.0,
+        1.0,
+        0.9795800408345215
+      ],
+      "PDMS": 0.9795800408345215,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E2_42/policy_probes/1000.pt",
+      "source_sha256": "ed0028d92afc2e8799314ad4c6bdc7e136e81bc11bad2dfe11ae464011c7183d"
+    },
+    {
+      "experiment": "E2",
+      "training_seed": 43,
+      "step": 0,
+      "token": "5bdf639417075a8e",
+      "normalized_state_RMS": 0.0,
+      "xy_RMS_m": 0.0,
+      "heading_RMS_rad": 0.0,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E2_43/policy_probes/0.pt",
+      "source_sha256": "63a15064dbb0b77bb5b6c90751d489e2be3978acfa78feaf6c96a7a5765921e5"
+    },
+    {
+      "experiment": "E2",
+      "training_seed": 43,
+      "step": 100,
+      "token": "5bdf639417075a8e",
+      "normalized_state_RMS": 0.007203568704426289,
+      "xy_RMS_m": 0.35407111048698425,
+      "heading_RMS_rad": 0.0104678925126791,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E2_43/policy_probes/100.pt",
+      "source_sha256": "c3bc9f4e8f2aeb7bd0bbc675d388b7c07ab42060cc7bd1bb632bbe34514aea14"
+    },
+    {
+      "experiment": "E2",
+      "training_seed": 43,
+      "step": 500,
+      "token": "5bdf639417075a8e",
+      "normalized_state_RMS": 0.01088142953813076,
+      "xy_RMS_m": 0.37317535281181335,
+      "heading_RMS_rad": 0.010890067555010319,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E2_43/policy_probes/500.pt",
+      "source_sha256": "8ee42016af438e891e0918139822031a2c637e848044e79bf40a18a8e0db3b0a"
+    },
+    {
+      "experiment": "E2",
+      "training_seed": 43,
+      "step": 1000,
+      "token": "5bdf639417075a8e",
+      "normalized_state_RMS": 0.008521251380443573,
+      "xy_RMS_m": 0.3813250660896301,
+      "heading_RMS_rad": 0.015432026237249374,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E2_43/policy_probes/1000.pt",
+      "source_sha256": "74e2304739e97895817688c308428950af121aea70500c96ab112b95eda1086c"
+    },
+    {
+      "experiment": "E2",
+      "training_seed": 44,
+      "step": 0,
+      "token": "526a6eacef345ea1",
+      "normalized_state_RMS": 0.0,
+      "xy_RMS_m": 0.0,
+      "heading_RMS_rad": 0.0,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E2_44/policy_probes/0.pt",
+      "source_sha256": "3f04121326f3660134a48513c72a301fb54b548ae1cba027442bf5381266708b"
+    },
+    {
+      "experiment": "E2",
+      "training_seed": 44,
+      "step": 100,
+      "token": "526a6eacef345ea1",
+      "normalized_state_RMS": 0.014738310128450394,
+      "xy_RMS_m": 0.6866704821586609,
+      "heading_RMS_rad": 0.011813229881227016,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E2_44/policy_probes/100.pt",
+      "source_sha256": "d84eae0ce15fb38ddfbe49e75dd94f0dcf8941be396dec7b9742cca0227a1a45"
+    },
+    {
+      "experiment": "E2",
+      "training_seed": 44,
+      "step": 500,
+      "token": "526a6eacef345ea1",
+      "normalized_state_RMS": 0.01426402572542429,
+      "xy_RMS_m": 0.6580302119255066,
+      "heading_RMS_rad": 0.008443872444331646,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E2_44/policy_probes/500.pt",
+      "source_sha256": "19f47cf76a66f9d0149772d92e2e97a3b54845defb345a7dc032d32211030e80"
+    },
+    {
+      "experiment": "E2",
+      "training_seed": 44,
+      "step": 1000,
+      "token": "526a6eacef345ea1",
+      "normalized_state_RMS": 0.014073516242206097,
+      "xy_RMS_m": 0.6315428614616394,
+      "heading_RMS_rad": 0.001830155961215496,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E2_44/policy_probes/1000.pt",
+      "source_sha256": "7a28ca0cd40fcbb048b233eb4b262baad382dbfa1e2a5f52b05eca2284f6b374"
+    },
+    {
+      "experiment": "E3",
+      "training_seed": 42,
+      "step": 0,
+      "token": "549771158cff59c7",
+      "normalized_state_RMS": 0.0,
+      "xy_RMS_m": 0.0,
+      "heading_RMS_rad": 0.0,
+      "score": [
+        1.0,
+        1.0,
+        0.670969193801532,
+        1.0,
+        1.0,
+        1.0,
+        0.8629038307506383
+      ],
+      "PDMS": 0.8629038307506383,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E3_42/policy_probes/0.pt",
+      "source_sha256": "22a1eb4be07cd334419b1cb280db6d1c6cc05f8c2a0207b34525f9425899fc25"
+    },
+    {
+      "experiment": "E3",
+      "training_seed": 42,
+      "step": 100,
+      "token": "549771158cff59c7",
+      "normalized_state_RMS": 0.022741543129086494,
+      "xy_RMS_m": 1.286059021949768,
+      "heading_RMS_rad": 0.006229913793504238,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E3_42/policy_probes/100.pt",
+      "source_sha256": "82e17fbd61203686d68c86c20e27909f72a38bebd4e14f08e68781e9dfeed7e2"
+    },
+    {
+      "experiment": "E3",
+      "training_seed": 42,
+      "step": 500,
+      "token": "549771158cff59c7",
+      "normalized_state_RMS": 0.021466782316565514,
+      "xy_RMS_m": 1.2463792562484741,
+      "heading_RMS_rad": 0.0058282813988626,
+      "score": [
+        1.0,
+        1.0,
+        0.9919424557513029,
+        1.0,
+        1.0,
+        1.0,
+        0.9966426898963762
+      ],
+      "PDMS": 0.9966426898963762,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E3_42/policy_probes/500.pt",
+      "source_sha256": "b1f1e3b9649c62189dd4f29ca79626fb37d9fa4e76a762af16c2183400e690a7"
+    },
+    {
+      "experiment": "E3",
+      "training_seed": 42,
+      "step": 1000,
+      "token": "549771158cff59c7",
+      "normalized_state_RMS": 0.014680392108857632,
+      "xy_RMS_m": 0.9228039383888245,
+      "heading_RMS_rad": 0.007147802505642176,
+      "score": [
+        1.0,
+        1.0,
+        0.9163382777072213,
+        1.0,
+        1.0,
+        1.0,
+        0.9651409490446756
+      ],
+      "PDMS": 0.9651409490446756,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E3_42/policy_probes/1000.pt",
+      "source_sha256": "9501de2daf0bc9e0ae9d94508509db58349ccb46804fe42eab8a596f3d87f7ba"
+    },
+    {
+      "experiment": "E3",
+      "training_seed": 43,
+      "step": 0,
+      "token": "5bdf639417075a8e",
+      "normalized_state_RMS": 0.0,
+      "xy_RMS_m": 0.0,
+      "heading_RMS_rad": 0.0,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E3_43/policy_probes/0.pt",
+      "source_sha256": "d6cbfd811544a39a4d282819106d56f4cc33cab438ae1b7784dccdd1627bab8f"
+    },
+    {
+      "experiment": "E3",
+      "training_seed": 43,
+      "step": 100,
+      "token": "5bdf639417075a8e",
+      "normalized_state_RMS": 0.0073983254842460155,
+      "xy_RMS_m": 0.3682057559490204,
+      "heading_RMS_rad": 0.011155483312904835,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E3_43/policy_probes/100.pt",
+      "source_sha256": "3000e71b8eb175c46754e21e3893a8af38ccdfca40d565818618044adb152bf4"
+    },
+    {
+      "experiment": "E3",
+      "training_seed": 43,
+      "step": 500,
+      "token": "5bdf639417075a8e",
+      "normalized_state_RMS": 0.011586364358663559,
+      "xy_RMS_m": 0.3854876756668091,
+      "heading_RMS_rad": 0.012159295380115509,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E3_43/policy_probes/500.pt",
+      "source_sha256": "b1916f46310be271eda9dcc11d8a0ae46e7ddf029aa3c77f1d8e5b97a840a0ad"
+    },
+    {
+      "experiment": "E3",
+      "training_seed": 43,
+      "step": 1000,
+      "token": "5bdf639417075a8e",
+      "normalized_state_RMS": 0.007998867891728878,
+      "xy_RMS_m": 0.3439750075340271,
+      "heading_RMS_rad": 0.018085777759552002,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E3_43/policy_probes/1000.pt",
+      "source_sha256": "8bb887976a04bd8bb9959eb1cd4b7046a4da584128ba6b1da6d41edf7de5e2b0"
+    },
+    {
+      "experiment": "E3",
+      "training_seed": 44,
+      "step": 0,
+      "token": "526a6eacef345ea1",
+      "normalized_state_RMS": 0.0,
+      "xy_RMS_m": 0.0,
+      "heading_RMS_rad": 0.0,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E3_44/policy_probes/0.pt",
+      "source_sha256": "7d2988fc48569062b068477bf150e3fc86150d3d48c551944e5cfc49df635d65"
+    },
+    {
+      "experiment": "E3",
+      "training_seed": 44,
+      "step": 100,
+      "token": "526a6eacef345ea1",
+      "normalized_state_RMS": 0.014528404921293259,
+      "xy_RMS_m": 0.6648358702659607,
+      "heading_RMS_rad": 0.011540199629962444,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E3_44/policy_probes/100.pt",
+      "source_sha256": "cd95d335e0b987267aed6c1f14e9f9903341201563851e1d4e66eea632866a47"
+    },
+    {
+      "experiment": "E3",
+      "training_seed": 44,
+      "step": 500,
+      "token": "526a6eacef345ea1",
+      "normalized_state_RMS": 0.013209141790866852,
+      "xy_RMS_m": 0.6176556944847107,
+      "heading_RMS_rad": 0.007247133646160364,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E3_44/policy_probes/500.pt",
+      "source_sha256": "3b744785a2e08934d8638f624eb25673dd825f7892eea85319e109f952af9a5d"
+    },
+    {
+      "experiment": "E3",
+      "training_seed": 44,
+      "step": 1000,
+      "token": "526a6eacef345ea1",
+      "normalized_state_RMS": 0.013964518904685974,
+      "xy_RMS_m": 0.5519087910652161,
+      "heading_RMS_rad": 0.0020305521320551634,
+      "score": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "PDMS": 1.0,
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/runs/train_E3_44/policy_probes/1000.pt",
+      "source_sha256": "35b5aab9060dd5b25cf0d7ba5a26b01b0db06954d85f1063bbe6fc5d35b55d8b"
+    }
+  ],
+  "scope": "Already-saved first scheduled fit input per training seed, fixed independent noise6101; one draw, descriptive only, not held-out policy comparison",
+  "no_new_policy_queries": true
+}

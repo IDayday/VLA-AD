@@ -1,0 +1,303 @@
+{
+  "E1": {
+    "mean_training_GPU_hours": 0.10659283616079915,
+    "mean_peak_GPU_GiB": 2.039177894592285,
+    "gain": -0.02251656450799973,
+    "teacher_queries": [
+      {
+        "student_rollout": 0,
+        "student_query": 0,
+        "teacher_query": 0,
+        "anchor_query": 0,
+        "student_diffusion": 8000,
+        "student_rollout_batch_calls": 0,
+        "student_query_batch_calls": 0,
+        "teacher_query_batch_calls": 0,
+        "anchor_query_batch_calls": 0,
+        "student_diffusion_batch_calls": 1000
+      },
+      {
+        "student_rollout": 0,
+        "student_query": 0,
+        "teacher_query": 0,
+        "anchor_query": 0,
+        "student_diffusion": 8000,
+        "student_rollout_batch_calls": 0,
+        "student_query_batch_calls": 0,
+        "teacher_query_batch_calls": 0,
+        "anchor_query_batch_calls": 0,
+        "student_diffusion_batch_calls": 1000
+      },
+      {
+        "student_rollout": 0,
+        "student_query": 0,
+        "teacher_query": 0,
+        "anchor_query": 0,
+        "student_diffusion": 8000,
+        "student_rollout_batch_calls": 0,
+        "student_query_batch_calls": 0,
+        "teacher_query_batch_calls": 0,
+        "anchor_query_batch_calls": 0,
+        "student_diffusion_batch_calls": 1000
+      }
+    ]
+  },
+  "E2": {
+    "mean_training_GPU_hours": 0.285975824834227,
+    "mean_peak_GPU_GiB": 6.359201431274414,
+    "gain": 0.01494375207882817,
+    "teacher_queries": [
+      {
+        "student_rollout": 0,
+        "student_query": 40000,
+        "teacher_query": 40000,
+        "anchor_query": 0,
+        "student_diffusion": 0,
+        "student_rollout_batch_calls": 0,
+        "student_query_batch_calls": 5000,
+        "teacher_query_batch_calls": 5000,
+        "anchor_query_batch_calls": 0,
+        "student_diffusion_batch_calls": 0
+      },
+      {
+        "student_rollout": 0,
+        "student_query": 40000,
+        "teacher_query": 40000,
+        "anchor_query": 0,
+        "student_diffusion": 0,
+        "student_rollout_batch_calls": 0,
+        "student_query_batch_calls": 5000,
+        "teacher_query_batch_calls": 5000,
+        "anchor_query_batch_calls": 0,
+        "student_diffusion_batch_calls": 0
+      },
+      {
+        "student_rollout": 0,
+        "student_query": 40000,
+        "teacher_query": 40000,
+        "anchor_query": 0,
+        "student_diffusion": 0,
+        "student_rollout_batch_calls": 0,
+        "student_query_batch_calls": 5000,
+        "teacher_query_batch_calls": 5000,
+        "anchor_query_batch_calls": 0,
+        "student_diffusion_batch_calls": 0
+      }
+    ]
+  },
+  "E3": {
+    "mean_training_GPU_hours": 0.3263701832535918,
+    "mean_peak_GPU_GiB": 6.3592023849487305,
+    "gain": 0.01699561430908705,
+    "teacher_queries": [
+      {
+        "student_rollout": 40000,
+        "student_query": 40000,
+        "teacher_query": 40000,
+        "anchor_query": 0,
+        "student_diffusion": 0,
+        "student_rollout_batch_calls": 5000,
+        "student_query_batch_calls": 5000,
+        "teacher_query_batch_calls": 5000,
+        "anchor_query_batch_calls": 0,
+        "student_diffusion_batch_calls": 0
+      },
+      {
+        "student_rollout": 40000,
+        "student_query": 40000,
+        "teacher_query": 40000,
+        "anchor_query": 0,
+        "student_diffusion": 0,
+        "student_rollout_batch_calls": 5000,
+        "student_query_batch_calls": 5000,
+        "teacher_query_batch_calls": 5000,
+        "anchor_query_batch_calls": 0,
+        "student_diffusion_batch_calls": 0
+      },
+      {
+        "student_rollout": 40000,
+        "student_query": 40000,
+        "teacher_query": 40000,
+        "anchor_query": 0,
+        "student_diffusion": 0,
+        "student_rollout_batch_calls": 5000,
+        "student_query_batch_calls": 5000,
+        "teacher_query_batch_calls": 5000,
+        "anchor_query_batch_calls": 0,
+        "student_diffusion_batch_calls": 0
+      }
+    ]
+  },
+  "E4-A": {
+    "mean_training_GPU_hours": 0.3621643285241185,
+    "mean_peak_GPU_GiB": 6.492438793182373,
+    "gain": 0.015974556605959894,
+    "teacher_queries": [
+      {
+        "student_rollout": 40000,
+        "student_query": 40000,
+        "teacher_query": 40000,
+        "anchor_query": 40000,
+        "student_diffusion": 0,
+        "student_rollout_batch_calls": 5000,
+        "student_query_batch_calls": 5000,
+        "teacher_query_batch_calls": 5000,
+        "anchor_query_batch_calls": 5000,
+        "student_diffusion_batch_calls": 0
+      },
+      {
+        "student_rollout": 40000,
+        "student_query": 40000,
+        "teacher_query": 40000,
+        "anchor_query": 40000,
+        "student_diffusion": 0,
+        "student_rollout_batch_calls": 5000,
+        "student_query_batch_calls": 5000,
+        "teacher_query_batch_calls": 5000,
+        "anchor_query_batch_calls": 5000,
+        "student_diffusion_batch_calls": 0
+      },
+      {
+        "student_rollout": 40000,
+        "student_query": 40000,
+        "teacher_query": 40000,
+        "anchor_query": 40000,
+        "student_diffusion": 0,
+        "student_rollout_batch_calls": 5000,
+        "student_query_batch_calls": 5000,
+        "teacher_query_batch_calls": 5000,
+        "anchor_query_batch_calls": 5000,
+        "student_diffusion_batch_calls": 0
+      }
+    ]
+  },
+  "E4-B": {
+    "mean_training_GPU_hours": 0.3489272615796438,
+    "mean_peak_GPU_GiB": 7.392847537994385,
+    "gain": 0.007945347727633799,
+    "teacher_queries": [
+      {
+        "student_rollout": 40000,
+        "student_query": 40000,
+        "teacher_query": 40000,
+        "anchor_query": 0,
+        "student_diffusion": 8000,
+        "student_rollout_batch_calls": 5000,
+        "student_query_batch_calls": 5000,
+        "teacher_query_batch_calls": 5000,
+        "anchor_query_batch_calls": 0,
+        "student_diffusion_batch_calls": 1000
+      },
+      {
+        "student_rollout": 40000,
+        "student_query": 40000,
+        "teacher_query": 40000,
+        "anchor_query": 0,
+        "student_diffusion": 8000,
+        "student_rollout_batch_calls": 5000,
+        "student_query_batch_calls": 5000,
+        "teacher_query_batch_calls": 5000,
+        "anchor_query_batch_calls": 0,
+        "student_diffusion_batch_calls": 1000
+      },
+      {
+        "student_rollout": 40000,
+        "student_query": 40000,
+        "teacher_query": 40000,
+        "anchor_query": 0,
+        "student_diffusion": 8000,
+        "student_rollout_batch_calls": 5000,
+        "student_query_batch_calls": 5000,
+        "teacher_query_batch_calls": 5000,
+        "anchor_query_batch_calls": 0,
+        "student_diffusion_batch_calls": 1000
+      }
+    ]
+  },
+  "E4-C": {
+    "mean_training_GPU_hours": 0.3849005511760091,
+    "mean_peak_GPU_GiB": 7.52513313293457,
+    "gain": 0.007900585219303296,
+    "teacher_queries": [
+      {
+        "student_rollout": 40000,
+        "student_query": 40000,
+        "teacher_query": 40000,
+        "anchor_query": 40000,
+        "student_diffusion": 8000,
+        "student_rollout_batch_calls": 5000,
+        "student_query_batch_calls": 5000,
+        "teacher_query_batch_calls": 5000,
+        "anchor_query_batch_calls": 5000,
+        "student_diffusion_batch_calls": 1000
+      },
+      {
+        "student_rollout": 40000,
+        "student_query": 40000,
+        "teacher_query": 40000,
+        "anchor_query": 40000,
+        "student_diffusion": 8000,
+        "student_rollout_batch_calls": 5000,
+        "student_query_batch_calls": 5000,
+        "teacher_query_batch_calls": 5000,
+        "anchor_query_batch_calls": 5000,
+        "student_diffusion_batch_calls": 1000
+      },
+      {
+        "student_rollout": 40000,
+        "student_query": 40000,
+        "teacher_query": 40000,
+        "anchor_query": 40000,
+        "student_diffusion": 8000,
+        "student_rollout_batch_calls": 5000,
+        "student_query_batch_calls": 5000,
+        "teacher_query_batch_calls": 5000,
+        "anchor_query_batch_calls": 5000,
+        "student_diffusion_batch_calls": 1000
+      }
+    ]
+  },
+  "E5": {
+    "mean_training_GPU_hours": 0.3735404807054955,
+    "mean_peak_GPU_GiB": 7.52513313293457,
+    "gain": -0.00833238510952431,
+    "teacher_queries": [
+      {
+        "student_rollout": 40000,
+        "student_query": 40000,
+        "teacher_query": 11200,
+        "anchor_query": 40000,
+        "student_diffusion": 8000,
+        "student_rollout_batch_calls": 5000,
+        "student_query_batch_calls": 5000,
+        "teacher_query_batch_calls": 1400,
+        "anchor_query_batch_calls": 5000,
+        "student_diffusion_batch_calls": 1000
+      },
+      {
+        "student_rollout": 40000,
+        "student_query": 40000,
+        "teacher_query": 10680,
+        "anchor_query": 40000,
+        "student_diffusion": 8000,
+        "student_rollout_batch_calls": 5000,
+        "student_query_batch_calls": 5000,
+        "teacher_query_batch_calls": 1335,
+        "anchor_query_batch_calls": 5000,
+        "student_diffusion_batch_calls": 1000
+      },
+      {
+        "student_rollout": 40000,
+        "student_query": 40000,
+        "teacher_query": 11320,
+        "anchor_query": 40000,
+        "student_diffusion": 8000,
+        "student_rollout_batch_calls": 5000,
+        "student_query_batch_calls": 5000,
+        "teacher_query_batch_calls": 1415,
+        "anchor_query_batch_calls": 5000,
+        "student_diffusion_batch_calls": 1000
+      }
+    ]
+  }
+}

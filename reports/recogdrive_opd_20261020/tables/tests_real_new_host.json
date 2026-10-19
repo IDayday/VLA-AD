@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "host": "training-vlawm-tsinghua-zt5",
+  "scenes": 16,
+  "model_scene_pairs": 64,
+  "trajectory_max_error": 0.0,
+  "canonical_score_max_error": 0.0,
+  "scope": "Exact native4-process cross-host routing qualification; not a new method or additional inference draws"
+}

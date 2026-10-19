@@ -1,0 +1,542 @@
+[
+  {
+    "kind": "repair",
+    "token": "c0f92874404d5814",
+    "log": "2021.06.23.17.31.36_veh-16_00016_00377",
+    "seed": 1101,
+    "scene_means": {
+      "IL": 0.5833333333333334,
+      "RL": 0.9445982166090067,
+      "E3": 0.7500000000000001,
+      "E5": 0.580622580058511
+    },
+    "event_seconds": {
+      "first_collision_s": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "first_dac_s": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "first_ttc_check_failure_s": [
+        3.3000000000000003,
+        null,
+        2.9000000000000004,
+        3.3000000000000003
+      ]
+    },
+    "all_draw_event_seconds": {
+      "first_collision_s": [
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      ],
+      "first_dac_s": [
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      ],
+      "first_ttc_check_failure_s": [
+        [
+          3.3000000000000003,
+          3.6,
+          3.4000000000000004,
+          3.5,
+          3.4000000000000004
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          2.9000000000000004,
+          null,
+          3.0,
+          null,
+          3.0
+        ],
+        [
+          3.3000000000000003,
+          3.8000000000000003,
+          3.5,
+          3.7,
+          3.5
+        ]
+      ]
+    },
+    "raw_progress_m": [
+      10.35082283503824,
+      8.668053693852716,
+      11.20439979802262,
+      10.187550336243177
+    ],
+    "reference_progress_m": 9.767755955921164,
+    "extra_case_state_log": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/diagnostics/case_states/repair.npz",
+    "state_log_sha256": "ee8f4ee2d58081380949c0a6b255ee84578549a0b67038ced166d8269af45464",
+    "canonical_score_error": 0.0,
+    "rule": "First stable token hash among threshold-eligible cases; displayed draw closest to mean E3-minus-IL change"
+  },
+  {
+    "kind": "regression",
+    "token": "de9c0d8341d65b55",
+    "log": "2021.07.16.22.40.23_veh-38_00204_00360",
+    "seed": 1102,
+    "scene_means": {
+      "IL": 0.9166666666666667,
+      "RL": 1.0,
+      "E3": 0.55,
+      "E5": 0.5833333333333334
+    },
+    "event_seconds": {
+      "first_collision_s": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "first_dac_s": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "first_ttc_check_failure_s": [
+        null,
+        null,
+        3.4000000000000004,
+        3.5
+      ]
+    },
+    "all_draw_event_seconds": {
+      "first_collision_s": [
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          3.9000000000000004,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      ],
+      "first_dac_s": [
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      ],
+      "first_ttc_check_failure_s": [
+        [
+          null,
+          null,
+          null,
+          3.7,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          3.4000000000000004,
+          3.0,
+          2.7,
+          3.5
+        ],
+        [
+          4.0,
+          3.5,
+          3.2,
+          2.9000000000000004,
+          3.5
+        ]
+      ]
+    },
+    "raw_progress_m": [
+      17.587174310015172,
+      13.379925493345468,
+      18.62767315351701,
+      18.499937020837763
+    ],
+    "reference_progress_m": 26.718045694212606,
+    "extra_case_state_log": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/diagnostics/case_states/regression.npz",
+    "state_log_sha256": "ff2ad072b9823d2981819b85eae24b97b3582b8531fa19c4731719a9207f242c",
+    "canonical_score_error": 0.0,
+    "rule": "First stable token hash among threshold-eligible cases; displayed draw closest to mean E3-minus-IL change"
+  },
+  {
+    "kind": "protected",
+    "token": "9d8f4e67c96b5637",
+    "log": "2021.07.09.15.53.28_veh-38_00184_02293",
+    "seed": 1102,
+    "scene_means": {
+      "IL": 0.9828234047587469,
+      "RL": 0.9799761111534575,
+      "E3": 0.91618574143522,
+      "E5": 0.9867424919077699
+    },
+    "event_seconds": {
+      "first_collision_s": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "first_dac_s": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "first_ttc_check_failure_s": [
+        null,
+        null,
+        null,
+        null
+      ]
+    },
+    "all_draw_event_seconds": {
+      "first_collision_s": [
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      ],
+      "first_dac_s": [
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      ],
+      "first_ttc_check_failure_s": [
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          4.0,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      ]
+    },
+    "raw_progress_m": [
+      20.67971317893202,
+      20.44499563418902,
+      21.780941729206518,
+      20.99260161953464
+    ],
+    "reference_progress_m": 21.44707258012467,
+    "extra_case_state_log": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/diagnostics/case_states/protected.npz",
+    "state_log_sha256": "a2d20f25c7359a0722a806061ddd6ed5c9020bca675db90df5f63abd4fa5683d",
+    "canonical_score_error": 0.0,
+    "rule": "First stable token hash among threshold-eligible cases; displayed draw closest to mean E3-minus-IL change"
+  },
+  {
+    "kind": "teacher_transfer_failure",
+    "token": "c0f92874404d5814",
+    "log": "2021.06.23.17.31.36_veh-16_00016_00377",
+    "seed": 1101,
+    "scene_means": {
+      "IL": 0.5833333333333334,
+      "RL": 0.9445982166090067,
+      "E3": 0.7500000000000001,
+      "E5": 0.580622580058511
+    },
+    "event_seconds": {
+      "first_collision_s": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "first_dac_s": [
+        null,
+        null,
+        null,
+        null
+      ],
+      "first_ttc_check_failure_s": [
+        3.3000000000000003,
+        null,
+        2.9000000000000004,
+        3.3000000000000003
+      ]
+    },
+    "all_draw_event_seconds": {
+      "first_collision_s": [
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      ],
+      "first_dac_s": [
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ]
+      ],
+      "first_ttc_check_failure_s": [
+        [
+          3.3000000000000003,
+          3.6,
+          3.4000000000000004,
+          3.5,
+          3.4000000000000004
+        ],
+        [
+          null,
+          null,
+          null,
+          null,
+          null
+        ],
+        [
+          2.9000000000000004,
+          null,
+          3.0,
+          null,
+          3.0
+        ],
+        [
+          3.3000000000000003,
+          3.8000000000000003,
+          3.5,
+          3.7,
+          3.5
+        ]
+      ]
+    },
+    "raw_progress_m": [
+      10.35082283503824,
+      8.668053693852716,
+      11.20439979802262,
+      10.187550336243177
+    ],
+    "reference_progress_m": 9.767755955921164,
+    "extra_case_state_log": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/diagnostics/case_states/teacher_transfer_failure.npz",
+    "state_log_sha256": "ee8f4ee2d58081380949c0a6b255ee84578549a0b67038ced166d8269af45464",
+    "canonical_score_error": 0.0,
+    "rule": "First stable token hash among threshold-eligible cases; displayed draw closest to mean E3-minus-IL change"
+  }
+]

@@ -1,0 +1,13 @@
+{
+  "status": "LOCKED",
+  "sha256": "4e49e7d2fcceee397fca64df3b5611d7f84c9915d0506fb796a307ecefa7b562",
+  "time": 1792436332.5203345,
+  "registration_sha256": "d0ba47ff9be3c62d525083e642f649046ec4c4ead481765624ee6cd84c922372",
+  "owner": {
+    "host": "training-vla-zt",
+    "pid": 1434568,
+    "start_ticks": 1387423710,
+    "code_sha": "8ea86acd1340d60541b081d24802b6d0dc099591",
+    "time": 1792436332.534382
+  }
+}

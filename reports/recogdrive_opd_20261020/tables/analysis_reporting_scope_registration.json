@@ -1,0 +1,14 @@
+{
+  "time": 1792438709.999066,
+  "owner": {
+    "host": "training-vla-zt",
+    "pid": 1499653,
+    "start_ticks": 1387732307,
+    "code_sha": "e8f29da27ceb5d7ac6637756c497ffe72d91c6e3",
+    "time": 1792438710.0042348
+  },
+  "primary_unchanged": true,
+  "scope": "Separate existing dev status from independent navtest status; stable extra value requires consistent support, or excludes material KD advantage on both splits; disagreement INCONCLUSIVE. No model, loss, threshold, checkpoint or data change.",
+  "primary_dev_analysis_already_read": false,
+  "main_test_aggregate_already_read": false
+}

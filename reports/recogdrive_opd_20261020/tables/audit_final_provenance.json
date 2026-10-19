@@ -4,25 +4,25 @@
     "train": {
       "scenes": 4115,
       "logs": 50,
-      "manifest_sha256": "e3292aae30586c02e6c0df62639a0dd3e9bfc58b55a6c5662ec4654e0bfaee1f",
+      "manifest_sha256": "3630e5eb39b8de72300edbe5544611df6d5991473e81c0249306ae7d763c8e55",
       "official_filter_sha256": "c37fea567a0cfdbc29076cca893d4f5dd32db59baec18ae214527206d6b64e6f"
     },
     "cal": {
       "scenes": 518,
       "logs": 4,
-      "manifest_sha256": "10488343ac654799c109e80bf09d26da6b49e4fc4210e7e3dba53c13c87a82c3",
+      "manifest_sha256": "158a70d820ca8d0eea8138eaef9f69556616f746bab077392fb683acd0dbc7e5",
       "official_filter_sha256": "c37fea567a0cfdbc29076cca893d4f5dd32db59baec18ae214527206d6b64e6f"
     },
     "dev": {
       "scenes": 1696,
       "logs": 16,
-      "manifest_sha256": "f9552d196d8973a6cfd1f182702b777198012f9fe60d51acee08c039e75eea53",
+      "manifest_sha256": "7793321e859e13c6e5740031b69869e4954fb99c3a5b81d62ee1384224eafeb3",
       "official_filter_sha256": "c37fea567a0cfdbc29076cca893d4f5dd32db59baec18ae214527206d6b64e6f"
     },
     "navtest": {
       "scenes": 12146,
       "logs": 136,
-      "manifest_sha256": "72149fa954499fd73eef38e9b2bbdfb78342ff2350d48bcbb51d1f35b44d9c8d",
+      "manifest_sha256": "06c28588e92fef58ff05daedb0878490d25e12de3bce5cad2eb7228e562c3d80",
       "official_filter_sha256": "61284edf5003c0291f843ce9817c822ba306609a62d54544223adae3fc7fc9cd"
     }
   },
@@ -1079,6 +1079,31 @@
     "navsim/planning/metric_caching/metric_cache_processor.py": "164c6be26ce4b1286d1260886f2124afddc5aae8476692fb43b0120b78ff4895",
     "scripts/opd/scoring.py": "c6ad9bba7bf26526acc5d5a838269954420e2ac0a524ba2ec7b9b9d3b4020134"
   },
+  "native_model_sources": {
+    "navsim/agents/recogdrive/recogdrive_agent.py": "7bffc6e7050a4cd7b32cd6a8a490f9bfedb013ebaa8f67796badfba7c22e32f0",
+    "navsim/agents/recogdrive/recogdrive_backbone.py": "2b7e6717b96c370cafe878997d38296349a72d7653451381d3bc1f3eb5613440",
+    "navsim/agents/recogdrive/recogdrive_features.py": "fb431ce770a18b0f4cfa907be3571fb5606b2306223820efe674347f2c9f7af3",
+    "navsim/agents/recogdrive/recogdrive_diffusion_planner.py": "47000d0d7e1c432ec8d4dd8bb84cdd80b263d921dbd3e45ec6acad7dbe60260b",
+    "navsim/agents/recogdrive/recogdrive_dit.py": "818ab9e354519e5dad3ddca17e28ff8acc5516d4f16c738add512b8af3d241e3",
+    "navsim/agents/recogdrive/utils/internvl_preprocess.py": "5920d8a6151fae0ca40fb305621cd7246995f368bc2f8a8515c7d5ae4d12eecf"
+  },
+  "VLM_ancillary_sources": {
+    "trainer_state.json": "2aca801a23b10fde07397a7e2b91c869ed727d33d1fba1af326ad9e4fd9d6b26",
+    "config.json": "6c7249180e5312db63e2279d06232a920f077157d56491bb59de319ed37c8656",
+    "configuration_intern_vit.py": "22dd687a5f142985407675fc6b1dc688c2ded93e54192543ecf28ef495a6efa8",
+    "added_tokens.json": "f2008ed2a42163fdfe6e1942bf8d1e901bb877384c5ad740a8ab7f31f857e91e",
+    "all_results.json": "46c60e3d2fa48423bd9f1cd749d7704dc3bf60b8ba9d255785084941ee41199d",
+    "generation_config.json": "69d76e6b0a3b31f0de871f8f5b968957e0532fd9b17214aabf151da4bdbe1804",
+    "vocab.json": "87a257b04b17642a0688c98cd1df89c398bda4fee532d6f88b38a659ecb4ac8d",
+    "configuration_internvl_chat.py": "6524e6deae6c318543d1022a599f011120f5a970eaa25f1118e7f5d0e346710c",
+    "tokenizer_config.json": "23c362651f75758f131d4798dd8fe3afe2c376063f5c514c5df46c20919db82c",
+    "train_results.json": "46c60e3d2fa48423bd9f1cd749d7704dc3bf60b8ba9d255785084941ee41199d",
+    "special_tokens_map.json": "1f6bc2d8338493b8e0ad8da35655b592c0bc6d41e1deae60f3c57f21599045f2",
+    "modeling_internvl_chat.py": "5d8f26ccfeb8434c0bcc295050725add4b2f2b0ffb4d1ab550c877a648386597",
+    "merges.txt": "455e0caaa06abffc663e9282dfe71dde07fd1991eaf24146bf08793c4dba4497",
+    "modeling_intern_vit.py": "1978e330ea5533dda4d1379096aded271fc741347fc48cb4924846b56a2a6a4b",
+    "conversation.py": "b1b9f280e9cb9211e519e2b8071002b57cc742aadb2f49b05fa674ee3c7d83ee"
+  },
   "maps": {
     "path": "/mnt/navsim/maps",
     "version": "nuplan-maps-v1.0",
@@ -1089,13 +1114,13 @@
     "complete_log",
     "parent_driving_record"
   ],
-  "protocol_sha256": "e02028b646a2745dca0b0a6f6eae7dff57119b3d12f8aeb0a3324a1f80c88968",
+  "protocol_sha256": "4e49e7d2fcceee397fca64df3b5611d7f84c9915d0506fb796a307ecefa7b562",
   "meaning": "Train/cal/dev are held out only from this new training, not proven unseen in original base training",
   "owner": {
     "host": "training-vla-zt",
-    "pid": 1288015,
-    "start_ticks": 1386753760,
-    "code_sha": "c6101f73d511daffa48bd5c825b0cfcd7501bc3d",
-    "time": 1792428941.121044
+    "pid": 1460299,
+    "start_ticks": 1387599765,
+    "code_sha": "0e285f44bd0de5e090435b40cd69d8753c5f02ff",
+    "time": 1792437401.622372
   }
 }
