@@ -133,6 +133,8 @@ print(json.dumps(dict(host=os.uname().nodename,affinity_CPUs=len(os.sched_getaff
 
 def tests():
     required=['real_batch','real_grpo','real_resume_v2','real_grpo_resume','real_ddp','real_online_vlm','real_parameter_perturbation','real_GT_parity','real_inference_cache','real_parallel_inference','real_shared_lock','real_student_deployment','real_disabled_auxiliary']
+    for name in ['real_statistics_projection','real_split_bundle','real_fresh_manifest']:
+        if (ROOT/'tests'/f'{name}.json').exists():required.append(name)
     if (ROOT/'resources/navtest_routing_lock.json').exists() and read(ROOT/'resources/navtest_routing_lock.json').get('GPU_capacity',32)>32:required.append('real_new_host')
     evidence={n:read(ROOT/'tests'/f'{n}.json') for n in required}
     assert all(v['passed'] for v in evidence.values())
