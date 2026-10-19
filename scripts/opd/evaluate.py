@@ -14,7 +14,17 @@ def score_task(task):
         if name=='IL_screen':tr=bank[name]
         else:tr=bank[name]
         values=scorer.batch(cache,tr)
-        out[name]={k:v.tolist() if isinstance(v,np.ndarray) else v for k,v in values.items() if k!='simulated_states'}
+        out[name]={}
+        for k,v in values.items():
+            if k=='simulated_states':continue
+            if k.startswith('first_'):
+                out[name][k]=[float(t) if np.isfinite(t) else None for t in v]
+            elif isinstance(v,np.ndarray):
+                if not np.isfinite(v).all():raise FloatingPointError(f'Nonfinite scoring quantity {k}')
+                out[name][k]=v.tolist()
+            else:
+                if not np.isfinite(v):raise FloatingPointError(f'Nonfinite scoring quantity {k}')
+                out[name][k]=v
     write(dest,dict(token=row['token'],log=row['log_name'],scores=out,predictions_sha256=sha(path),model_metadata=json.loads(str(bank['metadata']))))
     return row['token']
 

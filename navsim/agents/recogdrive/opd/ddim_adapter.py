@@ -40,7 +40,7 @@ class DDIMAdapter:
         time=h.ddim_t[indices]
         return h.p_mean_variance(x.detach(),time,indices,deterministic=deterministic,**conditioning)
 
-    def sample(self,tokens,inputs,*,deterministic=False,init=None,kernel='native'):
+    def sample(self,tokens,inputs,*,deterministic=False,init=None,kernel='native',noises=None):
         if kernel not in ('native','gaussian'):raise ValueError(kernel)
         h=self.head
         with torch.no_grad():
@@ -50,7 +50,7 @@ class DDIMAdapter:
             for k in range(h.ddim_steps):
                 mean,logvar,_=self.transition(x,k,c,deterministic)
                 std=(.5*logvar).exp().to(tokens.dtype)
-                noise=torch.randn_like(x)
+                noise=torch.randn_like(x) if noises is None else noises[:,k].detach().clone()
                 if deterministic:std.zero_()
                 else:std=std.clamp(min=getattr(h,'eval_min_sampling_denoising_std',.0001))
                 if kernel=='native':noise.clamp_(-getattr(h,'eval_randn_clip_value',1.),getattr(h,'eval_randn_clip_value',1.))

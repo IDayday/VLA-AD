@@ -11,13 +11,15 @@ def frozen_query(head,chain,tokens,inputs):
 
 def objective(student,teacher,anchor,tokens,inputs,*,experiment='E3',target=None,teacher_trajectory=None,
               teacher_chain=None,rollout_seed=0,mask=1.,protected=1.,weights=None,deterministic=False,
-              loss_type='deterministic_mean_mse',kernel='native'):
+              loss_type='deterministic_mean_mse',kernel='native',rollout_noise=None):
     device=tokens.device;counts=dict(student_rollout=0,student_query=0,teacher_query=0,anchor_query=0,student_diffusion=0)
+    mask=torch.broadcast_to(torch.as_tensor(mask,device=device,dtype=torch.float32),(len(tokens),))
+    protected=torch.broadcast_to(torch.as_tensor(protected,device=device,dtype=torch.float32),(len(tokens),))
     zero=sum(p.flatten()[0]*0 for p in student.parameters() if p.requires_grad)
     opd=zero;anch=zero;il=zero;per_step=torch.zeros(1,5,device=device);chain=None
     if experiment=='E1':
         if teacher_trajectory is None:raise ValueError('Teacher pseudo-GT missing')
-        il=diffusion_loss(student,tokens,inputs,teacher_trajectory);counts['student_diffusion']=1
+        il=diffusion_loss(student,tokens,inputs,teacher_trajectory);counts['student_diffusion']=len(tokens)
     else:
         if experiment=='E2':
             if teacher_chain is None:raise ValueError('Teacher chain missing')
@@ -25,26 +27,28 @@ def objective(student,teacher,anchor,tokens,inputs,*,experiment='E3',target=None
         else:
             with torch.random.fork_rng(devices=[device.index]):
                 torch.manual_seed(rollout_seed);torch.cuda.manual_seed(rollout_seed)
-                chain=DDIMAdapter(student).sample(tokens,inputs,deterministic=deterministic,kernel=kernel)
-            counts['student_rollout']=5
+                chain=DDIMAdapter(student).sample(tokens,inputs,deterministic=deterministic,kernel=kernel,
+                    init=rollout_noise[0] if rollout_noise is not None else None,noises=rollout_noise[1] if rollout_noise is not None else None)
+            counts['student_rollout']=5*len(tokens)
         pred=DDIMAdapter(student).evaluate_chain(chain,tokens,inputs,require_current=experiment!='E2')
-        counts['student_query']=5
-        if mask:
-            target_means=frozen_query(teacher,chain,tokens,inputs);counts['teacher_query']=5
+        counts['student_query']=5*len(tokens)
+        if mask.any():
+            target_means=frozen_query(teacher,chain,tokens,inputs);counts['teacher_query']=5*len(tokens)
             teacher_sigma=None
             if loss_type=='shared_variance_kl':
                 c=DDIMAdapter(teacher).prepare_conditioning(tokens,inputs)
                 with torch.no_grad():
                     teacher_sigma=torch.stack([(.5*DDIMAdapter(teacher).transition(chain.states[:,k],k,c,deterministic)[1]).exp().clamp_min(.0001) for k in range(5)],1)
-            opd,per_step=transition_loss(pred,target_means,weights=weights,objective=loss_type,
+            opd,per_step=transition_loss(pred,target_means,weights=weights,mask=mask,objective=loss_type,
                 sigma=chain.sigmas,teacher_sigma=teacher_sigma,kernel=kernel)
-        if protected and experiment in ('E4-A','E4-C','E5','E6'):
+        if protected.any() and experiment in ('E4-A','E4-C','E5','E6'):
             if anchor is None:raise ValueError('Anchor required')
-            anchor_means=frozen_query(anchor,chain,tokens,inputs);anch,_=transition_loss(pred,anchor_means,weights=weights)
-            counts['anchor_query']=5
+            anchor_means=frozen_query(anchor,chain,tokens,inputs);anch,_=transition_loss(pred,anchor_means,weights=weights,mask=protected)
+            counts['anchor_query']=5*len(tokens)
         if experiment in ('E4-B','E4-C','E5'):
             if target is None:raise ValueError('Training GT missing')
-            il=diffusion_loss(student,tokens,inputs,target);counts['student_diffusion']=1
+            il=diffusion_loss(student,tokens,inputs,target);counts['student_diffusion']=len(tokens)
+    counts.update({k+'_batch_calls':v//len(tokens) for k,v in list(counts.items())})
     return dict(opd=opd,anchor=anch,il=il,per_step=per_step,chain=chain,forward_counts=counts)
 
 

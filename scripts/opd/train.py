@@ -33,7 +33,17 @@ def main():
     params=[p for p in student.parameters() if p.requires_grad];opt=torch.optim.AdamW(params,lr=lr,weight_decay=cfg['weight_decay'])
     schedule=[];data=rows('train');rng=np.random.default_rng(a.seed)
     if a.stage in ('smoke','tiny'):data=sorted(data,key=lambda r:digest([r['token'],'tiny']))[:cfg['tiny_scenes']]
-    while len(schedule)<steps*cfg['global_batch']:schedule.extend(rng.permutation(len(data)).tolist())
+    lengths=read(ROOT/'manifests/token_lengths.json');buckets={}
+    for i,row in enumerate(data):buckets.setdefault(lengths[row['token']],[]).append(i)
+    while len(schedule)<steps:
+        epoch=[]
+        for indices in buckets.values():
+            indices=rng.permutation(indices).tolist()
+            for j in range(0,len(indices),cfg['global_batch']):
+                b=indices[j:j+cfg['global_batch']]
+                b=(b+indices*((cfg['global_batch']+len(indices)-1)//len(indices)))[:cfg['global_batch']]
+                epoch.append(b)
+        rng.shuffle(epoch);schedule.extend(epoch)
     gate=read(ROOT/'gates/static.json')['scenes'] if a.exp=='E5' else {}
     start_step=0;history=[];counts={};start=time.perf_counter();stop=[False]
     signal.signal(signal.SIGUSR1,lambda *_:stop.__setitem__(0,True))
@@ -55,33 +65,47 @@ def main():
             if step in cfg['endpoints'] or step==steps:save(dest/f'checkpoint_{step}.pt',state)
     if not a.resume:checkpoint(0)
     for step in range(start_step,steps):
-        opt.zero_grad(set_to_none=True);batch=[data[i] for i in schedule[step*cfg['global_batch']:(step+1)*cfg['global_batch']]]
+        opt.zero_grad(set_to_none=True);batch=[data[i] for i in schedule[step]]
         effective=[float(gate[r['token']]['gate'] and gate[r['token']]['category']=='A') if a.exp=='E5' else 1. for r in batch]
         protected=[float(gate[r['token']]['category'] in ('B','C')) if a.exp=='E5' else 1. for r in batch]
         valid_count=max(sum(effective),1);protected_count=max(sum(protected),1);metrics=np.zeros(8);per_step=np.zeros(5);micro_records=[]
-        for j in range(rank,len(batch),world):
-            row=batch[j];token=row['token'];tokens,inputs=conditioning(observation(row));seeds(seed_for(token,a.seed,f'optimizer_step_{step}'))
-            bank=torch.load(ROOT/'teacher/chains'/f'{token}.pt',map_location='cpu',weights_only=False)
-            z=int(digest([token,a.seed,step])[:8],16)%5
-            old=bank['chains'][z]
-            teacher_chain=Chain(old['states'].cuda(),old['means'].cuda(),old['sigmas'].cuda(),teacher.ddim_t,
-                torch.arange(5,device='cuda'),old['trajectory'].cuda(),tuple(p._version for p in teacher.parameters()),id(teacher),
-                cfg['rollout_deterministic'],cfg['rollout_kernel']) if a.exp=='E2' else None
-            out=objective(student,teacher,anchor,tokens,inputs,experiment=a.exp,target=gt(row).cuda()[None],
-                teacher_trajectory=old['trajectory'].cuda(),teacher_chain=teacher_chain,
-                rollout_seed=seed_for(token,3101+z,'distill_chain'),mask=effective[j],protected=protected[j],
-                weights=torch.tensor(cfg['step_weights'],device='cuda'),deterministic=cfg['rollout_deterministic'],
-                loss_type=cfg['objective'],kernel=cfg['rollout_kernel'])
-            if a.exp=='E1':loss=out['il']/len(batch)
-            else:loss=cfg['lambda_opd']*out['opd']*effective[j]/valid_count+anchor_weight*out['anchor']*protected[j]/protected_count+il_weight*out['il']/len(batch)
-            if not torch.isfinite(loss):raise FloatingPointError('Nonfinite objective')
-            (loss*world).backward()
-            metrics[:4]+=[float(out['opd'].detach())*effective[j],float(out['anchor'].detach())*protected[j],float(out['il'].detach()),float(loss.detach())]
-            metrics[4:]+=[effective[j],protected[j],1,0]
-            per_step+=out['per_step'].detach().mean(0).cpu().numpy()
-            for k,v in out['forward_counts'].items():counts[k]=counts.get(k,0)+v
-            if (step+1)%25==0 or step==0:micro_records.append(dict(token=token,seed=3101+z,gate=effective[j],category=gate[token]['category'] if gate else None,
-                chain_first=float(out['chain'].states[:,1].float().mean()) if out['chain'] is not None else None))
+        # Equal-length buckets permit native dense batching without padding or masks.
+        local_indices=list(range(rank,len(batch),world));local=[batch[j] for j in local_indices]
+        pairs=[conditioning(observation(row)) for row in local]
+        tokens=torch.cat([v[0] for v in pairs]);from transformers.feature_extraction_utils import BatchFeature
+        inputs=BatchFeature({k:torch.cat([v[1][k] for v in pairs]) for k in pairs[0][1]})
+        old=[];initial=[];noise=[];zs=[]
+        for row in local:
+            token=row['token'];z=int(digest([token,a.seed,step])[:8],16)%5;zs.append(z)
+            if a.exp in ('E1','E2'):
+                bank=torch.load(ROOT/'teacher'/('final_trajectories' if a.exp=='E1' else 'chains')/f'{token}.pt',map_location='cpu',weights_only=False)
+                if bank['metadata']['config_sha256']!=digest(cfg):raise ValueError('Teacher cache configuration mismatch')
+                old.append(dict(trajectory=bank['trajectories'][z:z+1]) if a.exp=='E1' else bank['chains'][z])
+            generator=torch.Generator(device='cuda').manual_seed(seed_for(token,3101+z,'distill_chain'))
+            initial.append(torch.randn((1,8,3),device='cuda',generator=generator))
+            noise.append(torch.stack([torch.randn((1,8,3),device='cuda',generator=generator) for _ in range(5)],1))
+        teacher_chain=Chain(torch.cat([v['states'] for v in old]).cuda(),torch.cat([v['means'] for v in old]).cuda(),
+            torch.cat([v['sigmas'] for v in old]).cuda(),teacher.ddim_t,torch.arange(5,device='cuda'),torch.cat([v['trajectory'] for v in old]).cuda(),
+            tuple(p._version for p in teacher.parameters()),id(teacher),cfg['rollout_deterministic'],cfg['rollout_kernel']) if a.exp=='E2' else None
+        mask=torch.tensor([effective[j] for j in local_indices],device='cuda');protect=torch.tensor([protected[j] for j in local_indices],device='cuda')
+        seeds(seed_for('batch',a.seed,f'optimizer_step_{step}'))
+        out=objective(student,teacher,anchor,tokens,inputs,experiment=a.exp,
+            target=torch.stack([gt(row) for row in local]).cuda() if a.exp in ('E4-B','E4-C','E5') else None,
+            teacher_trajectory=torch.cat([v['trajectory'] for v in old]).cuda() if a.exp=='E1' else None,teacher_chain=teacher_chain,
+            mask=mask,protected=protect,weights=torch.tensor(cfg['step_weights'],device='cuda'),deterministic=cfg['rollout_deterministic'],
+            loss_type=cfg['objective'],kernel=cfg['rollout_kernel'],rollout_noise=(torch.cat(initial),torch.cat(noise)))
+        local_valid=float(mask.sum());local_protected=float(protect.sum())
+        if a.exp=='E1':loss=out['il']*len(local)/len(batch)
+        else:loss=cfg['lambda_opd']*out['opd']*local_valid/valid_count+anchor_weight*out['anchor']*local_protected/protected_count+il_weight*out['il']*len(local)/len(batch)
+        if not torch.isfinite(loss):raise FloatingPointError('Nonfinite objective')
+        (loss*world).backward()
+        metrics[:4]=[float(out['opd'].detach())*local_valid,float(out['anchor'].detach())*local_protected,float(out['il'].detach())*len(local),float(loss.detach())]
+        metrics[4:]=[local_valid,local_protected,len(local),0]
+        per_step=out['per_step'].detach().mean(0).cpu().numpy()*len(local)
+        for k,v in out['forward_counts'].items():counts[k]=counts.get(k,0)+v
+        if (step+1)%25==0 or step==0:
+            for j,row in enumerate(local):micro_records.append(dict(token=row['token'],seed=3101+zs[j],gate=float(mask[j]),category=gate[row['token']]['category'] if gate else None,
+                chain_first=float(out['chain'].states[j,1].float().mean()) if out['chain'] is not None else None))
         if world>1:
             active=[p for p in params if p.grad is not None];flat=torch.cat([p.grad.reshape(-1) for p in active]);dist.all_reduce(flat);flat/=world
             offset=0

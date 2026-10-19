@@ -21,6 +21,7 @@ def launch(name,host,gpu,commands):
     if (dest/'spec.json').exists():raise ValueError('Job name already used')
     for p in (ROOT/'jobs').glob('*/spec.json'):
         if (p.parent/'complete.json').exists():continue
+        if not (p.parent/'launch.json').exists():continue
         s=read(p)
         if s['host']==host and s['gpu']==gpu:raise RuntimeError(f'GPU reserved by {p.parent.name}')
     write(dest/'spec.json',dict(name=name,host=host,gpu=gpu,commands=commands))

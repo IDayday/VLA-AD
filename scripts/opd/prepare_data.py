@@ -16,7 +16,28 @@ def main():
     for a in logs:
         for b in logs:
             if a!=b:assert not logs[a]&logs[b] and not parents[a]&parents[b]
-    from tools.training.simscale_sft.common import targets_from_frames
+    # Read tensor shapes from PyTorch ZIP metadata without rereading all cached bytes.
+    import zipfile,io
+    class ShapeReader(pickle.Unpickler):
+        def persistent_load(self,pid):return None
+        def find_class(self,module,name):
+            if module=='torch._utils' and name.startswith('_rebuild_tensor'):
+                return lambda storage,offset,size,stride,*args:dict(shape=list(size))
+            return super().find_class(module,name)
+    lengths={}
+    for split in mapping:
+        for row in rows(split):
+            with zipfile.ZipFile(Path(cfg['observation_cache'])/f"{row['token']}.pt") as archive:
+                meta=ShapeReader(io.BytesIO(archive.read(next(n for n in archive.namelist() if n.endswith('/data.pkl'))))).load()
+            lengths[row['token']]=meta['tokens']['shape'][1]
+    write(ROOT/'manifests/token_lengths.json',lengths)
+    import torch
+    from pyquaternion import Quaternion
+    from nuplan.common.actor_state.state_representation import StateSE2
+    from navsim.planning.simulation.planner.pdm_planner.utils.pdm_geometry_utils import convert_absolute_to_relative_se2_array
+    def targets_from_frames(frames):
+        poses=np.array([[*f['ego2global_translation'][:2],Quaternion(*f['ego2global_rotation']).yaw_pitch_roll[0]] for f in frames[3:12]],dtype=np.float64)
+        return torch.from_numpy(convert_absolute_to_relative_se2_array(StateSE2(*poses[0]),poses[1:]).astype(np.float32))
     groups={};targets={}
     for row in rows('train'):groups.setdefault(row['metadata_path'],[]).append(row)
     for path,group in groups.items():
