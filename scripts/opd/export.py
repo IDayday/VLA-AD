@@ -39,15 +39,19 @@ def main():
                 counts=dict(stable_high_to_low_count=int((stable&(j<.8)).sum()),stable_high_to_zero_count=int((stable&(j<=1e-12)).sum()),
                     positive_to_zero_count=int(((base_mean>1e-12)&(j<=1e-12)).sum()),zero_to_positive_count=int(((base_mean<=1e-12)&(j>1e-12)).sum()),
                     zero_output_count=int((v[...,-1]<=1e-12).sum()),teacher_positive_student_zero_count=int(((teacher_mean>1e-12)&(j<=1e-12)).sum()),
+                    stable_high_zero_output_count=int((stable[:,None]&(v[...,-1]<=1e-12)).sum()),
+                    paired_positive_output_to_zero_count=int(((base[...,-1]>1e-12)&(v[...,-1]<=1e-12)).sum()),
                     teacher_zero_student_positive_count=int(((teacher_mean<=1e-12)&(j>1e-12)).sum()),
                     both_zero_student_positive_count=int(((base_mean<=1e-12)&(teacher_mean<=1e-12)&(j>1e-12)).sum()),
                     scene_zero_count=int((j<=1e-12).sum()),scene_low_positive_through_point6_count=int(((j>1e-12)&(j<=.6)).sum()),
                     scene_high_count=int((j>=.8).sum()),median_scene_PDMS=float(np.median(j)),median_scene_PDMS_difference=float(np.median(j-base_mean)))
                 for component,index in [('NC',0),('DAC',1),('TTC',3)]:
                     counts['new_'+component+'_failed_output_count']=int(((base[...,index]>1e-12)&(v[...,index]<=1e-12)).sum())
+                    counts['new_'+component+'_violation_output_count']=int(((base[...,index]>=1-1e-6)&(v[...,index]<1-1e-6)).sum())
+                    counts[component+'_worsened_output_count']=int((v[...,index]<base[...,index]-1e-6).sum())
                 seeds.append(dict(split=split,experiment=e,training_seed=s,**paired_quantities(v[None],base,stable),**counts))
                 failures[e][str(s)]=dict(**counts,stable_high_to_zero_tokens=[r['token'] for r,m in zip(rows(split),stable&(j<=1e-12)) if m])
-        write(ROOT/'analysis'/f'failure_counts_{split}.json',dict(scope='Counts per trained policy, not independent scene repeats; zero means five-draw scene mean<=1e-12',methods=failures))
+        write(ROOT/'analysis'/f'failure_counts_{split}.json',dict(scope='Counts per trained policy, not independent scene repeats; zero scene means five-draw mean<=1e-12; output counters refer to single paired draws. New component violation means baseline≈1 and new<1, including fractional NC penalties; worsened includes further partial degradation.',methods=failures))
         shutil.copyfile(ROOT/'analysis'/f'failure_counts_{split}.json',dest/f'failure_counts_{split}.json')
     if seeds:csvwrite(dest/'individual_training_seed_results.csv',seeds)
     for path in ['audit/final_provenance.json','audit/official_model_sources.json','audit/VLM_ancillary_release_comparison.json','audit/official_forward_parity.json','audit/correction_registration.json','audit/IL_RL_tensor_comparison.json','audit/RL_reference_comparison.json','audit/formal_model_certificate.json','audit/evaluation_certificate_dev.json','audit/evaluation_certificate_navtest.json','audit/hardware_hosts.json','tests/final_matrix.json','tests/real_parallel_inference.json','tests/real_new_host.json','tests/real_grpo_resume.json','resources/navtest_routing_lock.json',
