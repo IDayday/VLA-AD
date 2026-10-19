@@ -6,6 +6,9 @@ from scripts.opd.common import *
 
 
 def main():
+    if '--exp' in sys.argv and sys.argv[sys.argv.index('--exp')+1]=='E6':
+        from scripts.opd.train_grpo import main as grpo_main
+        return grpo_main()
     import torch
     import torch.distributed as dist
     from navsim.agents.recogdrive.opd.checkpoint_io import build_head,state_hash,restore
@@ -28,6 +31,13 @@ def main():
     steps=a.steps or {'smoke':cfg['smoke_steps'],'tiny':cfg['tiny_steps'],'tune':cfg['tuning_steps'],'train':cfg['train_steps']}[a.stage]
     lr=a.lr or cfg['lr'];anchor_weight=a.anchor_weight if a.anchor_weight is not None else cfg['lambda_anchor']
     il_weight=a.il_weight if a.il_weight is not None else cfg['lambda_il']
+    if a.stage in ('tune','train'):
+        if read(ROOT/'analysis/G2.json')['status']!='PASS':raise ValueError('Real-data qualification has not passed')
+        weights=read(ROOT/'calibration/gradient_scales.json')['weights']
+        if anchor_weight!=weights['anchor'] or il_weight!=weights['il']:raise ValueError('Locked auxiliary scale calibration changed')
+    if a.stage=='train':
+        chosen=read(ROOT/'selection/tuning.json')['selected'][a.exp]
+        if lr!=chosen['lr'] or steps!=cfg['train_steps']:raise ValueError('Formal learning rate or budget differs from locked selection')
     actual=dict(experiment=a.exp,stage=a.stage,steps=steps,seed=a.seed,lr=lr,global_batch=cfg['global_batch'],world=world,
         anchor_weight=anchor_weight,il_weight=il_weight,config_sha256=digest(cfg),data_sha256=sha(ROOT/'manifests/train.json'))
     seeds(a.seed);student=build_head(cfg['student_init']);teacher=build_head(cfg['teacher_init'],frozen=True)

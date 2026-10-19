@@ -60,7 +60,14 @@ def observation_by_token(token):
     if x['token']!=token or x.get('protocol_sha256')!=cfg['observation_cache_protocol']:raise ValueError('Unbound observation cache')
     if set(x['features'])!={'history_trajectory','status_feature','high_command_one_hot','image_path_tensor'}:raise ValueError('Invalid cached inference inputs')
     return x
-def observation(row):return observation_by_token(row['token'])
+def observation(row):
+    if 'observation_path' not in row:return observation_by_token(row['token'])
+    import torch
+    x=torch.load(row['observation_path'],map_location='cpu',weights_only=False)
+    if x['token']!=row['token'] or x.get('cache_format')!='opd_native_vlm_v1':raise ValueError('Unbound observation cache')
+    if x['vlm_sha256']!=read(ROOT/'audit/checkpoints.json')['VLM']['sha256']:raise ValueError('VLM source changed')
+    if set(x['features'])!={'history_trajectory','status_feature','high_command_one_hot','image_path_tensor'}:raise ValueError('Invalid inference keys')
+    return x
 def conditioning(payload,device='cuda'):
     import torch
     from transformers.feature_extraction_utils import BatchFeature
