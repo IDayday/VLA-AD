@@ -60,7 +60,7 @@ def evidence_sections(data):
         cases=read(p);text+=f"预定四类case规则得到{len(cases)}个条目、{len({r['token'] for r in cases})}个不同场景。主轨迹取最接近场景平均变化的draw，淡线和事件点展示全部五次输出。空类别不替补。\n\n"
         for r in cases:
             text+=f"- {r['kind']} / {r['token']}：IL/RL/E3/E5五次均值为 "+'/'.join(f"{r['scene_means'][k]:.4f}" for k in ['IL','RL','E3','E5'])+'；主draw首次越界='+str(r['event_seconds']['first_dac_s'])+'秒，首次TTC检查失败='+str(r['event_seconds']['first_ttc_check_failure_s'])+'秒（None=窗口内无事件）。\n'
-        text+='\nTTC检查失败时刻不是真实剩余碰撞时间。案例以重新评分的一致性检查为前提，完整跟踪状态为额外日志，越界时间由已有ego area派生。数值后果不转换成让行/抢行等意图标签。\n\n'
+        text+='\n案例固定使用预登记seed42，不能代表三个训练种子的总体效果，尤其不能用该种子的E5个例掩盖其他种子的退化。TTC检查失败时刻不是真实剩余碰撞时间。案例以重新评分的一致性检查为前提，完整跟踪状态为额外日志，越界时间由已有ego area派生。数值后果不转换成让行/抢行等意图标签。\n\n'
     p=ROOT/'analysis/teacher_comparisons_dev.json'
     if p.exists():text+='相对直接RL教师的PDMS差：'+ '; '.join(f"{e}: {interval(v['PDMS'])}" for e,v in read(p)['contrasts'].items())+'。\n\n'
     p=ROOT/'analysis/secondary_anchor_vs_GT_dev.json'
@@ -190,6 +190,13 @@ RL 相对 IL 的 M_minus={interval(b['paired_RL_vs_IL']['M_minus'])}，{b['teach
         test_text+='\n\n关键测试配对差：'+'；'.join(f"{key}：PDMS差={interval(v['PDMS'])}，M_minus差={interval(v['M_minus'])}" for key,v in td['contrasts'].items())+'。'
         test_text+=f"\n\n开发主分析与测试确认分别保留，不合并曲线。跨两个split的稳定额外价值描述为 **{statuses['Q1_stable_extra_value']}**；测试OPD/KD状态={statuses['navtest_confirmation']['E3_vs_E2']}。一致性描述沿用相同实质性门槛，不是新增显著性检验。"
     admission_reason='E5未建立预登记的正向开发集泛化收益；因此不扩展正式E6。该停止来自科学门槛，非GPU不足' if not admission['admitted'] else '预登记开发门槛通过，已按锁定预算执行E6'
+    costs=read(ROOT/'analysis/costs_dev.json')
+    cost_text='正式1000步动作头训练（三种子平均，不含共享编码/教师库/评测）：\n\n|方法|秒/种子|峰值显存GiB|\n|---|---:|---:|\n'
+    for e,v in costs.items():cost_text+=f"|{e}|{v['mean_training_GPU_hours']*3600:.1f}|{v['mean_peak_GPU_GiB']:.2f}|\n"
+    online=read(ROOT/'audit/online_inference_cost.json')['summary']
+    cost_text+=f"\n独立20场景、预热1场景的原生学生在线推理中位数为{online['online_image_VLM_planner_seconds']['median']:.4f}秒/场景，包含图像加载、VLM和规划器；缓存输入后的规划器为{online['cached_planner_seconds']['median']:.4f}秒，正式单候选物理评分为{online['canonical_scalar_score_seconds']['median']:.4f}秒。测量来自活跃共享服务器，不是隔离延迟基准。E2与E3每种子均实际执行40,000个teacher样本步查询；E3另有40,000个学生rollout样本步，未给E3增加优化更新预算。\n"
+    accounting=ROOT/'audit/accounting.json'
+    if accounting.exists():cost_text+=f"\n有效修正批次的全部任务累计预留GPU时间为{read(accounting)['reserved_GPU_hours']:.2f} GPU小时，包含启动与评测，不等同于GPU利用率。无效v1成本另外保留，不从有效实验账目中消失。\n"
     report=f"""# ReCogDrive On-Policy Distillation 研究报告{'' if has_test else '（测试确认进行中）'}
 
 ## 研究结论
@@ -238,6 +245,8 @@ E5相对同学习率、同GT/Anchor权重的均匀监督E4-C，开发集PDMS差=
 
 ## 成本、复制对照与适用范围
 
+{cost_text}
+
 E0-COPY直接复制教师权重即可精确恢复教师输出，且没有蒸馏训练成本。相同架构、同一VLM、没有部署约束时，OPD不能仅凭逼近教师证明工程价值；需要保持IL能力、选择性传递或整合互补教师的真实优势。推理只调用单学生，不增加教师或环境反馈。Fig8与成本表记录实际训练时间、峰值显存和教师查询；输入编码、静态gate、教师缓存和调参为共享前置成本，另列总账，不隐藏在某一方法中。
 
 E6 训练使用原生自定义 PDM reward，EP/TTC/Comfort权重为10/5/2；正式评测 PDMS 为5/5/2，两者分开记录。本轮没有添加世界模型、专家路由或额外对齐任务。候选结果不支持时按协议停止对应路线，不继续搜索新的损失来追逐正结论。缺少正式E6结果时，无法区分教师约束、教师能力边界与GRPO本身限制，不作归因。
@@ -248,7 +257,7 @@ E6 训练使用原生自定义 PDM reward，EP/TTC/Comfort权重为10/5/2；正�
 
 ## 复现与证据
 
-锁定协议：configs/opd/protocol.yaml（SHA256 {read(ROOT/'protocol.lock.json')['sha256']}）。分支 research/recogdrive-opd-20261020，原始HEAD884ea1d0f67c60821d61033d61efb10916d16929。最终提交见 delivery.json。
+锁定协议：configs/opd/protocol.yaml（SHA256 {read(ROOT/'protocol.lock.json')['sha256']}）。分支 research/recogdrive-opd-20261020，原始HEAD884ea1d0f67c60821d61033d61efb10916d16929。最终推送提交与远端核验见外部 {ROOT}/delivery.json。
 
 完整产物：{ROOT}。逐场景轨迹在 evaluation/<split>/<model>/predictions，分项/事件在 scores，训练链与 optimizer 在 runs。每个任务的实际命令、PID/start ticks、代码来源hash、完成或失败状态在 jobs。文档 docs/RECOGDRIVE_OPD_RUNBOOK.md 给出全部入口；figures.py从实际结果生成Fig1–8，空结果不画虚拟曲线。
 
