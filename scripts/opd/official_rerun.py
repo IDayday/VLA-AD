@@ -30,7 +30,7 @@ def qualify():
         ('profile_serial',[serial]),('profile_parallel',[parallel]),
         ('online_official',[['scripts/opd/inputs.py','verify'],['scripts/opd/official_parity.py']]),
         ('native_cache_parity',[['scripts/opd/validate.py','--mode','cache']]),
-        ('E6_real_integration',[['scripts/opd/train_grpo.py','--stage','smoke','--variant','IL_JOINT','--name','E6_real_joint_smoke']]),
+        ('E6_real_integration',[['scripts/opd/train_grpo.py','--stage','smoke','--variant','IL_JOINT','--name','E6_IL_JOINT_42_smoke']]),
         ('resume_v2_full',[['scripts/opd/train.py','--exp','E3','--stage','smoke','--seed','73','--name','resume_v2_full']]),
         ('resume_v2_split',[['scripts/opd/train.py','--exp','E3','--stage','smoke','--seed','73','--name','resume_v2_split','--stop-after','2'],
             ['scripts/opd/train.py','--exp','E3','--stage','smoke','--seed','73','--name','resume_v2_split','--resume']]),
@@ -40,6 +40,10 @@ def qualify():
         'scripts/opd/train.py','--exp','E3','--stage','smoke','--seed','72','--name','ddp_smoke_fixed']])
     wait_job('ddp_actual_two')
     for action in ['parallel','resume','ddp','gt_parity','shared_lock']:call('scripts/opd/verify_integrations.py',action)
+    smoke=read(ROOT/'runs/E6_IL_JOINT_42_smoke/complete.json');per=smoke['seconds']/smoke['optimizer_updates']
+    fitting=[n for n in [100,250,500] if n*per*9/3600<=64]
+    if not fitting:raise RuntimeError('No registered E6 budget fits measured throughput')
+    write(ROOT/'selection/E6_budget.json',dict(status='LOCKED',steps=max(fitting),measured_seconds_per_update=per,estimated_training_GPU_hours=max(fitting)*per*9/3600,rule='Largest registered100/250/500 fitting64GPUh before E6 outcomes'))
     write(ROOT/'suite/G0_G1_complete.json',dict(status='COMPLETE',official_conditioning=True,time=time.time()))
 
 def banks():

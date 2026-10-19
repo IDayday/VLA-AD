@@ -20,43 +20,43 @@ def support(v,material=.002):
 
 def evidence_sections(data):
     text='\n\n## 数值诊断、失败案例与解释边界\n\n'
-    text+='先对每个已训练策略、每个场景的五个推理种子求均值，再取与IL的差。G是有符号差的总体均值，M_plus/M_minus分别是正部/负部的总体均值；先对每个策略截正/负，再跨三个训练种子平均。单次输出零分率与五次均值零分率分列，不把它们混用。完整log、训练种子及配对推理种子共同bootstrap，区间为未经多重比较校正的逐对95%区间。\n\n'
-    c=data['contrasts']
-    if 'E2_vs_E1' in c:text+=f"E2−E1平均PDMS={interval(c['E2_vs_E1']['PDMS'])}。过程监督与最终轨迹监督的差异需同时看平均分与退化；不能只依据OPD训练loss宣布更有效。\n\n"
-    text+=f"E3相对E1的M_minus差为{interval(c['E3_vs_E1']['M_minus'])}，显示固定协议下较小的下降幅度；平均分差的区间仍较宽。E3相对E2的PDMS区间上界低于0.002，支持的是‘本预算未达到预定实质性额外收益’，不是两个算法数学等价或所有规模下无效。\n\n"
-    text+='E4-A选择的学习率为3e-5，E3为1e-5，两者有相同的两个调参槽位，但最终配方的差异同时含Anchor和学习率。因此E4-A配方的保护效果不支持，不能进一步把退化全部归因于Anchor损失本身。没有在看到审计结果后补跑更有利的固定学习率分支。E4-B/C虽有较低M_minus点估计，平均增益也较小，区间不能确认在保留有效增益时的保护。\n\n'
+    text+='先对每个策略、每个场景的五个推理种子求均值，再计算相对IL的G、M_plus、M_minus。先对每个策略截正/负，再跨训练种子平均。单次输出零分率与五次均值零分率分列。区间按完整log、训练种子和配对推理种子bootstrap，未经多重比较校正。\n\n'
+    for key in ['E2_vs_E1','E3_vs_E1','E3_vs_E2','E4-A_vs_E3','E4-B_vs_E3','E4-C_vs_E3','E5_vs_E3']:
+        c=data['contrasts'][key]
+        text+=f"{key}：PDMS差={interval(c['PDMS'])}；M_minus差={interval(c['M_minus'])}（正值表示更多下降幅度）。\n\n"
+    rates=read(ROOT/'selection/tuning.json')['selected']
+    text+='各组采用相同的两个学习率槽位，最终学习率：'+', '.join(f"{e}={v['lr']}" for e,v in rates.items())+'。若最终学习率不同，配方差异不能全部归因于某一辅助损失。未根据审计结果补跑有利的固定学习率分支。较低M_minus若同时伴随较小平均增益，不能单独称为保护成功。\n\n'
     p=ROOT/'diagnostics/chain_distributions.json'
     if p.exists():
         v=read(p)['training_seeds'];state=np.mean([r['records'][-1]['state_RMS'] for r in v],0);response=np.mean([r['records'][-1]['teacher_response_RMS'] for r in v],0)
-        text+='E2/E3实际训练轨迹档案的场景、噪声一一配对，初始状态误差0。1000步处，六个链状态的平均RMS差（归一化空间）为 '+str(np.round(state,6).tolist())+'；五次教师响应RMS差为 '+str(np.round(response,6).tolist())+'。学生状态分布确实刷新并不同于教师链；这一机制事实没有自动转化成超过E2的PDMS收益。教师查询始终为eval、无梯度，未发现数值发散。\n\n'
+        text+='实际E2/E3训练链在共同场景和初始噪声下配对；1000步处六个状态的平均RMS差（归一化空间）为 '+str(np.round(state,6).tolist())+'；五次教师响应RMS差为 '+str(np.round(response,6).tolist())+'。学生状态变化不自动意味着最终PDMS提高。\n\n'
     p=ROOT/'diagnostics/gradients.json'
     if p.exists():
-        v=read(p)['records'];text+='固定16个校准输入上的OPD/Anchor梯度余弦中位数：'+', '.join(f"{e}={np.median([r['cosine'] for r in v if r['experiment']==e]):.3f}" for e in ['E3','E4-A','E4-B','E4-C','E5'])+'。这些诊断主要同向，不支持把当前失败简单解释为两项梯度普遍反向。它们只覆盖seed42最终模型的固定输入，不是交通因素的因果识别。训练总loss/梯度按25步记录，DDIM链与每步分歧全量保存；未记录点的梯度范数不补造。\n\n'
+        records=read(p)['records'];text+='固定16个校准输入上的OPD/Anchor梯度余弦中位数：'+', '.join(f"{e}={np.median([r['cosine'] for r in records if r['experiment']==e]):.3f}" for e in ['E3','E4-A','E4-B','E4-C','E5'])+'。这只描述seed42最终模型的局部梯度关系，不能解释为某交通因素的因果作用。训练loss/梯度按25步记录，全部学生链保存；未记录点不插补为实际观测。\n\n'
     p=ROOT/'diagnostics/gate_results.json'
     if p.exists():
-        g=read(ROOT/'gates/static.json');v=read(p);text+=f"静态训练类别为{g['category_counts']}，有效教师门控{int(g['effective_active'])}/4115。三个训练种子的激活样本数分别为 "+', '.join(str(sum(r['active_OPD_examples'].values()))+'/8000' for r in v['actual_training_exposure'].values())+'。全部8000次场景暴露仍按共同顺序执行，只有监督权重不同。\n\n'
-        text+='独立预登记的训练分布描述集为209场景（A64/B32/C64/D49），不是泛化集：\n\n|类别|IL|RL|E3|E5|\n|---|---:|---:|---:|---:|\n'
+        g=read(ROOT/'gates/static.json');v=read(p);registration=read(ROOT/'diagnostics/gate_registration.json')
+        text+=f"静态训练类别={g['category_counts']}，有效门控={g['effective_active']}/{len(rows('train'))}。三个种子的实际激活样本数分别为 "+', '.join(str(sum(r['active_OPD_examples'].values()))+'/8000' for r in v['actual_training_exposure'].values())+'。共同场景顺序不变，监督权重不同。\n\n'
+        text+=f"预登记的训练分布描述集为{registration['scenes']}场景，类别数{registration['counts']}，不是泛化证据：\n\n|类别|IL|RL|E3|E5|\n|---|---:|---:|---:|---:|\n"
         for cat in 'ABCD':
             a=v['categories']['E3'][cat];b=v['categories']['E5'][cat];text+=f"|{cat}|{a['IL_PDMS']:.4f}|{a['RL_PDMS']:.4f}|{a['PDMS']:.4f}|{b['PDMS']:.4f}|\n"
-        text+='\nE5在B类训练描述集比E3保留更多IL分数，在D类也有GT监督下的改善，但A类能力传递更弱、C类出现下降，且这些训练内迹象没有带来可靠开发集收益。类别是低/高分分层，D不等于双方分数均为0。静态gate并不能约束共享参数更新对未训练log的所有影响；本轮不能单独确定LCB、安全mask、Anchor分配中哪一项造成结果。\n\n'
+        text+='\n类别是原IL/RL低高分分层，D不等于双方零分。训练内表现不等于跨log泛化。静态gate无法直接约束共享参数更新对未训练log的后果，本矩阵不能单独确定LCB、safety mask与Anchor分配的因果贡献。\n\n'
     p=ROOT/'analysis/failure_counts_dev.json'
     if p.exists():
         v=read(p)['methods'];text+='开发集逐策略计数：\n\n|方法|高分→低于0.8（seed42/43/44）|高分→零分|正分→零分|\n|---|---|---|---|\n'
         for e in ['E3','E4-A','E4-B','E4-C','E5']:
             text+=f"|{e}|"+'|'.join('/'.join(str(v[e][str(s)][k]) for s in [42,43,44]) for k in ['stable_high_to_low_count','stable_high_to_zero_count','positive_to_zero_count'])+'|\n'
-        text+='\n这些是三个不同策略的计数，不相加后称为互不相同的场景。E3高分到零分的罕见事件区间包含0；固定五次估计中的下降不等于每个场景的真实期望都已被确定。零更新同噪声差为0，独立五次采样自比较也产生非零M_minus；后者的噪声耦合方式不同，不能直接从参数更新的M_minus中相减。\n\n'
+        text+='\n这是三个策略的计数，不相加为互异场景总数。有限五次估计不确定单个场景的真实期望。独立五次IL自比较也有非零M_minus；噪声耦合不同，不能直接从更新后的M_minus中相减。\n\n'
     p=ROOT/'analysis/cases.json'
     if p.exists():
-        cases=read(p);text+=f"四个事先固定的case规则选出{len({r['token'] for r in cases})}个不同场景；退化与保护规则命中同一个token，没有换成其他更好看的样本。主绘制轨迹仍为最接近场景平均变化的种子，淡线和事件点展示全部五次输出，避免把一个正常draw当成整个退化后果。\n\n"
+        cases=read(p);text+=f"预定四类case规则得到{len(cases)}个条目、{len({r['token'] for r in cases})}个不同场景。主轨迹取最接近场景平均变化的draw，淡线和事件点展示全部五次输出。空类别不替补。\n\n"
         for r in cases:
-            text+=f"- {r['kind']} / {r['token']}：IL/RL/E3/E5五次均值为 "+'/'.join(f"{r['scene_means'][k]:.4f}" for k in ['IL','RL','E3','E5'])+'；所选draw首次越界为'+str(r['event_seconds']['first_dac_s'])+'秒，首次TTC检查失败为'+str(r['event_seconds']['first_ttc_check_failure_s'])+'秒（None=四秒内无该事件）。\n'
-        text+='\n退化/保护例子的分数差主要受一个推理种子的TTC检查失败影响，不能把单例包装为已确定的跨场景期望规律。教师迁移失败例中，教师推进约8.91米且无TTC检查失败，E3推进约10.88米并在3.1秒首次检查失败；这些是数值后果，不标注让行/抢行等意图。所有重新记录的案例评分与正式分数误差不超过1e-6。碰撞/TTC首次时间来自既有scorer内部记录，越界时间由既有ego area派生，完整仿真状态是额外案例日志，不是新的监督任务。\n\n'
+            text+=f"- {r['kind']} / {r['token']}：IL/RL/E3/E5五次均值为 "+'/'.join(f"{r['scene_means'][k]:.4f}" for k in ['IL','RL','E3','E5'])+'；主draw首次越界='+str(r['event_seconds']['first_dac_s'])+'秒，首次TTC检查失败='+str(r['event_seconds']['first_ttc_check_failure_s'])+'秒（None=窗口内无事件）。\n'
+        text+='\nTTC检查失败时刻不是真实剩余碰撞时间。案例以重新评分的一致性检查为前提，完整跟踪状态为额外日志，越界时间由已有ego area派生。数值后果不转换成让行/抢行等意图标签。\n\n'
     p=ROOT/'analysis/teacher_comparisons_dev.json'
-    if p.exists():text+='相对直接使用RL教师的配对PDMS差：'+ '; '.join(f"{e}: {interval(v['PDMS'])}" for e,v in read(p)['contrasts'].items())+'。更少退化若伴随更小平均提升，不能认定优于直接复制教师。\n\n'
-    text+='## 继续与停止的路线\n\n当前证据支持从RL教师迁移部分平均规划收益；不支持把学生链OPD相对教师链KD的额外价值扩大为既定结论。保留E2作为后续对照，若没有保留IL或多教师整合的额外目标，直接复制RL仍是必须比较的低成本方案。停止扩容当前静态E5配方，不用更换起点、增加模块或调整阈值挽救该结果。E6正式训练依据开发门禁停止，不是因缺GPU；不能据此推翻其超过教师的可能性。\n\n'
+    if p.exists():text+='相对直接RL教师的PDMS差：'+ '; '.join(f"{e}: {interval(v['PDMS'])}" for e,v in read(p)['contrasts'].items())+'。\n\n'
     text+='## 图表\n\n'
-    for file,label in [('Fig1_PDMS_dev.png','Fig1 完整开发集PDMS'),('Fig1_paired_contrasts_dev.png','Fig1 配对差与实质性门槛'),('Fig2_learning_dev.png','Fig2 真实训练日志'),('Fig3_chain_discrepancy_dev.png','Fig3 去噪链诊断'),('Fig4_forgetting_dev.png','Fig4 修复与退化'),('Fig5_paired_dev.png','Fig5 场景配对'),('Fig6_quality_strata_dev.png','Fig6 质量分层'),('Fig7_repair.png','Fig7 修复'),('Fig7_regression.png','Fig7 退化及同一场景的局部保护'),('Fig7_teacher_transfer_failure.png','Fig7 教师能力迁移失败'),('Fig8_cost_dev.png','Fig8 实际成本')]:
-        if (REPORTS/'figures'/file).exists():text+=f'![{label}](figures/{file})\n\n'
+    for file in sorted((REPORTS/'figures').glob('*.png')):text+=f'![{file.stem}](figures/{file.name})\n\n'
     return text
 
 
@@ -155,7 +155,7 @@ RL 相对 IL 的 M_minus={interval(b['paired_RL_vs_IL']['M_minus'])}，{b['teach
     test_text='官方测试集正式确认尚未完成；不得将开发集结论表述为完整测试集成功。'
     if has_test:
         td=read(ROOT/'analysis/formal_navtest.json');tb=read(ROOT/'analysis/baseline_navtest.json')
-        test_text=f"官方 navtest {td['scenes']} 场景、{td['logs']} 个 log；精确匹配仓库官方 token 清单。IL={tb['components']['E0-IL']['PDMS']:.6f}，RL={tb['components']['E0-RL']['PDMS']:.6f}。"+' '.join(f"{e} PDMS={interval(v['metrics']['PDMS'])}，G={interval(v['metrics']['G'])}。" for e,v in td['methods'].items())+' 所有候选在锁定 cal 选择后一次性确认，测试结果不反向修改方案。'
+        test_text=f"官方 navtest {td['scenes']} 场景、{td['logs']} 个 log；精确匹配仓库官方 token 清单。IL={tb['components']['E0-IL']['PDMS']:.6f}，RL={tb['components']['E0-RL']['PDMS']:.6f}。"+' '.join(f"{e} PDMS={interval(v['metrics']['PDMS'])}，G={interval(v['metrics']['G'])}。" for e,v in td['methods'].items())+' 修正批次所有候选在锁定cal选择后一次性确认，测试结果不反向修改方案。工程修正前曾查看无效v1测试基线均值；未查看v1方法测试聚合。此数据接触限制与修正原因在08报告披露。'
     report=f"""# ReCogDrive On-Policy Distillation 完整研究报告
 
 ## 研究结论
@@ -168,7 +168,7 @@ Q3（进一步 DiffGRPO 超过 RL 教师）：**{statuses['Q3_teacher_ceiling']}
 
 ## 模型与算法核验
 
-采用官方 IL 学生与 RL 活动动作头教师；IL/RL 的结构一致，加载器不选择 RL 的 old_policy。所有核心张量必须加载，完整 missing/unexpected/shape mismatch 记录在02报告及外部 audit/checkpoints.json。冻结同一1536维 VLM，只训练384维 small DiT 动作规划器，共34,329,219参数。八点三维轨迹、原生 norm_odo/denorm_odo、五步 DDIM 均未改动；专家、残差、未来目标等路径关闭。
+采用官方 IL 学生与 RL 活动动作头教师；IL/RL 的结构一致，加载器不选择 RL 的 old_policy。所有核心张量必须加载，完整 missing/unexpected/shape mismatch 记录在02报告及外部 audit/checkpoints.json。冻结同一1536维 VLM，只训练384维 small DiT 动作规划器，共34,329,219参数。八点三维轨迹、原生 norm_odo/denorm_odo、五步 DDIM 均未改动；专家、残差、未来目标等路径关闭。OPD显式兼容层恢复官方系统提示词边界换行与左侧fixed2800 padding，保留全部hidden states；真实8场景与固定官方源码逐元素一致。首轮动态padding批次为INVALID，统一重做且不合并，详见08报告。
 
 DDIM adapter 与原 get_action 的逐步状态、均值及最终轨迹误差为0，E0-COPY 与 RL 误差为0。原生随机方差不能由 ddim_eta 配置名推断；实际路径含标准差下界和截断噪声，所以主版本使用转移均值 MSE，不能宣称 Gaussian KL。可选未截断共享方差 KL 仅有实现和正确性测试，正式性能消融 NOT_RUN。
 
@@ -212,7 +212,7 @@ E6 训练使用原生自定义 PDM reward，EP/TTC/Comfort权重为10/5/2；正�
 
 ## 复现与证据
 
-锁定协议：configs/opd/protocol.yaml（SHA256 e02028b646a2745dca0b0a6f6eae7dff57119b3d12f8aeb0a3324a1f80c88968）。分支 research/recogdrive-opd-20261020，原始HEAD884ea1d0f67c60821d61033d61efb10916d16929。最终提交见 delivery.json。
+锁定协议：configs/opd/protocol.yaml（SHA256 {read(ROOT/'protocol.lock.json')['sha256']}）。分支 research/recogdrive-opd-20261020，原始HEAD884ea1d0f67c60821d61033d61efb10916d16929。最终提交见 delivery.json。
 
 完整产物：{ROOT}。逐场景轨迹在 evaluation/<split>/<model>/predictions，分项/事件在 scores，训练链与 optimizer 在 runs。每个任务的实际命令、PID/start ticks、代码来源hash、完成或失败状态在 jobs。文档 docs/RECOGDRIVE_OPD_RUNBOOK.md 给出全部入口；figures.py从实际结果生成Fig1–8，空结果不画虚拟曲线。
 
