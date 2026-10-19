@@ -42,6 +42,9 @@ def paired_quantities(new,base,stable,w=None):
 
 
 def bootstrap(new,base,logs,stable,reps=2000):
+    # These quantities depend only on PDMS. Keep the other six already-validated
+    # score fields out of repeated fancy-index copies, without changing draws.
+    new=new[...,-1:];base=base[...,-1:]
     rng=np.random.default_rng(20261020);point=paired_quantities(new,base,stable);samples={k:[] for k,v in point.items() if v is not None}
     unique,inverse=np.unique(logs,return_inverse=True);ns,n,nz,_=new.shape
     for _ in range(reps):
@@ -54,6 +57,7 @@ def bootstrap(new,base,logs,stable,reps=2000):
 
 
 def compare(a,b,base,logs,stable,reps=2000):
+    a=a[...,-1:];b=b[...,-1:];base=base[...,-1:]
     rng=np.random.default_rng(20261020);p=paired_quantities(a,base,stable);q=paired_quantities(b,base,stable)
     keys=['PDMS','G','M_minus','stable_high_to_zero_fraction'];draws={k:[] for k in keys};unique,inverse=np.unique(logs,return_inverse=True)
     for _ in range(reps):
