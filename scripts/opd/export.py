@@ -10,7 +10,7 @@ from scripts.opd.analyze import bank,paired_quantities
 def csvwrite(path,records):
     path.parent.mkdir(parents=True,exist_ok=True);keys=list(dict.fromkeys(k for r in records for k in r))
     with open(path,'w') as f:
-        w=csv.DictWriter(f,fieldnames=keys);w.writeheader();w.writerows(records)
+        w=csv.DictWriter(f,fieldnames=keys,lineterminator='\n');w.writeheader();w.writerows(records)
 
 
 def main():

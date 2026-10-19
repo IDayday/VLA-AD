@@ -6,16 +6,19 @@ from scripts.opd.common import *
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--config');a=p.parse_args();cfg=config(a.config)
+    p=argparse.ArgumentParser();p.add_argument('--config');p.add_argument('--manifest-only',action='store_true');a=p.parse_args();cfg=config(a.config)
     source=PROJECT/'outputs/trajectory_effect_validation_20261019/manifests';mapping={'train':'D_fit','cal':'D_cal','dev':'D_audit'};logs={};parents={}
     for split,old in mapping.items():
         data=read(source/f'{old}.json')
-        assert all(r['split']=='navtrain' and Path(r['metric_cache_path']).is_file() and (Path(cfg['observation_cache'])/f"{r['token']}.pt").is_file() for r in data)
+        assert all(r['split']=='navtrain' and Path(r['metric_cache_path']).is_file() for r in data)
+        if cfg.get('official_conditioning'):
+            for r in data:r['observation_path']=str(ROOT/'observations'/split/f"{r['token']}.pt")
         logs[split]={r['log_name'] for r in data};parents[split]={r['driver_record'] for r in data}
         write(ROOT/'manifests'/f'{split}.json',data)
     for a in logs:
         for b in logs:
             if a!=b:assert not logs[a]&logs[b] and not parents[a]&parents[b]
+    if '--manifest-only' in sys.argv:return
     # Read tensor shapes from PyTorch ZIP metadata without rereading all cached bytes.
     import zipfile,io
     class ShapeReader(pickle.Unpickler):
@@ -27,7 +30,7 @@ def main():
     lengths={}
     for split in mapping:
         for row in rows(split):
-            with zipfile.ZipFile(Path(cfg['observation_cache'])/f"{row['token']}.pt") as archive:
+            with zipfile.ZipFile(row.get('observation_path',str(Path(cfg['observation_cache'])/f"{row['token']}.pt"))) as archive:
                 meta=ShapeReader(io.BytesIO(archive.read(next(n for n in archive.namelist() if n.endswith('/data.pkl'))))).load()
             lengths[row['token']]=meta['tokens']['shape'][1]
     write(ROOT/'manifests/token_lengths.json',lengths)

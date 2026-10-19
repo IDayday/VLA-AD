@@ -3,8 +3,8 @@ student_init: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogD
 teacher_init: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt
 anchor_init: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt
 vlm: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B
-observation_cache: /mnt/project/VLA-AD/outputs/trajectory_effect_validation_20261019/observations
-observation_cache_protocol: 7177a32ff6fa1c0a78161f4e6aa1ebdd126796796330a3c1d47a1270710be6a7
+observation_cache: /mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/observations
+observation_cache_protocol: 98ce682857a3c0b5cc7ca521499db4d8a175444729b472465a15d6adb43f9093
 sampling_method: ddim
 num_inference_steps: 5
 use_expert_features: false
@@ -13,10 +13,17 @@ train_backbone: false
 objective: deterministic_mean_mse
 rollout_deterministic: false
 rollout_kernel: native
-step_weights: [1, 1, 1, 1, 1]
+step_weights:
+- 1
+- 1
+- 1
+- 1
+- 1
 optimizer: AdamW
-lr_candidates: [0.00001, 0.00003]
-lr: 0.00001
+lr_candidates:
+- 1.0e-05
+- 3.0e-05
+lr: 1.0e-05
 weight_decay: 0.0001
 grad_clip_norm: 1.0
 global_batch: 8
@@ -25,12 +32,25 @@ smoke_steps: 4
 tiny_steps: 100
 tiny_scenes: 256
 tuning_steps: 100
-train_seeds: [42, 43, 44]
-inference_seeds: [1101, 1102, 1103, 1104, 1105]
-screening_seeds: [5101, 5102, 5103, 5104, 5105]
+train_seeds:
+- 42
+- 43
+- 44
+inference_seeds:
+- 1101
+- 1102
+- 1103
+- 1104
+- 1105
+screening_seeds:
+- 5101
+- 5102
+- 5103
+- 5104
+- 5105
 bootstrap_replicates: 2000
 high_threshold: 0.8
-zero_tolerance: 0.000000000001
+zero_tolerance: 1.0e-12
 material_drop: 0.02
 gate_z: 1.0
 gate_margin: 0.03
@@ -38,4 +58,10 @@ lambda_opd: 1.0
 lambda_anchor: 0.1
 lambda_il: 0.05
 selection: D_cal mean PDMS, earliest checkpoint on ties; no D_audit or navtest selection
-endpoints: [0, 100, 500, 1000]
+endpoints:
+- 0
+- 100
+- 500
+- 1000
+official_conditioning: true
+navtest_metric_cache: /mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/metric_cache/navtest

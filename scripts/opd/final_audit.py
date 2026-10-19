@@ -59,6 +59,22 @@ def accounting():
     write(ROOT/'audit/accounting.json',result);print('ACCOUNTING',gpu_hours,result['failures'],result['running'])
 
 
+def cache_versions():
+    from concurrent.futures import ThreadPoolExecutor
+    data=[(s,r) for s in ['train','cal','dev','navtest'] for r in rows(s)]
+    def one(item):
+        split,row=item;path=Path(row['metric_cache_path']);stat=path.stat()
+        first=read(ROOT/'evaluation'/split/'E0/scores'/f"{row['token']}.json")['model_metadata']['owner']['time']
+        if stat.st_mtime>first:raise ValueError(f'Metric cache modified after its baseline prediction: {path}')
+        return dict(split=split,token=row['token'],path=str(path),sha256=sha(path),bytes=stat.st_size,mtime_ns=stat.st_mtime_ns,baseline_prediction_time=first)
+    with ThreadPoolExecutor(8) as pool:result=list(pool.map(one,data))
+    path=ROOT/'audit/metric_cache_index.json';write(path,result)
+    write(ROOT/'audit/metric_cache_version.json',dict(passed=True,scenes=len(result),index=str(path),index_sha256=sha(path),
+        capture='Post-run hash snapshot; every cache mtime precedes its baseline prediction; not falsely labeled as hashes captured at original cache creation',
+        split_digests={s:digest([(r['token'],r['sha256']) for r in result if r['split']==s]) for s in ['train','cal','dev','navtest']}))
+    print('METRIC_CACHE_VERSION_PASS',len(result))
+
+
 def tests():
     required=['real_batch','real_grpo','real_resume_v2','real_ddp','real_online_vlm','real_parameter_perturbation','real_GT_parity','real_inference_cache','real_parallel_inference','real_shared_lock','real_student_deployment','real_disabled_auxiliary']
     evidence={n:read(ROOT/'tests'/f'{n}.json') for n in required}
@@ -88,4 +104,4 @@ def tests():
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('action',choices=['provenance','accounting','tests']);a=p.parse_args();globals()[a.action]()
+    p=argparse.ArgumentParser();p.add_argument('action',choices=['provenance','accounting','tests','cache_versions']);a=p.parse_args();globals()[a.action]()

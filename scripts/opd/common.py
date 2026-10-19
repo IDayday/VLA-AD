@@ -5,7 +5,7 @@ import numpy as np
 
 SOURCE=Path(__file__).resolve().parents[2]
 PROJECT=Path(os.environ.get('VLA_AD_PROJECT','/mnt/project/VLA-AD'))
-ROOT=Path(os.environ.get('OPD_RUN_ROOT',str(PROJECT/'outputs/recogdrive_opd_20261020')))
+ROOT=Path(os.environ.get('OPD_RUN_ROOT',str(PROJECT/'outputs/recogdrive_opd_20261020/official_v2')))
 REPORTS=SOURCE/'reports/recogdrive_opd_20261020'
 PYTHON='/root/miniconda3/envs/navsim/bin/python'
 
@@ -66,6 +66,9 @@ def observation(row):
     x=torch.load(row['observation_path'],map_location='cpu',weights_only=False)
     if x['token']!=row['token'] or x.get('cache_format')!='opd_native_vlm_v1':raise ValueError('Unbound observation cache')
     if x['vlm_sha256']!=read(ROOT/'audit/checkpoints.json')['VLM']['sha256']:raise ValueError('VLM source changed')
+    if config().get('official_conditioning',False):
+        if x.get('observation_contract')!='recogdrive_official_fixed2800_v2' or x.get('protocol_sha256')!=config()['observation_cache_protocol']:
+            raise ValueError('Non-official conditioning cache prohibited in corrected research')
     if set(x['features'])!={'history_trajectory','status_feature','high_command_one_hot','image_path_tensor'}:raise ValueError('Invalid inference keys')
     return x
 def conditioning(payload,device='cuda'):

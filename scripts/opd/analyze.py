@@ -125,7 +125,7 @@ def formal(split='dev'):
             teacher_zero_student_positive=int(((rj[None]<=1e-12)&(j>1e-12)).sum()),
             both_zero_student_improved=int(((ij[None]<=1e-12)&(rj[None]<=1e-12)&(j>.02)).sum()))
     contrasts={}
-    pairs=[('E3','E1'),('E3','E2'),('E4-A','E3'),('E4-B','E3'),('E4-C','E3'),('E5','E3'),('E5','E4-C')]
+    pairs=[('E2','E1'),('E3','E1'),('E3','E2'),('E4-A','E3'),('E4-B','E3'),('E4-C','E3'),('E5','E3'),('E5','E4-C')]
     choice=ROOT/'selection/navtest.json'
     if choice.exists():
         selected=('E5',read(choice)['E4_variant'])

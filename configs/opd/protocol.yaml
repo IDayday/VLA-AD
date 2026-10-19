@@ -1,5 +1,5 @@
 study: recogdrive_opd_20261020
-version: 1
+version: 2
 created_before_tuning_and_formal: true
 baseline:
   IL:
@@ -1481,10 +1481,8 @@ tuning:
   - 1.0e-05
   - 3.0e-05
   selection: Full D_cal mean PDMS, lower LR on exact ties
-  auxiliary_weights:
-    anchor: 0.07111589145682723
-    il: 0.007555598472931785
-  auxiliary_calibration_record_sha256: 3128d220746a7633a917867dffa91d5b04d1c0ab09b7db13d8817e0f672e7915
+  auxiliary_weights: Recompute with identical pre-registered fit-only gradient-scale
+    rule
 formal:
   methods: *id001
   seeds:
@@ -1571,3 +1569,14 @@ budgets:
   storage_ceiling_gib: 500
   confirmation_expansion: No outcome-directed extra modules or budget extension. Engineering
     corrections rerun affected records with explicit failed/invalid history.
+correction:
+  previous: 'INVALID: project dynamic VLM padding and stripped prompt'
+  previous_protocol_sha256: e02028b646a2745dca0b0a6f6eae7dff57119b3d12f8aeb0a3324a1f80c88968
+  upstream_sha: 5831ee83c7a6a40bf6919715b96b0e9ba2b48335
+  new_observation_contract: 98ce682857a3c0b5cc7ca521499db4d8a175444729b472465a15d6adb43f9093
+  unchanged: Scene/log/parent membership, seeds, experiments, loss definitions, fixed
+    budgets and selection rules. Recompute gradient scales using original fixed rule.
+    No v1 weights or outcomes transferred.
+  test_limitation: V1 test baseline mean viewed before engineering correction; v1
+    method test aggregates not inspected. Corrected configuration chosen by source
+    parity, not test outcomes.

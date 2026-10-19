@@ -17,8 +17,11 @@ def main():
     p=argparse.ArgumentParser();p.add_argument('--exp',default='E6');p.add_argument('--stage',choices=['smoke','train'],default='smoke')
     p.add_argument('--variant',choices=['IL_GRPO','E5_GRPO','IL_JOINT'],default='IL_JOINT');p.add_argument('--seed',type=int,default=42)
     p.add_argument('--steps',type=int);p.add_argument('--lr',type=float,default=1e-5);p.add_argument('--name');p.add_argument('--resume',action='store_true')
-    a=p.parse_args();configure();cfg=config();steps=a.steps or (4 if a.stage=='smoke' else read(ROOT/'selection/E6_budget.json')['steps'])
+    a=p.parse_args()
+    if int(os.environ.get('WORLD_SIZE','1'))!=1:raise ValueError('E6 uses one GPU per independent training seed; the E1-E5 runner provides the validated DDP path')
+    configure();cfg=config();steps=a.steps or (4 if a.stage=='smoke' else read(ROOT/'selection/E6_budget.json')['steps'])
     if a.stage=='train' and not read(ROOT/'selection/E6_admission.json')['admitted']:raise ValueError('E6 scientific admission has not passed')
+    if a.stage=='train' and (steps!=read(ROOT/'selection/E6_budget.json')['steps'] or a.seed not in cfg['train_seeds']):raise ValueError('E6 formal budget or seed changed')
     name=a.name or f'E6_{a.variant}_{a.seed}_{a.stage}';dest=ROOT/'runs'/name
     if (dest/'complete.json').exists():raise ValueError('Completed experiment cannot be overwritten')
     if (dest/'config.json').exists() and not a.resume:raise ValueError('Partial run needs --resume')

@@ -128,7 +128,27 @@ def e6():
             commands=[['scripts/opd/train.py','--exp','E6','--stage','train','--variant',variant,'--seed',str(seed)]]
             commands.extend([['scripts/opd/evaluate.py','--exp','E6','--name',name,'--split',s] for s in ['cal','dev']])
             tasks.append((f'formal_{name}',commands))
-    run_queue(tasks);write(ROOT/'suite/E6_complete.json',dict(status='COMPLETE',jobs=len(tasks),time=time.time()))
+    run_queue(tasks);write(ROOT/'suite/E6_training_complete.json',dict(status='COMPLETE',jobs=len(tasks),time=time.time()))
+    from scripts.opd.analyze_grpo import analyze as analyze_e6
+    analyze_e6('dev');analyze_e6('cal')
+    variants=['IL_GRPO','E5_GRPO','IL_JOINT'];cal=read(ROOT/'analysis/E6_cal.json')['methods']
+    best=max(variants,key=lambda v:(cal[v]['metrics']['PDMS']['estimate'],-variants.index(v)))
+    selection=dict(status='LOCKED',variant=best,source='Full D_cal mean PDMS across3 seeds, fixed registered endpoint; first listed variant on ties',
+        calibration_PDMS={v:cal[v]['metrics']['PDMS']['estimate'] for v in variants})
+    target=ROOT/'selection/E6_navtest.json'
+    if target.exists():
+        if read(target)!=selection:raise ValueError('E6 final test selection changed')
+    else:write(target,selection)
+    tasks=[]
+    for seed in config()['train_seeds']:
+        for group in range(2):
+            name=f'navtest_E6_{best}_{seed}_{group}';path=ROOT/'resources/navtest_bundles'/f'{name}.json'
+            write(path,[['scripts/opd/evaluate.py','--exp','E6','--name',f'E6_{best}_{seed}_train','--split','navtest',
+                '--rank',str(group*4+k),'--shards','8','--workers','1'] for k in range(4)])
+            tasks.append((name,[['scripts/opd/parallel.py','--spec',str(path),'--concurrency','4','--receipt',str(path.with_suffix('.receipt.json'))]]))
+    run_queue(tasks)
+    while not (ROOT/'suite/navtest_complete.json').exists():time.sleep(15)
+    analyze_e6('navtest');write(ROOT/'suite/E6_complete.json',dict(status='COMPLETE',training_runs=9,test_policies=3,time=time.time()))
 
 
 if __name__=='__main__':

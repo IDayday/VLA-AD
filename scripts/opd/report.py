@@ -18,6 +18,48 @@ def support(v,material=.002):
     return 'INCONCLUSIVE'
 
 
+def evidence_sections(data):
+    text='\n\n## 数值诊断、失败案例与解释边界\n\n'
+    text+='先对每个已训练策略、每个场景的五个推理种子求均值，再取与IL的差。G是有符号差的总体均值，M_plus/M_minus分别是正部/负部的总体均值；先对每个策略截正/负，再跨三个训练种子平均。单次输出零分率与五次均值零分率分列，不把它们混用。完整log、训练种子及配对推理种子共同bootstrap，区间为未经多重比较校正的逐对95%区间。\n\n'
+    c=data['contrasts']
+    if 'E2_vs_E1' in c:text+=f"E2−E1平均PDMS={interval(c['E2_vs_E1']['PDMS'])}。过程监督与最终轨迹监督的差异需同时看平均分与退化；不能只依据OPD训练loss宣布更有效。\n\n"
+    text+=f"E3相对E1的M_minus差为{interval(c['E3_vs_E1']['M_minus'])}，显示固定协议下较小的下降幅度；平均分差的区间仍较宽。E3相对E2的PDMS区间上界低于0.002，支持的是‘本预算未达到预定实质性额外收益’，不是两个算法数学等价或所有规模下无效。\n\n"
+    text+='E4-A选择的学习率为3e-5，E3为1e-5，两者有相同的两个调参槽位，但最终配方的差异同时含Anchor和学习率。因此E4-A配方的保护效果不支持，不能进一步把退化全部归因于Anchor损失本身。没有在看到审计结果后补跑更有利的固定学习率分支。E4-B/C虽有较低M_minus点估计，平均增益也较小，区间不能确认在保留有效增益时的保护。\n\n'
+    p=ROOT/'diagnostics/chain_distributions.json'
+    if p.exists():
+        v=read(p)['training_seeds'];state=np.mean([r['records'][-1]['state_RMS'] for r in v],0);response=np.mean([r['records'][-1]['teacher_response_RMS'] for r in v],0)
+        text+='E2/E3实际训练轨迹档案的场景、噪声一一配对，初始状态误差0。1000步处，六个链状态的平均RMS差（归一化空间）为 '+str(np.round(state,6).tolist())+'；五次教师响应RMS差为 '+str(np.round(response,6).tolist())+'。学生状态分布确实刷新并不同于教师链；这一机制事实没有自动转化成超过E2的PDMS收益。教师查询始终为eval、无梯度，未发现数值发散。\n\n'
+    p=ROOT/'diagnostics/gradients.json'
+    if p.exists():
+        v=read(p)['records'];text+='固定16个校准输入上的OPD/Anchor梯度余弦中位数：'+', '.join(f"{e}={np.median([r['cosine'] for r in v if r['experiment']==e]):.3f}" for e in ['E3','E4-A','E4-B','E4-C','E5'])+'。这些诊断主要同向，不支持把当前失败简单解释为两项梯度普遍反向。它们只覆盖seed42最终模型的固定输入，不是交通因素的因果识别。训练总loss/梯度按25步记录，DDIM链与每步分歧全量保存；未记录点的梯度范数不补造。\n\n'
+    p=ROOT/'diagnostics/gate_results.json'
+    if p.exists():
+        g=read(ROOT/'gates/static.json');v=read(p);text+=f"静态训练类别为{g['category_counts']}，有效教师门控{int(g['effective_active'])}/4115。三个训练种子的激活样本数分别为 "+', '.join(str(sum(r['active_OPD_examples'].values()))+'/8000' for r in v['actual_training_exposure'].values())+'。全部8000次场景暴露仍按共同顺序执行，只有监督权重不同。\n\n'
+        text+='独立预登记的训练分布描述集为209场景（A64/B32/C64/D49），不是泛化集：\n\n|类别|IL|RL|E3|E5|\n|---|---:|---:|---:|---:|\n'
+        for cat in 'ABCD':
+            a=v['categories']['E3'][cat];b=v['categories']['E5'][cat];text+=f"|{cat}|{a['IL_PDMS']:.4f}|{a['RL_PDMS']:.4f}|{a['PDMS']:.4f}|{b['PDMS']:.4f}|\n"
+        text+='\nE5在B类训练描述集比E3保留更多IL分数，在D类也有GT监督下的改善，但A类能力传递更弱、C类出现下降，且这些训练内迹象没有带来可靠开发集收益。类别是低/高分分层，D不等于双方分数均为0。静态gate并不能约束共享参数更新对未训练log的所有影响；本轮不能单独确定LCB、安全mask、Anchor分配中哪一项造成结果。\n\n'
+    p=ROOT/'analysis/failure_counts_dev.json'
+    if p.exists():
+        v=read(p)['methods'];text+='开发集逐策略计数：\n\n|方法|高分→低于0.8（seed42/43/44）|高分→零分|正分→零分|\n|---|---|---|---|\n'
+        for e in ['E3','E4-A','E4-B','E4-C','E5']:
+            text+=f"|{e}|"+'|'.join('/'.join(str(v[e][str(s)][k]) for s in [42,43,44]) for k in ['stable_high_to_low_count','stable_high_to_zero_count','positive_to_zero_count'])+'|\n'
+        text+='\n这些是三个不同策略的计数，不相加后称为互不相同的场景。E3高分到零分的罕见事件区间包含0；固定五次估计中的下降不等于每个场景的真实期望都已被确定。零更新同噪声差为0，独立五次采样自比较也产生非零M_minus；后者的噪声耦合方式不同，不能直接从参数更新的M_minus中相减。\n\n'
+    p=ROOT/'analysis/cases.json'
+    if p.exists():
+        cases=read(p);text+=f"四个事先固定的case规则选出{len({r['token'] for r in cases})}个不同场景；退化与保护规则命中同一个token，没有换成其他更好看的样本。主绘制轨迹仍为最接近场景平均变化的种子，淡线和事件点展示全部五次输出，避免把一个正常draw当成整个退化后果。\n\n"
+        for r in cases:
+            text+=f"- {r['kind']} / {r['token']}：IL/RL/E3/E5五次均值为 "+'/'.join(f"{r['scene_means'][k]:.4f}" for k in ['IL','RL','E3','E5'])+'；所选draw首次越界为'+str(r['event_seconds']['first_dac_s'])+'秒，首次TTC检查失败为'+str(r['event_seconds']['first_ttc_check_failure_s'])+'秒（None=四秒内无该事件）。\n'
+        text+='\n退化/保护例子的分数差主要受一个推理种子的TTC检查失败影响，不能把单例包装为已确定的跨场景期望规律。教师迁移失败例中，教师推进约8.91米且无TTC检查失败，E3推进约10.88米并在3.1秒首次检查失败；这些是数值后果，不标注让行/抢行等意图。所有重新记录的案例评分与正式分数误差不超过1e-6。碰撞/TTC首次时间来自既有scorer内部记录，越界时间由既有ego area派生，完整仿真状态是额外案例日志，不是新的监督任务。\n\n'
+    p=ROOT/'analysis/teacher_comparisons_dev.json'
+    if p.exists():text+='相对直接使用RL教师的配对PDMS差：'+ '; '.join(f"{e}: {interval(v['PDMS'])}" for e,v in read(p)['contrasts'].items())+'。更少退化若伴随更小平均提升，不能认定优于直接复制教师。\n\n'
+    text+='## 继续与停止的路线\n\n当前证据支持从RL教师迁移部分平均规划收益；不支持把学生链OPD相对教师链KD的额外价值扩大为既定结论。保留E2作为后续对照，若没有保留IL或多教师整合的额外目标，直接复制RL仍是必须比较的低成本方案。停止扩容当前静态E5配方，不用更换起点、增加模块或调整阈值挽救该结果。E6正式训练依据开发门禁停止，不是因缺GPU；不能据此推翻其超过教师的可能性。\n\n'
+    text+='## 图表\n\n'
+    for file,label in [('Fig1_PDMS_dev.png','Fig1 完整开发集PDMS'),('Fig1_paired_contrasts_dev.png','Fig1 配对差与实质性门槛'),('Fig2_learning_dev.png','Fig2 真实训练日志'),('Fig3_chain_discrepancy_dev.png','Fig3 去噪链诊断'),('Fig4_forgetting_dev.png','Fig4 修复与退化'),('Fig5_paired_dev.png','Fig5 场景配对'),('Fig6_quality_strata_dev.png','Fig6 质量分层'),('Fig7_repair.png','Fig7 修复'),('Fig7_regression.png','Fig7 退化及同一场景的局部保护'),('Fig7_teacher_transfer_failure.png','Fig7 教师能力迁移失败'),('Fig8_cost_dev.png','Fig8 实际成本')]:
+        if (REPORTS/'figures'/file).exists():text+=f'![{label}](figures/{file})\n\n'
+    return text
+
+
 def e6_admission():
     d=read(ROOT/'analysis/formal_dev.json');m=d['methods']['E5']['metrics']['G']
     integration=read(ROOT/'tests/real_grpo.json')['passed'];g2=read(ROOT/'analysis/G2.json')['status']=='PASS'
@@ -26,6 +68,16 @@ def e6_admission():
         reason='Registered scientific gate passed' if m['lower95']>0 and m['estimate']>=.002 and integration and g2 else 'E5 did not establish the registered positive held-out gain; no formal E6 expansion',
         integration_only=read(ROOT/'runs/E6_IL_JOINT_42_smoke/complete.json'))
     write(ROOT/'selection/E6_admission.json',admission);return admission
+
+
+def e6_status():
+    if not (ROOT/'analysis/E6_dev.json').exists():return 'NOT_RUN'
+    if not (ROOT/'analysis/E6_navtest.json').exists() or not (ROOT/'selection/E6_navtest.json').exists():return 'INCONCLUSIVE'
+    v=read(ROOT/'selection/E6_navtest.json')['variant'];a=read(ROOT/'analysis/E6_dev.json')['methods'][v]['relative_teacher']['G'];b=read(ROOT/'analysis/E6_navtest.json')['methods'][v]['relative_teacher']['G']
+    states=[support(a),support(b)]
+    if states==['SUPPORTED','SUPPORTED']:return 'SUPPORTED'
+    if states==['NOT_SUPPORTED','NOT_SUPPORTED']:return 'NOT_SUPPORTED'
+    return 'INCONCLUSIVE'
 
 
 def tables(split):
@@ -38,10 +90,14 @@ def tables(split):
         v=data['methods'][e];m=v['metrics'];table.append(dict(experiment=e,status='COMPLETE',train_seeds=3,**v['components'],PDMS_lower95=m['PDMS']['lower95'],PDMS_upper95=m['PDMS']['upper95'],
             G=m['G']['estimate'],M_plus=m['M_plus']['estimate'],M_minus=m['M_minus']['estimate'],
             G_lower95=m['G']['lower95'],G_upper95=m['G']['upper95'],stable_high_retention=m['stable_high_retention']['estimate'],zero_output_fraction=m['zero_output_fraction']['estimate']))
-    table.append(dict(experiment='E6',status='INTEGRATION_ONLY' if not (ROOT/'analysis/E6_dev.json').exists() else 'COMPLETE'))
+    if (ROOT/'analysis'/f'E6_{split}.json').exists():
+        for variant,r in read(ROOT/'analysis'/f'E6_{split}.json')['methods'].items():
+            table.append(dict(experiment='E6_'+variant,status='COMPLETE',train_seeds=3,**r['components'],G=r['metrics']['G']['estimate'],M_minus=r['metrics']['M_minus']['estimate'],
+                relative_teacher_G=r['relative_teacher']['G']['estimate']))
+    else:table.append(dict(experiment='E6',status='NOT_RUN',integration_optimizer_updates=4))
     dest=REPORTS/'tables';dest.mkdir(parents=True,exist_ok=True);keys=list(dict.fromkeys(k for r in table for k in r))
     with open(dest/f'{split}_results.csv','w') as f:
-        w=csv.DictWriter(f,fieldnames=keys);w.writeheader();w.writerows(table)
+        w=csv.DictWriter(f,fieldnames=keys,lineterminator='\n');w.writeheader();w.writerows(table)
     return table
 
 
@@ -60,14 +116,21 @@ def full():
         if c['PDMS']['lower95']<-.002 and status=='SUPPORTED':status='INCONCLUSIVE'
         anchored[e]=dict(status=status,M_minus_reduction=reduction,PDMS_difference=c['PDMS'])
     statuses=dict(Q1=q1,E3_vs_E1=q1a,E3_vs_E2=q1b,E3_transfer_vs_IL=transfer,Q2_OPD_forgetting=forget,
-        Q2_mitigation=anchored,Q3_teacher_ceiling='NOT_RUN' if not (ROOT/'analysis/E6_dev.json').exists() else 'INCONCLUSIVE')
+        Q2_mitigation=anchored,Q3_teacher_ceiling=e6_status())
     write(ROOT/'analysis/conclusions.json',statuses)
     result_lines=['|实验|开发集 PDMS（95% CI）|相对 IL 的 G（95% CI）|M+|M−|单次零分比例|','|---|---:|---:|---:|---:|---:|']
     for n in ['E0-IL','E0-RL','E0-COPY']:
         result_lines.append(f"|{n}|{b['components'][n]['PDMS']:.4f}|—|—|—|—|")
     for e,v in d['methods'].items():
         m=v['metrics'];result_lines.append(f"|{e}|{interval(m['PDMS'])}|{interval(m['G'])}|{m['M_plus']['estimate']:.4f}|{m['M_minus']['estimate']:.4f}|{100*m['zero_output_fraction']['estimate']:.2f}%|")
-    result_lines.append('|E6|NOT_RUN（正式比较）|真实4步集成已运行|—|—|—|')
+    e6_text='已运行原生DiffGRPO/OPD四个真实optimizer updates；零OPD权重与原生loss/gradient精确一致，联合梯度有效且教师不变。它是工程集成证据，不是超过教师的性能证据。'
+    if (ROOT/'analysis/E6_dev.json').exists():
+        e6_text='正式E6结果：'
+        for variant,r in read(ROOT/'analysis/E6_dev.json')['methods'].items():
+            m=r['metrics'];result_lines.append(f"|E6-{variant}|{interval(m['PDMS'])}|{interval(m['G'])}|{m['M_plus']['estimate']:.4f}|{m['M_minus']['estimate']:.4f}|{100*m['zero_output_fraction']['estimate']:.2f}%|")
+            e6_text+=f"{variant}相对RL教师={interval(r['relative_teacher']['G'])}；"
+        e6_text+='E5初始化的前置1000步及教师/gate成本另外计入，最终确认仅选择cal-best初始化，不按开发/测试结果选择。'
+    else:result_lines.append('|E6|NOT_RUN（正式比较）|真实4步集成已运行|—|—|—|')
     baseline=f"""# E0 基线结果
 
 完整固定开发集 {b['scenes']} 场景、{b['logs']} 个 log，5 次配对推理。IL PDMS={b['components']['E0-IL']['PDMS']:.6f}，RL={b['components']['E0-RL']['PDMS']:.6f}；RL−IL={interval(b['paired_RL_vs_IL']['G'])}。E0-COPY 与 RL 的逐步轨迹及评分均数值一致。
@@ -101,7 +164,7 @@ Q1（学生链 OPD 优于轨迹 SFT 和教师链 KD）：**{q1}**。E3−E1={int
 
 Q2（已有 IL 能力受损）：**{forget}**。E3 的 M_minus={interval(e3['M_minus'])}，独立高分保持率={interval(e3['stable_high_retention'])}。Anchor/GT/gate 的具体缓解结论分别列于下表和遗忘报告，不由平均分替代。
 
-Q3（进一步 DiffGRPO 超过 RL 教师）：**{statuses['Q3_teacher_ceiling']}**。{admission['reason']}。已运行原生 DiffGRPO/OPD 四个真实 optimizer updates；零 OPD 权重与原生 loss/gradient 精确一致，联合梯度有效且教师不变。它是工程集成证据，不是超过教师的性能证据。
+Q3（进一步 DiffGRPO 超过 RL 教师）：**{statuses['Q3_teacher_ceiling']}**。{admission['reason']}。{e6_text}
 
 ## 模型与算法核验
 
@@ -155,6 +218,7 @@ E6 训练使用原生自定义 PDM reward，EP/TTC/Comfort权重为10/5/2；正�
 
 实际命令：`python scripts/opd/analyze.py --suite E0-E6 --split dev`；`python scripts/opd/figures.py --split dev --cases`；`python scripts/opd/report.py`。正式E6未获门禁时不得绕过admission直接训练；小规模集成可用 `python scripts/opd/train.py --exp E6 --stage smoke --variant IL_JOINT`，新运行需不同name。
 """
+    report+=evidence_sections(d)
     (REPORTS/'07_research_conclusions.md').write_text(report)
     for name in ['baseline_dev.json','formal_dev.json','conclusions.json','G2.json','cases.json','costs_dev.json','formal_navtest.json','baseline_navtest.json']:
         p=ROOT/'analysis'/name

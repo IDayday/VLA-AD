@@ -17,7 +17,7 @@ def log(path):
     with open(path,'rb') as f:return pickle.load(f)
 
 
-def agent():
+def agent(official=None):
     from navsim.agents.recogdrive.recogdrive_agent import ReCogDriveAgent
     from nuplan.planning.simulation.trajectory.trajectory_sampling import TrajectorySampling
     from navsim.agents.recogdrive.opd.checkpoint_io import restore
@@ -26,6 +26,9 @@ def agent():
         sampling_method='ddim',cache_hidden_state=False,cache_mode=False,grpo=False,train_backbone=False,
         use_expert_features=False,use_last_rd=False,use_bit_drive=False,use_risk_vla=False,
         use_alignment_loss=False,expert_alignment_weight=0.,allow_random_init=False)
+    if official if official is not None else c.get('official_conditioning',False):
+        from navsim.agents.recogdrive.opd.conditioning import use_official_conditioning
+        use_official_conditioning(a.backbone)
     restore(a.action_head,c['student_init']);a.eval();a.requires_grad_(False)
     return a
 
@@ -92,7 +95,7 @@ def prepare_manifest():
     for r in data:
         assert r['split']=='navtest' and r['frame_count']==14 and r['observation_seconds']==5.
         r['observation_path']=str(ROOT/'observations/navtest'/f"{r['token']}.pt")
-        r['metric_cache_path']=str(ROOT/'metric_cache/navtest'/f"{r['token']}.pkl")
+        r['metric_cache_path']=str(Path(config().get('navtest_metric_cache',str(ROOT/'metric_cache/navtest')))/f"{r['token']}.pkl")
     target=ROOT/'manifests/navtest.json'
     if target.exists() and read(target)!=data:raise ValueError('Test population changed')
     write(target,data);write(ROOT/'manifests/navtest_identity.json',dict(source=str(source),source_sha256=sha(source),sha256=sha(target),
@@ -137,15 +140,42 @@ def deployment():
     write(ROOT/'tests/real_student_deployment.json',dict(passed=True,records=records,scope='Trained student native online image/VLM/DiT inference; no teacher, anchor, scorer or future in action generation',owner=identity()))
 
 
+def benchmark():
+    import torch
+    from navsim.agents.recogdrive.opd.checkpoint_io import restore
+    from scripts.opd.scoring import Scoring,load_cache
+    configure();start=time.perf_counter();a=agent();restore(a.action_head,ROOT/'runs/train_E3_42/latest.pt');torch.cuda.synchronize();load_seconds=time.perf_counter()-start
+    records=[]
+    for index,row in enumerate(rows('dev')[:21]):
+        seeds(seed_for(row['token'],1101));torch.cuda.synchronize();start=time.perf_counter();f=features(a,row)
+        with torch.no_grad():trajectory=a.forward({k:v.clone() for k,v in f.items()})['pred_traj'].cpu().numpy()[0]
+        torch.cuda.synchronize();online=time.perf_counter()-start
+        start=time.perf_counter();tokens,inputs=conditioning(observation(row));torch.cuda.synchronize();cache_prepare=time.perf_counter()-start
+        seeds(seed_for(row['token'],1101));torch.cuda.synchronize();start=time.perf_counter()
+        with torch.no_grad():cached=a.action_head.get_action(tokens,inputs)['pred_traj'].cpu().numpy()[0]
+        torch.cuda.synchronize();planner=time.perf_counter()-start;assert np.array_equal(trajectory,cached)
+        cache=load_cache(row['metric_cache_path']);scorer=Scoring();start=time.perf_counter();score=scorer.scalar(cache,trajectory);score_seconds=time.perf_counter()-start
+        assert np.isfinite(score).all()
+        if index:records.append(dict(token=row['token'],online_image_VLM_planner_seconds=online,cached_input_prepare_seconds=cache_prepare,cached_planner_seconds=planner,canonical_scalar_score_seconds=score_seconds))
+    fields=[k for k in records[0] if k!='token'];summary={k:dict(mean=float(np.mean([r[k] for r in records])),median=float(np.median([r[k] for r in records])),p95=float(np.quantile([r[k] for r in records],.95))) for k in fields}
+    write(ROOT/'audit/online_inference_cost.json',dict(scenes=len(records),warmup_scenes=1,model='E3 seed42 final1000',load_seconds=load_seconds,summary=summary,
+        records=records,online_cached_prediction_error=0.,peak_gpu_bytes=torch.cuda.max_memory_allocated(),owner=identity(),
+        scope='One deployed trajectory per observation; full native image loading/VLM/planner vs cached planner; model loading separate; measured on an active shared research server, not an isolated latency benchmark'))
+    print('ONLINE_COST',summary,flush=True)
+
+
 def extract(a):
     import torch
-    configure();native=agent();selected=rows(a.split)[a.rank::a.shards];start=time.time();vlm=read(ROOT/'audit/checkpoints.json')['VLM']['sha256']
+    configure();native=agent();population=sum([rows(s) for s in ('train','cal','dev','navtest')],[]) if a.split=='all' else rows(a.split)
+    selected=population[a.rank::a.shards];start=time.time();vlm=read(ROOT/'audit/checkpoints.json')['VLM']['sha256']
     for j,r in enumerate(selected):
         path=Path(r['observation_path'])
         if not path.exists():
             f=features(native,r);tokens=encode(native,f)
             save(path,dict(token=r['token'],tokens=tokens,features={k:v.cpu() for k,v in f.items()},cache_format='opd_native_vlm_v1',
-                vlm_sha256=vlm,input_contract='Current front image and4 past ego states; native action-head tokens',owner=identity()))
+                vlm_sha256=vlm,protocol_sha256=config()['observation_cache_protocol'],
+                observation_contract='recogdrive_official_fixed2800_v2' if config().get('official_conditioning') else 'project_dynamic_v1',
+                input_contract='Current front image and4 past ego states; native action-head tokens',owner=identity()))
         if a.with_metrics:metric(r)
         if (j+1)%32==0:print('INPUTS',a.rank,j+1,len(selected),time.time()-start,flush=True)
     write(ROOT/'input_jobs'/f'{a.split}_{a.rank}.json',dict(status='COMPLETE',rank=a.rank,shards=a.shards,scenes=len(selected),seconds=time.time()-start,with_metrics=a.with_metrics,owner=identity()))
@@ -162,9 +192,10 @@ def metrics(a):
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('action',choices=['manifest','verify','extract','metrics','deployment']);p.add_argument('--split',default='navtest');p.add_argument('--rank',type=int,default=0);p.add_argument('--shards',type=int,default=1);p.add_argument('--with-metrics',action='store_true');p.add_argument('--workers',type=int,default=4);a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('action',choices=['manifest','verify','extract','metrics','deployment','benchmark']);p.add_argument('--split',default='navtest');p.add_argument('--rank',type=int,default=0);p.add_argument('--shards',type=int,default=1);p.add_argument('--with-metrics',action='store_true');p.add_argument('--workers',type=int,default=4);a=p.parse_args()
     if a.action=='manifest':prepare_manifest()
     elif a.action=='verify':verify()
     elif a.action=='metrics':metrics(a)
     elif a.action=='deployment':deployment()
+    elif a.action=='benchmark':benchmark()
     else:extract(a)

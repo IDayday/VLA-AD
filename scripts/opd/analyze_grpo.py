@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 import argparse
 from scripts.opd.common import *
-from scripts.opd.analyze import bank,bootstrap,compare
+from scripts.opd.analyze import bank,bootstrap,compare,FIELDS
 
 
 def analyze(split):
@@ -14,6 +14,7 @@ def analyze(split):
     for v in variants:
         y=np.stack([bank(split,f'E6_{v}_{s}_train') for s in cfg['train_seeds']]);arrays[v]=y
         methods[v]=dict(metrics=bootstrap(y,il,logs,stable),relative_teacher=bootstrap(y,rl,logs,stable),
+            components=dict(zip(FIELDS,y.mean((0,1,2)).tolist())),
             costs=[read(ROOT/'runs'/f'E6_{v}_{s}_train'/'complete.json')['seconds'] for s in cfg['train_seeds']],
             initialization_cost_included='E5 1000-step pretraining plus teacher/gate preprocessing must be added' if v=='E5_GRPO' else 'Original IL initialization')
     contrasts={}
