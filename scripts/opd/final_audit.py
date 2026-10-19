@@ -52,6 +52,8 @@ def accounting():
             c=read(end);record.update(status=c['status'],seconds=c['seconds'],source_hashes=c['owner']['source_hashes'])
         elif failure.exists():record.update(status='NOT_LAUNCHED',reason=read(failure))
         else:record['status']='RUNNING'
+        record['rejected_admission_attempts']=[read(a) for a in sorted((p.parent/'admissions').glob('*.json'))]
+        if (p.parent/'handoff.json').exists():record['controller_handoff']=read(p.parent/'handoff.json')
         jobs.append(record)
     gpu_hours=sum(r.get('seconds',0)*len(r['gpus'] if isinstance(r['gpus'],list) else ([] if r['gpus'] is None else [r['gpus']]))/3600 for r in jobs)
     result=dict(jobs=jobs,reserved_GPU_hours=float(gpu_hours),definition='Wall-clock GPU reservation including evaluation and startup; CPU-only controllers excluded; not a utilization estimate',

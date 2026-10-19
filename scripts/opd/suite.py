@@ -54,7 +54,7 @@ def run_queue(tasks,reserve_for_e6=False):
             decision=ROOT/'selection/E6_admission.json'
             e6_dispatched=len(list((ROOT/'jobs').glob('formal_E6_*/launch.json')))
             hold=not decision.exists() or (read(decision)['admitted'] and e6_dispatched<9)
-            if hold:free=free[:max(0,len(HOSTS)*8-9-len(running))]
+            if hold:free=free[:max(0,len(free)-max(0,9-e6_dispatched))]
         while remaining and free:
             name,commands=remaining[0]
             host,gpu=free.pop(0)

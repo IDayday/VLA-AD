@@ -66,7 +66,9 @@ def main():
             (out.loss/4).backward();values=rewards['values']
             entries.append(dict(token=row['token'],reward=float(out.reward),reward_std=float(values.std()),valid_policy_signal=bool(values.std()>1e-8),
                 policy_loss=float(out.policy_loss),BC_loss=float(out.bc_loss),OPD_loss=float(aux['opd']) if aux else 0.,loss=float(out.loss)))
-            if aux is not None:save(dest/'rollouts'/f'{step+1}_{micro}.pt',dict(token=row['token'],states=aux['states'].cpu(),per_step=aux['per_step'].detach().cpu(),weight=weight))
+            if aux is not None:save(dest/'rollouts'/f'{step+1}_{micro}.pt',dict(token=row['token'],states=aux['states'].cpu(),
+                sigmas=aux['sigmas'].cpu(),timesteps=aux['timesteps'].cpu(),indices=aux['indices'].cpu(),
+                noise_clip=student.randn_clip_value,sampler='native DiffGRPO sample_chain',per_step=aux['per_step'].detach().cpu(),weight=weight))
         norm=float(torch.nn.utils.clip_grad_norm_(params,cfg['grad_clip_norm']))
         if not np.isfinite(norm):raise FloatingPointError('Nonfinite E6 gradient')
         optimizer.step();history.append(dict(step=step+1,OPD_weight=weight,grad_norm=norm,gradient_clipped=norm>cfg['grad_clip_norm'],

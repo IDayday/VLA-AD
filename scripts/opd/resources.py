@@ -26,14 +26,14 @@ def _launch(name,host,gpu,commands):
     policy=read('/mnt/project/server_dispatch_policy.json')
     if host not in policy['allowed_hosts'] or host in policy.get('global_dispatch_prohibitions',{}):raise PermissionError(host)
     dest=ROOT/'jobs'/name
+    retry_record=None
     if (dest/'spec.json').exists():
         previous=read(dest/'spec.json');failure=dest/'admission_failure.json'
         retryable=not (dest/'launch.json').exists() and failure.exists() and 'GPU occupied' in read(failure)['error'] and previous['commands']==commands
         if not retryable:raise ValueError('Job name already used')
         # A rejected pre-launch attempt is not an experiment. Preserve its full
         # route/error before trying the identical command on another empty GPU.
-        write(dest/'admissions'/f'{time.time_ns()}.json',dict(spec=previous,failure=read(failure),status='REJECTED_BEFORE_PROCESS_LAUNCH'))
-        failure.unlink()
+        retry_record=dict(spec=previous,failure=read(failure),status='REJECTED_BEFORE_PROCESS_LAUNCH')
     for p in (ROOT/'jobs').glob('*/spec.json'):
         if (p.parent/'complete.json').exists():continue
         if not (p.parent/'launch.json').exists():continue
@@ -41,6 +41,9 @@ def _launch(name,host,gpu,commands):
         old=set(s['gpu'] if isinstance(s['gpu'],list) else ([] if s['gpu'] is None else [s['gpu']]))
         requested=set(gpu if isinstance(gpu,list) else ([] if gpu is None else [gpu]))
         if s['host']==host and old&requested:raise RuntimeError(f'GPU reserved by {p.parent.name}')
+    if retry_record is not None:
+        write(dest/'admissions'/f'{time.time_ns()}.json',retry_record)
+        (dest/'admission_failure.json').unlink()
     write(dest/'spec.json',dict(name=name,host=host,gpu=gpu,commands=commands))
     code=f"""import os,json,subprocess
 from pathlib import Path

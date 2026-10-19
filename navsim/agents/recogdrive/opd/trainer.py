@@ -79,7 +79,21 @@ def grpo_with_opd(student,teacher,tokens,inputs,tokens_list,*,weight=0.,anchor_w
     if anchor_weight!=0:raise ValueError('Native GRPO already has IL BC; separate anchor requires a registered ablation')
     captured={};native=student.sample_chain
     def capture(*args,**kwargs):
-        states,trajectory=native(*args,**kwargs);captured['states']=states.detach().clone();return states,trajectory
+        original_mean=student.p_mean_variance;observed=[]
+        def observe(*values,**options):
+            result=original_mean(*values,**options)
+            deterministic=values[6] if len(values)>6 else options.get('deterministic',False)
+            sigma=(.5*result[1]).exp().to(values[0].dtype)
+            sigma=torch.zeros_like(sigma) if deterministic else sigma.clamp_min(student.min_sampling_denoising_std)
+            observed.append((values[0].detach().clone(),result[0].detach().clone(),sigma.detach().clone()))
+            return result
+        student.p_mean_variance=observe
+        try:states,trajectory=native(*args,**kwargs)
+        finally:student.p_mean_variance=original_mean
+        assert len(observed)==5 and torch.equal(torch.stack([v[0] for v in observed],1),states[:,:-1])
+        captured.update(states=states.detach().clone(),trajectory=trajectory.detach().clone(),
+            means=torch.stack([v[1] for v in observed],1),sigmas=torch.stack([v[2] for v in observed],1))
+        return states,trajectory
     student.sample_chain=capture
     try:result=student.forward_grpo(tokens,inputs,tokens_list,sample_time=group_size)
     finally:student.sample_chain=native
@@ -89,9 +103,10 @@ def grpo_with_opd(student,teacher,tokens,inputs,tokens_list,*,weight=0.,anchor_w
     from transformers.feature_extraction_utils import BatchFeature
     expanded=BatchFeature({k:v.expand(b,*v.shape[1:]) for k,v in inputs.items()})
     context=tokens.expand(b,-1,-1)
-    chain=Chain(states,states[:,:-1]*0,states[:,:-1,:1,:1]*0,student.ddim_t,torch.arange(5,device=tokens.device),
-        states[:,0]*0,tuple(p._version for p in student.parameters()),id(student),False,'native')
+    chain=Chain(states,captured['means'],captured['sigmas'],student.ddim_t,torch.arange(5,device=tokens.device),
+        captured['trajectory'],tuple(p._version for p in student.parameters()),id(student),False,'native')
     pred=DDIMAdapter(student).evaluate_chain(chain,context,expanded,require_current=True)
     target=frozen_query(teacher,chain,context,expanded);aux,steps=transition_loss(pred,target)
     result['loss']=result.loss+weight*aux
-    return result,dict(opd=aux,per_step=steps,states=states,teacher_forwards=5)
+    return result,dict(opd=aux,per_step=steps,states=states,sigmas=captured['sigmas'],timesteps=student.ddim_t.detach(),
+        indices=torch.arange(5,device=tokens.device),teacher_forwards=5)

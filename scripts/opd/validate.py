@@ -107,10 +107,24 @@ def grpo():
             v=read(p)['scores']['IL']['scores'];mean=np.mean(np.array(v)[:,-1])
             if mean<.8:candidates.append((mean,r))
     if not candidates:raise RuntimeError('No real low-score qualification inputs yet')
-    r=sorted(candidates,key=lambda x:digest([x[1]['token'],'grpo_validation']))[0][1]
-    tokens,inputs=conditioning(observation(r));s=build_head(cfg['student_init']);t=build_head(cfg['teacher_init'],frozen=True)
-    s=configure_native_grpo(s,[r],cfg['anchor_init']);s.eval();params=[p for p in s.parameters() if p.requires_grad]
-    seeds(7721);raw=s.forward_grpo(tokens,inputs,[r['token']],sample_time=8);g1=torch.autograd.grad(raw.loss,params,allow_unused=True)
+    selected=[x[1] for x in sorted(candidates,key=lambda x:digest([x[1]['token'],'grpo_validation']))[:16]]
+    s=build_head(cfg['student_init']);t=build_head(cfg['teacher_init'],frozen=True)
+    s=configure_native_grpo(s,selected,cfg['anchor_init']);s.eval();params=[p for p in s.parameters() if p.requires_grad];attempts=[]
+    for r in selected:
+        tokens,inputs=conditioning(observation(r));rewards={};native_reward=s.reward_fn
+        def record(*args,**kwargs):
+            value=native_reward(*args,**kwargs);rewards['values']=value.detach().clone();return value
+        s.reward_fn=record;seeds(7721)
+        try:raw=s.forward_grpo(tokens,inputs,[r['token']],sample_time=8)
+        finally:s.reward_fn=native_reward
+        std=float(rewards['values'].std());attempts.append(dict(token=r['token'],reward_std=std,has_policy_signal=std>1e-8))
+        if std>1e-8:break
+        del raw
+    write(ROOT/'tests/GRPO_signal_attempts.json',dict(rule='First at most16 hashed low-score fit scenes, group8, fixed7721; retain zero-signal attempts; numerical validation only',attempts=attempts))
+    if not attempts[-1]['has_policy_signal']:raise RuntimeError('No real GRPO reward variation in fixed qualification subset')
+    policy_grad=torch.autograd.grad(raw.policy_loss,params,allow_unused=True,retain_graph=True)
+    policy_norm=sum(float(x.square().sum()) for x in policy_grad if x is not None)**.5
+    g1=torch.autograd.grad(raw.loss,params,allow_unused=True)
     seeds(7721);zero,_=grpo_with_opd(s,t,tokens,inputs,[r['token']],weight=0);g2=torch.autograd.grad(zero.loss,params,allow_unused=True)
     assert torch.equal(raw.loss,zero.loss)
     error=max(float((x-y).abs().max()) for x,y in zip(g1,g2) if x is not None and y is not None);assert error==0
@@ -120,10 +134,13 @@ def grpo():
     gn_opd=torch.autograd.grad(aux['opd'],params,retain_graph=True,allow_unused=True)
     gn_opd=sum(float(x.square().sum()) for x in gn_opd if x is not None)**.5
     joint.loss.backward();norm=float(torch.nn.utils.clip_grad_norm_(params,1.));opt=torch.optim.AdamW(params,lr=1e-5);opt.step()
-    assert gn_opd>0 and np.isfinite(norm) and state_hash(t)==before_t and state_hash(s)!=before_s
+    assert policy_norm>0 and gn_opd>0 and np.isfinite(norm) and state_hash(t)==before_t and state_hash(s)!=before_s
     write(ROOT/'tests/real_grpo.json',dict(passed=True,token=r['token'],optimizer_updates=1,
         zero_weight_loss_error=0.,zero_weight_gradient_error=error,GRPO_gradient_norm=gn_grpo,OPD_gradient_norm=gn_opd,
         combined_gradient_norm=norm,policy_loss=float(raw.policy_loss),BC_loss=float(raw.bc_loss),OPD_loss=float(aux['opd']),
+        policy_only_gradient_norm=policy_norm,native_rollout_sigmas=aux['sigmas'][0].flatten().cpu().tolist(),
+        native_timesteps=aux['timesteps'].cpu().tolist(),native_indices=aux['indices'].cpu().tolist(),
+        signal_attempts=attempts,
         teacher_unchanged=True,native_BC_weight=s.bc_coeff if hasattr(s,'bc_coeff') else .1,
         formal_E6=False,owner=identity(),scope='Real integration only; not a teacher-ceiling performance experiment'))
     print('REAL_GRPO_PASS',gn_grpo,gn_opd,norm,flush=True)
