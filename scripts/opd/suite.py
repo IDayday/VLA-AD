@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 import argparse
 from scripts.opd.common import *
-from scripts.opd.resources import launch
+from scripts.opd.resources import launch,remote
 
 HOSTS=['training-rl-zt2','training-vla-zt','training-vlawm-tsinghua-zt2','training-vlawm-tsinghua-zt3']
 EXPS=['E1','E2','E3','E4-A','E4-B','E4-C','E5']
@@ -16,7 +16,20 @@ def slots():
         if (p.parent/'complete.json').exists() or not (p.parent/'launch.json').exists():continue
         spec=read(p);g=spec['gpu'];g=g if isinstance(g,list) else ([] if g is None else [g])
         reserved.update((spec['host'],i) for i in g)
-    return [(h,g) for h in HOSTS for g in range(8) if (h,g) not in reserved]
+    from concurrent.futures import ThreadPoolExecutor
+    policy=read('/mnt/project/server_dispatch_policy.json')
+    hosts=[h for h in HOSTS if h in policy['allowed_hosts'] and h not in policy.get('global_dispatch_prohibitions',{})]
+    def inspect(host):
+        try:
+            data=remote(host,"""import subprocess,json
+rows=subprocess.check_output(['nvidia-smi','--query-gpu=index,memory.used,utilization.gpu','--format=csv,noheader,nounits'],text=True).splitlines()
+print(json.dumps([list(map(int,row.split(','))) for row in rows]))
+""")
+            return host,data,None
+        except Exception as error:return host,[],str(error)
+    with ThreadPoolExecutor(len(hosts) or 1) as pool:inventory=list(pool.map(inspect,hosts))
+    write(ROOT/'resources/live_slots.json',dict(time=time.time(),inventory={h:dict(gpus=data,error=error) for h,data,error in inventory},preserve_unrelated_workloads=True))
+    return [(h,g) for h,data,error in inventory for g,memory,util in data if memory<=100 and util<=5 and (h,g) not in reserved]
 
 
 def run_queue(tasks,reserve_for_e6=False):
@@ -27,7 +40,16 @@ def run_queue(tasks,reserve_for_e6=False):
             if p.exists():
                 if read(p)['status']!='COMPLETE':raise RuntimeError(f'Failed experiment {name}; fix and explicitly rerun affected run')
                 running.remove(name)
-        free=slots()
+        # Existing tasks can be resumed/observed without a free GPU. In
+        # particular, completed tasks must not wait behind unrelated GPU jobs.
+        for task in list(remaining):
+            name,_=task;path=ROOT/'jobs'/name
+            if (path/'launch.json').exists():
+                remaining.remove(task)
+                if (path/'complete.json').exists():
+                    if read(path/'complete.json')['status']!='COMPLETE':raise RuntimeError('Failed experiment '+name)
+                else:running.append(name)
+        free=slots() if remaining else []
         if reserve_for_e6:
             decision=ROOT/'selection/E6_admission.json'
             e6_dispatched=len(list((ROOT/'jobs').glob('formal_E6_*/launch.json')))
@@ -35,14 +57,11 @@ def run_queue(tasks,reserve_for_e6=False):
             if hold:free=free[:max(0,len(HOSTS)*8-9-len(running))]
         while remaining and free:
             name,commands=remaining[0]
-            if (ROOT/'jobs'/name/'spec.json').exists():
-                if not (ROOT/'jobs'/name/'launch.json').exists():raise RuntimeError(f'Previous admission failed for {name}')
-                remaining.pop(0);running.append(name);continue
             host,gpu=free.pop(0)
             print('DISPATCH',name,host,gpu,flush=True)
             try:launch(name,host,gpu,commands)
             except RuntimeError as error:
-                if 'GPU reserved by' in str(error):continue
+                if 'GPU reserved by' in str(error) or 'GPU occupied' in str(error):continue
                 raise
             remaining.pop(0);running.append(name)
         write(ROOT/'suite/progress.json',dict(remaining=[r[0] for r in remaining],running=running,time=time.time()))

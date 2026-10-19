@@ -31,20 +31,26 @@ def main():
         p=ROOT/'analysis'/f'formal_{split}.json'
         if not p.exists():continue
         data=read(p);base=bank(split,'E0','IL');stable=(bank(split,'E0','IL_screen')[...,-1]>=.8).all(-1)
-        base_mean=base[...,-1].mean(-1);failures={}
+        base_mean=base[...,-1].mean(-1);teacher=bank(split,'E0','RL');teacher_mean=teacher[...,-1].mean(-1);failures={}
         for e in data['methods']:
             failures[e]={}
             for s in config()['train_seeds']:
                 v=bank(split,f'train_{e}_{s}');j=v[...,-1].mean(-1)
                 counts=dict(stable_high_to_low_count=int((stable&(j<.8)).sum()),stable_high_to_zero_count=int((stable&(j<=1e-12)).sum()),
                     positive_to_zero_count=int(((base_mean>1e-12)&(j<=1e-12)).sum()),zero_to_positive_count=int(((base_mean<=1e-12)&(j>1e-12)).sum()),
-                    zero_output_count=int((v[...,-1]<=1e-12).sum()))
+                    zero_output_count=int((v[...,-1]<=1e-12).sum()),teacher_positive_student_zero_count=int(((teacher_mean>1e-12)&(j<=1e-12)).sum()),
+                    teacher_zero_student_positive_count=int(((teacher_mean<=1e-12)&(j>1e-12)).sum()),
+                    both_zero_student_positive_count=int(((base_mean<=1e-12)&(teacher_mean<=1e-12)&(j>1e-12)).sum()),
+                    scene_zero_count=int((j<=1e-12).sum()),scene_low_positive_through_point6_count=int(((j>1e-12)&(j<=.6)).sum()),
+                    scene_high_count=int((j>=.8).sum()),median_scene_PDMS=float(np.median(j)),median_scene_PDMS_difference=float(np.median(j-base_mean)))
+                for component,index in [('NC',0),('DAC',1),('TTC',3)]:
+                    counts['new_'+component+'_failed_output_count']=int(((base[...,index]>1e-12)&(v[...,index]<=1e-12)).sum())
                 seeds.append(dict(split=split,experiment=e,training_seed=s,**paired_quantities(v[None],base,stable),**counts))
                 failures[e][str(s)]=dict(**counts,stable_high_to_zero_tokens=[r['token'] for r,m in zip(rows(split),stable&(j<=1e-12)) if m])
         write(ROOT/'analysis'/f'failure_counts_{split}.json',dict(scope='Counts per trained policy, not independent scene repeats; zero means five-draw scene mean<=1e-12',methods=failures))
         shutil.copyfile(ROOT/'analysis'/f'failure_counts_{split}.json',dest/f'failure_counts_{split}.json')
     if seeds:csvwrite(dest/'individual_training_seed_results.csv',seeds)
-    for path in ['audit/final_provenance.json','audit/IL_RL_tensor_comparison.json','audit/RL_reference_comparison.json','audit/formal_model_certificate.json','audit/evaluation_certificate_dev.json','audit/evaluation_certificate_navtest.json','audit/hardware_hosts.json','tests/final_matrix.json','tests/real_parallel_inference.json',
+    for path in ['audit/final_provenance.json','audit/official_forward_parity.json','audit/correction_registration.json','audit/IL_RL_tensor_comparison.json','audit/RL_reference_comparison.json','audit/formal_model_certificate.json','audit/evaluation_certificate_dev.json','audit/evaluation_certificate_navtest.json','audit/hardware_hosts.json','tests/final_matrix.json','tests/real_parallel_inference.json',
                  'selection/tuning.json','selection/navtest.json','selection/E6_admission.json','selection/E6_budget.json','calibration/gradient_scales.json',
                  'diagnostics/chain_distributions.json','diagnostics/gradients.json','diagnostics/gate_results.json']:
         p=ROOT/path
@@ -54,7 +60,8 @@ def main():
     write(dest/'artifact_index.json',dict(external_root=str(ROOT),protocol_sha256=sha(SOURCE/'configs/opd/protocol.yaml'),
         structured_evaluation='evaluation/<split>/<run>/{predictions,scores,complete_*}',actual_commands='jobs/*/spec.json',
         model_source_provenance='jobs/*/owner.json:source_hashes and runs/*/config.json',
-        cache='observations/navtest and previously bound frozen VLM cache; no teacher-forced future tokens',
+        cache='observations/<split>/<token>.pt: independently rebuilt pinned official fixed2800 conditioning; no teacher-forced future tokens',
+        invalid_previous_attempt=dict(root=str(ROOT.parent),status_file=str(ROOT.parent/'INVALID.json'),reports=str(ROOT.parent/'reports_invalid_snapshot'),protocol_file='configs/opd/protocol_v1_invalid.yaml',not_pooled=True),
         raw_artifacts_excluded_from_git=['Model weights','Original sensor images and logs','Raw VLM tokens','Complete optimizer states','Large training logs'],
         git_files={str(p.relative_to(REPORTS)):sha(p) for p in dest.glob('*') if p.name!='artifact_index.json'}))
 

@@ -39,7 +39,7 @@ def analyze():
                 cat=gate[token]['category'];m=float(r['effective_gate'][j]);counts[cat]+=1;active[cat]+=int(m>0);losses[cat].append(float(per_scene[j])*m)
         assert sum(counts.values())==8000
         exposures[str(seed)]=dict(examples=dict(counts),active_OPD_examples=dict(active),mean_masked_OPD={c:float(np.mean(v)) for c,v in losses.items()},activation_fraction=sum(active.values())/sum(counts.values()))
-    write(ROOT/'diagnostics/gate_results.json',dict(scope='Fixed209 training scenes; descriptive, not held-out evidence',categories=summary,actual_training_exposure=exposures))
+    write(ROOT/'diagnostics/gate_results.json',dict(scope=f'Fixed{len(data)} training scenes; max64 per original A/B/C/D class; descriptive, not held-out evidence',categories=summary,actual_training_exposure=exposures))
 
 
 if __name__=='__main__':

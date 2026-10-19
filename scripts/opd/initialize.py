@@ -7,7 +7,7 @@ from scripts.opd.common import *
 
 def main():
     import torch,yaml
-    from navsim.agents.recogdrive.opd.checkpoint_io import build_head
+    from navsim.agents.recogdrive.opd.checkpoint_io import build_head,read_state
     p=argparse.ArgumentParser();p.add_argument('--verify',action='store_true');p.add_argument('--dispatch-inputs',action='store_true');a=p.parse_args()
     torch.set_num_threads(1);c=config();protocol=yaml.safe_load((SOURCE/'configs/opd/protocol.yaml').read_text())
     assert c['official_conditioning'] and protocol['version']==2
@@ -18,6 +18,18 @@ def main():
         weights[label]=dict(path=c[key],sha256=value,load_report=head._opd_load_report);del head
     value=sha(Path(c['vlm'])/'model.safetensors');assert value==protocol['baseline']['VLM']['sha256']
     weights['VLM']=dict(path=c['vlm'],sha256=value,deployment_shared=True,limitation='Head-only checkpoints cannot prove historical VLM identity')
+    il={k.removeprefix('agent.action_head.'):v for k,v in read_state(c['student_init']).items()}
+    rl={k.removeprefix('agent.action_head.'):v for k,v in read_state(c['teacher_init']).items()}
+    active={k:v for k,v in rl.items() if not k.startswith('old_policy.')}
+    reference={k.removeprefix('old_policy.'):v for k,v in rl.items() if k.startswith('old_policy.')}
+    assert il.keys()==active.keys()==reference.keys()
+    assert all(v.shape==active[k].shape and v.dtype==active[k].dtype for k,v in il.items())
+    difference=[k for k,v in il.items() if not torch.equal(v,active[k])]
+    ref_difference=[k for k,v in il.items() if not torch.equal(v,reference[k])]
+    assert difference and not ref_difference
+    write(ROOT/'audit/RL_reference_comparison.json',dict(passed=True,IL_active_tensors=len(il),RL_active_tensors=len(active),
+        changed_active_tensors=len(difference),changed_names=difference,RL_old_policy_exactly_IL=True,
+        missing=[],unexpected=[],shape_mismatch=[],teacher_source='Actual RL active head; never old_policy'))
     if a.verify:
         existing=read(ROOT/'audit/checkpoints.json');assert all(existing[k]['sha256']==v['sha256'] for k,v in weights.items())
         print('REAL_WEIGHT_IDENTITIES_VERIFIED',ROOT);return
