@@ -201,7 +201,10 @@ RL 相对 IL 的 M_minus={interval(b['paired_RL_vs_IL']['M_minus'])}，{b['teach
     online=read(ROOT/'audit/online_inference_cost.json')['summary']
     cost_text+=f"\n独立20场景、预热1场景的原生学生在线推理中位数为{online['online_image_VLM_planner_seconds']['median']:.4f}秒/场景，包含图像加载、VLM和规划器；缓存输入后的规划器为{online['cached_planner_seconds']['median']:.4f}秒，正式单候选物理评分为{online['canonical_scalar_score_seconds']['median']:.4f}秒。测量来自活跃共享服务器，不是隔离延迟基准。E2与E3每种子均实际执行40,000个teacher样本步查询；E3另有40,000个学生rollout样本步，未给E3增加优化更新预算。\n"
     accounting=ROOT/'audit/accounting.json'
-    if accounting.exists():cost_text+=f"\n有效修正批次的全部任务累计预留GPU时间为{read(accounting)['reserved_GPU_hours']:.2f} GPU小时，包含启动与评测，不等同于GPU利用率。无效v1成本另外保留，不从有效实验账目中消失。\n"
+    if accounting.exists():cost_text+=f"\n有效修正批次的全部任务累计预留GPU时间为{read(accounting)['reserved_GPU_hours']:.2f} GPU小时，包含启动与评测，不等同于GPU利用率。\n"
+    resources=ROOT/'audit/resource_summary.json'
+    if resources.exists():
+        rs=read(resources);cost_text+=f"\n无效v1仍计入工程成本：{rs['invalid_v1_GPU_hours']:.2f} GPU小时，两批累计{rs['total_GPU_hours']:.2f} GPU小时，未超过预登记128小时上限。五台主机的本任务pause标记已移除，原压力自动化恢复观察；没有终止真实他人任务。失败与CPU编排交接记录在外部accounting.json中保留，已修复的问题不从历史中删除。\n"
     report=f"""# ReCogDrive On-Policy Distillation 研究报告{'' if has_test else '（测试确认进行中）'}
 
 ## 研究结论

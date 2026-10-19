@@ -59,6 +59,25 @@ def accounting():
     result=dict(jobs=jobs,reserved_GPU_hours=float(gpu_hours),definition='Wall-clock GPU reservation including evaluation and startup; CPU-only controllers excluded; not a utilization estimate',
         failures=[r['name'] for r in jobs if r['status'] in ['FAILED','NOT_LAUNCHED']],running=[r['name'] for r in jobs if r['status']=='RUNNING'])
     write(ROOT/'audit/accounting.json',result);print('ACCOUNTING',gpu_hours,result['failures'],result['running'])
+    resource_summary()
+
+
+def resource_summary():
+    from collections import Counter
+    current=read(ROOT/'audit/accounting.json');old_hours=0.
+    if (ROOT.parent/'INVALID.json').exists():
+        for p in (ROOT.parent/'jobs').glob('*/spec.json'):
+            end=p.parent/'complete.json'
+            if not end.exists():continue
+            g=read(p)['gpu'];count=len(g) if isinstance(g,list) else int(g is not None)
+            old_hours+=read(end)['seconds']*count/3600
+    restored=[read(p) for p in sorted((ROOT/'resources').glob('*_pressure_resume_v2.json'))]
+    assert all(v['action']=='resume' and v['prior_pause']==v['tag']=='recogdrive-opd-20261020-official-v2' for v in restored)
+    write(ROOT/'audit/resource_summary.json',dict(valid_v2_GPU_hours=current['reserved_GPU_hours'],invalid_v1_GPU_hours=old_hours,
+        total_GPU_hours=current['reserved_GPU_hours']+old_hours,definition=current['definition'],
+        valid_v2_job_status_counts=dict(Counter(v['status'] for v in current['jobs'])),failure_names=current['failures'],failures_remain_visible=True,
+        restored_pressure_automation_hosts=[v['host'] for v in restored],restoration='Only owned pause markers removed; original controllers reobserve fresh30min utilization; no custom filler started',
+        failure_explanation='Original G0_G1_audit encountered a GRPO diagnostic before E0 labels existed; repaired dependency and passed. Other recorded failures are CPU controller handoffs, with original history preserved. Full commands, exit codes and source hashes remain in accounting.json.'))
 
 
 def cache_versions():
