@@ -1,0 +1,1101 @@
+{
+  "passed": true,
+  "manifests": {
+    "train": {
+      "scenes": 4115,
+      "logs": 50,
+      "manifest_sha256": "e3292aae30586c02e6c0df62639a0dd3e9bfc58b55a6c5662ec4654e0bfaee1f",
+      "official_filter_sha256": "c37fea567a0cfdbc29076cca893d4f5dd32db59baec18ae214527206d6b64e6f"
+    },
+    "cal": {
+      "scenes": 518,
+      "logs": 4,
+      "manifest_sha256": "10488343ac654799c109e80bf09d26da6b49e4fc4210e7e3dba53c13c87a82c3",
+      "official_filter_sha256": "c37fea567a0cfdbc29076cca893d4f5dd32db59baec18ae214527206d6b64e6f"
+    },
+    "dev": {
+      "scenes": 1696,
+      "logs": 16,
+      "manifest_sha256": "f9552d196d8973a6cfd1f182702b777198012f9fe60d51acee08c039e75eea53",
+      "official_filter_sha256": "c37fea567a0cfdbc29076cca893d4f5dd32db59baec18ae214527206d6b64e6f"
+    },
+    "navtest": {
+      "scenes": 12146,
+      "logs": 136,
+      "manifest_sha256": "72149fa954499fd73eef38e9b2bbdfb78342ff2350d48bcbb51d1f35b44d9c8d",
+      "official_filter_sha256": "61284edf5003c0291f843ce9817c822ba306609a62d54544223adae3fc7fc9cd"
+    }
+  },
+  "source_logs": [
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.14.16.10_veh-35_00083_00485.pkl",
+      "sha256": "24c056bd9f407cb62460c70bbf19c412fb1894de54a9430b6ac8748c3c335dc7",
+      "bytes": 19467561
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.14.16.10_veh-35_01100_01664.pkl",
+      "sha256": "f9c1a857adb30fd92494b6bab14f0c2a86695bae5a545831efe7183fb80540df",
+      "bytes": 19970518
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.14.16.10_veh-35_01690_02183.pkl",
+      "sha256": "b5808dfe54f8774019c4b2f5be692bd674b0c8c243343345346e6c4527c4c517",
+      "bytes": 25345871
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.14.16.10_veh-35_02482_02649.pkl",
+      "sha256": "5dd37edd94464d055e0cc86bfa5613a51de04af6001514297d09aa5c5f2456ad",
+      "bytes": 8827472
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.14.16.10_veh-35_03373_03550.pkl",
+      "sha256": "dca05178ec4c2d80243604115c844adf8fe25cbd84da30e5fc839a8fd23f1f07",
+      "bytes": 8073447
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.14.16.10_veh-35_04097_04328.pkl",
+      "sha256": "a50023187eaf72e0d1a5bd63ece68c01fa3b62e0793e398c63b8a2c8ce5680dc",
+      "bytes": 11902342
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.14.24.08_veh-25_00934_01067.pkl",
+      "sha256": "2fdea58b7e1c73db885db2522ec9faf61c9c082ad276f7aea64d363085bda3d6",
+      "bytes": 13001855
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.14.24.08_veh-25_03764_04034.pkl",
+      "sha256": "439ed7948707a119af99537d11afece3511df654b8980efb630423004ae74f14",
+      "bytes": 20462506
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.14.24.08_veh-25_04059_04203.pkl",
+      "sha256": "b21e3c35ae9e1e82f5cb88f91078d33420b101682af9db685830fb5729ef12eb",
+      "bytes": 6024051
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.14.26.37_veh-27_04122_04279.pkl",
+      "sha256": "44487612d3ba52f79c8358a4c29bae619beeb69b21fc825061fe4f44fca5cff8",
+      "bytes": 7649568
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.15.59.03_veh-30_00625_00855.pkl",
+      "sha256": "0c7147657a339db99f0c5095f0e190563fc80153f9ab6d49031aef70d86dbe22",
+      "bytes": 9670516
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.15.59.03_veh-30_01478_01643.pkl",
+      "sha256": "af870aef63976471ca516c69a00cc6628db18d9b541373d3582b26ea04388c85",
+      "bytes": 12669952
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.15.59.03_veh-30_03499_03671.pkl",
+      "sha256": "2c2cca6869d7eb2048eefeff5957e877a1eb0d6de07e9d03fef8c78b51a803af",
+      "bytes": 9372279
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.15.59.03_veh-30_04027_04200.pkl",
+      "sha256": "d6850ba5a1fd12e5da698ab1934f5ad4d0d2050ed7e1817227ed3818199a8966",
+      "bytes": 5605875
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.15.59.03_veh-30_04463_04606.pkl",
+      "sha256": "078aa6ac13bc7a6a26a560a32d1d8df70e817d79ba1b33eb1cc3f7656985820a",
+      "bytes": 7805445
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.16.37.23_veh-25_00005_00217.pkl",
+      "sha256": "e88229299bc05172d6d1ac175978c9f53aef99790724e4e24d9e5fbed6b60d72",
+      "bytes": 7832263
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.16.37.23_veh-25_03311_03550.pkl",
+      "sha256": "c66612d2c26301aca50c1afcddfa9547cd3871ece4ca132c03c9b86a66835c91",
+      "bytes": 11126117
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.17.54.41_veh-35_01654_01850.pkl",
+      "sha256": "88dc7b5c1fd466472dda50bf264cf935912324b4b9f89cecfa8958d4da7f2d4d",
+      "bytes": 8086294
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.17.54.41_veh-35_01905_02121.pkl",
+      "sha256": "880218bdcf97d0fd20b93a793df88baa5a2dbf0fa7cb221e9d1cf7011bb6a8a8",
+      "bytes": 11152494
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.17.54.41_veh-35_02723_02902.pkl",
+      "sha256": "f8ee353e8342811b87886f26facafffecb490c6b66bf8b5d48d172fa1fd887b8",
+      "bytes": 7050651
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.17.54.41_veh-35_04111_04288.pkl",
+      "sha256": "2e7527b73dece6254f55a96fb3c05a28163411833878125818636576f74f3c38",
+      "bytes": 12673800
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.17.54.41_veh-35_04967_05098.pkl",
+      "sha256": "4c88fa5d4f2f36563e4878496db332d3ea3699d90dee1d9505b8446fd9f12979",
+      "bytes": 3692385
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.05.25.18.38.25_veh-25_04058_04186.pkl",
+      "sha256": "63983f895fc86dcf90c59eb22b41aac559eed154834691badc966856ea620603",
+      "bytes": 6563471
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.03.12.02.06_veh-35_00233_00609.pkl",
+      "sha256": "f7b42fbc25a5d417b7c004e0839eb688d0027d4808c57e5cad3539747f482efc",
+      "bytes": 12923455
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.03.12.02.06_veh-35_01100_01227.pkl",
+      "sha256": "a70aaa983088cd6462908c2bffc9b927b95b91ed35dfc4d4c4310ed5b9544b67",
+      "bytes": 6661708
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.03.12.02.06_veh-35_03526_03712.pkl",
+      "sha256": "aa4b61a2e3a65ea785bd2903392fb3fda1bb64f31c68884f200913caf23fa922",
+      "bytes": 7784614
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.03.13.55.17_veh-35_00073_00426.pkl",
+      "sha256": "7cef97a61b8f87a9d50150577790b4318382565007137b23e2e417c059c834e9",
+      "bytes": 18554419
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.03.13.55.17_veh-35_00789_00999.pkl",
+      "sha256": "66f86467c0f516f35ef9ebb5dfae60b387b2e898b81a0011c7f154bcf63e13cb",
+      "bytes": 8375414
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.03.13.55.17_veh-35_02419_02561.pkl",
+      "sha256": "3ca704dc7412dcf60a2ddfaa86db22f1c6f85409f7e827707468752f50620271",
+      "bytes": 5156610
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.03.13.55.17_veh-35_02572_02855.pkl",
+      "sha256": "4d32a0ff88f65d1ba7ecf11fc09be2167af2541fdd86ca5fa08ec2bb5e60ae44",
+      "bytes": 15428640
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.03.13.55.17_veh-35_02866_03582.pkl",
+      "sha256": "6493f48231a71b62a759dca007e3b753f12f7ce6d04f2e6c9576a58e283932b2",
+      "bytes": 25378058
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.03.17.06.58_veh-35_00712_00855.pkl",
+      "sha256": "71a76a32e8a0ec589273d431e6269fc66b2e7e9090263590e21c0ba32dce80bb",
+      "bytes": 7892153
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.03.17.06.58_veh-35_02571_02742.pkl",
+      "sha256": "76379d32c0b9116468fb0b6bd8443ed4c8cb4adb87de89105ca8b0523477ba34",
+      "bytes": 6923940
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.03.17.06.58_veh-35_02943_03220.pkl",
+      "sha256": "450a6973782585e70b3f6ac8a5781bad1942dd91f42d3aa59a48f7b6f66757fb",
+      "bytes": 12253970
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.03.17.06.58_veh-35_03860_03992.pkl",
+      "sha256": "9fdce2880926cf11b8aa618e40df0512f5763da2633a4c886037aa64a6be6da9",
+      "bytes": 7173063
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.03.18.47.39_veh-35_00123_00246.pkl",
+      "sha256": "b92420b3ba8c40add0a72765cf0a1b8ab5f9d4f95f2f9659f07977e63842e1fa",
+      "bytes": 5861151
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.03.18.47.39_veh-35_00257_00492.pkl",
+      "sha256": "9c4bfea3838a1810bd25cef82910c654e3f343ed10bcd167adc01bd30fc95f15",
+      "bytes": 11166120
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.03.18.47.39_veh-35_00503_00777.pkl",
+      "sha256": "5c009f0606e3d4712940662cd78519e6667541487a6b8616a696011d5bbab899",
+      "bytes": 11838993
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.28.13.53.26_veh-26_00492_00696.pkl",
+      "sha256": "591cc2de4450e64662523d244f6ad33243ddb0867ddbd50309afd6aca5b45563",
+      "bytes": 5459247
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.28.15.02.02_veh-38_02398_02848.pkl",
+      "sha256": "5236bd96597a07fa2a2e12d82db6b41134995d17875b3fda5b368f87f07cf9c8",
+      "bytes": 14581746
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.28.15.10.57_veh-16_02438_02580.pkl",
+      "sha256": "a8bc1efd760ec2faeac15389b9d65a744e4888c462caf9a7a354f0edd558a573",
+      "bytes": 5793992
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.28.16.29.11_veh-38_00022_00368.pkl",
+      "sha256": "ba4d957005e20a8512993c8de95b5e1f9d4c70372043150cb876eca487a20a9a",
+      "bytes": 14103310
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.28.16.29.11_veh-38_01415_01821.pkl",
+      "sha256": "b351f80ca97d2a03e443aa53f4b8533b13e26fcf569fc34d2f32e899745d16f0",
+      "bytes": 20247262
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.28.16.29.11_veh-38_03263_03766.pkl",
+      "sha256": "b5d39b9ea8252390c61693b488d4ae88190c78d8ca2e1d9e4d0e5aa29d661b79",
+      "bytes": 19404534
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.28.16.57.59_veh-26_00016_00484.pkl",
+      "sha256": "2cf09a9f3214c164a32691b82d91af8a94316c640f4a94277512e2866985368e",
+      "bytes": 19480243
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.28.18.03.27_veh-14_00620_01581.pkl",
+      "sha256": "7fb284e80c8acb05e716757fcbdf2d20622b1f9bfdfa661adcd208cd423a77ad",
+      "bytes": 43468086
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.28.20.24.43_veh-38_00369_00601.pkl",
+      "sha256": "a9d3d3382ff8a80ad175833647b8ce8ae6a18fa5231db19d344ce3433c794a93",
+      "bytes": 10864489
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.28.20.24.43_veh-38_03385_04952.pkl",
+      "sha256": "2cb8c8491ff35fb5fab60167c0b1d96cb3060399d0e72a7207315f3b1ee4dade",
+      "bytes": 69426710
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.28.21.16.05_veh-14_00957_01198.pkl",
+      "sha256": "bc769b56936100640e05168032d6f044e66c3159f62119126a50afcb3bc3b73e",
+      "bytes": 10341995
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.06.28.21.47.53_veh-35_00280_00424.pkl",
+      "sha256": "7d9cdc6cb4df47c7dda91b6c76676c35fa58c5b8d36f71fec4b0785f418471c8",
+      "bytes": 7077192
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.08.16.14.23.37_veh-45_00015_00132.pkl",
+      "sha256": "cdab4967e894a7a6b242f90ca3e58083458c9b6f79095495133ab0820c0c3914",
+      "bytes": 704701
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.08.30.13.45.25_veh-40_00610_00771.pkl",
+      "sha256": "3dbde388c51cf9ca6fe73a95430031b0c79dc40969828edbf0d0905f425461ca",
+      "bytes": 1821388
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.08.30.13.45.25_veh-40_00784_00867.pkl",
+      "sha256": "8e0ea1a6139e6b14a692ac6a5735512cf6ea3da1bff828446d6d9516455bb7d4",
+      "bytes": 1459878
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.08.30.13.45.25_veh-40_00878_01104.pkl",
+      "sha256": "e2a12cbd19c7d93d0dd85ba458ba441415d97567b2f884a86e70ff1429f77629",
+      "bytes": 5425737
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.08.30.13.45.25_veh-40_01116_01336.pkl",
+      "sha256": "6c7556faf1ece6897dcab3bd0f261a001e3bea8de16d53ec97730cbecbaa8bb5",
+      "bytes": 5323822
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.08.30.14.54.34_veh-40_00334_00419.pkl",
+      "sha256": "1eb78d26b211e4e79fc39837896beede8e864292ab0046d3d176fc0b2fce031c",
+      "bytes": 1758591
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.08.30.14.54.34_veh-40_00439_00835.pkl",
+      "sha256": "ac3701f793a0268423f4a543677987a9593364174e08eae62e309e1730771903",
+      "bytes": 8810593
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.08.30.14.54.34_veh-40_00885_00986.pkl",
+      "sha256": "5543800e925cdc3868cfa59b1e831ed6fa5f4d9eb37d3293814d6e4049006864",
+      "bytes": 1942540
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.08.30.16.16.44_veh-40_00256_00716.pkl",
+      "sha256": "d4a10bbeb280b42c33eae488bbdd5c52435c3754baa08bde7db649eb59fafb4e",
+      "bytes": 7772208
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.08.30.16.16.44_veh-40_00779_01088.pkl",
+      "sha256": "feca400c41045c5405c8d9d712fd94eeeddf16bf9e01ebcb35320934276d4be1",
+      "bytes": 8490845
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.08.30.16.16.44_veh-40_01099_01351.pkl",
+      "sha256": "c934f9cd8a98b0ff746e693f8af61cc9d1fe82255f76d40c683c0816f81fa40d",
+      "bytes": 6005361
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.14.18.22_veh-48_00221_00299.pkl",
+      "sha256": "1c500090883d6fc2bf39e7941123322258aab16ca6b4b6f727df4403ff1c7c1f",
+      "bytes": 806027
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.14.18.22_veh-48_00322_00895.pkl",
+      "sha256": "95cbee5156005d9622c8c835379aefd94bae51159909bca22cc419de1396ae61",
+      "bytes": 10048171
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.14.18.22_veh-48_00960_01115.pkl",
+      "sha256": "a7cd90d91033f0d5a1be9ea63cf453d865ff877e059c3e4c821495bc07bcff66",
+      "bytes": 3521190
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.14.18.22_veh-48_01298_01492.pkl",
+      "sha256": "8d773fb8608b9547668bb266025980f369f20ab4c252cfab24eb636f1fb46bcf",
+      "bytes": 4372853
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.14.18.22_veh-48_01503_01761.pkl",
+      "sha256": "fe14180c27b1d71e8bc1fa6d35e5dab7e0b9463953361a50578c38906c62aa51",
+      "bytes": 3991341
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.17.18.51_veh-48_00098_00328.pkl",
+      "sha256": "ed9fc3fff429463a8deffce41f4d9bf957c4ac54f067e95d45154d8e79fe0974",
+      "bytes": 5017445
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.17.18.51_veh-48_00574_00646.pkl",
+      "sha256": "83c8363a1e26a312ab55057986c2213a1ddd2782b15a32e3ac084912ec4864b8",
+      "bytes": 1398825
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.17.18.51_veh-48_00657_00876.pkl",
+      "sha256": "17507c39115433825d47b0df8e2c37dfd47f742c9268f222030d000907e34178",
+      "bytes": 3774991
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.17.18.51_veh-48_00889_01147.pkl",
+      "sha256": "47a1ae3fc0607c5e0df9585b512fd27f87d47ae0b7ea8b64be84a4e039e8db08",
+      "bytes": 6583670
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.17.18.51_veh-48_01173_01237.pkl",
+      "sha256": "a7cd3dd1672217184d5a8dd0db2512dd27ce759a6da7787a8768b11240b8ea5e",
+      "bytes": 1283841
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.17.18.51_veh-48_01248_01450.pkl",
+      "sha256": "58a203027ac6b356fdc5d073a0c0ccc00a5bbe90a0ff225a07cd98bba1d58267",
+      "bytes": 3489443
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.17.18.51_veh-48_01462_01552.pkl",
+      "sha256": "c6e35fc1574ffd03f760f513f7a8acaed8764413d99464a52907dabee89411cc",
+      "bytes": 965106
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.18.04.06_veh-40_00555_00731.pkl",
+      "sha256": "ad90d06ac6003ec455bd38d740879da02a6ffa2b0eb95395f0ee41e9982a2005",
+      "bytes": 3336595
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.18.04.06_veh-40_00743_01071.pkl",
+      "sha256": "d2c2c605801f086b5c3a00d2b6c1b53f64a288b01593d3a2b7c08bee2317e12d",
+      "bytes": 7079823
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.18.04.06_veh-40_01340_01425.pkl",
+      "sha256": "d6fd71000c7b6ee175e721b2ec9096cc393ee72d6793b637cb4037b52aecd68d",
+      "bytes": 1660194
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.18.29.25_veh-39_00427_00556.pkl",
+      "sha256": "6cb173f8e7fe4db4f963dee6a2e710e8d3640a696f396ed2c6f64c38a8204291",
+      "bytes": 2685297
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.18.29.25_veh-39_00569_00903.pkl",
+      "sha256": "d01707e0b81b47cc481be6b08bbfb91c05d8a0ca9a84428f493989a9938f4b14",
+      "bytes": 6563025
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.18.29.25_veh-39_00969_01184.pkl",
+      "sha256": "86f48a0533fa671649d3b664703c195a5fd9fda8f43d6f36b067e5a261fbefa7",
+      "bytes": 3785262
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.09.18.29.25_veh-39_01622_01766.pkl",
+      "sha256": "a873bfecd6774956f215efab4f82fe187c07e330d98f1e4a64f6905ed32c7faa",
+      "bytes": 2938712
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.13.53.10_veh-42_00077_00153.pkl",
+      "sha256": "e71bb7ed2cc537831e25281a196005ec715476433ae04acf9e572f512d3ae960",
+      "bytes": 448659
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.13.53.10_veh-42_00180_00342.pkl",
+      "sha256": "ff7a2bc6221bfd3da506b7d5c450469f339902787d880d3e077892adc632e102",
+      "bytes": 1148615
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.13.53.10_veh-42_00630_00818.pkl",
+      "sha256": "30b50c992a3d76699b8d91ff0b17543f5ea9bf6d74f681bcbdc5fbb5d57d8ff4",
+      "bytes": 2144221
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.13.53.10_veh-42_00860_01069.pkl",
+      "sha256": "0a647864cb11c639f1cf81a6d105900f75e8712822ef40166a36c636f6c79e82",
+      "bytes": 2830746
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.13.53.10_veh-42_01510_01591.pkl",
+      "sha256": "60b09e46da37555ba6d7dd6b3cfcdcf30ddaa613a741f2ed10aba4c21d8abaa8",
+      "bytes": 488785
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.14.39.34_veh-42_00032_00186.pkl",
+      "sha256": "8af568adf36465b430bbb379b8f728096d6184901c4756b7701a5ac5ecbdb0a3",
+      "bytes": 1033270
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.14.39.34_veh-42_00297_00935.pkl",
+      "sha256": "eafc74bc870f7ae1e002bfc9ecf964233495984cc4a754f06b313657c516fe6b",
+      "bytes": 6872217
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.14.39.34_veh-42_01111_01448.pkl",
+      "sha256": "ee15ab3bbdc2d946604ad9ea1563c1a901d6c913cf9155ef60ef0b3b5d7de1e8",
+      "bytes": 5094627
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.14.39.34_veh-42_01609_01687.pkl",
+      "sha256": "17eb7ddf80ac288bada51828e8f5a3692191109b390aa8650b98dac4bba0a858",
+      "bytes": 483896
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.15.12.03_veh-42_01037_01434.pkl",
+      "sha256": "057c98aa7ab2168010a30741b086e8dbc4d8d5c4380fccd9112370321656c974",
+      "bytes": 5277964
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.15.47.30_veh-45_01199_01391.pkl",
+      "sha256": "0f2c488693c2126fdbad7d4a5def1e2534c152b6f32a13768103b90c0beeb45a",
+      "bytes": 2875728
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.16.20.27_veh-08_02435_02525.pkl",
+      "sha256": "638283ecba2bc82e7ec290c67d50aaf38886dc2c9a4a69d9f12b620b183d637c",
+      "bytes": 1679496
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.17.40.09_veh-45_02539_02745.pkl",
+      "sha256": "57764e83e908c4e295fd1b6405add11aeddab6092bf93e99cb5e2e52083bf86f",
+      "bytes": 2842553
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.19.12.04_veh-42_00289_00398.pkl",
+      "sha256": "d3f9bad8211e62e1d990f1275c4aee31ef34061970be01f05f035af3dedc404e",
+      "bytes": 685635
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.19.12.04_veh-42_01088_01192.pkl",
+      "sha256": "c4a6be877b0d221368a8bdb2693a8d05c64b7ffa4e0e38283a3cc9c9d5fc493e",
+      "bytes": 1185474
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.19.12.04_veh-42_01221_01380.pkl",
+      "sha256": "b7605ccb19a917435f44b85ae3a78942e1805acc993393f0fb4790549b5a07d9",
+      "bytes": 3230652
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.19.12.04_veh-42_01438_01677.pkl",
+      "sha256": "ce5e0f7a9cc12ed0cc1e58ec4be78a2c38ef3a5eabd131453f60b3289d074006",
+      "bytes": 2615968
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.19.27.01_veh-45_00472_00711.pkl",
+      "sha256": "1bd5ae212ee1c1bf0634587e8967203ece5bbbfff3ff6c9ff2b699c7e7ac375a",
+      "bytes": 1951588
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.19.27.01_veh-45_01749_03230.pkl",
+      "sha256": "dee9d67b3dc95bc24a714c86226f6c547d366fd47f4dfc7b6a57504887511fa5",
+      "bytes": 21541443
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.19.49.00_veh-42_00990_01609.pkl",
+      "sha256": "c553e83a0b37734e7c0c97c7dacaf83de9048023161096abc79b9452020d5849",
+      "bytes": 9913258
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.16.21.13.37_veh-42_00172_00347.pkl",
+      "sha256": "22c95c4086953d2a082e4a60b5f59d21b876073fe5e9c5fd901509a162451389",
+      "bytes": 1371672
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.14.44.26_veh-28_00238_00320.pkl",
+      "sha256": "362f591b8032ac6d682262a4e6cb2861b778310cd3668358b43e0199a64e4166",
+      "bytes": 911711
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.14.44.26_veh-28_00337_00504.pkl",
+      "sha256": "2b7d04a80a0b060278bbb0f666a236d3636f13973e5a3e48316b9db312fb78c2",
+      "bytes": 2704988
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.14.44.26_veh-28_00528_00992.pkl",
+      "sha256": "4a95cd67f708c7eba1aa8c5c531250af772745ec057900fcf48d52519812a663",
+      "bytes": 9818566
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.14.44.26_veh-28_01059_01191.pkl",
+      "sha256": "4213de74ca433ae0120a8aea891ba4091b76a9660e31a71d19cd579dfa4f097a",
+      "bytes": 2681562
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.14.44.26_veh-28_01202_01296.pkl",
+      "sha256": "abae878cb686c1fe588c4a3d751c24f3fcea506abdae86f2de256f763f415eb6",
+      "bytes": 2981652
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.14.44.26_veh-28_01331_01485.pkl",
+      "sha256": "f1892b609b1c7ccab10b431eb6a073e95015c07a8ef9e9163f14b6470a0f5036",
+      "bytes": 2976331
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.14.44.26_veh-28_01509_01628.pkl",
+      "sha256": "d1d371e7a005139d23e1a473ff515d0aff661a92047069be6041a07fbe086b86",
+      "bytes": 1213719
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.14.44.26_veh-28_01640_01743.pkl",
+      "sha256": "d8ece0cf40291ea535fe786e0dfe4c44d7e2631a7a22d720108f03d43f945737",
+      "bytes": 1175983
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.15.23.04_veh-28_00601_00802.pkl",
+      "sha256": "8c37c729741b59965b99167b176b104c92c754fbf173c2b1ee419041e5384543",
+      "bytes": 3393158
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.15.23.04_veh-28_00814_01101.pkl",
+      "sha256": "98d75a8f9f726b9f17fb64866eaa0b11fd307adfc36af57ff56bd19c200a8b4d",
+      "bytes": 7614660
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.18.19.40_veh-28_00331_00426.pkl",
+      "sha256": "606753f1b25fdd57051a9acfc1681e77e3fa73d2c366786170026e29b084e3ea",
+      "bytes": 1543631
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.18.19.40_veh-28_00438_00833.pkl",
+      "sha256": "7add228cf9bbb14399f588c5903a473d819d64a9484d961ff7bb20342607de8c",
+      "bytes": 7511471
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.18.19.40_veh-28_00844_01218.pkl",
+      "sha256": "6c602f199a01496d6f26521d21498c66b6f9906b1cd99a419ecf93cbbd46b33e",
+      "bytes": 7083152
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.18.19.40_veh-28_01268_01685.pkl",
+      "sha256": "3a8d2d04cd8c6a1d00e3d32804c32371b283ce1202df9e3d49392dac07d67108",
+      "bytes": 8530738
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.18.19.40_veh-28_01727_01833.pkl",
+      "sha256": "50277bcb6c258771d9bdd5df1d422042efc93a32c02705df29d1bbcecb1508c2",
+      "bytes": 2038343
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.19.02.14_veh-28_00273_00514.pkl",
+      "sha256": "52bc5eaa9b2a8955ef6a69f07d371fde8827b86b7aa7b04a45342a071a8bca64",
+      "bytes": 4108558
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.19.02.14_veh-28_00540_00917.pkl",
+      "sha256": "7eda7634eab34e5bb414b3dd782de13b6df23d91a002c3c2f588e17e23a73482",
+      "bytes": 9677469
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.19.02.14_veh-28_00964_01689.pkl",
+      "sha256": "c2e1c2ad42c40487bbcda3e1cc6aa9d96a90e72233ddab53ff98b2c1b7be73d5",
+      "bytes": 16344372
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.19.02.14_veh-28_01717_01824.pkl",
+      "sha256": "d5a6b043704bf8fc8cccaae90bb89079465bd8a75f7b13707c8fb8263f930271",
+      "bytes": 1901996
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.19.02.14_veh-28_02451_02708.pkl",
+      "sha256": "21c493f1e358cff06007f47c97c647d574c876f019df4f06721e5b8def64fe10",
+      "bytes": 4134341
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.19.02.14_veh-28_02911_03005.pkl",
+      "sha256": "08fb4e25e680ebf6fcbe2955c667057c64be4a3f76e826c78b5c65560fde3547",
+      "bytes": 1346494
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.09.29.19.02.14_veh-28_03198_03360.pkl",
+      "sha256": "9a69e293d8904bb2e08ff84a5d8e1c4c717c96ce14ed6f93cb4db7661fa993dc",
+      "bytes": 1701361
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.10.06.07.26.10_veh-52_00006_00398.pkl",
+      "sha256": "9a5d496591455b61ffd4524adbe5e4132f7b051d311a060a2040077534a9f192",
+      "bytes": 4162292
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.10.06.07.26.10_veh-52_00422_00728.pkl",
+      "sha256": "28fe3ff2d77c9ad59de140561fa7332c6bf3b3bd2eeb8fb27e995339f1633330",
+      "bytes": 4367723
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.10.06.07.26.10_veh-52_00772_00917.pkl",
+      "sha256": "b87016505a9e56e4fd9e56d4bd1b771f4949c0af042dfb807311c4c177dbaabd",
+      "bytes": 1349080
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.10.06.07.26.10_veh-52_00953_01126.pkl",
+      "sha256": "0d016983040390975f03dcb75bce3c7e2f7c9db2e55568e6eeab4913134fb105",
+      "bytes": 1423834
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.10.06.07.26.10_veh-52_01245_02064.pkl",
+      "sha256": "391d1485ebb201b0f0f43e2e54fc8eb6d97baa7b1c0a9221a1b9f2f01740d3ef",
+      "bytes": 9441969
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.10.06.07.26.10_veh-52_02208_02394.pkl",
+      "sha256": "536fbce20fa0ea58c613ab6ed73a466724dc64a83e53024f03d20f7575a6a2a6",
+      "bytes": 1865360
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.10.06.08.16.17_veh-52_00032_00170.pkl",
+      "sha256": "8aadde0cefee36c81c290a0c6971cad477872a5556a434e30e67e28e2d3841d4",
+      "bytes": 889727
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.10.06.08.16.17_veh-52_00181_00574.pkl",
+      "sha256": "16e941306d0252f30a45aea4f67d3d2096018fd14dc563cd41f317ef2a3a3da2",
+      "bytes": 3449347
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.10.06.08.16.17_veh-52_00612_00782.pkl",
+      "sha256": "1d7cf7d995d56c123fd56b0b2762852ed89af2608ec773b5383312b92fe47b98",
+      "bytes": 2501447
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.10.06.08.16.17_veh-52_00922_01296.pkl",
+      "sha256": "6925c635deb51f7823a37c0e4598d4221e1b43e14772dba0153998a1f17cb286",
+      "bytes": 2768862
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.10.06.08.16.17_veh-52_01430_01579.pkl",
+      "sha256": "c20b5d0ab20ea473234e42a8b606d8887c91abb1ae2d26dbd368ed67bcac96c5",
+      "bytes": 1146261
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.10.06.08.16.17_veh-52_01590_01725.pkl",
+      "sha256": "954a59248c87e89133bf93a0c953606ecc069d4764fcecfeb8f268658f7625ef",
+      "bytes": 926968
+    },
+    {
+      "path": "/mnt/navsim/test_navsim_logs/test/2021.10.06.08.16.17_veh-52_01949_02501.pkl",
+      "sha256": "384f75b634ae7356243b391ca733d2424c867aa61fe09cb5da7cc3df61658e02",
+      "bytes": 5467402
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.05.12.19.36.12_veh-35_00215_00405.pkl",
+      "sha256": "8f4621571958ab0990545f993dd0dd3c029d24c5844f99628716a7b861903381",
+      "bytes": 9404629
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.05.12.19.36.12_veh-35_01179_01278.pkl",
+      "sha256": "44de05281127df9aeafc36b4645616586ba26836ae5b469d20ca81b1a1fdfdf3",
+      "bytes": 4978411
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.05.12.23.36.44_veh-35_00785_01041.pkl",
+      "sha256": "ec9f082c002c525b605ccbcb950092a08184b3e0705251f60a6488395f73f20e",
+      "bytes": 13491117
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.07.12.54.00_veh-35_01843_02314.pkl",
+      "sha256": "b54d88f779731d5bae10ce688a06deb2f9d7166b6addc4b442a91b5c37fc7725",
+      "bytes": 21400965
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.07.18.53.26_veh-26_01208_01412.pkl",
+      "sha256": "49eabd9f40ab1c6f4aa527f61c0faaedf065b54830ebfc8a9adb79dd6cb3ae2a",
+      "bytes": 10504296
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.08.12.54.54_veh-26_01289_01417.pkl",
+      "sha256": "2583ed6d7a77e427f61d95aed2e262f911a40e289043bc17ae5c5cef7074a377",
+      "bytes": 6924265
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.09.11.54.15_veh-12_05108_05331.pkl",
+      "sha256": "3e986a85ab326f4f7c3151e52beb885ec4ad88988dd1d65dfab4996a8a04cfe5",
+      "bytes": 10278053
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.09.12.06.35_veh-35_01164_01494.pkl",
+      "sha256": "efc572de2c19099b53b8b38488e36e79a169a0d980775d7444c1acd26aa6bf5a",
+      "bytes": 13334750
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.09.12.39.51_veh-26_03409_03722.pkl",
+      "sha256": "e2067c5affc862555d53149f0a4cc8872e134a06046af8047f770d3ac6a47395",
+      "bytes": 16317313
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.09.12.51.31_veh-35_01729_02626.pkl",
+      "sha256": "3f01470d7329395f27ab4cc569c2698f73467d356425630bd369fd3facd81c0a",
+      "bytes": 42916598
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.09.14.03.17_veh-12_02112_02202.pkl",
+      "sha256": "6ee4f75703d772fbe8cf478c3040562602a2003b0ff24b67ebb6a20e36d8b435",
+      "bytes": 4379348
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.09.14.50.36_veh-26_02826_02955.pkl",
+      "sha256": "d7866f29e155f2180861c0d91d1d52f4e2960d7c4f21777d9aa8dda42457a7a7",
+      "bytes": 6904212
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.09.17.23.18_veh-38_01598_01750.pkl",
+      "sha256": "8a34d6dbf006849545abd465a184a4c8df8e0f8a507bf143b5a579937575fc66",
+      "bytes": 6175382
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.09.17.37.09_veh-12_02082_02170.pkl",
+      "sha256": "46e60ec4c04f6648e49619e4da4aea0b3aad92677b14ee57af4f5f16e524161e",
+      "bytes": 3086148
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.09.18.23.43_veh-35_00349_00544.pkl",
+      "sha256": "eee0e2a263b9b57aae56a6480dec7e90123607419951c9fa4e458ec62692c20c",
+      "bytes": 10030068
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.09.20.26.11_veh-35_00970_01216.pkl",
+      "sha256": "42a09ac33c11aeddae2fd4550e144adb6af2bdf72be03f7e3fdd746bea76a4da",
+      "bytes": 14770995
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.14.11.44.56_veh-35_04178_05084.pkl",
+      "sha256": "2ed5edd8745839fa3364c499e17742c577cb22b44747a1c65e42fd535b50026b",
+      "bytes": 38375167
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.14.13.27.42_veh-35_04362_04572.pkl",
+      "sha256": "18dfabbcbdcd9de949168c776d92409b3bd1558e0338e7f5b1b0799e06c3f66c",
+      "bytes": 7859619
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.14.13.28.41_veh-12_02612_02703.pkl",
+      "sha256": "b1b52ce6edb990d79b71c2ea06e9c44411b65f5e6ee7e58e62a0eee39c65377a",
+      "bytes": 3748443
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.14.13.28.41_veh-12_05269_05369.pkl",
+      "sha256": "53f646d643c9afb55967911acb8468a779c3616600b1ea5b9de66edfd21e9642",
+      "bytes": 4262195
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.14.16.32.09_veh-35_02928_03118.pkl",
+      "sha256": "0b76e00a3f159761cac5ba645f9a150d176cedd3e9ed6b5faed322bd0f14078d",
+      "bytes": 8481952
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.14.18.42.45_veh-12_02233_02300.pkl",
+      "sha256": "71a5d1946c9a092c7ca5e0fdca4864592ec3255bdec8d64371ff9f2c38e96c21",
+      "bytes": 3748334
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.14.18.42.45_veh-12_03913_04017.pkl",
+      "sha256": "1dd906af66059bca43449ecc741f636d268704dc57df1b97afd6ff25c467bddb",
+      "bytes": 4191828
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.14.20.14.09_veh-26_00612_01016.pkl",
+      "sha256": "54a1d57918a90ab336f955c20afa22f5699f5b325321e6a4cadc0a9bec6a2d1e",
+      "bytes": 27509155
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.23.15.18.10_veh-26_00165_02848.pkl",
+      "sha256": "1029d9d55e4f3ad3344e2c5b4201ba6410e8e95dc3f3c33c6efd6bf291eb01f0",
+      "bytes": 113308837
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.23.15.56.12_veh-16_00839_01285.pkl",
+      "sha256": "55a174993ede7bd189e20d19af0924a44c436ee630ea7a6e4f7b2bd4a618a813",
+      "bytes": 18116879
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.23.17.31.36_veh-16_00016_00377.pkl",
+      "sha256": "692acbeb7799d21e9c1b7e0547295b236d6a6ea08674d55420c1b1d7a8a27074",
+      "bytes": 16116836
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.23.18.23.38_veh-26_01238_01416.pkl",
+      "sha256": "a2b40ce190d7ad85ac8b0969f2923aa67c7ca6ce5646a2bc514ea3bf63a18c71",
+      "bytes": 7694183
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.23.18.23.38_veh-26_01769_01925.pkl",
+      "sha256": "9094347741c743f1aaf75a4dbd598a6c5eec02c6ba8ac6b22267597781974970",
+      "bytes": 7717131
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.06.23.21.56.29_veh-35_00220_00936.pkl",
+      "sha256": "7c9a42bee5750cd0179da5cb5deab749adc5eaeeda8750da17ff48d1dee4d088",
+      "bytes": 36063387
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.07.09.01.37.16_veh-26_00692_00762.pkl",
+      "sha256": "62ca52a6a74340bcacb2a84fd312c1372c5ab7b186f8e1a757906fbe5e1819ed",
+      "bytes": 2671252
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.07.09.01.37.16_veh-26_03432_03503.pkl",
+      "sha256": "587ee3139e387095a061c22fbc7d1e77fe737dde5f2a2a416b7ea62b89131acb",
+      "bytes": 3060504
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.07.09.02.42.50_veh-35_02651_02770.pkl",
+      "sha256": "5a687e8b84a2ab778ca2fb62d5049f1f8f2527044a12cab14db09d4a027cc8a8",
+      "bytes": 3665044
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.07.09.15.53.28_veh-38_00184_02293.pkl",
+      "sha256": "9a5ab4806604450b051510aea31bb3610fd8130deba62981181f4b397d543c63",
+      "bytes": 86509381
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.07.09.16.12.19_veh-26_07208_07271.pkl",
+      "sha256": "78fef2689e5bc5368c05b067296a325d258d76cd16caa167f6f710233c48c821",
+      "bytes": 2111651
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.07.09.17.06.37_veh-35_00769_00907.pkl",
+      "sha256": "1092351a7082762b26380efe487394a4777b6a88a2fc61e25651b42296c3e6d1",
+      "bytes": 5549779
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.07.09.20.26.06_veh-35_02793_03289.pkl",
+      "sha256": "eab5db56b83e73f5f80adeeab0f5727aad16d14fbc0bd64891d7803c9c132e08",
+      "bytes": 26119025
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.07.16.00.24.14_veh-38_01165_01425.pkl",
+      "sha256": "4a6be9a4de932a93cef7fd90e2d6a3b6f72ac925ced9a713f5337ac8c5405e72",
+      "bytes": 11599933
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.07.16.00.51.05_veh-17_03264_05261.pkl",
+      "sha256": "095d611b956d35a3db02c2ed9e7801cb71ce5d420e9e39df5a354a2038b6b280",
+      "bytes": 98860361
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.07.16.01.22.41_veh-14_00015_00547.pkl",
+      "sha256": "8213fecb7332a20ef221687eb60a8a5b2fedc818fea663a60873cbd0fdd36ae9",
+      "bytes": 22674178
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.07.16.16.08.35_veh-35_02397_02540.pkl",
+      "sha256": "efcaa61b09813d6f7fda294c020636e3cd1f87354f3d94aa1c8c525d75ccb7ff",
+      "bytes": 9221574
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.07.16.21.17.55_veh-26_01392_01488.pkl",
+      "sha256": "09011f5e1029e5af447ad42e28f35cd5af738cac2f8102dfd7b1b8731aafcdbf",
+      "bytes": 5520884
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.07.16.22.40.23_veh-38_00204_00360.pkl",
+      "sha256": "c677a82287ed0f170ef12b924b0aba7737b3596f922ab627ccf4041aa9238653",
+      "bytes": 9621524
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.08.17.13.15.12_veh-45_01049_01467.pkl",
+      "sha256": "68e117f0a6091c7eff1155df4bc0ff950229489cbf90c115152c9da564a4df6f",
+      "bytes": 5260087
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.08.17.16.48.45_veh-43_00114_00415.pkl",
+      "sha256": "dfb1dab0e67098e12637fbf5c8e04b856ba70a137722bf508031f9f523df5e6c",
+      "bytes": 2253505
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.08.17.18.54.02_veh-45_02105_02189.pkl",
+      "sha256": "29ca5d84fc03c69fc45e486442b62da4a33e629d21f91a4418a854b14e4ae0c3",
+      "bytes": 578634
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.08.17.19.18.39_veh-08_00208_00380.pkl",
+      "sha256": "cac8436817e38a1e45806ca3677c2475da1c0d0cbfb1c417fd3ee82500829380",
+      "bytes": 1311286
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.08.24.17.34.27_veh-45_00696_00786.pkl",
+      "sha256": "3db36482611ad362774dc2cab3aef4a2673c5e2a42035d5212593034651d1a37",
+      "bytes": 1853435
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.08.24.18.30.46_veh-08_02605_02732.pkl",
+      "sha256": "e87b17ffbe642a5e0937bc6cf8a791ca1134901e043d48e399ffaaae1d1f7ffd",
+      "bytes": 886466
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.08.31.11.47.30_veh-40_00919_01000.pkl",
+      "sha256": "5dab41cdc31863448edd0e54c1910868a9876738552d1a6c23a54cfdc3c1913d",
+      "bytes": 2077496
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.08.31.12.21.30_veh-40_00248_00367.pkl",
+      "sha256": "ff2e76f3a0748cdcf7ac991cefb8dfe92c0600bb11a52e4fbf4fd4feb1ba6983",
+      "bytes": 2515603
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.08.31.14.01.15_veh-40_01576_01714.pkl",
+      "sha256": "389f2149b25f1ac027c334fa94117a34033aff67269dc619caac2e95beb2065f",
+      "bytes": 2328104
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.08.31.14.40.58_veh-40_00125_00269.pkl",
+      "sha256": "415598be103ec774b398d279acd52399134f57ca6f52d6d5f7a1090f152827e8",
+      "bytes": 2568581
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.08.31.14.40.58_veh-40_00467_00668.pkl",
+      "sha256": "a6a72af167e76ad45f19ccad2cdafa983017b73129454cb609980382d17c9225",
+      "bytes": 2846377
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.08.31.17.42.52_veh-40_01551_01684.pkl",
+      "sha256": "6841d5e586ef58c4793d5e3bf1c7358102310ae7d9637bc1ab176a58d6dbf240",
+      "bytes": 2940785
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.09.15.12.32.43_veh-28_00973_01056.pkl",
+      "sha256": "1f9aff3284bc910626a71f450de295da1ac55bdfca07e738938b65e075d0fcde",
+      "bytes": 1531607
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.09.15.13.52.55_veh-39_00016_00122.pkl",
+      "sha256": "b9e54ac76a1d5c832f37e46daa6c1f0c33a41c370490267ab9c49160a0e6d5d2",
+      "bytes": 2366265
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.09.15.14.27.22_veh-39_01420_01480.pkl",
+      "sha256": "8e59b387cb5d4d9b5a4639847c61232fba586067d14e3d1b6b6618cd46c758f8",
+      "bytes": 1048910
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.09.15.16.51.15_veh-28_01225_01302.pkl",
+      "sha256": "030326c741ca077c795391883479f4eb4cd21da25470b86337d6241264f34098",
+      "bytes": 1824221
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.10.01.13.28.54_veh-28_00995_01087.pkl",
+      "sha256": "6347ea52af2f49222ed94a857ecf1097f302906952bb2e3fb414a77dd77ce2e5",
+      "bytes": 1869016
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.10.01.17.52.06_veh-28_01141_01264.pkl",
+      "sha256": "a47a8ddbec4781a7836579ed18de488b14127adb31267b2f2a6b9dc539747a14",
+      "bytes": 1746141
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.10.01.19.16.42_veh-28_01511_01624.pkl",
+      "sha256": "581f093b3fce3d10b987c9622dce2048c6b78420b2c1b5b081d6783ddda85fcc",
+      "bytes": 1278152
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.10.05.04.38.41_veh-50_00014_00429.pkl",
+      "sha256": "dcb6d9a33c9b23cf081318e5848446be5e685e3d93c702883bed1b5e1aacb32e",
+      "bytes": 4632862
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.10.05.06.31.40_veh-52_01598_02013.pkl",
+      "sha256": "79167997ebadbe5e0ad5e8adb598d1cdd1f6bce57693c6d01e10df225255e202",
+      "bytes": 3377269
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.10.05.07.49.39_veh-52_00770_00905.pkl",
+      "sha256": "8933cffe1d769f1d9648e4b911815fada7cb4b2dc3787d535e931e7082b2a03d",
+      "bytes": 1697105
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.10.05.08.11.15_veh-50_00437_00585.pkl",
+      "sha256": "4836b36db5ad35ea52afc1e2b96dde0078187691138007375f30912f6d5028f0",
+      "bytes": 1185614
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.10.06.14.31.13_veh-28_01277_01377.pkl",
+      "sha256": "20cffcdcaa1021bf209a6a3020ec18530fc8c72bf020e89094edfd760e6270ba",
+      "bytes": 1923691
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.10.11.02.57.41_veh-50_01028_01289.pkl",
+      "sha256": "4b615e97ebaee671f371a4e263f5d1ed3a71fb8c542b61132f0537c05342c21e",
+      "bytes": 2886955
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.10.11.02.57.41_veh-50_02155_02265.pkl",
+      "sha256": "cd0547a505dde632020ca7cc94f688d059e2f3ea727ec4fa38d072a2f5a24dd5",
+      "bytes": 781142
+    },
+    {
+      "path": "/mnt/navsim/trainval_navsim_logs/trainval/2021.10.11.05.34.05_veh-50_00568_00631.pkl",
+      "sha256": "acc7d75c45c07cac545b87a2221f6fea2a8ace307798138626eb820b1fc04c45",
+      "bytes": 449747
+    }
+  ],
+  "weights": {
+    "IL": {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443"
+    },
+    "RL": {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt",
+      "sha256": "23fb949b10387efeff87e093703d5faf41b61b9e5ead16d4076661e3c7c08a20"
+    },
+    "VLM": {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B/model.safetensors",
+      "sha256": "79fb39297e322cd2d3dc68d4f23b86ff85806b336a4d5d0ed5db9b66e4034a3c"
+    }
+  },
+  "scoring_sources": {
+    "navsim/evaluate/pdm_score.py": "07c3fdf737388f4ee219bba4de5187a2140d8e6411151d686302666be5f063c8",
+    "navsim/planning/simulation/planner/pdm_planner/scoring/pdm_scorer.py": "02ab075017d4edb1c8bba6476ef1674b84d43dbca0f599df87cfe052b2dd5211",
+    "navsim/planning/simulation/planner/pdm_planner/simulation/pdm_simulator.py": "ae07b533ada10bc37e973e5685a46a7cafc51de8d922ed02add558452ff04807",
+    "navsim/planning/metric_caching/metric_cache_processor.py": "164c6be26ce4b1286d1260886f2124afddc5aae8476692fb43b0120b78ff4895",
+    "scripts/opd/scoring.py": "c6ad9bba7bf26526acc5d5a838269954420e2ac0a524ba2ec7b9b9d3b4020134"
+  },
+  "maps": {
+    "path": "/mnt/navsim/maps",
+    "version": "nuplan-maps-v1.0",
+    "metadata_sha256": "b9c0a62335dded8b25e634bc63e3f271908b6f4f803398f0250ef7769facc504"
+  },
+  "nonoverlap": [
+    "token",
+    "complete_log",
+    "parent_driving_record"
+  ],
+  "protocol_sha256": "e02028b646a2745dca0b0a6f6eae7dff57119b3d12f8aeb0a3324a1f80c88968",
+  "meaning": "Train/cal/dev are held out only from this new training, not proven unseen in original base training",
+  "owner": {
+    "host": "training-vla-zt",
+    "pid": 1288015,
+    "start_ticks": 1386753760,
+    "code_sha": "c6101f73d511daffa48bd5c825b0cfcd7501bc3d",
+    "time": 1792428941.121044
+  }
+}

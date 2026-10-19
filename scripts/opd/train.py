@@ -14,7 +14,7 @@ def main():
     from navsim.agents.recogdrive.opd.checkpoint_io import build_head,state_hash,restore
     from navsim.agents.recogdrive.opd.ddim_adapter import Chain
     from navsim.agents.recogdrive.opd.trainer import objective
-    p=argparse.ArgumentParser();p.add_argument('--exp',required=True);p.add_argument('--stage',choices=['smoke','tiny','tune','train'],default='train')
+    p=argparse.ArgumentParser();p.add_argument('--exp',required=True,choices=['E1','E2','E3','E4-A','E4-B','E4-C','E5']);p.add_argument('--stage',choices=['smoke','tiny','tune','train'],default='train')
     p.add_argument('--config');p.add_argument('--seed',type=int,default=42);p.add_argument('--lr',type=float);p.add_argument('--steps',type=int)
     p.add_argument('--name');p.add_argument('--resume',action='store_true');p.add_argument('--stop-after',type=int)
     p.add_argument('--anchor-weight',type=float);p.add_argument('--il-weight',type=float);a=p.parse_args()

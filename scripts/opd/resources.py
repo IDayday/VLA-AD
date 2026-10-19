@@ -15,6 +15,14 @@ def remote(host,code):
 
 
 def launch(name,host,gpu,commands):
+    import fcntl
+    lock=ROOT/'resources/dispatch.lock';lock.parent.mkdir(parents=True,exist_ok=True)
+    with open(lock,'a') as stream:
+        fcntl.flock(stream,fcntl.LOCK_EX)
+        return _launch(name,host,gpu,commands)
+
+
+def _launch(name,host,gpu,commands):
     policy=read('/mnt/project/server_dispatch_policy.json')
     if host not in policy['allowed_hosts'] or host in policy.get('global_dispatch_prohibitions',{}):raise PermissionError(host)
     dest=ROOT/'jobs'/name
@@ -50,8 +58,9 @@ def worker(path):
     owner['source_hashes']={str(p.relative_to(SOURCE)):sha(p) for d in ('scripts/opd','navsim/agents/recogdrive/opd') for p in (SOURCE/d).glob('*.py')}
     write(dest/'owner.json',owner)
     for i,command in enumerate(s['commands']):
-        identity();child=subprocess.Popen([PYTHON,*command],cwd=SOURCE)
-        write(dest/f'child_{i}.json',dict(pid=child.pid,start_ticks=int(Path(f'/proc/{child.pid}/stat').read_text().split()[21]),command=command))
+        dispatched=identity();source_hashes={str(p.relative_to(SOURCE)):sha(p) for d in ('scripts/opd','navsim/agents/recogdrive/opd') for p in (SOURCE/d).glob('*.py')}
+        child=subprocess.Popen([PYTHON,*command],cwd=SOURCE)
+        write(dest/f'child_{i}.json',dict(pid=child.pid,start_ticks=int(Path(f'/proc/{child.pid}/stat').read_text().split()[21]),command=command,source_hashes=source_hashes,dispatch=dispatched))
         rc=child.wait();results.append(dict(command=command,returncode=rc))
         if rc:break
     write(dest/'complete.json',dict(status='COMPLETE' if all(x['returncode']==0 for x in results) else 'FAILED',seconds=time.time()-start,results=results,owner=owner))

@@ -19,7 +19,7 @@ def slots():
     return [(h,g) for h in HOSTS for g in range(8) if (h,g) not in reserved]
 
 
-def run_queue(tasks):
+def run_queue(tasks,reserve_for_e6=False):
     remaining=list(tasks);running=[];admissions={}
     while remaining or running:
         for name in list(running):
@@ -28,13 +28,23 @@ def run_queue(tasks):
                 if read(p)['status']!='COMPLETE':raise RuntimeError(f'Failed experiment {name}; fix and explicitly rerun affected run')
                 running.remove(name)
         free=slots()
+        if reserve_for_e6:
+            decision=ROOT/'selection/E6_admission.json'
+            e6_dispatched=len(list((ROOT/'jobs').glob('formal_E6_*/launch.json')))
+            hold=not decision.exists() or (read(decision)['admitted'] and e6_dispatched<9)
+            if hold:free=free[:max(0,len(HOSTS)*8-9-len(running))]
         while remaining and free:
             name,commands=remaining[0]
             if (ROOT/'jobs'/name/'spec.json').exists():
                 if not (ROOT/'jobs'/name/'launch.json').exists():raise RuntimeError(f'Previous admission failed for {name}')
                 remaining.pop(0);running.append(name);continue
             host,gpu=free.pop(0)
-            print('DISPATCH',name,host,gpu,flush=True);launch(name,host,gpu,commands);remaining.pop(0);running.append(name)
+            print('DISPATCH',name,host,gpu,flush=True)
+            try:launch(name,host,gpu,commands)
+            except RuntimeError as error:
+                if 'GPU reserved by' in str(error):continue
+                raise
+            remaining.pop(0);running.append(name)
         write(ROOT/'suite/progress.json',dict(remaining=[r[0] for r in remaining],running=running,time=time.time()))
         if remaining or running:time.sleep(15)
 
@@ -80,12 +90,27 @@ def final_test():
     # Require every official test cache before dispatch, never mark partial evaluation complete.
     for r in rows('navtest'):
         if not Path(r['observation_path']).exists() or not Path(r['metric_cache_path']).exists():raise FileNotFoundError('Test input preparation incomplete')
+    routing=read(ROOT/'resources/evaluation_concurrency.json')
+    if not routing['parity_passed'] or routing['processes_per_gpu']!=4:raise ValueError('Four native process routing not qualified')
     tasks=[]
-    for rank in range(8):tasks.append((f'navtest_E0_{rank}',[['scripts/opd/evaluate.py','--exp','E0','--split','navtest','--rank',str(rank),'--shards','8']]))
+    def bundle(name,commands):
+        path=ROOT/'resources/navtest_bundles'/f'{name}.json';write(path,commands)
+        tasks.append((name,[['scripts/opd/parallel.py','--spec',str(path),'--concurrency','4','--receipt',str(path.with_suffix('.receipt.json'))]]))
+    for group in range(8):
+        bundle(f'navtest_E0_{group}',[['scripts/opd/evaluate.py','--exp','E0','--split','navtest','--rank',str(group*4+k),'--shards','32','--workers','1'] for k in range(4)])
     for e in choice['methods']:
         for s in choice['training_seeds']:
-            for rank in range(2):tasks.append((f'navtest_{e}_{s}_{rank}',[['scripts/opd/evaluate.py','--exp',e,'--seed',str(s),'--split','navtest','--rank',str(rank),'--shards','2']]))
-    run_queue(tasks);write(ROOT/'suite/navtest_complete.json',dict(status='COMPLETE',jobs=len(tasks),time=time.time()))
+            for group in range(2):
+                bundle(f'navtest_{e}_{s}_{group}',[['scripts/opd/evaluate.py','--exp',e,'--seed',str(s),'--split','navtest','--rank',str(group*4+k),'--shards','8','--workers','1'] for k in range(4)])
+    run_queue(tasks,reserve_for_e6=True);write(ROOT/'suite/navtest_complete.json',dict(status='COMPLETE',jobs=len(tasks),time=time.time()))
+
+
+def confirmation():
+    def ready(e,s):
+        markers=[read(p) for p in (ROOT/'evaluation/cal'/f'train_{e}_{s}').glob('complete_*.json')]
+        return bool(markers) and len(markers)==markers[0]['shards'] and sum(v['rows'] for v in markers)==len(rows('cal'))
+    while not all(ready(e,s) for e in EXPS for s in config()['train_seeds']):time.sleep(15)
+    final_test()
 
 
 def e6():
@@ -107,7 +132,8 @@ def e6():
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('action',choices=['formal','test','e6']);a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('action',choices=['formal','test','e6','confirm']);a=p.parse_args()
     if a.action=='formal':formal()
     elif a.action=='test':final_test()
+    elif a.action=='confirm':confirmation()
     else:e6()

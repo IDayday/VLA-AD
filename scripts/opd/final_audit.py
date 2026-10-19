@@ -32,6 +32,10 @@ def provenance():
     unique=sorted({r['metadata_path'] for s in manifest for r in rows(s)})
     metadata=[dict(path=p,sha256=sha(p),bytes=Path(p).stat().st_size) for p in unique]
     result=dict(passed=True,manifests=manifest,source_logs=metadata,weights=weights,scoring_sources={p:sha(SOURCE/p) for p in scoring},
+        native_model_sources={p:sha(SOURCE/p) for p in ['navsim/agents/recogdrive/recogdrive_agent.py','navsim/agents/recogdrive/recogdrive_backbone.py',
+            'navsim/agents/recogdrive/recogdrive_features.py','navsim/agents/recogdrive/recogdrive_diffusion_planner.py','navsim/agents/recogdrive/recogdrive_dit.py',
+            'navsim/agents/recogdrive/utils/internvl_preprocess.py']},
+        VLM_ancillary_sources={str(p.relative_to(cfg['vlm'])):sha(p) for p in Path(cfg['vlm']).glob('*') if p.suffix in ('.py','.json','.txt')},
         maps=dict(path='/mnt/navsim/maps',version='nuplan-maps-v1.0',metadata_sha256=sha('/mnt/navsim/maps/nuplan-maps-v1.0.json')),
         nonoverlap=['token','complete_log','parent_driving_record'],protocol_sha256=sha(SOURCE/'configs/opd/protocol.yaml'),
         meaning='Train/cal/dev are held out only from this new training, not proven unseen in original base training',owner=identity())
@@ -56,12 +60,13 @@ def accounting():
 
 
 def tests():
-    required=['real_batch','real_grpo','real_resume_v2','real_ddp','real_online_vlm','real_parameter_perturbation','real_GT_parity','real_inference_cache']
+    required=['real_batch','real_grpo','real_resume_v2','real_ddp','real_online_vlm','real_parameter_perturbation','real_GT_parity','real_inference_cache','real_parallel_inference','real_shared_lock']
     evidence={n:read(ROOT/'tests'/f'{n}.json') for n in required}
     assert all(v['passed'] for v in evidence.values())
     xml=ET.parse(ROOT/'tests/cpu.xml').getroot();suites=list(xml) if xml.tag=='testsuites' else [xml]
     counts={key:sum(int(s.attrib.get(key,0)) for s in suites) for key in ['tests','failures','errors','skipped']}
     assert not counts['failures'] and not counts['errors']
+    write(ROOT/'tests/cpu.json',dict(passed=True,**counts,source='Actual pytest JUnit XML',junit_sha256=sha(ROOT/'tests/cpu.xml')))
     mapping={
         'T01':'audit/checkpoints.json: IL strict restoration','T02':'audit/checkpoints.json: RL active head strict restoration',
         'T03':'audit/gates.json: native RL/COPY both modes','T04':'tests/real_batch.json: native dense batch and future-poison parity',

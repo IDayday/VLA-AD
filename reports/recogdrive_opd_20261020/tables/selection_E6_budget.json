@@ -1,0 +1,17 @@
+{
+  "status": "LOCKED",
+  "steps": 500,
+  "budget_GPU_hours": 64,
+  "measured_seconds_per_update": 7.6479878425598145,
+  "estimated_training_GPU_hours": 9.559984803199768,
+  "source": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/runs/E6_IL_JOINT_42_smoke/complete.json",
+  "source_sha256": "85ddc58b40bf9753dbfd9cc695f273da90ded6d594b94fa204202dccb6b6d123",
+  "rule": "Largest of100/250/500 fitting64 GPU hours before any formal E6 performance",
+  "owner": {
+    "host": "training-vla-zt",
+    "pid": 1287493,
+    "start_ticks": 1386743729,
+    "code_sha": "c6101f73d511daffa48bd5c825b0cfcd7501bc3d",
+    "time": 1792428824.226136
+  }
+}

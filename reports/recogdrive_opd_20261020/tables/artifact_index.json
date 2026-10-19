@@ -1,0 +1,28 @@
+{
+  "external_root": "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020",
+  "protocol_sha256": "e02028b646a2745dca0b0a6f6eae7dff57119b3d12f8aeb0a3324a1f80c88968",
+  "structured_evaluation": "evaluation/<split>/<run>/{predictions,scores,complete_*}",
+  "actual_commands": "jobs/*/spec.json",
+  "model_source_provenance": "jobs/*/owner.json:source_hashes and runs/*/config.json",
+  "cache": "observations/navtest and previously bound frozen VLM cache; no teacher-forced future tokens",
+  "raw_artifacts_excluded_from_git": [
+    "Model weights",
+    "Original sensor images and logs",
+    "Raw VLM tokens",
+    "Complete optimizer states",
+    "Large training logs"
+  ],
+  "git_files": {
+    "tables/calibration_gradient_scales.json": "3128d220746a7633a917867dffa91d5b04d1c0ab09b7db13d8817e0f672e7915",
+    "tables/audit_final_provenance.json": "670a9a3bd66fd51a8f344407b1e87cb3fd7dc0b66de9089ccc78ffcf9d85d515",
+    "tables/selection_tuning.json": "33fa2f19fd098c8261763f1143dcf57fc6e84d1094bfe93aa04b2c46716a4d7c",
+    "tables/audit_IL_RL_tensor_comparison.json": "51fdf8bbe2e253383621b87b52361a99261e3cface7bbaedc276e953e1db8cdc",
+    "tables/selection_E6_budget.json": "77f7eea04f457329e54ef79ddeb156e98b10aa5047decedc3da18a1f7ff9a053",
+    "tables/tests_real_parallel_inference.json": "aff724eed540beff4e5b84e247342522df456bb185b5e4befd59f9cd3f9c4e6e",
+    "tables/audit_hardware_hosts.json": "21a21ba9f7f39cfd013597837b85f55f8640b86829bdf7282ea6366417e881e6",
+    "tables/checkpoint_index.csv": "e0aacd163c1ba3d9ab308cb3d5bf7624fca8b31acd4b767d8a83b8ae3366cd65",
+    "tables/split_membership.csv": "74082fabd07bf13648b6e0964578432771c2cea62cb6ba4ac11ed6a73bc9abf8",
+    "tables/train_static_gate.csv": "c7882b0d344c7097edc0c7d0292dc052dd0ab7fcd282eee01417fbbf975ac5ed",
+    "tables/tests_final_matrix.json": "cca1d8d1199e8ba769e56912f3c322f7c1bd348a18c280f7c6e57ae8e2be262d"
+  }
+}

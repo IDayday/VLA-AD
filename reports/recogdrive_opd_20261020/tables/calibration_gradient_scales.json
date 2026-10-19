@@ -1,0 +1,70 @@
+{
+  "status": "LOCKED",
+  "records": [
+    {
+      "tokens": [
+        "d3f543f1178d5fcc",
+        "b28eadb9272c52ef",
+        "d5370a45f5485afc",
+        "c264db8a62225a42",
+        "d886acd986d7585c",
+        "487e3708e7905cde",
+        "e7efa298d30d5cec",
+        "91b2757714d0568c"
+      ],
+      "gradient_norms": {
+        "opd": 0.05845932059455066,
+        "anchor": 0.06969217319484802,
+        "il": 0.322239718314597
+      },
+      "gradient_cosine_with_opd": {
+        "anchor": 0.9551125002528347,
+        "il": 0.7805309499532936
+      },
+      "losses": {
+        "opd": 7.519407517975196e-05,
+        "anchor": 5.010189124732278e-05,
+        "il": 0.001059629488736391
+      }
+    },
+    {
+      "tokens": [
+        "760276f0836d538d",
+        "1fcc2491ac145385",
+        "1e8d7ec6ef175b7f",
+        "65a859fa6bbd555d",
+        "34a32cceac9f5468",
+        "a4ca9dfbb3fc5dcf",
+        "33b5603612f75dfc",
+        "e1275c14fed050ab"
+      ],
+      "gradient_norms": {
+        "opd": 0.04894851195366125,
+        "anchor": 0.08133993840206089,
+        "il": 0.3885433714234595
+      },
+      "gradient_cosine_with_opd": {
+        "anchor": 0.943688275176035,
+        "il": -0.5759245252396135
+      },
+      "losses": {
+        "opd": 6.346747977659106e-05,
+        "anchor": 4.9847043555928394e-05,
+        "il": 0.0018297851784154773
+      }
+    }
+  ],
+  "weights": {
+    "anchor": 0.07111589145682723,
+    "il": 0.007555598472931785
+  },
+  "owner": {
+    "host": "training-rl-zt2",
+    "pid": 1567375,
+    "start_ticks": 1378446549,
+    "code_sha": "6656ce616f83bdf429eeca1813d57274aa701761",
+    "time": 1792426798.761362
+  },
+  "rule": "Use E3 tiny qualification checkpoint on fixed16 D_fit scenes. Set auxiliary median gradient to0.1(anchor)/0.05(GT) of OPD, clip anchor[.001,1],GT[1e-6,.05]. No cal/dev/test outcome selection.",
+  "no_initialization_transfer": true
+}

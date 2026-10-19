@@ -117,6 +117,26 @@ def verify():
         VLM_sha256=read(ROOT/'audit/checkpoints.json')['VLM']['sha256'],input_contract='Native current image, navigation command and4 ego history; no answers/future',owner=identity()))
 
 
+def deployment():
+    import torch
+    from navsim.agents.recogdrive.opd.checkpoint_io import restore
+    from scripts.opd.scoring import Scoring,load_cache
+    configure();a=agent();records=[]
+    for exp in ['E3','E5']:
+        name=f'train_{exp}_42';path=ROOT/'runs'/name/'latest.pt'
+        assert read(ROOT/'runs'/name/'complete.json')['optimizer_updates']==1000
+        loaded=restore(a.action_head,path);assert not hasattr(a.action_head,'old_policy')
+        for r in rows('dev')[:8]:
+            f=features(a,r);seeds(seed_for(r['token'],1101))
+            with torch.no_grad():out=a.forward({k:v.clone() for k,v in f.items()})['pred_traj'].cpu().numpy()[0]
+            expected=np.load(ROOT/'evaluation/dev'/name/'predictions'/f"{r['token']}.npz")[name][0]
+            error=float(abs(out-expected).max());assert error<=1e-5,error
+            scored=Scoring().scalar(load_cache(r['metric_cache_path']),out);reference=read(ROOT/'evaluation/dev'/name/'scores'/f"{r['token']}.json")['scores'][name]['scores'][0]
+            score_error=float(abs(scored-reference).max());assert score_error<=1e-6,score_error
+            records.append(dict(experiment=exp,token=r['token'],trajectory_error=error,score_error=score_error))
+    write(ROOT/'tests/real_student_deployment.json',dict(passed=True,records=records,scope='Trained student native online image/VLM/DiT inference; no teacher, anchor, scorer or future in action generation',owner=identity()))
+
+
 def extract(a):
     import torch
     configure();native=agent();selected=rows(a.split)[a.rank::a.shards];start=time.time();vlm=read(ROOT/'audit/checkpoints.json')['VLM']['sha256']
@@ -142,8 +162,9 @@ def metrics(a):
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('action',choices=['manifest','verify','extract','metrics']);p.add_argument('--split',default='navtest');p.add_argument('--rank',type=int,default=0);p.add_argument('--shards',type=int,default=1);p.add_argument('--with-metrics',action='store_true');p.add_argument('--workers',type=int,default=4);a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('action',choices=['manifest','verify','extract','metrics','deployment']);p.add_argument('--split',default='navtest');p.add_argument('--rank',type=int,default=0);p.add_argument('--shards',type=int,default=1);p.add_argument('--with-metrics',action='store_true');p.add_argument('--workers',type=int,default=4);a=p.parse_args()
     if a.action=='manifest':prepare_manifest()
     elif a.action=='verify':verify()
     elif a.action=='metrics':metrics(a)
+    elif a.action=='deployment':deployment()
     else:extract(a)

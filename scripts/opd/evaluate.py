@@ -35,10 +35,20 @@ def main():
     p=argparse.ArgumentParser();p.add_argument('--exp',required=True);p.add_argument('--name');p.add_argument('--split',default='dev')
     p.add_argument('--seed',type=int,default=42)
     p.add_argument('--rank',type=int,default=0);p.add_argument('--shards',type=int,default=1);p.add_argument('--checkpoint-step',type=int)
+    p.add_argument('--serial',action='store_true',help='Keep one native inference process; no intra-GPU shard wrapper')
     p.add_argument('--limit',type=int);p.add_argument('--workers',type=int,default=2);a=p.parse_args()
     configure();cfg=config();name=a.name or ('E0' if a.exp=='E0' else f'train_{a.exp}_{a.seed}');dest=ROOT/'evaluation'/a.split/name
     label=name+(f'_step{a.checkpoint_step}' if a.checkpoint_step is not None else '')
     dest=ROOT/'evaluation'/a.split/label
+    policy=ROOT/'resources/evaluation_concurrency.json'
+    if not a.serial and a.shards==1 and a.rank==0 and policy.exists():
+        routing=read(policy)
+        if not routing['parity_passed'] or routing['trajectory_max_error']!=0.:raise ValueError('Unqualified inference concurrency')
+        count=routing['processes_per_gpu'];spec=dest/f'parallel_{os.getpid()}.json';receipt=dest/f'parallel_{os.getpid()}_receipt.json'
+        commands=[['scripts/opd/evaluate.py',*sys.argv[1:],'--rank',str(k),'--shards',str(count)] for k in range(count)]
+        write(spec,commands)
+        subprocess.run([PYTHON,'scripts/opd/parallel.py','--spec',str(spec),'--concurrency',str(count),'--receipt',str(receipt)],cwd=SOURCE,check=True)
+        return
     if a.exp=='E0':
         models={n:build_head(cfg[k],frozen=True) for n,k in [('IL','student_init'),('RL','teacher_init'),('COPY','teacher_init')]}
         checkpoint_identity={n:read(ROOT/'audit/checkpoints.json')[n]['sha256'] for n in models}
@@ -46,6 +56,8 @@ def main():
         path=ROOT/'runs'/name/(f'checkpoint_{a.checkpoint_step}.pt' if a.checkpoint_step is not None else 'latest.pt')
         models={name:build_head(path,frozen=True)}
         checkpoint_identity={name:sha(path)}
+    write(dest/f'worker_source_{a.rank}.json',dict(owner=identity(),checkpoint_sha256=checkpoint_identity,config_sha256=digest(cfg),
+        source_hashes={str(p.relative_to(SOURCE)):sha(p) for directory in ('navsim/agents/recogdrive/opd','scripts/opd') for p in (SOURCE/directory).glob('*.py')}))
     selected=rows(a.split)
     if a.limit:selected=selected[:a.limit]
     start=time.time();pending=[];completed=0
@@ -80,6 +92,7 @@ def main():
                 pending.pop(0).result();completed+=1
             if (i+1)%64==0:print('EVALUATE',name,a.split,a.rank,i+1,flush=True)
         for f in pending:f.result();completed+=1
-    write(dest/f'complete_{a.rank}.json',dict(status='COMPLETE',rows=completed,shards=a.shards,rank=a.rank,seconds=time.time()-start,owner=identity()))
+    write(dest/f'complete_{a.rank}.json',dict(status='COMPLETE',rows=completed,shards=a.shards,rank=a.rank,seconds=time.time()-start,
+        full_population=a.limit is None,population_limit=a.limit,peak_gpu_bytes=torch.cuda.max_memory_allocated(),owner=identity()))
 
 if __name__=='__main__':main()

@@ -1,0 +1,134 @@
+{
+  "passed": true,
+  "CPU": {
+    "tests": 27,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "integration_evidence": {
+    "real_batch": "01f116c58bb5979883d69df73c8f9b1dc302b4d8fda8bfc36684183f5f35c1b1",
+    "real_grpo": "cc28d26d5eaa4ac46ed1f0b3108049af47feafbbddbd68079f1142b9b000d33f",
+    "real_resume_v2": "8f320a175dd973d2bd82a5cd6809c4235232d8bcdb914b1a00935f7aeaf7fd05",
+    "real_ddp": "0c00bb5f0c0dd1baa0d9e7361b934bb07623e0a236981eb09fa4cf06140f207d",
+    "real_online_vlm": "9ffa2c93d02ceeb9872c4cd4a3fddcbca4b2aaa93c45821d2da7125e6e8cc797",
+    "real_parameter_perturbation": "5a9611484ca9f8811f2fe6645769c615ef5031168c9c5a44a2404766f5c64deb",
+    "real_GT_parity": "3f15b47671442f710a788d5fb9d92bf61e4ebe871d7560623c7c6aba052551d3",
+    "real_inference_cache": "040fd60439abf8b6a0e87fb2fbbb5264da17625319c4722c3a0c5009c9c325e2"
+  },
+  "tests": {
+    "T01": {
+      "status": "PASS",
+      "evidence": "audit/checkpoints.json: IL strict restoration"
+    },
+    "T02": {
+      "status": "PASS",
+      "evidence": "audit/checkpoints.json: RL active head strict restoration"
+    },
+    "T03": {
+      "status": "PASS",
+      "evidence": "audit/gates.json: native RL/COPY both modes"
+    },
+    "T04": {
+      "status": "PASS",
+      "evidence": "tests/real_batch.json: native dense batch and future-poison parity"
+    },
+    "T05": {
+      "status": "PASS",
+      "evidence": "audit/gates.json: sampler/adapter all states and means"
+    },
+    "T06": {
+      "status": "PASS",
+      "evidence": "tests/opd/test_ddim.py and adapter scheduler assertions"
+    },
+    "T07": {
+      "status": "PASS",
+      "evidence": "tests/real_GT_parity.json and test_ddim.py normalization"
+    },
+    "T08": {
+      "status": "PASS",
+      "evidence": "audit/gates.json and all run teacher hashes"
+    },
+    "T09": {
+      "status": "PASS",
+      "evidence": "audit/gates.json and all anchor run hashes"
+    },
+    "T10": {
+      "status": "PASS",
+      "evidence": "audit/gates.json and actual optimizer gradient histories"
+    },
+    "T11": {
+      "status": "PASS",
+      "evidence": "tests/real_parameter_perturbation.json identical model loss"
+    },
+    "T12": {
+      "status": "PASS",
+      "evidence": "tests/real_parameter_perturbation.json nonzero perturbed loss"
+    },
+    "T13": {
+      "status": "PASS",
+      "evidence": "tests/opd/test_rollout.py and runs/*/rollouts current_student"
+    },
+    "T14": {
+      "status": "PASS",
+      "evidence": "tests/opd/test_rollout.py and E2 frozen_teacher archives"
+    },
+    "T15": {
+      "status": "PASS",
+      "evidence": "audit/gates.json chain refresh and fixed-noise policy_probes"
+    },
+    "T16": {
+      "status": "PASS",
+      "evidence": "CPU loss tests and actual batch1/batch8 runs"
+    },
+    "T17": {
+      "status": "PASS",
+      "evidence": "audit/gates.json deterministic and native stochastic parity"
+    },
+    "T18": {
+      "status": "PASS",
+      "evidence": "tests/opd/test_losses.py degenerate and clipped Gaussian rejection"
+    },
+    "T19": {
+      "status": "PASS",
+      "evidence": "tests/opd/test_rollout.py and E4/E5 anchor unchanged completion"
+    },
+    "T20": {
+      "status": "PASS",
+      "evidence": "tests/opd/test_gating.py and train global effective-count normalization"
+    },
+    "T21": {
+      "status": "PASS",
+      "evidence": "tests/opd/test_losses.py zero mask and actual E5 zero-gate batches"
+    },
+    "T22": {
+      "status": "PASS",
+      "evidence": "audit/final_provenance.json official split/log/parent checks"
+    },
+    "T23": {
+      "status": "PASS",
+      "evidence": "tests/opd/test_eval_safety.py and pure head evaluation without teacher"
+    },
+    "T24": {
+      "status": "PASS",
+      "evidence": "tests/real_batch.json future poison and real_online_vlm exact native inputs"
+    },
+    "T25": {
+      "status": "PASS",
+      "evidence": "tests/real_resume_v2.json exact actual parameters,optimizer,RNG"
+    },
+    "T26": {
+      "status": "PASS",
+      "evidence": "audit/gates.json same-noise repeated outputs"
+    },
+    "T27": {
+      "status": "PASS",
+      "evidence": "tests/real_ddp.json actual2-GPU gradient reduction"
+    },
+    "T28": {
+      "status": "PASS",
+      "evidence": "tests/real_grpo.json exact zero-OPD native loss/gradient"
+    }
+  },
+  "caveat": "Numerical acceptance is separate from research performance. Optional KL/timestep performance ablations are NOT_RUN."
+}
