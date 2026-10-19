@@ -55,6 +55,12 @@ def evidence_sections(data):
         for e in ['E3','E4-A','E4-B','E4-C','E5']:
             text+=f"|{e}|"+'|'.join('/'.join(str(v[e][str(s)][k]) for s in [42,43,44]) for k in ['stable_high_to_low_count','stable_high_to_zero_count','positive_to_zero_count'])+'|\n'
         text+='\n这是三个策略的计数，不相加为互异场景总数。有限五次估计不确定单个场景的真实期望。独立五次IL自比较也有非零M_minus；噪声耦合不同，不能直接从更新后的M_minus中相减。\n\n'
+    p=ROOT/'analysis/failure_counts_navtest.json'
+    if p.exists():
+        v=read(p)['methods'];text+='官方测试集逐策略计数（seed42/43/44）：\n\n|方法|独立高分→零分|正分→零分|\n|---|---|---|\n'
+        for e in ['E2','E3','E4-A','E5']:
+            text+=f"|{e}|"+'|'.join('/'.join(str(v[e][str(s)][k]) for s in [42,43,44]) for k in ['stable_high_to_zero_count','positive_to_zero_count'])+'|\n'
+        text+='\n'
     p=ROOT/'analysis/cases.json'
     if p.exists():
         cases=read(p);text+=f"预定四类case规则得到{len(cases)}个条目、{len({r['token'] for r in cases})}个不同场景。主轨迹取最接近场景平均变化的draw，淡线和事件点展示全部五次输出。空类别不替补。\n\n"
@@ -225,13 +231,16 @@ RL 相对 IL 的 M_minus={interval(b['paired_RL_vs_IL']['M_minus'])}，{b['teach
         rs=read(resources);cost_text+=f"\n无效v1仍计入工程成本：{rs['invalid_v1_GPU_hours']:.2f} GPU小时，两批累计{rs['total_GPU_hours']:.2f} GPU小时，未超过预登记128小时上限。五台主机的本任务pause标记已移除，原压力自动化恢复观察；没有终止真实他人任务。失败与CPU编排交接记录在外部accounting.json中保留，已修复的问题不从历史中删除。\n"
     storage=ROOT/'audit/storage.json'
     if storage.exists():cost_text+=f"\n任务输出实测表观容量{read(storage)['GiB']:.2f} GiB，包含INVALID历史与有效重跑，低于500 GiB预算；既有外部原始数据、源权重及复用训练metric cache不在该容量口径内。\n"
+    teacher_gap=''
+    comparison=ROOT/'analysis/teacher_comparisons_navtest.json'
+    if comparison.exists():teacher_gap=f"测试集E3−RL教师的配对PDMS差为{interval(read(comparison)['contrasts']['E3_vs_RL']['PDMS'])}，当前学生明确未达到直接复制教师的平均水平。"
     report=f"""# ReCogDrive On-Policy Distillation 研究报告{'' if has_test else '（测试确认进行中）'}
 
 ## 研究结论
 
 Q1（固定开发集主分析：学生链 OPD 优于轨迹 SFT 和教师链 KD）：**{q1}**。E3−E1={interval(contrast['E3_vs_E1']['PDMS'])}；E3−E2={interval(contrast['E3_vs_E2']['PDMS'])}；E3 相对 IL 增益={interval(e3['G'])}。优势、绝对能力迁移和训练损失下降分别判断；独立测试确认及跨split稳定性在后文单列。
 
-Q2（已有 IL 能力受损）：**{forget}**。E3 的 M_minus={interval(e3['M_minus'])}，独立高分保持率={interval(e3['stable_high_retention'])}。Anchor/GT/gate 的具体缓解结论分别列于下表和遗忘报告，不由平均分替代。
+Q2（固定五次配对评价下的负迁移）：**{forget}**。E3 的 M_minus={interval(e3['M_minus'])}，独立高分保持率={interval(e3['stable_high_retention'])}。不把每个负值都标成已确定的场景期望退化。Anchor/GT/gate 的具体缓解结论分别列于下表和遗忘报告，不由平均分替代。
 
 Q3（进一步 DiffGRPO 超过 RL 教师）：**{statuses['Q3_teacher_ceiling']}**。{admission_reason}。{e6_text}
 
@@ -276,6 +285,8 @@ E5相对同学习率、同GT/Anchor权重的均匀监督E4-C，开发集PDMS差=
 {cost_text}
 
 E0-COPY直接复制教师权重即可精确恢复教师输出，且没有蒸馏训练成本。相同架构、同一VLM、没有部署约束时，OPD不能仅凭逼近教师证明工程价值；需要保持IL能力、选择性传递或整合互补教师的真实优势。推理只调用单学生，不增加教师或环境反馈。Fig8与成本表记录实际训练时间、峰值显存和教师查询；输入编码、静态gate、教师缓存和调参为共享前置成本，另列总账，不隐藏在某一方法中。
+
+{teacher_gap}
 
 E6 训练使用原生自定义 PDM reward，EP/TTC/Comfort权重为10/5/2；正式评测 PDMS 为5/5/2，两者分开记录。本轮没有添加世界模型、专家路由或额外对齐任务。候选结果不支持时按协议停止对应路线，不继续搜索新的损失来追逐正结论。缺少正式E6结果时，无法区分教师约束、教师能力边界与GRPO本身限制，不作归因。
 
