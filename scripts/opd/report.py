@@ -57,7 +57,8 @@ def evidence_sections(data):
         text+='\n这是三个策略的计数，不相加为互异场景总数。有限五次估计不确定单个场景的真实期望。独立五次IL自比较也有非零M_minus；噪声耦合不同，不能直接从更新后的M_minus中相减。\n\n'
     p=ROOT/'analysis/failure_counts_navtest.json'
     if p.exists():
-        v=read(p)['methods'];text+='官方测试集逐策略计数（seed42/43/44）：\n\n|方法|独立高分→零分|正分→零分|\n|---|---|---|\n'
+        v=read(p)['methods'];ref=v['E3']['42'];text+=f"官方测试集独立筛选稳定高分集合为{read(ROOT/'analysis/baseline_navtest.json')['stable_high_count']}场景；IL在另外五个评价种子下有{ref['baseline_stable_group_low_count']}场景均值低于0.8，零分均值场景为{ref['baseline_stable_group_zero_count']}，明确保留筛选后的自然回落。\n\n"
+        text+='官方测试集逐策略计数（seed42/43/44）：\n\n|方法|独立高分→零分|正分→零分|\n|---|---|---|\n'
         for e in ['E2','E3','E4-A','E5']:
             text+=f"|{e}|"+'|'.join('/'.join(str(v[e][str(s)][k]) for s in [42,43,44]) for k in ['stable_high_to_zero_count','positive_to_zero_count'])+'|\n'
         text+='\n'
