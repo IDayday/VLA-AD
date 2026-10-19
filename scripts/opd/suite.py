@@ -88,7 +88,26 @@ def final_test():
     run_queue(tasks);write(ROOT/'suite/navtest_complete.json',dict(status='COMPLETE',jobs=len(tasks),time=time.time()))
 
 
+def e6():
+    while not (ROOT/'suite/formal_complete.json').exists():time.sleep(15)
+    from scripts.opd.analyze import formal as analyze
+    if not (ROOT/'analysis/formal_dev.json').exists():analyze('dev')
+    from scripts.opd.report import e6_admission
+    admission=e6_admission()
+    if not admission['admitted']:
+        write(ROOT/'suite/E6_NOT_RUN.json',dict(status='NOT_RUN',reason=admission['reason']));return
+    tasks=[]
+    for variant in ['IL_GRPO','E5_GRPO','IL_JOINT']:
+        for seed in config()['train_seeds']:
+            name=f'E6_{variant}_{seed}_train'
+            commands=[['scripts/opd/train.py','--exp','E6','--stage','train','--variant',variant,'--seed',str(seed)]]
+            commands.extend([['scripts/opd/evaluate.py','--exp','E6','--name',name,'--split',s] for s in ['cal','dev']])
+            tasks.append((f'formal_{name}',commands))
+    run_queue(tasks);write(ROOT/'suite/E6_complete.json',dict(status='COMPLETE',jobs=len(tasks),time=time.time()))
+
+
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('action',choices=['formal','test']);a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('action',choices=['formal','test','e6']);a=p.parse_args()
     if a.action=='formal':formal()
-    else:final_test()
+    elif a.action=='test':final_test()
+    else:e6()
