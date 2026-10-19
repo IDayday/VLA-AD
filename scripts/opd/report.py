@@ -177,7 +177,7 @@ Q3（进一步 DiffGRPO 超过 RL 教师）：**{statuses['Q3_teacher_ceiling']}
 
 采用官方 IL 学生与 RL 活动动作头教师；IL/RL 的结构一致，加载器不选择 RL 的 old_policy。所有核心张量必须加载，完整 missing/unexpected/shape mismatch 记录在02报告及外部 audit/checkpoints.json。冻结同一1536维 VLM，只训练384维 small DiT 动作规划器，共34,329,219参数。八点三维轨迹、原生 norm_odo/denorm_odo、五步 DDIM 均未改动；专家、残差、未来目标等路径关闭。OPD显式兼容层恢复官方系统提示词边界换行与左侧fixed2800 padding，保留全部hidden states；真实8场景与固定官方源码逐元素一致。首轮动态padding批次为INVALID，统一重做且不合并，详见08报告。
 
-DDIM adapter 与原 get_action 的逐步状态、均值及最终轨迹误差为0，E0-COPY 与 RL 误差为0。原生随机方差不能由 ddim_eta 配置名推断；实际路径含标准差下界和截断噪声，所以主版本使用转移均值 MSE，不能宣称 Gaussian KL。可选未截断共享方差 KL 仅有实现和正确性测试，正式性能消融 NOT_RUN。
+DDIM adapter 与原 get_action 的逐步状态、均值及最终轨迹误差为0，E0-COPY 与 RL 误差为0。原生随机方差不能由 ddim_eta 配置名推断；实际路径含标准差下界和截断噪声，所以主版本匹配原生p_mean_variance返回的clamp前proposal均值MSE，不能宣称Gaussian KL，也不把它当作clamp后核的严格期望。最终clamp完整保留在rollout/parity/评分中。可选未截断共享方差 KL 仅有实现和正确性测试，正式性能消融 NOT_RUN。
 
 [DiffusionOPD](https://arxiv.org/abs/2605.15055) 的关键是由当前学生产生去噪状态，再用冻结教师监督这些状态。E1 是最终轨迹伪标签的原生噪声预测训练，E2 的状态来自教师，E3 的状态每轮来自当前学生。所有链 detach，重新预测学生转移时才建立梯度。这里没有 environment-level on-policy；[Flow VLA 多教师工作](https://arxiv.org/abs/2610.21522)涉及的环境互动不能移用于固定日志实验。[PIVOT-Q](https://arxiv.org/abs/2610.05745)的行为保护思想是相关参考，本研究不声称复现其量化场景。
 

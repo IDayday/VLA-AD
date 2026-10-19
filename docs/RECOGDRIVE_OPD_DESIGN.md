@@ -16,7 +16,7 @@ E1 用教师最终物理轨迹作伪标签，调用原生 diffusion IL：norm_od
 
 原生五步时间为 `[80,60,40,20,0]`。配置 `ddim_eta=0` 不代表实际随机方差为零；活动路径使用 EtaFixed。随机 get_action 的标准差下界为 1e-4，噪声截断到 [-1,1]，最终 latent 也裁剪。adapter 复用原生 p_mean_variance 并保留 RNG 调用顺序，通过逐步状态/均值和最终轨迹一致性检查。DiffGRPO 另有 0.04 的随机标准差下界及不同噪声裁剪，完整保留。
 
-主损失是 FP32 转移均值 MSE，均匀 step 权重，并非两个确定性核的有限 Gaussian KL。可选共享方差 KL 只允许明确选择的未截断高斯变体；原生截断核、不同方差与极小/零方差不能冒称满足解析 Gaussian KL 假设。
+主损失是FP32原生proposal均值MSE，均匀step权重。这里的μ明确指p_mean_variance返回的最终动作clamp之前的proposal mean，不宣称是clamp后输出核的严格期望；最终clamp保留在实际rollout、逐步parity和PDMS评测中。它并非两个确定性核的有限Gaussian KL。可选共享方差 KL 只允许明确选择的未截断高斯变体；原生截断核、不同方差与极小/零方差不能冒称满足解析 Gaussian KL 假设。
 
 ## 保留行为与选择性监督
 
@@ -26,7 +26,7 @@ E4-A 在相同学生状态上加入冻结 IL anchor 均值监督；E4-B 加原�
 
 ## DiffGRPO 扩展
 
-原生 rollout、奖励、组内 advantage、diffusion logprob、BC=0.1 均保留。零 OPD 权重直接调用原函数；非零权重复用学生原生组 rollout 状态，没有其他策略的伪 on-policy 样本。固定教师只参与训练，推理仍只有学生。已有 BC 不再叠加等价的 IL anchor。正式 E6 受预注册证据和资源门禁约束，小规模集成不等于超过教师。
+原生 rollout、奖励、组内 advantage、diffusion logprob、BC=0.1 均保留。零 OPD 权重直接调用原函数；原生DiffGRPO的截断采样和带标准差下界的logprob实现均保留，不能把原有logprob近似当成OPD解析高斯KL成立的依据；非零权重复用学生原生组 rollout 状态，没有其他策略的伪 on-policy 样本。固定教师只参与训练，推理仍只有学生。已有 BC 不再叠加等价的 IL anchor。正式 E6 受预注册证据和资源门禁约束，小规模集成不等于超过教师。
 
 ## 信息与统计边界
 
