@@ -117,6 +117,11 @@ def tables(split):
 
 def full():
     REPORTS.mkdir(parents=True,exist_ok=True);d=read(ROOT/'analysis/formal_dev.json');b=read(ROOT/'analysis/baseline_dev.json');g=read(ROOT/'analysis/G2.json')
+    env_path=REPORTS/'00_environment_audit.md';env_body=env_path.read_text().split('\n## 最终资源与数据身份')[0]
+    hardware=read(ROOT/'audit/hardware_hosts.json')
+    env_body+=f"\n## 最终资源与数据身份\n\n真实核验{hardware['unique_A800_devices']}张互异A800，主机为"+', '.join(hardware['hosts'])+'。逐主机CUDA/驱动/PyTorch环境与GPU UUID见tables/audit_hardware_hosts.json。原工作区未提交修改保留，研究在独立worktree中进行，原有ReCogDrive默认源码未改动。\n\n'
+    env_body+='版本化索引位于configs/opd/splits，含训练4115、校准518、开发1696、官方测试12146个精确有序场景；206个源log的字节哈希已核验。driver_record保留车辆标识，另以更保守的capture timestamp检查跨用途重叠，均无交集。真实新目录重建已逐字段、逐顺序核验，不依赖旧研究输出manifest。原始数据、图像、GT及大缓存均不进git。\n'
+    env_path.write_text(env_body)
     tuning=read(ROOT/'selection/tuning.json');gate=read(ROOT/'gates/static.json');admission=e6_admission();tables('dev')
     source=read(ROOT/'audit/official_model_sources.json');assert source['passed']
     audit_path=REPORTS/'02_checkpoint_audit.md';body=audit_path.read_text().split('\n## 官方模型来源')[0]
