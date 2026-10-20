@@ -1,0 +1,657 @@
+{
+  "status": "COMPLETE",
+  "name": "local_parent_confirm",
+  "split": "diagnostic_parent_confirm",
+  "scenes": 512,
+  "parents": 7,
+  "selected_temperature": 0.02,
+  "selected_rho": 0.5,
+  "by_position": [
+    {
+      "source": "IL",
+      "index": 0,
+      "targets": 1024,
+      "mean": {
+        "selection_gain": -8.002146734929074e-06,
+        "projection_gain": 2.7946689052983095e-05,
+        "guarded_gain": 0.0,
+        "accepted_fraction": 0.0,
+        "flat_fraction": 0.490234375,
+        "ESS": 15.980803451500833,
+        "standardized_shift_RMS": 0.0014892545516360656,
+        "fit_candidate_mean_value_range": 0.0007717301486991346,
+        "reference_suffix_return_variance": 0.0002209949193488921
+      }
+    },
+    {
+      "source": "IL",
+      "index": 1,
+      "targets": 1024,
+      "mean": {
+        "selection_gain": -3.9149189001936064e-05,
+        "projection_gain": 1.0203026035609443e-05,
+        "guarded_gain": 2.462114221639638e-06,
+        "accepted_fraction": 0.0009765625,
+        "flat_fraction": 0.4853515625,
+        "ESS": 15.951527370139956,
+        "standardized_shift_RMS": 0.00257228528729303,
+        "fit_candidate_mean_value_range": 0.001653655432164669,
+        "reference_suffix_return_variance": 0.0002709378987858623
+      }
+    },
+    {
+      "source": "IL",
+      "index": 2,
+      "targets": 1024,
+      "mean": {
+        "selection_gain": 0.00026991525519746344,
+        "projection_gain": 0.0001609033022987305,
+        "guarded_gain": 4.1676351341394236e-05,
+        "accepted_fraction": 0.0048828125,
+        "flat_fraction": 0.4873046875,
+        "ESS": 15.855635695159435,
+        "standardized_shift_RMS": 0.006013474695199861,
+        "fit_candidate_mean_value_range": 0.0039036136367940344,
+        "reference_suffix_return_variance": 0.0002743638628907796
+      }
+    },
+    {
+      "source": "IL",
+      "index": 3,
+      "targets": 1024,
+      "mean": {
+        "selection_gain": 0.0010719320482302948,
+        "projection_gain": 0.00046436520293800327,
+        "guarded_gain": 0.00026689848244138643,
+        "accepted_fraction": 0.025390625,
+        "flat_fraction": 0.4873046875,
+        "ESS": 15.624559468589723,
+        "standardized_shift_RMS": 0.013747205284744268,
+        "fit_candidate_mean_value_range": 0.010061178007163107,
+        "reference_suffix_return_variance": 0.00036121803414742876
+      }
+    },
+    {
+      "source": "IL",
+      "index": 4,
+      "targets": 1024,
+      "mean": {
+        "selection_gain": 1.05609670966313e-07,
+        "projection_gain": 1.0438040848869003e-07,
+        "guarded_gain": 0.0,
+        "accepted_fraction": 0.0,
+        "flat_fraction": 0.5126953125,
+        "ESS": 15.999800476245582,
+        "standardized_shift_RMS": 0.0002680630244338289,
+        "fit_candidate_mean_value_range": 0.00013267452595755458,
+        "reference_suffix_return_variance": 5.720715349089979e-09
+      }
+    },
+    {
+      "source": "OLD_OPD",
+      "index": 0,
+      "targets": 1024,
+      "mean": {
+        "selection_gain": -8.002146734929074e-06,
+        "projection_gain": 2.7946689052983095e-05,
+        "guarded_gain": 0.0,
+        "accepted_fraction": 0.0,
+        "flat_fraction": 0.490234375,
+        "ESS": 15.980803451500833,
+        "standardized_shift_RMS": 0.0014892545516360656,
+        "fit_candidate_mean_value_range": 0.0007717301486991346,
+        "reference_suffix_return_variance": 0.0002209949193488921
+      }
+    },
+    {
+      "source": "OLD_OPD",
+      "index": 1,
+      "targets": 1024,
+      "mean": {
+        "selection_gain": -3.9536766921737714e-05,
+        "projection_gain": 1.0255020117156241e-05,
+        "guarded_gain": 2.46445678449129e-06,
+        "accepted_fraction": 0.0009765625,
+        "flat_fraction": 0.4853515625,
+        "ESS": 15.951519741676748,
+        "standardized_shift_RMS": 0.0025696947729879627,
+        "fit_candidate_mean_value_range": 0.0016536617767997086,
+        "reference_suffix_return_variance": 0.0002709514767383565
+      }
+    },
+    {
+      "source": "OLD_OPD",
+      "index": 2,
+      "targets": 1024,
+      "mean": {
+        "selection_gain": 0.00029667692727052567,
+        "projection_gain": 0.0001857550961617006,
+        "guarded_gain": 4.160177457840042e-05,
+        "accepted_fraction": 0.00390625,
+        "flat_fraction": 0.48828125,
+        "ESS": 15.85569158103317,
+        "standardized_shift_RMS": 0.006009315003250748,
+        "fit_candidate_mean_value_range": 0.0039012000197544694,
+        "reference_suffix_return_variance": 0.00026659583898029876
+      }
+    },
+    {
+      "source": "OLD_OPD",
+      "index": 3,
+      "targets": 1024,
+      "mean": {
+        "selection_gain": 0.0009100955140419184,
+        "projection_gain": 0.00043781439873886513,
+        "guarded_gain": 0.00021221073047307304,
+        "accepted_fraction": 0.0224609375,
+        "flat_fraction": 0.4892578125,
+        "ESS": 15.632797235623002,
+        "standardized_shift_RMS": 0.013652889697198134,
+        "fit_candidate_mean_value_range": 0.009636292234063148,
+        "reference_suffix_return_variance": 0.0002910849615978704
+      }
+    },
+    {
+      "source": "OLD_OPD",
+      "index": 4,
+      "targets": 1024,
+      "mean": {
+        "selection_gain": -1.1069302605385897e-08,
+        "projection_gain": 1.3686790404444292e-07,
+        "guarded_gain": 0.0,
+        "accepted_fraction": 0.0,
+        "flat_fraction": 0.5283203125,
+        "ESS": 15.999833793379366,
+        "standardized_shift_RMS": 0.0002519601063823984,
+        "fit_candidate_mean_value_range": 0.00012585683725774288,
+        "reference_suffix_return_variance": 4.391352829274611e-09
+      }
+    },
+    {
+      "source": "RL",
+      "index": 0,
+      "targets": 1024,
+      "mean": {
+        "selection_gain": -8.002146734929074e-06,
+        "projection_gain": 2.7946689052983095e-05,
+        "guarded_gain": 0.0,
+        "accepted_fraction": 0.0,
+        "flat_fraction": 0.490234375,
+        "ESS": 15.980803451500833,
+        "standardized_shift_RMS": 0.0014892545516360656,
+        "fit_candidate_mean_value_range": 0.0007717301486991346,
+        "reference_suffix_return_variance": 0.0002209949193488921
+      }
+    },
+    {
+      "source": "RL",
+      "index": 1,
+      "targets": 1024,
+      "mean": {
+        "selection_gain": -3.90859135178658e-05,
+        "projection_gain": 1.0179659548954973e-05,
+        "guarded_gain": 2.463449185653618e-06,
+        "accepted_fraction": 0.0009765625,
+        "flat_fraction": 0.4853515625,
+        "ESS": 15.95152211934328,
+        "standardized_shift_RMS": 0.0025732332491958942,
+        "fit_candidate_mean_value_range": 0.0016540789511054754,
+        "reference_suffix_return_variance": 0.0002709416125623605
+      }
+    },
+    {
+      "source": "RL",
+      "index": 2,
+      "targets": 1024,
+      "mean": {
+        "selection_gain": 0.00029432750808836195,
+        "projection_gain": 0.0001860413406547812,
+        "guarded_gain": 4.149146430944225e-05,
+        "accepted_fraction": 0.0048828125,
+        "flat_fraction": 0.4873046875,
+        "ESS": 15.855660842731595,
+        "standardized_shift_RMS": 0.006012128972935571,
+        "fit_candidate_mean_value_range": 0.0039023593490128405,
+        "reference_suffix_return_variance": 0.00026657876002722665
+      }
+    },
+    {
+      "source": "RL",
+      "index": 3,
+      "targets": 1024,
+      "mean": {
+        "selection_gain": 0.0011299789075587111,
+        "projection_gain": 0.00046303443379024924,
+        "guarded_gain": 0.000265868993208852,
+        "accepted_fraction": 0.025390625,
+        "flat_fraction": 0.48828125,
+        "ESS": 15.626375151798129,
+        "standardized_shift_RMS": 0.013707137068692532,
+        "fit_candidate_mean_value_range": 0.010040946013759822,
+        "reference_suffix_return_variance": 0.00042215676406353556
+      }
+    },
+    {
+      "source": "RL",
+      "index": 4,
+      "targets": 1024,
+      "mean": {
+        "selection_gain": -2.698532936289453e-07,
+        "projection_gain": 1.0215316426520643e-07,
+        "guarded_gain": 0.0,
+        "accepted_fraction": 0.0,
+        "flat_fraction": 0.521484375,
+        "ESS": 15.999839216470718,
+        "standardized_shift_RMS": 0.00025437915512327436,
+        "fit_candidate_mean_value_range": 0.00012722931569442153,
+        "reference_suffix_return_variance": 4.249563853434392e-09
+      }
+    }
+  ],
+  "trace_hash_subset": {
+    "unique_scenes": 11,
+    "by_position": [
+      {
+        "source": "IL",
+        "index": 0,
+        "saved_states": 11,
+        "mean": {
+          "preclip_candidate_noise_fraction": 0.32054924242424243,
+          "candidate_coordinates_at_or_beyond_unit_bound": 0.15909090909090912,
+          "native_std_parameter_min": 0.7377548813819885,
+          "native_std_parameter_max": 0.7377548813819885,
+          "rounded_proposed_mean_shift_RMS": 0.00031081496060571885,
+          "unchanged_mean_coordinates_fraction": 0.8181818181818182,
+          "within_candidate_suffix_return_variance": 1.6099366384063217e-06,
+          "fit_vs_independent_candidate_mean_absolute_gap": 0.0001988730022915353
+        }
+      },
+      {
+        "source": "IL",
+        "index": 1,
+        "saved_states": 11,
+        "mean": {
+          "preclip_candidate_noise_fraction": 0.3106060606060606,
+          "candidate_coordinates_at_or_beyond_unit_bound": 0.05137310606060607,
+          "native_std_parameter_min": 0.5139675140380859,
+          "native_std_parameter_max": 0.5139675140380859,
+          "rounded_proposed_mean_shift_RMS": 0.00020928878273645586,
+          "unchanged_mean_coordinates_fraction": 0.8181818181818182,
+          "within_candidate_suffix_return_variance": 1.4798155009514513e-06,
+          "fit_vs_independent_candidate_mean_absolute_gap": 0.00024638129268871614
+        }
+      },
+      {
+        "source": "IL",
+        "index": 2,
+        "saved_states": 11,
+        "mean": {
+          "preclip_candidate_noise_fraction": 0.32765151515151514,
+          "candidate_coordinates_at_or_beyond_unit_bound": 0.030776515151515152,
+          "native_std_parameter_min": 0.2951086163520813,
+          "native_std_parameter_max": 0.2951086163520813,
+          "rounded_proposed_mean_shift_RMS": 0.0003680505324155092,
+          "unchanged_mean_coordinates_fraction": 0.8181818181818182,
+          "within_candidate_suffix_return_variance": 2.1684049395360966e-06,
+          "fit_vs_independent_candidate_mean_absolute_gap": 0.00010522122264358479
+        }
+      },
+      {
+        "source": "IL",
+        "index": 3,
+        "saved_states": 11,
+        "mean": {
+          "preclip_candidate_noise_fraction": 0.3371212121212121,
+          "candidate_coordinates_at_or_beyond_unit_bound": 0.0,
+          "native_std_parameter_min": 0.02506144531071186,
+          "native_std_parameter_max": 0.02506144531071186,
+          "rounded_proposed_mean_shift_RMS": 9.630223080007868e-05,
+          "unchanged_mean_coordinates_fraction": 0.8181818181818182,
+          "within_candidate_suffix_return_variance": 6.094085123777474e-10,
+          "fit_vs_independent_candidate_mean_absolute_gap": 2.019327686935236e-06
+        }
+      },
+      {
+        "source": "IL",
+        "index": 4,
+        "saved_states": 11,
+        "mean": {
+          "preclip_candidate_noise_fraction": 0.32007575757575757,
+          "candidate_coordinates_at_or_beyond_unit_bound": 0.0,
+          "native_std_parameter_min": 9.999999747378752e-05,
+          "native_std_parameter_max": 9.999999747378752e-05,
+          "rounded_proposed_mean_shift_RMS": 9.094665707400716e-09,
+          "unchanged_mean_coordinates_fraction": 0.8484848484848485,
+          "within_candidate_suffix_return_variance": 0.0,
+          "fit_vs_independent_candidate_mean_absolute_gap": 0.0
+        }
+      },
+      {
+        "source": "OLD_OPD",
+        "index": 0,
+        "saved_states": 11,
+        "mean": {
+          "preclip_candidate_noise_fraction": 0.32054924242424243,
+          "candidate_coordinates_at_or_beyond_unit_bound": 0.15909090909090912,
+          "native_std_parameter_min": 0.7377548813819885,
+          "native_std_parameter_max": 0.7377548813819885,
+          "rounded_proposed_mean_shift_RMS": 0.00031081496060571885,
+          "unchanged_mean_coordinates_fraction": 0.8181818181818182,
+          "within_candidate_suffix_return_variance": 1.6099366384063217e-06,
+          "fit_vs_independent_candidate_mean_absolute_gap": 0.0001988730022915353
+        }
+      },
+      {
+        "source": "OLD_OPD",
+        "index": 1,
+        "saved_states": 11,
+        "mean": {
+          "preclip_candidate_noise_fraction": 0.3106060606060606,
+          "candidate_coordinates_at_or_beyond_unit_bound": 0.050899621212121215,
+          "native_std_parameter_min": 0.5139675140380859,
+          "native_std_parameter_max": 0.5139675140380859,
+          "rounded_proposed_mean_shift_RMS": 0.00020876582923599264,
+          "unchanged_mean_coordinates_fraction": 0.8181818181818182,
+          "within_candidate_suffix_return_variance": 1.4764474690948633e-06,
+          "fit_vs_independent_candidate_mean_absolute_gap": 0.0002464259164379378
+        }
+      },
+      {
+        "source": "OLD_OPD",
+        "index": 2,
+        "saved_states": 11,
+        "mean": {
+          "preclip_candidate_noise_fraction": 0.32765151515151514,
+          "candidate_coordinates_at_or_beyond_unit_bound": 0.030776515151515152,
+          "native_std_parameter_min": 0.2951086163520813,
+          "native_std_parameter_max": 0.2951086163520813,
+          "rounded_proposed_mean_shift_RMS": 0.00036657486237924206,
+          "unchanged_mean_coordinates_fraction": 0.8181818181818182,
+          "within_candidate_suffix_return_variance": 2.147247264281479e-06,
+          "fit_vs_independent_candidate_mean_absolute_gap": 0.00010534191773901542
+        }
+      },
+      {
+        "source": "OLD_OPD",
+        "index": 3,
+        "saved_states": 11,
+        "mean": {
+          "preclip_candidate_noise_fraction": 0.3371212121212121,
+          "candidate_coordinates_at_or_beyond_unit_bound": 0.0,
+          "native_std_parameter_min": 0.02506144531071186,
+          "native_std_parameter_max": 0.02506144531071186,
+          "rounded_proposed_mean_shift_RMS": 9.423337707465345e-05,
+          "unchanged_mean_coordinates_fraction": 0.8181818181818182,
+          "within_candidate_suffix_return_variance": 6.093509794409155e-10,
+          "fit_vs_independent_candidate_mean_absolute_gap": 2.0164125505138393e-06
+        }
+      },
+      {
+        "source": "OLD_OPD",
+        "index": 4,
+        "saved_states": 11,
+        "mean": {
+          "preclip_candidate_noise_fraction": 0.32007575757575757,
+          "candidate_coordinates_at_or_beyond_unit_bound": 0.0,
+          "native_std_parameter_min": 9.999999747378752e-05,
+          "native_std_parameter_max": 9.999999747378752e-05,
+          "rounded_proposed_mean_shift_RMS": 3.4764520958932817e-09,
+          "unchanged_mean_coordinates_fraction": 0.9280303030303031,
+          "within_candidate_suffix_return_variance": 0.0,
+          "fit_vs_independent_candidate_mean_absolute_gap": 0.0
+        }
+      },
+      {
+        "source": "RL",
+        "index": 0,
+        "saved_states": 11,
+        "mean": {
+          "preclip_candidate_noise_fraction": 0.32054924242424243,
+          "candidate_coordinates_at_or_beyond_unit_bound": 0.15909090909090912,
+          "native_std_parameter_min": 0.7377548813819885,
+          "native_std_parameter_max": 0.7377548813819885,
+          "rounded_proposed_mean_shift_RMS": 0.00031081496060571885,
+          "unchanged_mean_coordinates_fraction": 0.8181818181818182,
+          "within_candidate_suffix_return_variance": 1.6099366384063217e-06,
+          "fit_vs_independent_candidate_mean_absolute_gap": 0.0001988730022915353
+        }
+      },
+      {
+        "source": "RL",
+        "index": 1,
+        "saved_states": 11,
+        "mean": {
+          "preclip_candidate_noise_fraction": 0.3106060606060606,
+          "candidate_coordinates_at_or_beyond_unit_bound": 0.05066287878787879,
+          "native_std_parameter_min": 0.5139675140380859,
+          "native_std_parameter_max": 0.5139675140380859,
+          "rounded_proposed_mean_shift_RMS": 0.00020884194369004533,
+          "unchanged_mean_coordinates_fraction": 0.8181818181818182,
+          "within_candidate_suffix_return_variance": 1.4840207134181757e-06,
+          "fit_vs_independent_candidate_mean_absolute_gap": 0.0002464445887825281
+        }
+      },
+      {
+        "source": "RL",
+        "index": 2,
+        "saved_states": 11,
+        "mean": {
+          "preclip_candidate_noise_fraction": 0.32765151515151514,
+          "candidate_coordinates_at_or_beyond_unit_bound": 0.030776515151515152,
+          "native_std_parameter_min": 0.2951086163520813,
+          "native_std_parameter_max": 0.2951086163520813,
+          "rounded_proposed_mean_shift_RMS": 0.0003674315521493554,
+          "unchanged_mean_coordinates_fraction": 0.8181818181818182,
+          "within_candidate_suffix_return_variance": 2.158123427854873e-06,
+          "fit_vs_independent_candidate_mean_absolute_gap": 0.000105291462370188
+        }
+      },
+      {
+        "source": "RL",
+        "index": 3,
+        "saved_states": 11,
+        "mean": {
+          "preclip_candidate_noise_fraction": 0.3371212121212121,
+          "candidate_coordinates_at_or_beyond_unit_bound": 0.0,
+          "native_std_parameter_min": 0.02506144531071186,
+          "native_std_parameter_max": 0.02506144531071186,
+          "rounded_proposed_mean_shift_RMS": 9.466351052238183e-05,
+          "unchanged_mean_coordinates_fraction": 0.8181818181818182,
+          "within_candidate_suffix_return_variance": 6.093187754952506e-10,
+          "fit_vs_independent_candidate_mean_absolute_gap": 2.017986372389061e-06
+        }
+      },
+      {
+        "source": "RL",
+        "index": 4,
+        "saved_states": 11,
+        "mean": {
+          "preclip_candidate_noise_fraction": 0.32007575757575757,
+          "candidate_coordinates_at_or_beyond_unit_bound": 0.0,
+          "native_std_parameter_min": 9.999999747378752e-05,
+          "native_std_parameter_max": 9.999999747378752e-05,
+          "rounded_proposed_mean_shift_RMS": 3.4764520958932817e-09,
+          "unchanged_mean_coordinates_fraction": 0.9280303030303031,
+          "within_candidate_suffix_return_variance": 0.0,
+          "fit_vs_independent_candidate_mean_absolute_gap": 0.0
+        }
+      }
+    ],
+    "rule": "Original fixed hash digest([scene_token,case]) modulo64 equals0; bank0 only",
+    "interpretation": "Subset-only diagnostic; unit-bound saturation is final clamp only at index4; earlier coordinates may exceed bounds"
+  },
+  "provenance": {
+    "script_sha256": "eb24578142edc79cedbf936f3a14601f4c0a5cd12f7f80eda6a2e84a24461f22",
+    "population_sha256": "e2a126a73898dc6774cf99d8168d7231385a1bb08fdbf10a1b93bb9feb61e4fd",
+    "choice_sha256": "b35ed9756e0f6e468f129dbdc78bc741c49a10a3c0efadb210bf68b426e6b153",
+    "scene_payloads_sha256": "a6e342786f97c9957f2136ec89bc91e55f5fa64300932ddd9371d53befd50d8c",
+    "trace_sources": {
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/3d6a500648ed5d2d_IL_0_0.02_0.5.pt": "2e3fd4acc64ea48758e3ec5a07893bf53fe21db6c1082a6b271298b1867fe451",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/3d6a500648ed5d2d_IL_1_0.02_0.5.pt": "92ed247b5f37e4908e945f79030921cbb3c040c60ee419917682a88a43411214",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/3d6a500648ed5d2d_IL_2_0.02_0.5.pt": "b8e0b1c27b9748dca7bc3ea93b52d926b1e6e9cce188f5e05068ea6d4470d309",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/3d6a500648ed5d2d_IL_3_0.02_0.5.pt": "ce8c35349f88c8f6e5f8c2c5e30a0892a8c7ca63645b251b6e5fb5d4608c0931",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/3d6a500648ed5d2d_IL_4_0.02_0.5.pt": "fa01117154984da9e2de52f358fe6df67c67834ad35fc4aaf21700bc12ab881b",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/3d6a500648ed5d2d_OLD_OPD_0_0.02_0.5.pt": "0dcc339ac8055a81ced97c4f7aa4949ee8e0f50cc4c88fbd4d82bca153bd9e8b",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/3d6a500648ed5d2d_OLD_OPD_1_0.02_0.5.pt": "168de411eac6d76486247c37208f35f8973574d14af65021c7548cf181a40082",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/3d6a500648ed5d2d_OLD_OPD_2_0.02_0.5.pt": "2b407efe4bd5695e7e6be23026ac021f81a48cafb7170b48a8740fbc995e6443",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/3d6a500648ed5d2d_OLD_OPD_3_0.02_0.5.pt": "683b607cff8ec3cb657718a75ad228b476a9039a8b6f1c96130d9f79e1d1479f",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/3d6a500648ed5d2d_OLD_OPD_4_0.02_0.5.pt": "1cd06f08d5d1f0172cc9f8f8d4e46e029c3ed91fd030ceafb5f2bf7fd8b3270d",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/3d6a500648ed5d2d_RL_0_0.02_0.5.pt": "059fa9ad7fd3b7281dd694df3c11b02bb815a504599d2affc0b452ac0d5c744b",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/3d6a500648ed5d2d_RL_1_0.02_0.5.pt": "db06ca8c919879076547d8e4483bb2da75e9e55a15ccd982e4e0734ddee6689c",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/3d6a500648ed5d2d_RL_2_0.02_0.5.pt": "d25fc8b833a6dd82c6dd7e015b07c55cd6576bb909e746e986ebeaa6d124fdee",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/3d6a500648ed5d2d_RL_3_0.02_0.5.pt": "707b95bd76cf1c1668605ad32049b6ede7c5cec159c6205559e1f60ad4e1648b",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/3d6a500648ed5d2d_RL_4_0.02_0.5.pt": "60f9bfa64bac3e6613c1780ed8b9e9dc0d36dd8d9cc9e1e70f6309a186d448b1",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/4262625e40c25e9a_IL_0_0.02_0.5.pt": "410dbccbb58b8766813def71e7b2d307d0c77a067cb3e645642e3e3a751e3491",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/4262625e40c25e9a_IL_1_0.02_0.5.pt": "fd52256476b759424189d8f72967c32005ed4af9d6a79b414e76ff4aa48ca649",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/4262625e40c25e9a_IL_2_0.02_0.5.pt": "73e6882e831a21609d403530fcdb7925a4cf5fe63cc4059dbd8443ac4aba4069",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/4262625e40c25e9a_IL_3_0.02_0.5.pt": "aa69c1a5a1bd25a0d5d9bd1263a3895ebe2948c6f6163d12f8038bddb702f9e8",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/4262625e40c25e9a_IL_4_0.02_0.5.pt": "b9249a85053c866fb2c5a1c23cb1377b0adc8442e213be053d84966f72e4c895",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/4262625e40c25e9a_OLD_OPD_0_0.02_0.5.pt": "41d007129343d9f0e5243b07124ed883b65639172d200da9d717f9751b5ec62a",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/4262625e40c25e9a_OLD_OPD_1_0.02_0.5.pt": "308835857101bd1461d6d326dbe125eee228c595252ef744d64803758db6c003",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/4262625e40c25e9a_OLD_OPD_2_0.02_0.5.pt": "5a24ec80281b3f64964c152227f65e04c812b60011e7dc76e351a0199adbf4ba",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/4262625e40c25e9a_OLD_OPD_3_0.02_0.5.pt": "cfc17ea226a1d31f2416affec678b332f5bdc93cb8559899439d9e38b3e49c83",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/4262625e40c25e9a_OLD_OPD_4_0.02_0.5.pt": "a2111949c18b0d8effe279222efa300a092eafd15a3bf0601aa55a4c5a205d57",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/4262625e40c25e9a_RL_0_0.02_0.5.pt": "d0af6224a7fcaf5b69d4654b1858cf448906d27471933129caac3720a0f5f407",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/4262625e40c25e9a_RL_1_0.02_0.5.pt": "8c3675149ec8cf01b4c99c38f04332e3a4acdd9394e74bdf4e330378bad425e4",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/4262625e40c25e9a_RL_2_0.02_0.5.pt": "ba933cba4d58d21f52e1de29f0a54789a68897c323161db4579f40acbb6375fd",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/4262625e40c25e9a_RL_3_0.02_0.5.pt": "9cff4e3acef4719e252922acc22ac92b1a823c7681ae86ef0dcc39696322c429",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/4262625e40c25e9a_RL_4_0.02_0.5.pt": "317793c4af1e0203e4a9c597124eec701f3eee067b1ac5dd4b75ab273a348395",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/46aba8ede9185d9d_IL_0_0.02_0.5.pt": "22674f6baad0f2e54b46782b8cd8ac6ad9b991f9d64e89daa048e587953f1ef7",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/46aba8ede9185d9d_IL_1_0.02_0.5.pt": "7e358c46525fae191b59725b7821a2f7c2fbaa6f536e6adf54d72dc2b3ae09a7",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/46aba8ede9185d9d_IL_2_0.02_0.5.pt": "3bc3f1c122b095dc62b9a7ac0f7ea9d2d2fd9bc73ad8facb37248cb2c358fcc1",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/46aba8ede9185d9d_IL_3_0.02_0.5.pt": "664fcfe890cafa89129f565a008ac77e3865e8767473e0634f5ed831719e5f55",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/46aba8ede9185d9d_IL_4_0.02_0.5.pt": "eea794eee4ae11dec92d21207eed5e3d84357d219eca32db21baf7ec63dda970",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/46aba8ede9185d9d_OLD_OPD_0_0.02_0.5.pt": "022ffb506a52dc0d070d05ada0caf654aaf4407ed1a71e0a477d801add2dab06",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/46aba8ede9185d9d_OLD_OPD_1_0.02_0.5.pt": "e6e63e0cd86fa39044a9c041397841da1ecb53ef66c6f5210b99786308cd59d5",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/46aba8ede9185d9d_OLD_OPD_2_0.02_0.5.pt": "f3fa81e40786b959af64d7a3a8f3236bc30b20ff31f3bddb626ba2bdc6b839cb",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/46aba8ede9185d9d_OLD_OPD_3_0.02_0.5.pt": "5589ccf03829c1d368ff8390f352b284a6c82f1f7b9106bcab5e6f0d687c3dc1",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/46aba8ede9185d9d_OLD_OPD_4_0.02_0.5.pt": "1702c9d68ea706512c7311099c44366ef036e6c404679c60bfd1bed5b3ee2e86",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/46aba8ede9185d9d_RL_0_0.02_0.5.pt": "549964516417cdcd55bba417e3f5ff32636298b634a69a18b015740729471bb2",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/46aba8ede9185d9d_RL_1_0.02_0.5.pt": "bf1607725d8d2308135ec3ac0f1eaf6aef3d35d13f0367c89c4f8e699da7d0f3",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/46aba8ede9185d9d_RL_2_0.02_0.5.pt": "66bff19a5dc0992262a5f6ac50adb4b973f4828acb47228b3ea73a1ce30da802",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/46aba8ede9185d9d_RL_3_0.02_0.5.pt": "06037b6a46b4a567443b71092bbe536db9b795d43d6effe12e8b3db44de2f6dd",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/46aba8ede9185d9d_RL_4_0.02_0.5.pt": "98f870f5d98cfecfdc3223eb2b3815fcb994ee33bce07993aefab582d9dfa247",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/5b9fc6ed944f577a_IL_0_0.02_0.5.pt": "7c738b93d1c4fe7757eddc36286f999bea76a1faee5c2b7fffc7df472665e429",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/5b9fc6ed944f577a_IL_1_0.02_0.5.pt": "93d18958f53c03213d1ea30993e1ada31b389a32f38798ff41dd750afdd758b9",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/5b9fc6ed944f577a_IL_2_0.02_0.5.pt": "eac2d0c166ec58273572d3ef40799941b0d965f26618ba50c1f896729a3e6193",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/5b9fc6ed944f577a_IL_3_0.02_0.5.pt": "6205f82b79a5edb7149ea83c95def76f1c94322bb3d0ef214850acba6c6bb909",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/5b9fc6ed944f577a_IL_4_0.02_0.5.pt": "cad3ee439a77174d3698f6561f6f84903385da60132bc90baff7a638e17b2803",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/5b9fc6ed944f577a_OLD_OPD_0_0.02_0.5.pt": "8b425d7473b5123f48f29969fc4ae15e07e74eed9b4cf263a2ed37c6826201f3",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/5b9fc6ed944f577a_OLD_OPD_1_0.02_0.5.pt": "d9c0232b99fae0f82fd6fb3c29963c80a37262340dbc74da9f4ff15592616c90",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/5b9fc6ed944f577a_OLD_OPD_2_0.02_0.5.pt": "b5d97b253d3efbcc4bdbfad3349d6499afd41701ad002b0879de64c59ed81d26",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/5b9fc6ed944f577a_OLD_OPD_3_0.02_0.5.pt": "06b17cd7215247d4ae7052560a4b83f8b80c64e92269663ee9ad16a499c9b961",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/5b9fc6ed944f577a_OLD_OPD_4_0.02_0.5.pt": "9939cf2c1b6d8159f7bb021444487a678862334c17dfaefc0f5405237efe2aff",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/5b9fc6ed944f577a_RL_0_0.02_0.5.pt": "3bc5c0d9408d238558d313b9bf0bf4c019720cd5434f61896e47acde6fc5fc99",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/5b9fc6ed944f577a_RL_1_0.02_0.5.pt": "48ac42c672be641f937a29335e53d12a9038c7f384bf2bb25375d6df68070117",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/5b9fc6ed944f577a_RL_2_0.02_0.5.pt": "95003b50a2c1b50bfc80acc3aa41ddf12fd7b68f375d4fa2f7ff822d9c658e09",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/5b9fc6ed944f577a_RL_3_0.02_0.5.pt": "37f300176036aedf6ca0be5021d9bbf0ad9cd9fa72760ee546cd418f553a7965",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/5b9fc6ed944f577a_RL_4_0.02_0.5.pt": "60cf685fd6e89af7d14d7cb4f73366d3479011bce43212a7eeb9f274a26ea7a3",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/6b9c9b55affc50c5_IL_0_0.02_0.5.pt": "fc3e81db190c155366469f1ed99faa02898c48c03f4ab51ab3d599154edb5aaf",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/6b9c9b55affc50c5_IL_1_0.02_0.5.pt": "2b6d7dfb7f2026d4c7428099d43602a22c8a3eb72b207bf10a6925c9d3f51170",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/6b9c9b55affc50c5_IL_2_0.02_0.5.pt": "0d3d403206193cbf881d4189edd81c91f170d8155fd9b6c84a3cb5aefd2c581f",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/6b9c9b55affc50c5_IL_3_0.02_0.5.pt": "0916f2f5e8d0ec39b802527e1a00c5cd518f8c5c75cfdf74de8987dcb6572d5e",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/6b9c9b55affc50c5_IL_4_0.02_0.5.pt": "1db07b26a78afa8be411ef3087f46152cf1a91a60b947d38552850f4e00338a6",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/6b9c9b55affc50c5_OLD_OPD_0_0.02_0.5.pt": "e452700e8b1361b15392242816f7e58413f9594c78b65f1874518460232b2840",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/6b9c9b55affc50c5_OLD_OPD_1_0.02_0.5.pt": "0ae7191085edea2d25ca61ad55bf5d21de19adb99fef661febe72485950322f3",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/6b9c9b55affc50c5_OLD_OPD_2_0.02_0.5.pt": "3bc176d3e5f76aa689755d318ed1b2586b99dcff7a07cad6186fd23444a085e0",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/6b9c9b55affc50c5_OLD_OPD_3_0.02_0.5.pt": "396d2569aa8957b9556711a560d9dca5e99d2e999eced0678538fc94707cffee",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/6b9c9b55affc50c5_OLD_OPD_4_0.02_0.5.pt": "e9a59da9367267c91368f84c93c845724fc4f0dd2677669dcd21ddf62a03072f",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/6b9c9b55affc50c5_RL_0_0.02_0.5.pt": "5ed987e4356fa700ab4308eb182e5343928a85f8fc2c647f18166f96951f75f1",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/6b9c9b55affc50c5_RL_1_0.02_0.5.pt": "ddb1e227b61ba3811adb93330a0536002a4cbd7b280e937e154c39a16367d2be",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/6b9c9b55affc50c5_RL_2_0.02_0.5.pt": "7c58f4fd62678ba73f0da3467c2926ed124e9792e875de4ae96b8b51181f9b13",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/6b9c9b55affc50c5_RL_3_0.02_0.5.pt": "94da442a04d891822dc0bbb54b95e41173c5c0c4b6d197e4aab09eb4453230b7",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/6b9c9b55affc50c5_RL_4_0.02_0.5.pt": "bb0fc0a0b1b0854186b2bb7a86768105ccc1246bf47501a4b9f51c471e919d3f",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/84336ba42bdf586e_IL_0_0.02_0.5.pt": "bc1a4e87f58a24a392ade63136e754e17ddf157ad5dc4b76ecaa912060b38893",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/84336ba42bdf586e_IL_1_0.02_0.5.pt": "3fc03669ff145df1128ee8785b1d18764e226f24a46848a5a3b6718b72faf916",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/84336ba42bdf586e_IL_2_0.02_0.5.pt": "c6dea44975dba2b8095f0fb98e1a430ce214cda8763ae6dbc64b754201c4b7d0",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/84336ba42bdf586e_IL_3_0.02_0.5.pt": "8cef8a460904cb76556136a53ed6b8c034121e70193cff34470beeb21cd14e1c",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/84336ba42bdf586e_IL_4_0.02_0.5.pt": "25bbe78ef3fb242d0feaf1a7bdf6e030d4e20c388cb20456d99c7c191f90e9d9",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/84336ba42bdf586e_OLD_OPD_0_0.02_0.5.pt": "7e58c3c85b8dbc14757f2f46cb4d18ab9d8b6589cba663697209a176d923ec0b",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/84336ba42bdf586e_OLD_OPD_1_0.02_0.5.pt": "d995979bb26f681ac20cc333479506ec8e77bef4e1f701b8286c3f66e5f594c4",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/84336ba42bdf586e_OLD_OPD_2_0.02_0.5.pt": "fe0a34f79d55f0659b2da47d37e71ed7ec0244b3f3391d3fea1cd82c1adf453f",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/84336ba42bdf586e_OLD_OPD_3_0.02_0.5.pt": "0be1af225750dded64dc449033da19114d187e2421d46b39e27f6127a8eb6dee",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/84336ba42bdf586e_OLD_OPD_4_0.02_0.5.pt": "d5337a8583e9c478e9478ba053980bbdfac2f18dd51e5533b45d294113e6c43b",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/84336ba42bdf586e_RL_0_0.02_0.5.pt": "3d590cfce6a1fca5ab5074eb741bcc8ffcab3a612e797c477e1f0b6257972546",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/84336ba42bdf586e_RL_1_0.02_0.5.pt": "48403213007234a899a43175a56ed669c1640fe6cf4ec73dd25b82fc0b86d1d2",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/84336ba42bdf586e_RL_2_0.02_0.5.pt": "1f96f7189254277e1c1daa910c79e9209a7284fa5a3cd0b962b9f0a98fd5ff65",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/84336ba42bdf586e_RL_3_0.02_0.5.pt": "613142173315db073a2ab269a68d779fd9d312c5348775b3306523d0c8290360",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/84336ba42bdf586e_RL_4_0.02_0.5.pt": "81fc66dd9101703db08b394f746e443f49d476a074ea904ae32921f568e33eb0",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/8c8ee410c526556e_IL_0_0.02_0.5.pt": "a89773d0b7d8cb8935785feb32254e9ade7607bc91f12ef5cae8307cbd08b7e9",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/8c8ee410c526556e_IL_1_0.02_0.5.pt": "2dacf1d1ec3b098bd36f21b9d63f9d7df140073bdabc5de2063865ffed0dfc5b",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/8c8ee410c526556e_IL_2_0.02_0.5.pt": "0de60f9bf0c897a2a486e18a90f0f8e2553f1524ca5476878892bb226804d231",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/8c8ee410c526556e_IL_3_0.02_0.5.pt": "b4b258c4ce222023005f55b7395a3e8dff70d708dcbeb525c0123dcb4bdf99c1",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/8c8ee410c526556e_IL_4_0.02_0.5.pt": "b795b5a12ee85fab9a0432e6b0d0b3d9a30a4105e7961a6e18091bd5001ca9f7",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/8c8ee410c526556e_OLD_OPD_0_0.02_0.5.pt": "3b84df9c1cbd7dc18272a90b3a8e92259605ad0f2e2cb7fac4f97f9f2c3bb6ac",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/8c8ee410c526556e_OLD_OPD_1_0.02_0.5.pt": "592c22b95cd714944cc7194d3345966876a33ccbbacd3244ec1cca6ee86178f3",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/8c8ee410c526556e_OLD_OPD_2_0.02_0.5.pt": "48b5d3bb0231c715506c2cdb7afa09914a016fc3ab0fdbfadfcecdbd002265dc",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/8c8ee410c526556e_OLD_OPD_3_0.02_0.5.pt": "df4ce0cde8511ce80559c853b9486449f1a811a71da1d3098213bd14c11f0259",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/8c8ee410c526556e_OLD_OPD_4_0.02_0.5.pt": "e2024c2ec1062dacf5f7e22cc46316a40aa421dd52f8280446c3404288b5c026",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/8c8ee410c526556e_RL_0_0.02_0.5.pt": "8ba0279c94ec32124a042935db64146763833296c051be477c79fcad909c43b1",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/8c8ee410c526556e_RL_1_0.02_0.5.pt": "0589bb10e42c51ece3a3fe9e996ea3a16d2a4bdf61433a38315d8b254c605426",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/8c8ee410c526556e_RL_2_0.02_0.5.pt": "9418d965e2d662add6fe7120c0f9d5857ee55803f330d00e48bbffa7b59d3bed",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/8c8ee410c526556e_RL_3_0.02_0.5.pt": "4beea55aca9934be8c30394d889005762029c635ce800c427cd8ad386688b8fd",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/8c8ee410c526556e_RL_4_0.02_0.5.pt": "2ab34e0e2b63e3bcefcdf2d43648a0380efc8f182a322059a53b57ed36ba43a8",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/9f4c33634dce5f5f_IL_0_0.02_0.5.pt": "81002ab4ed38390b0a9e3323add0ed76fc6b7535b394ec5ced3901ec52dc3d1e",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/9f4c33634dce5f5f_IL_1_0.02_0.5.pt": "72085f9589f5d023ce14535e2478ac1f1c02f18cd1d44ddf91298752f9508965",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/9f4c33634dce5f5f_IL_2_0.02_0.5.pt": "c1dc03c80d0a9fd78a6def4dea29e84f8d190d66912974196568d4b221630905",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/9f4c33634dce5f5f_IL_3_0.02_0.5.pt": "97e81d6359cd5876044ed6efe73e8e251b3089dd9ab98d6cbde5f60131d86c2d",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/9f4c33634dce5f5f_IL_4_0.02_0.5.pt": "bb7ac7ebe5bd812336673b9edbc5cbba524095b43821e7c93cb8f5532f6478ec",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/9f4c33634dce5f5f_OLD_OPD_0_0.02_0.5.pt": "bbacb7c9a67b7661f6771df75fd5f6ce203ae2290b9f7c9f3fa22c4d5caaed77",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/9f4c33634dce5f5f_OLD_OPD_1_0.02_0.5.pt": "23614b434e2539bcb8ef58847b1ac0c53d125fe21ff1ec6fc014cf930f3ed8f6",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/9f4c33634dce5f5f_OLD_OPD_2_0.02_0.5.pt": "bc7343d5946358b9e93f7e69b7a8b1d52987ebc6bbc5ddbceaaa865332364aa3",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/9f4c33634dce5f5f_OLD_OPD_3_0.02_0.5.pt": "5b872136c75091a8a7a72c7f7417d03ceac765bdf3557b15b1dce7b2c246c8f8",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/9f4c33634dce5f5f_OLD_OPD_4_0.02_0.5.pt": "b23f20fb3da44ab7f98e8a616a10197e89ac225d2bf42677e44b4cbca6a563b5",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/9f4c33634dce5f5f_RL_0_0.02_0.5.pt": "52ba7ccf95876fbed0968e19aa08c0d729cc3e283980b68d88bfca629129b546",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/9f4c33634dce5f5f_RL_1_0.02_0.5.pt": "a112bf3eddbe02caa5299702c40405e1682435d70df0c4472f89df7231f771d8",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/9f4c33634dce5f5f_RL_2_0.02_0.5.pt": "a465c5385953db05079b9b086308f4a4b14faef9253dc4e3c93aea70abe766ae",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/9f4c33634dce5f5f_RL_3_0.02_0.5.pt": "ab76abf75e0d89cc03bec9f4d82ebee7644f49598e82f0e6ae5f14e5e566bef7",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/9f4c33634dce5f5f_RL_4_0.02_0.5.pt": "dc92f278f9d5ea37c00a61026f2b20b339f2048a7afb0f87dae9698c20769ce6",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/b11a41883c265d6f_IL_0_0.02_0.5.pt": "0122ee6230182071c7913714184932ede9b01e32c4f39c7ec5420535711ce3e3",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/b11a41883c265d6f_IL_1_0.02_0.5.pt": "d7c7e466186a408eee73317eba172827a262ebc41aefd206455c2157441ce62c",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/b11a41883c265d6f_IL_2_0.02_0.5.pt": "4ef5c18ede9ef86985b8d83814d36888ea884c42f97c128b3fc68d3cfcfe8566",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/b11a41883c265d6f_IL_3_0.02_0.5.pt": "a0fd34ac6b460a4c061dc7cb8ed0e4e7a3cfe5aadde618dc7a302d44ae5efe75",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/b11a41883c265d6f_IL_4_0.02_0.5.pt": "b7db35570237f9edd1d726b323b0b2d30b6d3925799f0dcbfd078c2c1ada4257",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/b11a41883c265d6f_OLD_OPD_0_0.02_0.5.pt": "09201bd5220e9bb840ac46e8c4ad079997619a86b6b75d023720786b9f21ae74",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/b11a41883c265d6f_OLD_OPD_1_0.02_0.5.pt": "86c6e39eb3975bf94603294c4b4406b592f4785f626e58844055d506887ec012",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/b11a41883c265d6f_OLD_OPD_2_0.02_0.5.pt": "c7551512d182413c6b9182a40f127eed4cf1382f2dd8f07e69844302f0f5dd9f",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/b11a41883c265d6f_OLD_OPD_3_0.02_0.5.pt": "68b370533ddd6b99baaa67712b0e865192eff69e7d3a37d96184bfb231356c51",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/b11a41883c265d6f_OLD_OPD_4_0.02_0.5.pt": "09259a043b07de475d962d8609c8be7eb5ca2b247a19d0ea8b77f5877b080d17",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/b11a41883c265d6f_RL_0_0.02_0.5.pt": "b6e520bb3147925778e0033f7b36aafe32ffd82eaa0725e9b34c3b471ced451f",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/b11a41883c265d6f_RL_1_0.02_0.5.pt": "941bc152172ca8005315739f8d291cedada855caf2432543f0ef26e4fd04c6af",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/b11a41883c265d6f_RL_2_0.02_0.5.pt": "e6ad66871ae16a767431c498218b74c5d170875f1ee7f70acd97f04c9e7d5080",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/b11a41883c265d6f_RL_3_0.02_0.5.pt": "4eda875dc351a3818e0f8dbebbb46e5412dc7a666577afb7c47aab2f5b1a1460",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/b11a41883c265d6f_RL_4_0.02_0.5.pt": "c4070227ae5c4058f490d429832e4ea38a8e6c7aa5edc86b7600a7f645fd1354",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/bb3cc607601e5aa7_IL_0_0.02_0.5.pt": "535bd8307b35db41935a23f2af9cc912d5463b06dd278a8d5a463ceee2df4d3a",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/bb3cc607601e5aa7_IL_1_0.02_0.5.pt": "7992633548680db704b9ef01568d21105a5cc086bb0cd1a81331af7df6187d03",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/bb3cc607601e5aa7_IL_2_0.02_0.5.pt": "c9fa874554bb5998f937c71d3caaff73004f59e8a6f338d09331d0d6fe58cc1a",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/bb3cc607601e5aa7_IL_3_0.02_0.5.pt": "9c381b1739f78fdf7c999eb666378a1e11ca227b1ed33073975a3f4ac0304241",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/bb3cc607601e5aa7_IL_4_0.02_0.5.pt": "83a6ba0420d3d8805b1b05076df454b95c1bd3ffb926b3315902a45191fd47c8",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/bb3cc607601e5aa7_OLD_OPD_0_0.02_0.5.pt": "79e322a033738f6b2d581d2dbdfeebe3cad59e0be07af93ed3f038a62422c1d2",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/bb3cc607601e5aa7_OLD_OPD_1_0.02_0.5.pt": "a301fadb621630ba99f0b410b9ef2682f7092b15d0b488f7706a414ce522a373",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/bb3cc607601e5aa7_OLD_OPD_2_0.02_0.5.pt": "307f506d7cee7644cbd8ca8091b73036b6bd28bee7428acc74dc8cb6ba7ae8e1",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/bb3cc607601e5aa7_OLD_OPD_3_0.02_0.5.pt": "d81353d24f97fade5a9f006ca71b79f02463f173c2c648e28711195fe2962681",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/bb3cc607601e5aa7_OLD_OPD_4_0.02_0.5.pt": "3f4e1db6e4f16b1ef956406f376c749be813e62b5125b23fa8cf7508a146bd23",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/bb3cc607601e5aa7_RL_0_0.02_0.5.pt": "3f61ccf131e88930e4d20e2d1db46ff57963d7a661cf88a27a5aecbbad87dc98",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/bb3cc607601e5aa7_RL_1_0.02_0.5.pt": "a1f899c7cbe546ee30de9b87bbfe329061ca3bda045afbd964d9338d6e8e50ea",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/bb3cc607601e5aa7_RL_2_0.02_0.5.pt": "7e2b67377985c847268fa6fa0cf0cfce5e64bc0fdf6f86081879a803f9df7e86",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/bb3cc607601e5aa7_RL_3_0.02_0.5.pt": "c629d5a597dd9ded1db19cda892f6063f35e9ef68f4f6fd2191babf762440def",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/bb3cc607601e5aa7_RL_4_0.02_0.5.pt": "585357ec33224e74c258eb53c25b2d1132a243f65736b5a7a168c9039eca61fd",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/c7fe9d9a057450a8_IL_0_0.02_0.5.pt": "645845f461520eedf2ceb18205d751633066610649c434bb9bce7f542567130b",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/c7fe9d9a057450a8_IL_1_0.02_0.5.pt": "c658d4769af4d928f5f914f6f13bd65e62846ca44a4c5690fadac74941f2570b",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/c7fe9d9a057450a8_IL_2_0.02_0.5.pt": "a02ffcfe81ffb11cb5f03bbdd713e3e040651efc25ff36e95d4c6c4fe49c49c3",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/c7fe9d9a057450a8_IL_3_0.02_0.5.pt": "93f6773ae61dd9d390bae1a7943a6f9994ee1599dc3b99d5ce54f59cbe442a5f",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/c7fe9d9a057450a8_IL_4_0.02_0.5.pt": "b45798900cbd64d14525557743055148c206240499446177340d84b9419ecefd",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/c7fe9d9a057450a8_OLD_OPD_0_0.02_0.5.pt": "a73630f45fe54c60f586985dbc72798afd602d0f5244ab1076ff107a12da5084",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/c7fe9d9a057450a8_OLD_OPD_1_0.02_0.5.pt": "e82d76c1a7fc2e643738f245556352e9fb04dd40546d22bca11089148dbaef9a",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/c7fe9d9a057450a8_OLD_OPD_2_0.02_0.5.pt": "9e3f2d6ac83317bacda7414db431758d1ecc6b3ce8c4b47094033afca2e1ce38",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/c7fe9d9a057450a8_OLD_OPD_3_0.02_0.5.pt": "fb15759bb6d5b58d5773b24e7363e17983fa50a614b12dd6cbf842d9da2fc686",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/c7fe9d9a057450a8_OLD_OPD_4_0.02_0.5.pt": "2324dd10f9af5d53aced1d884fc45ab421b6604123c654927061c53ea96095de",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/c7fe9d9a057450a8_RL_0_0.02_0.5.pt": "5da5835a4f2b050a7556456108af8f1330db7a444b39d5b0fff36b0794105d72",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/c7fe9d9a057450a8_RL_1_0.02_0.5.pt": "833ca9c4f5b71c07fc90f25af77de1a6abe9bb95dadcc32c7eba7777da56a532",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/c7fe9d9a057450a8_RL_2_0.02_0.5.pt": "2cc618d8d89a953badadfe9be164c5c63746826308cd3762e68beaf6fd858e21",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/c7fe9d9a057450a8_RL_3_0.02_0.5.pt": "22c1c58b3be70ce69d1d3767c7cac23220aba2cc16943241953c2418a2dc876f",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_confirm/traces/c7fe9d9a057450a8_RL_4_0.02_0.5.pt": "2b460604fb90bae1f8cb20745b888495f7f272f1e2e112ffb80d56a3405e3b66"
+    }
+  },
+  "interpretation": "Descriptive complete-position coverage and predefined trace subset; no new significance tests, no revised calibration or targets"
+}

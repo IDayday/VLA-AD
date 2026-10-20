@@ -1,0 +1,21 @@
+{
+  "status": "NOT_RUN_PRECOMMITTED_PROCESS_GATE",
+  "gate_sha256": "22cb95cff9d42e5edb13a380c4e246fe1a827730f287cbf5cf0eb571a03c0e3a",
+  "methods": [
+    "P1_COLD",
+    "P2_WARM",
+    "C1_CONTINUE_OPD_exposure_matched",
+    "C1_CONTINUE_OPD_compute_matched",
+    "PROCESS_STUDENT_UNIFORM_TARGET",
+    "PROCESS_STUDENT_SHUFFLED_VALUE",
+    "PROCESS_STUDENT_NO_GUARD"
+  ],
+  "seeds": [
+    42,
+    43,
+    44
+  ],
+  "reason": "Held-out guarded mean kernel upper95 .0001497 below .002; no formal P student or Holm comparisons. Engineering/local diagnostic runs retained separately.",
+  "independent_GRPO_continues": true,
+  "optional_P3_ITERATIVE": "NOT_RUN_requires_fixed_reference_evidence"
+}

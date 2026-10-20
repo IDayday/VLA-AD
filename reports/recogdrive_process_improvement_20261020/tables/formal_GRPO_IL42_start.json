@@ -1,0 +1,33 @@
+{
+  "method": "native_GRPO",
+  "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+  "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+  "seed": 42,
+  "lr": 3e-05,
+  "steps": 15625,
+  "world": 8,
+  "global_batch": 32,
+  "group_size": 8,
+  "progress_weight": 5.0,
+  "BC_coeff": 0.1,
+  "split": "train_full",
+  "data_sha256": "e2616b8a707a4f1f7450a661f41856ad350ad48283bd947aa1fa93cd04fc446c",
+  "score_budget": 4000000,
+  "sampling_std_floor": 0.04,
+  "noise_clip": 5.0,
+  "logprob_std_floor": 0.1,
+  "logprob_clip": [
+    -5.0,
+    2.0
+  ],
+  "gamma_denoising": 0.6,
+  "owner": {
+    "host": "training-vla-zt",
+    "pid": 2147656,
+    "start_ticks": "1397167142",
+    "code_sha": "98491190429c2131bb51091c506813f8bdf4f152"
+  },
+  "parameter_count": 34329219,
+  "gradient_path": "Original forward_grpo unmodified, including original sample_chain graph behavior",
+  "probability_limitation": "Original Gaussian logprob surrogate for clipped-normal sampler; not exact native kernel density"
+}

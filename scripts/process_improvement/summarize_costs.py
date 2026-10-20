@@ -9,6 +9,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 import argparse
 import csv
+from datetime import datetime,timezone
 from collections import defaultdict
 
 from scripts.process_improvement.common import *
@@ -37,6 +38,21 @@ def sum_ledgers(paths):
                 peak_gpu_bytes_per_rank=[v.get('peak_gpu_bytes') for v in values],
                 peak_history_complete=all(v.get('peak_history_complete',False) for v in values),
                 source_files={str(p):hashlib.sha256(payload).hexdigest() for p,payload in payloads.items()})
+
+
+def diagnostic_receipts(root):
+    records=[]
+    paths=sorted(root.glob('*/complete_*.json'))+sorted(root.rglob('results.json'))
+    for path in paths:
+        value=read(path)
+        if path.name=='results.json' and not isinstance(value.get('budget'),dict):continue
+        summary=path.name=='results.json' and bool(list(path.parent.glob('complete_*.json')))
+        role='SUMMARY_NOT_COUNTED_AGAIN' if summary else 'EXECUTED_COUNTER_RECEIPT'
+        records.append(dict(name=str(path.parent.relative_to(root)),shard=path.stem,status=value['status'],
+            budget=None if summary else value.get('budget'),seconds=None if summary else value.get('seconds'),
+            cost_role=role,source_sha256=sha(path),
+            sampling_role=read(path.parent/'sampling_role.json') if (path.parent/'sampling_role.json').exists() else None))
+    return records
 
 
 def main():
@@ -73,19 +89,20 @@ def main():
             completion=done,ledger=ledger,
             telemetry_missing=ledger is None,
             source_config_sha256=sha(path)))
-    diagnostics=[]
-    for path in sorted((ROOT/'diagnostics').glob('*/complete_*.json')):
-        value=read(path)
-        diagnostics.append(dict(name=path.parent.name,shard=path.stem,status=value['status'],
-            budget=value.get('budget'),seconds=value.get('seconds'),source_sha256=sha(path),
-            sampling_role=read(path.parent/'sampling_role.json') if (path.parent/'sampling_role.json').exists() else None))
+    diagnostics=diagnostic_receipts(ROOT/'diagnostics')
+    diagnostic_budget=defaultdict(float)
+    for record in diagnostics:
+        if record['budget']:
+            for key,value in record['budget'].items():diagnostic_budget[key]+=value
     evaluations=[]
     for path in sorted((ROOT/'evaluation').glob('*/*/complete_*.json')):
         value=read(path)
         evaluations.append(dict(split=path.parents[1].name,name=path.parent.name,shard=path.stem,
             scenes=value['scenes'],seconds=value.get('seconds'),budget=value.get('budget'),source_sha256=sha(path)))
-    result=dict(study=STUDY,protocol_sha256=sha(ROOT/'protocol.yaml'),jobs=jobs,runs=runs,
+    result=dict(study=STUDY,generated_utc=datetime.now(timezone.utc).isoformat(),generator_sha256=sha(__file__),
+        protocol_sha256=sha(ROOT/'protocol.yaml'),jobs=jobs,runs=runs,
         diagnostics=diagnostics,evaluations=evaluations,
+        diagnostic_instrumented_counter_lower_bound=dict(diagnostic_budget),
         completed_job_lease_GPU_hours=sum(v['allocated_GPU_seconds'] for v in jobs if v['allocated_GPU_seconds'] is not None)/3600,
         unfinished_jobs=sum(v['status']=='RUNNING_OR_UNFINISHED' for v in jobs),
         unknown_finished_job_lease_costs=[v['name'] for v in jobs if not v['cost_complete'] and v['status']!='RUNNING_OR_UNFINISHED'],
@@ -97,6 +114,7 @@ def main():
             'Frozen VLM extraction is a shared study asset; raw producer/lease records retain its actual cost.',
             'Original IL/RL/VLM pretraining costs are unknown shared prerequisites; COPY has zero new planner optimization.',
             'Missing telemetry is null, never inferred from a different run; unfinished snapshots are lower-bound observations only.',
+            'Diagnostic counter total includes standalone/nested auxiliary results; summaries of shards are not added twice. Unmetered engineering tests are excluded from this lower bound, while their executed job GPU leases remain recorded.',
         ])
     write(ROOT/'analysis'/f'{a.snapshot_name}.json',result)
     write(REPORTS/'tables'/f'{a.snapshot_name}.json',result)

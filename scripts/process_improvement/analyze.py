@@ -70,7 +70,15 @@ def predictions(name,split,limit=None):
 
 def compare(names,baseline,split,repetitions=10000,limit=None,screening=None,cluster='parent',result_name=None):
     provenance=analysis_source(split)
-    old,rows=predictions(baseline,split,limit);new=[]
+    if isinstance(baseline,(list,tuple)):
+        if len(baseline)!=len(names) or not result_name:
+            raise ValueError('Paired initial policies require one baseline per training seed and an explicit result name')
+        initials=[predictions(name,split,limit) for name in baseline]
+        rows=initials[0][1]
+        assert all([r['token'] for r in other]==[r['token'] for r in rows] for _,other in initials)
+        old=np.stack([value for value,_ in initials])
+    else:old,rows=predictions(baseline,split,limit)
+    new=[]
     for name in names:
         value,other=predictions(name,split,limit)
         assert [r['token'] for r in rows]==[r['token'] for r in other]
@@ -81,9 +89,12 @@ def compare(names,baseline,split,repetitions=10000,limit=None,screening=None,clu
         high=(screen[:,:,-1]>=.90).all(1)
     field={'parent':'driver_record','log':'log_name'}[cluster]
     result=paired_bootstrap(old,np.stack(new),[r[field] for r in rows],high_mask=high,repetitions=repetitions)
-    result.update(methods=names,baseline=baseline,split=split,scenes=len(rows),high_screening=screening,cluster_unit=cluster,analysis_source=provenance)
+    result.update(methods=names,baseline=baseline if isinstance(baseline,str) else None,
+                  split=split,scenes=len(rows),high_screening=screening,cluster_unit=cluster,analysis_source=provenance)
+    if not isinstance(baseline,str):
+        result.update(paired_baselines=list(baseline),baseline_pairing='Each trained policy compared with its own seed-specific initialization, in the given order')
     suffix='' if cluster=='parent' else '_cluster_log'
-    suffix+=('' if baseline=='B0_IL' else '_vs_'+baseline)
+    suffix+=('' if baseline=='B0_IL' else '_vs_'+baseline if isinstance(baseline,str) else '_paired_initials')
     suffix+=('' if limit is None else '_limit'+str(limit))
     suffix+=('' if repetitions==10000 else '_boot'+str(repetitions))
     if cluster=='log':
@@ -121,6 +132,7 @@ def contrast(names,controls,baseline,split,repetitions=10000,screening=None,clus
 def main():
     p=argparse.ArgumentParser();p.add_argument('--local');p.add_argument('--split',default='dev')
     p.add_argument('--methods',nargs='+');p.add_argument('--baseline',default='B0_IL')
+    p.add_argument('--baseline-methods',nargs='+',help='Seed-matched own initial policies, compare mode only; requires explicit result name')
     p.add_argument('--screening');p.add_argument('--limit',type=int);p.add_argument('--repetitions',type=int,default=10000)
     p.add_argument('--control-methods',nargs='+')
     p.add_argument('--cluster',choices=['parent','log'],default='parent')
@@ -129,8 +141,10 @@ def main():
     if a.local:
         result=local(a.local,a.split,a.repetitions,not a.allow_partial)
     elif a.methods:
+        if a.baseline_methods and (a.control_methods or a.baseline!='B0_IL'):
+            raise ValueError('Seed-specific initials are for before/after comparison; risk contrasts require one common fixed baseline')
         if a.control_methods:result=contrast(a.methods,a.control_methods,a.baseline,a.split,a.repetitions,a.screening,a.cluster,a.result_name)
-        else:result=compare(a.methods,a.baseline,a.split,a.repetitions,a.limit,a.screening,a.cluster,a.result_name)
+        else:result=compare(a.methods,a.baseline_methods or a.baseline,a.split,a.repetitions,a.limit,a.screening,a.cluster,a.result_name)
     else:
         runs={p.parent.name:read(p) for p in (ROOT/'runs').glob('*/complete.json')}
         result=dict(study=STUDY,actual_completed_runs=runs,protocol_lock=read(ROOT/'protocol.lock.json'))

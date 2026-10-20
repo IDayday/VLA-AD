@@ -31,7 +31,7 @@ GPU 空闲快照采用两次观察，启动前仍原子复核，利用率回升�
 
 为防止整组训练被单卡队列持续分割，较高优先级的整组请求可以等待本研究已有短作业自然排空，并暂缓向该主机补入较低优先级任务。仅当全部八张卡均已确认空闲或由本研究正在运行的作业持有时才采用这项预留；存在未知/外部占用的主机不会因此锁住其余空闲卡。没有中断已有作业，实际启动仍重新检查物理空闲。预留状态保存在 `controller/state.json` 的 `reserved_for_gangs` 字段。
 
-若局部门禁已关闭且短任务真实完成，本地只有 4–7 卡空闲时，可使用额外验证的四卡 GRPO 分区。准入要求 `tests/native_GRPO_partition32.json` 的真实全局 B32、4/8 卡和精确恢复检查通过，且训练器、规划器、随机计划、资格脚本哈希一致；CPU 路由测试不能替代。仅作用于全新本地正式训练线，八卡全空时仍优先八卡。恢复始终使用保存的原主机和 world size，不将运行中的八卡线转成四卡。执行规则在 `configs/process_improvement/grpo_partition_execution.json`；实际资格尚需运行，不预报通过。
+若局部门禁已关闭且短任务真实完成，本地只有 4–7 卡空闲时，可使用额外验证的四卡 GRPO 分区。准入要求 `tests/native_GRPO_partition32.json` 的真实全局 B32、三起点 4/8 卡和精确恢复检查通过，且训练器、规划器、随机计划、资格脚本哈希一致；CPU 路由测试不能替代。仅作用于全新本地正式训练线，八卡全空时仍优先八卡。恢复始终使用保存的原主机和 world size，不将运行中的八卡线转成四卡。执行规则在 `configs/process_improvement/grpo_partition_execution.json`，实际资格已通过且原检查器失败保留。
 
 ```bash
 $PY scripts/process_improvement/coordinator.py --once
@@ -68,9 +68,14 @@ $PY scripts/process_improvement/analyze.py --methods MY_STUDENT --baseline B0_IL
   --screening B0_IL_screen --split dev --cluster log
 $PY scripts/process_improvement/analyze.py --methods MODEL42 MODEL43 MODEL44 \
   --baseline B0_RL --screening B0_IL_screen --split dev --result-name GROUP_vs_T0
+$PY scripts/process_improvement/analyze.py --methods GRPO_WARM_42_step977 GRPO_WARM_43_step977 GRPO_WARM_44_step977 \
+  --baseline-methods full_OPD_42_epoch1 full_OPD_43_epoch1 full_OPD_44_epoch1 \
+  --screening B0_IL_screen --split dev --result-name R2_step977_vs_own_initial
 $PY scripts/process_improvement/failure_audit.py --methods MODEL42 MODEL43 MODEL44 \
   --name GROUP --split dev
 $PY scripts/process_improvement/analyze.py --local local_parent_confirm --split diagnostic_parent_confirm
+$PY scripts/process_improvement/analyze_confirmation.py
+$PY scripts/process_improvement/render_confirmation.py
 $PY scripts/process_improvement/summarize_local.py --name local_parent_confirm --split diagnostic_parent_confirm
 $PY scripts/process_improvement/diagnose_dynamic.py --name dynamic_parent_teaching --limit 16 \
   --checkpoint "$PROCESS_RUN_ROOT/runs/full_OPD_42/head_2341.pt"
@@ -79,6 +84,8 @@ $PY scripts/process_improvement/export_student.py --name MY_STUDENT \
 ```
 
 导出验证从真实历史图像重新编码，独立子进程只加载导出的学生和 VLM。审计钩子禁止读取教师、原 IL 权重、metric cache、原始观测缓存、监督库和过程改进模块。需与训练侧缓存输入的原生轨迹逐元素一致。
+
+R2 的三个种子从各自的 warm 权重开始，分析新增 RL 收益时用 `--baseline-methods` 逐一配对，不能把 seed42 的 warm 当作全部初始策略；该模式必须给独立 `--result-name`。方法间 M_minus 风险差仍使用同一个固定 IL/T0 参照，不把不同初始化混成共同基准。上述 R2 命令须等对应真实评价全部完成才能执行。
 
 `infer_export.py` 可额外指定 `--benchmark-output PATH --benchmark-repeats 20`，在同一真实场景五组噪声上分别测量动作头和输入准备/图像 IO/VLM/动作头的热启动延迟。每种测量先暖机五次、逐次同步 GPU，并核验输出逐元素一致。动作头计时期间完整 VLM 仍驻留，所以该部分的总显存不是“独立动作头显存”；同时记录驻留与增量峰值。单场景重复计时不冒充总体时延置信区间，批量训练耗时不能替代本测量。
 

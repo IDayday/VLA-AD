@@ -2,7 +2,7 @@
 
 本文件记录工程验收，不宣称过程改进已经提高规划分数。运行产物根目录为 `/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020`。
 
-- CPU 数学/接口测试：118 passed（`audit/combined_cpu_tests_v27.log`，15 条依赖警告）。包括裁剪核、离散精确权重、多模态均值投影反例、无信息回报的 fit/test 分离、M=1、平坦值、ESS、半径、维度、分层统计，以及不可改写的校准锁、条件四轮候选端点、最终测试的候选/权重/种子/总体准入和资源交接约束。解析测试夹具只用于接口验收，不作为 NAVSIM 实验证据。
+- CPU 数学/接口测试：121 passed（`audit/combined_cpu_tests_v28.log`，15 条依赖警告）。包括裁剪核、离散精确权重、多模态均值投影反例、无信息回报的 fit/test 分离、M=1、平坦值、ESS、半径、维度、分层统计，以及不可改写的校准锁、条件四轮候选端点、最终测试的候选/权重/种子/总体准入和资源交接约束。解析测试夹具只用于接口验收，不作为 NAVSIM 实验证据。
 - 真实检查点数值验收：48 个模型/场景/采样模式组合通过；每个切分位置的 full vs suffix 逐元素一致。原生 DDIM 的 sigma、噪声裁剪和最后一步最终 clamp 被保留。`tests/parity.json`。
 - 关闭新目标后，旧 E3 与新普通 OPD 的八个真实场景 chain、梯度和 AdamW 参数更新一致；损失求均值顺序产生的最大差异为 `1.16e-10`。`tests/disabled_method.json`。
 - 同 world size 的连续/恢复训练参数及优化器状态逐元素一致。单卡与两卡的真实全局 batch 检查最大参数误差为 `1.1920928955078125e-7`。弹性 world size 恢复不支持。`tests/distributed_resume.json`。
@@ -38,10 +38,10 @@ CUDA graph 的前两次捕获暴露了原生 RoPE 的 `max().item()` 和冻结 e
 
 2026-10-20 扩大运行期间还记录了五次在创建 worker 前发生的 GPU 准入拒绝（检查后利用率回升）。这些是资源准入事件，不是模型/评分实验失败。原目录及错误均保留，明确复核无启动后使用新作业 ID 重排；网络超时或任何已有启动证据不会走该路径。调度器增加两次稳定空闲观察，并在原子复核失败后清除本轮该主机的旧空闲快照，防止级联误准入。复核记录在 `tables/prelaunch_admission_reviews.json`。
 
-新增的本地四卡执行准入逻辑已通过 CPU 测试：拒绝缺失/失败/源代码过期或未覆盖 IL/RL/WARM 三种起点的数值资格，不作用于不同全局 batch，不占用尚未完成的短诊断，不改变已经初始化或正在恢复的训练线，并从真实配置恢复原 world size 和主机。真实全局 B32 的三种起点 4/8 卡及 IL 四卡精确恢复资格另排队执行（`qualify_grpo_partition32.py`），在生成有效 PASS 回执前不放行四卡正式训练。它是原协议已允许的执行分区验证，不改变奖励、损失、采样、全局 batch 或科学预算，也不构成新方法。
+新增的本地四卡执行准入逻辑已通过 CPU 测试：拒绝缺失/失败/源代码过期或未覆盖 IL/RL/WARM 三种起点的数值资格，不作用于不同全局 batch，不占用尚未完成的短诊断，不改变已经初始化或正在恢复的训练线，并从真实配置恢复原 world size 和主机。修正检查器后的真实全局 B32 三起点 4/8 卡及 IL 四卡精确恢复资格已完成并通过；只作用于原协议允许的执行分区，不改变奖励、损失、采样、全局 batch 或科学预算，也不构成新方法。
 
 启动源码归档的新增检查也通过：实际源码自检保存并逐项校验 125 个小源文件/YAML 的 SHA（`audit/source_archive_real_selfcheck/receipt.json`）；CPU 检查证明不会混入模型/缓存/环境文件、已有归档不可覆盖、溯源预检查失败时不会创建子进程。该检查不算模型实验，也不会给旧作业补造不存在的历史归档。
 
 全局 B32 的四/八卡新资格首次执行失败，原作业与日志保留：`jobs/qualification_native_GRPO_partition32/`。失败发生在检查器对所有浮点状态一律要求有限值，而原生 `EtaFixed(base_eta=1)` 使用 `atanh(1)=+inf` 存储固定 eta，再通过 `tanh(+inf)=1` 输出有限常量。真实两侧仅 `eta.eta_logit`、`old_policy.eta.eta_logit` 非有限且逐元素相同；它们不参与优化。所有其他基础参数、状态和优化器值经原容差重查通过，IL 四次更新的四/八卡最大参数差为 `5.9604645e-8`。
 
-修正只显式验证这两个已知常量的名称、形状、正无穷、精确一致及实际 eta=1，未放宽参数/优化器数值容差；新增测试拒绝核心或优化器的 NaN/Inf 和 eta 不一致。已经完成的两条真实 IL 资格线按检查点 SHA 与未变执行源码复用，不覆盖失败，也不重复宣称新训练。独立的新作业 `qualification_native_GRPO_partition32_reviewed_constants` 将继续实际 IL 四卡精确恢复及 RL/warm 分区检查，全部通过前仍无四卡 PASS。审计见 `tables/partition32_constant_review.json`。
+修正只显式验证这两个已知常量的名称、形状、正无穷、精确一致及实际 eta=1，未放宽参数/优化器数值容差；新增测试拒绝核心或优化器的 NaN/Inf 和 eta 不一致。已经完成的两条真实 IL 资格线按检查点 SHA 与未变执行源码复用，不覆盖失败，也不重复宣称新训练。独立的新作业 `qualification_native_GRPO_partition32_reviewed_constants` 随后完成实际 IL 四卡精确恢复及 RL/warm 分区检查：IL/RL/warm 的四/八卡最大参数差分别为 `5.9604645e-8 / 1.4901161e-8 / 1.4901161e-8`，IL 连续/恢复的参数及优化器逐元素相同。每条资格线四次更新、1,024 次真实候选评分；复用的两条与后来实际执行的五条合计 7,168 次，没有重复计入复用数据。原失败仍为 FAILED。审计见 `tables/partition32_constant_review.json`，实际 PASS 及源文件/初始化权重 SHA 见 `tables/native_GRPO_partition32.json`。
