@@ -23,6 +23,8 @@ $PY scripts/process_improvement/audit_parent_ids.py
 
 所有 GPU 作业应使用 `dispatch.launch` 或 `run_suite.py --host HOST --gpus ... --job-name UNIQUE`。调度入口每次读取 `/mnt/project/server_dispatch_policy.json`，逐卡检查 UUID、显存、利用率和本研究的持有记录。不允许覆盖已有作业或静默重试失败作业。`coordinator.py` 是实际使用的阶段编排器，会等待校准结果、锁定学习率、派发扩大规模 OPD/Anchor 和独立 GRPO，并在独立校准记录上验证局部过程目标。
 
+八台授权 canonical 主机的空闲设备均参与动态检查。新 8-GPU GRPO 初期使用非本地主机池，本地用于推进全量训练及短校准/诊断。过程门禁最终为 `NOT_SUPPORTED` 或已用尽登记增样的 `INCONCLUSIVE`、warm 已锁定、所有当前短任务成功完成后，空闲本地整机也可自动接入新 GRPO 训练线；失败/未完成目录不能触发交接，已有恢复任务不更换原主机。过程门禁支持时保留其后续训练容量，不让独立长对照抢占前置验证。
+
 ```bash
 $PY scripts/process_improvement/coordinator.py --once
 $PY scripts/process_improvement/controller_control.py start

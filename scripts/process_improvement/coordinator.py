@@ -209,6 +209,28 @@ print(json.dumps([int(r.split(',')[0]) for r in rows if int(r.split(',')[1])<=10
     return [gpu for gpu in remote(host,code) if gpu not in occupied]
 
 
+def local_rl_handoff_ready(tasks):
+    """Release the short-work pool only after its actual prerequisites drain.
+
+    A supported process route retains its single-GPU capacity for real process
+    training. Closed negative/inconclusive routes leave independent GRPO free
+    to use the local eight GPUs. Resume jobs retain their original host below.
+    """
+    gate=ROOT/'selection/process_gate.json'
+    warm=ROOT/'selection/warm_start.json'
+    if not gate.exists() or not warm.exists():return False
+    decision=read(gate)
+    if decision['status'] not in ['NOT_SUPPORTED','INCONCLUSIVE'] or decision['expansion_allowed']:
+        return False
+    # Failed or unfinished short work is still a real dependency. Registry
+    # existence alone is not completion and never hides a failed qualification.
+    for task in tasks:
+        if task['gpus']!=1:continue
+        done=ROOT/'jobs'/task['name']/'complete.json'
+        if not done.exists() or read(done)['status']!='COMPLETE':return False
+    return True
+
+
 def main():
     p=argparse.ArgumentParser();p.add_argument('--once',action='store_true');p.add_argument('--formal-controls',action='store_true');a=p.parse_args()
     folder=ROOT/'controller';folder.mkdir(parents=True,exist_ok=True)
@@ -219,10 +241,14 @@ def main():
             identity();assert sha(ROOT/'protocol.yaml')==read(ROOT/'protocol.lock.json')['sha256']
             write(folder/'phase.json',dict(phase='scheduling',owner=identity()))
             tasks=ready_tasks(a.formal_controls);free={};started=[];errors=[]
+            handoff=local_rl_handoff_ready(tasks)
             for task in tasks:
                 job=ROOT/'jobs'/task['name']
                 if job.exists():continue # No implicit retry/overwrite of failed jobs.
-                for host in task['hosts']:
+                hosts=list(task['hosts'])
+                if handoff and task['gpus']==8 and not any('--resume' in command for command in task['commands']):
+                    if 'training-vla-zt' not in hosts:hosts.append('training-vla-zt')
+                for host in hosts:
                     if host not in free:
                         try:free[host]=available(host)
                         except Exception as exc:errors.append(dict(host=host,error=repr(exc)));free[host]=[]
@@ -234,7 +260,7 @@ def main():
                     except Exception as exc:errors.append(dict(name=task['name'],error=repr(exc)))
                     break
             state=dict(utc=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),ready_tasks=[t['name'] for t in tasks],
-                       launched=started,errors=errors,owner=identity())
+                       launched=started,errors=errors,owner=identity(),local_eight_GPU_handoff_ready=handoff)
             write(folder/'state.json',state)
             write(folder/'phase.json',dict(phase='idle',owner=identity()))
             print('COORDINATOR',state,flush=True)
