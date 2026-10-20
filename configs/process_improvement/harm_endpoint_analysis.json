@@ -1,0 +1,13 @@
+{
+  "status": "LOCKED_ANALYSIS_CLARIFICATION_BEFORE_FIRST_FORMAL_ENDPOINT",
+  "recorded_utc": "2026-10-20T22:36:44.761065+00:00",
+  "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+  "basis": "Existing formal_harm_boundary: preserve stopped lineage, report budget-limited scope, continue independent controls; no scientific rule changed",
+  "exact_budget_groups": "A three-seed fixed-endpoint estimate requires all three actual checkpoints at that endpoint. Never omit stopped seeds, copy earlier outputs to a higher-step alias, interpolate or fill expected results.",
+  "absent_endpoints": "Higher fixed endpoints after registered harm stopping remain NOT_RUN. Report every stopped seed, actual step/scores and harm record.",
+  "optional_stopping_strategy": "A separately named final strategy may group each seeds last actual policy under the registered stopping rule; list all actual steps/scores and call it a budget-cap stopping strategy, never equal actual scoring budget.",
+  "final_test": "Lock unique actual developed checkpoints and their roles before any final Navtest; repeated use in analysis groups does not create new training seeds.",
+  "current_formal_steps": {
+    "GRPO_IL_42": 640
+  }
+}

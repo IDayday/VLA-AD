@@ -1,0 +1,21 @@
+{
+  "status": "LOCKED",
+  "selected": {
+    "lr": 1e-05,
+    "PDMS": 0.9127938628030239,
+    "checkpoint_sha256": "d7176342612fd3ab675e90dd0d4e9a6745a3a207c788e95fe6407d9fd8bc5cc0"
+  },
+  "trials": [
+    {
+      "lr": 1e-05,
+      "PDMS": 0.9127938628030239,
+      "checkpoint_sha256": "d7176342612fd3ab675e90dd0d4e9a6745a3a207c788e95fe6407d9fd8bc5cc0"
+    },
+    {
+      "lr": 3e-05,
+      "PDMS": 0.9124259071185691,
+      "checkpoint_sha256": "1de97cf14571fa867a5c4503f7738a7087ffa124acf64ca5328f289a5393db64"
+    }
+  ],
+  "source": "Same selected warm recipe, training seed42, complete train25k epoch per LR, cal-tune only"
+}
