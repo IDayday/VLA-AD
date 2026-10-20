@@ -1,0 +1,18 @@
+{
+  "status": "REVIEWED_CHECKER_CONSTANT_ERROR_ONLY",
+  "original_failed_job_sha256": "3b84081871a92c0eae72418bc77c010df962d69f0521418f4afef205d723f308",
+  "original_worker_log_sha256": "0e051906aa384e21e8b2142cd5e61c96c4be9e40c9087b3beb1767d1e0becbc2",
+  "reused_checkpoints": {
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_B32_IL_continuous8/latest.pt": "bd91930cc1f30cfcea3f777cf1b733a412bdd01f7cb4816f8d9fea521f8c1a11",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_B32_IL_continuous4/latest.pt": "5dbe06f3a4dd15f72951b8f3d858f158e72d193f583319fc266947335decbc88"
+  },
+  "unchanged_execution_sources": {
+    "scripts/process_improvement/train_grpo.py": "39dacb5b170c63391d39eebb7e2835bff8806acba0f5eff219a82c3a263521e8",
+    "navsim/agents/recogdrive/recogdrive_diffusion_planner.py": "47000d0d7e1c432ec8d4dd8bb84cdd80b263d921dbd3e45ec6acad7dbe60260b",
+    "navsim/agents/recogdrive/process_improvement/rng_plan.py": "b986f3f168408be808484a9d80685db27fd463b14b585939ef156f67ed589bc7"
+  },
+  "IL_init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+  "actual_max_parameter_error_excluding_exact_fixed_constants": 5.960464477539063e-08,
+  "reason": "Native frozen EtaFixed(base_eta=1) stores atanh(1)=+inf and returns tanh(+inf)=1; both copies exactly equal. All active tensors/optimizer values finite and original parity tolerances retained.",
+  "safety": "Only completed real four-update IL partitions reused; no new PASS until remaining RL/WARM and world4 exact resume actually pass."
+}
