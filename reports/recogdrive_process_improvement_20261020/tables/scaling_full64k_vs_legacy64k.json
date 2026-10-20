@@ -1,0 +1,76 @@
+{
+  "point": {
+    "G": 0.0034664933744869703,
+    "M_plus": 0.0004364193245692746,
+    "M_minus": -0.0030300740499176887,
+    "material_drop_fraction": -0.008844339622641507,
+    "positive_to_zero_fraction": -0.0005896226415094338,
+    "delta_NC": 0.001474056603773585,
+    "delta_DAC": -3.469446951953614e-18,
+    "delta_TTC": 0.004834905660377358,
+    "high_to_zero_fraction": -0.0008583690987124461
+  },
+  "CI95": {
+    "G": [
+      0.0001702093488002954,
+      0.006769623284562473
+    ],
+    "M_plus": [
+      -0.0032797113919755846,
+      0.0031247188183999306
+    ],
+    "M_minus": [
+      -0.007090520654675229,
+      -0.0005101753610932285
+    ],
+    "material_drop_fraction": [
+      -0.019774529052139767,
+      -0.002550890519140451
+    ],
+    "positive_to_zero_fraction": [
+      -0.0036900936701674708,
+      0.002299182778552915
+    ],
+    "delta_NC": [
+      0.0,
+      0.004212391826144172
+    ],
+    "delta_DAC": [
+      -0.003299297993069658,
+      0.0028303001039964347
+    ],
+    "delta_TTC": [
+      0.0011938879577158771,
+      0.009983578782916653
+    ],
+    "high_to_zero_fraction": [
+      -0.007352941176470588,
+      0.003656390759879638
+    ]
+  },
+  "parent_count": 15,
+  "training_seeds": 1,
+  "inference_seeds": 5,
+  "bootstrap_repetitions": 10000,
+  "one_sided_centered_bootstrap_p_G": 0.019598040195980403,
+  "one_sided_centered_bootstrap_p_M_minus_benefit": 0.06179382061793821,
+  "estimand": "New minus control; both policies M_minus refer to identical fixed baseline; global paired inference IDs shared across all sampled training policies",
+  "new_methods": [
+    "full_OPD_42_exposure64000"
+  ],
+  "control_methods": [
+    "scaling_legacy_4k_OPD_42_epoch64k"
+  ],
+  "fixed_baseline": "B0_IL",
+  "split": "dev",
+  "control_training_replicates": 1,
+  "new_training_replicates": 1,
+  "cluster_unit": "parent",
+  "analysis_source": {
+    "script_sha256": "4b37cb47db4b10beca6d8266babff74978d4cab8916e1dcf00f0dacb0a5b14ae",
+    "statistics_sha256": "19478782b70a48a803d7ce746a40b2c698c8e8afac9ddae4ec5875749cbcf887",
+    "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+    "population_sha256": "68020f6d0cfd4d518aaa80c254f3018cd1be09e032a50d1c5a34dfa23522fe27",
+    "bootstrap_seed": 20261020
+  }
+}

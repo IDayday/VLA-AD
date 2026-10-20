@@ -56,7 +56,7 @@ def main():
     target=ROOT/'analysis'/f'failures_{a.split}_{a.name}.json';write(target,value)
     write(REPORTS/'tables'/target.name,value)
     with (REPORTS/'tables'/f'failures_{a.split}_{a.name}.csv').open('w',newline='') as f:
-        writer=csv.DictWriter(f,fieldnames=list(result[0]));writer.writeheader();writer.writerows(result)
+        writer=csv.DictWriter(f,fieldnames=list(result[0]),lineterminator='\n');writer.writeheader();writer.writerows(result)
     print('REAL_PAIRED_FAILURE_AUDIT',a.name,result,flush=True)
 
 

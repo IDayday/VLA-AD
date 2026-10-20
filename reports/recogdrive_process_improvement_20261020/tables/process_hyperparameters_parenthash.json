@@ -1,0 +1,87 @@
+{
+  "status": "LOCKED_FOR_INDEPENDENT_CONFIRMATION",
+  "primary_source": "OLD_OPD",
+  "chosen": {
+    "source": "OLD_OPD",
+    "temperature": 0.02,
+    "rho": 0.5,
+    "fields": [
+      "selection_gain",
+      "projection_gain",
+      "guarded_gain",
+      "accepted_fraction",
+      "ess",
+      "radius",
+      "fit_value_range"
+    ],
+    "noise_hierarchy": {
+      "mean": [
+        0.0017360279301084727,
+        0.0006964811311367691,
+        0.000191261522641225
+      ],
+      "CI95": [
+        [
+          0.0003431342839643535,
+          0.0001294595130851333,
+          2.29625018623509e-05
+        ],
+        [
+          0.003987313531217561,
+          0.0016973724871236235,
+          0.0004628652932933509
+        ]
+      ],
+      "parents": 7,
+      "scenes": 512,
+      "candidate_banks": 2,
+      "suffix_replicates": 16,
+      "conditional_on_fixed_rollin_seed": true
+    },
+    "mean": [
+      0.0017360279301084787,
+      0.0006964811311367704,
+      0.00019126152264122524,
+      0.010937499999999996,
+      15.775683348439637,
+      0.006815098507116082,
+      0.009464655478950597
+    ],
+    "CI95": [
+      [
+        0.0003431342839643535,
+        0.0001294595130851333,
+        2.29625018623509e-05,
+        0.0065040650406504065,
+        15.672339924434855,
+        0.005303332009801972,
+        0.0036137788537963936
+      ],
+      [
+        0.003987313531217561,
+        0.0016973724871236235,
+        0.0004628652932933509,
+        0.01595330739299611,
+        15.867478197440501,
+        0.008411299905141638,
+        0.018511111501525967
+      ]
+    ],
+    "parents": 7,
+    "scenes": 512
+  },
+  "rule": "Highest cal-tune guarded gain; exact ties prefer smaller rho then larger temperature",
+  "scope": "Choice only, not a confirmation claim; cal-confirm remains unused",
+  "source_manifest_sha256": "9e1b66a815e8d225f911dfa5c82a9441c7f7e7c1002ffa925401ce82b79eef1a",
+  "diagnostic_plan": {
+    "train_split": "diagnostic_parent_train",
+    "cal_split": "diagnostic_parent_cal",
+    "confirm_split": "diagnostic_parent_confirm",
+    "train_name": "local_parent_train_grid",
+    "cal_name": "local_parent_cal_grid",
+    "confirm_name": "local_parent_confirm",
+    "expansion_name": "local_parent_confirm_expand32",
+    "choice_file": "process_hyperparameters_parenthash.json",
+    "config": "configs/process_improvement/selected_process_parenthash.yaml"
+  }
+}

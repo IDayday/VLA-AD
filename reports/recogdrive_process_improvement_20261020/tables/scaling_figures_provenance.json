@@ -1,0 +1,17 @@
+{
+  "script_sha256": "e061be8058700c7a44fca635f01748fa3b39473a322cdc242f22abadc0744b7c",
+  "sources": {
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/scaling_scaling_legacy_4k_OPD_42_epoch2_vs_B0_IL.json": "214544833a8c6a8e30f3f1987fd995edc408495e0b4d7f552177437dbc497fdc",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/scaling_scaling_legacy_4k_OPD_42_epoch8_vs_B0_IL.json": "26dbed8ffff6bac18b362dd49ea0e3d6ad9ef843bf8a590b56aee174e1f1e7e2",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/scaling_scaling_legacy_4k_OPD_42_epoch64k_vs_B0_IL.json": "72656dad8fb024a758a47ac32cf57f895bf88fa2ea629ee6e5d47856845b3c9f",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/scaling_scaling_train_25k_OPD_42_epoch1_vs_B0_IL.json": "3d4007f708a2b7c786dbe5cdbe15a4b2e0c99579e0ad83b838976eb1e1547ebb",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/scaling_scaling_train_25k_OPD_42_epoch2_vs_B0_IL.json": "f5b7e1a6446986d1d5be6ed6ee1d5da498231ca5faf499a88f5e86851910cbde",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/scaling_scaling_train_25k_OPD_42_epoch64k_vs_B0_IL.json": "35692bedf572842de7bf4849aa09ce9b179ad838555f4abc16c83cf6d957b017",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/scaling_scaling_train_25k_OPD_42_epoch4_vs_B0_IL.json": "a6f7c9d262328eaeb1be57d0c2171615e98524ed8df42998b70d1d72bbe4df45",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/scaling_full_OPD_42_exposure64000_vs_B0_IL.json": "223ccab1c17f2428fd53e1be2e8ccd9a036883f42df20aa8a8f1af4d9824a341"
+  },
+  "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+  "training_seeds": 1,
+  "inference_seeds": 5,
+  "scope": "Seed42 scaling diagnostics; not an ensemble or a replacement for full three-seed inference"
+}

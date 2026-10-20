@@ -1,0 +1,15 @@
+{
+  "scope": "Execution routing only; frozen scientific protocol remains unchanged",
+  "source_protocol_clause": "training.alternate_world_size: measured_same_global_batch_partition_within_validated_FP32_error",
+  "qualification_receipt": "tests/native_GRPO_partition32.json",
+  "required_world_sizes": [
+    4,
+    8
+  ],
+  "global_batch": 32,
+  "admission": "Only fresh formal_GRPO local jobs, after closed process gate and actual short-task completion; 4<=idle<8; preferred8 if available",
+  "resume": "Original host and saved world size; never repartition existing optimizer or random states",
+  "cost": "Report actual per-rank GPU seconds, all-rank ledger and whole-job lease separately",
+  "science": "Same native sampler, reward, group8, IL BC, loss normalization, semantic scene/noise plan, update and scoring endpoints",
+  "status": "Real numerical qualification queued; CPU routing tests cannot admit the partition"
+}

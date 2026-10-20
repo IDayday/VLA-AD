@@ -1,0 +1,92 @@
+[
+  {
+    "name": "full64k_vs_legacy64k",
+    "returncode": 0,
+    "command": [
+      "/root/miniconda3/envs/navsim/bin/python",
+      "scripts/process_improvement/analyze.py",
+      "--methods",
+      "full_OPD_42_exposure64000",
+      "--control-methods",
+      "scaling_legacy_4k_OPD_42_epoch64k",
+      "--baseline",
+      "B0_IL",
+      "--screening",
+      "B0_IL_screen",
+      "--result-name",
+      "scaling_full64k_vs_legacy64k"
+    ]
+  },
+  {
+    "name": "full64k_vs_train25k64k",
+    "returncode": 0,
+    "command": [
+      "/root/miniconda3/envs/navsim/bin/python",
+      "scripts/process_improvement/analyze.py",
+      "--methods",
+      "full_OPD_42_exposure64000",
+      "--control-methods",
+      "scaling_train_25k_OPD_42_epoch64k",
+      "--baseline",
+      "B0_IL",
+      "--screening",
+      "B0_IL_screen",
+      "--result-name",
+      "scaling_full64k_vs_train25k64k"
+    ]
+  },
+  {
+    "name": "train25k64k_vs_legacy64k",
+    "returncode": 0,
+    "command": [
+      "/root/miniconda3/envs/navsim/bin/python",
+      "scripts/process_improvement/analyze.py",
+      "--methods",
+      "scaling_train_25k_OPD_42_epoch64k",
+      "--control-methods",
+      "scaling_legacy_4k_OPD_42_epoch64k",
+      "--baseline",
+      "B0_IL",
+      "--screening",
+      "B0_IL_screen",
+      "--result-name",
+      "scaling_train25k64k_vs_legacy64k"
+    ]
+  },
+  {
+    "name": "legacy8epochs_vs_2epochs",
+    "returncode": 0,
+    "command": [
+      "/root/miniconda3/envs/navsim/bin/python",
+      "scripts/process_improvement/analyze.py",
+      "--methods",
+      "scaling_legacy_4k_OPD_42_epoch8",
+      "--control-methods",
+      "scaling_legacy_4k_OPD_42_epoch2",
+      "--baseline",
+      "B0_IL",
+      "--screening",
+      "B0_IL_screen",
+      "--result-name",
+      "scaling_legacy8epochs_vs_2epochs"
+    ]
+  },
+  {
+    "name": "train25k4epochs_vs_1epoch",
+    "returncode": 0,
+    "command": [
+      "/root/miniconda3/envs/navsim/bin/python",
+      "scripts/process_improvement/analyze.py",
+      "--methods",
+      "scaling_train_25k_OPD_42_epoch4",
+      "--control-methods",
+      "scaling_train_25k_OPD_42_epoch1",
+      "--baseline",
+      "B0_IL",
+      "--screening",
+      "B0_IL_screen",
+      "--result-name",
+      "scaling_train25k4epochs_vs_1epoch"
+    ]
+  }
+]

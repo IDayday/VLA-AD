@@ -54,6 +54,8 @@ def tasks():
                 task=evaluation_task(baseline,init,split='cal_confirm',priority=0)
                 if task:ready.append(task)
             target=977;resume=False;hosts=RL_HOSTS
+            world=read(run/'config.json')['world'] if (run/'config.json').exists() else 8
+            if world not in [4,8]:raise ValueError('Unqualified formal GRPO world size')
             if (run/'paused.json').exists():
                 paused=read(run/'paused.json');step=paused['step'];label=f'{name}_step{step}'
                 checkpoint=run/f'head_{step}.pt'
@@ -78,7 +80,7 @@ def tasks():
                 # Actual running owner is authoritative if a pre-launch
                 # admission was explicitly retried under a new job identity.
                 hosts=[read(run/'config.json')['owner']['host']]
-            command=['-m','torch.distributed.run','--standalone','--nproc_per_node=8',
+            command=['-m','torch.distributed.run','--standalone',f'--nproc_per_node={world}',
                      'scripts/process_improvement/train_grpo.py','--name',name,'--init',init,
                      '--seed',str(seed),'--lr',str(recipe['lr']),'--score-budget','4000000']
             if target<15625:command+=['--stop-after',str(target)]
@@ -86,5 +88,5 @@ def tasks():
             # Complete the same low-cost endpoint across independent seeds
             # before occupying an entire host with a larger-budget extension.
             priority=7 if not resume else 8 if target==3907 else 9
-            ready.append(dict(name=f'formal_{name}_to{target}',priority=priority,gpus=8,hosts=hosts,commands=[command]))
+            ready.append(dict(name=f'formal_{name}_to{target}',priority=priority,gpus=world,hosts=hosts,commands=[command]))
     return ready

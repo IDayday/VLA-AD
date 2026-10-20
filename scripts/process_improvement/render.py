@@ -30,7 +30,7 @@ def main():
                       source=str(folder)))
     if metrics:
         with (tables/f'actual_{a.split}_metrics.csv').open('w',newline='') as stream:
-            writer=csv.DictWriter(stream,fieldnames=list(metrics[0]));writer.writeheader();writer.writerows(metrics)
+            writer=csv.DictWriter(stream,fieldnames=list(metrics[0]),lineterminator='\n');writer.writeheader();writer.writerows(metrics)
         # These are per-training-policy descriptive means. Aggregated three-seed
         # inferential comparisons are separate, never pseudo-ensembles here.
         fig,ax=plt.subplots(figsize=(max(7,len(metrics)*.42),4.2))

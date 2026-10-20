@@ -103,7 +103,7 @@ def main():
     table=REPORTS/'tables'/f'{a.snapshot_name}_runs.csv'
     with table.open('w',newline='') as stream:
         keys=['name','method','split','seed','world','status','actual_steps','GPU_seconds','physical_scores','logical_scores','teacher_DiT_calls','student_DiT_calls','telemetry_missing']
-        writer=csv.DictWriter(stream,fieldnames=keys);writer.writeheader()
+        writer=csv.DictWriter(stream,fieldnames=keys,lineterminator='\n');writer.writeheader()
         for run in runs:
             row={k:run[k] for k in keys if k in run}
             measured=run['ledger'] if run['ledger'] and run['ledger']['status']=='MEASURED' else None

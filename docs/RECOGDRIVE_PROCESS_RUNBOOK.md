@@ -29,6 +29,8 @@ GPU 空闲快照采用两次观察，启动前仍原子复核，利用率回升�
 
 为防止整组训练被单卡队列持续分割，较高优先级的整组请求可以等待本研究已有短作业自然排空，并暂缓向该主机补入较低优先级任务。仅当全部八张卡均已确认空闲或由本研究正在运行的作业持有时才采用这项预留；存在未知/外部占用的主机不会因此锁住其余空闲卡。没有中断已有作业，实际启动仍重新检查物理空闲。预留状态保存在 `controller/state.json` 的 `reserved_for_gangs` 字段。
 
+若局部门禁已关闭且短任务真实完成，本地只有 4–7 卡空闲时，可使用额外验证的四卡 GRPO 分区。准入要求 `tests/native_GRPO_partition32.json` 的真实全局 B32、4/8 卡和精确恢复检查通过，且训练器、规划器、随机计划、资格脚本哈希一致；CPU 路由测试不能替代。仅作用于全新本地正式训练线，八卡全空时仍优先八卡。恢复始终使用保存的原主机和 world size，不将运行中的八卡线转成四卡。执行规则在 `configs/process_improvement/grpo_partition_execution.json`；实际资格尚需运行，不预报通过。
+
 ```bash
 $PY scripts/process_improvement/coordinator.py --once
 $PY scripts/process_improvement/controller_control.py start
@@ -48,7 +50,7 @@ $PY scripts/process_improvement/train.py --method OPD --split train_25k \
   --epochs 1 --lr 1e-5 --name tune_OPD_1e-5
 $PY -m torch.distributed.run --standalone --nproc_per_node=8 \
   scripts/process_improvement/train_grpo.py --init IL --name GRPO_IL_42 \
-  --score-budget 4000000 --stop-after 977 --seed 42 --lr 1e-5
+  --score-budget 4000000 --stop-after 977 --seed 42 --lr 3e-5
 ```
 
 GRPO 的 977、3907、15625 更新分别越过 25 万、100 万、400 万真实候选评分端点；应报告实际值和完整更新造成的超额。`--stop-after` 保存后暂停，不构成科学完成。只能用锁定的 cal-confirm 伤害边界决定提前终止；否则继续下一端点。普通 OPD 的物理评分为零，不能用评分预算决定其训练长度。
@@ -90,6 +92,10 @@ $PY scripts/process_improvement/run_suite.py --phase final_eval --rank 0 --shard
 ```bash
 $PY scripts/process_improvement/summarize_costs.py --snapshot-name actual_costs
 $PY scripts/process_improvement/render.py --split dev
+$PY scripts/process_improvement/render_full.py
+$PY scripts/process_improvement/render_scaling.py
+$PY scripts/process_improvement/plot_cases.py --method full_OPD_42_epoch1 --split dev
+$PY scripts/process_improvement/plot_cases.py --method full_ANCHOR_42_epoch1 --split dev
 ```
 
 成本表区分独占 GPU 作业租用时间和训练内 ledger，两者属于同一工作的不同观察口径，不能相加。失败、中断、资格检查、调参和评价作业保留；尚未同步的 rank 快照及缺失遥测用明确状态或 null 表示。早期一个 GRPO 学习率试验没有 DiT hook 计数，不能拿另一次训练的计数补成实测。原 IL/RL/VLM 的预训练成本未知，作为共同前置资产说明；warm 起点的本轮实际训练成本仍需计入后续方法。

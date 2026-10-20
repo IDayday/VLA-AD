@@ -1,0 +1,132 @@
+{
+  "point": {
+    "G": -0.01775474112933312,
+    "M_plus": 0.007756057013347664,
+    "M_minus": 0.02551079814268078,
+    "material_drop_fraction": 0.15507075471698112,
+    "single_output_drop_probability": 0.13891509433962265,
+    "zero_output_fraction": 0.01839622641509434,
+    "zero_scene_mean_fraction": 0.01179245283018868,
+    "positive_to_zero_fraction": 0.00884433962264151,
+    "zero_to_positive_fraction": 0.001768867924528302,
+    "PDMS": 0.9318727951149485,
+    "median_scene_PDMS": 0.9656998307595083,
+    "delta_NC": -0.0008254716981132075,
+    "delta_DAC": -0.011556603773584908,
+    "delta_EP": -0.0169909606870529,
+    "delta_TTC": -0.009433962264150943,
+    "delta_Comfort": 0.0,
+    "delta_DDC": 0.0027122641509433965,
+    "delta_PDMS": -0.01775474112933312,
+    "high_M_minus": 0.008407279330790576,
+    "high_to_zero_fraction": 0.0034334763948497852,
+    "high_to_near_zero_fraction": 0.0034334763948497852
+  },
+  "CI95": {
+    "G": [
+      -0.023977291913732678,
+      -0.008807054336815284
+    ],
+    "M_plus": [
+      0.004913404150083153,
+      0.012361343434694047
+    ],
+    "M_minus": [
+      0.015688504897644596,
+      0.034547890842351096
+    ],
+    "material_drop_fraction": [
+      0.11407338040949352,
+      0.18538202953055158
+    ],
+    "single_output_drop_probability": [
+      0.10358266831094935,
+      0.1740047241389537
+    ],
+    "zero_output_fraction": [
+      0.00741186832292453,
+      0.03617990421975241
+    ],
+    "zero_scene_mean_fraction": [
+      0.004361812837670267,
+      0.02663937754982477
+    ],
+    "positive_to_zero_fraction": [
+      0.0033707486598625034,
+      0.019271988291747554
+    ],
+    "zero_to_positive_fraction": [
+      0.0,
+      0.005410450495160739
+    ],
+    "PDMS": [
+      0.8994046368936534,
+      0.9520914108160272
+    ],
+    "median_scene_PDMS": [
+      0.9271639346648897,
+      0.9918524080432567
+    ],
+    "delta_NC": [
+      -0.0029952042386341073,
+      0.0010517494153806381
+    ],
+    "delta_DAC": [
+      -0.022104187570863913,
+      -0.0039809484058595445
+    ],
+    "delta_EP": [
+      -0.031196630363650852,
+      -0.007207346077327116
+    ],
+    "delta_TTC": [
+      -0.022342325726137546,
+      0.01002623388489927
+    ],
+    "delta_Comfort": [
+      0.0,
+      0.0
+    ],
+    "delta_DDC": [
+      0.000158160597729841,
+      0.007740438347282297
+    ],
+    "delta_PDMS": [
+      -0.023977291913732678,
+      -0.008807054336815284
+    ],
+    "high_M_minus": [
+      0.004711996691191954,
+      0.0123127408811961
+    ],
+    "high_to_zero_fraction": [
+      0.0,
+      0.01090522454644592
+    ],
+    "high_to_near_zero_fraction": [
+      0.0,
+      0.01090522454644592
+    ]
+  },
+  "parent_count": 15,
+  "training_seeds": 1,
+  "inference_seeds": 5,
+  "bootstrap_repetitions": 10000,
+  "one_sided_centered_bootstrap_p": 1.0,
+  "scope": "Parent-block bootstrap crossed with training-policy draws and globally shared paired inference IDs; few clusters/seeds and rare failures may remain inconclusive",
+  "methods": [
+    "scaling_legacy_4k_OPD_42_epoch2"
+  ],
+  "baseline": "B0_RL",
+  "split": "dev",
+  "scenes": 1696,
+  "high_screening": "B0_IL_screen",
+  "cluster_unit": "parent",
+  "analysis_source": {
+    "script_sha256": "4b37cb47db4b10beca6d8266babff74978d4cab8916e1dcf00f0dacb0a5b14ae",
+    "statistics_sha256": "19478782b70a48a803d7ce746a40b2c698c8e8afac9ddae4ec5875749cbcf887",
+    "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+    "population_sha256": "68020f6d0cfd4d518aaa80c254f3018cd1be09e032a50d1c5a34dfa23522fe27",
+    "bootstrap_seed": 20261020
+  }
+}

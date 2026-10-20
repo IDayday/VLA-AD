@@ -1,0 +1,70 @@
+{
+  "status": "COMPLETE",
+  "results": [
+    {
+      "name": "scaling_scaling_legacy_4k_OPD_42_epoch2_vs_B0_IL",
+      "returncode": 0
+    },
+    {
+      "name": "scaling_scaling_legacy_4k_OPD_42_epoch2_vs_B0_RL",
+      "returncode": 0
+    },
+    {
+      "name": "scaling_scaling_legacy_4k_OPD_42_epoch8_vs_B0_IL",
+      "returncode": 0
+    },
+    {
+      "name": "scaling_scaling_legacy_4k_OPD_42_epoch8_vs_B0_RL",
+      "returncode": 0
+    },
+    {
+      "name": "scaling_scaling_legacy_4k_OPD_42_epoch64k_vs_B0_IL",
+      "returncode": 0
+    },
+    {
+      "name": "scaling_scaling_legacy_4k_OPD_42_epoch64k_vs_B0_RL",
+      "returncode": 0
+    },
+    {
+      "name": "scaling_scaling_train_25k_OPD_42_epoch1_vs_B0_IL",
+      "returncode": 0
+    },
+    {
+      "name": "scaling_scaling_train_25k_OPD_42_epoch1_vs_B0_RL",
+      "returncode": 0
+    },
+    {
+      "name": "scaling_scaling_train_25k_OPD_42_epoch2_vs_B0_IL",
+      "returncode": 0
+    },
+    {
+      "name": "scaling_scaling_train_25k_OPD_42_epoch2_vs_B0_RL",
+      "returncode": 0
+    },
+    {
+      "name": "scaling_scaling_train_25k_OPD_42_epoch4_vs_B0_IL",
+      "returncode": 0
+    },
+    {
+      "name": "scaling_scaling_train_25k_OPD_42_epoch4_vs_B0_RL",
+      "returncode": 0
+    },
+    {
+      "name": "scaling_scaling_train_25k_OPD_42_epoch64k_vs_B0_IL",
+      "returncode": 0
+    },
+    {
+      "name": "scaling_scaling_train_25k_OPD_42_epoch64k_vs_B0_RL",
+      "returncode": 0
+    },
+    {
+      "name": "scaling_full_OPD_42_exposure64000_vs_B0_IL",
+      "returncode": 0
+    },
+    {
+      "name": "scaling_full_OPD_42_exposure64000_vs_B0_RL",
+      "returncode": 0
+    }
+  ],
+  "commands_sha256": "cc5c9dbaf6ff72b74b930f5bb536589eb9d207dd63235241f27b48b9d19b1eff"
+}

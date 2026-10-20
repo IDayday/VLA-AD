@@ -67,3 +67,18 @@ Anchor 一轮减少了明显退化场景的比例（配对差 -0.008255，95% CI
 十二个主要比较均另以 16 个完整 log 重跑 10,000 次 bootstrap；训练种子和全局配对推理种子的抽样结构不变。原始敏感性结果见对应 `_log.json`，不替代 15 个父驾驶记录的主口径。未把三个学生平均输出当作一个集成模型，也未把五个推理种子当作五次训练。
 
 数据：`tables/B1_OPD_epoch{1,2}_vs_{IL,RL}.json`、`tables/Anchor_vs_OPD_epoch{1,2}.json`、`tables/{OPD,Anchor}_epoch2_vs_epoch1.json`、`tables/failures_dev_B1_OPD_epoch{1,2}.{json,csv}`；各自包含分析代码、统计代码、总体和协议哈希。
+
+真实三种子图见 `figures/Fig5_full_transfer_and_degradation.png`、`Fig6_paired_anchor_effect.png`、`Fig7_full_paired_scene_scatter.png`、`Fig8_full_training_dynamics.png`，生成入口是 `scripts/process_improvement/render_full.py`。区间图使用已经完成的父记录 bootstrap 结果，训练曲线仅连接实际保存的稀疏日志。
+
+## 依固定数值规则选出的实际案例
+
+案例使用 seed42 的锁定 OPD 一轮学生；按最大修复、最大下降、教师成功而学生失败、共同低分而学生提高的规则选取，分数并列时按 token 排序，不挑选驾驶意图。表中分数为五次均值，事件时刻单独来自第一个评价种子 7101，不把它解释为所有随机输出的事件时刻。
+
+| 规则 / token | IL | T0 | OPD | 第一个种子的实际后果 |
+|---|---:|---:|---:|---|
+| 最大修复 `16e38f619b4358cb` | 0 | 1 | 1 | IL 首次可驾驶区检查失败 3.5s；教师和学生无该事件 |
+| 最大退化 `a17b55560d22530f` | 1 | 0 | 0 | 教师首次越界 3.5s，学生 3.4s；显示复制教师也可能传递失败 |
+| 教师成功、学生失败 `83cbc1063ce1591d` | 0 | 0.907525 | 0 | IL/学生首次越界 1.8s/1.7s，教师无该事件；显示蒸馏未完整继承教师能力 |
+| 共同低分后改善 `de72514102555fab` | 0.540572 | 0.587457 | 0.922801 | 教师首次 TTC 检查失败 1.9s，学生无该事件；该时刻不是剩余碰撞时间 |
+
+对应地图、原始规划轨迹、跟踪仿真轨迹及事件标记在 `figures/cases/full_OPD_42_epoch1/`，Anchor 的相同规则案例在 `figures/cases/full_ANCHOR_42_epoch1/`。原始数据哈希与事件日志见各自 `tables/case_provenance_dev_*.json`。图示 t=0/t=2s 对象占用只作 privileged 解释，不进入学生输入或目标选择。

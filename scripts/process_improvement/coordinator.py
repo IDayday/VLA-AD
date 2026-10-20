@@ -251,6 +251,41 @@ def fully_research_owned_or_idle(host,free):
     return set(range(8))<=covered
 
 
+def local_partition_task(task, host, idle, handoff):
+    """Admit only new formal local GRPO into a qualified global32 partition.
+
+    This cannot preempt short work, migrate/resume an existing lineage, change
+    its global batch, or qualify itself from a unit-test fixture in production.
+    An entire available host keeps the preferred eight-rank execution.
+    """
+    if (not handoff or host!='training-vla-zt' or not 4<=len(idle)<8 or
+            task['gpus']!=8 or not task['name'].startswith('formal_GRPO_')):
+        return task
+    commands=task['commands']
+    if any('--resume' in c for c in commands):return task
+    path=ROOT/'tests/native_GRPO_partition32.json'
+    if not path.exists():return task
+    gate=read(path)
+    if (gate.get('status')!='PASS' or gate.get('world_sizes')!=[4,8] or
+            gate.get('global_batch')!=32 or gate.get('actual_optimizer_updates')!=4 or
+            not gate.get('exact_resume_optimizer')):return task
+    for field,source in [
+        ('train_source_sha256','scripts/process_improvement/train_grpo.py'),
+        ('planner_source_sha256','navsim/agents/recogdrive/recogdrive_diffusion_planner.py'),
+        ('rng_source_sha256','navsim/agents/recogdrive/process_improvement/rng_plan.py'),
+        ('qualification_source_sha256','scripts/process_improvement/qualify_grpo_partition32.py')]:
+        if gate.get(field)!=sha(SOURCE/source):return task
+    rewritten=[]
+    for command in commands:
+        if ('scripts/process_improvement/train_grpo.py' not in command or
+                '--nproc_per_node=8' not in command or '--name' not in command):return task
+        if '--global-batch' in command and command[command.index('--global-batch')+1]!='32':return task
+        name=command[command.index('--name')+1]
+        if (ROOT/'runs'/name/'config.json').exists():return task
+        rewritten.append(['--nproc_per_node=4' if value=='--nproc_per_node=8' else value for value in command])
+    return dict(task,gpus=4,commands=rewritten)
+
+
 def main():
     p=argparse.ArgumentParser();p.add_argument('--once',action='store_true');p.add_argument('--formal-controls',action='store_true');a=p.parse_args()
     folder=ROOT/'controller';folder.mkdir(parents=True,exist_ok=True)
@@ -284,16 +319,17 @@ def main():
                     if host not in free:
                         try:free[host]=available(host)
                         except Exception as exc:errors.append(dict(host=host,error=repr(exc)));free[host]=[]
-                    if len(free[host])<task['gpus']:
-                        if (task['gpus']>1 and free[host] and
+                    execution=local_partition_task(task,host,free[host],handoff)
+                    if len(free[host])<execution['gpus']:
+                        if (execution['gpus']>1 and free[host] and
                                 fully_research_owned_or_idle(host,free[host])):
                             reserved.append(dict(host=host,for_task=task['name'],
-                                                 idle_gpus=free[host],requested=task['gpus']))
+                                                 idle_gpus=free[host],requested=execution['gpus']))
                             free[host]=[] # Let owned jobs drain; stop lower-priority backfill.
                         continue
-                    gpus=free[host][:task['gpus']]
+                    gpus=free[host][:execution['gpus']]
                     try:
-                        launch(task['name'],host,gpus,task['commands']);free[host]=free[host][task['gpus']:]
+                        launch(task['name'],host,gpus,execution['commands']);free[host]=free[host][execution['gpus']:]
                         started.append(dict(name=task['name'],host=host,gpus=gpus))
                     except Exception as exc:
                         errors.append(dict(name=task['name'],error=repr(exc)))
