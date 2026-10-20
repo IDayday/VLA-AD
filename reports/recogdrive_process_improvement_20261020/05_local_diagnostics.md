@@ -15,6 +15,8 @@
 
 这些探索实验共执行 10,604,357 次物理候选评分、23,592,960 次逻辑请求，单 GPU 作业累计约 34.88 GPU 小时。此成本属于真实研究开销，纠正采样后不会被删除或隐藏。原始数据保留在 `diagnostics/local_train_grid`、`local_cal_grid`，并有 `sampling_role.json` 标明非主确认用途。
 
+早期还真实执行了 16 场景的动态教学程序小测（默认 M8/fit2/guard2）：80 个目标全部被 guard 拒绝，完整链相对参考的平均增益为零，共 1,416 次物理评分、1,632 次逻辑请求。该结果保留在 `tables/dynamic_teaching_exploratory.json` 和原 `diagnostics/dynamic_teaching/`；它验证了动态回退路径，不能证明接受目标的效果。纠正后的固定 16 场景、锁定配方 M16/fit8/guard8 动态诊断已单独排队，不覆盖旧结果；各步在新访问状态重算目标，不把静态目标拼成程序。
+
 正式纠正只改变诊断抽样规则：按父记录哈希排序轮询，再按固定的记录内哈希取场景，不依据得分过滤。train/cal-tune/cal-confirm 各 512 场景，父记录数分别为 127/7/7；训练总体、评分、三种 roll-in、六个温度/rho 组合、M/L、阈值和一次预登记确认扩容规则均未改变。新子集与全部哈希在 `configs/process_improvement/diagnostic_sampling_correction.json`；旧选择文件保留，正式选择将写入独立的 `process_hyperparameters_parenthash.json`。
 
 当前 H2/H3 为 `INCONCLUSIVE`，等待正确子集的诊断、cal-tune 选择及独立 cal-confirm 确认。不能因为旧探索结果的投影较小就跳过纠正后的实验，也不能据此暂停普通 OPD、Anchor 或原生 GRPO。

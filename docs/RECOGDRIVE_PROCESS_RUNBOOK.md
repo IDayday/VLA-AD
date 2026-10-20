@@ -70,6 +70,8 @@ $PY scripts/process_improvement/failure_audit.py --methods MODEL42 MODEL43 MODEL
   --name GROUP --split dev
 $PY scripts/process_improvement/analyze.py --local local_parent_confirm --split diagnostic_parent_confirm
 $PY scripts/process_improvement/summarize_local.py --name local_parent_confirm --split diagnostic_parent_confirm
+$PY scripts/process_improvement/diagnose_dynamic.py --name dynamic_parent_teaching --limit 16 \
+  --checkpoint "$PROCESS_RUN_ROOT/runs/full_OPD_42/head_2341.pt"
 $PY scripts/process_improvement/export_student.py --name MY_STUDENT \
   --checkpoint "$PROCESS_RUN_ROOT/runs/MY_RUN/head_2341.pt" --verify
 ```
@@ -77,6 +79,8 @@ $PY scripts/process_improvement/export_student.py --name MY_STUDENT \
 导出验证从真实历史图像重新编码，独立子进程只加载导出的学生和 VLM。审计钩子禁止读取教师、原 IL 权重、metric cache、原始观测缓存、监督库和过程改进模块。需与训练侧缓存输入的原生轨迹逐元素一致。
 
 `infer_export.py` 可额外指定 `--benchmark-output PATH --benchmark-repeats 20`，在同一真实场景五组噪声上分别测量动作头和输入准备/图像 IO/VLM/动作头的热启动延迟。每种测量先暖机五次、逐次同步 GPU，并核验输出逐元素一致。动作头计时期间完整 VLM 仍驻留，所以该部分的总显存不是“独立动作头显存”；同时记录驻留与增量峰值。单场景重复计时不冒充总体时延置信区间，批量训练耗时不能替代本测量。
+
+动态教学诊断只使用父记录哈希训练子集前 16 个固定场景、单个固定 roll-in 种子。在每个刚访问的新状态重新构造目标，并真实推进下一步，使用 M16/fit8/guard8、全部五个位置，独立报告调用和评分成本。它不是主训练每次仅一个位置的预算，也不是原生部署成绩；可同时评价一个冻结学生，但不通过该诊断更新或选择学生。历史 `dynamic_teaching` 目录保留，纠正后的结果使用独立名称。
 
 `navtest` 需要 `selection/final.lock.json`，只能对锁定最终模型和强对照运行。旧实验已经查看过该官方测试集，不能称为全新盲测。三种训练种子必须分别保存，五种推理种子不算五次训练重复。所有主张分别依据完整父驾驶记录 bootstrap 及安全分项；无数据的项目报告 `NOT_RUN`。
 

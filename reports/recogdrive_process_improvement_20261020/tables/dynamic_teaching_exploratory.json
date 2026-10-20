@@ -1,0 +1,595 @@
+{
+  "status": "COMPLETE",
+  "records": [
+    {
+      "token": "47db2933c57a5de1",
+      "driver_record": "2021.10.11.07.47.13_veh-50",
+      "reference": [
+        1.0,
+        1.0,
+        0.6792288492758783,
+        1.0,
+        1.0,
+        1.0,
+        0.8663453538649493
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        0.6792288492758783,
+        1.0,
+        1.0,
+        1.0,
+        0.8663453538649493
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 102,
+        "physical_scores": 93,
+        "score_cache_hits": 9,
+        "reference_simulations": 11
+      }
+    },
+    {
+      "token": "aecc8d3efcc85577",
+      "driver_record": "2021.08.31.12.54.56_veh-40",
+      "reference": [
+        1.0,
+        1.0,
+        0.8603822758177279,
+        1.0,
+        1.0,
+        1.0,
+        0.9418259482573866
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        0.8603822758177279,
+        1.0,
+        1.0,
+        1.0,
+        0.9418259482573866
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 204,
+        "physical_scores": 186,
+        "score_cache_hits": 18,
+        "reference_simulations": 22
+      }
+    },
+    {
+      "token": "4b24a509ec0f52d5",
+      "driver_record": "2021.08.17.17.17.01_veh-45",
+      "reference": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 306,
+        "physical_scores": 269,
+        "score_cache_hits": 37,
+        "reference_simulations": 33
+      }
+    },
+    {
+      "token": "785bbbe200cc5391",
+      "driver_record": "2021.07.16.18.06.21_veh-38",
+      "reference": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 408,
+        "physical_scores": 352,
+        "score_cache_hits": 56,
+        "reference_simulations": 44
+      }
+    },
+    {
+      "token": "2a646756defc517b",
+      "driver_record": "2021.08.17.14.45.12_veh-42",
+      "reference": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 510,
+        "physical_scores": 435,
+        "score_cache_hits": 75,
+        "reference_simulations": 55
+      }
+    },
+    {
+      "token": "81a13d41cf36539a",
+      "driver_record": "2021.10.05.07.38.12_veh-50",
+      "reference": [
+        1.0,
+        1.0,
+        0.8549303290297341,
+        1.0,
+        1.0,
+        1.0,
+        0.9395543037623892
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        0.8549303290297341,
+        1.0,
+        1.0,
+        1.0,
+        0.9395543037623892
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 612,
+        "physical_scores": 528,
+        "score_cache_hits": 84,
+        "reference_simulations": 66
+      }
+    },
+    {
+      "token": "d265ad033a9d58fb",
+      "driver_record": "2021.06.14.17.26.26_veh-38",
+      "reference": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 714,
+        "physical_scores": 611,
+        "score_cache_hits": 103,
+        "reference_simulations": 77
+      }
+    },
+    {
+      "token": "256d0975e89a5991",
+      "driver_record": "2021.06.14.18.13.35_veh-26",
+      "reference": [
+        1.0,
+        1.0,
+        0.859876914518979,
+        1.0,
+        1.0,
+        1.0,
+        0.9416153810495747
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        0.859876914518979,
+        1.0,
+        1.0,
+        1.0,
+        0.9416153810495747
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 816,
+        "physical_scores": 704,
+        "score_cache_hits": 112,
+        "reference_simulations": 88
+      }
+    },
+    {
+      "token": "7ce9817f3d575656",
+      "driver_record": "2021.10.11.07.47.13_veh-50",
+      "reference": [
+        1.0,
+        1.0,
+        0.8725345542859905,
+        1.0,
+        1.0,
+        1.0,
+        0.9468893976191627
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        0.8725345542859905,
+        1.0,
+        1.0,
+        1.0,
+        0.9468893976191627
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 918,
+        "physical_scores": 797,
+        "score_cache_hits": 121,
+        "reference_simulations": 99
+      }
+    },
+    {
+      "token": "331bb7509a6257d5",
+      "driver_record": "2021.07.16.21.17.55_veh-26",
+      "reference": [
+        1.0,
+        1.0,
+        0.8910530942283447,
+        1.0,
+        1.0,
+        1.0,
+        0.954605455928477
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        0.8910530942283447,
+        1.0,
+        1.0,
+        1.0,
+        0.954605455928477
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 1020,
+        "physical_scores": 890,
+        "score_cache_hits": 130,
+        "reference_simulations": 110
+      }
+    },
+    {
+      "token": "d5da67e3828954f4",
+      "driver_record": "2021.10.11.08.31.07_veh-50",
+      "reference": [
+        1.0,
+        1.0,
+        0.7753133661039437,
+        1.0,
+        1.0,
+        1.0,
+        0.9063805692099766
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        0.7753133661039437,
+        1.0,
+        1.0,
+        1.0,
+        0.9063805692099766
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 1122,
+        "physical_scores": 981,
+        "score_cache_hits": 141,
+        "reference_simulations": 121
+      }
+    },
+    {
+      "token": "021f8a7400b655bc",
+      "driver_record": "2021.06.14.17.26.26_veh-38",
+      "reference": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 1224,
+        "physical_scores": 1064,
+        "score_cache_hits": 160,
+        "reference_simulations": 132
+      }
+    },
+    {
+      "token": "eda08b35fb695fa4",
+      "driver_record": "2021.08.24.19.30.33_veh-45",
+      "reference": [
+        1.0,
+        1.0,
+        0.7244332808409426,
+        1.0,
+        1.0,
+        1.0,
+        0.8851805336837261
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        0.7244332808409426,
+        1.0,
+        1.0,
+        1.0,
+        0.8851805336837261
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 1326,
+        "physical_scores": 1157,
+        "score_cache_hits": 169,
+        "reference_simulations": 143
+      }
+    },
+    {
+      "token": "fa2b114d967f576a",
+      "driver_record": "2021.06.23.15.56.12_veh-16",
+      "reference": [
+        1.0,
+        1.0,
+        0.8260511257198613,
+        1.0,
+        1.0,
+        1.0,
+        0.9275213023832755
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        0.8260511257198613,
+        1.0,
+        1.0,
+        1.0,
+        0.9275213023832755
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 1428,
+        "physical_scores": 1250,
+        "score_cache_hits": 178,
+        "reference_simulations": 154
+      }
+    },
+    {
+      "token": "bb11185f7d215a15",
+      "driver_record": "2021.08.17.18.13.38_veh-45",
+      "reference": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 1530,
+        "physical_scores": 1333,
+        "score_cache_hits": 197,
+        "reference_simulations": 165
+      }
+    },
+    {
+      "token": "bb3bce6b6c6e508c",
+      "driver_record": "2021.07.16.01.22.41_veh-14",
+      "reference": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 1632,
+        "physical_scores": 1416,
+        "score_cache_hits": 216,
+        "reference_simulations": 176
+      }
+    }
+  ],
+  "seconds": 34.15196919441223,
+  "budget": {
+    "logical_scores": 1632,
+    "physical_scores": 1416,
+    "score_cache_hits": 216,
+    "reference_simulations": 176
+  },
+  "owner": {
+    "host": "training-vlawm-tsinghua-zt2",
+    "pid": 2263793,
+    "start_ticks": "1394598528",
+    "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+  },
+  "scope": "Targets recomputed at every newly visited state; searched diagnostic teacher, not a native deployed student"
+}
