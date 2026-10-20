@@ -1,0 +1,131 @@
+{
+  "status": "LOCKED",
+  "chosen": {
+    "method": "OPD",
+    "epoch": 1,
+    "step": 2341,
+    "mean_PDMS": 0.9206902696554321,
+    "per_seed": [
+      0.9221162114412781,
+      0.9187508912547729,
+      0.9212037062702454
+    ],
+    "checkpoints": {
+      "42": {
+        "path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_42/head_2341.pt",
+        "sha256": "ad63e1ca2e74342a1406b1c05a105d32eaab7d1187b124cc14017b957b0c7957"
+      },
+      "43": {
+        "path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_43/head_2341.pt",
+        "sha256": "3e571a440100ac766fb3319b66469f161f73045113ac9c0fb150c708ba95d02f"
+      },
+      "44": {
+        "path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_44/head_2341.pt",
+        "sha256": "352d88148724b0f72cb90bedcd3c9d3e3046b40f4da5b617bb7e2b712de49ee2"
+      }
+    }
+  },
+  "trials": [
+    {
+      "method": "OPD",
+      "epoch": 1,
+      "step": 2341,
+      "mean_PDMS": 0.9206902696554321,
+      "per_seed": [
+        0.9221162114412781,
+        0.9187508912547729,
+        0.9212037062702454
+      ],
+      "checkpoints": {
+        "42": {
+          "path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_42/head_2341.pt",
+          "sha256": "ad63e1ca2e74342a1406b1c05a105d32eaab7d1187b124cc14017b957b0c7957"
+        },
+        "43": {
+          "path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_43/head_2341.pt",
+          "sha256": "3e571a440100ac766fb3319b66469f161f73045113ac9c0fb150c708ba95d02f"
+        },
+        "44": {
+          "path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_44/head_2341.pt",
+          "sha256": "352d88148724b0f72cb90bedcd3c9d3e3046b40f4da5b617bb7e2b712de49ee2"
+        }
+      }
+    },
+    {
+      "method": "OPD",
+      "epoch": 2,
+      "step": 4681,
+      "mean_PDMS": 0.9144282010301511,
+      "per_seed": [
+        0.9212164602133491,
+        0.9019999779953151,
+        0.920068164881789
+      ],
+      "checkpoints": {
+        "42": {
+          "path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_42/head_4681.pt",
+          "sha256": "721fda2c1fee6f1269f2ce864c40c5fb806d49799a0569ac472066471ef9b8eb"
+        },
+        "43": {
+          "path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_43/head_4681.pt",
+          "sha256": "1ada351742e7890f3cd28fd261fc46ae094e5b549acfc15b18bf443505e86aa1"
+        },
+        "44": {
+          "path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_44/head_4681.pt",
+          "sha256": "b3b2b75266b57baf658545163ddd9c2ab0811782863b3ef4f468d3cd68c3b6e0"
+        }
+      }
+    },
+    {
+      "method": "ANCHOR",
+      "epoch": 1,
+      "step": 2341,
+      "mean_PDMS": 0.9191168705838756,
+      "per_seed": [
+        0.9215651408851933,
+        0.9183352611111842,
+        0.9174502097552493
+      ],
+      "checkpoints": {
+        "42": {
+          "path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_ANCHOR_42/head_2341.pt",
+          "sha256": "8faccd263a47df051b1b427d05b489ffbc4d5077a52d8ec87fbbffa8c5f5038f"
+        },
+        "43": {
+          "path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_ANCHOR_43/head_2341.pt",
+          "sha256": "680a506b5ac015784c02c104b8b27f45be2898f20a47a8cdbf6e280058be6897"
+        },
+        "44": {
+          "path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_ANCHOR_44/head_2341.pt",
+          "sha256": "1636f113e99b168f586f739a6d912e32949619f1df5073750d83f86f77e00999"
+        }
+      }
+    },
+    {
+      "method": "ANCHOR",
+      "epoch": 2,
+      "step": 4681,
+      "mean_PDMS": 0.9136786149786055,
+      "per_seed": [
+        0.9213484848863076,
+        0.9006928908691749,
+        0.9189944691803342
+      ],
+      "checkpoints": {
+        "42": {
+          "path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_ANCHOR_42/head_4681.pt",
+          "sha256": "bbfef0ddf4877ebf1a53f10d852d4fc59a582f4743a1fe96dcb49f3365891542"
+        },
+        "43": {
+          "path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_ANCHOR_43/head_4681.pt",
+          "sha256": "b0c43cb26f638cef81f361608c472a1f5382e36a424b14100ed28cf0cc27ff72"
+        },
+        "44": {
+          "path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_ANCHOR_44/head_4681.pt",
+          "sha256": "5a9353575d4bf52d681088ffcf4e6bb7a8d2dfc2b3e5eb2f6591a8e12c67718c"
+        }
+      }
+    }
+  ],
+  "rule": "Mean over all three training seeds on cal-tune; all registered eligible endpoints (1/2 plus conditional4); one recipe/epoch applied to each seeds own checkpoint"
+}
