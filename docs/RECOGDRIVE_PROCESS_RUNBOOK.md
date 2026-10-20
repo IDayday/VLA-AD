@@ -54,6 +54,8 @@ $PY scripts/process_improvement/evaluate.py --name MY_STUDENT \
   --checkpoint "$PROCESS_RUN_ROOT/runs/MY_RUN/head_2341.pt" --split dev --cuda-graph
 $PY scripts/process_improvement/analyze.py --methods MY_STUDENT --baseline B0_IL \
   --screening B0_IL_screen --split dev
+$PY scripts/process_improvement/analyze.py --methods MY_STUDENT --baseline B0_IL \
+  --screening B0_IL_screen --split dev --cluster log
 $PY scripts/process_improvement/analyze.py --local local_parent_confirm --split diagnostic_parent_confirm
 $PY scripts/process_improvement/export_student.py --name MY_STUDENT \
   --checkpoint "$PROCESS_RUN_ROOT/runs/MY_RUN/head_2341.pt" --verify
