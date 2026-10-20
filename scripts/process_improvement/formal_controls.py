@@ -45,7 +45,10 @@ def tasks():
             for step in [977,3907,15625]:
                 checkpoint=run/f'head_{step}.pt'
                 if checkpoint.exists():
-                    task=evaluation_task(f'{name}_step{step}',checkpoint,split='dev',priority=17)
+                    # Schedule the fixed endpoint report before reserving all
+                    # remaining cards for another gang. These results never
+                    # select a checkpoint or stop training (cal-confirm does).
+                    task=evaluation_task(f'{name}_step{step}',checkpoint,split='dev',priority=1)
                     if task:ready.append(task)
             if (run/'complete.json').exists():continue
             init=recipe['init_by_seed'][str(seed)]['path'] if family=='WARM' else recipe['init']
