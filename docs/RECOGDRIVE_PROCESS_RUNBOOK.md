@@ -63,4 +63,14 @@ $PY scripts/process_improvement/export_student.py --name MY_STUDENT \
 
 `navtest` 需要 `selection/final.lock.json`，只能对锁定最终模型和强对照运行。旧实验已经查看过该官方测试集，不能称为全新盲测。三种训练种子必须分别保存，五种推理种子不算五次训练重复。所有主张分别依据完整父驾驶记录 bootstrap 及安全分项；无数据的项目报告 `NOT_RUN`。
 
+最终候选清单是显式 JSON 列表，每项包含 `name`、`checkpoint`，可选 `dev_name`（默认同名）和 `screening`。以下锁定入口要求对应的完整 dev 记录与权重、角色和随机种子一致；不会读取 navtest 分数或自动排序。生成的小体积锁必须先正常提交，随后评价还会核验当前 HEAD 中的锁字节、候选名、权重 SHA、种子及完整总体，单有外部文件不能放行任意模型。
+
+```bash
+$PY scripts/process_improvement/lock_final.py --candidates-file "$PROCESS_RUN_ROOT/selection/final_candidates.json" \
+  --calibration-locks learning_rates.json warm_start.json grpo_rates.json process_gate.json
+git add configs/process_improvement/final_eval_lock.json
+git commit -m 'Lock final developed candidates before full Navtest confirmation'
+$PY scripts/process_improvement/run_suite.py --phase final_eval --rank 0 --shards 24
+```
+
 早期 token-hash 诊断和选择保留为探索结果。纠正脚本在没有任何确认标签时锁定父记录哈希子集；正式编排自动读取纠正记录，不会沿用早期选择。`selected_process_exploratory_tokenhash.yaml` 仅用于重建旧探索结果。未知 GPU 占用不会被当作压力进程终止，资源变化只影响排程；同 world size 的迁移保存完整原生训练状态，不重置模型或优化器。

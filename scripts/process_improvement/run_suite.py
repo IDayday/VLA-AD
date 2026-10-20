@@ -94,7 +94,9 @@ def main():
     elif a.phase=='final_eval':
         lock=read(ROOT/'selection/final.lock.json')
         commands=[['scripts/process_improvement/evaluate.py','--name',item['name'],'--checkpoint',item['checkpoint'],
-                   '--split',split,'--cuda-graph','--rank',str(a.rank),'--shards',str(a.shards)]
+                   '--split',split,'--cuda-graph','--rank',str(a.rank),'--shards',str(a.shards),
+                   '--seeds',*[str(seed) for seed in item['seeds']],
+                   *(['--screening'] if item.get('screening',False) else [])]
                   for split in ['dev','navtest'] for item in lock['candidates']]
     if a.resume:
         for command in commands:

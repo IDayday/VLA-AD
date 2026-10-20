@@ -45,6 +45,17 @@ def main():
     spec=dict(checkpoint_path=path,checkpoint_sha256=sha(path),population_sha256=sha(ROOT/'manifests'/f'{a.split}.json'),
               evaluation_seeds=seeds,screening=a.screening,contract=CONTRACT,sampling='native stochastic DDIM5 single trajectory',
               precision='float32',total_limit=a.limit)
+    if a.split=='navtest':
+        from navsim.agents.recogdrive.process_improvement.final_evaluation import validate_final_evaluation
+        final_path=SOURCE/'configs/process_improvement/final_eval_lock.json'
+        relative=str(final_path.relative_to(SOURCE))
+        committed=subprocess.check_output(['git','show','HEAD:'+relative],cwd=SOURCE)
+        if committed!=final_path.read_bytes() or read(final_path)!=read(ROOT/'selection/final.lock.json'):
+            raise ValueError('Final configuration must be identical to the committed branch lock')
+        validate_final_evaluation(read(final_path), name=a.name,
+            checkpoint_sha256=spec['checkpoint_sha256'], seeds=seeds, screening=a.screening,
+            limit=a.limit, population_sha256=spec['population_sha256'],
+            protocol_sha256=sha(ROOT/'protocol.yaml'))
     if (dest/f'config_{a.rank}.json').exists():
         assert read(dest/f'config_{a.rank}.json')['spec']==spec
     write(dest/f'config_{a.rank}.json',dict(spec=spec,owner=identity(),rank=a.rank,shards=a.shards))
