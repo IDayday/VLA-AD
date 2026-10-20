@@ -1,0 +1,5763 @@
+{
+  "study": "recogdrive_process_improvement_20261020",
+  "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+  "jobs": [
+    {
+      "name": "E0_COPY",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        4
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1533.8306155204773,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/evaluate.py",
+          "--name",
+          "B0_COPY",
+          "--baseline",
+          "COPY",
+          "--split",
+          "dev"
+        ]
+      ],
+      "source_spec_sha256": "5e0f7e00bd942579455e570de4e6c83adb8997322e94524b48710d5a234e6725"
+    },
+    {
+      "name": "E0_IL",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        2
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1517.09996509552,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/evaluate.py",
+          "--name",
+          "B0_IL",
+          "--baseline",
+          "IL",
+          "--split",
+          "dev"
+        ]
+      ],
+      "source_spec_sha256": "bf601a09ecd7067528d10edaed487fc819510cdf9842a1a907603ca4f8a449fd"
+    },
+    {
+      "name": "E0_RL",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        3
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1519.7771353721619,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/evaluate.py",
+          "--name",
+          "B0_RL",
+          "--baseline",
+          "RL",
+          "--split",
+          "dev"
+        ]
+      ],
+      "source_spec_sha256": "c718f3c961bc87c4091097e6239a5681f9ad95414d968da35df81b3b15bcf216"
+    },
+    {
+      "name": "auto_eval_cal_confirm_B0_IL",
+      "host": "training-vla-zt",
+      "gpus": [
+        5
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1012.356035232544,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/parallel.py",
+          "--spec",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/auto_eval_cal_confirm_B0_IL.json",
+          "--receipt",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/auto_eval_cal_confirm_B0_IL.receipt.json"
+        ]
+      ],
+      "source_spec_sha256": "dfe45ef46c65cc1c654b6c36a8bced4b45aa526d9bf701272a293961994a2e01"
+    },
+    {
+      "name": "auto_eval_cal_confirm_B0_RL",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        2
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1161.1495952606201,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/parallel.py",
+          "--spec",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/auto_eval_cal_confirm_B0_RL.json",
+          "--receipt",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/auto_eval_cal_confirm_B0_RL.receipt.json"
+        ]
+      ],
+      "source_spec_sha256": "c84a26fcafd7ea365d9b005d0292129a48c555870b40ff56963791f22a7cd8d6"
+    },
+    {
+      "name": "auto_eval_cal_tune_full_ANCHOR_42_epoch1",
+      "host": "training-vla-zt",
+      "gpus": [
+        3
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 948.9947781562805,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/parallel.py",
+          "--spec",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/auto_eval_cal_tune_full_ANCHOR_42_epoch1.json",
+          "--receipt",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/auto_eval_cal_tune_full_ANCHOR_42_epoch1.receipt.json"
+        ]
+      ],
+      "source_spec_sha256": "4d82f0c833f4ecdb49096c3317e2df0bce02e10c4cad7944b3f297e084ec6f23"
+    },
+    {
+      "name": "auto_eval_cal_tune_full_ANCHOR_43_epoch1",
+      "host": "training-vla-zt",
+      "gpus": [
+        3
+      ],
+      "status": "RUNNING_OR_UNFINISHED",
+      "allocated_GPU_seconds": null,
+      "cost_complete": false,
+      "commands": [
+        [
+          "scripts/process_improvement/parallel.py",
+          "--spec",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/auto_eval_cal_tune_full_ANCHOR_43_epoch1.json",
+          "--receipt",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/auto_eval_cal_tune_full_ANCHOR_43_epoch1.receipt.json"
+        ]
+      ],
+      "source_spec_sha256": "4e56cb6ad9d0cba33595e7c47ec71998a391b67a9eb743aeda55a9f21af93394"
+    },
+    {
+      "name": "auto_eval_cal_tune_full_ANCHOR_44_epoch1",
+      "host": "training-vla-zt",
+      "gpus": [
+        4
+      ],
+      "status": "RUNNING_OR_UNFINISHED",
+      "allocated_GPU_seconds": null,
+      "cost_complete": false,
+      "commands": [
+        [
+          "scripts/process_improvement/parallel.py",
+          "--spec",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/auto_eval_cal_tune_full_ANCHOR_44_epoch1.json",
+          "--receipt",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/auto_eval_cal_tune_full_ANCHOR_44_epoch1.receipt.json"
+        ]
+      ],
+      "source_spec_sha256": "e7994a757e10f49f89775bf808a75c5e80bd0182f156aa4bced65dda6a7fcd09"
+    },
+    {
+      "name": "auto_eval_cal_tune_tune_GRPO_IL_1e-5",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        0
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1006.9381248950958,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/parallel.py",
+          "--spec",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/auto_eval_cal_tune_tune_GRPO_IL_1e-5.json",
+          "--receipt",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/auto_eval_cal_tune_tune_GRPO_IL_1e-5.receipt.json"
+        ]
+      ],
+      "source_spec_sha256": "68e2fb188fe3daa1596152656fff70c82f2020a6f0198ec64d49af17b297b144"
+    },
+    {
+      "name": "auto_eval_cal_tune_tune_GRPO_IL_3e-5",
+      "host": "training-vla-zt",
+      "gpus": [
+        3
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 951.5130462646484,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/parallel.py",
+          "--spec",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/auto_eval_cal_tune_tune_GRPO_IL_3e-5.json",
+          "--receipt",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/auto_eval_cal_tune_tune_GRPO_IL_3e-5.receipt.json"
+        ]
+      ],
+      "source_spec_sha256": "e6547feb3562d8b44f7b2573df26f283d7ac45a2e10ab31e5ea090bab46cc6af"
+    },
+    {
+      "name": "auto_full_ANCHOR_42",
+      "host": "training-vla-zt",
+      "gpus": [
+        0
+      ],
+      "status": "RUNNING_OR_UNFINISHED",
+      "allocated_GPU_seconds": null,
+      "cost_complete": false,
+      "commands": [
+        [
+          "scripts/process_improvement/run_suite.py",
+          "--phase",
+          "scaling",
+          "--method",
+          "ANCHOR",
+          "--seed",
+          "42"
+        ]
+      ],
+      "source_spec_sha256": "6663ed19088f4c8adcbfbf4fb69288e40835f52938b75e1b53933247a4c7ec5a"
+    },
+    {
+      "name": "auto_full_ANCHOR_43",
+      "host": "training-vla-zt",
+      "gpus": [
+        6
+      ],
+      "status": "RUNNING_OR_UNFINISHED",
+      "allocated_GPU_seconds": null,
+      "cost_complete": false,
+      "commands": [
+        [
+          "scripts/process_improvement/run_suite.py",
+          "--phase",
+          "scaling",
+          "--method",
+          "ANCHOR",
+          "--seed",
+          "43"
+        ]
+      ],
+      "source_spec_sha256": "daf39e8ab4e400b7774a4dec3ddd8c648580565b73d34f5d22a4343068a36aa0"
+    },
+    {
+      "name": "auto_full_ANCHOR_44",
+      "host": "training-vla-zt",
+      "gpus": [
+        7
+      ],
+      "status": "RUNNING_OR_UNFINISHED",
+      "allocated_GPU_seconds": null,
+      "cost_complete": false,
+      "commands": [
+        [
+          "scripts/process_improvement/run_suite.py",
+          "--phase",
+          "scaling",
+          "--method",
+          "ANCHOR",
+          "--seed",
+          "44"
+        ]
+      ],
+      "source_spec_sha256": "484a012f038f586d50a5ef0698aa63acfed6dbd1474e1b5360bbdd1c5dff99d5"
+    },
+    {
+      "name": "auto_full_OPD_42",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        3
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1948.19184923172,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/run_suite.py",
+          "--phase",
+          "scaling",
+          "--method",
+          "OPD",
+          "--seed",
+          "42"
+        ]
+      ],
+      "source_spec_sha256": "67ad54e625a33e00f46db5ab72601eb89f56f3c4e779d86804cd95c375b55d06"
+    },
+    {
+      "name": "auto_full_OPD_43",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        4
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1947.8557755947113,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/run_suite.py",
+          "--phase",
+          "scaling",
+          "--method",
+          "OPD",
+          "--seed",
+          "43"
+        ]
+      ],
+      "source_spec_sha256": "7bfb2ca711faabd9e1188a3856fb1fce2067f2c0f4cdfdfe3e79b3415e36fab3"
+    },
+    {
+      "name": "auto_full_OPD_44",
+      "host": "training-vla-zt",
+      "gpus": [
+        1
+      ],
+      "status": "RUNNING_OR_UNFINISHED",
+      "allocated_GPU_seconds": null,
+      "cost_complete": false,
+      "commands": [
+        [
+          "scripts/process_improvement/run_suite.py",
+          "--phase",
+          "scaling",
+          "--method",
+          "OPD",
+          "--seed",
+          "44"
+        ]
+      ],
+      "source_spec_sha256": "ae73b29f3e4ef972bea9b244dd1263909ee70d7d0a1e89ed0691a4d2c0b0d942"
+    },
+    {
+      "name": "auto_scaling_legacy_4k_OPD_42",
+      "host": "training-vla-zt",
+      "gpus": [
+        3
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 4137.018605470657,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/run_suite.py",
+          "--phase",
+          "scaling",
+          "--population",
+          "legacy_4k"
+        ]
+      ],
+      "source_spec_sha256": "894dd8cfd2ac709e591a7021bb7918ea58c041de52e4b4275eea5eb08c86f64a"
+    },
+    {
+      "name": "auto_scaling_train_25k_OPD_42",
+      "host": "training-vla-zt",
+      "gpus": [
+        4
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 6666.098992109299,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/run_suite.py",
+          "--phase",
+          "scaling",
+          "--population",
+          "train_25k"
+        ]
+      ],
+      "source_spec_sha256": "6fb4a169bf5ff5eaf4fb74cac12102f36b60c097640bfafcc8e3bc68edf7295f"
+    },
+    {
+      "name": "auto_tune_GRPO_IL_3e-5",
+      "host": "training-rl-zt2",
+      "gpus": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 27901.32592201233,
+      "cost_complete": true,
+      "commands": [
+        [
+          "-m",
+          "torch.distributed.run",
+          "--standalone",
+          "--nproc_per_node=8",
+          "scripts/process_improvement/train_grpo.py",
+          "--name",
+          "tune_GRPO_IL_3e-5",
+          "--init",
+          "IL",
+          "--lr",
+          "3e-5",
+          "--split",
+          "train_25k",
+          "--steps",
+          "812",
+          "--score-budget",
+          "207872"
+        ]
+      ],
+      "source_spec_sha256": "bd131f99db1a1766b1a67abe9d7002a6cfc2209ade46fc6991c5285138021ca3"
+    },
+    {
+      "name": "auto_tune_GRPO_RL_1e-5",
+      "host": "training-rl-zt2",
+      "gpus": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 27962.800273895264,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/verify_inputs.py"
+        ],
+        [
+          "-m",
+          "torch.distributed.run",
+          "--standalone",
+          "--nproc_per_node=8",
+          "scripts/process_improvement/train_grpo.py",
+          "--name",
+          "tune_GRPO_RL_1e-5",
+          "--init",
+          "RL",
+          "--lr",
+          "1e-5",
+          "--split",
+          "train_25k",
+          "--steps",
+          "812",
+          "--score-budget",
+          "207872"
+        ]
+      ],
+      "source_spec_sha256": "17de6a9564d930867a8462949b936041e679a17d69a2c8558573b756c986b608"
+    },
+    {
+      "name": "auto_tune_GRPO_RL_3e-5",
+      "host": "training-rl-zt2",
+      "gpus": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "status": "RUNNING_OR_UNFINISHED",
+      "allocated_GPU_seconds": null,
+      "cost_complete": false,
+      "commands": [
+        [
+          "scripts/process_improvement/verify_inputs.py"
+        ],
+        [
+          "-m",
+          "torch.distributed.run",
+          "--standalone",
+          "--nproc_per_node=8",
+          "scripts/process_improvement/train_grpo.py",
+          "--name",
+          "tune_GRPO_RL_3e-5",
+          "--init",
+          "RL",
+          "--lr",
+          "3e-5",
+          "--split",
+          "train_25k",
+          "--steps",
+          "812",
+          "--score-budget",
+          "207872"
+        ]
+      ],
+      "source_spec_sha256": "b2edf1d993f0845e7a90d2d63a6ca4426a5357e4bb893b6e0ac7dae33fcbacce"
+    },
+    {
+      "name": "calibrate_B0_IL",
+      "host": "training-vla-zt",
+      "gpus": [
+        0
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 947.5468208789825,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/parallel.py",
+          "--spec",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/cal_B0_IL_commands.json",
+          "--receipt",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/cal_B0_IL_commands.receipt.json"
+        ]
+      ],
+      "source_spec_sha256": "11b601c905c8035bbd1a32a3e978382bbacff39dc4546f36e858f41f7d476629"
+    },
+    {
+      "name": "calibrate_B0_RL",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        2
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 942.1647846698761,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/parallel.py",
+          "--spec",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/cal_B0_RL_commands.json",
+          "--receipt",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/cal_B0_RL_commands.receipt.json"
+        ]
+      ],
+      "source_spec_sha256": "592c799d250a43d80153cc1175490bece98f7ec921b21046fd23e69f444ca28b"
+    },
+    {
+      "name": "calibrate_tune_ANCHOR_1e-5",
+      "host": "training-vla-zt",
+      "gpus": [
+        6
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 954.8995110988617,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_trained_graph.py",
+          "--checkpoint",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_ANCHOR_1e-5/head_812.pt",
+          "--name",
+          "tune_ANCHOR_1e-5"
+        ],
+        [
+          "scripts/process_improvement/parallel.py",
+          "--spec",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/cal_tune_ANCHOR_1e-5_commands.json",
+          "--receipt",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/cal_tune_ANCHOR_1e-5_commands.receipt.json"
+        ]
+      ],
+      "source_spec_sha256": "567c2bf31a6b970f53d08a1e2425a597cef109a3f520bd658eb5167bcca43145"
+    },
+    {
+      "name": "calibrate_tune_ANCHOR_3e-5",
+      "host": "training-vla-zt",
+      "gpus": [
+        7
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 954.5598165988922,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_trained_graph.py",
+          "--checkpoint",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_ANCHOR_3e-5/head_812.pt",
+          "--name",
+          "tune_ANCHOR_3e-5"
+        ],
+        [
+          "scripts/process_improvement/parallel.py",
+          "--spec",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/cal_tune_ANCHOR_3e-5_commands.json",
+          "--receipt",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/cal_tune_ANCHOR_3e-5_commands.receipt.json"
+        ]
+      ],
+      "source_spec_sha256": "faa5ab198297723e97571f039fc566f12790b5f54578ea56dade47d50126ef14"
+    },
+    {
+      "name": "calibrate_tune_OPD_1e-5",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        3
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 956.710727930069,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_trained_graph.py",
+          "--checkpoint",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_OPD_1e-5/head_812.pt",
+          "--name",
+          "tune_OPD_1e-5"
+        ],
+        [
+          "scripts/process_improvement/parallel.py",
+          "--spec",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/cal_tune_OPD_1e-5_commands.json",
+          "--receipt",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/cal_tune_OPD_1e-5_commands.receipt.json"
+        ]
+      ],
+      "source_spec_sha256": "c1d83bfd631696a1d311ad0ced34a57b2832bc8172f257f4ac5a3f3b9b8b3f90"
+    },
+    {
+      "name": "calibrate_tune_OPD_3e-5",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        4
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 950.6860806941986,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_trained_graph.py",
+          "--checkpoint",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_OPD_3e-5/head_812.pt",
+          "--name",
+          "tune_OPD_3e-5"
+        ],
+        [
+          "scripts/process_improvement/parallel.py",
+          "--spec",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/cal_tune_OPD_3e-5_commands.json",
+          "--receipt",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/cal_tune_OPD_3e-5_commands.receipt.json"
+        ]
+      ],
+      "source_spec_sha256": "1d3b8ca5f788050dbb7eeb535e8c70893300d02754f74cbfc4024f6d1e4c7375"
+    },
+    {
+      "name": "dynamic_teaching_diagnostic",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        4
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 43.97269892692566,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose_dynamic.py"
+        ]
+      ],
+      "source_spec_sha256": "bb9845a8d74d14ad3e6cb21fc3e77a4ccb619959d08295cb3c6a273135d1ebea"
+    },
+    {
+      "name": "evaluate_historical_native",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        0
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 624.899290561676,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/parallel.py",
+          "--spec",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/HISTORICAL_E3_commands.json",
+          "--receipt",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/HISTORICAL_E3_commands.receipt.json"
+        ],
+        [
+          "scripts/process_improvement/parallel.py",
+          "--spec",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/HISTORICAL_E4-A_commands.json",
+          "--receipt",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/suite/HISTORICAL_E4-A_commands.receipt.json"
+        ]
+      ],
+      "source_spec_sha256": "c50f7e4fb1916633b2d336492dcaeab8b182ab98621004a6bd3cfe488d641bd7"
+    },
+    {
+      "name": "expanded_local_0",
+      "host": "training-vlawm-tsinghua-zt6",
+      "gpus": [
+        0
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 6421.436680793762,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "0",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "0",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "b72634b86b917e69da8f6a80851cb28cb801a29203ffc38eccb626039229c9f3"
+    },
+    {
+      "name": "expanded_local_1",
+      "host": "training-vlawm-tsinghua-zt6",
+      "gpus": [
+        1
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 6298.556064605713,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "1",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "1",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "1ffee457fc74d472931107145f6ba06b9c9c9295310b52931e51ff120ea8fc24"
+    },
+    {
+      "name": "expanded_local_10",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        6
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 5870.763347864151,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "10",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "10",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "49ba8548982d86851deb3c4c05ef65a254304d564ad669c590465cf06af66b38"
+    },
+    {
+      "name": "expanded_local_11",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        7
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 6090.172460317612,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "11",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "11",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "0f3824c96b6ed0a25fcc319521bcc56c1ec0900ee15f8d5c68382c1b45cb9241"
+    },
+    {
+      "name": "expanded_local_12",
+      "host": "training-vla-zt",
+      "gpus": [
+        1
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 4155.044161319733,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "12",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "12",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "0681ae8ff985e1d0cc3b51da414864ebef882bab511988b5a72f8ddaf93d2e5b"
+    },
+    {
+      "name": "expanded_local_13",
+      "host": "training-vla-zt",
+      "gpus": [
+        2
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 4185.39342546463,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "13",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "13",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "dbd0f2e891fa4e43e69526db205fd06f25129847b54b10a0703ee1a210df3aea"
+    },
+    {
+      "name": "expanded_local_14",
+      "host": "training-vla-zt",
+      "gpus": [
+        3
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 4155.408479452133,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "14",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "14",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "ca179bcb4ce4eedab8d5c14002567ae03848d0d92250785e62342be11917a2f8"
+    },
+    {
+      "name": "expanded_local_15",
+      "host": "training-vla-zt",
+      "gpus": [
+        4
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 4124.646514177322,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "15",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "15",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "cdb103cf00dea9c7f851c41dc8661b510e8d7bc1ac44b9495e9c6a5eb9886f93"
+    },
+    {
+      "name": "expanded_local_16",
+      "host": "training-vlawm-tsinghua-zt5",
+      "gpus": [
+        0
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 5211.948595285416,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "16",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "16",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "17bba5edd997a9f8ba422612fc0ef21c6f7f0c329818f0bc88f17b2e27a29eba"
+    },
+    {
+      "name": "expanded_local_17",
+      "host": "training-vlawm-tsinghua-zt5",
+      "gpus": [
+        1
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 4131.386552095413,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "17",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "17",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "090b0f65e6c8ecb505f41cad1c575894155d99f34468055245a3c5beabd10c2a"
+    },
+    {
+      "name": "expanded_local_18",
+      "host": "training-vlawm-tsinghua-zt5",
+      "gpus": [
+        2
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 4417.469923019409,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "18",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "18",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "48c7d7d97a6b251a2adcae484f1ca4d3f6bddcd8ffed3f67092bff47ec86ba78"
+    },
+    {
+      "name": "expanded_local_19",
+      "host": "training-vlawm-tsinghua-zt5",
+      "gpus": [
+        3
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 4282.769361257553,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "19",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "19",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "0e0f494e27954332e30042c0ee42f72bc640ed45e03764b5cc2ee79e71b35917"
+    },
+    {
+      "name": "expanded_local_2",
+      "host": "training-vlawm-tsinghua-zt6",
+      "gpus": [
+        2
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 6370.589457988739,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "2",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "2",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "4568c28ce74b2656ce98b908124b05932fa67552078592cea65c8554dcf1cd0d"
+    },
+    {
+      "name": "expanded_local_20",
+      "host": "training-vlawm-tsinghua-zt5",
+      "gpus": [
+        4
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 4184.474412441254,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "20",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "20",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "a3fad99c78fed4c3498d91f377f432708d71d1c123059258bd9baa588ea0ce28"
+    },
+    {
+      "name": "expanded_local_21",
+      "host": "training-vlawm-tsinghua-zt5",
+      "gpus": [
+        5
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 4243.0117819309235,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "21",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "21",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "1dc32546b58eeb8a3ec61c0715a11ebe0faf5dbaacf21d4f0c1b4c9b77bfa987"
+    },
+    {
+      "name": "expanded_local_22",
+      "host": "training-vlawm-tsinghua-zt5",
+      "gpus": [
+        6
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 4225.44962477684,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "22",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "22",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "2b63a08c127d376b7c526aaee44e7d5116df7ef6b1cfaafbe99cc3836ce4c252"
+    },
+    {
+      "name": "expanded_local_23",
+      "host": "training-vlawm-tsinghua-zt5",
+      "gpus": [
+        7
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 4172.122877120972,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "23",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "23",
+          "--shards",
+          "24",
+          "--grid",
+          "--scoring-workers",
+          "4",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "bb12417cbf41926bb9d2cb53a2ca84d39fe1baff614efee09e2bfd4044be9456"
+    },
+    {
+      "name": "expanded_local_3",
+      "host": "training-vlawm-tsinghua-zt6",
+      "gpus": [
+        3
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 6299.185583353043,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "3",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "3",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "f940ad6e38357e94d768f6f8aa95044d104367e346524db054178f0a88c2e471"
+    },
+    {
+      "name": "expanded_local_4",
+      "host": "training-vlawm-tsinghua-zt6",
+      "gpus": [
+        4
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 6254.791433572769,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "4",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "4",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "7d4298b875705ccf48fd5a1f0ebf8392c5e9b737d874d73483224c4daa78f786"
+    },
+    {
+      "name": "expanded_local_5",
+      "host": "training-vlawm-tsinghua-zt6",
+      "gpus": [
+        5
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 6358.987791061401,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "5",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "5",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "d45972a2993954515dc1cc7ce70eca84b441f5afb3652b0348386656ded2416d"
+    },
+    {
+      "name": "expanded_local_6",
+      "host": "training-vlawm-tsinghua-zt6",
+      "gpus": [
+        6
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 6273.830112457275,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "6",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "6",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "c14d23ee561fd2784a734976523ec7ce969b95151263ebdd632dc75122eb7e00"
+    },
+    {
+      "name": "expanded_local_7",
+      "host": "training-vlawm-tsinghua-zt6",
+      "gpus": [
+        7
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 6502.052748441696,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "7",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "7",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "9a8793a3133be1765b6c24f49489715fc325c0e2abb18d9119e7f7a7ebf5688a"
+    },
+    {
+      "name": "expanded_local_8",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        1
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 6014.067697048187,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "8",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "8",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "38a1ad524063456197ffc729f91e09c03f3acae870bca277e27baa9f8fb28cb1"
+    },
+    {
+      "name": "expanded_local_9",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        5
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 6041.546685218811,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_train",
+          "--rank",
+          "9",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_train_grid"
+        ],
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "diagnostic_cal",
+          "--rank",
+          "9",
+          "--shards",
+          "24",
+          "--grid",
+          "--name",
+          "local_cal_grid"
+        ]
+      ],
+      "source_spec_sha256": "b841080c77331a2051c146aae206f97fc1e409430be4d5900878fd8db7f740d2"
+    },
+    {
+      "name": "export_qualification_OPD",
+      "host": "training-vla-zt",
+      "gpus": [
+        5
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 26.972447395324707,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/export_student.py",
+          "--checkpoint",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_OPD_1e-5/head_812.pt",
+          "--name",
+          "tune_OPD_1e-5",
+          "--verify"
+        ]
+      ],
+      "source_spec_sha256": "8c80d4e5f5a79ed4ce07f882b1fad9a7089b90a4cb09fa2b1e627260be94eadf"
+    },
+    {
+      "name": "historical_E4A_parallel",
+      "host": "training-vla-zt",
+      "gpus": [
+        0
+      ],
+      "status": "FAILED",
+      "allocated_GPU_seconds": 2.2273523807525635,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/historical.py",
+          "--exp",
+          "E4-A"
+        ]
+      ],
+      "source_spec_sha256": "07109f4590b853a52253e9b701de18c5c3961ad13cbd8b24155d2ac1720a3a22"
+    },
+    {
+      "name": "historical_reproductions",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        0
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 2633.5021777153015,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/historical.py",
+          "--exp",
+          "E3"
+        ],
+        [
+          "scripts/process_improvement/historical.py",
+          "--exp",
+          "E4-A"
+        ]
+      ],
+      "source_spec_sha256": "ec161237815f21b68a335b9f97fdc941f3e947929d4d7bc1618a5dd9e8242858"
+    },
+    {
+      "name": "migrate_full_OPD_42_local",
+      "host": "training-vla-zt",
+      "gpus": [
+        2
+      ],
+      "status": "RUNNING_OR_UNFINISHED",
+      "allocated_GPU_seconds": null,
+      "cost_complete": false,
+      "commands": [
+        [
+          "scripts/process_improvement/migrate_training.py",
+          "--old-job",
+          "auto_full_OPD_42",
+          "--run",
+          "full_OPD_42"
+        ]
+      ],
+      "source_spec_sha256": "ae3c64eeb134be21a92c44b99c55aa8389ec62071485813f238d33ee1030ce3a"
+    },
+    {
+      "name": "migrate_full_OPD_43_local",
+      "host": "training-vla-zt",
+      "gpus": [
+        5
+      ],
+      "status": "RUNNING_OR_UNFINISHED",
+      "allocated_GPU_seconds": null,
+      "cost_complete": false,
+      "commands": [
+        [
+          "scripts/process_improvement/migrate_training.py",
+          "--old-job",
+          "auto_full_OPD_43",
+          "--run",
+          "full_OPD_43"
+        ]
+      ],
+      "source_spec_sha256": "5c361fb537d68f79e4512040b9ebd4ff2ef1018876b4b814a77fe2e4338ee627"
+    },
+    {
+      "name": "native_GRPO_qualification_10",
+      "host": "training-vlawm-tsinghua-zt6",
+      "gpus": [
+        2
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 32.990020513534546,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/train_grpo.py",
+          "--qualification",
+          "--split",
+          "legacy_4k",
+          "--steps",
+          "4",
+          "--global-batch",
+          "4",
+          "--progress-weight",
+          "10",
+          "--name",
+          "qualification_GRPO_10"
+        ]
+      ],
+      "source_spec_sha256": "8207175e9aba72ba1887d171acb47f1cddfd4b0456532452c65f1c53f3131ad3"
+    },
+    {
+      "name": "native_GRPO_qualification_5",
+      "host": "training-vlawm-tsinghua-zt6",
+      "gpus": [
+        3
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 32.33550500869751,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/train_grpo.py",
+          "--qualification",
+          "--split",
+          "legacy_4k",
+          "--steps",
+          "4",
+          "--global-batch",
+          "4",
+          "--progress-weight",
+          "5",
+          "--name",
+          "qualification_GRPO_5"
+        ]
+      ],
+      "source_spec_sha256": "cc7b1ab48791c9c1502f043001a02f5a2157f88d988a67eb44d2b4b884adc956"
+    },
+    {
+      "name": "online_input_local",
+      "host": "training-vla-zt",
+      "gpus": [
+        5
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 15.512418746948242,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/verify_inputs.py"
+        ]
+      ],
+      "source_spec_sha256": "3e19fff6d79266ef7012b03957f740a738d58cc8c2590c7f059b730fe8587807"
+    },
+    {
+      "name": "online_input_tsinghua2",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        4
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 15.379267930984497,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/verify_inputs.py"
+        ]
+      ],
+      "source_spec_sha256": "989304b843a48695d6c3f3f06c8940a98a33b7e2752c8de747e75e9545db8fc4"
+    },
+    {
+      "name": "qualification_PROCESS_training",
+      "host": "training-vla-zt",
+      "gpus": [
+        5
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 287.6129457950592,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/train.py",
+          "--method",
+          "PROCESS",
+          "--name",
+          "qualification_PROCESS_128",
+          "--split",
+          "diagnostic_train",
+          "--steps",
+          "32",
+          "--global-batch",
+          "4",
+          "--micro-batch",
+          "1",
+          "--qualification"
+        ],
+        [
+          "scripts/process_improvement/train.py",
+          "--method",
+          "OPD",
+          "--name",
+          "qualification_OPD_128",
+          "--split",
+          "diagnostic_train",
+          "--steps",
+          "32",
+          "--global-batch",
+          "4",
+          "--micro-batch",
+          "1",
+          "--qualification"
+        ]
+      ],
+      "source_spec_sha256": "be348d3eee9f7827b6c923a666a7fd436c27678d85ccada91d69d9d23e6ec396"
+    },
+    {
+      "name": "qualification_batched_exact_fallback",
+      "host": "training-vla-zt",
+      "gpus": [
+        3
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 44.33056426048279,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_fallback.py"
+        ],
+        [
+          "scripts/process_improvement/qualify_disabled.py"
+        ]
+      ],
+      "source_spec_sha256": "b985fbcc9c2f8de0927b5bf56aaf6eeb3da134f777ab2485d45f6b4a451300cc"
+    },
+    {
+      "name": "qualification_frozen_suffix_cache",
+      "host": "training-vla-zt",
+      "gpus": [
+        3
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 178.76927614212036,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_frozen_suffix.py"
+        ]
+      ],
+      "source_spec_sha256": "e5f0007cd9eb9b267a2e4af25b31c52d3968d229feb4fbe890e1b6b3d6cec9d3"
+    },
+    {
+      "name": "qualification_frozen_suffix_full_coverage",
+      "host": "training-vla-zt",
+      "gpus": [
+        3
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 107.09691715240479,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_frozen_suffix.py",
+          "--batches",
+          "16",
+          "32",
+          "48",
+          "64",
+          "96",
+          "--output-name",
+          "frozen_suffix_cache_extra120.json"
+        ],
+        [
+          "scripts/process_improvement/qualify_frozen_suffix.py",
+          "--aggregate"
+        ]
+      ],
+      "source_spec_sha256": "160a54b55eea9f487418243ce8019bcbfea0a17cfcb93fefedb3c3b60a19e87b"
+    },
+    {
+      "name": "qualification_native_GRPO_distributed",
+      "host": "training-rl-zt2",
+      "gpus": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1001.5154361724854,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_grpo_distributed.py"
+        ]
+      ],
+      "source_spec_sha256": "9d5bf6597179a7ee7248486c22430c94f8dc29210fdee18a3a3696dcf36f433d"
+    },
+    {
+      "name": "qualification_policy_evaluation",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        0
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 67.1566710472107,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/evaluate.py",
+          "--name",
+          "qualification_OPD_B32",
+          "--checkpoint",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qualification_OPD_B32/head_8.pt",
+          "--split",
+          "dev",
+          "--limit",
+          "64"
+        ]
+      ],
+      "source_spec_sha256": "53d37899eca634204253b183ebcab35d48128c637c0e65e598837e9a00e5a709"
+    },
+    {
+      "name": "qualification_real_accepted_gradient",
+      "host": "training-vla-zt",
+      "gpus": [
+        2
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 18.714937210083008,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_accepted.py"
+        ]
+      ],
+      "source_spec_sha256": "b5705e0d0f04454b8c40619b965bd849c6704a21d7426e570d3c346dbb14b6be"
+    },
+    {
+      "name": "qualification_target",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        1
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 60.1006498336792,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/diagnose.py",
+          "--split",
+          "legacy_4k",
+          "--limit",
+          "4",
+          "--sources",
+          "IL",
+          "RL",
+          "OLD_OPD",
+          "--banks",
+          "1",
+          "--candidates",
+          "8",
+          "--fit",
+          "2",
+          "--guard",
+          "2",
+          "--test",
+          "4",
+          "--name",
+          "qualification_local"
+        ]
+      ],
+      "source_spec_sha256": "fa463e86ede1473f4e43473041369233854be8159af83976baab094fd7f8cb2a"
+    },
+    {
+      "name": "qualification_training",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        0
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 214.94562101364136,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/train.py",
+          "--qualification",
+          "--split",
+          "legacy_4k",
+          "--steps",
+          "8",
+          "--name",
+          "qualification_OPD_B32",
+          "--global-batch",
+          "32"
+        ]
+      ],
+      "source_spec_sha256": "9c72d74d781465ace1ae0d6f664c3857f659948c6c479c18bc977d0eb2dd74fe"
+    },
+    {
+      "name": "qualify_batch8_inference",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        3
+      ],
+      "status": "FAILED",
+      "allocated_GPU_seconds": 108.11059236526489,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/evaluate_batched.py",
+          "--qualification",
+          "--batch-size",
+          "8",
+          "--name",
+          "qualification_batched8_IL",
+          "--baseline",
+          "IL"
+        ],
+        [
+          "scripts/process_improvement/evaluate_batched.py",
+          "--qualification",
+          "--batch-size",
+          "8",
+          "--name",
+          "qualification_batched8_RL",
+          "--baseline",
+          "RL"
+        ]
+      ],
+      "source_spec_sha256": "fc08a6f3a4ae0c6aaea455567b0c0449900c2823338206b6b7b784c774e0956b"
+    },
+    {
+      "name": "qualify_batch_inference",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        3
+      ],
+      "status": "FAILED",
+      "allocated_GPU_seconds": 84.80354332923889,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/evaluate_batched.py",
+          "--qualification",
+          "--name",
+          "qualification_batched_IL",
+          "--baseline",
+          "IL"
+        ],
+        [
+          "scripts/process_improvement/evaluate_batched.py",
+          "--qualification",
+          "--name",
+          "qualification_batched_RL",
+          "--baseline",
+          "RL"
+        ]
+      ],
+      "source_spec_sha256": "6a7b57417b4bf0763f9400a18c4cb8fa6bacd51b5ae8ddbed31c7df1eb4abe85"
+    },
+    {
+      "name": "qualify_context_cache",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        5
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 19.252249717712402,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_optimization.py"
+        ]
+      ],
+      "source_spec_sha256": "b5a41e169e9b5a68e1943383f9c286f6fe7144a54f093deb81fbbd5c81f2c09d"
+    },
+    {
+      "name": "qualify_cuda_graph",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        4
+      ],
+      "status": "FAILED",
+      "allocated_GPU_seconds": 11.76671314239502,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_cuda_graph.py"
+        ]
+      ],
+      "source_spec_sha256": "abb9064989c290de701345088edd99c81c5a330436e3b650454a92cda571a374"
+    },
+    {
+      "name": "qualify_cuda_graph_retry1",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        4
+      ],
+      "status": "FAILED",
+      "allocated_GPU_seconds": 11.740287065505981,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_cuda_graph.py"
+        ]
+      ],
+      "source_spec_sha256": "35ecebdbab208efa681387855cf74b854a8cff888f9b3575ec3e503d8a1ee734"
+    },
+    {
+      "name": "qualify_cuda_graph_retry2",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        4
+      ],
+      "status": "INTERRUPTED",
+      "allocated_GPU_seconds": null,
+      "cost_complete": false,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_cuda_graph.py"
+        ]
+      ],
+      "source_spec_sha256": "63d830fbf9aaad1e979886951edeee1d808871fe45cfeb3c8459742f4a294e5c"
+    },
+    {
+      "name": "qualify_cuda_graph_shard_0",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        3
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 272.72270822525024,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_cuda_graph.py",
+          "--rank",
+          "0",
+          "--shards",
+          "4"
+        ]
+      ],
+      "source_spec_sha256": "a2ab85e7df6d5b7574d2306395cf55f9deea93501fcea76c57ed0d5df6bce730"
+    },
+    {
+      "name": "qualify_cuda_graph_shard_1",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        4
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 271.86453199386597,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_cuda_graph.py",
+          "--rank",
+          "1",
+          "--shards",
+          "4"
+        ]
+      ],
+      "source_spec_sha256": "8ece3d753b29171d170d2bdb40ff7c0b271383b57e8922b158ec076ac265e8c5"
+    },
+    {
+      "name": "qualify_cuda_graph_shard_2",
+      "host": "training-vla-zt",
+      "gpus": [
+        6
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 271.0762872695923,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_cuda_graph.py",
+          "--rank",
+          "2",
+          "--shards",
+          "4"
+        ]
+      ],
+      "source_spec_sha256": "fd8178eb0b7d551ceaa04272983e0193fd731e165ba40fb27d4f9927ac3a4d00"
+    },
+    {
+      "name": "qualify_cuda_graph_shard_3",
+      "host": "training-vla-zt",
+      "gpus": [
+        7
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 271.1875145435333,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_cuda_graph.py",
+          "--rank",
+          "3",
+          "--shards",
+          "4"
+        ]
+      ],
+      "source_spec_sha256": "42ad2fdaae3de972cdd8b8918c9599011799ea6a875a2ccb46472ba01cd7ca44"
+    },
+    {
+      "name": "qualify_disabled_method",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        4
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 27.312096118927002,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_disabled.py"
+        ]
+      ],
+      "source_spec_sha256": "328ef7682e5eb7a8f832f7defdf66508df74d8b6edf4d78f7341f1c666c47348"
+    },
+    {
+      "name": "qualify_distributed_resume",
+      "host": "training-vlawm-tsinghua-zt6",
+      "gpus": [
+        0,
+        1
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 198.0970106124878,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_distributed.py"
+        ]
+      ],
+      "source_spec_sha256": "ec5451b3dfbd2092557d791bc0db9f868554123c187b70ad4243de4dd5b3ca67"
+    },
+    {
+      "name": "qualify_evaluation_cache",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        2
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1544.3903090953827,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_eval_cache.py"
+        ],
+        [
+          "scripts/process_improvement/evaluate.py",
+          "--name",
+          "B0_IL_screen",
+          "--baseline",
+          "IL",
+          "--screening",
+          "--native-cache",
+          "--split",
+          "dev"
+        ]
+      ],
+      "source_spec_sha256": "f3247771f70a3ea87d6377a7169a0bc8eb64f9217ba8926638254558866965c3"
+    },
+    {
+      "name": "qualify_native_batch",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        6
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 36.265095949172974,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/qualify_batch.py"
+        ]
+      ],
+      "source_spec_sha256": "0fa5c5d4c0163942106afb8999d083efa3c55523c8c925cd4eadcd5e768707b8"
+    },
+    {
+      "name": "qualify_parallel_models",
+      "host": "training-vlawm-tsinghua-zt2",
+      "gpus": [
+        3
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 21.793433666229248,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/parallel.py",
+          "--spec",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/resources/parallel_qualification.json",
+          "--concurrency",
+          "3",
+          "--receipt",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/tests/parallel_models.json"
+        ]
+      ],
+      "source_spec_sha256": "f3798f814c8d890f2f4b6c1917a97c1d56d4e0af639ff2f6b3c4aac8d2ac57a0"
+    },
+    {
+      "name": "raw_cache_0",
+      "host": "training-vla-zt",
+      "gpus": [
+        0
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1287.5648927688599,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "0",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "99f28796829db0b8cbe90929e383bf6a7fbea12c8dd3a9c56fa6c4452ff931a9"
+    },
+    {
+      "name": "raw_cache_1",
+      "host": "training-vla-zt",
+      "gpus": [
+        1
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1281.2253103256226,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "1",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "ad8c639d1b84333ab3b78120d789939408a847d5e924e986661008216212179e"
+    },
+    {
+      "name": "raw_cache_10",
+      "host": "training-rl-zt2",
+      "gpus": [
+        2
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1451.904111623764,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "10",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "612c6b4c184b75af86f1b9fea0ea44df86fc3e368928bffb050a5e3eaa6165ae"
+    },
+    {
+      "name": "raw_cache_11",
+      "host": "training-rl-zt2",
+      "gpus": [
+        3
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1446.4144701957703,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "11",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "0c3ca93c960e3f260b9405200173c4e0d705b5d0ceda8a21663b2ad1130a3363"
+    },
+    {
+      "name": "raw_cache_12",
+      "host": "training-rl-zt2",
+      "gpus": [
+        4
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1452.339252948761,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "12",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "f6df0b7ca519f64bee0919361ff7ffe54a457026ff251958e8bfc0aa340bd7a7"
+    },
+    {
+      "name": "raw_cache_13",
+      "host": "training-rl-zt2",
+      "gpus": [
+        5
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1472.2954618930817,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "13",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "808fce68e79c98c78a28edf9683bf690db687ff26e05cda4e28f4f9985ae7594"
+    },
+    {
+      "name": "raw_cache_14",
+      "host": "training-rl-zt2",
+      "gpus": [
+        6
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1442.6333391666412,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "14",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "16a6df20a28f9ffb0fbc5b46c67d81a511061fdb0cfdfe356ee3988bf22c19d3"
+    },
+    {
+      "name": "raw_cache_15",
+      "host": "training-rl-zt2",
+      "gpus": [
+        7
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1439.8454895019531,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "15",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "f839b364a1470d9a0ea737ec968734ef2eb1403458ed3477fa0f388bd86f78b0"
+    },
+    {
+      "name": "raw_cache_16",
+      "host": "training-vlawm-tsinghua-zt5",
+      "gpus": [
+        0
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1285.6466636657715,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "16",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "abd1590c220cc545cc1e4451827ed5d336f6523f3170854463c7efb43fe83fdc"
+    },
+    {
+      "name": "raw_cache_17",
+      "host": "training-vlawm-tsinghua-zt5",
+      "gpus": [
+        1
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1301.4289481639862,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "17",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "14040f7cda67193d2357b1244048c1ae7df6873bdca33ee42718e61712975b98"
+    },
+    {
+      "name": "raw_cache_18",
+      "host": "training-vlawm-tsinghua-zt5",
+      "gpus": [
+        2
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1276.1837859153748,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "18",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "388d13ed0493cb430a61a478ed1eaf562bfcbdf296b2ae972c873211e3afee59"
+    },
+    {
+      "name": "raw_cache_19",
+      "host": "training-vlawm-tsinghua-zt5",
+      "gpus": [
+        3
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1307.9865727424622,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "19",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "30a82ca184312022de7efd4d70aa74de46614058e20e56acdfb5a89be4945f20"
+    },
+    {
+      "name": "raw_cache_2",
+      "host": "training-vla-zt",
+      "gpus": [
+        2
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1292.336944103241,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "2",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "05efb1dd195577489a653dfd170d95215e99146f06daaacb712879c942556332"
+    },
+    {
+      "name": "raw_cache_20",
+      "host": "training-vlawm-tsinghua-zt5",
+      "gpus": [
+        4
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1280.8622410297394,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "20",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "0e954da3983e24fe6524ed13f51d319f445bd7b02fe2e324fd20471af23035e1"
+    },
+    {
+      "name": "raw_cache_21",
+      "host": "training-vlawm-tsinghua-zt5",
+      "gpus": [
+        5
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1299.3785257339478,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "21",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "dd4c15969b4c0eea182e0057cb9a2f208fb73d3f209d33b186e8a05f50608c06"
+    },
+    {
+      "name": "raw_cache_22",
+      "host": "training-vlawm-tsinghua-zt5",
+      "gpus": [
+        6
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1291.1996994018555,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "22",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "27b3a5796f0c5ab894c40d4a2e031e6394f66d97a99745927c0c824d0bdc5780"
+    },
+    {
+      "name": "raw_cache_23",
+      "host": "training-vlawm-tsinghua-zt5",
+      "gpus": [
+        7
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1292.5431063175201,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "23",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "675a096fbca13a16136c0f8cfb35ee7c1985727ec686643f5e456f5b5627676c"
+    },
+    {
+      "name": "raw_cache_3",
+      "host": "training-vla-zt",
+      "gpus": [
+        3
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1262.4964699745178,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "3",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "c4aef08f4c910dcf2ef92adbf09a3cf902859cf321bab7e9a101918dcc621e7c"
+    },
+    {
+      "name": "raw_cache_4",
+      "host": "training-vla-zt",
+      "gpus": [
+        4
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1281.092895746231,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "4",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "e2a93a145356dc0a8bb4bbaa4615c4cdd46eaf1ad9bfc6b0b592892c0bd62f00"
+    },
+    {
+      "name": "raw_cache_5",
+      "host": "training-vla-zt",
+      "gpus": [
+        5
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1257.0875124931335,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "5",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "eea744c5f3ffc64f4767cd7a05dc79c193cbc781eefaa3541319c1932f06fe34"
+    },
+    {
+      "name": "raw_cache_6",
+      "host": "training-vla-zt",
+      "gpus": [
+        6
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1264.4649398326874,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "6",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "a7a65be2adeebd18c51779343b7553e459ac6c937c270d841b814a6896c0f7d5"
+    },
+    {
+      "name": "raw_cache_7",
+      "host": "training-vla-zt",
+      "gpus": [
+        7
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1285.8969099521637,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "7",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "14b36d0b3ff491a4def612f91e81d3f58df01ba4f4f3953b9a7bfcf2021d56db"
+    },
+    {
+      "name": "raw_cache_8",
+      "host": "training-rl-zt2",
+      "gpus": [
+        0
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1459.4699640274048,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "8",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "a43f4ebf976353dda18a5cdf73fa7449b6e01634a464d8311407a9f0d65e8b47"
+    },
+    {
+      "name": "raw_cache_9",
+      "host": "training-rl-zt2",
+      "gpus": [
+        1
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1442.3280138969421,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/prepare_cache.py",
+          "--split",
+          "all",
+          "--rank",
+          "9",
+          "--shards",
+          "24"
+        ]
+      ],
+      "source_spec_sha256": "dc248101b4253cec6587c726a0053fab1771109583c1316688f02cfccf697862"
+    },
+    {
+      "name": "tune_ANCHOR_1e-5",
+      "host": "training-vla-zt",
+      "gpus": [
+        7
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1786.6651017665863,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/wait_cache.py",
+          "--split",
+          "train_25k"
+        ],
+        [
+          "scripts/process_improvement/train.py",
+          "--method",
+          "ANCHOR",
+          "--split",
+          "train_25k",
+          "--epochs",
+          "1",
+          "--lr",
+          "1e-5",
+          "--name",
+          "tune_ANCHOR_1e-5"
+        ]
+      ],
+      "source_spec_sha256": "a5051c1b98e956c58e36bc98c378a1d222659f19f030aece0c01a855f1717435"
+    },
+    {
+      "name": "tune_ANCHOR_3e-5",
+      "host": "training-vla-zt",
+      "gpus": [
+        0
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1875.6631274223328,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/train.py",
+          "--method",
+          "ANCHOR",
+          "--split",
+          "train_25k",
+          "--epochs",
+          "1",
+          "--lr",
+          "3e-5",
+          "--name",
+          "tune_ANCHOR_3e-5"
+        ]
+      ],
+      "source_spec_sha256": "cc5c9e11c2b14b48a55084b9bf166614d53bd3f443151495fe3108b74f2d6015"
+    },
+    {
+      "name": "tune_GRPO_IL_1e-5",
+      "host": "training-rl-zt2",
+      "gpus": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 28150.347402572632,
+      "cost_complete": true,
+      "commands": [
+        [
+          "-m",
+          "torch.distributed.run",
+          "--standalone",
+          "--nproc_per_node=8",
+          "scripts/process_improvement/train_grpo.py",
+          "--split",
+          "train_25k",
+          "--steps",
+          "812",
+          "--score-budget",
+          "207872",
+          "--lr",
+          "1e-5",
+          "--name",
+          "tune_GRPO_IL_1e-5",
+          "--init",
+          "IL"
+        ]
+      ],
+      "source_spec_sha256": "afef305e4fc505f9d3cb63e59ca651023350e8191e5b4b05bc74c04b9a048c15"
+    },
+    {
+      "name": "tune_OPD_1e-5",
+      "host": "training-vla-zt",
+      "gpus": [
+        5
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1721.2386264801025,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/wait_cache.py",
+          "--split",
+          "train_25k"
+        ],
+        [
+          "scripts/process_improvement/train.py",
+          "--method",
+          "OPD",
+          "--split",
+          "train_25k",
+          "--epochs",
+          "1",
+          "--lr",
+          "1e-5",
+          "--name",
+          "tune_OPD_1e-5"
+        ]
+      ],
+      "source_spec_sha256": "89acedc07617e735883a7c0734636f00cb575745614c12c60b6e6886e6170eda"
+    },
+    {
+      "name": "tune_OPD_3e-5",
+      "host": "training-vla-zt",
+      "gpus": [
+        6
+      ],
+      "status": "COMPLETE",
+      "allocated_GPU_seconds": 1721.354725599289,
+      "cost_complete": true,
+      "commands": [
+        [
+          "scripts/process_improvement/wait_cache.py",
+          "--split",
+          "train_25k"
+        ],
+        [
+          "scripts/process_improvement/train.py",
+          "--method",
+          "OPD",
+          "--split",
+          "train_25k",
+          "--epochs",
+          "1",
+          "--lr",
+          "3e-5",
+          "--name",
+          "tune_OPD_3e-5"
+        ]
+      ],
+      "source_spec_sha256": "3810cd2efc81fb1879a41a38201d92575f64464d35224e316bd0a1f014dafe90"
+    }
+  ],
+  "runs": [
+    {
+      "name": "full_ANCHOR_42",
+      "method": "ANCHOR",
+      "split": "train_full",
+      "seed": 42,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "RUNNING_OR_UNFINISHED",
+      "actual_steps": 3230,
+      "completion": null,
+      "ledger": {
+        "status": "MEASURED",
+        "checkpoint_step": 3200,
+        "GPU_seconds": 7138.465710878372,
+        "compute": {
+          "student": {
+            "forward_calls": 32000.0,
+            "trajectory_states": 1024000.0
+          },
+          "teacher": {
+            "forward_calls": 16000.0,
+            "trajectory_states": 512000.0
+          },
+          "anchor": {
+            "forward_calls": 16000.0,
+            "trajectory_states": 512000.0
+          }
+        },
+        "budget": {
+          "logical_scores": 0.0,
+          "physical_scores": 0.0,
+          "score_cache_hits": 0.0,
+          "reference_simulations": 0.0,
+          "cpu_scoring_seconds": 0.0
+        },
+        "source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_ANCHOR_42/cost_rank_0.json": "5e3960732f1840f8e0de8bd7b5ee8b42faf4b0a47c60ae1d3931f7097708eec7"
+        }
+      },
+      "telemetry_missing": false,
+      "source_config_sha256": "f3f54413e41bba24790d03278cfd3beab14f2fe0898855a2b5f619944c4a7f2d"
+    },
+    {
+      "name": "full_ANCHOR_43",
+      "method": "ANCHOR",
+      "split": "train_full",
+      "seed": 43,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "RUNNING_OR_UNFINISHED",
+      "actual_steps": 3080,
+      "completion": null,
+      "ledger": {
+        "status": "MEASURED",
+        "checkpoint_step": 3000,
+        "GPU_seconds": 7016.800478219986,
+        "compute": {
+          "student": {
+            "forward_calls": 30000.0,
+            "trajectory_states": 960000.0
+          },
+          "teacher": {
+            "forward_calls": 15000.0,
+            "trajectory_states": 480000.0
+          },
+          "anchor": {
+            "forward_calls": 15000.0,
+            "trajectory_states": 480000.0
+          }
+        },
+        "budget": {
+          "logical_scores": 0.0,
+          "physical_scores": 0.0,
+          "score_cache_hits": 0.0,
+          "reference_simulations": 0.0,
+          "cpu_scoring_seconds": 0.0
+        },
+        "source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_ANCHOR_43/cost_rank_0.json": "7ad4eb10ffb73e8184f59f65ec41192b85ea9709d08f9218d9aeebe385409c9b"
+        }
+      },
+      "telemetry_missing": false,
+      "source_config_sha256": "44eccabce25797d0f36cf16e6770df5f99555feba69dd65598908bb936d31695"
+    },
+    {
+      "name": "full_ANCHOR_44",
+      "method": "ANCHOR",
+      "split": "train_full",
+      "seed": 44,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "RUNNING_OR_UNFINISHED",
+      "actual_steps": 3210,
+      "completion": null,
+      "ledger": {
+        "status": "MEASURED",
+        "checkpoint_step": 3200,
+        "GPU_seconds": 7187.858418464661,
+        "compute": {
+          "student": {
+            "forward_calls": 32000.0,
+            "trajectory_states": 1024000.0
+          },
+          "teacher": {
+            "forward_calls": 16000.0,
+            "trajectory_states": 512000.0
+          },
+          "anchor": {
+            "forward_calls": 16000.0,
+            "trajectory_states": 512000.0
+          }
+        },
+        "budget": {
+          "logical_scores": 0.0,
+          "physical_scores": 0.0,
+          "score_cache_hits": 0.0,
+          "reference_simulations": 0.0,
+          "cpu_scoring_seconds": 0.0
+        },
+        "source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_ANCHOR_44/cost_rank_0.json": "a1a7a1aa4f0d990a77b16cde273db8a516acc0c9e8a02e240829518363bb5030"
+        }
+      },
+      "telemetry_missing": false,
+      "source_config_sha256": "4cf964f4d0b2fef6f9743f63f8750130221f1b18cb35a6f23f1f64e77ce8cbb3"
+    },
+    {
+      "name": "full_OPD_42",
+      "method": "OPD",
+      "split": "train_full",
+      "seed": 42,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "RUNNING_OR_UNFINISHED",
+      "actual_steps": 3240,
+      "completion": null,
+      "ledger": {
+        "status": "MEASURED",
+        "checkpoint_step": 3200,
+        "GPU_seconds": 7114.2715673446655,
+        "compute": {
+          "student": {
+            "forward_calls": 32000.0,
+            "trajectory_states": 1024000.0
+          },
+          "teacher": {
+            "forward_calls": 16000.0,
+            "trajectory_states": 512000.0
+          }
+        },
+        "budget": {
+          "logical_scores": 0.0,
+          "physical_scores": 0.0,
+          "score_cache_hits": 0.0,
+          "reference_simulations": 0.0,
+          "cpu_scoring_seconds": 0.0
+        },
+        "source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_42/cost_rank_0.json": "d75badad15c12c31c00ce29a7657fffc0683addc0ff218d67337823ca183f412"
+        }
+      },
+      "telemetry_missing": false,
+      "source_config_sha256": "fdaf0ec3e42561d1f1ce247d54aba7de0b8282f834b011c15cc04eb66eb99f5d"
+    },
+    {
+      "name": "full_OPD_43",
+      "method": "OPD",
+      "split": "train_full",
+      "seed": 43,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "RUNNING_OR_UNFINISHED",
+      "actual_steps": 3230,
+      "completion": null,
+      "ledger": {
+        "status": "MEASURED",
+        "checkpoint_step": 3200,
+        "GPU_seconds": 7122.7629408836365,
+        "compute": {
+          "student": {
+            "forward_calls": 32000.0,
+            "trajectory_states": 1024000.0
+          },
+          "teacher": {
+            "forward_calls": 16000.0,
+            "trajectory_states": 512000.0
+          }
+        },
+        "budget": {
+          "logical_scores": 0.0,
+          "physical_scores": 0.0,
+          "score_cache_hits": 0.0,
+          "reference_simulations": 0.0,
+          "cpu_scoring_seconds": 0.0
+        },
+        "source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_43/cost_rank_0.json": "93f008b967cbd374355607dcd64ef2ee0e995ff35fc69cce556dfdc29bd542a3"
+        }
+      },
+      "telemetry_missing": false,
+      "source_config_sha256": "bae42f5ad61a836ab413182e497d5007e3e655a56fb70db28ffcd055bce38d66"
+    },
+    {
+      "name": "full_OPD_44",
+      "method": "OPD",
+      "split": "train_full",
+      "seed": 44,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "RUNNING_OR_UNFINISHED",
+      "actual_steps": 3390,
+      "completion": null,
+      "ledger": {
+        "status": "MEASURED",
+        "checkpoint_step": 3300,
+        "GPU_seconds": 6772.160941123962,
+        "compute": {
+          "student": {
+            "forward_calls": 33000.0,
+            "trajectory_states": 1056000.0
+          },
+          "teacher": {
+            "forward_calls": 16500.0,
+            "trajectory_states": 528000.0
+          }
+        },
+        "budget": {
+          "logical_scores": 0.0,
+          "physical_scores": 0.0,
+          "score_cache_hits": 0.0,
+          "reference_simulations": 0.0,
+          "cpu_scoring_seconds": 0.0
+        },
+        "source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_44/cost_rank_0.json": "9f23b66777e5931e6bc9b0da8858b24648fe77116f469071ce8f7f65b0eac6bc"
+        }
+      },
+      "telemetry_missing": false,
+      "source_config_sha256": "b35b5c84266fa7e8d982cfc9132fea35478df54c5d3f7838929f0bc878959ff0"
+    },
+    {
+      "name": "qual_GRPO_continuous8",
+      "method": "native_GRPO",
+      "split": "legacy_4k",
+      "seed": 42,
+      "world": 8,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 4,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 4,
+        "scene_exposures": 32,
+        "physical_scores": 256,
+        "seconds": 10.413763761520386,
+        "peak_gpu_bytes": 7609814016,
+        "IL_BC_reference_unchanged": true,
+        "checkpoint_sha256": "c1ff68706052f9f070b00b92be54639cd0bcdf02d624aaab351c46e17f9d6cd4",
+        "owner": {
+          "host": "training-rl-zt2",
+          "pid": 2021382,
+          "start_ticks": "1387126608",
+          "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
+        }
+      },
+      "ledger": {
+        "status": "MEASURED",
+        "checkpoint_step": 4,
+        "GPU_seconds": 71.79797172546387,
+        "compute": {
+          "student": {
+            "forward_calls": 224.0,
+            "trajectory_states": 2720.0
+          },
+          "IL_reference": {
+            "forward_calls": 160.0,
+            "trajectory_states": 160.0
+          }
+        },
+        "budget": {
+          "physical_scores": 256.0,
+          "logical_scores": 256.0,
+          "reference_simulations": 256.0,
+          "cpu_scoring_seconds": 7.731233932999995
+        },
+        "source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_continuous8/cost_rank_0.json": "614d148468452b7cec4604f4eceb6e7b98fe41d91c5f0bea74bd18c260a2c8b7",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_continuous8/cost_rank_1.json": "a8b2db1ccea8f01de5b1b62b1ec28e0338b5381b6acee42079b867456064e9a9",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_continuous8/cost_rank_2.json": "37efe41221cb009582edbd547daeb4268b3302bebd021183bf77413f6480f0a5",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_continuous8/cost_rank_3.json": "d0cdc94e34c935b34686125fe553441b36a7254820fadb47d13c6a450d1849bf",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_continuous8/cost_rank_4.json": "5705fe3e42deb41bb8cce1442dadc86f32f4c5bc38310966060231d003daad2d",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_continuous8/cost_rank_5.json": "959d2a43f9e0effb5cdab4f9c822f8bf585a653b229aa9e5049a62903cc157db",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_continuous8/cost_rank_6.json": "77979215e3f35d59f14618fe0ec657323d994a619ba0a7bca475e9ac4cb68e19",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_continuous8/cost_rank_7.json": "bd91441640174e6d8a6eb7302483466b776390cac1594c7ce7b530c9fe1bafc9"
+        }
+      },
+      "telemetry_missing": false,
+      "source_config_sha256": "e5b2370c862840bc9d8eccd323886180b30f84f8ed15e5eb386037fa7dee9cb7"
+    },
+    {
+      "name": "qual_GRPO_resume8",
+      "method": "native_GRPO",
+      "split": "legacy_4k",
+      "seed": 42,
+      "world": 8,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 4,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 4,
+        "scene_exposures": 32,
+        "physical_scores": 256,
+        "seconds": 14.728261709213257,
+        "peak_gpu_bytes": 7615433728,
+        "IL_BC_reference_unchanged": true,
+        "checkpoint_sha256": "65997f887fd47c66fe5d444b7ab7171f8939623d2032437a0ae5d29bb6807ca8",
+        "owner": {
+          "host": "training-rl-zt2",
+          "pid": 2024340,
+          "start_ticks": "1387131458",
+          "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
+        }
+      },
+      "ledger": {
+        "status": "MEASURED",
+        "checkpoint_step": 4,
+        "GPU_seconds": 107.23707842826843,
+        "compute": {
+          "student": {
+            "forward_calls": 224.0,
+            "trajectory_states": 2720.0
+          },
+          "IL_reference": {
+            "forward_calls": 160.0,
+            "trajectory_states": 160.0
+          }
+        },
+        "budget": {
+          "physical_scores": 256.0,
+          "logical_scores": 256.0,
+          "reference_simulations": 256.0,
+          "cpu_scoring_seconds": 7.685061993
+        },
+        "source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_resume8/cost_rank_0.json": "36776e869cba3f3e4546f444f7cf106c2ee36f32f6d7bd930afa34325367c121",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_resume8/cost_rank_1.json": "9caf2145f0f26edd1119c0c5a9f9fe6ddfa3f8c23465cfdaf4581f316d5bb291",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_resume8/cost_rank_2.json": "db08ee42bfff376c35cf4f9281011d26d4a53600d0ce2b5affdcfd5ac7feb903",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_resume8/cost_rank_3.json": "8a6528d09cc577e45f44e7626f205d869a7f8d298af816716cdb18ecb25b775f",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_resume8/cost_rank_4.json": "0dd49d0499076ad3e87d1a7952e5a017880a516ebb849f40dd4af9c006ccb947",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_resume8/cost_rank_5.json": "bb61e1ac7b56693092089b90c598f29e1cfe0161a320eb4c9fc644707a70993c",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_resume8/cost_rank_6.json": "b5bbf38b2b152381309465c1a966046198fdd365e74ddd6d8c86d57bf983e448",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_resume8/cost_rank_7.json": "51feb609481a573ea85210f37ffffb3fd3099225800b95a7b2ad7d7af9c8d129"
+        }
+      },
+      "telemetry_missing": false,
+      "source_config_sha256": "ee49ea273fa90e21e63ba1a6c2014c13d44f3e3c24c7ca17db06a1d39cd016d5"
+    },
+    {
+      "name": "qual_GRPO_single",
+      "method": "native_GRPO",
+      "split": "legacy_4k",
+      "seed": 42,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 4,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 4,
+        "scene_exposures": 32,
+        "physical_scores": 256,
+        "seconds": 35.11352872848511,
+        "peak_gpu_bytes": 7626989568,
+        "IL_BC_reference_unchanged": true,
+        "checkpoint_sha256": "6bf4cd1e27cec296f7b4e2d0dfeb3222778933a957fbf39966799974f89914b3",
+        "owner": {
+          "host": "training-rl-zt2",
+          "pid": 2021046,
+          "start_ticks": "1387121798",
+          "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
+        }
+      },
+      "ledger": {
+        "status": "MEASURED",
+        "checkpoint_step": 4,
+        "GPU_seconds": 34.10720348358154,
+        "compute": {
+          "student": {
+            "forward_calls": 224.0,
+            "trajectory_states": 2720.0
+          },
+          "IL_reference": {
+            "forward_calls": 160.0,
+            "trajectory_states": 160.0
+          }
+        },
+        "budget": {
+          "physical_scores": 256.0,
+          "logical_scores": 256.0,
+          "reference_simulations": 256.0,
+          "cpu_scoring_seconds": 7.5422905309999955
+        },
+        "source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_single/cost_rank_0.json": "b3c7c9bf1e6fcb660e37f5da1a730e57c9059ca6fd71b6c8742556b0a089b001"
+        }
+      },
+      "telemetry_missing": false,
+      "source_config_sha256": "8b3f4f10e0ca8034480650465c1bf07f4ceea65cf28815ab9259936b93a8605c"
+    },
+    {
+      "name": "qual_exact_continuous",
+      "method": "OPD",
+      "split": "legacy_4k",
+      "seed": 42,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 4,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 4,
+        "scene_exposures": 16,
+        "seconds": 15.996062755584717,
+        "peak_gpu_bytes": 1552343552,
+        "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "final_student_hash": "0a814f0717f334920d4b4f86acba69b5068e81c340ec9b5562d049eda09bdc3e",
+        "reference_unchanged": true,
+        "checkpoint_sha256": "2854be4734d1f59033ffea44b0aada0fee26afc2e2b54f06c1b8a649718ea4c1",
+        "physical_scores": 0,
+        "owner": {
+          "host": "training-vlawm-tsinghua-zt6",
+          "pid": 942385,
+          "start_ticks": "1394402455",
+          "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+        }
+      },
+      "ledger": null,
+      "telemetry_missing": true,
+      "source_config_sha256": "47117c92a072864ad743cd7a0e5345466369cfc60c7f4d8ac303f224c3cac9ab"
+    },
+    {
+      "name": "qual_exact_ddp",
+      "method": "OPD",
+      "split": "legacy_4k",
+      "seed": 42,
+      "world": 2,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 4,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 4,
+        "scene_exposures": 16,
+        "seconds": 10.243852853775024,
+        "peak_gpu_bytes": 1690022400,
+        "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "final_student_hash": "48a2087073af8bb027cb053740637b1666a3981a05fcf4558e5c652aa4407332",
+        "reference_unchanged": true,
+        "checkpoint_sha256": "a696ac0647848055de63880f7e68613da1241f94c0d518ad99986e342bccaf00",
+        "physical_scores": 0,
+        "owner": {
+          "host": "training-vlawm-tsinghua-zt6",
+          "pid": 943121,
+          "start_ticks": "1394409597",
+          "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+        }
+      },
+      "ledger": null,
+      "telemetry_missing": true,
+      "source_config_sha256": "192cbab28a25b18c1839f1761a4fdb898cf0b5677cde84b4c2a80785755ba929"
+    },
+    {
+      "name": "qual_exact_resume",
+      "method": "OPD",
+      "split": "legacy_4k",
+      "seed": 42,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 4,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 4,
+        "scene_exposures": 16,
+        "seconds": 17.217309713363647,
+        "peak_gpu_bytes": 1553998336,
+        "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "final_student_hash": "0a814f0717f334920d4b4f86acba69b5068e81c340ec9b5562d049eda09bdc3e",
+        "reference_unchanged": true,
+        "checkpoint_sha256": "ac1a03bd4e343ad3ca5fe2b0147c0f98f268cf131118d2cbbb8c23d6227d00bc",
+        "physical_scores": 0,
+        "owner": {
+          "host": "training-vlawm-tsinghua-zt6",
+          "pid": 942890,
+          "start_ticks": "1394407324",
+          "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+        }
+      },
+      "ledger": null,
+      "telemetry_missing": true,
+      "source_config_sha256": "a045016cd636510f013523cfdc69359220e41c582f702f912f918edb8eef379c"
+    },
+    {
+      "name": "qualification_GRPO_10",
+      "method": "native_GRPO",
+      "split": "legacy_4k",
+      "seed": 42,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 4,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 4,
+        "scene_exposures": 16,
+        "physical_scores": 128,
+        "seconds": 20.621276378631592,
+        "peak_gpu_bytes": 7626989568,
+        "IL_BC_reference_unchanged": true,
+        "checkpoint_sha256": "e798ff3282a9b549ae4b9371b38d7d55b3fb48f3bc28b6bf4690b18bb1d7ca0e",
+        "owner": {
+          "host": "training-vlawm-tsinghua-zt6",
+          "pid": 943674,
+          "start_ticks": "1394414470",
+          "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+        }
+      },
+      "ledger": null,
+      "telemetry_missing": true,
+      "source_config_sha256": "9a79fe3fd914fc681fc3456e550e7be3332547c3f94dba44c09d4a213d0a1595"
+    },
+    {
+      "name": "qualification_GRPO_5",
+      "method": "native_GRPO",
+      "split": "legacy_4k",
+      "seed": 42,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 4,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 4,
+        "scene_exposures": 16,
+        "physical_scores": 128,
+        "seconds": 20.500520706176758,
+        "peak_gpu_bytes": 7626989568,
+        "IL_BC_reference_unchanged": true,
+        "checkpoint_sha256": "b92cc0a75f81b3e37900308ecd85e215900f4cb2d4f5fe245433a0cda1c143f7",
+        "owner": {
+          "host": "training-vlawm-tsinghua-zt6",
+          "pid": 943681,
+          "start_ticks": "1394414490",
+          "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+        }
+      },
+      "ledger": null,
+      "telemetry_missing": true,
+      "source_config_sha256": "da617a6855a17b73718d4b65c10dc4b5f95222343af772002ebb59c830d8dfa8"
+    },
+    {
+      "name": "qualification_OPD_128",
+      "method": "OPD",
+      "split": "diagnostic_train",
+      "seed": 42,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 32,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 32,
+        "scene_exposures": 128,
+        "seconds": 103.11379408836365,
+        "peak_gpu_bytes": 1552343552,
+        "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "final_student_hash": "bf7f7f33c35b217518d5ae2ba7d991ab96be8604e2b55b93ac617613cc8a83e3",
+        "reference_unchanged": true,
+        "checkpoint_sha256": "ea843a4d47d35d42b7276431c564ffb1f2bc4ff5c327dbed7fa6c876aa12e5a2",
+        "physical_scores": 0,
+        "owner": {
+          "host": "training-vla-zt",
+          "pid": 1923288,
+          "start_ticks": "1394791939",
+          "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+        }
+      },
+      "ledger": {
+        "status": "MEASURED",
+        "checkpoint_step": 32,
+        "GPU_seconds": 102.33629846572876,
+        "compute": {
+          "student": {
+            "forward_calls": 1280.0,
+            "trajectory_states": 1280.0
+          },
+          "teacher": {
+            "forward_calls": 640.0,
+            "trajectory_states": 640.0
+          }
+        },
+        "budget": {
+          "logical_scores": 0.0,
+          "physical_scores": 0.0,
+          "score_cache_hits": 0.0,
+          "reference_simulations": 0.0,
+          "cpu_scoring_seconds": 0.0
+        },
+        "source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qualification_OPD_128/cost_rank_0.json": "9110d30381a3ade94095d1dbb4e234abbd53133b24cc803b2ce94aa9f878247b"
+        }
+      },
+      "telemetry_missing": false,
+      "source_config_sha256": "275ab58b135be38272d14beb27295a31d9f1fb27ecf0bf3a84a39aabd01a261a"
+    },
+    {
+      "name": "qualification_OPD_B32",
+      "method": "OPD",
+      "split": "legacy_4k",
+      "seed": 42,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 8,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 8,
+        "scene_exposures": 256,
+        "seconds": 202.23492980003357,
+        "peak_gpu_bytes": 1551753728,
+        "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "final_student_hash": "340bd6285dc08ff133ff30eb2a39504fe604292617377cb293b0ab7e864b0958",
+        "reference_unchanged": true,
+        "checkpoint_sha256": "d4ea1aa7a3659a97b731f354e13fbc458211404c63b86af68c327e1bb0947e3f",
+        "physical_scores": 0,
+        "owner": {
+          "host": "training-vlawm-tsinghua-zt2",
+          "pid": 2253268,
+          "start_ticks": "1394390937",
+          "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+        }
+      },
+      "ledger": null,
+      "telemetry_missing": true,
+      "source_config_sha256": "34694813b32375dd43e70cc5a5c072e0248a8d4bc026aad1bfa0ed1b48f611ae"
+    },
+    {
+      "name": "qualification_PROCESS_128",
+      "method": "PROCESS",
+      "split": "diagnostic_train",
+      "seed": 42,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 32,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 32,
+        "scene_exposures": 128,
+        "seconds": 158.08630800247192,
+        "peak_gpu_bytes": 1561569792,
+        "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "final_student_hash": "bf7f7f33c35b217518d5ae2ba7d991ab96be8604e2b55b93ac617613cc8a83e3",
+        "reference_unchanged": true,
+        "checkpoint_sha256": "0e1ec167cd908b5b50997b68308bc8ed0d36b4fb91afdb04a96de65bd6601ac2",
+        "physical_scores": 2231,
+        "owner": {
+          "host": "training-vla-zt",
+          "pid": 1921046,
+          "start_ticks": "1394774793",
+          "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+        }
+      },
+      "ledger": null,
+      "telemetry_missing": true,
+      "source_config_sha256": "da5a498c1472992b0491c81f308ac7ecc0368e308f6c5b7723475914d4841205"
+    },
+    {
+      "name": "scaling_legacy_4k_OPD_42",
+      "method": "OPD",
+      "split": "legacy_4k",
+      "seed": 42,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 2000,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 2000,
+        "scene_exposures": 64000,
+        "seconds": 4122.299727201462,
+        "peak_gpu_bytes": 25254521344,
+        "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "final_student_hash": "e781b03e69c322f148af784c511236ec0f3fcdb44d5ab2c5af12c2255cc095a9",
+        "reference_unchanged": true,
+        "checkpoint_sha256": "b0149ebd7aa45ceb575a0e116b8b4e5eb01aa8dbcc07c7ede68c3f6b6d130818",
+        "physical_scores": 0,
+        "owner": {
+          "host": "training-vla-zt",
+          "pid": 1934782,
+          "start_ticks": "1394902355",
+          "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
+        }
+      },
+      "ledger": {
+        "status": "MEASURED",
+        "checkpoint_step": 2000,
+        "GPU_seconds": 4121.505796432495,
+        "compute": {
+          "student": {
+            "forward_calls": 20000.0,
+            "trajectory_states": 640000.0
+          },
+          "teacher": {
+            "forward_calls": 10000.0,
+            "trajectory_states": 320000.0
+          }
+        },
+        "budget": {
+          "logical_scores": 0.0,
+          "physical_scores": 0.0,
+          "score_cache_hits": 0.0,
+          "reference_simulations": 0.0,
+          "cpu_scoring_seconds": 0.0
+        },
+        "source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/scaling_legacy_4k_OPD_42/cost_rank_0.json": "f509815646706af3afe63b05f088787a2bb2190ca38992ac2490bcc5d0094e03"
+        }
+      },
+      "telemetry_missing": false,
+      "source_config_sha256": "1fad686d78ab16f7ed409050359454f993d8a0342cba1be5de3970928c4c5fbf"
+    },
+    {
+      "name": "scaling_train_25k_OPD_42",
+      "method": "OPD",
+      "split": "train_25k",
+      "seed": 42,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 3245,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 3245,
+        "scene_exposures": 103840,
+        "seconds": 6651.928876876831,
+        "peak_gpu_bytes": 25254521344,
+        "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "final_student_hash": "bb69d9e2159e462f0d181579857afc709e668a694435e8739905d9b5176085fb",
+        "reference_unchanged": true,
+        "checkpoint_sha256": "4edaa1b3e4690dfbc8c388c9e36d1450eb4aeb2ee5704d7ba61a50e98316a1e0",
+        "physical_scores": 0,
+        "owner": {
+          "host": "training-vla-zt",
+          "pid": 1934789,
+          "start_ticks": "1394902369",
+          "code_sha": "892271735d1c61f3af5c6b80d37b94b00a4f045f"
+        }
+      },
+      "ledger": {
+        "status": "MEASURED",
+        "checkpoint_step": 3245,
+        "GPU_seconds": 6651.187568187714,
+        "compute": {
+          "student": {
+            "forward_calls": 32450.0,
+            "trajectory_states": 1038400.0
+          },
+          "teacher": {
+            "forward_calls": 16225.0,
+            "trajectory_states": 519200.0
+          }
+        },
+        "budget": {
+          "logical_scores": 0.0,
+          "physical_scores": 0.0,
+          "score_cache_hits": 0.0,
+          "reference_simulations": 0.0,
+          "cpu_scoring_seconds": 0.0
+        },
+        "source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/scaling_train_25k_OPD_42/cost_rank_0.json": "1b8689b283926152d8df873da34bb6c103b339e09cb4265ad84b6cbe0787000c"
+        }
+      },
+      "telemetry_missing": false,
+      "source_config_sha256": "2a6db31d51a91f763c3f8f4af9488c396208b27545fbf9c1db75bf5bb3abf6ec"
+    },
+    {
+      "name": "tune_ANCHOR_1e-5",
+      "method": "ANCHOR",
+      "split": "train_25k",
+      "seed": 42,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 812,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 812,
+        "scene_exposures": 25984,
+        "seconds": 1690.7324256896973,
+        "peak_gpu_bytes": 25395950080,
+        "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "final_student_hash": "7d080247545c6e11ad006d950a540db6f996ec1ea98947c302439e7ca33b0131",
+        "reference_unchanged": true,
+        "checkpoint_sha256": "073d49c2560a0b9de4cc3e5aed80300078b977f8c957fdcea62beefa8cad2ad8",
+        "physical_scores": 0,
+        "owner": {
+          "host": "training-vla-zt",
+          "pid": 1894528,
+          "start_ticks": "1394494763",
+          "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+        }
+      },
+      "ledger": null,
+      "telemetry_missing": true,
+      "source_config_sha256": "5bce5b6c666e7253f3f558cb760c00fa0501def638ce1ba1da9815a9d0326505"
+    },
+    {
+      "name": "tune_ANCHOR_3e-5",
+      "method": "ANCHOR",
+      "split": "train_25k",
+      "seed": 42,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 812,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 812,
+        "scene_exposures": 25984,
+        "seconds": 1860.7075681686401,
+        "peak_gpu_bytes": 25395950080,
+        "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "final_student_hash": "e5f08523794477f2b38d2442461aa00738aa7ca1de7651a7498b34abd61f3622",
+        "reference_unchanged": true,
+        "checkpoint_sha256": "e21983f4de98b7dd659e197fb48c6d0c751b1c4d991764d6e998c47a4f880887",
+        "physical_scores": 0,
+        "owner": {
+          "host": "training-vla-zt",
+          "pid": 1895401,
+          "start_ticks": "1394501126",
+          "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+        }
+      },
+      "ledger": null,
+      "telemetry_missing": true,
+      "source_config_sha256": "5a0a9dfb89e6b61bb3bf1e635bfc62c36db397386c4acc39356e5da39a290f82"
+    },
+    {
+      "name": "tune_GRPO_IL_1e-5",
+      "method": "native_GRPO",
+      "split": "train_25k",
+      "seed": 42,
+      "world": 8,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 812,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 812,
+        "scene_exposures": 25984,
+        "physical_scores": 207872,
+        "seconds": 3503.1774537563324,
+        "peak_gpu_bytes": 7764307968,
+        "IL_BC_reference_unchanged": true,
+        "checkpoint_sha256": "8c5dd55ab3c0879cb81991f3785c0a657441546b3f4cfd8200ce2aa0e044380a",
+        "owner": {
+          "host": "training-rl-zt2",
+          "pid": 1992093,
+          "start_ticks": "1386410694",
+          "code_sha": "4775215702db8cb143ab3457f901e0c0f81fce49"
+        }
+      },
+      "ledger": null,
+      "telemetry_missing": true,
+      "source_config_sha256": "3db8f62933852c730f6665db96892f6d1d501da8ce7cdfc9d112e4ffd04fb40b"
+    },
+    {
+      "name": "tune_GRPO_IL_3e-5",
+      "method": "native_GRPO",
+      "split": "train_25k",
+      "seed": 42,
+      "world": 8,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 812,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 812,
+        "scene_exposures": 25984,
+        "physical_scores": 207872,
+        "seconds": 3471.5632696151733,
+        "peak_gpu_bytes": 7764307968,
+        "IL_BC_reference_unchanged": true,
+        "checkpoint_sha256": "6879b3902a5e761a364a12687f5038814a3cabff965b6b51ae19e902944159b2",
+        "owner": {
+          "host": "training-rl-zt2",
+          "pid": 2006105,
+          "start_ticks": "1386764611",
+          "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
+        }
+      },
+      "ledger": {
+        "status": "MEASURED",
+        "checkpoint_step": 812,
+        "GPU_seconds": 27765.03805422783,
+        "compute": {
+          "student": {
+            "forward_calls": 181888.0,
+            "trajectory_states": 2208640.0
+          },
+          "IL_reference": {
+            "forward_calls": 129920.0,
+            "trajectory_states": 129920.0
+          }
+        },
+        "budget": {
+          "physical_scores": 207872.0,
+          "logical_scores": 207872.0,
+          "reference_simulations": 207872.0,
+          "cpu_scoring_seconds": 6292.173548920983
+        },
+        "source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_IL_3e-5/cost_rank_0.json": "80b7cdccacc607ac5403a25d7e0e341661458f372da3471a22f7db39d1941295",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_IL_3e-5/cost_rank_1.json": "6ed5096a1398a485847489a9f77671a1b533a7b165b640e75791ee624cdd7c5b",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_IL_3e-5/cost_rank_2.json": "aa84a82dceabcd46df43fb8ef29e04d54057d3d95b1974f3ffc58c57bb909f96",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_IL_3e-5/cost_rank_3.json": "b81bbc3a4ae767ea41347af3f07b77a9b6ef0715c5f9c8910e343beae23a004f",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_IL_3e-5/cost_rank_4.json": "2c937d7abe7c4ad08b78e4c504e7f21e51089408deec4543c78c4c4c1e7a21fb",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_IL_3e-5/cost_rank_5.json": "b64bd0712e8b0095050a952ae7c4f025741eebdf06baf4be5a56fe2cfc26413c",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_IL_3e-5/cost_rank_6.json": "8e23049d7e30c18f50abf89433f416fc97a67f6a9aefc5e00c8c7eca3646ef94",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_IL_3e-5/cost_rank_7.json": "91bb6d0f09a73b0de6653c805f47c6cdb9f45a0740b4587fd0a8eb7aeebe1c0f"
+        }
+      },
+      "telemetry_missing": false,
+      "source_config_sha256": "e905c7fd8e3614aa749543d78b3625ed745a00d612311b6202e63d0fef7b6993"
+    },
+    {
+      "name": "tune_GRPO_RL_1e-5",
+      "method": "native_GRPO",
+      "split": "train_25k",
+      "seed": 42,
+      "world": 8,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 812,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 812,
+        "scene_exposures": 25984,
+        "physical_scores": 207872,
+        "seconds": 3462.743896007538,
+        "peak_gpu_bytes": 7764307968,
+        "IL_BC_reference_unchanged": true,
+        "checkpoint_sha256": "e9a04ea58053d64aadcf97819ddb19ac5fedc04c9f029f967a274f5a4e3a9720",
+        "owner": {
+          "host": "training-rl-zt2",
+          "pid": 2026103,
+          "start_ticks": "1387139132",
+          "code_sha": "32c93f459acdac5c9224214806b94fa9e7d86be6"
+        }
+      },
+      "ledger": {
+        "status": "MEASURED",
+        "checkpoint_step": 812,
+        "GPU_seconds": 27696.89322900772,
+        "compute": {
+          "student": {
+            "forward_calls": 181888.0,
+            "trajectory_states": 2208640.0
+          },
+          "IL_reference": {
+            "forward_calls": 129920.0,
+            "trajectory_states": 129920.0
+          }
+        },
+        "budget": {
+          "physical_scores": 207872.0,
+          "logical_scores": 207872.0,
+          "reference_simulations": 207872.0,
+          "cpu_scoring_seconds": 6294.179932431001
+        },
+        "source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_RL_1e-5/cost_rank_0.json": "7f91c5106ce65892b6d5940793a4f856b3f2d0e1e78a4a89131887066c01b782",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_RL_1e-5/cost_rank_1.json": "63ec80d81c390856c873fe391e6b5d913f0c7764707a00660f8dd37b6041c620",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_RL_1e-5/cost_rank_2.json": "c91d270a705dc0df752f3cf09f4b1f70f7b09b49bf0ca724cb9b29eb356b7e51",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_RL_1e-5/cost_rank_3.json": "a850a58c26bc4af7b0e614d6d83b78cb0406d6b829ab09cf07c1571fd8f6b620",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_RL_1e-5/cost_rank_4.json": "0c259233ab957dff409e9808f511509ea4f764c88dbd3719d70de7886234b894",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_RL_1e-5/cost_rank_5.json": "789cf3d5512210d30f10fdd962050437163dea0c4fde8b939298ab575fde208d",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_RL_1e-5/cost_rank_6.json": "4132d95387a7d320c608bc7caa2a2d5832d863b6da745a41f869779b0481c188",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_RL_1e-5/cost_rank_7.json": "3e4d5cb1f3bdf2fc113fa2c580d1af99032292b5b3ae3938601efe6bf1d4e8ea"
+        }
+      },
+      "telemetry_missing": false,
+      "source_config_sha256": "a1a31bcffa1e883c83f9d4529439fbe61e4891d706cf979d1d6879b7bf1efa6e"
+    },
+    {
+      "name": "tune_GRPO_RL_3e-5",
+      "method": "native_GRPO",
+      "split": "train_25k",
+      "seed": 42,
+      "world": 8,
+      "parameter_count": 34329219,
+      "status": "RUNNING_OR_UNFINISHED",
+      "actual_steps": 30,
+      "completion": null,
+      "ledger": {
+        "status": "MEASURED",
+        "checkpoint_step": 0,
+        "GPU_seconds": 0.002161741256713867,
+        "compute": {},
+        "budget": {
+          "physical_scores": 0.0,
+          "logical_scores": 0.0,
+          "reference_simulations": 0.0,
+          "cpu_scoring_seconds": 0.0
+        },
+        "source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_RL_3e-5/cost_rank_0.json": "2376bb0dd1b8bc786e32c65bb3bdf5b47c53be6529a4901f8b671fd5a5abfdbc",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_RL_3e-5/cost_rank_1.json": "a223e979f69a90cc4b8bff67c25c3e5b1d023a615a68443946831bef5af1d484",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_RL_3e-5/cost_rank_2.json": "11f9acd26cf3e8acdfdb4de6205c36a1275df70b830f426e3f9f61081f80c12a",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_RL_3e-5/cost_rank_3.json": "e75ad1c65d50e08cf69e5c52e82ab10b8aed7572c57d6e669758ceb44072458c",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_RL_3e-5/cost_rank_4.json": "6ac0b2ff1cbe4731055b3231ab2c1990afff8d985a2bf06b21de631200c801fd",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_RL_3e-5/cost_rank_5.json": "e189b1017f76bd0693f6fe247bfac55c3f2e6873e91ebec53cf28861f62a99de",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_RL_3e-5/cost_rank_6.json": "86526387ec1b3edc129ccccb2c6484c00c6805b506a3c672a3dba1207431f368",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/tune_GRPO_RL_3e-5/cost_rank_7.json": "d40c6834cba595b0d0e2ad189ac5b87f777798c91c132cca85e70389d0cb96f0"
+        }
+      },
+      "telemetry_missing": false,
+      "source_config_sha256": "283dbdce4067814571932515111b5fcdb8aca1299ce8bcc2f5c0ef6525b49664"
+    },
+    {
+      "name": "tune_OPD_1e-5",
+      "method": "OPD",
+      "split": "train_25k",
+      "seed": 42,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 812,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 812,
+        "scene_exposures": 25984,
+        "seconds": 1627.0902109146118,
+        "peak_gpu_bytes": 25254521344,
+        "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "final_student_hash": "f263adc7925934ce91263d44d0a7c5edb728ec14411af9c5f9e9ef1513aeedb9",
+        "reference_unchanged": true,
+        "checkpoint_sha256": "39f229c42ac0df8897106f3e4c4d6a32a29f645f90e4e8e6a40de0f22d5e0b55",
+        "physical_scores": 0,
+        "owner": {
+          "host": "training-vla-zt",
+          "pid": 1894529,
+          "start_ticks": "1394494763",
+          "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+        }
+      },
+      "ledger": null,
+      "telemetry_missing": true,
+      "source_config_sha256": "0faec1bd7902906cb1575039322d804800a32326adccaa02bc580f9bcc796d39"
+    },
+    {
+      "name": "tune_OPD_3e-5",
+      "method": "OPD",
+      "split": "train_25k",
+      "seed": 42,
+      "world": 1,
+      "parameter_count": 34329219,
+      "status": "COMPLETE",
+      "actual_steps": 812,
+      "completion": {
+        "status": "COMPLETE",
+        "steps": 812,
+        "scene_exposures": 25984,
+        "seconds": 1627.1720504760742,
+        "peak_gpu_bytes": 25254521344,
+        "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "final_student_hash": "f359892ef843a825f83730c64981cd898fa60dfe2a3dfa494661ee1e308f4a0f",
+        "reference_unchanged": true,
+        "checkpoint_sha256": "2df2bf884fe6571f751951054ffb796fe8a575b87dddeac52acfda9088d8f47b",
+        "physical_scores": 0,
+        "owner": {
+          "host": "training-vla-zt",
+          "pid": 1894527,
+          "start_ticks": "1394494763",
+          "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+        }
+      },
+      "ledger": null,
+      "telemetry_missing": true,
+      "source_config_sha256": "3ba67eea87f92584d4dfc085ad4b98a266a45b5fc42d1e0099489991e2a0abcf"
+    }
+  ],
+  "diagnostics": [
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_0",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 506880,
+        "physical_scores": 230217,
+        "score_cache_hits": 276663,
+        "reference_simulations": 5399
+      },
+      "seconds": 3464.1716380119324,
+      "source_sha256": "e37155a40e99a7479a88af7bde205e6ba4d7058db33138afd2b64bcfa93e8ed9",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_1",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 506880,
+        "physical_scores": 230741,
+        "score_cache_hits": 276139,
+        "reference_simulations": 5496
+      },
+      "seconds": 3394.2481105327606,
+      "source_sha256": "a8a74dbe098392bad835860f05c61869918073a54f94f4f2ec1396540e6f3f33",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_10",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 215463,
+        "score_cache_hits": 268377,
+        "reference_simulations": 4861
+      },
+      "seconds": 3110.5691907405853,
+      "source_sha256": "6f7c9b4a64285827e9c92ce62cbc7f9a0ee6f8316ece43fc00c91bafe6325bda",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_11",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 226712,
+        "score_cache_hits": 257128,
+        "reference_simulations": 5705
+      },
+      "seconds": 3235.1378071308136,
+      "source_sha256": "a8e4827d8a4139b2b8eec96b02418e1ba17f5e519af0d28e3f29951d716ad71c",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_12",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 213229,
+        "score_cache_hits": 270611,
+        "reference_simulations": 8059
+      },
+      "seconds": 2072.021552324295,
+      "source_sha256": "52e02b1386e139074d373d8252494768f6c69409fef9c92afb995d52878967be",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_13",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 219030,
+        "score_cache_hits": 264810,
+        "reference_simulations": 8645
+      },
+      "seconds": 2090.47794342041,
+      "source_sha256": "434966000c2137bd7cd7a247b4761e4018c3a97b62c7d3a37544a3850744b8f6",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_14",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 213958,
+        "score_cache_hits": 269882,
+        "reference_simulations": 8098
+      },
+      "seconds": 2078.187420129776,
+      "source_sha256": "6ee4cfef29772378368eae082e796e21fd64d41300096f4ed3eaf56888fa57a2",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_15",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 217168,
+        "score_cache_hits": 266672,
+        "reference_simulations": 8421
+      },
+      "seconds": 2067.568984270096,
+      "source_sha256": "9bc6c0364c2710b4a1bc1832307ef7ff3a5171f162bdda1e7b4f28fdd77168e8",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_16",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 212202,
+        "score_cache_hits": 271638,
+        "reference_simulations": 7953
+      },
+      "seconds": 3062.1841144561768,
+      "source_sha256": "3fdf82e2ba008cda2b5b530c0ea9becdad106c2eb753750205f6aebcccfe7706",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_17",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 218450,
+        "score_cache_hits": 265390,
+        "reference_simulations": 8546
+      },
+      "seconds": 2063.576288461685,
+      "source_sha256": "f4597e79420126b9bc28039a397ac811c7573ab35c25421ca1f771aa0f35fafa",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_18",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 233097,
+        "score_cache_hits": 250743,
+        "reference_simulations": 9920
+      },
+      "seconds": 2208.7555379867554,
+      "source_sha256": "2a4a4655b928b832a158724f6bd42b99a6060f9d7592f436130efaaaca4eeb15",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_19",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 224822,
+        "score_cache_hits": 259018,
+        "reference_simulations": 9167
+      },
+      "seconds": 2125.6770100593567,
+      "source_sha256": "fce58bace6daeb4219a94fc31510e4339c1905e140ccab95fcbe8dea29eca410",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_2",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 506880,
+        "physical_scores": 234707,
+        "score_cache_hits": 272173,
+        "reference_simulations": 5757
+      },
+      "seconds": 3487.8778989315033,
+      "source_sha256": "9179aa0fb875b6e4fa1535c0039dd8f829a24a9e87e91d89a36a7e77b07c95db",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_20",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 216502,
+        "score_cache_hits": 267338,
+        "reference_simulations": 8374
+      },
+      "seconds": 2066.340215444565,
+      "source_sha256": "417b519b24d25afb993c880d8d566060ff486df5e95560f60c185fe1698625e9",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_21",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 217337,
+        "score_cache_hits": 266503,
+        "reference_simulations": 8422
+      },
+      "seconds": 2106.6236073970795,
+      "source_sha256": "03dce13a72fe892de792b72ba04834ef6bbacb1d44518b2e333744f6d5241dc2",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_22",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 221795,
+        "score_cache_hits": 262045,
+        "reference_simulations": 8872
+      },
+      "seconds": 2131.657183408737,
+      "source_sha256": "099b62de1a34a9ca5630b71ced63d7256976ab345fff6e692cee97e666c33564",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_23",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 213940,
+        "score_cache_hits": 269900,
+        "reference_simulations": 8111
+      },
+      "seconds": 2060.5245501995087,
+      "source_sha256": "ef88cfcba5731bceedaa96d269b519ae2b778ff71f95b61467b320443802ca23",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_3",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 506880,
+        "physical_scores": 232679,
+        "score_cache_hits": 274201,
+        "reference_simulations": 5641
+      },
+      "seconds": 3376.4108357429504,
+      "source_sha256": "efb9566f9bc023289be63a65939763529169cb909ff9231ec55d1e670821fd6f",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_4",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 506880,
+        "physical_scores": 229756,
+        "score_cache_hits": 277124,
+        "reference_simulations": 5389
+      },
+      "seconds": 3363.642078399658,
+      "source_sha256": "6f05b4cdfbc5c5edef841b9d42e5b121b6c2915954b9a7a2e7301a3f034749d0",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_5",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 506880,
+        "physical_scores": 233113,
+        "score_cache_hits": 273767,
+        "reference_simulations": 5641
+      },
+      "seconds": 3456.848055124283,
+      "source_sha256": "23803b647a007b2ea0f73494a4524b4109616166bd4d0abf108445452d29ad3f",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_6",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 506880,
+        "physical_scores": 235026,
+        "score_cache_hits": 271854,
+        "reference_simulations": 5778
+      },
+      "seconds": 3473.9794957637787,
+      "source_sha256": "3816a7244ff2bc4d4c22fc702ce025fa1dbe8c3469b1bc72383a7e203541ab2d",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_7",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 506880,
+        "physical_scores": 232336,
+        "score_cache_hits": 274544,
+        "reference_simulations": 5597
+      },
+      "seconds": 3534.6843180656433,
+      "source_sha256": "068ad4b14d4f10aa282585fce64030d8d30b98f54d295f625af21899bad60b8f",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_8",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 213727,
+        "score_cache_hits": 270113,
+        "reference_simulations": 4769
+      },
+      "seconds": 3146.422723054886,
+      "source_sha256": "305293b90fae11d9c6e930fdb0a2749c29ec351e4ebec513b95a747694fe00db",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_cal_grid",
+      "shard": "complete_9",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 209682,
+        "score_cache_hits": 274158,
+        "reference_simulations": 4477
+      },
+      "seconds": 3096.786120414734,
+      "source_sha256": "355f7cd44f50db197e35b3cfab07bbb75d78ee62e67f8b7edaddf97172aa31a6",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_cal_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_0",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 506880,
+        "physical_scores": 230758,
+        "score_cache_hits": 276122,
+        "reference_simulations": 5469
+      },
+      "seconds": 2925.5729382038116,
+      "source_sha256": "e8353c198ef7b36c4bca69ba5747839d56de7af81a788f4c8f9959b4b49cfbe5",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_1",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 506880,
+        "physical_scores": 222675,
+        "score_cache_hits": 284205,
+        "reference_simulations": 4921
+      },
+      "seconds": 2874.9722125530243,
+      "source_sha256": "530f8953759e1ec3835a86a00e07a2ed1fd1cf5221a952b9d4a050024e5f66b8",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_10",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 214588,
+        "score_cache_hits": 269252,
+        "reference_simulations": 4813
+      },
+      "seconds": 2728.2733211517334,
+      "source_sha256": "12b03c1958c0f8da4783a4f6138b591504e313cca69d9dd75575ef96fbd9c22d",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_11",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 221615,
+        "score_cache_hits": 262225,
+        "reference_simulations": 5323
+      },
+      "seconds": 2823.8428299427032,
+      "source_sha256": "fa71dc69dbf28bbfc30e325e3f7cff1990fa311e421bb1c2c0ae0131db3833a1",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_12",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 211755,
+        "score_cache_hits": 272085,
+        "reference_simulations": 7937
+      },
+      "seconds": 2052.324517726898,
+      "source_sha256": "fc46ed48bafa1612b95cfff7a207a66f0753575587720a5cff5a1ac8e8ab8de2",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_13",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 207502,
+        "score_cache_hits": 276338,
+        "reference_simulations": 7488
+      },
+      "seconds": 2065.4488503932953,
+      "source_sha256": "530378efe2c89d5fa735725a4acf49029c0e3ea70475f71fe8651bdf1348f398",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_14",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 206999,
+        "score_cache_hits": 276841,
+        "reference_simulations": 7482
+      },
+      "seconds": 2046.965085029602,
+      "source_sha256": "ea31068d886669c4a3b5a90996eda2786ad7a095401cffbb403fa02f71c4eb6e",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_15",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 199509,
+        "score_cache_hits": 284331,
+        "reference_simulations": 6795
+      },
+      "seconds": 2025.260912656784,
+      "source_sha256": "87664517813c6379c1f731c75f1813fec2cc40df2190185e92cca2a815d21cb7",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_16",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 217354,
+        "score_cache_hits": 266486,
+        "reference_simulations": 8438
+      },
+      "seconds": 2118.8249247074127,
+      "source_sha256": "8a766ef83eb085d74b1acb84ffe0e8b9ab1102204e36cbcb6e80406077a9e012",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_17",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 213526,
+        "score_cache_hits": 270314,
+        "reference_simulations": 8061
+      },
+      "seconds": 2036.088546514511,
+      "source_sha256": "61ea8f32410c13363beb84eaff6861a35b739ef5587088d64d7768fb83cf0efb",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_18",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 228253,
+        "score_cache_hits": 255587,
+        "reference_simulations": 9523
+      },
+      "seconds": 2176.9707310199738,
+      "source_sha256": "046b839fd9e37e65e19062a031335c5b8c1ac2f3e7ef9f76b1b457592c290b17",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_19",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 221701,
+        "score_cache_hits": 262139,
+        "reference_simulations": 8843
+      },
+      "seconds": 2127.901794910431,
+      "source_sha256": "d3b6a32446c8c0920b7cc2b95aee83df908ad38d359b3c5072748a2e4700e6cb",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_2",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 506880,
+        "physical_scores": 224485,
+        "score_cache_hits": 282395,
+        "reference_simulations": 5034
+      },
+      "seconds": 2851.751056432724,
+      "source_sha256": "cf429254e89d8350e8ccda84db6d92dbe269fac1254bdc18f69d9343e99adfb1",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_20",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 215559,
+        "score_cache_hits": 268281,
+        "reference_simulations": 8249
+      },
+      "seconds": 2089.484851360321,
+      "source_sha256": "b168337d3ebde6fec536860d9838b0089f4c6b3a51c85f824128a84255ca3f94",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_21",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 217692,
+        "score_cache_hits": 266148,
+        "reference_simulations": 8472
+      },
+      "seconds": 2107.0949347019196,
+      "source_sha256": "61f28a64c9881d92691cb8d5d33b1d515e8c7802a8fd47611b0b4d4ba5ae2a06",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_22",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 210609,
+        "score_cache_hits": 273231,
+        "reference_simulations": 7795
+      },
+      "seconds": 2063.5672862529755,
+      "source_sha256": "e24912ccb20149b937ed30166919e5f7005dff4a15f5d5c9fcdc049c45592474",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_23",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 218239,
+        "score_cache_hits": 265601,
+        "reference_simulations": 8517
+      },
+      "seconds": 2082.42960190773,
+      "source_sha256": "789fede91cde29e44f5fb459ad693123cd56ea5873645f69b77621f123ce8bdf",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_3",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 506880,
+        "physical_scores": 230880,
+        "score_cache_hits": 276000,
+        "reference_simulations": 5492
+      },
+      "seconds": 2892.7017574310303,
+      "source_sha256": "4edbd410a1b33b6e083d92468cca1a904230814b31db387bc7108be38245b31d",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_4",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 506880,
+        "physical_scores": 221673,
+        "score_cache_hits": 285207,
+        "reference_simulations": 4773
+      },
+      "seconds": 2862.654839038849,
+      "source_sha256": "42e888c590045ccdd73b8c1b8248ccd3ab67c04895fa50465f1e7a58cf9e9b4b",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_5",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 506880,
+        "physical_scores": 227447,
+        "score_cache_hits": 279433,
+        "reference_simulations": 5260
+      },
+      "seconds": 2871.9651379585266,
+      "source_sha256": "e5719cb588a00308ce5e2f59c0f9b5230aa885e564c8b0cdec7787639d222cb7",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_6",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 506880,
+        "physical_scores": 214497,
+        "score_cache_hits": 292383,
+        "reference_simulations": 4309
+      },
+      "seconds": 2768.5128076076508,
+      "source_sha256": "76737ae6e0fbbf8533141da2f8a297a3fafacdb8776aff5c1d572d55e7629c29",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_7",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 506880,
+        "physical_scores": 225876,
+        "score_cache_hits": 281004,
+        "reference_simulations": 5132
+      },
+      "seconds": 2937.558856010437,
+      "source_sha256": "c9fe31d57995f495e6e49d088f3faacf929cfd842f321a3479b3bcf6f2260284",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_8",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 223367,
+        "score_cache_hits": 260473,
+        "reference_simulations": 5442
+      },
+      "seconds": 2837.736087322235,
+      "source_sha256": "d40aa4891e877009cea3fa9e9801382bf6b02bf99265112e2665220aa37a2f99",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "local_train_grid",
+      "shard": "complete_9",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 483840,
+        "physical_scores": 232109,
+        "score_cache_hits": 251731,
+        "reference_simulations": 6090
+      },
+      "seconds": 2912.8121457099915,
+      "source_sha256": "340dc859f4c2c41f58473706c99a2af00529d4002361f6d21c0a32844e304aef",
+      "sampling_role": {
+        "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+        "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+        "replacement": "local_parent_train_grid",
+        "old_results_preserved": true
+      }
+    },
+    {
+      "name": "qualification_local",
+      "shard": "complete_0",
+      "status": "COMPLETE",
+      "budget": {
+        "logical_scores": 3840,
+        "physical_scores": 2328,
+        "score_cache_hits": 1512,
+        "reference_simulations": 196
+      },
+      "seconds": 45.119549036026,
+      "source_sha256": "34f6d0dda6f7849016ddda1a956475bd3f9c78bd0fb0c24da04776d26cef0914",
+      "sampling_role": null
+    }
+  ],
+  "evaluations": [
+    {
+      "split": "cal_confirm",
+      "name": "B0_IL",
+      "shard": "complete_0",
+      "scenes": 1863,
+      "seconds": 1001.192822933197,
+      "budget": {
+        "logical_scores": 9315,
+        "physical_scores": 9315,
+        "score_cache_hits": 0,
+        "reference_simulations": 1863,
+        "cpu_scoring_seconds": 100.86608467700219
+      },
+      "source_sha256": "a5def535b10c918a89b5d2eeaf1fe3deed1378292b3006278de8f5cfb3d71c00"
+    },
+    {
+      "split": "cal_confirm",
+      "name": "B0_IL",
+      "shard": "complete_1",
+      "scenes": 1863,
+      "seconds": 996.8687822818756,
+      "budget": {
+        "logical_scores": 9315,
+        "physical_scores": 9315,
+        "score_cache_hits": 0,
+        "reference_simulations": 1863,
+        "cpu_scoring_seconds": 100.05453503000098
+      },
+      "source_sha256": "f5cdc72b81b83ce0324d67ab3c494c7cf4984282ba0fc9c8849410bca3ac5912"
+    },
+    {
+      "split": "cal_confirm",
+      "name": "B0_IL",
+      "shard": "complete_2",
+      "scenes": 1863,
+      "seconds": 1000.6794769763947,
+      "budget": {
+        "logical_scores": 9315,
+        "physical_scores": 9315,
+        "score_cache_hits": 0,
+        "reference_simulations": 1863,
+        "cpu_scoring_seconds": 100.62407102799634
+      },
+      "source_sha256": "6ee95fd44929acdaeba5e310850fa1544ed8f72112fbd97a9e3f450da3bdabfd"
+    },
+    {
+      "split": "cal_confirm",
+      "name": "B0_RL",
+      "shard": "complete_0",
+      "scenes": 1863,
+      "seconds": 1139.5782516002655,
+      "budget": {
+        "logical_scores": 9315,
+        "physical_scores": 9315,
+        "score_cache_hits": 0,
+        "reference_simulations": 1863,
+        "cpu_scoring_seconds": 98.39471877299698
+      },
+      "source_sha256": "efbcd1d4a152581570f590048ddde28452291c8ad6b5a0b6f4c59846b9be2990"
+    },
+    {
+      "split": "cal_confirm",
+      "name": "B0_RL",
+      "shard": "complete_1",
+      "scenes": 1863,
+      "seconds": 1147.0008435249329,
+      "budget": {
+        "logical_scores": 9315,
+        "physical_scores": 9315,
+        "score_cache_hits": 0,
+        "reference_simulations": 1863,
+        "cpu_scoring_seconds": 102.27783251200157
+      },
+      "source_sha256": "33e17da9daa47b47df0b2dc9f5a7eaa959bf1f7a056b6a30efc675f7071df7c0"
+    },
+    {
+      "split": "cal_confirm",
+      "name": "B0_RL",
+      "shard": "complete_2",
+      "scenes": 1863,
+      "seconds": 1149.2447307109833,
+      "budget": {
+        "logical_scores": 9315,
+        "physical_scores": 9315,
+        "score_cache_hits": 0,
+        "reference_simulations": 1863,
+        "cpu_scoring_seconds": 100.38727391200166
+      },
+      "source_sha256": "a4ecce52a5395993949af61478f2f1c2fe24b0d1c33a5c2b4dcf283ee3d22447"
+    },
+    {
+      "split": "cal_tune",
+      "name": "B0_IL",
+      "shard": "complete_0",
+      "scenes": 1772,
+      "seconds": 934.0397317409515,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772
+      },
+      "source_sha256": "2cc5c42464ed0c0538fb5c17db9b5fb9ce63278f56b8922838e4989c16a5e99b"
+    },
+    {
+      "split": "cal_tune",
+      "name": "B0_IL",
+      "shard": "complete_1",
+      "scenes": 1772,
+      "seconds": 931.7718894481659,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772
+      },
+      "source_sha256": "3177ca102bf44c06fdc34f78c6c2c16642f1e2c52ec37a3d44b4410bc51a463d"
+    },
+    {
+      "split": "cal_tune",
+      "name": "B0_IL",
+      "shard": "complete_2",
+      "scenes": 1772,
+      "seconds": 935.7153899669647,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772
+      },
+      "source_sha256": "58cb85ea36642a288a8c8fc4f117b0136299e21ac98a67a8920468fbc5a934e9"
+    },
+    {
+      "split": "cal_tune",
+      "name": "B0_RL",
+      "shard": "complete_0",
+      "scenes": 1772,
+      "seconds": 928.9932765960693,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772
+      },
+      "source_sha256": "462324914f836e574dbcd1adc9ed007f7a669f9b193d3140421c2cbe4b527161"
+    },
+    {
+      "split": "cal_tune",
+      "name": "B0_RL",
+      "shard": "complete_1",
+      "scenes": 1772,
+      "seconds": 930.0914883613586,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772
+      },
+      "source_sha256": "e40ca602ce2b7a1e0b5e3cbca2aa95315a3ea1674714feccdd13bcc29f599d6f"
+    },
+    {
+      "split": "cal_tune",
+      "name": "B0_RL",
+      "shard": "complete_2",
+      "scenes": 1772,
+      "seconds": 929.1511628627777,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772
+      },
+      "source_sha256": "6b3e8bd650ae91462adbc7dc70bc9ed4ffe5d899a5bb5ff5a336559473d938e1"
+    },
+    {
+      "split": "cal_tune",
+      "name": "full_ANCHOR_42_epoch1",
+      "shard": "complete_0",
+      "scenes": 1772,
+      "seconds": 930.2038404941559,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772,
+        "cpu_scoring_seconds": 95.45324267700013
+      },
+      "source_sha256": "d2c9c667c0574571230997baa9a2703e0076857675536baced0eb24a90e9e3f5"
+    },
+    {
+      "split": "cal_tune",
+      "name": "full_ANCHOR_42_epoch1",
+      "shard": "complete_1",
+      "scenes": 1772,
+      "seconds": 938.0204432010651,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772,
+        "cpu_scoring_seconds": 95.08387370600016
+      },
+      "source_sha256": "1d9da310ad4bc73f53007bcd5c491d475384186ebcbf40962034492edb91a43d"
+    },
+    {
+      "split": "cal_tune",
+      "name": "full_ANCHOR_42_epoch1",
+      "shard": "complete_2",
+      "scenes": 1772,
+      "seconds": 938.2212462425232,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772,
+        "cpu_scoring_seconds": 95.1651769389982
+      },
+      "source_sha256": "cd96822c39b3b64850e593df09e53d8f2a37cda0c85543852e9f103147f9dc5c"
+    },
+    {
+      "split": "cal_tune",
+      "name": "tune_ANCHOR_1e-5",
+      "shard": "complete_0",
+      "scenes": 1772,
+      "seconds": 918.377498626709,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772
+      },
+      "source_sha256": "8dd5ff3f2854145434228ef7e4d415b2be0def9a948f4045600572c09b187850"
+    },
+    {
+      "split": "cal_tune",
+      "name": "tune_ANCHOR_1e-5",
+      "shard": "complete_1",
+      "scenes": 1772,
+      "seconds": 925.8762662410736,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772
+      },
+      "source_sha256": "2cbe79054b587046901159b25864507f6301286597b2becfa6bb8059a158408c"
+    },
+    {
+      "split": "cal_tune",
+      "name": "tune_ANCHOR_1e-5",
+      "shard": "complete_2",
+      "scenes": 1772,
+      "seconds": 925.0146901607513,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772
+      },
+      "source_sha256": "f1f749f28102b8e8d862f52f30c75844af9d757b555fa30bdfddf4fe527a7bbb"
+    },
+    {
+      "split": "cal_tune",
+      "name": "tune_ANCHOR_3e-5",
+      "shard": "complete_0",
+      "scenes": 1772,
+      "seconds": 923.531350851059,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772
+      },
+      "source_sha256": "b4be852949c5f9c3fd95fa1c681b7133a4f3daed0ed54ad1bf6aeeec8dd54c14"
+    },
+    {
+      "split": "cal_tune",
+      "name": "tune_ANCHOR_3e-5",
+      "shard": "complete_1",
+      "scenes": 1772,
+      "seconds": 923.5019750595093,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772
+      },
+      "source_sha256": "e9709b65c1de6cb114c68e87177742e52f9f02711a3695c8c9ceadd9df2f42d5"
+    },
+    {
+      "split": "cal_tune",
+      "name": "tune_ANCHOR_3e-5",
+      "shard": "complete_2",
+      "scenes": 1772,
+      "seconds": 923.2628445625305,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772
+      },
+      "source_sha256": "cd67ca03d5823c052a6c9e7605f5f23579f37246c2daba6200e9ad01b1509635"
+    },
+    {
+      "split": "cal_tune",
+      "name": "tune_GRPO_IL_1e-5",
+      "shard": "complete_0",
+      "scenes": 1772,
+      "seconds": 995.7444043159485,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772,
+        "cpu_scoring_seconds": 94.38781212699837
+      },
+      "source_sha256": "d51250224367f57ba6f0e92e1b06bef4b78a0bfeffb7c843025fbe741b59e6c5"
+    },
+    {
+      "split": "cal_tune",
+      "name": "tune_GRPO_IL_1e-5",
+      "shard": "complete_1",
+      "scenes": 1772,
+      "seconds": 993.4465272426605,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772,
+        "cpu_scoring_seconds": 94.21691306800008
+      },
+      "source_sha256": "b70adb4eaf493c0f9a4ccbaa2f15022b3acac62374aa7e301a7d85d85f32259f"
+    },
+    {
+      "split": "cal_tune",
+      "name": "tune_GRPO_IL_1e-5",
+      "shard": "complete_2",
+      "scenes": 1772,
+      "seconds": 996.6064374446869,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772,
+        "cpu_scoring_seconds": 93.53789431799942
+      },
+      "source_sha256": "b3c7c6bcc5dfea35c66ef7d677983051db3fe397b295361a7c4afa6022b9e139"
+    },
+    {
+      "split": "cal_tune",
+      "name": "tune_GRPO_IL_3e-5",
+      "shard": "complete_0",
+      "scenes": 1772,
+      "seconds": 938.2569074630737,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772,
+        "cpu_scoring_seconds": 95.21243566899824
+      },
+      "source_sha256": "398cf3a9fab042389b764a4c188fefaf30d481721141df7aac1d2236ddaa51aa"
+    },
+    {
+      "split": "cal_tune",
+      "name": "tune_GRPO_IL_3e-5",
+      "shard": "complete_1",
+      "scenes": 1772,
+      "seconds": 940.7375478744507,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772,
+        "cpu_scoring_seconds": 95.25399022400114
+      },
+      "source_sha256": "b573fefc5cd16c08c9505920f89bf01742d9653f5a235d160e358c6eb208d6e9"
+    },
+    {
+      "split": "cal_tune",
+      "name": "tune_GRPO_IL_3e-5",
+      "shard": "complete_2",
+      "scenes": 1772,
+      "seconds": 932.9358777999878,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772,
+        "cpu_scoring_seconds": 93.34709078000077
+      },
+      "source_sha256": "ba2e0151607003c96e2b0ab8be3b8cf13a3153df77db90afaa31a015cae1b9de"
+    },
+    {
+      "split": "cal_tune",
+      "name": "tune_OPD_1e-5",
+      "shard": "complete_0",
+      "scenes": 1772,
+      "seconds": 918.8086075782776,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772
+      },
+      "source_sha256": "a54b8d491cd87e5015dabfc87e554b5696aab3170d028a0094c9a56f8c413efa"
+    },
+    {
+      "split": "cal_tune",
+      "name": "tune_OPD_1e-5",
+      "shard": "complete_1",
+      "scenes": 1772,
+      "seconds": 925.8302302360535,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772
+      },
+      "source_sha256": "cad3a3a24a020fd157a1b1f614f6ed8cbe5a4fb5a4ad09b49959fb1e23b4b865"
+    },
+    {
+      "split": "cal_tune",
+      "name": "tune_OPD_1e-5",
+      "shard": "complete_2",
+      "scenes": 1772,
+      "seconds": 920.9115557670593,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772
+      },
+      "source_sha256": "6d5cabb5732041e30348a071ea926dd34c1a0ee8c5d483b05fbbf2d1ce12ef27"
+    },
+    {
+      "split": "cal_tune",
+      "name": "tune_OPD_3e-5",
+      "shard": "complete_0",
+      "scenes": 1772,
+      "seconds": 919.6607460975647,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772
+      },
+      "source_sha256": "acba16f1a5c46a4b16030db80a6512ca77e7531f0aa4f315220df3263f9939c1"
+    },
+    {
+      "split": "cal_tune",
+      "name": "tune_OPD_3e-5",
+      "shard": "complete_1",
+      "scenes": 1772,
+      "seconds": 916.8825917243958,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772
+      },
+      "source_sha256": "37064a002adafb5a6c15035ca3a151b5b18a13d1280b5ea35e9aba016d35526d"
+    },
+    {
+      "split": "cal_tune",
+      "name": "tune_OPD_3e-5",
+      "shard": "complete_2",
+      "scenes": 1772,
+      "seconds": 919.6836047172546,
+      "budget": {
+        "logical_scores": 8860,
+        "physical_scores": 8860,
+        "score_cache_hits": 0,
+        "reference_simulations": 1772
+      },
+      "source_sha256": "ecf9d384c9638fd1f52513723a98669630ea058f838d7a89af36cc638ddb93f5"
+    },
+    {
+      "split": "dev",
+      "name": "B0_COPY",
+      "shard": "complete_0",
+      "scenes": 1696,
+      "seconds": 1523.1742413043976,
+      "budget": {
+        "logical_scores": 8480,
+        "physical_scores": 8480,
+        "score_cache_hits": 0,
+        "reference_simulations": 1696
+      },
+      "source_sha256": "23f695bad194b0f7cb70424f50699071a31da3f9bbd5c611dc2ac082726f451e"
+    },
+    {
+      "split": "dev",
+      "name": "B0_IL",
+      "shard": "complete_0",
+      "scenes": 1696,
+      "seconds": 1506.7447574138641,
+      "budget": {
+        "logical_scores": 8480,
+        "physical_scores": 8480,
+        "score_cache_hits": 0,
+        "reference_simulations": 1696
+      },
+      "source_sha256": "cd35aeb675f1980b902245716f1a8c10e4e1b72425c290972437a67151432f12"
+    },
+    {
+      "split": "dev",
+      "name": "B0_IL_screen",
+      "shard": "complete_0",
+      "scenes": 1696,
+      "seconds": 1510.4930510520935,
+      "budget": {
+        "logical_scores": 8480,
+        "physical_scores": 8480,
+        "score_cache_hits": 0,
+        "reference_simulations": 1696
+      },
+      "source_sha256": "01b19543c370c1e86cf53139c5cf96c34a5a53db5be4a3309b420fa69e9362cd"
+    },
+    {
+      "split": "dev",
+      "name": "B0_RL",
+      "shard": "complete_0",
+      "scenes": 1696,
+      "seconds": 1508.7131626605988,
+      "budget": {
+        "logical_scores": 8480,
+        "physical_scores": 8480,
+        "score_cache_hits": 0,
+        "reference_simulations": 1696
+      },
+      "source_sha256": "53f2f216afa1a91951cd3b632527952cb234c4c524c97c434e75b0c58c77f0c8"
+    },
+    {
+      "split": "dev",
+      "name": "HISTORICAL_E3",
+      "shard": "complete_0",
+      "scenes": 566,
+      "seconds": 301.93873476982117,
+      "budget": {
+        "logical_scores": 2830,
+        "physical_scores": 2830,
+        "score_cache_hits": 0,
+        "reference_simulations": 566,
+        "cpu_scoring_seconds": 29.717887676999858
+      },
+      "source_sha256": "1fbbe2a183928da24952b42e1775d5243f38026298397ff250f5573abf98a847"
+    },
+    {
+      "split": "dev",
+      "name": "HISTORICAL_E3",
+      "shard": "complete_1",
+      "scenes": 565,
+      "seconds": 300.5375657081604,
+      "budget": {
+        "logical_scores": 2825,
+        "physical_scores": 2825,
+        "score_cache_hits": 0,
+        "reference_simulations": 565,
+        "cpu_scoring_seconds": 29.77807379000043
+      },
+      "source_sha256": "441895f93928bc2cecc94eae730f4edcf3684f9ede75c7af0846c001e2078b14"
+    },
+    {
+      "split": "dev",
+      "name": "HISTORICAL_E3",
+      "shard": "complete_2",
+      "scenes": 565,
+      "seconds": 300.9980618953705,
+      "budget": {
+        "logical_scores": 2825,
+        "physical_scores": 2825,
+        "score_cache_hits": 0,
+        "reference_simulations": 565,
+        "cpu_scoring_seconds": 31.24624559799986
+      },
+      "source_sha256": "30c94dd37c6488771cb2613b9a6f760bb2c94b1574c13105b524d9e95a2b4487"
+    },
+    {
+      "split": "dev",
+      "name": "HISTORICAL_E4-A",
+      "shard": "complete_0",
+      "scenes": 566,
+      "seconds": 300.2414243221283,
+      "budget": {
+        "logical_scores": 2830,
+        "physical_scores": 2830,
+        "score_cache_hits": 0,
+        "reference_simulations": 566,
+        "cpu_scoring_seconds": 29.57410407499984
+      },
+      "source_sha256": "1082288043e8e7c46e036edaf60762a5d509805b9d13d63ace1a64e4aef9abc2"
+    },
+    {
+      "split": "dev",
+      "name": "HISTORICAL_E4-A",
+      "shard": "complete_1",
+      "scenes": 565,
+      "seconds": 299.94638752937317,
+      "budget": {
+        "logical_scores": 2825,
+        "physical_scores": 2825,
+        "score_cache_hits": 0,
+        "reference_simulations": 565,
+        "cpu_scoring_seconds": 30.866092049999676
+      },
+      "source_sha256": "ed487703214a275c2a1ef451a7cca9e942dda324fd9b1585bd30ac43cd0a4553"
+    },
+    {
+      "split": "dev",
+      "name": "HISTORICAL_E4-A",
+      "shard": "complete_2",
+      "scenes": 565,
+      "seconds": 298.6924033164978,
+      "budget": {
+        "logical_scores": 2825,
+        "physical_scores": 2825,
+        "score_cache_hits": 0,
+        "reference_simulations": 565,
+        "cpu_scoring_seconds": 30.539391393999935
+      },
+      "source_sha256": "7e7b72a71ece7897d65d990ad81649d8d374b0bd059ec64f611ab5e20fdae24c"
+    },
+    {
+      "split": "dev",
+      "name": "parallel_qualification_0",
+      "shard": "complete_0",
+      "scenes": 8,
+      "seconds": 10.56822156906128,
+      "budget": {
+        "logical_scores": 40,
+        "physical_scores": 40,
+        "score_cache_hits": 0,
+        "reference_simulations": 8
+      },
+      "source_sha256": "9d5e0ba0f062502af78a39f08419703054f9c2d955abe4622b0de21fb7426907"
+    },
+    {
+      "split": "dev",
+      "name": "parallel_qualification_1",
+      "shard": "complete_0",
+      "scenes": 8,
+      "seconds": 10.568000555038452,
+      "budget": {
+        "logical_scores": 40,
+        "physical_scores": 40,
+        "score_cache_hits": 0,
+        "reference_simulations": 8
+      },
+      "source_sha256": "c96bf6b0ae49aefceecdd30a4331c4e474b7d823be3a9fa879372f7dad1bc518"
+    },
+    {
+      "split": "dev",
+      "name": "parallel_qualification_2",
+      "shard": "complete_0",
+      "scenes": 8,
+      "seconds": 10.568746566772461,
+      "budget": {
+        "logical_scores": 40,
+        "physical_scores": 40,
+        "score_cache_hits": 0,
+        "reference_simulations": 8
+      },
+      "source_sha256": "606866daab512aaf83dda6b90f66a1ea173fbc3b3f64f156b6b67bab707148f6"
+    },
+    {
+      "split": "dev",
+      "name": "qualification_OPD_B32",
+      "shard": "complete_0",
+      "scenes": 64,
+      "seconds": 58.15495419502258,
+      "budget": {
+        "logical_scores": 320,
+        "physical_scores": 320,
+        "score_cache_hits": 0,
+        "reference_simulations": 64
+      },
+      "source_sha256": "6b0b178308343c670a79bfba2eff216b56b7296061c706ef1373e74e2bee0bdc"
+    }
+  ],
+  "completed_job_lease_GPU_hours": 80.04859313978089,
+  "unfinished_jobs": 9,
+  "unknown_finished_job_lease_costs": [
+    "qualify_cuda_graph_retry2"
+  ],
+  "interpretation": [
+    "Run ledgers and exclusive job leases overlap; do not sum these GPU cost views.",
+    "Finished lease costs include setup, inference, CPU scoring waits and failed qualifications.",
+    "Qualifying/scientific diagnostic scores and tuning/evaluation costs are separate from each policy training budget.",
+    "A warm-start method inherits its selected training-seed-specific warm cost; this is not zero-cost initialization.",
+    "Frozen VLM extraction is a shared study asset; raw producer/lease records retain its actual cost.",
+    "Original IL/RL/VLM pretraining costs are unknown shared prerequisites; COPY has zero new planner optimization.",
+    "Missing telemetry is null, never inferred from a different run; unfinished snapshots are lower-bound observations only."
+  ]
+}

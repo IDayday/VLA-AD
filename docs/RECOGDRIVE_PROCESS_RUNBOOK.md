@@ -76,3 +76,10 @@ $PY scripts/process_improvement/run_suite.py --phase final_eval --rank 0 --shard
 ```
 
 早期 token-hash 诊断和选择保留为探索结果。纠正脚本在没有任何确认标签时锁定父记录哈希子集；正式编排自动读取纠正记录，不会沿用早期选择。`selected_process_exploratory_tokenhash.yaml` 仅用于重建旧探索结果。未知 GPU 占用不会被当作压力进程终止，资源变化只影响排程；同 world size 的迁移保存完整原生训练状态，不重置模型或优化器。
+
+```bash
+$PY scripts/process_improvement/summarize_costs.py --snapshot-name actual_costs
+$PY scripts/process_improvement/render.py --split dev
+```
+
+成本表区分独占 GPU 作业租用时间和训练内 ledger，两者属于同一工作的不同观察口径，不能相加。失败、中断、资格检查、调参和评价作业保留；尚未同步的 rank 快照及缺失遥测用明确状态或 null 表示。早期一个 GRPO 学习率试验没有 DiT hook 计数，不能拿另一次训练的计数补成实测。原 IL/RL/VLM 的预训练成本未知，作为共同前置资产说明；warm 起点的本轮实际训练成本仍需计入后续方法。
