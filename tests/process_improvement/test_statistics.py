@@ -42,6 +42,25 @@ def test_identical_policy_has_exact_zero_paired_change():
     assert result['parent_count']==3
 
 
+def test_shared_inference_seeds_do_not_gain_precision_by_repeating_a_policy():
+    # Actual evaluation uses the SAME five semantic noise IDs for every
+    # training policy. Repeating one policy cannot create fifteen noise IDs.
+    old=np.zeros((2,5,7));new=old.copy();new[:,:,-1]=[0,0,1,1,1]
+    single=paired_bootstrap(old,new[None],['a','b'],repetitions=3000)
+    repeated=paired_bootstrap(old,np.stack([new]*3),['a','b'],repetitions=3000)
+    assert single['CI95']['G']==[.2,1.]
+    # Repeating the arithmetic mean can change its last binary digit only.
+    np.testing.assert_allclose(repeated['CI95']['G'],single['CI95']['G'],rtol=0,atol=np.finfo(np.float64).eps)
+
+
+def test_shared_noise_is_preserved_in_method_risk_contrasts():
+    from navsim.agents.recogdrive.process_improvement.statistics import risk_difference_bootstrap
+    baseline=np.zeros((2,5,7));control=np.stack([baseline]*3)
+    policy=baseline.copy();policy[:,:,-1]=[0,0,1,1,1]
+    result=risk_difference_bootstrap(baseline,control,np.stack([policy]*3),['a','b'],repetitions=3000)
+    np.testing.assert_allclose(result['CI95']['G'],[.2,1.],rtol=0,atol=np.finfo(np.float64).eps)
+
+
 def test_holm_multiplicity_monotonic():
     adjusted=holm_adjust({'a':.01,'b':.04,'c':.2})
     assert adjusted=={'a':.03,'b':.08,'c':.2}

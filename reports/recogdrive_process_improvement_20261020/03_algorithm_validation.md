@@ -2,7 +2,7 @@
 
 本文件记录工程验收，不宣称过程改进已经提高规划分数。运行产物根目录为 `/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020`。
 
-- CPU 数学/接口测试：83 passed（`audit/combined_cpu_tests_v14.log`）。包括裁剪核、离散精确权重、多模态均值投影反例、无信息回报的 fit/test 分离、M=1、平坦值、ESS、半径、维度、分层统计，以及不可改写的校准锁、条件四轮候选端点和最终测试的候选/权重/种子/总体准入约束。解析测试夹具只用于接口验收，不作为 NAVSIM 实验证据。
+- CPU 数学/接口测试：85 passed（`audit/combined_cpu_tests_v16.log`）。包括裁剪核、离散精确权重、多模态均值投影反例、无信息回报的 fit/test 分离、M=1、平坦值、ESS、半径、维度、分层统计，以及不可改写的校准锁、条件四轮候选端点和最终测试的候选/权重/种子/总体准入约束。解析测试夹具只用于接口验收，不作为 NAVSIM 实验证据。
 - 真实检查点数值验收：48 个模型/场景/采样模式组合通过；每个切分位置的 full vs suffix 逐元素一致。原生 DDIM 的 sigma、噪声裁剪和最后一步最终 clamp 被保留。`tests/parity.json`。
 - 关闭新目标后，旧 E3 与新普通 OPD 的八个真实场景 chain、梯度和 AdamW 参数更新一致；损失求均值顺序产生的最大差异为 `1.16e-10`。`tests/disabled_method.json`。
 - 同 world size 的连续/恢复训练参数及优化器状态逐元素一致。单卡与两卡的真实全局 batch 检查最大参数误差为 `1.1920928955078125e-7`。弹性 world size 恢复不支持。`tests/distributed_resume.json`。
@@ -29,3 +29,5 @@ CUDA graph 的前两次捕获暴露了原生 RoPE 的 `max().item()` 和冻结 e
 另发现两项需要明确记录的协议/接口修正。早期 512 场景局部诊断使用 token 哈希，而规范第 16 节要求父记录哈希；这些评分本身仍有效，父记录用途隔离也成立，但旧子集与选参被降为探索性结果，保留原文件。正式诊断已重建为父记录哈希轮询子集（train 覆盖 127 个父记录，cal-tune/cal-confirm 各 7 个），在尚未观察任何确认标签时锁定并重跑。51 个重叠场景仅复用完全相同场景、检查点、随机数和评分协议的有效标签。原协议未被改写，纠正记录见 `configs/process_improvement/diagnostic_sampling_correction.json`。
 
 过程批训练的拒绝目标现显式保留同批普通教师前向的目标，避免用另一次 B1 前向覆盖批量目标而引入浮点差异。全零/混合接受 mask 的损失、梯度和全局分母 CPU 检查通过；真实四场景批次也通过：原先重新计算 B1 参考值的最大梯度差为 `1.825392246246338e-7`，修正后回退损失及梯度差均为零，学生真实更新、教师不变（`tests/batched_exact_fallback.json`）。此前已运行的过程小测使用 micro-batch=1，局部评分没有使用该损失接口，普通 OPD/Anchor 也不注入过程目标，因此不受此修正影响。
+
+三种子分析前另修正了推理噪声的重采样结构。实际部署评价的五个语义噪声 ID 在所有训练策略间共享，因此 bootstrap 对这一轴共同重采样，并与训练策略及父记录的抽样交叉。旧实现按训练副本分别抽噪声，会让完全相同策略的重复副本虚假缩窄区间；解析反例的 95% 区间从错误的 `[1/3,13/15]` 恢复为 `[0.2,1.0]`。失败回归日志保留在 `audit/crossed_noise_regression_before_fix.log`，修正记录见 `configs/process_improvement/crossed_inference_bootstrap_correction.json`。此前没有完成任何三训练种子的正式分析或轮数选择，现有单种子结果及点估计不受影响；没有调整科学阈值。

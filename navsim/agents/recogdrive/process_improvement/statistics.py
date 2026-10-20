@@ -37,11 +37,12 @@ def paired_bootstrap(old,new,parents,*,high_mask=None,repetitions=10000,seed=202
     for b in range(repetitions):
         train_indices=rng.integers(new.shape[0],size=new.shape[0])
         scene_indices=np.concatenate([groups[j] for j in rng.integers(len(groups),size=len(groups))])
-        # Inference seeds remain paired across every policy in a scene. Draw
-        # one shared seed set per training replicate, preserving scene blocks.
+        # Evaluation uses global semantic noise IDs shared by every training
+        # policy. Resample that axis once, crossed with training/parent draws;
+        # independent per-training draws would create artificial noise repeats.
         sampled_old=[];sampled_new=[]
+        z=rng.integers(new.shape[2],size=new.shape[2])
         for t in train_indices:
-            z=rng.integers(new.shape[2],size=new.shape[2])
             sampled_old.append(old[t][scene_indices][:,z]);sampled_new.append(new[t][scene_indices][:,z])
         high=None if high_mask is None else np.asarray(high_mask)[scene_indices]
         result=summarize_delta(np.stack(sampled_old),np.stack(sampled_new),high)
@@ -52,7 +53,7 @@ def paired_bootstrap(old,new,parents,*,high_mask=None,repetitions=10000,seed=202
     return dict(point=point,CI95=intervals,parent_count=len(unique),training_seeds=new.shape[0],
                 inference_seeds=new.shape[2],bootstrap_repetitions=repetitions,
                 one_sided_centered_bootstrap_p=p_positive,
-                scope='Parent-block bootstrap; few parents/training seeds and rare failures may remain inconclusive')
+                scope='Parent-block bootstrap crossed with training-policy draws and globally shared paired inference IDs; few clusters/seeds and rare failures may remain inconclusive')
 
 
 def parent_mean_bootstrap(values,parents,repetitions=10000,seed=20261020):
@@ -119,8 +120,9 @@ def risk_difference_bootstrap(baseline,control,new,parents,high_mask=None,repeti
     for _ in range(repetitions):
         tr=rng.integers(new.shape[0],size=new.shape[0]);si=np.concatenate([groups[j] for j in rng.integers(len(groups),size=len(groups))])
         b=[];c=[];n=[]
+        z=rng.integers(new.shape[2],size=new.shape[2])
         for t in tr:
-            z=rng.integers(new.shape[2],size=new.shape[2]);b.append(base[t][si][:,z]);c.append(control[t][si][:,z]);n.append(new[t][si][:,z])
+            b.append(base[t][si][:,z]);c.append(control[t][si][:,z]);n.append(new[t][si][:,z])
         h=None if high_mask is None else np.asarray(high_mask)[si]
         result=summarize(np.stack(b),np.stack(c),np.stack(n),h)
         for k in point:draws[k].append(result.get(k,np.nan))
@@ -129,7 +131,7 @@ def risk_difference_bootstrap(baseline,control,new,parents,high_mask=None,repeti
                 bootstrap_repetitions=repetitions,
                 one_sided_centered_bootstrap_p_G=float((1+np.count_nonzero(np.asarray(draws['G'])-point['G']>=point['G']))/(repetitions+1)),
                 one_sided_centered_bootstrap_p_M_minus_benefit=float((1+np.count_nonzero(-(np.asarray(draws['M_minus'])-point['M_minus'])>=-point['M_minus']))/(repetitions+1)),
-                estimand='New minus control; both policies M_minus refer to identical fixed baseline')
+                estimand='New minus control; both policies M_minus refer to identical fixed baseline; global paired inference IDs shared across all sampled training policies')
 
 
 def local_noise_bootstrap(noise_values,parents,repetitions=10000,seed=20261020):

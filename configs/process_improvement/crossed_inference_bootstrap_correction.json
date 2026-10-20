@@ -1,0 +1,11 @@
+{
+  "status": "CORRECTED_BEFORE_THREE_TRAINING_SEED_ANALYSIS",
+  "reason": "All deployed training policies share global semantic inference noise IDs; bootstrap must cross one shared noise draw with parent and training-policy draws",
+  "thresholds_unchanged": true,
+  "point_estimands_unchanged": true,
+  "single_training_seed_estimates_unchanged": true,
+  "affected_completed_formal_three_seed_analysis_count": 0,
+  "regression": "Repeating an identical policy three times must retain its five noise IDs; analytic CI [0.2,1.0], previous erroneous nested-noise CI [1/3,13/15]",
+  "regression_evidence": "audit/crossed_noise_regression_before_fix.log",
+  "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e"
+}
