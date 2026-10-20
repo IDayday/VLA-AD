@@ -1,0 +1,6 @@
+{
+  "status": "EXPLORATORY_NONCONFORMING_SAMPLER",
+  "reason": "Token-hash subset instead of requested parent-hash subset; labels and parent-purpose isolation remain valid",
+  "replacement": "local_parent_cal_grid",
+  "old_results_preserved": true
+}

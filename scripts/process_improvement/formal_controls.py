@@ -77,5 +77,8 @@ def tasks():
                      '--seed',str(seed),'--lr',str(recipe['lr']),'--score-budget','4000000']
             if target<15625:command+=['--stop-after',str(target)]
             if resume:command+=['--resume']
-            ready.append(dict(name=f'formal_{name}_to{target}',priority=6 if resume else 7,gpus=8,hosts=hosts,commands=[command]))
+            # Complete the same low-cost endpoint across independent seeds
+            # before occupying an entire host with a larger-budget extension.
+            priority=7 if not resume else 8 if target==3907 else 9
+            ready.append(dict(name=f'formal_{name}_to{target}',priority=priority,gpus=8,hosts=hosts,commands=[command]))
     return ready

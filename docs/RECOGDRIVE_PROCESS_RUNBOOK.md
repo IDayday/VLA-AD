@@ -8,6 +8,7 @@ export PROCESS_RUN_ROOT=/mnt/project/VLA-AD/outputs/recogdrive_process_improveme
 export OMP_NUM_THREADS=1 OPENBLAS_NUM_THREADS=1 MKL_NUM_THREADS=1
 PY=/root/miniconda3/envs/navsim/bin/python
 $PY scripts/process_improvement/build_splits.py
+$PY scripts/process_improvement/correct_diagnostic_sampling.py
 $PY scripts/process_improvement/run_suite.py --phase parity --resume
 $PY -m pytest tests/process_improvement tests/opd -q
 ```
@@ -24,12 +25,13 @@ $PY scripts/process_improvement/audit_parent_ids.py
 
 ```bash
 $PY scripts/process_improvement/coordinator.py --once
-$PY scripts/process_improvement/coordinator.py
+$PY scripts/process_improvement/controller_control.py start
+$PY scripts/process_improvement/controller_control.py status
 $PY scripts/process_improvement/run_suite.py --phase scaling --method OPD --seed 42 --population train_full
 $PY scripts/process_improvement/run_suite.py --phase local_diagnostics --rank 0 --shards 24
 $PY scripts/process_improvement/calibrate.py --stage mechanism
-$PY scripts/process_improvement/diagnose.py --name local_confirm --split diagnostic_confirm \
-  --config configs/process_improvement/selected_process.yaml --rank 0 --shards 8 --scoring-workers 4
+$PY scripts/process_improvement/diagnose.py --name local_parent_confirm --split diagnostic_parent_confirm \
+  --config configs/process_improvement/selected_process_parenthash.yaml --rank 0 --shards 8 --scoring-workers 4
 $PY scripts/process_improvement/calibrate.py --stage process_gate
 ```
 
@@ -52,7 +54,7 @@ $PY scripts/process_improvement/evaluate.py --name MY_STUDENT \
   --checkpoint "$PROCESS_RUN_ROOT/runs/MY_RUN/head_2341.pt" --split dev --cuda-graph
 $PY scripts/process_improvement/analyze.py --methods MY_STUDENT --baseline B0_IL \
   --screening B0_IL_screen --split dev
-$PY scripts/process_improvement/analyze.py --local local_confirm --split diagnostic_confirm
+$PY scripts/process_improvement/analyze.py --local local_parent_confirm --split diagnostic_parent_confirm
 $PY scripts/process_improvement/export_student.py --name MY_STUDENT \
   --checkpoint "$PROCESS_RUN_ROOT/runs/MY_RUN/head_2341.pt" --verify
 ```
@@ -60,3 +62,5 @@ $PY scripts/process_improvement/export_student.py --name MY_STUDENT \
 导出验证从真实历史图像重新编码，独立子进程只加载导出的学生和 VLM。审计钩子禁止读取教师、原 IL 权重、metric cache、原始观测缓存、监督库和过程改进模块。需与训练侧缓存输入的原生轨迹逐元素一致。
 
 `navtest` 需要 `selection/final.lock.json`，只能对锁定最终模型和强对照运行。旧实验已经查看过该官方测试集，不能称为全新盲测。三种训练种子必须分别保存，五种推理种子不算五次训练重复。所有主张分别依据完整父驾驶记录 bootstrap 及安全分项；无数据的项目报告 `NOT_RUN`。
+
+早期 token-hash 诊断和选择保留为探索结果。纠正脚本在没有任何确认标签时锁定父记录哈希子集；正式编排自动读取纠正记录，不会沿用早期选择。`selected_process_exploratory_tokenhash.yaml` 仅用于重建旧探索结果。未知 GPU 占用不会被当作压力进程终止，资源变化只影响排程；同 world size 的迁移保存完整原生训练状态，不重置模型或优化器。

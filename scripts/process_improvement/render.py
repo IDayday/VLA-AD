@@ -65,7 +65,9 @@ def main():
             axes[row,1].set(xlabel='Actual optimizer updates',ylabel='Gradient L2 norm')
         fig.tight_layout();fig.savefig(figures/'Fig2_actual_training.png',dpi=160)
     plt.close(fig)
-    for phase in ['local_train_grid','local_cal_grid','local_confirm','local_confirm_expand32']:
+    plan=diagnostic_plan()
+    for phase in dict.fromkeys(['local_train_grid','local_cal_grid','local_confirm','local_confirm_expand32',
+                               plan['train_name'],plan['cal_name'],plan['confirm_name'],plan['expansion_name']]):
         path=ROOT/'analysis'/f'{phase}.json'
         if not path.exists():continue
         result=read(path)
@@ -78,10 +80,13 @@ def main():
             artist=ax.plot(x,mean[:,j],'o',ms=3,label=label)[0]
             ax.vlines(x,lo[:,j],hi[:,j],color=artist.get_color(),lw=.8)
         ax.axhline(.002,color='red',ls='--',lw=.7,label='Registered material gain');ax.axhline(0,color='black',lw=.5)
-        ax.set(xticks=positions,xticklabels=labels,ylabel='Held-out suffix PDMS difference',title=phase)
+        role=ROOT/'diagnostics'/phase/'sampling_role.json'
+        title=('Exploratory token-hash / ' if role.exists() else '')+phase
+        ax.set(xticks=positions,xticklabels=labels,ylabel='Held-out suffix PDMS difference',title=title)
         ax.tick_params(axis='x',rotation=75);ax.legend(fontsize=7);fig.tight_layout()
         fig.savefig(figures/f'Fig4_{phase}.png',dpi=160);plt.close(fig)
         write(tables/f'{phase}.json',result)
+        if role.exists():write(tables/f'{phase}_sampling_role.json',read(role))
     inventory={}
     for path in (ROOT/'runs').glob('*/config.json'):
         name=path.parent.name

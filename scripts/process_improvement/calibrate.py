@@ -36,16 +36,16 @@ def rates():
 
 def mechanism():
     # This procedure cannot look at dev/navtest or cal_confirm when choosing.
-    result=local('local_cal_grid','diagnostic_cal')
+    plan=diagnostic_plan();result=local(plan['cal_name'],plan['cal_split'])
     source=[r for r in result['results'] if r['source']=='OLD_OPD']
     chosen=sorted(source,key=lambda r:(-r['mean'][2],r['rho'],-r['temperature']))[0]
     value=dict(status='LOCKED_FOR_INDEPENDENT_CONFIRMATION',primary_source='OLD_OPD',chosen=chosen,
                rule='Highest cal-tune guarded gain; exact ties prefer smaller rho then larger temperature',
                scope='Choice only, not a confirmation claim; cal-confirm remains unused',
-               source_manifest_sha256=sha(ROOT/'manifests/diagnostic_cal.json'))
-    immutable(ROOT/'selection/process_hyperparameters.json',value)
+               source_manifest_sha256=sha(ROOT/'manifests'/f"{plan['cal_split']}.json"),diagnostic_plan=plan)
+    immutable(ROOT/'selection'/plan['choice_file'],value)
     import yaml
-    config_path=SOURCE/'configs/process_improvement/selected_process.yaml'
+    config_path=SOURCE/plan['config']
     payload=dict(extends='base.yaml',temperature=chosen['temperature'],rho=chosen['rho'])
     if config_path.exists():assert yaml.safe_load(config_path.read_text())==payload
     else:config_path.write_text(yaml.safe_dump(payload,sort_keys=False))
@@ -89,6 +89,9 @@ def warm():
 
 
 def confirmation_membership():
+    if (ROOT/'selection/diagnostic_protocol_correction.json').exists():
+        value=read(ROOT/'selection/diagnostic_protocol_correction.json');name=value['active_plan']['confirm_split']
+        return dict(status='LOCKED_PARENT_HASH_CORRECTION',**value['manifests'][name])
     original=membership('cal_confirm')
     selected=sorted(original,key=lambda r:digest([r['token'],'local-confirm-v1']))[:512]
     assert len(selected)==512
@@ -123,11 +126,11 @@ def extension():
 
 
 def process_gate():
-    chosen=read(ROOT/'selection/process_hyperparameters.json')['chosen']
-    expanded=ROOT/'diagnostics/local_confirm_expand32'
+    plan=diagnostic_plan();chosen=read(ROOT/'selection'/plan['choice_file'])['chosen']
+    expanded=ROOT/'diagnostics'/plan['expansion_name']
     expansion_complete=expanded.exists() and len(list((expanded/'scenes').glob('*.json')))==512
-    name='local_confirm_expand32' if expansion_complete else 'local_confirm'
-    result=local(name,'diagnostic_confirm')
+    name=plan['expansion_name'] if expansion_complete else plan['confirm_name']
+    result=local(name,plan['confirm_split'])
     item=next(r for r in result['results'] if r['source']=='OLD_OPD' and r['temperature']==chosen['temperature'] and r['rho']==chosen['rho'])
     mean=item['mean'][2];lower=item['CI95'][0][2];upper=item['CI95'][1][2]
     if mean>=.002 and lower>0:status='SUPPORTED'

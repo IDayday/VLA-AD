@@ -20,11 +20,12 @@ def main():
         graph.prepare(tokens,inputs)
         for seed in config()['evaluation_seeds']:
             plan=RNGKey(STUDY,seed,0,0,row['token'],0,-1).plan('final_eval',device='cuda')
-            native=adapter.sample_rollin(tokens,inputs,plan).trajectory
+            rollin=adapter.sample_rollin(tokens,inputs,plan);native=rollin.trajectory
             accelerated,states=graph.sample(plan,return_states=True)
             assert torch.equal(native,accelerated),(row['token'],seed,float((native-accelerated).abs().max()))
+            assert torch.equal(states,rollin.states),(row['token'],seed,'Intermediate graph state mismatch')
             records.append(dict(token=row['token'],seed=seed,trajectory_max_error=0.))
-    write(ROOT/'tests/trained_graph'/f'{a.name}.json',dict(status='PASS',checkpoint_sha256=sha(a.checkpoint),records=records,owner=identity()))
+    write(ROOT/'tests/trained_graph'/f'{a.name}.json',dict(status='PASS',checkpoint_sha256=sha(a.checkpoint),records=records,intermediate_states_exact=True,owner=identity()))
     print('TRAINED_NATIVE_GRAPH_PARITY_PASS',a.name,len(records),flush=True)
 
 

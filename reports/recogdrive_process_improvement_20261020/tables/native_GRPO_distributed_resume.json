@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "errors": {
+    "single": 1.4901161193847656e-08,
+    "resume8": 0.0
+  },
+  "exact_resume_optimizer": true,
+  "world_sizes": [
+    1,
+    8
+  ],
+  "global_batch": 8,
+  "actual_optimizer_updates": 4,
+  "physical_scores_per_run": 256,
+  "owner": {
+    "host": "training-rl-zt2",
+    "pid": 2021044,
+    "start_ticks": "1387121691",
+    "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
+  }
+}

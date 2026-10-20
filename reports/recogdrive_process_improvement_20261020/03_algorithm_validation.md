@@ -2,10 +2,12 @@
 
 本文件记录工程验收，不宣称过程改进已经提高规划分数。运行产物根目录为 `/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020`。
 
-- CPU 数学/接口测试：65 passed（`audit/combined_cpu_tests_v8.log`）。包括裁剪核、离散精确权重、多模态均值投影反例、无信息回报的 fit/test 分离、M=1、平坦值、ESS、半径、维度及分层统计。
+- CPU 数学/接口测试：71 passed（`audit/combined_cpu_tests_v11.log`）。包括裁剪核、离散精确权重、多模态均值投影反例、无信息回报的 fit/test 分离、M=1、平坦值、ESS、半径、维度及分层统计。
 - 真实检查点数值验收：48 个模型/场景/采样模式组合通过；每个切分位置的 full vs suffix 逐元素一致。原生 DDIM 的 sigma、噪声裁剪和最后一步最终 clamp 被保留。`tests/parity.json`。
 - 关闭新目标后，旧 E3 与新普通 OPD 的八个真实场景 chain、梯度和 AdamW 参数更新一致；损失求均值顺序产生的最大差异为 `1.16e-10`。`tests/disabled_method.json`。
 - 同 world size 的连续/恢复训练参数及优化器状态逐元素一致。单卡与两卡的真实全局 batch 检查最大参数误差为 `1.1920928955078125e-7`。弹性 world size 恢复不支持。`tests/distributed_resume.json`。
+- 原生 GRPO 的单卡/八卡真实检查也通过：四次更新、每组 256 次候选评分，最大参数误差 `1.4901161193847656e-8`；八卡连续/恢复的参数和优化器状态逐元素一致。`tests/native_GRPO_distributed_resume.json`。
+- 25k 普通 OPD 的 812 次真实更新前缀检查通过：一轮学习率试验与更长训练计划的第一轮，在独立物理 GPU 上得到的全部核心参数逐元素相同。`tests/real_812_update_prefix.json`。
 - 正式逐候选评分与实验包装层的候选增删、顺序、外来候选及分片评分检查通过；总分误差为零，离散分项一致。`tests/parallel_scoring.json`。
 - E0-RL 与 E0-COPY 在 1,696 个 dev 场景、五种配对推理种子上的全部轨迹及分数逐元素相同。`tests/E0_full_COPY.json`。
 - 单场景 CUDA 调度在 IL/RL 各 1,696 场景×五种种子上通过原生输出精确一致性检查；共 3,392 个模型/场景记录。它只移除重复的调度/常量计算，不改变模型、精度、batch、噪声或选轨规则。`tests/cuda_graph_inference.json`。
@@ -22,3 +24,7 @@ CUDA graph 的前两次捕获暴露了原生 RoPE 的 `max().item()` 和冻结 e
 早期测试收集遇到旧、新同名 `test_statistics.py` 的模块冲突，通过为新测试目录添加包标记修复；此前失败日志保留。一次重复启动历史 Anchor 复现实验被拒绝覆盖，真正持有该目录的历史串行作业完成了训练。E3 与 Anchor 两个历史复现的最终核心参数均与旧权重完全相同。
 
 新数据按完整父驾驶记录隔离，并额外扫描了 1,328 个原始 log 的实际标识：1,328 个 log_token、19,845 个 scene_token 均无跨用途冲突（包含 navtest）。`audit/parent_identifiers_including_navtest.json`。底模可能见过官方训练数据；这里只保证没有用于本轮新增训练，不能写成底模从未见过。
+
+另发现两项需要明确记录的协议/接口修正。早期 512 场景局部诊断使用 token 哈希，而规范第 16 节要求父记录哈希；这些评分本身仍有效，父记录用途隔离也成立，但旧子集与选参被降为探索性结果，保留原文件。正式诊断已重建为父记录哈希轮询子集（train 覆盖 127 个父记录，cal-tune/cal-confirm 各 7 个），在尚未观察任何确认标签时锁定并重跑。51 个重叠场景仅复用完全相同场景、检查点、随机数和评分协议的有效标签。原协议未被改写，纠正记录见 `configs/process_improvement/diagnostic_sampling_correction.json`。
+
+过程批训练的拒绝目标现显式保留同批普通教师前向的目标，避免用另一次 B1 前向覆盖批量目标而引入浮点差异。全零/混合接受 mask 的损失、梯度和全局分母 CPU 检查通过；真实四场景批次也通过：原先重新计算 B1 参考值的最大梯度差为 `1.825392246246338e-7`，修正后回退损失及梯度差均为零，学生真实更新、教师不变（`tests/batched_exact_fallback.json`）。此前已运行的过程小测使用 micro-batch=1，局部评分没有使用该损失接口，普通 OPD/Anchor 也不注入过程目标，因此不受此修正影响。

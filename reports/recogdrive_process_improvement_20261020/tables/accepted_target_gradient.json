@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "token": "081703a932925f99",
+  "index": 2,
+  "guard_gain": 0.0024251043557798335,
+  "selected_target_shift": 0.10881689190864563,
+  "ordinary_vs_process_gradient_L2": 0.041658077389001846,
+  "gradient_norm": 0.2040497362613678,
+  "ordinary_loss": 0.0002693810674827546,
+  "process_loss": 0.0004015837621409446,
+  "student_chain_refreshed": true,
+  "teacher_unchanged": true,
+  "budget": {
+    "logical_scores": 144,
+    "physical_scores": 144,
+    "score_cache_hits": 0,
+    "reference_simulations": 2,
+    "cpu_scoring_seconds": 0.7548504450000006
+  },
+  "owner": {
+    "host": "training-vla-zt",
+    "pid": 1935717,
+    "start_ticks": "1394907628",
+    "code_sha": "4775215702db8cb143ab3457f901e0c0f81fce49"
+  },
+  "scope": "Signal-conditioned engineering integration only; selection on D_fit is not a performance result"
+}

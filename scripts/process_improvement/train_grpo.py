@@ -80,6 +80,9 @@ def main():
         if 'compute' in own:compute.load_state_dict(own['compute'])
         torch.set_rng_state(own['torch_rng']);torch.cuda.set_rng_state(own['cuda_rng']);np.random.set_state(own['numpy_rng']);random.setstate(own['python_rng'])
         previous=state['physical_scores']
+        if rank==0 and (dest/'paused.json').exists():
+            pause=read(dest/'paused.json');assert pause['step']==start
+            write(dest/'pause_history'/f'{start}.json',pause);(dest/'paused.json').unlink()
     if rank==0:write(dest/'config.json',dict(actual,owner=identity(),parameter_count=sum(p.numel() for p in params),
             gradient_path='Original forward_grpo unmodified, including original sample_chain graph behavior',
             probability_limitation='Original Gaussian logprob surrogate for clipped-normal sampler; not exact native kernel density'))

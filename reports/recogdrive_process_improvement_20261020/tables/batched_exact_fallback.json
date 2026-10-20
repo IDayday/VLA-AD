@@ -1,0 +1,15 @@
+{
+  "status": "PASS",
+  "global_batch": 4,
+  "legacy_unmasked_gradient_roundoff": 1.825392246246338e-07,
+  "masked_loss_error": 0.0,
+  "masked_gradient_error": 0.0,
+  "actual_student_update": true,
+  "teacher_unchanged": true,
+  "owner": {
+    "host": "training-vla-zt",
+    "pid": 1970547,
+    "start_ticks": "1395318116",
+    "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
+  }
+}

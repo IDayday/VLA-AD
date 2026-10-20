@@ -57,6 +57,9 @@ def main():
     if not a.qualification:
         lock=read(ROOT/'protocol.lock.json')
         assert sha(ROOT/'protocol.yaml')==lock['sha256'], 'Locked protocol changed'
+        if a.method in ['PROCESS','UNIFORM_TARGET','SHUFFLED_VALUE','NO_GUARD']:
+            for gate in ['accepted_target_gradient.json','batched_exact_fallback.json']:
+                if read(ROOT/'tests'/gate)['status']!='PASS':raise ValueError('Process training numerical admission incomplete: '+gate)
     if a.split.startswith(('cal','dev','navtest','diagnostic_cal')):
         raise ValueError('Optimization outside registered training population prohibited')
     data=membership(a.split)
@@ -104,6 +107,9 @@ def main():
         counter.__dict__.update(own['budget']);previous_scores=checkpoint['physical_scores_global']
         if 'compute' in own:compute.load_state_dict(own['compute'])
         reference_version=checkpoint['reference_version']
+        if rank==0 and (dest/'paused.json').exists():
+            pause=read(dest/'paused.json');assert pause['step']==start
+            write(dest/'pause_history'/f'{start}.json',pause);(dest/'paused.json').unlink()
     if rank==0:
         write(dest/'config.json',dict(actual,parameter_count=sum(p.numel() for p in parameters),owner=identity(),schedule_sha256=digest(schedule.tolist())))
     started=time.time();halt=[False]
@@ -153,9 +159,9 @@ def main():
                 plans=[key.plan('rollin',device=tokens.device) for key in keys]
                 noise=NoisePlan(torch.cat([p.initial for p in plans]),torch.cat([p.steps for p in plans]))
                 rollin=adapter.sample_rollin(tokens,inputs,noise,step)
-                targets=None;selected=None
+                targets=None;selected=None;selected_mask=None
                 if process_method:
-                    selected=[(step*batch+i)%5 for i in ids];target_list=[]
+                    selected=[(step*batch+i)%5 for i in ids];target_list=[];injection=[]
                     for j,(row,key,index) in enumerate(zip(rows,keys,selected)):
                         own_inputs=BatchFeature({k:v[j:j+1] for k,v in inputs.items()})
                         with torch.no_grad():context=reference_adapter.prepare_conditioning(tokens[j:j+1],own_inputs)
@@ -173,11 +179,16 @@ def main():
                                  rng_key=key.at_step(index).__dict__,config=cfg,error=repr(error),budget=counter.state_dict()))
                             raise
                         target_list.append(record.target)
+                        inject=record.accepted and record.statistics['realized_shift_rms']>0
+                        injection.append(inject)
                         if detail:save(dest/'target_traces'/f'{step}_{step*batch+ids[j]}.pt',record)
                         diagnostics.append(dict(token=row['token'],index=index,accepted=record.accepted,reason=record.reason,
+                                                target_injected=inject,
                                                 rng_key=key.at_step(index).__dict__,**record.statistics))
                     targets=torch.cat(target_list);selected=torch.tensor(selected,device=tokens.device)
+                    selected_mask=torch.tensor(injection,device=tokens.device,dtype=torch.bool)
                 out=objective_from_rollin(student,reference,rollin,tokens,inputs,step,selected_target=targets,selected_index=selected,
+                                          selected_mask=selected_mask,
                                           anchor=anchor,anchor_weight=cfg['lambda_anchor'] if anchor else 0.)
                 # Sum local scene losses / true global batch. The final allreduce
                 # is SUM (not DDP average), including zero-acceptance ranks.

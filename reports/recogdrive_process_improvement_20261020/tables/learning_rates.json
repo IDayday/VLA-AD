@@ -1,0 +1,57 @@
+{
+  "status": "LOCKED",
+  "selection": "Complete train_25k epoch; highest cal_tune mean PDMS; ties smaller LR",
+  "selected": {
+    "OPD": {
+      "name": "tune_OPD_3e-5",
+      "lr": 3e-05,
+      "PDMS": 0.9157408451769996,
+      "scene_exposures": 25984,
+      "data_split": "cal_tune",
+      "checkpoint_sha256": "1197c69a8e549b4f3a97a1dcc74644b9fbee6bd45908050d3aff7f93013ee049"
+    },
+    "ANCHOR": {
+      "name": "tune_ANCHOR_3e-5",
+      "lr": 3e-05,
+      "PDMS": 0.9147289964712982,
+      "scene_exposures": 25984,
+      "data_split": "cal_tune",
+      "checkpoint_sha256": "032fb366f3d60521b3072d3d93256e5de0d4427fbb3e1244401a1f5c2522c175"
+    }
+  },
+  "trials": [
+    {
+      "name": "tune_OPD_1e-5",
+      "lr": 1e-05,
+      "PDMS": 0.9105443825020608,
+      "scene_exposures": 25984,
+      "data_split": "cal_tune",
+      "checkpoint_sha256": "47a32fc47d7af1715df96bc9a766481bb0e45858e3febaffda4e732934f50a33"
+    },
+    {
+      "name": "tune_OPD_3e-5",
+      "lr": 3e-05,
+      "PDMS": 0.9157408451769996,
+      "scene_exposures": 25984,
+      "data_split": "cal_tune",
+      "checkpoint_sha256": "1197c69a8e549b4f3a97a1dcc74644b9fbee6bd45908050d3aff7f93013ee049"
+    },
+    {
+      "name": "tune_ANCHOR_1e-5",
+      "lr": 1e-05,
+      "PDMS": 0.9105461635688222,
+      "scene_exposures": 25984,
+      "data_split": "cal_tune",
+      "checkpoint_sha256": "3c63a2d73994cd30cc5b86d69b28a4ad4fd962c4c8ca11a8204d2e44504e5543"
+    },
+    {
+      "name": "tune_ANCHOR_3e-5",
+      "lr": 3e-05,
+      "PDMS": 0.9147289964712982,
+      "scene_exposures": 25984,
+      "data_split": "cal_tune",
+      "checkpoint_sha256": "032fb366f3d60521b3072d3d93256e5de0d4427fbb3e1244401a1f5c2522c175"
+    }
+  ],
+  "calibration_manifest_sha256": "d21f9eb59499feca65bf8eaba632a22a76e2b851de084b7b277e1568a830b252"
+}

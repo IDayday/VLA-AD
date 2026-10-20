@@ -4,16 +4,18 @@ from .suffix_rollout import NativeAdapter
 
 
 def objective(student, reference, tokens, inputs, noise, student_version, *,
-              selected_target=None, selected_index=None, anchor=None, anchor_weight=0.):
+              selected_target=None, selected_index=None, selected_mask=None, anchor=None, anchor_weight=0.):
     student_adapter = NativeAdapter(student)
     rollin = student_adapter.sample_rollin(tokens, inputs, noise, student_version)
     return objective_from_rollin(student, reference, rollin, tokens, inputs, student_version,
                                  selected_target=selected_target, selected_index=selected_index,
+                                 selected_mask=selected_mask,
                                  anchor=anchor, anchor_weight=anchor_weight)
 
 
 def objective_from_rollin(student, reference, rollin, tokens, inputs, student_version, *,
-                          selected_target=None, selected_index=None, anchor=None, anchor_weight=0.):
+                          selected_target=None, selected_index=None, selected_mask=None, anchor=None, anchor_weight=0.):
+    if selected_mask is not None and selected_target is None:raise ValueError('Target mask without targets')
     with torch.no_grad():
         ref = NativeAdapter(reference)
         context = ref.prepare_conditioning(tokens, inputs)
@@ -22,7 +24,13 @@ def objective_from_rollin(student, reference, rollin, tokens, inputs, student_ve
         if selected_target is not None:
             if selected_index is None or len(selected_target) != len(tokens):
                 raise ValueError('Selected targets must align with scenes/steps')
-            targets[torch.arange(len(tokens), device=tokens.device), selected_index] = selected_target
+            mask=torch.ones(len(tokens),device=tokens.device,dtype=torch.bool) if selected_mask is None else selected_mask
+            if mask.shape!=(len(tokens),) or mask.dtype!=torch.bool or mask.device!=tokens.device:
+                raise ValueError('One Boolean injection decision per scene is required')
+            # Rejected/zero-shift targets retain the exact SAME batched ordinary
+            # teacher forward. A separately recomputed B1 reference mean can
+            # differ by FP32 GEMM rounding, so copying it is not exact fallback.
+            targets[torch.arange(len(tokens), device=tokens.device)[mask], selected_index[mask]] = selected_target[mask]
         anchor_targets = None
         if anchor is not None and anchor_weight:
             aa = NativeAdapter(anchor)

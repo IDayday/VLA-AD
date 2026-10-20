@@ -43,6 +43,7 @@ def ready_tasks(include_formal=False):
     from scripts.process_improvement import calibrate
     extra=ROOT/'suite/extra_queue.json'
     tasks=read(extra) if extra.exists() else []
+    suffix_flags=['--frozen-suffix-cache'] if frozen_suffix_cache_available() else []
     # Fixed-hyperparameter safety monitoring baselines, no test data access.
     for base in ['IL','RL']:
         task=evaluation_task('B0_'+base,baseline=base,split='cal_confirm',priority=25)
@@ -87,31 +88,42 @@ def ready_tasks(include_formal=False):
     grpo_names=[f'tune_GRPO_{initial}_{lr}' for initial in ['IL','RL'] for lr in ['1e-5','3e-5']]
     if not (ROOT/'selection/grpo_rates.json').exists() and all(eval_done(n) for n in grpo_names):calibrate.grpo_rates()
     # Calibration selection and confirmation occupy disjoint physical records.
-    local=ROOT/'diagnostics/local_cal_grid'
-    choice=ROOT/'selection/process_hyperparameters.json'
+    plan=diagnostic_plan();local=ROOT/'diagnostics'/plan['cal_name']
+    choice=ROOT/'selection'/plan['choice_file']
+    if (ROOT/'selection/diagnostic_protocol_correction.json').exists():
+        for rank in range(24):
+            parts=[]
+            for purpose in ['train','cal']:
+                name=plan[purpose+'_name'];split=plan[purpose+'_split']
+                if not (ROOT/'diagnostics'/name/f'complete_{rank}.json').exists():
+                    parts.append(['scripts/process_improvement/diagnose.py','--split',split,'--rank',str(rank),'--shards','24',
+                                  '--grid','--name',name,'--scoring-workers','4',*suffix_flags])
+            if parts:tasks.append(dict(name=f'corrected_parent_diagnostics_{rank}',priority=12,gpus=1,
+                                       hosts=SINGLE_HOSTS+RL_HOSTS,commands=parts))
     if not choice.exists() and all((local/f'complete_{r}.json').exists() for r in range(24)):calibrate.mechanism()
     if choice.exists():
-        phase='local_confirm';expansion=False
+        phase=plan['confirm_name'];expansion=False
         if all((ROOT/'diagnostics'/phase/f'complete_{r}.json').exists() for r in range(8)):
-            if not (ROOT/'selection/process_gate_local_confirm.json').exists():calibrate.process_gate()
-            decision=read(ROOT/'selection/process_gate_local_confirm.json')
+            if not (ROOT/'selection'/f'process_gate_{phase}.json').exists():calibrate.process_gate()
+            decision=read(ROOT/'selection'/f'process_gate_{phase}.json')
             if decision['expansion_allowed']:
-                phase='local_confirm_expand32';expansion=True
+                phase=plan['expansion_name'];expansion=True
             else:phase=None
         if phase:
             for rank in range(8):
                 if (ROOT/'diagnostics'/phase/f'complete_{rank}.json').exists():continue
-                command=['scripts/process_improvement/diagnose.py','--name',phase,'--split','diagnostic_confirm',
-                         '--config','configs/process_improvement/selected_process.yaml',
-                         '--rank',str(rank),'--shards','8','--scoring-workers','4']
+                command=['scripts/process_improvement/diagnose.py','--name',phase,'--split',plan['confirm_split'],
+                         '--config',plan['config'],
+                         '--rank',str(rank),'--shards','8','--scoring-workers','4',*suffix_flags]
                 if expansion:command+=['--test','32']
                 tasks.append(dict(name=f'auto_{phase}_{rank}',priority=20,gpus=1,hosts=SINGLE_HOSTS,commands=[command]))
             if expansion and all((ROOT/'diagnostics'/phase/f'complete_{r}.json').exists() for r in range(8)):
-                if not (ROOT/'selection/process_gate_local_confirm_expand32.json').exists():calibrate.process_gate()
+                if not (ROOT/'selection'/f'process_gate_{phase}.json').exists():calibrate.process_gate()
     if include_formal:
         from scripts.process_improvement.formal_controls import tasks as formal_tasks
         tasks.extend(formal_tasks())
-    return sorted([t for t in tasks if t],key=lambda t:(t['priority'],t['name']))
+    return sorted([t for t in tasks if t and all(Path(p).exists() for p in t.get('requires',[]))],
+                  key=lambda t:(t['priority'],t['name']))
 
 
 def available(host):

@@ -1,0 +1,124 @@
+{
+  "point": {
+    "G": 0.016463070452095312,
+    "M_plus": 0.028292709243734945,
+    "M_minus": 0.01182963879163963,
+    "material_drop_fraction": 0.04363207547169811,
+    "single_output_drop_probability": 0.025235849056603775,
+    "zero_output_fraction": 0.019575471698113207,
+    "zero_scene_mean_fraction": 0.011202830188679245,
+    "positive_to_zero_fraction": 0.005306603773584905,
+    "zero_to_positive_fraction": 0.010023584905660377,
+    "PDMS": 0.9316501841528066,
+    "median_scene_PDMS": 0.9666078497950967,
+    "delta_NC": -0.0011792452830188679,
+    "delta_DAC": 0.007311320754716982,
+    "delta_EP": 0.036022255694636136,
+    "delta_TTC": -0.00731132075471698,
+    "delta_Comfort": 0.0011792452830188679,
+    "delta_DDC": -0.00029481132075471697,
+    "delta_PDMS": 0.016463070452095312,
+    "high_M_minus": 0.008209533992409174,
+    "high_to_zero_fraction": 0.002575107296137339,
+    "high_to_near_zero_fraction": 0.002575107296137339
+  },
+  "CI95": {
+    "G": [
+      0.009197238527233677,
+      0.02265023619468179
+    ],
+    "M_plus": [
+      0.01917116474697055,
+      0.040187955957405874
+    ],
+    "M_minus": [
+      0.0056607251438116225,
+      0.02095975620289829
+    ],
+    "material_drop_fraction": [
+      0.02345406849456951,
+      0.05578802649511939
+    ],
+    "single_output_drop_probability": [
+      0.017966337081744294,
+      0.03340260437704256
+    ],
+    "zero_output_fraction": [
+      0.005862416426114284,
+      0.04325235279727864
+    ],
+    "zero_scene_mean_fraction": [
+      0.0031824841118284785,
+      0.02974874399612659
+    ],
+    "positive_to_zero_fraction": [
+      0.0013341561928991276,
+      0.013513513513513514
+    ],
+    "zero_to_positive_fraction": [
+      0.002920987563198878,
+      0.021919442474198737
+    ],
+    "PDMS": [
+      0.892323197131306,
+      0.9541087001017057
+    ],
+    "median_scene_PDMS": [
+      0.9274020514207176,
+      0.9935363829540482
+    ],
+    "delta_NC": [
+      -0.0037918960152774255,
+      0.0
+    ],
+    "delta_DAC": [
+      0.0004279755531763024,
+      0.011456361245954692
+    ],
+    "delta_EP": [
+      0.02650692991739568,
+      0.04399359394865798
+    ],
+    "delta_TTC": [
+      -0.0117206493152236,
+      -0.001147145510519899
+    ],
+    "delta_Comfort": [
+      0.0,
+      0.005263157894736842
+    ],
+    "delta_DDC": [
+      -0.002105971782910358,
+      0.0007330538582179851
+    ],
+    "delta_PDMS": [
+      0.009197238527233677,
+      0.02265023619468179
+    ],
+    "high_M_minus": [
+      0.004095587201899709,
+      0.016521399171221814
+    ],
+    "high_to_zero_fraction": [
+      0.0,
+      0.00975622982910957
+    ],
+    "high_to_near_zero_fraction": [
+      0.0,
+      0.00975622982910957
+    ]
+  },
+  "parent_count": 15,
+  "training_seeds": 1,
+  "inference_seeds": 5,
+  "bootstrap_repetitions": 10000,
+  "one_sided_centered_bootstrap_p": 9.999000099990002e-05,
+  "scope": "Parent-block bootstrap; few parents/training seeds and rare failures may remain inconclusive",
+  "methods": [
+    "HISTORICAL_E4-A"
+  ],
+  "baseline": "B0_IL",
+  "split": "dev",
+  "scenes": 1696,
+  "high_screening": "B0_IL_screen"
+}

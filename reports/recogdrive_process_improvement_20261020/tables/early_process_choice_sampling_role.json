@@ -1,0 +1,7 @@
+{
+  "status": "SUPERSEDED_FOR_SAMPLING_PROTOCOL_NONCONFORMANCE",
+  "unchanged_old_choice_sha256": "2094d7076e263749b82b137507312fcf0c18d018f899e596efe8a18bf7190850",
+  "replacement": "process_hyperparameters_parenthash.json",
+  "original_results_preserved": true,
+  "reason": "Spec section16 requires parent-hash diagnostic sampling; corrected selection uses new cal-tune sample only"
+}

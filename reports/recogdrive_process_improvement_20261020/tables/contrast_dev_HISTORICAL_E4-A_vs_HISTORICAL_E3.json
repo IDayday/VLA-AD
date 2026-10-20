@@ -1,0 +1,66 @@
+{
+  "point": {
+    "G": 0.0007649686211754075,
+    "M_plus": -0.0022963566813401608,
+    "M_minus": -0.0030613253025155683,
+    "material_drop_fraction": -0.010023584905660382,
+    "positive_to_zero_fraction": -0.0017688679245283024,
+    "delta_NC": 0.0025943396226415097,
+    "delta_DAC": -0.0022405660377358477,
+    "delta_TTC": 0.006721698113207548,
+    "high_to_zero_fraction": -0.0008583690987124461
+  },
+  "CI95": {
+    "G": [
+      -0.002613690026401149,
+      0.0038035558369318725
+    ],
+    "M_plus": [
+      -0.0037610395255634013,
+      -0.0012002341826251766
+    ],
+    "M_minus": [
+      -0.006230645353888999,
+      -4.7267124626434233e-05
+    ],
+    "material_drop_fraction": [
+      -0.01585511887053971,
+      -0.004034901945896699
+    ],
+    "positive_to_zero_fraction": [
+      -0.007240692807256871,
+      0.0029704760139986743
+    ],
+    "delta_NC": [
+      0.0,
+      0.005697335879467566
+    ],
+    "delta_DAC": [
+      -0.004686225156903765,
+      -0.0004197052020898456
+    ],
+    "delta_TTC": [
+      0.0019673420149658584,
+      0.01205144167758846
+    ],
+    "high_to_zero_fraction": [
+      -0.006655851358846367,
+      0.0029456167103279578
+    ]
+  },
+  "parent_count": 15,
+  "training_seeds": 1,
+  "inference_seeds": 5,
+  "bootstrap_repetitions": 10000,
+  "estimand": "New minus control; both policies M_minus refer to identical fixed baseline",
+  "new_methods": [
+    "HISTORICAL_E4-A"
+  ],
+  "control_methods": [
+    "HISTORICAL_E3"
+  ],
+  "fixed_baseline": "B0_IL",
+  "split": "dev",
+  "control_training_replicates": 1,
+  "new_training_replicates": 1
+}

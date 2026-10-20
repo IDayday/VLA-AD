@@ -9,6 +9,14 @@ def test_linear_harm_bootstrap_retains_parent_and_paired_noise():
     assert abs(result['point']['G']-.025)<1e-14
     np.testing.assert_allclose(result['CI95']['G'],[.025,.025],atol=1e-14)
     assert result['parent_count']==2 and result['training_seeds']==1
+
+
+def test_risk_difference_does_not_create_a_training_seed_ensemble():
+    from navsim.agents.recogdrive.process_improvement.statistics import risk_difference_bootstrap
+    baseline=np.full((2,2,7),.5);control=np.stack([baseline,baseline]);new=control.copy()
+    new[0,:,:,-1]=0.;new[1,:,:,-1]=1.
+    result=risk_difference_bootstrap(baseline,control,new,['A','B'],repetitions=32)
+    assert result['point']['G']==0 and result['point']['M_minus']==.25
 from navsim.agents.recogdrive.process_improvement.statistics import summarize_delta,paired_bootstrap,holm_adjust,local_noise_bootstrap
 
 

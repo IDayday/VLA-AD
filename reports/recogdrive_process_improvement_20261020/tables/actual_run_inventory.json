@@ -110,10 +110,10 @@
       "qualification": false,
       "parameter_count": 34329219,
       "owner": {
-        "host": "training-vlawm-tsinghua-zt2",
-        "pid": 2282345,
-        "start_ticks": "1394895511",
-        "code_sha": "4775215702db8cb143ab3457f901e0c0f81fce49"
+        "host": "training-vla-zt",
+        "pid": 1951667,
+        "start_ticks": "1395072210",
+        "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
       },
       "schedule_sha256": "91bded55e6b160e5534ba68686612353fb891569b28bf87bdfbd1b82d0715496"
     },
@@ -208,6 +208,58 @@
         "pid": 1894529,
         "start_ticks": "1394494763",
         "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+      }
+    },
+    "paused": null
+  },
+  "qual_GRPO_single": {
+    "config": {
+      "method": "native_GRPO",
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "seed": 42,
+      "lr": 1e-05,
+      "steps": 4,
+      "world": 1,
+      "global_batch": 8,
+      "group_size": 8,
+      "progress_weight": 5.0,
+      "BC_coeff": 0.1,
+      "split": "legacy_4k",
+      "data_sha256": "375c1044464316b5293f78d39dc065aab8ba0ea80f3134e3372930e8b4821312",
+      "score_budget": 256,
+      "sampling_std_floor": 0.04,
+      "noise_clip": 5.0,
+      "logprob_std_floor": 0.1,
+      "logprob_clip": [
+        -5.0,
+        2.0
+      ],
+      "gamma_denoising": 0.6,
+      "owner": {
+        "host": "training-rl-zt2",
+        "pid": 2021046,
+        "start_ticks": "1387121798",
+        "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
+      },
+      "parameter_count": 34329219,
+      "gradient_path": "Original forward_grpo unmodified, including original sample_chain graph behavior",
+      "probability_limitation": "Original Gaussian logprob surrogate for clipped-normal sampler; not exact native kernel density"
+    },
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 4,
+      "scene_exposures": 32,
+      "physical_scores": 256,
+      "seconds": 35.11352872848511,
+      "peak_gpu_bytes": 7626989568,
+      "IL_BC_reference_unchanged": true,
+      "checkpoint_sha256": "6bf4cd1e27cec296f7b4e2d0dfeb3222778933a957fbf39966799974f89914b3",
+      "owner": {
+        "host": "training-rl-zt2",
+        "pid": 2021046,
+        "start_ticks": "1387121798",
+        "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
       }
     },
     "paused": null
@@ -443,6 +495,95 @@
     },
     "paused": null
   },
+  "qual_GRPO_continuous8": {
+    "config": {
+      "method": "native_GRPO",
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "seed": 42,
+      "lr": 1e-05,
+      "steps": 4,
+      "world": 8,
+      "global_batch": 8,
+      "group_size": 8,
+      "progress_weight": 5.0,
+      "BC_coeff": 0.1,
+      "split": "legacy_4k",
+      "data_sha256": "375c1044464316b5293f78d39dc065aab8ba0ea80f3134e3372930e8b4821312",
+      "score_budget": 256,
+      "sampling_std_floor": 0.04,
+      "noise_clip": 5.0,
+      "logprob_std_floor": 0.1,
+      "logprob_clip": [
+        -5.0,
+        2.0
+      ],
+      "gamma_denoising": 0.6,
+      "owner": {
+        "host": "training-rl-zt2",
+        "pid": 2021382,
+        "start_ticks": "1387126608",
+        "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
+      },
+      "parameter_count": 34329219,
+      "gradient_path": "Original forward_grpo unmodified, including original sample_chain graph behavior",
+      "probability_limitation": "Original Gaussian logprob surrogate for clipped-normal sampler; not exact native kernel density"
+    },
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 4,
+      "scene_exposures": 32,
+      "physical_scores": 256,
+      "seconds": 10.413763761520386,
+      "peak_gpu_bytes": 7609814016,
+      "IL_BC_reference_unchanged": true,
+      "checkpoint_sha256": "c1ff68706052f9f070b00b92be54639cd0bcdf02d624aaab351c46e17f9d6cd4",
+      "owner": {
+        "host": "training-rl-zt2",
+        "pid": 2021382,
+        "start_ticks": "1387126608",
+        "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
+      }
+    },
+    "paused": null
+  },
+  "tune_GRPO_RL_1e-5": {
+    "config": {
+      "method": "native_GRPO",
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt",
+      "init_sha256": "23fb949b10387efeff87e093703d5faf41b61b9e5ead16d4076661e3c7c08a20",
+      "seed": 42,
+      "lr": 1e-05,
+      "steps": 812,
+      "world": 8,
+      "global_batch": 32,
+      "group_size": 8,
+      "progress_weight": 5.0,
+      "BC_coeff": 0.1,
+      "split": "train_25k",
+      "data_sha256": "a1e973616f5bdbf0d11c2b4ef718cd1df287a4a065977c76fcbe04cd0fe6239b",
+      "score_budget": 207872,
+      "sampling_std_floor": 0.04,
+      "noise_clip": 5.0,
+      "logprob_std_floor": 0.1,
+      "logprob_clip": [
+        -5.0,
+        2.0
+      ],
+      "gamma_denoising": 0.6,
+      "owner": {
+        "host": "training-rl-zt2",
+        "pid": 2026103,
+        "start_ticks": "1387139132",
+        "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
+      },
+      "parameter_count": 34329219,
+      "gradient_path": "Original forward_grpo unmodified, including original sample_chain graph behavior",
+      "probability_limitation": "Original Gaussian logprob surrogate for clipped-normal sampler; not exact native kernel density"
+    },
+    "completion": null,
+    "paused": null
+  },
   "scaling_legacy_4k_OPD_42": {
     "config": {
       "method": "OPD",
@@ -469,7 +610,24 @@
       },
       "schedule_sha256": "b82a732ea36140bdbd965c1da1c79f00abc2eb61a8d99a3b6e25dbfdcc5833c1"
     },
-    "completion": null,
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 2000,
+      "scene_exposures": 64000,
+      "seconds": 4122.299727201462,
+      "peak_gpu_bytes": 25254521344,
+      "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+      "final_student_hash": "e781b03e69c322f148af784c511236ec0f3fcdb44d5ab2c5af12c2255cc095a9",
+      "reference_unchanged": true,
+      "checkpoint_sha256": "b0149ebd7aa45ceb575a0e116b8b4e5eb01aa8dbcc07c7ede68c3f6b6d130818",
+      "physical_scores": 0,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1934782,
+        "start_ticks": "1394902355",
+        "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
+      }
+    },
     "paused": null
   },
   "full_OPD_43": {
@@ -491,10 +649,10 @@
       "qualification": false,
       "parameter_count": 34329219,
       "owner": {
-        "host": "training-vlawm-tsinghua-zt2",
-        "pid": 2282351,
-        "start_ticks": "1394895527",
-        "code_sha": "4775215702db8cb143ab3457f901e0c0f81fce49"
+        "host": "training-vla-zt",
+        "pid": 1951668,
+        "start_ticks": "1395072214",
+        "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
       },
       "schedule_sha256": "65a2477a5833b853a4a50b5e64effe9d3837613b0256db5c9cd02dc6b24effae"
     },
@@ -581,7 +739,22 @@
       "gradient_path": "Original forward_grpo unmodified, including original sample_chain graph behavior",
       "probability_limitation": "Original Gaussian logprob surrogate for clipped-normal sampler; not exact native kernel density"
     },
-    "completion": null,
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 812,
+      "scene_exposures": 25984,
+      "physical_scores": 207872,
+      "seconds": 3471.5632696151733,
+      "peak_gpu_bytes": 7764307968,
+      "IL_BC_reference_unchanged": true,
+      "checkpoint_sha256": "6879b3902a5e761a364a12687f5038814a3cabff965b6b51ae19e902944159b2",
+      "owner": {
+        "host": "training-rl-zt2",
+        "pid": 2006105,
+        "start_ticks": "1386764611",
+        "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
+      }
+    },
     "paused": null
   },
   "full_OPD_44": {
@@ -884,6 +1057,58 @@
         "pid": 1894527,
         "start_ticks": "1394494763",
         "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+      }
+    },
+    "paused": null
+  },
+  "qual_GRPO_resume8": {
+    "config": {
+      "method": "native_GRPO",
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "seed": 42,
+      "lr": 1e-05,
+      "steps": 4,
+      "world": 8,
+      "global_batch": 8,
+      "group_size": 8,
+      "progress_weight": 5.0,
+      "BC_coeff": 0.1,
+      "split": "legacy_4k",
+      "data_sha256": "375c1044464316b5293f78d39dc065aab8ba0ea80f3134e3372930e8b4821312",
+      "score_budget": 256,
+      "sampling_std_floor": 0.04,
+      "noise_clip": 5.0,
+      "logprob_std_floor": 0.1,
+      "logprob_clip": [
+        -5.0,
+        2.0
+      ],
+      "gamma_denoising": 0.6,
+      "owner": {
+        "host": "training-rl-zt2",
+        "pid": 2024340,
+        "start_ticks": "1387131458",
+        "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
+      },
+      "parameter_count": 34329219,
+      "gradient_path": "Original forward_grpo unmodified, including original sample_chain graph behavior",
+      "probability_limitation": "Original Gaussian logprob surrogate for clipped-normal sampler; not exact native kernel density"
+    },
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 4,
+      "scene_exposures": 32,
+      "physical_scores": 256,
+      "seconds": 14.728261709213257,
+      "peak_gpu_bytes": 7615433728,
+      "IL_BC_reference_unchanged": true,
+      "checkpoint_sha256": "65997f887fd47c66fe5d444b7ab7171f8939623d2032437a0ae5d29bb6807ca8",
+      "owner": {
+        "host": "training-rl-zt2",
+        "pid": 2024340,
+        "start_ticks": "1387131458",
+        "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
       }
     },
     "paused": null

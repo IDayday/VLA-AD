@@ -75,6 +75,23 @@ def membership(name):
     return read(ROOT / 'manifests' / f'{name}.json')
 
 
+def diagnostic_plan():
+    correction=ROOT/'selection/diagnostic_protocol_correction.json'
+    if correction.exists():return read(correction)['active_plan']
+    return dict(train_split='diagnostic_train',cal_split='diagnostic_cal',confirm_split='diagnostic_confirm',
+                train_name='local_train_grid',cal_name='local_cal_grid',confirm_name='local_confirm',
+                expansion_name='local_confirm_expand32',choice_file='process_hyperparameters.json',
+                config='configs/process_improvement/selected_process.yaml')
+
+
+def frozen_suffix_cache_available():
+    path=ROOT/'tests/frozen_suffix_cache.json'
+    if not path.exists():return False
+    gate=read(path)
+    return (gate['status']=='PASS' and gate.get('admitted_for_performance',False) and
+            all(sha(SOURCE/name)==value for name,value in gate['source_hashes'].items()))
+
+
 def observation(row):
     import torch
     path = Path(row['observation_path'])

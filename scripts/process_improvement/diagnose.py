@@ -31,8 +31,14 @@ def main():
     p.add_argument('--grid',action='store_true');p.add_argument('--name',required=True)
     p.add_argument('--scoring-workers',type=int,default=0)
     p.add_argument('--config')
+    p.add_argument('--frozen-suffix-cache',action='store_true')
     args=p.parse_args();configure();cfg=config(args.config)
     if read(ROOT/'tests/parity.json')['status']!='PASS':raise ValueError('Numerical qualification incomplete')
+    if args.frozen_suffix_cache:
+        if not frozen_suffix_cache_available():
+            raise ValueError('Frozen suffix cache has no current exact numerical admission')
+        from navsim.agents.recogdrive.process_improvement.frozen_suffix import FrozenSuffixAdapter
+        NativeAdapter=FrozenSuffixAdapter
     if args.split in ('dev','navtest'):raise ValueError('Local method selection must not inspect audit/test data')
     rows=membership(args.split)
     if args.limit:rows=rows[:args.limit]

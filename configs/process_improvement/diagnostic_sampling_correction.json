@@ -1,0 +1,413 @@
+{
+  "status": "LOCKED_BEFORE_CONFIRMATION",
+  "reason": "Correct specification section16 diagnostic sampling unit",
+  "specification_quote": "先在固定512个train场景上诊断，按父记录哈希取样而不是只取已知可修复场景。",
+  "original_protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+  "active_plan": {
+    "train_split": "diagnostic_parent_train",
+    "cal_split": "diagnostic_parent_cal",
+    "confirm_split": "diagnostic_parent_confirm",
+    "train_name": "local_parent_train_grid",
+    "cal_name": "local_parent_cal_grid",
+    "confirm_name": "local_parent_confirm",
+    "expansion_name": "local_parent_confirm_expand32",
+    "choice_file": "process_hyperparameters_parenthash.json",
+    "config": "configs/process_improvement/selected_process_parenthash.yaml"
+  },
+  "manifests": {
+    "diagnostic_parent_train": {
+      "sha256": "01346f8f94d9a4e7bd1b15d959f6d2b95b92d39160644a846ae4883203f6b970",
+      "source_split": "train_full",
+      "scenes": 512,
+      "parents": 127,
+      "rule": "Parent-hash round robin; fixed within-parent token order; no score filter"
+    },
+    "diagnostic_parent_cal": {
+      "sha256": "9e1b66a815e8d225f911dfa5c82a9441c7f7e7c1002ffa925401ce82b79eef1a",
+      "source_split": "cal_tune",
+      "scenes": 512,
+      "parents": 7,
+      "rule": "Parent-hash round robin; fixed within-parent token order; no score filter"
+    },
+    "diagnostic_parent_confirm": {
+      "sha256": "e2a126a73898dc6774cf99d8168d7231385a1bb08fdbf10a1b93bb9feb61e4fd",
+      "source_split": "cal_confirm",
+      "scenes": 512,
+      "parents": 7,
+      "rule": "Parent-hash round robin; fixed within-parent token order; no score filter"
+    }
+  },
+  "earlier_tokenhash_choice_preserved_sha256": "2094d7076e263749b82b137507312fcf0c18d018f899e596efe8a18bf7190850",
+  "reused_valid_labels": [
+    {
+      "token": "e4b91d11f46c5b7a",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_train_grid/scenes/e4b91d11f46c5b7a.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_train_grid/scenes/e4b91d11f46c5b7a.json",
+      "sha256": "285ff90f3369fda7ddddfb5055ec5c492696eeef923720333e25bcd5906d6dcb",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "1035067f7dd0573d",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_train_grid/scenes/1035067f7dd0573d.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_train_grid/scenes/1035067f7dd0573d.json",
+      "sha256": "02bafd0608042fa50dbaa446b13b906f774ddeba50c0436703a6a75195d1cf0a",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "4f002496dc26558b",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_train_grid/scenes/4f002496dc26558b.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_train_grid/scenes/4f002496dc26558b.json",
+      "sha256": "49d24f59e81389ecd06bd784f1c1a28c8c3046dba5cb62500922d78cbd1cb4c6",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "6584467e5e3c531b",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_train_grid/scenes/6584467e5e3c531b.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_train_grid/scenes/6584467e5e3c531b.json",
+      "sha256": "36ea4253cd5edf1c58b73f5c033758d90e3e3915620cbb631efee5201fb62a5e",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "57db6797c25d5fdf",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_train_grid/scenes/57db6797c25d5fdf.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_train_grid/scenes/57db6797c25d5fdf.json",
+      "sha256": "22e6e2bc31c33eff4acb8ec8b82a4140c5b27df3809eff32a46e0ae570fb579b",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "61e2cef4a4bb5641",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/61e2cef4a4bb5641.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/61e2cef4a4bb5641.json",
+      "sha256": "6aa1c4ab1cb4c1af549915a2e3f69d19943b5072af07aa21793feceb05f6c2dc",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "60d3e8b2738653b5",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/60d3e8b2738653b5.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/60d3e8b2738653b5.json",
+      "sha256": "5c183c0eb2f8648e506cc1343c49cf5650d5dc55da8c116271138f99a49652bc",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "f8a46647238655fc",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/f8a46647238655fc.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/f8a46647238655fc.json",
+      "sha256": "a3732fbb57f1c8220adb20ab38bc89ec73f190b8adaa81e9f123bd94b0fb3181",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "8f1c55fe05575560",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/8f1c55fe05575560.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/8f1c55fe05575560.json",
+      "sha256": "faed33f5399ff0ef1c19242a446d564fff1ae69e180ff22acab0bcb90b39f763",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "3c9f4631ac41543f",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/3c9f4631ac41543f.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/3c9f4631ac41543f.json",
+      "sha256": "aedf233cebe451cfde8e8a0e7956fb80aa9ecb33f020cd87f1a2c22cb92551cb",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "31e8e5119d3553bb",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/31e8e5119d3553bb.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/31e8e5119d3553bb.json",
+      "sha256": "24192b179e280fe07ee1af131d7c49d9c3f740c97c969685a4dca1896d95b665",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "3582076bfc5559bd",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/3582076bfc5559bd.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/3582076bfc5559bd.json",
+      "sha256": "c8565cab6bb8f0913a323de3f4dac06b0d6c8951170064d81b41d78768e764bd",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "935ddc4f5eaf5f4f",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/935ddc4f5eaf5f4f.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/935ddc4f5eaf5f4f.json",
+      "sha256": "f94b1975edfa7f40f35e2e280e49d083d1fb91106720122050a07c839e693221",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "601d887023195139",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/601d887023195139.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/601d887023195139.json",
+      "sha256": "25ecd0250bef5754a8de3d5a556f5f68886fd6ea008acfec9327b7420e348962",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "1c2befeea0595c57",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/1c2befeea0595c57.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/1c2befeea0595c57.json",
+      "sha256": "3e3e53e5e33f8d9220bedce7ee1db32353bd856fa954a8da4892088f30055e60",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "cc654128e7ec5810",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/cc654128e7ec5810.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/cc654128e7ec5810.json",
+      "sha256": "7eeffc0db5a777fc71f46bfc8631522af9cc6fe9599c6e9fdf383f012e2a6f28",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "52a58f0f884b5606",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/52a58f0f884b5606.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/52a58f0f884b5606.json",
+      "sha256": "244a542bfbaf043194b4b409bfa007f620de52b84220cfcf016b66cfd53d0c2c",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "5848855556335759",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/5848855556335759.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/5848855556335759.json",
+      "sha256": "3b3869e9a8bda45fe2d44faf7f5d2005405cc92f43c982327b9f24dd0685b82f",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "8e7fee9f35ef5b8a",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/8e7fee9f35ef5b8a.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/8e7fee9f35ef5b8a.json",
+      "sha256": "1eb6708d57a42266a78b663b1699b356a124ade94c1d1cac42863e458c99c23e",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "6a9b9b4cf98855b9",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/6a9b9b4cf98855b9.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/6a9b9b4cf98855b9.json",
+      "sha256": "41de400fb77d4f0977438829221f71a6e378d1ac1236688f25cc2d11edef1976",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "e3e97bc9dcd55a11",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/e3e97bc9dcd55a11.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/e3e97bc9dcd55a11.json",
+      "sha256": "07859a102e177b15cf4dd173c1d6553ebebb635a96dd9538d447eb724fb71114",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "97b7e745a3a15b3c",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/97b7e745a3a15b3c.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/97b7e745a3a15b3c.json",
+      "sha256": "37971f7625bdf307a703f9556aca53fd825780274f5e45d618ba8b11a292a258",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "b70a95c237725212",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/b70a95c237725212.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/b70a95c237725212.json",
+      "sha256": "ccbd7f27178f91c9212802fb1fd4f5540b5dc5d249a16827c610f5f0ccf4df47",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "71a5ed77c5b55b3b",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/71a5ed77c5b55b3b.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/71a5ed77c5b55b3b.json",
+      "sha256": "da6c1729d623f8020dad2b28052c225d0b0211c8e677e87d294db6d7db135452",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "2d8965454be854fa",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/2d8965454be854fa.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/2d8965454be854fa.json",
+      "sha256": "4ff3f51e7f19c9ccce0a0201e959021a86d04a53ebaa821afbc2eb595de94958",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "f83ea5e78cc255f5",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/f83ea5e78cc255f5.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/f83ea5e78cc255f5.json",
+      "sha256": "225188f812c8785517d5bad0f922ce4848128a5298695831ee2ba14f7c43802e",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "3a2ef3106e135174",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/3a2ef3106e135174.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/3a2ef3106e135174.json",
+      "sha256": "f228520d860ed67f132792c5533bec6ee8770556b00f365dfb0cf48001cd47e7",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "365a48bdee2f51d9",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/365a48bdee2f51d9.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/365a48bdee2f51d9.json",
+      "sha256": "e6d159e67a26915a3550ea59ffdcfe868355523f1eba2492b9b84f83415f89c9",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "941604d7ee175b96",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/941604d7ee175b96.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/941604d7ee175b96.json",
+      "sha256": "38995691ffcc68698268d22c166936cbf48a3c4b12e594f51914599587c6ce1d",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "6e0936e3a6ec57f1",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/6e0936e3a6ec57f1.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/6e0936e3a6ec57f1.json",
+      "sha256": "dca3921be62dcef1012269ed085ebea1379dab59658dbf77167104199fbddcab",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "bacce81905b258aa",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/bacce81905b258aa.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/bacce81905b258aa.json",
+      "sha256": "eda3be4ea24b5215baf6bc10e7302c7ea0ed8c17ab6b4ebcbbfe360b1b7f7d0e",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "fa4bf485b2ed5175",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/fa4bf485b2ed5175.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/fa4bf485b2ed5175.json",
+      "sha256": "d1f1688c75bd562483aac810b8cc2066e4438eeaa4c791ff2b52696ccd663e2a",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "9f3a34d4a66d5e48",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/9f3a34d4a66d5e48.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/9f3a34d4a66d5e48.json",
+      "sha256": "0e85d61afd98df468f43c21a17ba6097a6b7b83359a4b7474bacfda5f6e1a310",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "bc61c93676bf5f3c",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/bc61c93676bf5f3c.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/bc61c93676bf5f3c.json",
+      "sha256": "3d1123e93f0bc18b9f403184a15a4490511301e6c3d3583fd8fb20646844bff1",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "c36a0d426aea5bea",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/c36a0d426aea5bea.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/c36a0d426aea5bea.json",
+      "sha256": "5ac0e0d85f75ea79defa872dc4b13e4946333b1d0ff5d45fc73e0b3b7b238772",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "18c172986b665c4e",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/18c172986b665c4e.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/18c172986b665c4e.json",
+      "sha256": "a4fa98c453acc920dd7d77439ad6504dc2c94c0aaa6a7b7b8334e2785d9cf1b5",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "9449612389bd5c9d",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/9449612389bd5c9d.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/9449612389bd5c9d.json",
+      "sha256": "f3d9d4959e8ef531fb05ba4f96a86b0358f01dd3065c8ff4b7d347a514bc4866",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "0217be86a1b65740",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/0217be86a1b65740.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/0217be86a1b65740.json",
+      "sha256": "c29b9ba9ab44218c210be11e91bede6cdcfec527caf0046010f97aba929f75bf",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "ef4e94d0114d5bee",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/ef4e94d0114d5bee.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/ef4e94d0114d5bee.json",
+      "sha256": "aa7ae7781aebf42416af5c369ef7a3144c504dd8fc9f91d08a0c9bde9f28fd46",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "1470b58493fa5403",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/1470b58493fa5403.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/1470b58493fa5403.json",
+      "sha256": "02d39048e6969b7860eb9045bed285d43ed94f8b1cffec6b8d3a72f7e7bd7cf4",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "36c6cfbedc8e52eb",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/36c6cfbedc8e52eb.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/36c6cfbedc8e52eb.json",
+      "sha256": "6a3bed29ef934d4665d96c2b98af41aa4a1e8364ef699eb03fbaaf89cb1a2538",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "4b420ec6222a5b71",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/4b420ec6222a5b71.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/4b420ec6222a5b71.json",
+      "sha256": "2ee66d9a229743e98e75b08f68bb7b18bac96741305b95302497a54a9e348ddb",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "51872eefee695cde",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/51872eefee695cde.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/51872eefee695cde.json",
+      "sha256": "bb77240fa9de89f88aff64245300aba61cf8ecca06130ee7e0bb8bc03160d26b",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "3ff07d0d223156e6",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/3ff07d0d223156e6.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/3ff07d0d223156e6.json",
+      "sha256": "4a33dc751e4c2ce6a19f665be7c5c9d5755709cf945399451cef9f18872ed509",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "b4c56ad1e80553b8",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/b4c56ad1e80553b8.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/b4c56ad1e80553b8.json",
+      "sha256": "56062d5ef7f270e30c429365cd8e39fb803115c67cb48d4562d62d9eaa7e4fdc",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "c5d55e0062ec5e4f",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/c5d55e0062ec5e4f.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/c5d55e0062ec5e4f.json",
+      "sha256": "5731b821d486a0271010671a63dffb54dbc3b23c6becd98f700a6fb0aefa65f1",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "1badf0cf158658b7",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/1badf0cf158658b7.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/1badf0cf158658b7.json",
+      "sha256": "d4f55a607b52561a55cb4fdc987c36e641f08049aee2fe8218451514959642b8",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "2b0992066d4759e4",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/2b0992066d4759e4.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/2b0992066d4759e4.json",
+      "sha256": "3be32d0e475e723ecceafe876285427c772ac4c30f5505a807d4d0ddedcb2623",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "2887dafce8d05cf0",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/2887dafce8d05cf0.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/2887dafce8d05cf0.json",
+      "sha256": "95e5c013be01ba4222ad3c3c1c337830647811a2e1b816675c4eeb56eb08ed87",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "0dac409941fa5ba2",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/0dac409941fa5ba2.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/0dac409941fa5ba2.json",
+      "sha256": "c1174f69c1eaba5d65983af8ac39252ceae53f370e4068973e28e9bd4cae01d1",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    },
+    {
+      "token": "0cf8c77809475798",
+      "source": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_cal_grid/scenes/0cf8c77809475798.json",
+      "destination": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/local_parent_cal_grid/scenes/0cf8c77809475798.json",
+      "sha256": "0372ffeb13501a9cee1d9b4968f86e7e367903d3dbe21e2299d01ac6991176fc",
+      "scope": "Same scene/state source/checkpoints/MLK/CRN and score; valid label reuse; no new physical score charged"
+    }
+  ],
+  "confirmatory_labels_observed_before_correction": 0,
+  "unchanged": [
+    "score protocol",
+    "six hyperparameter pairs",
+    "M16/Lfit8/Lguard8/Ltest16",
+    "three rollin sources",
+    "full training populations",
+    "OPD/Anchor LR selection",
+    "RL controls",
+    "thresholds",
+    "one registered confirmation expansion"
+  ],
+  "extra_cost": "Engineering retest cost is recorded separately; not a new scientific hyperparameter expansion"
+}

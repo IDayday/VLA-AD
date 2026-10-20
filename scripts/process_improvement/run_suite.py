@@ -26,7 +26,7 @@ def main():
     p.add_argument('--cold',action='store_true');p.add_argument('--extend-four-epochs',action='store_true')
     a=p.parse_args()
     if a.run_root:os.environ['PROCESS_RUN_ROOT']=a.run_root
-    from scripts.process_improvement.common import ROOT,SOURCE,PYTHON,read,write,identity
+    from scripts.process_improvement.common import ROOT,SOURCE,PYTHON,read,write,identity,diagnostic_plan
     if Path(a.resource_policy).resolve()!=Path('/mnt/project/server_dispatch_policy.json'):
         raise ValueError('The live host policy cannot be replaced by a different file')
     commands=[];gate=None
@@ -55,9 +55,10 @@ def main():
         else:raise ValueError('Unregistered scaling population')
         commands=[command]
     elif a.phase=='local_diagnostics':
-        commands=[['scripts/process_improvement/diagnose.py','--name','local_'+part+'_grid','--split',split,
+        plan=diagnostic_plan()
+        commands=[['scripts/process_improvement/diagnose.py','--name',plan[part+'_name'],'--split',plan[part+'_split'],
                    '--grid','--rank',str(a.rank),'--shards',str(a.shards),'--scoring-workers','4']
-                  for part,split in [('train','diagnostic_train'),('cal','diagnostic_cal')]]
+                  for part in ['train','cal']]
     elif a.phase=='calibration':
         commands=[['scripts/process_improvement/calibrate.py','--stage',a.stage]]
     elif a.phase=='main':
@@ -77,7 +78,7 @@ def main():
         if method=='OPD' and a.steps is None:raise ValueError('C1 requires fixed exposure/compute-matched --steps; OPD consumes no scoring budget')
         command=['scripts/process_improvement/train.py','--method',method,'--name',a.name or f'warm_{method}_{a.seed}',
                  '--split',a.population,'--steps',str(a.steps or 100000),'--init',init,'--seed',str(a.seed),
-                 '--lr',str(rate),'--config','configs/process_improvement/selected_process.yaml']
+                 '--lr',str(rate),'--config',diagnostic_plan()['config']]
         if method!='OPD':command+=['--score-budget',str(a.score_budget)]
         commands=[command]
     elif a.phase=='rl_controls':

@@ -19,12 +19,12 @@ def main():
     from navsim.agents.recogdrive.process_improvement.statistics import parent_mean_bootstrap
     from scripts.opd.scoring import load_cache
     p=argparse.ArgumentParser();p.add_argument('--checkpoint',required=True);p.add_argument('--name',required=True)
-    p.add_argument('--config',default='configs/process_improvement/selected_process.yaml')
-    p.add_argument('--limit',type=int,default=128);a=p.parse_args();configure();cfg=config(a.config)
+    p.add_argument('--config')
+    p.add_argument('--limit',type=int,default=128);a=p.parse_args();configure();plan=diagnostic_plan();cfg=config(a.config or SOURCE/plan['config'])
     dest=ROOT/'diagnostics/suffix_mismatch'/a.name
     if (dest/'results.json').exists():raise FileExistsError('Preserve completed suffix diagnostic')
     student=build_head(a.checkpoint,frozen=True);reference=build_head(cfg['teacher_init'],frozen=True)
-    sa=NativeAdapter(student);ra=NativeAdapter(reference);rows=membership('diagnostic_confirm')[:a.limit]
+    sa=NativeAdapter(student);ra=NativeAdapter(reference);rows=membership(plan['confirm_split'])[:a.limit]
     scorer=CanonicalScorer(workers=4,metric_paths={r['token']:r['metric_cache_path'] for r in rows})
     builder=TargetBuilder(ra,scorer,cfg);records=[];started=time.time()
     for row in rows:

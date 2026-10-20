@@ -76,15 +76,34 @@ def compare(names,baseline,split,repetitions=10000,limit=None,screening=None):
     return result
 
 
+def contrast(names,controls,baseline,split,repetitions=10000,screening=None):
+    from navsim.agents.recogdrive.process_improvement.statistics import risk_difference_bootstrap
+    base,rows=predictions(baseline,split)
+    new=np.stack([predictions(name,split)[0] for name in names])
+    control=np.stack([predictions(name,split)[0] for name in controls])
+    if len(control)==1:control=np.broadcast_to(control,new.shape)
+    if control.shape!=new.shape:raise ValueError('Controls must be fixed or paired one-to-one with training policies')
+    high=None
+    if screening:
+        values,_=predictions(screening,split);high=(values[:,:,-1]>=.9).all(1)
+    result=risk_difference_bootstrap(base,control,new,[r['driver_record'] for r in rows],high_mask=high,repetitions=repetitions)
+    result.update(new_methods=names,control_methods=controls,fixed_baseline=baseline,split=split,
+                  control_training_replicates=len(controls),new_training_replicates=len(names))
+    write(ROOT/'analysis'/f'contrast_{split}_{names[0]}_vs_{controls[0]}.json',result)
+    return result
+
+
 def main():
     p=argparse.ArgumentParser();p.add_argument('--local');p.add_argument('--split',default='dev')
     p.add_argument('--methods',nargs='+');p.add_argument('--baseline',default='B0_IL')
     p.add_argument('--screening');p.add_argument('--limit',type=int);p.add_argument('--repetitions',type=int,default=10000)
+    p.add_argument('--control-methods',nargs='+')
     p.add_argument('--suite');p.add_argument('--allow-partial',action='store_true');a=p.parse_args()
     if a.local:
         result=local(a.local,a.split,a.repetitions,not a.allow_partial)
     elif a.methods:
-        result=compare(a.methods,a.baseline,a.split,a.repetitions,a.limit,a.screening)
+        if a.control_methods:result=contrast(a.methods,a.control_methods,a.baseline,a.split,a.repetitions,a.screening)
+        else:result=compare(a.methods,a.baseline,a.split,a.repetitions,a.limit,a.screening)
     else:
         runs={p.parent.name:read(p) for p in (ROOT/'runs').glob('*/complete.json')}
         result=dict(study=STUDY,actual_completed_runs=runs,protocol_lock=read(ROOT/'protocol.lock.json'))

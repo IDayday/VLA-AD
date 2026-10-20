@@ -99,6 +99,39 @@ def paired_linear_bootstrap(old,new,parents,repetitions=10000,seed=20261020):
                 bootstrap_repetitions=repetitions,scope='Linear harm-boundary metrics only; whole-parent blocks and paired inference-seed hierarchy')
 
 
+def risk_difference_bootstrap(baseline,control,new,parents,high_mask=None,repetitions=10000,seed=20261020):
+    """Compare two policies' degradation against the SAME fixed baseline.
+
+    This is distinct from treating the control as the baseline, which changes
+    the definition of M_minus. Truncate each training policy's scene-mean
+    changes before averaging policies. Shared draws retain all pairing.
+    """
+    baseline=np.asarray(baseline,dtype=np.float64);control=np.asarray(control,dtype=np.float64);new=np.asarray(new,dtype=np.float64)
+    if control.shape!=new.shape or new.ndim!=4 or baseline.shape!=new.shape[1:]:raise ValueError('Fixed baseline and paired training-policy arrays required')
+    base=np.broadcast_to(baseline,new.shape);parents=np.asarray(parents)
+    if len(parents)!=new.shape[1]:raise ValueError('Parent metadata mismatch')
+    groups=[np.flatnonzero(parents==p) for p in np.unique(parents)];rng=np.random.default_rng(seed)
+    def summarize(b,c,n,h):
+        cs=summarize_delta(b,c,h);ns=summarize_delta(b,n,h)
+        return {k:ns[k]-cs[k] for k in ['G','M_plus','M_minus','material_drop_fraction','positive_to_zero_fraction',
+                                         'delta_NC','delta_DAC','delta_TTC']+(['high_to_zero_fraction'] if h is not None and np.any(h) else [])}
+    point=summarize(base,control,new,high_mask);draws={k:[] for k in point}
+    for _ in range(repetitions):
+        tr=rng.integers(new.shape[0],size=new.shape[0]);si=np.concatenate([groups[j] for j in rng.integers(len(groups),size=len(groups))])
+        b=[];c=[];n=[]
+        for t in tr:
+            z=rng.integers(new.shape[2],size=new.shape[2]);b.append(base[t][si][:,z]);c.append(control[t][si][:,z]);n.append(new[t][si][:,z])
+        h=None if high_mask is None else np.asarray(high_mask)[si]
+        result=summarize(np.stack(b),np.stack(c),np.stack(n),h)
+        for k in point:draws[k].append(result.get(k,np.nan))
+    return dict(point=point,CI95={k:np.nanquantile(v,[.025,.975]).tolist() for k,v in draws.items()},
+                parent_count=len(groups),training_seeds=new.shape[0],inference_seeds=new.shape[2],
+                bootstrap_repetitions=repetitions,
+                one_sided_centered_bootstrap_p_G=float((1+np.count_nonzero(np.asarray(draws['G'])-point['G']>=point['G']))/(repetitions+1)),
+                one_sided_centered_bootstrap_p_M_minus_benefit=float((1+np.count_nonzero(-(np.asarray(draws['M_minus'])-point['M_minus'])>=-point['M_minus']))/(repetitions+1)),
+                estimand='New minus control; both policies M_minus refer to identical fixed baseline')
+
+
 def local_noise_bootstrap(noise_values,parents,repetitions=10000,seed=20261020):
     """Parent blocks + independent candidate banks + paired suffix-replicate IDs.
 
