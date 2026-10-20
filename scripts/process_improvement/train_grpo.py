@@ -22,6 +22,7 @@ def main():
     from navsim.agents.recogdrive.opd.checkpoint_io import build_head,state_hash,restore
     from navsim.agents.recogdrive.opd.trainer import configure_native_grpo
     from navsim.agents.recogdrive.process_improvement.rng_plan import RNGKey
+    from navsim.agents.recogdrive.process_improvement.compute_ledger import ComputeLedger
     from scripts.opd.scoring import Scoring
     p=argparse.ArgumentParser();p.add_argument('--name',required=True)
     p.add_argument('--init',default='IL');p.add_argument('--split',default='train_full')
@@ -61,6 +62,7 @@ def main():
         last_reward['values']=result.detach().clone()
         return result
     student.reward_fn=reward
+    compute=ComputeLedger(student=student,IL_reference=student.old_policy)
     reference_hash=state_hash(student.old_policy)
     params=[p for p in student.parameters() if p.requires_grad]
     optimizer=torch.optim.AdamW(params,lr=a.lr,weight_decay=cfg['weight_decay'])
@@ -73,6 +75,7 @@ def main():
         student.load_state_dict(state['full_student'],strict=True);optimizer.load_state_dict(state['optimizer'])
         start=state['step'];history=state['history'];elapsed=state['seconds']
         own=state['rank_states'][rank];counts.update(own['counts'])
+        if 'compute' in own:compute.load_state_dict(own['compute'])
         torch.set_rng_state(own['torch_rng']);torch.cuda.set_rng_state(own['cuda_rng']);np.random.set_state(own['numpy_rng']);random.setstate(own['python_rng'])
         previous=state['physical_scores']
     if rank==0:write(dest/'config.json',dict(actual,owner=identity(),parameter_count=sum(p.numel() for p in params),
@@ -80,7 +83,8 @@ def main():
             probability_limitation='Original Gaussian logprob surrogate for clipped-normal sampler; not exact native kernel density'))
     began=time.time();halt=[False];signal.signal(signal.SIGUSR1,lambda *_:halt.__setitem__(0,True))
     def checkpoint(step,physical,endpoint=False):
-        own=dict(counts=counts.copy(),torch_rng=torch.get_rng_state(),cuda_rng=torch.cuda.get_rng_state(),numpy_rng=np.random.get_state(),python_rng=random.getstate())
+        own=dict(counts=counts.copy(),torch_rng=torch.get_rng_state(),cuda_rng=torch.cuda.get_rng_state(),numpy_rng=np.random.get_state(),python_rng=random.getstate(),compute=compute.state_dict())
+        write(dest/f'cost_rank_{rank}.json',dict(step=step,compute=compute.state_dict(),budget=counts.copy(),allocated_GPU_seconds=elapsed+time.time()-began))
         states=[own]
         if world>1:states=[None]*world;dist.all_gather_object(states,own)
         if rank==0:
@@ -137,6 +141,8 @@ def main():
             flag=torch.tensor(int(stop),device='cuda');dist.all_reduce(flag,op=dist.ReduceOp.MAX);stop=bool(flag)
         if (step+1)%100==0 or crossed or step+1==steps or stop:checkpoint(step+1,physical,crossed or step+1==steps or stop)
         if stop and step+1<steps:
+            assert state_hash(student.old_policy)==reference_hash
+            assert all(p.grad is None for p in student.old_policy.parameters())
             if rank==0:write(dest/'paused.json',dict(step=step+1,physical_scores=physical))
             if world>1:dist.barrier();dist.destroy_process_group()
             return

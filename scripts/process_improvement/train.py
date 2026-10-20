@@ -49,6 +49,7 @@ def main():
     from navsim.agents.recogdrive.process_improvement.objective import objective_from_rollin
     from navsim.agents.recogdrive.process_improvement.projection_guard import TargetBuilder
     from navsim.agents.recogdrive.process_improvement.budget_counter import CanonicalScorer,BudgetCounter
+    from navsim.agents.recogdrive.process_improvement.compute_ledger import ComputeLedger
     from scripts.opd.scoring import load_cache
     a=parse();configure();cfg=config(a.config)
     if not read(ROOT/'tests/parity.json')['status']=='PASS':
@@ -86,6 +87,7 @@ def main():
     adapter=NativeAdapter(student);reference_adapter=NativeAdapter(reference)
     counter=BudgetCounter();scorer=CanonicalScorer(counter)
     target_builder=TargetBuilder(reference_adapter,scorer,cfg)
+    compute=ComputeLedger(student=student,teacher=reference,anchor=anchor)
     reference_version=0;start=0;elapsed_before=0.;history=[];previous_scores=0
     # Deterministic epoch permutations, concatenated before batching: no partial
     # minibatch padding duplicates and no silently dropped end-of-epoch scenes.
@@ -100,6 +102,7 @@ def main():
         torch.set_rng_state(own['torch_rng']);torch.cuda.set_rng_state(own['cuda_rng'])
         np.random.set_state(own['numpy_rng']);random.setstate(own['python_rng'])
         counter.__dict__.update(own['budget']);previous_scores=checkpoint['physical_scores_global']
+        if 'compute' in own:compute.load_state_dict(own['compute'])
         reference_version=checkpoint['reference_version']
     if rank==0:
         write(dest/'config.json',dict(actual,parameter_count=sum(p.numel() for p in parameters),owner=identity(),schedule_sha256=digest(schedule.tolist())))
@@ -110,7 +113,9 @@ def main():
     score_endpoints=cfg['score_endpoints']
     def checkpoint(step,physical,endpoint=False):
         own=dict(torch_rng=torch.get_rng_state(),cuda_rng=torch.cuda.get_rng_state(),numpy_rng=np.random.get_state(),
-                 python_rng=random.getstate(),budget=counter.state_dict())
+                 python_rng=random.getstate(),budget=counter.state_dict(),compute=compute.state_dict())
+        write(dest/f'cost_rank_{rank}.json',dict(step=step,compute=compute.state_dict(),budget=counter.state_dict(),
+              allocated_GPU_seconds=elapsed_before+time.time()-started))
         rank_states=[own]
         if world>1:
             rank_states=[None]*world;dist.all_gather_object(rank_states,own)
@@ -203,7 +208,18 @@ def main():
             if (step+1)%100==0 or step+1 in endpoint_steps or crossed or stop:
                 checkpoint(step+1,physical,step+1 in endpoint_steps or crossed or stop)
             if stop and step+1<steps:
-                if rank==0:write(dest/'paused.json',dict(step=step+1,physical_scores=physical,score_budget_reached=a.score_budget is not None and physical>=a.score_budget))
+                budget_complete=a.score_budget is not None and physical>=a.score_budget
+                assert state_hash(reference)==ref_hash and (anchor is None or state_hash(anchor)==anchor_hash)
+                assert all(p.grad is None for p in reference.parameters())
+                if rank==0:
+                    if budget_complete:
+                        write(dest/'complete.json',dict(status='COMPLETE_BUDGET',steps=step+1,scene_exposures=(step+1)*batch,
+                              seconds=elapsed_before+time.time()-started,peak_gpu_bytes=torch.cuda.max_memory_allocated(),
+                              initial_student_hash=initial_hash,final_student_hash=state_hash(student),reference_unchanged=True,
+                              checkpoint_sha256=sha(dest/'latest.pt'),physical_scores=physical,requested_score_budget=a.score_budget,
+                              score_overshoot=physical-a.score_budget,owner=identity()))
+                    else:
+                        write(dest/'paused.json',dict(step=step+1,physical_scores=physical,score_budget_reached=False))
                 if world>1:dist.barrier();dist.destroy_process_group()
                 return
     assert state_hash(reference)==ref_hash and (anchor is None or state_hash(anchor)==anchor_hash)

@@ -42,6 +42,10 @@ class RNGKey:
 def candidate_noise(key, count, mode='antithetic', device='cpu', dtype=torch.float32, bank=0):
     if count < 1:
         raise ValueError('At least one candidate required')
+    if count == 1:
+        # Degenerate bank retains the native marginal; proposal() returns the
+        # exact reference mean independently of its one observed value.
+        return key.normal((1, 8, 3), 'candidate', bank, device, dtype)
     if mode == 'iid':
         return key.normal((count, 8, 3), 'candidate', bank, device, dtype)
     if mode != 'antithetic' or count % 2:

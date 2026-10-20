@@ -2,6 +2,7 @@
 from dataclasses import dataclass, asdict
 import hashlib
 import numpy as np
+import time
 
 _WORKER_SCORER = None
 
@@ -13,8 +14,9 @@ def score_chunk(job):
     if _WORKER_SCORER is None:
         _WORKER_SCORER = Scoring()
     offset, path, trajectories = job
-    values = _WORKER_SCORER.batch(load_cache(path), trajectories)['scores']
-    return offset, hashlib.sha256(trajectories.tobytes()).hexdigest(), values
+    cache=load_cache(path);started=time.process_time()
+    values = _WORKER_SCORER.batch(cache, trajectories)['scores']
+    return offset, hashlib.sha256(trajectories.tobytes()).hexdigest(), values,time.process_time()-started
 
 
 @dataclass
@@ -23,6 +25,7 @@ class BudgetCounter:
     physical_scores: int = 0
     score_cache_hits: int = 0
     reference_simulations: int = 0
+    cpu_scoring_seconds: float = 0.
 
     def state_dict(self):
         return asdict(self)
@@ -81,13 +84,16 @@ class CanonicalScorer:
                         jobs.append((int(indices[0]), self.metric_paths[scene_token], trajectories[indices].copy()))
                 returned = list(self.pool.map(score_chunk, jobs))
                 result = np.empty((len(trajectories), 7), dtype=np.float64)
-                for (offset, path, requested), (returned_offset, returned_sha, values) in zip(jobs, returned):
+                for (offset, path, requested), (returned_offset, returned_sha, values,cpu_seconds) in zip(jobs, returned):
                     if returned_offset != offset or returned_sha != hashlib.sha256(requested.tobytes()).hexdigest():
                         raise RuntimeError('Asynchronous scorer candidate identity mismatch')
                     result[offset:offset+len(values)] = values
+                    self.counter.cpu_scoring_seconds+=cpu_seconds
                 simulations = len(jobs)
             else:
+                started=time.process_time()
                 result = self.scorer.batch(metric_cache, trajectories)['scores']
+                self.counter.cpu_scoring_seconds+=time.process_time()-started
             if result.shape != (len(unseen), 7) or not np.isfinite(result).all():
                 raise FloatingPointError('Scoring failed; distinguish this from a legal zero score')
             self.cache.update(zip(unseen, result))

@@ -25,6 +25,7 @@ def test_rho_zero_and_zero_variance():
     assert torch.equal(proposal(mean, std, candidates, values, rho=0).mean, mean)
     assert torch.equal(proposal(mean, std*0, candidates, values).mean, mean)
     assert torch.equal(proposal(mean, std, candidates[:1], values[:1]).mean, mean)
+    assert candidate_noise(RNGKey('test',42,0,0,'x',0,0),1).shape == (1,8,3)
 
 
 def test_ess_increases_and_radius_and_permutation():
@@ -71,7 +72,10 @@ def test_multimodal_selection_does_not_imply_projection_gain():
     # The two rewarded modes are -2 and +2. A projected mean near 0 loses both.
     assert weighted_gain > .99
     assert abs(float(p.mean.mean())) < .02
-    projected_reward = float(((p.mean[0,0]-2).abs()<.1) | ((p.mean[0,0]+2).abs()<.1))
+    # Compare the entire *same offset kernel*, not reward at its mean alone.
+    offsets=candidates[:,0,0]-mean[0,0]
+    projected_support=p.mean[0,0]+offsets
+    projected_reward=float((((projected_support-2).abs()<.1) | ((projected_support+2).abs()<.1)).float().mean())
     assert projected_reward == 0 and reward.mean() == .5
 
 

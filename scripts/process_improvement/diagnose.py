@@ -30,7 +30,8 @@ def main():
     p.add_argument('--guard',type=int,default=8);p.add_argument('--test',type=int,default=16)
     p.add_argument('--grid',action='store_true');p.add_argument('--name',required=True)
     p.add_argument('--scoring-workers',type=int,default=0)
-    args=p.parse_args();configure();cfg=config()
+    p.add_argument('--config')
+    args=p.parse_args();configure();cfg=config(args.config)
     if read(ROOT/'tests/parity.json')['status']!='PASS':raise ValueError('Numerical qualification incomplete')
     if args.split in ('dev','navtest'):raise ValueError('Local method selection must not inspect audit/test data')
     rows=membership(args.split)
@@ -46,7 +47,7 @@ def main():
     grid=[(t,r) for t in [.02,.05,.10] for r in [.25,.5]] if args.grid else [(cfg['temperature'],cfg['rho'])]
     dest.mkdir(parents=True,exist_ok=True)
     write(dest/f'config_{args.rank}.json',dict(arguments=vars(args),source_checkpoint_sha256={k:sha(paths[k]) for k in heads},
-          scene_manifest_sha256=sha(ROOT/'manifests'/f'{args.split}.json'),owner=identity(),grid=grid))
+          scene_manifest_sha256=sha(ROOT/'manifests'/f'{args.split}.json'),config_sha256=digest(cfg),owner=identity(),grid=grid))
     for number,row in enumerate(rows):
         output=dest/'scenes'/f"{row['token']}.json"
         if output.exists():continue

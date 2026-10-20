@@ -1,0 +1,23 @@
+# 算法与数值验收
+
+本文件记录工程验收，不宣称过程改进已经提高规划分数。运行产物根目录为 `/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020`。
+
+- CPU 数学/接口测试：64 passed（`audit/combined_cpu_tests_v6.log`）。包括裁剪核、离散精确权重、多模态均值投影反例、无信息回报的 fit/test 分离、M=1、平坦值、ESS、半径、维度及分层统计。
+- 真实检查点数值验收：48 个模型/场景/采样模式组合通过；每个切分位置的 full vs suffix 逐元素一致。原生 DDIM 的 sigma、噪声裁剪和最后一步最终 clamp 被保留。`tests/parity.json`。
+- 关闭新目标后，旧 E3 与新普通 OPD 的八个真实场景 chain、梯度和 AdamW 参数更新一致；损失求均值顺序产生的最大差异为 `1.16e-10`。`tests/disabled_method.json`。
+- 同 world size 的连续/恢复训练参数及优化器状态逐元素一致。单卡与两卡的真实全局 batch 检查最大参数误差为 `1.1920928955078125e-7`。弹性 world size 恢复不支持。`tests/distributed_resume.json`。
+- 正式逐候选评分与实验包装层的候选增删、顺序、外来候选及分片评分检查通过；总分误差为零，离散分项一致。`tests/parallel_scoring.json`。
+- E0-RL 与 E0-COPY 在 1,696 个 dev 场景、五种配对推理种子上的全部轨迹及分数逐元素相同。`tests/E0_full_COPY.json`。
+- 单场景 CUDA 调度在 IL/RL 各 1,696 场景×五种种子上通过原生输出精确一致性检查；共 3,392 个模型/场景记录。它只移除重复的调度/常量计算，不改变模型、精度、batch、噪声或选轨规则。`tests/cuda_graph_inference.json`。
+- 新学生导出后，独立进程从真实图像重新编码，仅加载导出动作头和共享 VLM，轨迹与原生缓存输入路径逐元素一致。教师、评分缓存、未来标签和过程改进模块被运行时禁止。`exports/tune_OPD_1e-5/verification.json`。
+- 已完成真实 128 场景曝光、32 次更新的过程路径集成训练：2,231 次物理候选评分，学生核心状态哈希改变，参考权重未改变。此小测不能作为泛化收益证据。`runs/qualification_PROCESS_128/complete.json`。
+
+## 保留的失败与工程修复
+
+跨场景 B32 和 B8 推理批处理在真实 token `a02f3e19c1ad5991` 上分别出现 `1.1335681342483639e-6`、`1.0161554968579622e-6` 的 PDMS 差异，超过预先锁定的 `1e-6` 容差。两种加速均未准入正式评价；没有放宽阈值或删除反例。相关资格目录及日志保留在 `evaluation/dev/qualification_batched_IL`、`qualification_batched8_IL` 和 `jobs/`。
+
+CUDA graph 的前两次捕获暴露了原生 RoPE 的 `max().item()` 和冻结 eta 的 CPU 构造/传输。修复只在显式局部作用域复用原生调用得到的固定八位置旋转常量和固定 eta；作用域结束恢复原模块，参数名及对象不变。完整 E0 检查随后通过。第三次长任务为了分四卡验证而中断，有精确 PID/启动时间/进程组终止回执，未计为失败或完成。
+
+早期测试收集遇到旧、新同名 `test_statistics.py` 的模块冲突，通过为新测试目录添加包标记修复；此前失败日志保留。一次重复启动历史 Anchor 复现实验被拒绝覆盖，真正持有该目录的历史串行作业完成了训练。E3 与 Anchor 两个历史复现的最终核心参数均与旧权重完全相同。
+
+新数据按完整父驾驶记录隔离，并额外扫描了 1,328 个原始 log 的实际标识：1,328 个 log_token、19,845 个 scene_token 均无跨用途冲突（包含 navtest）。`audit/parent_identifiers_including_navtest.json`。底模可能见过官方训练数据；这里只保证没有用于本轮新增训练，不能写成底模从未见过。

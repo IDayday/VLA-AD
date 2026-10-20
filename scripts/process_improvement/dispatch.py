@@ -81,6 +81,28 @@ def worker(path):
         raise SystemExit(1)
 
 
+def stop_owned(name,reason):
+    """Stop only this registry's exact process group; retain an explicit receipt."""
+    dest=ROOT/'jobs'/name;spec=read(dest/'spec.json');receipt=read(dest/'launch.json')
+    if (dest/'complete.json').exists():raise ValueError('Job is already finished')
+    code=f"""import os,json,signal,time
+from pathlib import Path
+pid={receipt['pid']!r}; path=Path('/proc')/str(pid)
+args=(path/'cmdline').read_bytes().split(b'\\0')
+assert int((path/'stat').read_text().split()[21])==int({receipt['start_ticks']!r})
+assert path.stat().st_uid==os.getuid()
+assert b'scripts/process_improvement/dispatch.py' in args and {str(dest/'spec.json').encode()!r} in args
+assert os.getpgid(pid)==pid
+elapsed=time.monotonic()-int((path/'stat').read_text().split()[21])/os.sysconf('SC_CLK_TCK')
+os.killpg(pid,signal.SIGTERM)
+print(json.dumps(dict(parent_pid=pid,start_ticks={receipt['start_ticks']!r},reason={reason!r},allocated_seconds=elapsed,signal='SIGTERM',exact_owned_process_group=True)))
+"""
+    result=remote(spec['host'],code)
+    write(dest/'termination.json',result)
+    write(dest/'complete.json',dict(status='INTERRUPTED',reason=reason,termination=result,results=[]))
+    return result
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('action', choices=['worker'])

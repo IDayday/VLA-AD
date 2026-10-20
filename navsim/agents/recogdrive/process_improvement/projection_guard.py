@@ -1,6 +1,8 @@
 """Independent paired acceptance; rejection always restores ordinary reference OPD."""
 import numpy as np
 import torch
+import hashlib
+import json
 from .candidate_value import evaluate_candidates, evaluate_kernels
 from .contracts import TargetRecord
 from .improvement_target import proposal
@@ -50,10 +52,15 @@ class TargetBuilder:
                       realized_shift_rms=float((native_proposal-stats.mean).float().square().mean().sqrt()),
                       candidate_clip_fraction=float((raw.abs()>stats.noise_clip).float().mean()),
                       fit_namespace='fit_suffix', guard_namespace='target_guard', test_namespace='diagnostic_test',
-                      ablation=ablation, candidate_mode=cfg['candidate_mode'], budget=self.scorer.counter.state_dict())
+                      ablation=ablation, candidate_mode=cfg['candidate_mode'], budget=self.scorer.counter.state_dict(),
+                      input_contract_sha256='98ce682857a3c0b5cc7ca521499db4d8a175444729b472465a15d6adb43f9093',
+                      scoring_contract='NAVSIM_v1_PDMS_reference_candidate_progress_weights5_5_2',
+                      config_sha256=hashlib.sha256(json.dumps(cfg,sort_keys=True).encode()).hexdigest(),kernel=stats.kernel)
         full = dict(raw_state=state.cpu(), reference_mean=stats.mean.cpu(), actual_std=stats.std.cpu(),
                     raw_candidate_noise=raw.cpu(), candidates=candidates.cpu(), fit_scores=fit,
-                    weights=proposed.weights.cpu(), guard_scores=guard, rng_key=key.__dict__) if trace else {}
+                    weights=proposed.weights.cpu(), guard_scores=guard, rng_key=key.__dict__,
+                    candidate_ids=[f'{key.scene_token}:{key.student_version}:{key.reference_version}:{key.occurrence_id}:{index}:{bank}:{j}'
+                                   for j in range(len(candidates))]) if trace else {}
         return TargetRecord(key.scene_token, key.student_version, key.reference_version, index, stats.timestep,
                             target.detach().clone(), native_proposal.detach().clone(), stats.mean.detach().clone(),
                             stats.std.detach().clone(), accepted, reason, fields, full)
