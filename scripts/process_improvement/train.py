@@ -92,6 +92,7 @@ def main():
     target_builder=TargetBuilder(reference_adapter,scorer,cfg)
     compute=ComputeLedger(student=student,teacher=reference,anchor=anchor)
     reference_version=0;start=0;elapsed_before=0.;history=[];previous_scores=0
+    previous_peak=0;peak_history_complete=True
     # Deterministic epoch permutations, concatenated before batching: no partial
     # minibatch padding duplicates and no silently dropped end-of-epoch scenes.
     schedule=np.concatenate([np.random.default_rng(a.seed*100000+epoch).permutation(len(data))
@@ -102,6 +103,8 @@ def main():
         restore(student,dest/'latest.pt');optimizer.load_state_dict(checkpoint['optimizer'])
         start=checkpoint['step'];elapsed_before=checkpoint['seconds'];history=checkpoint['history']
         own=checkpoint['rank_states'][rank]
+        previous_peak=own.get('peak_gpu_bytes',0)
+        peak_history_complete=own.get('peak_history_complete','peak_gpu_bytes' in own)
         torch.set_rng_state(own['torch_rng']);torch.cuda.set_rng_state(own['cuda_rng'])
         np.random.set_state(own['numpy_rng']);random.setstate(own['python_rng'])
         counter.__dict__.update(own['budget']);previous_scores=checkpoint['physical_scores_global']
@@ -118,10 +121,13 @@ def main():
     endpoint_steps|={math.ceil(64000/batch),steps}
     score_endpoints=cfg['score_endpoints']
     def checkpoint(step,physical,endpoint=False):
+        peak=max(previous_peak,torch.cuda.max_memory_allocated())
         own=dict(torch_rng=torch.get_rng_state(),cuda_rng=torch.cuda.get_rng_state(),numpy_rng=np.random.get_state(),
-                 python_rng=random.getstate(),budget=counter.state_dict(),compute=compute.state_dict())
+                 python_rng=random.getstate(),budget=counter.state_dict(),compute=compute.state_dict(),
+                 peak_gpu_bytes=peak,peak_history_complete=peak_history_complete)
         write(dest/f'cost_rank_{rank}.json',dict(step=step,compute=compute.state_dict(),budget=counter.state_dict(),
-              allocated_GPU_seconds=elapsed_before+time.time()-started))
+              allocated_GPU_seconds=elapsed_before+time.time()-started,
+              peak_gpu_bytes=peak,peak_history_complete=peak_history_complete))
         rank_states=[own]
         if world>1:
             rank_states=[None]*world;dist.all_gather_object(rank_states,own)
@@ -235,7 +241,8 @@ def main():
                 if rank==0:
                     if budget_complete:
                         write(dest/'complete.json',dict(status='COMPLETE_BUDGET',steps=step+1,scene_exposures=(step+1)*batch,
-                              seconds=elapsed_before+time.time()-started,peak_gpu_bytes=torch.cuda.max_memory_allocated(),
+                              seconds=elapsed_before+time.time()-started,peak_gpu_bytes=max(previous_peak,torch.cuda.max_memory_allocated()),
+                              peak_history_complete=peak_history_complete,peak_scope='rank0; all ranks in cost_rank files',
                               initial_student_hash=initial_hash,final_student_hash=state_hash(student),reference_unchanged=True,
                               checkpoint_sha256=sha(dest/'latest.pt'),physical_scores=physical,requested_score_budget=a.score_budget,
                               score_overshoot=physical-a.score_budget,owner=identity()))
@@ -247,7 +254,8 @@ def main():
     assert all(p.grad is None for p in reference.parameters())
     if rank==0:
         write(dest/'complete.json',dict(status='COMPLETE',steps=steps,scene_exposures=steps*batch,
-              seconds=elapsed_before+time.time()-started,peak_gpu_bytes=torch.cuda.max_memory_allocated(),
+              seconds=elapsed_before+time.time()-started,peak_gpu_bytes=max(previous_peak,torch.cuda.max_memory_allocated()),
+              peak_history_complete=peak_history_complete,peak_scope='rank0; all ranks in cost_rank files',
               initial_student_hash=initial_hash,final_student_hash=state_hash(student),reference_unchanged=True,
               checkpoint_sha256=sha(dest/'latest.pt'),physical_scores=previous_scores,owner=identity()))
     if world>1:dist.barrier();dist.destroy_process_group()

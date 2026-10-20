@@ -1,0 +1,361 @@
+{
+  "status": "SIX_REAL_TWO_EPOCH_ENDPOINTS_REACHED",
+  "records": [
+    {
+      "method": "OPD",
+      "seed": 42,
+      "steps": 4681,
+      "scene_exposures": 149792,
+      "full_population_scenes": 74885,
+      "status": "PAUSED_AT_REGISTERED_TWO_EPOCH_ENDPOINT_AWAITING_CAL_EXTENSION",
+      "checkpoint": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_42/head_4681.pt",
+      "checkpoint_sha256": "721fda2c1fee6f1269f2ce864c40c5fb806d49799a0569ac472066471ef9b8eb",
+      "config": {
+        "method": "OPD",
+        "split": "train_full",
+        "seed": 42,
+        "lr": 3e-05,
+        "steps": 9361,
+        "epochs": 4.0,
+        "global_batch": 32,
+        "micro_batch": 32,
+        "world": 1,
+        "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+        "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+        "data_sha256": "e2616b8a707a4f1f7450a661f41856ad350ad48283bd947aa1fa93cd04fc446c",
+        "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+        "score_budget": null,
+        "qualification": false,
+        "parameter_count": 34329219,
+        "owner": {
+          "host": "training-vla-zt",
+          "pid": 1951667,
+          "start_ticks": "1395072210",
+          "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
+        },
+        "schedule_sha256": "91bded55e6b160e5534ba68686612353fb891569b28bf87bdfbd1b82d0715496"
+      },
+      "cost": {
+        "step": 4681,
+        "compute": {
+          "student": {
+            "forward_calls": 46810,
+            "trajectory_states": 1497920
+          },
+          "teacher": {
+            "forward_calls": 23405,
+            "trajectory_states": 748960
+          }
+        },
+        "budget": {
+          "logical_scores": 0,
+          "physical_scores": 0,
+          "score_cache_hits": 0,
+          "reference_simulations": 0,
+          "cpu_scoring_seconds": 0.0
+        },
+        "allocated_GPU_seconds": 10140.015830993652
+      },
+      "scientific_conclusion": "Not a dev/navtest performance result; not final four-epoch decision"
+    },
+    {
+      "method": "OPD",
+      "seed": 43,
+      "steps": 4681,
+      "scene_exposures": 149792,
+      "full_population_scenes": 74885,
+      "status": "PAUSED_AT_REGISTERED_TWO_EPOCH_ENDPOINT_AWAITING_CAL_EXTENSION",
+      "checkpoint": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_43/head_4681.pt",
+      "checkpoint_sha256": "1ada351742e7890f3cd28fd261fc46ae094e5b549acfc15b18bf443505e86aa1",
+      "config": {
+        "method": "OPD",
+        "split": "train_full",
+        "seed": 43,
+        "lr": 3e-05,
+        "steps": 9361,
+        "epochs": 4.0,
+        "global_batch": 32,
+        "micro_batch": 32,
+        "world": 1,
+        "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+        "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+        "data_sha256": "e2616b8a707a4f1f7450a661f41856ad350ad48283bd947aa1fa93cd04fc446c",
+        "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+        "score_budget": null,
+        "qualification": false,
+        "parameter_count": 34329219,
+        "owner": {
+          "host": "training-vla-zt",
+          "pid": 1951668,
+          "start_ticks": "1395072214",
+          "code_sha": "f04d027c50c4986e3d7826a4c87d08442c6ccb91"
+        },
+        "schedule_sha256": "65a2477a5833b853a4a50b5e64effe9d3837613b0256db5c9cd02dc6b24effae"
+      },
+      "cost": {
+        "step": 4681,
+        "compute": {
+          "student": {
+            "forward_calls": 46810,
+            "trajectory_states": 1497920
+          },
+          "teacher": {
+            "forward_calls": 23405,
+            "trajectory_states": 748960
+          }
+        },
+        "budget": {
+          "logical_scores": 0,
+          "physical_scores": 0,
+          "score_cache_hits": 0,
+          "reference_simulations": 0,
+          "cpu_scoring_seconds": 0.0
+        },
+        "allocated_GPU_seconds": 10158.857074022293
+      },
+      "scientific_conclusion": "Not a dev/navtest performance result; not final four-epoch decision"
+    },
+    {
+      "method": "OPD",
+      "seed": 44,
+      "steps": 4681,
+      "scene_exposures": 149792,
+      "full_population_scenes": 74885,
+      "status": "PAUSED_AT_REGISTERED_TWO_EPOCH_ENDPOINT_AWAITING_CAL_EXTENSION",
+      "checkpoint": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_44/head_4681.pt",
+      "checkpoint_sha256": "b3b2b75266b57baf658545163ddd9c2ab0811782863b3ef4f468d3cd68c3b6e0",
+      "config": {
+        "method": "OPD",
+        "split": "train_full",
+        "seed": 44,
+        "lr": 3e-05,
+        "steps": 9361,
+        "epochs": 4.0,
+        "global_batch": 32,
+        "micro_batch": 32,
+        "world": 1,
+        "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+        "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+        "data_sha256": "e2616b8a707a4f1f7450a661f41856ad350ad48283bd947aa1fa93cd04fc446c",
+        "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+        "score_budget": null,
+        "qualification": false,
+        "parameter_count": 34329219,
+        "owner": {
+          "host": "training-vla-zt",
+          "pid": 1934777,
+          "start_ticks": "1394902351",
+          "code_sha": "4775215702db8cb143ab3457f901e0c0f81fce49"
+        },
+        "schedule_sha256": "9b6344cd10e2884c14512d0f33b090ef4363638f050f90ac2d429e5f2d1548dc"
+      },
+      "cost": {
+        "step": 4681,
+        "compute": {
+          "student": {
+            "forward_calls": 46810,
+            "trajectory_states": 1497920
+          },
+          "teacher": {
+            "forward_calls": 23405,
+            "trajectory_states": 748960
+          }
+        },
+        "budget": {
+          "logical_scores": 0,
+          "physical_scores": 0,
+          "score_cache_hits": 0,
+          "reference_simulations": 0,
+          "cpu_scoring_seconds": 0.0
+        },
+        "allocated_GPU_seconds": 9581.19278883934
+      },
+      "scientific_conclusion": "Not a dev/navtest performance result; not final four-epoch decision"
+    },
+    {
+      "method": "ANCHOR",
+      "seed": 42,
+      "steps": 4681,
+      "scene_exposures": 149792,
+      "full_population_scenes": 74885,
+      "status": "PAUSED_AT_REGISTERED_TWO_EPOCH_ENDPOINT_AWAITING_CAL_EXTENSION",
+      "checkpoint": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_ANCHOR_42/head_4681.pt",
+      "checkpoint_sha256": "bbfef0ddf4877ebf1a53f10d852d4fc59a582f4743a1fe96dcb49f3365891542",
+      "config": {
+        "method": "ANCHOR",
+        "split": "train_full",
+        "seed": 42,
+        "lr": 3e-05,
+        "steps": 9361,
+        "epochs": 4.0,
+        "global_batch": 32,
+        "micro_batch": 32,
+        "world": 1,
+        "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+        "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+        "data_sha256": "e2616b8a707a4f1f7450a661f41856ad350ad48283bd947aa1fa93cd04fc446c",
+        "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+        "score_budget": null,
+        "qualification": false,
+        "parameter_count": 34329219,
+        "owner": {
+          "host": "training-vla-zt",
+          "pid": 1931563,
+          "start_ticks": "1394877191",
+          "code_sha": "4775215702db8cb143ab3457f901e0c0f81fce49"
+        },
+        "schedule_sha256": "91bded55e6b160e5534ba68686612353fb891569b28bf87bdfbd1b82d0715496"
+      },
+      "cost": {
+        "step": 4681,
+        "compute": {
+          "student": {
+            "forward_calls": 46810,
+            "trajectory_states": 1497920
+          },
+          "teacher": {
+            "forward_calls": 23405,
+            "trajectory_states": 748960
+          },
+          "anchor": {
+            "forward_calls": 23405,
+            "trajectory_states": 748960
+          }
+        },
+        "budget": {
+          "logical_scores": 0,
+          "physical_scores": 0,
+          "score_cache_hits": 0,
+          "reference_simulations": 0,
+          "cpu_scoring_seconds": 0.0
+        },
+        "allocated_GPU_seconds": 10174.617892503738
+      },
+      "scientific_conclusion": "Not a dev/navtest performance result; not final four-epoch decision"
+    },
+    {
+      "method": "ANCHOR",
+      "seed": 43,
+      "steps": 4681,
+      "scene_exposures": 149792,
+      "full_population_scenes": 74885,
+      "status": "PAUSED_AT_REGISTERED_TWO_EPOCH_ENDPOINT_AWAITING_CAL_EXTENSION",
+      "checkpoint": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_ANCHOR_43/head_4681.pt",
+      "checkpoint_sha256": "b0c43cb26f638cef81f361608c472a1f5382e36a424b14100ed28cf0cc27ff72",
+      "config": {
+        "method": "ANCHOR",
+        "split": "train_full",
+        "seed": 43,
+        "lr": 3e-05,
+        "steps": 9361,
+        "epochs": 4.0,
+        "global_batch": 32,
+        "micro_batch": 32,
+        "world": 1,
+        "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+        "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+        "data_sha256": "e2616b8a707a4f1f7450a661f41856ad350ad48283bd947aa1fa93cd04fc446c",
+        "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+        "score_budget": null,
+        "qualification": false,
+        "parameter_count": 34329219,
+        "owner": {
+          "host": "training-vla-zt",
+          "pid": 1931568,
+          "start_ticks": "1394877195",
+          "code_sha": "4775215702db8cb143ab3457f901e0c0f81fce49"
+        },
+        "schedule_sha256": "65a2477a5833b853a4a50b5e64effe9d3837613b0256db5c9cd02dc6b24effae"
+      },
+      "cost": {
+        "step": 4681,
+        "compute": {
+          "student": {
+            "forward_calls": 46810,
+            "trajectory_states": 1497920
+          },
+          "teacher": {
+            "forward_calls": 23405,
+            "trajectory_states": 748960
+          },
+          "anchor": {
+            "forward_calls": 23405,
+            "trajectory_states": 748960
+          }
+        },
+        "budget": {
+          "logical_scores": 0,
+          "physical_scores": 0,
+          "score_cache_hits": 0,
+          "reference_simulations": 0,
+          "cpu_scoring_seconds": 0.0
+        },
+        "allocated_GPU_seconds": 10958.276852607727
+      },
+      "scientific_conclusion": "Not a dev/navtest performance result; not final four-epoch decision"
+    },
+    {
+      "method": "ANCHOR",
+      "seed": 44,
+      "steps": 4681,
+      "scene_exposures": 149792,
+      "full_population_scenes": 74885,
+      "status": "PAUSED_AT_REGISTERED_TWO_EPOCH_ENDPOINT_AWAITING_CAL_EXTENSION",
+      "checkpoint": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_ANCHOR_44/head_4681.pt",
+      "checkpoint_sha256": "5a9353575d4bf52d681088ffcf4e6bb7a8d2dfc2b3e5eb2f6591a8e12c67718c",
+      "config": {
+        "method": "ANCHOR",
+        "split": "train_full",
+        "seed": 44,
+        "lr": 3e-05,
+        "steps": 9361,
+        "epochs": 4.0,
+        "global_batch": 32,
+        "micro_batch": 32,
+        "world": 1,
+        "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+        "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+        "data_sha256": "e2616b8a707a4f1f7450a661f41856ad350ad48283bd947aa1fa93cd04fc446c",
+        "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+        "score_budget": null,
+        "qualification": false,
+        "parameter_count": 34329219,
+        "owner": {
+          "host": "training-vla-zt",
+          "pid": 1931575,
+          "start_ticks": "1394877210",
+          "code_sha": "4775215702db8cb143ab3457f901e0c0f81fce49"
+        },
+        "schedule_sha256": "9b6344cd10e2884c14512d0f33b090ef4363638f050f90ac2d429e5f2d1548dc"
+      },
+      "cost": {
+        "step": 4681,
+        "compute": {
+          "student": {
+            "forward_calls": 46810,
+            "trajectory_states": 1497920
+          },
+          "teacher": {
+            "forward_calls": 23405,
+            "trajectory_states": 748960
+          },
+          "anchor": {
+            "forward_calls": 23405,
+            "trajectory_states": 748960
+          }
+        },
+        "budget": {
+          "logical_scores": 0,
+          "physical_scores": 0,
+          "score_cache_hits": 0,
+          "reference_simulations": 0,
+          "cpu_scoring_seconds": 0.0
+        },
+        "allocated_GPU_seconds": 10626.808252334595
+      },
+      "scientific_conclusion": "Not a dev/navtest performance result; not final four-epoch decision"
+    }
+  ],
+  "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+  "warm_or_extension_locked": false
+}

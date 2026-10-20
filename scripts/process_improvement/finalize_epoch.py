@@ -18,6 +18,7 @@ def main():
         assert read(dest/'paused.json')['step']==4681
         value=dict(status='COMPLETE_REGISTERED_TWO_EPOCH_ENDPOINT',steps=4681,scene_exposures=149792,
                    physical_scores=state['physical_scores_global'],seconds=state['seconds'],
+                   peak_gpu_bytes=None,peak_history_complete=False,
                    checkpoint_sha256=sha(dest/'latest.pt'),requested_maximum_updates=9361,
                    additional_four_epoch_extension=False,extension_decision_sha256=sha(ROOT/'selection/four_epoch_extension.json'))
         if (dest/'complete.json').exists():assert read(dest/'complete.json')==value

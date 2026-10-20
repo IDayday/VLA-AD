@@ -75,8 +75,9 @@ def tasks():
                 target=3907 if step==977 else 15625
                 assert step in [977,3907],'Unexpected paused formal GRPO endpoint'
                 resume=True
-                first=read(ROOT/'jobs'/f'formal_{name}_to977'/'spec.json')
-                hosts=[first['host']]
+                # Actual running owner is authoritative if a pre-launch
+                # admission was explicitly retried under a new job identity.
+                hosts=[read(run/'config.json')['owner']['host']]
             command=['-m','torch.distributed.run','--standalone','--nproc_per_node=8',
                      'scripts/process_improvement/train_grpo.py','--name',name,'--init',init,
                      '--seed',str(seed),'--lr',str(recipe['lr']),'--score-budget','4000000']

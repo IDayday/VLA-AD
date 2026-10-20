@@ -33,8 +33,12 @@ def main():
         import torch
         state=torch.load(dest/'latest.pt',map_location='cpu',weights_only=False)
         assert state['step']==step
+        peaks=[own.get('peak_gpu_bytes') for own in state['rank_states']]
+        peak_complete=all(own.get('peak_history_complete',False) for own in state['rank_states'])
         write(dest/'complete.json',dict(status='STOPPED_PREREGISTERED_HARM',steps=step,
               scene_exposures=step*cfg['global_batch'],physical_scores=physical,seconds=state['seconds'],
+              peak_gpu_bytes=max((p for p in peaks if p is not None),default=None),
+              peak_history_complete=peak_complete,peak_scope='maximum observed across ranks; null if unrecorded',
               checkpoint_sha256=sha(dest/'latest.pt'),boundary_record=str(path),
               requested_updates=cfg['steps'],higher_endpoints='NOT_RUN_after_precommitted_harm_boundary',owner=identity()))
     print(json.dumps(record,ensure_ascii=False,indent=2),flush=True)

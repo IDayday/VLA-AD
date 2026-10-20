@@ -71,12 +71,15 @@ def main():
     schedule=np.concatenate([np.random.default_rng(a.seed*100000+epoch).permutation(len(data))
                              for epoch in range(int(np.ceil(steps*a.global_batch/len(data))))])[:steps*a.global_batch]
     start=0;history=[];elapsed=0.;previous=0
+    previous_peak=0;peak_history_complete=True
     if a.resume:
         state=torch.load(dest/'latest.pt',map_location='cpu',weights_only=False)
         if state['config']!=actual:raise ValueError('Native GRPO resume identity changed')
         student.load_state_dict(state['full_student'],strict=True);optimizer.load_state_dict(state['optimizer'])
         start=state['step'];history=state['history'];elapsed=state['seconds']
         own=state['rank_states'][rank];counts.update(own['counts'])
+        previous_peak=own.get('peak_gpu_bytes',0)
+        peak_history_complete=own.get('peak_history_complete','peak_gpu_bytes' in own)
         if 'compute' in own:compute.load_state_dict(own['compute'])
         torch.set_rng_state(own['torch_rng']);torch.cuda.set_rng_state(own['cuda_rng']);np.random.set_state(own['numpy_rng']);random.setstate(own['python_rng'])
         previous=state['physical_scores']
@@ -88,8 +91,11 @@ def main():
             probability_limitation='Original Gaussian logprob surrogate for clipped-normal sampler; not exact native kernel density'))
     began=time.time();halt=[False];signal.signal(signal.SIGUSR1,lambda *_:halt.__setitem__(0,True))
     def checkpoint(step,physical,endpoint=False):
-        own=dict(counts=counts.copy(),torch_rng=torch.get_rng_state(),cuda_rng=torch.cuda.get_rng_state(),numpy_rng=np.random.get_state(),python_rng=random.getstate(),compute=compute.state_dict())
-        write(dest/f'cost_rank_{rank}.json',dict(step=step,compute=compute.state_dict(),budget=counts.copy(),allocated_GPU_seconds=elapsed+time.time()-began))
+        peak=max(previous_peak,torch.cuda.max_memory_allocated())
+        own=dict(counts=counts.copy(),torch_rng=torch.get_rng_state(),cuda_rng=torch.cuda.get_rng_state(),numpy_rng=np.random.get_state(),python_rng=random.getstate(),compute=compute.state_dict(),
+                 peak_gpu_bytes=peak,peak_history_complete=peak_history_complete)
+        write(dest/f'cost_rank_{rank}.json',dict(step=step,compute=compute.state_dict(),budget=counts.copy(),allocated_GPU_seconds=elapsed+time.time()-began,
+              peak_gpu_bytes=peak,peak_history_complete=peak_history_complete))
         states=[own]
         if world>1:states=[None]*world;dist.all_gather_object(states,own)
         if rank==0:
@@ -154,7 +160,8 @@ def main():
     assert state_hash(student.old_policy)==reference_hash
     assert all(p.grad is None for p in student.old_policy.parameters())
     if rank==0:write(dest/'complete.json',dict(status='COMPLETE',steps=steps,scene_exposures=steps*a.global_batch,
-          physical_scores=previous,seconds=elapsed+time.time()-began,peak_gpu_bytes=torch.cuda.max_memory_allocated(),
+          physical_scores=previous,seconds=elapsed+time.time()-began,peak_gpu_bytes=max(previous_peak,torch.cuda.max_memory_allocated()),
+          peak_history_complete=peak_history_complete,peak_scope='rank0; all ranks in cost_rank files',
           IL_BC_reference_unchanged=True,checkpoint_sha256=sha(dest/'latest.pt'),owner=identity()))
     if world>1:dist.barrier();dist.destroy_process_group()
 

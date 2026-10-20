@@ -1,0 +1,61 @@
+{
+  "current": {
+    "auto_eval_cal_tune_full_ANCHOR_44_epoch2": "reviewed_retry1_auto_eval_cal_tune_full_ANCHOR_44_epoch2",
+    "corrected_parent_diagnostics_16": "reviewed_retry1_corrected_parent_diagnostics_16",
+    "corrected_parent_diagnostics_17": "reviewed_retry1_corrected_parent_diagnostics_17",
+    "corrected_parent_diagnostics_18": "reviewed_retry1_corrected_parent_diagnostics_18",
+    "corrected_parent_diagnostics_19": "reviewed_retry1_corrected_parent_diagnostics_19"
+  },
+  "reviews": [
+    {
+      "original": "auto_eval_cal_tune_full_ANCHOR_44_epoch2",
+      "rejected_attempt": "auto_eval_cal_tune_full_ANCHOR_44_epoch2",
+      "replacement": "reviewed_retry1_auto_eval_cal_tune_full_ANCHOR_44_epoch2",
+      "failure_sha256": "d13929f6452127a7814bb53cab9ffe74fccdc285afd8ee44bc147ca40333074b",
+      "spec_sha256": "fd5da6d05a0954a8844850dea24ea34ab781104e9763a58571cc841ba2bd1b60",
+      "reason": "Atomic GPU-occupied check rejected before Popen; no model, scoring or optimizer worker launched",
+      "original_artifacts_untouched": true,
+      "utc": "2026-10-20T18:40:19Z"
+    },
+    {
+      "original": "corrected_parent_diagnostics_16",
+      "rejected_attempt": "corrected_parent_diagnostics_16",
+      "replacement": "reviewed_retry1_corrected_parent_diagnostics_16",
+      "failure_sha256": "71a4d7c6f14144d599069c530eeb9cf866eea647242632ca163499358dbfa7fd",
+      "spec_sha256": "5f6e594b57956b9e963bceb4d7450ff1f0831fd1f75d66f34da49c2553ae781d",
+      "reason": "Atomic GPU-occupied check rejected before Popen; no model, scoring or optimizer worker launched",
+      "original_artifacts_untouched": true,
+      "utc": "2026-10-20T18:40:19Z"
+    },
+    {
+      "original": "corrected_parent_diagnostics_17",
+      "rejected_attempt": "corrected_parent_diagnostics_17",
+      "replacement": "reviewed_retry1_corrected_parent_diagnostics_17",
+      "failure_sha256": "e7b4cab41d6898c7031b95efc0ce1d3e4dc701182ca1a440c242e18ad9d961ec",
+      "spec_sha256": "6803ce79d51b82697849895a4528d7a592ccaeec1d98e95eda0837bfe8677bcb",
+      "reason": "Atomic GPU-occupied check rejected before Popen; no model, scoring or optimizer worker launched",
+      "original_artifacts_untouched": true,
+      "utc": "2026-10-20T18:40:19Z"
+    },
+    {
+      "original": "corrected_parent_diagnostics_18",
+      "rejected_attempt": "corrected_parent_diagnostics_18",
+      "replacement": "reviewed_retry1_corrected_parent_diagnostics_18",
+      "failure_sha256": "e7b4cab41d6898c7031b95efc0ce1d3e4dc701182ca1a440c242e18ad9d961ec",
+      "spec_sha256": "ddcb7d28e73db3f51e64ce648b09bbabfe97bcc585bf9bc3d90bed74dfa70931",
+      "reason": "Atomic GPU-occupied check rejected before Popen; no model, scoring or optimizer worker launched",
+      "original_artifacts_untouched": true,
+      "utc": "2026-10-20T18:40:19Z"
+    },
+    {
+      "original": "corrected_parent_diagnostics_19",
+      "rejected_attempt": "corrected_parent_diagnostics_19",
+      "replacement": "reviewed_retry1_corrected_parent_diagnostics_19",
+      "failure_sha256": "71a4d7c6f14144d599069c530eeb9cf866eea647242632ca163499358dbfa7fd",
+      "spec_sha256": "9f0a3dc45358b7f9c30c28d31d438ae8d00f76b0d23d758a732358d155593acc",
+      "reason": "Atomic GPU-occupied check rejected before Popen; no model, scoring or optimizer worker launched",
+      "original_artifacts_untouched": true,
+      "utc": "2026-10-20T18:40:19Z"
+    }
+  ]
+}

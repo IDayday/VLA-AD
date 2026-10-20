@@ -202,9 +202,15 @@ def available(host):
         if (spec.parent/'launch.json').exists() and not (spec.parent/'complete.json').exists():
             value=read(spec)
             if value['host']==host:occupied.update(value['gpus'])
-    code="""import json,subprocess
-rows=subprocess.check_output(['nvidia-smi','--query-gpu=index,memory.used,utilization.gpu','--format=csv,noheader,nounits'],text=True).splitlines()
-print(json.dumps([int(r.split(',')[0]) for r in rows if int(r.split(',')[1])<=100 and int(r.split(',')[2])<=5]))
+    code="""import json,subprocess,time
+def idle():
+ rows=subprocess.check_output(['nvidia-smi','--query-gpu=index,memory.used,utilization.gpu','--format=csv,noheader,nounits'],text=True).splitlines()
+ return {int(r.split(',')[0]) for r in rows if int(r.split(',')[1])<=100 and int(r.split(',')[2])<=5}
+first=idle()
+if first:
+ time.sleep(1)
+ first &= idle()
+print(json.dumps(sorted(first)))
 """
     return [gpu for gpu in remote(host,code) if gpu not in occupied]
 
@@ -241,6 +247,10 @@ def main():
             identity();assert sha(ROOT/'protocol.yaml')==read(ROOT/'protocol.lock.json')['sha256']
             write(folder/'phase.json',dict(phase='scheduling',owner=identity()))
             tasks=ready_tasks(a.formal_controls);free={};started=[];errors=[]
+            retry_path=ROOT/'controller/admission_retry_map.json'
+            if retry_path.exists():
+                retries=read(retry_path)['current']
+                tasks=[dict(t,name=retries.get(t['name'],t['name'])) for t in tasks]
             handoff=local_rl_handoff_ready(tasks)
             for task in tasks:
                 job=ROOT/'jobs'/task['name']
@@ -257,7 +267,11 @@ def main():
                     try:
                         launch(task['name'],host,gpus,task['commands']);free[host]=free[host][task['gpus']:]
                         started.append(dict(name=task['name'],host=host,gpus=gpus))
-                    except Exception as exc:errors.append(dict(name=task['name'],error=repr(exc)))
+                    except Exception as exc:
+                        errors.append(dict(name=task['name'],error=repr(exc)))
+                        # The live atomic recheck supersedes this loop's earlier
+                        # idle snapshot. Do not cascade admissions to that card.
+                        free[host]=[]
                     break
             state=dict(utc=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),ready_tasks=[t['name'] for t in tasks],
                        launched=started,errors=errors,owner=identity(),local_eight_GPU_handoff_ready=handoff)

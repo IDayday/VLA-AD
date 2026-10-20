@@ -34,6 +34,8 @@ def sum_ledgers(paths):
     return dict(status='MEASURED', checkpoint_step=values[0]['step'],
                 GPU_seconds=sum(v['allocated_GPU_seconds'] for v in values),
                 compute={k:dict(v) for k,v in compute.items()}, budget=dict(budget),
+                peak_gpu_bytes_per_rank=[v.get('peak_gpu_bytes') for v in values],
+                peak_history_complete=all(v.get('peak_history_complete',False) for v in values),
                 source_files={str(p):hashlib.sha256(payload).hexdigest() for p,payload in payloads.items()})
 
 
@@ -45,10 +47,13 @@ def main():
     for path in sorted((ROOT/'jobs').glob('*/spec.json')):
         spec=read(path);done=path.parent/'complete.json'
         value=read(done) if done.exists() else None
+        admission=read(path.parent/'admission_failure.json') if (path.parent/'admission_failure.json').exists() else None
+        rejected=bool(admission and 'RuntimeError: GPU occupied:' in admission['error'] and not (path.parent/'launch.json').exists())
         jobs.append(dict(name=path.parent.name,host=spec['host'],gpus=spec['gpus'],
-            status=value['status'] if value else 'RUNNING_OR_UNFINISHED',
-            allocated_GPU_seconds=(value['seconds']*len(spec['gpus']) if value and 'seconds' in value else None),
-            cost_complete=bool(value and 'seconds' in value),
+            status=value['status'] if value else 'PRELAUNCH_GPU_REJECTED' if rejected else 'RUNNING_OR_UNFINISHED',
+            allocated_GPU_seconds=(value['seconds']*len(spec['gpus']) if value and 'seconds' in value else 0. if rejected else None),
+            cost_complete=bool((value and 'seconds' in value) or rejected),
+            admission_failure=admission,no_worker_launched=rejected,
             commands=spec['commands'],source_spec_sha256=sha(path)))
     runs=[]
     for path in sorted((ROOT/'runs').glob('*/config.json')):

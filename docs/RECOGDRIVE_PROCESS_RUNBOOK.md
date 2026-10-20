@@ -25,6 +25,8 @@ $PY scripts/process_improvement/audit_parent_ids.py
 
 八台授权 canonical 主机的空闲设备均参与动态检查。新 8-GPU GRPO 初期使用非本地主机池，本地用于推进全量训练及短校准/诊断。过程门禁最终为 `NOT_SUPPORTED` 或已用尽登记增样的 `INCONCLUSIVE`、warm 已锁定、所有当前短任务成功完成后，空闲本地整机也可自动接入新 GRPO 训练线；失败/未完成目录不能触发交接，已有恢复任务不更换原主机。过程门禁支持时保留其后续训练容量，不让独立长对照抢占前置验证。
 
+GPU 空闲快照采用两次观察，启动前仍原子复核，利用率回升不会放宽阈值。若原子检查明确在创建 worker 前拒绝，可在核对没有任何 `launch/owner/child` 记录后运行 `review_admission.py --jobs ORIGINAL_JOB_ID`，以新的作业 ID 重排；旧失败目录不删除、不覆盖。这个命令不处理网络超时或可能已启动的 worker，也不能用于重放已运行的优化器更新。复核映射记录在 `controller/admission_retry_map.json`。恢复的 GRPO 主机以真实训练配置中已保存的 owner 为准，不使用被拒绝的预计划主机。
+
 ```bash
 $PY scripts/process_improvement/coordinator.py --once
 $PY scripts/process_improvement/controller_control.py start
