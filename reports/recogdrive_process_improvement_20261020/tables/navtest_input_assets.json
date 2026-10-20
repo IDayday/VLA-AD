@@ -1,0 +1,46 @@
+{
+  "status": "OBSERVATION_ASSET_INVENTORY_ONLY_NO_TEST_SCORES_READ",
+  "scenes": 12146,
+  "missing_observation_files": 0,
+  "missing_metric_files": 0,
+  "observation_path_roots": [
+    "/mnt/project/VLA-AD/outputs/recogdrive_opd_20261020/official_v2/observations"
+  ],
+  "no_model_selection_or_test_evaluation": true,
+  "sampled_header_checks": [
+    {
+      "token": "431ae29947e95c26",
+      "protocol_sha256": "98ce682857a3c0b5cc7ca521499db4d8a175444729b472465a15d6adb43f9093",
+      "VLM_sha256": "79fb39297e322cd2d3dc68d4f23b86ff85806b336a4d5d0ed5db9b66e4034a3c",
+      "shape": [
+        1,
+        2800,
+        1536
+      ],
+      "dtype": "torch.bfloat16"
+    },
+    {
+      "token": "898e245e2b0056b0",
+      "protocol_sha256": "98ce682857a3c0b5cc7ca521499db4d8a175444729b472465a15d6adb43f9093",
+      "VLM_sha256": "79fb39297e322cd2d3dc68d4f23b86ff85806b336a4d5d0ed5db9b66e4034a3c",
+      "shape": [
+        1,
+        2800,
+        1536
+      ],
+      "dtype": "torch.bfloat16"
+    },
+    {
+      "token": "de664d2cb249576d",
+      "protocol_sha256": "98ce682857a3c0b5cc7ca521499db4d8a175444729b472465a15d6adb43f9093",
+      "VLM_sha256": "79fb39297e322cd2d3dc68d4f23b86ff85806b336a4d5d0ed5db9b66e4034a3c",
+      "shape": [
+        1,
+        2800,
+        1536
+      ],
+      "dtype": "torch.bfloat16"
+    }
+  ],
+  "strict_sample_headers_pass": true
+}
