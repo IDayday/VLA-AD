@@ -27,6 +27,8 @@ $PY scripts/process_improvement/audit_parent_ids.py
 
 GPU 空闲快照采用两次观察，启动前仍原子复核，利用率回升不会放宽阈值。若原子检查明确在创建 worker 前拒绝，可在核对没有任何 `launch/owner/child` 记录后运行 `review_admission.py --jobs ORIGINAL_JOB_ID`，以新的作业 ID 重排；旧失败目录不删除、不覆盖。这个命令不处理网络超时或可能已启动的 worker，也不能用于重放已运行的优化器更新。复核映射记录在 `controller/admission_retry_map.json`。恢复的 GRPO 主机以真实训练配置中已保存的 owner 为准，不使用被拒绝的预计划主机。
 
+每个 `jobs/JOB/child_N.json` 保留实际启动的代码哈希。后续作业还保存 `source_snapshot_N.tar.gz` 的小源码归档、归档 SHA 及当时 Git HEAD，覆盖新旧复用模块、基础规划器/评分器和小 YAML；不包含模型、缓存或环境凭据。它是共享工作区在启动时的源码快照，不冒充隔离 checkout 执行保证；旧作业只有其原始哈希，不能事后声称存在当时的源码归档。归档预检查失败时记录 FAILED 并拒绝创建子进程。
+
 为防止整组训练被单卡队列持续分割，较高优先级的整组请求可以等待本研究已有短作业自然排空，并暂缓向该主机补入较低优先级任务。仅当全部八张卡均已确认空闲或由本研究正在运行的作业持有时才采用这项预留；存在未知/外部占用的主机不会因此锁住其余空闲卡。没有中断已有作业，实际启动仍重新检查物理空闲。预留状态保存在 `controller/state.json` 的 `reserved_for_gangs` 字段。
 
 若局部门禁已关闭且短任务真实完成，本地只有 4–7 卡空闲时，可使用额外验证的四卡 GRPO 分区。准入要求 `tests/native_GRPO_partition32.json` 的真实全局 B32、4/8 卡和精确恢复检查通过，且训练器、规划器、随机计划、资格脚本哈希一致；CPU 路由测试不能替代。仅作用于全新本地正式训练线，八卡全空时仍优先八卡。恢复始终使用保存的原主机和 world size，不将运行中的八卡线转成四卡。执行规则在 `configs/process_improvement/grpo_partition_execution.json`；实际资格尚需运行，不预报通过。

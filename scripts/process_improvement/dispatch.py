@@ -7,6 +7,9 @@ import fcntl
 import subprocess
 import socket
 import time
+import tarfile
+import io
+import hashlib
 from scripts.process_improvement.common import *
 
 
@@ -58,6 +61,34 @@ print(json.dumps(dict(pid=p.pid,start_ticks=Path('/proc/'+str(p.pid)+'/stat').re
         return receipt
 
 
+def archive_launch_sources(dest,index):
+    """Retain the actual small source bytes, including uncommitted development.
+
+    This is a launch snapshot, not a claim of execution in an isolated checkout.
+    It complements the HEAD ID and hashes of older jobs, without inventing
+    archives for those already launched. Models, caches and secrets are absent.
+    """
+    folders=['scripts/process_improvement','scripts/opd','navsim/agents/recogdrive/process_improvement',
+             'navsim/agents/recogdrive/opd']
+    paths={p for folder in folders for p in (SOURCE/folder).glob('*.py')}
+    for name in ['navsim/agents/recogdrive/recogdrive_agent.py',
+                 'navsim/agents/recogdrive/recogdrive_diffusion_planner.py',
+                 'navsim/agents/recogdrive/recogdrive_dit.py','navsim/evaluate/pdm_score.py',
+                 'navsim/planning/simulation/planner/pdm_planner/scoring/pdm_scorer.py']:
+        paths.add(SOURCE/name)
+    paths.update((SOURCE/'configs/process_improvement').glob('*.yaml'))
+    payloads={str(p.relative_to(SOURCE)):p.read_bytes() for p in sorted(paths) if p.is_file()}
+    hashes={name:hashlib.sha256(value).hexdigest() for name,value in payloads.items()}
+    target=Path(dest)/f'source_snapshot_{index}.tar.gz'
+    if target.exists():raise FileExistsError('Launch source snapshot is immutable')
+    with tarfile.open(target,'w:gz') as archive:
+        for name,value in payloads.items():
+            info=tarfile.TarInfo(name);info.size=len(value);info.mode=0o644
+            archive.addfile(info,io.BytesIO(value))
+    return hashes,dict(path=str(target),sha256=sha(target),files=len(payloads),
+                       scope='Source bytes at launch; shared-checkout execution; historical jobs retain original hashes only')
+
+
 def worker(path):
     spec = read(path)
     dest = Path(path).parent
@@ -67,10 +98,15 @@ def worker(path):
     results = []
     for index, command in enumerate(spec['commands']):
         identity()  # Recheck live host permission before each independently queued job.
-        hashes = {str(p.relative_to(SOURCE)): sha(p) for folder in ('scripts/process_improvement', 'navsim/agents/recogdrive/process_improvement')
-                  for p in (SOURCE/folder).glob('*.py')}
+        try:
+            hashes,archive=archive_launch_sources(dest,index)
+            commit=subprocess.check_output(['git','rev-parse','HEAD'],cwd=SOURCE,text=True).strip()
+        except Exception as exc:
+            results.append(dict(command=command,returncode=None,prelaunch_error=repr(exc)))
+            break # Provenance failure must not start an unrecorded child.
         proc = subprocess.Popen([PYTHON, *command], cwd=SOURCE)
-        write(dest/f'child_{index}.json', dict(pid=proc.pid, command=command, source_hashes=hashes))
+        write(dest/f'child_{index}.json', dict(pid=proc.pid, command=command, source_hashes=hashes,
+                                             source_archive=archive,source_HEAD_at_launch=commit))
         rc = proc.wait()
         results.append(dict(command=command, returncode=rc))
         if rc:
