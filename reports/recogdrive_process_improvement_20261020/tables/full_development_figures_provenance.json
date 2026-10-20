@@ -1,0 +1,24 @@
+{
+  "script_sha256": "ee636790beb4ae9b68dbc6b76e3cd24ec8c9cf45eebffd30df8facff89b3cc80",
+  "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+  "analysis_sources": {
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/B1_OPD_epoch2_vs_IL.json": "84f8b1bc595a7ff1d86a46748d2cebfb3514b6180572f8f00f6d470f84dc4d1b",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/B2_ANCHOR_epoch1_vs_IL.json": "34ea8a962a45a1ce9c98b60010f72200e4e7a0dfccae5951e44af0fd86267045",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/B1_OPD_epoch1_vs_IL.json": "83083d71a1c4eb67341e02557c3a51e4dab38b8bf4fe794f56b586cc7fa66d6a",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/Anchor_vs_OPD_epoch2.json": "4deb704454ed20174dfbe43e3efe4d7721db685a13063574e085662ae05e97a5",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/B2_ANCHOR_epoch2_vs_IL.json": "3fbbe18aef3355ca3040e38a834a1838bfcbc8a94001a66154c681233d63b6ce",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/Anchor_vs_OPD_epoch1.json": "44f16ada6df4b6a62721853a84f3ba6a599514cf15148e4a79cc3a5f72ea3a0f"
+  },
+  "progress_sources": {
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_42/progress.json": "1fced1860cbdc3bcf7faa70c56c3f00dda6dce65929751e9d62364b1b83fa2c5",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_43/progress.json": "953ea435b8e5197a8cd795687b2f6f7d968c3c5c82fd2a2c2b23636b25d51ad8",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_44/progress.json": "0f172c805504a9a1ed74638a4f978a06abbdccd4bf0d54e2ac6b795713269747",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_ANCHOR_42/progress.json": "7924b8bf34585d553ef2ff9c1c2245e22c64b06c58988e66e0b5d18654bbf689",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_ANCHOR_43/progress.json": "f346969da6225cea32a54792a47cfff8483263d7b2516b0058f710db396928e3",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_ANCHOR_44/progress.json": "98eac302f0f555c0df1be7d2b756527f7c1e9a34e283afe41c325eb7519ea417"
+  },
+  "population_sha256": "68020f6d0cfd4d518aaa80c254f3018cd1be09e032a50d1c5a34dfa23522fe27",
+  "IL_PDMS": 0.9151871137007114,
+  "T0_PDMS": 0.9496275362442816,
+  "interpretation": "All observed three-seed full-training endpoints retained; no final-test outcomes used"
+}

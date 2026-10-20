@@ -1,0 +1,80 @@
+{
+  "point": {
+    "G": -0.002016876905544116,
+    "M_plus": -0.0021777973845732088,
+    "M_minus": -0.00016092047902908913,
+    "material_drop_fraction": -0.005896226415094338,
+    "positive_to_zero_fraction": 0.0007861635220125784,
+    "delta_NC": 0.0004127358490566041,
+    "delta_DAC": -0.001768867924528305,
+    "delta_TTC": 0.0008254716981132069,
+    "high_to_zero_fraction": -0.00028612303290414913
+  },
+  "CI95": {
+    "G": [
+      -0.006032957306598545,
+      0.001694563433668249
+    ],
+    "M_plus": [
+      -0.003930276647254389,
+      -0.0011901614582067457
+    ],
+    "M_minus": [
+      -0.00407017421387522,
+      0.0030660618953355077
+    ],
+    "material_drop_fraction": [
+      -0.015324342283699487,
+      0.0034336866123282836
+    ],
+    "positive_to_zero_fraction": [
+      -0.0022952324947728996,
+      0.004280466988794303
+    ],
+    "delta_NC": [
+      -0.0012838107404720123,
+      0.0031770227762197875
+    ],
+    "delta_DAC": [
+      -0.005705784280950791,
+      0.0002560052378569512
+    ],
+    "delta_TTC": [
+      -0.0018084446481772317,
+      0.00561667578908958
+    ],
+    "high_to_zero_fraction": [
+      -0.0036805480622959623,
+      0.002659685172983044
+    ]
+  },
+  "training_seeds": 3,
+  "inference_seeds": 5,
+  "bootstrap_repetitions": 10000,
+  "one_sided_centered_bootstrap_p_G": 0.8939106089391061,
+  "one_sided_centered_bootstrap_p_M_minus_benefit": 0.4540545945405459,
+  "estimand": "New minus control; both policies M_minus refer to identical fixed baseline; global paired inference IDs shared across all sampled training policies",
+  "new_methods": [
+    "full_ANCHOR_42_epoch2",
+    "full_ANCHOR_43_epoch2",
+    "full_ANCHOR_44_epoch2"
+  ],
+  "control_methods": [
+    "full_OPD_42_epoch2",
+    "full_OPD_43_epoch2",
+    "full_OPD_44_epoch2"
+  ],
+  "fixed_baseline": "B0_IL",
+  "split": "dev",
+  "control_training_replicates": 3,
+  "new_training_replicates": 3,
+  "cluster_unit": "log",
+  "analysis_source": {
+    "script_sha256": "4b37cb47db4b10beca6d8266babff74978d4cab8916e1dcf00f0dacb0a5b14ae",
+    "statistics_sha256": "19478782b70a48a803d7ce746a40b2c698c8e8afac9ddae4ec5875749cbcf887",
+    "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+    "population_sha256": "68020f6d0cfd4d518aaa80c254f3018cd1be09e032a50d1c5a34dfa23522fe27",
+    "bootstrap_seed": 20261020
+  },
+  "log_count": 16
+}

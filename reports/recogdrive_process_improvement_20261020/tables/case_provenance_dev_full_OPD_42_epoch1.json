@@ -1,0 +1,166 @@
+[
+  {
+    "rule": "largest_repair",
+    "token": "16e38f619b4358cb",
+    "log": "2021.10.11.02.57.41_veh-50_01028_01289",
+    "cases": {
+      "B0_IL": {
+        "inference_seed": 7101,
+        "scene_mean_PDMS": 0.0,
+        "first_seed_PDMS": 0.0,
+        "events": {
+          "first_collision_s": null,
+          "first_dac_s": 3.5,
+          "first_ttc_check_failure_s": null
+        },
+        "prediction_sha256": "572e160495802f22ec070ce877d13167b275d23ab5b00fad5e44d8e3c83ba259"
+      },
+      "B0_RL": {
+        "inference_seed": 7101,
+        "scene_mean_PDMS": 1.0,
+        "first_seed_PDMS": 1.0,
+        "events": {
+          "first_collision_s": null,
+          "first_dac_s": null,
+          "first_ttc_check_failure_s": null
+        },
+        "prediction_sha256": "6b908ff61641db32fc581ab7963312566b7f0443d1518f5e6d1f54d4e0da994c"
+      },
+      "full_OPD_42_epoch1": {
+        "inference_seed": 7101,
+        "scene_mean_PDMS": 1.0,
+        "first_seed_PDMS": 1.0,
+        "events": {
+          "first_collision_s": null,
+          "first_dac_s": null,
+          "first_ttc_check_failure_s": null
+        },
+        "prediction_sha256": "db2c6944562727bf59eb15d127393cb84a6211af7e4c1d359dcd8136e729f158"
+      }
+    },
+    "interpretation": "Dashed planned trajectory; solid tracked simulation; x marks first violation. TTC check failure is not remaining collision time. Occupancy at t=0 and t=2s is privileged illustration only."
+  },
+  {
+    "rule": "largest_degradation",
+    "token": "a17b55560d22530f",
+    "log": "2021.10.05.07.49.39_veh-52_00770_00905",
+    "cases": {
+      "B0_IL": {
+        "inference_seed": 7101,
+        "scene_mean_PDMS": 1.0,
+        "first_seed_PDMS": 1.0,
+        "events": {
+          "first_collision_s": null,
+          "first_dac_s": null,
+          "first_ttc_check_failure_s": null
+        },
+        "prediction_sha256": "b2c6cb0431615dd9da9254b2643763a9c6e2dc1b6097b18b0c2093f7e08f7f2f"
+      },
+      "B0_RL": {
+        "inference_seed": 7101,
+        "scene_mean_PDMS": 0.0,
+        "first_seed_PDMS": 0.0,
+        "events": {
+          "first_collision_s": null,
+          "first_dac_s": 3.5,
+          "first_ttc_check_failure_s": null
+        },
+        "prediction_sha256": "4e7e4724a249dbc2e9aced1c1109152a0ebce0f12bd5bcb1558abc7ca482ea7a"
+      },
+      "full_OPD_42_epoch1": {
+        "inference_seed": 7101,
+        "scene_mean_PDMS": 0.0,
+        "first_seed_PDMS": 0.0,
+        "events": {
+          "first_collision_s": null,
+          "first_dac_s": 3.4000000000000004,
+          "first_ttc_check_failure_s": null
+        },
+        "prediction_sha256": "b33b9bd59fc09ac802b19dbbc3c5f67b20eacd34d9f3561e16b271d952c5fac1"
+      }
+    },
+    "interpretation": "Dashed planned trajectory; solid tracked simulation; x marks first violation. TTC check failure is not remaining collision time. Occupancy at t=0 and t=2s is privileged illustration only."
+  },
+  {
+    "rule": "teacher_success_student_failure",
+    "token": "83cbc1063ce1591d",
+    "log": "2021.10.11.02.57.41_veh-50_02155_02265",
+    "cases": {
+      "B0_IL": {
+        "inference_seed": 7101,
+        "scene_mean_PDMS": 0.0,
+        "first_seed_PDMS": 0.0,
+        "events": {
+          "first_collision_s": null,
+          "first_dac_s": 1.8,
+          "first_ttc_check_failure_s": null
+        },
+        "prediction_sha256": "78802e428e48e9737f6224924560f7d7ab650af7b1399b0ecf09a8c7f500db07"
+      },
+      "B0_RL": {
+        "inference_seed": 7101,
+        "scene_mean_PDMS": 0.9075252666409156,
+        "first_seed_PDMS": 0.906067761678777,
+        "events": {
+          "first_collision_s": null,
+          "first_dac_s": null,
+          "first_ttc_check_failure_s": null
+        },
+        "prediction_sha256": "9e77e9d5ff5f9b91c402726a64f7e624ad725ddf99c56dd584aa4b62261bd94f"
+      },
+      "full_OPD_42_epoch1": {
+        "inference_seed": 7101,
+        "scene_mean_PDMS": 0.0,
+        "first_seed_PDMS": 0.0,
+        "events": {
+          "first_collision_s": null,
+          "first_dac_s": 1.7000000000000002,
+          "first_ttc_check_failure_s": null
+        },
+        "prediction_sha256": "8db40a8fff211db6fccef37c671122f8e20a078bee81ec8fd109f1b30ac89904"
+      }
+    },
+    "interpretation": "Dashed planned trajectory; solid tracked simulation; x marks first violation. TTC check failure is not remaining collision time. Occupancy at t=0 and t=2s is privileged illustration only."
+  },
+  {
+    "rule": "joint_failure_improvement",
+    "token": "de72514102555fab",
+    "log": "2021.10.11.02.57.41_veh-50_02155_02265",
+    "cases": {
+      "B0_IL": {
+        "inference_seed": 7101,
+        "scene_mean_PDMS": 0.5405717970116424,
+        "first_seed_PDMS": 0.9012806154264227,
+        "events": {
+          "first_collision_s": null,
+          "first_dac_s": null,
+          "first_ttc_check_failure_s": null
+        },
+        "prediction_sha256": "699fc094b09e828be8b71151d5ee1ca3bbd9be0ec8af83fa8c958023bdda91a7"
+      },
+      "B0_RL": {
+        "inference_seed": 7101,
+        "scene_mean_PDMS": 0.5874571069054191,
+        "first_seed_PDMS": 0.5021653252152068,
+        "events": {
+          "first_collision_s": null,
+          "first_dac_s": null,
+          "first_ttc_check_failure_s": 1.9000000000000001
+        },
+        "prediction_sha256": "6621a30fd8aace14686d08c0403d8eb5c98ce4a07ad5d05c902d54a018c8abbc"
+      },
+      "full_OPD_42_epoch1": {
+        "inference_seed": 7101,
+        "scene_mean_PDMS": 0.9228006589273768,
+        "first_seed_PDMS": 0.920901726349553,
+        "events": {
+          "first_collision_s": null,
+          "first_dac_s": null,
+          "first_ttc_check_failure_s": null
+        },
+        "prediction_sha256": "379dde763138a4110678910a861a8fe28aaf2a71898c0438202faa8623af2f8d"
+      }
+    },
+    "interpretation": "Dashed planned trajectory; solid tracked simulation; x marks first violation. TTC check failure is not remaining collision time. Occupancy at t=0 and t=2s is privileged illustration only."
+  }
+]
