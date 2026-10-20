@@ -1,4 +1,56 @@
 {
+  "tune_GRPO_RL_3e-5": {
+    "config": {
+      "method": "native_GRPO",
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt",
+      "init_sha256": "23fb949b10387efeff87e093703d5faf41b61b9e5ead16d4076661e3c7c08a20",
+      "seed": 42,
+      "lr": 3e-05,
+      "steps": 812,
+      "world": 8,
+      "global_batch": 32,
+      "group_size": 8,
+      "progress_weight": 5.0,
+      "BC_coeff": 0.1,
+      "split": "train_25k",
+      "data_sha256": "a1e973616f5bdbf0d11c2b4ef718cd1df287a4a065977c76fcbe04cd0fe6239b",
+      "score_budget": 207872,
+      "sampling_std_floor": 0.04,
+      "noise_clip": 5.0,
+      "logprob_std_floor": 0.1,
+      "logprob_clip": [
+        -5.0,
+        2.0
+      ],
+      "gamma_denoising": 0.6,
+      "owner": {
+        "host": "training-rl-zt2",
+        "pid": 2041494,
+        "start_ticks": "1387491487",
+        "code_sha": "32c93f459acdac5c9224214806b94fa9e7d86be6"
+      },
+      "parameter_count": 34329219,
+      "gradient_path": "Original forward_grpo unmodified, including original sample_chain graph behavior",
+      "probability_limitation": "Original Gaussian logprob surrogate for clipped-normal sampler; not exact native kernel density"
+    },
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 812,
+      "scene_exposures": 25984,
+      "physical_scores": 207872,
+      "seconds": 3501.256898880005,
+      "peak_gpu_bytes": 7764307968,
+      "IL_BC_reference_unchanged": true,
+      "checkpoint_sha256": "4117c0c43e752ae82921c4cb68c237533f1624bd0ba85bd2270d07a6e30bbba0",
+      "owner": {
+        "host": "training-rl-zt2",
+        "pid": 2041494,
+        "start_ticks": "1387491487",
+        "code_sha": "fea497eea58de9c50d2ad0d7d47c87da57b6d716"
+      }
+    },
+    "paused": null
+  },
   "tune_ANCHOR_3e-5": {
     "config": {
       "method": "ANCHOR",
@@ -117,8 +169,24 @@
       },
       "schedule_sha256": "91bded55e6b160e5534ba68686612353fb891569b28bf87bdfbd1b82d0715496"
     },
-    "completion": null,
-    "paused": null
+    "completion": {
+      "status": "COMPLETE_REGISTERED_TWO_EPOCH_ENDPOINT",
+      "steps": 4681,
+      "scene_exposures": 149792,
+      "physical_scores": 0,
+      "seconds": 10140.063699007034,
+      "peak_gpu_bytes": null,
+      "peak_history_complete": false,
+      "checkpoint_sha256": "b97929a349b3712e4b2f2b707c33b38dff0aeb9ef44314328ea67528bbfbf274",
+      "requested_maximum_updates": 9361,
+      "additional_four_epoch_extension": false,
+      "extension_decision_sha256": "a8a6e9fa30dacb5421bbdc20d9440fc2b1f4d2feb9ce58279a07b1c261400e9d"
+    },
+    "paused": {
+      "step": 4681,
+      "physical_scores": 0,
+      "score_budget_reached": false
+    }
   },
   "qualification_OPD_128": {
     "config": {
@@ -290,8 +358,24 @@
       },
       "schedule_sha256": "91bded55e6b160e5534ba68686612353fb891569b28bf87bdfbd1b82d0715496"
     },
-    "completion": null,
-    "paused": null
+    "completion": {
+      "status": "COMPLETE_REGISTERED_TWO_EPOCH_ENDPOINT",
+      "steps": 4681,
+      "scene_exposures": 149792,
+      "physical_scores": 0,
+      "seconds": 10174.660852193832,
+      "peak_gpu_bytes": null,
+      "peak_history_complete": false,
+      "checkpoint_sha256": "b244cedfb812e43c475cf621638b03a15be733f7bb29d2ce50753f52c70d31ed",
+      "requested_maximum_updates": 9361,
+      "additional_four_epoch_extension": false,
+      "extension_decision_sha256": "a8a6e9fa30dacb5421bbdc20d9440fc2b1f4d2feb9ce58279a07b1c261400e9d"
+    },
+    "paused": {
+      "step": 4681,
+      "physical_scores": 0,
+      "score_budget_reached": false
+    }
   },
   "qualification_GRPO_5": {
     "config": {
@@ -395,6 +479,43 @@
         "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
       }
     },
+    "paused": null
+  },
+  "tune_GRPO_WARM_1e-5": {
+    "config": {
+      "method": "native_GRPO",
+      "init": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/full_OPD_42/head_2341.pt",
+      "init_sha256": "ad63e1ca2e74342a1406b1c05a105d32eaab7d1187b124cc14017b957b0c7957",
+      "seed": 42,
+      "lr": 1e-05,
+      "steps": 812,
+      "world": 8,
+      "global_batch": 32,
+      "group_size": 8,
+      "progress_weight": 5.0,
+      "BC_coeff": 0.1,
+      "split": "train_25k",
+      "data_sha256": "a1e973616f5bdbf0d11c2b4ef718cd1df287a4a065977c76fcbe04cd0fe6239b",
+      "score_budget": 207872,
+      "sampling_std_floor": 0.04,
+      "noise_clip": 5.0,
+      "logprob_std_floor": 0.1,
+      "logprob_clip": [
+        -5.0,
+        2.0
+      ],
+      "gamma_denoising": 0.6,
+      "owner": {
+        "host": "training-rl-zt2",
+        "pid": 2088386,
+        "start_ticks": "1388518884",
+        "code_sha": "465a2926f6aabb4c9893dec7e199c728ad6aea01"
+      },
+      "parameter_count": 34329219,
+      "gradient_path": "Original forward_grpo unmodified, including original sample_chain graph behavior",
+      "probability_limitation": "Original Gaussian logprob surrogate for clipped-normal sampler; not exact native kernel density"
+    },
+    "completion": null,
     "paused": null
   },
   "tune_GRPO_IL_1e-5": {
@@ -581,7 +702,22 @@
       "gradient_path": "Original forward_grpo unmodified, including original sample_chain graph behavior",
       "probability_limitation": "Original Gaussian logprob surrogate for clipped-normal sampler; not exact native kernel density"
     },
-    "completion": null,
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 812,
+      "scene_exposures": 25984,
+      "physical_scores": 207872,
+      "seconds": 3462.743896007538,
+      "peak_gpu_bytes": 7764307968,
+      "IL_BC_reference_unchanged": true,
+      "checkpoint_sha256": "e9a04ea58053d64aadcf97819ddb19ac5fedc04c9f029f967a274f5a4e3a9720",
+      "owner": {
+        "host": "training-rl-zt2",
+        "pid": 2026103,
+        "start_ticks": "1387139132",
+        "code_sha": "32c93f459acdac5c9224214806b94fa9e7d86be6"
+      }
+    },
     "paused": null
   },
   "scaling_legacy_4k_OPD_42": {
@@ -656,8 +792,24 @@
       },
       "schedule_sha256": "65a2477a5833b853a4a50b5e64effe9d3837613b0256db5c9cd02dc6b24effae"
     },
-    "completion": null,
-    "paused": null
+    "completion": {
+      "status": "COMPLETE_REGISTERED_TWO_EPOCH_ENDPOINT",
+      "steps": 4681,
+      "scene_exposures": 149792,
+      "physical_scores": 0,
+      "seconds": 10158.900693655014,
+      "peak_gpu_bytes": null,
+      "peak_history_complete": false,
+      "checkpoint_sha256": "78d025e9f4240999c8b3273625f3ebca6710e4a05ab9c3a5d6b0e359f787b4b6",
+      "requested_maximum_updates": 9361,
+      "additional_four_epoch_extension": false,
+      "extension_decision_sha256": "a8a6e9fa30dacb5421bbdc20d9440fc2b1f4d2feb9ce58279a07b1c261400e9d"
+    },
+    "paused": {
+      "step": 4681,
+      "physical_scores": 0,
+      "score_budget_reached": false
+    }
   },
   "qual_exact_ddp": {
     "config": {
@@ -783,8 +935,24 @@
       },
       "schedule_sha256": "9b6344cd10e2884c14512d0f33b090ef4363638f050f90ac2d429e5f2d1548dc"
     },
-    "completion": null,
-    "paused": null
+    "completion": {
+      "status": "COMPLETE_REGISTERED_TWO_EPOCH_ENDPOINT",
+      "steps": 4681,
+      "scene_exposures": 149792,
+      "physical_scores": 0,
+      "seconds": 9581.240763187408,
+      "peak_gpu_bytes": null,
+      "peak_history_complete": false,
+      "checkpoint_sha256": "bea1397aef9bca77aa390525002a07c3a42d2f9f80e878a28e86a4493ccd8a42",
+      "requested_maximum_updates": 9361,
+      "additional_four_epoch_extension": false,
+      "extension_decision_sha256": "a8a6e9fa30dacb5421bbdc20d9440fc2b1f4d2feb9ce58279a07b1c261400e9d"
+    },
+    "paused": {
+      "step": 4681,
+      "physical_scores": 0,
+      "score_budget_reached": false
+    }
   },
   "full_ANCHOR_43": {
     "config": {
@@ -812,8 +980,24 @@
       },
       "schedule_sha256": "65a2477a5833b853a4a50b5e64effe9d3837613b0256db5c9cd02dc6b24effae"
     },
-    "completion": null,
-    "paused": null
+    "completion": {
+      "status": "COMPLETE_REGISTERED_TWO_EPOCH_ENDPOINT",
+      "steps": 4681,
+      "scene_exposures": 149792,
+      "physical_scores": 0,
+      "seconds": 10958.32403254509,
+      "peak_gpu_bytes": null,
+      "peak_history_complete": false,
+      "checkpoint_sha256": "c2445204e4a7589a5c02161cadf23e7b15c4bf361329f76a58a8e0a404ca88fc",
+      "requested_maximum_updates": 9361,
+      "additional_four_epoch_extension": false,
+      "extension_decision_sha256": "a8a6e9fa30dacb5421bbdc20d9440fc2b1f4d2feb9ce58279a07b1c261400e9d"
+    },
+    "paused": {
+      "step": 4681,
+      "physical_scores": 0,
+      "score_budget_reached": false
+    }
   },
   "scaling_train_25k_OPD_42": {
     "config": {
@@ -841,7 +1025,24 @@
       },
       "schedule_sha256": "d740f8ec2ee3a0bef4d85386c86e0b9df3cc15e75b02db1beee818676a1a9a88"
     },
-    "completion": null,
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 3245,
+      "scene_exposures": 103840,
+      "seconds": 6651.928876876831,
+      "peak_gpu_bytes": 25254521344,
+      "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+      "final_student_hash": "bb69d9e2159e462f0d181579857afc709e668a694435e8739905d9b5176085fb",
+      "reference_unchanged": true,
+      "checkpoint_sha256": "4edaa1b3e4690dfbc8c388c9e36d1450eb4aeb2ee5704d7ba61a50e98316a1e0",
+      "physical_scores": 0,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1934789,
+        "start_ticks": "1394902369",
+        "code_sha": "892271735d1c61f3af5c6b80d37b94b00a4f045f"
+      }
+    },
     "paused": null
   },
   "full_ANCHOR_44": {
@@ -870,8 +1071,24 @@
       },
       "schedule_sha256": "9b6344cd10e2884c14512d0f33b090ef4363638f050f90ac2d429e5f2d1548dc"
     },
-    "completion": null,
-    "paused": null
+    "completion": {
+      "status": "COMPLETE_REGISTERED_TWO_EPOCH_ENDPOINT",
+      "steps": 4681,
+      "scene_exposures": 149792,
+      "physical_scores": 0,
+      "seconds": 10626.855934143066,
+      "peak_gpu_bytes": null,
+      "peak_history_complete": false,
+      "checkpoint_sha256": "15e633c54a4e9d34264f7a40c3cb488f5c85413b3285650f9bb7f11d8244e83a",
+      "requested_maximum_updates": 9361,
+      "additional_four_epoch_extension": false,
+      "extension_decision_sha256": "a8a6e9fa30dacb5421bbdc20d9440fc2b1f4d2feb9ce58279a07b1c261400e9d"
+    },
+    "paused": {
+      "step": 4681,
+      "physical_scores": 0,
+      "score_budget_reached": false
+    }
   },
   "qualification_PROCESS_128": {
     "config": {

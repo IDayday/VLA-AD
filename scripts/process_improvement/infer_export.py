@@ -8,6 +8,7 @@ import importlib.abc
 import json
 import os
 import sys
+import time
 from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 
@@ -30,6 +31,7 @@ def main():
     p=argparse.ArgumentParser();p.add_argument('--checkpoint',required=True)
     p.add_argument('--row',required=True);p.add_argument('--vlm',required=True)
     p.add_argument('--noise',required=True);p.add_argument('--output',required=True)
+    p.add_argument('--benchmark-output');p.add_argument('--benchmark-repeats',type=int,default=20)
     a=p.parse_args();configure();sys.meta_path.insert(0,NoResearchInference())
     row=json.loads(Path(a.row).read_text())
     assert set(row)=={'token','log_name','metadata_path','sensor_root','start_idx'}
@@ -58,6 +60,58 @@ def main():
         trajectories.append(value.cpu())
     torch.save(dict(trajectories=torch.cat(trajectories),raw_tokens=tokens,opened_files=opened,
                    improvement_imported=any(k.startswith('navsim.agents.recogdrive.process_improvement') for k in sys.modules)),a.output)
+    if a.benchmark_output:
+        import numpy as np
+        target=Path(a.benchmark_output)
+        if target.exists():raise FileExistsError('Completed latency measurement is immutable')
+        if a.benchmark_repeats<5:raise ValueError('At least five timing repetitions required')
+        def native(raw,inputs,noise):
+            draws=iter(noise['steps'][:,i] for i in range(5))
+            with torch.no_grad(),patch('torch.randn_like',side_effect=lambda x:next(draws).clone()):
+                return model.action_head.get_action(raw,inputs,deterministic=False,
+                    init_actions=noise['initial'].clone())['pred_traj']
+        measurements={}
+        for full in [False,True]:
+            label='online_features_VLM_and_native_head' if full else 'native_head_given_raw_VLM_tokens'
+            def forward(noise):
+                if full:
+                    current=features(model,row);hidden=encode(model,current)
+                    current_raw,current_inputs=conditioning(dict(tokens=hidden,features=current))
+                    return native(current_raw,current_inputs,noise)
+                return native(raw,inputs,noise)
+            for j in range(5):
+                result=forward(bank[j%len(bank)])
+                torch.testing.assert_close(result.cpu(),trajectories[j%len(bank)],atol=0,rtol=0)
+            torch.cuda.synchronize();torch.cuda.reset_peak_memory_stats()
+            resident=torch.cuda.memory_allocated();seconds=[]
+            for j in range(a.benchmark_repeats):
+                torch.cuda.synchronize();start=time.perf_counter()
+                result=forward(bank[j%len(bank)])
+                torch.cuda.synchronize();seconds.append(time.perf_counter()-start)
+                torch.testing.assert_close(result.cpu(),trajectories[j%len(bank)],atol=0,rtol=0)
+            peak=torch.cuda.max_memory_allocated()
+            measurements[label]=dict(warmup_calls=5,repeats=len(seconds),seconds=seconds,
+                mean_seconds=float(np.mean(seconds)),median_seconds=float(np.median(seconds)),
+                p95_seconds=float(np.quantile(seconds,.95)),resident_GPU_bytes=resident,
+                peak_total_GPU_bytes=peak,peak_incremental_GPU_bytes=peak-resident)
+        target.parent.mkdir(parents=True,exist_ok=True)
+        import hashlib
+        def file_hash(path):
+            value=hashlib.sha256()
+            with open(path,'rb') as stream:
+                for block in iter(lambda:stream.read(8<<20),b''):value.update(block)
+            return value.hexdigest()
+        target.write_text(json.dumps(dict(status='COMPLETE',token=row['token'],
+            device=torch.cuda.get_device_name(),native_K5_single_trajectory=True,
+            no_teacher_scorer_future_or_improvement_dependency=True,source_checkpoint=a.checkpoint,
+            checkpoint_sha256=file_hash(a.checkpoint),VLM_sha256=file_hash(Path(a.vlm)/'model.safetensors'),
+            script_sha256=file_hash(__file__),
+            total_head_parameters=sum(p.numel() for p in model.action_head.parameters()),
+            native_head_parameters=sum(p.numel() for n,p in model.action_head.named_parameters() if not n.startswith('action_aware_aux_head.')),
+            VLM_dtype=str(next(model.backbone.parameters()).dtype),
+            head_dtype=str(next(model.action_head.parameters()).dtype),measurements=measurements,
+            caveat='One fixed real scene, five paired noises, repeated warm measurements; not scene-population latency CI. End-to-end includes input preparation/image IO, VLM and head; excludes model loading. Full frozen VLM remains resident for head-only measurement.'),indent=2)+'\n')
+        print('REAL_NATIVE_STUDENT_LATENCY_MEASURED',a.benchmark_output,flush=True)
 
 
 if __name__=='__main__':main()

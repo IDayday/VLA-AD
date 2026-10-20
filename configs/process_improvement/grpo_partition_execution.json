@@ -7,6 +7,7 @@
     8
   ],
   "global_batch": 32,
+  "validated_initializations_required": ["IL", "RL", "WARM"],
   "admission": "Only fresh formal_GRPO local jobs, after closed process gate and actual short-task completion; 4<=idle<8; preferred8 if available",
   "resume": "Original host and saved world size; never repartition existing optimizer or random states",
   "cost": "Report actual per-rank GPU seconds, all-rank ledger and whole-job lease separately",

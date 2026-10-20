@@ -268,6 +268,7 @@ def local_partition_task(task, host, idle, handoff):
     gate=read(path)
     if (gate.get('status')!='PASS' or gate.get('world_sizes')!=[4,8] or
             gate.get('global_batch')!=32 or gate.get('actual_optimizer_updates')!=4 or
+            gate.get('validated_initializations')!=['IL','RL','WARM'] or
             not gate.get('exact_resume_optimizer')):return task
     for field,source in [
         ('train_source_sha256','scripts/process_improvement/train_grpo.py'),

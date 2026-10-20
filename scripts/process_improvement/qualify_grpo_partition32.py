@@ -12,31 +12,25 @@ from scripts.process_improvement.common import *
 
 def main():
     import torch
-    base = ['scripts/process_improvement/train_grpo.py', '--qualification', '--init', 'IL',
+    base = ['scripts/process_improvement/train_grpo.py', '--qualification',
             '--split', 'legacy_4k', '--steps', '4', '--global-batch', '32',
             '--score-budget', '1024', '--lr', '3e-5']
-    def command(world, label, extra=()):
+    warm=read(ROOT/'selection/warm_start.json')['chosen']['checkpoints']['42']['path']
+    initializations={'IL':'IL','RL':'RL','WARM':warm}
+    def command(world, family, label, extra=()):
         return [PYTHON, '-m', 'torch.distributed.run', '--standalone', f'--nproc_per_node={world}',
-                *base, '--name', 'qual_GRPO_B32_' + label, *extra]
-    for cmd in [command(8, 'continuous8'), command(4, 'continuous4'),
-                command(4, 'resume4', ['--stop-after', '2']), command(4, 'resume4', ['--resume'])]:
-        subprocess.run(cmd, cwd=SOURCE, check=True)
-    states = {name: torch.load(ROOT/'runs'/('qual_GRPO_B32_' + name)/'latest.pt',
-                              map_location='cpu', weights_only=False)
-              for name in ['continuous8', 'continuous4', 'resume4']}
-    reference = states['continuous8']
-    errors = {}
-    for label in ['continuous4', 'resume4']:
-        value = states[label]
-        assert value['step'] == reference['step'] == 4
-        assert value['physical_scores'] == reference['physical_scores'] == 1024
-        left = reference if label == 'continuous4' else states['continuous4']
+                *base, '--init',initializations[family],'--name',f'qual_GRPO_B32_{family}_{label}', *extra]
+    def load(family,label):
+        return torch.load(ROOT/'runs'/f'qual_GRPO_B32_{family}_{label}'/'latest.pt',map_location='cpu',weights_only=False)
+    def compare(left,value,exact):
+        assert value['step'] == left['step'] == 4
+        assert value['physical_scores'] == left['physical_scores'] == 1024
         maximum = 0.
         for key, tensor in left['full_student'].items():
             if key.startswith('action_aware_aux_head.'):
                 continue  # Explicitly inactive, not part of the native planner.
             other = value['full_student'][key]
-            if label == 'resume4':
+            if exact:
                 assert torch.equal(tensor, other), key
             else:
                 torch.testing.assert_close(tensor, other, atol=2e-6, rtol=1e-5)
@@ -47,14 +41,26 @@ def main():
             for field, tensor in fields.items():
                 other = value['optimizer']['state'][key][field]
                 if isinstance(tensor, torch.Tensor):
-                    if label == 'resume4':
+                    if exact:
                         assert torch.equal(tensor, other), (key, field)
                     else:
                         torch.testing.assert_close(tensor, other, atol=2e-8, rtol=2e-4)
-        errors[label] = maximum
+        return maximum
+    errors={};checkpoint_ids={}
+    for family in initializations:
+        for world in [8,4]:subprocess.run(command(world,family,f'continuous{world}'),cwd=SOURCE,check=True)
+        left,right=load(family,'continuous8'),load(family,'continuous4')
+        errors[family+'_partition4']=compare(left,right,False)
+        checkpoint_ids[family]=left['config']['init_sha256']
+        if family=='IL':
+            for extra in [['--stop-after','2'],['--resume']]:
+                subprocess.run(command(4,family,'resume4',extra),cwd=SOURCE,check=True)
+            errors['IL_exact_resume4']=compare(right,load(family,'resume4'),True)
+        del left,right
     write(ROOT/'tests/native_GRPO_partition32.json', dict(
         status='PASS', world_sizes=[4, 8], global_batch=32, actual_optimizer_updates=4,
         physical_scores_per_run=1024, errors=errors, exact_resume_optimizer=True,
+        validated_initializations=list(initializations),initial_checkpoint_sha256=checkpoint_ids,
         train_source_sha256=sha(SOURCE/'scripts/process_improvement/train_grpo.py'),
         planner_source_sha256=sha(SOURCE/'navsim/agents/recogdrive/recogdrive_diffusion_planner.py'),
         rng_source_sha256=sha(SOURCE/'navsim/agents/recogdrive/process_improvement/rng_plan.py'),

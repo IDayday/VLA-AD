@@ -69,11 +69,14 @@ $PY scripts/process_improvement/analyze.py --methods MODEL42 MODEL43 MODEL44 \
 $PY scripts/process_improvement/failure_audit.py --methods MODEL42 MODEL43 MODEL44 \
   --name GROUP --split dev
 $PY scripts/process_improvement/analyze.py --local local_parent_confirm --split diagnostic_parent_confirm
+$PY scripts/process_improvement/summarize_local.py --name local_parent_confirm --split diagnostic_parent_confirm
 $PY scripts/process_improvement/export_student.py --name MY_STUDENT \
   --checkpoint "$PROCESS_RUN_ROOT/runs/MY_RUN/head_2341.pt" --verify
 ```
 
 导出验证从真实历史图像重新编码，独立子进程只加载导出的学生和 VLM。审计钩子禁止读取教师、原 IL 权重、metric cache、原始观测缓存、监督库和过程改进模块。需与训练侧缓存输入的原生轨迹逐元素一致。
+
+`infer_export.py` 可额外指定 `--benchmark-output PATH --benchmark-repeats 20`，在同一真实场景五组噪声上分别测量动作头和输入准备/图像 IO/VLM/动作头的热启动延迟。每种测量先暖机五次、逐次同步 GPU，并核验输出逐元素一致。动作头计时期间完整 VLM 仍驻留，所以该部分的总显存不是“独立动作头显存”；同时记录驻留与增量峰值。单场景重复计时不冒充总体时延置信区间，批量训练耗时不能替代本测量。
 
 `navtest` 需要 `selection/final.lock.json`，只能对锁定最终模型和强对照运行。旧实验已经查看过该官方测试集，不能称为全新盲测。三种训练种子必须分别保存，五种推理种子不算五次训练重复。所有主张分别依据完整父驾驶记录 bootstrap 及安全分项；无数据的项目报告 `NOT_RUN`。
 

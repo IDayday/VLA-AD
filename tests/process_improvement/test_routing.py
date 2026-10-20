@@ -68,7 +68,7 @@ def qualified_partition(tmp_path, monkeypatch):
     monkeypatch.setattr(coordinator, 'sha', lambda path: 'test_source_identity')
     folder=tmp_path/'tests';folder.mkdir()
     gate=dict(status='PASS',world_sizes=[4,8],global_batch=32,actual_optimizer_updates=4,
-              exact_resume_optimizer=True)
+              exact_resume_optimizer=True,validated_initializations=['IL','RL','WARM'])
     for field in ['train_source_sha256','planner_source_sha256','rng_source_sha256','qualification_source_sha256']:
         gate[field]='test_source_identity'
     (folder/'native_GRPO_partition32.json').write_text(json.dumps(gate))
@@ -107,6 +107,7 @@ def test_partition_never_changes_an_existing_or_resume_lineage(tmp_path,monkeypa
 
 @pytest.mark.parametrize('field,value',[
     ('status','FAILED'),('global_batch',8),('exact_resume_optimizer',False),
+    ('validated_initializations',['IL']),
     ('train_source_sha256','changed_source')])
 def test_failed_or_stale_partition_gate_cannot_admit_formal_runs(tmp_path,monkeypatch,field,value):
     task=qualified_partition(tmp_path,monkeypatch)
