@@ -1,0 +1,56 @@
+{
+  "status": "LOCKED",
+  "selected": {
+    "IL": {
+      "name": "tune_GRPO_IL_3e-5",
+      "lr": 3e-05,
+      "PDMS": 0.9088737932902125,
+      "data_split": "cal_tune",
+      "physical_scores": 207872,
+      "checkpoint_sha256": "dc9da458a426e4bb2cf4352d34403041c924b1ad885b93e4b6027c00b300079e"
+    },
+    "RL": {
+      "name": "tune_GRPO_RL_1e-5",
+      "lr": 1e-05,
+      "PDMS": 0.9236057228989925,
+      "data_split": "cal_tune",
+      "physical_scores": 207872,
+      "checkpoint_sha256": "036139acb100f82081c84f870897b84fc2d4dbd450ec5f0c964c3cefa38b92c7"
+    }
+  },
+  "trials": [
+    {
+      "name": "tune_GRPO_IL_1e-5",
+      "lr": 1e-05,
+      "PDMS": 0.905268155884953,
+      "data_split": "cal_tune",
+      "physical_scores": 207872,
+      "checkpoint_sha256": "65f2de5dff6ba0e1addabe21496459f7ac05c8dcd553e5f923dcd35794c71697"
+    },
+    {
+      "name": "tune_GRPO_IL_3e-5",
+      "lr": 3e-05,
+      "PDMS": 0.9088737932902125,
+      "data_split": "cal_tune",
+      "physical_scores": 207872,
+      "checkpoint_sha256": "dc9da458a426e4bb2cf4352d34403041c924b1ad885b93e4b6027c00b300079e"
+    },
+    {
+      "name": "tune_GRPO_RL_1e-5",
+      "lr": 1e-05,
+      "PDMS": 0.9236057228989925,
+      "data_split": "cal_tune",
+      "physical_scores": 207872,
+      "checkpoint_sha256": "036139acb100f82081c84f870897b84fc2d4dbd450ec5f0c964c3cefa38b92c7"
+    },
+    {
+      "name": "tune_GRPO_RL_3e-5",
+      "lr": 3e-05,
+      "PDMS": 0.9198779050280754,
+      "data_split": "cal_tune",
+      "physical_scores": 207872,
+      "checkpoint_sha256": "4f5f45eac59a00c93832f98406db1a92d7bc82b897ecaf4e03af26c10389490a"
+    }
+  ],
+  "rule": "One complete train_25k epoch each, same canonical scoring budget, best cal-tune PDMS, ties lower LR"
+}

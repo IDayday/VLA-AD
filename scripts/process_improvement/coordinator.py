@@ -246,7 +246,7 @@ def main():
         while True:
             identity();assert sha(ROOT/'protocol.yaml')==read(ROOT/'protocol.lock.json')['sha256']
             write(folder/'phase.json',dict(phase='scheduling',owner=identity()))
-            tasks=ready_tasks(a.formal_controls);free={};started=[];errors=[]
+            tasks=ready_tasks(a.formal_controls);free={};started=[];errors=[];blocked=[]
             retry_path=ROOT/'controller/admission_retry_map.json'
             if retry_path.exists():
                 retries=read(retry_path)['current']
@@ -254,7 +254,15 @@ def main():
             handoff=local_rl_handoff_ready(tasks)
             for task in tasks:
                 job=ROOT/'jobs'/task['name']
-                if job.exists():continue # No implicit retry/overwrite of failed jobs.
+                if job.exists():
+                    # Persistent failed admissions must remain visible after
+                    # the transient launch-error iteration has passed.
+                    done=read(job/'complete.json') if (job/'complete.json').exists() else None
+                    if done and done['status']!='COMPLETE':
+                        blocked.append(dict(name=task['name'],reason=done['status']))
+                    elif not (job/'launch.json').exists():
+                        blocked.append(dict(name=task['name'],reason='Admission needs explicit review; no launch receipt'))
+                    continue # No implicit retry/overwrite of failed jobs.
                 hosts=list(task['hosts'])
                 if handoff and task['gpus']==8 and not any('--resume' in command for command in task['commands']):
                     if 'training-vla-zt' not in hosts:hosts.append('training-vla-zt')
@@ -274,7 +282,7 @@ def main():
                         free[host]=[]
                     break
             state=dict(utc=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),ready_tasks=[t['name'] for t in tasks],
-                       launched=started,errors=errors,owner=identity(),local_eight_GPU_handoff_ready=handoff)
+                       launched=started,errors=errors,blocked_ready_tasks=blocked,owner=identity(),local_eight_GPU_handoff_ready=handoff)
             write(folder/'state.json',state)
             write(folder/'phase.json',dict(phase='idle',owner=identity()))
             print('COORDINATOR',state,flush=True)
