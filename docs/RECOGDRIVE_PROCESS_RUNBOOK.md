@@ -27,6 +27,8 @@ $PY scripts/process_improvement/audit_parent_ids.py
 
 GPU 空闲快照采用两次观察，启动前仍原子复核，利用率回升不会放宽阈值。若原子检查明确在创建 worker 前拒绝，可在核对没有任何 `launch/owner/child` 记录后运行 `review_admission.py --jobs ORIGINAL_JOB_ID`，以新的作业 ID 重排；旧失败目录不删除、不覆盖。这个命令不处理网络超时或可能已启动的 worker，也不能用于重放已运行的优化器更新。复核映射记录在 `controller/admission_retry_map.json`。恢复的 GRPO 主机以真实训练配置中已保存的 owner 为准，不使用被拒绝的预计划主机。
 
+为防止整组训练被单卡队列持续分割，较高优先级的整组请求可以等待本研究已有短作业自然排空，并暂缓向该主机补入较低优先级任务。仅当全部八张卡均已确认空闲或由本研究正在运行的作业持有时才采用这项预留；存在未知/外部占用的主机不会因此锁住其余空闲卡。没有中断已有作业，实际启动仍重新检查物理空闲。预留状态保存在 `controller/state.json` 的 `reserved_for_gangs` 字段。
+
 ```bash
 $PY scripts/process_improvement/coordinator.py --once
 $PY scripts/process_improvement/controller_control.py start

@@ -34,3 +34,30 @@ def test_short_lease_must_actually_finish_successfully_before_handoff(tmp_path,m
     assert not coordinator.local_rl_handoff_ready(tasks)
     (directory/'complete.json').write_text('{"status":"COMPLETE"}')
     assert coordinator.local_rl_handoff_ready(tasks)
+
+
+def owned_job(tmp_path,name,gpus,complete=False,launched=True):
+    directory=tmp_path/'jobs'/name;directory.mkdir(parents=True)
+    (directory/'spec.json').write_text(json.dumps(dict(host='host',gpus=gpus)))
+    if launched:(directory/'launch.json').write_text('{}')
+    if complete:(directory/'complete.json').write_text('{"status":"COMPLETE"}')
+
+
+def test_gang_reservation_only_drains_our_own_leases(tmp_path,monkeypatch):
+    monkeypatch.setattr(coordinator,'ROOT',tmp_path)
+    owned_job(tmp_path,'running',list(range(1,8)))
+    assert coordinator.fully_research_owned_or_idle('host',[0])
+    assert not coordinator.fully_research_owned_or_idle('other_host',[0])
+
+
+def test_unknown_missing_gpu_is_never_a_gang_reservation(tmp_path,monkeypatch):
+    monkeypatch.setattr(coordinator,'ROOT',tmp_path)
+    owned_job(tmp_path,'running',[1,2,3,4,5,6])
+    assert not coordinator.fully_research_owned_or_idle('host',[0])
+
+
+def test_finished_or_unlaunched_jobs_do_not_prove_gpu_ownership(tmp_path,monkeypatch):
+    monkeypatch.setattr(coordinator,'ROOT',tmp_path)
+    owned_job(tmp_path,'finished',[7],complete=True)
+    owned_job(tmp_path,'rejected',[7],launched=False)
+    assert not coordinator.fully_research_owned_or_idle('host',list(range(7)))

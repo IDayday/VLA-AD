@@ -237,6 +237,20 @@ def local_rl_handoff_ready(tasks):
     return True
 
 
+def fully_research_owned_or_idle(host,free):
+    """Only reserve a gang while all missing cards run our own finite jobs.
+
+    Foreign/unknown occupancy never turns seven idle GPUs into a permanently
+    reserved host. The live physical recheck remains mandatory at admission.
+    """
+    covered=set(free)
+    for path in (ROOT/'jobs').glob('*/spec.json'):
+        if not (path.parent/'launch.json').exists() or (path.parent/'complete.json').exists():continue
+        spec=read(path)
+        if spec['host']==host:covered.update(spec['gpus'])
+    return set(range(8))<=covered
+
+
 def main():
     p=argparse.ArgumentParser();p.add_argument('--once',action='store_true');p.add_argument('--formal-controls',action='store_true');a=p.parse_args()
     folder=ROOT/'controller';folder.mkdir(parents=True,exist_ok=True)
@@ -246,7 +260,7 @@ def main():
         while True:
             identity();assert sha(ROOT/'protocol.yaml')==read(ROOT/'protocol.lock.json')['sha256']
             write(folder/'phase.json',dict(phase='scheduling',owner=identity()))
-            tasks=ready_tasks(a.formal_controls);free={};started=[];errors=[];blocked=[]
+            tasks=ready_tasks(a.formal_controls);free={};started=[];errors=[];blocked=[];reserved=[]
             retry_path=ROOT/'controller/admission_retry_map.json'
             if retry_path.exists():
                 retries=read(retry_path)['current']
@@ -270,7 +284,13 @@ def main():
                     if host not in free:
                         try:free[host]=available(host)
                         except Exception as exc:errors.append(dict(host=host,error=repr(exc)));free[host]=[]
-                    if len(free[host])<task['gpus']:continue
+                    if len(free[host])<task['gpus']:
+                        if (task['gpus']>1 and free[host] and
+                                fully_research_owned_or_idle(host,free[host])):
+                            reserved.append(dict(host=host,for_task=task['name'],
+                                                 idle_gpus=free[host],requested=task['gpus']))
+                            free[host]=[] # Let owned jobs drain; stop lower-priority backfill.
+                        continue
                     gpus=free[host][:task['gpus']]
                     try:
                         launch(task['name'],host,gpus,task['commands']);free[host]=free[host][task['gpus']:]
@@ -282,7 +302,8 @@ def main():
                         free[host]=[]
                     break
             state=dict(utc=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),ready_tasks=[t['name'] for t in tasks],
-                       launched=started,errors=errors,blocked_ready_tasks=blocked,owner=identity(),local_eight_GPU_handoff_ready=handoff)
+                       launched=started,errors=errors,blocked_ready_tasks=blocked,reserved_for_gangs=reserved,
+                       owner=identity(),local_eight_GPU_handoff_ready=handoff)
             write(folder/'state.json',state)
             write(folder/'phase.json',dict(phase='idle',owner=identity()))
             print('COORDINATOR',state,flush=True)
