@@ -12,6 +12,8 @@
 
 主环境 `/root/miniconda3/envs/navsim/bin/python`，依赖锁见 environment.lock.txt。现场核验的授权服务器为 vla-zt、rl-zt2 和 tsinghua 系列；仅使用现场确认空闲或已授权回收的压力 worker GPU。保留其他真实研究进程。压力暂停操作只针对 `/tmp/zt-idle-pressure-v1/agent.py --worker GPU-*` 的精确 argv、UID、PID/start ticks；没有新建或手动启动压力程序。
 
+扩大训练期间补充核验了全部八台授权 canonical 主机：共 64 个不同物理 GPU UUID（`tables/eight_host_physical_uuid_inventory.json`）。这不等于 64 张卡均空闲：本研究最初并用五台的 40 张卡，随后多台出现无法归属到容器可见 PID 的负载，未终止未知进程或重置 GPU。OPD 的两条训练线在更新 664 保存完整原生状态后迁移至本地，同 world size 恢复继续；现场可直接使用的资源一度为本地和 rl-zt2 共 16 张卡。调度器持续检查全部八台的实时权限、物理显存/利用率与持有记录，有空闲时自动接入。完整 8-GPU GRPO 的新调度暂保留本地给短校准及机制诊断，避免长训练阻塞这些前置工作。
+
 本轮原始 VLM 缓存按 token 前缀分块，复用旧 official_v2 合法缓存；写入新缓存有 SHA256、源 VLM、输入契约与可恢复索引。共享磁盘现场约 2.3 TiB 空闲；本研究新缓存上限 900 GiB，并保留至少 512 GiB 空间，避免预先要求 TB 级全量缓存。
 
 可追溯数据总体、排除原因和源日志哈希在 tables/population_summary.json 及 configs/process_improvement/splits 中。所有结果尚须按后续完整实验判定，工程门禁不构成研究假设支持。

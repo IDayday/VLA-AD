@@ -42,6 +42,11 @@ def tasks():
     for family,recipe in recipes.items():
         for seed in [42,43,44]:
             name=f'GRPO_{family}_{seed}';run=ROOT/'runs'/name
+            for step in [977,3907,15625]:
+                checkpoint=run/f'head_{step}.pt'
+                if checkpoint.exists():
+                    task=evaluation_task(f'{name}_step{step}',checkpoint,split='dev',priority=17)
+                    if task:ready.append(task)
             if (run/'complete.json').exists():continue
             init=recipe['init_by_seed'][str(seed)]['path'] if family=='WARM' else recipe['init']
             baseline='WARM_'+str(seed) if family=='WARM' else 'B0_'+family

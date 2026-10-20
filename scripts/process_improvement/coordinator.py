@@ -13,8 +13,17 @@ import time
 from scripts.process_improvement.common import *
 from scripts.process_improvement.dispatch import remote,launch
 
-SINGLE_HOSTS=['training-vla-zt','training-vlawm-tsinghua-zt2']
-RL_HOSTS=['training-rl-zt2','training-vlawm-tsinghua-zt5','training-vlawm-tsinghua-zt6']
+# All currently user-authorized canonical hosts are continuously considered.
+# Admission still requires an empty physical device and the live policy; an
+# unrelated or invisible CUDA owner is never preempted. Local stays available
+# for short calibration/diagnostic work until a later explicit routing handoff.
+SINGLE_HOSTS=['training-vla-zt','training-vlawm-tsinghua-zt2',
+              'training-vlawm-tsinghua-zt5','training-vlawm-tsinghua-zt6',
+              'training-rl-zt2','training-vlawm-tsinghua-zt',
+              'training-vlawm-tsinghua-zt3','training-vlawm-tsinghua-zt4']
+RL_HOSTS=['training-rl-zt2','training-vlawm-tsinghua-zt5','training-vlawm-tsinghua-zt6',
+          'training-vlawm-tsinghua-zt','training-vlawm-tsinghua-zt3',
+          'training-vlawm-tsinghua-zt4','training-vlawm-tsinghua-zt2']
 
 
 def evaluation_task(name,checkpoint=None,baseline=None,split='cal_tune',priority=0):
@@ -29,9 +38,15 @@ def evaluation_task(name,checkpoint=None,baseline=None,split='cal_tune',priority
     path=ROOT/'suite'/f'auto_eval_{split}_{name}.json'
     if path.exists():assert read(path)==commands
     else:write(path,commands)
+    worker_commands=[]
+    gate=ROOT/'tests/trained_graph'/f'{name}.json'
+    if checkpoint and not gate.exists():
+        worker_commands.append(['scripts/process_improvement/qualify_trained_graph.py',
+                                '--checkpoint',str(checkpoint),'--name',name])
+    worker_commands.append(['scripts/process_improvement/parallel.py','--spec',str(path),
+                           '--receipt',str(path.with_suffix('.receipt.json'))])
     return dict(name=f'auto_eval_{split}_{name}',priority=priority,gpus=1,hosts=SINGLE_HOSTS,
-                commands=[['scripts/process_improvement/parallel.py','--spec',str(path),
-                           '--receipt',str(path.with_suffix('.receipt.json'))]])
+                commands=worker_commands)
 
 
 def eval_done(name,split='cal_tune'):
@@ -92,6 +107,41 @@ def ready_tasks(include_formal=False):
                         if task:tasks.append(task)
                     additional_ready=additional_ready and eval_done(f'{name}_epoch4')
             if not warm.exists() and two_epoch_cal and additional_ready:calibrate.warm()
+        if warm.exists():
+            chosen=read(warm)['chosen']
+            # Audit every fixed full-training endpoint after warm selection is
+            # locked. No dev result enters the calibration/extension decisions.
+            for method in ['OPD','ANCHOR']:
+                epochs=[(1,2341),(2,4681)]
+                if read(extension_file)['decisions'][method]['extend_to_four_epochs']:
+                    epochs.append((4,9361))
+                for seed in [42,43,44]:
+                    for epoch,step in epochs:
+                        name=f'full_{method}_{seed}'
+                        task=evaluation_task(f'{name}_epoch{epoch}',ROOT/'runs'/name/f'head_{step}.pt',split='dev',priority=15)
+                        if task:tasks.append(task)
+            scaling=[('legacy_4k',[(2,258),(8,1029),('64k',2000)]),
+                     ('train_25k',[(1,812),(2,1623),(4,3245),('64k',2000)])]
+            for population,endpoints in scaling:
+                for epoch,step in endpoints:
+                    name=f'scaling_{population}_OPD_42';checkpoint=ROOT/'runs'/name/f'head_{step}.pt'
+                    if checkpoint.exists():
+                        task=evaluation_task(f'{name}_epoch{epoch}',checkpoint,split='dev',priority=16)
+                        if task:tasks.append(task)
+            task=evaluation_task('full_OPD_42_exposure64000',ROOT/'runs/full_OPD_42/head_2000.pt',split='dev',priority=16)
+            if task:tasks.append(task)
+            for seed in [42,43,44]:
+                name=f"selected_full_{chosen['method']}_{seed}_epoch{chosen['epoch']}"
+                if not (ROOT/'exports'/name/'verification.json').exists():
+                    tasks.append(dict(name='auto_export_'+name,priority=14,gpus=1,hosts=SINGLE_HOSTS,
+                        commands=[['scripts/process_improvement/export_student.py','--name',name,
+                                   '--checkpoint',chosen['checkpoints'][str(seed)]['path'],'--verify']]))
+            plan=diagnostic_plan()
+            suffix=ROOT/'diagnostics/suffix_mismatch/selected_full_seed42/results.json'
+            if (ROOT/'selection'/plan['choice_file']).exists() and not suffix.exists():
+                tasks.append(dict(name='auto_selected_full_suffix_mismatch',priority=18,gpus=1,hosts=SINGLE_HOSTS,
+                    commands=[['scripts/process_improvement/diagnose_suffix.py','--name','selected_full_seed42',
+                               '--checkpoint',chosen['checkpoints']['42']['path'],'--config',plan['config'],'--limit','128']]))
     # The original native algorithm is independent of every process gate.
     for initial in ['IL','RL']:
         for lr in ['1e-5','3e-5']:
