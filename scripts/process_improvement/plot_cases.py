@@ -74,7 +74,7 @@ def main():
             events=case['events']
             times=['none' if events[key] is None else f'{events[key]:.1f}s'
                    for key in ['first_collision_s','first_dac_s','first_ttc_check_failure_s']]
-            captions.append(f"{label}: first-draw PDMS {case['first_seed_PDMS']:.3f}; collision {times[0]}, DAC {times[1]}, TTC check {times[2]}")
+            captions.append(f"{label}: first-draw PDMS {case['first_seed_PDMS']:.3f}; NC event {times[0]}, DAC {times[1]}, TTC check {times[2]}")
         captions+=['Dashed: planned; solid: tracked; x: first violation. Occupancy t=0/2s is privileged illustration.',
                    'TTC-check failure time is not the remaining time to a collision.']
         fig.text(.04,.015,'\n'.join(captions),fontsize=7.1,va='bottom')
@@ -82,6 +82,7 @@ def main():
         fig.savefig(directory/f'{rule}.png',dpi=150);plt.close(fig)
         records.append(dict(rule=rule,token=row['token'],log=row['log_name'],cases=cases,
                             generator_sha256=sha(__file__),protocol_sha256=sha(ROOT/'protocol.yaml'),
+                            collision_event_semantics='Native first at-fault collision time used by NC; not every geometric contact',
                             interpretation='Dashed planned trajectory; solid tracked simulation; x marks first violation. TTC check failure is not remaining collision time. Occupancy at t=0 and t=2s is privileged illustration only.'))
     write(REPORTS/'tables'/f'case_provenance_{a.split}_{a.method}.json',records)
     # Every regeneration is a real extra CPU scoring cost, even when the

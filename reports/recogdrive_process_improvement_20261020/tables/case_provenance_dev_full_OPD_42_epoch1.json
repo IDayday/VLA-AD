@@ -38,8 +38,9 @@
         "prediction_sha256": "db2c6944562727bf59eb15d127393cb84a6211af7e4c1d359dcd8136e729f158"
       }
     },
-    "generator_sha256": "e59938bca9f70bdfef6cc22e4b57da15fe6ba106417967ea243e725c0b93e299",
+    "generator_sha256": "b52f10d12a700bdb9270fcd0b68a748d72a359bbc209c5bff98aaddbbe776fd9",
     "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+    "collision_event_semantics": "Native first at-fault collision time used by NC; not every geometric contact",
     "interpretation": "Dashed planned trajectory; solid tracked simulation; x marks first violation. TTC check failure is not remaining collision time. Occupancy at t=0 and t=2s is privileged illustration only."
   },
   {
@@ -81,8 +82,9 @@
         "prediction_sha256": "b33b9bd59fc09ac802b19dbbc3c5f67b20eacd34d9f3561e16b271d952c5fac1"
       }
     },
-    "generator_sha256": "e59938bca9f70bdfef6cc22e4b57da15fe6ba106417967ea243e725c0b93e299",
+    "generator_sha256": "b52f10d12a700bdb9270fcd0b68a748d72a359bbc209c5bff98aaddbbe776fd9",
     "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+    "collision_event_semantics": "Native first at-fault collision time used by NC; not every geometric contact",
     "interpretation": "Dashed planned trajectory; solid tracked simulation; x marks first violation. TTC check failure is not remaining collision time. Occupancy at t=0 and t=2s is privileged illustration only."
   },
   {
@@ -124,8 +126,9 @@
         "prediction_sha256": "8db40a8fff211db6fccef37c671122f8e20a078bee81ec8fd109f1b30ac89904"
       }
     },
-    "generator_sha256": "e59938bca9f70bdfef6cc22e4b57da15fe6ba106417967ea243e725c0b93e299",
+    "generator_sha256": "b52f10d12a700bdb9270fcd0b68a748d72a359bbc209c5bff98aaddbbe776fd9",
     "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+    "collision_event_semantics": "Native first at-fault collision time used by NC; not every geometric contact",
     "interpretation": "Dashed planned trajectory; solid tracked simulation; x marks first violation. TTC check failure is not remaining collision time. Occupancy at t=0 and t=2s is privileged illustration only."
   },
   {
@@ -167,8 +170,9 @@
         "prediction_sha256": "379dde763138a4110678910a861a8fe28aaf2a71898c0438202faa8623af2f8d"
       }
     },
-    "generator_sha256": "e59938bca9f70bdfef6cc22e4b57da15fe6ba106417967ea243e725c0b93e299",
+    "generator_sha256": "b52f10d12a700bdb9270fcd0b68a748d72a359bbc209c5bff98aaddbbe776fd9",
     "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+    "collision_event_semantics": "Native first at-fault collision time used by NC; not every geometric contact",
     "interpretation": "Dashed planned trajectory; solid tracked simulation; x marks first violation. TTC check failure is not remaining collision time. Occupancy at t=0 and t=2s is privileged illustration only."
   }
 ]

@@ -83,4 +83,6 @@ Anchor 一轮减少了明显退化场景的比例（配对差 -0.008255，95% CI
 
 对应地图、原始规划轨迹、跟踪仿真轨迹及事件标记在 `figures/cases/full_OPD_42_epoch1/`，Anchor 的相同规则案例在 `figures/cases/full_ANCHOR_42_epoch1/`。原始数据哈希与事件日志见各自 `tables/case_provenance_dev_*.json`。图示 t=0/t=2s 对象占用只作 privileged 解释，不进入学生输入或目标选择。
 
-11张已选案例图已补充图内事件时刻、单种子分数及五次均值的区别；案例选择、轨迹、评分和时刻与此前提交逐字段一致。此次仅展示重绘，31次额外真实CPU评分另计，不当成新增独立评价；核验记录为 `tables/case_event_display_validation.json`。
+11张已选案例图已补充图内事件时刻、单种子分数及五次均值的区别；案例选择、轨迹、评分和时刻与此前提交逐字段一致。此次仅展示重绘，两次展示重绘共62次额外真实CPU评分另计，不当成新增独立评价；核验记录为 `tables/case_event_display_validation.json`。
+
+碰撞时间字段严格指原生 NC 的首次责任碰撞事件（`time_to_at_fault_collision`），图中以“NC event”标注；不是所有几何接触的完整日志。原生 scorer 对不承担责任的接触不会更新此时间字段。
