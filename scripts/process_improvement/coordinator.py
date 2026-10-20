@@ -69,9 +69,29 @@ def ready_tasks(include_formal=False):
             if not (run/'complete.json').exists():
                 tasks.append(dict(name='auto_'+name,priority=11,gpus=1,hosts=SINGLE_HOSTS,
                     commands=[['scripts/process_improvement/run_suite.py','--phase','scaling','--population',population]]))
-        warm=ROOT/'selection/warm_start.json'
-        if not warm.exists() and all(eval_done(f'full_{m}_{s}_epoch{e}') for m in ['OPD','ANCHOR'] for s in [42,43,44] for e in [1,2]):
-            calibrate.warm()
+        warm=ROOT/'selection/warm_start.json';extension_file=ROOT/'selection/four_epoch_extension.json'
+        two_epoch_cal=all(eval_done(f'full_{m}_{s}_epoch{e}') for m in ['OPD','ANCHOR'] for s in [42,43,44] for e in [1,2])
+        if two_epoch_cal and not extension_file.exists():calibrate.extension()
+        if extension_file.exists():
+            decision=read(extension_file)['decisions'];additional_ready=True
+            for method in ['OPD','ANCHOR']:
+                if not decision[method]['extend_to_four_epochs']:
+                    if not all((ROOT/'runs'/f'full_{method}_{seed}'/'complete.json').exists() for seed in [42,43,44]):
+                        subprocess.run([PYTHON,'scripts/process_improvement/finalize_epoch.py','--method',method],cwd=SOURCE,check=True)
+                    continue
+                for seed in [42,43,44]:
+                    name=f'full_{method}_{seed}';run=ROOT/'runs'/name
+                    if not (run/'complete.json').exists():
+                        host=read(run/'config.json')['owner']['host']
+                        tasks.append(dict(name='auto_extend_'+name,priority=10,gpus=1,hosts=[host],
+                            commands=[['scripts/process_improvement/run_suite.py','--phase','scaling','--method',method,
+                                       '--seed',str(seed),'--resume','--extend-four-epochs']]))
+                    checkpoint=run/'head_9361.pt'
+                    if checkpoint.exists():
+                        task=evaluation_task(f'{name}_epoch4',checkpoint,priority=1)
+                        if task:tasks.append(task)
+                    additional_ready=additional_ready and eval_done(f'{name}_epoch4')
+            if not warm.exists() and two_epoch_cal and additional_ready:calibrate.warm()
     # The original native algorithm is independent of every process gate.
     for initial in ['IL','RL']:
         for lr in ['1e-5','3e-5']:

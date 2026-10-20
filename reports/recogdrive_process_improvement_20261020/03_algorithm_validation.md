@@ -2,7 +2,7 @@
 
 本文件记录工程验收，不宣称过程改进已经提高规划分数。运行产物根目录为 `/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020`。
 
-- CPU 数学/接口测试：71 passed（`audit/combined_cpu_tests_v11.log`）。包括裁剪核、离散精确权重、多模态均值投影反例、无信息回报的 fit/test 分离、M=1、平坦值、ESS、半径、维度及分层统计。
+- CPU 数学/接口测试：74 passed（`audit/combined_cpu_tests_v13.log`）。包括裁剪核、离散精确权重、多模态均值投影反例、无信息回报的 fit/test 分离、M=1、平坦值、ESS、半径、维度、分层统计，以及不可改写的校准锁和条件四轮候选端点。
 - 真实检查点数值验收：48 个模型/场景/采样模式组合通过；每个切分位置的 full vs suffix 逐元素一致。原生 DDIM 的 sigma、噪声裁剪和最后一步最终 clamp 被保留。`tests/parity.json`。
 - 关闭新目标后，旧 E3 与新普通 OPD 的八个真实场景 chain、梯度和 AdamW 参数更新一致；损失求均值顺序产生的最大差异为 `1.16e-10`。`tests/disabled_method.json`。
 - 同 world size 的连续/恢复训练参数及优化器状态逐元素一致。单卡与两卡的真实全局 batch 检查最大参数误差为 `1.1920928955078125e-7`。弹性 world size 恢复不支持。`tests/distributed_resume.json`。
@@ -11,6 +11,7 @@
 - 正式逐候选评分与实验包装层的候选增删、顺序、外来候选及分片评分检查通过；总分误差为零，离散分项一致。`tests/parallel_scoring.json`。
 - E0-RL 与 E0-COPY 在 1,696 个 dev 场景、五种配对推理种子上的全部轨迹及分数逐元素相同。`tests/E0_full_COPY.json`。
 - 单场景 CUDA 调度在 IL/RL 各 1,696 场景×五种种子上通过原生输出精确一致性检查；共 3,392 个模型/场景记录。它只移除重复的调度/常量计算，不改变模型、精度、batch、噪声或选轨规则。`tests/cuda_graph_inference.json`。
+- 冻结后缀的上下文复用在三个真实动作头、两个父记录哈希场景、八种分支 batch（16/32/48/64/96/128/256/512）和四个切分点上，共 192 个组合的状态、轨迹和分数均逐元素一致；原生/复用总耗时比为 1.6206。仅用于显式开启的局部诊断加速，不改变主训练。`tests/frozen_suffix_cache.json`。
 - 新学生导出后，独立进程从真实图像重新编码，仅加载导出动作头和共享 VLM，轨迹与原生缓存输入路径逐元素一致。教师、评分缓存、未来标签和过程改进模块被运行时禁止。`exports/tune_OPD_1e-5/verification.json`。
 - 已完成真实 128 场景曝光、32 次更新的过程路径集成训练：2,231 次物理候选评分，学生核心状态哈希改变，参考权重未改变。128 个目标均被 guard 拒绝，更新来自保留的普通 OPD；此小测不能验证接受目标的梯度作用，也不能作为泛化收益证据。另设真实接受目标的信号条件集成测试。`runs/qualification_PROCESS_128/complete.json`。
 - 接受目标的真实集成检查另行通过：按 token 字典序取第一个已接受的 D_fit 案例，重新评分 144 条轨迹，guard 增益 `0.0024251`，目标位移范数 `0.108817`，相对普通 OPD 的梯度差范数 `0.0416581`；优化后学生链改变、教师不变。此例为专门选择的工程分支检查，不能算平均收益或泛化证据。`tests/accepted_target_gradient.json`。

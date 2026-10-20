@@ -1,0 +1,8 @@
+{
+  "status": "LOCKED_BEFORE_EPOCH2_CALIBRATION",
+  "rule": "Warm recipe selection considers all pre-registered eligible full endpoints:1/2 and conditional4; shared recipe+epoch across seeds",
+  "reason": "Do not ignore the protocol-authorized four-epoch extension when choosing a sufficiently trained warm policy",
+  "original_protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+  "eligibility_rule_unchanged": true,
+  "dev_or_test_results_used": false
+}

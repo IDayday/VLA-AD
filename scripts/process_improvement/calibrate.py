@@ -72,8 +72,11 @@ def grpo_rates():
 
 def warm():
     cfg=config();trials=[]
+    extension_choice=read(ROOT/'selection/four_epoch_extension.json')
     for method in ['OPD','ANCHOR']:
-        for epoch,step in [(1,2341),(2,4681)]:
+        endpoints=[(1,2341),(2,4681)]
+        if extension_choice['decisions'][method]['extend_to_four_epochs']:endpoints.append((4,9361))
+        for epoch,step in endpoints:
             means=[];checkpoints={}
             for seed in cfg['train_seeds']:
                 name=f'full_{method}_{seed}_epoch{epoch}'
@@ -83,7 +86,7 @@ def warm():
             trials.append(dict(method=method,epoch=epoch,step=step,mean_PDMS=float(np.mean(means)),per_seed=means,checkpoints=checkpoints))
     chosen=sorted(trials,key=lambda r:(-r['mean_PDMS'],r['epoch'],r['method']!='OPD'))[0]
     value=dict(status='LOCKED',chosen=chosen,trials=trials,
-               rule='Mean over all three training seeds on cal-tune; one recipe/epoch applied to each seeds own checkpoint')
+               rule='Mean over all three training seeds on cal-tune; all registered eligible endpoints (1/2 plus conditional4); one recipe/epoch applied to each seeds own checkpoint')
     immutable(ROOT/'selection/warm_start.json',value)
     return value
 
