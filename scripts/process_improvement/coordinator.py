@@ -39,9 +39,10 @@ def eval_done(name,split='cal_tune'):
     return all((dest/f'complete_{rank}.json').exists() for rank in range(3))
 
 
-def ready_tasks():
+def ready_tasks(include_formal=False):
     from scripts.process_improvement import calibrate
-    tasks=[]
+    extra=ROOT/'suite/extra_queue.json'
+    tasks=read(extra) if extra.exists() else []
     # Fixed-hyperparameter safety monitoring baselines, no test data access.
     for base in ['IL','RL']:
         task=evaluation_task('B0_'+base,baseline=base,split='cal_confirm',priority=25)
@@ -79,7 +80,8 @@ def ready_tasks():
                 if task:tasks.append(task)
             elif name!='tune_GRPO_IL_1e-5':
                 tasks.append(dict(name='auto_'+name,priority=5,gpus=8,hosts=RL_HOSTS,
-                    commands=[['-m','torch.distributed.run','--standalone','--nproc_per_node=8',
+                    commands=[['scripts/process_improvement/verify_inputs.py'],
+                              ['-m','torch.distributed.run','--standalone','--nproc_per_node=8',
                                'scripts/process_improvement/train_grpo.py','--name',name,'--init',initial,
                                '--lr',lr,'--split','train_25k','--steps','812','--score-budget','207872']]))
     grpo_names=[f'tune_GRPO_{initial}_{lr}' for initial in ['IL','RL'] for lr in ['1e-5','3e-5']]
@@ -106,6 +108,9 @@ def ready_tasks():
                 tasks.append(dict(name=f'auto_{phase}_{rank}',priority=20,gpus=1,hosts=SINGLE_HOSTS,commands=[command]))
             if expansion and all((ROOT/'diagnostics'/phase/f'complete_{r}.json').exists() for r in range(8)):
                 if not (ROOT/'selection/process_gate_local_confirm_expand32.json').exists():calibrate.process_gate()
+    if include_formal:
+        from scripts.process_improvement.formal_controls import tasks as formal_tasks
+        tasks.extend(formal_tasks())
     return sorted([t for t in tasks if t],key=lambda t:(t['priority'],t['name']))
 
 
@@ -123,14 +128,15 @@ print(json.dumps([int(r.split(',')[0]) for r in rows if int(r.split(',')[1])<=10
 
 
 def main():
-    p=argparse.ArgumentParser();p.add_argument('--once',action='store_true');a=p.parse_args()
+    p=argparse.ArgumentParser();p.add_argument('--once',action='store_true');p.add_argument('--formal-controls',action='store_true');a=p.parse_args()
     folder=ROOT/'controller';folder.mkdir(parents=True,exist_ok=True)
     with (folder/'lease.lock').open('a') as lock:
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         write(folder/'owner.json',identity())
         while True:
             identity();assert sha(ROOT/'protocol.yaml')==read(ROOT/'protocol.lock.json')['sha256']
-            tasks=ready_tasks();free={};started=[];errors=[]
+            write(folder/'phase.json',dict(phase='scheduling',owner=identity()))
+            tasks=ready_tasks(a.formal_controls);free={};started=[];errors=[]
             for task in tasks:
                 job=ROOT/'jobs'/task['name']
                 if job.exists():continue # No implicit retry/overwrite of failed jobs.
@@ -148,6 +154,7 @@ def main():
             state=dict(utc=time.strftime('%Y-%m-%dT%H:%M:%SZ',time.gmtime()),ready_tasks=[t['name'] for t in tasks],
                        launched=started,errors=errors,owner=identity())
             write(folder/'state.json',state)
+            write(folder/'phase.json',dict(phase='idle',owner=identity()))
             print('COORDINATOR',state,flush=True)
             if a.once:return
             time.sleep(30)

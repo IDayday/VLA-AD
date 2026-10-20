@@ -73,6 +73,32 @@ def holm_adjust(pvalues):
     return result
 
 
+def paired_linear_bootstrap(old,new,parents,repetitions=10000,seed=20261020):
+    """Exact sufficient statistics for ONE policy's linear metric differences.
+
+    Used only for the registered harm boundary; nonlinear M+/M- still use the
+    full hierarchy above. Parent counts and paired global noise IDs are sampled
+    independently. No scene independence or artificial training replication.
+    """
+    old,new=np.asarray(old,dtype=np.float64),np.asarray(new,dtype=np.float64)
+    if old.shape!=new.shape or old.ndim!=3 or old.shape[-1]!=7:raise ValueError('One paired policy x scene/noise/metric comparison required')
+    parents=np.asarray(parents)
+    if len(parents)!=len(old):raise ValueError('Parent metadata mismatch')
+    difference=new-old;groups=[np.flatnonzero(parents==v) for v in np.unique(parents)]
+    sums=np.stack([difference[g].sum(0) for g in groups]);counts=np.array([len(g) for g in groups])
+    rng=np.random.default_rng(seed)
+    pw=rng.multinomial(len(groups),np.ones(len(groups))/len(groups),size=repetitions)
+    zw=rng.multinomial(old.shape[1],np.ones(old.shape[1])/old.shape[1],size=repetitions)/old.shape[1]
+    draws=np.einsum('rg,gzm,rz->rm',pw,sums,zw,optimize=True)/(pw@counts)[:,None]
+    mean=difference.mean((0,1));bounds=np.quantile(draws,[.025,.975],axis=0)
+    labels=['NC','DAC','EP','TTC','Comfort','DDC','PDMS']
+    point={'delta_'+name:float(mean[j]) for j,name in enumerate(labels)}
+    ci={'delta_'+name:bounds[:,j].tolist() for j,name in enumerate(labels)}
+    point['G']=point['delta_PDMS'];ci['G']=ci['delta_PDMS']
+    return dict(point=point,CI95=ci,parent_count=len(groups),training_seeds=1,inference_seeds=old.shape[1],
+                bootstrap_repetitions=repetitions,scope='Linear harm-boundary metrics only; whole-parent blocks and paired inference-seed hierarchy')
+
+
 def local_noise_bootstrap(noise_values,parents,repetitions=10000,seed=20261020):
     """Parent blocks + independent candidate banks + paired suffix-replicate IDs.
 

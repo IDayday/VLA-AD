@@ -53,7 +53,9 @@ def main():
         output=dest/'scenes'/f"{row['token']}.npz"
         meta=output.with_suffix('.json')
         if output.exists() and meta.exists():
-            assert read(meta)['evaluation_identity']==digest(spec)
+            previous=read(meta)
+            assert previous['evaluation_identity']==digest(spec)
+            assert previous['prediction_sha256']==sha(output),'Existing prediction payload changed'
             continue
         tokens,inputs=conditioning(observation(row));predictions=[]
         from navsim.agents.recogdrive.opd.inference_cache import native_inference_cache

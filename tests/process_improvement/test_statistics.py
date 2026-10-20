@@ -1,4 +1,14 @@
 import numpy as np
+
+
+def test_linear_harm_bootstrap_retains_parent_and_paired_noise():
+    from navsim.agents.recogdrive.process_improvement.statistics import paired_linear_bootstrap
+    old=np.zeros((5,3,7));old[:,0]=.1;old[:,1]=.4;old[:,2]=.9
+    new=old+.025
+    result=paired_linear_bootstrap(old,new,['A','A','B','B','B'],repetitions=1000)
+    assert abs(result['point']['G']-.025)<1e-14
+    np.testing.assert_allclose(result['CI95']['G'],[.025,.025],atol=1e-14)
+    assert result['parent_count']==2 and result['training_seeds']==1
 from navsim.agents.recogdrive.process_improvement.statistics import summarize_delta,paired_bootstrap,holm_adjust,local_noise_bootstrap
 
 

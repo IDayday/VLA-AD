@@ -54,10 +54,12 @@ def main():
     scoring=Scoring(progress_weight=a.progress_weight)
     student.train_scorer=scoring.scorer;student.simulator=scoring.simulator
     original_reward=student.reward_fn
-    counts=dict(physical_scores=0,logical_scores=0,reference_simulations=0)
+    counts=dict(physical_scores=0,logical_scores=0,reference_simulations=0,cpu_scoring_seconds=0.)
     last_reward={}
     def reward(traj,tokens,caches):
+        before=time.process_time()
         result=original_reward(traj,tokens,caches)
+        counts['cpu_scoring_seconds']+=time.process_time()-before
         counts['physical_scores']+=len(traj);counts['logical_scores']+=len(traj);counts['reference_simulations']+=len(traj)
         last_reward['values']=result.detach().clone()
         return result

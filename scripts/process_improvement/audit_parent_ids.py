@@ -11,6 +11,7 @@ from scripts.process_improvement.common import *
 def inspect(path):
     frames=pickle.load(open(path,'rb'))
     return dict(path=path,parent=Path(path).stem.rsplit('_',2)[0],
+                sha256=sha(path),bytes=Path(path).stat().st_size,
                 log_tokens=sorted({f['log_token'] for f in frames}),scene_tokens=sorted({f['scene_token'] for f in frames}))
 
 
@@ -18,6 +19,7 @@ def main():
     purposes=read(ROOT/'manifests/parent_splits.json')
     purpose_by_parent={parent:name for name,parents in purposes.items() for parent in parents}
     versions=read(ROOT/'manifests/source_versions.json')
+    expected_hashes={v['path']:v['sha256'] for v in versions}
     # Test identifiers are audited without reading any test predictions/rewards.
     tests=membership('navtest')
     for row in tests:
@@ -28,6 +30,7 @@ def main():
     records=[]
     with ProcessPoolExecutor(4) as pool:
         for item in pool.map(inspect,[v['path'] for v in versions],chunksize=1):
+            if item['path'] in expected_hashes:assert item['sha256']==expected_hashes[item['path']],'Raw dataset changed since population reconstruction'
             records.append(item);purpose=purpose_by_parent[item['parent']]
             for token in item['log_tokens']:log_to_parents[token].add(item['parent']);log_to_purposes[token].add(purpose)
             for token in item['scene_tokens']:scene_to_purposes[token].add(purpose)

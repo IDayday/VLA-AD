@@ -1,0 +1,891 @@
+{
+  "tune_ANCHOR_3e-5": {
+    "config": {
+      "method": "ANCHOR",
+      "split": "train_25k",
+      "seed": 42,
+      "lr": 3e-05,
+      "steps": 812,
+      "epochs": 1.0,
+      "global_batch": 32,
+      "micro_batch": 32,
+      "world": 1,
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "data_sha256": "a1e973616f5bdbf0d11c2b4ef718cd1df287a4a065977c76fcbe04cd0fe6239b",
+      "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+      "score_budget": null,
+      "qualification": false,
+      "parameter_count": 34329219,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1895401,
+        "start_ticks": "1394501126",
+        "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+      },
+      "schedule_sha256": "1aa072c686272abd2d18e4ce193fecafff0527961fc32733c160533d773a542a"
+    },
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 812,
+      "scene_exposures": 25984,
+      "seconds": 1860.7075681686401,
+      "peak_gpu_bytes": 25395950080,
+      "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+      "final_student_hash": "e5f08523794477f2b38d2442461aa00738aa7ca1de7651a7498b34abd61f3622",
+      "reference_unchanged": true,
+      "checkpoint_sha256": "e21983f4de98b7dd659e197fb48c6d0c751b1c4d991764d6e998c47a4f880887",
+      "physical_scores": 0,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1895401,
+        "start_ticks": "1394501126",
+        "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+      }
+    },
+    "paused": null
+  },
+  "qualification_OPD_B32": {
+    "config": {
+      "method": "OPD",
+      "split": "legacy_4k",
+      "seed": 42,
+      "lr": 3e-05,
+      "steps": 8,
+      "epochs": 2.0,
+      "global_batch": 32,
+      "micro_batch": 1,
+      "world": 1,
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "data_sha256": "375c1044464316b5293f78d39dc065aab8ba0ea80f3134e3372930e8b4821312",
+      "config_sha256": "61bb3f52ae8666d05886b47361abf2f7a7c74baf9b2a7647c84f9e2fae45c128",
+      "score_budget": null,
+      "qualification": true,
+      "parameter_count": 34329219,
+      "owner": {
+        "host": "training-vlawm-tsinghua-zt2",
+        "pid": 2253268,
+        "start_ticks": "1394390937",
+        "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+      },
+      "schedule_sha256": "658f2c662ef133eabe346d3934c982eae0221b531dc34b36dcdef22a75244c99"
+    },
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 8,
+      "scene_exposures": 256,
+      "seconds": 202.23492980003357,
+      "peak_gpu_bytes": 1551753728,
+      "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+      "final_student_hash": "340bd6285dc08ff133ff30eb2a39504fe604292617377cb293b0ab7e864b0958",
+      "reference_unchanged": true,
+      "checkpoint_sha256": "d4ea1aa7a3659a97b731f354e13fbc458211404c63b86af68c327e1bb0947e3f",
+      "physical_scores": 0,
+      "owner": {
+        "host": "training-vlawm-tsinghua-zt2",
+        "pid": 2253268,
+        "start_ticks": "1394390937",
+        "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+      }
+    },
+    "paused": null
+  },
+  "full_OPD_42": {
+    "config": {
+      "method": "OPD",
+      "split": "train_full",
+      "seed": 42,
+      "lr": 3e-05,
+      "steps": 9361,
+      "epochs": 4.0,
+      "global_batch": 32,
+      "micro_batch": 32,
+      "world": 1,
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "data_sha256": "e2616b8a707a4f1f7450a661f41856ad350ad48283bd947aa1fa93cd04fc446c",
+      "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+      "score_budget": null,
+      "qualification": false,
+      "parameter_count": 34329219,
+      "owner": {
+        "host": "training-vlawm-tsinghua-zt2",
+        "pid": 2282345,
+        "start_ticks": "1394895511",
+        "code_sha": "4775215702db8cb143ab3457f901e0c0f81fce49"
+      },
+      "schedule_sha256": "91bded55e6b160e5534ba68686612353fb891569b28bf87bdfbd1b82d0715496"
+    },
+    "completion": null,
+    "paused": null
+  },
+  "qualification_OPD_128": {
+    "config": {
+      "method": "OPD",
+      "split": "diagnostic_train",
+      "seed": 42,
+      "lr": 3e-05,
+      "steps": 32,
+      "epochs": 2.0,
+      "global_batch": 4,
+      "micro_batch": 1,
+      "world": 1,
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "data_sha256": "9f1582735a95e26f4f61302ffbc80a36208b70b2c049340b57a11a0e857793b6",
+      "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+      "score_budget": null,
+      "qualification": true,
+      "parameter_count": 34329219,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1923288,
+        "start_ticks": "1394791939",
+        "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+      },
+      "schedule_sha256": "95f50cb3c208c0a8bd94e2cf08b3f64f9e870348caa6ea4666d0480585be52b6"
+    },
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 32,
+      "scene_exposures": 128,
+      "seconds": 103.11379408836365,
+      "peak_gpu_bytes": 1552343552,
+      "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+      "final_student_hash": "bf7f7f33c35b217518d5ae2ba7d991ab96be8604e2b55b93ac617613cc8a83e3",
+      "reference_unchanged": true,
+      "checkpoint_sha256": "ea843a4d47d35d42b7276431c564ffb1f2bc4ff5c327dbed7fa6c876aa12e5a2",
+      "physical_scores": 0,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1923288,
+        "start_ticks": "1394791939",
+        "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+      }
+    },
+    "paused": null
+  },
+  "tune_OPD_1e-5": {
+    "config": {
+      "method": "OPD",
+      "split": "train_25k",
+      "seed": 42,
+      "lr": 1e-05,
+      "steps": 812,
+      "epochs": 1.0,
+      "global_batch": 32,
+      "micro_batch": 32,
+      "world": 1,
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "data_sha256": "a1e973616f5bdbf0d11c2b4ef718cd1df287a4a065977c76fcbe04cd0fe6239b",
+      "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+      "score_budget": null,
+      "qualification": false,
+      "parameter_count": 34329219,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1894529,
+        "start_ticks": "1394494763",
+        "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+      },
+      "schedule_sha256": "1aa072c686272abd2d18e4ce193fecafff0527961fc32733c160533d773a542a"
+    },
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 812,
+      "scene_exposures": 25984,
+      "seconds": 1627.0902109146118,
+      "peak_gpu_bytes": 25254521344,
+      "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+      "final_student_hash": "f263adc7925934ce91263d44d0a7c5edb728ec14411af9c5f9e9ef1513aeedb9",
+      "reference_unchanged": true,
+      "checkpoint_sha256": "39f229c42ac0df8897106f3e4c4d6a32a29f645f90e4e8e6a40de0f22d5e0b55",
+      "physical_scores": 0,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1894529,
+        "start_ticks": "1394494763",
+        "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+      }
+    },
+    "paused": null
+  },
+  "full_ANCHOR_42": {
+    "config": {
+      "method": "ANCHOR",
+      "split": "train_full",
+      "seed": 42,
+      "lr": 3e-05,
+      "steps": 9361,
+      "epochs": 4.0,
+      "global_batch": 32,
+      "micro_batch": 32,
+      "world": 1,
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "data_sha256": "e2616b8a707a4f1f7450a661f41856ad350ad48283bd947aa1fa93cd04fc446c",
+      "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+      "score_budget": null,
+      "qualification": false,
+      "parameter_count": 34329219,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1931563,
+        "start_ticks": "1394877191",
+        "code_sha": "4775215702db8cb143ab3457f901e0c0f81fce49"
+      },
+      "schedule_sha256": "91bded55e6b160e5534ba68686612353fb891569b28bf87bdfbd1b82d0715496"
+    },
+    "completion": null,
+    "paused": null
+  },
+  "qualification_GRPO_5": {
+    "config": {
+      "method": "native_GRPO",
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "seed": 42,
+      "lr": 1e-05,
+      "steps": 4,
+      "world": 1,
+      "global_batch": 4,
+      "group_size": 8,
+      "progress_weight": 5.0,
+      "BC_coeff": 0.1,
+      "split": "legacy_4k",
+      "data_sha256": "375c1044464316b5293f78d39dc065aab8ba0ea80f3134e3372930e8b4821312",
+      "score_budget": 4000000,
+      "sampling_std_floor": 0.04,
+      "noise_clip": 5.0,
+      "logprob_std_floor": 0.1,
+      "logprob_clip": [
+        -5.0,
+        2.0
+      ],
+      "gamma_denoising": 0.6,
+      "owner": {
+        "host": "training-vlawm-tsinghua-zt6",
+        "pid": 943681,
+        "start_ticks": "1394414490",
+        "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+      },
+      "parameter_count": 34329219,
+      "gradient_path": "Original forward_grpo unmodified, including original sample_chain graph behavior",
+      "probability_limitation": "Original Gaussian logprob surrogate for clipped-normal sampler; not exact native kernel density"
+    },
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 4,
+      "scene_exposures": 16,
+      "physical_scores": 128,
+      "seconds": 20.500520706176758,
+      "peak_gpu_bytes": 7626989568,
+      "IL_BC_reference_unchanged": true,
+      "checkpoint_sha256": "b92cc0a75f81b3e37900308ecd85e215900f4cb2d4f5fe245433a0cda1c143f7",
+      "owner": {
+        "host": "training-vlawm-tsinghua-zt6",
+        "pid": 943681,
+        "start_ticks": "1394414490",
+        "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+      }
+    },
+    "paused": null
+  },
+  "qualification_GRPO_10": {
+    "config": {
+      "method": "native_GRPO",
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "seed": 42,
+      "lr": 1e-05,
+      "steps": 4,
+      "world": 1,
+      "global_batch": 4,
+      "group_size": 8,
+      "progress_weight": 10.0,
+      "BC_coeff": 0.1,
+      "split": "legacy_4k",
+      "data_sha256": "375c1044464316b5293f78d39dc065aab8ba0ea80f3134e3372930e8b4821312",
+      "score_budget": 4000000,
+      "sampling_std_floor": 0.04,
+      "noise_clip": 5.0,
+      "logprob_std_floor": 0.1,
+      "logprob_clip": [
+        -5.0,
+        2.0
+      ],
+      "gamma_denoising": 0.6,
+      "owner": {
+        "host": "training-vlawm-tsinghua-zt6",
+        "pid": 943674,
+        "start_ticks": "1394414470",
+        "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+      },
+      "parameter_count": 34329219,
+      "gradient_path": "Original forward_grpo unmodified, including original sample_chain graph behavior",
+      "probability_limitation": "Original Gaussian logprob surrogate for clipped-normal sampler; not exact native kernel density"
+    },
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 4,
+      "scene_exposures": 16,
+      "physical_scores": 128,
+      "seconds": 20.621276378631592,
+      "peak_gpu_bytes": 7626989568,
+      "IL_BC_reference_unchanged": true,
+      "checkpoint_sha256": "e798ff3282a9b549ae4b9371b38d7d55b3fb48f3bc28b6bf4690b18bb1d7ca0e",
+      "owner": {
+        "host": "training-vlawm-tsinghua-zt6",
+        "pid": 943674,
+        "start_ticks": "1394414470",
+        "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+      }
+    },
+    "paused": null
+  },
+  "tune_GRPO_IL_1e-5": {
+    "config": {
+      "method": "native_GRPO",
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "seed": 42,
+      "lr": 1e-05,
+      "steps": 812,
+      "world": 8,
+      "global_batch": 32,
+      "group_size": 8,
+      "progress_weight": 5.0,
+      "BC_coeff": 0.1,
+      "split": "train_25k",
+      "data_sha256": "a1e973616f5bdbf0d11c2b4ef718cd1df287a4a065977c76fcbe04cd0fe6239b",
+      "score_budget": 207872,
+      "sampling_std_floor": 0.04,
+      "noise_clip": 5.0,
+      "logprob_std_floor": 0.1,
+      "logprob_clip": [
+        -5.0,
+        2.0
+      ],
+      "gamma_denoising": 0.6,
+      "owner": {
+        "host": "training-rl-zt2",
+        "pid": 1992093,
+        "start_ticks": "1386410694",
+        "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+      },
+      "parameter_count": 34329219,
+      "gradient_path": "Original forward_grpo unmodified, including original sample_chain graph behavior",
+      "probability_limitation": "Original Gaussian logprob surrogate for clipped-normal sampler; not exact native kernel density"
+    },
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 812,
+      "scene_exposures": 25984,
+      "physical_scores": 207872,
+      "seconds": 3503.1774537563324,
+      "peak_gpu_bytes": 7764307968,
+      "IL_BC_reference_unchanged": true,
+      "checkpoint_sha256": "8c5dd55ab3c0879cb81991f3785c0a657441546b3f4cfd8200ce2aa0e044380a",
+      "owner": {
+        "host": "training-rl-zt2",
+        "pid": 1992093,
+        "start_ticks": "1386410694",
+        "code_sha": "4775215702db8cb143ab3457f901e0c0f81fce49"
+      }
+    },
+    "paused": null
+  },
+  "qual_exact_continuous": {
+    "config": {
+      "method": "OPD",
+      "split": "legacy_4k",
+      "seed": 42,
+      "lr": 3e-05,
+      "steps": 4,
+      "epochs": 2.0,
+      "global_batch": 4,
+      "micro_batch": 1,
+      "world": 1,
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "data_sha256": "375c1044464316b5293f78d39dc065aab8ba0ea80f3134e3372930e8b4821312",
+      "config_sha256": "61bb3f52ae8666d05886b47361abf2f7a7c74baf9b2a7647c84f9e2fae45c128",
+      "score_budget": null,
+      "qualification": true,
+      "parameter_count": 34329219,
+      "owner": {
+        "host": "training-vlawm-tsinghua-zt6",
+        "pid": 942385,
+        "start_ticks": "1394402455",
+        "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+      },
+      "schedule_sha256": "b90771c74f8c4c1ef5abe8696123f846b58ba8105acfc8ad2125bcb029784dd1"
+    },
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 4,
+      "scene_exposures": 16,
+      "seconds": 15.996062755584717,
+      "peak_gpu_bytes": 1552343552,
+      "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+      "final_student_hash": "0a814f0717f334920d4b4f86acba69b5068e81c340ec9b5562d049eda09bdc3e",
+      "reference_unchanged": true,
+      "checkpoint_sha256": "2854be4734d1f59033ffea44b0aada0fee26afc2e2b54f06c1b8a649718ea4c1",
+      "physical_scores": 0,
+      "owner": {
+        "host": "training-vlawm-tsinghua-zt6",
+        "pid": 942385,
+        "start_ticks": "1394402455",
+        "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+      }
+    },
+    "paused": null
+  },
+  "scaling_legacy_4k_OPD_42": {
+    "config": {
+      "method": "OPD",
+      "split": "legacy_4k",
+      "seed": 42,
+      "lr": 3e-05,
+      "steps": 2000,
+      "epochs": 2.0,
+      "global_batch": 32,
+      "micro_batch": 32,
+      "world": 1,
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "data_sha256": "375c1044464316b5293f78d39dc065aab8ba0ea80f3134e3372930e8b4821312",
+      "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+      "score_budget": null,
+      "qualification": false,
+      "parameter_count": 34329219,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1934782,
+        "start_ticks": "1394902355",
+        "code_sha": "4775215702db8cb143ab3457f901e0c0f81fce49"
+      },
+      "schedule_sha256": "b82a732ea36140bdbd965c1da1c79f00abc2eb61a8d99a3b6e25dbfdcc5833c1"
+    },
+    "completion": null,
+    "paused": null
+  },
+  "full_OPD_43": {
+    "config": {
+      "method": "OPD",
+      "split": "train_full",
+      "seed": 43,
+      "lr": 3e-05,
+      "steps": 9361,
+      "epochs": 4.0,
+      "global_batch": 32,
+      "micro_batch": 32,
+      "world": 1,
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "data_sha256": "e2616b8a707a4f1f7450a661f41856ad350ad48283bd947aa1fa93cd04fc446c",
+      "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+      "score_budget": null,
+      "qualification": false,
+      "parameter_count": 34329219,
+      "owner": {
+        "host": "training-vlawm-tsinghua-zt2",
+        "pid": 2282351,
+        "start_ticks": "1394895527",
+        "code_sha": "4775215702db8cb143ab3457f901e0c0f81fce49"
+      },
+      "schedule_sha256": "65a2477a5833b853a4a50b5e64effe9d3837613b0256db5c9cd02dc6b24effae"
+    },
+    "completion": null,
+    "paused": null
+  },
+  "qual_exact_ddp": {
+    "config": {
+      "method": "OPD",
+      "split": "legacy_4k",
+      "seed": 42,
+      "lr": 3e-05,
+      "steps": 4,
+      "epochs": 2.0,
+      "global_batch": 4,
+      "micro_batch": 1,
+      "world": 2,
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "data_sha256": "375c1044464316b5293f78d39dc065aab8ba0ea80f3134e3372930e8b4821312",
+      "config_sha256": "61bb3f52ae8666d05886b47361abf2f7a7c74baf9b2a7647c84f9e2fae45c128",
+      "score_budget": null,
+      "qualification": true,
+      "parameter_count": 34329219,
+      "owner": {
+        "host": "training-vlawm-tsinghua-zt6",
+        "pid": 943121,
+        "start_ticks": "1394409597",
+        "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+      },
+      "schedule_sha256": "b90771c74f8c4c1ef5abe8696123f846b58ba8105acfc8ad2125bcb029784dd1"
+    },
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 4,
+      "scene_exposures": 16,
+      "seconds": 10.243852853775024,
+      "peak_gpu_bytes": 1690022400,
+      "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+      "final_student_hash": "48a2087073af8bb027cb053740637b1666a3981a05fcf4558e5c652aa4407332",
+      "reference_unchanged": true,
+      "checkpoint_sha256": "a696ac0647848055de63880f7e68613da1241f94c0d518ad99986e342bccaf00",
+      "physical_scores": 0,
+      "owner": {
+        "host": "training-vlawm-tsinghua-zt6",
+        "pid": 943121,
+        "start_ticks": "1394409597",
+        "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+      }
+    },
+    "paused": null
+  },
+  "tune_GRPO_IL_3e-5": {
+    "config": {
+      "method": "native_GRPO",
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "seed": 42,
+      "lr": 3e-05,
+      "steps": 812,
+      "world": 8,
+      "global_batch": 32,
+      "group_size": 8,
+      "progress_weight": 5.0,
+      "BC_coeff": 0.1,
+      "split": "train_25k",
+      "data_sha256": "a1e973616f5bdbf0d11c2b4ef718cd1df287a4a065977c76fcbe04cd0fe6239b",
+      "score_budget": 207872,
+      "sampling_std_floor": 0.04,
+      "noise_clip": 5.0,
+      "logprob_std_floor": 0.1,
+      "logprob_clip": [
+        -5.0,
+        2.0
+      ],
+      "gamma_denoising": 0.6,
+      "owner": {
+        "host": "training-rl-zt2",
+        "pid": 2006105,
+        "start_ticks": "1386764611",
+        "code_sha": "4775215702db8cb143ab3457f901e0c0f81fce49"
+      },
+      "parameter_count": 34329219,
+      "gradient_path": "Original forward_grpo unmodified, including original sample_chain graph behavior",
+      "probability_limitation": "Original Gaussian logprob surrogate for clipped-normal sampler; not exact native kernel density"
+    },
+    "completion": null,
+    "paused": null
+  },
+  "full_OPD_44": {
+    "config": {
+      "method": "OPD",
+      "split": "train_full",
+      "seed": 44,
+      "lr": 3e-05,
+      "steps": 9361,
+      "epochs": 4.0,
+      "global_batch": 32,
+      "micro_batch": 32,
+      "world": 1,
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "data_sha256": "e2616b8a707a4f1f7450a661f41856ad350ad48283bd947aa1fa93cd04fc446c",
+      "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+      "score_budget": null,
+      "qualification": false,
+      "parameter_count": 34329219,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1934777,
+        "start_ticks": "1394902351",
+        "code_sha": "4775215702db8cb143ab3457f901e0c0f81fce49"
+      },
+      "schedule_sha256": "9b6344cd10e2884c14512d0f33b090ef4363638f050f90ac2d429e5f2d1548dc"
+    },
+    "completion": null,
+    "paused": null
+  },
+  "full_ANCHOR_43": {
+    "config": {
+      "method": "ANCHOR",
+      "split": "train_full",
+      "seed": 43,
+      "lr": 3e-05,
+      "steps": 9361,
+      "epochs": 4.0,
+      "global_batch": 32,
+      "micro_batch": 32,
+      "world": 1,
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "data_sha256": "e2616b8a707a4f1f7450a661f41856ad350ad48283bd947aa1fa93cd04fc446c",
+      "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+      "score_budget": null,
+      "qualification": false,
+      "parameter_count": 34329219,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1931568,
+        "start_ticks": "1394877195",
+        "code_sha": "4775215702db8cb143ab3457f901e0c0f81fce49"
+      },
+      "schedule_sha256": "65a2477a5833b853a4a50b5e64effe9d3837613b0256db5c9cd02dc6b24effae"
+    },
+    "completion": null,
+    "paused": null
+  },
+  "scaling_train_25k_OPD_42": {
+    "config": {
+      "method": "OPD",
+      "split": "train_25k",
+      "seed": 42,
+      "lr": 3e-05,
+      "steps": 3245,
+      "epochs": 4.0,
+      "global_batch": 32,
+      "micro_batch": 32,
+      "world": 1,
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "data_sha256": "a1e973616f5bdbf0d11c2b4ef718cd1df287a4a065977c76fcbe04cd0fe6239b",
+      "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+      "score_budget": null,
+      "qualification": false,
+      "parameter_count": 34329219,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1934789,
+        "start_ticks": "1394902369",
+        "code_sha": "4775215702db8cb143ab3457f901e0c0f81fce49"
+      },
+      "schedule_sha256": "d740f8ec2ee3a0bef4d85386c86e0b9df3cc15e75b02db1beee818676a1a9a88"
+    },
+    "completion": null,
+    "paused": null
+  },
+  "full_ANCHOR_44": {
+    "config": {
+      "method": "ANCHOR",
+      "split": "train_full",
+      "seed": 44,
+      "lr": 3e-05,
+      "steps": 9361,
+      "epochs": 4.0,
+      "global_batch": 32,
+      "micro_batch": 32,
+      "world": 1,
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "data_sha256": "e2616b8a707a4f1f7450a661f41856ad350ad48283bd947aa1fa93cd04fc446c",
+      "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+      "score_budget": null,
+      "qualification": false,
+      "parameter_count": 34329219,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1931575,
+        "start_ticks": "1394877210",
+        "code_sha": "4775215702db8cb143ab3457f901e0c0f81fce49"
+      },
+      "schedule_sha256": "9b6344cd10e2884c14512d0f33b090ef4363638f050f90ac2d429e5f2d1548dc"
+    },
+    "completion": null,
+    "paused": null
+  },
+  "qualification_PROCESS_128": {
+    "config": {
+      "method": "PROCESS",
+      "split": "diagnostic_train",
+      "seed": 42,
+      "lr": 3e-05,
+      "steps": 32,
+      "epochs": 2.0,
+      "global_batch": 4,
+      "micro_batch": 1,
+      "world": 1,
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "data_sha256": "9f1582735a95e26f4f61302ffbc80a36208b70b2c049340b57a11a0e857793b6",
+      "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+      "score_budget": null,
+      "qualification": true,
+      "parameter_count": 34329219,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1921046,
+        "start_ticks": "1394774793",
+        "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+      },
+      "schedule_sha256": "95f50cb3c208c0a8bd94e2cf08b3f64f9e870348caa6ea4666d0480585be52b6"
+    },
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 32,
+      "scene_exposures": 128,
+      "seconds": 158.08630800247192,
+      "peak_gpu_bytes": 1561569792,
+      "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+      "final_student_hash": "bf7f7f33c35b217518d5ae2ba7d991ab96be8604e2b55b93ac617613cc8a83e3",
+      "reference_unchanged": true,
+      "checkpoint_sha256": "0e1ec167cd908b5b50997b68308bc8ed0d36b4fb91afdb04a96de65bd6601ac2",
+      "physical_scores": 2231,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1921046,
+        "start_ticks": "1394774793",
+        "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+      }
+    },
+    "paused": null
+  },
+  "qual_exact_resume": {
+    "config": {
+      "method": "OPD",
+      "split": "legacy_4k",
+      "seed": 42,
+      "lr": 3e-05,
+      "steps": 4,
+      "epochs": 2.0,
+      "global_batch": 4,
+      "micro_batch": 1,
+      "world": 1,
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "data_sha256": "375c1044464316b5293f78d39dc065aab8ba0ea80f3134e3372930e8b4821312",
+      "config_sha256": "61bb3f52ae8666d05886b47361abf2f7a7c74baf9b2a7647c84f9e2fae45c128",
+      "score_budget": null,
+      "qualification": true,
+      "parameter_count": 34329219,
+      "owner": {
+        "host": "training-vlawm-tsinghua-zt6",
+        "pid": 942890,
+        "start_ticks": "1394407324",
+        "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+      },
+      "schedule_sha256": "b90771c74f8c4c1ef5abe8696123f846b58ba8105acfc8ad2125bcb029784dd1"
+    },
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 4,
+      "scene_exposures": 16,
+      "seconds": 17.217309713363647,
+      "peak_gpu_bytes": 1553998336,
+      "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+      "final_student_hash": "0a814f0717f334920d4b4f86acba69b5068e81c340ec9b5562d049eda09bdc3e",
+      "reference_unchanged": true,
+      "checkpoint_sha256": "ac1a03bd4e343ad3ca5fe2b0147c0f98f268cf131118d2cbbb8c23d6227d00bc",
+      "physical_scores": 0,
+      "owner": {
+        "host": "training-vlawm-tsinghua-zt6",
+        "pid": 942890,
+        "start_ticks": "1394407324",
+        "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+      }
+    },
+    "paused": {
+      "step": 2,
+      "physical_scores": 0,
+      "score_budget_reached": false
+    }
+  },
+  "tune_ANCHOR_1e-5": {
+    "config": {
+      "method": "ANCHOR",
+      "split": "train_25k",
+      "seed": 42,
+      "lr": 1e-05,
+      "steps": 812,
+      "epochs": 1.0,
+      "global_batch": 32,
+      "micro_batch": 32,
+      "world": 1,
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "data_sha256": "a1e973616f5bdbf0d11c2b4ef718cd1df287a4a065977c76fcbe04cd0fe6239b",
+      "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+      "score_budget": null,
+      "qualification": false,
+      "parameter_count": 34329219,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1894528,
+        "start_ticks": "1394494763",
+        "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+      },
+      "schedule_sha256": "1aa072c686272abd2d18e4ce193fecafff0527961fc32733c160533d773a542a"
+    },
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 812,
+      "scene_exposures": 25984,
+      "seconds": 1690.7324256896973,
+      "peak_gpu_bytes": 25395950080,
+      "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+      "final_student_hash": "7d080247545c6e11ad006d950a540db6f996ec1ea98947c302439e7ca33b0131",
+      "reference_unchanged": true,
+      "checkpoint_sha256": "073d49c2560a0b9de4cc3e5aed80300078b977f8c957fdcea62beefa8cad2ad8",
+      "physical_scores": 0,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1894528,
+        "start_ticks": "1394494763",
+        "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+      }
+    },
+    "paused": null
+  },
+  "tune_OPD_3e-5": {
+    "config": {
+      "method": "OPD",
+      "split": "train_25k",
+      "seed": 42,
+      "lr": 3e-05,
+      "steps": 812,
+      "epochs": 1.0,
+      "global_batch": 32,
+      "micro_batch": 32,
+      "world": 1,
+      "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+      "data_sha256": "a1e973616f5bdbf0d11c2b4ef718cd1df287a4a065977c76fcbe04cd0fe6239b",
+      "config_sha256": "8b74de4b8986b228c72120d6be76703898374c76d596664b0cc7be11126f4bcb",
+      "score_budget": null,
+      "qualification": false,
+      "parameter_count": 34329219,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1894527,
+        "start_ticks": "1394494763",
+        "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+      },
+      "schedule_sha256": "1aa072c686272abd2d18e4ce193fecafff0527961fc32733c160533d773a542a"
+    },
+    "completion": {
+      "status": "COMPLETE",
+      "steps": 812,
+      "scene_exposures": 25984,
+      "seconds": 1627.1720504760742,
+      "peak_gpu_bytes": 25254521344,
+      "initial_student_hash": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+      "final_student_hash": "f359892ef843a825f83730c64981cd898fa60dfe2a3dfa494661ee1e308f4a0f",
+      "reference_unchanged": true,
+      "checkpoint_sha256": "2df2bf884fe6571f751951054ffb796fe8a575b87dddeac52acfda9088d8f47b",
+      "physical_scores": 0,
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 1894527,
+        "start_ticks": "1394494763",
+        "code_sha": "41297b8296fee710c63973f8e5f5db6a7c4bd346"
+      }
+    },
+    "paused": null
+  }
+}

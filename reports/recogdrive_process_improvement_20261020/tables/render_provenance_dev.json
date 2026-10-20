@@ -1,0 +1,14 @@
+{
+  "study": "recogdrive_process_improvement_20261020",
+  "script_sha256": "5ffd1e0c0fd00ebe069c291ba0d2bd119c94c7e3b493ea0c188d7f61a62e8098",
+  "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+  "actual_complete_evaluations": [
+    "B0_COPY",
+    "B0_IL",
+    "B0_RL",
+    "HISTORICAL_E3",
+    "HISTORICAL_E4-A"
+  ],
+  "tables": "Descriptive per-policy means; confidence intervals require analyze.py",
+  "external_artifact_root": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020"
+}

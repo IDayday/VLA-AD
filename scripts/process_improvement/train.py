@@ -160,12 +160,22 @@ def main():
                         own_inputs=BatchFeature({k:v[j:j+1] for k,v in inputs.items()})
                         with torch.no_grad():context=reference_adapter.prepare_conditioning(tokens[j:j+1],own_inputs)
                         detail=int(digest([row['token'],'trace'])[:8],16)%256==0
-                        record=target_builder.build(rollin.states[j:j+1,index],context,index,key.at_step(index),
-                                                    load_cache(row['metric_cache_path']),trace=detail,
-                                                    ablation=None if a.method=='PROCESS' else a.method)
+                        try:
+                            record=target_builder.build(rollin.states[j:j+1,index],context,index,key.at_step(index),
+                                                        load_cache(row['metric_cache_path']),trace=detail,
+                                                        ablation=None if a.method=='PROCESS' else a.method)
+                        except Exception as error:
+                            # Retain the actual failed state and exact keys;
+                            # a scoring exception is never a fabricated zero.
+                            error_path=dest/'errors'/f'target_step_{step}_occurrence_{key.occurrence_id}.pt'
+                            save(error_path,dict(row=row,state=rollin.states[j:j+1,index].cpu(),
+                                 teacher_context={k:v.detach().cpu() if v is not None else None for k,v in context.items()},
+                                 rng_key=key.at_step(index).__dict__,config=cfg,error=repr(error),budget=counter.state_dict()))
+                            raise
                         target_list.append(record.target)
                         if detail:save(dest/'target_traces'/f'{step}_{step*batch+ids[j]}.pt',record)
-                        diagnostics.append(dict(token=row['token'],index=index,accepted=record.accepted,reason=record.reason,**record.statistics))
+                        diagnostics.append(dict(token=row['token'],index=index,accepted=record.accepted,reason=record.reason,
+                                                rng_key=key.at_step(index).__dict__,**record.statistics))
                     targets=torch.cat(target_list);selected=torch.tensor(selected,device=tokens.device)
                 out=objective_from_rollin(student,reference,rollin,tokens,inputs,step,selected_target=targets,selected_index=selected,
                                           anchor=anchor,anchor_weight=cfg['lambda_anchor'] if anchor else 0.)

@@ -1,0 +1,62 @@
+[
+  {
+    "rule": "largest_repair",
+    "token": "16e38f619b4358cb",
+    "log": "2021.10.11.02.57.41_veh-50_01028_01289",
+    "cases": {
+      "B0_IL": {
+        "inference_seed": 7101,
+        "scene_mean_PDMS": 0.0,
+        "first_seed_PDMS": 0.0,
+        "events": {
+          "first_collision_s": null,
+          "first_dac_s": 3.5,
+          "first_ttc_check_failure_s": null
+        },
+        "prediction_sha256": "572e160495802f22ec070ce877d13167b275d23ab5b00fad5e44d8e3c83ba259"
+      },
+      "B0_RL": {
+        "inference_seed": 7101,
+        "scene_mean_PDMS": 1.0,
+        "first_seed_PDMS": 1.0,
+        "events": {
+          "first_collision_s": null,
+          "first_dac_s": null,
+          "first_ttc_check_failure_s": null
+        },
+        "prediction_sha256": "6b908ff61641db32fc581ab7963312566b7f0443d1518f5e6d1f54d4e0da994c"
+      }
+    },
+    "interpretation": "Dashed planned trajectory; solid tracked simulation; x marks first violation. TTC check failure is not remaining collision time. Occupancy at t=0 and t=2s is privileged illustration only."
+  },
+  {
+    "rule": "largest_degradation",
+    "token": "9eae5a2e43535977",
+    "log": "2021.10.11.02.57.41_veh-50_01028_01289",
+    "cases": {
+      "B0_IL": {
+        "inference_seed": 7101,
+        "scene_mean_PDMS": 1.0,
+        "first_seed_PDMS": 1.0,
+        "events": {
+          "first_collision_s": null,
+          "first_dac_s": null,
+          "first_ttc_check_failure_s": null
+        },
+        "prediction_sha256": "09130cc82b3dd52f9b10e14986fa121848758a8ded30d2b9aff686128dba5b0b"
+      },
+      "B0_RL": {
+        "inference_seed": 7101,
+        "scene_mean_PDMS": 0.0,
+        "first_seed_PDMS": 0.0,
+        "events": {
+          "first_collision_s": 3.3000000000000003,
+          "first_dac_s": 3.5,
+          "first_ttc_check_failure_s": 3.3000000000000003
+        },
+        "prediction_sha256": "27ec9bdcd25499d85cc6bbd004f451c185d9396cda78cca45cbd62b030102f44"
+      }
+    },
+    "interpretation": "Dashed planned trajectory; solid tracked simulation; x marks first violation. TTC check failure is not remaining collision time. Occupancy at t=0 and t=2s is privileged illustration only."
+  }
+]

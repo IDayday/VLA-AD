@@ -23,6 +23,7 @@ def main():
     p.add_argument('--name');p.add_argument('--checkpoint');p.add_argument('--init',default='IL')
     p.add_argument('--score-budget',type=int,default=4000000)
     p.add_argument('--steps',type=int)
+    p.add_argument('--cold',action='store_true');p.add_argument('--extend-four-epochs',action='store_true')
     a=p.parse_args()
     if a.run_root:os.environ['PROCESS_RUN_ROOT']=a.run_root
     from scripts.process_improvement.common import ROOT,SOURCE,PYTHON,read,write,identity
@@ -44,7 +45,13 @@ def main():
                  '--seed',str(a.seed),'--lr',str(rates[method]['lr'])]
         if a.population=='legacy_4k':command+=['--exposures','64000']
         elif a.population=='train_25k':command+=['--epochs','4']
-        elif a.population=='train_full':command+=['--epochs','4','--stop-after','4681']
+        elif a.population=='train_full':
+            command+=['--epochs','4']
+            if a.extend_four_epochs:
+                choice=read(ROOT/'selection/four_epoch_extension.json')
+                assert choice['decisions'][method]['extend_to_four_epochs']
+                if not a.resume:raise ValueError('Four epochs must extend the existing lineage with --resume')
+            else:command+=['--stop-after','4681']
         else:raise ValueError('Unregistered scaling population')
         commands=[command]
     elif a.phase=='local_diagnostics':
@@ -59,19 +66,28 @@ def main():
             write(ROOT/'suite'/f'process_not_run_seed_{a.seed}.json',dict(status='NOT_RUN',reason=gate,independent_controls_continue=True))
             print('Process gate did not support expansion; OPD and GRPO remain independent',flush=True)
             return
-        warm=read(ROOT/'selection/warm_start.json')['chosen'];rates=read(ROOT/'selection/learning_rates.json')['selected']
-        init=warm['checkpoints'][str(a.seed)]['path'];method=a.method
+        rates=read(ROOT/'selection/learning_rates.json')['selected'];method=a.method
+        if a.cold:
+            from scripts.process_improvement.common import config
+            init=config()['student_init'];rate=rates['OPD']['lr']
+        else:
+            warm=read(ROOT/'selection/warm_start.json')['chosen']
+            init=warm['checkpoints'][str(a.seed)]['path'];rate=rates[warm['method']]['lr']
         if method not in ['PROCESS','UNIFORM_TARGET','SHUFFLED_VALUE','NO_GUARD','OPD']:raise ValueError(method)
         if method=='OPD' and a.steps is None:raise ValueError('C1 requires fixed exposure/compute-matched --steps; OPD consumes no scoring budget')
         command=['scripts/process_improvement/train.py','--method',method,'--name',a.name or f'warm_{method}_{a.seed}',
-                 '--split','train_full','--steps',str(a.steps or 100000),'--init',init,'--seed',str(a.seed),
-                 '--lr',str(rates[warm['method']]['lr']),'--config','configs/process_improvement/selected_process.yaml']
+                 '--split',a.population,'--steps',str(a.steps or 100000),'--init',init,'--seed',str(a.seed),
+                 '--lr',str(rate),'--config','configs/process_improvement/selected_process.yaml']
         if method!='OPD':command+=['--score-budget',str(a.score_budget)]
         commands=[command]
     elif a.phase=='rl_controls':
-        selected=read(ROOT/'selection/grpo_rates.json')['selected'][a.init]
+        if a.init=='WARM':
+            selected=read(ROOT/'selection/grpo_warm_rate.json')['selected']
+            initial=read(ROOT/'selection/warm_start.json')['chosen']['checkpoints'][str(a.seed)]['path']
+        else:
+            selected=read(ROOT/'selection/grpo_rates.json')['selected'][a.init];initial=a.init
         command=['scripts/process_improvement/train_grpo.py','--name',a.name or f'GRPO_{a.init}_{a.seed}',
-                 '--init',a.init,'--seed',str(a.seed),'--lr',str(selected['lr']),'--score-budget',str(a.score_budget)]
+                 '--init',initial,'--seed',str(a.seed),'--lr',str(selected['lr']),'--score-budget',str(a.score_budget)]
         if len(a.gpus)>1:command=['-m','torch.distributed.run','--standalone',f'--nproc_per_node={len(a.gpus)}',*command]
         commands=[command]
     elif a.phase=='final_eval':

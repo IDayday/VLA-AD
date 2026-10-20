@@ -4,7 +4,7 @@ from pathlib import Path
 sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 import argparse
 from scripts.process_improvement.common import *
-from scripts.process_improvement.analyze import compare
+from scripts.process_improvement.analyze import predictions
 
 
 def main():
@@ -17,7 +17,9 @@ def main():
     epoch_steps={int(__import__('math').ceil(len(membership(cfg['split']))*epoch/cfg['global_batch'])) for epoch in [1,2,4,8]}
     score_endpoint=any(b<=physical<b+cfg['global_batch']*max(8,config()['candidate_count']*config()['fit_replicates']+2*config()['guard_replicates']) for b in config()['score_endpoints'])
     assert step in epoch_steps or score_endpoint,'Early-stop check is outside registered endpoints'
-    result=compare([a.evaluation],a.baseline,'cal_confirm')
+    from navsim.agents.recogdrive.process_improvement.statistics import paired_linear_bootstrap
+    old,rows=predictions(a.baseline,'cal_confirm');new,_=predictions(a.evaluation,'cal_confirm')
+    result=paired_linear_bootstrap(old,new,[r['driver_record'] for r in rows])
     point=result['point'];ci=result['CI95']
     triggers=[name for name in ['G','delta_NC','delta_DAC','delta_TTC'] if point[name]<=-.02 and ci[name][1]<0]
     record=dict(status='HARM_BOUNDARY_REACHED' if triggers else 'CONTINUE',run=a.run,step=step,

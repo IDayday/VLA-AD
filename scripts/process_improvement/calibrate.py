@@ -99,6 +99,29 @@ def confirmation_membership():
     return read(ROOT/'selection/confirmation_population.json')
 
 
+def extension():
+    if (ROOT/'selection/four_epoch_extension.json').exists():return read(ROOT/'selection/four_epoch_extension.json')
+    from navsim.agents.recogdrive.process_improvement.statistics import paired_bootstrap
+    import shutil
+    decisions={}
+    for method in ['OPD','ANCHOR']:
+        before=[];after=[]
+        for seed in config()['train_seeds']:
+            values,rows=predictions(f'full_{method}_{seed}_epoch1','cal_tune');before.append(values)
+            values,_=predictions(f'full_{method}_{seed}_epoch2','cal_tune');after.append(values)
+        result=paired_bootstrap(np.stack(before),np.stack(after),[r['driver_record'] for r in rows])
+        # This exact registered rule is independent of dev/test results and
+        # never changes a lineage's already planned optimizer/sampler schedule.
+        free=shutil.disk_usage(ROOT).free
+        storage=free>=config()['shared_free_floor_bytes']+(10<<30)
+        extend=result['point']['G']>0 and result['CI95']['G'][1]>=.002 and storage
+        decisions[method]=dict(extend_to_four_epochs=bool(extend),paired_cal_tune=result,
+                               storage_available_bytes=free,storage_allows=storage)
+    value=dict(status='LOCKED',decisions=decisions,rule='Positive epoch2-minus-epoch1 cal gain, CI upper >=0.002, and storage budget permits')
+    immutable(ROOT/'selection/four_epoch_extension.json',value)
+    return value
+
+
 def process_gate():
     chosen=read(ROOT/'selection/process_hyperparameters.json')['chosen']
     expanded=ROOT/'diagnostics/local_confirm_expand32'
@@ -122,5 +145,5 @@ def process_gate():
 
 
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--stage',choices=['rates','grpo_rates','mechanism','warm','confirmation_membership','process_gate'],required=True)
+    p=argparse.ArgumentParser();p.add_argument('--stage',choices=['rates','grpo_rates','mechanism','warm','extension','confirmation_membership','process_gate'],required=True)
     args=p.parse_args();print(json.dumps(globals()[args.stage](),ensure_ascii=False,indent=2),flush=True)

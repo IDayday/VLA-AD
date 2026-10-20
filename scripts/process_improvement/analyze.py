@@ -52,7 +52,9 @@ def predictions(name,split,limit=None):
     for row in rows:
         path=root/'scenes'/f"{row['token']}.npz";meta=path.with_suffix('.json')
         if not path.exists() or not meta.exists():raise ValueError(f'Incomplete evaluation {name}: {row["token"]}')
-        identities.add(read(meta)['evaluation_identity'])
+        metadata=read(meta)
+        if metadata['prediction_sha256']!=sha(path):raise ValueError(f'Prediction payload hash changed: {path}')
+        identities.add(metadata['evaluation_identity'])
         with np.load(path) as data:arrays.append(data['scores'])
     if len(identities)!=1:raise ValueError('Mixed evaluation identities')
     return np.stack(arrays),rows
