@@ -186,7 +186,9 @@ def ready_tasks(include_formal=False):
                          '--config',plan['config'],
                          '--rank',str(rank),'--shards','8','--scoring-workers','4',*suffix_flags]
                 if expansion:command+=['--test','32']
-                tasks.append(dict(name=f'auto_{phase}_{rank}',priority=20,gpus=1,hosts=SINGLE_HOSTS,commands=[command]))
+                # Complete the independent confirmation before optional local
+                # ablations/suffix probes can occupy its last pending shard.
+                tasks.append(dict(name=f'auto_{phase}_{rank}',priority=17,gpus=1,hosts=SINGLE_HOSTS,commands=[command]))
             if expansion and all((ROOT/'diagnostics'/phase/f'complete_{r}.json').exists() for r in range(8)):
                 if not (ROOT/'selection'/f'process_gate_{phase}.json').exists():calibrate.process_gate()
     if include_formal:

@@ -65,30 +65,35 @@ def main():
         target=Path(a.benchmark_output)
         if target.exists():raise FileExistsError('Completed latency measurement is immutable')
         if a.benchmark_repeats<5:raise ValueError('At least five timing repetitions required')
-        def native(raw,inputs,noise):
-            draws=iter(noise['steps'][:,i] for i in range(5))
-            with torch.no_grad(),patch('torch.randn_like',side_effect=lambda x:next(draws).clone()):
-                return model.action_head.get_action(raw,inputs,deterministic=False,
-                    init_actions=noise['initial'].clone())['pred_traj']
+        def native(raw,inputs):
+            with torch.no_grad():
+                return model.action_head.get_action(raw,inputs,deterministic=False)['pred_traj']
+        timing_seeds=[7101,7102,7103,7104,7105]
+        def prepare_seed(index):
+            seed=timing_seeds[index%len(timing_seeds)]
+            torch.manual_seed(seed);torch.cuda.manual_seed_all(seed)
+        expected_native=[]
+        for j in range(len(timing_seeds)):
+            prepare_seed(j);expected_native.append(native(raw,inputs).cpu())
         measurements={}
         for full in [False,True]:
             label='online_features_VLM_and_native_head' if full else 'native_head_given_raw_VLM_tokens'
-            def forward(noise):
+            def forward():
                 if full:
                     current=features(model,row);hidden=encode(model,current)
                     current_raw,current_inputs=conditioning(dict(tokens=hidden,features=current))
-                    return native(current_raw,current_inputs,noise)
-                return native(raw,inputs,noise)
+                    return native(current_raw,current_inputs)
+                return native(raw,inputs)
             for j in range(5):
-                result=forward(bank[j%len(bank)])
-                torch.testing.assert_close(result.cpu(),trajectories[j%len(bank)],atol=0,rtol=0)
+                prepare_seed(j);result=forward()
+                torch.testing.assert_close(result.cpu(),expected_native[j%len(timing_seeds)],atol=0,rtol=0)
             torch.cuda.synchronize();torch.cuda.reset_peak_memory_stats()
             resident=torch.cuda.memory_allocated();seconds=[]
             for j in range(a.benchmark_repeats):
-                torch.cuda.synchronize();start=time.perf_counter()
-                result=forward(bank[j%len(bank)])
+                prepare_seed(j);torch.cuda.synchronize();start=time.perf_counter()
+                result=forward()
                 torch.cuda.synchronize();seconds.append(time.perf_counter()-start)
-                torch.testing.assert_close(result.cpu(),trajectories[j%len(bank)],atol=0,rtol=0)
+                torch.testing.assert_close(result.cpu(),expected_native[j%len(timing_seeds)],atol=0,rtol=0)
             peak=torch.cuda.max_memory_allocated()
             measurements[label]=dict(warmup_calls=5,repeats=len(seconds),seconds=seconds,
                 mean_seconds=float(np.mean(seconds)),median_seconds=float(np.median(seconds)),
@@ -106,6 +111,7 @@ def main():
             no_teacher_scorer_future_or_improvement_dependency=True,source_checkpoint=a.checkpoint,
             checkpoint_sha256=file_hash(a.checkpoint),VLM_sha256=file_hash(Path(a.vlm)/'model.safetensors'),
             script_sha256=file_hash(__file__),
+            timing_seeds=timing_seeds,randomness='Original get_action draws initial and step noise inside timed call; RNG reset and output assertions outside timing. Timing Torch RNG seeds are distinct from stateless deployment-score noise plans.',
             total_head_parameters=sum(p.numel() for p in model.action_head.parameters()),
             native_head_parameters=sum(p.numel() for n,p in model.action_head.named_parameters() if not n.startswith('action_aware_aux_head.')),
             VLM_dtype=str(next(model.backbone.parameters()).dtype),

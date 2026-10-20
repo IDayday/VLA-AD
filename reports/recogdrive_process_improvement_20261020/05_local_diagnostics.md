@@ -11,6 +11,8 @@
 
 方括号为保留父记录、候选库及配对后续噪声层级的 95% bootstrap 区间；条件是固定 roll-in seed。这里的温度不是原生 DDIM eta。选择收益评价的是有限候选分布，投影收益评价的是原生噪声核中的均值位移；两者不能互相替代。最终学生目前也不能用这些目标程序分数代替评价。
 
+局部 P0 指给定 roll-in 前缀和当前数值状态后的原参考转移/续采样，并不是 T0 从初始噪声生成整条轨迹的部署成绩。P1 使用 fit 权重乘独立 test 候选回报，P0/P2 使用新当前步噪声且严格配对。最后一步的候选后续没有随机步骤，重复位置不是新的独立 suffix 样本；P0/P2 当前步核仍按真实噪声评价。局部条件均值不能与完整模型 PDMS 直接相减来宣称学生已实现过程收益。
+
 这些探索实验共执行 10,604,357 次物理候选评分、23,592,960 次逻辑请求，单 GPU 作业累计约 34.88 GPU 小时。此成本属于真实研究开销，纠正采样后不会被删除或隐藏。原始数据保留在 `diagnostics/local_train_grid`、`local_cal_grid`，并有 `sampling_role.json` 标明非主确认用途。
 
 正式纠正只改变诊断抽样规则：按父记录哈希排序轮询，再按固定的记录内哈希取场景，不依据得分过滤。train/cal-tune/cal-confirm 各 512 场景，父记录数分别为 127/7/7；训练总体、评分、三种 roll-in、六个温度/rho 组合、M/L、阈值和一次预登记确认扩容规则均未改变。新子集与全部哈希在 `configs/process_improvement/diagnostic_sampling_correction.json`；旧选择文件保留，正式选择将写入独立的 `process_hyperparameters_parenthash.json`。
