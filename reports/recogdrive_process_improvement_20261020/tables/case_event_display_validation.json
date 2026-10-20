@@ -1,0 +1,19 @@
+{
+  "status": "PASS_REAL_CASE_REGENERATION",
+  "generator_sha256": "e59938bca9f70bdfef6cc22e4b57da15fe6ba106417967ea243e725c0b93e299",
+  "prior_commit": "783c40879d8b7046d30fee636dcfd553aa5c9781",
+  "cases": 11,
+  "checks": [
+    "Same numerical scene/rule selection, predictions, scores and event times as prior committed tables",
+    "Re-scoring matches completed labels within1e-6",
+    "Added visible first-seed/event times; five-draw legend distinguished",
+    "Visual review of full OPD largest degradation completed"
+  ],
+  "new_actual_physical_scores": 31,
+  "GPU_work": false,
+  "receipts": {
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/case_figures_dev_full_OPD_42_epoch1/1792538456685995103/results.json": "6fc57a8004840e02edc90a57c200f63a3d109483a78292f836562b92fb980d78",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/case_figures_dev_full_ANCHOR_42_epoch1/1792538469830988344/results.json": "65b0927a6a7b27530ac0e9824345177bd83e0ad53429ef411d1f9b0a6d33c53a",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/diagnostics/case_figures_dev_B0_RL/1792538464445496098/results.json": "22e8765606fcf6ebb24de8a1147ac13b955cf17993b86be0f77029d2e23b43f8"
+  }
+}

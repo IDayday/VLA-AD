@@ -82,3 +82,5 @@ Anchor 一轮减少了明显退化场景的比例（配对差 -0.008255，95% CI
 | 共同低分后改善 `de72514102555fab` | 0.540572 | 0.587457 | 0.922801 | 教师首次 TTC 检查失败 1.9s，学生无该事件；该时刻不是剩余碰撞时间 |
 
 对应地图、原始规划轨迹、跟踪仿真轨迹及事件标记在 `figures/cases/full_OPD_42_epoch1/`，Anchor 的相同规则案例在 `figures/cases/full_ANCHOR_42_epoch1/`。原始数据哈希与事件日志见各自 `tables/case_provenance_dev_*.json`。图示 t=0/t=2s 对象占用只作 privileged 解释，不进入学生输入或目标选择。
+
+11张已选案例图已补充图内事件时刻、单种子分数及五次均值的区别；案例选择、轨迹、评分和时刻与此前提交逐字段一致。此次仅展示重绘，31次额外真实CPU评分另计，不当成新增独立评价；核验记录为 `tables/case_event_display_validation.json`。

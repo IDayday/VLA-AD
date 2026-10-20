@@ -27,6 +27,8 @@
         "prediction_sha256": "6b908ff61641db32fc581ab7963312566b7f0443d1518f5e6d1f54d4e0da994c"
       }
     },
+    "generator_sha256": "e59938bca9f70bdfef6cc22e4b57da15fe6ba106417967ea243e725c0b93e299",
+    "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
     "interpretation": "Dashed planned trajectory; solid tracked simulation; x marks first violation. TTC check failure is not remaining collision time. Occupancy at t=0 and t=2s is privileged illustration only."
   },
   {
@@ -57,6 +59,8 @@
         "prediction_sha256": "27ec9bdcd25499d85cc6bbd004f451c185d9396cda78cca45cbd62b030102f44"
       }
     },
+    "generator_sha256": "e59938bca9f70bdfef6cc22e4b57da15fe6ba106417967ea243e725c0b93e299",
+    "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
     "interpretation": "Dashed planned trajectory; solid tracked simulation; x marks first violation. TTC check failure is not remaining collision time. Occupancy at t=0 and t=2s is privileged illustration only."
   }
 ]
