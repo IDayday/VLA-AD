@@ -231,10 +231,15 @@ def local_rl_handoff_ready(tasks):
     decision=read(gate)
     if decision['status'] not in ['NOT_SUPPORTED','INCONCLUSIVE'] or decision['expansion_allowed']:
         return False
-    # Failed or unfinished short work is still a real dependency. Registry
-    # existence alone is not completion and never hides a failed qualification.
+    # Mechanism/qualification short work must actually finish. Periodic formal
+    # GRPO endpoint evaluations are independent control work, not renewed
+    # mechanism prerequisites: a qualified new four-rank job may use the other
+    # idle cards while those evaluations run. Their failures still stay visible
+    # in blocked_ready_tasks; this does not change their completion or results.
     for task in tasks:
         if task['gpus']!=1:continue
+        if re.fullmatch(r'(?:reviewed_retry\d+_)*auto_eval_(?:dev|cal_confirm)_GRPO_(?:IL|RL|WARM)_(?:42|43|44)_step(?:977|3907|15625)',task['name']):
+            continue
         done=ROOT/'jobs'/task['name']/'complete.json'
         if not done.exists() or read(done)['status']!='COMPLETE':return False
     return True

@@ -17,5 +17,12 @@
   "cost": "Report actual per-rank GPU seconds, all-rank ledger and whole-job lease separately",
   "science": "Same native sampler, reward, group8, IL BC, loss normalization, semantic scene/noise plan, update and scoring endpoints",
   "status": "REAL_NUMERICAL_QUALIFICATION_PASSED",
-  "receipt_sha256": "4ce9586246d51dd06430ddaf4f8a61975986a01a0c1078df3d972716e43df82d"
+  "receipt_sha256": "4ce9586246d51dd06430ddaf4f8a61975986a01a0c1078df3d972716e43df82d",
+  "periodic_endpoint_overlap": {
+    "recorded_utc": "2026-10-20T22:59:25.269040+00:00",
+    "scope": "Execution routing only; no objective, data, initialization, stopping or selection rule changed",
+    "rule": "After closed mechanism gate, formal GRPO dev/cal-confirm evaluations at steps977/3907/15625 do not renew mechanism handoff prerequisites; qualified new local four-rank jobs may overlap on other physically idle GPUs; full8 preferred when available",
+    "preserved": "Other unfinished or failed short prerequisites still prevent handoff; all failed endpoint evaluations remain visible and must be resolved; existing lineages resume original host/world/optimizer/RNG",
+    "routing_tests": "26 passed, including five independent overlap/prerequisite cases"
+  }
 }

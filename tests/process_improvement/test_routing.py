@@ -36,6 +36,29 @@ def test_short_lease_must_actually_finish_successfully_before_handoff(tmp_path,m
     assert coordinator.local_rl_handoff_ready(tasks)
 
 
+@pytest.mark.parametrize('name',[
+    'auto_eval_cal_confirm_GRPO_IL_42_step977',
+    'reviewed_retry1_auto_eval_dev_GRPO_WARM_44_step15625',
+])
+def test_formal_endpoint_evaluation_can_overlap_qualified_fresh_training(tmp_path,monkeypatch,name):
+    setup_root(tmp_path,monkeypatch,'NOT_SUPPORTED')
+    tasks=[dict(name=name,gpus=1)]
+    assert coordinator.local_rl_handoff_ready(tasks)
+    # An independent mechanism prerequisite still prevents the handoff.
+    tasks.append(dict(name='qualification_native_GRPO_distributed',gpus=1))
+    assert not coordinator.local_rl_handoff_ready(tasks)
+
+
+@pytest.mark.parametrize('name',[
+    'auto_eval_cal_tune_GRPO_IL_42_step977',
+    'auto_eval_dev_GRPO_IL_42_step1000',
+    'auto_eval_dev_full_OPD_42_epoch1',
+])
+def test_endpoint_overlap_never_bypasses_other_short_prerequisites(tmp_path,monkeypatch,name):
+    setup_root(tmp_path,monkeypatch,'NOT_SUPPORTED')
+    assert not coordinator.local_rl_handoff_ready([dict(name=name,gpus=1)])
+
+
 def owned_job(tmp_path,name,gpus,complete=False,launched=True):
     directory=tmp_path/'jobs'/name;directory.mkdir(parents=True)
     (directory/'spec.json').write_text(json.dumps(dict(host='host',gpus=gpus)))
