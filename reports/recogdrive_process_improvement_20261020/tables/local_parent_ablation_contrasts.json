@@ -1,0 +1,116 @@
+{
+  "status": "COMPLETE",
+  "scenes": 64,
+  "parents": 64,
+  "contrasts": [
+    {
+      "new": [
+        "antithetic",
+        "PROCESS"
+      ],
+      "control": [
+        "antithetic",
+        "SHUFFLED_VALUE"
+      ],
+      "mean": [
+        0.00035104518099975194
+      ],
+      "CI95": [
+        [
+          0.0
+        ],
+        [
+          0.0013262187148165715
+        ]
+      ],
+      "parents": 64,
+      "scenes": 64,
+      "candidate_banks": 2,
+      "suffix_replicates": 16,
+      "conditional_on_fixed_rollin_seed": true
+    },
+    {
+      "new": [
+        "antithetic",
+        "PROCESS"
+      ],
+      "control": [
+        "antithetic",
+        "NO_GUARD"
+      ],
+      "mean": [
+        -8.353864353180578e-05
+      ],
+      "CI95": [
+        [
+          -0.0003588110622131391
+        ],
+        [
+          -2.6502981428791735e-05
+        ]
+      ],
+      "parents": 64,
+      "scenes": 64,
+      "candidate_banks": 2,
+      "suffix_replicates": 16,
+      "conditional_on_fixed_rollin_seed": true
+    },
+    {
+      "new": [
+        "antithetic",
+        "PROCESS"
+      ],
+      "control": [
+        "antithetic",
+        "UNIFORM_TARGET"
+      ],
+      "mean": [
+        0.0004817007781384009
+      ],
+      "CI95": [
+        [
+          0.0
+        ],
+        [
+          0.001625161263899438
+        ]
+      ],
+      "parents": 64,
+      "scenes": 64,
+      "candidate_banks": 2,
+      "suffix_replicates": 16,
+      "conditional_on_fixed_rollin_seed": true
+    },
+    {
+      "new": [
+        "iid",
+        "PROCESS"
+      ],
+      "control": [
+        "antithetic",
+        "PROCESS"
+      ],
+      "mean": [
+        1.8373215649953347e-05
+      ],
+      "CI95": [
+        [
+          -0.000554623116116307
+        ],
+        [
+          0.0004914778433120927
+        ]
+      ],
+      "parents": 64,
+      "scenes": 64,
+      "candidate_banks": 2,
+      "suffix_replicates": 16,
+      "conditional_on_fixed_rollin_seed": true
+    }
+  ],
+  "original_result_sha256": "541eed96ecbbbf971a3324edcc92d98943573744fd6502bc18151f932899ea71",
+  "source_scene_payloads_sha256": "9d7b247c35418af406ab54b2087737bd5d544ce8f848db324af71df96b9edee0",
+  "analysis_script_sha256": "7e1a7dc5d35db3731832353e28e1cb36b380fd24f681b548d5e1a131b5bfd6de",
+  "statistics_sha256": "19478782b70a48a803d7ce746a40b2c698c8e8afac9ddae4ec5875749cbcf887",
+  "scope": "Fixed64 D_fit negative controls, historical OPD rollin; no calibration change; conditional fixed rollin seed; PDMS only, not a safety noninferiority or student result"
+}

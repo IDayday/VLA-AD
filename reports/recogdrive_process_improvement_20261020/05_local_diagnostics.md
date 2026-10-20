@@ -55,3 +55,32 @@
 原始哈希规则每 64 个 token 固定保存一部分 trace，train 共 10 场景、cal 共 13 场景。train 的历史 OPD 最后一步在这一小 trace 子集中的均值位移 RMS 平均约 3.41e-8，48.33% 的均值坐标舍入后未变，最终候选坐标没有触及 clamp 边界。这里不支持把最终 clamp 饱和当作该子集的主要瓶颈；也不能把小 trace 子集的零饱和推广到整个总体。早期位置可超过 ±1，因为原生最终 clamp 仅作用于最后一步。
 
 完整位置覆盖、平坦比例、ESS、半径、参考续采样方差及 trace 中拟合/独立候选值差异见 `tables/local_parent_{train,cal}_grid_details.json`。生成命令为 `summarize_local.py --name local_parent_train_grid --split diagnostic_parent_train`（cal 对应替换）。它仅读取原有真实结果和预先保存的 trace，没有新评分、目标回流或显著性筛选。
+
+## 固定 64 场景的真实局部消融
+
+父记录哈希 D_fit 的前 64 场景、64 个父记录均完成了两种候选噪声及四种目标对照。统一 M16/fit8/guard8/test16、两库和五个位置，旧 OPD roll-in；没有训练新学生，也没有更改校准选择。
+
+| 候选噪声 | 目标程序 | 独立 PDMS 核收益（95% CI） |
+|---|---|---:|
+| antithetic | PROCESS | 0.000482 [0,0.001625] |
+| antithetic | UNIFORM_TARGET | 0 [0,0] |
+| antithetic | SHUFFLED_VALUE | 0.000131 [-0.000004,0.000654] |
+| antithetic | NO_GUARD | 0.000565 [0.000039,0.001743] |
+| iid | PROCESS | 0.000500 [0,0.001544] |
+| iid | UNIFORM_TARGET | 0 [0,0] |
+| iid | SHUFFLED_VALUE | 0.000091 [-0.000001,0.000491] |
+| iid | NO_GUARD | 0.000632 [0.000035,0.001826] |
+
+直接配对的 PROCESS−SHUFFLED_VALUE 为 +0.000351，95% CI [0,0.001326]，仍不能确认价值权重相对该负控制的额外作用。PROCESS−NO_GUARD 为 -0.000084，CI [-0.000359,-0.000027]；在这个训练子集上，guard 减少了幅度很小的 PDMS 收益，不应隐藏。iid−antithetic 的主程序差为 +0.000018，CI [-0.000555,0.000491]，没有据此更换默认采样。
+
+PROCESS 的 antithetic/iid 接受比例为 1.406%/1.094%；NO_GUARD 的 accepted=True 是变体定义，不代表所有目标位移非零。该消融保存的是 PDMS 差，不能用它宣称 NO_GUARD 安全非劣。主 512 场景机制诊断另有完整分项。这里是 D_fit 的次要诊断，区间未作为 P2 主比较的多重检验结果，更不能代替不同父记录的 cal-confirm 或学生部署评价。
+
+实耗共 137,078 次物理评分、901,120 次逻辑请求、764,042 次精确重复命中。真实原始结果见 `tables/local_parent_ablations.json`，基于保留逐场景 MC 差值的直接配对分析见 `tables/local_parent_ablation_contrasts.json`，生成入口为 `scripts/process_improvement/analyze_ablations.py`。
+
+## 完成的动态程序与当前学生 suffix 诊断
+
+锁定配方下的 16 场景动态程序也已真实完成。每一步访问新状态后重算目标，但 80 个目标全部被 guard 拒绝，动态链与原参考的平均 PDMS 均为 0.976740，增益为零。另行冻结评价的一轮 OPD seed42 在这 16 个 D_fit 场景为 0.976404；没有使用过程目标更新它，因此这个数值不能证明学生已经继承过程改进。实耗 9,392 次物理评分、11,568 次逻辑请求，参考 DiT 560 次调用/23,280 个轨迹状态，冻结学生 80 次/80 状态。`tables/dynamic_parent_teaching.json` 保留所有结果，旧零增益小测没有被覆盖。
+
+当前完整 OPD 学生的 suffix mismatch 也完成了 128 个固定 cal-confirm 场景、7 个父记录的真实诊断。使用主训练大小的 M8/fit2/guard2，一共 640 个目标、5 个接受；目标和当前步参考核固定，只替换后续策略，测试噪声严格配对。加入保存的 16 组 test 噪声轴后，参考 suffix 的增益为 0.000060，95% CI [0.000004,0.000253]；学生 suffix 为 0.000096，CI [0.000005,0.000382]；二者差为 +0.000036，CI [-0.000124,0.000321]。这里未发现明确的额外 suffix 损失，也没有达到实质性收益门槛。
+
+这些区间条件于单一固定目标库、fit/guard 及 roll-in；不能把注入同一个目标后由学生续采样的收益，写成学生自己已经学习并部署了该目标。原始父记录条件区间及方差、640 个逐位置样本和 29,744 次物理评分保留在外部 `diagnostics/suffix_mismatch/selected_full_seed42/`；提交结果 `tables/selected_full_suffix_mismatch.json`，保留噪声轴的成对重分析为 `tables/selected_full_suffix_mismatch_paired.json`，入口 `scripts/process_improvement/analyze_suffix.py`。它不参与主确认的参数或停止规则选择。

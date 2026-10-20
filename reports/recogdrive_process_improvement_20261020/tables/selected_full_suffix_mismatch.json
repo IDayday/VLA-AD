@@ -1,0 +1,42 @@
+{
+  "mean": [
+    5.993896500683985e-05,
+    9.64226697751089e-05,
+    0.00023025702162081838,
+    0.0003247737315856568
+  ],
+  "CI95": [
+    [
+      9.396007634808016e-06,
+      8.844053674140787e-06,
+      8.762602379407389e-06,
+      1.2120218816387421e-05
+    ],
+    [
+      0.00014131917334017318,
+      0.0002595020550736155,
+      0.0004571265392220683,
+      0.0008410461480104708
+    ]
+  ],
+  "parents": 7,
+  "scenes": 128,
+  "status": "COMPLETE",
+  "fields": [
+    "reference_gain",
+    "student_gain",
+    "reference_value_variance",
+    "student_value_variance"
+  ],
+  "checkpoint_sha256": "ad63e1ca2e74342a1406b1c05a105d32eaab7d1187b124cc14017b957b0c7957",
+  "config_sha256": "b5ac2660efcfbb026f1a3f367c27b8c5342508c1427fa68fde89a91c1afd172d",
+  "budget": {
+    "logical_scores": 53760,
+    "physical_scores": 29744,
+    "score_cache_hits": 24016,
+    "reference_simulations": 2462,
+    "cpu_scoring_seconds": 214.81942023200085
+  },
+  "seconds": 532.4383518695831,
+  "caveat": "Fixed target and current-step reference noise kernel; only continuation policy changes. Diagnostic, not training or deployment evaluation."
+}

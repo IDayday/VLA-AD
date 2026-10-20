@@ -1,0 +1,39 @@
+{
+  "mean": [
+    5.993896500683985e-05,
+    9.642266977510888e-05,
+    3.648370476826905e-05
+  ],
+  "CI95": [
+    [
+      4.4857503097862104e-06,
+      5.166180896937248e-06,
+      -0.00012401344010033226
+    ],
+    [
+      0.00025298333422722497,
+      0.0003821416578839838,
+      0.00032128715784237303
+    ]
+  ],
+  "parents": 7,
+  "scenes": 128,
+  "candidate_banks": 1,
+  "suffix_replicates": 16,
+  "conditional_on_fixed_rollin_seed": true,
+  "status": "COMPLETE",
+  "fields": [
+    "reference_suffix_gain",
+    "student_suffix_gain",
+    "student_minus_reference_gain"
+  ],
+  "target_constructions": 640,
+  "accepted_targets": 5,
+  "conditional_on_fixed_target_construction": true,
+  "source_checkpoint_sha256": "ad63e1ca2e74342a1406b1c05a105d32eaab7d1187b124cc14017b957b0c7957",
+  "input_result_sha256": "eefa9120e7b3f8c55033316d0ac82f681acf5a7ec189a25968c884bbcea839fa",
+  "scene_payloads_sha256": "b2477c4a4499960591715feed1486b10d6e80f5effa186c62cf519a948137419",
+  "analysis_script_sha256": "0cbbcd068e4c1c8289f42011984592363a5075d605714628685741874160a1a3",
+  "statistics_sha256": "19478782b70a48a803d7ce746a40b2c698c8e8afac9ddae4ec5875749cbcf887",
+  "scope": "128 fixed cal-confirm scenes, one fixed target bank per state; only suffix policy changes under same current-step reference kernel. No training, recalibration or deployed-student gain claim."
+}

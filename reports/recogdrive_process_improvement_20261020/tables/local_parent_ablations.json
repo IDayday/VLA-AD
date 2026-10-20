@@ -1,0 +1,365 @@
+{
+  "status": "COMPLETE",
+  "results": [
+    {
+      "mean": [
+        0.0005652394216702067
+      ],
+      "CI95": [
+        [
+          3.9143432478609756e-05
+        ],
+        [
+          0.001743220020161263
+        ]
+      ],
+      "parents": 64,
+      "scenes": 64,
+      "candidate_banks": 2,
+      "suffix_replicates": 16,
+      "conditional_on_fixed_rollin_seed": true,
+      "mode": "antithetic",
+      "variant": "NO_GUARD",
+      "diagnostics": {
+        "mean": [
+          1.0,
+          0.00186260413702327,
+          0.008349025179632005,
+          15.734110714495182
+        ],
+        "CI95": [
+          [
+            1.0,
+            0.0005736723926239734,
+            0.0017303345678374175,
+            15.440008562244476
+          ],
+          [
+            1.0,
+            0.0036853221457304438,
+            0.018070924634230323,
+            15.941549686938522
+          ]
+        ],
+        "parents": 64,
+        "scenes": 64
+      }
+    },
+    {
+      "mean": [
+        0.0004817007781384009
+      ],
+      "CI95": [
+        [
+          0.0
+        ],
+        [
+          0.001625161263899438
+        ]
+      ],
+      "parents": 64,
+      "scenes": 64,
+      "candidate_banks": 2,
+      "suffix_replicates": 16,
+      "conditional_on_fixed_rollin_seed": true,
+      "mode": "antithetic",
+      "variant": "PROCESS",
+      "diagnostics": {
+        "mean": [
+          0.0140625,
+          0.00186260413702327,
+          0.008349025179632005,
+          15.734110714495182
+        ],
+        "CI95": [
+          [
+            0.0015625,
+            0.0005736723926239734,
+            0.0017303345678374175,
+            15.440008562244476
+          ],
+          [
+            0.03125,
+            0.0036853221457304438,
+            0.018070924634230323,
+            15.941549686938522
+          ]
+        ],
+        "parents": 64,
+        "scenes": 64
+      }
+    },
+    {
+      "mean": [
+        0.00013065559713864886
+      ],
+      "CI95": [
+        [
+          -4.234629001532947e-06
+        ],
+        [
+          0.000654295544634375
+        ]
+      ],
+      "parents": 64,
+      "scenes": 64,
+      "candidate_banks": 2,
+      "suffix_replicates": 16,
+      "conditional_on_fixed_rollin_seed": true,
+      "mode": "antithetic",
+      "variant": "SHUFFLED_VALUE",
+      "diagnostics": {
+        "mean": [
+          0.004687500000000001,
+          0.0013081889711642931,
+          0.008349025179632005,
+          15.734110766649248
+        ],
+        "CI95": [
+          [
+            0.0,
+            0.0003698725167774258,
+            0.0017303345678374175,
+            15.44000863399357
+          ],
+          [
+            0.0125,
+            0.0026463307068737667,
+            0.018070924634230323,
+            15.941549749076367
+          ]
+        ],
+        "parents": 64,
+        "scenes": 64
+      }
+    },
+    {
+      "mean": [
+        0.0
+      ],
+      "CI95": [
+        [
+          0.0
+        ],
+        [
+          0.0
+        ]
+      ],
+      "parents": 64,
+      "scenes": 64,
+      "candidate_banks": 2,
+      "suffix_replicates": 16,
+      "conditional_on_fixed_rollin_seed": true,
+      "mode": "antithetic",
+      "variant": "UNIFORM_TARGET",
+      "diagnostics": {
+        "mean": [
+          0.0,
+          0.0,
+          0.0,
+          16.0
+        ],
+        "CI95": [
+          [
+            0.0,
+            0.0,
+            0.0,
+            16.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            16.0
+          ]
+        ],
+        "parents": 64,
+        "scenes": 64
+      }
+    },
+    {
+      "mean": [
+        0.0006320342279170614
+      ],
+      "CI95": [
+        [
+          3.4723064680165235e-05
+        ],
+        [
+          0.0018255247839447924
+        ]
+      ],
+      "parents": 64,
+      "scenes": 64,
+      "candidate_banks": 2,
+      "suffix_replicates": 16,
+      "conditional_on_fixed_rollin_seed": true,
+      "mode": "iid",
+      "variant": "NO_GUARD",
+      "diagnostics": {
+        "mean": [
+          1.0,
+          0.0014667948122014792,
+          0.00808589281514287,
+          15.748268839716909
+        ],
+        "CI95": [
+          [
+            1.0,
+            0.00044124011580522877,
+            0.0016898588533513245,
+            15.465420086719092
+          ],
+          [
+            1.0,
+            0.0029359875262647836,
+            0.017367157416883855,
+            15.946600692607461
+          ]
+        ],
+        "parents": 64,
+        "scenes": 64
+      }
+    },
+    {
+      "mean": [
+        0.0005000739937883541
+      ],
+      "CI95": [
+        [
+          0.0
+        ],
+        [
+          0.0015443469223294776
+        ]
+      ],
+      "parents": 64,
+      "scenes": 64,
+      "candidate_banks": 2,
+      "suffix_replicates": 16,
+      "conditional_on_fixed_rollin_seed": true,
+      "mode": "iid",
+      "variant": "PROCESS",
+      "diagnostics": {
+        "mean": [
+          0.0109375,
+          0.0014667948122014792,
+          0.00808589281514287,
+          15.748268839716909
+        ],
+        "CI95": [
+          [
+            0.0,
+            0.00044124011580522877,
+            0.0016898588533513245,
+            15.465420086719092
+          ],
+          [
+            0.025,
+            0.0029359875262647836,
+            0.017367157416883855,
+            15.946600692607461
+          ]
+        ],
+        "parents": 64,
+        "scenes": 64
+      }
+    },
+    {
+      "mean": [
+        9.089604844930538e-05
+      ],
+      "CI95": [
+        [
+          -1.4996865997382487e-06
+        ],
+        [
+          0.0004910162855451895
+        ]
+      ],
+      "parents": 64,
+      "scenes": 64,
+      "candidate_banks": 2,
+      "suffix_replicates": 16,
+      "conditional_on_fixed_rollin_seed": true,
+      "mode": "iid",
+      "variant": "SHUFFLED_VALUE",
+      "diagnostics": {
+        "mean": [
+          0.003125,
+          0.0012143565840285681,
+          0.00808589281514287,
+          15.748268826305868
+        ],
+        "CI95": [
+          [
+            0.0,
+            0.0003586684362072809,
+            0.0016898588533513245,
+            15.465420099049805
+          ],
+          [
+            0.0078125,
+            0.002431365321523629,
+            0.017367157416883855,
+            15.946600718833508
+          ]
+        ],
+        "parents": 64,
+        "scenes": 64
+      }
+    },
+    {
+      "mean": [
+        0.0
+      ],
+      "CI95": [
+        [
+          0.0
+        ],
+        [
+          0.0
+        ]
+      ],
+      "parents": 64,
+      "scenes": 64,
+      "candidate_banks": 2,
+      "suffix_replicates": 16,
+      "conditional_on_fixed_rollin_seed": true,
+      "mode": "iid",
+      "variant": "UNIFORM_TARGET",
+      "diagnostics": {
+        "mean": [
+          0.0,
+          0.0,
+          0.0,
+          16.0
+        ],
+        "CI95": [
+          [
+            0.0,
+            0.0,
+            0.0,
+            16.0
+          ],
+          [
+            0.0,
+            0.0,
+            0.0,
+            16.0
+          ]
+        ],
+        "parents": 64,
+        "scenes": 64
+      }
+    }
+  ],
+  "budget": {
+    "logical_scores": 901120,
+    "physical_scores": 137078,
+    "score_cache_hits": 764042,
+    "reference_simulations": 7245,
+    "cpu_scoring_seconds": 903.0591158549983
+  },
+  "scope": "64-scene local stability/negative controls; not a formal student or a substitute for independent confirmation"
+}

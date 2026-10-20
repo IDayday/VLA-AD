@@ -10,6 +10,7 @@ sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
 import argparse
 import fcntl
 import time
+import re
 from scripts.process_improvement.common import *
 from scripts.process_improvement.dispatch import remote,launch
 
@@ -261,7 +262,7 @@ def local_partition_task(task, host, idle, handoff):
     An entire available host keeps the preferred eight-rank execution.
     """
     if (not handoff or host!='training-vla-zt' or not 4<=len(idle)<8 or
-            task['gpus']!=8 or not task['name'].startswith('formal_GRPO_')):
+            task['gpus']!=8 or not re.fullmatch(r'(?:reviewed_retry\d+_)*formal_GRPO_(?:IL|RL|WARM)_\d+_to\d+',task['name'])):
         return task
     commands=task['commands']
     if any('--resume' in c for c in commands):return task

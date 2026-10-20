@@ -1,0 +1,766 @@
+{
+  "status": "COMPLETE",
+  "records": [
+    {
+      "token": "020735cdbee55716",
+      "driver_record": "2021.06.08.18.59.48_veh-12",
+      "reference": [
+        1.0,
+        1.0,
+        0.8987957647795901,
+        1.0,
+        1.0,
+        1.0,
+        0.9578315686581625
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        0.8987957647795901,
+        1.0,
+        1.0,
+        1.0,
+        0.9578315686581625
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 723,
+        "physical_scores": 610,
+        "score_cache_hits": 113,
+        "reference_simulations": 23,
+        "cpu_scoring_seconds": 4.50976121
+      },
+      "frozen_student": [
+        1.0,
+        1.0,
+        0.9378634139094773,
+        1.0,
+        1.0,
+        1.0,
+        0.9741097557956154
+      ]
+    },
+    {
+      "token": "6344a6621d745739",
+      "driver_record": "2021.07.16.18.19.22_veh-35",
+      "reference": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 1446,
+        "physical_scores": 1180,
+        "score_cache_hits": 266,
+        "reference_simulations": 46,
+        "cpu_scoring_seconds": 8.364903481999997
+      },
+      "frozen_student": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "token": "794bf0c2b69c5481",
+      "driver_record": "2021.08.31.12.54.56_veh-40",
+      "reference": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 2169,
+        "physical_scores": 1750,
+        "score_cache_hits": 419,
+        "reference_simulations": 69,
+        "cpu_scoring_seconds": 12.391839670000003
+      },
+      "frozen_student": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "token": "e3c0f2ed04b75aec",
+      "driver_record": "2021.09.14.16.46.51_veh-45",
+      "reference": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 2892,
+        "physical_scores": 2320,
+        "score_cache_hits": 572,
+        "reference_simulations": 92,
+        "cpu_scoring_seconds": 16.112896262000007
+      },
+      "frozen_student": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "token": "eb89dde92f83573c",
+      "driver_record": "2021.06.14.16.48.02_veh-12",
+      "reference": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 3615,
+        "physical_scores": 2890,
+        "score_cache_hits": 725,
+        "reference_simulations": 115,
+        "cpu_scoring_seconds": 19.84609925600001
+      },
+      "frozen_student": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "token": "d74b03976f695a44",
+      "driver_record": "2021.06.14.20.14.09_veh-26",
+      "reference": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 4338,
+        "physical_scores": 3460,
+        "score_cache_hits": 878,
+        "reference_simulations": 138,
+        "cpu_scoring_seconds": 23.54008552200001
+      },
+      "frozen_student": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "token": "cfc22edcbf535fc3",
+      "driver_record": "2021.06.23.16.52.00_veh-26",
+      "reference": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 5061,
+        "physical_scores": 4030,
+        "score_cache_hits": 1031,
+        "reference_simulations": 161,
+        "cpu_scoring_seconds": 26.796941445
+      },
+      "frozen_student": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "token": "5a63fc99338a5825",
+      "driver_record": "2021.08.24.18.30.46_veh-08",
+      "reference": [
+        1.0,
+        1.0,
+        0.8492131690827395,
+        1.0,
+        1.0,
+        1.0,
+        0.9371721537844747
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        0.8492131690827395,
+        1.0,
+        1.0,
+        1.0,
+        0.9371721537844747
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 5784,
+        "physical_scores": 4640,
+        "score_cache_hits": 1144,
+        "reference_simulations": 184,
+        "cpu_scoring_seconds": 29.738252071
+      },
+      "frozen_student": [
+        1.0,
+        1.0,
+        0.8641922643371712,
+        1.0,
+        1.0,
+        1.0,
+        0.9434134434738214
+      ]
+    },
+    {
+      "token": "24fc954273bd5113",
+      "driver_record": "2021.08.17.17.17.01_veh-45",
+      "reference": [
+        1.0,
+        1.0,
+        0.8591764269507173,
+        1.0,
+        1.0,
+        1.0,
+        0.9413235112294656
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        0.8591764269507173,
+        1.0,
+        1.0,
+        1.0,
+        0.9413235112294656
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 6507,
+        "physical_scores": 5250,
+        "score_cache_hits": 1257,
+        "reference_simulations": 207,
+        "cpu_scoring_seconds": 32.91421899800001
+      },
+      "frozen_student": [
+        1.0,
+        1.0,
+        0.8525451941022609,
+        1.0,
+        1.0,
+        1.0,
+        0.9385604975426087
+      ]
+    },
+    {
+      "token": "f8388643d5e75bd8",
+      "driver_record": "2021.08.31.17.42.52_veh-40",
+      "reference": [
+        1.0,
+        1.0,
+        0.7791552642961765,
+        1.0,
+        1.0,
+        1.0,
+        0.9079813601234069
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        0.7791552642961765,
+        1.0,
+        1.0,
+        1.0,
+        0.9079813601234069
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 7230,
+        "physical_scores": 5860,
+        "score_cache_hits": 1370,
+        "reference_simulations": 230,
+        "cpu_scoring_seconds": 37.18764272500002
+      },
+      "frozen_student": [
+        1.0,
+        1.0,
+        0.7846082290098778,
+        1.0,
+        1.0,
+        1.0,
+        0.9102534287541157
+      ]
+    },
+    {
+      "token": "99c5fc0dea245211",
+      "driver_record": "2021.07.24.18.06.35_veh-35",
+      "reference": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 7953,
+        "physical_scores": 6430,
+        "score_cache_hits": 1523,
+        "reference_simulations": 253,
+        "cpu_scoring_seconds": 40.52348560100001
+      },
+      "frozen_student": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "token": "19a10c4e2fb45cab",
+      "driver_record": "2021.06.09.14.03.17_veh-12",
+      "reference": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 8676,
+        "physical_scores": 7000,
+        "score_cache_hits": 1676,
+        "reference_simulations": 276,
+        "cpu_scoring_seconds": 44.360572715999986
+      },
+      "frozen_student": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "token": "b87fc3ee418056d9",
+      "driver_record": "2021.08.24.18.07.48_veh-45",
+      "reference": [
+        1.0,
+        1.0,
+        0.8566315686450859,
+        1.0,
+        1.0,
+        1.0,
+        0.9402631536021192
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        0.8566315686450859,
+        1.0,
+        1.0,
+        1.0,
+        0.9402631536021192
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 9399,
+        "physical_scores": 7610,
+        "score_cache_hits": 1789,
+        "reference_simulations": 299,
+        "cpu_scoring_seconds": 47.04892510499999
+      },
+      "frozen_student": [
+        1.0,
+        1.0,
+        0.826031888545305,
+        1.0,
+        1.0,
+        1.0,
+        0.927513286893877
+      ]
+    },
+    {
+      "token": "8dd27546af7c57e0",
+      "driver_record": "2021.07.24.22.52.16_veh-35",
+      "reference": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 10122,
+        "physical_scores": 8180,
+        "score_cache_hits": 1942,
+        "reference_simulations": 322,
+        "cpu_scoring_seconds": 50.72824440799999
+      },
+      "frozen_student": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ]
+    },
+    {
+      "token": "706dacab2be954f8",
+      "driver_record": "2021.06.09.17.37.09_veh-12",
+      "reference": [
+        1.0,
+        1.0,
+        0.8638301169055883,
+        1.0,
+        1.0,
+        1.0,
+        0.9432625487106617
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        0.8638301169055883,
+        1.0,
+        1.0,
+        1.0,
+        0.9432625487106617
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 10845,
+        "physical_scores": 8790,
+        "score_cache_hits": 2055,
+        "reference_simulations": 345,
+        "cpu_scoring_seconds": 55.14118581699999
+      },
+      "frozen_student": [
+        1.0,
+        1.0,
+        0.853402622799629,
+        1.0,
+        1.0,
+        1.0,
+        0.9389177594998454
+      ]
+    },
+    {
+      "token": "00e0b2e40a03591d",
+      "driver_record": "2021.09.15.14.00.15_veh-28",
+      "reference": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "dynamic_teaching": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "gain": 0.0,
+      "accepted": [
+        false,
+        false,
+        false,
+        false,
+        false
+      ],
+      "budget": {
+        "logical_scores": 11568,
+        "physical_scores": 9392,
+        "score_cache_hits": 2176,
+        "reference_simulations": 368,
+        "cpu_scoring_seconds": 58.92556439199995
+      },
+      "frozen_student": [
+        1.0,
+        1.0,
+        0.9752565583866508,
+        1.0,
+        1.0,
+        0.5,
+        0.9896902326611045
+      ]
+    }
+  ],
+  "seconds": 70.84020662307739,
+  "budget": {
+    "logical_scores": 11568,
+    "physical_scores": 9392,
+    "score_cache_hits": 2176,
+    "reference_simulations": 368,
+    "cpu_scoring_seconds": 58.92556439199995
+  },
+  "compute": {
+    "reference": {
+      "forward_calls": 560,
+      "trajectory_states": 23280
+    },
+    "student": {
+      "forward_calls": 80,
+      "trajectory_states": 80
+    }
+  },
+  "owner": {
+    "host": "training-vla-zt",
+    "pid": 2120968,
+    "start_ticks": "1396885374",
+    "code_sha": "b4206d4c0eea776eb353e03a47462f7aa91d3cdd"
+  },
+  "scope": "Targets recomputed at every newly visited state; searched diagnostic teacher, not a native deployed student"
+}

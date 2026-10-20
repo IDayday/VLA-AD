@@ -88,6 +88,12 @@ def test_new_partition_requires_real_gate_and_short_work_handoff(tmp_path,monkey
     assert coordinator.local_partition_task(task,'training-vla-zt',list(range(7)),True)==task
 
 
+def test_reviewed_prelaunch_retry_keeps_qualified_partition_available(tmp_path,monkeypatch):
+    task=qualified_partition(tmp_path,monkeypatch)
+    task['name']='reviewed_retry1_formal_GRPO_IL_42_to977'
+    assert coordinator.local_partition_task(task,'training-vla-zt',list(range(7)),True)['gpus']==4
+
+
 @pytest.mark.parametrize('host,idle',[
     ('training-rl-zt2',list(range(7))),('training-vla-zt',list(range(8))),
     ('training-vla-zt',list(range(3)))])
