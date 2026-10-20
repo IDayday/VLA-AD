@@ -1,0 +1,344 @@
+{
+  "scope": "Single training seed interim fixed endpoint; independent seeds and larger endpoints pending; not used for selection or stopping",
+  "run": "GRPO_IL_42",
+  "training_seed": 42,
+  "checkpoint": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/head_977.pt",
+  "checkpoint_sha256": "3a8a8c70125a13a659da4dc649bae5ba95a12feb68e0fe98b96ed0f18153c3dd",
+  "actual_steps": 977,
+  "actual_scene_exposures": 31264,
+  "physical_scores": 250112,
+  "run_config": {
+    "method": "native_GRPO",
+    "init": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+    "init_sha256": "4569221da6962d4e26d21a463cd70c06a7ad4d76654943fb3870086f43bdb443",
+    "seed": 42,
+    "lr": 3e-05,
+    "steps": 15625,
+    "world": 8,
+    "global_batch": 32,
+    "group_size": 8,
+    "progress_weight": 5.0,
+    "BC_coeff": 0.1,
+    "split": "train_full",
+    "data_sha256": "e2616b8a707a4f1f7450a661f41856ad350ad48283bd947aa1fa93cd04fc446c",
+    "score_budget": 4000000,
+    "sampling_std_floor": 0.04,
+    "noise_clip": 5.0,
+    "logprob_std_floor": 0.1,
+    "logprob_clip": [
+      -5.0,
+      2.0
+    ],
+    "gamma_denoising": 0.6,
+    "owner": {
+      "host": "training-vla-zt",
+      "pid": 2147656,
+      "start_ticks": "1397167142",
+      "code_sha": "98491190429c2131bb51091c506813f8bdf4f152"
+    },
+    "parameter_count": 34329219,
+    "gradient_path": "Original forward_grpo unmodified, including original sample_chain graph behavior",
+    "probability_limitation": "Original Gaussian logprob surrogate for clipped-normal sampler; not exact native kernel density"
+  },
+  "ledger": {
+    "status": "MEASURED",
+    "checkpoint_step": 977,
+    "GPU_seconds": 32961.11154985428,
+    "compute": {
+      "student": {
+        "forward_calls": 218848.0,
+        "trajectory_states": 2657440.0
+      },
+      "IL_reference": {
+        "forward_calls": 156320.0,
+        "trajectory_states": 156320.0
+      }
+    },
+    "budget": {
+      "physical_scores": 250112.0,
+      "logical_scores": 250112.0,
+      "reference_simulations": 250112.0,
+      "cpu_scoring_seconds": 7413.969828692975
+    },
+    "peak_gpu_bytes_per_rank": [
+      7764307968,
+      7764307968,
+      7764307968,
+      7764307968,
+      7764307968,
+      7764307968,
+      7764307968,
+      7764307968
+    ],
+    "peak_history_complete": true,
+    "source_files": {
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_0.json": "772607d9c185299f6303c49470c8d06f61f660677a2f84294c6da31519fba636",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_1.json": "7237dacfca02933ab06511ccf7416c031d850ef45c7d1beb593e748244ce0544",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_2.json": "7646c5e40a6e2f4f4a40f0ac27479c094cd4d4b4df261df5d8b496f58df41310",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_3.json": "5fe6a751fa01184966c5c3e056cee07980fdd82bf3ef4fe0f312b9e56d0756c1",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_4.json": "61c6a36857e0e5a53e0fbf3a82227dfa677bae54e3a0a7e0bc5f9e2b0a6d9613",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_5.json": "59685a031110a16ae331f0a2be5de9bcbec60b433d78d213f2d97b18f7b8bdfa",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_6.json": "cd68ace1e3d2e6982bffdf0f1b6b17580fac775fb6b502772c7c71907453488c",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_7.json": "b8b681c61081e0926f46e6a43b58f6f8e64f4ff457b48d7ec99ffe6ea461a7c5"
+    }
+  },
+  "comparisons": {
+    "IL": {
+      "path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/R1_IL_seed42_step977_vs_IL.json",
+      "sha256": "5a2756f1fff33ed7ceb1433c3c9af5148aa91e7f93367eb4a70972cdd8f4977f",
+      "result": {
+        "point": {
+          "G": 0.016507243880262788,
+          "M_plus": 0.026126558285465926,
+          "M_minus": 0.00961931440520314,
+          "material_drop_fraction": 0.08077830188679246,
+          "single_output_drop_probability": 0.07712264150943396,
+          "zero_output_fraction": 0.010141509433962264,
+          "zero_scene_mean_fraction": 0.006485849056603774,
+          "positive_to_zero_fraction": 0.0011792452830188679,
+          "zero_to_positive_fraction": 0.01061320754716981,
+          "PDMS": 0.9316943575809742,
+          "median_scene_PDMS": 0.9536591962205444,
+          "delta_NC": -0.0007075471698113207,
+          "delta_DAC": 0.01650943396226415,
+          "delta_EP": 0.013074043840974922,
+          "delta_TTC": 0.0031839622641509436,
+          "delta_Comfort": 0.0011792452830188679,
+          "delta_DDC": -0.0010023584905660377,
+          "delta_PDMS": 0.016507243880262788,
+          "high_M_minus": 0.008230874398365258,
+          "high_to_zero_fraction": 0.0,
+          "high_to_near_zero_fraction": 0.0
+        },
+        "CI95": {
+          "G": [
+            0.004910383080566308,
+            0.028740070959384786
+          ],
+          "M_plus": [
+            0.01653836045563434,
+            0.036223359036691924
+          ],
+          "M_minus": [
+            0.005633436329025012,
+            0.015142305959252813
+          ],
+          "material_drop_fraction": [
+            0.049263959825447144,
+            0.11073138222496375
+          ],
+          "single_output_drop_probability": [
+            0.047330741945615436,
+            0.10813784087945871
+          ],
+          "zero_output_fraction": [
+            0.0014349614984935067,
+            0.025565030513602913
+          ],
+          "zero_scene_mean_fraction": [
+            0.0007059869971820337,
+            0.018006544176337725
+          ],
+          "positive_to_zero_fraction": [
+            0.0,
+            0.005263157894736842
+          ],
+          "zero_to_positive_fraction": [
+            0.004842452377265992,
+            0.022707489694521486
+          ],
+          "PDMS": [
+            0.8982826532169098,
+            0.9512830099102577
+          ],
+          "median_scene_PDMS": [
+            0.9107852326628786,
+            0.9785339083532153
+          ],
+          "delta_NC": [
+            -0.0026226076555023923,
+            0.0004504589112027127
+          ],
+          "delta_DAC": [
+            0.006052622529501195,
+            0.029005451085310018
+          ],
+          "delta_EP": [
+            -5.60351455929823e-05,
+            0.023540632270316275
+          ],
+          "delta_TTC": [
+            -0.00177937382671688,
+            0.007966095107871803
+          ],
+          "delta_Comfort": [
+            0.0,
+            0.005263157894736842
+          ],
+          "delta_DDC": [
+            -0.0019891572616029638,
+            0.0
+          ],
+          "delta_PDMS": [
+            0.004910383080566308,
+            0.028740070959384786
+          ],
+          "high_M_minus": [
+            0.0044158970269001585,
+            0.013339489526094551
+          ],
+          "high_to_zero_fraction": [
+            0.0,
+            0.0034015538033395146
+          ],
+          "high_to_near_zero_fraction": [
+            0.0,
+            0.0034015538033395146
+          ]
+        },
+        "parent_count": 15,
+        "training_seeds": 1,
+        "inference_seeds": 5,
+        "bootstrap_repetitions": 10000,
+        "one_sided_centered_bootstrap_p": 0.005499450054994501,
+        "scope": "Parent-block bootstrap crossed with training-policy draws and globally shared paired inference IDs; few clusters/seeds and rare failures may remain inconclusive",
+        "methods": [
+          "GRPO_IL_42_step977"
+        ],
+        "baseline": "B0_IL",
+        "split": "dev",
+        "scenes": 1696,
+        "high_screening": "B0_IL_screen",
+        "cluster_unit": "parent",
+        "analysis_source": {
+          "script_sha256": "4dd8cde678a2dde03fe947993eafa1617ab8f1c017db066d6bef3eedec27dc22",
+          "statistics_sha256": "19478782b70a48a803d7ce746a40b2c698c8e8afac9ddae4ec5875749cbcf887",
+          "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+          "population_sha256": "68020f6d0cfd4d518aaa80c254f3018cd1be09e032a50d1c5a34dfa23522fe27",
+          "bootstrap_seed": 20261020
+        }
+      }
+    },
+    "T0": {
+      "path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/R1_IL_seed42_step977_vs_T0.json",
+      "sha256": "dd7ba48a28483dab83bd273df3a208f3386aec87f33cd36fd910bd9b3255fae3",
+      "result": {
+        "point": {
+          "G": -0.017933178663307375,
+          "M_plus": 0.007236965844106914,
+          "M_minus": 0.025170144507414293,
+          "material_drop_fraction": 0.31839622641509435,
+          "single_output_drop_probability": 0.3161556603773585,
+          "zero_output_fraction": 0.010141509433962264,
+          "zero_scene_mean_fraction": 0.006485849056603774,
+          "positive_to_zero_fraction": 0.005306603773584905,
+          "zero_to_positive_fraction": 0.003537735849056604,
+          "PDMS": 0.9316943575809742,
+          "median_scene_PDMS": 0.9536591962205444,
+          "delta_NC": 0.0007665094339622641,
+          "delta_DAC": -0.0037735849056603765,
+          "delta_EP": -0.037932005310846006,
+          "delta_TTC": 0.0008254716981132069,
+          "delta_Comfort": 0.0,
+          "delta_DDC": 0.0018278301886792455,
+          "delta_PDMS": -0.017933178663307375
+        },
+        "CI95": {
+          "G": [
+            -0.024853298258668784,
+            -0.012743001622027624
+          ],
+          "M_plus": [
+            0.002314198873052022,
+            0.015212798422857991
+          ],
+          "M_minus": [
+            0.01810955925289475,
+            0.03659168028355237
+          ],
+          "material_drop_fraction": [
+            0.23407713918824005,
+            0.4509690585911784
+          ],
+          "single_output_drop_probability": [
+            0.23169280428909195,
+            0.44861560737737727
+          ],
+          "zero_output_fraction": [
+            0.0014349614984935067,
+            0.025565030513602913
+          ],
+          "zero_scene_mean_fraction": [
+            0.0007059869971820337,
+            0.018006544176337725
+          ],
+          "positive_to_zero_fraction": [
+            0.000594848692932178,
+            0.015083037525354968
+          ],
+          "zero_to_positive_fraction": [
+            0.0,
+            0.012172325354176844
+          ],
+          "PDMS": [
+            0.8982826532169098,
+            0.9512830099102577
+          ],
+          "median_scene_PDMS": [
+            0.9107852326628786,
+            0.9785339083532153
+          ],
+          "delta_NC": [
+            0.0,
+            0.0017996469772600524
+          ],
+          "delta_DAC": [
+            -0.011147792486910398,
+            0.0010695187165775408
+          ],
+          "delta_EP": [
+            -0.055356966181529396,
+            -0.02664200900160519
+          ],
+          "delta_TTC": [
+            -0.007698708609271524,
+            0.015517626496030328
+          ],
+          "delta_Comfort": [
+            0.0,
+            0.0
+          ],
+          "delta_DDC": [
+            -0.0011023688832789032,
+            0.0071635987745261535
+          ],
+          "delta_PDMS": [
+            -0.024853298258668784,
+            -0.012743001622027624
+          ]
+        },
+        "parent_count": 15,
+        "training_seeds": 1,
+        "inference_seeds": 5,
+        "bootstrap_repetitions": 10000,
+        "one_sided_centered_bootstrap_p": 1.0,
+        "scope": "Parent-block bootstrap crossed with training-policy draws and globally shared paired inference IDs; few clusters/seeds and rare failures may remain inconclusive",
+        "methods": [
+          "GRPO_IL_42_step977"
+        ],
+        "baseline": "B0_RL",
+        "split": "dev",
+        "scenes": 1696,
+        "high_screening": null,
+        "cluster_unit": "parent",
+        "analysis_source": {
+          "script_sha256": "4dd8cde678a2dde03fe947993eafa1617ab8f1c017db066d6bef3eedec27dc22",
+          "statistics_sha256": "19478782b70a48a803d7ce746a40b2c698c8e8afac9ddae4ec5875749cbcf887",
+          "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+          "population_sha256": "68020f6d0cfd4d518aaa80c254f3018cd1be09e032a50d1c5a34dfa23522fe27",
+          "bootstrap_seed": 20261020
+        }
+      }
+    }
+  }
+}
