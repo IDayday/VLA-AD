@@ -1,0 +1,6 @@
+{
+  "sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+  "specification_sha256": "4e0e126af6fb9e7d37c8dd8ac3aaeb175453f6f43bcbf9518d92559428622268",
+  "reason": "Locked after real 256-exposure OPD, native GRPO10/5 reward qualification, local scoring and batch/memory measurement; before expanded experiments",
+  "base_commit": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+}

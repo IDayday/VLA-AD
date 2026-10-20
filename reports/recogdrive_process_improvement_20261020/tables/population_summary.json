@@ -1,0 +1,92 @@
+{
+  "official_filter_sha256": "c37fea567a0cfdbc29076cca893d4f5dd32db59baec18ae214527206d6b64e6f",
+  "official_token_entries": 103288,
+  "official_unique_tokens": 103288,
+  "official_log_entries": 1192,
+  "stats": {
+    "declared_token_occurrences": 103288,
+    "metric_cache_present": 103288
+  },
+  "legal_scenes": 103288,
+  "excluded_scenes": 0,
+  "duplicate_valid_tokens": 0,
+  "populations": {
+    "train_full": {
+      "scenes": 74885,
+      "logs": 903,
+      "parents": 127,
+      "sha256": "e2616b8a707a4f1f7450a661f41856ad350ad48283bd947aa1fa93cd04fc446c"
+    },
+    "train_25k": {
+      "scenes": 25958,
+      "logs": 302,
+      "parents": 39,
+      "sha256": "a1e973616f5bdbf0d11c2b4ef718cd1df287a4a065977c76fcbe04cd0fe6239b"
+    },
+    "train_50k": {
+      "scenes": 50039,
+      "logs": 594,
+      "parents": 80,
+      "sha256": "cc51ba0c5c334e2c529005c2263b35143b52ae3397d0775cf101f0bacb6fde7f"
+    },
+    "legacy_4k": {
+      "scenes": 4115,
+      "logs": 50,
+      "parents": 44,
+      "sha256": "375c1044464316b5293f78d39dc065aab8ba0ea80f3134e3372930e8b4821312"
+    },
+    "dev": {
+      "scenes": 1696,
+      "logs": 16,
+      "parents": 15,
+      "sha256": "68020f6d0cfd4d518aaa80c254f3018cd1be09e032a50d1c5a34dfa23522fe27"
+    },
+    "navtest": {
+      "scenes": 12146,
+      "logs": 136,
+      "parents": 44,
+      "sha256": "3f5ad1b20c98373e9e7bba5835a97fa5428f8fe461eeb8a535c3c711dc4a37db"
+    },
+    "cal": {
+      "scenes": 16005,
+      "logs": 138,
+      "parents": 20,
+      "sha256": "1863f341dd8ffb50c5e899e4c1e7fddd0d34a494873dd2f796bd7365ef391809"
+    },
+    "cal_tune": {
+      "scenes": 5316,
+      "logs": 31,
+      "parents": 7,
+      "sha256": "d21f9eb59499feca65bf8eaba632a22a76e2b851de084b7b277e1568a830b252"
+    },
+    "cal_confirm": {
+      "scenes": 5589,
+      "logs": 77,
+      "parents": 7,
+      "sha256": "290955b0a260a8104efbafd435ee9c3d7388ee6c3af12147c298b1ffa8d7ba7f"
+    },
+    "cal_promotion": {
+      "scenes": 5100,
+      "logs": 30,
+      "parents": 6,
+      "sha256": "eae05816cd28b6c6c97c2dbc13efe93448424038355a6ae7470587f96e9ebd78"
+    },
+    "diagnostic_train": {
+      "scenes": 512,
+      "logs": 324,
+      "parents": 113,
+      "sha256": "9f1582735a95e26f4f61302ffbc80a36208b70b2c049340b57a11a0e857793b6"
+    },
+    "diagnostic_cal": {
+      "scenes": 512,
+      "logs": 31,
+      "parents": 7,
+      "sha256": "7b40ee102967bcdf93e310f6bb02ad5f64bb779457ba9d6531c912d551771d4e"
+    }
+  },
+  "cache_absence_is_not_exclusion": true,
+  "base_training_exposure_unknown": true,
+  "navtest_previously_viewed": true,
+  "source_versions_sha256": "42e6954acda1d43c736b316eac6324f0e68b80c75a961ca586c9f5942c7286b6",
+  "exclusions_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+}

@@ -1,0 +1,20 @@
+{
+  "status": "PASS",
+  "errors": {
+    "resume": 0.0,
+    "ddp": 1.1920928955078125e-07
+  },
+  "exact_resume_optimizer": true,
+  "global_batch": 4,
+  "world_sizes": [
+    1,
+    2
+  ],
+  "microbatch": 1,
+  "owner": {
+    "host": "training-vlawm-tsinghua-zt6",
+    "pid": 942384,
+    "start_ticks": "1394402350",
+    "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+  }
+}

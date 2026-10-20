@@ -1,0 +1,64 @@
+"""Native single-trajectory deployment evaluation, paired semantic noise per scene."""
+import sys
+from pathlib import Path
+sys.path.insert(0,str(Path(__file__).resolve().parents[2]))
+import argparse
+import time
+import numpy as np
+from scripts.process_improvement.common import *
+
+
+def main():
+    import torch
+    from navsim.agents.recogdrive.opd.checkpoint_io import build_head
+    from navsim.agents.recogdrive.process_improvement.rng_plan import RNGKey
+    from navsim.agents.recogdrive.process_improvement.suffix_rollout import NativeAdapter
+    from navsim.agents.recogdrive.process_improvement.budget_counter import CanonicalScorer
+    from scripts.opd.scoring import load_cache
+    p=argparse.ArgumentParser();p.add_argument('--name',required=True);p.add_argument('--checkpoint')
+    p.add_argument('--baseline',choices=['IL','RL','COPY']);p.add_argument('--split',default='dev')
+    p.add_argument('--rank',type=int,default=0);p.add_argument('--shards',type=int,default=1)
+    p.add_argument('--limit',type=int);p.add_argument('--seeds',nargs='+',type=int)
+    p.add_argument('--screening',action='store_true');a=p.parse_args();configure();cfg=config()
+    if bool(a.checkpoint)==bool(a.baseline):raise ValueError('Specify exactly one checkpoint or baseline')
+    if a.split=='navtest' and not (ROOT/'selection/final.lock.json').exists():
+        raise ValueError('Navtest requires a precommitted final configuration lock')
+    path=a.checkpoint or cfg['student_init' if a.baseline=='IL' else 'teacher_init']
+    head=build_head(path,frozen=True);adapter=NativeAdapter(head)
+    rows=membership(a.split)
+    if a.limit:rows=rows[:a.limit]
+    rows=rows[a.rank::a.shards]
+    seeds=a.seeds or cfg['screening_seeds' if a.screening else 'evaluation_seeds']
+    dest=ROOT/'evaluation'/a.split/a.name
+    spec=dict(checkpoint_path=path,checkpoint_sha256=sha(path),population_sha256=sha(ROOT/'manifests'/f'{a.split}.json'),
+              evaluation_seeds=seeds,screening=a.screening,contract=CONTRACT,sampling='native stochastic DDIM5 single trajectory',
+              precision='float32',total_limit=a.limit)
+    if (dest/f'config_{a.rank}.json').exists():
+        assert read(dest/f'config_{a.rank}.json')['spec']==spec
+    write(dest/f'config_{a.rank}.json',dict(spec=spec,owner=identity(),rank=a.rank,shards=a.shards))
+    scorer=CanonicalScorer();started=time.time()
+    for index,row in enumerate(rows):
+        output=dest/'scenes'/f"{row['token']}.npz"
+        meta=output.with_suffix('.json')
+        if output.exists() and meta.exists():
+            assert read(meta)['evaluation_identity']==digest(spec)
+            continue
+        tokens,inputs=conditioning(observation(row));predictions=[]
+        for seed in seeds:
+            key=RNGKey(STUDY,seed,0,0,row['token'],0,-1)
+            trajectory=adapter.sample_rollin(tokens,inputs,key.plan('final_eval',device='cuda')).trajectory[0]
+            predictions.append(trajectory.cpu().numpy())
+        predictions=np.stack(predictions)
+        scores=scorer.score(row['token'],load_cache(row['metric_cache_path']),predictions)
+        output.parent.mkdir(parents=True,exist_ok=True)
+        temp=output.with_name(output.name+f'.{os.getpid()}.tmp.npz')
+        np.savez_compressed(temp,trajectories=predictions,scores=scores,seeds=seeds)
+        temp.replace(output)
+        write(meta,dict(token=row['token'],log_name=row['log_name'],driver_record=row['driver_record'],
+                        evaluation_identity=digest(spec),prediction_sha256=sha(output)))
+        if (index+1)%64==0:print('EVAL',a.name,a.rank,index+1,len(rows),time.time()-started,flush=True)
+    write(dest/f'complete_{a.rank}.json',dict(status='COMPLETE',scenes=len(rows),seconds=time.time()-started,
+          budget=scorer.counter.state_dict(),owner=identity()))
+
+
+if __name__=='__main__':main()

@@ -1,0 +1,161 @@
+study_id: recogdrive_process_improvement_20261020
+version: 1
+specification_sha256: 4e0e126af6fb9e7d37c8dd8ac3aaeb175453f6f43bcbf9518d92559428622268
+base_commit: 560bb257cd493613130f4b3643a0a2e4a88a7115
+scope:
+  trainable: entire_native_base_planner
+  frozen: shared_raw_official_VLM
+  inference: native_stochastic_DDIM5_single_trajectory
+  forbidden: [final_trajectory_pseudo_GT, feature_alignment, new_action_head, inference_search, inference_teacher]
+  on_policy_meaning: generation_level_only_not_environment_interaction
+  final_navtest_previously_viewed: true
+data:
+  official_navtrain_tokens: 103288
+  legal_navtrain_tokens: 103288
+  train_full: {scenes: 74885, parents: 127, logs: 903}
+  train_25k: {scenes: 25958, parents: 39, logs: 302}
+  train_50k: {scenes: 50039, parents: 80, logs: 594}
+  calibration: {scenes: 16005, parents: 20, tune: 5316, confirm: 5589, promotion: 5100}
+  dev: {scenes: 1696, parents: 15, logs: 16}
+  split_unit: whole_driving_record
+  cache_absence_excludes_legal_scene: false
+  split_membership: external_manifests_with_committed_compact_reconstruction_index
+  base_model_training_exposure: unknown_potentially_all_official_navtrain
+training:
+  seeds: [42, 43, 44]
+  global_batch: 32
+  micro_batch: 32
+  world_size: 1
+  alternate_world_size: measured_same_global_batch_partition_within_validated_FP32_error
+  precision: float32
+  TF32: false
+  optimizer: AdamW
+  lr_candidates: [0.00001, 0.00003]
+  lr_tuning_budget_each: one_complete_train_25k_epoch
+  lr_selection: highest_cal_tune_PDMS_at_one_epoch_same_budget_per_method_ties_choose_smaller_lr
+  weight_decay: 0.0001
+  gradient_clip_norm: 1.0
+  schedule: 100_update_linear_warmup_then_constant
+  rollout: fresh_detached_current_student_each_optimizer_update
+  objective_normalizer: global_scene_count_times_5_times_8_times_3
+  anchor_weight: 0.11228771859776292
+  anchor_GT_loss: false
+  selected_step: uniform_rotation_by_global_scene_exposure_independent_of_reward
+  context_cache: disabled_main_optimization_available_only_with_recorded_parity
+  checkpoint_resume: exact_same_world_size_full_optimizer_per_rank_RNG_cursor_reference_budget
+scaling:
+  historical_reproduction: {global_batch: 8, optimizer_updates: 1000, experiments: [E3, E4-A], role: separate_historical_control}
+  seed: 42
+  ordinary_OPD:
+    legacy_4k: {epochs: [2, 8], additional_fixed_exposure_endpoint: 64000}
+    train_25k: {epochs: [1, 2, 4], additional_fixed_exposure_endpoint: 64000}
+    train_full: {epochs: [1, 2], additional_fixed_exposure_endpoint: 64000}
+  full_confirmation: {methods: [B1_OPD_FULL, B2_ANCHOR_FULL], seeds: [42, 43, 44], epochs: [1, 2]}
+  optional_full_4_epochs: only_if_epoch2_cal_gain_over_epoch1_is_positive_and_CI_cannot_exclude_0.002_and_storage_budget_allows
+  saved_endpoints: one_lineage_per_recipe_no_independent_restart_per_epoch
+local_improvement:
+  reference_initial: immutable_T0_official_RL_active_action_head
+  kernel: native_inference_clipped_normal_actual_std_final_clamp
+  candidates: 8
+  candidate_noise: antithetic_pairs_then_native_clip
+  fit_suffix_replicates: 2
+  guard_replicates: 2
+  temperature_base: 0.05
+  temperature_grid: [0.02, 0.05, 0.10]
+  rho_grid: [0.25, 0.5]
+  ess_min_fraction: 0.5
+  temperature_selection: deterministic_increase_only_expansion_then_40_bisections
+  standardized_RMS_radius: 0.25
+  flat_tolerance: 0.000001
+  zero_std: zero_shift_no_artificial_floor
+  flat_or_M1_or_rho0: exact_reference_mean
+  projection: rho_times_sum_of_centered_weights_times_candidate_minus_reference_mean
+  interpretation: finite_bank_heuristic_mean_projection_not_exact_native_kernel_KL
+  guard_accept: independent_paired_mean_PDMS_gain_gt_0.002_and_NC_DAC_TTC_mean_difference_ge_minus_1e-8
+  guard_rejection: ordinary_reference_OPD_not_masking
+  target_precision: float32_native_injection_dtype_rounding
+  target_replay_across_updates: false
+  namespaces: [rollin, candidate, fit_suffix, target_guard, diagnostic_test, reference_promotion, final_eval]
+diagnostics:
+  train_scenes: 512
+  calibration_scenes: 512
+  scene_selection: fixed_hash_without_score_filter
+  rollin_sources: [IL, T0_RL, historical_OPD]
+  all_steps: true
+  independent_candidate_banks: 2
+  candidates: 16
+  fit_replicates: 8
+  guard_replicates: 8
+  test_replicates: 16
+  hyperparameters: six_temperature_rho_pairs_shared_candidate_fit_and_test_noise_banks
+  selection: cal_tune_only
+  confirmation: cal_confirm_with_frozen_hyperparameters
+  diagnostic_confirmatory_expansion:
+    allowed_count: 1
+    trigger: insufficient_events_or_CI_too_wide_to_decide_material_gain
+    action: increase_test_replicates_to_32_for_all_compared_variants_same_locked_scenes
+  local_states_are_not_independent: cluster_scene_then_parent
+  positive_threshold: independent_projection_or_guarded_gain_at_least_0.002_with_parent_bootstrap_lower_gt_zero
+  projection_negative_stop: stop_expanding_that_process_variant_but_continue_OPD_Anchor_and_GRPO_controls
+main_methods:
+  priority: [B0_IL, B0_RL, B0_COPY, B1_OPD_FULL, B2_ANCHOR_FULL, P2_WARM, C1_CONTINUE_OPD, R1_IL_GRPO, R2_WARM_GRPO, R3_RL_GRPO]
+  P1_COLD: at_least_real_medium_train_25k_comparison_if_projection_gate_passes
+  P2_WARM: selected_full_OPD_or_Anchor_recipe_and_epoch_applied_to_each_seeds_own_checkpoint
+  warm_selection: calibration_mean_over_training_seeds_fixed_recipe_and_epoch_ties_prefer_lower_cost_then_OPD
+  C1_CONTINUE_OPD: same_warm_checkpoint_exposure_update_matched_and_additional_compute_matched_lineage
+  R1_IL_GRPO: official_IL_native_DiffGRPO
+  R2_WARM_GRPO: same_seed_same_selected_warm_checkpoint_native_DiffGRPO
+  R3_RL_GRPO: official_RL_native_DiffGRPO
+  GRPO_native_reward_qualification: [10, 5, 2]
+  GRPO_primary_reward: [5, 5, 2]
+  GRPO_group_size: 8
+  GRPO_BC: native_single_IL_reference_coefficient_0.1_no_duplicate_anchor
+  GRPO_probability_limitation: original_clipped_gaussian_logprob_surrogate_preserved_not_exact_clipped_kernel_density
+  P3_ITERATIVE: optional_after_fixed_reference_evidence_only
+  scoring_endpoints_per_seed: [250000, 1000000, 4000000]
+  score_endpoint_overshoot: at_most_one_complete_optimizer_update_report_actual
+  cost_metrics: [logical_scores, physical_scores, exact_duplicate_hits, reference_simulations, teacher_DiT_calls, student_DiT_calls, scene_exposures, optimizer_updates, GPU_seconds, CPU_scoring_seconds, VLM_cache_cost, warm_start_cost, tuning_cost, evaluation_cost]
+  compute_matched_OPD: fixed_calibrated_step_cost_choose_nearest_saved_100_update_endpoint_without_using_dev_or_test
+  ablations: [UNIFORM_TARGET, SHUFFLED_VALUE, NO_GUARD]
+  iid_antithetic: local_stability_diagnostic_only
+evaluation:
+  seeds: [7101, 7102, 7103, 7104, 7105]
+  independent_high_screening_seeds: [7201, 7202, 7203, 7204, 7205]
+  canonical_PDMS_weights: [5, 5, 2]
+  fields: [NC, DAC, EP, TTC, Comfort, DDC, PDMS]
+  trajectory: rear_axle_ego_x_forward_y_left_heading_radians_8_points_0.5_to_4_seconds
+  score_tolerance: 0.000001
+  inference_protocol: single_native_student_output_no_oracle_or_scorer_selection
+  high_score_threshold: 0.90
+  material_drop: 0.02
+  near_zero_threshold: 0.01
+  zero_tolerance: 0.00000001
+  navtest: one_final_locked_configuration_confirmation_after_development_no_retuning
+statistics:
+  cluster: parent_driving_record_primary_log_sensitivity
+  hierarchy: training_seed_inference_seed_retained_scene_means_before_positive_negative_truncation
+  bootstrap_replicates: 10000
+  confidence: 0.95
+  primary_comparisons: [P2_vs_C1, P2_vs_R2, P2_vs_T0]
+  multiplicity: Holm_Bonferroni_for_primary_claims_report_unadjusted_also
+  material_student_gain: 0.002
+  super_teacher: mean_gain_ge_0.002_and_paired_95CI_lower_gt_zero
+  safety_NI_margin: 0.001
+  high_to_zero_increase_upper_bound: 0.001
+  M_minus_benefit: max_0.0005_or_10_percent_of_control
+stopping:
+  engineering_protocol_error: INVALID_fix_and_repeat_affected_only
+  small_pilot_or_old_E5_failure: never_blocks_independent_full_OPD_or_GRPO
+  insufficient_events: INCONCLUSIVE_one_registered_diagnostic_expansion_only
+  selection_positive_projection_negative: report_both_stop_projection_training_expansion
+  projection_positive_transfer_negative: diagnose_fit_coverage_clamp_gradient_then_report_no_generalization_without_module_expansion
+  formal_harm_boundary:
+    checked_at: scoring_endpoints_or_complete_epochs_cal_confirm_only
+    condition: mean_PDMS_decline_at_least_0.02_and_paired_95CI_upper_lt_zero_or_safety_NC_DAC_TTC_decline_at_least_0.02_with_95CI_upper_lt_zero
+    action: stop_affected_lineage_preserve_endpoint_and_report_budget_limited_scope_continue_independent_controls
+storage:
+  cache_cap_bytes: 966367641600
+  shared_free_floor_bytes: 549755813888
+  reuse_history: raw_official_v2_observations_and_canonical_metric_cache_read_only
+  traces: fixed_hash_subset_plus_errors_no_full_training_activation_dump
+  weights_and_large_logs: external_gitignored

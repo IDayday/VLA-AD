@@ -22,3 +22,7 @@ modelscope_cache/
 outputs/
 wandb/
 lightning_logs/
+
+# Process-improvement runtime artifacts (compact split indexes are versioned).
+process_runs/
+*.trace.pt

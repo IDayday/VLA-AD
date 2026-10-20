@@ -1,0 +1,59 @@
+{
+  "status": "PASS",
+  "records": [
+    {
+      "batch": 1,
+      "mean_seconds": 0.7418352365493774,
+      "seconds_per_scene": 0.7418352365493774,
+      "peak_gpu_bytes": 1661441536,
+      "gradient_partition_max_error": null,
+      "loss": 6.58182761981152e-05
+    },
+    {
+      "batch": 2,
+      "mean_seconds": 0.7547260522842407,
+      "seconds_per_scene": 0.37736302614212036,
+      "peak_gpu_bytes": 2404374016,
+      "gradient_partition_max_error": null,
+      "loss": 6.747645238647237e-05
+    },
+    {
+      "batch": 4,
+      "mean_seconds": 0.7855318784713745,
+      "seconds_per_scene": 0.19638296961784363,
+      "peak_gpu_bytes": 3900603904,
+      "gradient_partition_max_error": 4.880130290985107e-07,
+      "loss": 6.0011076129740104e-05
+    },
+    {
+      "batch": 8,
+      "mean_seconds": 0.8600374460220337,
+      "seconds_per_scene": 0.10750468075275421,
+      "peak_gpu_bytes": 7039776768,
+      "gradient_partition_max_error": null,
+      "loss": 5.8065725170308724e-05
+    },
+    {
+      "batch": 16,
+      "mean_seconds": 0.9821357727050781,
+      "seconds_per_scene": 0.06138348579406738,
+      "peak_gpu_bytes": 12944161280,
+      "gradient_partition_max_error": null,
+      "loss": 5.995447645545937e-05
+    },
+    {
+      "batch": 32,
+      "mean_seconds": 1.3929026126861572,
+      "seconds_per_scene": 0.04352820664644241,
+      "peak_gpu_bytes": 24967339008,
+      "gradient_partition_max_error": null,
+      "loss": 7.28035083739087e-05
+    }
+  ],
+  "owner": {
+    "host": "training-vlawm-tsinghua-zt2",
+    "pid": 2254937,
+    "start_ticks": "1394412153",
+    "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+  }
+}

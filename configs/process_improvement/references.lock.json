@@ -1,0 +1,78 @@
+[
+  {
+    "name": "DiffusionOPD",
+    "url": "https://github.com/ali-vilab/DiffusionOPD",
+    "commit": "0c85bf0193a6da24bb1f72152b612d353a154999",
+    "license": "Apache-2.0",
+    "inspected_files": {
+      "scripts/train_sd3_opd.py": "1f052a0e9404af9d9fa2b73cca625e8b3039c33bb097baf5bdf8ea6446450ef7"
+    },
+    "reuse": "mathematical_adaptation_only_no_third_party_runtime_import"
+  },
+  {
+    "name": "VIDD",
+    "url": "https://github.com/divelab/VIDD",
+    "commit": "20b80877a670efd84655c98ccb026790fd162baf",
+    "license": "No license file found; no source code copied",
+    "inspected_files": {
+      "finetune_reward.py": "55dce2b2cf3e046cd93eab205dce85d768f627a056138196a2b2c56aabc65d04",
+      "diffusion_gosai.py": "cafa682281ec1006dd564312c9f2b0b15a0ab8d77c61a9441226fab63c0aff92",
+      "losses/rl_loss.py": "db46379aa8a3670697876154ea54fcdf70c1719abb25f14b8196c0672574875b"
+    },
+    "reuse": "mathematical_adaptation_only_no_third_party_runtime_import"
+  },
+  {
+    "name": "SVDD-image",
+    "url": "https://github.com/masa-ue/SVDD-image",
+    "commit": "920d3b66062f0b7a7b2db709e9ecca35631e3b74",
+    "license": "No license file found; no source code copied",
+    "inspected_files": {
+      "sd_pipeline.py": "ea64f234f3e8242c0a995a46d25bc9412f2ffccb54ba39ee17c125a04e2abe18",
+      "inference_decoding_nonp.py": "329eb8628fbfbb5a0a056a2957de4266811f0213e6543f4d61c1f1a4d6c9710a",
+      "diffusers_patch/ddim_with_kl.py": "bacf449433503f4dae60e79f81bd42e6e0f1e4f9ba0c78dd567cfe264a3ccf31"
+    },
+    "reuse": "mathematical_adaptation_only_no_third_party_runtime_import"
+  },
+  {
+    "name": "dppo",
+    "url": "https://github.com/irom-princeton/dppo",
+    "commit": "cc7234ad7ff39a8f32de3af903606723a16f0648",
+    "license": "MIT",
+    "inspected_files": {
+      "model/diffusion/diffusion_vpg.py": "fa697cf69d38adedbd3fd4afd06ee96f37133b480b61505326c3cc0ce833fc54",
+      "model/diffusion/diffusion_ppo.py": "e6071bb23b426b0c75e347ccde71bb91e3a572de0b17f0a28fa294dc3f3ca563",
+      "model/diffusion/eta.py": "b6255b4ba13d049ba6383594c5758ae106bb65dfbe968d2ca267a51ae0600254"
+    },
+    "reuse": "mathematical_adaptation_only_no_third_party_runtime_import"
+  },
+  {
+    "name": "DiffusionOPD_paper",
+    "url": "https://arxiv.org/html/2605.15055v1",
+    "local_html_sha256": "48cf23b811037496d843ffa8aee6441ee00b277c2c23cf6f82a495613d29803f",
+    "role": "primary_method_reference"
+  },
+  {
+    "name": "VIDD_paper",
+    "url": "https://arxiv.org/html/2507.00445v3",
+    "local_html_sha256": "211ea7d118134835e9915bef0588e38c9a1aa70b1d14bf8e1218e58468edd1b5",
+    "role": "primary_method_reference"
+  },
+  {
+    "name": "SVDD_paper",
+    "url": "https://arxiv.org/html/2408.08252v5",
+    "local_html_sha256": "b3edb24668836fb407a46c70494a2dcc82ff4921af4b7dd0ccb051ebaf1ad32b",
+    "role": "primary_method_reference"
+  },
+  {
+    "name": "MPO_paper",
+    "url": "https://arxiv.org/html/1806.06920v1",
+    "local_html_sha256": "d398d35976e4c622dead5ab7dd21905d48a8cc5141b22f7adc7355a89f167cf9",
+    "role": "primary_method_reference"
+  },
+  {
+    "name": "DPPO_paper",
+    "url": "https://arxiv.org/html/2409.00588v3",
+    "local_html_sha256": "82dc4e18b53e157ad188db4240144d23b8bf91438cd0f191da931b0f24b5fd10",
+    "role": "primary_method_reference"
+  }
+]

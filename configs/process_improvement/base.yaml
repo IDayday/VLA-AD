@@ -1,0 +1,40 @@
+study_id: recogdrive_process_improvement_20261020
+base_commit: 560bb257cd493613130f4b3643a0a2e4a88a7115
+student_init: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt
+teacher_init: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt
+anchor_init: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt
+vlm: /mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-VLM-2B
+vlm_sha256: 79fb39297e322cd2d3dc68d4f23b86ff85806b336a4d5d0ed5db9b66e4034a3c
+sampling_method: ddim
+num_inference_steps: 5
+train_backbone: false
+use_expert_features: false
+use_last_rd: false
+precision: float32
+global_batch: 32
+micro_batch: 32
+train_seeds: [42, 43, 44]
+lr_candidates: [0.00001, 0.00003]
+weight_decay: 0.0001
+grad_clip_norm: 1.0
+warmup_updates: 100
+lambda_anchor: 0.11228771859776292
+candidate_count: 8
+candidate_mode: antithetic
+fit_replicates: 2
+guard_replicates: 2
+temperature: 0.05
+rho: 0.5
+ess_fraction: 0.5
+radius: 0.25
+flat_value_tolerance: 0.000001
+guard_margin: 0.002
+safety_tolerance: 0.00000001
+score_endpoints: [250000, 1000000, 4000000]
+evaluation_seeds: [7101, 7102, 7103, 7104, 7105]
+screening_seeds: [7201, 7202, 7203, 7204, 7205]
+cache_max_bytes: 966367641600
+shared_free_floor_bytes: 549755813888
+raw_logs: /mnt/navsim/trainval_navsim_logs/trainval
+sensor_root: /mnt/navsim/trainval_sensor_blobs/trainval
+official_filter: navsim/planning/script/config/common/train_test_split/scene_filter/navtrain.yaml

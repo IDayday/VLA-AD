@@ -1,0 +1,2137 @@
+{
+  "status": "PASS",
+  "records": [
+    {
+      "token": "cc9b708a380b5a8a",
+      "head": "IL",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "cc9b708a380b5a8a",
+      "head": "IL",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "cc9b708a380b5a8a",
+      "head": "RL",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "cc9b708a380b5a8a",
+      "head": "RL",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "cc9b708a380b5a8a",
+      "head": "COPY",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "cc9b708a380b5a8a",
+      "head": "COPY",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "aa43f9c9b3c455ae",
+      "head": "IL",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "aa43f9c9b3c455ae",
+      "head": "IL",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "aa43f9c9b3c455ae",
+      "head": "RL",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "aa43f9c9b3c455ae",
+      "head": "RL",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "aa43f9c9b3c455ae",
+      "head": "COPY",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "aa43f9c9b3c455ae",
+      "head": "COPY",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "c69a254de93354b6",
+      "head": "IL",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "c69a254de93354b6",
+      "head": "IL",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "c69a254de93354b6",
+      "head": "RL",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "c69a254de93354b6",
+      "head": "RL",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "c69a254de93354b6",
+      "head": "COPY",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "c69a254de93354b6",
+      "head": "COPY",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "f725a2d2887a585e",
+      "head": "IL",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "f725a2d2887a585e",
+      "head": "IL",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "f725a2d2887a585e",
+      "head": "RL",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "f725a2d2887a585e",
+      "head": "RL",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "f725a2d2887a585e",
+      "head": "COPY",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "f725a2d2887a585e",
+      "head": "COPY",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "7d14dc9e1394504c",
+      "head": "IL",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "7d14dc9e1394504c",
+      "head": "IL",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "7d14dc9e1394504c",
+      "head": "RL",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "7d14dc9e1394504c",
+      "head": "RL",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "7d14dc9e1394504c",
+      "head": "COPY",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "7d14dc9e1394504c",
+      "head": "COPY",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "694febdb81105aa6",
+      "head": "IL",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "694febdb81105aa6",
+      "head": "IL",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "694febdb81105aa6",
+      "head": "RL",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "694febdb81105aa6",
+      "head": "RL",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "694febdb81105aa6",
+      "head": "COPY",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "694febdb81105aa6",
+      "head": "COPY",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "55d627edf1c05c6c",
+      "head": "IL",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "55d627edf1c05c6c",
+      "head": "IL",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "55d627edf1c05c6c",
+      "head": "RL",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "55d627edf1c05c6c",
+      "head": "RL",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "55d627edf1c05c6c",
+      "head": "COPY",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "55d627edf1c05c6c",
+      "head": "COPY",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "e80eed1fab2c5cfd",
+      "head": "IL",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "e80eed1fab2c5cfd",
+      "head": "IL",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "e80eed1fab2c5cfd",
+      "head": "RL",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "e80eed1fab2c5cfd",
+      "head": "RL",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "e80eed1fab2c5cfd",
+      "head": "COPY",
+      "deterministic": false,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    },
+    {
+      "token": "e80eed1fab2c5cfd",
+      "head": "COPY",
+      "deterministic": true,
+      "native_error": 0.0,
+      "suffix_error": 0.0
+    }
+  ],
+  "heads": {
+    "IL": {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-IL/ReCogDrive_Diffusion_Planner_2B_IL.ckpt",
+      "missing": [],
+      "missing_all": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "missing_noncore": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "missing_semantics": "missing lists required core tensors; missing_all includes explicitly disabled auxiliary targets left unrestored",
+      "unexpected": [],
+      "shape_mismatch": [],
+      "ignored": [],
+      "restored_tensors": 347,
+      "dtypes": [
+        "torch.float32",
+        "torch.int64"
+      ]
+    },
+    "RL": {
+      "path": "/mnt/project/VLA-AD/checkpoints/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt",
+      "missing": [],
+      "missing_all": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "missing_noncore": [
+        "action_aware_aux_head.0.bias",
+        "action_aware_aux_head.0.weight",
+        "action_aware_aux_head.1.bias",
+        "action_aware_aux_head.1.weight",
+        "action_aware_aux_head.3.bias",
+        "action_aware_aux_head.3.weight"
+      ],
+      "missing_semantics": "missing lists required core tensors; missing_all includes explicitly disabled auxiliary targets left unrestored",
+      "unexpected": [],
+      "shape_mismatch": [],
+      "ignored": [
+        {
+          "key": "agent.action_head.old_policy.ddpm_betas",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ddpm_alphas",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ddpm_alphas_cumprod",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ddpm_alphas_cumprod_prev",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ddpm_sqrt_alphas_cumprod",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ddpm_sqrt_one_minus_alphas_cumprod",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ddpm_sqrt_recip_alphas_cumprod",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ddpm_sqrt_recipm1_alphas_cumprod",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ddpm_var",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ddpm_logvar_clipped",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ddpm_mu_coef1",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ddpm_mu_coef2",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ddim_t_schedule",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ddim_t",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ddim_alphas",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ddim_alphas_sqrt",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ddim_alphas_prev",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ddim_sqrt_one_minus_alphas",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ddim_sigmas",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.timestep_encoder.timestep_embedder.linear_1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.timestep_encoder.timestep_embedder.linear_1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.timestep_encoder.timestep_embedder.linear_2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.timestep_encoder.timestep_embedder.linear_2.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.rotary_embedder.inv_freq",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.0.norm1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.0.attn.to_q.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.0.attn.to_q.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.0.attn.to_k.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.0.attn.to_k.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.0.attn.to_v.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.0.attn.to_v.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.0.attn.q_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.0.attn.k_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.0.attn.to_out.0.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.0.attn.to_out.0.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.0.norm2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.0.ffn.w12.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.0.ffn.w12.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.0.ffn.w3.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.0.ffn.w3.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.0.adaLN_modulation.1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.0.adaLN_modulation.1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.1.norm1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.1.attn.to_q.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.1.attn.to_q.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.1.attn.to_k.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.1.attn.to_k.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.1.attn.to_v.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.1.attn.to_v.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.1.attn.q_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.1.attn.k_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.1.attn.to_out.0.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.1.attn.to_out.0.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.1.norm2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.1.ffn.w12.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.1.ffn.w12.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.1.ffn.w3.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.1.ffn.w3.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.1.adaLN_modulation.1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.1.adaLN_modulation.1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.2.norm1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.2.attn.to_q.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.2.attn.to_q.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.2.attn.to_k.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.2.attn.to_k.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.2.attn.to_v.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.2.attn.to_v.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.2.attn.q_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.2.attn.k_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.2.attn.to_out.0.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.2.attn.to_out.0.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.2.norm2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.2.ffn.w12.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.2.ffn.w12.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.2.ffn.w3.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.2.ffn.w3.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.2.adaLN_modulation.1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.2.adaLN_modulation.1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.3.norm1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.3.attn.to_q.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.3.attn.to_q.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.3.attn.to_k.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.3.attn.to_k.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.3.attn.to_v.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.3.attn.to_v.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.3.attn.q_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.3.attn.k_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.3.attn.to_out.0.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.3.attn.to_out.0.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.3.norm2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.3.ffn.w12.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.3.ffn.w12.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.3.ffn.w3.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.3.ffn.w3.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.3.adaLN_modulation.1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.3.adaLN_modulation.1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.4.norm1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.4.attn.to_q.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.4.attn.to_q.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.4.attn.to_k.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.4.attn.to_k.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.4.attn.to_v.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.4.attn.to_v.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.4.attn.q_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.4.attn.k_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.4.attn.to_out.0.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.4.attn.to_out.0.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.4.norm2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.4.ffn.w12.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.4.ffn.w12.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.4.ffn.w3.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.4.ffn.w3.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.4.adaLN_modulation.1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.4.adaLN_modulation.1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.5.norm1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.5.attn.to_q.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.5.attn.to_q.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.5.attn.to_k.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.5.attn.to_k.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.5.attn.to_v.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.5.attn.to_v.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.5.attn.q_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.5.attn.k_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.5.attn.to_out.0.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.5.attn.to_out.0.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.5.norm2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.5.ffn.w12.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.5.ffn.w12.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.5.ffn.w3.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.5.ffn.w3.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.5.adaLN_modulation.1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.5.adaLN_modulation.1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.6.norm1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.6.attn.to_q.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.6.attn.to_q.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.6.attn.to_k.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.6.attn.to_k.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.6.attn.to_v.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.6.attn.to_v.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.6.attn.q_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.6.attn.k_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.6.attn.to_out.0.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.6.attn.to_out.0.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.6.norm2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.6.ffn.w12.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.6.ffn.w12.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.6.ffn.w3.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.6.ffn.w3.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.6.adaLN_modulation.1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.6.adaLN_modulation.1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.7.norm1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.7.attn.to_q.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.7.attn.to_q.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.7.attn.to_k.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.7.attn.to_k.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.7.attn.to_v.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.7.attn.to_v.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.7.attn.q_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.7.attn.k_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.7.attn.to_out.0.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.7.attn.to_out.0.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.7.norm2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.7.ffn.w12.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.7.ffn.w12.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.7.ffn.w3.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.7.ffn.w3.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.7.adaLN_modulation.1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.7.adaLN_modulation.1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.8.norm1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.8.attn.to_q.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.8.attn.to_q.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.8.attn.to_k.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.8.attn.to_k.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.8.attn.to_v.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.8.attn.to_v.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.8.attn.q_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.8.attn.k_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.8.attn.to_out.0.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.8.attn.to_out.0.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.8.norm2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.8.ffn.w12.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.8.ffn.w12.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.8.ffn.w3.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.8.ffn.w3.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.8.adaLN_modulation.1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.8.adaLN_modulation.1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.9.norm1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.9.attn.to_q.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.9.attn.to_q.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.9.attn.to_k.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.9.attn.to_k.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.9.attn.to_v.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.9.attn.to_v.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.9.attn.q_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.9.attn.k_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.9.attn.to_out.0.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.9.attn.to_out.0.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.9.norm2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.9.ffn.w12.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.9.ffn.w12.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.9.ffn.w3.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.9.ffn.w3.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.9.adaLN_modulation.1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.9.adaLN_modulation.1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.10.norm1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.10.attn.to_q.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.10.attn.to_q.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.10.attn.to_k.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.10.attn.to_k.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.10.attn.to_v.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.10.attn.to_v.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.10.attn.q_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.10.attn.k_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.10.attn.to_out.0.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.10.attn.to_out.0.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.10.norm2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.10.ffn.w12.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.10.ffn.w12.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.10.ffn.w3.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.10.ffn.w3.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.10.adaLN_modulation.1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.10.adaLN_modulation.1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.11.norm1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.11.attn.to_q.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.11.attn.to_q.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.11.attn.to_k.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.11.attn.to_k.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.11.attn.to_v.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.11.attn.to_v.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.11.attn.q_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.11.attn.k_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.11.attn.to_out.0.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.11.attn.to_out.0.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.11.norm2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.11.ffn.w12.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.11.ffn.w12.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.11.ffn.w3.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.11.ffn.w3.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.11.adaLN_modulation.1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.11.adaLN_modulation.1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.12.norm1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.12.attn.to_q.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.12.attn.to_q.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.12.attn.to_k.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.12.attn.to_k.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.12.attn.to_v.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.12.attn.to_v.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.12.attn.q_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.12.attn.k_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.12.attn.to_out.0.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.12.attn.to_out.0.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.12.norm2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.12.ffn.w12.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.12.ffn.w12.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.12.ffn.w3.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.12.ffn.w3.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.12.adaLN_modulation.1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.12.adaLN_modulation.1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.13.norm1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.13.attn.to_q.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.13.attn.to_q.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.13.attn.to_k.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.13.attn.to_k.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.13.attn.to_v.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.13.attn.to_v.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.13.attn.q_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.13.attn.k_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.13.attn.to_out.0.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.13.attn.to_out.0.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.13.norm2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.13.ffn.w12.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.13.ffn.w12.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.13.ffn.w3.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.13.ffn.w3.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.13.adaLN_modulation.1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.13.adaLN_modulation.1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.14.norm1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.14.attn.to_q.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.14.attn.to_q.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.14.attn.to_k.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.14.attn.to_k.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.14.attn.to_v.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.14.attn.to_v.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.14.attn.q_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.14.attn.k_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.14.attn.to_out.0.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.14.attn.to_out.0.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.14.norm2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.14.ffn.w12.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.14.ffn.w12.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.14.ffn.w3.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.14.ffn.w3.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.14.adaLN_modulation.1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.14.adaLN_modulation.1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.15.norm1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.15.attn.to_q.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.15.attn.to_q.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.15.attn.to_k.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.15.attn.to_k.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.15.attn.to_v.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.15.attn.to_v.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.15.attn.q_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.15.attn.k_norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.15.attn.to_out.0.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.15.attn.to_out.0.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.15.norm2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.15.ffn.w12.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.15.ffn.w12.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.15.ffn.w3.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.15.ffn.w3.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.15.adaLN_modulation.1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.transformer_blocks.15.adaLN_modulation.1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.final_layer.norm_final.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.final_layer.linear.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.final_layer.linear.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.final_layer.modulation_proj.1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.model.final_layer.modulation_proj.1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.his_traj_encoder.fc1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.his_traj_encoder.fc1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.his_traj_encoder.norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.his_traj_encoder.norm.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.his_traj_encoder.fc2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.his_traj_encoder.fc2.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ego_status_encoder.fc1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ego_status_encoder.fc1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ego_status_encoder.norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ego_status_encoder.norm.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ego_status_encoder.fc2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.ego_status_encoder.fc2.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.action_encoder.fc1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.action_encoder.fc1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.action_encoder.fc2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.action_encoder.fc2.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.action_encoder.fc3.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.action_encoder.fc3.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.feature_encoder.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.feature_encoder.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.fusion_projector.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.fusion_projector.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.action_decoder.fc1.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.action_decoder.fc1.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.action_decoder.norm.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.action_decoder.norm.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.action_decoder.fc2.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.action_decoder.fc2.bias",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.position_embedding.weight",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        },
+        {
+          "key": "agent.action_head.old_policy.eta.eta_logit",
+          "reason": "inactive RL/IL reference, never selected as active teacher"
+        }
+      ],
+      "restored_tensors": 347,
+      "dtypes": [
+        "torch.float32",
+        "torch.int64"
+      ]
+    }
+  },
+  "same_teacher_loss": 0.0,
+  "online_cache_max_error": 0.0,
+  "core_projection_gradient_nonzero": true,
+  "teacher_anchor_unchanged": true,
+  "student_chain_refreshed": true,
+  "gradients": {
+    "model.timestep_encoder.timestep_embedder.linear_1.weight": 0.0004536781634669751,
+    "model.timestep_encoder.timestep_embedder.linear_1.bias": 3.521009421092458e-05,
+    "model.timestep_encoder.timestep_embedder.linear_2.weight": 0.0007801341125741601,
+    "model.timestep_encoder.timestep_embedder.linear_2.bias": 6.01015126449056e-05,
+    "model.transformer_blocks.0.norm1.weight": 1.1423082924011396e-06,
+    "model.transformer_blocks.0.attn.to_q.weight": 1.149828949564835e-05,
+    "model.transformer_blocks.0.attn.to_q.bias": 6.874020641589595e-07,
+    "model.transformer_blocks.0.attn.to_k.weight": 1.0082007975142915e-05,
+    "model.transformer_blocks.0.attn.to_k.bias": 5.620352112600813e-07,
+    "model.transformer_blocks.0.attn.to_v.weight": 2.5940316845662892e-05,
+    "model.transformer_blocks.0.attn.to_v.bias": 1.4277512718763319e-06,
+    "model.transformer_blocks.0.attn.q_norm.weight": 1.2726127351925243e-06,
+    "model.transformer_blocks.0.attn.k_norm.weight": 1.374336989101721e-06,
+    "model.transformer_blocks.0.attn.to_out.0.weight": 4.068752969033085e-05,
+    "model.transformer_blocks.0.attn.to_out.0.bias": 2.125924993379158e-06,
+    "model.transformer_blocks.0.norm2.weight": 1.1819888641184662e-05,
+    "model.transformer_blocks.0.ffn.w12.weight": 0.00019349718058947474,
+    "model.transformer_blocks.0.ffn.w12.bias": 1.4177966477291193e-05,
+    "model.transformer_blocks.0.ffn.w3.weight": 0.00012884200259577483,
+    "model.transformer_blocks.0.ffn.w3.bias": 1.055439770425437e-05,
+    "model.transformer_blocks.0.adaLN_modulation.1.weight": 0.0004882976645603776,
+    "model.transformer_blocks.0.adaLN_modulation.1.bias": 3.137595558655448e-05,
+    "model.transformer_blocks.1.norm1.weight": 1.9598051039793063e-06,
+    "model.transformer_blocks.1.attn.to_q.weight": 7.059112249407917e-05,
+    "model.transformer_blocks.1.attn.to_q.bias": 2.81867301055172e-06,
+    "model.transformer_blocks.1.attn.to_k.weight": 5.50942677364219e-05,
+    "model.transformer_blocks.1.attn.to_k.bias": 7.742782486275246e-07,
+    "model.transformer_blocks.1.attn.to_v.weight": 7.987977733137086e-05,
+    "model.transformer_blocks.1.attn.to_v.bias": 3.8002331166353542e-06,
+    "model.transformer_blocks.1.attn.q_norm.weight": 6.418225893867202e-06,
+    "model.transformer_blocks.1.attn.k_norm.weight": 6.571247013198445e-06,
+    "model.transformer_blocks.1.attn.to_out.0.weight": 0.00010253211803501472,
+    "model.transformer_blocks.1.attn.to_out.0.bias": 5.385326858231565e-06,
+    "model.transformer_blocks.1.norm2.weight": 9.468466487305705e-06,
+    "model.transformer_blocks.1.ffn.w12.weight": 0.00014146504690870643,
+    "model.transformer_blocks.1.ffn.w12.bias": 1.1322162208671216e-05,
+    "model.transformer_blocks.1.ffn.w3.weight": 0.0001001444979920052,
+    "model.transformer_blocks.1.ffn.w3.bias": 8.735265510040335e-06,
+    "model.transformer_blocks.1.adaLN_modulation.1.weight": 0.0005984120070934296,
+    "model.transformer_blocks.1.adaLN_modulation.1.bias": 3.777707024710253e-05,
+    "model.transformer_blocks.2.norm1.weight": 1.8081854022966581e-06,
+    "model.transformer_blocks.2.attn.to_q.weight": 2.1874244339414872e-05,
+    "model.transformer_blocks.2.attn.to_q.bias": 1.1127762036267086e-06,
+    "model.transformer_blocks.2.attn.to_k.weight": 1.9841005268972367e-05,
+    "model.transformer_blocks.2.attn.to_k.bias": 9.771439408723381e-07,
+    "model.transformer_blocks.2.attn.to_v.weight": 3.023924546141643e-05,
+    "model.transformer_blocks.2.attn.to_v.bias": 1.6444847688035225e-06,
+    "model.transformer_blocks.2.attn.q_norm.weight": 1.185375595014193e-06,
+    "model.transformer_blocks.2.attn.k_norm.weight": 9.375533522870683e-07,
+    "model.transformer_blocks.2.attn.to_out.0.weight": 4.030609125038609e-05,
+    "model.transformer_blocks.2.attn.to_out.0.bias": 2.413837137282826e-06,
+    "model.transformer_blocks.2.norm2.weight": 3.4407707971695345e-06,
+    "model.transformer_blocks.2.ffn.w12.weight": 7.833749987185001e-05,
+    "model.transformer_blocks.2.ffn.w12.bias": 6.696473064948805e-06,
+    "model.transformer_blocks.2.ffn.w3.weight": 4.812451879843138e-05,
+    "model.transformer_blocks.2.ffn.w3.bias": 8.111506758723408e-06,
+    "model.transformer_blocks.2.adaLN_modulation.1.weight": 0.00022691607591696084,
+    "model.transformer_blocks.2.adaLN_modulation.1.bias": 1.459579016227508e-05,
+    "model.transformer_blocks.3.norm1.weight": 2.2466872451332165e-06,
+    "model.transformer_blocks.3.attn.to_q.weight": 7.679741975152865e-05,
+    "model.transformer_blocks.3.attn.to_q.bias": 2.879003659472801e-06,
+    "model.transformer_blocks.3.attn.to_k.weight": 7.330913649639115e-05,
+    "model.transformer_blocks.3.attn.to_k.bias": 1.1318315955577418e-06,
+    "model.transformer_blocks.3.attn.to_v.weight": 8.878090739017352e-05,
+    "model.transformer_blocks.3.attn.to_v.bias": 4.330591309553711e-06,
+    "model.transformer_blocks.3.attn.q_norm.weight": 6.558860150107648e-06,
+    "model.transformer_blocks.3.attn.k_norm.weight": 4.63196738564875e-06,
+    "model.transformer_blocks.3.attn.to_out.0.weight": 0.00010292035585734993,
+    "model.transformer_blocks.3.attn.to_out.0.bias": 5.850120487593813e-06,
+    "model.transformer_blocks.3.norm2.weight": 2.2854189865029184e-06,
+    "model.transformer_blocks.3.ffn.w12.weight": 4.61522358818911e-05,
+    "model.transformer_blocks.3.ffn.w12.bias": 4.097691999049857e-06,
+    "model.transformer_blocks.3.ffn.w3.weight": 3.6064655432710424e-05,
+    "model.transformer_blocks.3.ffn.w3.bias": 7.311773060791893e-06,
+    "model.transformer_blocks.3.adaLN_modulation.1.weight": 0.0004759758012369275,
+    "model.transformer_blocks.3.adaLN_modulation.1.bias": 2.851646968338173e-05,
+    "model.transformer_blocks.4.norm1.weight": 1.0732276223279769e-06,
+    "model.transformer_blocks.4.attn.to_q.weight": 1.2366163900878746e-05,
+    "model.transformer_blocks.4.attn.to_q.bias": 8.337194685736904e-07,
+    "model.transformer_blocks.4.attn.to_k.weight": 1.0582371942291502e-05,
+    "model.transformer_blocks.4.attn.to_k.bias": 5.72623832795216e-07,
+    "model.transformer_blocks.4.attn.to_v.weight": 1.8716564227361232e-05,
+    "model.transformer_blocks.4.attn.to_v.bias": 1.6984998865154921e-06,
+    "model.transformer_blocks.4.attn.q_norm.weight": 6.105923375798739e-07,
+    "model.transformer_blocks.4.attn.k_norm.weight": 7.27650331100449e-07,
+    "model.transformer_blocks.4.attn.to_out.0.weight": 1.8607259335112758e-05,
+    "model.transformer_blocks.4.attn.to_out.0.bias": 2.802603148666094e-06,
+    "model.transformer_blocks.4.norm2.weight": 5.08050561620621e-06,
+    "model.transformer_blocks.4.ffn.w12.weight": 9.059273725142702e-05,
+    "model.transformer_blocks.4.ffn.w12.bias": 6.836254669906339e-06,
+    "model.transformer_blocks.4.ffn.w3.weight": 6.599824700970203e-05,
+    "model.transformer_blocks.4.ffn.w3.bias": 8.730385161470622e-06,
+    "model.transformer_blocks.4.adaLN_modulation.1.weight": 0.0002176890120608732,
+    "model.transformer_blocks.4.adaLN_modulation.1.bias": 1.3925858183938544e-05,
+    "model.transformer_blocks.5.norm1.weight": 2.4617588678665925e-06,
+    "model.transformer_blocks.5.attn.to_q.weight": 9.144980140263215e-05,
+    "model.transformer_blocks.5.attn.to_q.bias": 3.161311497024144e-06,
+    "model.transformer_blocks.5.attn.to_k.weight": 0.00015620446356479079,
+    "model.transformer_blocks.5.attn.to_k.bias": 1.6728369018892408e-06,
+    "model.transformer_blocks.5.attn.to_v.weight": 0.00010929158452199772,
+    "model.transformer_blocks.5.attn.to_v.bias": 4.863258709519869e-06,
+    "model.transformer_blocks.5.attn.q_norm.weight": 5.024749498261372e-06,
+    "model.transformer_blocks.5.attn.k_norm.weight": 4.850761797570158e-06,
+    "model.transformer_blocks.5.attn.to_out.0.weight": 0.00011328871914884076,
+    "model.transformer_blocks.5.attn.to_out.0.bias": 6.918970939295832e-06,
+    "model.transformer_blocks.5.norm2.weight": 3.3846877158794086e-06,
+    "model.transformer_blocks.5.ffn.w12.weight": 5.5206815886776894e-05,
+    "model.transformer_blocks.5.ffn.w12.bias": 4.8436295401188545e-06,
+    "model.transformer_blocks.5.ffn.w3.weight": 4.479519702726975e-05,
+    "model.transformer_blocks.5.ffn.w3.bias": 7.794968041707762e-06,
+    "model.transformer_blocks.5.adaLN_modulation.1.weight": 0.0003362555580679327,
+    "model.transformer_blocks.5.adaLN_modulation.1.bias": 2.0030343875987455e-05,
+    "model.transformer_blocks.6.norm1.weight": 8.469625072393683e-07,
+    "model.transformer_blocks.6.attn.to_q.weight": 9.703752766654361e-06,
+    "model.transformer_blocks.6.attn.to_q.bias": 6.822340878898103e-07,
+    "model.transformer_blocks.6.attn.to_k.weight": 8.501689990225714e-06,
+    "model.transformer_blocks.6.attn.to_k.bias": 4.92067329105339e-07,
+    "model.transformer_blocks.6.attn.to_v.weight": 2.1059693608549424e-05,
+    "model.transformer_blocks.6.attn.to_v.bias": 1.899437506835966e-06,
+    "model.transformer_blocks.6.attn.q_norm.weight": 3.540207842434029e-07,
+    "model.transformer_blocks.6.attn.k_norm.weight": 4.4151619249532814e-07,
+    "model.transformer_blocks.6.attn.to_out.0.weight": 1.9364386389497668e-05,
+    "model.transformer_blocks.6.attn.to_out.0.bias": 3.142803279843065e-06,
+    "model.transformer_blocks.6.norm2.weight": 1.9361773411219474e-06,
+    "model.transformer_blocks.6.ffn.w12.weight": 4.212504791212268e-05,
+    "model.transformer_blocks.6.ffn.w12.bias": 3.074751020903932e-06,
+    "model.transformer_blocks.6.ffn.w3.weight": 3.6283476219978184e-05,
+    "model.transformer_blocks.6.ffn.w3.bias": 7.172865025495412e-06,
+    "model.transformer_blocks.6.adaLN_modulation.1.weight": 0.00011508006718941033,
+    "model.transformer_blocks.6.adaLN_modulation.1.bias": 7.292013378901174e-06,
+    "model.transformer_blocks.7.norm1.weight": 2.3077398054738296e-06,
+    "model.transformer_blocks.7.attn.to_q.weight": 6.904516340000555e-05,
+    "model.transformer_blocks.7.attn.to_q.bias": 3.4928787044918863e-06,
+    "model.transformer_blocks.7.attn.to_k.weight": 6.244050018722191e-05,
+    "model.transformer_blocks.7.attn.to_k.bias": 5.680142862729554e-07,
+    "model.transformer_blocks.7.attn.to_v.weight": 7.880303746787831e-05,
+    "model.transformer_blocks.7.attn.to_v.bias": 3.938378085877048e-06,
+    "model.transformer_blocks.7.attn.q_norm.weight": 3.5122129702358507e-06,
+    "model.transformer_blocks.7.attn.k_norm.weight": 3.1796275834494736e-06,
+    "model.transformer_blocks.7.attn.to_out.0.weight": 7.5829382694792e-05,
+    "model.transformer_blocks.7.attn.to_out.0.bias": 5.853717993886676e-06,
+    "model.transformer_blocks.7.norm2.weight": 4.759000148624182e-06,
+    "model.transformer_blocks.7.ffn.w12.weight": 8.793536835582927e-05,
+    "model.transformer_blocks.7.ffn.w12.bias": 7.21838159734034e-06,
+    "model.transformer_blocks.7.ffn.w3.weight": 5.226228677202016e-05,
+    "model.transformer_blocks.7.ffn.w3.bias": 8.423184226558078e-06,
+    "model.transformer_blocks.7.adaLN_modulation.1.weight": 0.00031871587270870805,
+    "model.transformer_blocks.7.adaLN_modulation.1.bias": 2.060738370346371e-05,
+    "model.transformer_blocks.8.norm1.weight": 1.570544213791436e-06,
+    "model.transformer_blocks.8.attn.to_q.weight": 9.376637535751797e-06,
+    "model.transformer_blocks.8.attn.to_q.bias": 6.994738441790105e-07,
+    "model.transformer_blocks.8.attn.to_k.weight": 8.468666237604339e-06,
+    "model.transformer_blocks.8.attn.to_k.bias": 5.116697252560698e-07,
+    "model.transformer_blocks.8.attn.to_v.weight": 2.3960637918207794e-05,
+    "model.transformer_blocks.8.attn.to_v.bias": 2.1343603293644264e-06,
+    "model.transformer_blocks.8.attn.q_norm.weight": 5.947512136117439e-07,
+    "model.transformer_blocks.8.attn.k_norm.weight": 5.002706870982365e-07,
+    "model.transformer_blocks.8.attn.to_out.0.weight": 2.073015639325604e-05,
+    "model.transformer_blocks.8.attn.to_out.0.bias": 3.3212784273928264e-06,
+    "model.transformer_blocks.8.norm2.weight": 1.6006293890313827e-06,
+    "model.transformer_blocks.8.ffn.w12.weight": 3.105266296188347e-05,
+    "model.transformer_blocks.8.ffn.w12.bias": 3.074434971495066e-06,
+    "model.transformer_blocks.8.ffn.w3.weight": 2.4775128622422926e-05,
+    "model.transformer_blocks.8.ffn.w3.bias": 7.2481425377191044e-06,
+    "model.transformer_blocks.8.adaLN_modulation.1.weight": 0.00012278968642931432,
+    "model.transformer_blocks.8.adaLN_modulation.1.bias": 7.559201094409218e-06,
+    "model.transformer_blocks.9.norm1.weight": 8.95533048606012e-06,
+    "model.transformer_blocks.9.attn.to_q.weight": 0.0001899408525787294,
+    "model.transformer_blocks.9.attn.to_q.bias": 7.75334319769172e-06,
+    "model.transformer_blocks.9.attn.to_k.weight": 0.00021310136071406305,
+    "model.transformer_blocks.9.attn.to_k.bias": 2.5002925667649833e-06,
+    "model.transformer_blocks.9.attn.to_v.weight": 0.00011133918451378122,
+    "model.transformer_blocks.9.attn.to_v.bias": 5.625556241284357e-06,
+    "model.transformer_blocks.9.attn.q_norm.weight": 1.1213104698981624e-05,
+    "model.transformer_blocks.9.attn.k_norm.weight": 1.176623936771648e-05,
+    "model.transformer_blocks.9.attn.to_out.0.weight": 9.88327810773626e-05,
+    "model.transformer_blocks.9.attn.to_out.0.bias": 7.2427233135385904e-06,
+    "model.transformer_blocks.9.norm2.weight": 3.2987275062623667e-06,
+    "model.transformer_blocks.9.ffn.w12.weight": 5.902311750105582e-05,
+    "model.transformer_blocks.9.ffn.w12.bias": 5.363536729419138e-06,
+    "model.transformer_blocks.9.ffn.w3.weight": 3.745629146578722e-05,
+    "model.transformer_blocks.9.ffn.w3.bias": 8.608290954725817e-06,
+    "model.transformer_blocks.9.adaLN_modulation.1.weight": 0.0003957206499762833,
+    "model.transformer_blocks.9.adaLN_modulation.1.bias": 2.6042516765301116e-05,
+    "model.transformer_blocks.10.norm1.weight": 1.4619141666116775e-06,
+    "model.transformer_blocks.10.attn.to_q.weight": 1.4424289474845864e-05,
+    "model.transformer_blocks.10.attn.to_q.bias": 1.2548242693810607e-06,
+    "model.transformer_blocks.10.attn.to_k.weight": 9.999097528634593e-06,
+    "model.transformer_blocks.10.attn.to_k.bias": 7.239349315568688e-07,
+    "model.transformer_blocks.10.attn.to_v.weight": 2.2130438082967885e-05,
+    "model.transformer_blocks.10.attn.to_v.bias": 2.231561893495382e-06,
+    "model.transformer_blocks.10.attn.q_norm.weight": 6.077027592255035e-07,
+    "model.transformer_blocks.10.attn.k_norm.weight": 5.016794375478639e-07,
+    "model.transformer_blocks.10.attn.to_out.0.weight": 2.0280534954508767e-05,
+    "model.transformer_blocks.10.attn.to_out.0.bias": 3.759057335628313e-06,
+    "model.transformer_blocks.10.norm2.weight": 1.5496538026127382e-06,
+    "model.transformer_blocks.10.ffn.w12.weight": 2.991191104229074e-05,
+    "model.transformer_blocks.10.ffn.w12.bias": 2.698697016967344e-06,
+    "model.transformer_blocks.10.ffn.w3.weight": 2.1515746993827634e-05,
+    "model.transformer_blocks.10.ffn.w3.bias": 6.876850420667324e-06,
+    "model.transformer_blocks.10.adaLN_modulation.1.weight": 9.851058712229133e-05,
+    "model.transformer_blocks.10.adaLN_modulation.1.bias": 6.1804926190234255e-06,
+    "model.transformer_blocks.11.norm1.weight": 7.169128821260529e-06,
+    "model.transformer_blocks.11.attn.to_q.weight": 0.00022365276527125388,
+    "model.transformer_blocks.11.attn.to_q.bias": 1.0249774277326651e-05,
+    "model.transformer_blocks.11.attn.to_k.weight": 0.00026322362828068435,
+    "model.transformer_blocks.11.attn.to_k.bias": 2.1311907403287478e-06,
+    "model.transformer_blocks.11.attn.to_v.weight": 0.00013463254435919225,
+    "model.transformer_blocks.11.attn.to_v.bias": 6.215432676981436e-06,
+    "model.transformer_blocks.11.attn.q_norm.weight": 9.395404958922882e-06,
+    "model.transformer_blocks.11.attn.k_norm.weight": 9.822547326621134e-06,
+    "model.transformer_blocks.11.attn.to_out.0.weight": 0.00010081207437906414,
+    "model.transformer_blocks.11.attn.to_out.0.bias": 7.695453859923873e-06,
+    "model.transformer_blocks.11.norm2.weight": 3.4896427223429782e-06,
+    "model.transformer_blocks.11.ffn.w12.weight": 6.081921310396865e-05,
+    "model.transformer_blocks.11.ffn.w12.bias": 4.485232693696162e-06,
+    "model.transformer_blocks.11.ffn.w3.weight": 4.3649779399856925e-05,
+    "model.transformer_blocks.11.ffn.w3.bias": 9.192647667077836e-06,
+    "model.transformer_blocks.11.adaLN_modulation.1.weight": 0.00027166184736415744,
+    "model.transformer_blocks.11.adaLN_modulation.1.bias": 1.6903284631553106e-05,
+    "model.transformer_blocks.12.norm1.weight": 1.6414987840107642e-06,
+    "model.transformer_blocks.12.attn.to_q.weight": 2.4109349396894686e-05,
+    "model.transformer_blocks.12.attn.to_q.bias": 1.6750044551372412e-06,
+    "model.transformer_blocks.12.attn.to_k.weight": 2.197485082433559e-05,
+    "model.transformer_blocks.12.attn.to_k.bias": 1.096517962650978e-06,
+    "model.transformer_blocks.12.attn.to_v.weight": 2.4053766537690535e-05,
+    "model.transformer_blocks.12.attn.to_v.bias": 2.236505224573193e-06,
+    "model.transformer_blocks.12.attn.q_norm.weight": 8.600848673268047e-07,
+    "model.transformer_blocks.12.attn.k_norm.weight": 7.946953815007873e-07,
+    "model.transformer_blocks.12.attn.to_out.0.weight": 2.9296688808244653e-05,
+    "model.transformer_blocks.12.attn.to_out.0.bias": 3.431106733842171e-06,
+    "model.transformer_blocks.12.norm2.weight": 3.0717540084879147e-06,
+    "model.transformer_blocks.12.ffn.w12.weight": 5.957535540801473e-05,
+    "model.transformer_blocks.12.ffn.w12.bias": 4.008467385574477e-06,
+    "model.transformer_blocks.12.ffn.w3.weight": 4.39506875409279e-05,
+    "model.transformer_blocks.12.ffn.w3.bias": 7.474771791748935e-06,
+    "model.transformer_blocks.12.adaLN_modulation.1.weight": 0.0001983929832931608,
+    "model.transformer_blocks.12.adaLN_modulation.1.bias": 1.2014535059279297e-05,
+    "model.transformer_blocks.13.norm1.weight": 4.258563876646804e-06,
+    "model.transformer_blocks.13.attn.to_q.weight": 0.00012583289935719222,
+    "model.transformer_blocks.13.attn.to_q.bias": 6.469611889770022e-06,
+    "model.transformer_blocks.13.attn.to_k.weight": 9.559792670188472e-05,
+    "model.transformer_blocks.13.attn.to_k.bias": 6.583926506209536e-07,
+    "model.transformer_blocks.13.attn.to_v.weight": 8.890491881174967e-05,
+    "model.transformer_blocks.13.attn.to_v.bias": 4.2352658056188375e-06,
+    "model.transformer_blocks.13.attn.q_norm.weight": 3.535557880240958e-06,
+    "model.transformer_blocks.13.attn.k_norm.weight": 2.5977053610404255e-06,
+    "model.transformer_blocks.13.attn.to_out.0.weight": 6.43327075522393e-05,
+    "model.transformer_blocks.13.attn.to_out.0.bias": 6.352235232043313e-06,
+    "model.transformer_blocks.13.norm2.weight": 3.899390321748797e-06,
+    "model.transformer_blocks.13.ffn.w12.weight": 8.842532406561077e-05,
+    "model.transformer_blocks.13.ffn.w12.bias": 5.407955995906377e-06,
+    "model.transformer_blocks.13.ffn.w3.weight": 5.630427403957583e-05,
+    "model.transformer_blocks.13.ffn.w3.bias": 7.509630449931137e-06,
+    "model.transformer_blocks.13.adaLN_modulation.1.weight": 0.00021675568132195622,
+    "model.transformer_blocks.13.adaLN_modulation.1.bias": 1.3097117516736034e-05,
+    "model.transformer_blocks.14.norm1.weight": 1.2922006362714455e-06,
+    "model.transformer_blocks.14.attn.to_q.weight": 1.3197354746807832e-05,
+    "model.transformer_blocks.14.attn.to_q.bias": 9.378393883707759e-07,
+    "model.transformer_blocks.14.attn.to_k.weight": 1.537796197226271e-05,
+    "model.transformer_blocks.14.attn.to_k.bias": 8.682301313456264e-07,
+    "model.transformer_blocks.14.attn.to_v.weight": 2.550584395066835e-05,
+    "model.transformer_blocks.14.attn.to_v.bias": 2.503903942852048e-06,
+    "model.transformer_blocks.14.attn.q_norm.weight": 5.900661790292361e-07,
+    "model.transformer_blocks.14.attn.k_norm.weight": 5.796226218990341e-07,
+    "model.transformer_blocks.14.attn.to_out.0.weight": 3.025131081813015e-05,
+    "model.transformer_blocks.14.attn.to_out.0.bias": 3.8843077163619455e-06,
+    "model.transformer_blocks.14.norm2.weight": 6.436647709051613e-06,
+    "model.transformer_blocks.14.ffn.w12.weight": 0.00015429903578478843,
+    "model.transformer_blocks.14.ffn.w12.bias": 8.22993661131477e-06,
+    "model.transformer_blocks.14.ffn.w3.weight": 7.96155072748661e-05,
+    "model.transformer_blocks.14.ffn.w3.bias": 9.11278766579926e-06,
+    "model.transformer_blocks.14.adaLN_modulation.1.weight": 0.00024975865380838513,
+    "model.transformer_blocks.14.adaLN_modulation.1.bias": 1.570794302097056e-05,
+    "model.transformer_blocks.15.norm1.weight": 9.726576536195353e-06,
+    "model.transformer_blocks.15.attn.to_q.weight": 0.0003020928706973791,
+    "model.transformer_blocks.15.attn.to_q.bias": 1.1468334378150757e-05,
+    "model.transformer_blocks.15.attn.to_k.weight": 0.00029786437517032027,
+    "model.transformer_blocks.15.attn.to_k.bias": 2.8603790269698948e-06,
+    "model.transformer_blocks.15.attn.to_v.weight": 0.00016191029862966388,
+    "model.transformer_blocks.15.attn.to_v.bias": 6.021164608682739e-06,
+    "model.transformer_blocks.15.attn.q_norm.weight": 8.835219887259882e-06,
+    "model.transformer_blocks.15.attn.k_norm.weight": 9.713966392155271e-06,
+    "model.transformer_blocks.15.attn.to_out.0.weight": 9.019995923154056e-05,
+    "model.transformer_blocks.15.attn.to_out.0.bias": 7.5984034992870875e-06,
+    "model.transformer_blocks.15.norm2.weight": 9.044883881870192e-06,
+    "model.transformer_blocks.15.ffn.w12.weight": 0.00020983864669688046,
+    "model.transformer_blocks.15.ffn.w12.bias": 1.0779227523016743e-05,
+    "model.transformer_blocks.15.ffn.w3.weight": 0.0001157704318757169,
+    "model.transformer_blocks.15.ffn.w3.bias": 1.032514774124138e-05,
+    "model.transformer_blocks.15.adaLN_modulation.1.weight": 0.0003790621121879667,
+    "model.transformer_blocks.15.adaLN_modulation.1.bias": 2.348917769268155e-05,
+    "model.final_layer.norm_final.weight": 0.0005305357044562697,
+    "model.final_layer.linear.weight": 0.0049314722418785095,
+    "model.final_layer.linear.bias": 0.00020354958542156965,
+    "model.final_layer.modulation_proj.1.weight": 0.008603718131780624,
+    "model.final_layer.modulation_proj.1.bias": 0.0005302734789438546,
+    "his_traj_encoder.fc1.weight": 3.283328453562717e-07,
+    "his_traj_encoder.fc1.bias": 3.2557552913203835e-05,
+    "his_traj_encoder.norm.weight": 5.348601007426623e-06,
+    "his_traj_encoder.norm.bias": 5.5816453823354095e-06,
+    "his_traj_encoder.fc2.weight": 0.00014912965707480907,
+    "his_traj_encoder.fc2.bias": 4.759092462336412e-06,
+    "ego_status_encoder.fc1.weight": 0.0001329032820649445,
+    "ego_status_encoder.fc1.bias": 0.00012372556375339627,
+    "ego_status_encoder.norm.weight": 3.579902113415301e-05,
+    "ego_status_encoder.norm.bias": 3.8911581214051694e-05,
+    "ego_status_encoder.fc2.weight": 0.0018889060011133552,
+    "ego_status_encoder.fc2.bias": 6.01015126449056e-05,
+    "action_encoder.fc1.weight": 0.0011730155674740672,
+    "action_encoder.fc1.bias": 0.0004836738226003945,
+    "action_encoder.fc2.weight": 0.004667766857892275,
+    "action_encoder.fc2.bias": 0.00017673370894044638,
+    "action_encoder.fc3.weight": 0.004404133651405573,
+    "action_encoder.fc3.bias": 7.052132423268631e-05,
+    "feature_encoder.weight": 0.0014994732337072492,
+    "feature_encoder.bias": 1.0359308362239972e-05,
+    "fusion_projector.weight": 0.0032729690428823233,
+    "fusion_projector.bias": 2.822218812070787e-05,
+    "action_decoder.fc1.weight": 0.00788382813334465,
+    "action_decoder.fc1.bias": 0.00020480231614783406,
+    "action_decoder.norm.weight": 0.00131408020388335,
+    "action_decoder.norm.bias": 0.0016681387787684798,
+    "action_decoder.fc2.weight": 0.09758519381284714,
+    "action_decoder.fc2.bias": 0.003311260836198926,
+    "position_embedding.weight": 8.4597100794781e-05
+  },
+  "timestep": [
+    80,
+    60,
+    40,
+    20,
+    0
+  ],
+  "seconds": 65.13395380973816,
+  "owner": {
+    "host": "training-vla-zt",
+    "pid": 1852817,
+    "start_ticks": "1394347207",
+    "code_sha": "560bb257cd493613130f4b3643a0a2e4a88a7115"
+  }
+}
