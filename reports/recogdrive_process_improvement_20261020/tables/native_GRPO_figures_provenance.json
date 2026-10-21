@@ -28,6 +28,31 @@
       ]
     },
     {
+      "label": "R2",
+      "family": "WARM",
+      "step": 977,
+      "scores": 250112,
+      "analysis_path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/R2_WARM_step977_vs_IL.json",
+      "analysis_sha256": "8b939ca85d5192d81045ddbadda9ec0f1dfc9ceb59179b0f22c880a8649480c4",
+      "costs": [
+        {
+          "training_seed": 42,
+          "receipt_sha256": "40b26b028ba5badd58da5989154a6a1665f2a316ae02a7528a9c252dd5301878",
+          "native_phase_GPU_hours": 8.805145243141386
+        },
+        {
+          "training_seed": 43,
+          "receipt_sha256": "acc49d37e7b58a4e9674cc56dc16d27f7122d002005f9c06a5e4b0a036e467e7",
+          "native_phase_GPU_hours": 8.990138451655707
+        },
+        {
+          "training_seed": 44,
+          "receipt_sha256": "e52185444faa80bb6c2cb5dafe0a0fab2c02ec66b73dc890e6529099160fb08b",
+          "native_phase_GPU_hours": 9.06288883401288
+        }
+      ]
+    },
+    {
       "label": "R3",
       "family": "RL",
       "step": 977,
@@ -62,11 +87,6 @@
     {
       "family": "IL",
       "step": 15625,
-      "status": "NO_COMPLETE_THREE_SEED_ANALYSIS"
-    },
-    {
-      "family": "WARM",
-      "step": 977,
       "status": "NO_COMPLETE_THREE_SEED_ANALYSIS"
     },
     {

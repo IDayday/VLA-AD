@@ -1,0 +1,59 @@
+{
+  "status": "CONTINUE",
+  "run": "GRPO_WARM_44",
+  "step": 977,
+  "physical_scores": 250112,
+  "triggers": [],
+  "comparison": {
+    "point": {
+      "delta_NC": 0.00021470746108427267,
+      "delta_DAC": 0.0001431383073895151,
+      "delta_EP": -0.016044254231247005,
+      "delta_TTC": 0.0012524601896582574,
+      "delta_Comfort": 3.578457684737878e-05,
+      "delta_DDC": 1.789228842368939e-05,
+      "delta_PDMS": -0.005983260079667243,
+      "G": -0.005983260079667243
+    },
+    "CI95": {
+      "delta_NC": [
+        -0.0007254082391974127,
+        0.0012827211977060014
+      ],
+      "delta_DAC": [
+        -0.001050295630369431,
+        0.0013050951578758257
+      ],
+      "delta_EP": [
+        -0.018036598297896972,
+        -0.013828450938925374
+      ],
+      "delta_TTC": [
+        -0.00126984126984127,
+        0.004078146127473871
+      ],
+      "delta_Comfort": [
+        0.0,
+        0.0002120890774125133
+      ],
+      "delta_DDC": [
+        -0.000845279860663925,
+        0.0008902292998511191
+      ],
+      "delta_PDMS": [
+        -0.007677909399006391,
+        -0.003947011652708818
+      ],
+      "G": [
+        -0.007677909399006391,
+        -0.003947011652708818
+      ]
+    },
+    "parent_count": 7,
+    "training_seeds": 1,
+    "inference_seeds": 5,
+    "bootstrap_repetitions": 10000,
+    "scope": "Linear harm-boundary metrics only; whole-parent blocks and paired inference-seed hierarchy"
+  },
+  "rule": "Locked protocol formal_harm_boundary; cal-confirm only"
+}
