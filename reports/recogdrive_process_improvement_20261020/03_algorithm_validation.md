@@ -2,7 +2,7 @@
 
 本文件记录工程验收，不宣称过程改进已经提高规划分数。运行产物根目录为 `/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020`。
 
-- CPU 数学/接口测试：141 passed（`audit/combined_cpu_tests_v34.log`，15 条依赖警告）。包括裁剪核、离散精确权重、多模态均值投影反例、无信息回报的 fit/test 分离、M=1、平坦值、ESS、半径、维度、分层统计，以及不可改写的校准锁、条件四轮候选端点、最终测试的候选/权重/种子/总体准入、完整恢复状态归档和资源交接约束。新主机准入拒绝失败、过期、不同world或不相关主机的资格，CPU夹具不能代替实际GPU检查。解析测试夹具只用于接口验收，不作为 NAVSIM 实验证据。
+- CPU 数学/接口测试：141 passed（`audit/combined_cpu_tests_v35.log`，15 条依赖警告）。包括裁剪核、离散精确权重、多模态均值投影反例、无信息回报的 fit/test 分离、M=1、平坦值、ESS、半径、维度、分层统计，以及不可改写的校准锁、条件四轮候选端点、最终测试的候选/权重/种子/总体准入、完整恢复状态归档和资源交接约束。新主机准入拒绝失败、过期、不同world或不相关主机的资格，CPU夹具不能代替实际GPU检查。解析测试夹具只用于接口验收，不作为 NAVSIM 实验证据。
 - 真实检查点数值验收：48 个模型/场景/采样模式组合通过；每个切分位置的 full vs suffix 逐元素一致。原生 DDIM 的 sigma、噪声裁剪和最后一步最终 clamp 被保留。`tests/parity.json`。
 - 关闭新目标后，旧 E3 与新普通 OPD 的八个真实场景 chain、梯度和 AdamW 参数更新一致；损失求均值顺序产生的最大差异为 `1.16e-10`。`tests/disabled_method.json`。
 - 同 world size 的连续/恢复训练参数及优化器状态逐元素一致。单卡与两卡的真实全局 batch 检查最大参数误差为 `1.1920928955078125e-7`。弹性 world size 恢复不支持。`tests/distributed_resume.json`。
@@ -53,3 +53,5 @@ CUDA graph 的前两次捕获暴露了原生 RoPE 的 `max().item()` 和冻结 e
 CPU检查覆盖原子替换后归档保留、拒绝不同step冒充历史状态、归档损坏检测；调度测试检查恢复前调用归档且保持原主机/world size。首次32通过、1失败来自旧路由接口fixture缺少完整状态文件，已用显式归档接口spy修正该fixture并保留失败原因；独立状态测试继续使用真实torch序列化校验，生产断言未放宽。
 
 zt4新增真实host复核的源阶段已通过：IL/RL/warm各4次更新、1,024次物理评分，与此前在本地/RL2的相同world4、全局B32资格线比较，核心参数及优化器逐元素一致，最大误差均0。另一个IL资格线真实暂停在第2次更新，保存原始完整优化器/每rank RNG状态，512次评分；源阶段实际新增合计3,584次。它目前仅为`PASS_SOURCE_ONLY_NOT_MIGRATION_ADMISSION`，还需在不同原主机实际恢复到第4次更新并核对全部状态后才允许正式迁移。清单与SHA见 tables/native_GRPO_host4_source.json，压力回收证据见 host4_pressure_preemption.json。旧、新资格不是独立性能种子，未用于挑选方法或阈值。
+
+随后不同主机的真实续跑也已完成：同一zt4两步状态在VLA主机恢复，实际继续两次更新/512评分；第四步的核心参数、优化器、每rank torch/CUDA/numpy/python RNG、采样游标、参考策略和评分计数与连续训练全部精确一致，最大误差0。两阶段新增评分合计4,096，未重复计入源前缀。实际收据见 tables/native_GRPO_cross_host_resume.json。调度器据此只放行已暂停world4在这一合格主机对中的额外安排；不移动活动训练或改变world，不放宽浮点断言。已实际从各自原始977步完整状态恢复RL seed42和Warm seed42至zt4的两组四卡，保留原参数、优化器、随机状态与预算。

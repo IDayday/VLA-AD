@@ -1,0 +1,33 @@
+{
+  "status": "PASS",
+  "world": 4,
+  "global_batch": 32,
+  "source_host": "training-vlawm-tsinghua-zt4",
+  "destination_host": "training-vla-zt",
+  "source_stage_sha256": "d50e80ce2d496865efd5652a8e647b21ad034c92d90301b0cf391b2690416d6c",
+  "source_original_step2_sha256": "58ef76a5584e39cc3598b2ed2ea606ab2d738df11d51cb2a9d1ed1e592432622",
+  "continuous_step4_sha256": "a077348db243d2352d0d1ef4ab566db9791112b359eea089c9f65e2c0132c2c1",
+  "cross_host_step4_sha256": "cd2c493dcc5bac4f9be23ed74f94d3aa1aaafe8824feb2a55c249a008a39e998",
+  "core_max_error": 0.0,
+  "optimizer_exact": true,
+  "all_rank_RNG_exact": true,
+  "cursor_reference_budget_exact": true,
+  "validated_initializations": [
+    "IL",
+    "RL",
+    "WARM"
+  ],
+  "qualification_source_hashes": {
+    "scripts/process_improvement/train_grpo.py": "39dacb5b170c63391d39eebb7e2835bff8806acba0f5eff219a82c3a263521e8",
+    "navsim/agents/recogdrive/recogdrive_diffusion_planner.py": "47000d0d7e1c432ec8d4dd8bb84cdd80b263d921dbd3e45ec6acad7dbe60260b",
+    "navsim/agents/recogdrive/process_improvement/rng_plan.py": "b986f3f168408be808484a9d80685db27fd463b14b585939ef156f67ed589bc7",
+    "scripts/process_improvement/qualify_grpo_host.py": "90fcc7fb08b1b152a9d6001fed07041828bcb91957c492c418dede9971a1f1ed"
+  },
+  "owner": {
+    "host": "training-vla-zt",
+    "pid": 2356966,
+    "start_ticks": "1400800375",
+    "code_sha": "9b6bf83912b0150b68ae7f688ef7bda1b09c6319"
+  },
+  "scope": "Execution-only host4 admission for paused world4 lineages; no elastic world change, active-job migration or altered scientific recipe"
+}

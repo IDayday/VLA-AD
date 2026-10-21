@@ -1,0 +1,61 @@
+{
+  "status": "MEASURED_IMMUTABLE_ENDPOINT",
+  "step": 3907,
+  "checkpoint_sha256": "93a9f393f273cdc1ccc96452db1d3de5a2dd3c8421a1b5007d962c5f2efe6432",
+  "run_config_sha256": "cafdd4b9b9e9cd8f03cc44fb3ec5f402c28a7b562324d9e1fdc766cce0ba9d44",
+  "actual_source_files": {
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_0.json": "11193401fade3426e4e1235cd85f432d936eb3c70147cbd8f69fb7a5292020e5",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_1.json": "fd7d6fb09a5f72e3ccc5130415b508591974b5f87e74efef07ee2545517d3b18",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_2.json": "12cf0fc0b19742d262676bf4cc172e8369099b23aeceb77bc6e223e564758947",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_3.json": "4de90804b00e4174faba24746f6b83dd3d5247dae0621840636f7f23b46de095",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_4.json": "90a28cdc7ea0d81c67186d054ae32dba8ce67c6b6ebbb028eac01dd1176e9420",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_5.json": "4d25224976cb402332986233ff451fd9deb23a7e9530c8b5a846b26c05577e43",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_6.json": "c3723bd7ab2925992c4ac347af78e98b951531d63b58f8eefee48eb493dc5a5d",
+    "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_7.json": "a9a1549e2b80286aac77cd8706718ab7c6e1a33724d4ccfe653d0959f45eca07"
+  },
+  "ledger": {
+    "status": "MEASURED",
+    "checkpoint_step": 3907,
+    "GPU_seconds": 133489.4706571102,
+    "compute": {
+      "student": {
+        "forward_calls": 875168.0,
+        "trajectory_states": 10627040.0
+      },
+      "IL_reference": {
+        "forward_calls": 625120.0,
+        "trajectory_states": 625120.0
+      }
+    },
+    "budget": {
+      "physical_scores": 1000192.0,
+      "logical_scores": 1000192.0,
+      "reference_simulations": 1000192.0,
+      "cpu_scoring_seconds": 29610.12783603515
+    },
+    "peak_gpu_bytes_per_rank": [
+      7767584768,
+      7767584768,
+      7767584768,
+      7767584768,
+      7767584768,
+      7767584768,
+      7767584768,
+      7767584768
+    ],
+    "peak_history_complete": true,
+    "source_files": {
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/endpoint_costs/3907/rank_0.json": "11193401fade3426e4e1235cd85f432d936eb3c70147cbd8f69fb7a5292020e5",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/endpoint_costs/3907/rank_1.json": "fd7d6fb09a5f72e3ccc5130415b508591974b5f87e74efef07ee2545517d3b18",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/endpoint_costs/3907/rank_2.json": "12cf0fc0b19742d262676bf4cc172e8369099b23aeceb77bc6e223e564758947",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/endpoint_costs/3907/rank_3.json": "4de90804b00e4174faba24746f6b83dd3d5247dae0621840636f7f23b46de095",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/endpoint_costs/3907/rank_4.json": "90a28cdc7ea0d81c67186d054ae32dba8ce67c6b6ebbb028eac01dd1176e9420",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/endpoint_costs/3907/rank_5.json": "4d25224976cb402332986233ff451fd9deb23a7e9530c8b5a846b26c05577e43",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/endpoint_costs/3907/rank_6.json": "c3723bd7ab2925992c4ac347af78e98b951531d63b58f8eefee48eb493dc5a5d",
+      "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/endpoint_costs/3907/rank_7.json": "a9a1549e2b80286aac77cd8706718ab7c6e1a33724d4ccfe653d0959f45eca07"
+    }
+  },
+  "generator_sha256": "536dc3a50b6d3ec49b42471817abf4e2edd6a921048ed6f4a243247d4c59e65f",
+  "aggregator_sha256": "8a7b10e8182ea51f42cd846e2245fe68b9018fa4bde85baa47b7f69497a0970b",
+  "interpretation": "Actual paused/completed rank ledgers; cumulative training cost, distinct from whole-job leases; no historical imputation"
+}
