@@ -115,3 +115,5 @@ NC平均变化=-0.001474 [-0.004268,0]，不满足0.001安全非劣标准；DAC�
 四份主/敏感性区间在 tables/R1_IL_step977_vs_*.json，完整失败计数在 tables/failures_dev_R1_IL_step977.json/csv。后续R1更高预算、R2/R3仍在运行。本端点与OPD一轮的曝光及新增评分预算不同，不据其原始均分宣称同预算优劣。
 
 [Fig12](figures/Fig12_native_registered_budget_endpoints.png) 根据真实完成的三种子原生GRPO组绘制固定评分端点；当前只有R1首端点，不绘制未完成的R2/R3或高预算曲线，也不插值。原始PDMS区间与配对变化区间含不同协方差，比较以配对区间为准。图脚本同时核验归档成本与评价策略的检查点SHA；native-phase成本记录不冒充含warm/调参/缓存/评价的总成本。
+
+第三个IL种子44的cal-confirm审计为CONTINUE：G=0.007851，95%CI[-0.002695,0.016740]。三个R1首端点均未触发预注册伤害边界；更高预算仍按协议继续，不因dev差于T0而提前停止。记录见 tables/R1_IL_seed44_harm_audit_977.json。
