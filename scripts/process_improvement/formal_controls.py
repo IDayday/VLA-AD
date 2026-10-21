@@ -7,6 +7,38 @@ native optimizer/RNG state. No old E5 or process-projection gate is consulted.
 from scripts.process_improvement.common import *
 
 
+def freeze_endpoint_cost(run, step):
+    """Archive the actual stable rank ledgers before a resume overwrites them."""
+    from scripts.process_improvement.calibrate import immutable
+    from scripts.process_improvement.summarize_costs import sum_ledgers
+    dest=run/'endpoint_costs'/str(step);receipt=dest/'receipt.json'
+    checkpoint=run/f'head_{step}.pt'
+    if receipt.exists():
+        value=read(receipt)
+        if value['checkpoint_sha256']!=sha(checkpoint):raise ValueError('Endpoint checkpoint changed')
+        for path,expected in value['ledger']['source_files'].items():
+            if sha(path)!=expected:raise ValueError('Archived endpoint cost ledger changed')
+        return value
+    cfg=read(run/'config.json')
+    sources=[run/f'cost_rank_{rank}.json' for rank in range(cfg['world'])]
+    if not all(path.exists() for path in sources):raise ValueError('Missing actual rank cost ledger')
+    if any(read(path)['step']!=step for path in sources):
+        raise ValueError('Never infer an endpoint cost from another training step')
+    archived=[]
+    for rank,path in enumerate(sources):
+        target=dest/f'rank_{rank}.json';immutable(target,read(path));archived.append(target)
+    ledger=sum_ledgers(archived)
+    if ledger['budget']['physical_scores']!=step*cfg['global_batch']*cfg['group_size']:
+        raise ValueError('Actual endpoint scoring count differs from native group accounting')
+    value=dict(status='MEASURED_IMMUTABLE_ENDPOINT',step=step,
+               checkpoint_sha256=sha(checkpoint),run_config_sha256=sha(run/'config.json'),
+               actual_source_files={str(path):sha(path) for path in sources},ledger=ledger,
+               generator_sha256=sha(__file__),aggregator_sha256=sha(SOURCE/'scripts/process_improvement/summarize_costs.py'),
+               interpretation='Actual paused/completed rank ledgers; cumulative training cost, distinct from whole-job leases; no historical imputation')
+    immutable(receipt,value)
+    return value
+
+
 def tasks():
     from scripts.process_improvement.coordinator import evaluation_task,SINGLE_HOSTS,RL_HOSTS,eval_done
     from scripts.process_improvement.calibrate import immutable
@@ -42,6 +74,10 @@ def tasks():
     for family,recipe in recipes.items():
         for seed in [42,43,44]:
             name=f'GRPO_{family}_{seed}';run=ROOT/'runs'/name
+            for marker,field in [('paused.json','step'),('complete.json','steps')]:
+                if (run/marker).exists():
+                    step=read(run/marker)[field]
+                    if step in [977,3907,15625]:freeze_endpoint_cost(run,step)
             for step in [977,3907,15625]:
                 checkpoint=run/f'head_{step}.pt'
                 if checkpoint.exists():

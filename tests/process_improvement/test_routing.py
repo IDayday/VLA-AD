@@ -159,10 +159,17 @@ def test_formal_resume_preserves_actual_world4_and_original_host(tmp_path,monkey
     for name,value in [
         ('selection/grpo_rates.json',dict(selected={k:dict(lr=1e-5) for k in ['IL','RL']})),
         ('tests/native_GRPO_distributed_resume.json',dict(status='PASS')),
-        ('runs/GRPO_IL_42/config.json',dict(world=4,owner=dict(host='training-vla-zt'))),
+        ('runs/GRPO_IL_42/config.json',dict(world=4,global_batch=32,group_size=8,owner=dict(host='training-vla-zt'))),
         ('runs/GRPO_IL_42/paused.json',dict(step=977)),
         ('runs/GRPO_IL_42/harm_audit_977.json',dict(status='CONTINUE'))]:
         path=tmp_path/name;path.parent.mkdir(parents=True,exist_ok=True);path.write_text(json.dumps(value))
+    # Cost-interface unit fixtures only; not research artifacts or observations.
+    run=tmp_path/'runs/GRPO_IL_42'
+    (run/'head_977.pt').write_bytes(b'routing-unit-checkpoint')
+    for rank in range(4):
+        (run/f'cost_rank_{rank}.json').write_text(json.dumps(dict(
+            step=977,compute={},budget=dict(physical_scores=977*256//4),
+            allocated_GPU_seconds=100.,peak_history_complete=False)))
     task=next(t for t in formal_controls.tasks() if t['name']=='formal_GRPO_IL_42_to3907')
     assert task['gpus']==4 and task['hosts']==['training-vla-zt']
     assert '--nproc_per_node=4' in task['commands'][0] and '--resume' in task['commands'][0]
