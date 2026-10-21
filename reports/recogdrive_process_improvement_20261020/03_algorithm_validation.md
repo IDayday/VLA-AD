@@ -45,3 +45,5 @@ CUDA graph 的前两次捕获暴露了原生 RoPE 的 `max().item()` 和冻结 e
 全局 B32 的四/八卡新资格首次执行失败，原作业与日志保留：`jobs/qualification_native_GRPO_partition32/`。失败发生在检查器对所有浮点状态一律要求有限值，而原生 `EtaFixed(base_eta=1)` 使用 `atanh(1)=+inf` 存储固定 eta，再通过 `tanh(+inf)=1` 输出有限常量。真实两侧仅 `eta.eta_logit`、`old_policy.eta.eta_logit` 非有限且逐元素相同；它们不参与优化。所有其他基础参数、状态和优化器值经原容差重查通过，IL 四次更新的四/八卡最大参数差为 `5.9604645e-8`。
 
 修正只显式验证这两个已知常量的名称、形状、正无穷、精确一致及实际 eta=1，未放宽参数/优化器数值容差；新增测试拒绝核心或优化器的 NaN/Inf 和 eta 不一致。已经完成的两条真实 IL 资格线按检查点 SHA 与未变执行源码复用，不覆盖失败，也不重复宣称新训练。独立的新作业 `qualification_native_GRPO_partition32_reviewed_constants` 随后完成实际 IL 四卡精确恢复及 RL/warm 分区检查：IL/RL/warm 的四/八卡最大参数差分别为 `5.9604645e-8 / 1.4901161e-8 / 1.4901161e-8`，IL 连续/恢复的参数及优化器逐元素相同。每条资格线四次更新、1,024 次真实候选评分；复用的两条与后来实际执行的五条合计 7,168 次，没有重复计入复用数据。原失败仍为 FAILED。审计见 `tables/partition32_constant_review.json`，实际 PASS 及源文件/初始化权重 SHA 见 `tables/native_GRPO_partition32.json`。
+
+两个已训练原生GRPO检查点的独立部署集成检查也已通过：R1-IL seed42 step977、R3-RL seed42 step977。各自从真实图像在线提取的VLM token及五组原生噪声轨迹与正式路径逐元素一致，最大误差均0；独立子进程拒绝教师、评分缓存、未来标签及过程模块参与推理。证据在 tables/native_GRPO_export_integration.json。它们是既有检查点的工程接口验收，不是选模，也不替代高预算/其他权重验收。
