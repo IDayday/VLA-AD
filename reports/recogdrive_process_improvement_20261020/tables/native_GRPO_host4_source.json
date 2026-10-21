@@ -1,0 +1,57 @@
+{
+  "status": "PASS_SOURCE_ONLY_NOT_MIGRATION_ADMISSION",
+  "source_host": "training-vlawm-tsinghua-zt4",
+  "world": 4,
+  "comparisons": [
+    {
+      "family": "IL",
+      "old_checkpoint": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_B32_IL_continuous4/latest.pt",
+      "old_sha256": "5dbe06f3a4dd15f72951b8f3d858f158e72d193f583319fc266947335decbc88",
+      "new_checkpoint": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_host4_IL_continuous4/latest.pt",
+      "new_sha256": "a077348db243d2352d0d1ef4ab566db9791112b359eea089c9f65e2c0132c2c1",
+      "core_max_error": 0.0
+    },
+    {
+      "family": "RL",
+      "old_checkpoint": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_B32_RL_continuous4/latest.pt",
+      "old_sha256": "130ed9903c8bf4659afb5816e472363f21d188c52ef13562ce426f12310e566a",
+      "new_checkpoint": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_host4_RL_continuous4/latest.pt",
+      "new_sha256": "75ae1cdefaa86adb6e94c2b799ce16ee35a8f4a4980ae4159bdf500ea5cb41ff",
+      "core_max_error": 0.0
+    },
+    {
+      "family": "WARM",
+      "old_checkpoint": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_B32_WARM_continuous4/latest.pt",
+      "old_sha256": "4926b5fc906d754a8ae7fcdc539f3af6a370d0073a10ff9571bd7657bd2b6a88",
+      "new_checkpoint": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_host4_WARM_continuous4/latest.pt",
+      "new_sha256": "40fd3367c67d966a1afdacc906e808bdbeb3a31cb7ddb069e7dcac93c2e8c1fa",
+      "core_max_error": 0.0
+    }
+  ],
+  "paused_original_state": {
+    "status": "PRESERVED_ORIGINAL_FULL_STATE",
+    "step": 2,
+    "full_state_path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/qual_GRPO_host4_IL_cross_resume4/endpoint_states/2/full.pt",
+    "full_state_sha256": "58ef76a5584e39cc3598b2ed2ea606ab2d738df11d51cb2a9d1ed1e592432622",
+    "head_sha256": "1be361792a7e1fd979dfb3c3b8d8d57da9b159a328ad0be61d46b43d6449dcda",
+    "world": 4,
+    "cursor": 64,
+    "physical_scores": 512,
+    "reference_sha256": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+    "generator_sha256": "308de750658356fcbb4c49b2aea60c421153c0a089ae3394bacabcf6f7e7aa0f",
+    "semantics": "Original paused/completed latest.pt inode pinned before native atomic replacement; no reconstructed optimizer or RNG"
+  },
+  "qualification_source_hashes": {
+    "scripts/process_improvement/train_grpo.py": "39dacb5b170c63391d39eebb7e2835bff8806acba0f5eff219a82c3a263521e8",
+    "navsim/agents/recogdrive/recogdrive_diffusion_planner.py": "47000d0d7e1c432ec8d4dd8bb84cdd80b263d921dbd3e45ec6acad7dbe60260b",
+    "navsim/agents/recogdrive/process_improvement/rng_plan.py": "b986f3f168408be808484a9d80685db27fd463b14b585939ef156f67ed589bc7",
+    "scripts/process_improvement/qualify_grpo_host.py": "90fcc7fb08b1b152a9d6001fed07041828bcb91957c492c418dede9971a1f1ed"
+  },
+  "owner": {
+    "host": "training-vlawm-tsinghua-zt4",
+    "pid": 1075059,
+    "start_ticks": "1400415933",
+    "code_sha": "ed13b0976cfd6293ec38c75585fe1a7a121c9e20"
+  },
+  "interpretation": "Three actual cross-host four-update replicas agree exactly; actual cross-host resume still pending"
+}

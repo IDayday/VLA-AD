@@ -51,3 +51,5 @@ CUDA graph 的前两次捕获暴露了原生 RoPE 的 `max().item()` 和冻结 e
 固定端点的完整恢复状态另增加归档保护，不修改已通过数值资格的原生训练器。训练器原有 `latest.pt` 已包含完整参数、优化器、调度/AMP状态、每rank RNG、采样与评分游标；其原子替换方式允许调度器在暂停/完成端点固定当前文件inode，后续保存不会覆盖该归档。首次实查成功保存其余八条正式线的原始977步完整状态。IL seed42已恢复到更高步，原977步完整状态不可回溯，明确记为 `HISTORICAL_FULL_STATE_UNAVAILABLE`；该步的策略权重、成本、评价及当前较新完整恢复状态仍在。没有用较新优化器冒充旧状态，也没有补做训练伪称原始记录。清单及SHA见 tables/endpoint_state_initial_preservation.json。
 
 CPU检查覆盖原子替换后归档保留、拒绝不同step冒充历史状态、归档损坏检测；调度测试检查恢复前调用归档且保持原主机/world size。首次32通过、1失败来自旧路由接口fixture缺少完整状态文件，已用显式归档接口spy修正该fixture并保留失败原因；独立状态测试继续使用真实torch序列化校验，生产断言未放宽。
+
+zt4新增真实host复核的源阶段已通过：IL/RL/warm各4次更新、1,024次物理评分，与此前在本地/RL2的相同world4、全局B32资格线比较，核心参数及优化器逐元素一致，最大误差均0。另一个IL资格线真实暂停在第2次更新，保存原始完整优化器/每rank RNG状态，512次评分；源阶段实际新增合计3,584次。它目前仅为`PASS_SOURCE_ONLY_NOT_MIGRATION_ADMISSION`，还需在不同原主机实际恢复到第4次更新并核对全部状态后才允许正式迁移。清单与SHA见 tables/native_GRPO_host4_source.json，压力回收证据见 host4_pressure_preemption.json。旧、新资格不是独立性能种子，未用于挑选方法或阈值。
