@@ -2,7 +2,7 @@
 
 本文件记录工程验收，不宣称过程改进已经提高规划分数。运行产物根目录为 `/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020`。
 
-- CPU 数学/接口测试：130 passed（`audit/combined_cpu_tests_v32.log`，15 条依赖警告）。包括裁剪核、离散精确权重、多模态均值投影反例、无信息回报的 fit/test 分离、M=1、平坦值、ESS、半径、维度、分层统计，以及不可改写的校准锁、条件四轮候选端点、最终测试的候选/权重/种子/总体准入和资源交接约束。解析测试夹具只用于接口验收，不作为 NAVSIM 实验证据。
+- CPU 数学/接口测试：133 passed（`audit/combined_cpu_tests_v33.log`，15 条依赖警告）。包括裁剪核、离散精确权重、多模态均值投影反例、无信息回报的 fit/test 分离、M=1、平坦值、ESS、半径、维度、分层统计，以及不可改写的校准锁、条件四轮候选端点、最终测试的候选/权重/种子/总体准入、完整恢复状态归档和资源交接约束。解析测试夹具只用于接口验收，不作为 NAVSIM 实验证据。
 - 真实检查点数值验收：48 个模型/场景/采样模式组合通过；每个切分位置的 full vs suffix 逐元素一致。原生 DDIM 的 sigma、噪声裁剪和最后一步最终 clamp 被保留。`tests/parity.json`。
 - 关闭新目标后，旧 E3 与新普通 OPD 的八个真实场景 chain、梯度和 AdamW 参数更新一致；损失求均值顺序产生的最大差异为 `1.16e-10`。`tests/disabled_method.json`。
 - 同 world size 的连续/恢复训练参数及优化器状态逐元素一致。单卡与两卡的真实全局 batch 检查最大参数误差为 `1.1920928955078125e-7`。弹性 world size 恢复不支持。`tests/distributed_resume.json`。
@@ -47,3 +47,7 @@ CUDA graph 的前两次捕获暴露了原生 RoPE 的 `max().item()` 和冻结 e
 修正只显式验证这两个已知常量的名称、形状、正无穷、精确一致及实际 eta=1，未放宽参数/优化器数值容差；新增测试拒绝核心或优化器的 NaN/Inf 和 eta 不一致。已经完成的两条真实 IL 资格线按检查点 SHA 与未变执行源码复用，不覆盖失败，也不重复宣称新训练。独立的新作业 `qualification_native_GRPO_partition32_reviewed_constants` 随后完成实际 IL 四卡精确恢复及 RL/warm 分区检查：IL/RL/warm 的四/八卡最大参数差分别为 `5.9604645e-8 / 1.4901161e-8 / 1.4901161e-8`，IL 连续/恢复的参数及优化器逐元素相同。每条资格线四次更新、1,024 次真实候选评分；复用的两条与后来实际执行的五条合计 7,168 次，没有重复计入复用数据。原失败仍为 FAILED。审计见 `tables/partition32_constant_review.json`，实际 PASS 及源文件/初始化权重 SHA 见 `tables/native_GRPO_partition32.json`。
 
 两个已训练原生GRPO检查点的独立部署集成检查也已通过：R1-IL seed42 step977、R3-RL seed42 step977。各自从真实图像在线提取的VLM token及五组原生噪声轨迹与正式路径逐元素一致，最大误差均0；独立子进程拒绝教师、评分缓存、未来标签及过程模块参与推理。证据在 tables/native_GRPO_export_integration.json。它们是既有检查点的工程接口验收，不是选模，也不替代高预算/其他权重验收。
+
+固定端点的完整恢复状态另增加归档保护，不修改已通过数值资格的原生训练器。训练器原有 `latest.pt` 已包含完整参数、优化器、调度/AMP状态、每rank RNG、采样与评分游标；其原子替换方式允许调度器在暂停/完成端点固定当前文件inode，后续保存不会覆盖该归档。首次实查成功保存其余八条正式线的原始977步完整状态。IL seed42已恢复到更高步，原977步完整状态不可回溯，明确记为 `HISTORICAL_FULL_STATE_UNAVAILABLE`；该步的策略权重、成本、评价及当前较新完整恢复状态仍在。没有用较新优化器冒充旧状态，也没有补做训练伪称原始记录。清单及SHA见 tables/endpoint_state_initial_preservation.json。
+
+CPU检查覆盖原子替换后归档保留、拒绝不同step冒充历史状态、归档损坏检测；调度测试检查恢复前调用归档且保持原主机/world size。首次32通过、1失败来自旧路由接口fixture缺少完整状态文件，已用显式归档接口spy修正该fixture并保留失败原因；独立状态测试继续使用真实torch序列化校验，生产断言未放宽。

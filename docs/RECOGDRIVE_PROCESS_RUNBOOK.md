@@ -127,3 +127,5 @@ $PY scripts/process_improvement/plot_cases.py --method full_ANCHOR_42_epoch1 --s
     $PY scripts/process_improvement/summarize_warm_costs.py
 
 该成本应按seed与R2/P2配对，完整研究成本还包括选择、缓存与评价；不重复加到已经包含warm训练的全作业lease总量。
+
+调度器在原生GRPO固定端点恢复前保存 `runs/<name>/endpoint_states/<step>/full.pt` 与SHA收据，固定的是原始 `latest.pt` inode；训练器后续仍使用原生原子替换。该文件包含优化器和每rank RNG，可作同world恢复输入的独立保留副本，不是只含动作头的 `head_<step>.pt`。已覆盖的历史状态不重建、不用较新状态冒充；首次保护的缺失清单见报告表 `endpoint_state_initial_preservation.json`。完整状态文件均在gitignore输出目录。

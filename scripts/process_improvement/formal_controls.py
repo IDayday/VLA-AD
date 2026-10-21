@@ -77,7 +77,11 @@ def tasks():
             for marker,field in [('paused.json','step'),('complete.json','steps')]:
                 if (run/marker).exists():
                     step=read(run/marker)[field]
-                    if step in [977,3907,15625]:freeze_endpoint_cost(run,step)
+                    if step in [977,3907,15625]:
+                        freeze_endpoint_cost(run,step)
+                        if not (run/'endpoint_states'/str(step)/'receipt.json').exists():
+                            from scripts.process_improvement.endpoint_state import freeze_endpoint_state
+                            freeze_endpoint_state(run,step)
             for step in [977,3907,15625]:
                 checkpoint=run/f'head_{step}.pt'
                 if checkpoint.exists():

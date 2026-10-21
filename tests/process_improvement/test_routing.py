@@ -154,6 +154,9 @@ def test_partition_does_not_apply_global32_receipt_to_another_batch(tmp_path,mon
 
 def test_formal_resume_preserves_actual_world4_and_original_host(tmp_path,monkeypatch):
     from scripts.process_improvement import formal_controls
+    from scripts.process_improvement import endpoint_state
+    archives=[]
+    monkeypatch.setattr(endpoint_state,'freeze_endpoint_state',lambda run,step: archives.append((run,step)))
     monkeypatch.setattr(formal_controls,'ROOT',tmp_path)
     monkeypatch.setattr(coordinator,'ROOT',tmp_path)
     for name,value in [
@@ -173,3 +176,4 @@ def test_formal_resume_preserves_actual_world4_and_original_host(tmp_path,monkey
     task=next(t for t in formal_controls.tasks() if t['name']=='formal_GRPO_IL_42_to3907')
     assert task['gpus']==4 and task['hosts']==['training-vla-zt']
     assert '--nproc_per_node=4' in task['commands'][0] and '--resume' in task['commands'][0]
+    assert archives==[(run,977)]
