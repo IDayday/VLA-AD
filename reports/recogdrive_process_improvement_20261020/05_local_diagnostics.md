@@ -104,3 +104,7 @@ PROCESS 的 antithetic/iid 接受比例为 1.406%/1.094%；NO_GUARD 的 accepted
 因此，本轮停止 P1-COLD/P2-WARM 及依赖它们的正式学生消融、C1 对照和 P2 主假设检验，记录为 **NOT_RUN（未通过进入条件）**，不是学生学习失败的反证。独立的完整 OPD/Anchor 已完成，三个起点的原生 GRPO 继续实际运行。没有使用旧 E5 的失败阻断新实验，也没有用工程小测的梯度非零替代 H4 泛化。
 
 原始主结果、门禁和成对分解见 `tables/local_parent_confirm.json`、`tables/process_gate.json`、`tables/confirmation_decomposition.json`；完整位置/trace 诊断在 `tables/local_parent_confirm_details.json`。图 `figures/Fig10_independent_process_confirmation.png` 同时保留全门槛尺度与小效应放大图；`Fig11_paired_process_attenuation.png` 显示配对衰减。图和分析由 `render_confirmation.py`、`analyze_confirmation.py` 从真实标签生成，不填入不存在的过程学生成绩。
+
+补充的 [Fig14](figures/Fig14_real_local_projection_trace.png)只读取已保存的原始trace，不产生新rollout或评分。在既定哈希保存的55个OLD_OPD bank0状态中，按P1到raw衰减最大、文件名破同分的展示规则选出`bb3cc607601e5aa7`、index0/timestep80：P1增益0.000079532，raw均值核增益0.000002454，guard后0。图分别展示fit/独立suffix候选值、原始fit权重、按实际sigma缩放的归一化均值位移和三个不同程序的真实后果。P1是有限候选混合分布，不能用平均终局轨迹冒充它的评分；八个轨迹点仍是一项联合动作。
+
+这是确认完成后的个案解释，不是新的确认性检验、交通因素因果归因或学生学习证据。这个哈希trace子集没有被接受的OLD_OPD目标，未额外寻找成功trace；全体主确认的28个接受目标仍在原始逐场景记录中，不能以该子集零接受替代总体比例。来源、规则和零新增评分记录见 tables/local_projection_trace_case.json。

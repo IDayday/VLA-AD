@@ -140,3 +140,8 @@ $PY scripts/process_improvement/plot_cases.py --method full_ANCHOR_42_epoch1 --s
 共同完成的原生GRPO首评分端点训练日志图（九条实际线的原始记录点，非dev学习曲线）：
 
     $PY scripts/process_improvement/render_grpo_dynamics.py
+
+保存的局部过程trace个案（仅读缓存，零新增评分），以及已完成原生端点的地图/事件案例（每次真实展示重评分另记成本）：
+
+    $PY scripts/process_improvement/render_local_trace.py
+    $PY scripts/process_improvement/plot_cases.py --method GRPO_IL_42_step3907 --split dev
