@@ -1,0 +1,14 @@
+{
+  "status": "PRE_EXECUTION_ONLY_REGISTRATION",
+  "utc": "2026-10-21T08:50:24.769526+00:00",
+  "source_host": "training-vlawm-tsinghua-zt6",
+  "destination_host": "training-vla-zt",
+  "world": 8,
+  "global_batch": 32,
+  "expected_actual_qualification_scores": 4096,
+  "source_stage": "Three actual four-update world8 IL/RL/WARM replicas vs existing world8 qualification, then IL pause2 with full original state",
+  "destination_stage": "Actual cross-host resume same IL2 state to4 on local; exact core/optimizer/allrank RNG/cursor/reference/counts",
+  "maintenance": "After actual source PASS only: briefly stop CPU coordinator, native SIGUSR1 at atomic optimizer boundary for owned local IL44/WARM43 jobs; preserve full original states; run bounded world8 destination qualification; resume both native world4 lineages with same host/world/config/optimizer/RNG/cursor and original3907 target before coordinator restart",
+  "admission": "Only actual destination PASS admits paused local world8 IL42 to host6; active trajectories never migrated, no elastic world change",
+  "science": "No change to data, reward, native loss/sampler/BC, optimizer schedule, evaluation/model selection, scoring or update budgets; maintenance checkpoints not evaluated or selected"
+}

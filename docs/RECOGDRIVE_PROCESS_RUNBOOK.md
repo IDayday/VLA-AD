@@ -145,3 +145,14 @@ $PY scripts/process_improvement/plot_cases.py --method full_ANCHOR_42_epoch1 --s
 
     $PY scripts/process_improvement/render_local_trace.py
     $PY scripts/process_improvement/plot_cases.py --method GRPO_IL_42_step3907 --split dev
+
+zt6重新实际空闲后的八卡资格另有独立执行前登记 `grpo_host8_execution_registration.json`。源阶段复核三起点world8并保存真实第二步状态；只有源阶段通过后才可进行已登记的短暂本地维护。以下操作只针对该登记中两条本任务原生线，先停止CPU协调器，以SIGUSR1请求原生完整更新边界保存；不使用SIGKILL，不重置任何训练状态。目的阶段不论通过与否，都恢复这两条线到原来的world4、主机和3907目标，确认实际更新后才启动协调器：
+
+    $PY scripts/process_improvement/qualify_grpo_host8.py --stage source
+    $PY scripts/process_improvement/controller_control.py stop
+    $PY scripts/process_improvement/maintenance_native.py pause
+    $PY scripts/process_improvement/qualify_grpo_host8.py --stage destination
+    $PY scripts/process_improvement/maintenance_native.py resume
+    $PY scripts/process_improvement/controller_control.py start
+
+GPU命令通过严格dispatch分配对应8张实际空闲卡；不要在未通过源资格或训练仍占卡时直接运行目的阶段。维护中间head只作完整恢复证据，不加入候选、cal/dev评价或选模。world8迁移须有独立的实际cross-host PASS及未变源码，不能借world4资格放行。zt6暂停标记也在真实研究结束后按本任务tag单独释放。

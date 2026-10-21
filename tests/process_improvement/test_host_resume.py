@@ -35,3 +35,15 @@ def test_incomplete_stale_or_unrelated_qualification_cannot_move_resume(tmp_path
     run,gate=setup(tmp_path,monkeypatch);gate[field]=value
     write(tmp_path/'tests/native_GRPO_cross_host_resume.json',gate)
     assert q.resume_hosts(run,4)==['original']
+
+
+def test_world8_requires_its_own_real_resume_and_source_identity(tmp_path,monkeypatch):
+    run,value=setup(tmp_path,monkeypatch)
+    monkeypatch.setattr(q,'host8_sources',lambda:{'unit8':'unchanged'})
+    assert q.resume_hosts(run,8)==['original']
+    value.update(world=8,qualification_source_hashes={'unit8':'unchanged'})
+    write(tmp_path/'tests/native_GRPO_cross_host_resume8.json',value)
+    assert q.resume_hosts(run,8)==['original','new']
+    value['all_rank_RNG_exact']=False
+    write(tmp_path/'tests/native_GRPO_cross_host_resume8.json',value)
+    assert q.resume_hosts(run,8)==['original']
