@@ -1,0 +1,78 @@
+{
+  "generator_sha256": "9c9cc3fbd0493c9ea85f2e208448c5ca63a8dbd185805be9f5683c21f0b20b34",
+  "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+  "observed_groups": [
+    {
+      "label": "R1",
+      "family": "IL",
+      "step": 977,
+      "scores": 250112,
+      "analysis_path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/R1_IL_step977_vs_IL.json",
+      "analysis_sha256": "6ed90ffca665c1c245f41dbc877c5489f67336d172b31868a0deae74b1f53a3d",
+      "costs": [
+        {
+          "training_seed": 42,
+          "receipt_sha256": "852e62f083edbecef7b11baef2f5bedb44719a32b4c6361eb5e7263f2ee2f5a7",
+          "native_phase_GPU_hours": 9.155864319403966
+        },
+        {
+          "training_seed": 43,
+          "receipt_sha256": "73125c1ebd1bc692cf39b7bc1d223b108b3644135afb83cde9ebc0bd02d9c1c7",
+          "native_phase_GPU_hours": 9.270807326038678
+        },
+        {
+          "training_seed": 44,
+          "receipt_sha256": "19ab379e8128fe8e91f84d797c41fd63a636488c3503e7109837fdb77e8233a6",
+          "native_phase_GPU_hours": 8.87345363067256
+        }
+      ]
+    }
+  ],
+  "missing_groups": [
+    {
+      "family": "IL",
+      "step": 3907,
+      "status": "NO_COMPLETE_THREE_SEED_ANALYSIS"
+    },
+    {
+      "family": "IL",
+      "step": 15625,
+      "status": "NO_COMPLETE_THREE_SEED_ANALYSIS"
+    },
+    {
+      "family": "WARM",
+      "step": 977,
+      "status": "NO_COMPLETE_THREE_SEED_ANALYSIS"
+    },
+    {
+      "family": "WARM",
+      "step": 3907,
+      "status": "NO_COMPLETE_THREE_SEED_ANALYSIS"
+    },
+    {
+      "family": "WARM",
+      "step": 15625,
+      "status": "NO_COMPLETE_THREE_SEED_ANALYSIS"
+    },
+    {
+      "family": "RL",
+      "step": 977,
+      "status": "NO_COMPLETE_THREE_SEED_ANALYSIS"
+    },
+    {
+      "family": "RL",
+      "step": 3907,
+      "status": "NO_COMPLETE_THREE_SEED_ANALYSIS"
+    },
+    {
+      "family": "RL",
+      "step": 15625,
+      "status": "NO_COMPLETE_THREE_SEED_ANALYSIS"
+    }
+  ],
+  "IL_PDMS": 0.9151871137007114,
+  "T0_PDMS": 0.9496275362442816,
+  "intervals": "Parent record x training-policy x globally paired inference IDs; absolute PDMS intervals differ from paired differences",
+  "costs": "Native-phase training ledgers only; not total compute. Warm initialization, tuning, cache and evaluation costs are separate and must not be omitted in total-budget comparison.",
+  "interpretation": "Three models remain separate policies; no policy ensemble, missing-score fill or checkpoint selection"
+}

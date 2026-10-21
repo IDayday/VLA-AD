@@ -115,3 +115,9 @@ $PY scripts/process_improvement/plot_cases.py --method full_ANCHOR_42_epoch1 --s
 ```
 
 成本表区分独占 GPU 作业租用时间和训练内 ledger，两者属于同一工作的不同观察口径，不能相加。失败、中断、资格检查、调参和评价作业保留；尚未同步的 rank 快照及缺失遥测用明确状态或 null 表示。早期一个 GRPO 学习率试验没有 DiT hook 计数，不能拿另一次训练的计数补成实测。原 IL/RL/VLM 的预训练成本未知，作为共同前置资产说明；warm 起点的本轮实际训练成本仍需计入后续方法。
+
+固定原生GRPO评分端点图（只绘制已经完成完整dev的三个独立训练种子组，缺失组不补值）：
+
+    $PY scripts/process_improvement/render_grpo.py
+
+实际首轮执行生成1个已完成组；后续在生成对应R1/R2/R3三种子分析JSON后，用同一命令刷新。该图横轴为新增原生候选评分；完整成本另按实际ledger/lease和warm前置成本分析。
