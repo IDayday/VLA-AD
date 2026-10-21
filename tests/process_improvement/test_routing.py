@@ -100,15 +100,16 @@ def qualified_partition(tmp_path, monkeypatch):
         '--name','GRPO_IL_42','--global-batch','32']])
 
 
-def test_new_partition_requires_real_gate_and_short_work_handoff(tmp_path,monkeypatch):
+@pytest.mark.parametrize('host',['training-vla-zt','training-rl-zt2'])
+def test_new_partition_requires_real_gate_and_short_work_handoff(tmp_path,monkeypatch,host):
     task=qualified_partition(tmp_path,monkeypatch)
-    assert coordinator.local_partition_task(task,'training-vla-zt',list(range(7)),False)==task
-    own=coordinator.local_partition_task(task,'training-vla-zt',list(range(7)),True)
+    assert coordinator.local_partition_task(task,host,list(range(7)),False)==task
+    own=coordinator.local_partition_task(task,host,list(range(7)),True)
     assert own['gpus']==4
     assert '--nproc_per_node=4' in own['commands'][0]
     assert task['gpus']==8 and '--nproc_per_node=8' in task['commands'][0]
     (tmp_path/'tests/native_GRPO_partition32.json').unlink()
-    assert coordinator.local_partition_task(task,'training-vla-zt',list(range(7)),True)==task
+    assert coordinator.local_partition_task(task,host,list(range(7)),True)==task
 
 
 def test_reviewed_prelaunch_retry_keeps_qualified_partition_available(tmp_path,monkeypatch):
@@ -118,7 +119,7 @@ def test_reviewed_prelaunch_retry_keeps_qualified_partition_available(tmp_path,m
 
 
 @pytest.mark.parametrize('host,idle',[
-    ('training-rl-zt2',list(range(7))),('training-vla-zt',list(range(8))),
+    ('training-vlawm-tsinghua-zt5',list(range(7))),('training-vla-zt',list(range(8))),
     ('training-vla-zt',list(range(3)))])
 def test_partition_preserves_nonlocal_whole_host_and_capacity_rules(tmp_path,monkeypatch,host,idle):
     task=qualified_partition(tmp_path,monkeypatch)

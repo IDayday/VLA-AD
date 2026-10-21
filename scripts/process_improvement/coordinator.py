@@ -260,13 +260,13 @@ def fully_research_owned_or_idle(host,free):
 
 
 def local_partition_task(task, host, idle, handoff):
-    """Admit only new formal local GRPO into a qualified global32 partition.
+    """Admit new formal GRPO on the two audited A800 hosts at global32.
 
     This cannot preempt short work, migrate/resume an existing lineage, change
     its global batch, or qualify itself from a unit-test fixture in production.
     An entire available host keeps the preferred eight-rank execution.
     """
-    if (not handoff or host!='training-vla-zt' or not 4<=len(idle)<8 or
+    if (not handoff or host not in ['training-vla-zt','training-rl-zt2'] or not 4<=len(idle)<8 or
             task['gpus']!=8 or not re.fullmatch(r'(?:reviewed_retry\d+_)*formal_GRPO_(?:IL|RL|WARM)_\d+_to\d+',task['name'])):
         return task
     commands=task['commands']

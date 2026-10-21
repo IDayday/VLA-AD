@@ -12,7 +12,7 @@
     "RL",
     "WARM"
   ],
-  "admission": "Only fresh formal_GRPO local jobs, after closed process gate and actual short-task completion; 4<=idle<8; preferred8 if available",
+  "admission": "Only fresh formal_GRPO on the two audited A800 hosts after closed process gate; 4<=idle<8; preferred8 if available; existing resume retains actual host/world",
   "resume": "Original host and saved world size; never repartition existing optimizer or random states",
   "cost": "Report actual per-rank GPU seconds, all-rank ledger and whole-job lease separately",
   "science": "Same native sampler, reward, group8, IL BC, loss normalization, semantic scene/noise plan, update and scoring endpoints",
@@ -23,7 +23,50 @@
     "scope": "Execution routing only; no objective, data, initialization, stopping or selection rule changed",
     "rule": "After closed mechanism gate, formal GRPO dev/cal-confirm evaluations at steps977/3907/15625 do not renew mechanism handoff prerequisites; qualified new local four-rank jobs may overlap on other physically idle GPUs; full8 preferred when available",
     "preserved": "Other unfinished or failed short prerequisites still prevent handoff; all failed endpoint evaluations remain visible and must be resolved; existing lineages resume original host/world/optimizer/RNG",
-    "routing_tests": "26 passed, including five independent overlap/prerequisite cases",
+    "routing_tests": "27 passed including both audited host routes and strict prerequisite/source/resume restrictions",
     "endpoint_report_priority": "cal-confirm priority0; fixed dev report priority1 before fresh gang7, so gang reservation does not strand runnable reports on idle cards; dev is never used for stopping/selection"
-  }
+  },
+  "audited_partition_hosts": [
+    "training-vla-zt",
+    "training-rl-zt2"
+  ],
+  "two_host_basis": {
+    "qual_GRPO_B32_IL_continuous4": {
+      "owner": {
+        "host": "training-rl-zt2",
+        "pid": 2105085,
+        "start_ticks": "1388873900",
+        "code_sha": "b4206d4c0eea776eb353e03a47462f7aa91d3cdd"
+      },
+      "world": 4
+    },
+    "qual_GRPO_B32_IL_continuous8": {
+      "owner": {
+        "host": "training-rl-zt2",
+        "pid": 2103554,
+        "start_ticks": "1388870126",
+        "code_sha": "b4206d4c0eea776eb353e03a47462f7aa91d3cdd"
+      },
+      "world": 8
+    },
+    "qual_GRPO_B32_RL_continuous4": {
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 2143683,
+        "start_ticks": "1397149594",
+        "code_sha": "98491190429c2131bb51091c506813f8bdf4f152"
+      },
+      "world": 4
+    },
+    "qual_GRPO_B32_WARM_continuous4": {
+      "owner": {
+        "host": "training-vla-zt",
+        "pid": 2146325,
+        "start_ticks": "1397159366",
+        "code_sha": "98491190429c2131bb51091c506813f8bdf4f152"
+      },
+      "world": 4
+    }
+  },
+  "two_host_scope": "Both hosts already executed real qualified native GRPO. Original IL4/8 on RL2 and reviewed remaining qualification on local; unchanged same source/hardware family and passed4/8 global32 semantics. This routes new jobs only, not an untested world partition or a change to training."
 }
