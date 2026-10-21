@@ -165,3 +165,5 @@ Warm seed42实际完成977更新/250,112评分，完整dev×5 PDMS=0.941263。�
 数据见 tables/R2_WARM_seed42_step977_vs_own_init.json、vs_IL.json、vs_T0.json。后续cal-confirm伤害检查与其他warm种子仍运行。
 
 该策略已记录的native phase训练GPU小时=8.805145，加同seed实际warm训练1.485584后为10.290729。这是训练路径时间，完整研究/总预算还包含另列的准备、调参、缓存和评价，不能与完整job lease重复相加。
+
+R2 seed42的独立cal-confirm自身warm比较G=-0.005285，95%CI[-0.006391,-0.003986]，审计为CONTINUE。校准负结果同样保留；没有达到预登记0.02边界，不据此修改学习率/BC或发明新停止规则。审计见 tables/R2_WARM_seed42_harm_audit_977.json。
