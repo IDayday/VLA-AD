@@ -136,3 +136,7 @@ $PY scripts/process_improvement/plot_cases.py --method full_ANCHOR_42_epoch1 --s
     $PY scripts/process_improvement/qualify_grpo_host.py --stage destination
 
 重复命令不会覆盖已完成资格线；不能把`PASS_SOURCE_ONLY_NOT_MIGRATION_ADMISSION`当作迁移通过。科学协议、训练核心源码和登记预算保持不变。
+
+共同完成的原生GRPO首评分端点训练日志图（九条实际线的原始记录点，非dev学习曲线）：
+
+    $PY scripts/process_improvement/render_grpo_dynamics.py
