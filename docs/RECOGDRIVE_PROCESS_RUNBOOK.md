@@ -121,3 +121,9 @@ $PY scripts/process_improvement/plot_cases.py --method full_ANCHOR_42_epoch1 --s
     $PY scripts/process_improvement/render_grpo.py
 
 实际首轮执行生成1个已完成组；后续在生成对应R1/R2/R3三种子分析JSON后，用同一命令刷新。该图横轴为新增原生候选评分；完整成本另按实际ledger/lease和warm前置成本分析。
+
+所选warm一轮的实际继承训练成本（核验锁定检查点、world1和准确端点日志，拒绝用其他epoch/rank/seed代替）：
+
+    $PY scripts/process_improvement/summarize_warm_costs.py
+
+该成本应按seed与R2/P2配对，完整研究成本还包括选择、缓存与评价；不重复加到已经包含warm训练的全作业lease总量。

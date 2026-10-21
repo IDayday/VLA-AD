@@ -145,3 +145,13 @@ R3 seed42的cal-confirm自身T0比较为G=-0.005478，95%CI[-0.007209,-0.004216]
 R3 seed44的cal-confirm自身T0比较G=-0.007886，95%CI[-0.009980,-0.006484]，审计CONTINUE。R1/R3六个首端点的完整dev及独立cal-confirm审计均完成；R3三个种子的负向校准结果全部保留，更高预算仍遵循既有边界。三个warm起点已实际开始，尚不能填入它们的正式评分。
 
 原生R3检查点的额外真实独立部署计时也完成：RL2 A800、同一固定真实场景、每类5暖机+20重复，原始get_action在计时区间内部生成初始与逐步噪声。动作头给定raw token平均146.106ms/中位146.015ms/p95 147.972ms；输入准备/图像IO+VLM+动作头平均388.493ms/中位387.168ms/p95 395.814ms。Torch allocated总峰值分别约4.09/5.13GiB，动作头计时时完整VLM仍驻留；不是纯动作头驻留显存、冷启动或场景总体时延区间。数据在 tables/native_GRPO_R3_latency.json；不因与其他主机单场景数值接近而宣称时延优势。
+
+### 所选warm一轮的实际继承成本
+
+三个所选warm检查点均为world1，原始累计progress日志在准确的2341更新端点仍有唯一实际耗时记录，包含此前恢复训练段。其训练时间为seed42/43/44的1.485584/1.487318/1.339956 GPU小时，平均1.437619；均有74,912实际场景曝光、0新增NAVSIM训练评分。核对了所选checkpoint SHA、payload step/cursor、原生R2分支init SHA及日志计数，没有用两轮最终ledger替代一轮，也不外推多rank时间。
+
+该口径从模型/优化器准备后开始，含期间的训练和先前检查点开销，终点为该次更新后的实际日志时刻，不包括终点权重写入/评价。它是继承训练成本，不是整个研究或完整job lease。R2训练路径应将同seed的此项加到native phase；完整两轮候选比较、学习率/recipe选择、VLM缓存和评价仍须单列。研究总体lease已经包含warm训练，不能再重复相加。该prefix未记录的峰值显存与逐模块调用数保持null，不用后续端点补填。
+
+实际数据与来源哈希见 tables/warm_prefix_costs.json；可执行命令：
+
+    python scripts/process_improvement/summarize_warm_costs.py
