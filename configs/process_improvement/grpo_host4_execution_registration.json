@@ -1,0 +1,14 @@
+{
+  "status": "PRE_EXECUTION_ONLY_REGISTRATION",
+  "utc": "2026-10-21T06:48:54.250578+00:00",
+  "source_host": "training-vlawm-tsinghua-zt4",
+  "destination_hosts": [
+    "training-vla-zt",
+    "training-rl-zt2"
+  ],
+  "scope": "Execution only; no science protocol changes or new policy candidates",
+  "source_stage": "Three real global32 world4 four-update IL/RL/WARM replicas vs prior exact states; a fourth IL lineage paused at2 with full optimizer/RNG state",
+  "destination_stage": "Resume that same IL lineage on a different original A800 host to4; exact core/optimizer/allrank RNG/cursor/reference/scoring equality vs continuous4",
+  "actual_expected_physical_scores": 4096,
+  "admission": "Only after actual destination PASS and unchanged source hashes; paused world4 lineages may resume on available qualified host4 preserving every state. No active job moved or world size changed."
+}

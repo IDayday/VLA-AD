@@ -155,9 +155,11 @@ def test_partition_does_not_apply_global32_receipt_to_another_batch(tmp_path,mon
 def test_formal_resume_preserves_actual_world4_and_original_host(tmp_path,monkeypatch):
     from scripts.process_improvement import formal_controls
     from scripts.process_improvement import endpoint_state
+    from scripts.process_improvement import resume_placement
     archives=[]
     monkeypatch.setattr(endpoint_state,'freeze_endpoint_state',lambda run,step: archives.append((run,step)))
     monkeypatch.setattr(formal_controls,'ROOT',tmp_path)
+    monkeypatch.setattr(resume_placement,'ROOT',tmp_path)
     monkeypatch.setattr(coordinator,'ROOT',tmp_path)
     for name,value in [
         ('selection/grpo_rates.json',dict(selected={k:dict(lr=1e-5) for k in ['IL','RL']})),

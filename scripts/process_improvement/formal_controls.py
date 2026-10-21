@@ -1,8 +1,9 @@
 """Independent native GRPO controls with fixed scoring endpoints and harm checks.
 
 This scheduler never reads dev/navtest to pick a model or stop a lineage.
-Training resumes on its original host, with its original world size and full
-native optimizer/RNG state. No old E5 or process-projection gate is consulted.
+Training retains its original world size and full native optimizer/RNG state.
+A newly available host requires real cross-host exact-resume qualification.
+No old E5 or process-projection gate is consulted.
 """
 from scripts.process_improvement.common import *
 
@@ -122,7 +123,8 @@ def tasks():
                 resume=True
                 # Actual running owner is authoritative if a pre-launch
                 # admission was explicitly retried under a new job identity.
-                hosts=[read(run/'config.json')['owner']['host']]
+                from scripts.process_improvement.resume_placement import resume_hosts
+                hosts=resume_hosts(run,world)
             command=['-m','torch.distributed.run','--standalone',f'--nproc_per_node={world}',
                      'scripts/process_improvement/train_grpo.py','--name',name,'--init',init,
                      '--seed',str(seed),'--lr',str(recipe['lr']),'--score-budget','4000000']

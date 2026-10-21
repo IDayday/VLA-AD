@@ -14,6 +14,10 @@
 
 扩大训练期间补充核验了全部八台授权 canonical 主机：共 64 个不同物理 GPU UUID（`tables/eight_host_physical_uuid_inventory.json`）。这不等于 64 张卡均空闲：本研究最初并用五台的 40 张卡，随后多台出现无法归属到容器可见 PID 的负载，未终止未知进程或重置 GPU。OPD 的两条训练线在更新 664 保存完整原生状态后迁移至本地，同 world size 恢复继续；现场可直接使用的资源一度为本地和 rl-zt2 共 16 张卡。调度器持续检查全部八台的实时权限、物理显存/利用率与持有记录，有空闲时自动接入。完整 8-GPU GRPO 的新调度暂保留本地给短校准及机制诊断，避免长训练阻塞这些前置工作。
 
+2026-10-21 06:44 UTC复核发现部分远端没有`rg`，此前`resources.py`的GPU物理清单仍有效，但该工具的进程过滤子命令失败，不能将它当作完整进程可见性证据。现改为优先rg、缺失时grep的明确回退，并兼容cgroup v1/v2。实际重查确认Tsinghua主节点有受保护的独立Qwen训练；Tsinghua-zt4新出现八个精确匹配的`/tmp/zt-idle-pressure-v1/agent.py --worker GPU-*`。按已有用户授权、UID/PID/start ticks/argv检查，仅暂停这八个压力worker，之后八卡物理显存与利用率均归零。其他节点仍无法归属的负载不处理。原检查、错误及修正后的进程证据保留在外部audit目录。
+
+zt4加入本轮第六个压力暂停标记，结束时仅释放本任务自己的标记。正式迁移须先完成新增三起点真实host数值检查和跨主机同world完整状态恢复资格；不将新空闲资源直接视为数值资格，不移动正在训练的线，不改变world、优化器或科学预算。执行前登记见 `configs/process_improvement/grpo_host4_execution_registration.json`，对应真实资格评分预算4,096，不计为新训练种子或研究性能结果。
+
 本轮原始 VLM 缓存按 token 前缀分块，复用旧 official_v2 合法缓存；写入新缓存有 SHA256、源 VLM、输入契约与可恢复索引。共享磁盘现场约 2.3 TiB 空闲；本研究新缓存上限 900 GiB，并保留至少 512 GiB 空间，避免预先要求 TB 级全量缓存。
 
 可追溯数据总体、排除原因和源日志哈希在 tables/population_summary.json 及 configs/process_improvement/splits 中。所有结果尚须按后续完整实验判定，工程门禁不构成研究假设支持。

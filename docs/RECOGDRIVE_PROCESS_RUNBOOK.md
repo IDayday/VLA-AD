@@ -129,3 +129,10 @@ $PY scripts/process_improvement/plot_cases.py --method full_ANCHOR_42_epoch1 --s
 该成本应按seed与R2/P2配对，完整研究成本还包括选择、缓存与评价；不重复加到已经包含warm训练的全作业lease总量。
 
 调度器在原生GRPO固定端点恢复前保存 `runs/<name>/endpoint_states/<step>/full.pt` 与SHA收据，固定的是原始 `latest.pt` inode；训练器后续仍使用原生原子替换。该文件包含优化器和每rank RNG，可作同world恢复输入的独立保留副本，不是只含动作头的 `head_<step>.pt`。已覆盖的历史状态不重建、不用较新状态冒充；首次保护的缺失清单见报告表 `endpoint_state_initial_preservation.json`。完整状态文件均在gitignore输出目录。
+
+新增物理主机的资格分两阶段执行，第一阶段在回收压力worker后的zt4跑三起点四更新复核，并保存实际IL第二更新的完整状态；第二阶段在另一已用A800主机恢复同一训练线，检查参数、优化器、每rank RNG和游标逐元素一致。必须通过实际第二阶段后，调度器才允许已暂停且相同world4的线在该合格主机对之间安排。两阶段分别运行（设备由严格调度器分配）：
+
+    $PY scripts/process_improvement/qualify_grpo_host.py --stage source
+    $PY scripts/process_improvement/qualify_grpo_host.py --stage destination
+
+重复命令不会覆盖已完成资格线；不能把`PASS_SOURCE_ONLY_NOT_MIGRATION_ADMISSION`当作迁移通过。科学协议、训练核心源码和登记预算保持不变。
