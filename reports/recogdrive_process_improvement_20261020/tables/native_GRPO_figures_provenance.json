@@ -1,5 +1,5 @@
 {
-  "generator_sha256": "9c9cc3fbd0493c9ea85f2e208448c5ca63a8dbd185805be9f5683c21f0b20b34",
+  "generator_sha256": "8456b72622ca9bfee40b4dd868172e74089309a7d48d1d40ecbbd19abdf05371",
   "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
   "observed_groups": [
     {
@@ -24,6 +24,31 @@
           "training_seed": 44,
           "receipt_sha256": "19ab379e8128fe8e91f84d797c41fd63a636488c3503e7109837fdb77e8233a6",
           "native_phase_GPU_hours": 8.87345363067256
+        }
+      ]
+    },
+    {
+      "label": "R3",
+      "family": "RL",
+      "step": 977,
+      "scores": 250112,
+      "analysis_path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/R3_RL_step977_vs_IL.json",
+      "analysis_sha256": "5cfff0a82a56bd2ef9cf99f370215e9526ae262d12470429ac4d98ae190cca0b",
+      "costs": [
+        {
+          "training_seed": 42,
+          "receipt_sha256": "3c77923c944a4737f9d510153e10687f12672ec6437294fa7c68cd11d9c37124",
+          "native_phase_GPU_hours": 9.006653189924029
+        },
+        {
+          "training_seed": 43,
+          "receipt_sha256": "57de5bab2f33fe5f71279b69e31559f26ebdf6740f617e3cf0ac2191e403eea6",
+          "native_phase_GPU_hours": 9.212741045686935
+        },
+        {
+          "training_seed": 44,
+          "receipt_sha256": "11656ac223afe113acd086c57d934cb367aa2a20c9011c00850117c2f726bc57",
+          "native_phase_GPU_hours": 8.950417048136392
         }
       ]
     }
@@ -56,11 +81,6 @@
     },
     {
       "family": "RL",
-      "step": 977,
-      "status": "NO_COMPLETE_THREE_SEED_ANALYSIS"
-    },
-    {
-      "family": "RL",
       "step": 3907,
       "status": "NO_COMPLETE_THREE_SEED_ANALYSIS"
     },
@@ -73,6 +93,7 @@
   "IL_PDMS": 0.9151871137007114,
   "T0_PDMS": 0.9496275362442816,
   "intervals": "Parent record x training-policy x globally paired inference IDs; absolute PDMS intervals differ from paired differences",
+  "axis": "Categorical registered endpoints with within-bin method offsets; actual physical counts retained, not a continuous/interpolated learning curve",
   "costs": "Native-phase training ledgers only; not total compute. Warm initialization, tuning, cache and evaluation costs are separate and must not be omitted in total-budget comparison.",
-  "interpretation": "Three models remain separate policies; no policy ensemble, missing-score fill or checkpoint selection"
+  "interpretation": "Three models remain separate policies; no policy ensemble, missing-score fill or checkpoint selection. Common-IL differences include initialization ability; own-initialization analyses separately measure new learning."
 }
