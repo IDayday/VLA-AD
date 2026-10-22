@@ -1,0 +1,134 @@
+{
+  "point": {
+    "G": 0.01900979561845541,
+    "M_plus": 0.03195187540736399,
+    "M_minus": 0.012942079788908578,
+    "material_drop_fraction": 0.08294025157232704,
+    "single_output_drop_probability": 0.07692610062893082,
+    "zero_output_fraction": 0.01214622641509434,
+    "zero_scene_mean_fraction": 0.007861635220125786,
+    "positive_to_zero_fraction": 0.003537735849056604,
+    "zero_to_positive_fraction": 0.011595911949685534,
+    "PDMS": 0.9341969093191668,
+    "median_scene_PDMS": 0.9623754225942283,
+    "delta_NC": -0.00404874213836478,
+    "delta_DAC": 0.016981132075471698,
+    "delta_EP": 0.02386705017969129,
+    "delta_TTC": -0.00145440251572327,
+    "delta_Comfort": 0.0011792452830188679,
+    "delta_DDC": -0.0003341194968553459,
+    "delta_PDMS": 0.01900979561845541,
+    "high_M_minus": 0.01336088156192442,
+    "high_to_zero_fraction": 0.0037195994277539344,
+    "high_to_near_zero_fraction": 0.0037195994277539344
+  },
+  "CI95": {
+    "G": [
+      0.0030926607164789245,
+      0.034946826764937065
+    ],
+    "M_plus": [
+      0.02153247706864602,
+      0.045941991965790484
+    ],
+    "M_minus": [
+      0.0072412120423150745,
+      0.0214168291461397
+    ],
+    "material_drop_fraction": [
+      0.04694787079967729,
+      0.11361991165090166
+    ],
+    "single_output_drop_probability": [
+      0.04260833094409468,
+      0.10896036126366092
+    ],
+    "zero_output_fraction": [
+      0.003113313375039888,
+      0.029461514284475656
+    ],
+    "zero_scene_mean_fraction": [
+      0.0016965207934285778,
+      0.022589132034264516
+    ],
+    "positive_to_zero_fraction": [
+      0.000859466490045883,
+      0.010837862537583193
+    ],
+    "zero_to_positive_fraction": [
+      0.005775557704952401,
+      0.02696784023627542
+    ],
+    "PDMS": [
+      0.8984341913708126,
+      0.953781758680999
+    ],
+    "median_scene_PDMS": [
+      0.9168314122237224,
+      0.9914283058018631
+    ],
+    "delta_NC": [
+      -0.009551098376313275,
+      -0.0006332829670731541
+    ],
+    "delta_DAC": [
+      0.0054702223704692025,
+      0.03382027104750948
+    ],
+    "delta_EP": [
+      0.0057017601114239215,
+      0.04096543171813666
+    ],
+    "delta_TTC": [
+      -0.012574612728729985,
+      0.005006433350488934
+    ],
+    "delta_Comfort": [
+      0.0,
+      0.005110841462723892
+    ],
+    "delta_DDC": [
+      -0.0017845161459151097,
+      0.0010064695066427556
+    ],
+    "delta_PDMS": [
+      0.0030926607164789245,
+      0.034946826764937065
+    ],
+    "high_M_minus": [
+      0.006432839511473023,
+      0.025382211694080392
+    ],
+    "high_to_zero_fraction": [
+      0.0003914821868345109,
+      0.013158729205052191
+    ],
+    "high_to_near_zero_fraction": [
+      0.0003914821868345109,
+      0.013158729205052191
+    ]
+  },
+  "training_seeds": 3,
+  "inference_seeds": 5,
+  "bootstrap_repetitions": 10000,
+  "one_sided_centered_bootstrap_p": 0.012098790120987902,
+  "scope": "Complete-log sensitivity analysis; globally paired inference IDs and training-policy draws retained; parent-record analysis is primary",
+  "methods": [
+    "GRPO_IL_42_step3907",
+    "GRPO_IL_43_step3907",
+    "GRPO_IL_44_step3907"
+  ],
+  "baseline": "B0_IL",
+  "split": "dev",
+  "scenes": 1696,
+  "high_screening": "B0_IL_screen",
+  "cluster_unit": "log",
+  "analysis_source": {
+    "script_sha256": "4dd8cde678a2dde03fe947993eafa1617ab8f1c017db066d6bef3eedec27dc22",
+    "statistics_sha256": "19478782b70a48a803d7ce746a40b2c698c8e8afac9ddae4ec5875749cbcf887",
+    "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+    "population_sha256": "68020f6d0cfd4d518aaa80c254f3018cd1be09e032a50d1c5a34dfa23522fe27",
+    "bootstrap_seed": 20261020
+  },
+  "log_count": 16
+}

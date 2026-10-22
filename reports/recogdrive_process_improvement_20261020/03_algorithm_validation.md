@@ -55,3 +55,5 @@ CPU检查覆盖原子替换后归档保留、拒绝不同step冒充历史状态�
 zt4新增真实host复核的源阶段已通过：IL/RL/warm各4次更新、1,024次物理评分，与此前在本地/RL2的相同world4、全局B32资格线比较，核心参数及优化器逐元素一致，最大误差均0。另一个IL资格线真实暂停在第2次更新，保存原始完整优化器/每rank RNG状态，512次评分；源阶段实际新增合计3,584次。它目前仅为`PASS_SOURCE_ONLY_NOT_MIGRATION_ADMISSION`，还需在不同原主机实际恢复到第4次更新并核对全部状态后才允许正式迁移。清单与SHA见 tables/native_GRPO_host4_source.json，压力回收证据见 host4_pressure_preemption.json。旧、新资格不是独立性能种子，未用于挑选方法或阈值。
 
 随后不同主机的真实续跑也已完成：同一zt4两步状态在VLA主机恢复，实际继续两次更新/512评分；第四步的核心参数、优化器、每rank torch/CUDA/numpy/python RNG、采样游标、参考策略和评分计数与连续训练全部精确一致，最大误差0。两阶段新增评分合计4,096，未重复计入源前缀。实际收据见 tables/native_GRPO_cross_host_resume.json。调度器据此只放行已暂停world4在这一合格主机对中的额外安排；不移动活动训练或改变world，不放宽浮点断言。已实际从各自原始977步完整状态恢复RL seed42和Warm seed42至zt4的两组四卡，保留原参数、优化器、随机状态与预算。
+
+2026-10-22完整CPU集合158通过、15条依赖弃用警告（audit/combined_cpu_tests_v38.log，SHA在tables/cpu_validation_v38.json）。新增断言保证显式主机资格不会被本地handoff拓宽，维护只接受原登记的world/lineage/预算，并在任何训练信号前拒绝源或目的任一方已撤回；队列在容量查询之前按实时策略排除撤回/未知主机。原生训练器/规划器/随机流源码未改，历史真实数值资格保持原身份。zt6目的资格及维护均未运行，不能用源阶段PASS或这些CPU测试冒充跨机恢复通过。

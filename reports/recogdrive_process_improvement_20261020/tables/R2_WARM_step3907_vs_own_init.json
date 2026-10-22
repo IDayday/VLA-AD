@@ -1,0 +1,140 @@
+{
+  "point": {
+    "G": -0.005128338599326299,
+    "M_plus": 0.004106891016950369,
+    "M_minus": 0.009235229616276666,
+    "material_drop_fraction": 0.08510220125786164,
+    "single_output_drop_probability": 0.0832940251572327,
+    "zero_output_fraction": 0.009119496855345912,
+    "zero_scene_mean_fraction": 0.007272012578616352,
+    "positive_to_zero_fraction": 0.0015723270440251573,
+    "zero_to_positive_fraction": 0.002161949685534591,
+    "PDMS": 0.9385340938922362,
+    "median_scene_PDMS": 0.9651680296299314,
+    "delta_NC": -0.0009237421383647799,
+    "delta_DAC": 0.0016116352201257865,
+    "delta_EP": -0.015416683271271055,
+    "delta_TTC": 0.001061320754716981,
+    "delta_Comfort": 0.0,
+    "delta_DDC": 0.00025550314465408805,
+    "delta_PDMS": -0.005128338599326299,
+    "high_M_minus": 0.006943519358703211,
+    "high_to_zero_fraction": 0.0034334763948497852,
+    "high_to_near_zero_fraction": 0.0034334763948497852
+  },
+  "CI95": {
+    "G": [
+      -0.00965101886761975,
+      -0.0016488169747986593
+    ],
+    "M_plus": [
+      0.0015528907607073933,
+      0.007869405862738328
+    ],
+    "M_minus": [
+      0.006969794996067119,
+      0.0133455532916136
+    ],
+    "material_drop_fraction": [
+      0.0630572892926031,
+      0.11211873686685261
+    ],
+    "single_output_drop_probability": [
+      0.062425556961995116,
+      0.11097407065946721
+    ],
+    "zero_output_fraction": [
+      0.0013728491188445423,
+      0.022670215969712606
+    ],
+    "zero_scene_mean_fraction": [
+      0.0007873013376265688,
+      0.019662737697352117
+    ],
+    "positive_to_zero_fraction": [
+      0.00015403407407529456,
+      0.004582634698746482
+    ],
+    "zero_to_positive_fraction": [
+      0.00025474218589370654,
+      0.0054534881349809754
+    ],
+    "PDMS": [
+      0.9055062591122067,
+      0.9577183257400593
+    ],
+    "median_scene_PDMS": [
+      0.9183831367493137,
+      0.9939270936894663
+    ],
+    "delta_NC": [
+      -0.0033310259791481576,
+      0.0008793567644047868
+    ],
+    "delta_DAC": [
+      -0.0005596570399063289,
+      0.004785559894017569
+    ],
+    "delta_EP": [
+      -0.022285331186057685,
+      -0.011910030797243065
+    ],
+    "delta_TTC": [
+      -0.003019447683468986,
+      0.0049409959586441815
+    ],
+    "delta_Comfort": [
+      0.0,
+      0.0
+    ],
+    "delta_DDC": [
+      -0.0005700497253164831,
+      0.0013729916672070956
+    ],
+    "delta_PDMS": [
+      -0.00965101886761975,
+      -0.0016488169747986593
+    ],
+    "high_M_minus": [
+      0.004632857075256011,
+      0.011748389801091845
+    ],
+    "high_to_zero_fraction": [
+      0.0005455092383696042,
+      0.010977595635535962
+    ],
+    "high_to_near_zero_fraction": [
+      0.0005455092383696042,
+      0.010977595635535962
+    ]
+  },
+  "parent_count": 15,
+  "training_seeds": 3,
+  "inference_seeds": 5,
+  "bootstrap_repetitions": 10000,
+  "one_sided_centered_bootstrap_p": 0.9839016098390161,
+  "scope": "Parent-block bootstrap crossed with training-policy draws and globally shared paired inference IDs; few clusters/seeds and rare failures may remain inconclusive",
+  "methods": [
+    "GRPO_WARM_42_step3907",
+    "GRPO_WARM_43_step3907",
+    "GRPO_WARM_44_step3907"
+  ],
+  "baseline": null,
+  "split": "dev",
+  "scenes": 1696,
+  "high_screening": "B0_IL_screen",
+  "cluster_unit": "parent",
+  "analysis_source": {
+    "script_sha256": "4dd8cde678a2dde03fe947993eafa1617ab8f1c017db066d6bef3eedec27dc22",
+    "statistics_sha256": "19478782b70a48a803d7ce746a40b2c698c8e8afac9ddae4ec5875749cbcf887",
+    "protocol_sha256": "6d00d7c66287bfae7b8877a8d29855e1987515d9c7b813bf4dc18ecea43c497e",
+    "population_sha256": "68020f6d0cfd4d518aaa80c254f3018cd1be09e032a50d1c5a34dfa23522fe27",
+    "bootstrap_seed": 20261020
+  },
+  "paired_baselines": [
+    "full_OPD_42_epoch1",
+    "full_OPD_43_epoch1",
+    "full_OPD_44_epoch1"
+  ],
+  "baseline_pairing": "Each trained policy compared with its own seed-specific initialization, in the given order"
+}

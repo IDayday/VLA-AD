@@ -1,0 +1,28 @@
+{
+  "status": "NOT_RUN_WITHDRAWN_BEFORE_ANY_NATIVE_SIGNAL",
+  "utc": "2026-10-22T00:38:58.116428+00:00",
+  "policy_sha256": "5544068bca66e1533a977bf70f44816a0ca8f596d22f8cfd38aba12d30d9835b",
+  "withdrawn_host": "training-vlawm-tsinghua-zt6",
+  "withdrawal": {
+    "host": "training-vlawm-tsinghua-zt6",
+    "aliases": [
+      "training-vlawm-tsinghua-zt6",
+      "training-vlawm-tsinghua-zt6-worker-0",
+      "tsinghua-zt6",
+      "vlawm-tsinghua-zt6",
+      "vlawm-tsinghua-zt6-worker-0"
+    ],
+    "utc": "2026-10-22T00:26:39.854236+00:00",
+    "user_instruction": "tsinghua-zt6服务器不再使用，其他服务器如果有压力脚本，可以kill，使用完了再挂上压力脚本",
+    "new_task_dispatch_allowed": false,
+    "scope": "No new preparation, cache, teacher replay, scoring, training, observers, retries or pressure restoration; preserve unrelated jobs and data.",
+    "record": "/mnt/project/recogdrive-representation-workspace/115033c_a800_v1/multi_server/20261022T002639Z/AUTHORIZATION.json"
+  },
+  "historical_registration_sha256": "a5dbee59fccc8eedd63e571cc756a31f38a99e20876261408b1df523ab371523",
+  "unexecuted_amendment_sha256": "8ffd91849e4c916bf9944b59c9e5c4ba29dc06618fb090e151bd4641f2072316",
+  "actual_completed_source_only": "PASS_SOURCE_ONLY_NOT_MIGRATION_ADMISSION",
+  "destination_qualification": "NOT_RUN",
+  "native_maintenance_pause": "NOT_RUN",
+  "native_migration": "NOT_RUN",
+  "scope": "Cancel administrative plan, preserve original registrations and source results; continue all active native training unchanged. No further SSH, work, observers, retries or pressure restoration on withdrawn host."
+}

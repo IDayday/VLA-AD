@@ -156,3 +156,14 @@ zt6重新实际空闲后的八卡资格另有独立执行前登记 `grpo_host8_e
     $PY scripts/process_improvement/controller_control.py start
 
 GPU命令通过严格dispatch分配对应8张实际空闲卡；不要在未通过源资格或训练仍占卡时直接运行目的阶段。维护中间head只作完整恢复证据，不加入候选、cal/dev评价或选模。world8迁移须有独立的实际cross-host PASS及未变源码，不能借world4资格放行。zt6暂停标记也在真实研究结束后按本任务tag单独释放。
+
+2026-10-22 资源撤回覆盖上述zt6维护示例：不要再执行该维护或连接zt6。grpo_host8_execution_withdrawal.json记录目的资格/暂停/迁移均NOT_RUN，原生训练未被维护信号中断。历史registration/amendment不是当前授权；维护CLI在发送任何信号前核查源和目的双方的实时许可，调度器也先排除撤回主机。不要运行压力恢复命令绕过撤回。
+
+百万评分三种子主/敏感性统计已经完成，复现示例（R2自身起点必须传入按seed匹配的三条warm策略）：
+
+    $PY scripts/process_improvement/failure_audit.py --name R1_IL_step3907 --methods GRPO_IL_42_step3907 GRPO_IL_43_step3907 GRPO_IL_44_step3907
+    $PY scripts/process_improvement/failure_audit.py --name R2_WARM_step3907 --methods GRPO_WARM_42_step3907 GRPO_WARM_43_step3907 GRPO_WARM_44_step3907
+    $PY scripts/process_improvement/failure_audit.py --name R3_RL_step3907 --methods GRPO_RL_42_step3907 GRPO_RL_43_step3907 GRPO_RL_44_step3907
+    $PY scripts/process_improvement/render_grpo.py
+
+Fig12只绘制真实完成的三种子固定节点，无4M占位值或插值。未完成高预算训练不能用此处统计脚本代替。

@@ -295,6 +295,22 @@ def local_partition_task(task, host, idle, handoff):
     return dict(task,gpus=4,commands=rewritten)
 
 
+def task_hosts(task,handoff):
+    """Expand fresh formal placement only, never an explicit host qualification."""
+    hosts=list(task['hosts'])
+    if (handoff and task['gpus']==8 and
+            re.fullmatch(r'(?:reviewed_retry\d+_)*formal_GRPO_(?:IL|RL|WARM)_\d+_to\d+',task['name']) and
+            not any('--resume' in command for command in task['commands']) and
+            'training-vla-zt' not in hosts):hosts.append('training-vla-zt')
+    return hosts
+
+
+def authorized_task_hosts(task,handoff,policy):
+    """Apply current withdrawals before even a read-only capacity request."""
+    permitted=set(policy['allowed_hosts'])-set(policy.get('global_dispatch_prohibitions',{}))
+    return [host for host in task_hosts(task,handoff) if host in permitted]
+
+
 def main():
     p=argparse.ArgumentParser();p.add_argument('--once',action='store_true');p.add_argument('--formal-controls',action='store_true');a=p.parse_args()
     folder=ROOT/'controller';folder.mkdir(parents=True,exist_ok=True)
@@ -321,9 +337,7 @@ def main():
                     elif not (job/'launch.json').exists():
                         blocked.append(dict(name=task['name'],reason='Admission needs explicit review; no launch receipt'))
                     continue # No implicit retry/overwrite of failed jobs.
-                hosts=list(task['hosts'])
-                if handoff and task['gpus']==8 and not any('--resume' in command for command in task['commands']):
-                    if 'training-vla-zt' not in hosts:hosts.append('training-vla-zt')
+                hosts=authorized_task_hosts(task,handoff,read(PROJECT.parent/'server_dispatch_policy.json'))
                 for host in hosts:
                     if host not in free:
                         try:free[host]=available(host)

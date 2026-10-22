@@ -1,0 +1,18 @@
+{
+  "status": "PASS",
+  "passed": 158,
+  "warnings": 15,
+  "command": [
+    "/root/miniconda3/envs/navsim/bin/python",
+    "-m",
+    "pytest",
+    "-q",
+    "tests/process_improvement",
+    "tests/opd"
+  ],
+  "log": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/audit/combined_cpu_tests_v38.log",
+  "log_sha256": "119717bea15d4e0ef9ed72c0a0e056447bf34fffafb295b4709f4c3889714756",
+  "generated_utc": "2026-10-22T00:41:30.067752+00:00",
+  "scope": "Weight-free CPU and interface tests; distinct from preserved real checkpoint, simulation and training qualifications",
+  "changes": "Explicit host qualification routing, registered administrative signal guards, live withdrawal before capacity/maintenance; no native trainer/sampler/reward changes"
+}

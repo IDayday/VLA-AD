@@ -6,6 +6,19 @@ import pytest
 from scripts.process_improvement import coordinator
 
 
+def test_live_host_withdrawal_filters_old_queued_host_lists():
+    task=dict(name='ordinary_eval',gpus=1,hosts=['allowed','withdrawn','unknown'],commands=[])
+    policy=dict(allowed_hosts=['allowed','withdrawn'],global_dispatch_prohibitions={'withdrawn':{}})
+    assert coordinator.authorized_task_hosts(task,False,policy)==['allowed']
+
+
+def test_live_withdrawal_cannot_be_reintroduced_by_local_handoff():
+    task=dict(name='formal_GRPO_IL_42_to15625',gpus=8,hosts=['source'],commands=[['train']])
+    policy=dict(allowed_hosts=['source','training-vla-zt'],
+                global_dispatch_prohibitions={'training-vla-zt':{}})
+    assert coordinator.authorized_task_hosts(task,True,policy)==['source']
+
+
 def setup_root(tmp_path, monkeypatch, status, expansion=False):
     monkeypatch.setattr(coordinator, 'ROOT', tmp_path)
     selection=tmp_path/'selection'
@@ -179,3 +192,19 @@ def test_formal_resume_preserves_actual_world4_and_original_host(tmp_path,monkey
     assert task['gpus']==4 and task['hosts']==['training-vla-zt']
     assert '--nproc_per_node=4' in task['commands'][0] and '--resume' in task['commands'][0]
     assert archives==[(run,977)]
+
+
+def test_explicit_new_host_qualification_never_uses_another_idle_host():
+    task=dict(name='qualification_GRPO_host6_world8_source',gpus=8,hosts=['qualified_source'],commands=[['qualifier','source']])
+    assert coordinator.task_hosts(task,True)==['qualified_source']
+
+
+def test_fresh_formal_handoff_can_use_local_host():
+    task=dict(name='formal_GRPO_IL_42_to977',gpus=8,hosts=['training-rl-zt2'],commands=[['train']])
+    assert coordinator.task_hosts(task,True)==['training-rl-zt2','training-vla-zt']
+    assert coordinator.task_hosts(task,False)==['training-rl-zt2']
+
+
+def test_resume_host_constraints_survive_whole_host_handoff():
+    task=dict(name='formal_GRPO_IL_42_to3907',gpus=8,hosts=['original'],commands=[['train','--resume']])
+    assert coordinator.task_hosts(task,True)==['original']

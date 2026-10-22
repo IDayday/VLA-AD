@@ -28,6 +28,31 @@
       ]
     },
     {
+      "label": "R1",
+      "family": "IL",
+      "step": 3907,
+      "scores": 1000192,
+      "analysis_path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/R1_IL_step3907_vs_IL.json",
+      "analysis_sha256": "570978bb035a061bdd6085a7fafc2674763415e120e909145cd55f034c12bb38",
+      "costs": [
+        {
+          "training_seed": 42,
+          "receipt_sha256": "0edc031b53fe547ae3795b50f4af299eaf20826f2fdf78580e81f06123bb908a",
+          "native_phase_GPU_hours": 37.08040851586395
+        },
+        {
+          "training_seed": 43,
+          "receipt_sha256": "d61fb357dab63083278e0ce9ddd14810dd4529592b1ac7ad91c587b6e4923920",
+          "native_phase_GPU_hours": 37.72994813428985
+        },
+        {
+          "training_seed": 44,
+          "receipt_sha256": "8f977e49b6949d5ad8ed5a20d8479b7ae572cec3c62f703e000a602dc6c0d3a6",
+          "native_phase_GPU_hours": 35.83893263101578
+        }
+      ]
+    },
+    {
       "label": "R2",
       "family": "WARM",
       "step": 977,
@@ -49,6 +74,31 @@
           "training_seed": 44,
           "receipt_sha256": "e52185444faa80bb6c2cb5dafe0a0fab2c02ec66b73dc890e6529099160fb08b",
           "native_phase_GPU_hours": 9.06288883401288
+        }
+      ]
+    },
+    {
+      "label": "R2",
+      "family": "WARM",
+      "step": 3907,
+      "scores": 1000192,
+      "analysis_path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/R2_WARM_step3907_vs_IL.json",
+      "analysis_sha256": "32a0e0ea541d930a71050cca7ed12e8a644f9349ab20a514b33583b33d9c20d5",
+      "costs": [
+        {
+          "training_seed": 42,
+          "receipt_sha256": "6927d1d3f5ee863b75eb491b6814d1f9e1e39d3e63c24b3e150ada3eb525dd7d",
+          "native_phase_GPU_hours": 34.994648818506136
+        },
+        {
+          "training_seed": 43,
+          "receipt_sha256": "a039a3210fbe2fbed25b417bdf02f5ffd42ca52ba056e8f21fa8b16c51b48512",
+          "native_phase_GPU_hours": 35.93858291433917
+        },
+        {
+          "training_seed": 44,
+          "receipt_sha256": "3132d99c379ef797fd6065a477bbf827e65c4270cd6605e3c018fc5746cb2d22",
+          "native_phase_GPU_hours": 36.109567783673604
         }
       ]
     },
@@ -76,32 +126,42 @@
           "native_phase_GPU_hours": 8.950417048136392
         }
       ]
+    },
+    {
+      "label": "R3",
+      "family": "RL",
+      "step": 3907,
+      "scores": 1000192,
+      "analysis_path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/analysis/R3_RL_step3907_vs_IL.json",
+      "analysis_sha256": "c6731f82f3ca859de54f7d5607bd977be8cec14e9fa02bfa0e3ac2822033a2df",
+      "costs": [
+        {
+          "training_seed": 42,
+          "receipt_sha256": "638c7f9eaa8f8f078914a8d155d92a1b5c02d5d1336cd3cc23d0016fd58fd2b3",
+          "native_phase_GPU_hours": 35.196475506557356
+        },
+        {
+          "training_seed": 43,
+          "receipt_sha256": "2daac163d8a55cc6354287212e0881a2326c912d0504899ab7c2f70c4e9c908e",
+          "native_phase_GPU_hours": 36.11432695700063
+        },
+        {
+          "training_seed": 44,
+          "receipt_sha256": "be461f11ca5ef94b01bed8d647e34259cce5286b99591d4a120d536c4adf4298",
+          "native_phase_GPU_hours": 36.523725094729
+        }
+      ]
     }
   ],
   "missing_groups": [
     {
       "family": "IL",
-      "step": 3907,
-      "status": "NO_COMPLETE_THREE_SEED_ANALYSIS"
-    },
-    {
-      "family": "IL",
       "step": 15625,
       "status": "NO_COMPLETE_THREE_SEED_ANALYSIS"
     },
     {
       "family": "WARM",
-      "step": 3907,
-      "status": "NO_COMPLETE_THREE_SEED_ANALYSIS"
-    },
-    {
-      "family": "WARM",
       "step": 15625,
-      "status": "NO_COMPLETE_THREE_SEED_ANALYSIS"
-    },
-    {
-      "family": "RL",
-      "step": 3907,
       "status": "NO_COMPLETE_THREE_SEED_ANALYSIS"
     },
     {
