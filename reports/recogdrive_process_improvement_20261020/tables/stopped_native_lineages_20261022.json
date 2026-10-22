@@ -1,0 +1,674 @@
+{
+  "status": "ALL_NINE_LINEAGES_PRESERVED",
+  "utc": "2026-10-22T01:05:48.217914+00:00",
+  "total_actual_physical_scores": 14035712,
+  "registered_maximum_scores": 36000000,
+  "records": [
+    {
+      "name": "GRPO_IL_42",
+      "status": "STOPPED_BY_USER_NOT_SCIENTIFIC_FAILURE",
+      "pause": {
+        "step": 12087,
+        "physical_scores": 3094272
+      },
+      "full_state": {
+        "status": "PRESERVED_ORIGINAL_FULL_STATE",
+        "step": 12087,
+        "full_state_path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/endpoint_states/12087/full.pt",
+        "full_state_sha256": "3f0fc39c33de6addc5884d251259440ea97ae191d37ccd08a86bd9411265a945",
+        "head_sha256": "34660dd1fe014e10ff0c6546840de1047396f583657e2dc7d7e3b836ae6d515f",
+        "world": 8,
+        "cursor": 386784,
+        "physical_scores": 3094272,
+        "reference_sha256": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "generator_sha256": "308de750658356fcbb4c49b2aea60c421153c0a089ae3394bacabcf6f7e7aa0f",
+        "semantics": "Original paused/completed latest.pt inode pinned before native atomic replacement; no reconstructed optimizer or RNG"
+      },
+      "cost": {
+        "status": "MEASURED_IMMUTABLE_ENDPOINT",
+        "step": 12087,
+        "checkpoint_sha256": "34660dd1fe014e10ff0c6546840de1047396f583657e2dc7d7e3b836ae6d515f",
+        "run_config_sha256": "d944deed5accbfd3e9b52b20be6e8bb4a4680a6c1c02fedc36948c55857b3afd",
+        "actual_source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_0.json": "7f7961c60b83e08891b6ec703d455757eee419e78f0c4c867e82b411cd047abb",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_1.json": "d764f579d7f4aa7769799eb461ca35bf54c1bfcaf1ca1a006a964520f75d23fb",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_2.json": "5d1fda26de714b5c9cafc048aef8a683def06dc594abacf969181df97fd6d160",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_3.json": "e357fc81cc3507e0474e3b3d7bc4739f22fca19046f6e5bee1c89d2cd849c6ce",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_4.json": "4261d1cdf9398ab6479492d5c63edfcbc36a660be2bfa14b90f70db52212127e",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_5.json": "429a1ad8393a30754c4039765bd17f2534a3df9423172dae10fd259727e50558",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_6.json": "6cb74ce1c8d44dd873bc1411ddd4f4ffbf2f37ada1846488a348a7f55e8826ce",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/cost_rank_7.json": "2e194e39401d34816a4d3bc7559463c9960450320672985711b5dd22f324414b"
+        },
+        "ledger": {
+          "status": "MEASURED",
+          "checkpoint_step": 12087,
+          "GPU_seconds": 415052.1402685642,
+          "compute": {
+            "student": {
+              "forward_calls": 2707488.0,
+              "trajectory_states": 32876640.0
+            },
+            "IL_reference": {
+              "forward_calls": 1933920.0,
+              "trajectory_states": 1933920.0
+            }
+          },
+          "budget": {
+            "physical_scores": 3094272.0,
+            "logical_scores": 3094272.0,
+            "reference_simulations": 3094272.0,
+            "cpu_scoring_seconds": 92040.17987542426
+          },
+          "peak_gpu_bytes_per_rank": [
+            7767584768,
+            7767584768,
+            7767584768,
+            7767584768,
+            7767584768,
+            7767584768,
+            7767584768,
+            7767584768
+          ],
+          "peak_history_complete": true,
+          "source_files": {
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/endpoint_costs/12087/rank_0.json": "7f7961c60b83e08891b6ec703d455757eee419e78f0c4c867e82b411cd047abb",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/endpoint_costs/12087/rank_1.json": "d764f579d7f4aa7769799eb461ca35bf54c1bfcaf1ca1a006a964520f75d23fb",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/endpoint_costs/12087/rank_2.json": "5d1fda26de714b5c9cafc048aef8a683def06dc594abacf969181df97fd6d160",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/endpoint_costs/12087/rank_3.json": "e357fc81cc3507e0474e3b3d7bc4739f22fca19046f6e5bee1c89d2cd849c6ce",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/endpoint_costs/12087/rank_4.json": "4261d1cdf9398ab6479492d5c63edfcbc36a660be2bfa14b90f70db52212127e",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/endpoint_costs/12087/rank_5.json": "429a1ad8393a30754c4039765bd17f2534a3df9423172dae10fd259727e50558",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/endpoint_costs/12087/rank_6.json": "6cb74ce1c8d44dd873bc1411ddd4f4ffbf2f37ada1846488a348a7f55e8826ce",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_42/endpoint_costs/12087/rank_7.json": "2e194e39401d34816a4d3bc7559463c9960450320672985711b5dd22f324414b"
+          }
+        },
+        "generator_sha256": "536dc3a50b6d3ec49b42471817abf4e2edd6a921048ed6f4a243247d4c59e65f",
+        "aggregator_sha256": "8a7b10e8182ea51f42cd846e2245fe68b9018fa4bde85baa47b7f69497a0970b",
+        "interpretation": "Actual paused/completed rank ledgers; cumulative training cost, distinct from whole-job leases; no historical imputation"
+      },
+      "evaluation_role": "Administrative final saved state only; not evaluated, tuned or promoted"
+    },
+    {
+      "name": "GRPO_IL_43",
+      "status": "STOPPED_BY_USER_NOT_SCIENTIFIC_FAILURE",
+      "pause": {
+        "step": 6303,
+        "physical_scores": 1613568
+      },
+      "full_state": {
+        "status": "PRESERVED_ORIGINAL_FULL_STATE",
+        "step": 6303,
+        "full_state_path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_43/endpoint_states/6303/full.pt",
+        "full_state_sha256": "cc2ac11842851ee3e8badfc9fc49e5b3a80e559d90778f2355f5e0f031a135cc",
+        "head_sha256": "2e194bb8908f8347ac748df4e69db76af4b4a6c01b921cfbcd40bd369e386b01",
+        "world": 8,
+        "cursor": 201696,
+        "physical_scores": 1613568,
+        "reference_sha256": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "generator_sha256": "308de750658356fcbb4c49b2aea60c421153c0a089ae3394bacabcf6f7e7aa0f",
+        "semantics": "Original paused/completed latest.pt inode pinned before native atomic replacement; no reconstructed optimizer or RNG"
+      },
+      "cost": {
+        "status": "MEASURED_IMMUTABLE_ENDPOINT",
+        "step": 6303,
+        "checkpoint_sha256": "2e194bb8908f8347ac748df4e69db76af4b4a6c01b921cfbcd40bd369e386b01",
+        "run_config_sha256": "fc3b4faa0da91c70dae3f260cea9995c33c9896f67882791cadbd54da8aa69b9",
+        "actual_source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_43/cost_rank_0.json": "176a86f2ec8d38e501f5143715f59afa47f325f9bfc9495f18728a2da8ca65ee",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_43/cost_rank_1.json": "5929161d09a20d0f0de563398b2b670ffc8442ee9900298561c910d14b5ceb0b",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_43/cost_rank_2.json": "5e3b7a8c596b54df88b3fcadfd4a6b9710fcd49c1230910b3eb00d2bc5d1fd49",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_43/cost_rank_3.json": "f7d2aefb16b0184e033bb771e5d8f2629adc608e2a8bce581d6a87d6a6a0f19c",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_43/cost_rank_4.json": "a8fe6c08ef9329f19579b13324b1b6929d09c73f83104e51c03daedb1a48bb63",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_43/cost_rank_5.json": "0a9bf52c931ab7bd561ccb7aad02aaf9c505d34932313f2ca382003f1e270a97",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_43/cost_rank_6.json": "baf4a70e21c5111214609a7e026c05e02a0ae7582c9e9a5adb1c8d48f761f15e",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_43/cost_rank_7.json": "2fd9b08860d2f8ced7ede393d866c5fd6bb8eaacb2192dae0c45e28340e7e784"
+        },
+        "ledger": {
+          "status": "MEASURED",
+          "checkpoint_step": 6303,
+          "GPU_seconds": 218034.44520163536,
+          "compute": {
+            "student": {
+              "forward_calls": 1411872.0,
+              "trajectory_states": 17144160.0
+            },
+            "IL_reference": {
+              "forward_calls": 1008480.0,
+              "trajectory_states": 1008480.0
+            }
+          },
+          "budget": {
+            "physical_scores": 1613568.0,
+            "logical_scores": 1613568.0,
+            "reference_simulations": 1613568.0,
+            "cpu_scoring_seconds": 49110.82891453708
+          },
+          "peak_gpu_bytes_per_rank": [
+            7767584768,
+            7767584768,
+            7767584768,
+            7767584768,
+            7767584768,
+            7767584768,
+            7767584768,
+            7767584768
+          ],
+          "peak_history_complete": true,
+          "source_files": {
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_43/endpoint_costs/6303/rank_0.json": "176a86f2ec8d38e501f5143715f59afa47f325f9bfc9495f18728a2da8ca65ee",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_43/endpoint_costs/6303/rank_1.json": "5929161d09a20d0f0de563398b2b670ffc8442ee9900298561c910d14b5ceb0b",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_43/endpoint_costs/6303/rank_2.json": "5e3b7a8c596b54df88b3fcadfd4a6b9710fcd49c1230910b3eb00d2bc5d1fd49",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_43/endpoint_costs/6303/rank_3.json": "f7d2aefb16b0184e033bb771e5d8f2629adc608e2a8bce581d6a87d6a6a0f19c",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_43/endpoint_costs/6303/rank_4.json": "a8fe6c08ef9329f19579b13324b1b6929d09c73f83104e51c03daedb1a48bb63",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_43/endpoint_costs/6303/rank_5.json": "0a9bf52c931ab7bd561ccb7aad02aaf9c505d34932313f2ca382003f1e270a97",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_43/endpoint_costs/6303/rank_6.json": "baf4a70e21c5111214609a7e026c05e02a0ae7582c9e9a5adb1c8d48f761f15e",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_43/endpoint_costs/6303/rank_7.json": "2fd9b08860d2f8ced7ede393d866c5fd6bb8eaacb2192dae0c45e28340e7e784"
+          }
+        },
+        "generator_sha256": "536dc3a50b6d3ec49b42471817abf4e2edd6a921048ed6f4a243247d4c59e65f",
+        "aggregator_sha256": "8a7b10e8182ea51f42cd846e2245fe68b9018fa4bde85baa47b7f69497a0970b",
+        "interpretation": "Actual paused/completed rank ledgers; cumulative training cost, distinct from whole-job leases; no historical imputation"
+      },
+      "evaluation_role": "Administrative final saved state only; not evaluated, tuned or promoted"
+    },
+    {
+      "name": "GRPO_IL_44",
+      "status": "STOPPED_BY_USER_NOT_SCIENTIFIC_FAILURE",
+      "pause": {
+        "step": 3907,
+        "physical_scores": 1000192
+      },
+      "full_state": {
+        "status": "PRESERVED_ORIGINAL_FULL_STATE",
+        "step": 3907,
+        "full_state_path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_44/endpoint_states/3907/full.pt",
+        "full_state_sha256": "94cfdef585f539aeeb71534fd5e9f2737d7262d6bc0d1d4c1321e5ec34c08b39",
+        "head_sha256": "2a19799a1e79c97f12a710b6cd8654b8fff7488ea71943438fc8ef4ee34da988",
+        "world": 4,
+        "cursor": 125024,
+        "physical_scores": 1000192,
+        "reference_sha256": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "generator_sha256": "308de750658356fcbb4c49b2aea60c421153c0a089ae3394bacabcf6f7e7aa0f",
+        "semantics": "Original paused/completed latest.pt inode pinned before native atomic replacement; no reconstructed optimizer or RNG"
+      },
+      "cost": {
+        "status": "MEASURED_IMMUTABLE_ENDPOINT",
+        "step": 3907,
+        "checkpoint_sha256": "2a19799a1e79c97f12a710b6cd8654b8fff7488ea71943438fc8ef4ee34da988",
+        "run_config_sha256": "74071ad92774fc62e0de0af3a448affb7f4e3f53685748326eddfca83cdadbea",
+        "actual_source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_44/cost_rank_0.json": "4dc3a596198498bdfdb0a5efae11f3d4ec5ea7746f4fccf6a5796b50f4a27c7a",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_44/cost_rank_1.json": "9faee065344dba369b70ef9551b9d7dc55bf55cc81b6cdb27293d77c74bb5cec",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_44/cost_rank_2.json": "234d4b904cd0b6792ca637d2b88b0a157b1bbf9777f2ed69d5a04678da103d2f",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_44/cost_rank_3.json": "fdcf0e4278d6489898076927fa95e2a620a007bca1ee42fc399447a8a559a51e"
+        },
+        "ledger": {
+          "status": "MEASURED",
+          "checkpoint_step": 3907,
+          "GPU_seconds": 129020.1574716568,
+          "compute": {
+            "student": {
+              "forward_calls": 875168.0,
+              "trajectory_states": 10627040.0
+            },
+            "IL_reference": {
+              "forward_calls": 625120.0,
+              "trajectory_states": 625120.0
+            }
+          },
+          "budget": {
+            "physical_scores": 1000192.0,
+            "logical_scores": 1000192.0,
+            "reference_simulations": 1000192.0,
+            "cpu_scoring_seconds": 29469.97825061164
+          },
+          "peak_gpu_bytes_per_rank": [
+            7767584768,
+            7767584768,
+            7767584768,
+            7767584768
+          ],
+          "peak_history_complete": true,
+          "source_files": {
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_44/endpoint_costs/3907/rank_0.json": "4dc3a596198498bdfdb0a5efae11f3d4ec5ea7746f4fccf6a5796b50f4a27c7a",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_44/endpoint_costs/3907/rank_1.json": "9faee065344dba369b70ef9551b9d7dc55bf55cc81b6cdb27293d77c74bb5cec",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_44/endpoint_costs/3907/rank_2.json": "234d4b904cd0b6792ca637d2b88b0a157b1bbf9777f2ed69d5a04678da103d2f",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_IL_44/endpoint_costs/3907/rank_3.json": "fdcf0e4278d6489898076927fa95e2a620a007bca1ee42fc399447a8a559a51e"
+          }
+        },
+        "generator_sha256": "536dc3a50b6d3ec49b42471817abf4e2edd6a921048ed6f4a243247d4c59e65f",
+        "aggregator_sha256": "8a7b10e8182ea51f42cd846e2245fe68b9018fa4bde85baa47b7f69497a0970b",
+        "interpretation": "Actual paused/completed rank ledgers; cumulative training cost, distinct from whole-job leases; no historical imputation"
+      },
+      "evaluation_role": "Existing fixed endpoint, no new evaluation"
+    },
+    {
+      "name": "GRPO_RL_42",
+      "status": "STOPPED_BY_USER_NOT_SCIENTIFIC_FAILURE",
+      "pause": {
+        "step": 8471,
+        "physical_scores": 2168576
+      },
+      "full_state": {
+        "status": "PRESERVED_ORIGINAL_FULL_STATE",
+        "step": 8471,
+        "full_state_path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_42/endpoint_states/8471/full.pt",
+        "full_state_sha256": "7662f4a61c3d12b8db2e395537619b2eb80170d4dd0552d7eee4a279617dc328",
+        "head_sha256": "45d1ad0477779a42d664841dc83c54def317477f76393668196899ac85c6ce75",
+        "world": 4,
+        "cursor": 271072,
+        "physical_scores": 2168576,
+        "reference_sha256": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "generator_sha256": "308de750658356fcbb4c49b2aea60c421153c0a089ae3394bacabcf6f7e7aa0f",
+        "semantics": "Original paused/completed latest.pt inode pinned before native atomic replacement; no reconstructed optimizer or RNG"
+      },
+      "cost": {
+        "status": "MEASURED_IMMUTABLE_ENDPOINT",
+        "step": 8471,
+        "checkpoint_sha256": "45d1ad0477779a42d664841dc83c54def317477f76393668196899ac85c6ce75",
+        "run_config_sha256": "ed1cf940873588a12b4df5dc28ec4c8b83feca848f2c908dfa0504e57425f746",
+        "actual_source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_42/cost_rank_0.json": "87092ebf393cf1d278796b7e9ac35f3b5792348e89c1a25412e1c02a6be1d736",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_42/cost_rank_1.json": "7236630b63cd1993fac2fd58206281c0aed644b9a0b297fb069bb0d118a181ac",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_42/cost_rank_2.json": "53cdcc1c32980e492087fd7009217a74e44a5630acef6fc1d4729097fbd18a31",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_42/cost_rank_3.json": "5fe0166da0fd0c5c2483cd80ce5932d249efeebd86b286a70194a08a74ec3d9a"
+        },
+        "ledger": {
+          "status": "MEASURED",
+          "checkpoint_step": 8471,
+          "GPU_seconds": 274206.9456124306,
+          "compute": {
+            "student": {
+              "forward_calls": 1897504.0,
+              "trajectory_states": 23041120.0
+            },
+            "IL_reference": {
+              "forward_calls": 1355360.0,
+              "trajectory_states": 1355360.0
+            }
+          },
+          "budget": {
+            "physical_scores": 2168576.0,
+            "logical_scores": 2168576.0,
+            "reference_simulations": 2168576.0,
+            "cpu_scoring_seconds": 63728.696563499325
+          },
+          "peak_gpu_bytes_per_rank": [
+            7767584768,
+            7767584768,
+            7767584768,
+            7767584768
+          ],
+          "peak_history_complete": true,
+          "source_files": {
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_42/endpoint_costs/8471/rank_0.json": "87092ebf393cf1d278796b7e9ac35f3b5792348e89c1a25412e1c02a6be1d736",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_42/endpoint_costs/8471/rank_1.json": "7236630b63cd1993fac2fd58206281c0aed644b9a0b297fb069bb0d118a181ac",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_42/endpoint_costs/8471/rank_2.json": "53cdcc1c32980e492087fd7009217a74e44a5630acef6fc1d4729097fbd18a31",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_42/endpoint_costs/8471/rank_3.json": "5fe0166da0fd0c5c2483cd80ce5932d249efeebd86b286a70194a08a74ec3d9a"
+          }
+        },
+        "generator_sha256": "536dc3a50b6d3ec49b42471817abf4e2edd6a921048ed6f4a243247d4c59e65f",
+        "aggregator_sha256": "8a7b10e8182ea51f42cd846e2245fe68b9018fa4bde85baa47b7f69497a0970b",
+        "interpretation": "Actual paused/completed rank ledgers; cumulative training cost, distinct from whole-job leases; no historical imputation"
+      },
+      "evaluation_role": "Administrative final saved state only; not evaluated, tuned or promoted"
+    },
+    {
+      "name": "GRPO_RL_43",
+      "status": "STOPPED_BY_USER_NOT_SCIENTIFIC_FAILURE",
+      "pause": {
+        "step": 3907,
+        "physical_scores": 1000192
+      },
+      "full_state": {
+        "status": "PRESERVED_ORIGINAL_FULL_STATE",
+        "step": 3907,
+        "full_state_path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_43/endpoint_states/3907/full.pt",
+        "full_state_sha256": "91a293eac9f3758ba0f4829b5ef0932114bb3ebcdef8bceebab397c5f964c3a2",
+        "head_sha256": "abd26acb387017e6a0aa3e4266dfb4e5fae9952e04664eb311379f5eb9ed6165",
+        "world": 4,
+        "cursor": 125024,
+        "physical_scores": 1000192,
+        "reference_sha256": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "generator_sha256": "308de750658356fcbb4c49b2aea60c421153c0a089ae3394bacabcf6f7e7aa0f",
+        "semantics": "Original paused/completed latest.pt inode pinned before native atomic replacement; no reconstructed optimizer or RNG"
+      },
+      "cost": {
+        "status": "MEASURED_IMMUTABLE_ENDPOINT",
+        "step": 3907,
+        "checkpoint_sha256": "abd26acb387017e6a0aa3e4266dfb4e5fae9952e04664eb311379f5eb9ed6165",
+        "run_config_sha256": "c3b48b2b85e930ad4119c4e4572b1d25e35a4cae6529ad83ce1675e75dff52c5",
+        "actual_source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_43/cost_rank_0.json": "c3ba2b568b9f19b6b244dac92ce5cceec2f026a7cf4954964f141bfe698d92e4",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_43/cost_rank_1.json": "56a5b86e744d45b834d8bc764de5437bcd94781add019ebdbe6e3d94e3cd399d",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_43/cost_rank_2.json": "1166b8cdebc27ac5c29db1d52e17da56640eaa3018e544c09159bbf280f7769c",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_43/cost_rank_3.json": "c89adbff78987f31857cffc7f5136166b715407f3d211b5bf8d7d6860446dfe1"
+        },
+        "ledger": {
+          "status": "MEASURED",
+          "checkpoint_step": 3907,
+          "GPU_seconds": 130011.57704520226,
+          "compute": {
+            "student": {
+              "forward_calls": 875168.0,
+              "trajectory_states": 10627040.0
+            },
+            "IL_reference": {
+              "forward_calls": 625120.0,
+              "trajectory_states": 625120.0
+            }
+          },
+          "budget": {
+            "physical_scores": 1000192.0,
+            "logical_scores": 1000192.0,
+            "reference_simulations": 1000192.0,
+            "cpu_scoring_seconds": 30331.17284914058
+          },
+          "peak_gpu_bytes_per_rank": [
+            7767584768,
+            7767584768,
+            7767584768,
+            7767584768
+          ],
+          "peak_history_complete": true,
+          "source_files": {
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_43/endpoint_costs/3907/rank_0.json": "c3ba2b568b9f19b6b244dac92ce5cceec2f026a7cf4954964f141bfe698d92e4",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_43/endpoint_costs/3907/rank_1.json": "56a5b86e744d45b834d8bc764de5437bcd94781add019ebdbe6e3d94e3cd399d",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_43/endpoint_costs/3907/rank_2.json": "1166b8cdebc27ac5c29db1d52e17da56640eaa3018e544c09159bbf280f7769c",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_43/endpoint_costs/3907/rank_3.json": "c89adbff78987f31857cffc7f5136166b715407f3d211b5bf8d7d6860446dfe1"
+          }
+        },
+        "generator_sha256": "536dc3a50b6d3ec49b42471817abf4e2edd6a921048ed6f4a243247d4c59e65f",
+        "aggregator_sha256": "8a7b10e8182ea51f42cd846e2245fe68b9018fa4bde85baa47b7f69497a0970b",
+        "interpretation": "Actual paused/completed rank ledgers; cumulative training cost, distinct from whole-job leases; no historical imputation"
+      },
+      "evaluation_role": "Existing fixed endpoint, no new evaluation"
+    },
+    {
+      "name": "GRPO_RL_44",
+      "status": "STOPPED_BY_USER_NOT_SCIENTIFIC_FAILURE",
+      "pause": {
+        "step": 3907,
+        "physical_scores": 1000192
+      },
+      "full_state": {
+        "status": "PRESERVED_ORIGINAL_FULL_STATE",
+        "step": 3907,
+        "full_state_path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_44/endpoint_states/3907/full.pt",
+        "full_state_sha256": "f9e448cc4419a91d33dd5bf8c37bf1d61225abe394d471a488018b81c8f3efd0",
+        "head_sha256": "5251f53fc9b26de3febfbae9014eb68a97f42208cff19924b7825ebd274e6170",
+        "world": 4,
+        "cursor": 125024,
+        "physical_scores": 1000192,
+        "reference_sha256": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "generator_sha256": "308de750658356fcbb4c49b2aea60c421153c0a089ae3394bacabcf6f7e7aa0f",
+        "semantics": "Original paused/completed latest.pt inode pinned before native atomic replacement; no reconstructed optimizer or RNG"
+      },
+      "cost": {
+        "status": "MEASURED_IMMUTABLE_ENDPOINT",
+        "step": 3907,
+        "checkpoint_sha256": "5251f53fc9b26de3febfbae9014eb68a97f42208cff19924b7825ebd274e6170",
+        "run_config_sha256": "9cad76a16b0670c08a960a29985db8ecc5180108a6dba0d148eabb8114f9151e",
+        "actual_source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_44/cost_rank_0.json": "14699f307a6b541d710c3162447de66822f7f1aa6fb8e0d763e6dd673d38b90d",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_44/cost_rank_1.json": "db8f3837b3ff46486465722f21cd15d80a210f1198002cfab28f04d681a47e4f",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_44/cost_rank_2.json": "f2e46c24f964a486bb495c674c74540cfcb9bc2ce8f58c75b81378a9e1d2a714",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_44/cost_rank_3.json": "b2fb13f5f51b236404f5233bd80ae0925c8286d74f4c2ba64aa9f3935c1c9766"
+        },
+        "ledger": {
+          "status": "MEASURED",
+          "checkpoint_step": 3907,
+          "GPU_seconds": 131485.4103410244,
+          "compute": {
+            "student": {
+              "forward_calls": 875168.0,
+              "trajectory_states": 10627040.0
+            },
+            "IL_reference": {
+              "forward_calls": 625120.0,
+              "trajectory_states": 625120.0
+            }
+          },
+          "budget": {
+            "physical_scores": 1000192.0,
+            "logical_scores": 1000192.0,
+            "reference_simulations": 1000192.0,
+            "cpu_scoring_seconds": 30606.53900218808
+          },
+          "peak_gpu_bytes_per_rank": [
+            7767584768,
+            7767584768,
+            7767584768,
+            7767584768
+          ],
+          "peak_history_complete": true,
+          "source_files": {
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_44/endpoint_costs/3907/rank_0.json": "14699f307a6b541d710c3162447de66822f7f1aa6fb8e0d763e6dd673d38b90d",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_44/endpoint_costs/3907/rank_1.json": "db8f3837b3ff46486465722f21cd15d80a210f1198002cfab28f04d681a47e4f",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_44/endpoint_costs/3907/rank_2.json": "f2e46c24f964a486bb495c674c74540cfcb9bc2ce8f58c75b81378a9e1d2a714",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_RL_44/endpoint_costs/3907/rank_3.json": "b2fb13f5f51b236404f5233bd80ae0925c8286d74f4c2ba64aa9f3935c1c9766"
+          }
+        },
+        "generator_sha256": "536dc3a50b6d3ec49b42471817abf4e2edd6a921048ed6f4a243247d4c59e65f",
+        "aggregator_sha256": "8a7b10e8182ea51f42cd846e2245fe68b9018fa4bde85baa47b7f69497a0970b",
+        "interpretation": "Actual paused/completed rank ledgers; cumulative training cost, distinct from whole-job leases; no historical imputation"
+      },
+      "evaluation_role": "Existing fixed endpoint, no new evaluation"
+    },
+    {
+      "name": "GRPO_WARM_42",
+      "status": "STOPPED_BY_USER_NOT_SCIENTIFIC_FAILURE",
+      "pause": {
+        "step": 8431,
+        "physical_scores": 2158336
+      },
+      "full_state": {
+        "status": "PRESERVED_ORIGINAL_FULL_STATE",
+        "step": 8431,
+        "full_state_path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_42/endpoint_states/8431/full.pt",
+        "full_state_sha256": "e68db4a5ef1736d4cf4cfc0eb605d4bdeecbd5463be12637697cfa972573b0cb",
+        "head_sha256": "0d193698e707890d2ff6cc6981a60613ee53ec4547b229eb2a8795fe4e88870b",
+        "world": 4,
+        "cursor": 269792,
+        "physical_scores": 2158336,
+        "reference_sha256": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "generator_sha256": "308de750658356fcbb4c49b2aea60c421153c0a089ae3394bacabcf6f7e7aa0f",
+        "semantics": "Original paused/completed latest.pt inode pinned before native atomic replacement; no reconstructed optimizer or RNG"
+      },
+      "cost": {
+        "status": "MEASURED_IMMUTABLE_ENDPOINT",
+        "step": 8431,
+        "checkpoint_sha256": "0d193698e707890d2ff6cc6981a60613ee53ec4547b229eb2a8795fe4e88870b",
+        "run_config_sha256": "aa0772e3b072dacba7f326396faff26390ef948fc44d5dd352a5d54c84561491",
+        "actual_source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_42/cost_rank_0.json": "dc01927693542e5dbf528292cf4181c9a0002399b1c5b3dda40f56b20af99941",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_42/cost_rank_1.json": "e5157d0500d53b127c0c7fda32db65867669af3ed6ae7aa627926862a228fa25",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_42/cost_rank_2.json": "f74e2d5b82748c05cde0d4ff394e6a93cf4315c448088f0c49549db0a3dfe09e",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_42/cost_rank_3.json": "a0f083e32a0128d9ed43d2de94cac09ead91106c086443576cb60a14d36e0734"
+        },
+        "ledger": {
+          "status": "MEASURED",
+          "checkpoint_step": 8431,
+          "GPU_seconds": 273497.2768726349,
+          "compute": {
+            "student": {
+              "forward_calls": 1888544.0,
+              "trajectory_states": 22932320.0
+            },
+            "IL_reference": {
+              "forward_calls": 1348960.0,
+              "trajectory_states": 1348960.0
+            }
+          },
+          "budget": {
+            "physical_scores": 2158336.0,
+            "logical_scores": 2158336.0,
+            "reference_simulations": 2158336.0,
+            "cpu_scoring_seconds": 63506.83707167112
+          },
+          "peak_gpu_bytes_per_rank": [
+            7767584768,
+            7767584768,
+            7767584768,
+            7767584768
+          ],
+          "peak_history_complete": true,
+          "source_files": {
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_42/endpoint_costs/8431/rank_0.json": "dc01927693542e5dbf528292cf4181c9a0002399b1c5b3dda40f56b20af99941",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_42/endpoint_costs/8431/rank_1.json": "e5157d0500d53b127c0c7fda32db65867669af3ed6ae7aa627926862a228fa25",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_42/endpoint_costs/8431/rank_2.json": "f74e2d5b82748c05cde0d4ff394e6a93cf4315c448088f0c49549db0a3dfe09e",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_42/endpoint_costs/8431/rank_3.json": "a0f083e32a0128d9ed43d2de94cac09ead91106c086443576cb60a14d36e0734"
+          }
+        },
+        "generator_sha256": "536dc3a50b6d3ec49b42471817abf4e2edd6a921048ed6f4a243247d4c59e65f",
+        "aggregator_sha256": "8a7b10e8182ea51f42cd846e2245fe68b9018fa4bde85baa47b7f69497a0970b",
+        "interpretation": "Actual paused/completed rank ledgers; cumulative training cost, distinct from whole-job leases; no historical imputation"
+      },
+      "evaluation_role": "Administrative final saved state only; not evaluated, tuned or promoted"
+    },
+    {
+      "name": "GRPO_WARM_43",
+      "status": "STOPPED_BY_USER_NOT_SCIENTIFIC_FAILURE",
+      "pause": {
+        "step": 3907,
+        "physical_scores": 1000192
+      },
+      "full_state": {
+        "status": "PRESERVED_ORIGINAL_FULL_STATE",
+        "step": 3907,
+        "full_state_path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_43/endpoint_states/3907/full.pt",
+        "full_state_sha256": "75bf3dd3853af69db052b60b99df9dc413ec4b55e7fc8c2911196d398a52cafd",
+        "head_sha256": "758a28bafca8a6778be4646abda3bca555fabd7e0e867f83e600b3471b509362",
+        "world": 4,
+        "cursor": 125024,
+        "physical_scores": 1000192,
+        "reference_sha256": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "generator_sha256": "308de750658356fcbb4c49b2aea60c421153c0a089ae3394bacabcf6f7e7aa0f",
+        "semantics": "Original paused/completed latest.pt inode pinned before native atomic replacement; no reconstructed optimizer or RNG"
+      },
+      "cost": {
+        "status": "MEASURED_IMMUTABLE_ENDPOINT",
+        "step": 3907,
+        "checkpoint_sha256": "758a28bafca8a6778be4646abda3bca555fabd7e0e867f83e600b3471b509362",
+        "run_config_sha256": "66637b47582afe28c57e4460fe29c1c735bf2d4f7ecb3ad21d35c47ecf098b3e",
+        "actual_source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_43/cost_rank_0.json": "23f812fde689aeba30131517877b0493e54c71d9072b85fff6ce7d8247164f6f",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_43/cost_rank_1.json": "6c48fe94e167898ec7f23c79dbd91eb966ab29eb8edd6e2b73688a38f73f4fa7",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_43/cost_rank_2.json": "97ff42dc53555ec848a671c677d909f965f93f248710d1bdbff82d1a0496ae2b",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_43/cost_rank_3.json": "5bdb79682eb680abfbb3ba1f3d89a866317ad7904449108087086a917927c196"
+        },
+        "ledger": {
+          "status": "MEASURED",
+          "checkpoint_step": 3907,
+          "GPU_seconds": 129378.89849162102,
+          "compute": {
+            "student": {
+              "forward_calls": 875168.0,
+              "trajectory_states": 10627040.0
+            },
+            "IL_reference": {
+              "forward_calls": 625120.0,
+              "trajectory_states": 625120.0
+            }
+          },
+          "budget": {
+            "physical_scores": 1000192.0,
+            "logical_scores": 1000192.0,
+            "reference_simulations": 1000192.0,
+            "cpu_scoring_seconds": 29564.65431666469
+          },
+          "peak_gpu_bytes_per_rank": [
+            7767584768,
+            7767584768,
+            7767584768,
+            7767584768
+          ],
+          "peak_history_complete": true,
+          "source_files": {
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_43/endpoint_costs/3907/rank_0.json": "23f812fde689aeba30131517877b0493e54c71d9072b85fff6ce7d8247164f6f",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_43/endpoint_costs/3907/rank_1.json": "6c48fe94e167898ec7f23c79dbd91eb966ab29eb8edd6e2b73688a38f73f4fa7",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_43/endpoint_costs/3907/rank_2.json": "97ff42dc53555ec848a671c677d909f965f93f248710d1bdbff82d1a0496ae2b",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_43/endpoint_costs/3907/rank_3.json": "5bdb79682eb680abfbb3ba1f3d89a866317ad7904449108087086a917927c196"
+          }
+        },
+        "generator_sha256": "536dc3a50b6d3ec49b42471817abf4e2edd6a921048ed6f4a243247d4c59e65f",
+        "aggregator_sha256": "8a7b10e8182ea51f42cd846e2245fe68b9018fa4bde85baa47b7f69497a0970b",
+        "interpretation": "Actual paused/completed rank ledgers; cumulative training cost, distinct from whole-job leases; no historical imputation"
+      },
+      "evaluation_role": "Existing fixed endpoint, no new evaluation"
+    },
+    {
+      "name": "GRPO_WARM_44",
+      "status": "STOPPED_BY_USER_NOT_SCIENTIFIC_FAILURE",
+      "pause": {
+        "step": 3907,
+        "physical_scores": 1000192
+      },
+      "full_state": {
+        "status": "PRESERVED_ORIGINAL_FULL_STATE",
+        "step": 3907,
+        "full_state_path": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_44/endpoint_states/3907/full.pt",
+        "full_state_sha256": "7e55cb4e21cfd25467094d7ba1e669c87d6e6833461abb34bead8b5ccd780db9",
+        "head_sha256": "19305a484d00bc6489a22cfe8121197844c310f7950bf93dea0fd436f896e606",
+        "world": 4,
+        "cursor": 125024,
+        "physical_scores": 1000192,
+        "reference_sha256": "09394ced050372606913a35f67579faac420f18160038769916bc5911dd3270d",
+        "generator_sha256": "308de750658356fcbb4c49b2aea60c421153c0a089ae3394bacabcf6f7e7aa0f",
+        "semantics": "Original paused/completed latest.pt inode pinned before native atomic replacement; no reconstructed optimizer or RNG"
+      },
+      "cost": {
+        "status": "MEASURED_IMMUTABLE_ENDPOINT",
+        "step": 3907,
+        "checkpoint_sha256": "19305a484d00bc6489a22cfe8121197844c310f7950bf93dea0fd436f896e606",
+        "run_config_sha256": "2966b18aa3f5a44d79a944f1582be176a60b55ae5d9f0d7397de7d153c5c4c46",
+        "actual_source_files": {
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_44/cost_rank_0.json": "fb97ad9dae26318b771363a6d762feae7aa708841949625ba6233d6081b61a6c",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_44/cost_rank_1.json": "d31f7c69600b330eec80d5dd8fc5d4c7af9b13672e6fa7d693272989b00a2436",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_44/cost_rank_2.json": "93f19f96369eb6aebafe867f0fe28fcba969f119ea4b2d28cca8f3e203e5ef20",
+          "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_44/cost_rank_3.json": "ea3b95b574175b0ef52e4c86f9e619bc86062e7f038865193802978ebaa9cbff"
+        },
+        "ledger": {
+          "status": "MEASURED",
+          "checkpoint_step": 3907,
+          "GPU_seconds": 129994.44402122498,
+          "compute": {
+            "student": {
+              "forward_calls": 875168.0,
+              "trajectory_states": 10627040.0
+            },
+            "IL_reference": {
+              "forward_calls": 625120.0,
+              "trajectory_states": 625120.0
+            }
+          },
+          "budget": {
+            "physical_scores": 1000192.0,
+            "logical_scores": 1000192.0,
+            "reference_simulations": 1000192.0,
+            "cpu_scoring_seconds": 30163.8921380138
+          },
+          "peak_gpu_bytes_per_rank": [
+            7767584768,
+            7767584768,
+            7767584768,
+            7767584768
+          ],
+          "peak_history_complete": true,
+          "source_files": {
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_44/endpoint_costs/3907/rank_0.json": "fb97ad9dae26318b771363a6d762feae7aa708841949625ba6233d6081b61a6c",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_44/endpoint_costs/3907/rank_1.json": "d31f7c69600b330eec80d5dd8fc5d4c7af9b13672e6fa7d693272989b00a2436",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_44/endpoint_costs/3907/rank_2.json": "93f19f96369eb6aebafe867f0fe28fcba969f119ea4b2d28cca8f3e203e5ef20",
+            "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/runs/GRPO_WARM_44/endpoint_costs/3907/rank_3.json": "ea3b95b574175b0ef52e4c86f9e619bc86062e7f038865193802978ebaa9cbff"
+          }
+        },
+        "generator_sha256": "536dc3a50b6d3ec49b42471817abf4e2edd6a921048ed6f4a243247d4c59e65f",
+        "aggregator_sha256": "8a7b10e8182ea51f42cd846e2245fe68b9018fa4bde85baa47b7f69497a0970b",
+        "interpretation": "Actual paused/completed rank ledgers; cumulative training cost, distinct from whole-job leases; no historical imputation"
+      },
+      "evaluation_role": "Existing fixed endpoint, no new evaluation"
+    }
+  ],
+  "original_4M_per_policy": "NOT_COMPLETED_USER_REQUESTED_STOP",
+  "final_navtest": "NOT_RUN_USER_REQUESTED_STOP",
+  "no_new_training_or_scoring": true
+}

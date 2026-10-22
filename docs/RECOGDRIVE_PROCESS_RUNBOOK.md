@@ -167,3 +167,5 @@ GPU命令通过严格dispatch分配对应8张实际空闲卡；不要在未通�
     $PY scripts/process_improvement/render_grpo.py
 
 Fig12只绘制真实完成的三种子固定节点，无4M占位值或插值。未完成高预算训练不能用此处统计脚本代替。
+
+2026-10-22本研究已按用户要求停止。ROOT/controller/user_stop.json持续禁止协调器start/restart及直接调度；不得自动删除该记录或恢复训练。保留命令仅为历史复现文档，执行新的训练/评测需要新的明确授权。四个最新中途head未评价、不选模，完整状态和旧固定节点均保留；终止记录见报告08。

@@ -9,6 +9,11 @@ import time
 from scripts.process_improvement.common import *
 
 
+def require_restart_authorization(action):
+    if action in ['start','restart'] and (ROOT/'controller/user_stop.json').exists():
+        raise RuntimeError('User stopped this study; do not restart without new explicit authorization')
+
+
 def owned():
     path=ROOT/'controller/owner.json'
     if not path.exists():return None
@@ -25,6 +30,7 @@ def owned():
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('action',choices=['start','stop','status','restart']);a=p.parse_args();identity()
+    require_restart_authorization(a.action)
     prior=owned()
     if a.action=='status':print(prior or {'status':'NOT_RUNNING'});return
     if a.action in ['stop','restart'] and prior:

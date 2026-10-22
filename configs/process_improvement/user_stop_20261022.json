@@ -1,0 +1,8 @@
+{
+  "status": "STOP_REQUESTED_BY_USER",
+  "utc": "2026-10-22T01:04:01.586417+00:00",
+  "request": "本实验相关任务可以停止，不再训练，释放资源。",
+  "no_new_training": true,
+  "no_new_evaluation": true,
+  "coordinator_restart_requires_new_user_authorization": true
+}

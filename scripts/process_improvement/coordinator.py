@@ -314,10 +314,14 @@ def authorized_task_hosts(task,handoff,policy):
 def main():
     p=argparse.ArgumentParser();p.add_argument('--once',action='store_true');p.add_argument('--formal-controls',action='store_true');a=p.parse_args()
     folder=ROOT/'controller';folder.mkdir(parents=True,exist_ok=True)
+    if (folder/'user_stop.json').exists():
+        raise RuntimeError('Study explicitly stopped by user; no new workers permitted')
     with (folder/'lease.lock').open('a') as lock:
         fcntl.flock(lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         write(folder/'owner.json',identity())
         while True:
+            if (folder/'user_stop.json').exists():
+                print('USER_STOP_NO_FURTHER_DISPATCH',flush=True);return
             identity();assert sha(ROOT/'protocol.yaml')==read(ROOT/'protocol.lock.json')['sha256']
             write(folder/'phase.json',dict(phase='scheduling',owner=identity()))
             tasks=ready_tasks(a.formal_controls);free={};started=[];errors=[];blocked=[];reserved=[]

@@ -1,0 +1,107 @@
+{
+  "status": "STOPPED_BY_USER_RESOURCES_RELEASED",
+  "utc": "2026-10-22T01:07:07.325322+00:00",
+  "user_request": {
+    "status": "STOP_REQUESTED_BY_USER",
+    "utc": "2026-10-22T01:04:01.586417+00:00",
+    "request": "本实验相关任务可以停止，不再训练，释放资源。",
+    "no_new_training": true,
+    "no_new_evaluation": true,
+    "coordinator_restart_requires_new_user_authorization": true
+  },
+  "coordinator_running": false,
+  "active_owned_jobs": 0,
+  "owned_process_counts": {
+    "training-rl-zt2": 0,
+    "training-vla-zt": 0,
+    "training-vlawm-tsinghua-zt": 0,
+    "training-vlawm-tsinghua-zt2": 0,
+    "training-vlawm-tsinghua-zt3": 0,
+    "training-vlawm-tsinghua-zt4": 0,
+    "training-vlawm-tsinghua-zt5": 0
+  },
+  "four_training_jobs_exited_normally": true,
+  "released_native_rank_GPU_allocations": 24,
+  "all_nine_full_states_preserved": true,
+  "total_native_training_scores": 14035712,
+  "registered_native_score_budget": 36000000,
+  "native_budget_completed": false,
+  "stopped_intermediate_heads": "NOT_EVALUATED_NOT_SELECTED_NO_NEW_SCORES",
+  "final_navtest": "NOT_RUN_USER_REQUESTED_STOP",
+  "prior_mechanism_failure": "Unchanged: local raw/guarded projection excluded registered material threshold; final process student not run due original gate",
+  "pressure": {
+    "status": "OWN_PAUSE_MARKERS_RELEASED",
+    "restored": [
+      {
+        "host": "training-rl-zt2",
+        "action": "resume",
+        "released": 0
+      },
+      {
+        "host": "training-vla-zt",
+        "action": "resume",
+        "released": 0
+      },
+      {
+        "host": "training-vlawm-tsinghua-zt2",
+        "action": "resume",
+        "released": 0
+      },
+      {
+        "host": "training-vlawm-tsinghua-zt4",
+        "action": "resume",
+        "released": 0
+      },
+      {
+        "host": "training-vlawm-tsinghua-zt5",
+        "action": "resume",
+        "released": 0
+      }
+    ],
+    "unchanged": [
+      {
+        "host": "training-vlawm-tsinghua-zt",
+        "reason": "No current own pause marker; do not remove another operator marker"
+      },
+      {
+        "host": "training-vlawm-tsinghua-zt3",
+        "reason": "No current own pause marker; do not remove another operator marker"
+      }
+    ],
+    "withdrawn_host": "training-vlawm-tsinghua-zt6",
+    "withdrawn_action": "NOT_CONTACTED_NO_PRESSURE_RESTORATION",
+    "semantics": "Release only exact own tag. Existing original pressure automation resumes according to its normal idle policy; no new pressure program manually launched."
+  },
+  "restart_negative_checks": [
+    {
+      "command": [
+        "/root/miniconda3/envs/navsim/bin/python",
+        "scripts/process_improvement/controller_control.py",
+        "start"
+      ],
+      "returncode": 1,
+      "expected_refusal": "RuntimeError: User stopped this study; do not restart without new explicit authorization"
+    },
+    {
+      "command": [
+        "/root/miniconda3/envs/navsim/bin/python",
+        "scripts/process_improvement/coordinator.py",
+        "--once",
+        "--formal-controls"
+      ],
+      "returncode": 1,
+      "expected_refusal": "RuntimeError: Study explicitly stopped by user; no new workers permitted"
+    }
+  ],
+  "CPU_tests": {
+    "passed": 163,
+    "warnings": 15,
+    "log": "/mnt/project/VLA-AD/outputs/recogdrive_process_improvement_20261020/audit/combined_cpu_tests_user_stop.log",
+    "log_sha256": "8b04b1360b911b1acbb8c14f73fc3b22b0dcfdd1a299909cb6d59918d811a506"
+  },
+  "lineage_receipt_sha256": "9bdaa7b5dce28a143d392bdce66921c80613c094d88c873bf62f7c50f784c78d",
+  "process_verification_sha256": "4b2649ceacab84452cc9bb0f4654eb09bb0e6996e14da08a421d6e87f60e42d1",
+  "signal_plan_sha256": "e32ee8bcfa56448f47aea30b24dac931a45eb94858ff0ee19126edb56ce779d1",
+  "signals_sha256": "1d4807fd420d30c3f3e4522e1603d87fe8dbf4cea7b91ef75baa842f35a95a45",
+  "interpretation": "Administrative user stop, not scientific convergence/completion or evidence of failed high-budget checkpoints. No new training, scoring, development selection or final test was run."
+}
