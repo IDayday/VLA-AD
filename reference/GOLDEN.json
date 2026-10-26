@@ -1,0 +1,317 @@
+{
+  "schema": 1,
+  "real_native_records": [
+    {
+      "population": "train",
+      "library": "D_P7_original",
+      "token": "0002267a294e52a7",
+      "index": 1,
+      "arrays": {
+        "path": "reference/golden/train_D_P7_original_0.npz",
+        "sha256": "6776268ac3ebca7e204477e5e733dde3b114e32dfbcccd76f2e4ef12d51176e1",
+        "bytes": 59025
+      },
+      "source_result_sha256": "895f027103198329a8215e7ebb2327e76308861e8c4f7e80c3e1a7eef313adb2",
+      "Base_interface_sha256": "5b55513bee81088b4332fd2c903a8525a925f8dc28c68a0f4b3d74bb08545042"
+    },
+    {
+      "population": "train",
+      "library": "D_P7_original",
+      "token": "00022b6fc91d554a",
+      "index": 2,
+      "arrays": {
+        "path": "reference/golden/train_D_P7_original_1.npz",
+        "sha256": "4de7d3e5d749998a35931ed880ec3ff44bd17a4bd8bee625eb7f2f6e84595ccd",
+        "bytes": 58980
+      },
+      "source_result_sha256": "5a9efb4f5413e557b7d18a56ab4ccfa5639e2db99b40d9f5b228d6fac9088ec8",
+      "Base_interface_sha256": "860079f841c5000c478f912f68072bac9824c91ccd9b04dfc603b75e3f523f55"
+    },
+    {
+      "population": "train",
+      "library": "D_C8_original",
+      "token": "0002267a294e52a7",
+      "index": 1,
+      "arrays": {
+        "path": "reference/golden/train_D_C8_original_0.npz",
+        "sha256": "537a905ba9fa5b132d2a75f760d6fbc80ba368ba0c80f34a28694edc6a30c628",
+        "bytes": 65389
+      },
+      "source_result_sha256": "d45aa40e55efd25fda6d02a7ed44934e41f0e8f2e9eade7fc0e61a1940978762",
+      "Base_interface_sha256": "5b55513bee81088b4332fd2c903a8525a925f8dc28c68a0f4b3d74bb08545042"
+    },
+    {
+      "population": "train",
+      "library": "D_C8_original",
+      "token": "00022b6fc91d554a",
+      "index": 2,
+      "arrays": {
+        "path": "reference/golden/train_D_C8_original_1.npz",
+        "sha256": "f183779a00b4aa4d644fb213633c538a3179cda7c9eff73b1501f660e081df9f",
+        "bytes": 65360
+      },
+      "source_result_sha256": "1a2ad53b6283324a1293c97e253a5dca3855a7b111e618d853874ee609210029",
+      "Base_interface_sha256": "860079f841c5000c478f912f68072bac9824c91ccd9b04dfc603b75e3f523f55"
+    },
+    {
+      "population": "train",
+      "library": "R_P8_double",
+      "token": "0002267a294e52a7",
+      "index": 1,
+      "arrays": {
+        "path": "reference/golden/train_R_P8_double_0.npz",
+        "sha256": "0aa401341fa23250c57d4577075337ea4491758df0b9bc306efcdbb797c492fa",
+        "bytes": 65335
+      },
+      "source_result_sha256": "0b13992dceeef7c2f6a1184c208aa5826a0b8ce74abee793c76f729cd4970fcb",
+      "Base_interface_sha256": "5b55513bee81088b4332fd2c903a8525a925f8dc28c68a0f4b3d74bb08545042"
+    },
+    {
+      "population": "train",
+      "library": "R_P8_double",
+      "token": "00022b6fc91d554a",
+      "index": 2,
+      "arrays": {
+        "path": "reference/golden/train_R_P8_double_1.npz",
+        "sha256": "6cc2c20543cc0593adec4c8b6e370e5858163d1cd80afcb0a299dc16be1e6281",
+        "bytes": 65314
+      },
+      "source_result_sha256": "e76368c4e8a3cfcbe090a1470c9b944cfe3db8b38265aa97ba58cb42a639d22f",
+      "Base_interface_sha256": "860079f841c5000c478f912f68072bac9824c91ccd9b04dfc603b75e3f523f55"
+    },
+    {
+      "population": "train",
+      "library": "R_C8_double",
+      "token": "0002267a294e52a7",
+      "index": 1,
+      "arrays": {
+        "path": "reference/golden/train_R_C8_double_0.npz",
+        "sha256": "59a556a86c2dc295a9027201e38d35017e2698d21dbc9bb2a0ead303487bd7d1",
+        "bytes": 65411
+      },
+      "source_result_sha256": "827eb8f6e412d63cb5875aa8338f94f6d4447292a4774dc19bbd0e89fae35a46",
+      "Base_interface_sha256": "5b55513bee81088b4332fd2c903a8525a925f8dc28c68a0f4b3d74bb08545042"
+    },
+    {
+      "population": "train",
+      "library": "R_C8_double",
+      "token": "00022b6fc91d554a",
+      "index": 2,
+      "arrays": {
+        "path": "reference/golden/train_R_C8_double_1.npz",
+        "sha256": "933709d2e8243a82b248326289cd0e203a4d85b8cc8d16f7157f54079fc70b4c",
+        "bytes": 65366
+      },
+      "source_result_sha256": "865f2a1d9b6a10c54c737e356ba4443959f62af02aace7064138b748f5521f83",
+      "Base_interface_sha256": "860079f841c5000c478f912f68072bac9824c91ccd9b04dfc603b75e3f523f55"
+    },
+    {
+      "population": "train",
+      "library": "D_P8_double",
+      "token": "0002267a294e52a7",
+      "index": 1,
+      "arrays": {
+        "path": "reference/golden/train_D_P8_double_0.npz",
+        "sha256": "e27dded9e27bda170ae57220cd8690978f7445d03ecb9affa27e460ecac1dada",
+        "bytes": 65300
+      },
+      "source_result_sha256": "0e1eb574aae5dc0605083cd21efa35dadcba5cc7d339aa4d49ee2bdb79bc68dd",
+      "Base_interface_sha256": "5b55513bee81088b4332fd2c903a8525a925f8dc28c68a0f4b3d74bb08545042"
+    },
+    {
+      "population": "train",
+      "library": "D_P8_double",
+      "token": "00022b6fc91d554a",
+      "index": 2,
+      "arrays": {
+        "path": "reference/golden/train_D_P8_double_1.npz",
+        "sha256": "6caf675e6119660a450f6d25b9552f7fc48af054660620c6305b245cb49530d1",
+        "bytes": 65341
+      },
+      "source_result_sha256": "e0358a76c3634d7657c62da4016a1742d0f54004c77abe49d3d91d462a5bf7c6",
+      "Base_interface_sha256": "860079f841c5000c478f912f68072bac9824c91ccd9b04dfc603b75e3f523f55"
+    },
+    {
+      "population": "train",
+      "library": "D_C8_double",
+      "token": "0002267a294e52a7",
+      "index": 1,
+      "arrays": {
+        "path": "reference/golden/train_D_C8_double_0.npz",
+        "sha256": "c88d3f47fe3aabbf7db5fc7466f97576394dc99143610fe001307d10da35704f",
+        "bytes": 65330
+      },
+      "source_result_sha256": "3d43670af0365bf20d3851a665c521734da44be0819401d6d317d9422d5debf9",
+      "Base_interface_sha256": "5b55513bee81088b4332fd2c903a8525a925f8dc28c68a0f4b3d74bb08545042"
+    },
+    {
+      "population": "train",
+      "library": "D_C8_double",
+      "token": "00022b6fc91d554a",
+      "index": 2,
+      "arrays": {
+        "path": "reference/golden/train_D_C8_double_1.npz",
+        "sha256": "5b14d923b5d6d65c924f9c8567134765d55050d59e4112238686bc762d058d97",
+        "bytes": 65306
+      },
+      "source_result_sha256": "54032d3dca4b9475927f280bbbce6e3ec8c9d373eaa783bce7de92be2f90c12a",
+      "Base_interface_sha256": "860079f841c5000c478f912f68072bac9824c91ccd9b04dfc603b75e3f523f55"
+    },
+    {
+      "population": "test",
+      "library": "D_P7_original",
+      "token": "0000548db87959c2",
+      "index": 0,
+      "arrays": {
+        "path": "reference/golden/test_D_P7_original_0.npz",
+        "sha256": "8d246817d7a8692e82db40750775711124a272619c29949043d0abeb8ea0d0e7",
+        "bytes": 58947
+      },
+      "source_result_sha256": "84c58aa867b914f645771e4b7e7d7dcdfdeac9d514caaa1f5c420bc83e4f582a",
+      "Base_interface_sha256": "2b1e00fea855ff64d835bb593b5704b4424b5d91cf45c5db7020f37be0754be5"
+    },
+    {
+      "population": "test",
+      "library": "D_P7_original",
+      "token": "00016f8b45c25a1d",
+      "index": 1,
+      "arrays": {
+        "path": "reference/golden/test_D_P7_original_1.npz",
+        "sha256": "aba5b1708a34c3a2ba864cad7177dda5b9bb1e2c6cf67e171d5903ccacba23b9",
+        "bytes": 58434
+      },
+      "source_result_sha256": "0aebcb24e94ebd505f03853521bc43adfccb3232eeb149ff3aeca0bccd704c49",
+      "Base_interface_sha256": "53f702fe08e04f73b9c27c1a9c2ce40667badedeb569bd2e4400ce3036e843f6"
+    },
+    {
+      "population": "test",
+      "library": "D_C8_original",
+      "token": "0000548db87959c2",
+      "index": 0,
+      "arrays": {
+        "path": "reference/golden/test_D_C8_original_0.npz",
+        "sha256": "5930d48232f8b362845b835826e3ec909aa03ee3b4ca40d890b8ee149fe64578",
+        "bytes": 65337
+      },
+      "source_result_sha256": "c094dfa0db20315b144b5d530ab386a62fce8838cc94c56837132d5c6d5fb145",
+      "Base_interface_sha256": "2b1e00fea855ff64d835bb593b5704b4424b5d91cf45c5db7020f37be0754be5"
+    },
+    {
+      "population": "test",
+      "library": "D_C8_original",
+      "token": "00016f8b45c25a1d",
+      "index": 1,
+      "arrays": {
+        "path": "reference/golden/test_D_C8_original_1.npz",
+        "sha256": "76d5efda6d9658afbcb50f243d82586285a285cfa2f19b3f2ceab611fbbfa2be",
+        "bytes": 64756
+      },
+      "source_result_sha256": "b8f9cdb9eba5748c1fa732aa4bcc442d70529c88916fa29727787542d9ccdfe7",
+      "Base_interface_sha256": "53f702fe08e04f73b9c27c1a9c2ce40667badedeb569bd2e4400ce3036e843f6"
+    },
+    {
+      "population": "test",
+      "library": "R_P8_double",
+      "token": "0000548db87959c2",
+      "index": 0,
+      "arrays": {
+        "path": "reference/golden/test_R_P8_double_0.npz",
+        "sha256": "e33ffacc834151642696e69bac072ba90675c026f8fb1ed057aa79ea5df66228",
+        "bytes": 65274
+      },
+      "source_result_sha256": "246df0a3eeacac24628bf6e3cda734185b803f93cb27d5fef93551169e35fb0d",
+      "Base_interface_sha256": "2b1e00fea855ff64d835bb593b5704b4424b5d91cf45c5db7020f37be0754be5"
+    },
+    {
+      "population": "test",
+      "library": "R_P8_double",
+      "token": "00016f8b45c25a1d",
+      "index": 1,
+      "arrays": {
+        "path": "reference/golden/test_R_P8_double_1.npz",
+        "sha256": "997414cabf3fb55392d0529385acaf38fef32f5f57be9315303ed2db6dd84ee8",
+        "bytes": 64674
+      },
+      "source_result_sha256": "e0425c23b256d00b4be07fc2d8cc9fca02f63847ba1a2b9c7ad68aee69a7be30",
+      "Base_interface_sha256": "53f702fe08e04f73b9c27c1a9c2ce40667badedeb569bd2e4400ce3036e843f6"
+    },
+    {
+      "population": "test",
+      "library": "R_C8_double",
+      "token": "0000548db87959c2",
+      "index": 0,
+      "arrays": {
+        "path": "reference/golden/test_R_C8_double_0.npz",
+        "sha256": "c9e9e916fdfadc9537195bba1f79e0fbe5c12162c9ddefb192d6047e5e20a29b",
+        "bytes": 65344
+      },
+      "source_result_sha256": "0cb58e13e77f9e18cab89a31cffcd3481c265afe37e9a5ef5a636b69ea576067",
+      "Base_interface_sha256": "2b1e00fea855ff64d835bb593b5704b4424b5d91cf45c5db7020f37be0754be5"
+    },
+    {
+      "population": "test",
+      "library": "R_C8_double",
+      "token": "00016f8b45c25a1d",
+      "index": 1,
+      "arrays": {
+        "path": "reference/golden/test_R_C8_double_1.npz",
+        "sha256": "a6cdf56bf036e32514ad81c5dbd08af6eb2cb4901b90732c002bf88dcc126767",
+        "bytes": 64779
+      },
+      "source_result_sha256": "bc065ebac761925ee6b7eea8172d1de3c376245cabdc325d212a729abc29ba29",
+      "Base_interface_sha256": "53f702fe08e04f73b9c27c1a9c2ce40667badedeb569bd2e4400ce3036e843f6"
+    },
+    {
+      "population": "test",
+      "library": "D_P8_double",
+      "token": "0000548db87959c2",
+      "index": 0,
+      "arrays": {
+        "path": "reference/golden/test_D_P8_double_0.npz",
+        "sha256": "23779e44b7fb92f97c5034b82c57287b905b31c5ce29baa20edb274206184991",
+        "bytes": 65295
+      },
+      "source_result_sha256": "33879b4c0afd9b44b8ae1586c03023f5cec21bd159a1cfef8e45f5122906cab6",
+      "Base_interface_sha256": "2b1e00fea855ff64d835bb593b5704b4424b5d91cf45c5db7020f37be0754be5"
+    },
+    {
+      "population": "test",
+      "library": "D_P8_double",
+      "token": "00016f8b45c25a1d",
+      "index": 1,
+      "arrays": {
+        "path": "reference/golden/test_D_P8_double_1.npz",
+        "sha256": "85dd49aed77002ef1a58f437618d4018a38a1bc5f6e823ecc0c28c1832f7270c",
+        "bytes": 64759
+      },
+      "source_result_sha256": "988ee99320b2d26884ec8473b009c8ab477a0eb371f39192b58990d10ef9d184",
+      "Base_interface_sha256": "53f702fe08e04f73b9c27c1a9c2ce40667badedeb569bd2e4400ce3036e843f6"
+    },
+    {
+      "population": "test",
+      "library": "D_C8_double",
+      "token": "0000548db87959c2",
+      "index": 0,
+      "arrays": {
+        "path": "reference/golden/test_D_C8_double_0.npz",
+        "sha256": "7095572228b90f96041ef40af207cb003f1a3715030de94478aef5858df809c4",
+        "bytes": 65277
+      },
+      "source_result_sha256": "c8ada8aad0000be10b0427fb7172d7e9a3539f5801177cf5bf316a62d3c6d1bd",
+      "Base_interface_sha256": "2b1e00fea855ff64d835bb593b5704b4424b5d91cf45c5db7020f37be0754be5"
+    },
+    {
+      "population": "test",
+      "library": "D_C8_double",
+      "token": "00016f8b45c25a1d",
+      "index": 1,
+      "arrays": {
+        "path": "reference/golden/test_D_C8_double_1.npz",
+        "sha256": "1e50b684ee203e2e2c4a366bddf64b80c36341edda8c1a094e4da5b334674df2",
+        "bytes": 64754
+      },
+      "source_result_sha256": "fb5cdce33be16e42542aa519c31b4ee4746d7f9280918a06e94c2691425447c2",
+      "Base_interface_sha256": "53f702fe08e04f73b9c27c1a9c2ce40667badedeb569bd2e4400ce3036e843f6"
+    }
+  ]
+}

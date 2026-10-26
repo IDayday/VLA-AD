@@ -1,0 +1,20 @@
+{
+  "train": {
+    "path": "manifests/train.csv.gz",
+    "sha256": "938a9fcd3c68737847594f643de4e1d6feca1370ae6538c951aecfeba293ad59",
+    "rows": 85813,
+    "bytes": 10886535
+  },
+  "test": {
+    "path": "manifests/test.csv.gz",
+    "sha256": "3f88e3ef132c908db4b412a7b21d3fe3e343a8a1663923b41b8889d9ca50aa3a",
+    "rows": 12146,
+    "bytes": 1433333
+  },
+  "validation": {
+    "path": "manifests/validation.csv.gz",
+    "sha256": "7112cc9e9ed5fac168da0737b3e370ef88e505bde2cec752f19067cab3f34fb3",
+    "rows": 17475,
+    "teacher_decisions_available": false
+  }
+}

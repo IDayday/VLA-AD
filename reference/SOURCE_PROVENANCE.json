@@ -1,0 +1,1839 @@
+{
+  "schema": 1,
+  "base_model": "ReCogDrive-2B-RL",
+  "frozen_catalog_sha256": "52ea64abc75d04048bfe10e0235c196d98e62154e8bd895f938ec6eadcfb15e0",
+  "references": [
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/v2/programs/D_P7_original.json",
+      "sha256": "85d4c651fb4261ac969320ed87da3c0177ffc834f996d14fc0797acaf68652e7"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/RESULT.json",
+      "sha256": "fc54452e6bbc0768744c637e8fbfbfea720d6a941fb06551ee744e0908255f68"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/SPACES/D/RESULT.json",
+      "sha256": "26e62ebd3513403ef117defd14198a40de8dba18680a0d5d4d056554ad35661f"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/SPACES/D/DECODER.npz",
+      "sha256": "fbdc4e9f6a0b16afe7d0a4d5813b277a820f863bd5d492529aa7390dbe6d1f7b"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster00/COMMON/MANIFEST.json",
+      "sha256": "fff26b249d654509ae52eed886b015b54eed443f4d8a2c1140e5fc4546594303"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster00/COMMON/STATE.npz",
+      "sha256": "ffc73e542ef71296a8cb99391fe8aea31315eb8b5d32397eb87fa3235a629128"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster00/MODEL/MANIFEST.json",
+      "sha256": "ce2601aaadf00866fa1b436059b2fe717e8d896002cf4cf84cde350bd2fdb502"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster00/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster01/COMMON/MANIFEST.json",
+      "sha256": "cdf0b866056e2eb73f71d0bd5340802b9fab60956a174db2f30e0bd56712e7e7"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster01/COMMON/STATE.npz",
+      "sha256": "0e2c906ac2e617d3e6ce2f9f6fd9bfd354e69b797f3a6f2aaf2a9277bd45a394"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster01/MLP2000/ENDPOINT2000/MANIFEST.json",
+      "sha256": "f3b7c13d4a0e4934db7e94bf5e17ad8f9d485d85e47f17d552aa73f181165856"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster01/MLP2000/ENDPOINT2000/STATE.npz",
+      "sha256": "a8d27be8222112ad6f19809bf1fc2ab9747c641123c438aede24939e0b500017"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster03/COMMON/MANIFEST.json",
+      "sha256": "e108d32f9a2270142a0ef2d9eae7b01926bb55c7aba9e66466edb4d6b21c23d9"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster03/COMMON/STATE.npz",
+      "sha256": "86a02b09bb26504a3a70e84a57cf8f9463e0ca982a2d02a700b7697f99f39b10"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster03/MODEL/MANIFEST.json",
+      "sha256": "2bbca80838aaa4762b7c8a925b06692cc5f4c27c1c6ee4a4d76907a39a280deb"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster03/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster05/COMMON/MANIFEST.json",
+      "sha256": "9e31143cfe92638ed044a603b184c0f1496e68031d6a88159cb77881651c9204"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster05/COMMON/STATE.npz",
+      "sha256": "296ec25e30bde70841cf777050bf99c86e24ad6567b5c79d4fb81389b6f80b58"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster05/MODEL/MANIFEST.json",
+      "sha256": "23413528bd5788b9b32dd852a5e250853fa5e74bf58e1a6a914c33b122615ee9"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster05/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster02/COMMON/MANIFEST.json",
+      "sha256": "9a9bf25202537faf6f7ac68fc6adc7539694c965110141379b060539cef97693"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster02/COMMON/STATE.npz",
+      "sha256": "de24006eed83fefcde9d9d828d2d6b22e80e228d00d2e9826e3565dac557fd6b"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster02/MODEL/MANIFEST.json",
+      "sha256": "598e59a584201a1374ab0840001ea70f8bf137f46e879e8206dcf8c0010eacfd"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster02/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster04/COMMON/MANIFEST.json",
+      "sha256": "6b480deb7feb75835de7104b8c7c5d788e538198dad0a5a38ca7ef9b879fa5a9"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster04/COMMON/STATE.npz",
+      "sha256": "a421cc4d31084c8749cc855ce3feb875d1835a78ee4ffaceb5ba716436b869da"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster04/MODEL/MANIFEST.json",
+      "sha256": "ad0c8615c3ddebdf618e9adb2ed418adfe7499ddcd98cd6b3677a311036bc6b1"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster04/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster06/COMMON/MANIFEST.json",
+      "sha256": "8fb465e5d1b32c0a074206c636de44c7c87b2660c03a59f88a2abc5ea7eae1bd"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster06/COMMON/STATE.npz",
+      "sha256": "d7fa288a2b69487755615c8b7a7246c69300c99179eba8564dfb5903320a1b83"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster06/MODEL/MANIFEST.json",
+      "sha256": "44d1ce3118054557aa2c3892fc5ba5d7ea7dc4235df5d11cfb2719ed7b7c1a36"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__39681d529496e9d51266/cluster06/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/v2/programs/D_C8_original.json",
+      "sha256": "f667651eda092b2bba4aa0ecdf586b91eb9364e5cd5fafba4ff8067b813687e5"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/RESULT.json",
+      "sha256": "aa07ec98302505021f7a816f138575f7564cc9eadafd83540101b412d9fd582e"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster03/COMMON/MANIFEST.json",
+      "sha256": "11beecbef8348599f21f1beaaa7b7ba7b82fb8b84360f391d323f665bcbd1dc7"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster03/COMMON/STATE.npz",
+      "sha256": "ba0186fab683ee4ab5f439ab7f08483b1694360ad144cecc09c672d334f33e2f"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster03/MODEL/MANIFEST.json",
+      "sha256": "9357b70aa82063767b5945f0427861de3c0c7af34b4df0822e9e0c2efaf3f362"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster03/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster01/COMMON/MANIFEST.json",
+      "sha256": "b56878d99bdaab480d6a2fb479ff405213e245e58d855246232b45d12db328ff"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster01/COMMON/STATE.npz",
+      "sha256": "a0bea4f0e9f4e058b1017db4865af9886b623748ae464d1b48848cef7970729e"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster01/MODEL/MANIFEST.json",
+      "sha256": "3d3a2e74611c819ae517932d31dfde1318bac12547aa221096ec5b554f55e437"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster01/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster00/COMMON/MANIFEST.json",
+      "sha256": "142d20665c46dcc5ae87cff81a133037766352739c8479d52fc2aa3bc0734241"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster00/COMMON/STATE.npz",
+      "sha256": "1a592e9d08db881ddc900fb666e9d822e0074413bff26a27c1335bb5a5bd8836"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster00/MLP2000/ENDPOINT2000/MANIFEST.json",
+      "sha256": "75ca60bcc3ab211aafa074a534c9094256a8046a75ec50d99402cdfe6078968f"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster00/MLP2000/ENDPOINT2000/STATE.npz",
+      "sha256": "a0f03a4a032ff9e4176deba8d6d5fac728d6a62b60f1903f360721934965d77e"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster05/COMMON/MANIFEST.json",
+      "sha256": "a75ec762e5f476ea74449bfea811e6dfb8d6e2dd83f56660f64fbb2c4cbfa273"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster05/COMMON/STATE.npz",
+      "sha256": "5c5b536e7c66f9f3bbab3ea359864acd269aeb56dcf8b90f4c127b93c53cf3ee"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster05/MODEL/MANIFEST.json",
+      "sha256": "408e655fbd24b7fac3e0ae64e5fd9e95dc5f3bd1379628daa048a4c5ec8c01ed"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster05/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster02/COMMON/MANIFEST.json",
+      "sha256": "fa3cfd3e030e9f0c27c854e4894d5433555829bd599fc8ed98fdafd675082eb3"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster02/COMMON/STATE.npz",
+      "sha256": "28f2ad52d88ae16875e4de4ca617ea86f794d8616986c365fb155f7063cb6cb3"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster02/MODEL/MANIFEST.json",
+      "sha256": "79b9965a4425024376564951a8b41a49429d82dca0be49c0872f4f094d6146d1"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster02/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster07/COMMON/MANIFEST.json",
+      "sha256": "641da6a7b1ef1c2b4e2b599a20176a302f863d0ca8b2ea93dcb4e50f5ac2707d"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster07/COMMON/STATE.npz",
+      "sha256": "63d432674c5150e3570c7e91a3b0462845e4aaa11a1d0ce38267ad00ce2b6a17"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster07/MODEL/MANIFEST.json",
+      "sha256": "429e947911c5d4367ff4070f5523aeed51b3d4672ddc8e9ab1f6bb34d536f913"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster07/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster04/COMMON/MANIFEST.json",
+      "sha256": "89f9e4c49410fb8ecebe135b47cd0f0f864cd74af956be84430a33051d572683"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster04/COMMON/STATE.npz",
+      "sha256": "62089ba716daf68985834a435b52c42837b0245bde3452c518fadcfab6190a83"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster04/MLP2000/ENDPOINT2000/MANIFEST.json",
+      "sha256": "578c3d77ad06c793e21079d58a937283e297c5c4bc8895d81c6225277986384d"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster04/MLP2000/ENDPOINT2000/STATE.npz",
+      "sha256": "b2f4e14674d0455b7bfb7d39a3bb32a21e62a54a2546eccc5f3abc1e52aaa6ec"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster06/COMMON/MANIFEST.json",
+      "sha256": "a60d7f94629a9d794bcf88cbd0baad9ff3d2c3250b0d561a2bdbd5a0c448217c"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster06/COMMON/STATE.npz",
+      "sha256": "78505e4ae786613f1c2c152b9f7c9394ce8059dd4286f4b5b60f05dbb8d55ba4"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster06/MODEL/MANIFEST.json",
+      "sha256": "a503017fde28dff3632413a7eeaecff4dc49d8a54b4de74675e99e6d1d077432"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/cluster06/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/v2/programs/R_P8_double.json",
+      "sha256": "fa9daacd8d234047381c3c83ab30ea2612b5783f914bfe3a3e4c48c74daca191"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/RESULT.json",
+      "sha256": "c6a55d0ed6c676b54ed70004f90390005ff50bd71813c5ffb1fc4459b6999dbd"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/SPACES/R/RESULT.json",
+      "sha256": "a893720bbeb0cfb6ab2f3d2e3ba39cf726cfe9f420ae57c426370930d154bdca"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/SPACES/R/DECODER.npz",
+      "sha256": "c7ea056a9bef961717ca13687ec62889d5b49e014456f7bc76b2aeb50eef6640"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster06/COMMON/MANIFEST.json",
+      "sha256": "d897d456d2c19500a0e2ae05ceb12ae1096b312ed329760bf389becf3e985bab"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster06/COMMON/STATE.npz",
+      "sha256": "78ab3ec3680f7c0aa04cb54bd695f904223cbf043989c52ddd4de3a2be407e9e"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster06/MODEL/MANIFEST.json",
+      "sha256": "3b3b2cf07339191342f9061f535ff7ef486e66252a7b3356f742180864cf0d0d"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster06/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster05/COMMON/MANIFEST.json",
+      "sha256": "bdc7aa187be8a733256aa7ffb658592c720427cf7b6a4b496a27db663a2130ca"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster05/COMMON/STATE.npz",
+      "sha256": "2daad3e9f818519d3e52a9b12f8d29c561e47ae61fb9a6a1cfdf739e016425ef"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster05/MODEL/MANIFEST.json",
+      "sha256": "723307670f72deb69b6e4c29c2204fea05d16cfc8c84b6928756bc168e1cf7da"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster05/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster01/COMMON/MANIFEST.json",
+      "sha256": "1f600fe9accc44dd6b397bdfcd382005ee6dcfded6b695d75352f7cb3813f7b0"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster01/COMMON/STATE.npz",
+      "sha256": "747028d004a210ece35a54f51edded99122d921fb2eb6c599bf8dc2b161a6719"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster01/MODEL/MANIFEST.json",
+      "sha256": "eb102e256b1bf674b01de0144ccbc4babb12cea687c5d74c6c635779a2bbc385"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster01/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster04/COMMON/MANIFEST.json",
+      "sha256": "d6c53beb5a96b44c2b4f2c8a2b68247af698171c3af1f6d96262d099e5c67620"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster04/COMMON/STATE.npz",
+      "sha256": "0d54171260dfdd58f44033cbd41992fc74df48021b9a4e513590a19a0984b055"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster04/MODEL/MANIFEST.json",
+      "sha256": "bdf8f4dd6f9304ae7e49a98982754e229a9161e281b3c0420adbfde39ee3b067"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster04/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster02/COMMON/MANIFEST.json",
+      "sha256": "c1a804afceb6788ecc9fde85cafaec2fe378556858ca251f8f95cb3d0b0892f2"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster02/COMMON/STATE.npz",
+      "sha256": "c2f1164e77a89fb669901977c4b9edac9067f8f3c50a879d14721d3a928316f3"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster02/MODEL/MANIFEST.json",
+      "sha256": "e74b28e34dece06105967d499691fecd963f4268a28a08a0128dc99a1e399f0e"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster02/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster00/COMMON/MANIFEST.json",
+      "sha256": "b92b1da017a4477e2ed1b9143798bd17c2c83ef6b8947f9bb1ab8d8ab16e4071"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster00/COMMON/STATE.npz",
+      "sha256": "b0ee15115fe42179389749ced7f9ebdd31b12e190382cc1249c4318eace3d7c1"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster00/MODEL/MANIFEST.json",
+      "sha256": "fa5e159707f7bb931f8621a92fceb64e05e1d37029c94826c76b24bc01c98119"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster00/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster03/COMMON/MANIFEST.json",
+      "sha256": "618a2a981081b3fe6008cdc5c11ac499f7fb8b83d73a717cc81c97f837dd5a08"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster03/COMMON/STATE.npz",
+      "sha256": "29269394bee495f54f3b99071f7625f6aa07c2b139726b56d79c4d38ef8d6f26"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster03/MODEL/MANIFEST.json",
+      "sha256": "5de54d42d12f78c4652f7520becc66f5b54a03e219ed5fde70a374a41a508212"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster03/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster07/COMMON/MANIFEST.json",
+      "sha256": "05472c6df9625fe86169e6a505ad7c70b5f17eb14e9e12bba142af88cca08a0b"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster07/COMMON/STATE.npz",
+      "sha256": "897d22e539f362cdd2109186bae27cdd46e07b91ebbd792c2a8c41df1ae06742"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster07/MODEL/MANIFEST.json",
+      "sha256": "bb78d74c9c44f662bdd45c44cfaee8d817a5d70f38dc469d681ef7d7b0d61d8f"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_P8_double/cluster07/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/v2/programs/R_C8_double.json",
+      "sha256": "c0226827fbee092408f03fcb8db15139215dcd6cf369dcab6dd9f37f5f282a79"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/RESULT.json",
+      "sha256": "74c689287e8f587bf3a98c1b1c731cca7f077a432ede89ca2e3c81ff845c4d5f"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster03/COMMON/MANIFEST.json",
+      "sha256": "72053a8bc8b26f21927e9e490e99d0f85302f53f1313ee8e410f1136ce159924"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster03/COMMON/STATE.npz",
+      "sha256": "4311a8badb23d95c91b92d24524e0f7572bdc3fb96cd505d783f91b4670273db"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster03/MODEL/MANIFEST.json",
+      "sha256": "954f9dc0e507e65eb642fcd81c0b7dbff38aef7fed9d75c3f3e8e3748e558748"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster03/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster01/COMMON/MANIFEST.json",
+      "sha256": "7366019f8ebb0486276ff48a9dfc7208669002feef20cd9111245839f0a2f256"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster01/COMMON/STATE.npz",
+      "sha256": "626322030f948fa815a517d100149bb11eceec40f9473a4e570b8bdf4bfe83dd"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster01/MODEL/MANIFEST.json",
+      "sha256": "0ea60c008f06badb0d80e400d61eeedc331f009e04ce4da5908c86392a0cfb32"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster01/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster00/COMMON/MANIFEST.json",
+      "sha256": "f2e7021565c852ae82cff4c78dfb8d3ff7bd36bda4782ca7c12a8eaa85efa191"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster00/COMMON/STATE.npz",
+      "sha256": "cff800b7258730c60b3afa4c249561868b5a4f5371bc039d230df6191c34ab09"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster00/MODEL/MANIFEST.json",
+      "sha256": "ff46ca8f4b3ddedaf11d729171e069e062e39def8a6351d2dc665c26438f9587"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster00/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster05/COMMON/MANIFEST.json",
+      "sha256": "726af29d04159b491b9f60b1f4b378a84a948e747c8f441bbb50d4bd6586a575"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster05/COMMON/STATE.npz",
+      "sha256": "897c6f6a34d3b07ca4a0a2f0d656c48ec1fea5dc863b9634898e447b3ed7ccd5"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster05/MLP2000/ENDPOINT2000/MANIFEST.json",
+      "sha256": "fe71a24579bc5731041eeee2bc8661f8de0722136d1f88ddcee495383f62fc37"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster05/MLP2000/ENDPOINT2000/STATE.npz",
+      "sha256": "97fe81075afa089489b1b400ab3f4d81ea501c68cf782b6a8ce6c70809a889ec"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster02/COMMON/MANIFEST.json",
+      "sha256": "64022c6c43ae8c883d2c96663d9f0e4776da0538178f50c80f3ce8f696621cd7"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster02/COMMON/STATE.npz",
+      "sha256": "522a436d45a6d6d4b75d2da8c925e69aeb7228172554354ee837a7361f86223a"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster02/MODEL/MANIFEST.json",
+      "sha256": "e5345b4651e64566f2711153f0ece62a2deec57991503bf844ebb1bbf1803092"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster02/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster07/COMMON/MANIFEST.json",
+      "sha256": "565f4efcdfd0e815a851d47258972923d0d9612c62cf96ff8f5ec69282a97e44"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster07/COMMON/STATE.npz",
+      "sha256": "0d4291c3023e1c8d225c070bae010546d27ac5d18da8d4ec59f48678b705ad2d"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster07/MODEL/MANIFEST.json",
+      "sha256": "f80903b36eec17703a22c8fcf9ae68ba9d08a03c9246b6f9f17ab5770390ed18"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster07/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster04/COMMON/MANIFEST.json",
+      "sha256": "c8e921991620db1dd77dbb06a0957c99518b44ec358ce8440c6f72ed0795b31e"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster04/COMMON/STATE.npz",
+      "sha256": "41e3c5a945d491f639fd0c162302d209777306d2290db9c02d34e9d6695f5076"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster04/MLP2000/ENDPOINT2000/MANIFEST.json",
+      "sha256": "fc47485558de9813fe01a78e7a54a340a4dfa5193394c8269714f9f56379ecc1"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster04/MLP2000/ENDPOINT2000/STATE.npz",
+      "sha256": "ddeb62a7138b45ed8f8ba8fa7de284400c100cacf59c69813bdd4debc2a92b97"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster06/COMMON/MANIFEST.json",
+      "sha256": "f4ab9fe9a84d5da337d0cf512084e768c611227aae13901da36c724d4bebe22e"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster06/COMMON/STATE.npz",
+      "sha256": "1b1bb08fc4fbd9880f9d20506cd987742a244b42cc59af7deed8b88a0c10b654"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster06/MODEL/MANIFEST.json",
+      "sha256": "164866dc7608074303f6f3d3ae6caa89d7e3ddad8f357c24765664be547ec6a9"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/R_C8_double/cluster06/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/v2/programs/D_P8_double.json",
+      "sha256": "a6ce54f98c60af5ac1b59bc4324960d2b911489d7456afa7df5e002ed63c5b4b"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/RESULT.json",
+      "sha256": "28965fae13b7b28aa8a6ed0cab0f511e9006e21cf8affa288d4d600f0f47996a"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/SPACES/D/RESULT.json",
+      "sha256": "89783d0ebf7d4f0576833045fb5c36b6e4ceff51f54e8cd0d71a29fe34091d69"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster05/COMMON/MANIFEST.json",
+      "sha256": "2694b3ced4a1e4750b15add7350a3982c0d268b2bbcaefc1a2e99f3f28969a98"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster05/COMMON/STATE.npz",
+      "sha256": "641104c6b05aafdf6fedaf09b853457a1a00c3525045e28f67239a947896ec3d"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster05/MLP2000/ENDPOINT2000/MANIFEST.json",
+      "sha256": "700b9261bbe9f886510bcda00ad859065eed05131d9e7ed3822778ca8564eafa"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster05/MLP2000/ENDPOINT2000/STATE.npz",
+      "sha256": "00785f40beb11354c5265ccdadd801d213d02d157eec3ec2a22219ab2c249bc9"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster04/COMMON/MANIFEST.json",
+      "sha256": "d58dc2d0f02cd411616fa9f80b539fc26f00812dda1e15693551130958332b1f"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster04/COMMON/STATE.npz",
+      "sha256": "891b5872796fef554cfdb5790ea239437925c8be4970b94368eeb6fa7c0ed773"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster04/MODEL/MANIFEST.json",
+      "sha256": "2580f9f77ce6abfed2e71fa6c0b39e85eba3d4c6b45fb3cbeb87b33e1442e0e4"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster04/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster03/COMMON/MANIFEST.json",
+      "sha256": "eae7c48e3599634fc5e942c5a8c43617154eba255a33ec1645b19010313f050b"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster03/COMMON/STATE.npz",
+      "sha256": "8199fd65f191b5b17c084177cd557ce474323c779f7cfdcf476889a4bd118ec0"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster03/MODEL/MANIFEST.json",
+      "sha256": "cc5f2f54e7cf4ed88dfabbe199f8eee88ba46b363e1e19bcc200278dbda8e1cb"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster03/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster00/COMMON/MANIFEST.json",
+      "sha256": "369ef62d4eb46e00337451812c2f7a746d9720c62869a028a51a1892f9e5e7af"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster00/COMMON/STATE.npz",
+      "sha256": "bc63b261fbebc4fb8c681423fbd2e95da542b06db167a582a2899fc6db2595da"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster00/MODEL/MANIFEST.json",
+      "sha256": "7ef46a0a8ec6cfacdc5eb2d8a301bfdee9380c0b305ca3928f489b752e49da51"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster00/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster06/COMMON/MANIFEST.json",
+      "sha256": "0b2771ccecfe7f5836bdf2984e68635fdd5eb6b68a92440c44f104f9768cc92f"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster06/COMMON/STATE.npz",
+      "sha256": "7b62e996052865a1a7b8cd6aaaae757dbf0c708d30ef1bac7107fc3e6b81b7c8"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster06/MODEL/MANIFEST.json",
+      "sha256": "67a7fd969c167c11a96836126036df1c51809f969200874442a2f0fcf56509a8"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster06/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster02/COMMON/MANIFEST.json",
+      "sha256": "b3f17dfb5e307d55487ad753459ec439bd4105fe6ffa416a1084877c616ca351"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster02/COMMON/STATE.npz",
+      "sha256": "1ebe75b2c5381cde39ded8c8050bd3a6b83642db953bdf4a0539a5a877c85a2c"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster02/MODEL/MANIFEST.json",
+      "sha256": "6798e4f5f6d868301da574784c216e891ea56e23bed2938220ddbbe2e795bff1"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster02/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster01/COMMON/MANIFEST.json",
+      "sha256": "54ecf6c005dee48101185126ff95beb6de6e79c474718518f93554e5335c3d52"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster01/COMMON/STATE.npz",
+      "sha256": "3c989df8ebf3f34ec52918c31ed1f51dc23c3c9070cd2d2532fbc609829fcd1a"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster01/MODEL/MANIFEST.json",
+      "sha256": "9078506a95ca1657c9544123266f998226d4cdfc9710e8d5f8ef494b3f570f31"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster01/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster07/COMMON/MANIFEST.json",
+      "sha256": "17869435071e55caf922b13f0890b9376397159520ca25260c1dec65d8cb0762"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster07/COMMON/STATE.npz",
+      "sha256": "51634c245222bb9eb14a76ad001047c67ac3fb41dab9b40c7f18fcdde2626361"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster07/MODEL/MANIFEST.json",
+      "sha256": "5c7a04ad3e658708787b2c8e93be898cd4ba98cad03da1a4aa897744d568b6b5"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/ACTUAL_V2/ALLTRAIN/BANKS/D_P8_double/cluster07/MODEL/STATE.npz",
+      "sha256": "8739c76e681f900923b900c9df0ef75cf421d39cabb54650c4b9ad19b6a76d85"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/v2/programs/D_C8_double.json",
+      "sha256": "98cc1b923d520771fbead96847dd36304ab97fb301f1d9ed5d9f22f67afcf54f"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/analysis/full_population_s0_s4_v1/train/D_P7_original/MATRIX.npz",
+      "sha256": "d400af64641e48f74b2038cf54d91a9286d2a1ba1f1de77200163310a8070fb2"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/evaluation/reused_train_v1/part000/ACCEPTANCE.json",
+      "sha256": "df68581f9dcc93e546e5d4ecde920b09da0443dacc6d8f5545c5b7747ce9d750"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation/reused_train_v1_part000/train/main/items/D_P7_original__f2694dc7bd93cf155b909fcd/RESULT.json",
+      "sha256": "895f027103198329a8215e7ebb2327e76308861e8c4f7e80c3e1a7eef313adb2"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation/reused_train_v1_part000/train/main/items/D_P7_original__f2694dc7bd93cf155b909fcd/OUTPUTS.npz",
+      "sha256": "8c2273aa5582bbd5bb1c12f435b64bad5f5e7dc58413aa97260db6674c5bc959"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation/reused_train_v1_part000/train/main/items/D_P7_original__0dc71ae09f5d5d1bd2c3aa6f/RESULT.json",
+      "sha256": "5a9efb4f5413e557b7d18a56ab4ccfa5639e2db99b40d9f5b228d6fac9088ec8"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation/reused_train_v1_part000/train/main/items/D_P7_original__0dc71ae09f5d5d1bd2c3aa6f/OUTPUTS.npz",
+      "sha256": "d4e8e648b1400a76b2d1796dec27b40614b61b68dc43a7b541520815d4626550"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/analysis/full_population_s0_s4_v1/train/D_C8_original/MATRIX.npz",
+      "sha256": "58a2a48b500ff794e2df2d783b6ca9c7d9c9545307585f8f02deef07376242a7"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation/reused_train_v1_part000/train/main/items/D_C8_original__ae56a457f03edcd17d5edf56/RESULT.json",
+      "sha256": "d45aa40e55efd25fda6d02a7ed44934e41f0e8f2e9eade7fc0e61a1940978762"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation/reused_train_v1_part000/train/main/items/D_C8_original__ae56a457f03edcd17d5edf56/OUTPUTS.npz",
+      "sha256": "5503021a7d9fba0d85f03a1051d31ec0594f8ddb79067e3ea031292aca54a923"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation/reused_train_v1_part000/train/main/items/D_C8_original__010485ba5fa6d6881f23c211/RESULT.json",
+      "sha256": "1a2ad53b6283324a1293c97e253a5dca3855a7b111e618d853874ee609210029"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation/reused_train_v1_part000/train/main/items/D_C8_original__010485ba5fa6d6881f23c211/OUTPUTS.npz",
+      "sha256": "9b89845cd118bf7c265be039adafafaaef173e4bac23770de5fd32e81d8de94c"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/analysis/full_population_s0_s4_v1/train/R_P8_double/MATRIX.npz",
+      "sha256": "e51b31aa45a45d0466d8b3afdaceaab9acd90e3eadf5b3b6c4d8458a7fc3abac"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/evaluation/fresh_train_v2/part000/ACCEPTANCE.json",
+      "sha256": "a8cce29f9076159fe6999fb4ef0c5c408c04be549f555350bb01328a050d71ac"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/fresh_train_v2_part000/train/main/items/R_P8_double__f4fc07018535d17118dc5dd5/RESULT.json",
+      "sha256": "0b13992dceeef7c2f6a1184c208aa5826a0b8ce74abee793c76f729cd4970fcb"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/fresh_train_v2_part000/train/main/items/R_P8_double__f4fc07018535d17118dc5dd5/OUTPUTS.npz",
+      "sha256": "16b9646957707f1d0878f93de90475e297f52a3e5bab08424edca597a708b582"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/fresh_train_v2_part000/train/main/items/R_P8_double__e3c184da11fb2796da261e9f/RESULT.json",
+      "sha256": "e76368c4e8a3cfcbe090a1470c9b944cfe3db8b38265aa97ba58cb42a639d22f"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/fresh_train_v2_part000/train/main/items/R_P8_double__e3c184da11fb2796da261e9f/OUTPUTS.npz",
+      "sha256": "0cb1b2f9a2d5c99ac4730ab40e71763f91ccee907de66707353e46595b1297f0"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/analysis/full_population_s0_s4_v1/train/R_C8_double/MATRIX.npz",
+      "sha256": "d2442e6e272759531807c4e67d6bc25ae013dbf33b61622bcab66dd28492a183"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/fresh_train_v2_part000/train/main/items/R_C8_double__2d2a783d1cf3512d47472c69/RESULT.json",
+      "sha256": "827eb8f6e412d63cb5875aa8338f94f6d4447292a4774dc19bbd0e89fae35a46"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/fresh_train_v2_part000/train/main/items/R_C8_double__2d2a783d1cf3512d47472c69/OUTPUTS.npz",
+      "sha256": "27c8d2a47cbb00b66a1129c68ac7df5e2839fcfedd1b3b3cd88db00a0abd04d5"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/fresh_train_v2_part000/train/main/items/R_C8_double__ea06c9d9b3d2e640172130e7/RESULT.json",
+      "sha256": "865f2a1d9b6a10c54c737e356ba4443959f62af02aace7064138b748f5521f83"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/fresh_train_v2_part000/train/main/items/R_C8_double__ea06c9d9b3d2e640172130e7/OUTPUTS.npz",
+      "sha256": "d3e076b8f64a53419909014f74f131040cb77af31b515c14dc2e4a9d287a09f3"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/analysis/full_population_s0_s4_v1/train/D_P8_double/MATRIX.npz",
+      "sha256": "44229d09732edec848fab1aaaf352df5ee1e903c1917e8f6d21716ac1058df97"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/fresh_train_v2_part000/train/main/items/D_P8_double__5a5cc050ec931eef697f165b/RESULT.json",
+      "sha256": "0e1eb574aae5dc0605083cd21efa35dadcba5cc7d339aa4d49ee2bdb79bc68dd"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/fresh_train_v2_part000/train/main/items/D_P8_double__5a5cc050ec931eef697f165b/OUTPUTS.npz",
+      "sha256": "eb7bef5965a0dd09d409e2cd24fe8ef627a198856a948c4ddc78e6c1ff0cf72f"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/fresh_train_v2_part000/train/main/items/D_P8_double__9ea00f70066a30e44a076727/RESULT.json",
+      "sha256": "e0358a76c3634d7657c62da4016a1742d0f54004c77abe49d3d91d462a5bf7c6"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/fresh_train_v2_part000/train/main/items/D_P8_double__9ea00f70066a30e44a076727/OUTPUTS.npz",
+      "sha256": "f0df131c23ec08bd825e41ee080baf563c60c75f23f26f935a41aa422dbf6c1d"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/analysis/full_population_s0_s4_v1/train/D_C8_double/MATRIX.npz",
+      "sha256": "a68f3458f725d7cd0bd9f88d058dff7546a89e18c089c30262bca9924c599d58"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation/reused_train_v1_part000/train/main/items/D_C8_double__5058aa859c0f2742ec011912/RESULT.json",
+      "sha256": "3d43670af0365bf20d3851a665c521734da44be0819401d6d317d9422d5debf9"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation/reused_train_v1_part000/train/main/items/D_C8_double__5058aa859c0f2742ec011912/OUTPUTS.npz",
+      "sha256": "7473b5e051d51d84c0d51d22c3fe7bfe2264e3b959bee08019e0c39054f662d5"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation/reused_train_v1_part000/train/main/items/D_C8_double__dc7d970317c9809342bad6fb/RESULT.json",
+      "sha256": "54032d3dca4b9475927f280bbbce6e3ec8c9d373eaa783bce7de92be2f90c12a"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation/reused_train_v1_part000/train/main/items/D_C8_double__dc7d970317c9809342bad6fb/OUTPUTS.npz",
+      "sha256": "375d997973a5ad95148001c542534da80e079981c40bcbd6b644c94f7d7cdcca"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/analysis/full_population_s0_s4_v1/test/D_P7_original/MATRIX.npz",
+      "sha256": "65a17c3848a0a8a53b75dc1fdb3438f667f4d5684abb581beed8044cb3b45566"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_external_pipeline_v1/test/actual_v1/main/ACCEPTANCE.json",
+      "sha256": "ae28f9c17537cf0a89a226625c15b2a67e5c233d8d92137c34e52285f8234d5c"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/runs/stage_a_test_external_native_v1/actual_v1/test/main/items/stageA__39681d529496e9d51266__0/RESULT.json",
+      "sha256": "84c58aa867b914f645771e4b7e7d7dcdfdeac9d514caaa1f5c420bc83e4f582a"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/runs/stage_a_test_external_native_v1/actual_v1/test/main/items/stageA__39681d529496e9d51266__0/OUTPUTS.npz",
+      "sha256": "aecb5c22c2b4621d6cdc1ce4acb5735b8cb976f9caa3012f0b7429d5b7fd3f67"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/runs/stage_a_test_external_native_v1/actual_v1/test/main/items/stageA__39681d529496e9d51266__1/RESULT.json",
+      "sha256": "0aebcb24e94ebd505f03853521bc43adfccb3232eeb149ff3aeca0bccd704c49"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/runs/stage_a_test_external_native_v1/actual_v1/test/main/items/stageA__39681d529496e9d51266__1/OUTPUTS.npz",
+      "sha256": "790c8041b9b419230d8bffa44676245bef1b22b25ce251952b39abcdf811326c"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/analysis/full_population_s0_s4_v1/test/D_C8_original/MATRIX.npz",
+      "sha256": "6286087149508c8abe21c12809f10e3b3d3446b7b9d7bf8306baf7a1db126f5d"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/runs/stage_a_test_external_native_v1/actual_v1/test/main/items/stageA__72fed05876ef2f0d5890__0/RESULT.json",
+      "sha256": "c094dfa0db20315b144b5d530ab386a62fce8838cc94c56837132d5c6d5fb145"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/runs/stage_a_test_external_native_v1/actual_v1/test/main/items/stageA__72fed05876ef2f0d5890__0/OUTPUTS.npz",
+      "sha256": "9a5e4fc2758705ac7bde48201e40f7a6e3ff1c48b9f7edf4639beb23851ef8b5"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/runs/stage_a_test_external_native_v1/actual_v1/test/main/items/stageA__72fed05876ef2f0d5890__1/RESULT.json",
+      "sha256": "b8f9cdb9eba5748c1fa732aa4bcc442d70529c88916fa29727787542d9ccdfe7"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/runs/stage_a_test_external_native_v1/actual_v1/test/main/items/stageA__72fed05876ef2f0d5890__1/OUTPUTS.npz",
+      "sha256": "ac55073c1f5e39cd425a833d02d3d1e05c6b646142e886e8c3f603aea60a57c7"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/analysis/full_population_s0_s4_v1/test/R_P8_double/MATRIX.npz",
+      "sha256": "e2496f87a258bbf122c635d5e4cdb827140a7b1d8b24a72fb046370919a17ae3"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/evaluation/four_test_v2/part000/ACCEPTANCE.json",
+      "sha256": "e5d05b61d9afeaf368ca875428e42ef28b29ac92921ab4e1a669785eb1b4e5f9"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/four_test_v2_part000/test/main/items/R_P8_double__bc11f0f9b927fac20a35473e/RESULT.json",
+      "sha256": "246df0a3eeacac24628bf6e3cda734185b803f93cb27d5fef93551169e35fb0d"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/four_test_v2_part000/test/main/items/R_P8_double__bc11f0f9b927fac20a35473e/OUTPUTS.npz",
+      "sha256": "5f68439dc96310d53a35c0c6a62a1e51587f25676f33e11c5bceb4449f42dd8b"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/four_test_v2_part000/test/main/items/R_P8_double__f4fc07018535d17118dc5dd5/RESULT.json",
+      "sha256": "e0425c23b256d00b4be07fc2d8cc9fca02f63847ba1a2b9c7ad68aee69a7be30"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/four_test_v2_part000/test/main/items/R_P8_double__f4fc07018535d17118dc5dd5/OUTPUTS.npz",
+      "sha256": "046fea8af2cc26d71d149dec6f812027abbd39f8b55a89d37dc558f775f56932"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/analysis/full_population_s0_s4_v1/test/R_C8_double/MATRIX.npz",
+      "sha256": "f3ce42a5fd751395c10e1b557faa3e986b5e86fdf069990c23b09bcaf4a15211"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/four_test_v2_part000/test/main/items/R_C8_double__d1edf49f081649dc1fd39135/RESULT.json",
+      "sha256": "0cb58e13e77f9e18cab89a31cffcd3481c265afe37e9a5ef5a636b69ea576067"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/four_test_v2_part000/test/main/items/R_C8_double__d1edf49f081649dc1fd39135/OUTPUTS.npz",
+      "sha256": "bfd5811712f9b69edcf4302b6c26facb376df42ec593114b44ca436b7938c805"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/four_test_v2_part000/test/main/items/R_C8_double__2d2a783d1cf3512d47472c69/RESULT.json",
+      "sha256": "bc065ebac761925ee6b7eea8172d1de3c376245cabdc325d212a729abc29ba29"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/four_test_v2_part000/test/main/items/R_C8_double__2d2a783d1cf3512d47472c69/OUTPUTS.npz",
+      "sha256": "d811ca8d7186dab350a1424e591dcb0b540df72b78f9418afadd6c3d2280e89e"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/analysis/full_population_s0_s4_v1/test/D_P8_double/MATRIX.npz",
+      "sha256": "4bf5d57ec4028bfbd7f42226a0a17e3b9f2a6ceb588c277100878245557c1619"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/four_test_v2_part000/test/main/items/D_P8_double__e63a7e5757d9ee38f4c46c6f/RESULT.json",
+      "sha256": "33879b4c0afd9b44b8ae1586c03023f5cec21bd159a1cfef8e45f5122906cab6"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/four_test_v2_part000/test/main/items/D_P8_double__e63a7e5757d9ee38f4c46c6f/OUTPUTS.npz",
+      "sha256": "02454dbcf827b36c660b62b954676073d646371dc0de9074494b96a5a42803f2"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/four_test_v2_part000/test/main/items/D_P8_double__5a5cc050ec931eef697f165b/RESULT.json",
+      "sha256": "988ee99320b2d26884ec8473b009c8ab477a0eb371f39192b58990d10ef9d184"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/four_test_v2_part000/test/main/items/D_P8_double__5a5cc050ec931eef697f165b/OUTPUTS.npz",
+      "sha256": "e37332c30eba9c29f5c8deec11a1cb08428e92f499914d53f974bac1b568f898"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/analysis/full_population_s0_s4_v1/test/D_C8_double/MATRIX.npz",
+      "sha256": "4733f5ba884b8c8e8df24c63e27093bba847551180a783cae2d6d9165a91cf90"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/four_test_v2_part000/test/main/items/D_C8_double__bf3cf0e29fff5fa7f9314e40/RESULT.json",
+      "sha256": "c8ada8aad0000be10b0427fb7172d7e9a3539f5801177cf5bf316a62d3c6d1bd"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/four_test_v2_part000/test/main/items/D_C8_double__bf3cf0e29fff5fa7f9314e40/OUTPUTS.npz",
+      "sha256": "230f2db8e2f2407c89fd1401ba9e7131ca4e7c414ba8fda6e92a6cbd3a4be42f"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/four_test_v2_part000/test/main/items/D_C8_double__0901e93e2e261252fd9c0abd/RESULT.json",
+      "sha256": "fb5cdce33be16e42542aa519c31b4ee4746d7f9280918a06e94c2691425447c2"
+    },
+    {
+      "source": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/runs/evaluation_v2/four_test_v2_part000/test/main/items/D_C8_double__0901e93e2e261252fd9c0abd/OUTPUTS.npz",
+      "sha256": "028a58e8f5dd49d3015a72aad73c38b000517994db6fa3ce7f3b8ec29b04d40b"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/repair_score.py",
+      "destination": "vendor/repair_score.py",
+      "sha256": "af57d02add53734c5184e847556ef48bf55f0790817037cf0f5507cce7825f24"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/score.py",
+      "destination": "vendor/score.py",
+      "sha256": "14a440d2367276d916b0acd003938abf6e2e1589cbd9947e834df393b54b85a3"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/model/__init__.py",
+      "destination": "vendor/upstream/model/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/model/blocks/attention.py",
+      "destination": "vendor/upstream/model/blocks/attention.py",
+      "sha256": "c40daea407abe77618eae32020ac03e80c1597a757994fb767cd4ef5aff132ce"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/model/blocks/encoder.py",
+      "destination": "vendor/upstream/model/blocks/encoder.py",
+      "sha256": "c0ab0b8c7fe9daa70d05d0fbeeb207d36d259a57541013fced7079ddf2478f6f"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/model/blocks/rmsnorm.py",
+      "destination": "vendor/upstream/model/blocks/rmsnorm.py",
+      "sha256": "2257f84f1124e7f26cbd8182c94270b889a7b9a780ce669cdeaa17cfffd42a7b"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/model/blocks/rope.py",
+      "destination": "vendor/upstream/model/blocks/rope.py",
+      "sha256": "5c64f67db28f038b304e3d3b7de96ece44a6ec10d7e081b22afb2ee99875754f"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/model/lightning.py",
+      "destination": "vendor/upstream/model/lightning.py",
+      "sha256": "e634cee8987790f5a8542ccd6cf6d9751dcf90ed8726c375be8e483fefe9c6fe"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/model/recogdrive_agent.py",
+      "destination": "vendor/upstream/model/recogdrive_agent.py",
+      "sha256": "054c9354d428ae3a26e89bf45e17931f720152f77e114f8084100dbf055ae8fb"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/model/recogdrive_backbone.py",
+      "destination": "vendor/upstream/model/recogdrive_backbone.py",
+      "sha256": "61312a5e18687df0ce9a921c655ccdf5f38f0524fcde8d76cbcd131970ccffb3"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/model/recogdrive_diffusion_planner.py",
+      "destination": "vendor/upstream/model/recogdrive_diffusion_planner.py",
+      "sha256": "caa18fd74454e21bcb8e0f6dba518c6f330bfd919ac2e9e108cbd24b612c26e8"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/model/recogdrive_dit.py",
+      "destination": "vendor/upstream/model/recogdrive_dit.py",
+      "sha256": "1af5c45d5eaa2d7fa2920c6f885c62f94e5cac39af111697a7fd0f22c2e8571e"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/model/recogdrive_features.py",
+      "destination": "vendor/upstream/model/recogdrive_features.py",
+      "sha256": "5185cb679c3b5bdd9f92a8ac912aa28c0e42cb924e7cf6ddc8ffea3763eae842"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/model/utils/conversation.py",
+      "destination": "vendor/upstream/model/utils/conversation.py",
+      "sha256": "2d6640bfec06e7da136e2b703d8836d2e64c87a095e397c94fa3d68737f4b027"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/model/utils/internvl_preprocess.py",
+      "destination": "vendor/upstream/model/utils/internvl_preprocess.py",
+      "sha256": "441fac2891395e36e6271baff326e15b283c671e068f674e975c062cffe86332"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/model/utils/lr_scheduler.py",
+      "destination": "vendor/upstream/model/utils/lr_scheduler.py",
+      "sha256": "8d5b400dbb37e7cd39f1e07d0a681e782e02d8ffe9db64bc214828d0ad2bf3dc"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/model/utils/utils.py",
+      "destination": "vendor/upstream/model/utils/utils.py",
+      "sha256": "8c7681d338f7fe6b5c3160b1882b519430fd97a87100bff660d4cc73d65e0b4a"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/__init__.py",
+      "destination": "vendor/upstream/navsim/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/agents/__init__.py",
+      "destination": "vendor/upstream/navsim/agents/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/agents/abstract_agent.py",
+      "destination": "vendor/upstream/navsim/agents/abstract_agent.py",
+      "sha256": "c7c4873a73e0b622f86c1900ca611bdccc2a3b23b313b6a4713d6aa76bc43826"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/common/__init__.py",
+      "destination": "vendor/upstream/navsim/common/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/common/dataclasses.py",
+      "destination": "vendor/upstream/navsim/common/dataclasses.py",
+      "sha256": "6c8b046becb5c4a86ad3e5c4adc623b8aaf7f31fee436f9605956070903e291d"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/common/dataloader.py",
+      "destination": "vendor/upstream/navsim/common/dataloader.py",
+      "sha256": "7aa9d5fa293aa5cb5ee9900c7b83ccc3b49e2c14c4592aad1ae4a6a9e994740b"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/common/enums.py",
+      "destination": "vendor/upstream/navsim/common/enums.py",
+      "sha256": "810e96dae26aea1c98c2412b7ca22da73aab1b3f0a83b7d06ee28ffe688c7bc9"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/common/scene_annotator.py",
+      "destination": "vendor/upstream/navsim/common/scene_annotator.py",
+      "sha256": "f319719702b1eb9310de116a6a7fd494b1d4d350fc59eb08926129fce3194bbd"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/evaluate/__init__.py",
+      "destination": "vendor/upstream/navsim/evaluate/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/evaluate/pdm_score.py",
+      "destination": "vendor/upstream/navsim/evaluate/pdm_score.py",
+      "sha256": "07c3fdf737388f4ee219bba4de5187a2140d8e6411151d686302666be5f063c8"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/metric_caching/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/metric_caching/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/metric_caching/caching.py",
+      "destination": "vendor/upstream/navsim/planning/metric_caching/caching.py",
+      "sha256": "382f3617e3f02ade7fd502e35f974c311c55c01732e5da070b2c27b95bdd376e"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/metric_caching/metric_cache.py",
+      "destination": "vendor/upstream/navsim/planning/metric_caching/metric_cache.py",
+      "sha256": "8e4b99b011e217d0b21853edce0b497de46adaec2260ee0e6073cf88db43f4a7"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/metric_caching/metric_cache_processor.py",
+      "destination": "vendor/upstream/navsim/planning/metric_caching/metric_cache_processor.py",
+      "sha256": "164c6be26ce4b1286d1260886f2124afddc5aae8476692fb43b0120b78ff4895"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/metric_caching/metric_caching_utils.py",
+      "destination": "vendor/upstream/navsim/planning/metric_caching/metric_caching_utils.py",
+      "sha256": "9c7131bb98bb3bb020598df43824f02419570da2c7f6cc4793ecbfe4b83288db"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/scenario_builder/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/scenario_builder/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/scenario_builder/navsim_scenario.py",
+      "destination": "vendor/upstream/navsim/planning/scenario_builder/navsim_scenario.py",
+      "sha256": "d29c803697dddc9af059f9b742f1310a53ec520ebb2a8916c4d40829e1d574fe"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/scenario_builder/navsim_scenario_utils.py",
+      "destination": "vendor/upstream/navsim/planning/scenario_builder/navsim_scenario_utils.py",
+      "sha256": "28f0ee850c35157ab5a9600a3aa68f0f5b0a848b278e7b322b10a000916723f9"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/script/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/builders/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/script/builders/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/builders/observation_builder.py",
+      "destination": "vendor/upstream/navsim/planning/script/builders/observation_builder.py",
+      "sha256": "3aab34b73a095669d449426bf645e6cfaaa038411d16f168045395ba4763872c"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/builders/planner_builder.py",
+      "destination": "vendor/upstream/navsim/planning/script/builders/planner_builder.py",
+      "sha256": "8b65db8f67c3d06471d6d97764729921d112b88ee358ef4f67988fd0fb5ecc58"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/builders/simulation_builder.py",
+      "destination": "vendor/upstream/navsim/planning/script/builders/simulation_builder.py",
+      "sha256": "7269fc955da0269e406c8764c1e3f2f8e18810e552e1e018e4256ef35ec51302"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/builders/worker_pool_builder.py",
+      "destination": "vendor/upstream/navsim/planning/script/builders/worker_pool_builder.py",
+      "sha256": "b0bfa91ce470240d98f74f6d3f3308f8b5192d98e9a63b93bd36634cc4494814"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/callback/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/script/callback/__init__.py",
+      "sha256": "aaea804a98bf6ec30c7a169e8eca3c9308a3653d3b44a81ccbb2461cd2964d77"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/callback/ema.py",
+      "destination": "vendor/upstream/navsim/planning/script/callback/ema.py",
+      "sha256": "7758747e686f28c1ef77cc3ab33a6cc11ee6295bff8214c10ae68696c3a8eef0"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/script/config/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/agent/constant_velocity_agent.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/agent/constant_velocity_agent.yaml",
+      "sha256": "73ea65006885ce7c70405bed9418b86ff263264ea59cbae0c688ccfba72ea9f4"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/agent/ego_status_mlp_agent.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/agent/ego_status_mlp_agent.yaml",
+      "sha256": "2c0862ae5e9f7016eca0857576ab65c0981c95141943021edc24f5f918297848"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/agent/human_agent.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/agent/human_agent.yaml",
+      "sha256": "d4ce01277be1800b584a2e808e712bd6cecb09b77ca5daff51d3884a9cc4b300"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/agent/internvl_agent.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/agent/internvl_agent.yaml",
+      "sha256": "68ea59c48f48804730e3f75b216befc0f985e915967269fdc4fc3580d76f1f91"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/agent/qwen_agent.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/agent/qwen_agent.yaml",
+      "sha256": "d8db2294660e1c3e49b606d0830c3d64d31eaa0dd7de08749aec273c47ca7f01"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/agent/recogdrive_agent.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/agent/recogdrive_agent.yaml",
+      "sha256": "491eb5baef2ca06aeb690e3c2d15adb2babd3082b23bf39a84e3ff2d805e5f3f"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/agent/transfuser_agent.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/agent/transfuser_agent.yaml",
+      "sha256": "5a7dc46a9b3e65604740244ee7871ec323e318585520a557e0518009ef4b5089"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/default_common.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/default_common.yaml",
+      "sha256": "af1d9518acb22247c1de09b883913ede3eb1e983a786a0523e07287a36616aef"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/default_evaluation.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/default_evaluation.yaml",
+      "sha256": "0d281be196a824e8bee781a9115603704ffaf38fadfb5bbc30cc630d140312e8"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/collision_fallback30_base_rerun.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/collision_fallback30_base_rerun.yaml",
+      "sha256": "7d73ab6716f9be1a36eff37b494da462e0f8765498fc90ed8bdd7a0b1d5ebad9"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/collision_unrepaired206_missing16_base_rerun.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/collision_unrepaired206_missing16_base_rerun.yaml",
+      "sha256": "70edbed5970795946053372a1e3aa7e84c01fcecda72d98914557846af67af54"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/generated_epoch9.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/generated_epoch9.yaml",
+      "sha256": "3d33d43676d45ff2a3e4edf6bd1acdf265577caf8bde9a031c8dfe46b8b5b4ee"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/mini.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/mini.yaml",
+      "sha256": "1eab5cfe0bf3c6b718e6963beb170590d9fc836a795a4a5cfb70131c02b75730"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/navmini.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/navmini.yaml",
+      "sha256": "77eb20e44d96a7d1a743c899407905fc1714329ebfe6bd02370256401d3515bf"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/navtest.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/navtest.yaml",
+      "sha256": "f72568e6282e413474c91b69acd889ecb9affc36f3571a25cf10a44c8d3d1804"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/navtrain.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/navtrain.yaml",
+      "sha256": "fcfc95704d532849c7fe1f1ac2bc9e158305fef93a1d5340637ad4b9f440c8cb"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/private_test_e2e.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/private_test_e2e.yaml",
+      "sha256": "853c057e11478f1265416549ff4d65c3d73fddbda0c8d28f77b985c316e7a3e0"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/all_scenes.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/all_scenes.yaml",
+      "sha256": "7b17f2e6b0a6698ef4a463338ff2f6b25084ea1cf1a377db7865b11b50481b87"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/collision_fallback30_base_rerun.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/collision_fallback30_base_rerun.yaml",
+      "sha256": "5119ad1e6e9f7bac3b6e3066abee72b9871af79f7c95fa46e7cb855e926cfe89"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/collision_unrepaired206_missing16_base_rerun.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/collision_unrepaired206_missing16_base_rerun.yaml",
+      "sha256": "56fd128a980cdcaa92f57d45751141f8b9f4e905a231a4148cce2bb6baac9cf7"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/collision_zero_20260726.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/collision_zero_20260726.yaml",
+      "sha256": "aa8b27bf593dcd389cdd3959b35afd3671e9ef96c96a37723286953b2a8b82a7"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/competition_private_tokens.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/competition_private_tokens.yaml",
+      "sha256": "4a81b66b72c03874d276a4ccdb7931badf75c73cb6b3975b3e1e2caca1fec4d4"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/generated_epoch9.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/generated_epoch9.yaml",
+      "sha256": "3afe6dfdbd1f514d4b2395a3aba00efd573fe0c86fa143858469a61d7730c05e"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/navmini.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/navmini.yaml",
+      "sha256": "504fb80beec0f4aa7dac509574e44e9245aa44131d35741baab43ae1779e395f"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/navtest.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/navtest.yaml",
+      "sha256": "61284edf5003c0291f843ce9817c822ba306609a62d54544223adae3fc7fc9cd"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/navtrain.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/navtrain.yaml",
+      "sha256": "c37fea567a0cfdbc29076cca893d4f5dd32db59baec18ae214527206d6b64e6f"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/private_test_e2e.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/private_test_e2e.yaml",
+      "sha256": "1d7374a086ead55c0819e237a73cf86694811a881e7b20b4e2c3b91c7d362c57"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/warmup_test_e2e.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/scene_filter/warmup_test_e2e.yaml",
+      "sha256": "4d41f0bec7eb97e678a237d2d974f3173aa812ff01d983c4874a4d65e4ec03c1"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/test.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/test.yaml",
+      "sha256": "097a86187d98269260e713bc7fb9dab3734f377c232856654779f822de7c0ef3"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/trainval.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/trainval.yaml",
+      "sha256": "35a012523da70f30cfad18b94e7fd68876a9165875b439dd1fb4bdf7728286d2"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/train_test_split/warmup_test_e2e.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/train_test_split/warmup_test_e2e.yaml",
+      "sha256": "4cb069682fc35d6b4c08938471bda0f461d6522d2f1815dca21e13687ec10b71"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/worker/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/worker/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/worker/ray_distributed.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/worker/ray_distributed.yaml",
+      "sha256": "719ea826aa4db3bc231ffc6d2fa8c9bd3b8a85f34a5454d3eeef0c9cf4b0220b"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/worker/ray_distributed_no_torch.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/worker/ray_distributed_no_torch.yaml",
+      "sha256": "1d39d16d6c23b8ca8f2783aa5da2243dda4ce0c540893d7e97c7cbb4f6202b87"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/worker/sequential.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/worker/sequential.yaml",
+      "sha256": "0cfee6da66aa60af20f4745a6d601067e374ac436822bf28a3a50f1bd1b6044c"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/common/worker/single_machine_thread_pool.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/common/worker/single_machine_thread_pool.yaml",
+      "sha256": "e3b0b355ca7a8c86abc2d3abd7fad57e71a834af7db653b6069e850c367ec9a5"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/metric_caching/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/script/config/metric_caching/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/metric_caching/default_metric_caching.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/metric_caching/default_metric_caching.yaml",
+      "sha256": "cba78fda0e9e17ae276e247347d2b249e1955762a56e3b7b779090564be9ba9d"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/pdm_scoring/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/script/config/pdm_scoring/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/pdm_scoring/default_run_create_submission_pickle.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/pdm_scoring/default_run_create_submission_pickle.yaml",
+      "sha256": "c1bed83b44e57b08fe2855bd36242f30f82917e514f3b36b040bd36fd7fae57a"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/pdm_scoring/default_run_merge_submission_pickles.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/pdm_scoring/default_run_merge_submission_pickles.yaml",
+      "sha256": "f1e60f3d461363d5a81fec9d402ceaace1d3af771bf707ad0ddc9b5236fb9ed9"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/pdm_scoring/default_run_pdm_score-navtrain.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/pdm_scoring/default_run_pdm_score-navtrain.yaml",
+      "sha256": "461c3ce3ee618a0444822f14b94419fcc91191b371dfc1add31887eb057433a5"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/pdm_scoring/default_run_pdm_score.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/pdm_scoring/default_run_pdm_score.yaml",
+      "sha256": "461c3ce3ee618a0444822f14b94419fcc91191b371dfc1add31887eb057433a5"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/pdm_scoring/default_run_pdm_score_from_submission.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/pdm_scoring/default_run_pdm_score_from_submission.yaml",
+      "sha256": "3ff8475a243af5afdf15f81e827f9ecbe376d55493f702b5e68e1022658975de"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/pdm_scoring/default_scoring_parameters.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/pdm_scoring/default_scoring_parameters.yaml",
+      "sha256": "66563a99d9d52875cdb93d67e888d32303a9c41560bb785a565bafd9482df428"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/training/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/script/config/training/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/training/default_train_val_test_log_split.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/training/default_train_val_test_log_split.yaml",
+      "sha256": "3c2182f5ed60442710f34d8ce6bab5b4eae9a38ae5ac3f5615e470aa4c6cd150"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/config/training/default_training.yaml",
+      "destination": "vendor/upstream/navsim/planning/script/config/training/default_training.yaml",
+      "sha256": "65f83eced80fbd48e4ae9ebc4d0b30cadbb2e9c6a6710382feaf603a06851178"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/eval_vlm_direct_text_pdm.py",
+      "destination": "vendor/upstream/navsim/planning/script/eval_vlm_direct_text_pdm.py",
+      "sha256": "ccde67e3858cee06c5f8dd3cbdaec2f8cfa14175523051bb6524428a674b1cf0"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/plt_all_log.py",
+      "destination": "vendor/upstream/navsim/planning/script/plt_all_log.py",
+      "sha256": "a2d9112fed8c3b41aed4b1f7add1c8a073f609233bb97adfc7fb097431abd839"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/plt_all_vis.py",
+      "destination": "vendor/upstream/navsim/planning/script/plt_all_vis.py",
+      "sha256": "2817f9b897856cff0653143e80ab28f861108c7fe58c8a24fb617949a4405d1e"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_create_submission_pickle.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_create_submission_pickle.py",
+      "sha256": "f05e9d62a16356cc859f33938cf3649886c13db74575fe836ebf2dcadfc55d4c"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_create_submission_pickle_ddp_recogdrive.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_create_submission_pickle_ddp_recogdrive.py",
+      "sha256": "801fec10a9888326be4ce10d1e9756206fb5b43c2c5c1b48e1b3971da42be6dd"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_dataset_caching.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_dataset_caching.py",
+      "sha256": "173b12f1e462258e6ff20b7f55d530fe86502dbbd31bc1dba93fe9e2482adfd5"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_dataset_caching_multi_node.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_dataset_caching_multi_node.py",
+      "sha256": "0ec7c31180d1b9e2a16b707ed86637b3f2e2653a0a8530fb1a63106be8068604"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_generate_dataset.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_generate_dataset.py",
+      "sha256": "5317acaa04a21fd7b6a072a9f7ab2fe2d07efe742cbdfcafd0a8639f22ea5ed4"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_generate_dataset_pipeline.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_generate_dataset_pipeline.py",
+      "sha256": "8bd726afec9d7a4b8e1b34ab25d9efabc2681517ede898c4449a86676ecda99c"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_generate_risk_anchors_v2_augmented.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_generate_risk_anchors_v2_augmented.py",
+      "sha256": "a9556780dd5a95f67c1484adae3de6fa332d9b2d80dabe5382f7ce2abd765a65"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_merge_submission_pickles.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_merge_submission_pickles.py",
+      "sha256": "899ddd6d30881e0f4c41ef7bc5e3245d8ada3bcf99d8a0778fe26da4c63ee89f"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_metric_caching.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_metric_caching.py",
+      "sha256": "c6d67ccd7db0f65752dc54e76cec002b9ef78701e83d4c64ff3e6231a48cee52"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_pdm_score.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_pdm_score.py",
+      "sha256": "8def1a01ff062d392f7ebaa5f4b04a6a212125944025eb2e99a432d0d923abb3"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_pdm_score_from_submission.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_pdm_score_from_submission.py",
+      "sha256": "ccd6c060885d460de943dbc40bfe6cd9b50bee954ae1995dd20b4a4bb647d7b3"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_pdm_score_internvl.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_pdm_score_internvl.py",
+      "sha256": "644bea91fd068213c1df7f79d2ef814a23b2129e3ff05b0ca27d3f41d6a5aa5f"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_pdm_score_qwen.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_pdm_score_qwen.py",
+      "sha256": "f788a362f74d8198bdc4848e267244faf853daafc00595bac5e2bff745f9ad5b"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_pdm_score_recogdrive.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_pdm_score_recogdrive.py",
+      "sha256": "bfb44e90105133425cb8e2c2cc0302ba1e793af4177c718be2e0d2e56fc232ff"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_recogdrive_accelerate.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_recogdrive_accelerate.py",
+      "sha256": "e23811f37420f7f63766b217cd8359c0debcf2d9d6321f58a384f3f4fd0a1c9d"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_training.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_training.py",
+      "sha256": "18446f24bbc0ca50312e24138139475323b184acf330cabda8b8d328aba9474d"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_training_recogdrive.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_training_recogdrive.py",
+      "sha256": "b3190ab591c31a3eabcb792cada4eacafdd78db0666bda999477e4dc060ed87c"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_training_recogdrive_ema.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_training_recogdrive_ema.py",
+      "sha256": "c37e1657c652a9028cc49b98fd2edd289d8f83adced6cde6ca9f94acbed865d0"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/run_training_recogdrive_rl.py",
+      "destination": "vendor/upstream/navsim/planning/script/run_training_recogdrive_rl.py",
+      "sha256": "7a7d88390ebc832c074d3d227110305a1b8e40ad72a9d07dc91efb9c0dbbaaf0"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/script/utils.py",
+      "destination": "vendor/upstream/navsim/planning/script/utils.py",
+      "sha256": "b3f82938dcccc35ca570947fa6fe284a58cd596b7ddaa1702c16fb55c75734ca"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/abstract_pdm_closed_planner.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/abstract_pdm_closed_planner.py",
+      "sha256": "2272e0c838f1fe23275de74f2d087e66ff5966075bf3e1e6f6458ab63c6bf126"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/abstract_pdm_planner.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/abstract_pdm_planner.py",
+      "sha256": "40f5c849de0cb4bc21a8b9b2c249ebf69ab9aa5739faccc0b2c28bb3b3c13899"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/observation/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/observation/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/observation/pdm_object_manager.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/observation/pdm_object_manager.py",
+      "sha256": "c8ef532af2082451694b67adf30eed31ace87f8fab5fdefe2740cc13ff47b780"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/observation/pdm_observation.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/observation/pdm_observation.py",
+      "sha256": "f0cd40d7394490ed89ecc04f033e2e479dcc08bff292db7c92a4647ad30e64f6"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/observation/pdm_occupancy_map.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/observation/pdm_occupancy_map.py",
+      "sha256": "cd9b4e5b943e8c042cfbaba5ef01849a3ba1802b3223c4558443be591c6b358a"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/pdm_closed_planner.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/pdm_closed_planner.py",
+      "sha256": "1c104315d2f6b10688de5f96f9c362875f6a85f53d91dc933ef16c9bacc51c8c"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/proposal/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/proposal/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/proposal/batch_idm_policy.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/proposal/batch_idm_policy.py",
+      "sha256": "8c2456db3858c8ea44aa26a2e51e1921b3b2cd23aef52053842e86bd84a6f686"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/proposal/pdm_generator.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/proposal/pdm_generator.py",
+      "sha256": "4ca46054e175b35b7b59cf88eefc07912f56e67d518be4cb9ab03b7800213bf5"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/proposal/pdm_proposal.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/proposal/pdm_proposal.py",
+      "sha256": "6eceae812bac770c9eec47c0d0099f4497b2095af5fd446675e0de8198f5d47f"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_comfort_metrics.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_comfort_metrics.py",
+      "sha256": "b2131da3b66d217b2d5e1d61cdd134b26c958f79b4060f43c0d11525b40f771d"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_scorer.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_scorer.py",
+      "sha256": "02ab075017d4edb1c8bba6476ef1674b84d43dbca0f599df87cfe052b2dd5211"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_scorer_utils.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_scorer_utils.py",
+      "sha256": "110b51aab2005318c0b262ce06a80926d5bdf9588f526ed47294ef8f5d6f30c6"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/batch_kinematic_bicycle.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/batch_kinematic_bicycle.py",
+      "sha256": "253beb3c1e7005a8c18a2aa33f43cbf6181829bc6aeda57f74d7bbc91f081ee0"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/batch_lqr.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/batch_lqr.py",
+      "sha256": "03c4d1b781edfba61dd2eee4f9308cc197e8db264de3df3936b6ff11e30238e7"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/batch_lqr_utils.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/batch_lqr_utils.py",
+      "sha256": "a140e4132c6ec6017041d5185ae6f2aad3dbbe2274fbaaea4fadd05168fa3718"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/pdm_simulator.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/pdm_simulator.py",
+      "sha256": "ae07b533ada10bc37e973e5685a46a7cafc51de8d922ed02add558452ff04807"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/graph_search/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/graph_search/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/graph_search/bfs_roadblock.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/graph_search/bfs_roadblock.py",
+      "sha256": "1004756971d4e203bbcebbcf9bc06e2ef7fbfba12a8bad31d63b87f0ea7816b2"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/graph_search/dijkstra.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/graph_search/dijkstra.py",
+      "sha256": "71a755882ff935bfa458050ad77b145209b80cbf64aa877e842279ac9fc402bf"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_array_representation.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_array_representation.py",
+      "sha256": "e5102697bf941d2f01ff5fc172416c435f639004884b6959741eea5524614dd3"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_emergency_brake.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_emergency_brake.py",
+      "sha256": "f4c2cca47303edad84043f6644e50f73482b944b875df8bb5eae2a2626f167ee"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_enums.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_enums.py",
+      "sha256": "827e7338b8e553684f87a0fc27a16cff3e3ee382e2a18271145e7e549a6c52bc"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_geometry_utils.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_geometry_utils.py",
+      "sha256": "b83b8b8e187e31b3b0f392d104998f6fec3b9669eab3de69d22d0e520213af23"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_path.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_path.py",
+      "sha256": "febeb11b0661b1a2eb2d8ddbc3346fdd8c2b57fe0e03e4dc0c8811c78e24c71c"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/route_utils.py",
+      "destination": "vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/route_utils.py",
+      "sha256": "7045213d1beb743ce9d14ae53fa3d2da36001031742b00acc4c4e1678e5ae6da"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/training/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/training/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/training/abstract_feature_target_builder.py",
+      "destination": "vendor/upstream/navsim/planning/training/abstract_feature_target_builder.py",
+      "sha256": "fd25cf18d3ad861211624451742435b44d61efe67367cc33b881ba9e3f2dca84"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/training/adaptive_replay/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/training/adaptive_replay/__init__.py",
+      "sha256": "53589da3eb39f0e280ae069b8856c3237d11948059807f0eea2709dd34b7f639"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/training/adaptive_replay/controller.py",
+      "destination": "vendor/upstream/navsim/planning/training/adaptive_replay/controller.py",
+      "sha256": "5f87ec8697eb01c5d6eae3430846298d5ff719acdcf8a2d1f5ee75c08dc12fce"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/training/adaptive_replay/distillation.py",
+      "destination": "vendor/upstream/navsim/planning/training/adaptive_replay/distillation.py",
+      "sha256": "351060b7552b75c90202ff0aa8ba629b72bcabe95d8ca204e88b12830fcc5b3e"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/training/adaptive_replay/reference_bridge.py",
+      "destination": "vendor/upstream/navsim/planning/training/adaptive_replay/reference_bridge.py",
+      "sha256": "7aa3a241957f45c33785c9322f913a007830ce0acbf71c963d61c32ed7a03c04"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/training/adaptive_replay/reference_objectives.py",
+      "destination": "vendor/upstream/navsim/planning/training/adaptive_replay/reference_objectives.py",
+      "sha256": "f295bb6a93ba81e906ca7ae71b6251621e24ae790e66838023d5a731a6cf3fa0"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/training/adaptive_replay/sampler.py",
+      "destination": "vendor/upstream/navsim/planning/training/adaptive_replay/sampler.py",
+      "sha256": "143150de64a95bad1e226009dd524e9eb7bb0adf794962092d1aee01cbc38834"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/training/agent_lightning_module.py",
+      "destination": "vendor/upstream/navsim/planning/training/agent_lightning_module.py",
+      "sha256": "bce22ff5c08cb1da57aadd04269e374b30ff9910e0b65073d75293b3dab2d031"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/training/callbacks/time_logging_callback.py",
+      "destination": "vendor/upstream/navsim/planning/training/callbacks/time_logging_callback.py",
+      "sha256": "008c603684661a0e0ea10978a6c8c91208940882d4e6ba71dd8b5a752aff2078"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/training/dataset.py",
+      "destination": "vendor/upstream/navsim/planning/training/dataset.py",
+      "sha256": "79a59afce97ba3f609e84269514fb0b986416f7437fe4fb1d84686649fbd418e"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/training/gd_ema_objective.py",
+      "destination": "vendor/upstream/navsim/planning/training/gd_ema_objective.py",
+      "sha256": "06a9c932e3f94422a18483591600593e32fe189b4ae8ce47cf5abfac1fd0d9f8"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/training/role_mixed_dataset.py",
+      "destination": "vendor/upstream/navsim/planning/training/role_mixed_dataset.py",
+      "sha256": "081170262f9a8c0d6ebca89ef2712bcea1af6007236f4447557bc1757a05beee"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/utils/multithreading/__init__.py",
+      "destination": "vendor/upstream/navsim/planning/utils/multithreading/__init__.py",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/utils/multithreading/worker_ray_no_torch.py",
+      "destination": "vendor/upstream/navsim/planning/utils/multithreading/worker_ray_no_torch.py",
+      "sha256": "3cf0516adc1d7f3c24f40e3b6c742749f6cfc9ffcf9e22df50ac57037cf1b19f"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/vlm_core.py",
+      "destination": "vendor/vlm_core.py",
+      "sha256": "64117b8a3213a81c0040dff6ffda059243e811dfa211b381827ec42b4a519109"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/vlm_intervene_v4.py",
+      "destination": "vendor/vlm_intervene_v4.py",
+      "sha256": "afa840eac523e956c2c986913886c1018a3cf2180e89dc6c148ed38d88b4200c"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/vlm_semantic.py",
+      "destination": "vendor/vlm_semantic.py",
+      "sha256": "c546be04bc5383bd3934b3782672dc4ad079ce86a089bd1364c55be6dcf0fda8"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/vendor/worker.py",
+      "destination": "vendor/worker.py",
+      "sha256": "b16b411c25eedd727076c87040b8a7cd054c9dd10e3780e4e6e82cd19d33455c"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/seeds.py",
+      "destination": "seeds.py",
+      "sha256": "d790c639dea4b87698a9afceef09bdc36e19ea928c305affaad72dc60d705c5f"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/noise_replay.py",
+      "destination": "noise_replay.py",
+      "sha256": "8e313ce619db3187e0959afe8e209b585b0001ff451dad74ee989defb7d06933"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/requirements-inference.txt",
+      "destination": "requirements-inference.txt",
+      "sha256": "3dff563115a21227025003ed5615b83a5bf237007b0944de6d13445f04cfb1da"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/requirements-reference.txt",
+      "destination": "requirements-reference.txt",
+      "sha256": "e77e7045d01a9431264f9262c6b199d8e7988c139276a5266a3cf689588ad66e"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/reference/environment.json",
+      "destination": "reference/environment.json",
+      "sha256": "c0904be5816d73f2d3fbe4d93de2bdf9d397a8ec96c1572a9fa1351ca9b51b98"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/reference/golden_noise_banks.npz",
+      "destination": "reference/golden_noise_banks.npz",
+      "sha256": "aaf5a37539d8fbdef196d51f2ec28bf061df21c3855b6608e8a4b8a8644df06d"
+    },
+    {
+      "source": "1020-representation_teacher_portable/repo/configs/paths.example.json",
+      "destination": "configs/paths.example.json",
+      "sha256": "9e142ab2b02cfb3a3c31351902ad1a462f89896a09106b1ec3ddce89ff48f523"
+    }
+  ],
+  "no_refit": true,
+  "no_new_choice_search": true,
+  "no_large_checkpoint_or_raw_dataset": true
+}

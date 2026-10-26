@@ -1,0 +1,111 @@
+{
+  "status": "PASS_LOCAL_PORTABLE_REPLAY",
+  "date_UTC": "2026-10-26",
+  "compute_device": "DSW single PPU-ZW810E, Torch 2.4.0",
+  "checks": {
+    "real_native_records": 24,
+    "expert_requests_bitwise_exact": 188,
+    "zero_padding_cap": true,
+    "complete_population_library_pairs": 12,
+    "all_scene_library_decisions": 587754,
+    "full_population_scores_reproduced": true
+  },
+  "actual_native_smoke": [
+    {
+      "source": "cached native GPU FP32",
+      "population": "train",
+      "library": "D_C8_double",
+      "token": "0002267a294e52a7",
+      "choice": 6,
+      "actual_Base_interface_SHA256_exact": true,
+      "all_five_Base_and_teacher_trajectories_bitwise_exact": true,
+      "actual_rescore_max_abs_difference": 0.0,
+      "padding_exact": true,
+      "record_sha256": "bcecaab004c03f1a2a10a92a408e66699f6f4bd0584ede8321bebd316c2b94bc"
+    },
+    {
+      "source": "cached native GPU FP32",
+      "population": "train",
+      "library": "D_C8_double",
+      "token": "00022b6fc91d554a",
+      "choice": 7,
+      "actual_Base_interface_SHA256_exact": true,
+      "all_five_Base_and_teacher_trajectories_bitwise_exact": true,
+      "actual_rescore_max_abs_difference": 0.0,
+      "padding_exact": true,
+      "record_sha256": "85fbd9ad2cae4b1f8a334efb59af3ffb286c5881b5e3e5854e4fc032b456258c"
+    },
+    {
+      "source": "cached native GPU FP32",
+      "population": "test",
+      "library": "D_P7_original",
+      "token": "0000548db87959c2",
+      "choice": 7,
+      "actual_Base_interface_SHA256_exact": true,
+      "all_five_Base_and_teacher_trajectories_bitwise_exact": true,
+      "actual_rescore_max_abs_difference": 0.0,
+      "padding_exact": true,
+      "record_sha256": "ac82d88c910e287f5b8efd6d338b97b3844456591bdaea1d289ecdb238416e17"
+    }
+  ],
+  "raw_VLM_smoke": {
+    "population": "train",
+    "token": "0002267a294e52a7",
+    "fields_exact_to_cached": [
+      "token_ids",
+      "image_mask",
+      "text_mask",
+      "Base_interface",
+      "teacher_interface",
+      "Base_trajectories",
+      "teacher_trajectories",
+      "rescored_PDMS"
+    ],
+    "raw_front_image_to_VLM_to_projection_to_repair_to_trajectory_to_score": true
+  },
+  "asset_check": {
+    "status": "PASS_ASSET_IDENTITIES",
+    "large_weights_hashed": true,
+    "versions": {
+      "torch": "2.4.0",
+      "torchvision": "0.19.0",
+      "transformers": "4.37.0",
+      "diffusers": "0.38.0",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "nuplan-devkit": "1.2.0",
+      "timm": "1.0.27"
+    },
+    "reference_versions": {
+      "torch": "2.4.0",
+      "torchvision": "0.19.0",
+      "transformers": "4.37.0",
+      "diffusers": "0.38.0",
+      "numpy": "1.26.4",
+      "scipy": "1.15.3",
+      "nuplan-devkit": "1.2.0",
+      "timm": "1.0.27"
+    },
+    "version_differences": [],
+    "dataset_roots_exist": {
+      "maps": true,
+      "navtrain_logs": true,
+      "navtrain_sensor": true,
+      "navtrain_metric": true,
+      "navtest_logs": true,
+      "navtest_sensor": true,
+      "navtest_metric": true,
+      "navtrain_features": true,
+      "navtest_features": true
+    }
+  },
+  "training_executed": false,
+  "new_repair_search_executed": false,
+  "cloud_jobs_created_or_stopped": false,
+  "different_platform_full_model_evaluation_executed": false,
+  "limitations": [
+    "Local fixtures and a few real single-device replay scenes passed; another hardware/software stack and all-scene replay still need receiving-side checks.",
+    "Raw VLM full-path replay was checked on one training scene; full raw datasets were not rerun for packaging.",
+    "Package contains no full-population hidden tensors, raw images or large Base weights."
+  ]
+}

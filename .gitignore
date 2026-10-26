@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+paths.local.json
+runtime/
+outputs/
+*.ckpt
+*.safetensors
+.env
+*.log

@@ -1,0 +1,142 @@
+{
+  "id": "R_P8_double",
+  "route": "R",
+  "order": "P_to_C",
+  "K": 8,
+  "raw_shift_factor": 2.0,
+  "cap_factor": 2.0,
+  "view": "valid_shared384",
+  "rank": 48,
+  "space": {
+    "path": "assets/spaces/R48.npz",
+    "sha256": "d277d2a46edb945347aa77e237391a1ae7877a7bd749f1bdcc879d05ec3c63a3",
+    "bytes": 144828
+  },
+  "experts": [
+    {
+      "choice": 1,
+      "slot": 0,
+      "fitted_cluster": 6,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "parameters": {
+        "path": "assets/operators/bff3695708121d1adaecb4f939901a73f07801732135f98f7e090a4034a0c735.npz",
+        "sha256": "e251dc99f8458c7ae604a3cf7a1907e86533ed829137f45c0f82b53bd01c758a",
+        "bytes": 627
+      },
+      "physical_UID": "a205ed957386016eadff9d33b60ca302a30d258b3988fd644e663a7616d268d3",
+      "source_model_sha256": "3b3b2cf07339191342f9061f535ff7ef486e66252a7b3356f742180864cf0d0d"
+    },
+    {
+      "choice": 2,
+      "slot": 1,
+      "fitted_cluster": 5,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "parameters": {
+        "path": "assets/operators/99c258bc0506fba3505eb8dac2fead16adb6f3471dbf227308e5885968071dd3.npz",
+        "sha256": "44e1250ffb6baa64bea8d2fca122e7216d55483e961ed4c2cf321b4b6bb37870",
+        "bytes": 628
+      },
+      "physical_UID": "051cd9fc850a5a3cc745504dde8871c9d9bdd300da23ba8994bda4432e6a3be4",
+      "source_model_sha256": "723307670f72deb69b6e4c29c2204fea05d16cfc8c84b6928756bc168e1cf7da"
+    },
+    {
+      "choice": 3,
+      "slot": 2,
+      "fitted_cluster": 1,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "parameters": {
+        "path": "assets/operators/5b57ef50fffa37401d0713fa5dd564928ded391e2a12e151d734fa751d3036e0.npz",
+        "sha256": "6894ba0c8f2056c55b416f92f20fabc48e255b441447ad9852a2d3cd040bac03",
+        "bytes": 626
+      },
+      "physical_UID": "5eacb947cd74f0852864052b0a9531579963e6e2b06e34950e3c231255c457fb",
+      "source_model_sha256": "eb102e256b1bf674b01de0144ccbc4babb12cea687c5d74c6c635779a2bbc385"
+    },
+    {
+      "choice": 4,
+      "slot": 3,
+      "fitted_cluster": 4,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "parameters": {
+        "path": "assets/operators/9e16c251701762275a89ef7316da8aaf40ffc7a69173ba52fcbb5415b3c86db8.npz",
+        "sha256": "40b1bb7db3ed6e7c803a4cc004cbc6a38adc35a6d95b66d915b2bbad220a9770",
+        "bytes": 626
+      },
+      "physical_UID": "aca66846ad934dc460c90d976fd95c6ba157269426d07a47860c3fd0a733f057",
+      "source_model_sha256": "bdf8f4dd6f9304ae7e49a98982754e229a9161e281b3c0420adbfde39ee3b067"
+    },
+    {
+      "choice": 5,
+      "slot": 4,
+      "fitted_cluster": 2,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "parameters": {
+        "path": "assets/operators/3aba45719877aee3941e8b9e88a2cb88b9420144cb57440448aa1d86c9eabe79.npz",
+        "sha256": "918bf229548af686809926c2059f3f266971c3ab6857b6639cee16a7d81a8c71",
+        "bytes": 627
+      },
+      "physical_UID": "c9523636555c4151a67aedf6900df7b7510881036434c36fae4b74c757ac2d47",
+      "source_model_sha256": "e74b28e34dece06105967d499691fecd963f4268a28a08a0128dc99a1e399f0e"
+    },
+    {
+      "choice": 6,
+      "slot": 5,
+      "fitted_cluster": 0,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "parameters": {
+        "path": "assets/operators/2f982f64f0f51b32843961c263f584e97e41742cbabb70906c0851e118a8b5b5.npz",
+        "sha256": "5c80b5617c73ab08e67fc5642c1c049857fd201eb4af708943d2263a2c6c5088",
+        "bytes": 626
+      },
+      "physical_UID": "1293e4db6baa193ea1e93866753972b6b75d587c60a63fdc8994cbd62f4f19e7",
+      "source_model_sha256": "fa5e159707f7bb931f8621a92fceb64e05e1d37029c94826c76b24bc01c98119"
+    },
+    {
+      "choice": 7,
+      "slot": 6,
+      "fitted_cluster": 3,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "parameters": {
+        "path": "assets/operators/cd42df869945b87aacacb8723e5853ea992544b431ccc6d6ada1d36e2b8d21bd.npz",
+        "sha256": "c262cd927c50c3ae6b69f204d9cb3a7c256fb16886e3b02a8bba2fa0f437520f",
+        "bytes": 626
+      },
+      "physical_UID": "29ef486e5f79c9e7aabf2b715d56a8316ed74c1add56459717ccd855b0b36ad5",
+      "source_model_sha256": "5de54d42d12f78c4652f7520becc66f5b54a03e219ed5fde70a374a41a508212"
+    },
+    {
+      "choice": 8,
+      "slot": 7,
+      "fitted_cluster": 7,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "parameters": {
+        "path": "assets/operators/b6d255a3d2899a6bf80cd76734476ea0dfc6109708bf0aa9c7550292b46dfdd9.npz",
+        "sha256": "d757edb621aa7a74270570bab54d782416443d4709ef7e67cab9bf4e30078449",
+        "bytes": 629
+      },
+      "physical_UID": "364c34176ca47b3f9ac0341052a643924f393d637b24fd712da98b5cfb696225",
+      "source_model_sha256": "bb78d74c9c44f662bdd45c44cfaee8d817a5d70f38dc469d681ef7d7b0d61d8f"
+    }
+  ],
+  "source_program_sha256": "fa9daacd8d234047381c3c83ab30ea2612b5783f914bfe3a3e4c48c74daca191",
+  "source_bank_sha256": "c6a55d0ed6c676b54ed70004f90390005ff50bd71813c5ffb1fc4459b6999dbd",
+  "choice_zero": "Base",
+  "intervention": "action_head.feature_encoder output",
+  "application": "same 384-vector shift on every valid image and valid text token; padding unchanged"
+}

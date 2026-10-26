@@ -1,0 +1,83 @@
+{
+  "population": "train",
+  "library": "D_C8_original",
+  "scenes": 85813,
+  "score_unit": "0..1 in NPZ mean_PDMS_score; 0..100 in CSV",
+  "noise_indices": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "choice_table": {
+    "path": "decisions/train/D_C8_original/choices.csv.gz",
+    "sha256": "a7cc0e0be247279e345c5724b1691682c02a8746e8d9b285112010dfd71e6f49",
+    "rows": 85813,
+    "bytes": 6826755
+  },
+  "chunks": [
+    {
+      "path": "decisions/train/D_C8_original/pdms_000000.npz",
+      "sha256": "237b2038d08bdd135a821e0c4dcc03d3de575908219449fea8178db8bdbe00f0",
+      "bytes": 347041
+    },
+    {
+      "path": "decisions/train/D_C8_original/pdms_008192.npz",
+      "sha256": "98eb0073ce7c03f2283b54c52c63f560533a79e6585d34dca38c24d3cd0ca82c",
+      "bytes": 344035
+    },
+    {
+      "path": "decisions/train/D_C8_original/pdms_016384.npz",
+      "sha256": "03263530a6ac22c670fc4fc82bff56e02e4b46569dcefc40ebf970e781c2ddd7",
+      "bytes": 346959
+    },
+    {
+      "path": "decisions/train/D_C8_original/pdms_024576.npz",
+      "sha256": "3bb838ee1a57e9fcf062a0de282d13e8f00934b496ff9c4c6fba325708bb4504",
+      "bytes": 347080
+    },
+    {
+      "path": "decisions/train/D_C8_original/pdms_032768.npz",
+      "sha256": "7a37c7db73abceac89364c72ab181f247f9490eecc9f7f8021372b33d5bc11e6",
+      "bytes": 348829
+    },
+    {
+      "path": "decisions/train/D_C8_original/pdms_040960.npz",
+      "sha256": "670794d33ba4731b3ec285c12c61a6ca41820d352dc4b908253a04749ea0b02f",
+      "bytes": 343641
+    },
+    {
+      "path": "decisions/train/D_C8_original/pdms_049152.npz",
+      "sha256": "109401109ac72b8971a89fdbc06140dec7ba795d25b6aabb53a82133a4fd50ad",
+      "bytes": 345625
+    },
+    {
+      "path": "decisions/train/D_C8_original/pdms_057344.npz",
+      "sha256": "374c510c87c26d323a503c8c9f6a86bd757fa795e271669a9f752ccb7855ab39",
+      "bytes": 343904
+    },
+    {
+      "path": "decisions/train/D_C8_original/pdms_065536.npz",
+      "sha256": "bb8f0d3cea483b0b5d79895609d62fa5b0317b7b079c6b6b4334b8cfb389ef4c",
+      "bytes": 346500
+    },
+    {
+      "path": "decisions/train/D_C8_original/pdms_073728.npz",
+      "sha256": "b4836e7a8b89a6dea145ad2c47f641a881f73192f96ea9fa29b76967be69f345",
+      "bytes": 347040
+    },
+    {
+      "path": "decisions/train/D_C8_original/pdms_081920.npz",
+      "sha256": "7308c4e895e051d73e6f27c9eb94483bf92ab446ffed6ba86cb8c5e01fffb6d7",
+      "bytes": 165503
+    }
+  ],
+  "source_summary_sha256": "b3dd81ccd84526947ff80a8ee44b98e244bddc1c3cbfb2113dcba0eb8257f127",
+  "source_matrix_sha256": "58a2a48b500ff794e2df2d783b6ca9c7d9c9545307585f8f02deef07376242a7",
+  "fixed_scene_choice": true,
+  "training_use_allowed": true,
+  "TEST_offline_diagnostic_only": false,
+  "NPZ_contains_all_branch_five_noise_means": true,
+  "CSV_contains_Base_and_selected_each_of_five_noises": true
+}

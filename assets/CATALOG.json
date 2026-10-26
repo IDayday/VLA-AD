@@ -1,0 +1,33 @@
+{
+  "schema": 1,
+  "libraries": [
+    {
+      "id": "D_P7_original",
+      "path": "assets/libraries/D_P7_original.json"
+    },
+    {
+      "id": "D_C8_original",
+      "path": "assets/libraries/D_C8_original.json"
+    },
+    {
+      "id": "R_P8_double",
+      "path": "assets/libraries/R_P8_double.json"
+    },
+    {
+      "id": "R_C8_double",
+      "path": "assets/libraries/R_C8_double.json"
+    },
+    {
+      "id": "D_P8_double",
+      "path": "assets/libraries/D_P8_double.json"
+    },
+    {
+      "id": "D_C8_double",
+      "path": "assets/libraries/D_C8_double.json"
+    }
+  ],
+  "two_physical_spaces": true,
+  "shared_space_within_each_library": true,
+  "no_cluster_specific_spaces": true,
+  "selection": "one Base-first argmax of mean S0-S4 per scene and library; identical expert and dose on all five draws"
+}

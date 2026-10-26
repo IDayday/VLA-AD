@@ -1,0 +1,142 @@
+{
+  "id": "R_C8_double",
+  "route": "R",
+  "order": "C_to_P",
+  "K": 8,
+  "raw_shift_factor": 2.0,
+  "cap_factor": 2.0,
+  "view": "valid_shared384",
+  "rank": 48,
+  "space": {
+    "path": "assets/spaces/R48.npz",
+    "sha256": "d277d2a46edb945347aa77e237391a1ae7877a7bd749f1bdcc879d05ec3c63a3",
+    "bytes": 144828
+  },
+  "experts": [
+    {
+      "choice": 1,
+      "slot": 0,
+      "fitted_cluster": 3,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "parameters": {
+        "path": "assets/operators/a57e3179c7a9f92d01016f077fc2bacb88367e7de802eb8165ff76b302e10557.npz",
+        "sha256": "5591553c2a54b716ef1a868bb182c71151f18fe98ccae2c4c83f94b6f74cede8",
+        "bytes": 626
+      },
+      "physical_UID": "59f5ac0bc57788cec65a6baf41337705122a8ba1d1c8abe0749b1390c90755cf",
+      "source_model_sha256": "954f9dc0e507e65eb642fcd81c0b7dbff38aef7fed9d75c3f3e8e3748e558748"
+    },
+    {
+      "choice": 2,
+      "slot": 1,
+      "fitted_cluster": 1,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "parameters": {
+        "path": "assets/operators/1470984310bd55761a6ffc18318aefcd2d5d28e60774fd58247128d7d5550bb6.npz",
+        "sha256": "327393c423bb344e6063660b68bad294ea0f62a7a060e1d3354d075097c622ed",
+        "bytes": 627
+      },
+      "physical_UID": "b34f93476dd193afdaa5d038dad73496b256cc3891f2a78cfb5c3cdf2f9731b1",
+      "source_model_sha256": "0ea60c008f06badb0d80e400d61eeedc331f009e04ce4da5908c86392a0cfb32"
+    },
+    {
+      "choice": 3,
+      "slot": 2,
+      "fitted_cluster": 0,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "parameters": {
+        "path": "assets/operators/71932831138a9c0b87a317e337ea96ba142a30905d347289c54c9861f8abdcd6.npz",
+        "sha256": "f8d4661b4f37126dac6a8d02912d81bf6347cb5ded8a3f874392f7b72d4d8d35",
+        "bytes": 630
+      },
+      "physical_UID": "af706734c50632680b128aa3190c95cf35c231a5f59fdd99e21fe7b72ccc94e8",
+      "source_model_sha256": "ff46ca8f4b3ddedaf11d729171e069e062e39def8a6351d2dc665c26438f9587"
+    },
+    {
+      "choice": 4,
+      "slot": 3,
+      "fitted_cluster": 5,
+      "method": "mlp",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "parameters": {
+        "path": "assets/operators/a80d1d8a3667e032ed2e9d94c647eeed2d8d3627f21ed5b6e9195cc9d7702c74.npz",
+        "sha256": "46da4dd433349a20917a4c4e144b83553cbd8fda52b01b7293f7bb89529a2969",
+        "bytes": 37065
+      },
+      "physical_UID": "f333e6b6d02825091540fd5b27b9721a737ecec26961b4d2d6cd57c5a9091862",
+      "source_model_sha256": "fe71a24579bc5731041eeee2bc8661f8de0722136d1f88ddcee495383f62fc37"
+    },
+    {
+      "choice": 5,
+      "slot": 4,
+      "fitted_cluster": 2,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "parameters": {
+        "path": "assets/operators/92a38beb7b00b1bb1c23f88fac3fd6165a5d09fa673ba3500ae3ed7e2956ea00.npz",
+        "sha256": "9036e37b5a2df03015769aa7dc7b4e010a15bf4718927487e19df87d4a82261c",
+        "bytes": 628
+      },
+      "physical_UID": "15ff27e8a3072ef9637871b5a2612bedd0b1f6864aa54c2e34a5cabda888b35d",
+      "source_model_sha256": "e5345b4651e64566f2711153f0ece62a2deec57991503bf844ebb1bbf1803092"
+    },
+    {
+      "choice": 6,
+      "slot": 5,
+      "fitted_cluster": 7,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "parameters": {
+        "path": "assets/operators/df2f6c060f0160e50da9041998d19707f5b319111f9327031a410af07757d427.npz",
+        "sha256": "6c87d5a64f0b5c037f4d6777f4df6b1c3442e873e35e6e5ad0335c1b7f5c2344",
+        "bytes": 627
+      },
+      "physical_UID": "c537ad0cc7ae520866c789cbd2625fa8a674a864b9997fea27c95724a5048bbf",
+      "source_model_sha256": "f80903b36eec17703a22c8fcf9ae68ba9d08a03c9246b6f9f17ab5770390ed18"
+    },
+    {
+      "choice": 7,
+      "slot": 6,
+      "fitted_cluster": 4,
+      "method": "mlp",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "parameters": {
+        "path": "assets/operators/5566ae91080df464a4f8f1871901d339a99929ed2e338b83ddd46b3a9e371749.npz",
+        "sha256": "bffd50915b7eb33d6df949d39c08234d350c912825761c3200b492d89725a979",
+        "bytes": 37091
+      },
+      "physical_UID": "60ddc603e281a47e9c8d540162aaa12f5eef3afd1338cbfffcb5eba5b96c6d68",
+      "source_model_sha256": "fc47485558de9813fe01a78e7a54a340a4dfa5193394c8269714f9f56379ecc1"
+    },
+    {
+      "choice": 8,
+      "slot": 7,
+      "fitted_cluster": 6,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "parameters": {
+        "path": "assets/operators/6c1b57abd2dfd0e570d12e213927374e143b4cc2ca8391709a4077f3df835a58.npz",
+        "sha256": "9a7817c2624bcd58ef05f97b5d0fcdb58da28b37bed7e86842ff6fd961984e54",
+        "bytes": 625
+      },
+      "physical_UID": "b926dfbb0f964a26b510867f37ca5dc6ca652ac3270c3e91a456635b3426eb35",
+      "source_model_sha256": "164866dc7608074303f6f3d3ae6caa89d7e3ddad8f357c24765664be547ec6a9"
+    }
+  ],
+  "source_program_sha256": "c0226827fbee092408f03fcb8db15139215dcd6cf369dcab6dd9f37f5f282a79",
+  "source_bank_sha256": "74c689287e8f587bf3a98c1b1c731cca7f077a432ede89ca2e3c81ff845c4d5f",
+  "choice_zero": "Base",
+  "intervention": "action_head.feature_encoder output",
+  "application": "same 384-vector shift on every valid image and valid text token; padding unchanged"
+}

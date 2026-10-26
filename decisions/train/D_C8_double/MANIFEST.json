@@ -1,0 +1,83 @@
+{
+  "population": "train",
+  "library": "D_C8_double",
+  "scenes": 85813,
+  "score_unit": "0..1 in NPZ mean_PDMS_score; 0..100 in CSV",
+  "noise_indices": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "choice_table": {
+    "path": "decisions/train/D_C8_double/choices.csv.gz",
+    "sha256": "f626b90c614423de3a884a408237a109ef4dc3392e2f0ab64fdba753ff5f4e4c",
+    "rows": 85813,
+    "bytes": 6592480
+  },
+  "chunks": [
+    {
+      "path": "decisions/train/D_C8_double/pdms_000000.npz",
+      "sha256": "5829c719977f45025fc498c356b538276962eebc4229cf3626dd6490094d3b82",
+      "bytes": 359729
+    },
+    {
+      "path": "decisions/train/D_C8_double/pdms_008192.npz",
+      "sha256": "a8306e85e1989feafa48995c474dfad480dd78567955fc453c41a5a88b5b80ab",
+      "bytes": 355701
+    },
+    {
+      "path": "decisions/train/D_C8_double/pdms_016384.npz",
+      "sha256": "b3a34c83f9d0c40b1f550b7fdb35dcb43d83143ad99aff9324feb69c186477d2",
+      "bytes": 359229
+    },
+    {
+      "path": "decisions/train/D_C8_double/pdms_024576.npz",
+      "sha256": "1493848e5f573c9f99d5d17da53ef8f24ea8937b1e5fc345052bf5579627f5bb",
+      "bytes": 359501
+    },
+    {
+      "path": "decisions/train/D_C8_double/pdms_032768.npz",
+      "sha256": "2175d084313571ead640385862a351ab1ad8bf3478e14487ac8861ee3286cde1",
+      "bytes": 360843
+    },
+    {
+      "path": "decisions/train/D_C8_double/pdms_040960.npz",
+      "sha256": "0f653c0155e7bc536868238bb535b38c6a297d6ef863897cff5f5bba685eaa04",
+      "bytes": 356556
+    },
+    {
+      "path": "decisions/train/D_C8_double/pdms_049152.npz",
+      "sha256": "6675c7eb9d8cc449be465b63af28a078513bb8134d6cac8cc8e3af37c392e82b",
+      "bytes": 356991
+    },
+    {
+      "path": "decisions/train/D_C8_double/pdms_057344.npz",
+      "sha256": "5a082a2f442f2a2f6b2212155444886a64849eeb907b516ac026ce1979b33ef0",
+      "bytes": 356272
+    },
+    {
+      "path": "decisions/train/D_C8_double/pdms_065536.npz",
+      "sha256": "1554fad67bc8d06f9f2831a1a4219a82ecdf239a1c775d5dddd997727f5a7506",
+      "bytes": 360128
+    },
+    {
+      "path": "decisions/train/D_C8_double/pdms_073728.npz",
+      "sha256": "6b00200be75056fc21d1203ce484a4a420fc111001bf567ba7dc94c1f2374cc7",
+      "bytes": 360799
+    },
+    {
+      "path": "decisions/train/D_C8_double/pdms_081920.npz",
+      "sha256": "c6a02572533aac46cb8d043619b96bacb6eba2fd0c437c5934ff7c5fc84d901b",
+      "bytes": 171541
+    }
+  ],
+  "source_summary_sha256": "b94c666f3a55304ed44c9c03aba45bbee18480e164ffa3e12fe19451484b0cb4",
+  "source_matrix_sha256": "a68f3458f725d7cd0bd9f88d058dff7546a89e18c089c30262bca9924c599d58",
+  "fixed_scene_choice": true,
+  "training_use_allowed": true,
+  "TEST_offline_diagnostic_only": false,
+  "NPZ_contains_all_branch_five_noise_means": true,
+  "CSV_contains_Base_and_selected_each_of_five_noises": true
+}

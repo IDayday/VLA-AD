@@ -1,0 +1,38 @@
+{
+  "population": "test",
+  "library": "D_P7_original",
+  "scenes": 12146,
+  "score_unit": "0..1 in NPZ mean_PDMS_score; 0..100 in CSV",
+  "noise_indices": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "choice_table": {
+    "path": "decisions/test/D_P7_original/choices.csv.gz",
+    "sha256": "c04485ddc5f8d1fe2095eb886fa32b2550814fc48e141eb0d9aae7770a7081ea",
+    "rows": 12146,
+    "bytes": 1039114
+  },
+  "chunks": [
+    {
+      "path": "decisions/test/D_P7_original/pdms_000000.npz",
+      "sha256": "28d7e1f2fc7f30556817da3e1379e51cdf59ebebf810a15d87c55f408526bc68",
+      "bytes": 334483
+    },
+    {
+      "path": "decisions/test/D_P7_original/pdms_008192.npz",
+      "sha256": "5ea086e867b2359b9639c1aa68fe3fd3d653e2c2fe03e65c9dab04165d2461d6",
+      "bytes": 161656
+    }
+  ],
+  "source_summary_sha256": "8660eb7cf51deaace86e303677f7ce868ee51f0b2a4161790673cee95e31e039",
+  "source_matrix_sha256": "65a17c3848a0a8a53b75dc1fdb3438f667f4d5684abb581beed8044cb3b45566",
+  "fixed_scene_choice": true,
+  "training_use_allowed": false,
+  "TEST_offline_diagnostic_only": true,
+  "NPZ_contains_all_branch_five_noise_means": true,
+  "CSV_contains_Base_and_selected_each_of_five_noises": true
+}
