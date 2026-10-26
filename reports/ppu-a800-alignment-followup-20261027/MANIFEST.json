@@ -12,8 +12,13 @@
     },
     {
       "path": "README.md",
-      "bytes": 9071,
-      "sha256": "230c48523fe106e2ed70a5ae742f2da37fa7db22f518d2ba927c2e498105788e"
+      "bytes": 9309,
+      "sha256": "f515e278fca36e960f99579b6466e7e4c6bbee36b665663a7407d57a18997dfa"
+    },
+    {
+      "path": "REMOTE_VERIFICATION.json",
+      "bytes": 489,
+      "sha256": "248c731ff89ec48918e351d0c93374d9ddfaa901cdc674fd4d82e449c3a8d151"
     },
     {
       "path": "evidence/A800_tf32_false.json",

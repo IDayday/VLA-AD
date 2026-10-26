@@ -1,0 +1,8 @@
+{
+  "commit": "86e4d46e1bccd762e46b81ba77d32e304c79a01c",
+  "remote_raw_URL": "https://raw.githubusercontent.com/IDayday/VLA-AD/86e4d46e1bccd762e46b81ba77d32e304c79a01c/reports/ppu-a800-alignment-followup-20261027/ppu_native_no_bias.npz",
+  "remote_file_bytes": 14897225,
+  "remote_file_sha256": "9c1abc99ea9ba94db1160cdd89c566c5c2df4d2efacaed8e83d801deaa3a302d",
+  "identical_to_local_file": true,
+  "native_C_sha256": "c04efdfc37e1d5d2fc0ce8bf618df389103f20a7c183e53e708eaf3dbaf2389b"
+}

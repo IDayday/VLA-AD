@@ -1,3 +1,5 @@
+**完整原始输入与 PPU 环境/中间量补充已一并提供：**见 [v2 数据和文档说明](../ppu-a800-embedding-audit-20261027.README.md)，压缩包含原 JPG、四帧元数据和 12 项命中旧 PPU 指纹的完整输入。
+
 **PPU 实际张量已补交（在 `32bafef` 基础上）**
 
 - 实际张量：[ppu_native_no_bias.npz](ppu_native_no_bias.npz)，14,897,225 字节；解压后的原生 BF16 数据为 18,874,368 字节（18 MiB），shape `[9,1024,32,32]`。
