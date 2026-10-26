@@ -1,0 +1,27 @@
+{
+  "archive_filename": "teacher-repair-reproduction-source-20261027.tar.gz",
+  "archive_bytes": 95694352,
+  "archive_sha256": "98e4bc7c315fcf9326dac2fa3972d1d89aeb066094d2dc0169cde3537ecf2005",
+  "root_directory": "teacher-repair-reproduction-source-20261027",
+  "parts": [
+    {
+      "filename": "teacher-repair-reproduction-source-20261027.tar.gz.part001",
+      "bytes": 41943040,
+      "sha256": "edc81acdb207cb167278ec5e9e0da781b0ed71f452f7dde977f892b99d129b0a"
+    },
+    {
+      "filename": "teacher-repair-reproduction-source-20261027.tar.gz.part002",
+      "bytes": 41943040,
+      "sha256": "6f4e1fe1058a1aa59b9d7e11b80bd30d58cfc195ce55b693bfd821b06892eb4b"
+    },
+    {
+      "filename": "teacher-repair-reproduction-source-20261027.tar.gz.part003",
+      "bytes": 11808272,
+      "sha256": "2bfede4dfb91be17a4720c2ddef5bcd2572d306b79b1d79dab5f1194e24cd4fd"
+    }
+  ],
+  "format": "Concatenated gzip-compressed tar stream; take every part in manifest order.",
+  "original_source_files": 4547,
+  "python_source_files": 2607,
+  "expanded_original_source_bytes": 597024801
+}

@@ -1,0 +1,407 @@
+{
+  "status": "PASS",
+  "receiver_command": [
+    "python3",
+    "-B",
+    "/mnt/workspace/project/VLA-AD-ppu-a800-handoff-20261027/reports/teacher-repair-reproduction-source-20261027/assemble_archive.py",
+    "--archive",
+    "/mnt/workspace/project/teacher-repair-reproduction-receiver-20261027.tar.gz",
+    "--extract-to",
+    "/mnt/workspace/project/teacher-repair-reproduction-receiver-20261027",
+    "--verify-sources"
+  ],
+  "stages": [
+    {
+      "archive_verified": "/mnt/workspace/project/teacher-repair-reproduction-receiver-20261027.tar.gz",
+      "sha256": "98e4bc7c315fcf9326dac2fa3972d1d89aeb066094d2dc0169cde3537ecf2005",
+      "bytes": 95694352
+    },
+    {
+      "extracted": "/mnt/workspace/project/teacher-repair-reproduction-receiver-20261027/teacher-repair-reproduction-source-20261027"
+    },
+    {
+      "status": "PASS",
+      "files_verified": 4547,
+      "bytes_verified": 597024801,
+      "python_files_checked": 2607,
+      "syntax_errors": [],
+      "original_eight_sources": [
+        {
+          "frozen": "1026-interface_teacher_portable/repo/reference/original_sources/full_six_factory_v2.py",
+          "byte_identical_research_sources": [
+            "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/code/full_six_factory_v2.py"
+          ]
+        },
+        {
+          "frozen": "1026-interface_teacher_portable/repo/reference/original_sources/ol_l1_geometry_v1.py",
+          "byte_identical_research_sources": [
+            "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_geometry_v1.py"
+          ]
+        },
+        {
+          "frozen": "1026-interface_teacher_portable/repo/reference/original_sources/ol_l1_operators_v1.py",
+          "byte_identical_research_sources": [
+            "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_operators_v1.py"
+          ]
+        },
+        {
+          "frozen": "1026-interface_teacher_portable/repo/reference/original_sources/ol_l1_pilot_fitter_v1.py",
+          "byte_identical_research_sources": [
+            "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_pilot_fitter_v1.py"
+          ]
+        },
+        {
+          "frozen": "1026-interface_teacher_portable/repo/reference/original_sources/ol_l2_cal_pack_v1.py",
+          "byte_identical_research_sources": [
+            "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l2_cal_pack_v1.py"
+          ]
+        },
+        {
+          "frozen": "1026-interface_teacher_portable/repo/reference/original_sources/ol_stage_a_final_factory_v1.py",
+          "byte_identical_research_sources": [
+            "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_stage_a_final_factory_v1.py"
+          ]
+        },
+        {
+          "frozen": "1026-interface_teacher_portable/repo/reference/original_sources/p2_u1_policy_cap_v1.py",
+          "byte_identical_research_sources": [
+            "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_policy_cap_v1.py"
+          ]
+        },
+        {
+          "frozen": "1026-interface_teacher_portable/repo/reference/original_sources/p2_u1_repair_functions_v1.py",
+          "byte_identical_research_sources": [
+            "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_repair_functions_v1.py"
+          ]
+        }
+      ],
+      "critical_local_source_closure": [
+        "1010-il_baseline/vendor/model/recogdrive_backbone.py",
+        "1010-il_baseline/vendor/model/recogdrive_features.py",
+        "1010-il_baseline/vendor/model/utils/conversation.py",
+        "1016-rl_representation_analysis/code/common.py",
+        "1016-rl_representation_analysis/code/paired_observation.py",
+        "1016-rl_representation_analysis/code/repair_engine.py",
+        "1016-rl_representation_analysis/code/repair_score.py",
+        "1016-rl_representation_analysis/code/representation_prepare.py",
+        "1016-rl_representation_analysis/code/score.py",
+        "1016-rl_representation_analysis/code/upstream/model/recogdrive_agent.py",
+        "1016-rl_representation_analysis/code/upstream/model/recogdrive_backbone.py",
+        "1016-rl_representation_analysis/code/upstream/model/recogdrive_features.py",
+        "1016-rl_representation_analysis/code/upstream/model/utils/conversation.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/agents/abstract_agent.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/common/dataclasses.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/evaluate/__init__.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/evaluate/pdm_score.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/planning/metric_caching/metric_cache.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/planning/simulation/planner/pdm_planner/observation/pdm_object_manager.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/planning/simulation/planner/pdm_planner/observation/pdm_observation.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/planning/simulation/planner/pdm_planner/observation/pdm_occupancy_map.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/__init__.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_comfort_metrics.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_scorer.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_scorer_utils.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/batch_kinematic_bicycle.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/batch_lqr.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/batch_lqr_utils.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/pdm_simulator.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_array_representation.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_enums.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_geometry_utils.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_path.py",
+        "1016-rl_representation_analysis/code/upstream/navsim/planning/training/abstract_feature_target_builder.py",
+        "1016-rl_representation_analysis/code/vlm_core.py",
+        "1016-rl_representation_analysis/code/worker.py",
+        "1018-representation_repair_batch2/code/r2_behavior_router.py",
+        "1018-representation_repair_batch2/code/r2_cached_interfaces.py",
+        "1018-representation_repair_batch2/code/r2_common.py",
+        "1018-representation_repair_batch2/code/r2_counterfactual.py",
+        "1018-representation_repair_batch2/code/r2_delta_regression_v2.py",
+        "1018-representation_repair_batch2/code/r2_eval_rollouts.py",
+        "1018-representation_repair_batch2/code/r2_expert_space.py",
+        "1018-representation_repair_batch2/code/r2_learned_expert.py",
+        "1018-representation_repair_batch2/code/r2_learned_expert_v3.py",
+        "1018-representation_repair_batch2/code/r2_library_rollouts.py",
+        "1018-representation_repair_batch2/code/r2_mixed_interfaces_v2.py",
+        "1018-representation_repair_batch2/code/r2_mixed_locations_v3.py",
+        "1018-representation_repair_batch2/code/r2_router_features.py",
+        "1020-representation_teacher_portable/repo/vendor/repair_score.py",
+        "1020-representation_teacher_portable/repo/vendor/score.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/model/recogdrive_agent.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/model/recogdrive_backbone.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/model/recogdrive_features.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/model/utils/conversation.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/agents/abstract_agent.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/common/dataclasses.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/evaluate/__init__.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/evaluate/pdm_score.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/metric_caching/metric_cache.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/observation/pdm_object_manager.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/observation/pdm_observation.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/observation/pdm_occupancy_map.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/__init__.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_comfort_metrics.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_scorer.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_scorer_utils.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/batch_kinematic_bicycle.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/batch_lqr.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/batch_lqr_utils.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/pdm_simulator.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_array_representation.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_enums.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_geometry_utils.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_path.py",
+        "1020-representation_teacher_portable/repo/vendor/upstream/navsim/planning/training/abstract_feature_target_builder.py",
+        "1020-representation_teacher_portable/repo/vendor/vlm_core.py",
+        "1020-representation_teacher_portable/repo/vendor/worker.py",
+        "1021-representation_distillation_batch4/stage2_local_distillation/code/s2_common.py",
+        "1021-representation_repair_batch3/code/r3_common.py",
+        "1021-representation_repair_batch3/code/r3_runtime.py",
+        "1024-representation_distillation_diagnosis_batch5/code/b5_common.py",
+        "1024-representation_distillation_diagnosis_batch5/code/b5_conditional_interface_probe.py",
+        "1024-representation_distillation_diagnosis_batch5/code/b5_linear_interface_probe.py",
+        "1024-representation_distillation_diagnosis_batch5/code/b5_pool.py",
+        "1024-representation_distillation_diagnosis_batch5/code/b5_pool_v2.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_balanced_armijo_calibrate.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_balanced_behavior_probe.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_behavior_prepare.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_behavior_probe.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_behavior_score_v2.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_expanded_behavior_prepare.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_expanded_behavior_probe.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_expanded_behavior_run.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_frozen_interface_eval.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_full_context_inputs.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_native_feedback_base_inputs_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_suffix_gradient_audit.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_direction_center_native_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_direction_experts_math_v2.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_fullblock15_interpolation_eval_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_fullblock15_interpolation_prepare_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_geometry_math_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_native_attn_real1600_accept_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_native_attn_train_sensitive_v2.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_native_block15_runtime_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_native_directions_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_native_external_collect_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_native_external_eval_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_native_external_prepare_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_native_fullblock15_accept_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_native_fullblock15_runtime_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_native_fullblock15_train_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_paired_assets_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_paired_mapping_math_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_policy_cap_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_post_teacher_replay_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_repair_functions_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_cv_shared48_cpu_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_cv_shared48_native_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_cv_shared48_outer_native_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_cv_shared48_outer_refit_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_cv_shared48_selection_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_dose_cv_collect_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_dose_cv_native_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_dose_cv_requests_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_dose_variant_held_native_v2.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_dose_variant_held_requests_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l0_prepare_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_data_pack_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_geometry_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_native_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_operators_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_pilot_diagnostics_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_pilot_fitter_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_pilot_selection_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_prepare_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_random_k8_cpu_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l2_cal_pack_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l2_formal_selection_v2.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l2_native_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l3_held_diagnostics_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l3_native_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l3_outer_refit_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_random_k8_outer_native_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_random_k8_outer_refit_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_ranked_view_outer_refit_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_role2_768_cpu_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_role2_768_native_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_role2_768_selection_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_saved_held_library_diagnostics_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_saved_held_library_diagnostics_v2.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_shared32_64_cpu_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_shared32_64_native_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_shared32_64_selection_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_shared48_completion_held_diagnostics_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_shared48_completion_native_v2.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_shared48_completion_outer_native_pipeline_v2.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_shared48_completion_outer_native_v2.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_shared48_completion_outer_refit_v2.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_shared48_completion_requests_v2.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_shared48_completion_selection_v2.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_shared48_fixed_family_oof_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_stage_a_final_factory_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_stage_a_selection_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_stage_b_cell_cpu_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_stage_b_final_factory_v1.py",
+        "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/code/full_six_factory_v2.py",
+        "1026-interface_teacher_portable/repo/vendor/repair_score.py",
+        "1026-interface_teacher_portable/repo/vendor/score.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/model/recogdrive_agent.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/model/recogdrive_backbone.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/model/recogdrive_features.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/model/utils/conversation.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/agents/abstract_agent.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/common/dataclasses.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/evaluate/__init__.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/evaluate/pdm_score.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/planning/metric_caching/metric_cache.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/observation/pdm_object_manager.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/observation/pdm_observation.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/observation/pdm_occupancy_map.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/__init__.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_comfort_metrics.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_scorer.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/scoring/pdm_scorer_utils.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/batch_kinematic_bicycle.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/batch_lqr.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/batch_lqr_utils.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/simulation/pdm_simulator.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_array_representation.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_enums.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_geometry_utils.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/planning/simulation/planner/pdm_planner/utils/pdm_path.py",
+        "1026-interface_teacher_portable/repo/vendor/upstream/navsim/planning/training/abstract_feature_target_builder.py",
+        "1026-interface_teacher_portable/repo/vendor/vlm_core.py",
+        "1026-interface_teacher_portable/repo/vendor/worker.py"
+      ],
+      "required_modules_present": [
+        "g5_runtime",
+        "ol_l1_data_pack_v1",
+        "ol_l3_outer_refit_v1",
+        "ol_stage_b_final_factory_v1",
+        "p2_u1_paired_assets_v1",
+        "p2_u1_paired_mapping_math_v1",
+        "r2_counterfactual"
+      ],
+      "critical_external_python_packages": [
+        "PIL",
+        "numpy",
+        "nuplan",
+        "omegaconf",
+        "pyquaternion",
+        "pytorch_lightning",
+        "scipy",
+        "shapely",
+        "sklearn",
+        "torch",
+        "transformers"
+      ],
+      "additional_external_packages_for_review": [],
+      "missing_critical_research_modules": [],
+      "split": {
+        "seed": 2026102531,
+        "selected": 10042,
+        "sessions": 130,
+        "final": {
+          "a_samples": 8021,
+          "b_samples": 2021,
+          "a_sessions": 104,
+          "b_sessions": 26,
+          "disjoint": true
+        },
+        "folds": [
+          {
+            "fold": 0,
+            "outer": {
+              "a_samples": 8055,
+              "b_samples": 1987,
+              "a_sessions": 104,
+              "b_sessions": 26,
+              "disjoint": true
+            },
+            "inner": {
+              "a_samples": 6374,
+              "b_samples": 1681,
+              "a_sessions": 83,
+              "b_sessions": 21,
+              "disjoint": true
+            }
+          },
+          {
+            "fold": 1,
+            "outer": {
+              "a_samples": 8013,
+              "b_samples": 2029,
+              "a_sessions": 104,
+              "b_sessions": 26,
+              "disjoint": true
+            },
+            "inner": {
+              "a_samples": 6356,
+              "b_samples": 1657,
+              "a_sessions": 83,
+              "b_sessions": 21,
+              "disjoint": true
+            }
+          },
+          {
+            "fold": 2,
+            "outer": {
+              "a_samples": 8028,
+              "b_samples": 2014,
+              "a_sessions": 104,
+              "b_sessions": 26,
+              "disjoint": true
+            },
+            "inner": {
+              "a_samples": 6419,
+              "b_samples": 1609,
+              "a_sessions": 83,
+              "b_sessions": 21,
+              "disjoint": true
+            }
+          },
+          {
+            "fold": 3,
+            "outer": {
+              "a_samples": 8115,
+              "b_samples": 1927,
+              "a_sessions": 104,
+              "b_sessions": 26,
+              "disjoint": true
+            },
+            "inner": {
+              "a_samples": 6445,
+              "b_samples": 1670,
+              "a_sessions": 84,
+              "b_sessions": 20,
+              "disjoint": true
+            }
+          },
+          {
+            "fold": 4,
+            "outer": {
+              "a_samples": 7957,
+              "b_samples": 2085,
+              "a_sessions": 104,
+              "b_sessions": 26,
+              "disjoint": true
+            },
+            "inner": {
+              "a_samples": 6303,
+              "b_samples": 1654,
+              "a_sessions": 83,
+              "b_sessions": 21,
+              "disjoint": true
+            }
+          }
+        ]
+      },
+      "model_imports": 0,
+      "model_forwards": 0,
+      "training_calls": 0,
+      "scope": "Static dependency/source-byte and real split validation; not an inference/training reproduction."
+    }
+  ],
+  "model_or_training_calls": 0
+}

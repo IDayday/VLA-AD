@@ -1,0 +1,151 @@
+[
+  {
+    "path": "1022-gt_assisted_representation_optimization/configs/EFFECTIVE_GT_OPTIMIZATION.json",
+    "component": "research",
+    "bytes": 1805,
+    "reasons": [
+      "complete configs tree",
+      "literal configuration reference in 1024-representation_distillation_diagnosis_batch5/code/b5_gt_geometry_inventory.py"
+    ],
+    "sha256": "4b8b43bbf3920c36ec73cab2d08b7d262c1f98879797f0534f2e8a3cfa6386d5",
+    "mode": 384
+  },
+  {
+    "path": "1022-gt_assisted_representation_optimization/configs/FROZEN_MODEL_AND_SCORING.json",
+    "component": "research",
+    "bytes": 3919,
+    "reasons": [
+      "complete configs tree",
+      "literal configuration reference in 1024-representation_distillation_diagnosis_batch5/code/b5_gt_geometry_inventory.py"
+    ],
+    "sha256": "d2a0e6a2973bdc618b932f9b8a550efe69d7d664df75ca9f171aea7e7689902e",
+    "mode": 384
+  },
+  {
+    "path": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/session_cv_metadata_v1/SPLITS.json",
+    "component": "research",
+    "bytes": 3346835,
+    "reasons": [
+      "preparation metadata/source (bounded depth)",
+      "literal configuration reference in 1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_pilot_metadata_v1.py",
+      "literal configuration reference in 1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_data_pack_v1.py",
+      "literal configuration reference in 1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/code/full_six_report_figures_v2.py"
+    ],
+    "sha256": "979fb2fd8ffe4c4a83f28f984cdf5ce8d94de21199ca4c0bdc1bb96be031d4e6",
+    "mode": 384
+  },
+  {
+    "path": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/v2/INNER_PLAN.json",
+    "component": "research",
+    "bytes": 729523,
+    "reasons": [
+      "preparation metadata/source (bounded depth)",
+      "literal configuration reference in 1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/code/full_six_factory_v2.py"
+    ],
+    "sha256": "38951712e55d259ecb801cb281075b506aceb4f4d0fc47011c94f8cccdaaffc1",
+    "mode": 384
+  },
+  {
+    "path": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/v2/ALLTRAIN_PLAN.json",
+    "component": "research",
+    "bytes": 841563,
+    "reasons": [
+      "preparation metadata/source (bounded depth)",
+      "literal configuration reference in 1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/code/full_six_factory_v2.py"
+    ],
+    "sha256": "31608e7ed8471e1b73e0f6ef1bb964fb59f8bf5180c1ea96359b1ec50647aa3f",
+    "mode": 384
+  },
+  {
+    "path": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/v2/USER_FIXED_CATALOG.json",
+    "component": "research",
+    "bytes": 15645,
+    "reasons": [
+      "preparation metadata/source (bounded depth)",
+      "literal configuration reference in 1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/code/full_six_factory_v2.py"
+    ],
+    "sha256": "d9d7f5da7ca73a54b4f9a9c07fbf8df81ac814058ed13811bd0d57fba4ee4e12",
+    "mode": 384
+  },
+  {
+    "path": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/analysis/v2/FINAL_SLOT_FREEZE.json",
+    "component": "research",
+    "bytes": 34894,
+    "reasons": [
+      "frozen library selection metadata",
+      "literal configuration reference in 1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/code/full_six_factory_v2.py"
+    ],
+    "sha256": "7466f56da0eeb33091a48b64c41b99ab483a035fb41b38e8c06549179baacf62",
+    "mode": 384
+  },
+  {
+    "path": "1021-representation_distillation_batch4/configs/distillation_main_v4/H.json",
+    "component": "research",
+    "bytes": 3539,
+    "reasons": [
+      "complete configs tree"
+    ],
+    "sha256": "e9baba6b3d546404544e2a2e2c3e7f2808884a798e58ad1fea7514227fdf683a",
+    "mode": 384
+  },
+  {
+    "path": "1021-representation_distillation_batch4/configs/distillation_main_v4/T.json",
+    "component": "research",
+    "bytes": 3539,
+    "reasons": [
+      "complete configs tree"
+    ],
+    "sha256": "9d4c9fdd44d2f8ad4ff05fb57173a1746ce507fb3b7b7c3794054823e866bf6e",
+    "mode": 384
+  },
+  {
+    "path": "1021-representation_distillation_batch4/configs/distillation_main_v4/HT.json",
+    "component": "research",
+    "bytes": 3558,
+    "reasons": [
+      "complete configs tree"
+    ],
+    "sha256": "b2e8d6a9fb9f019aefddb35280e1f415fef7e43d118f2d621e2c53cb943a9fb6",
+    "mode": 384
+  },
+  {
+    "path": "1021-representation_distillation_batch4/stage2_local_distillation/configs/formal_v1/H.json",
+    "component": "research",
+    "bytes": 15465,
+    "reasons": [
+      "complete configs tree"
+    ],
+    "sha256": "3fc5082c127f617671eee1b6b7981d06e291d041242d1beb6a0cb80bd5e6ad48",
+    "mode": 384
+  },
+  {
+    "path": "1021-representation_distillation_batch4/stage2_local_distillation/configs/formal_v1/H_interface.json",
+    "component": "research",
+    "bytes": 15485,
+    "reasons": [
+      "complete configs tree"
+    ],
+    "sha256": "cb7630f3622f74d3ca56bb33f122df9fefc7198c33f2a6628d3bd2e4cb924144",
+    "mode": 384
+  },
+  {
+    "path": "1021-representation_distillation_batch4/stage2_local_distillation/configs/formal_v1/T.json",
+    "component": "research",
+    "bytes": 15465,
+    "reasons": [
+      "complete configs tree"
+    ],
+    "sha256": "760b1c1ee784e7a472d081cbd1f264b6d485bf1f27d5c9d210817ad8178b08ea",
+    "mode": 384
+  },
+  {
+    "path": "1021-representation_distillation_batch4/stage2_local_distillation/configs/formal_v1/HT.json",
+    "component": "research",
+    "bytes": 15467,
+    "reasons": [
+      "complete configs tree"
+    ],
+    "sha256": "ebbc573a4d472c583c2c5227371e056b128353fcacce6cf202ecc13a77d70991",
+    "mode": 384
+  }
+]

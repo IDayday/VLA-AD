@@ -1,0 +1,114 @@
+{
+  "excluded_live_files": [
+    {
+      "path": "1016-rl_representation_analysis/ACTIVE_HANDOFF_LATEST.md",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1016-rl_representation_analysis/provenance/LATEST_REPAIR_REPORT_ACCEPTANCE.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1018-representation_repair_batch2/config/control_scripts_update.lock",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1018-representation_repair_batch2/config/gpu_stages.lock",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1018-representation_repair_batch2/provenance/cpu_inbox_compaction/LATEST.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1018-representation_repair_batch2/resources/CLOUD_LATEST.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1018-representation_repair_batch2/resources/LATEST.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1018-representation_repair_batch2/resources/MONITOR_LAST_ERROR.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1018-representation_repair_batch2/resources/TERMINAL_ALERT.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1021-representation_distillation_batch4/provenance/MAIN_MONITOR_V4_REPLACEMENT.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1021-representation_distillation_batch4/provenance/MAIN_MONITOR_V6_REPLACEMENT.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1022-gt_assisted_representation_optimization/provenance/ARTIFACT_CHECK_BEFORE_INLINE_MONITOR_STOP.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1022-gt_assisted_representation_optimization/provenance/PAUSE_DELIVERY_BEFORE_INLINE_MONITOR_STOP.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1022-gt_assisted_representation_optimization/resources/pause/CLEANUP_MONITOR.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1022-gt_assisted_representation_optimization/resources/pause/LOCAL_PHASE_MONITOR_STOPPED.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1022-gt_assisted_representation_optimization/resources/pause/LOCAL_PHASE_MONITOR_STOP_INTENT.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1022-gt_assisted_representation_optimization/resources/pause/LOCAL_RESOURCE_MONITOR_STOPPED.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1022-gt_assisted_representation_optimization/resources/pause/LOCAL_RESOURCE_MONITOR_STOP_INTENT.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1022-gt_assisted_representation_optimization/resume_20261023_shared/MONITOR_LIVE.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1022-gt_assisted_representation_optimization/resume_20261023_shared/MONITOR_SEEN.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/MONITOR_LAST_SEEN.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/MONITOR_LIVE.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/nodes/CAPACITY_MONITOR_ENV_PREPARING_CORRECTION.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/user_pause_20261025T230025Z/ROOT_MECHANICAL_MONITOR_STOPPED.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/user_pause_20261025T230025Z/ROOT_MECHANICAL_MONITOR_STOP_REQUEST.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1024-representation_distillation_diagnosis_batch5/stage2/provenance/EXPANDED_MONITOR_CPFS_READ_INCIDENT_V1.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    },
+    {
+      "path": "1024-representation_distillation_diagnosis_batch5/stage2/provenance/U1_RESPONSE_CLOSED_MONITOR_SESSIONS_V1.json",
+      "reason": "live monitoring/lock file; not research source or a frozen configuration"
+    }
+  ],
+  "changed_non_code_metadata": [],
+  "original_tree_writes": 0
+}

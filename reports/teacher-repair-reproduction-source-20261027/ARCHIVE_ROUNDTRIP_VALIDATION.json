@@ -1,0 +1,9 @@
+{
+  "status": "PASS",
+  "tar_files_verified": 4573,
+  "all_member_bytes_and_sha256_match_materialized_snapshot": true,
+  "all_source_files_preserved": true,
+  "archive_sha256": "98e4bc7c315fcf9326dac2fa3972d1d89aeb066094d2dc0169cde3537ecf2005",
+  "archive_bytes": 95694352,
+  "original_tree_writes": 0
+}

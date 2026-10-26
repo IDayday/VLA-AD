@@ -1,0 +1,27 @@
+{
+  "source_root_at_collection": "/mnt/data_and_weight/WM_Group/sjc_workspace/ReCogDrive",
+  "original_dlc_research_root": "/mnt/workspace/ReCogDrive",
+  "extracted_research_root": "<EXTRACTED>/teacher-repair-reproduction-source-20261027/ReCogDrive",
+  "shared_data_historical": "/mnt/data",
+  "shared_data_current": "/mnt/data_and_weight/Public_Space",
+  "shared_model_root_historical": "/mnt/yehr_workspace",
+  "shared_model_root_current": "/mnt/data_and_weight/WM_Group/yehr_workspace",
+  "vlm": {
+    "current": "/mnt/data_and_weight/WM_Group/yehr_workspace/ReCogDrive/ReCogDrive/recogdrive/ReCogDrive-VLM-2B",
+    "safetensors_sha256": "79fb39297e322cd2d3dc68d4f23b86ff85806b336a4d5d0ed5db9b66e4034a3c"
+  },
+  "planner": {
+    "current": "/mnt/data_and_weight/WM_Group/yehr_workspace/ReCogDrive/ReCogDrive/recogdrive/ReCogDrive-2B-RL/ReCogDrive_Diffusion_Planner_2B_RL.ckpt",
+    "sha256": "23fb949b10387efeff87e093703d5faf41b61b9e5ead16d4076661e3c7c08a20"
+  },
+  "large_external_assets": [
+    "NAVSIM/OpenScene full dataset, sensor blobs, maps, score/metric caches",
+    "1016/1018/1021 original hidden-state and paired-state caches referenced by configs/manifests",
+    "1022-gt_assisted_representation_optimization/resume_20261023_shared/payloads and original runs actual per-scene arrays",
+    "1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/l1_data_pack_v1/PACKS actual feature/pair payloads",
+    "All actual fitting/optimization run payloads outside the included frozen portable banks",
+    "Frozen fitted bank/space/operator numerical artifacts and generated teacher/choice outputs; not repackaged in this source/config handoff."
+  ],
+  "raw_single_scene_in_existing_repository": "reports/ppu-a800-embedding-audit-20261027-v2.tar.gz",
+  "note": "Mapping/provenance only. No source path, parameter, software environment, or global precision flag was changed. Mount/map historical paths in an isolated receiver container before any authorized rerun."
+}

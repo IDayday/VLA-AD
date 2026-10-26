@@ -1,0 +1,15 @@
+{
+  "syntax_errors": [],
+  "python_files_checked": 2607,
+  "components": {
+    "research": {
+      "files": 4136,
+      "bytes": 565091754
+    },
+    "frozen_runtime": {
+      "files": 411,
+      "bytes": 31933047
+    }
+  },
+  "model_or_training_calls": 0
+}

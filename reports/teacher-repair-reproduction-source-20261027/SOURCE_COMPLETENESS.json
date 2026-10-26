@@ -1,0 +1,8 @@
+{
+  "status": "PASS",
+  "all_algorithm_source_and_config_files_preserved": true,
+  "expected_source_config_files": 3155,
+  "missing": [],
+  "original_eight_sources_still_preserved": true,
+  "cache_or_result_regeneration_not_run": true
+}
