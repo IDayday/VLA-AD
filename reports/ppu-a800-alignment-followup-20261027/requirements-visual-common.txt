@@ -1,0 +1,13 @@
+# Exact COMMON package versions observed in the PPU visual reference.
+# A800 isolated diagnostic environment only; keep a supported NVIDIA Torch 2.4.0 build.
+# Do not install a PPU wheel/SDK on NVIDIA. Backend differences must be reported.
+torchvision==0.19.0
+transformers==4.57.0
+tokenizers==0.22.1
+timm==1.0.20
+numpy==1.26.4
+Pillow==10.1.0
+safetensors==0.6.2
+accelerate==1.5.2
+einops==0.8.1
+decord==0.6.0

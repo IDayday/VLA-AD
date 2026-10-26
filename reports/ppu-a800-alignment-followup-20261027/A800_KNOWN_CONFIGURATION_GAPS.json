@@ -1,0 +1,34 @@
+{
+  "scope": "Read-only precheck of existing A800 records; not a new A800 controlled replay",
+  "PPU_configuration": "PPU_CONTROLLED_CONFIGURATION.json",
+  "known_mismatches": [
+    {
+      "field": "numeric_policy.tf32_cudnn",
+      "PPU": true,
+      "A800": false,
+      "source": "evidence/A800_FIRST_BLOCK_REFERENCE.json"
+    },
+    {
+      "field": "backend_identity.cudnn_runtime_version",
+      "PPU": 8905,
+      "A800": 90700,
+      "source": "evidence/A800_tf32_true.json; this older report records 9.7.0, latest receiver must collect its actual runtime again"
+    },
+    {
+      "field": "backend_identity.torch_git",
+      "PPU": "36615d2dc445b0232500ca5fadc986949833ae46",
+      "A800": "e4ee3be4063b7c430974252fdf7db42273388d86",
+      "source": "evidence/A800_FIRST_BLOCK_REFERENCE.json"
+    }
+  ],
+  "not_recorded_in_existing_A800_trace": [
+    "num_threads",
+    "num_interop_threads",
+    "actual norm1 eps/normalized_shape",
+    "actual norm1 input stride/storage_offset",
+    "all 340 visual parameters and 341 module scalar configurations",
+    "complete common package version vector"
+  ],
+  "strict_gate_already_passed_on_A800": false,
+  "new_controlled_A800_result_received": false
+}

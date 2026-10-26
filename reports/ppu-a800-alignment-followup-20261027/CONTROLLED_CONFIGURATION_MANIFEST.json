@@ -1,0 +1,66 @@
+{
+  "schema": 1,
+  "basis_audit_commit": "c3e1441",
+  "teacher_frozen_commit": "6bb7119583513094a169b4c2f2dc2a05ac293aa3",
+  "scene": "0002267a294e52a7",
+  "PPU_reference_scope": "Verified current pure visual path; historic full chain separately archived",
+  "configuration_captured_without_new_model_forward": true,
+  "A800_new_controlled_run_received": false,
+  "full_chain_alignment_complete": false,
+  "reused_repository_data_archive": {
+    "path": "../ppu-a800-embedding-audit-20261027-v2.tar.gz",
+    "sha256": "4e080828292355b2e42e4fd81fee213df276a175a8f2c75175ca00e05f81a65c"
+  },
+  "files": [
+    {
+      "path": "PPU_CONFIGURATION_AND_A800_REQUIREMENTS.md",
+      "bytes": 15460,
+      "sha256": "ceba58d5d02c09f84622ea4e777e700181cd88ad2db3267660f13d0bba924718"
+    },
+    {
+      "path": "PPU_CONTROLLED_CONFIGURATION.json",
+      "bytes": 275687,
+      "sha256": "44e4fe84f80a0eeb656d6b98e75d3d5a60b7c48698dc79e9d13e3b8ee6da2cd2"
+    },
+    {
+      "path": "PPU_CONTROLLED_CONFIGURATION.json.sha256",
+      "bytes": 100,
+      "sha256": "877300579c3196f5df3b0917c19675e04533f8817d1336ef09f612cdb9817997"
+    },
+    {
+      "path": "PPU_HISTORICAL_FULL_CHAIN_REFERENCE.json",
+      "bytes": 24493,
+      "sha256": "c45c2a74af58993b17752c3c04e6fe4e96c4b477ba1b0cf24938653c13bd65e8"
+    },
+    {
+      "path": "A800_KNOWN_CONFIGURATION_GAPS.json",
+      "bytes": 1209,
+      "sha256": "f541f8a419ad5c209a0a991f13ac94a55f025f84481082f8a8d7c2ad4bb6a4a2"
+    },
+    {
+      "path": "requirements-visual-common.txt",
+      "bytes": 407,
+      "sha256": "43312c3c12ef62892ad693765b15593c86edb6121fa0a761b90c74c4fb69476b"
+    },
+    {
+      "path": "controlled_conditions.py",
+      "bytes": 23928,
+      "sha256": "140bc31333d9d4358de2ef3c17e9e291d7e98dc4d74dd90a0bf627fe66b3be2c"
+    },
+    {
+      "path": "run_a800_controlled_visual.py",
+      "bytes": 3075,
+      "sha256": "f681bfde86880f729ce0725ddce4509579d3eb9e2d4e653149aaafeb1dbf282b"
+    },
+    {
+      "path": "diagnostic_source/validate_controlled_gate.py",
+      "bytes": 6461,
+      "sha256": "5e35d892874070e99b2646cb6bc3362f19658aa327b7516232820ffce867a059"
+    },
+    {
+      "path": "CONTROLLED_GATE_VALIDATION.json",
+      "bytes": 875,
+      "sha256": "7e9a655af0a7c1878f3f7f5a41199bc98ca3a9a7dd9c3e8b5baa042081bf7f74"
+    }
+  ]
+}

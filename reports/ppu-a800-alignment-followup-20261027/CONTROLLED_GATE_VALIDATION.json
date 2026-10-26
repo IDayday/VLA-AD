@@ -1,0 +1,27 @@
+{
+  "status": "PASS",
+  "scope": "CPU-only metadata/gate validation; no model or GPU arithmetic",
+  "mismatch_cases_blocked": [
+    "TF32 flag",
+    "CPU threads",
+    "inference mode",
+    "norm epsilon",
+    "normalized shape",
+    "input stride",
+    "raw JPG bytes",
+    "actual BF16 input bytes",
+    "actual norm weight bytes",
+    "checkpoint file bytes",
+    "functional norm source",
+    "common package version",
+    "training state",
+    "missing scalar",
+    "JSON boolean type"
+  ],
+  "invalid_input_identity_blocks": true,
+  "failed_gate_returns_before_any_model_access": true,
+  "backend_build_differences_are_disclosed_without_hardware_only_claim": true,
+  "fresh_settings_helper_refuses_active_CUDA_before_mutation": true,
+  "all_340_actual_parameter_fingerprints_match_previous_verified_capture": true,
+  "source_and_checkpoint_reference_integrity": true
+}

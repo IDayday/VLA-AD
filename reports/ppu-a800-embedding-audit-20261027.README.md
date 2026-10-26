@@ -1,3 +1,5 @@
+**A800 最新受控对照要求：**先读 [PPU 完整实测配置与同数据核查要求](ppu-a800-alignment-followup-20261027/PPU_CONFIGURATION_AND_A800_REQUIREMENTS.md)，使用 [机器配置清单](ppu-a800-alignment-followup-20261027/PPU_CONTROLLED_CONFIGURATION.json) 和严格门禁；配置或原始数据未匹配时停止算子比较。
+
 **最新 PPU 算子核查：**[结果说明](ppu-a800-alignment-followup-20261027/PPU_FIRST_BLOCK_RESULTS.md)、[PPU_FIRST_BLOCK_TRACE.json](ppu-a800-alignment-followup-20261027/PPU_FIRST_BLOCK_TRACE.json)。当前 PPU 视觉末层命中历史 SHA；相同 embedding 后首个分歧为 block 0 的 `norm1`。
 
 # PPU 与 A800 单场景特征核查：真实数据、张量和诊断

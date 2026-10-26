@@ -1,0 +1,762 @@
+{
+  "schema": 1,
+  "provenance": {
+    "identity": "Original PPU DSW historical observations, not this host full-model rerun",
+    "capture_date_UTC": "2026-10-26",
+    "transcript": "rollout-2026-10-26T16-37-03-01a1775b-2312-7811-be58-946145934740.jsonl",
+    "records": {
+      "2321": {
+        "sha256_stdout": "2b737590ff4523c2aedba205a3161573aa2e29269616070a19901ac31fbccb99"
+      },
+      "2364": {
+        "sha256_stdout": "73df53854dc5e8a2329ad942b65d4cd48d626f1ae36ce585edd4e9c7282c1e29"
+      },
+      "2371": {
+        "sha256_stdout": "0aa92106286f01492ca8b3eb2c6b8c39b9a5e19bd8dbe6794896d84034415c3f"
+      },
+      "2385": {
+        "sha256_stdout": "fe0d109d16ad309be848e267d9e01998343e13b274b4d5b9b38f6b0269fdf381"
+      }
+    },
+    "frozen_commit": "6bb7119583513094a169b4c2f2dc2a05ac293aa3",
+    "scene": "0002267a294e52a7"
+  },
+  "python_packages": {
+    "python": "3.10.13 (main, Feb  5 2026, 09:35:43) [GCC 11.4.0]",
+    "executable": "/usr/local/bin/python3",
+    "versions": {
+      "torch": {
+        "version": "2.4.0",
+        "location": "/usr/local/lib/python3.10/site-packages"
+      },
+      "torchvision": {
+        "version": "0.19.0",
+        "location": "/usr/local/lib/python3.10/site-packages"
+      },
+      "transformers": {
+        "version": "4.37.0",
+        "location": "/usr/local/lib/python3.10/site-packages"
+      },
+      "tokenizers": {
+        "version": "0.15.2",
+        "location": "/usr/local/lib/python3.10/site-packages"
+      },
+      "timm": {
+        "version": "1.0.27",
+        "location": "/usr/local/lib/python3.10/site-packages"
+      },
+      "Pillow": {
+        "version": "10.1.0",
+        "location": "/usr/local/lib/python3.10/site-packages"
+      },
+      "numpy": {
+        "version": "1.26.4",
+        "location": "/usr/local/lib/python3.10/site-packages"
+      },
+      "diffusers": {
+        "version": "0.38.0",
+        "location": "/usr/local/lib/python3.10/site-packages"
+      },
+      "scipy": {
+        "version": "1.15.3",
+        "location": "/usr/local/lib/python3.10/site-packages"
+      },
+      "nuplan-devkit": {
+        "version": "1.2.0",
+        "location": "/usr/local/lib/python3.10/site-packages"
+      },
+      "flash-attn": {
+        "installed": false
+      },
+      "apex": {
+        "installed": false
+      }
+    }
+  },
+  "vendor_distributions": {
+    "triton": "3.0.0+ppu1.7.0.oe",
+    "torchmetrics": "1.9.0",
+    "pytorch-lightning": "2.6.1",
+    "torch": "2.4.0",
+    "torchvision": "0.19.0",
+    "torchdata": "0.9.0",
+    "torchaudio": "2.4.0",
+    "torchtext": "0.18.0"
+  },
+  "torch_build": {
+    "file": "/usr/local/lib/python3.10/site-packages/torch/__init__.py",
+    "version": "2.4.0",
+    "git": "36615d2dc445b0232500ca5fadc986949833ae46",
+    "cuda": "12.4",
+    "hip": null,
+    "config": "PyTorch built with:\n  - GCC 11.4\n  - C++ Version: 201703\n  - Intel(R) oneAPI Math Kernel Library Version 2021.1-Product Build 20201104 for Intel(R) 64 architecture applications\n  - Intel(R) MKL-DNN v3.4.2 (Git Hash 1137e04ec0b5251ca2b4400a4fd3c667ce843d67)\n  - OpenMP 201511 (a.k.a. OpenMP 4.5)\n  - LAPACK is enabled (usually provided by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX512\n  - CUDA Runtime 12.4\n  - NVCC architecture flags: -gencode;arch=compute_80,code=sm_80\n  - CuDNN 8.9.5  (built against CUDA 8.90.5)\n  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=12.4, CUDNN_VERSION=8.9.5, CXX_COMPILER=/usr/bin/c++, CXX_FLAGS= -D_GLIBCXX_USE_CXX11_ABI=1 -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO -DLIBKINETO_NOROCTRACER -DUSE_FBGEMM -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2 -fPIC -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Werror=range-loop-construct -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow -Wsuggest-override -Wno-psabi -Wno-error=pedantic -Wno-error=old-style-cast -Wno-missing-braces -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, FORCE_FALLBACK_CUDA_MPI=1, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=2.4.0, USE_CUDA=ON, USE_CUDNN=ON, USE_CUSPARSELT=OFF, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_GLOO=ON, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=ON, USE_NCCL=True, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, USE_ROCM_KERNEL_ASSERT=OFF, \n",
+    "device": "PPU-ZW810E",
+    "device_count": 1,
+    "tf32_matmul": false,
+    "tf32_cudnn": true,
+    "bf16_reduced": true,
+    "fp16_reduced": true
+  },
+  "import_observations": [
+    "IMPORT flash_attn ModuleNotFoundError No module named 'flash_attn'",
+    "IMPORT flash_attn_2_cuda ModuleNotFoundError No module named 'flash_attn_2_cuda'",
+    "IMPORT apex ModuleNotFoundError No module named 'apex'",
+    "IMPORT torch_ppu ModuleNotFoundError No module named 'torch_ppu'"
+  ],
+  "actual_loaded_modules": {
+    "language_attention": [
+      {
+        "class": "Qwen2Attention",
+        "module": "transformers.models.qwen2.modeling_qwen2",
+        "source": "/usr/local/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py",
+        "sha256": "1a6fab248bdd2dc99898a2baaa8ea9880068d8d229a4f50a90ae4429ccd5ab08"
+      }
+    ],
+    "language_attn_classes": [
+      "Qwen2Attention"
+    ],
+    "language_impl": "eager",
+    "vision_attention": {
+      "class": "InternAttention",
+      "module": "transformers_modules.ReCogDrive-VLM-2B.modeling_intern_vit",
+      "source": "/mnt/workspace/ReCogDrive/1026-interface_teacher_portable/verification/native_raw_train_smoke/runtime/teacher_export/hf_modules_cache/transformers_modules/ReCogDrive-VLM-2B/modeling_intern_vit.py",
+      "sha256": "1978e330ea5533dda4d1379096aded271fc741347fc48cb4924846b56a2a6a4b"
+    },
+    "vision_flash": [
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false,
+      false
+    ],
+    "norms": {
+      "vision_norm1": {
+        "class": "LayerNorm",
+        "module": "torch.nn.modules.normalization",
+        "source": "/usr/local/lib/python3.10/site-packages/torch/nn/modules/normalization.py",
+        "sha256": "2a534a6b1d5ce386178d94ef90630f322dd6dbe02e466e69f715faacbc2a2e35"
+      },
+      "vision_norm2": {
+        "class": "LayerNorm",
+        "module": "torch.nn.modules.normalization",
+        "source": "/usr/local/lib/python3.10/site-packages/torch/nn/modules/normalization.py",
+        "sha256": "2a534a6b1d5ce386178d94ef90630f322dd6dbe02e466e69f715faacbc2a2e35"
+      },
+      "language_input": {
+        "class": "Qwen2RMSNorm",
+        "module": "transformers.models.qwen2.modeling_qwen2",
+        "source": "/usr/local/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py",
+        "sha256": "1a6fab248bdd2dc99898a2baaa8ea9880068d8d229a4f50a90ae4429ccd5ab08"
+      },
+      "language_post": {
+        "class": "Qwen2RMSNorm",
+        "module": "transformers.models.qwen2.modeling_qwen2",
+        "source": "/usr/local/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py",
+        "sha256": "1a6fab248bdd2dc99898a2baaa8ea9880068d8d229a4f50a90ae4429ccd5ab08"
+      },
+      "language_final": {
+        "class": "Qwen2RMSNorm",
+        "module": "transformers.models.qwen2.modeling_qwen2",
+        "source": "/usr/local/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py",
+        "sha256": "1a6fab248bdd2dc99898a2baaa8ea9880068d8d229a4f50a90ae4429ccd5ab08"
+      }
+    },
+    "dtype": {
+      "VLM": "torch.bfloat16",
+      "projector": "torch.float32",
+      "head": "torch.float32"
+    },
+    "read_only_denied": []
+  },
+  "effective_forward_state": {
+    "pid": 816178,
+    "checkpoint_sha": "23fb949b10387efeff87e093703d5faf41b61b9e5ead16d4076661e3c7c08a20",
+    "TF32_matmul": false,
+    "TF32_cudnn": false,
+    "BF16_reduction": true,
+    "autocast": false,
+    "LLM_attention_class": "Qwen2Attention"
+  },
+  "PPU_SDK": {
+    "release": "2.0.0-715aa1",
+    "source": "Original PPU /usr/local/PPU_SDK/release.yaml, original record 2371"
+  },
+  "single_scene_full_chain": {
+    "token": "0002267a294e52a7",
+    "population": "train",
+    "sequence": 2800,
+    "valid": 2793,
+    "padding": 7,
+    "image": 2304,
+    "validtext": 489,
+    "image_metadata": {
+      "data_path": "2021.08.17.14.32.33_veh-08_00016_00354/CAM_F0/7748b04b25de58be.jpg"
+    },
+    "patches": 9,
+    "pixels_FP32": {
+      "shape": [
+        9,
+        3,
+        448,
+        448
+      ],
+      "dtype": "torch.float32",
+      "sha256": "dd60c99b68580be8e5240951069e390b683a5c28bb8e05125a0bd649c73cd55d"
+    },
+    "pixels_BF16": {
+      "shape": [
+        9,
+        3,
+        448,
+        448
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "f0d5c4a3814c428ac6cca1a0ec5293c5d624fe2d5669c926cc9d3c594e7ab4ac"
+    },
+    "input_tensors": {
+      "pixel_values": {
+        "shape": [
+          9,
+          3,
+          448,
+          448
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "f0d5c4a3814c428ac6cca1a0ec5293c5d624fe2d5669c926cc9d3c594e7ab4ac"
+      },
+      "input_ids": {
+        "shape": [
+          1,
+          2800
+        ],
+        "dtype": "torch.int64",
+        "sha256": "f47363f01c681976fa54b1911f3db310a3f474a942b8bcae86df74974105de37"
+      },
+      "attention_mask": {
+        "shape": [
+          1,
+          2800
+        ],
+        "dtype": "torch.int64",
+        "sha256": "327128d0b57d5d5888ab4f01d5f9c759b37539a94f0029106ab5e30306446d7e"
+      },
+      "position_ids": {
+        "shape": [
+          1,
+          2800
+        ],
+        "dtype": "torch.int64",
+        "sha256": "6a66ecc3aee4ddf1751c21598346235104f5d19a961df6abb94feb272e0ef307"
+      },
+      "image_flags": {
+        "shape": [
+          9
+        ],
+        "dtype": "torch.int64",
+        "sha256": "df070c0849900928e1e85833cce32020c89d2303a9e960510c3c3b79746448b7"
+      }
+    },
+    "role_masks": {
+      "image": {
+        "shape": [
+          2800
+        ],
+        "dtype": "torch.bool",
+        "sha256": "621c053c24b6db399240153747c0cb18cfe1c40daf1f6a7c344214f1ef1ed5e6"
+      },
+      "validtext": {
+        "shape": [
+          2800
+        ],
+        "dtype": "torch.bool",
+        "sha256": "9301bb7936486d9b956679b1902cbdd095f94abce86e44dee01f605d9b886db9"
+      },
+      "padding": {
+        "shape": [
+          2800
+        ],
+        "dtype": "torch.bool",
+        "sha256": "bbdfe78369f0d4464d26c1936f2e1bf8958a8856a444d0177afd20e043af3e28"
+      }
+    },
+    "padding_side": "left",
+    "auxiliary": {
+      "history_trajectory": {
+        "shape": [
+          4,
+          3
+        ],
+        "dtype": "torch.float32",
+        "sha256": "b1819fc792ee0380343de7a91d61c7442728bf4373e82e8c9355c9df530a723f"
+      },
+      "high_command_one_hot": {
+        "shape": [
+          4
+        ],
+        "dtype": "torch.float32",
+        "sha256": "6855960ee428276148fc8745625c44bde7ae835a9e2fa181cc917af9bcad0d6a"
+      },
+      "status_feature": {
+        "shape": [
+          8
+        ],
+        "dtype": "torch.float32",
+        "sha256": "5dc1484333407fc1f3d843d003c150e8188a98ee9b636cbaa06d065c0a8e8cd9"
+      }
+    },
+    "native_hidden": {
+      "shape": [
+        1,
+        2800,
+        1536
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "2ee0d4cfeb6f39b930caaecffd8c71c15daa0fd9c7dbc05c0736296db11da4ff"
+    },
+    "native_hidden_dtype": "torch.bfloat16",
+    "hidden_raw_vs_cache": {
+      "exact": true,
+      "max_abs": 0.0,
+      "relative_L2": 0.0
+    },
+    "intermediates": {
+      "vision_embedding": {
+        "shape": [
+          9,
+          1025,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "ba0df59744dadae4460575d1cf6786ffb3d5636d286f7267d57a113b2d789d74"
+      },
+      "vision_last": {
+        "shape": [
+          9,
+          1025,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "ba7dbbd0efbb5109fa9c593a28cf3528b8b6d3ed1507fa7a832e36cc7abcfc9d"
+      },
+      "bridge": {
+        "shape": [
+          9,
+          256,
+          1536
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "ca451c995817961132b472a28341c948238ff6f703875eb30c57f0bf542c973b"
+      },
+      "language_first": {
+        "shape": [
+          1,
+          2800,
+          1536
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "46e21841a065cf08ed6a0ffe307fac8e02fa8b02fd53a8a2c18b0ad7f6050e09"
+      },
+      "language_final_native": {
+        "shape": [
+          1,
+          2800,
+          1536
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "2ee0d4cfeb6f39b930caaecffd8c71c15daa0fd9c7dbc05c0736296db11da4ff"
+      }
+    },
+    "Base_interface": {
+      "shape": [
+        2800,
+        384
+      ],
+      "dtype": "torch.float32",
+      "sha256": "5b55513bee81088b4332fd2c903a8525a925f8dc28c68a0f4b3d74bb08545042"
+    },
+    "expected_Base_SHA": "5b55513bee81088b4332fd2c903a8525a925f8dc28c68a0f4b3d74bb08545042",
+    "Base_SHA_matches": true,
+    "raw_vs_cache_interface": {
+      "all": {
+        "exact": true,
+        "max_abs": 0.0,
+        "relative_L2": 0.0
+      },
+      "valid": {
+        "exact": true,
+        "max_abs": 0.0,
+        "relative_L2": 0.0
+      },
+      "padding": {
+        "exact": true,
+        "max_abs": 0.0,
+        "relative_L2": 0.0
+      }
+    },
+    "Base_raw_vs_native_hidden_f32": {
+      "exact": true,
+      "max_abs": 0.0,
+      "relative_L2": 0.0
+    },
+    "teacher_choice": 6,
+    "teacher_interface": {
+      "shape": [
+        2800,
+        384
+      ],
+      "dtype": "torch.float32",
+      "sha256": "b52891a98ece78e41cb5ac56c3b2acd7b3a722d4c8703223df2f50ae51e1d377"
+    },
+    "applied_shift": {
+      "shape": [
+        1,
+        2,
+        384
+      ],
+      "dtype": "torch.float32",
+      "sha256": "f67d0db63c33273717d898200eb8452532d100f8ba957a89886786008a2dd4fd"
+    },
+    "actual_shift_RMS": [
+      0.9953828885702458
+    ],
+    "actual_shift_rows_match_original": {
+      "exact": true,
+      "max_abs": 0.0,
+      "relative_L2": 0.0
+    },
+    "Base_trajectory_comparison": {
+      "all": {
+        "exact": true,
+        "max_abs": 0.0,
+        "relative_L2": 0.0
+      },
+      "XY_m": {
+        "exact": true,
+        "max_abs": 0.0,
+        "relative_L2": 0.0
+      },
+      "heading_rad": {
+        "exact": true,
+        "max_abs": 0.0,
+        "relative_L2": 0.0
+      }
+    },
+    "teacher_trajectory_comparison": {
+      "all": {
+        "exact": true,
+        "max_abs": 0.0,
+        "relative_L2": 0.0
+      },
+      "XY_m": {
+        "exact": true,
+        "max_abs": 0.0,
+        "relative_L2": 0.0
+      },
+      "heading_rad": {
+        "exact": true,
+        "max_abs": 0.0,
+        "relative_L2": 0.0
+      }
+    },
+    "Base_trajectory_SHA": {
+      "shape": [
+        5,
+        8,
+        3
+      ],
+      "dtype": "float32",
+      "sha256": "a39c123773739b02105f03d495d00c57eb6db1221d88609056993fd0b746ea70"
+    },
+    "teacher_trajectory_SHA": {
+      "shape": [
+        5,
+        8,
+        3
+      ],
+      "dtype": "float32",
+      "sha256": "7aee00e18efb88ef8f8004551b3ce5bae8089bf591bd59c79edeaf11c669456c"
+    },
+    "explicit_noise": {
+      "shape": [
+        5,
+        6,
+        1,
+        8,
+        3
+      ],
+      "dtype": "float32",
+      "sha256": "c39e5183f1127b0faf42e649b148743cb57a34dc70c30657f0d881a9cf210f10"
+    },
+    "scores": {
+      "rescored": true,
+      "fields": [
+        "score",
+        "no_at_fault_collisions",
+        "drivable_area_compliance",
+        "time_to_collision_within_bound",
+        "ego_progress",
+        "comfort",
+        "driving_direction_compliance"
+      ],
+      "actual": [
+        [
+          [
+            0.9094344749203042,
+            1.0,
+            1.0,
+            1.0,
+            0.78264273980873,
+            1.0,
+            1.0
+          ],
+          [
+            0.9101492846879095,
+            1.0,
+            1.0,
+            1.0,
+            0.7843582832509828,
+            1.0,
+            1.0
+          ],
+          [
+            0.907097544148041,
+            1.0,
+            1.0,
+            1.0,
+            0.7770341059552984,
+            1.0,
+            1.0
+          ],
+          [
+            0.9073254654041962,
+            1.0,
+            1.0,
+            1.0,
+            0.7775811169700709,
+            1.0,
+            1.0
+          ],
+          [
+            0.911951222469892,
+            1.0,
+            1.0,
+            1.0,
+            0.7886829339277409,
+            1.0,
+            1.0
+          ]
+        ],
+        [
+          [
+            0.9165530355494828,
+            1.0,
+            1.0,
+            1.0,
+            0.7997272853187585,
+            1.0,
+            1.0
+          ],
+          [
+            0.9178519947534444,
+            1.0,
+            1.0,
+            1.0,
+            0.8028447874082667,
+            1.0,
+            1.0
+          ],
+          [
+            0.916159369154034,
+            1.0,
+            1.0,
+            1.0,
+            0.7987824859696817,
+            1.0,
+            1.0
+          ],
+          [
+            0.9150555366445992,
+            1.0,
+            1.0,
+            1.0,
+            0.7961332879470379,
+            1.0,
+            1.0
+          ],
+          [
+            0.9175471558909347,
+            1.0,
+            1.0,
+            1.0,
+            0.8021131741382431,
+            1.0,
+            1.0
+          ]
+        ]
+      ],
+      "comparison": {
+        "exact": true,
+        "max_abs": 0.0,
+        "relative_L2": 0.0
+      }
+    }
+  },
+  "limitations": [
+    "Original PPU package list is the packages actually recorded, not a claim that pip freeze captured all historical distributions.",
+    "Historical full-chain fingerprints do not mean current host reproduced later VLM/action layers.",
+    "Original full intermediate tensors were not saved; hashes cannot reconstruct cross-platform error magnitudes."
+  ],
+  "loaded_vendor_libraries_during_original_full_replay": [
+    "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcublas.so.12.4.5.8",
+    "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcublasLt.so.12.4.5.8",
+    "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcuda.so.1",
+    "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcudart.so.12.4.127",
+    "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcudnn.so.8.9.5",
+    "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcudnn_cnn_infer.so.8.9.5",
+    "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcufft.so.11.2.1.3",
+    "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcupti.so.2024.1.1",
+    "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcurand.so.10.3.5.147",
+    "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcusparse.so.12.3.1.170",
+    "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libnccl.so.2.21.5",
+    "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libnvToolsExt.so.1.0.0",
+    "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libnvidia-ml.so.1",
+    "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libnvjpeg.so.12.3.1.117",
+    "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libacblas.so",
+    "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libacblasLt.so",
+    "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libacblas_internal.so",
+    "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libacdnn.so",
+    "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libacdnn_cnn_infer.so",
+    "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libacdnn_ops_infer.so",
+    "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libacrtc_prebuild.so",
+    "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libalippu.so",
+    "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libhg_wrapper.so",
+    "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libhggc.so",
+    "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libhggc_wrapper.so",
+    "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libhggcrt.12.0.so",
+    "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libhgml.so",
+    "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libhgrtc.so.1.0",
+    "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libhgvm.so.1.0",
+    "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libuki.so",
+    "/usr/local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so"
+  ],
+  "golden_numeric_payload": {
+    "file": "original_ppu_golden_outputs.npz",
+    "source": "/mnt/data_and_weight/WM_Group/sjc_workspace/ReCogDrive/1026-interface_teacher_portable/repo/reference/golden/train_D_C8_double_0.npz",
+    "source_sha256": "c88d3f47fe3aabbf7db5fc7466f97576394dc99143610fe001307d10da35704f",
+    "selected_existing_teacher_choice": 6,
+    "golden_array_index": 5,
+    "selection_recomputed": false,
+    "note": "Only existing Base and frozen selected teacher outputs from this single-scene golden. Not new inference or teacher generation.",
+    "arrays": {
+      "Base_trajectory": {
+        "shape": [
+          5,
+          8,
+          3
+        ],
+        "dtype": "float32",
+        "sha256": "a39c123773739b02105f03d495d00c57eb6db1221d88609056993fd0b746ea70"
+      },
+      "teacher_trajectory": {
+        "shape": [
+          5,
+          8,
+          3
+        ],
+        "dtype": "float32",
+        "sha256": "7aee00e18efb88ef8f8004551b3ce5bae8089bf591bd59c79edeaf11c669456c"
+      },
+      "Base_scores": {
+        "shape": [
+          5,
+          7
+        ],
+        "dtype": "float64",
+        "sha256": "532303ff68ba4844a07c98c71009763a53a4724904b44e36e6d57c17cfc7e40f"
+      },
+      "teacher_scores": {
+        "shape": [
+          5,
+          7
+        ],
+        "dtype": "float64",
+        "sha256": "17e2973429875989157eea0010ea24144e0eba8755ac8dd86dfd79ac48dc3ffb"
+      },
+      "applied_shift": {
+        "shape": [
+          1,
+          2,
+          384
+        ],
+        "dtype": "float32",
+        "sha256": "f67d0db63c33273717d898200eb8452532d100f8ba957a89886786008a2dd4fd"
+      }
+    }
+  },
+  "original_DLC_golden_job_context": {
+    "scope": "Original DLC golden score generation job, not the verified image tag of the raw DSW replay or current PPU process",
+    "configuration": {
+      "recorded_at": "2026-10-26T17:08:31.122Z",
+      "source_line": 544,
+      "data": {
+        "JobId": "dlclgooi3vnbfco4",
+        "Status": "Running",
+        "UserCommand": "python3 -u -B /mnt/workspace/ReCogDrive/1018-representation_repair_batch2/code/dlc_resident.py --node-dir /mnt/workspace/ReCogDrive/1018-representation_repair_batch2/resources/shared_resident_20261023_v1/node02",
+        "JobSpecs": [
+          {
+            "Image": "dsw-registry-vpc.cn-wulanchabu.cr.aliyuncs.com/cloud-dsw-user/users:u1393074507312057-1090813-20261002204511",
+            "PodCount": 1,
+            "ResourceConfig": {
+              "CPU": "176",
+              "GPU": "16",
+              "GPUType": "",
+              "Memory": "1758Gi",
+              "SharedMemory": "64Gi"
+            },
+            "Type": "Worker"
+          }
+        ],
+        "max_running_minutes": 4320
+      }
+    },
+    "scene_execution": {
+      "recorded_at": "2026-10-26T17:08:31.122Z",
+      "source_line": 544,
+      "data": {
+        "time": "2026-10-26T00:16:52.472185+00:00",
+        "started_unix": 1792973810.8562841,
+        "queue": {
+          "path": "/mnt/workspace/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/evaluation/reused_train_v1/part000/QUEUE.json",
+          "sha256": "40f82c3963a8e1b2c993155c439fab48bda7a7bc6234dfa66eaefcf9d932943c"
+        },
+        "release": {
+          "path": "/mnt/workspace/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/evaluation/reused_train_v1/part000/ROOT_RELEASE.json",
+          "sha256": "8aa3c09f33dffbc1843ea3c3c26397a10ba7aa82b5a125dca5e9e66cae6a0e1b"
+        },
+        "pid": 35229,
+        "host": "dlclgooi3vnbfco4-master-0",
+        "visible_device": "5",
+        "slot": 21
+      }
+    }
+  }
+}
