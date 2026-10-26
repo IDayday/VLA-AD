@@ -1,3 +1,5 @@
+**PPU 接续结果已返回：**[首个 block 核查与结论](PPU_FIRST_BLOCK_RESULTS.md)、[PPU_FIRST_BLOCK_TRACE.json](PPU_FIRST_BLOCK_TRACE.json)。当前视觉末层命中历史 PPU；后续首个分歧为 block 0 的 `norm1`。全链仍未完成对齐。
+
 **A800 已完成真实 C 的精确比较和因果注入：完整 embedding 已逐位对齐，后续视觉层及接口仍不一致。** 最新结论、实际评分和下一步 PPU 算子级核查见 [A800_REAL_C_RESULTS.md](A800_REAL_C_RESULTS.md)。无需再次导出输入或 C；全量生成继续暂停。下文保留此前补交记录。
 
 **完整原始输入与 PPU 环境/中间量补充已一并提供：**见 [v2 数据和文档说明](../ppu-a800-embedding-audit-20261027.README.md)，压缩包含原 JPG、四帧元数据和 12 项命中旧 PPU 指纹的完整输入。

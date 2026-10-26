@@ -1,0 +1,33 @@
+{
+  "status": "TRACE_COMPLETE",
+  "path": "/mnt/workspace/project/VLA-AD-ppu-a800-handoff-20261027/reports/ppu-a800-alignment-followup-20261027/PPU_FIRST_BLOCK_TRACE.json",
+  "sha256": "53f9c409b49ee04efa326e1b62f08c54646286e25b17ce366b19ec42cac3973a",
+  "embedding_sha256": "ba0df59744dadae4460575d1cf6786ffb3d5636d286f7267d57a113b2d789d74",
+  "first_divergent_event": "norm1",
+  "parameter_matches_A800": true,
+  "control_matches_A800": {
+    "norm1_FP32_then_BF16": false,
+    "norm1_FP64_then_BF16": true
+  },
+  "vision_last": {
+    "shape": [
+      9,
+      1025,
+      1024
+    ],
+    "dtype": "torch.bfloat16",
+    "sha256": "ba7dbbd0efbb5109fa9c593a28cf3528b8b6d3ed1507fa7a832e36cc7abcfc9d"
+  },
+  "vision_last_matches_historical_PPU": true,
+  "precision": {
+    "tf32_matmul": false,
+    "tf32_cudnn": true,
+    "bf16_reduced": true,
+    "fp16_reduced": true,
+    "autocast": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": false
+  },
+  "model_retained_in_process": true,
+  "pid": 3471971
+}

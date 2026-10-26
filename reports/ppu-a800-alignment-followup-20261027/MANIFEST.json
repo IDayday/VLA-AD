@@ -6,19 +6,94 @@
   "bulk_generation_resumed": false,
   "files": [
     {
+      "path": "A800_REAL_C_RESULTS.md",
+      "bytes": 7751,
+      "sha256": "a210a4ad6bd4ca7645cf6dea4f18495ba52ce32dffba15b1f6d08752aa124833"
+    },
+    {
       "path": "PPU_EXPORT_RECEIPT.json",
       "bytes": 4877,
       "sha256": "57da3169851450acd274da8acf99856fb08146c85d0614c8745ea501b7df327c"
     },
     {
+      "path": "PPU_FIRST_BLOCK_MANIFEST.json",
+      "bytes": 2203,
+      "sha256": "cc13333c9563fd231f9568ae404d11d2a0664fc4a6fc12b134870796990a2bc6"
+    },
+    {
+      "path": "PPU_FIRST_BLOCK_RESULTS.md",
+      "bytes": 6141,
+      "sha256": "a321e861ab4482a5cc0460ec21dea0868701a2d9bc9be288d4a2fca5591996b8"
+    },
+    {
+      "path": "PPU_FIRST_BLOCK_TRACE.json",
+      "bytes": 25554,
+      "sha256": "53f9c409b49ee04efa326e1b62f08c54646286e25b17ce366b19ec42cac3973a"
+    },
+    {
+      "path": "PPU_FIRST_BLOCK_TRACE.json.sha256",
+      "bytes": 93,
+      "sha256": "e2a3b7ab34cedf38204056e5fbc46cf0be3b6dd4b258dde3420b1b569f97a38f"
+    },
+    {
+      "path": "PPU_FIRST_BLOCK_TRACE.stdout.txt",
+      "bytes": 9819,
+      "sha256": "70434ea39817e806985660aff35c3097d14f2814074fb0becbcee7446bfa0f31"
+    },
+    {
+      "path": "PPU_FIRST_BLOCK_TRACE_SUMMARY.json",
+      "bytes": 1016,
+      "sha256": "170660b2b8e34df55c195abcc4f4473ff8e81a6a73bc52231fa7f889c5f78ada"
+    },
+    {
+      "path": "PPU_NORM1_CONTROLS.json",
+      "bytes": 11437,
+      "sha256": "fbbe2ca2e1b6833b896a77f30e7b4fd67f1256fe50920507011f0551b922e3e5"
+    },
+    {
+      "path": "PPU_VISION_PARAMETER_METADATA.json",
+      "bytes": 84745,
+      "sha256": "f399bd095b7c9b20510834982d67439d703bdd96fc1472d6499dd141152da7b2"
+    },
+    {
       "path": "README.md",
-      "bytes": 9309,
-      "sha256": "f515e278fca36e960f99579b6466e7e4c6bbee36b665663a7407d57a18997dfa"
+      "bytes": 9914,
+      "sha256": "8151b96d991a6efe89f15ead35362b994f4b076ec41c5ee83483efb9be6b20bf"
+    },
+    {
+      "path": "REAL_C_RESULT_MANIFEST.json",
+      "bytes": 1884,
+      "sha256": "c5eb50861a1c9d7bdf0cfc97863cec023f926ef221d8308cf0029c909f6e77ea"
     },
     {
       "path": "REMOTE_VERIFICATION.json",
       "bytes": 489,
       "sha256": "248c731ff89ec48918e351d0c93374d9ddfaa901cdc674fd4d82e449c3a8d151"
+    },
+    {
+      "path": "diagnostic_source/inject_ppu_native_C.py",
+      "bytes": 9841,
+      "sha256": "332b3ad12653b5531c3b541d363d3bfdeeed2b7031e8c38478ad04924ca8abca"
+    },
+    {
+      "path": "diagnostic_source/run_first_vision_block_trace.py",
+      "bytes": 2240,
+      "sha256": "97fed5078a6f843b5524653a69b23e271d5406f81c2dc6925bbc782d7a9d3c31"
+    },
+    {
+      "path": "diagnostic_source/run_ppu_first_block_trace.py",
+      "bytes": 8058,
+      "sha256": "cb2f5dba223fd2462e81e1b0f94e08d0d3e3b76d052c25063c71fcd77d7922e8"
+    },
+    {
+      "path": "diagnostic_source/supplement_ppu_norm1_comparisons.py",
+      "bytes": 4072,
+      "sha256": "fad6714384a590090ee1e82d27f7f9547728fd01f2c1cd1e2a6b490293611126"
+    },
+    {
+      "path": "evidence/A800_FIRST_BLOCK_REFERENCE.json",
+      "bytes": 8494,
+      "sha256": "5b32c67159224a92d340faa6ae759267993bf13213ff28c155da587688fdf51a"
     },
     {
       "path": "evidence/A800_tf32_false.json",
@@ -51,9 +126,34 @@
       "sha256": "5b7929f39d5155c9ad742528829be8bbc3cd166ae1f39d57a46f12679721faf2"
     },
     {
+      "path": "evidence/EXACT_C_AND_PATCH_COMPARISON.json",
+      "bytes": 6517,
+      "sha256": "d978bdd1aff6260cf4d1cc91af8c62a7b102f1b36c329fc824f314970cfde04b"
+    },
+    {
+      "path": "evidence/FIRST_BLOCK_VERIFICATION.json",
+      "bytes": 336,
+      "sha256": "953d3ed2b9d29482181f19807cf115f3e52cb63bc397ead94a154bff2ed33f7e"
+    },
+    {
+      "path": "evidence/PAIRED_SINGLE_SCENE_SCORES.json",
+      "bytes": 2699,
+      "sha256": "0f6b68d09e10d232554eed030062e39fcd2b015d3218a0094f5011d695689c61"
+    },
+    {
       "path": "evidence/PATCH_RECEIPT.json",
       "bytes": 449,
       "sha256": "66b91185bcbd9154faf1094eda0a34fb7bd2592c8c049c83de7b1d864f29788a"
+    },
+    {
+      "path": "evidence/REAL_C_DOWNLOAD_RECEIPT.json",
+      "bytes": 1783,
+      "sha256": "18d48df1c3de7a6cb6327cd83e48a58bbf95f4f487debd767e82bda3f44a0ae4"
+    },
+    {
+      "path": "evidence/REAL_C_INJECTION_RESULT.json",
+      "bytes": 62264,
+      "sha256": "1e0ce434bd03ea4e8f6b029cb9be76ad076c751db16248d3083198b78609cd52"
     },
     {
       "path": "export_ppu_native_C.py",
@@ -69,8 +169,15 @@
       "path": "ppu_native_no_bias.npz.sha256",
       "bytes": 89,
       "sha256": "b85790a172f5bc6b3744fbddc4a38a7f695f2d8f3789046fb6d9c6d1bef07524"
+    },
+    {
+      "path": "trace_first_vision_block.py",
+      "bytes": 5997,
+      "sha256": "3b02f01636c2c1ed93434f87febd3a10a6b204c3a230407a01ffd6c73d952698"
     }
   ],
   "ppu_native_C_payload_delivered": true,
-  "ppu_export_based_on_commit": "32bafef"
+  "ppu_export_based_on_commit": "32bafef",
+  "ppu_first_block_trace_delivered": true,
+  "first_divergent_after_common_embedding": "block0.norm1"
 }

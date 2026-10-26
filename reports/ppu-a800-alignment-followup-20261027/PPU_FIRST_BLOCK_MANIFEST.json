@@ -1,0 +1,67 @@
+{
+  "schema": 1,
+  "incoming_audit_commit": "5cf8440",
+  "frozen_teacher_commit": "6bb7119583513094a169b4c2f2dc2a05ac293aa3",
+  "scene": "0002267a294e52a7",
+  "first_divergent_event": "norm1",
+  "current_vision_last_matches_historical_PPU": true,
+  "full_chain_alignment_complete": false,
+  "bulk_generation_resumed": false,
+  "files": [
+    {
+      "path": "PPU_FIRST_BLOCK_TRACE.json",
+      "bytes": 25554,
+      "sha256": "53f9c409b49ee04efa326e1b62f08c54646286e25b17ce366b19ec42cac3973a"
+    },
+    {
+      "path": "PPU_FIRST_BLOCK_TRACE.json.sha256",
+      "bytes": 93,
+      "sha256": "e2a3b7ab34cedf38204056e5fbc46cf0be3b6dd4b258dde3420b1b569f97a38f"
+    },
+    {
+      "path": "PPU_FIRST_BLOCK_TRACE_SUMMARY.json",
+      "bytes": 1016,
+      "sha256": "170660b2b8e34df55c195abcc4f4473ff8e81a6a73bc52231fa7f889c5f78ada"
+    },
+    {
+      "path": "PPU_FIRST_BLOCK_TRACE.stdout.txt",
+      "bytes": 9819,
+      "sha256": "70434ea39817e806985660aff35c3097d14f2814074fb0becbcee7446bfa0f31"
+    },
+    {
+      "path": "PPU_FIRST_BLOCK_RESULTS.md",
+      "bytes": 6141,
+      "sha256": "a321e861ab4482a5cc0460ec21dea0868701a2d9bc9be288d4a2fca5591996b8"
+    },
+    {
+      "path": "PPU_NORM1_CONTROLS.json",
+      "bytes": 11437,
+      "sha256": "fbbe2ca2e1b6833b896a77f30e7b4fd67f1256fe50920507011f0551b922e3e5"
+    },
+    {
+      "path": "PPU_VISION_PARAMETER_METADATA.json",
+      "bytes": 84745,
+      "sha256": "f399bd095b7c9b20510834982d67439d703bdd96fc1472d6499dd141152da7b2"
+    },
+    {
+      "path": "trace_first_vision_block.py",
+      "bytes": 5997,
+      "sha256": "3b02f01636c2c1ed93434f87febd3a10a6b204c3a230407a01ffd6c73d952698"
+    },
+    {
+      "path": "diagnostic_source/run_ppu_first_block_trace.py",
+      "bytes": 8058,
+      "sha256": "cb2f5dba223fd2462e81e1b0f94e08d0d3e3b76d052c25063c71fcd77d7922e8"
+    },
+    {
+      "path": "diagnostic_source/supplement_ppu_norm1_comparisons.py",
+      "bytes": 4072,
+      "sha256": "fad6714384a590090ee1e82d27f7f9547728fd01f2c1cd1e2a6b490293611126"
+    },
+    {
+      "path": "evidence/A800_FIRST_BLOCK_REFERENCE.json",
+      "bytes": 8494,
+      "sha256": "5b32c67159224a92d340faa6ae759267993bf13213ff28c155da587688fdf51a"
+    }
+  ]
+}

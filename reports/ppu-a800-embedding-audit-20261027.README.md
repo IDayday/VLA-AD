@@ -1,3 +1,5 @@
+**最新 PPU 算子核查：**[结果说明](ppu-a800-alignment-followup-20261027/PPU_FIRST_BLOCK_RESULTS.md)、[PPU_FIRST_BLOCK_TRACE.json](ppu-a800-alignment-followup-20261027/PPU_FIRST_BLOCK_TRACE.json)。当前 PPU 视觉末层命中历史 SHA；相同 embedding 后首个分歧为 block 0 的 `norm1`。
+
 # PPU 与 A800 单场景特征核查：真实数据、张量和诊断
 
 已交付固定场景 `0002267a294e52a7` 的原始数据和完整实际模型输入，以及真正的 PPU 原生 BF16 无 bias 卷积张量 C。原教师冻结提交为 `6bb7119583513094a169b4c2f2dc2a05ac293aa3`。
