@@ -1,0 +1,419 @@
+Initializing backbone of type: 'internvl' from path: '/mnt/project/recogdrive-representation-teacher-1/local/models/ReCogDrive-VLM-2B'
+`torch_dtype` is deprecated! Use `dtype` instead!
+/mnt/project/recogdrive-ppu-controlled-visual-20261026/common_packages/timm/models/layers/__init__.py:48: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers
+  warnings.warn(f"Importing from {__name__} is deprecated, please import via timm.layers", FutureWarning)
+InternVL model configured.
+Backbone 'internvl' loaded successfully on device 'cuda'.
+{
+  "schema": 1,
+  "scene": "0002267a294e52a7",
+  "torch": "2.4.0+cu124",
+  "torch_git": "e4ee3be4063b7c430974252fdf7db42273388d86",
+  "device": "NVIDIA A800-SXM4-80GB",
+  "precision": {
+    "tf32_matmul": false,
+    "tf32_cudnn": true,
+    "bf16_reduced": true,
+    "fp16_reduced": true,
+    "autocast": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": false
+  },
+  "parameters": {
+    "embedding.class_embedding": {
+      "shape": [
+        1,
+        1,
+        1024
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "2ffe312fbc671217cf3cd0f98faee072604336ffe387466c5074015cbddd690e"
+    },
+    "embedding.position_embedding": {
+      "shape": [
+        1,
+        1025,
+        1024
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "49f52f43097694aece525b5d9cac260260fdc7415fcaf6f3ef04c1834a329498"
+    },
+    "embedding.patch_embedding.weight": {
+      "shape": [
+        1024,
+        3,
+        14,
+        14
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "425967ed2a49b8bd8b855b2e409bc62610668319252b6c19456872cf096cf1b9"
+    },
+    "embedding.patch_embedding.bias": {
+      "shape": [
+        1024
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "22c02c387fde92e85b5ce2fcad6790c68f5dbde2d46d2cda96a02870a48f0069"
+    },
+    "block0.ls1": {
+      "shape": [
+        1024
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "577de743b3d4041ae5b2aecbdae3a58727d878fd8282938273ed625062ec1f5b"
+    },
+    "block0.ls2": {
+      "shape": [
+        1024
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "616030f838a7cab75fc912dcd4af2b1192ae2e28e4e8dea8e2cdc4e63093d822"
+    },
+    "block0.attn.qkv.weight": {
+      "shape": [
+        3072,
+        1024
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "1c10737a8c838f4cc18d4c7f55f017b848a0eb979bcc1a23550229afcce4f6f5"
+    },
+    "block0.attn.qkv.bias": {
+      "shape": [
+        3072
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "69ad4a7673c03a891264e23468ea1fd94eb701acd14fbf40db7291f6cf35dc18"
+    },
+    "block0.attn.proj.weight": {
+      "shape": [
+        1024,
+        1024
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "d186f10be90d10dd9d6ddd7551eaf1a80f1d6ed3ee231819e527874d072816ba"
+    },
+    "block0.attn.proj.bias": {
+      "shape": [
+        1024
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "8a269e59b83c63ac01bb852e194399d139ef7a6c5b0270436a7949191246df01"
+    },
+    "block0.mlp.fc1.weight": {
+      "shape": [
+        4096,
+        1024
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "c393c72ce7efba20fd0196bc86a0754101c81e363fb36bb8dc7c007d2aa23f19"
+    },
+    "block0.mlp.fc1.bias": {
+      "shape": [
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "901802d992a566b2e43fbf44aa11a044c6ff5cf09009e99254e38bee9b9fd257"
+    },
+    "block0.mlp.fc2.weight": {
+      "shape": [
+        1024,
+        4096
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "b3e8d4753c67f92ce813fd0a2c1260504dd98ee688334058d1e54c144c7236ef"
+    },
+    "block0.mlp.fc2.bias": {
+      "shape": [
+        1024
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "5d0abd7307560f2d2b2b67ef613ee211a876f01baabec15170109bc53940a16f"
+    },
+    "block0.norm1.weight": {
+      "shape": [
+        1024
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "5d0a8e2d541ad7773802bfb56790a6545ace1f77a01c360b0d4a2bee9c1b07f9"
+    },
+    "block0.norm1.bias": {
+      "shape": [
+        1024
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "45f0aa070632f6d2c0e1e21133c3c1ea5aacda29ae2e60bb9fd689983f9a892f"
+    },
+    "block0.norm2.weight": {
+      "shape": [
+        1024
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "c08982cca8b9927c8601183a998f2ceb0f7ef796eceb5c3d1f9ca91f71283c07"
+    },
+    "block0.norm2.bias": {
+      "shape": [
+        1024
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "20b339933f2bfd512c86baf14f352a85a11a534ae024141cd3f9a370ae68a4a3"
+    }
+  },
+  "events": [
+    {
+      "name": "norm1",
+      "tensor": {
+        "shape": [
+          9,
+          1025,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "5030ad21c11c8533d7db00b8fa6f84cca5f9fc754dbe632e399a516f04bcc839"
+      }
+    },
+    {
+      "name": "attn.qkv",
+      "tensor": {
+        "shape": [
+          9,
+          1025,
+          3072
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "6a2a90ca02233cdc6022859b24244480946b2ef7dbf4cc536058b531c5b293db"
+      }
+    },
+    {
+      "name": "attn.attn_drop",
+      "tensor": {
+        "shape": [
+          9,
+          16,
+          1025,
+          1025
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "2a02d8d804d82555ae42993d3b8363a5a2bda19638ec91e853ac5b71bbc7a71d"
+      }
+    },
+    {
+      "name": "attn.proj",
+      "tensor": {
+        "shape": [
+          9,
+          1025,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "4d0876066d1fac6079f0314f2551736c9f03e94586f32441811d13d6ba325cda"
+      }
+    },
+    {
+      "name": "attn",
+      "tensor": {
+        "shape": [
+          9,
+          1025,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "4d0876066d1fac6079f0314f2551736c9f03e94586f32441811d13d6ba325cda"
+      }
+    },
+    {
+      "name": "drop_path1",
+      "tensor": {
+        "shape": [
+          9,
+          1025,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "3f98035532257c35bc8f95b652d30118003fef3509267a342bd3aaffef9848a6"
+      }
+    },
+    {
+      "name": "norm2",
+      "tensor": {
+        "shape": [
+          9,
+          1025,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "b04f1587c026c51c150d1cd918eb8664dc1ac68f90cc16cedd571bc30fac2bf4"
+      }
+    },
+    {
+      "name": "mlp.fc1",
+      "tensor": {
+        "shape": [
+          9,
+          1025,
+          4096
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "cc0587756869cb74a73a66d466b0290309830be876032513af936726916a5c16"
+      }
+    },
+    {
+      "name": "mlp.act",
+      "tensor": {
+        "shape": [
+          9,
+          1025,
+          4096
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "c3b49ef7c72c7178c2c367fa6bd7c0a31d7e44b3e51342cca4152224267d1e39"
+      }
+    },
+    {
+      "name": "mlp.fc2",
+      "tensor": {
+        "shape": [
+          9,
+          1025,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "2efd6b391fe7e697a8529b34f3751e926146b1b398e7ac5c314ac1fc2bd25fcc"
+      }
+    },
+    {
+      "name": "mlp",
+      "tensor": {
+        "shape": [
+          9,
+          1025,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "2efd6b391fe7e697a8529b34f3751e926146b1b398e7ac5c314ac1fc2bd25fcc"
+      }
+    },
+    {
+      "name": "drop_path2",
+      "tensor": {
+        "shape": [
+          9,
+          1025,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "7485fb15aba32e985c9b5b59a4ba81ebbd3ce0f4cb339eaf0e612f5fdb06988e"
+      }
+    },
+    {
+      "name": "block0_output",
+      "tensor": {
+        "shape": [
+          9,
+          1025,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "sha256": "78ad5b01cc788d03e2105be96ae364efe7cb1865dd3a1325abdce6bd361cbb5a"
+      }
+    }
+  ],
+  "controls": {
+    "norm1_FP32_then_BF16": {
+      "shape": [
+        9,
+        1025,
+        1024
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "5030ad21c11c8533d7db00b8fa6f84cca5f9fc754dbe632e399a516f04bcc839"
+    },
+    "norm1_FP64_then_BF16": {
+      "shape": [
+        9,
+        1025,
+        1024
+      ],
+      "dtype": "torch.bfloat16",
+      "sha256": "c2d3724196d0317280585c3e838ea6bc0835507ae04b2790b07ef465c999757e"
+    }
+  },
+  "diagnostic_only": true,
+  "bulk_generation_resumed": false,
+  "vision_source_sha256": "1978e330ea5533dda4d1379096aded271fc741347fc48cb4924846b56a2a6a4b",
+  "embedding": {
+    "shape": [
+      9,
+      1025,
+      1024
+    ],
+    "dtype": "torch.bfloat16",
+    "sha256": "ba0df59744dadae4460575d1cf6786ffb3d5636d286f7267d57a113b2d789d74"
+  },
+  "vision_last": {
+    "shape": [
+      9,
+      1025,
+      1024
+    ],
+    "dtype": "torch.bfloat16",
+    "sha256": "32ee715174c5a3c02006b92c819b3a4397325ef8c9b116d0d53ddb27ea646dea"
+  },
+  "vision_last_matches_historical_PPU": false,
+  "flags_and_parameter_versions_preserved": true,
+  "parameter_matches_A800": {
+    "embedding.class_embedding": true,
+    "embedding.position_embedding": true,
+    "embedding.patch_embedding.weight": true,
+    "embedding.patch_embedding.bias": true,
+    "block0.ls1": true,
+    "block0.ls2": true,
+    "block0.attn.qkv.weight": true,
+    "block0.attn.qkv.bias": true,
+    "block0.attn.proj.weight": true,
+    "block0.attn.proj.bias": true,
+    "block0.mlp.fc1.weight": true,
+    "block0.mlp.fc1.bias": true,
+    "block0.mlp.fc2.weight": true,
+    "block0.mlp.fc2.bias": true,
+    "block0.norm1.weight": true,
+    "block0.norm1.bias": true,
+    "block0.norm2.weight": true,
+    "block0.norm2.bias": true
+  },
+  "event_matches_A800": {
+    "norm1": false,
+    "attn.qkv": false,
+    "attn.attn_drop": false,
+    "attn.proj": false,
+    "attn": false,
+    "drop_path1": false,
+    "norm2": false,
+    "mlp.fc1": false,
+    "mlp.act": false,
+    "mlp.fc2": false,
+    "mlp": false,
+    "drop_path2": false,
+    "block0_output": false
+  },
+  "first_divergent_event": "norm1",
+  "control_matches_A800": {
+    "norm1_FP32_then_BF16": false,
+    "norm1_FP64_then_BF16": true
+  },
+  "reference_precision": {
+    "tf32_matmul": false,
+    "tf32_cudnn": true,
+    "bf16_reduced": true,
+    "fp16_reduced": true,
+    "autocast": false,
+    "cudnn_benchmark": false,
+    "cudnn_deterministic": false
+  }
+}
+{
+  "status": "CONTROLLED_VISUAL_CHECK_COMPLETE",
+  "first_divergent_event": "norm1",
+  "vision_last_matches_historical_PPU": false,
+  "portable_conditions_match": true,
+  "hardware_only_cause_proven": false
+}

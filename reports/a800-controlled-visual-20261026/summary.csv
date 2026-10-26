@@ -1,0 +1,2 @@
+name,gpu,state,returncode,pid,log
+controlled_visual_001,GPU-30077d20-8876-bcfe-609e-ee7c140e6770,done,0,1898539,/mnt/project/recogdrive-ppu-controlled-visual-20261026/dispatch/controlled_visual_001/training-vlawm-tsinghua-zt6/logs/controlled_visual_001.log

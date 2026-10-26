@@ -1,0 +1,698 @@
+{
+  "schema": 1,
+  "status": "PORTABLE_MATCH_BACKEND_DIFFERENCES_DECLARED",
+  "portable_conditions_match": true,
+  "portable_differences": [],
+  "input_identity_validation": {
+    "all_12_actual_inputs_match_repository": true,
+    "per_tensor": {
+      "pixel_values": true,
+      "input_ids": true,
+      "attention_mask": true,
+      "position_ids": true,
+      "image_flags": true,
+      "pixels_FP32": true,
+      "history_trajectory": true,
+      "high_command_one_hot": true,
+      "status_feature": true,
+      "role_image": true,
+      "role_validtext": true,
+      "role_padding": true
+    },
+    "frozen_commit_matches": true,
+    "weights_hashed_in_this_capture": true,
+    "model_arithmetic_executed": false,
+    "precision_unchanged": true
+  },
+  "backend_differences": [
+    {
+      "field": "PPU_SDK_release",
+      "reason": "JSON_type_mismatch",
+      "expected": "version: 2.1.0-a5f865\n",
+      "actual": null
+    },
+    {
+      "field": "all_distribution_versions.AcclEP-P",
+      "reason": "missing_field",
+      "expected": "2.1.0.0+b235f284"
+    },
+    {
+      "field": "all_distribution_versions.appdirs",
+      "reason": "missing_field",
+      "expected": "1.4.4"
+    },
+    {
+      "field": "all_distribution_versions.autocommand",
+      "reason": "unexpected_field",
+      "actual": "2.2.2"
+    },
+    {
+      "field": "all_distribution_versions.backports.tarfile",
+      "reason": "unexpected_field",
+      "actual": "1.2.0"
+    },
+    {
+      "field": "all_distribution_versions.cloud-tpu-client",
+      "reason": "missing_field",
+      "expected": "0.10"
+    },
+    {
+      "field": "all_distribution_versions.coloredlogs",
+      "reason": "missing_field",
+      "expected": "15.0.1"
+    },
+    {
+      "field": "all_distribution_versions.dataclasses",
+      "reason": "missing_field",
+      "expected": "0.6"
+    },
+    {
+      "field": "all_distribution_versions.dateparser",
+      "reason": "missing_field",
+      "expected": "1.1.7"
+    },
+    {
+      "field": "all_distribution_versions.distro",
+      "reason": "missing_field",
+      "expected": "1.9.0"
+    },
+    {
+      "field": "all_distribution_versions.elastic-transport",
+      "reason": "missing_field",
+      "expected": "8.4.0"
+    },
+    {
+      "field": "all_distribution_versions.elasticsearch",
+      "reason": "missing_field",
+      "expected": "8.5.3"
+    },
+    {
+      "field": "all_distribution_versions.et_xmlfile",
+      "reason": "missing_field",
+      "expected": "2.0.0"
+    },
+    {
+      "field": "all_distribution_versions.expecttest",
+      "reason": "missing_field",
+      "expected": "0.2.1"
+    },
+    {
+      "field": "all_distribution_versions.flash-attn",
+      "reason": "missing_field",
+      "expected": "2.8.2+v0.1.0.ppu2.1.0.oe"
+    },
+    {
+      "field": "all_distribution_versions.flash_attn",
+      "reason": "unexpected_field",
+      "actual": "2.7.4.post1"
+    },
+    {
+      "field": "all_distribution_versions.func-timeout",
+      "reason": "missing_field",
+      "expected": "4.3.5"
+    },
+    {
+      "field": "all_distribution_versions.func_timeout",
+      "reason": "unexpected_field",
+      "actual": "4.3.5"
+    },
+    {
+      "field": "all_distribution_versions.future",
+      "reason": "missing_field",
+      "expected": "0.18.2"
+    },
+    {
+      "field": "all_distribution_versions.google-api-core",
+      "reason": "missing_field",
+      "expected": "1.34.1"
+    },
+    {
+      "field": "all_distribution_versions.google-api-python-client",
+      "reason": "missing_field",
+      "expected": "1.8.0"
+    },
+    {
+      "field": "all_distribution_versions.google-auth-httplib2",
+      "reason": "missing_field",
+      "expected": "0.2.0"
+    },
+    {
+      "field": "all_distribution_versions.googleapis-common-protos",
+      "reason": "missing_field",
+      "expected": "1.63.0"
+    },
+    {
+      "field": "all_distribution_versions.gsplat",
+      "expected": "1.5.3+v0.1.0.ppu2.1.0.ce",
+      "actual": "1.5.3"
+    },
+    {
+      "field": "all_distribution_versions.httplib2",
+      "reason": "missing_field",
+      "expected": "0.22.0"
+    },
+    {
+      "field": "all_distribution_versions.humanfriendly",
+      "reason": "missing_field",
+      "expected": "10.0"
+    },
+    {
+      "field": "all_distribution_versions.hypothesis",
+      "reason": "missing_field",
+      "expected": "6.103.4"
+    },
+    {
+      "field": "all_distribution_versions.importlib_metadata",
+      "expected": "8.7.0",
+      "actual": "8.0.0"
+    },
+    {
+      "field": "all_distribution_versions.inflect",
+      "reason": "unexpected_field",
+      "actual": "7.3.1"
+    },
+    {
+      "field": "all_distribution_versions.intel-openmp",
+      "reason": "missing_field",
+      "expected": "2021.1.1"
+    },
+    {
+      "field": "all_distribution_versions.iopath",
+      "reason": "missing_field",
+      "expected": "0.1.10"
+    },
+    {
+      "field": "all_distribution_versions.jaraco.collections",
+      "reason": "unexpected_field",
+      "actual": "5.1.0"
+    },
+    {
+      "field": "all_distribution_versions.jaraco.context",
+      "reason": "unexpected_field",
+      "actual": "5.3.0"
+    },
+    {
+      "field": "all_distribution_versions.jaraco.functools",
+      "reason": "unexpected_field",
+      "actual": "4.0.1"
+    },
+    {
+      "field": "all_distribution_versions.jaraco.text",
+      "reason": "unexpected_field",
+      "actual": "3.12.1"
+    },
+    {
+      "field": "all_distribution_versions.jupyter_builder",
+      "reason": "missing_field",
+      "expected": "1.2.0"
+    },
+    {
+      "field": "all_distribution_versions.mkl",
+      "reason": "missing_field",
+      "expected": "2021.1.1"
+    },
+    {
+      "field": "all_distribution_versions.mkl-include",
+      "reason": "missing_field",
+      "expected": "2021.1.1"
+    },
+    {
+      "field": "all_distribution_versions.model-prof",
+      "reason": "missing_field",
+      "expected": "0.1.3"
+    },
+    {
+      "field": "all_distribution_versions.more-itertools",
+      "reason": "unexpected_field",
+      "actual": "10.3.0"
+    },
+    {
+      "field": "all_distribution_versions.nest-asyncio2",
+      "reason": "missing_field",
+      "expected": "1.7.2"
+    },
+    {
+      "field": "all_distribution_versions.nuplan-devkit",
+      "expected": "1.1.1",
+      "actual": "1.2.2"
+    },
+    {
+      "field": "all_distribution_versions.nvidia-cublas-cu12",
+      "expected": "12.9.2.10",
+      "actual": "12.4.5.8"
+    },
+    {
+      "field": "all_distribution_versions.nvidia-cuda-cupti-cu12",
+      "expected": "12.9.79",
+      "actual": "12.4.127"
+    },
+    {
+      "field": "all_distribution_versions.nvidia-cuda-nvrtc-cu12",
+      "expected": "12.9.86",
+      "actual": "12.4.127"
+    },
+    {
+      "field": "all_distribution_versions.nvidia-cuda-runtime-cu12",
+      "expected": "12.9.79",
+      "actual": "12.4.127"
+    },
+    {
+      "field": "all_distribution_versions.nvidia-cudnn-cu12",
+      "expected": "9.24.0.43",
+      "actual": "9.1.0.70"
+    },
+    {
+      "field": "all_distribution_versions.nvidia-cufft-cu12",
+      "expected": "11.4.1.4",
+      "actual": "11.2.1.3"
+    },
+    {
+      "field": "all_distribution_versions.nvidia-curand-cu12",
+      "expected": "10.3.10.19",
+      "actual": "10.3.5.147"
+    },
+    {
+      "field": "all_distribution_versions.nvidia-cusolver-cu12",
+      "expected": "11.7.5.82",
+      "actual": "11.6.1.9"
+    },
+    {
+      "field": "all_distribution_versions.nvidia-cusparse-cu12",
+      "expected": "12.5.10.65",
+      "actual": "12.3.1.170"
+    },
+    {
+      "field": "all_distribution_versions.nvidia-ml-py",
+      "expected": "13.610.43",
+      "actual": "13.580.82"
+    },
+    {
+      "field": "all_distribution_versions.nvidia-nccl-cu12",
+      "expected": "2.30.7",
+      "actual": "2.21.5"
+    },
+    {
+      "field": "all_distribution_versions.nvidia-nvjitlink-cu12",
+      "expected": "12.9.86",
+      "actual": "12.4.127"
+    },
+    {
+      "field": "all_distribution_versions.nvidia-nvtx-cu12",
+      "expected": "12.9.79",
+      "actual": "12.4.127"
+    },
+    {
+      "field": "all_distribution_versions.oauth2client",
+      "reason": "missing_field",
+      "expected": "4.1.3"
+    },
+    {
+      "field": "all_distribution_versions.openpyxl",
+      "reason": "missing_field",
+      "expected": "3.1.5"
+    },
+    {
+      "field": "all_distribution_versions.optree",
+      "reason": "missing_field",
+      "expected": "0.13.0"
+    },
+    {
+      "field": "all_distribution_versions.packaging",
+      "expected": "25.0",
+      "actual": "24.2"
+    },
+    {
+      "field": "all_distribution_versions.pandarallel",
+      "reason": "missing_field",
+      "expected": "1.6.5"
+    },
+    {
+      "field": "all_distribution_versions.pip",
+      "expected": "22.0.4",
+      "actual": "26.2.1"
+    },
+    {
+      "field": "all_distribution_versions.platformdirs",
+      "expected": "4.5.0",
+      "actual": "4.2.2"
+    },
+    {
+      "field": "all_distribution_versions.portalocker",
+      "reason": "missing_field",
+      "expected": "2.6.0"
+    },
+    {
+      "field": "all_distribution_versions.pytz-deprecation-shim",
+      "reason": "missing_field",
+      "expected": "0.1.0.post0"
+    },
+    {
+      "field": "all_distribution_versions.resampy",
+      "reason": "missing_field",
+      "expected": "0.4.2"
+    },
+    {
+      "field": "all_distribution_versions.setuptools",
+      "expected": "57.5.0",
+      "actual": "84.0.0"
+    },
+    {
+      "field": "all_distribution_versions.tbb",
+      "reason": "missing_field",
+      "expected": "2021.1.1"
+    },
+    {
+      "field": "all_distribution_versions.tlparse",
+      "reason": "missing_field",
+      "expected": "0.3.20"
+    },
+    {
+      "field": "all_distribution_versions.tomli",
+      "expected": "2.3.0",
+      "actual": "2.0.1"
+    },
+    {
+      "field": "all_distribution_versions.torch",
+      "expected": "2.4.0",
+      "actual": "2.5.1+cu124"
+    },
+    {
+      "field": "all_distribution_versions.torchaudio",
+      "expected": "2.4.0",
+      "actual": "2.5.1+cu124"
+    },
+    {
+      "field": "all_distribution_versions.torchdata",
+      "reason": "missing_field",
+      "expected": "0.9.0"
+    },
+    {
+      "field": "all_distribution_versions.torchtext",
+      "reason": "missing_field",
+      "expected": "0.18.0"
+    },
+    {
+      "field": "all_distribution_versions.torchvision",
+      "expected": "0.19.0",
+      "actual": "0.20.1+cu124"
+    },
+    {
+      "field": "all_distribution_versions.triton",
+      "expected": "3.0.0+ppu1.7.0.oe",
+      "actual": "3.1.0"
+    },
+    {
+      "field": "all_distribution_versions.typeguard",
+      "expected": "2.13.3",
+      "actual": "4.3.0"
+    },
+    {
+      "field": "all_distribution_versions.typing_extensions",
+      "expected": "4.15.0",
+      "actual": "4.12.2"
+    },
+    {
+      "field": "all_distribution_versions.tzlocal",
+      "reason": "missing_field",
+      "expected": "4.2"
+    },
+    {
+      "field": "all_distribution_versions.uritemplate",
+      "reason": "missing_field",
+      "expected": "3.0.1"
+    },
+    {
+      "field": "all_distribution_versions.viser",
+      "expected": "1.0.1",
+      "actual": "1.0.15"
+    },
+    {
+      "field": "all_distribution_versions.wheel",
+      "expected": "0.40.0",
+      "actual": "0.45.1"
+    },
+    {
+      "field": "all_distribution_versions.zipp",
+      "expected": "3.23.0",
+      "actual": "3.19.2"
+    },
+    {
+      "field": "cpu_initial_seed_for_record_only",
+      "expected": 894398283103237715,
+      "actual": 549536175895872815
+    },
+    {
+      "field": "cudnn_runtime_version",
+      "expected": 8905,
+      "actual": 90700
+    },
+    {
+      "field": "device",
+      "expected": "PPU-ZW810E",
+      "actual": "NVIDIA A800-SXM4-80GB"
+    },
+    {
+      "field": "driver_observation.nvidia_smi_compatibility_query.stdout",
+      "expected": "PPU-ZW810E, 1.3.2-d7f5a2, 97920 MiB",
+      "actual": "NVIDIA A800-SXM4-80GB, 595.71.05, 81920 MiB\nNVIDIA A800-SXM4-80GB, 595.71.05, 81920 MiB\nNVIDIA A800-SXM4-80GB, 595.71.05, 81920 MiB\nNVIDIA A800-SXM4-80GB, 595.71.05, 81920 MiB\nNVIDIA A800-SXM4-80GB, 595.71.05, 81920 MiB\nNVIDIA A800-SXM4-80GB, 595.71.05, 81920 MiB\nNVIDIA A800-SXM4-80GB, 595.71.05, 81920 MiB\nNVIDIA A800-SXM4-80GB, 595.71.05, 81920 MiB"
+    },
+    {
+      "field": "driver_observation.ppu_smi_version.available",
+      "reason": "unexpected_field",
+      "actual": false
+    },
+    {
+      "field": "driver_observation.ppu_smi_version.exit_code",
+      "reason": "missing_field",
+      "expected": 0
+    },
+    {
+      "field": "driver_observation.ppu_smi_version.stderr",
+      "reason": "missing_field",
+      "expected": ""
+    },
+    {
+      "field": "driver_observation.ppu_smi_version.stdout",
+      "reason": "missing_field",
+      "expected": "T-Head ppu-smi version v1.28\nBuild date: Apr 17 2026, 00:28:02\nCode node: 9c3eb8d"
+    },
+    {
+      "field": "loaded_libraries",
+      "expected": [
+        {
+          "path": "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcublas.so.12.4.5.8",
+          "bytes": 389000
+        },
+        {
+          "path": "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcublasLt.so.12.4.5.8",
+          "bytes": 107080
+        },
+        {
+          "path": "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcuda.so.1",
+          "bytes": 402936
+        },
+        {
+          "path": "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcudart.so.12.4.127",
+          "bytes": 274128
+        },
+        {
+          "path": "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcudnn.so.8.9.5",
+          "bytes": 175968
+        },
+        {
+          "path": "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcufft.so.11.2.1.3",
+          "bytes": 39632
+        },
+        {
+          "path": "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcupti.so.2024.1.1",
+          "bytes": 84488
+        },
+        {
+          "path": "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcurand.so.10.3.5.147",
+          "bytes": 34472
+        },
+        {
+          "path": "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libcusparse.so.12.3.1.170",
+          "bytes": 372048
+        },
+        {
+          "path": "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libnccl.so.2.21.5",
+          "bytes": 106496
+        },
+        {
+          "path": "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libnvToolsExt.so.1.0.0",
+          "bytes": 30224
+        },
+        {
+          "path": "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libnvidia-ml.so.1",
+          "bytes": 246864
+        },
+        {
+          "path": "/usr/local/PPU_SDK/CUDA_SDK/targets/x86_64-linux/lib/libnvjpeg.so.12.3.1.117",
+          "bytes": 66088
+        },
+        {
+          "path": "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libacblas.so",
+          "bytes": 113968
+        },
+        {
+          "path": "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libacblasLt.so",
+          "bytes": 627240
+        },
+        {
+          "path": "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libacblas_internal.so",
+          "bytes": 69914528
+        },
+        {
+          "path": "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libacrtc_prebuild.so",
+          "bytes": 568510328
+        },
+        {
+          "path": "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libalippu.so",
+          "bytes": 1895664
+        },
+        {
+          "path": "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libhg_wrapper.so",
+          "bytes": 8662928
+        },
+        {
+          "path": "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libhggc.so",
+          "bytes": 36801856
+        },
+        {
+          "path": "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libhggc_wrapper.so",
+          "bytes": 5957768
+        },
+        {
+          "path": "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libhggcrt.12.0.so",
+          "bytes": 6365552
+        },
+        {
+          "path": "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libhgml.so",
+          "bytes": 2270080
+        },
+        {
+          "path": "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libhgrtc.so.1.0",
+          "bytes": 154099120
+        },
+        {
+          "path": "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libhgvm.so.1.0",
+          "bytes": 84676280
+        },
+        {
+          "path": "/usr/local/PPU_SDK/targets/x86_64-linux/lib/libuki.so",
+          "bytes": 762240
+        },
+        {
+          "path": "/usr/local/lib/python3.10/site-packages/torch/lib/libc10.so",
+          "bytes": 1139984
+        },
+        {
+          "path": "/usr/local/lib/python3.10/site-packages/torch/lib/libc10_cuda.so",
+          "bytes": 618208
+        },
+        {
+          "path": "/usr/local/lib/python3.10/site-packages/torch/lib/libtorch.so",
+          "bytes": 15312
+        },
+        {
+          "path": "/usr/local/lib/python3.10/site-packages/torch/lib/libtorch_cpu.so",
+          "bytes": 291671336
+        },
+        {
+          "path": "/usr/local/lib/python3.10/site-packages/torch/lib/libtorch_cuda.so",
+          "bytes": 247630824
+        },
+        {
+          "path": "/usr/local/lib/python3.10/site-packages/torch/lib/libtorch_global_deps.so",
+          "bytes": 15480
+        },
+        {
+          "path": "/usr/local/lib/python3.10/site-packages/torch/lib/libtorch_python.so",
+          "bytes": 26423688
+        }
+      ],
+      "actual": [
+        {
+          "path": "/mnt/project/recogdrive-ppu-controlled-visual-20261026/common_packages/torchvision.libs/libcudart.7ec1eba6.so.12",
+          "bytes": 679264
+        },
+        {
+          "path": "/mnt/project/recogdrive-teacher2-a800-20261026/diagnostics/torch240_packages/torch/lib/libc10.so",
+          "bytes": 1347801
+        },
+        {
+          "path": "/mnt/project/recogdrive-teacher2-a800-20261026/diagnostics/torch240_packages/torch/lib/libc10_cuda.so",
+          "bytes": 660473
+        },
+        {
+          "path": "/mnt/project/recogdrive-teacher2-a800-20261026/diagnostics/torch240_packages/torch/lib/libtorch.so",
+          "bytes": 255913
+        },
+        {
+          "path": "/mnt/project/recogdrive-teacher2-a800-20261026/diagnostics/torch240_packages/torch/lib/libtorch_cpu.so",
+          "bytes": 492516273
+        },
+        {
+          "path": "/mnt/project/recogdrive-teacher2-a800-20261026/diagnostics/torch240_packages/torch/lib/libtorch_cuda.so",
+          "bytes": 895732865
+        },
+        {
+          "path": "/mnt/project/recogdrive-teacher2-a800-20261026/diagnostics/torch240_packages/torch/lib/libtorch_global_deps.so",
+          "bytes": 21177
+        },
+        {
+          "path": "/mnt/project/recogdrive-teacher2-a800-20261026/diagnostics/torch240_packages/torch/lib/libtorch_python.so",
+          "bytes": 27309121
+        },
+        {
+          "path": "/usr/lib/x86_64-linux-gnu/libcuda.so.595.71.05",
+          "bytes": 91501576
+        },
+        {
+          "path": "/usr/lib/x86_64-linux-gnu/libcudnn.so.9.7.0",
+          "bytes": 125136
+        },
+        {
+          "path": "/usr/local/cuda-12.8/targets/x86_64-linux/lib/libcublas.so.12.8.3.14",
+          "bytes": 116384544
+        },
+        {
+          "path": "/usr/local/cuda-12.8/targets/x86_64-linux/lib/libcublasLt.so.12.8.3.14",
+          "bytes": 781053840
+        },
+        {
+          "path": "/usr/local/cuda-12.8/targets/x86_64-linux/lib/libcudart.so.12.8.57",
+          "bytes": 728800
+        }
+      ]
+    },
+    {
+      "field": "platform",
+      "expected": "Linux-5.10.134-013.13.4.kangaroo.al8.x86_64-x86_64-with-glibc2.35",
+      "actual": "Linux-5.10.0-136.12.0.88.4.ctl3.x86_64-x86_64-with-glibc2.35"
+    },
+    {
+      "field": "python_build",
+      "expected": "3.10.13 (main, May 13 2026, 11:33:43) [GCC 11.4.0]",
+      "actual": "3.10.13 | packaged by conda-forge | (main, Dec 23 2023, 15:36:39) [GCC 12.3.0]"
+    },
+    {
+      "field": "torch_build",
+      "expected": "PyTorch built with:\n  - GCC 11.4\n  - C++ Version: 201703\n  - Intel(R) oneAPI Math Kernel Library Version 2021.1-Product Build 20201104 for Intel(R) 64 architecture applications\n  - Intel(R) MKL-DNN v3.4.2 (Git Hash 1137e04ec0b5251ca2b4400a4fd3c667ce843d67)\n  - OpenMP 201511 (a.k.a. OpenMP 4.5)\n  - LAPACK is enabled (usually provided by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX512\n  - CUDA Runtime 12.4\n  - NVCC architecture flags: -gencode;arch=compute_80,code=sm_80\n  - CuDNN 8.9.5  (built against CUDA 8.90.5)\n  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=12.4, CUDNN_VERSION=8.9.5, CXX_COMPILER=/usr/bin/c++, CXX_FLAGS= -D_GLIBCXX_USE_CXX11_ABI=1 -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO -DLIBKINETO_NOROCTRACER -DUSE_FBGEMM -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2 -fPIC -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Werror=range-loop-construct -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow -Wsuggest-override -Wno-psabi -Wno-error=pedantic -Wno-error=old-style-cast -Wno-missing-braces -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, FORCE_FALLBACK_CUDA_MPI=1, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=2.4.0, USE_CUDA=ON, USE_CUDNN=ON, USE_CUSPARSELT=OFF, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_GLOO=ON, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=ON, USE_NCCL=True, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, USE_ROCM_KERNEL_ASSERT=OFF, \n",
+      "actual": "PyTorch built with:\n  - GCC 9.3\n  - C++ Version: 201703\n  - Intel(R) oneAPI Math Kernel Library Version 2022.2-Product Build 20220804 for Intel(R) 64 architecture applications\n  - Intel(R) MKL-DNN v3.4.2 (Git Hash 1137e04ec0b5251ca2b4400a4fd3c667ce843d67)\n  - OpenMP 201511 (a.k.a. OpenMP 4.5)\n  - LAPACK is enabled (usually provided by MKL)\n  - NNPACK is enabled\n  - CPU capability usage: AVX512\n  - CUDA Runtime 12.8\n  - Built with CUDA Runtime 12.4\n  - NVCC architecture flags: -gencode;arch=compute_50,code=sm_50;-gencode;arch=compute_60,code=sm_60;-gencode;arch=compute_70,code=sm_70;-gencode;arch=compute_75,code=sm_75;-gencode;arch=compute_80,code=sm_80;-gencode;arch=compute_86,code=sm_86;-gencode;arch=compute_90,code=sm_90\n  - CuDNN 90.7  (built against CUDA 12.8)\n    - Built with CuDNN 90.1\n  - Magma 2.6.1\n  - Build settings: BLAS_INFO=mkl, BUILD_TYPE=Release, CUDA_VERSION=12.4, CUDNN_VERSION=9.1.0, CXX_COMPILER=/opt/rh/devtoolset-9/root/usr/bin/c++, CXX_FLAGS= -D_GLIBCXX_USE_CXX11_ABI=0 -fabi-version=11 -fvisibility-inlines-hidden -DUSE_PTHREADPOOL -DNDEBUG -DUSE_KINETO -DLIBKINETO_NOROCTRACER -DUSE_FBGEMM -DUSE_PYTORCH_QNNPACK -DUSE_XNNPACK -DSYMBOLICATE_MOBILE_DEBUG_HANDLE -O2 -fPIC -Wall -Wextra -Werror=return-type -Werror=non-virtual-dtor -Werror=bool-operation -Wnarrowing -Wno-missing-field-initializers -Wno-type-limits -Wno-array-bounds -Wno-unknown-pragmas -Wno-unused-parameter -Wno-unused-function -Wno-unused-result -Wno-strict-overflow -Wno-strict-aliasing -Wno-stringop-overflow -Wsuggest-override -Wno-psabi -Wno-error=pedantic -Wno-error=old-style-cast -Wno-missing-braces -fdiagnostics-color=always -faligned-new -Wno-unused-but-set-variable -Wno-maybe-uninitialized -fno-math-errno -fno-trapping-math -Werror=format -Wno-stringop-overflow, LAPACK_INFO=mkl, PERF_WITH_AVX=1, PERF_WITH_AVX2=1, PERF_WITH_AVX512=1, TORCH_VERSION=2.4.0, USE_CUDA=ON, USE_CUDNN=ON, USE_CUSPARSELT=1, USE_EXCEPTION_PTR=1, USE_GFLAGS=OFF, USE_GLOG=OFF, USE_GLOO=ON, USE_MKL=ON, USE_MKLDNN=ON, USE_MPI=OFF, USE_NCCL=1, USE_NNPACK=ON, USE_OPENMP=ON, USE_ROCM=OFF, USE_ROCM_KERNEL_ASSERT=OFF, \n"
+    },
+    {
+      "field": "torch_git",
+      "expected": "36615d2dc445b0232500ca5fadc986949833ae46",
+      "actual": "e4ee3be4063b7c430974252fdf7db42273388d86"
+    },
+    {
+      "field": "torch_version",
+      "expected": "2.4.0",
+      "actual": "2.4.0+cu124"
+    }
+  ],
+  "all_external_conditions_identical": false,
+  "interpretation": "A passing portable gate allows a backend comparison. Different vendor torch builds, cuDNN/SDK/driver/compiler or runtime libraries remain software/backend variables; never conclude hardware-only from this gate."
+}

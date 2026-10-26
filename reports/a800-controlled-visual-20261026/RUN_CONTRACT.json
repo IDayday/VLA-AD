@@ -1,0 +1,12 @@
+{
+  "time": "2026-10-26T19:59:24.823617+00:00",
+  "audit_commit": "3d9b0979f0e052bb9c2b6afdf73f595af463a3aa",
+  "source_repo": "/mnt/project/-recogdrive-representation-teacher-2",
+  "source_commit": "6bb7119583513094a169b4c2f2dc2a05ac293aa3",
+  "scope": "Match current PPU controlled pure-visual portable conditions, then rerun same repository scene; no full-chain equality claim",
+  "scene": "0002267a294e52a7",
+  "reference_scope": "current SDK2.1.0 / transformers4.57 / cuDNN TF32True; not historical full-chain SDK2.0 / transformers4.37 / cuDNN TF32False",
+  "shared_environment_mutation_allowed": false,
+  "teacher_or_student_runs_resumed": false,
+  "reference_configuration_sha256": "44e4fe84f80a0eeb656d6b98e75d3d5a60b7c48698dc79e9d13e3b8ee6da2cd2"
+}

@@ -1,0 +1,78 @@
+{
+  "status": "CONTROLLED_COMPARISON_COMPLETE_OUTPUTS_DIFFER",
+  "time": "2026-10-26T20:10:16.973390+00:00",
+  "reference_audit_commit": "3d9b0979f0e052bb9c2b6afdf73f595af463a3aa",
+  "source_teacher_commit": "6bb7119583513094a169b4c2f2dc2a05ac293aa3",
+  "scene": "0002267a294e52a7",
+  "portable_conditions_match": true,
+  "portable_difference_count": 0,
+  "original_inputs_matched": 12,
+  "visual_parameters_matched": 340,
+  "visual_module_specs_matched": 341,
+  "native_C_comparison": {
+    "comparable": true,
+    "raw_bytes_equal": false,
+    "numeric_equal": false,
+    "elements": 9437184,
+    "different_elements": 5989,
+    "max_abs_error": 0.0078125,
+    "relative_l2": 5.2339973181182126e-05,
+    "relative_l2_denominator": "L2(second_tensor)",
+    "torch_equal": false
+  },
+  "native_patch_comparison": {
+    "comparable": true,
+    "raw_bytes_equal": false,
+    "numeric_equal": false,
+    "elements": 9437184,
+    "different_elements": 2179,
+    "max_abs_error": 0.0078125,
+    "relative_l2": 5.279721763236374e-05,
+    "relative_l2_denominator": "L2(second_tensor)",
+    "torch_equal": false
+  },
+  "native_embedding_matches_PPU": false,
+  "common_PPU_C_embedding_matches_PPU": true,
+  "first_independent_suffix_divergence": "norm1",
+  "native_norm1_sha256": "5030ad21c11c8533d7db00b8fa6f84cca5f9fc754dbe632e399a516f04bcc839",
+  "PPU_norm1_sha256": "d8007d98b0846101fd9c86e3c983cc9b053574239b6e76101364173cc7643ffe",
+  "common_embedding_suffix_vision_last_matches_PPU": false,
+  "FP32_norm_then_BF16_matches_PPU": false,
+  "FP64_norm_then_BF16_matches_PPU": true,
+  "backend_differences": {
+    "device": {
+      "PPU": "PPU-ZW810E",
+      "A800": "NVIDIA A800-SXM4-80GB"
+    },
+    "torch_version": {
+      "PPU": "2.4.0",
+      "A800": "2.4.0+cu124"
+    },
+    "torch_git": {
+      "PPU": "36615d2dc445b0232500ca5fadc986949833ae46",
+      "A800": "e4ee3be4063b7c430974252fdf7db42273388d86"
+    },
+    "torch_cuda_build": {
+      "PPU": "12.4",
+      "A800": "12.4"
+    },
+    "cudnn_runtime_version": {
+      "PPU": 8905,
+      "A800": 90700
+    },
+    "python_build": {
+      "PPU": "3.10.13 (main, May 13 2026, 11:33:43) [GCC 11.4.0]",
+      "A800": "3.10.13 | packaged by conda-forge | (main, Dec 23 2023, 15:36:39) [GCC 12.3.0]"
+    }
+  },
+  "all_external_conditions_identical": false,
+  "hardware_only_cause_proven": false,
+  "physical_GPU_job_exitcode": 0,
+  "visual_only": true,
+  "full_chain_alignment_complete": false,
+  "native_full_vision_suffix_from_native_embedding_measured": false,
+  "common_PPU_embedding_used_only_for_isolating_suffix_operators": true,
+  "teacher_targets_generated_in_this_diagnostic": false,
+  "shared_environment_modified": false,
+  "full_local_D_C8_refit_waiting_for_user_upload": true
+}

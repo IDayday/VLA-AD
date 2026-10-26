@@ -1,0 +1,39 @@
+{
+  "audit_commit": "3d9b0979f0e052bb9c2b6afdf73f595af463a3aa",
+  "files": {
+    "PPU_FIRST_BLOCK_TRACE_SUMMARY.json": "170660b2b8e34df55c195abcc4f4473ff8e81a6a73bc52231fa7f889c5f78ada",
+    "ppu_native_no_bias.npz": "9c1abc99ea9ba94db1160cdd89c566c5c2df4d2efacaed8e83d801deaa3a302d",
+    "A800_REAL_C_RESULTS.md": "a210a4ad6bd4ca7645cf6dea4f18495ba52ce32dffba15b1f6d08752aa124833",
+    "trace_first_vision_block.py": "3b02f01636c2c1ed93434f87febd3a10a6b204c3a230407a01ffd6c73d952698",
+    "A800_KNOWN_CONFIGURATION_GAPS.json": "f541f8a419ad5c209a0a991f13ac94a55f025f84481082f8a8d7c2ad4bb6a4a2",
+    "PPU_FIRST_BLOCK_TRACE.json": "53f9c409b49ee04efa326e1b62f08c54646286e25b17ce366b19ec42cac3973a",
+    "MANIFEST.json": "8463271746d9eedf53a24e0b43f7ec3eb572aa38deb41d0f0f0fb549cf88364c",
+    "PPU_FIRST_BLOCK_TRACE.json.sha256": "e2a3b7ab34cedf38204056e5fbc46cf0be3b6dd4b258dde3420b1b569f97a38f",
+    "controlled_conditions.py": "140bc31333d9d4358de2ef3c17e9e291d7e98dc4d74dd90a0bf627fe66b3be2c",
+    "PPU_HISTORICAL_FULL_CHAIN_REFERENCE.json": "c45c2a74af58993b17752c3c04e6fe4e96c4b477ba1b0cf24938653c13bd65e8",
+    "PPU_FIRST_BLOCK_RESULTS.md": "a321e861ab4482a5cc0460ec21dea0868701a2d9bc9be288d4a2fca5591996b8",
+    "PPU_CONFIGURATION_AND_A800_REQUIREMENTS.md": "ceba58d5d02c09f84622ea4e777e700181cd88ad2db3267660f13d0bba924718",
+    "REAL_C_RESULT_MANIFEST.json": "c5eb50861a1c9d7bdf0cfc97863cec023f926ef221d8308cf0029c909f6e77ea",
+    "REMOTE_VERIFICATION.json": "248c731ff89ec48918e351d0c93374d9ddfaa901cdc674fd4d82e449c3a8d151",
+    "PPU_FIRST_BLOCK_TRACE.stdout.txt": "70434ea39817e806985660aff35c3097d14f2814074fb0becbcee7446bfa0f31",
+    "PPU_FIRST_BLOCK_MANIFEST.json": "cc13333c9563fd231f9568ae404d11d2a0664fc4a6fc12b134870796990a2bc6",
+    "PPU_VISION_PARAMETER_METADATA.json": "f399bd095b7c9b20510834982d67439d703bdd96fc1472d6499dd141152da7b2",
+    "export_ppu_native_C.py": "100570355f2d1e3edf119a256a5cfb32eacd4f517d02ec057a71cf8088fea931",
+    "CONTROLLED_GATE_VALIDATION.json": "7e9a655af0a7c1878f3f7f5a41199bc98ca3a9a7dd9c3e8b5baa042081bf7f74",
+    "requirements-visual-common.txt": "43312c3c12ef62892ad693765b15593c86edb6121fa0a761b90c74c4fb69476b",
+    "README.md": "912158d3b0ff5fb8a2b905cc71b5fdf378ba0a8eb6cac1a8ca16c6de281bced0",
+    "CONTROLLED_CONFIGURATION_MANIFEST.json": "76269e2a6cde8c76f667cdf8eb0ab9a56e4432810c296c7fae84b95c78953cf5",
+    "run_a800_controlled_visual.py": "f681bfde86880f729ce0725ddce4509579d3eb9e2d4e653149aaafeb1dbf282b",
+    "PPU_EXPORT_RECEIPT.json": "57da3169851450acd274da8acf99856fb08146c85d0614c8745ea501b7df327c",
+    "PPU_NORM1_CONTROLS.json": "fbbe2ca2e1b6833b896a77f30e7b4fd67f1256fe50920507011f0551b922e3e5",
+    "PPU_CONTROLLED_CONFIGURATION.json.sha256": "877300579c3196f5df3b0917c19675e04533f8817d1336ef09f612cdb9817997",
+    "ppu_native_no_bias.npz.sha256": "b85790a172f5bc6b3744fbddc4a38a7f695f2d8f3789046fb6d9c6d1bef07524",
+    "PPU_CONTROLLED_CONFIGURATION.json": "44e4fe84f80a0eeb656d6b98e75d3d5a60b7c48698dc79e9d13e3b8ee6da2cd2"
+  },
+  "command": "env ZT_AUTO_PROXY=0 PYTHONNOUSERSITE=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/mnt/project/recogdrive-ppu-controlled-visual-20261026/common_packages:/mnt/project/recogdrive-teacher2-a800-20261026/diagnostics/torch240_packages:/root/miniconda3/envs/ddp/lib/python3.10/site-packages HF_HOME=/mnt/project/recogdrive-ppu-controlled-visual-20261026/hf_home HF_MODULES_CACHE=/mnt/project/recogdrive-ppu-controlled-visual-20261026/hf_modules HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 TMPDIR=/mnt/project/recogdrive-ppu-controlled-visual-20261026/tmp TRITON_CACHE_DIR=/mnt/project/recogdrive-ppu-controlled-visual-20261026/triton MPLCONFIGDIR=/mnt/project/recogdrive-ppu-controlled-visual-20261026/mpl /mnt/project/recogdrive-ppu-controlled-visual-20261026/py31013/bin/python -B /mnt/project/recogdrive-ppu-controlled-visual-20261026/audit_repo/reports/ppu-a800-alignment-followup-20261027/run_a800_controlled_visual.py --bundle /mnt/project/recogdrive-ppu-controlled-visual-20261026/bundle/ppu-a800-embedding-audit-20261027-v2 --frozen-repo /mnt/project/-recogdrive-representation-teacher-2 --vlm /mnt/project/recogdrive-representation-teacher-1/local/models/ReCogDrive-VLM-2B --output-dir /mnt/project/recogdrive-ppu-controlled-visual-20261026/outputs/controlled_visual_001",
+  "job": {
+    "host": "training-vlawm-tsinghua-zt6",
+    "gpu": "GPU-30077d20-8876-bcfe-609e-ee7c140e6770",
+    "launcher_pid": 1898538
+  }
+}

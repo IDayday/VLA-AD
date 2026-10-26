@@ -1,0 +1,7 @@
+{
+  "audit_commit": "3d9b0979f0e052bb9c2b6afdf73f595af463a3aa",
+  "archive": "/mnt/project/recogdrive-teacher2-a800-20261026/diagnostics/ppu_audit_20261027_v2/ppu-a800-embedding-audit-20261027-v2.tar.gz",
+  "archive_sha256": "4e080828292355b2e42e4fd81fee213df276a175a8f2c75175ca00e05f81a65c",
+  "frozen_teacher_commit": "6bb7119583513094a169b4c2f2dc2a05ac293aa3",
+  "new_refit_waiting_for_upload": true
+}

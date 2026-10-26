@@ -1,0 +1,7 @@
+{
+  "status": "STOPPED_BEFORE_GPU_MODEL_OR_OPERATORS",
+  "cause": "Initial CPU preflight rejected exact torchvision distribution metadata: reference0.19.0 vs installed0.19.0+cu124",
+  "resolution": "Download unmodified PyPI torchvision0.19.0 wheel into the independent diagnostic prefix; do not edit version metadata",
+  "model_loaded": false,
+  "model_forward_executed": false
+}

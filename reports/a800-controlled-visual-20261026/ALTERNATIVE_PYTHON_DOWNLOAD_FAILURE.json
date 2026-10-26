@@ -1,0 +1,6 @@
+{
+  "status": "ALTERNATIVE_PYTHON_DOWNLOAD_FAILED",
+  "cause": "GitHub release asset download read timed out; zero-byte partial archive preserved",
+  "used_for_execution": false,
+  "actual_python": "Conda-forge Python3.10.13 successfully installed under independent py31013 prefix"
+}

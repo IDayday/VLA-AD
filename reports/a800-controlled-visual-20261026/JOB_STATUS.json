@@ -1,0 +1,12 @@
+{
+  "alive": false,
+  "command": "env ZT_AUTO_PROXY=0 PYTHONNOUSERSITE=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=/mnt/project/recogdrive-ppu-controlled-visual-20261026/common_packages:/mnt/project/recogdrive-teacher2-a800-20261026/diagnostics/torch240_packages:/root/miniconda3/envs/ddp/lib/python3.10/site-packages HF_HOME=/mnt/project/recogdrive-ppu-controlled-visual-20261026/hf_home HF_MODULES_CACHE=/mnt/project/recogdrive-ppu-controlled-visual-20261026/hf_modules HF_HUB_OFFLINE=1 TRANSFORMERS_OFFLINE=1 TMPDIR=/mnt/project/recogdrive-ppu-controlled-visual-20261026/tmp TRITON_CACHE_DIR=/mnt/project/recogdrive-ppu-controlled-visual-20261026/triton MPLCONFIGDIR=/mnt/project/recogdrive-ppu-controlled-visual-20261026/mpl /mnt/project/recogdrive-ppu-controlled-visual-20261026/py31013/bin/python -B /mnt/project/recogdrive-ppu-controlled-visual-20261026/audit_repo/reports/ppu-a800-alignment-followup-20261027/run_a800_controlled_visual.py --bundle /mnt/project/recogdrive-ppu-controlled-visual-20261026/bundle/ppu-a800-embedding-audit-20261027-v2 --frozen-repo /mnt/project/-recogdrive-representation-teacher-2 --vlm /mnt/project/recogdrive-representation-teacher-1/local/models/ReCogDrive-VLM-2B --output-dir /mnt/project/recogdrive-ppu-controlled-visual-20261026/outputs/controlled_visual_001",
+  "ended_at": "2026-10-26T20:07:29+00:00",
+  "gpu": "GPU-30077d20-8876-bcfe-609e-ee7c140e6770",
+  "log": "/mnt/project/recogdrive-ppu-controlled-visual-20261026/dispatch/controlled_visual_001/training-vlawm-tsinghua-zt6/logs/controlled_visual_001.log",
+  "name": "controlled_visual_001",
+  "pid": 1898539,
+  "returncode": 0,
+  "state": "done",
+  "updated_at": "2026-10-26T20:07:29+00:00"
+}

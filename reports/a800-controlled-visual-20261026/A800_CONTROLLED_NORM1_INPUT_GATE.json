@@ -1,0 +1,42 @@
+{
+  "status": "MATCH",
+  "differences": [],
+  "actual": {
+    "shape": [
+      9,
+      1025,
+      1024
+    ],
+    "dtype": "torch.bfloat16",
+    "stride": [
+      1049600,
+      1024,
+      1
+    ],
+    "layout": "torch.strided",
+    "storage_offset": 0,
+    "contiguous": true,
+    "channels_last": null,
+    "device_type": "cuda",
+    "sha256": "ba0df59744dadae4460575d1cf6786ffb3d5636d286f7267d57a113b2d789d74"
+  },
+  "expected": {
+    "shape": [
+      9,
+      1025,
+      1024
+    ],
+    "dtype": "torch.bfloat16",
+    "stride": [
+      1049600,
+      1024,
+      1
+    ],
+    "layout": "torch.strided",
+    "storage_offset": 0,
+    "contiguous": true,
+    "channels_last": null,
+    "device_type": "cuda",
+    "sha256": "ba0df59744dadae4460575d1cf6786ffb3d5636d286f7267d57a113b2d789d74"
+  }
+}
