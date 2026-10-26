@@ -1,0 +1,4 @@
+experiment: H_gain1
+teacher_target: gain1
+state_source: none
+enable_transition_loss: false

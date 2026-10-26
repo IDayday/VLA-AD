@@ -1,0 +1,4 @@
+experiment: H_full
+teacher_target: full
+state_source: none
+enable_transition_loss: false

@@ -1,0 +1,76 @@
+{
+  "schema": "local_teacher_pipeline_code_snapshot_v1",
+  "source_commit": "f85d4e557b12a7d05f5deb8d1640834cacd94d32",
+  "files": [
+    {
+      "path": "code/fit_library.py",
+      "sha256": "a86c7fee440909b769d2e17067f1a48aab6094d2871c9d76a124c475ac7c811a"
+    },
+    {
+      "path": "code/gt_controller_fast.py",
+      "sha256": "f2cd6a0b1040b58d553eb9118b77f95d467f6e50e02f6bdbd9c42c3d7fb88796"
+    },
+    {
+      "path": "code/gt_numeric.py",
+      "sha256": "023ff2e7289668db0a5c0a0d0a3163663692be236cad16d9c13495f36c0a0d8e"
+    },
+    {
+      "path": "code/gt_opt_controller.py",
+      "sha256": "02833d6ab787c947b7ab88682386b9972497f79eec4c4b0622374fd482a6b379"
+    },
+    {
+      "path": "code/gt_opt_worker.py",
+      "sha256": "1f91b04f066cce2cd23ce798dbfe3d29258981feefa47e4ec295fbbc9cdd1164"
+    },
+    {
+      "path": "code/local_teacher_suite.py",
+      "sha256": "a0488d98789422b59cd0cb1ecae6fef16d4920d412723b5e5715cfb21d846fe1"
+    },
+    {
+      "path": "code/native_base_worker.py",
+      "sha256": "6855078521e98c39679e2f607369fd7ebc08addbc41c79677d7f3346863b2df0"
+    },
+    {
+      "path": "code/round1_prepare_and_run.py",
+      "sha256": "7467a61390f80aeb9cfab1f4253ad59a4cce61c33f71de6bc61a58dba82ddf7d"
+    },
+    {
+      "path": "code/teacher_eval_worker.py",
+      "sha256": "40179dc093b0286f4cc13a8b8478d1010b9d8689572536539fb79e00561de2eb"
+    },
+    {
+      "path": "code/teacher_library.py",
+      "sha256": "45df3515afdaa2752ee0e06149e301c2b7f29f1e71d9ccbb60238fadbb44d8f3"
+    },
+    {
+      "path": "engineering/cap_batch_parity.py",
+      "sha256": "1dbbfa1906d4da86ae21bfa653acab945539072517985058b35d6d8c02798f22"
+    },
+    {
+      "path": "engineering/preflight_gt_stage_generators.py",
+      "sha256": "b7340174c6ae347a5d9ab4ad92f3740cf9d533b8cc895e4b61019f8f5707dfab"
+    },
+    {
+      "path": "engineering/qualify_inference_graph.py",
+      "sha256": "07ccefc8b4e10a7637202b7071efc0e18c8629be37a3d2c9d2758c8343dc87cd"
+    },
+    {
+      "path": "engineering/qualify_teacher_query_cache.py",
+      "sha256": "6ed2989b46dcd81f165cc61df2d4d8ad9b37bcbb4d3a6c4298f4ce30bb0c1120"
+    },
+    {
+      "path": "engineering/report_round1_paired_comparisons.py",
+      "sha256": "0d17249eebb6c0d95ee8f3b6f02a6b22a3617c1761e1357e63a88f8b866c81a4"
+    },
+    {
+      "path": "engineering/report_teacher_physical_costs.py",
+      "sha256": "065bfe391a600c121ce7846c6e8ecc1cabb7ccaaaa5335db4c193e4ec4cff218"
+    },
+    {
+      "path": "engineering/test_round1_preparation_owner.py",
+      "sha256": "03d2129ec075cfa18490d43df33c9e0cfad532f8235f27a8e95c2eb7367c38a4"
+    }
+  ],
+  "weights_or_tensor_data_included": false,
+  "math_source_tree_is_separate_immutable_verified_archive": true
+}

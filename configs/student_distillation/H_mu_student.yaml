@@ -1,0 +1,4 @@
+experiment: H_mu_student
+teacher_target: gain1
+state_source: student
+enable_transition_loss: true

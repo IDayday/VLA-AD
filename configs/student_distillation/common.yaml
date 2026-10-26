@@ -1,0 +1,106 @@
+protocol:
+  name: recogdrive_no_routing_round1_local_refit_v1
+  frozen_evidence_commit: 6bb7119583513094a169b4c2f2dc2a05ac293aa3
+  library: local_refit_D_C8_double
+  teacher_origin: independent_local_refit_frozen
+  student_kind: continuous_shared_d48
+  teacher_is_fixed: true
+  route_or_gate: false
+data:
+  train_scenes: 85813
+  validation_scenes: 17475
+  test_scenes: 12146
+  split_key: token
+  preserve_native_token_layout: true
+  source: verified_post_cache
+  input_augmentation: none
+  natural_scene_weights: true
+model:
+  interface_dim: 384
+  subspace_rank: 48
+  query_count: 4
+  hidden_dim: 256
+  cross_attention_layers: 2
+  attention_heads: 4
+  ffn_expansion: 4
+  state_dim: 24
+  dropout: 0.0
+  zero_init_output: true
+  coefficient_parameterization: l2_dimensionless
+  cap_from_library: true
+  freeze_vlm: true
+  freeze_feature_encoder: true
+  freeze_action_head: true
+training:
+  seeds: [20261027, 20261028]
+  epochs: 40
+  global_batch_size: 64
+  microbatch_per_device: 1
+  updates_per_epoch: 1341
+  total_optimizer_updates: 53640
+  last_batch: padded_slots_zero_weight_normalize_real_count
+  early_stopping: false
+  automatic_scientific_stop_on_negative_pdms: false
+optimizer:
+  name: adamw
+  lr: 0.0001
+  betas: [0.9, 0.999]
+  eps: 0.00000001
+  weight_decay: 0.01
+  no_decay_bias_norm_queries_output: true
+  grad_clip_norm: 1.0
+scheduler:
+  name: warmup_cosine
+  warmup_updates: 1341
+  total_updates: 53640
+  min_lr: 0.00001
+precision:
+  adapter: float32
+  action_head: float32
+  loss: float32
+  tf32: false
+  autocast: false
+performance:
+  frozen_teacher_query_cache: true
+  teacher_query_cache_max_entries: 500000
+  cache_receipt: qualification/TEACHER_QUERY_CACHE_ADMISSION.json
+loss:
+  representation_weight: 1.0
+  representation_scale: frozen_train_full_nonzero_actual_shift_mse
+  transition_mean_weight_max: 0.5
+  transition_start_update: 5364
+  transition_ramp_updates: 2682
+  transition_scale: frozen_train_calibration_per_step
+  additional_keep_weight: 0.0
+sampler:
+  method: ddim
+  timesteps: [80, 60, 40, 20, 0]
+  deterministic: false
+  eta: 1.0
+  std_floor_source: get_action_eval_min_sampling_denoising_std
+  noise_clip_source: get_action_eval_randn_clip_value
+  native_scene_microbatch: 1
+  train_noise_namespace: NRKD_train_v1
+  train_noise_banks: 5
+  evaluation_noise_indices: [0, 1, 2, 3, 4]
+checkpoint:
+  interval_updates: 1000
+  save_every_epoch: true
+  save_full_validation_epochs: [8, 16, 24, 32, 40]
+  include_optimizer_scheduler_rng_sampler: true
+  atomic_write: true
+evaluation:
+  monitor_every_epochs: 2
+  monitor_scenes: 2048
+  monitor_noise_indices: [0]
+  full_validation_epochs: [8, 16, 24, 32, 40]
+  full_validation_noise_indices: [0, 1, 2, 3, 4]
+  test_checkpoints: [last, validation_best]
+  new_noise_validation_indices: [5, 6, 7, 8, 9]
+  bootstrap_unit: log
+  bootstrap_replicates: 2000
+  functional_diagnostic_scenes: 2048
+  functional_diagnostic_noise_indices: [0]
+  functional_diagnostic_time_indices: [0, 1, 2, 3, 4]
+  functional_diagnostic_state_sources: [teacher, student]
+paths: {}
