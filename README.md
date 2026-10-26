@@ -6,6 +6,8 @@
 
 ## 先从这里开始
 
+如果由Codex接手，请让它在仓库根目录启动：根目录`AGENTS.md`会自动指向完整交接；也可直接让它读取[给训练智能体的交接](docs/给训练智能体的交接.md)。不需要原作者补充口头背景。
+
 1. [接收方逐步操作指南](docs/接收方操作指南.md)：克隆、配置、验收、导出、训练接入和分片接续。
 2. [教师定义与数据字典](docs/教师定义与数据字典.md)：专家、空间、力度、种子、选择和文件字段。
 3. 两份完整报告：[接口表征分析与修复](reports/interface_representation_repair.html)、[诊断与参数吸收实验](reports/representation_distillation_diagnosis.html)。HTML含折叠细节与内嵌图表，下载/克隆后用本地浏览器打开。

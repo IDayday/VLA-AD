@@ -9,10 +9,16 @@
       "git_blob_sha1": "c7939f584f868f8de6caa840caf7860baa125c55"
     },
     {
+      "path": "AGENTS.md",
+      "bytes": 4730,
+      "sha256": "820372bdae81f1cd649200483970940fbe228ed17daf5a5b8457b0915a48a899",
+      "git_blob_sha1": "b9e8a880add4cbdf28d3640af9aeda722a0105be"
+    },
+    {
       "path": "README.md",
-      "bytes": 6207,
-      "sha256": "3c1a842460172e6fc4fbbf64753a396e3ceecb82148b5cd3537df0a4a83a3756",
-      "git_blob_sha1": "5161d6248da11fb30b80c3d0629238d0d10ca8a1"
+      "bytes": 6450,
+      "sha256": "7841b1688fe865c56f3522911f859bff236278a3bda4fa3a52567eb0df054065",
+      "git_blob_sha1": "87c5885793febb6f80e2f4c2ae251e8c5a0003d5"
     },
     {
       "path": "assets/CATALOG.json",
@@ -2325,6 +2331,6 @@
       "git_blob_sha1": "1136ffbfd15f5efa8c73f3e80037f1ff140c596a"
     }
   ],
-  "total_bytes": 92822640,
+  "total_bytes": 92827613,
   "base_weights_or_raw_images_included": false
 }
