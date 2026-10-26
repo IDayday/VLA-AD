@@ -1,3 +1,31 @@
+**PPU 实际张量已补交（在 `32bafef` 基础上）**
+
+- 实际张量：[ppu_native_no_bias.npz](ppu_native_no_bias.npz)，14,897,225 字节；解压后的原生 BF16 数据为 18,874,368 字节（18 MiB），shape `[9,1024,32,32]`。
+- 张量原始字节 SHA256：`c04efdfc37e1d5d2fc0ce8bf618df389103f20a7c183e53e708eaf3dbaf2389b`，精确命中要求。
+- NPZ 文件 SHA256：`9c1abc99ea9ba94db1160cdd89c566c5c2df4d2efacaed8e83d801deaa3a302d`，见 [文件校验](ppu_native_no_bias.npz.sha256)。
+- [PPU_EXPORT_RECEIPT.json](PPU_EXPORT_RECEIPT.json) 记录输入、四个实际设备参数、源码 SHA、精度前后状态和独立 CPU 载荷复核。
+
+原核查进程已退出，因此通过原 `RecogDriveBackbone` 入口重新加载同一冻结 VLM，使用逐位命中原 PPU 的实际 BF16 输入。直接调用本目录原版导出函数，未修改该脚本、模型参数、attention、norm 或精度标志。仅执行一次原生 BF16 无 bias 卷积，没有完整 VLM/动作前向或教师搜索。本次实际 `matmul.allow_tf32=False`、`cudnn.allow_tf32=True`、BF16/FP16 reduced reduction=True、autocast=False，导出前后相同。
+
+A800 可直接读取原 dtype 字节，不经过 FP32 转换：
+
+```python
+import hashlib, json, numpy as np, torch
+with np.load('ppu_native_no_bias.npz', allow_pickle=False) as z:
+    metadata = json.loads(z['__metadata_utf8__'].tobytes())
+    raw = z['native_no_bias'].copy()
+assert raw.dtype == np.uint8
+assert hashlib.sha256(raw.tobytes()).hexdigest() == \
+    'c04efdfc37e1d5d2fc0ce8bf618df389103f20a7c183e53e708eaf3dbaf2389b'
+C = torch.from_numpy(raw).view(torch.bfloat16).reshape(
+    metadata['tensors']['native_no_bias']['shape'])
+# C 此时在 CPU；需要时再 C.to(原 A800 模型所在设备)。
+```
+
+数据已满足下一步两端 C 的精确逐元素比较及 A800 后续路径注入所需的 PPU 载荷。**尚未在 PPU 侧执行 A800 对比或后续层注入，不宣称全链对齐。** 下文保留补交前的 A800 核查与交接要求，作为历史上下文。
+
+---
+
 **结论：已定位首个数值分歧，尚未修复到原 PPU 教师数据逐位一致。全量生成继续暂停。**
 
 本文针对名称含 `20261027` 的审计补包；没有把补包名称作为本地执行日期。输入仓库冻结为 `6bb7119583513094a169b4c2f2dc2a05ac293aa3`。

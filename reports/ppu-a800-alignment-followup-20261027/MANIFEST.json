@@ -6,9 +6,14 @@
   "bulk_generation_resumed": false,
   "files": [
     {
+      "path": "PPU_EXPORT_RECEIPT.json",
+      "bytes": 4877,
+      "sha256": "57da3169851450acd274da8acf99856fb08146c85d0614c8745ea501b7df327c"
+    },
+    {
       "path": "README.md",
-      "bytes": 7019,
-      "sha256": "d4831092ad66543a38fc116569395897c76a6eaad1b2effbfe04492f92916239"
+      "bytes": 9071,
+      "sha256": "230c48523fe106e2ed70a5ae742f2da37fa7db22f518d2ba927c2e498105788e"
     },
     {
       "path": "evidence/A800_tf32_false.json",
@@ -49,6 +54,18 @@
       "path": "export_ppu_native_C.py",
       "bytes": 2258,
       "sha256": "100570355f2d1e3edf119a256a5cfb32eacd4f517d02ec057a71cf8088fea931"
+    },
+    {
+      "path": "ppu_native_no_bias.npz",
+      "bytes": 14897225,
+      "sha256": "9c1abc99ea9ba94db1160cdd89c566c5c2df4d2efacaed8e83d801deaa3a302d"
+    },
+    {
+      "path": "ppu_native_no_bias.npz.sha256",
+      "bytes": 89,
+      "sha256": "b85790a172f5bc6b3744fbddc4a38a7f695f2d8f3789046fb6d9c6d1bef07524"
     }
-  ]
+  ],
+  "ppu_native_C_payload_delivered": true,
+  "ppu_export_based_on_commit": "32bafef"
 }
