@@ -1,0 +1,9 @@
+{
+  "shared_reference_B_SHA256": "4b68fe75dd277df7216e32ea2d3c2ac476d88e36c17615b6e96ddee0bfd61386",
+  "Native_PPU_vs_Native_A800_raw_different_elements_lower": 1983,
+  "Native_PPU_vs_Native_A800_raw_different_elements_upper": 3245,
+  "max_abs_error_upper": 0.01171875,
+  "L2_error_over_shared_B_norm_lower": 2.8436076816426338e-05,
+  "L2_error_over_shared_B_norm_upper": 8.975897073447173e-05,
+  "note": "Rigorous bounds from the byte-identical B reference, not measured exact Native-vs-Native errors. 631 alone is not the cross-platform mismatch count."
+}

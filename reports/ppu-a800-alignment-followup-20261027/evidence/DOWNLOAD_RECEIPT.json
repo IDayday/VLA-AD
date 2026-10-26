@@ -1,0 +1,61 @@
+{
+  "time": "2026-10-26T17:32:07.125749+00:00",
+  "branch": "audit/ppu-a800-embedding-20261027",
+  "commit": "0a1b1eb0813643b9d7c1ba7711009943133cc7d8",
+  "downloads": [
+    {
+      "file": "ppu-a800-embedding-audit-20261027.README.md",
+      "url": "https://raw.githubusercontent.com/IDayday/VLA-AD/0a1b1eb0813643b9d7c1ba7711009943133cc7d8/reports/ppu-a800-embedding-audit-20261027.README.md",
+      "bytes": 1154,
+      "sha256": "22068fc9d119b85a72c1775374ff976ea862a131d3e8673c75212322bf7a2c0a",
+      "git_blob_sha1": "becf90fa0ed45daaf22bdc0216950f755733393c"
+    },
+    {
+      "file": "ppu-a800-embedding-audit-20261027.tar.gz.sha256",
+      "url": "https://raw.githubusercontent.com/IDayday/VLA-AD/0a1b1eb0813643b9d7c1ba7711009943133cc7d8/reports/ppu-a800-embedding-audit-20261027.tar.gz.sha256",
+      "bytes": 107,
+      "sha256": "d7bc730646133f52fae73e095bfe4bed658309504a810932dffe7513b2e8cccd",
+      "git_blob_sha1": "6b7538f6dbf2960e4ee3327458c00fd72a2b9745"
+    },
+    {
+      "file": "ppu-a800-embedding-audit-20261027.tar.gz",
+      "url": "https://raw.githubusercontent.com/IDayday/VLA-AD/0a1b1eb0813643b9d7c1ba7711009943133cc7d8/reports/ppu-a800-embedding-audit-20261027.tar.gz",
+      "bytes": 31953,
+      "sha256": "5b3505b59439d839ca4add76323ff0e51d3e4e8d806be092634912dfc08d9e75",
+      "git_blob_sha1": "ac29520c17586499fd6b242b82bacb58c2172ca5"
+    }
+  ],
+  "published_archive_SHA_verified": true,
+  "members": [
+    {
+      "path": "ppu-a800-embedding-audit-20261027/MANIFEST.json",
+      "bytes": 988,
+      "sha256": "e8d118bcafa40e66a581a66910ac1bfdb156123c38343698711dad3833542584"
+    },
+    {
+      "path": "ppu-a800-embedding-audit-20261027/READ_ME.txt",
+      "bytes": 1704,
+      "sha256": "0ddc43584da873c6bec6313dfbf31be4a6edb9812f4fb1966579495a0e01473a"
+    },
+    {
+      "path": "ppu-a800-embedding-audit-20261027/REPORT.html",
+      "bytes": 96605,
+      "sha256": "a1551ae1b916ea14bf4bfc2017d79ed69e6c16a0932e71333759fac3fcd4fef0"
+    },
+    {
+      "path": "ppu-a800-embedding-audit-20261027/audit_embedding.py",
+      "bytes": 15805,
+      "sha256": "39251a9ab05bf55740cc3e2aa6e4cca5bd923af2fd77f2cf3834dcc960d114a3"
+    },
+    {
+      "path": "ppu-a800-embedding-audit-20261027/local_results.json",
+      "bytes": 35160,
+      "sha256": "ddbf3a0bd46b48e2f6a6fd71d1a69d5b838df132db91886a1528c02d5ef4fb1a"
+    },
+    {
+      "path": "ppu-a800-embedding-audit-20261027/validation.json",
+      "bytes": 422,
+      "sha256": "5dde4a06b00903ba72b420d39c6ef5303d4efd87f7b438921f0cdd8b190a357c"
+    }
+  ]
+}

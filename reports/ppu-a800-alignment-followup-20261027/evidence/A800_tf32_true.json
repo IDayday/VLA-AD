@@ -1,0 +1,967 @@
+{
+  "status": "COMPLETE_RECEIVED_SCRIPT_A800_CAPTURE",
+  "time": "2026-10-26T17:42:17.673090+00:00",
+  "report": {
+    "schema": 1,
+    "scene": "0002267a294e52a7",
+    "status": "COLLECTED",
+    "errors": {},
+    "environment": {
+      "torch": "2.4.0+cu124",
+      "torch_git": "e4ee3be4063b7c430974252fdf7db42273388d86",
+      "python": "3.10.20",
+      "torch_cuda_build": "12.4",
+      "flags": {
+        "tf32_matmul": false,
+        "tf32_cudnn": true,
+        "bf16_reduced": true,
+        "fp16_reduced": true,
+        "matmul_precision": "highest",
+        "autocast": false,
+        "cudnn_benchmark": false,
+        "cudnn_deterministic": false,
+        "deterministic_algorithms": false
+      },
+      "device": "cuda:0",
+      "transformers": "4.37.0",
+      "timm": "1.0.20",
+      "torchvision": "0.19.0+cu124",
+      "numpy": "1.26.4",
+      "Pillow": "10.1.0",
+      "device_name": "NVIDIA A800-SXM4-80GB"
+    },
+    "pixels": {
+      "shape": [
+        9,
+        3,
+        448,
+        448
+      ],
+      "dtype": "torch.bfloat16",
+      "stride": [
+        602112,
+        200704,
+        448,
+        1
+      ],
+      "device": "cuda:0",
+      "sha256": "f0d5c4a3814c428ac6cca1a0ec5293c5d624fe2d5669c926cc9d3c594e7ab4ac"
+    },
+    "parameters": {
+      "class_embedding": {
+        "shape": [
+          1,
+          1,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          1024,
+          1024,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "2ffe312fbc671217cf3cd0f98faee072604336ffe387466c5074015cbddd690e",
+        "matches_reference_sha": true
+      },
+      "position_embedding": {
+        "shape": [
+          1,
+          1025,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          1049600,
+          1024,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "49f52f43097694aece525b5d9cac260260fdc7415fcaf6f3ef04c1834a329498",
+        "matches_reference_sha": true
+      },
+      "patch_embedding.weight": {
+        "shape": [
+          1024,
+          3,
+          14,
+          14
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          588,
+          196,
+          14,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "425967ed2a49b8bd8b855b2e409bc62610668319252b6c19456872cf096cf1b9",
+        "matches_reference_sha": true
+      },
+      "patch_embedding.bias": {
+        "shape": [
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "22c02c387fde92e85b5ce2fcad6790c68f5dbde2d46d2cda96a02870a48f0069",
+        "matches_reference_sha": true
+      }
+    },
+    "native": {
+      "patch": {
+        "shape": [
+          9,
+          1024,
+          32,
+          32
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          1048576,
+          1024,
+          32,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "5c2bc73d5f9638bd46a2f05b40b555e00b0ca10795a61d2b62f38d9d8f2b74a6"
+      },
+      "position": {
+        "shape": [
+          1,
+          1024,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          1024,
+          1024,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "caad8e186d73c8c7469a372c478a8ab02398eeaf47ecfaedff6054ca175d211c"
+      },
+      "full": {
+        "shape": [
+          9,
+          1025,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          1049600,
+          1024,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "f6baad2b747217f687d472eefae293619ba84c6b7c56ea8681381961c3a72ae8"
+      },
+      "CLS_output": {
+        "shape": [
+          9,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          1049600,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "9999ddbc5ccae9bd81b5e022fe0a421d79b9d10fc5e3b2eaedc41941f240ce17"
+      },
+      "PATCH_output": {
+        "shape": [
+          9,
+          1024,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          1049600,
+          1024,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "cb4b54527c8dc5c6adffcb0869802d57004965a69a4b24d597daa72ed51e4df0"
+      }
+    },
+    "diagnostics": {
+      "position_vs_uninterpolated": {
+        "comparable": true,
+        "raw_bytes_equal": true,
+        "numeric_equal": true,
+        "elements": 1048576,
+        "different_elements": 0,
+        "max_abs_error": 0.0,
+        "relative_l2": 0.0,
+        "relative_l2_denominator": "L2(second_tensor)",
+        "first16": [],
+        "torch_equal": true
+      },
+      "native_no_bias": {
+        "shape": [
+          9,
+          1024,
+          32,
+          32
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          1048576,
+          1024,
+          32,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "bf31e9e59faa5cadc54c23000cd17dc14254b956aca0e9ae821e9842340228b0"
+      },
+      "native_split_bias": {
+        "shape": [
+          9,
+          1024,
+          32,
+          32
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          1048576,
+          1024,
+          32,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "5c2bc73d5f9638bd46a2f05b40b555e00b0ca10795a61d2b62f38d9d8f2b74a6"
+      },
+      "native_patch_vs_native_split_bias": {
+        "comparable": true,
+        "raw_bytes_equal": true,
+        "numeric_equal": true,
+        "elements": 9437184,
+        "different_elements": 0,
+        "max_abs_error": 0.0,
+        "relative_l2": 0.0,
+        "relative_l2_denominator": "L2(second_tensor)",
+        "first16": [],
+        "torch_equal": true
+      },
+      "A": {
+        "shape": [
+          9,
+          1024,
+          32,
+          32
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          1048576,
+          1024,
+          32,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "6d4534341b80eaf4786525ec546db64933ae28e7f742b68ab162c166218ae2b3"
+      },
+      "fp32_no_bias": {
+        "shape": [
+          9,
+          1024,
+          32,
+          32
+        ],
+        "dtype": "torch.float32",
+        "stride": [
+          1048576,
+          1024,
+          32,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "b28c4a6ae91b98b3ef05ce9b9405ebb1eab005f077fa4bdbc7b937a9453a5f4e"
+      },
+      "fp32_no_bias_bf16": {
+        "shape": [
+          9,
+          1024,
+          32,
+          32
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          1048576,
+          1024,
+          32,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "9090ddc574f732bc2d25e688eb159067704097d0ac12d8c3940c76dc4147607b"
+      },
+      "B": {
+        "shape": [
+          9,
+          1024,
+          32,
+          32
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          1048576,
+          1024,
+          32,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "4b68fe75dd277df7216e32ea2d3c2ac476d88e36c17615b6e96ddee0bfd61386"
+      },
+      "fp32_separate_bias_then_cast": {
+        "shape": [
+          9,
+          1024,
+          32,
+          32
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          1048576,
+          1024,
+          32,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "6d4534341b80eaf4786525ec546db64933ae28e7f742b68ab162c166218ae2b3"
+      },
+      "A_vs_fp32_separate_bias_then_cast": {
+        "comparable": true,
+        "raw_bytes_equal": true,
+        "numeric_equal": true,
+        "elements": 9437184,
+        "different_elements": 0,
+        "max_abs_error": 0.0,
+        "relative_l2": 0.0,
+        "relative_l2_denominator": "L2(second_tensor)",
+        "first16": [],
+        "torch_equal": true
+      },
+      "native_patch_vs_A": {
+        "comparable": true,
+        "raw_bytes_equal": false,
+        "numeric_equal": false,
+        "elements": 9437184,
+        "different_elements": 2644939,
+        "max_abs_error": 0.015625,
+        "relative_l2": 0.0025933334680706913,
+        "relative_l2_denominator": "L2(second_tensor)",
+        "first16": [
+          {
+            "flat_index": 11,
+            "first": -0.0654296875,
+            "second": -0.06591796875,
+            "difference": 0.00048828125
+          },
+          {
+            "flat_index": 24,
+            "first": -0.053466796875,
+            "second": -0.05322265625,
+            "difference": -0.000244140625
+          },
+          {
+            "flat_index": 27,
+            "first": -0.06298828125,
+            "second": -0.0634765625,
+            "difference": 0.00048828125
+          },
+          {
+            "flat_index": 33,
+            "first": -0.048828125,
+            "second": -0.048583984375,
+            "difference": -0.000244140625
+          },
+          {
+            "flat_index": 34,
+            "first": -0.04736328125,
+            "second": -0.047119140625,
+            "difference": -0.000244140625
+          },
+          {
+            "flat_index": 36,
+            "first": -0.06494140625,
+            "second": -0.0654296875,
+            "difference": 0.00048828125
+          },
+          {
+            "flat_index": 48,
+            "first": -0.07861328125,
+            "second": -0.078125,
+            "difference": -0.00048828125
+          },
+          {
+            "flat_index": 81,
+            "first": 0.1533203125,
+            "second": 0.15234375,
+            "difference": 0.0009765625
+          },
+          {
+            "flat_index": 84,
+            "first": -0.1806640625,
+            "second": -0.181640625,
+            "difference": 0.0009765625
+          },
+          {
+            "flat_index": 89,
+            "first": 0.1416015625,
+            "second": 0.140625,
+            "difference": 0.0009765625
+          },
+          {
+            "flat_index": 90,
+            "first": 0.126953125,
+            "second": 0.1259765625,
+            "difference": 0.0009765625
+          },
+          {
+            "flat_index": 92,
+            "first": 0.0008697509765625,
+            "second": 0.00086212158203125,
+            "difference": 7.62939453125e-06
+          },
+          {
+            "flat_index": 94,
+            "first": -0.1669921875,
+            "second": -0.16796875,
+            "difference": 0.0009765625
+          },
+          {
+            "flat_index": 99,
+            "first": -0.228515625,
+            "second": -0.2294921875,
+            "difference": 0.0009765625
+          },
+          {
+            "flat_index": 103,
+            "first": -0.2177734375,
+            "second": -0.21875,
+            "difference": 0.0009765625
+          },
+          {
+            "flat_index": 104,
+            "first": -0.1396484375,
+            "second": -0.140625,
+            "difference": 0.0009765625
+          }
+        ],
+        "torch_equal": false
+      },
+      "native_patch_vs_B": {
+        "comparable": true,
+        "raw_bytes_equal": false,
+        "numeric_equal": false,
+        "elements": 9437184,
+        "different_elements": 2614,
+        "max_abs_error": 0.0078125,
+        "relative_l2": 5.909752377544904e-05,
+        "relative_l2_denominator": "L2(second_tensor)",
+        "first16": [
+          {
+            "flat_index": 694,
+            "first": -0.015869140625,
+            "second": -0.0157470703125,
+            "difference": -0.0001220703125
+          },
+          {
+            "flat_index": 2660,
+            "first": -0.00457763671875,
+            "second": -0.004638671875,
+            "difference": 6.103515625e-05
+          },
+          {
+            "flat_index": 2704,
+            "first": 0.001708984375,
+            "second": 0.0015869140625,
+            "difference": 0.0001220703125
+          },
+          {
+            "flat_index": 14468,
+            "first": -0.169921875,
+            "second": -0.1689453125,
+            "difference": -0.0009765625
+          },
+          {
+            "flat_index": 19610,
+            "first": 0.007171630859375,
+            "second": 0.007232666015625,
+            "difference": -6.103515625e-05
+          },
+          {
+            "flat_index": 33527,
+            "first": -0.03515625,
+            "second": -0.034912109375,
+            "difference": -0.000244140625
+          },
+          {
+            "flat_index": 36589,
+            "first": -0.04052734375,
+            "second": -0.040283203125,
+            "difference": -0.000244140625
+          },
+          {
+            "flat_index": 44904,
+            "first": 0.0032501220703125,
+            "second": 0.00323486328125,
+            "difference": 1.52587890625e-05
+          },
+          {
+            "flat_index": 50275,
+            "first": 0.00341796875,
+            "second": 0.0034332275390625,
+            "difference": -1.52587890625e-05
+          },
+          {
+            "flat_index": 55241,
+            "first": 0.000579833984375,
+            "second": 0.000640869140625,
+            "difference": -6.103515625e-05
+          },
+          {
+            "flat_index": 55247,
+            "first": -0.0087890625,
+            "second": -0.00872802734375,
+            "difference": -6.103515625e-05
+          },
+          {
+            "flat_index": 56027,
+            "first": -0.01080322265625,
+            "second": -0.0107421875,
+            "difference": -6.103515625e-05
+          },
+          {
+            "flat_index": 60987,
+            "first": -0.037353515625,
+            "second": -0.037109375,
+            "difference": -0.000244140625
+          },
+          {
+            "flat_index": 61009,
+            "first": 0.00157928466796875,
+            "second": 0.0015869140625,
+            "difference": -7.62939453125e-06
+          },
+          {
+            "flat_index": 61296,
+            "first": -0.04736328125,
+            "second": -0.047119140625,
+            "difference": -0.000244140625
+          },
+          {
+            "flat_index": 63028,
+            "first": -0.02099609375,
+            "second": -0.0211181640625,
+            "difference": 0.0001220703125
+          }
+        ],
+        "torch_equal": false
+      },
+      "native_no_bias_vs_fp32_no_bias_bf16": {
+        "comparable": true,
+        "raw_bytes_equal": false,
+        "numeric_equal": false,
+        "elements": 9437184,
+        "different_elements": 6980,
+        "max_abs_error": 0.0078125,
+        "relative_l2": 5.876495917451452e-05,
+        "relative_l2_denominator": "L2(second_tensor)",
+        "first16": [
+          {
+            "flat_index": 597,
+            "first": -0.001129150390625,
+            "second": -0.00112152099609375,
+            "difference": -7.62939453125e-06
+          },
+          {
+            "flat_index": 694,
+            "first": -0.012451171875,
+            "second": -0.01239013671875,
+            "difference": -6.103515625e-05
+          },
+          {
+            "flat_index": 905,
+            "first": -5.984306335449219e-05,
+            "second": -5.9604644775390625e-05,
+            "difference": -2.384185791015625e-07
+          },
+          {
+            "flat_index": 966,
+            "first": 5.178153514862061e-07,
+            "second": 6.370246410369873e-07,
+            "difference": -1.1920928955078125e-07
+          },
+          {
+            "flat_index": 2602,
+            "first": 0.006134033203125,
+            "second": 0.006103515625,
+            "difference": 3.0517578125e-05
+          },
+          {
+            "flat_index": 2660,
+            "first": 0.01312255859375,
+            "second": 0.0130615234375,
+            "difference": 6.103515625e-05
+          },
+          {
+            "flat_index": 2704,
+            "first": 0.0194091796875,
+            "second": 0.019287109375,
+            "difference": 0.0001220703125
+          },
+          {
+            "flat_index": 2767,
+            "first": -0.00762939453125,
+            "second": -0.007659912109375,
+            "difference": 3.0517578125e-05
+          },
+          {
+            "flat_index": 6422,
+            "first": 0.00186920166015625,
+            "second": 0.001861572265625,
+            "difference": 7.62939453125e-06
+          },
+          {
+            "flat_index": 6425,
+            "first": -0.0001277923583984375,
+            "second": -0.00012874603271484375,
+            "difference": 9.5367431640625e-07
+          },
+          {
+            "flat_index": 9906,
+            "first": 1.3649463653564453e-05,
+            "second": 1.3589859008789062e-05,
+            "difference": 5.960464477539063e-08
+          },
+          {
+            "flat_index": 11022,
+            "first": -2.7179718017578125e-05,
+            "second": -2.7060508728027344e-05,
+            "difference": -1.1920928955078125e-07
+          },
+          {
+            "flat_index": 14287,
+            "first": -0.0001125335693359375,
+            "second": -0.00011301040649414062,
+            "difference": 4.76837158203125e-07
+          },
+          {
+            "flat_index": 14468,
+            "first": -0.1640625,
+            "second": -0.1630859375,
+            "difference": -0.0009765625
+          },
+          {
+            "flat_index": 16352,
+            "first": 0.0007476806640625,
+            "second": 0.000751495361328125,
+            "difference": -3.814697265625e-06
+          },
+          {
+            "flat_index": 16749,
+            "first": 0.00060272216796875,
+            "second": 0.000598907470703125,
+            "difference": 3.814697265625e-06
+          }
+        ],
+        "torch_equal": false
+      },
+      "X": {
+        "shape": [
+          9,
+          1025,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          1049600,
+          1024,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "e20d48a0d8559d7fd4427c14801af62ff460afdc05518bf73d09968b95eb51f8"
+      },
+      "P": {
+        "shape": [
+          1,
+          1025,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          1049600,
+          1024,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "49f52f43097694aece525b5d9cac260260fdc7415fcaf6f3ef04c1834a329498"
+      },
+      "X_plus_P": {
+        "shape": [
+          9,
+          1025,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          1049600,
+          1024,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "f6baad2b747217f687d472eefae293619ba84c6b7c56ea8681381961c3a72ae8"
+      },
+      "FP32_add_then_BF16": {
+        "shape": [
+          9,
+          1025,
+          1024
+        ],
+        "dtype": "torch.bfloat16",
+        "stride": [
+          1049600,
+          1024,
+          1
+        ],
+        "device": "cuda:0",
+        "sha256": "f6baad2b747217f687d472eefae293619ba84c6b7c56ea8681381961c3a72ae8"
+      },
+      "full_vs_X_plus_P": {
+        "comparable": true,
+        "raw_bytes_equal": true,
+        "numeric_equal": true,
+        "elements": 9446400,
+        "different_elements": 0,
+        "max_abs_error": 0.0,
+        "relative_l2": 0.0,
+        "relative_l2_denominator": "L2(second_tensor)",
+        "first16": [],
+        "torch_equal": true
+      },
+      "BF16_add_vs_FP32_add_cast": {
+        "comparable": true,
+        "raw_bytes_equal": true,
+        "numeric_equal": true,
+        "elements": 9446400,
+        "different_elements": 0,
+        "max_abs_error": 0.0,
+        "relative_l2": 0.0,
+        "relative_l2_denominator": "L2(second_tensor)",
+        "first16": [],
+        "torch_equal": true
+      }
+    },
+    "parameters_comparable": true,
+    "convolution_attributes": {
+      "stride": [
+        14,
+        14
+      ],
+      "padding": [
+        0,
+        0
+      ],
+      "dilation": [
+        1,
+        1
+      ],
+      "groups": 1,
+      "kernel_size": [
+        14,
+        14
+      ]
+    },
+    "embedding_source": {
+      "path": "/mnt/project/recogdrive-teacher2-a800-20261026/diagnostics/ppu_audit_20261027/A800_CAPTURE/tf32_true/runtime/teacher_export/hf_modules_cache/transformers_modules/ReCogDrive-VLM-2B/modeling_intern_vit.py",
+      "sha256": "1978e330ea5533dda4d1379096aded271fc741347fc48cb4924846b56a2a6a4b"
+    },
+    "model_sources": {
+      "chat": {
+        "class": "InternVLChatModel",
+        "path": "/mnt/project/recogdrive-teacher2-a800-20261026/diagnostics/ppu_audit_20261027/A800_CAPTURE/tf32_true/runtime/teacher_export/hf_modules_cache/transformers_modules/ReCogDrive-VLM-2B/modeling_internvl_chat.py",
+        "sha256": "5d8f26ccfeb8434c0bcc295050725add4b2f2b0ffb4d1ab550c877a648386597"
+      },
+      "language_attention": {
+        "class": "Qwen2Attention",
+        "path": "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/lib/python3.10/site-packages/transformers/models/qwen2/modeling_qwen2.py",
+        "sha256": "1a6fab248bdd2dc99898a2baaa8ea9880068d8d229a4f50a90ae4429ccd5ab08"
+      }
+    },
+    "preservation": {
+      "precision_flags_unchanged": true,
+      "parameter_versions_unchanged": true,
+      "parameter_hashes_unchanged": true,
+      "changed_environment_keys": []
+    },
+    "against_recorded_PPU": {
+      "patch": false,
+      "position": true,
+      "full": false,
+      "CLS_output": true,
+      "PATCH_output": false,
+      "A": true,
+      "B": true,
+      "X": false,
+      "P": true,
+      "X_plus_P": false,
+      "FP32_add_then_BF16": false
+    },
+    "against_user_A800": {
+      "pixels": true,
+      "patch": true,
+      "position": true,
+      "full": true,
+      "CLS_output": true,
+      "PATCH_output": true,
+      "A": false,
+      "B": false
+    }
+  },
+  "tensor_payload": {
+    "path": "/mnt/project/recogdrive-teacher2-a800-20261026/diagnostics/ppu_audit_20261027/A800_CAPTURE/tf32_true/a800_embedding_payload.npz",
+    "bytes": 132058996,
+    "sha256": "a07537995acb1c4bcc6a685a04754ec5929e61c4552104b8807d6b9cab2db1f9"
+  },
+  "mathematical_controls": {},
+  "PPU_known_coordinate_comparison": [
+    {
+      "index": 966,
+      "PPU_native_C": 5.774199962615967e-07,
+      "PPU_FP32_Dq": 6.370246410369873e-07,
+      "A800_native_C": 5.178153514862061e-07,
+      "A800_FP32_Dq": 6.370246410369873e-07,
+      "A800_FP32_unrounded_D": 6.370246410369873e-07
+    },
+    {
+      "index": 2660,
+      "PPU_native_C": 0.01312255859375,
+      "PPU_FP32_Dq": 0.0130615234375,
+      "A800_native_C": 0.01312255859375,
+      "A800_FP32_Dq": 0.0130615234375,
+      "A800_FP32_unrounded_D": 0.013092003762722015
+    },
+    {
+      "index": 6422,
+      "PPU_native_C": 0.00186920166015625,
+      "PPU_FP32_Dq": 0.001861572265625,
+      "A800_native_C": 0.00186920166015625,
+      "A800_FP32_Dq": 0.001861572265625,
+      "A800_FP32_unrounded_D": 0.0018653683364391327
+    },
+    {
+      "index": 6506,
+      "PPU_native_C": 0.00823974609375,
+      "PPU_FP32_Dq": 0.00830078125,
+      "A800_native_C": 0.00830078125,
+      "A800_FP32_Dq": 0.00830078125,
+      "A800_FP32_unrounded_D": 0.00827027577906847
+    },
+    {
+      "index": 9906,
+      "PPU_native_C": 1.3649463653564453e-05,
+      "PPU_FP32_Dq": 1.3589859008789062e-05,
+      "A800_native_C": 1.3649463653564453e-05,
+      "A800_FP32_Dq": 1.3589859008789062e-05,
+      "A800_FP32_unrounded_D": 1.359451562166214e-05
+    },
+    {
+      "index": 33527,
+      "PPU_native_C": -0.034423828125,
+      "PPU_FP32_Dq": -0.0341796875,
+      "A800_native_C": -0.034423828125,
+      "A800_FP32_Dq": -0.0341796875,
+      "A800_FP32_unrounded_D": -0.0343017578125
+    },
+    {
+      "index": 36589,
+      "PPU_native_C": -0.03955078125,
+      "PPU_FP32_Dq": -0.039306640625,
+      "A800_native_C": -0.03955078125,
+      "A800_FP32_Dq": -0.039306640625,
+      "A800_FP32_unrounded_D": -0.0394287034869194
+    },
+    {
+      "index": 44642,
+      "PPU_native_C": -2.5331974029541016e-06,
+      "PPU_FP32_Dq": -2.5480985641479492e-06,
+      "A800_native_C": -2.5033950805664062e-06,
+      "A800_FP32_Dq": -2.5480985641479492e-06,
+      "A800_FP32_unrounded_D": -2.5508925318717957e-06
+    },
+    {
+      "index": 55247,
+      "PPU_native_C": -0.00103759765625,
+      "PPU_FP32_Dq": -0.00102996826171875,
+      "A800_native_C": -0.00103759765625,
+      "A800_FP32_Dq": -0.00102996826171875,
+      "A800_FP32_unrounded_D": -0.001033775508403778
+    },
+    {
+      "index": 57083,
+      "PPU_native_C": 5.125999450683594e-05,
+      "PPU_FP32_Dq": 5.14984130859375e-05,
+      "A800_native_C": 5.14984130859375e-05,
+      "A800_FP32_Dq": 5.14984130859375e-05,
+      "A800_FP32_unrounded_D": 5.1409006118774414e-05
+    },
+    {
+      "index": 59400,
+      "PPU_native_C": -0.00067138671875,
+      "PPU_FP32_Dq": -0.000675201416015625,
+      "A800_native_C": -0.000675201416015625,
+      "A800_FP32_Dq": -0.000675201416015625,
+      "A800_FP32_unrounded_D": -0.0006733238697052002
+    },
+    {
+      "index": 59445,
+      "PPU_native_C": -0.00012874603271484375,
+      "PPU_FP32_Dq": -0.0001277923583984375,
+      "A800_native_C": -0.0001277923583984375,
+      "A800_FP32_Dq": -0.0001277923583984375,
+      "A800_FP32_unrounded_D": -0.00012826919555664062
+    },
+    {
+      "index": 59704,
+      "PPU_native_C": 0.0004119873046875,
+      "PPU_FP32_Dq": 0.0004138946533203125,
+      "A800_native_C": 0.0004138946533203125,
+      "A800_FP32_Dq": 0.0004138946533203125,
+      "A800_FP32_unrounded_D": 0.00041297078132629395
+    },
+    {
+      "index": 60987,
+      "PPU_native_C": -0.03759765625,
+      "PPU_FP32_Dq": -0.037353515625,
+      "A800_native_C": -0.03759765625,
+      "A800_FP32_Dq": -0.037353515625,
+      "A800_FP32_unrounded_D": -0.03747556358575821
+    },
+    {
+      "index": 73441,
+      "PPU_native_C": -0.000640869140625,
+      "PPU_FP32_Dq": -0.000644683837890625,
+      "A800_native_C": -0.000644683837890625,
+      "A800_FP32_Dq": -0.000644683837890625,
+      "A800_FP32_unrounded_D": -0.000642780214548111
+    },
+    {
+      "index": 75267,
+      "PPU_native_C": 0.1142578125,
+      "PPU_FP32_Dq": 0.11376953125,
+      "A800_native_C": 0.1142578125,
+      "A800_FP32_Dq": 0.11376953125,
+      "A800_FP32_unrounded_D": 0.1140136569738388
+    }
+  ],
+  "incoming_script_sha256": "39251a9ab05bf55740cc3e2aa6e4cca5bd923af2fd77f2cf3834dcc960d114a3",
+  "adapted_script_sha256": "0bad4bb44d5912864512e0af4dbbb7200902e3bc0c637d08ce1d0892377d9c88",
+  "cudnn_version": 90700,
+  "original_inference_tf32_cudnn": false,
+  "audit_tf32_cudnn": true,
+  "scope": "One first-embedding scene only; no complete VLM/teacher cache generation"
+}

@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "frozen_teacher_commit": "6bb7119583513094a169b4c2f2dc2a05ac293aa3",
+  "incoming_audit_commit": "0a1b1eb0813643b9d7c1ba7711009943133cc7d8",
+  "alignment_complete": false,
+  "bulk_generation_resumed": false,
+  "files": [
+    {
+      "path": "README.md",
+      "bytes": 7019,
+      "sha256": "d4831092ad66543a38fc116569395897c76a6eaad1b2effbfe04492f92916239"
+    },
+    {
+      "path": "evidence/A800_tf32_false.json",
+      "bytes": 28646,
+      "sha256": "2cbd0d6e2ade31968e27b15a3166bdd16f1be7df2868d563a31f94ac2e6cac68"
+    },
+    {
+      "path": "evidence/A800_tf32_true.json",
+      "bytes": 26671,
+      "sha256": "e227ac6247f9d3dd5265efe0cc43e1e0c585d0e1ad35422ffd3baeb742e1eaf2"
+    },
+    {
+      "path": "evidence/CUDNN_v7.json",
+      "bytes": 4013,
+      "sha256": "4983e24aeb29cb793b77eb45becf761548fd15167031acf9d25401cad24f6bfa"
+    },
+    {
+      "path": "evidence/CUDNN_v8.json",
+      "bytes": 4013,
+      "sha256": "da5ead6844f3ca9c656a551bd9362f900f78e125e649df819ce8ef894fa856ae"
+    },
+    {
+      "path": "evidence/DERIVED_BOUNDS.json",
+      "bytes": 558,
+      "sha256": "a61f77a27726d0328f83da42f79aaac22b48aeca44b3d0baada333dd2a2620d5"
+    },
+    {
+      "path": "evidence/DOWNLOAD_RECEIPT.json",
+      "bytes": 2548,
+      "sha256": "5b7929f39d5155c9ad742528829be8bbc3cd166ae1f39d57a46f12679721faf2"
+    },
+    {
+      "path": "evidence/PATCH_RECEIPT.json",
+      "bytes": 449,
+      "sha256": "66b91185bcbd9154faf1094eda0a34fb7bd2592c8c049c83de7b1d864f29788a"
+    },
+    {
+      "path": "export_ppu_native_C.py",
+      "bytes": 2258,
+      "sha256": "100570355f2d1e3edf119a256a5cfb32eacd4f517d02ec057a71cf8088fea931"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "original_sha256": "39251a9ab05bf55740cc3e2aa6e4cca5bd923af2fd77f2cf3834dcc960d114a3",
+  "adapted_sha256": "0bad4bb44d5912864512e0af4dbbb7200902e3bc0c637d08ce1d0892377d9c88",
+  "change": {
+    "before": "report[\"against_user_A800\"] = {k: tensor_sha(v) == expected",
+    "after": "report[\"against_user_A800\"] = {k: tensor_sha(tensors[k]) == expected"
+  },
+  "numerical_tensor_operations_changed": false,
+  "original_bundle_unchanged": true
+}

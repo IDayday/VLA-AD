@@ -1,0 +1,100 @@
+{
+  "status": "COMPLETE_BOUNDED_CUDNN_ALGORITHM_CONTROLS",
+  "time": "2026-10-26T17:45:56.167955+00:00",
+  "api": "v7",
+  "disabled_v8_environment": "1",
+  "torch": "2.4.0+cu124",
+  "cudnn": 90700,
+  "cases": [
+    {
+      "layout": "NCHW",
+      "deterministic": false,
+      "benchmark": false,
+      "C_sha256": "2ba80ff86f1ab0a01db452e6493c6c1668d8b27aa29c60800825ff9862dfecae",
+      "patch_sha256": "0fe3087b9ca2186768b083a64196fd9ac7643511620dd09f87ac28735a04c283",
+      "full_sha256": "7125e2c85cc701e7c263779e8e4917805d499343b05bef76efdc65a30f10dbca",
+      "C_matches_PPU": false,
+      "patch_matches_PPU": false,
+      "full_matches_PPU": false
+    },
+    {
+      "layout": "NCHW",
+      "deterministic": true,
+      "benchmark": false,
+      "C_sha256": "2ba80ff86f1ab0a01db452e6493c6c1668d8b27aa29c60800825ff9862dfecae",
+      "patch_sha256": "0fe3087b9ca2186768b083a64196fd9ac7643511620dd09f87ac28735a04c283",
+      "full_sha256": "7125e2c85cc701e7c263779e8e4917805d499343b05bef76efdc65a30f10dbca",
+      "C_matches_PPU": false,
+      "patch_matches_PPU": false,
+      "full_matches_PPU": false
+    },
+    {
+      "layout": "NCHW",
+      "deterministic": false,
+      "benchmark": true,
+      "C_sha256": "2ba80ff86f1ab0a01db452e6493c6c1668d8b27aa29c60800825ff9862dfecae",
+      "patch_sha256": "0fe3087b9ca2186768b083a64196fd9ac7643511620dd09f87ac28735a04c283",
+      "full_sha256": "7125e2c85cc701e7c263779e8e4917805d499343b05bef76efdc65a30f10dbca",
+      "C_matches_PPU": false,
+      "patch_matches_PPU": false,
+      "full_matches_PPU": false
+    },
+    {
+      "layout": "NCHW",
+      "deterministic": true,
+      "benchmark": true,
+      "C_sha256": "2ba80ff86f1ab0a01db452e6493c6c1668d8b27aa29c60800825ff9862dfecae",
+      "patch_sha256": "0fe3087b9ca2186768b083a64196fd9ac7643511620dd09f87ac28735a04c283",
+      "full_sha256": "7125e2c85cc701e7c263779e8e4917805d499343b05bef76efdc65a30f10dbca",
+      "C_matches_PPU": false,
+      "patch_matches_PPU": false,
+      "full_matches_PPU": false
+    },
+    {
+      "layout": "channels_last",
+      "deterministic": false,
+      "benchmark": false,
+      "C_sha256": "2ba80ff86f1ab0a01db452e6493c6c1668d8b27aa29c60800825ff9862dfecae",
+      "patch_sha256": "0fe3087b9ca2186768b083a64196fd9ac7643511620dd09f87ac28735a04c283",
+      "full_sha256": "7125e2c85cc701e7c263779e8e4917805d499343b05bef76efdc65a30f10dbca",
+      "C_matches_PPU": false,
+      "patch_matches_PPU": false,
+      "full_matches_PPU": false
+    },
+    {
+      "layout": "channels_last",
+      "deterministic": true,
+      "benchmark": false,
+      "C_sha256": "2ba80ff86f1ab0a01db452e6493c6c1668d8b27aa29c60800825ff9862dfecae",
+      "patch_sha256": "0fe3087b9ca2186768b083a64196fd9ac7643511620dd09f87ac28735a04c283",
+      "full_sha256": "7125e2c85cc701e7c263779e8e4917805d499343b05bef76efdc65a30f10dbca",
+      "C_matches_PPU": false,
+      "patch_matches_PPU": false,
+      "full_matches_PPU": false
+    },
+    {
+      "layout": "channels_last",
+      "deterministic": false,
+      "benchmark": true,
+      "C_sha256": "2ba80ff86f1ab0a01db452e6493c6c1668d8b27aa29c60800825ff9862dfecae",
+      "patch_sha256": "0fe3087b9ca2186768b083a64196fd9ac7643511620dd09f87ac28735a04c283",
+      "full_sha256": "7125e2c85cc701e7c263779e8e4917805d499343b05bef76efdc65a30f10dbca",
+      "C_matches_PPU": false,
+      "patch_matches_PPU": false,
+      "full_matches_PPU": false
+    },
+    {
+      "layout": "channels_last",
+      "deterministic": true,
+      "benchmark": true,
+      "C_sha256": "2ba80ff86f1ab0a01db452e6493c6c1668d8b27aa29c60800825ff9862dfecae",
+      "patch_sha256": "0fe3087b9ca2186768b083a64196fd9ac7643511620dd09f87ac28735a04c283",
+      "full_sha256": "7125e2c85cc701e7c263779e8e4917805d499343b05bef76efdc65a30f10dbca",
+      "C_matches_PPU": false,
+      "patch_matches_PPU": false,
+      "full_matches_PPU": false
+    }
+  ],
+  "cache_generation_resumed": false,
+  "scope": "One known scene; original frozen input and weights; no reference-specific value edits"
+}

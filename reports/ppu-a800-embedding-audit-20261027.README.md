@@ -1,5 +1,7 @@
 # PPU 与 A800 首层视觉 embedding 核查交接
 
+**A800 后续核验与 PPU 最小补充要求已更新：**见 [后续说明及导出脚本](ppu-a800-alignment-followup-20261027/README.md)。当前尚未完成原生 BF16 全链对齐，批量生成继续暂停。
+
 压缩包：`ppu-a800-embedding-audit-20261027.tar.gz`。内容与此前交付的 ZIP 逐文件一致，包含详细 HTML 报告、实际测量 JSON、A800 采集脚本、操作说明和校验清单。
 
 ```bash
