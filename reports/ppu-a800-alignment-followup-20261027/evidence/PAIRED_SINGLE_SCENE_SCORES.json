@@ -1,0 +1,97 @@
+{
+  "scene": "0002267a294e52a7",
+  "noise_full_SHA_matches_original": true,
+  "noise_sha256": "c39e5183f1127b0faf42e649b148743cb57a34dc70c30657f0d881a9cf210f10",
+  "rows": [
+    {
+      "condition": "Original PPU historical",
+      "arm": "Base",
+      "PDMS_mean": 90.91915983260685
+    },
+    {
+      "condition": "Original PPU historical",
+      "arm": "teacher",
+      "PDMS_mean": 91.66334183984989
+    },
+    {
+      "condition": "A800 native",
+      "arm": "Base",
+      "PDMS_mean": 91.05475572640242,
+      "PDMS_S0_S4": [
+        91.08562747464094,
+        91.15139409007543,
+        90.837000569104,
+        90.86481883866799,
+        91.33493765952366
+      ],
+      "max_abs_seven_field_difference": 0.0034123195826529784,
+      "all_seven_scores_equal": false,
+      "NC_DAC_TTC_comfort_all_one": true,
+      "trajectory": {
+        "XY_max_abs_m": 0.11674880981445312,
+        "heading_max_abs_rad": 0.0016144514083862305,
+        "raw_equal": false
+      }
+    },
+    {
+      "condition": "A800 native",
+      "arm": "teacher",
+      "PDMS_mean": 91.81677410724701,
+      "PDMS_S0_S4": [
+        91.81852530990483,
+        91.93509968385058,
+        91.76040733916966,
+        91.66469741836215,
+        91.90514078494786
+      ],
+      "max_abs_seven_field_difference": 0.003917322118957789,
+      "all_seven_scores_equal": false,
+      "NC_DAC_TTC_comfort_all_one": true,
+      "trajectory": {
+        "XY_max_abs_m": 0.13469314575195312,
+        "heading_max_abs_rad": 0.0015773773193359375,
+        "raw_equal": false
+      }
+    },
+    {
+      "condition": "A800 ppu_C",
+      "arm": "Base",
+      "PDMS_mean": 91.01558255666544,
+      "PDMS_S0_S4": [
+        91.04463338550458,
+        91.11858832712505,
+        90.80199452962367,
+        90.81516783758543,
+        91.29752870348854
+      ],
+      "max_abs_seven_field_difference": 0.0024878366000182783,
+      "all_seven_scores_equal": false,
+      "NC_DAC_TTC_comfort_all_one": true,
+      "trajectory": {
+        "XY_max_abs_m": 0.07409286499023438,
+        "heading_max_abs_rad": 0.000594019889831543,
+        "raw_equal": false
+      }
+    },
+    {
+      "condition": "A800 ppu_C",
+      "arm": "teacher",
+      "PDMS_mean": 91.78455644229771,
+      "PDMS_S0_S4": [
+        91.78038344583031,
+        91.91017206357573,
+        91.73670336035723,
+        91.6225562050795,
+        91.87296713664578
+      ],
+      "max_abs_seven_field_difference": 0.0030019173811688393,
+      "all_seven_scores_equal": false,
+      "NC_DAC_TTC_comfort_all_one": true,
+      "trajectory": {
+        "XY_max_abs_m": 0.09383201599121094,
+        "heading_max_abs_rad": 0.0012375116348266602,
+        "raw_equal": false
+      }
+    }
+  ]
+}

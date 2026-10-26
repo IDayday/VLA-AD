@@ -1,0 +1,7 @@
+{
+  "status": "COMPLETE_ONE_BLOCK_TRACE_FROM_PPU_EMBEDDING",
+  "time": "2026-10-26T18:34:40.631638+00:00",
+  "full_forward_first_block_match": true,
+  "reference": "/mnt/project/recogdrive-teacher2-a800-20261026/diagnostics/ppu_audit_20261027_v2/FIRST_VISION_BLOCK_WITH_SUFFIX/A800_REFERENCE.json",
+  "bulk_generation_resumed": false
+}

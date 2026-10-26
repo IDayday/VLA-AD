@@ -1,0 +1,58 @@
+{
+  "schema": 1,
+  "input_commit": "36e9f40123213d23ad4951cc062f24b161a2ae78",
+  "strict_alignment": false,
+  "bulk_generation_resumed": false,
+  "files": [
+    {
+      "path": "A800_REAL_C_RESULTS.md",
+      "bytes": 7751,
+      "sha256": "a210a4ad6bd4ca7645cf6dea4f18495ba52ce32dffba15b1f6d08752aa124833"
+    },
+    {
+      "path": "diagnostic_source/inject_ppu_native_C.py",
+      "bytes": 9841,
+      "sha256": "332b3ad12653b5531c3b541d363d3bfdeeed2b7031e8c38478ad04924ca8abca"
+    },
+    {
+      "path": "diagnostic_source/run_first_vision_block_trace.py",
+      "bytes": 2240,
+      "sha256": "97fed5078a6f843b5524653a69b23e271d5406f81c2dc6925bbc782d7a9d3c31"
+    },
+    {
+      "path": "evidence/A800_FIRST_BLOCK_REFERENCE.json",
+      "bytes": 8494,
+      "sha256": "5b32c67159224a92d340faa6ae759267993bf13213ff28c155da587688fdf51a"
+    },
+    {
+      "path": "evidence/EXACT_C_AND_PATCH_COMPARISON.json",
+      "bytes": 6517,
+      "sha256": "d978bdd1aff6260cf4d1cc91af8c62a7b102f1b36c329fc824f314970cfde04b"
+    },
+    {
+      "path": "evidence/FIRST_BLOCK_VERIFICATION.json",
+      "bytes": 336,
+      "sha256": "953d3ed2b9d29482181f19807cf115f3e52cb63bc397ead94a154bff2ed33f7e"
+    },
+    {
+      "path": "evidence/PAIRED_SINGLE_SCENE_SCORES.json",
+      "bytes": 2699,
+      "sha256": "0f6b68d09e10d232554eed030062e39fcd2b015d3218a0094f5011d695689c61"
+    },
+    {
+      "path": "evidence/REAL_C_DOWNLOAD_RECEIPT.json",
+      "bytes": 1783,
+      "sha256": "18d48df1c3de7a6cb6327cd83e48a58bbf95f4f487debd767e82bda3f44a0ae4"
+    },
+    {
+      "path": "evidence/REAL_C_INJECTION_RESULT.json",
+      "bytes": 62264,
+      "sha256": "1e0ce434bd03ea4e8f6b029cb9be76ad076c751db16248d3083198b78609cd52"
+    },
+    {
+      "path": "trace_first_vision_block.py",
+      "bytes": 5997,
+      "sha256": "3b02f01636c2c1ed93434f87febd3a10a6b204c3a230407a01ffd6c73d952698"
+    }
+  ]
+}

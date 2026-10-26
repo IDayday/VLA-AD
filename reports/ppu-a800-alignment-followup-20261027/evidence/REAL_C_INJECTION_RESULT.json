@@ -1,0 +1,2292 @@
+{
+  "status": "COMPLETE_ONE_SCENE_REAL_PPU_C_CAUSAL_INJECTION",
+  "setup": {
+    "time": "2026-10-26T18:29:38.293146+00:00",
+    "scene": "0002267a294e52a7",
+    "torch": "2.4.0+cu124",
+    "torch_git": "e4ee3be4063b7c430974252fdf7db42273388d86",
+    "cudnn": 90700,
+    "device": "NVIDIA A800-SXM4-80GB",
+    "TF32_matmul": false,
+    "TF32_cudnn": false,
+    "language_impl": "eager",
+    "vision_flash_count": 0,
+    "all_12_inputs_match": {
+      "pixel_values": true,
+      "input_ids": true,
+      "attention_mask": true,
+      "position_ids": true,
+      "image_flags": true,
+      "history_trajectory": true,
+      "high_command_one_hot": true,
+      "status_feature": true,
+      "role_image": true,
+      "role_validtext": true,
+      "role_padding": true,
+      "pixels_FP32": true
+    },
+    "PPU_native_C_file_sha256": "9c1abc99ea9ba94db1160cdd89c566c5c2df4d2efacaed8e83d801deaa3a302d",
+    "diagnostic_only": true,
+    "bulk_generation_resumed": false
+  },
+  "cases": [
+    {
+      "mode": "native",
+      "fingerprints": {
+        "vision_embedding": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "f6baad2b747217f687d472eefae293619ba84c6b7c56ea8681381961c3a72ae8"
+        },
+        "vision_last": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "936f57039e0211b0992495229bb65d49a0c9e389664a36d3380b48163e04a712"
+        },
+        "bridge": {
+          "shape": [
+            9,
+            256,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "1b88c900815f5871a884a170c3697a85fd6f9a1afcba72a88c15241123bcbad5"
+        },
+        "language_first": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "988e660bbdf474610b776b934db9be00b1df65490f47d3890e6d8643361d0f38"
+        },
+        "language_final_BF16": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "1d48c3572c4b98e9a378e4e9097f10f5c0a376936021bbfe49ef20b66e6965e8"
+        },
+        "Base_interface": {
+          "shape": [
+            2800,
+            384
+          ],
+          "dtype": "torch.float32",
+          "sha256": "94b6390bdfd9370352dde641a77ecf2595b1ae83a8d9f106d48ac5d2a37e38a4"
+        }
+      },
+      "matches_PPU": {
+        "vision_embedding": false,
+        "vision_last": false,
+        "bridge": false,
+        "language_first": false,
+        "language_final_BF16": false,
+        "Base_interface": false
+      },
+      "layer_fingerprints": {
+        "vision_0": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "ddccb46f2ae37c95cc798f10f5af8c0f475c78258ad7af5ba6d9bfc6b20787c1"
+        },
+        "vision_1": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "9fccb69429d02a0d9567108a6d0ea839aa86eb0fb443a048d2c4f9f7d5fd348e"
+        },
+        "vision_2": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "334679cc161b43052ce7811ca3b22a609cac4506fab4b34a6677331978096358"
+        },
+        "vision_3": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "ef26ef796c4b01792f4e11a24f38aa0241e0bd3d96f5a9ea85f7a793c1500c5c"
+        },
+        "vision_4": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "19708b9ff7e0df3b59ffb40c35bc195ff5d915bea7cc0b124ca0c0b4e1593991"
+        },
+        "vision_5": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "5c28e0df3cb833cae4d6f4c0c035b3e08584afe5d553003d7ca8d59bdd6ea5e9"
+        },
+        "vision_6": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "9e885ccb26414602b16af8b85d945d497b5fae7c214cdb123c56cacf61058e37"
+        },
+        "vision_7": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "993f9e38744d60907742d999a264eba2e1d28704deec689aba6af574c4d35907"
+        },
+        "vision_8": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "084d23b1094bd80223aafc783992c5687f7836db03f378691b374377d77981b2"
+        },
+        "vision_9": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "0d42305bd1a2fa68250362feb85a81127084efc9e6721bb240ed1f9c9eda2fb4"
+        },
+        "vision_10": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "d40cfeb772d2f92c4f45a14313a12b1ea76af5256ff6d04c4617ba1c6d4db02d"
+        },
+        "vision_11": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "fe5c0c86580b0bbbc33c3f868606b718d501f9e242cf3c0410a8748b0b18c061"
+        },
+        "vision_12": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "641ccf9852e5a1d1c606fbaafd41be68ce342d10f642a01ba76ac289ffa1c989"
+        },
+        "vision_13": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "ef1e59f552719d76e77741fe923f67b8ff0cc5095feb585f58b3a040a10aa502"
+        },
+        "vision_14": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "dd5949e658439b8109d79962d3557ad8c7384e7b9dd1e77c5cbebd74ef97427e"
+        },
+        "vision_15": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "baf229b36d10632af64ac7021ffee87ecc9065b2e2db30852bf06e04923a8be5"
+        },
+        "vision_16": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "7c85755073f25da4b027cd7b6b31c420083fd2d60f474a38ed0efbdd9c744160"
+        },
+        "vision_17": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "8dbbc6753585ff3a3199e407eb052e6adc977b8a7057fa44fca4d82a4153b335"
+        },
+        "vision_18": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "4e1ef948dfd2a470f86531d3b6c553546921778677ced7f4e40d308e0077d03c"
+        },
+        "vision_19": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "b5be60ba1ca2e4fb75fba4b13ea5b7756404eb4dd7390005c8f595a6a5f90f50"
+        },
+        "vision_20": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "3e457a7902a5174fa62dcba001e6bcbcf80e785cd7b4887f71c172c328d37b0a"
+        },
+        "vision_21": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "5bdaff0a67d7108c89f9416bfd4f1bb416cb4a6b2fa86ef8cb19852da2be17fb"
+        },
+        "vision_22": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "87d9d48e5929af3c610434830f995109abd52d2fcb82f9d4c25da93019326a69"
+        },
+        "vision_23": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "936f57039e0211b0992495229bb65d49a0c9e389664a36d3380b48163e04a712"
+        },
+        "language_0": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "988e660bbdf474610b776b934db9be00b1df65490f47d3890e6d8643361d0f38"
+        },
+        "language_1": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "12a13aee4df7478688a7ff1ce3a1c78282e4e2b99291f022fc48f53af098bc8e"
+        },
+        "language_2": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "8efcc331a5fc9a1f8a383b3ea509a2fd76ac86d1e19a204d5548501a67bbb643"
+        },
+        "language_3": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "f081dbeaec6651b36f5c89d9bddbd32a28701a3ef7ade34fdf3dfa8fc27a783e"
+        },
+        "language_4": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "8370cfe7cb6798ccb72f816b57a6fab13c5e67df49e2df0ed17bf28fb6bee493"
+        },
+        "language_5": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "1515bb44f70beb6ea14e490f84d2dedaacc9a61d64f050ad61c7871ce8e9a007"
+        },
+        "language_6": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "8787eb662097a0a6bf8fd60cf91b4f7672090c3afab86e76898aac4d6d77e322"
+        },
+        "language_7": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "e97afc6cacdb9c08649dd7024b4b829ffc7b9f4d9f7b99e858e25464fa2dcc15"
+        },
+        "language_8": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "e2da8cf2ea40007c9eeeae985a3d5f4fb64761713d8221222356d76e6f45da7a"
+        },
+        "language_9": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "c9a6b461a3fb2857cb0019f3a50bc9b1db23bbd5054c709603d6d9a0f26b1117"
+        },
+        "language_10": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "0c649a3b45beb74bce509a09f59c733d99602ce9b682be211071741b87d28eee"
+        },
+        "language_11": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "8528eb7dc4c9997461d33d07d5cefd19165b71e09fa7c6d6406597fe249aec9d"
+        },
+        "language_12": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "9e25bd21a253c656ee0b8eb569b3ab48a0d1135c9ba0755a9c155ce96eecb8ae"
+        },
+        "language_13": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "e39b8ca672e62f9df8b9775995c19cc90ca4877c4999f5e79678f4f5f82a16f7"
+        },
+        "language_14": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "55c3aaa5ba75d6a3ab4df41c75a85d1e0d3a2c8f14a690239669982b1fbdce10"
+        },
+        "language_15": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "867c6a9bec99bf0ab1933429b6a2499db7fe7889a32e80e6c681248ac2e741c6"
+        },
+        "language_16": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "83e74b1cae3ee89ad7112df3fbec1a301a3f24903c46f66cf45dd7fa18e4ad11"
+        },
+        "language_17": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "6703b9fc2afb287ed81619604e86c529203c83e89d3d29fb78b8a4057ded52e2"
+        },
+        "language_18": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "a1ecee99d073f05112d81b21e77b480da57230980bea065d32ef76e566a8d341"
+        },
+        "language_19": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "da72172d0f81f1e2243bf88319f111f8cf3d7e01585742e3dbe6e7da98e6f233"
+        },
+        "language_20": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "d4d32ace423b3a08758279e93aa75452764095409b267ff8de1ce902cfa05f23"
+        },
+        "language_21": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "3edcf168822c51d5d314fc870d9fe2eada348efb1e6bb6033b0b7219050a15e9"
+        },
+        "language_22": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "fa182d4c31936fe22a8b3ea7547e5617623f9a5ad82b82187ae7d74cfe269212"
+        },
+        "language_23": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "744edb398b854dd4d335e7af9daa8b0f7058dbb988e25a0701cca4b7f0524bf6"
+        },
+        "language_24": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "6bfe0e9b6a138bcc0231b30874437ffafb8e7512131301863a512babf18555cd"
+        },
+        "language_25": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "8b66d9c31f27d0ee4af4afff60f04a4b2ef45943ad70b5bc21b34affdf1e6212"
+        },
+        "language_26": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "04aead679c7736fb3100ae9ec47837481eec9475afb88b4bee0ea316a2561fa0"
+        },
+        "language_27": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "dd2a4c5a2c5f2143d7e1ecc449d39a8a59674cc7bd3730dde67a3613f9c57585"
+        }
+      },
+      "first_divergent_recorded_stage": "vision_embedding",
+      "Base_trajectory": {
+        "XY_max_abs_m": 0.11674880981445312,
+        "heading_max_abs_rad": 0.0016144514083862305,
+        "raw_equal": false
+      },
+      "teacher_trajectory": {
+        "XY_max_abs_m": 0.13469314575195312,
+        "heading_max_abs_rad": 0.0015773773193359375,
+        "raw_equal": false
+      },
+      "scores": [
+        {
+          "arm": "Base",
+          "seed_index": 0,
+          "trajectory": [
+            [
+              2.610685348510742,
+              0.3500251770019531,
+              0.08479094505310059
+            ],
+            [
+              5.683394908905029,
+              0.338409423828125,
+              0.1016923189163208
+            ],
+            [
+              8.83647632598877,
+              0.6268768310546875,
+              0.11612355709075928
+            ],
+            [
+              12.118433952331543,
+              0.9360256195068359,
+              0.12221419811248779
+            ],
+            [
+              15.462408065795898,
+              1.4071674346923828,
+              0.13008689880371094
+            ],
+            [
+              18.792585372924805,
+              1.7768936157226562,
+              0.13845109939575195
+            ],
+            [
+              22.40752601623535,
+              2.126680374145508,
+              0.14183294773101807
+            ],
+            [
+              25.77701759338379,
+              2.4438133239746094,
+              0.1486811637878418
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.786055059391383,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9108562747464095
+          },
+          "quality": "high_quality"
+        },
+        {
+          "arm": "Base",
+          "seed_index": 1,
+          "trajectory": [
+            [
+              2.640359401702881,
+              0.33305931091308594,
+              0.0796651840209961
+            ],
+            [
+              5.607713222503662,
+              0.4110984802246094,
+              0.10090816020965576
+            ],
+            [
+              8.790031433105469,
+              0.6027088165283203,
+              0.12032389640808105
+            ],
+            [
+              12.143200874328613,
+              0.9809703826904297,
+              0.12237429618835449
+            ],
+            [
+              15.442588806152344,
+              1.3962364196777344,
+              0.13227951526641846
+            ],
+            [
+              18.733190536499023,
+              1.7490558624267578,
+              0.14215898513793945
+            ],
+            [
+              22.305570602416992,
+              2.154958724975586,
+              0.1413816213607788
+            ],
+            [
+              25.74479866027832,
+              2.494699478149414,
+              0.1494917869567871
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.7876334581618101,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9115139409007543
+          },
+          "quality": "high_quality"
+        },
+        {
+          "arm": "Base",
+          "seed_index": 2,
+          "trajectory": [
+            [
+              2.643629550933838,
+              0.41638946533203125,
+              0.08236467838287354
+            ],
+            [
+              5.568840026855469,
+              0.38678741455078125,
+              0.1002202033996582
+            ],
+            [
+              8.779491424560547,
+              0.6606082916259766,
+              0.11466693878173828
+            ],
+            [
+              12.041646003723145,
+              0.9721450805664062,
+              0.12492311000823975
+            ],
+            [
+              15.337804794311523,
+              1.4039058685302734,
+              0.13122761249542236
+            ],
+            [
+              18.580673217773438,
+              1.7458763122558594,
+              0.13951218128204346
+            ],
+            [
+              22.102317810058594,
+              2.088399887084961,
+              0.1458888053894043
+            ],
+            [
+              25.453153610229492,
+              2.4831924438476562,
+              0.14565157890319824
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.7800880136584961,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9083700056910401
+          },
+          "quality": "high_quality"
+        },
+        {
+          "arm": "Base",
+          "seed_index": 3,
+          "trajectory": [
+            [
+              2.6068248748779297,
+              0.3556671142578125,
+              0.08339869976043701
+            ],
+            [
+              5.6926774978637695,
+              0.40380287170410156,
+              0.10383319854736328
+            ],
+            [
+              8.8071928024292,
+              0.5809001922607422,
+              0.11850392818450928
+            ],
+            [
+              12.154251098632812,
+              0.9735603332519531,
+              0.12592363357543945
+            ],
+            [
+              15.36561393737793,
+              1.3136138916015625,
+              0.13390040397644043
+            ],
+            [
+              18.70103645324707,
+              1.7231464385986328,
+              0.1374574899673462
+            ],
+            [
+              22.161495208740234,
+              2.0700225830078125,
+              0.1435009241104126
+            ],
+            [
+              25.56616973876953,
+              2.4466896057128906,
+              0.148978590965271
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.7807556521280314,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9086481883866798
+          },
+          "quality": "high_quality"
+        },
+        {
+          "arm": "Base",
+          "seed_index": 4,
+          "trajectory": [
+            [
+              2.5317540168762207,
+              0.32745933532714844,
+              0.0879906415939331
+            ],
+            [
+              5.641822814941406,
+              0.31575584411621094,
+              0.11173367500305176
+            ],
+            [
+              8.796975135803223,
+              0.5628948211669922,
+              0.12473249435424805
+            ],
+            [
+              12.071515083312988,
+              0.9847316741943359,
+              0.12782442569732666
+            ],
+            [
+              15.397260665893555,
+              1.4348011016845703,
+              0.13891243934631348
+            ],
+            [
+              18.795669555664062,
+              1.9277381896972656,
+              0.13993000984191895
+            ],
+            [
+              22.51080322265625,
+              2.33831787109375,
+              0.1440732479095459
+            ],
+            [
+              25.914409637451172,
+              2.731679916381836,
+              0.1492774486541748
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.7920385038285682,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9133493765952366
+          },
+          "quality": "high_quality"
+        },
+        {
+          "arm": "teacher",
+          "seed_index": 0,
+          "trajectory": [
+            [
+              2.9895715713500977,
+              0.2799644470214844,
+              0.109657883644104
+            ],
+            [
+              6.04260778427124,
+              0.3080615997314453,
+              0.1460590362548828
+            ],
+            [
+              9.012557029724121,
+              0.6844806671142578,
+              0.16241490840911865
+            ],
+            [
+              12.279033660888672,
+              1.0628681182861328,
+              0.1603834629058838
+            ],
+            [
+              15.650686264038086,
+              1.7552471160888672,
+              0.1561654806137085
+            ],
+            [
+              19.152509689331055,
+              2.311544418334961,
+              0.15807759761810303
+            ],
+            [
+              23.027090072631836,
+              2.8816299438476562,
+              0.15292036533355713
+            ],
+            [
+              26.626188278198242,
+              3.437183380126953,
+              0.15779519081115723
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.8036446074377163,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9181852530990483
+          },
+          "quality": "high_quality"
+        },
+        {
+          "arm": "teacher",
+          "seed_index": 1,
+          "trajectory": [
+            [
+              3.071226119995117,
+              0.2625999450683594,
+              0.10073685646057129
+            ],
+            [
+              5.813861846923828,
+              0.4150867462158203,
+              0.14255011081695557
+            ],
+            [
+              8.876684188842773,
+              0.6556072235107422,
+              0.16906023025512695
+            ],
+            [
+              12.307422637939453,
+              1.1718158721923828,
+              0.16142845153808594
+            ],
+            [
+              15.676401138305664,
+              1.748739242553711,
+              0.16066181659698486
+            ],
+            [
+              19.131839752197266,
+              2.264890670776367,
+              0.16681909561157227
+            ],
+            [
+              22.8615779876709,
+              2.9107322692871094,
+              0.1523585319519043
+            ],
+            [
+              26.506288528442383,
+              3.493804931640625,
+              0.15971243381500244
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.8064423924124139,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9193509968385057
+          },
+          "quality": "high_quality"
+        },
+        {
+          "arm": "teacher",
+          "seed_index": 2,
+          "trajectory": [
+            [
+              3.088956356048584,
+              0.3678264617919922,
+              0.10715150833129883
+            ],
+            [
+              5.790578365325928,
+              0.3575115203857422,
+              0.1407386064529419
+            ],
+            [
+              8.925317764282227,
+              0.7425518035888672,
+              0.161362886428833
+            ],
+            [
+              12.217827796936035,
+              1.1358585357666016,
+              0.1664968729019165
+            ],
+            [
+              15.628534317016602,
+              1.792642593383789,
+              0.16332721710205078
+            ],
+            [
+              18.992801666259766,
+              2.272430419921875,
+              0.1652010679244995
+            ],
+            [
+              22.7398738861084,
+              2.8554611206054688,
+              0.1634136438369751
+            ],
+            [
+              26.33952522277832,
+              3.5272159576416016,
+              0.15557360649108887
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.8022497761400718,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9176040733916966
+          },
+          "quality": "high_quality"
+        },
+        {
+          "arm": "teacher",
+          "seed_index": 3,
+          "trajectory": [
+            [
+              3.0035462379455566,
+              0.29001617431640625,
+              0.1080406904220581
+            ],
+            [
+              6.041207313537598,
+              0.37589263916015625,
+              0.14691293239593506
+            ],
+            [
+              8.98914909362793,
+              0.5990200042724609,
+              0.16883599758148193
+            ],
+            [
+              12.258533477783203,
+              1.1516342163085938,
+              0.1669919490814209
+            ],
+            [
+              15.70505142211914,
+              1.606161117553711,
+              0.16478800773620605
+            ],
+            [
+              19.081768035888672,
+              2.3014450073242188,
+              0.15806961059570312
+            ],
+            [
+              22.815702438354492,
+              2.8436813354492188,
+              0.15755414962768555
+            ],
+            [
+              26.45247459411621,
+              3.519205093383789,
+              0.1623927354812622
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.7999527380406918,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9166469741836215
+          },
+          "quality": "high_quality"
+        },
+        {
+          "arm": "teacher",
+          "seed_index": 4,
+          "trajectory": [
+            [
+              2.9195785522460938,
+              0.3334236145019531,
+              0.11637985706329346
+            ],
+            [
+              6.014403343200684,
+              0.3639659881591797,
+              0.16574108600616455
+            ],
+            [
+              9.040582656860352,
+              0.6784839630126953,
+              0.1843165159225464
+            ],
+            [
+              12.21838665008545,
+              1.2191448211669922,
+              0.1749250888824463
+            ],
+            [
+              15.726516723632812,
+              1.849142074584961,
+              0.17457664012908936
+            ],
+            [
+              19.217422485351562,
+              2.560201644897461,
+              0.16128146648406982
+            ],
+            [
+              23.135412216186523,
+              3.1742820739746094,
+              0.15863406658172607
+            ],
+            [
+              26.654844284057617,
+              3.855745315551758,
+              0.15943217277526855
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.8057233788387484,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9190514078494786
+          },
+          "quality": "high_quality"
+        }
+      ],
+      "Base_PDMS": 91.05475572640242,
+      "teacher_PDMS": 91.81677410724701
+    },
+    {
+      "mode": "ppu_C",
+      "fingerprints": {
+        "vision_embedding": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "ba0df59744dadae4460575d1cf6786ffb3d5636d286f7267d57a113b2d789d74"
+        },
+        "vision_last": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "32ee715174c5a3c02006b92c819b3a4397325ef8c9b116d0d53ddb27ea646dea"
+        },
+        "bridge": {
+          "shape": [
+            9,
+            256,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "05a7ba23b3eadf809007e2e607cfc15143d7ac1b105fe2ba15c69d15166e0153"
+        },
+        "language_first": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "d47a45e460f706e2373b5066cd36f869b0e8b441a278513b848fd99c2685c7e1"
+        },
+        "language_final_BF16": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "824883ecdb02c13c639f3f87e5ac37ac11e981fa4db2d4391b04255797c7055c"
+        },
+        "Base_interface": {
+          "shape": [
+            2800,
+            384
+          ],
+          "dtype": "torch.float32",
+          "sha256": "fab1c5d686f72b5bf85d926020f90c774a884b0ab63052fc22a1d2d476eb93c3"
+        }
+      },
+      "matches_PPU": {
+        "vision_embedding": true,
+        "vision_last": false,
+        "bridge": false,
+        "language_first": false,
+        "language_final_BF16": false,
+        "Base_interface": false
+      },
+      "layer_fingerprints": {
+        "vision_0": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "78ad5b01cc788d03e2105be96ae364efe7cb1865dd3a1325abdce6bd361cbb5a"
+        },
+        "vision_1": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "23b9a0b108a99795ad46eb66e5c8b12718c982711cbf1526c10428c23ef0c238"
+        },
+        "vision_2": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "c65d8eff4dde1c3630711d0589d60ba9585e963dfc04b3519d67b7aa2d6369d3"
+        },
+        "vision_3": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "b2ca9512bd5dda7b5a1d8a413e82eaa05bd0b1dde3765ed027029e71a71d9cb8"
+        },
+        "vision_4": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "e924ed520099273f91fb5d7b00f268c453ced38f1219a52f1c257632ec297b5c"
+        },
+        "vision_5": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "4564f2c87465f96f632c9814aaabcb3c34694db30404ff819a961e92804dae46"
+        },
+        "vision_6": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "272551b819e5d197b91da05857a8c5a33f00a09dbb0bd0070b89bacae35d985f"
+        },
+        "vision_7": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "63ef7b0df0e43dfe51ea462bbfbc4c11ed0f42c53d163feda4f50aac5bfdeb60"
+        },
+        "vision_8": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "49bbba6841eb1d75efb8287263c89f64bef72e73ea492f4f555cb6b051fe51b8"
+        },
+        "vision_9": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "bfa6c5852e7e6ee935c156ce49d54ddc39c0f3c8be6fbd55369ef20cee2bdb14"
+        },
+        "vision_10": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "24aa81004e747cd398f74c82803bb4665034242539c4c5c129a612b5b956776b"
+        },
+        "vision_11": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "bb07bfa32b27f4a6fb73e9d732cc34df29d620e8981d69f9c69e50e9f1f42250"
+        },
+        "vision_12": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "9bbf143c99fe75df0dcbdb28964fa34bcf141945d57d717d34bcc9d2b6823e21"
+        },
+        "vision_13": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "238bfc55ce3368088f3ed37efef89dc058d14164bb3bc7aab3818afcddecf39a"
+        },
+        "vision_14": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "7cb024f37b9eb6fab6ef933f76c25c675ef7f3628a48c3e2f61633c68806b446"
+        },
+        "vision_15": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "b0c2f3d3d3710719abd6c3b7cad31b57fdff8744ceb2aeaa5fe345f0052e25f6"
+        },
+        "vision_16": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "c3f54a08d57bc4f836173167febebc529819c8e2c15b2211949d608a758846ec"
+        },
+        "vision_17": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "b0b2fbee45b967aef9c11c9016d691aa416e5e83f5a1ede094f0ccf49d598a4a"
+        },
+        "vision_18": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "182a8c9ae9b711e2eb3a26eac0831243e67ef5c2d09029f2d31b4e40344a8c0a"
+        },
+        "vision_19": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "74fed01dfa7bd0967b5d2430cab08f3afc56d575fdb05aa6522bcd4cb9f56a84"
+        },
+        "vision_20": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "73914a9b1461822856fdc33f1f9ebe24be24dcb002225f7b576039e06fcad257"
+        },
+        "vision_21": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "1aba60ffb34b801febb7e50d946c7ac66b9832a286da1bd1e0f0f1bf1cef292c"
+        },
+        "vision_22": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "ae1f6ccfc10e7c6ad11def6bb1dddb6b9085a4f361c8a27493843b755c108274"
+        },
+        "vision_23": {
+          "shape": [
+            9,
+            1025,
+            1024
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "32ee715174c5a3c02006b92c819b3a4397325ef8c9b116d0d53ddb27ea646dea"
+        },
+        "language_0": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "d47a45e460f706e2373b5066cd36f869b0e8b441a278513b848fd99c2685c7e1"
+        },
+        "language_1": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "9fa263442f366c74f5f313dca61df6a30e2bb276ac91e486f4dfd47af86f778b"
+        },
+        "language_2": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "164d39329c8d88cec9f3c0b7451984f53d233940384a91160a8744a10de00113"
+        },
+        "language_3": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "28ded23344de4359b0503de0257908c0df7aad12b397414c28744dd1cea28a7a"
+        },
+        "language_4": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "c861633afb1d8bcff5833a8bb6ae8fff54cfb3925eb314272e4dcb3a41eb6230"
+        },
+        "language_5": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "f65be7b41b1e75547ac1d06caf5896d5259c40f5de79239ac857b88c24f9fe2e"
+        },
+        "language_6": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "0e389b6ae2810cdcc2482bd97a6082d201dc15bfe5161e261119257eb86f39d6"
+        },
+        "language_7": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "15fa9d112ecbb942f648ee216c8f019b8cb7a6c0bd89f0a32ca61e4de1789c39"
+        },
+        "language_8": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "6ed90e0298c9a744a0f97995160b163f0fbfeb4b517115c8f075d633fdb07cf4"
+        },
+        "language_9": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "654ea51e9ecc99fed1d17dedb2820c27b85253c711bb5299b61813525f9043d3"
+        },
+        "language_10": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "f885bb9baa65e5af963fe6ec7fb83912add4ef45089b052abf948dca8f1a4975"
+        },
+        "language_11": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "198e02e7681d31317bf3973829e6b097068a3e7968e6d0b257b34453dcf8c386"
+        },
+        "language_12": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "c36216b6f3fd8263df22ec3a9ce46d5683225c2f15852892aec168c8d072b70d"
+        },
+        "language_13": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "e546b08b353520a1481cfaa23526256a04848943c31399fb4cf09df0ceca19da"
+        },
+        "language_14": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "e0168eb73f253fe9974a1912a7f8dcb9e45612c34f5a63357441b8c625073775"
+        },
+        "language_15": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "f4c3a9e52aef62d60148e2bc92f15369539e5a46ae4b2ad147eb4b2a71858c69"
+        },
+        "language_16": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "831c95bc21b725e149e3a1b1733ab9afbb6b3ddfe900b7e11e1f7e0a0d303a66"
+        },
+        "language_17": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "10d4e7ee838a85e10897a57f7e071cf8df8c6663c593790599247a01329b4e94"
+        },
+        "language_18": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "fd62aa68653689a1670c39d3df8d587030d775c984a764a75b04690490a35f93"
+        },
+        "language_19": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "4ace9b8900e5c0f33c0042450e46c27a0af39241dd7a8a644fe8c1b81b76f627"
+        },
+        "language_20": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "4cc8107ef205262a589d067b4d7d98f435519e637b293a75f0a2ddb70e9befa6"
+        },
+        "language_21": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "d943b612d9cfc592ca8198d189815c3bcbbc4736076e4c4c230357a60ba4ebe4"
+        },
+        "language_22": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "48b8a89fd01ed17ca54814cd8f4417ab0c3b0cc8ffa7ce09a12b21119ce0c15b"
+        },
+        "language_23": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "5e721d13ba5471b89f79f4b49b21b77f419935deff89933810fb342347249f70"
+        },
+        "language_24": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "75ee09f050b4b6bb7d8b6f952fc51255c6c1b088bc69d4a83eb18a0015596888"
+        },
+        "language_25": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "5351af7b1edc13e83a383a379149403aa25c232128b65b9e7b5d086a8b1df753"
+        },
+        "language_26": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "ed75b8e73d5993dd95ad96e67fafec2d69b536a991204e05cafd64e970d43fd0"
+        },
+        "language_27": {
+          "shape": [
+            1,
+            2800,
+            1536
+          ],
+          "dtype": "torch.bfloat16",
+          "sha256": "b609f35b18088316fbc9a81740521a0db3e747e2b892463c047bc9bc716077cf"
+        }
+      },
+      "first_divergent_recorded_stage": "vision_last",
+      "Base_trajectory": {
+        "XY_max_abs_m": 0.07409286499023438,
+        "heading_max_abs_rad": 0.000594019889831543,
+        "raw_equal": false
+      },
+      "teacher_trajectory": {
+        "XY_max_abs_m": 0.09383201599121094,
+        "heading_max_abs_rad": 0.0012375116348266602,
+        "raw_equal": false
+      },
+      "scores": [
+        {
+          "arm": "Base",
+          "seed_index": 0,
+          "trajectory": [
+            [
+              2.6027631759643555,
+              0.3483390808105469,
+              0.08532261848449707
+            ],
+            [
+              5.675301551818848,
+              0.3388233184814453,
+              0.10267877578735352
+            ],
+            [
+              8.833702087402344,
+              0.6329307556152344,
+              0.11758732795715332
+            ],
+            [
+              12.119145393371582,
+              0.9465389251708984,
+              0.12365925312042236
+            ],
+            [
+              15.470052719116211,
+              1.4271278381347656,
+              0.1313871145248413
+            ],
+            [
+              18.794801712036133,
+              1.8022708892822266,
+              0.13940799236297607
+            ],
+            [
+              22.3876895904541,
+              2.1543407440185547,
+              0.14216387271881104
+            ],
+            [
+              25.73379898071289,
+              2.471515655517578,
+              0.14834916591644287
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.7850712012521099,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9104463338550458
+          },
+          "quality": "high_quality"
+        },
+        {
+          "arm": "Base",
+          "seed_index": 1,
+          "trajectory": [
+            [
+              2.6335811614990234,
+              0.33111572265625,
+              0.08011603355407715
+            ],
+            [
+              5.595448970794678,
+              0.4131889343261719,
+              0.10195600986480713
+            ],
+            [
+              8.78532886505127,
+              0.6079921722412109,
+              0.12181079387664795
+            ],
+            [
+              12.14777946472168,
+              0.9932994842529297,
+              0.12380146980285645
+            ],
+            [
+              15.452287673950195,
+              1.4162044525146484,
+              0.1336069107055664
+            ],
+            [
+              18.736663818359375,
+              1.7744712829589844,
+              0.14317679405212402
+            ],
+            [
+              22.290681838989258,
+              2.1836986541748047,
+              0.1416635513305664
+            ],
+            [
+              25.705890655517578,
+              2.5221290588378906,
+              0.1490802764892578
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.7868461198510011,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9111858832712505
+          },
+          "quality": "high_quality"
+        },
+        {
+          "arm": "Base",
+          "seed_index": 2,
+          "trajectory": [
+            [
+              2.636791229248047,
+              0.4152565002441406,
+              0.082855224609375
+            ],
+            [
+              5.555589199066162,
+              0.38771820068359375,
+              0.10125851631164551
+            ],
+            [
+              8.777341842651367,
+              0.6669063568115234,
+              0.1161431074142456
+            ],
+            [
+              12.042860984802246,
+              0.9825763702392578,
+              0.1263519525527954
+            ],
+            [
+              15.343385696411133,
+              1.421600341796875,
+              0.13242781162261963
+            ],
+            [
+              18.58054542541504,
+              1.7706584930419922,
+              0.14050793647766113
+            ],
+            [
+              22.080915451049805,
+              2.114856719970703,
+              0.14632606506347656
+            ],
+            [
+              25.410795211791992,
+              2.5088348388671875,
+              0.14517521858215332
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.779247868710968,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9080199452962366
+          },
+          "quality": "high_quality"
+        },
+        {
+          "arm": "Base",
+          "seed_index": 3,
+          "trajectory": [
+            [
+              2.598996162414551,
+              0.3539562225341797,
+              0.0838935375213623
+            ],
+            [
+              5.68411111831665,
+              0.40499305725097656,
+              0.10484862327575684
+            ],
+            [
+              8.80081558227539,
+              0.5850925445556641,
+              0.11990857124328613
+            ],
+            [
+              12.154010772705078,
+              0.9845294952392578,
+              0.1273481845855713
+            ],
+            [
+              15.371654510498047,
+              1.3315105438232422,
+              0.13521552085876465
+            ],
+            [
+              18.700084686279297,
+              1.7490291595458984,
+              0.13838458061218262
+            ],
+            [
+              22.139917373657227,
+              2.0964126586914062,
+              0.14383196830749512
+            ],
+            [
+              25.516647338867188,
+              2.4714202880859375,
+              0.14859092235565186
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.7795640281020505,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9081516783758543
+          },
+          "quality": "high_quality"
+        },
+        {
+          "arm": "Base",
+          "seed_index": 4,
+          "trajectory": [
+            [
+              2.52457332611084,
+              0.32489013671875,
+              0.08841252326965332
+            ],
+            [
+              5.634809494018555,
+              0.3157501220703125,
+              0.11275374889373779
+            ],
+            [
+              8.795934677124023,
+              0.5673599243164062,
+              0.12622296810150146
+            ],
+            [
+              12.07050609588623,
+              0.9945774078369141,
+              0.1292428970336914
+            ],
+            [
+              15.404237747192383,
+              1.453338623046875,
+              0.1401987075805664
+            ],
+            [
+              18.798206329345703,
+              1.9532833099365234,
+              0.14078545570373535
+            ],
+            [
+              22.494239807128906,
+              2.3654556274414062,
+              0.144187331199646
+            ],
+            [
+              25.87519645690918,
+              2.7601871490478516,
+              0.14871394634246826
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.791140688883725,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9129752870348854
+          },
+          "quality": "high_quality"
+        },
+        {
+          "arm": "teacher",
+          "seed_index": 0,
+          "trajectory": [
+            [
+              2.9814720153808594,
+              0.2793426513671875,
+              0.10971355438232422
+            ],
+            [
+              6.0382280349731445,
+              0.3078041076660156,
+              0.14622175693511963
+            ],
+            [
+              9.010502815246582,
+              0.6878890991210938,
+              0.16303658485412598
+            ],
+            [
+              12.278711318969727,
+              1.0673351287841797,
+              0.16130661964416504
+            ],
+            [
+              15.654184341430664,
+              1.7672443389892578,
+              0.15704071521759033
+            ],
+            [
+              19.149518966674805,
+              2.3290653228759766,
+              0.15825331211090088
+            ],
+            [
+              22.99978256225586,
+              2.903493881225586,
+              0.15199685096740723
+            ],
+            [
+              26.5853271484375,
+              3.460195541381836,
+              0.15592515468597412
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.8027292026999273,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.917803834458303
+          },
+          "quality": "high_quality"
+        },
+        {
+          "arm": "teacher",
+          "seed_index": 1,
+          "trajectory": [
+            [
+              3.0644021034240723,
+              0.2623100280761719,
+              0.10073351860046387
+            ],
+            [
+              5.804976940155029,
+              0.41652488708496094,
+              0.1427769660949707
+            ],
+            [
+              8.87254524230957,
+              0.6587600708007812,
+              0.16971087455749512
+            ],
+            [
+              12.311038970947266,
+              1.1779003143310547,
+              0.16235065460205078
+            ],
+            [
+              15.68231201171875,
+              1.7597770690917969,
+              0.16148114204406738
+            ],
+            [
+              19.13031578063965,
+              2.282001495361328,
+              0.16691839694976807
+            ],
+            [
+              22.839242935180664,
+              2.9344234466552734,
+              0.151297926902771
+            ],
+            [
+              26.473064422607422,
+              3.5169334411621094,
+              0.15773773193359375
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.8058441295258175,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9191017206357573
+          },
+          "quality": "high_quality"
+        },
+        {
+          "arm": "teacher",
+          "seed_index": 2,
+          "trajectory": [
+            [
+              3.0826311111450195,
+              0.3686389923095703,
+              0.10718142986297607
+            ],
+            [
+              5.779794216156006,
+              0.3581218719482422,
+              0.14094102382659912
+            ],
+            [
+              8.923929214477539,
+              0.7466297149658203,
+              0.16196119785308838
+            ],
+            [
+              12.219408988952637,
+              1.1410865783691406,
+              0.16749930381774902
+            ],
+            [
+              15.630491256713867,
+              1.802621841430664,
+              0.1641911268234253
+            ],
+            [
+              18.986797332763672,
+              2.2889404296875,
+              0.16527152061462402
+            ],
+            [
+              22.710721969604492,
+              2.8764400482177734,
+              0.1624842882156372
+            ],
+            [
+              26.304479598999023,
+              3.549966812133789,
+              0.15361976623535156
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.8016808806485737,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9173670336035723
+          },
+          "quality": "high_quality"
+        },
+        {
+          "arm": "teacher",
+          "seed_index": 3,
+          "trajectory": [
+            [
+              2.9949936866760254,
+              0.2896461486816406,
+              0.10805392265319824
+            ],
+            [
+              6.035849094390869,
+              0.37647438049316406,
+              0.1471041440963745
+            ],
+            [
+              8.982304573059082,
+              0.599853515625,
+              0.16950130462646484
+            ],
+            [
+              12.253952980041504,
+              1.1573715209960938,
+              0.1679903268814087
+            ],
+            [
+              15.708719253540039,
+              1.616363525390625,
+              0.1656186580657959
+            ],
+            [
+              19.07255744934082,
+              2.318704605102539,
+              0.158211350440979
+            ],
+            [
+              22.783390045166016,
+              2.8644485473632812,
+              0.156561017036438
+            ],
+            [
+              26.407283782958984,
+              3.540536880493164,
+              0.16072380542755127
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.7989413489219084,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9162255620507951
+          },
+          "quality": "high_quality"
+        },
+        {
+          "arm": "teacher",
+          "seed_index": 4,
+          "trajectory": [
+            [
+              2.9113078117370605,
+              0.3320770263671875,
+              0.11624538898468018
+            ],
+            [
+              6.010218620300293,
+              0.3629722595214844,
+              0.1658468246459961
+            ],
+            [
+              9.041159629821777,
+              0.6795387268066406,
+              0.18484711647033691
+            ],
+            [
+              12.216605186462402,
+              1.2225074768066406,
+              0.17574965953826904
+            ],
+            [
+              15.729650497436523,
+              1.8595008850097656,
+              0.17529642581939697
+            ],
+            [
+              19.214588165283203,
+              2.5775222778320312,
+              0.1613912582397461
+            ],
+            [
+              23.113115310668945,
+              3.1967830657958984,
+              0.15759992599487305
+            ],
+            [
+              26.61907958984375,
+              3.8835620880126953,
+              0.15744590759277344
+            ]
+          ],
+          "score": {
+            "no_at_fault_collisions": 1.0,
+            "drivable_area_compliance": 1.0,
+            "ego_progress": 0.8049512112794988,
+            "time_to_collision_within_bound": 1.0,
+            "comfort": 1.0,
+            "driving_direction_compliance": 1.0,
+            "score": 0.9187296713664578
+          },
+          "quality": "high_quality"
+        }
+      ],
+      "Base_PDMS": 91.01558255666544,
+      "teacher_PDMS": 91.78455644229771
+    }
+  ],
+  "native_vs_injection": {
+    "vision_embedding": {
+      "max_abs": 0.0078125,
+      "relative_l2": 5.330135625809497e-05,
+      "different_elements": 1495
+    },
+    "vision_last": {
+      "max_abs": 27.4375,
+      "relative_l2": 0.025892889586099224,
+      "different_elements": 8663799
+    },
+    "bridge": {
+      "max_abs": 0.5625,
+      "relative_l2": 0.01596094126392166,
+      "different_elements": 3073530
+    },
+    "language_first": {
+      "max_abs": 1.5,
+      "relative_l2": 0.04499617745242909,
+      "different_elements": 3436173
+    },
+    "language_final_BF16": {
+      "max_abs": 28.25,
+      "relative_l2": 0.13456747045222556,
+      "different_elements": 3751118
+    },
+    "Base_interface": {
+      "max_abs": 6.206380844116211,
+      "relative_l2": 0.1418732978025981,
+      "different_elements": 963456
+    }
+  },
+  "parameters_unchanged": true,
+  "full_chain_aligned": false,
+  "production_fix": false,
+  "bulk_generation_resumed": false
+}
