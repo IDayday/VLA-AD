@@ -19,11 +19,12 @@ def main():
     sources={}
     for path in sorted((ROOT/'code').glob('*.py')):
         sources[Path('code')/path.name]=path
-    for name in ('launch_local_owners.py','snapshot_native_scope.py','test_round1_preparation_owner.py',
+    for name in ('launch_local_owners.py','restart_waiting_local_owners.py','launch_fixed_tsinghua_gt.py',
+                 'snapshot_native_scope.py','test_round1_preparation_owner.py','test_preparation_identity.py',
                  'NATIVE_SCOPE_INTEGRATION.md','report_teacher_physical_costs.py','report_round1_paired_comparisons.py'):
         sources[Path('engineering')/name]=ROOT/'engineering'/name
     for name in ('fullflow_teacher_owner.py','permanent_dispatch.py','finalize_round1_physical_costs.py',
-                 'test_local_fullflow_owner.py','PERMANENT_TEACHER_ALLOCATION.json'):
+                 'test_local_fullflow_owner.py','PERMANENT_TEACHER_ALLOCATION.json','PERMANENT_TEACHER_40GPU_ALLOCATION.json'):
         sources[Path('engineering/permanent_fullflow')/name]=ROOT/'engineering/permanent_fullflow'/name
     metadata=OLD/'engineering/local_candidate_recheck_20261027'
     for name in ('fit_library_local.py','recheck_candidates.py','recheck_panel.py','test_fit_library_local.py'):
@@ -36,6 +37,7 @@ def main():
     for name in ('install_gt.py','test_transport.py','test_all_stage_generators.py','INSTALLATION.json','TRANSPORT_CPU_TESTS.xml'):
         sources[Path('gt_transport_tests')/name]=gt_tests/name
     sources[Path('gt_transport_tests/ALL_STAGE_GENERATORS_COMPLETE.json')]=gt_tests/'ALL_STAGE_GENERATORS_PRIVATE_FIXTURES/COMPLETE.json'
+    sources[Path('resources/ROUND1_FIXED_32GPU_WITH_TSINGHUA_ALLOCATION.json')]=Path('/mnt/project/recogdrive-no-routing-round1-results-20261026/resources/ROUND1_FIXED_32GPU_WITH_TSINGHUA_ALLOCATION.json')
     for target,source in sources.items():
         path=destination/target;path.parent.mkdir(parents=True,exist_ok=True)
         shutil.copyfile(source,path)

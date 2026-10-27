@@ -32,6 +32,23 @@ def main():
                            code_freeze=freeze, poll_seconds=.01, engineering_retries=1)
     owner = PreparationOwner(args)
     owner.code_gate()
+    bound=folder/'BOUND_PRODUCTION.py';bound.write_text('BOUND = 1\n')
+    original_fitter=folder/'ORIGINAL_FITTER.py';original_fitter.write_text('ORIGINAL = 1\n')
+    production=folder/'PRODUCTION_SOURCE.json'
+    atomic(production,{'files':[{'active_source':str(bound),'sha256':sha(bound)}],
+        'external_original_fitter':{'path':str(original_fitter),'sha256':sha(original_fitter)}})
+    frozen=json.loads(freeze.read_text());frozen['production_source_snapshot']={'path':str(production),'sha256':sha(production)}
+    atomic(freeze,frozen);owner.code_gate()
+    bound.write_text('BOUND = 2\n')
+    try:owner.code_gate()
+    except ValueError:pass
+    else:raise AssertionError('Changed external production source passed its reviewed manifest')
+    bound.write_text('BOUND = 1\n')
+    original_fitter.write_text('ORIGINAL = 2\n')
+    try:owner.code_gate()
+    except ValueError:pass
+    else:raise AssertionError('Changed original fitter source passed its approved SHA')
+    original_fitter.write_text('ORIGINAL = 1\n');owner.code_gate()
     source.write_text('VALUE = 2\n')
     rejected = False
     try:
@@ -113,6 +130,7 @@ def main():
         raise AssertionError('A recovered successful suite was duplicated')
     atomic(folder / 'COMPLETE.json', {'status': 'PASS_PRIVATE_CPU_PREPARATION_OWNER',
            'source_change_rejected': True, 'incomplete_ready_rejected': True,
+           'active_production_and_original_fitter_source_changes_rejected': True,
            'actual_failed_then_successful_CPU_child': True, 'completed_job_not_duplicated': True,
            'real_GPU_or_SSH_calls': 0, 'formal_qualification': False,
            'actual_stable_launcher_suite_failure_then_fresh_resume': True})

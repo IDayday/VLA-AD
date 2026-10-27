@@ -76,6 +76,17 @@ class PreparationOwner:
         commit = subprocess.check_output(['git', 'rev-parse', 'HEAD'], cwd=self.args.code, text=True).strip()
         if commit != frozen.get('git_commit'):
             raise ValueError('Implementation branch commit changed after acceptance')
+        production=frozen.get('production_source_snapshot')
+        if production:
+            if sha(production['path'])!=production['sha256']:
+                raise ValueError('Reviewed production source manifest changed')
+            snapshot=read(production['path'])
+            for row in snapshot['files']:
+                if sha(row['active_source'])!=row['sha256']:
+                    raise ValueError('Reviewed active production source changed: '+row['active_source'])
+            original=snapshot['external_original_fitter']
+            if sha(original['path'])!=original['sha256']:
+                raise ValueError('Approved original fitter source changed')
         return frozen
 
     def inventory_command(self, host, query):
@@ -116,32 +127,40 @@ class PreparationOwner:
     def gpu_output_complete(self, name, path):
         if not Path(path).is_file():
             return False
-        value = read(path)
-        if name.startswith('targets_'):
-            population = name.removeprefix('targets_')
-            count = {'train': 85813, 'test': 12146}[population]
-            spec = value.get('populations', {}).get(population, {})
-            if (value.get('schema') != 'nrkd_compact_targets_v1' or value.get('teacher_origin') != 'local_refit' or
-                value.get('immutable_population') != population or spec.get('count') != count or
-                set(spec.get('versions', {})) != {'full', 'gain1'}):
+        if name.startswith('targets_') or name in ('train_calibration','formal_ddp','formal_single'):
+            from preparation_identity import validate_current_output
+            try:
+                current=getattr(self,'current_paths',None) or read(self.paths_file)
+                return validate_current_output(name,path,paths=current,results=self.args.results,
+                    code=self.args.code,world_size=getattr(self,'training_world_size',None))
+            except (ValueError,KeyError,TypeError,OSError,json.JSONDecodeError):
                 return False
-            refs = [spec.get('index', {})] + [v.get('shifts', {}) for v in spec['versions'].values()]
-            return all(Path(r.get('path', '')).is_file() and sha(r['path']) == r.get('sha256') for r in refs)
-        if name == 'train_calibration':
-            return (value.get('schema') == 'nrkd_train_calibration_v1' and value.get('status') == 'COMPLETE' and
-                    value.get('population') == 'train' and value.get('teacher_origin') == 'local_refit' and
-                    value.get('targets_manifest_sha256') == sha(self.args.results / 'targets/train/MANIFEST.json'))
-        if name == 'formal_ddp':
-            return (value.get('schema') == 'nrkd_ddp_tail_check_v1' and value.get('status') == 'PASS' and
-                    value.get('world_size') == self.training_world_size and value.get('real_scene_count') == 53 and
-                    value.get('global_slots') == 64 and value.get('zero_weight_padded_slots') == 11)
-        if name == 'formal_single':
-            execution = value.get('execution', {})
-            return (value.get('schema') == 'nrkd_code_checks_v1' and value.get('status') == 'CODE_CHECKS_PASS' and
-                    value.get('formal_asset_qualification') is True and not value.get('pending_checks') and
-                    execution.get('world_size') == self.training_world_size and
-                    execution.get('gradient_accumulation_steps') == 64 // self.training_world_size)
+        value = read(path)
         return value.get('status') == 'ACTUAL_CPU_CHILD_COMPLETED' and name == 'PRIVATE_CPU_RECOVERY'
+
+    def retire_incompatible_output(self,name,path,ownership_error):
+        """Preserve incompatible artifacts only after proving no child is live."""
+        path=Path(path)
+        if not path.exists() or self.gpu_output_complete(name,path):return
+        family=self.folder/'remote_execution/jobs'/name;family.mkdir(parents=True,exist_ok=True)
+        with (family/'FAMILY_LEASE.lock').open('a+') as lease:
+            try:fcntl.flock(lease,fcntl.LOCK_EX|fcntl.LOCK_NB)
+            except BlockingIOError:return  # Controller reattaches the live owner.
+            pointer=family/'ACTIVE_ATTEMPT.json'
+            if pointer.exists():
+                spec=Path(read(pointer)['spec']);state_path=spec.parent/'STATUS.json'
+                state=read(state_path) if state_path.exists() else {}
+                terminal=(state.get('status')=='EXITED' and isinstance(state.get('returncode'),int) and state['returncode']>=0)
+                no_child=(state.get('status') in ('STARTUP_FAILED','SUPERSEDED_BEFORE_START') and state.get('child_started') is False)
+                if not (terminal or no_child):
+                    raise ownership_error('Incompatible preparation output has a live/unknown recorded child; preserve it')
+            source=path.parent if name.startswith('targets_') or name in ('formal_ddp','formal_single') else path
+            destination=self.folder/'incompatible_outputs'/name/str(time.time_ns())
+            destination.parent.mkdir(parents=True,exist_ok=True)
+            source.rename(destination)
+            atomic(destination.parent/(destination.name+'.json'),{'status':'PRESERVED_INCOMPATIBLE_OUTPUT',
+                   'name':name,'original_path':str(source),'preserved_path':str(destination),'time':stamp(),
+                   'no_live_or_unknown_child_moved':True,'reason':'Current teacher/assets/code completion identity differs'})
 
     def gpu_job(self, name, host, uuids, arguments, complete_path):
         """Use the same lease/versioned-attempt implementation as the full suite."""
@@ -169,6 +188,7 @@ class PreparationOwner:
         command = [self.args.python, '-B', *map(str, arguments)]
         for attempt in range(self.args.engineering_retries + 1):
             try:
+                self.retire_incompatible_output(name,complete_path,RemoteOwnershipUnknown)
                 controller.execute(name, command, allocation_run=name,
                                    success_check=lambda: self.gpu_output_complete(name, complete_path))
                 atomic(self.folder / f'{name}.COMPLETE.json', {'status': 'COMPLETE',
@@ -349,6 +369,7 @@ class PreparationOwner:
                 raise ValueError('Locally generated teacher readiness artifact changed')
         self.code_gate()
         values, self.paths_file, config_file = self.paths()
+        self.current_paths=values
         planned = read(self.args.resources)
         allocation = planned['allocations']['H_mu_teacher_seed20261027']
         self.training_world_size = int(planned.get('world_size', len(allocation['gpu_uuids'])))
