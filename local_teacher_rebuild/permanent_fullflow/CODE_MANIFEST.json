@@ -1,0 +1,23 @@
+{
+  "schema": "permanent_only_full_original_GT_code_v1",
+  "full_original_GT_search_required": true,
+  "shortened_cut_used_for_formal_teacher": false,
+  "files": [
+    {
+      "path": "fullflow_teacher_owner.py",
+      "sha256": "58fb6df5d20e177c9740312a74137399de56a3b789a015caecbf4f33b3477ee2"
+    },
+    {
+      "path": "permanent_dispatch.py",
+      "sha256": "041559cd260107d726f47fbf5fb25ab6b7876d3494b6951960c271e704255420"
+    },
+    {
+      "path": "round1_prepare_and_run_permanent.py",
+      "sha256": "278129955e7bfc86efa59ae59122f1d60f26c193e2a6a1f8a08cab507521866c"
+    },
+    {
+      "path": "test_fullflow_owner.py",
+      "sha256": "12c8e066ef038d60ad1ac2554c587b58845bf4accf15ed5b76e56bcac20f401b"
+    }
+  ]
+}

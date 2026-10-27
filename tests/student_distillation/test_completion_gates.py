@@ -118,23 +118,30 @@ def test_qualification_rejects_h_only_recovery_and_synthetic_status(tmp_path):
     paths = {key: str(tmp_path / key) for key in keys}
     paths["qualification_receipt"] = str(tmp_path / "qualification.json")
     identities = {"code_files": {}, "files": {key: {"sha256": sha256(paths[key])} for key in keys[:-1]}}
+    cfg = {"paths": paths, "runtime": {"world_size": 2}, "training": {"gradient_accumulation_steps": 32}}
+    from student_distillation.train import formal_execution
     checks = {}
     for check in QUALIFICATION_CHECKS:
         artifact = tmp_path / (check + ".json")
         value = {"status": "PASS"}
         if check == "dit_input_gradient":
             value["student_forward_native_parity"] = {"status": "PASS", "scenes": 64, "time_indices": list(range(5)), "bitwise": True}
+        if check == "ddp_tail_objective":
+            value.update(schema="nrkd_ddp_tail_check_v1", world_size=2, global_slots=64, real_scene_count=53,
+                         zero_weight_padded_slots=11, native_microbatch=1, gradient_accumulation_steps=32,
+                         DDP_adapter_only=True)
         atomic_json(artifact, value)
         checks[check] = {"status": "PASS", "artifact": {"path": str(artifact), "sha256": sha256(artifact)}}
     receipt = {"schema": "nrkd_code_checks_v1", "status": "CODE_CHECKS_PASS", "formal_asset_qualification": True,
-               "code_sha256": {}, "identities": {key + "_sha256": sha256(paths[key]) for key in keys}, "checks": checks}
+               "code_sha256": {}, "identities": {key + "_sha256": sha256(paths[key]) for key in keys}, "checks": checks,
+               "execution": formal_execution(cfg)}
     atomic_json(paths["qualification_receipt"], receipt)
     with pytest.raises(ValueError, match="active teacher-state"):
-        verify_qualification({"paths": paths}, identities)
+        verify_qualification(cfg, identities)
     receipt["status"] = "ENGINEERING_CHECKS_PASS_SYNTHETIC_BASIS"
     atomic_json(paths["qualification_receipt"], receipt)
     with pytest.raises(ValueError, match="Synthetic"):
-        verify_qualification({"paths": paths}, identities)
+        verify_qualification(cfg, identities)
 
 
 def test_deterministic_metadata_scopes_restore_flags_even_after_failure():

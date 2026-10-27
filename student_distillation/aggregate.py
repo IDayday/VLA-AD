@@ -236,7 +236,11 @@ def report(out, require_complete=True):
                    "paired_base_gt90_student_zero": test.get("events", {}).get("paired_base_gt90_student_zero"),
                    "train_wall_seconds": train_complete.get("wall_seconds_total", train_complete.get("wall_seconds_this_process")),
                    "test_wall_seconds": test.get("wall_seconds_this_process"),
-                   "world_size": train_complete.get("world_size"), "status": run["status"]}
+                   "world_size": train_complete.get("world_size"),
+                   "global_batch_size": train_complete.get("global_batch_size"),
+                   "microbatch_per_device": train_complete.get("microbatch_per_device"),
+                   "gradient_accumulation_steps": train_complete.get("gradient_accumulation_steps"),
+                   "status": run["status"]}
             row.update({f"test_{key}_points": value for key, value in test.get("components_points", {}).items()})
             representation = (summaries["train_representation"] or {}).get("representation", {})
             row.update(train_keep_predicted_rms=representation.get("keep", {}).get("predicted_rms"),

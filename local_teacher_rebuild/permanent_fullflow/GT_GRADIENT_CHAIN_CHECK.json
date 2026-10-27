@@ -1,0 +1,18 @@
+{
+  "status": "PASS_ACTUAL_GT_INTERFACE_BACKPROP_CONFIGURATION",
+  "observed_at": "2026-10-27T01:02:49.351496+00:00",
+  "source_result": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/native_gt/analysis/post_B/scene_048857/interface_post_c0.35_random2_lr1.0/RESULT.json",
+    "sha256": "db2149feba3dafd82dba7c7c8143a70781ce47c34d7e22f7c92577926eaa7095"
+  },
+  "original_stage": "post_B",
+  "block": "interface_post",
+  "steps": 128,
+  "gradient_count": 128,
+  "gradient_min": 1.2996457599001587e-07,
+  "gradient_max": 0.0002529708144720644,
+  "finite_nonzero_gradients": 128,
+  "selection_rule": "actual S0 PDMS; cumulative Base retained",
+  "claim_limit": "One actual original configuration proof, not full teacher or student qualification",
+  "frozen_model_runtime_assertion": "LocalGTNumeric.verify_engine checks requires_grad=False,grad=None and unchanged parameter versions"
+}

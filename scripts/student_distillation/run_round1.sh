@@ -8,5 +8,5 @@ python -B -m student_distillation.run_suite \
   --paths-config "$ROUND1_PATHS_CONFIG" \
   --experiments H_full H_gain1 H_mu_teacher H_mu_student \
   --training-seeds 20261027 20261028 --epochs 40 --global-batch-size 64 \
-  --resources "$ROUND1_RESOURCES" --world-size 4 --resume auto --complete-through report \
+  --resources "$ROUND1_RESOURCES" --resume auto --complete-through report \
   --out "$ROUND1_OUTPUT"

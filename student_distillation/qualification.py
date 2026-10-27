@@ -874,10 +874,10 @@ def run_qualification(args):
     active_result = active_transition_recovery(args, active_batches[:args.active_scenes], active_shifts[:args.active_scenes], adapter_factory, bridge, out / 'active_transition_recovery', out / 'control_checkpoint.pt', active_calibration, identities)
     recovery['active_transition_recovery'] = active_result
     checks['next_update_recovery'] = _record(out, 'next_update_recovery', recovery)
+    execution = None
     if args.ddp_receipt:
         ddp = read_json(args.ddp_receipt)
-        if ddp.get('schema') != 'nrkd_ddp_tail_check_v1' or ddp.get('status') != 'PASS' or ddp.get('real_scene_count') != 53 or ddp.get('world_size', 0) < 2:
-            raise ValueError('Real multi-GPU 53-scene DDP receipt is invalid')
+        execution = validate_ddp_execution(ddp, getattr(args, 'training_world_size', None))
         for key in ('teacher_bundle_sha256', 'feature_manifest_sha256', 'calibration_sha256'):
             if ddp['identities'].get(key) != identities.get(key):
                 raise ValueError(f'DDP receipt identity mismatch: {key}')
@@ -890,6 +890,7 @@ def run_qualification(args):
     formal = bool(bundle is not None and args.targets_manifest and args.calibration and all_pass)
     result = {'schema': 'nrkd_code_checks_v1', 'status': 'CODE_CHECKS_PASS' if formal else ('ENGINEERING_CHECKS_PASS_SYNTHETIC_BASIS' if bundle is None else 'PENDING_FORMAL_QUALIFICATION'),
               'formal_asset_qualification': formal, 'identities': identities, 'code_sha256': code_identity(),
+              'execution': execution,
               'source': source, 'checks': checks, 'pending_checks': [k for k, v in checks.items() if v['status'] != 'PASS']}
     cache_cfg = _qualification_cache_config(args)
     if cache_cfg is not None:
@@ -903,12 +904,30 @@ def run_qualification(args):
     return result
 
 
+def validate_ddp_execution(receipt, expected_world=None):
+    """Bind a real tail-objective proof to its requested rank/accumulation layout."""
+    from .train import formal_execution
+    world = receipt.get('world_size')
+    execution = formal_execution({'runtime': {'world_size': world},
+                                  'training': {'gradient_accumulation_steps': 64 // world if type(world) is int and world else None}})
+    if expected_world is not None and world != expected_world:
+        raise ValueError('DDP qualification world_size differs from --training-world-size')
+    required = {'schema': 'nrkd_ddp_tail_check_v1', 'status': 'PASS', 'real_scene_count': 53,
+                'global_slots': 64, 'zero_weight_padded_slots': 11, 'native_microbatch': 1,
+                'gradient_accumulation_steps': execution['gradient_accumulation_steps'], 'DDP_adapter_only': True}
+    if any(receipt.get(key) != expected for key, expected in required.items()):
+        raise ValueError('Real DDP tail proof must use microbatch1, accumulation64/world and 53 real of 64 slots')
+    return execution
+
+
 def run_ddp_tail(args):
     from . import distributed as dd
     from .losses import scene_loss
     env = dd.initialize()
-    if env.world_size < 2 or not str(env.device).startswith('cuda'):
-        raise ValueError('--ddp-only requires torchrun on at least two actual CUDA GPUs')
+    if env.world_size not in (2, 4) or not str(env.device).startswith('cuda'):
+        raise ValueError('--ddp-only requires torchrun on two or four actual CUDA GPUs')
+    if getattr(args, 'training_world_size', None) not in (None, env.world_size):
+        raise ValueError('Actual torchrun WORLD_SIZE differs from --training-world-size')
     out = Path(args.out).resolve(); out.mkdir(parents=True, exist_ok=True)
     random.seed(args.seed); np.random.seed(args.seed); torch.manual_seed(args.seed); torch.cuda.manual_seed_all(args.seed)
     basis, d0, cap, basis_identity, _ = _basis(args, out if env.rank == 0 else out / f'rank_{env.rank}')
@@ -960,10 +979,12 @@ def run_ddp_tail(args):
         identities = _identities(args, read_json(args.paths))
         value = {'schema': 'nrkd_ddp_tail_check_v1', 'status': 'PASS', 'real_scene_count': 53,
                  'global_slots': 64, 'zero_weight_padded_slots': 11, 'world_size': env.world_size,
+                 'gradient_accumulation_steps': len(slots),
                  'identities': identities, 'basis_identity': basis_identity, 'code_sha256': code_identity(),
                  'serial_loss': serial_loss, 'ddp_loss': global_loss, 'gradient_atol': 2e-6, 'gradient_rtol': 1e-4,
                  'gradient_comparisons': comparisons, 'real_native_cases': [dataset.metadata[i]['token'] for i in indices[:53]],
                  'native_microbatch': 1, 'DDP_adapter_only': True}
+        value['execution'] = validate_ddp_execution(value, getattr(args, 'training_world_size', None))
         atomic_json(out / 'DDP_TAIL_53.json', value)
     dd.barrier()
     if torch.distributed.is_initialized():
@@ -993,6 +1014,8 @@ def main(argv=None):
     p.add_argument('--engineering-teacher-query-cache-receipt', help='Qualified cache admission for active-only synthetic control; never formal asset admission')
     p.add_argument('--ddp-only', action='store_true')
     p.add_argument('--ddp-receipt')
+    p.add_argument('--training-world-size', type=int, choices=(2, 4),
+                   help='Bind DDP tail and full qualification to the formal run rank count')
     p.add_argument('--out', required=True)
     args = p.parse_args(argv)
     if args.engineering_teacher_query_cache_receipt and (not args.active_recovery_only_from or args.teacher_bundle):

@@ -196,17 +196,34 @@ def execute_spec(path):
         family_lease.close()
 
 
-def load_resources(path, out):
+def resource_world_size(allocations, requested=None, declared=None):
+    """Use one explicit allocation width for all eight independent runs."""
+    widths = {len(allocation.get("gpu_uuids", [])) for allocation in allocations.values()}
+    if len(widths) != 1 or not widths <= {2, 4}:
+        raise ValueError("Formal resources require uniformly two or four GPUs per run")
+    world = next(iter(widths))
+    for value in (requested, declared):
+        if value is not None and (type(value) is not int or value != world):
+            raise ValueError("Requested/declared world_size differs from the per-run GPU allocation")
+    for allocation in allocations.values():
+        value = allocation.get("world_size", world)
+        if type(value) is not int or value != world:
+            raise ValueError("A per-run world_size differs from its GPU allocation")
+    return world
+
+
+def load_resources(path, out, world_size=None):
     value = json.loads(Path(path).read_text())
     allocations = value.get("allocations", value.get("runs"))
     expected = {f"{experiment}_seed{seed}" for experiment in EXPERIMENTS for seed in SEEDS}
     if not isinstance(allocations, dict) or set(allocations) != expected:
         raise ValueError("Resources must explicitly allocate all eight registered runs")
+    world = resource_world_size(allocations, world_size, value.get("world_size"))
     used = set()
     for run_id, allocation in allocations.items():
         uuids = allocation.get("gpu_uuids", [])
-        if len(uuids) != 4 or len(set(uuids)) != 4 or any(not str(uuid).startswith("GPU-") for uuid in uuids):
-            raise ValueError(f"{run_id} requires four explicit GPU UUIDs")
+        if len(uuids) != world or len(set(uuids)) != world or any(not str(uuid).startswith("GPU-") for uuid in uuids):
+            raise ValueError(f"{run_id} requires {world} explicit unique GPU UUIDs")
         if used & set(uuids):
             raise ValueError("Independent runs may not overlap an allocated GPU")
         used.update(uuids)
@@ -224,15 +241,26 @@ def load_resources(path, out):
         allocation["_task"] = authorization["task"]
         allocation["_live_policy_path"] = policy["source"]
         allocation["_resource_status"] = value.get("status")
+        allocation["world_size"] = world
     atomic_json(Path(out) / "RESOURCE_ALLOCATION.json", {"source": str(Path(path).resolve()),
-                                                        "sha256": sha256(path), "allocation": value})
+                "sha256": sha256(path), "world_size": world, "global_batch_size": 64,
+                "microbatch_per_device": 1, "gradient_accumulation_steps": 64 // world,
+                "allocation": value})
     return allocations
 
 
 class Controller:
-    def __init__(self, out, registry, allocations):
+    def __init__(self, out, registry, allocations, world_size=None):
         self.out, self.registry = Path(out), registry
-        self.allocations, self.world_size = allocations, 4
+        widths = {len(allocation["gpu_uuids"]) for allocation in allocations.values()}
+        if len(widths) != 1 or not widths or min(widths) < 1:
+            raise ValueError("Controller allocations must share one positive GPU count")
+        actual = next(iter(widths))
+        if world_size is not None and (type(world_size) is not int or world_size != actual):
+            raise ValueError("Controller world_size differs from its GPU allocation")
+        if any(allocation.get("world_size", actual) != actual for allocation in allocations.values()):
+            raise ValueError("Controller allocation world_size differs from its GPU count")
+        self.allocations, self.world_size = allocations, actual
         self.lock = threading.RLock()
         self.commands = self.out / "launch_commands.audit.sh"
         if not self.commands.exists():
@@ -320,7 +348,9 @@ class Controller:
             self.registry.task_update(attempt_key, "RUNNING", command=command, devices=selected, host=allocation["host"],
                                       log=str(log), spec=str(spec_path), logical_key=key, start=existing.get("start", stamp()))
             if run_id:
-                self.registry.run_update(run_id, "TRAINING", command=command, world_size=4, devices=selected, host=allocation["host"])
+                self.registry.run_update(run_id, "TRAINING", command=command, world_size=self.world_size,
+                                         gradient_accumulation_steps=64 // self.world_size,
+                                         devices=selected, host=allocation["host"])
         start = time.monotonic()
         launcher = None
         wrapper_log = job / "wrapper.log"
@@ -578,15 +608,15 @@ def run(args):
         raise ValueError("The formal suite must include all A/B/C/D arms and both registered training seeds")
     if args.epochs != 40 or args.global_batch_size != 64:
         raise ValueError("The formal suite cannot shorten the training budget")
-    if not args.resources or args.world_size not in (None, 4):
-        raise ValueError("The eight-run scheduler requires the explicit per-run four-GPU host/UUID resource manifest")
+    if not args.resources or args.world_size not in (None, 2, 4):
+        raise ValueError("The eight-run scheduler requires explicit per-run two- or four-GPU host/UUID resources")
     owner = (out / "SUITE_CONTROLLER.lock").open("a+")
     fcntl.flock(owner, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    allocations = load_resources(args.resources, out)
-    world = 4
+    allocations = load_resources(args.resources, out, args.world_size)
+    world = resource_world_size(allocations, args.world_size)
     registry = Registry(out)
     atomic_json(out / "RESOURCE_INVENTORY.json", inventory())
-    controller = Controller(out, registry, allocations)
+    controller = Controller(out, registry, allocations, world)
     configs = {}
     common_path = args.config_dir / "common.yaml"
     common = load_config(common_path)
@@ -594,6 +624,10 @@ def run(args):
         overlay = load_config(args.paths_config)
         common = merge(common, overlay if "paths" in overlay else {"paths": overlay})
     common.setdefault("paths", {})["results_root"] = str(out)
+    common.setdefault("runtime", {})["world_size"] = world
+    common["training"]["gradient_accumulation_steps"] = 64 // world
+    registry.value["execution"] = {"world_size": world, "global_batch_size": 64,
+                                    "microbatch_per_device": 1, "gradient_accumulation_steps": 64 // world}
     registry.value["independent_validation_teacher"] = {
         "status": "REGISTERED_INDEPENDENT_OWNER", "registry": str(validation_teacher_registry(common)),
         "required_marker": str(out / "VAL_TEACHER_DIAGNOSTICS.json")}
@@ -621,7 +655,7 @@ def run(args):
     registry.value["asset_qualification"] = qualification
     registry.save()
     # The root-owned independent validation-teacher controller may run on its
-    # reserved six GPUs while these eight disjoint four-GPU allocations train.
+    # separately allocated resources while these eight disjoint groups train.
     # Its evidence is mandatory before final diagnostics/report, never a Train label.
     def train_one(run_id):
         cfg, config_path = configs[run_id]
@@ -768,8 +802,8 @@ def main():
     parser.add_argument("--global-batch-size", type=int, default=64)
     parser.add_argument("--resume", default="auto")
     parser.add_argument("--complete-through", choices=("report",), default="report")
-    parser.add_argument("--resources", type=Path, required=True, help="Verified all-eight-run host/four-GPU UUID allocation")
-    parser.add_argument("--world-size", type=int)
+    parser.add_argument("--resources", type=Path, required=True, help="Verified all-eight-run host/GPU UUID allocation")
+    parser.add_argument("--world-size", type=int, choices=(2, 4), help="Cross-check per-run GPU count; otherwise infer the manifest")
     parser.add_argument("--engineering-retries", type=int, default=3)
     parser.add_argument("--out", type=Path, required=True)
     args = parser.parse_args()

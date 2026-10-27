@@ -21,6 +21,17 @@ QUALIFICATION_CHECKS = ("asset_identity", "zero_identity", "actual_teacher_injec
                         "dit_input_gradient", "ddp_tail_objective", "next_update_recovery")
 
 
+def formal_execution(cfg):
+    world = cfg.get("runtime", {}).get("world_size")
+    if type(world) is not int or world not in (2, 4):
+        raise ValueError("Formal execution must record runtime.world_size as 2 or 4")
+    accumulation = cfg.get("training", {}).get("gradient_accumulation_steps")
+    if type(accumulation) is not int or accumulation != 64 // world:
+        raise ValueError("Formal execution must accumulate 64/world_size scene microbatches per rank")
+    return {"world_size": world, "global_batch_size": 64, "microbatch_per_device": 1,
+            "gradient_accumulation_steps": accumulation, "DDP_adapter_only": True}
+
+
 def verify_formal_config(cfg):
     """Reject ineffective or changed scientific options before any formal work."""
     validate_config(cfg)
@@ -58,6 +69,7 @@ def verify_formal_config(cfg):
     expected = targets.get(cfg.get("experiment"))
     if expected != (cfg.get("teacher_target"), cfg.get("state_source"), cfg.get("enable_transition_loss")):
         raise ValueError("Formal experiment target/state-source/loss assignment changed")
+    formal_execution(cfg)
 
 
 def verify_qualification(cfg, identities=None):
@@ -77,6 +89,9 @@ def verify_qualification(cfg, identities=None):
             raise ValueError(f"Engineering qualification {key} identity differs")
     if receipt.get("identities", {}).get("checkpoint_sha256") != sha256(cfg["paths"]["checkpoint"]):
         raise ValueError("Engineering qualification used a different frozen RL Base")
+    execution = formal_execution(cfg)
+    if receipt.get("execution") != execution:
+        raise ValueError("Engineering qualification used a different DDP world_size or accumulation layout")
     for name in QUALIFICATION_CHECKS:
         check = receipt.get("checks", {}).get(name, {})
         if check.get("status") != "PASS":
@@ -98,11 +113,20 @@ def verify_qualification(cfg, identities=None):
             parity = evidence.get("student_forward_native_parity", {})
             if parity.get("status") != "PASS" or parity.get("scenes", 0) < 64 or parity.get("time_indices") != [0, 1, 2, 3, 4] or parity.get("bitwise") is not True:
                 raise ValueError("Student deterministic compiled-VJP metadata lacks actual64scene all-five-step native bitwise forward parity")
+        if name == "ddp_tail_objective":
+            evidence = json.loads(artifact_path.read_text())
+            required = {"schema": "nrkd_ddp_tail_check_v1", "status": "PASS", "world_size": execution["world_size"],
+                        "global_slots": 64, "real_scene_count": 53, "zero_weight_padded_slots": 11,
+                        "native_microbatch": 1, "gradient_accumulation_steps": execution["gradient_accumulation_steps"],
+                        "DDP_adapter_only": True}
+            if any(evidence.get(key) != expected for key, expected in required.items()):
+                raise ValueError("DDP tail qualification must match the actual world_size and 53-real/64-slot objective")
     from .losses import teacher_query_cache_settings
     cache = teacher_query_cache_settings(cfg, refresh=True)
     if cache is not None and receipt.get("performance_admissions", {}).get("teacher_query_cache") != cache["admission"]:
         raise ValueError("Formal C qualification is missing its exact cache admission artifact and identities")
-    result = {"path": str(Path(path).resolve()), "sha256": sha256(path), "checks": list(QUALIFICATION_CHECKS)}
+    result = {"path": str(Path(path).resolve()), "sha256": sha256(path), "checks": list(QUALIFICATION_CHECKS),
+              "execution": execution}
     if cache is not None:
         result["performance_admissions"] = {"teacher_query_cache": cache["admission"]}
     return result
@@ -402,6 +426,8 @@ def run(cfg, out, resume="auto", formal=True):
         if os.environ.get("CUBLAS_WORKSPACE_CONFIG") != ":4096:8":
             raise ValueError("Formal training requires the qualified startup CUBLAS_WORKSPACE_CONFIG=:4096:8")
     env = distributed.initialize()
+    if formal and env.world_size != formal_execution(cfg)["world_size"]:
+        raise ValueError("Actual torchrun WORLD_SIZE differs from the qualified effective configuration")
     torch.set_num_threads(int(cfg.get("runtime", {}).get("torch_threads", 1)))
     out = Path(out)
     out.mkdir(parents=True, exist_ok=True)
@@ -564,6 +590,10 @@ def run(cfg, out, resume="auto", formal=True):
             if recovery.get("status") != "PASS" or not recovery.get("trained_Adam_state") or not recovery.get("transition_loss_active"):
                 raise ValueError("Actual active C/D next-update recovery is incomplete")
         atomic_json(out / "TRAIN_COMPLETE.json", {"status": "TRAIN_COMPLETE", **progress, "world_size": env.world_size,
+                                                  "global_batch_size": cfg["training"]["global_batch_size"],
+                                                  "microbatch_per_device": 1,
+                                                  "gradient_accumulation_steps": cfg["training"]["global_batch_size"] // env.world_size,
+                                                  "DDP_adapter_only": True,
                                                   "wall_seconds_this_process": time.monotonic() - start,
                                                   "full_validation_evidence": full_validation_evidence,
                                                   "qualification": verification if formal else None})

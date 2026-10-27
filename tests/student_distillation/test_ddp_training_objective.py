@@ -3,8 +3,9 @@ from pathlib import Path
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
+import pytest
 from student_distillation.distributed import Environment, wrap_adapter
-from student_distillation.checkpointing import clone_nested, save_checkpoint
+from student_distillation.checkpointing import clone_nested, save_checkpoint, read_checkpoint, load_checkpoint
 from student_distillation.train import make_optimizer, train_update, verify_next_update
 
 
@@ -91,3 +92,10 @@ def test_ddp_real_loss_matches_single_and_replays_next_tail_update(tmp_path):
         assert abs(left["loss"] - right["loss"]) < 1e-7
     assert (tmp_path / "RECOVERY_w1.json").exists()
     assert (tmp_path / "RECOVERY_w2.json").exists()
+    state = read_checkpoint(tmp_path / "checkpoint_w2.pt")
+    assert state["world_size"] == 2 and len(state["rng_by_rank"]) == 2
+    model = SmallAdapter()
+    optimizer, scheduler, _ = make_optimizer(model, config())
+    with pytest.raises(ValueError, match="checkpoint world size"):
+        load_checkpoint(tmp_path / "checkpoint_w2.pt", model, optimizer, scheduler,
+                        Environment(world_size=4), {"synthetic": True})
