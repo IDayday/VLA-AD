@@ -1,0 +1,105 @@
+{
+  "at": "2026-10-27T14:59:35.157714+00:00",
+  "active_GPU_allocations": 16,
+  "retained_hosts": [
+    "training-vla-zt",
+    "training-vlawm-tsinghua-zt",
+    "training-vlawm-tsinghua-zt4",
+    "training-vlawm-tsinghua-zt5"
+  ],
+  "retained_indices": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "cancelled_indices": [
+    4,
+    5,
+    6,
+    7
+  ],
+  "reason": "User single training seed and resource-saving instruction; prevent stale cancelled-seed admissions.",
+  "global_or_other_task_grants_changed": false,
+  "historical_authorized_gpu_indices": {
+    "training-vla-zt": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "training-vlawm-tsinghua-zt": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "training-vlawm-tsinghua-zt3": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "training-vlawm-tsinghua-zt4": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ],
+    "training-vlawm-tsinghua-zt5": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  "policy_path": "/mnt/project/server_dispatch_policy.json",
+  "policy_sha256": "9b856119e52b3e222c4fdabe5cba6aecf92cd89a2ddc32d5d1e82025993e5aed",
+  "new_authorized_gpu_indices": {
+    "training-vla-zt": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "training-vlawm-tsinghua-zt": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "training-vlawm-tsinghua-zt3": [],
+    "training-vlawm-tsinghua-zt4": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "training-vlawm-tsinghua-zt5": [
+      0,
+      1,
+      2,
+      3
+    ]
+  }
+}

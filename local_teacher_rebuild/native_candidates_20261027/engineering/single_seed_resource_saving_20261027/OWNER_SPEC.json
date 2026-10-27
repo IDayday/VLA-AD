@@ -1,0 +1,84 @@
+{
+  "schema": "nrkd_single_seed_owner_v1",
+  "user_instruction": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/single_seed_20261027/USER_INSTRUCTION.json",
+    "sha256": "ee19728c823cf4b1f939f1845f86ece1c0e7fd29b6060ec8ed0c6615f8487fe5"
+  },
+  "arguments": [
+    "--config-dir",
+    "/mnt/project/recogdrive-no-routing-round1-20261026/configs/student_distillation",
+    "--paths-config",
+    "/mnt/project/recogdrive-no-routing-round1-results-20261026/protocol/PATHS_BASIC_NORMAL_START_CONFIG.json",
+    "--resources",
+    "/mnt/project/recogdrive-no-routing-round1-results-20261026/resources/ROUND1_SINGLE_SEED_16GPU_READY_20261027.json",
+    "--world-size",
+    "4",
+    "--engineering-retries",
+    "3",
+    "--complete-through",
+    "report",
+    "--out",
+    "/mnt/project/recogdrive-no-routing-round1-results-20261026",
+    "--training-seeds",
+    "20261027"
+  ],
+  "original_retained_training_specs": {
+    "H_full_seed20261027": {
+      "spec": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/jobs/train__H_full_seed20261027__attempt00/attempt_00000/SPEC.json",
+        "sha256": "86c48493750e4f1e33de32d372c11a89c63b811ed5f30a91fe520e374eb53b3a"
+      },
+      "child_pid": 1477475,
+      "child_start_ticks": 1454965688,
+      "gpu_uuids": [
+        "GPU-f0cd16db-c7f6-2226-c901-d1809277060e",
+        "GPU-27c69c7c-eb37-82fb-6fa0-0777abd64056",
+        "GPU-51b3887b-3158-ece3-aa70-a52adb25160b",
+        "GPU-31f9e6ef-4c0d-b5e0-7ddf-527f4a7dbcbc"
+      ]
+    },
+    "H_gain1_seed20261027": {
+      "spec": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/jobs/train__H_gain1_seed20261027__attempt00/attempt_00000/SPEC.json",
+        "sha256": "7e4d5659171587f597c16c06fb2caf58c7fba53c8eb15669e4a5be374933fed8"
+      },
+      "child_pid": 500641,
+      "child_start_ticks": 160618219,
+      "gpu_uuids": [
+        "GPU-ba6629ed-35db-198b-d353-d6048cbdf36b",
+        "GPU-c976d64e-44ea-d8bd-a026-d1c1f14d4db6",
+        "GPU-e2a93cb8-47e2-0b2f-952e-bcfa5403ad24",
+        "GPU-28ad5baf-48e8-8ea7-2e0b-514cc7f2d690"
+      ]
+    },
+    "H_mu_student_seed20261027": {
+      "spec": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/jobs/train__H_mu_student_seed20261027__attempt00/attempt_00000/SPEC.json",
+        "sha256": "aa52eb110d849b504d8217734353f478693c13087d3b8b349d83c59fd77a93e0"
+      },
+      "child_pid": 442848,
+      "child_start_ticks": 1454966178,
+      "gpu_uuids": [
+        "GPU-de0a113d-0ee7-6d02-f202-38ed7a2eba42",
+        "GPU-9d5086e9-c3c6-960a-702d-d1c5870b6b9f",
+        "GPU-a3f83a36-3e49-431e-4440-35f9e4d01a59",
+        "GPU-4fe15b93-9f87-08ea-699d-40375083da94"
+      ]
+    },
+    "H_mu_teacher_seed20261027": {
+      "spec": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/jobs/train__H_mu_teacher_seed20261027__attempt00/attempt_00000/SPEC.json",
+        "sha256": "93a15fac93c3db09d3a6ae41a7e730b3ed9fff999ab28a445a3a924255123cd5"
+      },
+      "child_pid": 710019,
+      "child_start_ticks": 1454947863,
+      "gpu_uuids": [
+        "GPU-f679bff0-a4a2-ae4f-0b85-74c519b45a9c",
+        "GPU-562375d4-b1d6-f0d9-a68d-5a81e5272907",
+        "GPU-b8a35758-a506-a8a1-dca7-499c485068fc",
+        "GPU-72a7d08b-16b7-7c64-a324-a08e043c6006"
+      ]
+    }
+  },
+  "source_HEAD_must_remain": "0a58bd8e6271e26103512add2c5cb7816d7eb8f1"
+}

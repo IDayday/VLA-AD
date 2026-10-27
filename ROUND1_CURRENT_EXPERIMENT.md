@@ -5,7 +5,7 @@
 ## 当前实验范围
 
 - 当前保留 **20261027** 一个 training seed，四组：H_full、H_gain1、H_mu_teacher、H_mu_student。
-- 20261028 的四个重复 run 已按用户要求停止，已有权重、日志及实际停止证明保留，释放 16 张 GPU 的任务分配。单 seed 调度控制器正在独立接续；四个保留训练进程继续运行。
+- 20261028 的四个重复 run 已按用户要求停止，已有权重、日志及实际停止证明保留，释放 16 张 GPU 的任务分配。单 seed 调度控制器已接续；四个保留训练进程继续运行，PID、启动时间、命令和原始attempt均未改变。
 - 每个保留 run 仍训练全部 85,813 场景、40 epochs，global batch=64，world_size=4、microbatch=1、累积16次；每 epoch 1,341 次更新，共53,640次。
 - 用户已取消五类额外资格验收，采用显式 `USER_AUTHORIZED_BASIC_NORMAL_START`。未执行的验收没有标为通过。保留实际训练的有限 loss/梯度检查、梯度裁剪和正常 checkpoint 保存/加载。
 
@@ -23,6 +23,8 @@
 冻结证据基线为 `6bb7119583513094a169b4c2f2dc2a05ac293aa3`；完整原研究方法源码证据为 `f85d4e557b12a7d05f5deb8d1640834cacd94d32`。本轮教师使用本机完整重拟合结果，PPU 参数及分数仅作历史证据。
 
 冻结训练入口原先注册两个 seed。当前单 seed 计划以本分支保存的用户指令和实际控制器接续记录为准；重跑时应使用配套单 seed 操作入口，避免直接套用原双 seed 默认值。
+
+[单 seed 调度源码](local_teacher_rebuild/native_candidates_20261027/engineering/single_seed_resource_saving_20261027/)在独立进程中缩减注册、选择锁、评测子进程和报告范围，训练命令保持原样。[14:58真实接续证明](reports/round1_initial_20261027/resource_transition/ACTUAL_LIVE_ADOPTION.json)显示四个保留run分别已到A2538、B1159、C3352、D2785步，均沿用唯一原始训练attempt。源码中的机器路径和OWNER_SPEC对应当前平台，迁机需配置当地路径。
 
 ## 教师与学生方法
 

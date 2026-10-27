@@ -1,0 +1,65 @@
+{
+  "status": "FOUR_ORIGINAL_SEED27_CHILDREN_ADOPTED_WITHOUT_RESTART",
+  "time": "2026-10-27T14:59:45.351823+00:00",
+  "owner": {
+    "name": "single_seed_four_run_owner",
+    "pid": 727949,
+    "start_ticks": "1455165543",
+    "argv": [
+      "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+      "-B",
+      "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/single_seed_resource_saving_20261027/single_seed_owner.py"
+    ]
+  },
+  "runs": [
+    {
+      "run_id": "H_full_seed20261027",
+      "same_original_child_pid": 1477475,
+      "same_original_start_ticks": 1454965688,
+      "original_spec_sha256": "86c48493750e4f1e33de32d372c11a89c63b811ed5f30a91fe520e374eb53b3a",
+      "actual_global_step": 2538,
+      "epoch": 2,
+      "step_seconds": 0.9938301760703325,
+      "loss": 0.2977340056961566,
+      "no_new_training_attempt": true
+    },
+    {
+      "run_id": "H_gain1_seed20261027",
+      "same_original_child_pid": 500641,
+      "same_original_start_ticks": 160618219,
+      "original_spec_sha256": "7e4d5659171587f597c16c06fb2caf58c7fba53c8eb15669e4a5be374933fed8",
+      "actual_global_step": 1159,
+      "epoch": 1,
+      "step_seconds": 1.8080172599293292,
+      "loss": 0.27524891486245906,
+      "no_new_training_attempt": true
+    },
+    {
+      "run_id": "H_mu_student_seed20261027",
+      "same_original_child_pid": 442848,
+      "same_original_start_ticks": 1454966178,
+      "original_spec_sha256": "aa52eb110d849b504d8217734353f478693c13087d3b8b349d83c59fd77a93e0",
+      "actual_global_step": 2785,
+      "epoch": 3,
+      "step_seconds": 0.9660011995583773,
+      "loss": 0.2266505035697719,
+      "no_new_training_attempt": true
+    },
+    {
+      "run_id": "H_mu_teacher_seed20261027",
+      "same_original_child_pid": 710019,
+      "same_original_start_ticks": 1454947863,
+      "original_spec_sha256": "93a15fac93c3db09d3a6ae41a7e730b3ed9fff999ab28a445a3a924255123cd5",
+      "actual_global_step": 3352,
+      "epoch": 3,
+      "step_seconds": 0.8619302492588758,
+      "loss": 0.31340826988866866,
+      "no_new_training_attempt": true
+    }
+  ],
+  "active_runs": 4,
+  "cancelled_runs": 4,
+  "core_HEAD_unchanged": "0a58bd8e6271e26103512add2c5cb7816d7eb8f1",
+  "no_seed28_tasks_remain_active": true,
+  "REPORT_COMPLETE": false
+}

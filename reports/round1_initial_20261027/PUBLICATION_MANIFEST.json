@@ -475,6 +475,60 @@
       "published_path": "operations/epoch_loss_statistics/test_epoch_loss_statistics_v2.py",
       "sha256": "729801b12699b7df1ca61c872ab82e5c016fcc4f53914da6c96605295e8cb25a",
       "bytes": 10878
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/single_seed_resource_saving_20261027/single_seed_scope.py",
+      "published_path": "local_teacher_rebuild/native_candidates_20261027/engineering/single_seed_resource_saving_20261027/single_seed_scope.py",
+      "sha256": "a80f8fcabe2ab521b88b41ce3244b4572ecbac2d6983e3214583979e2c3b3728",
+      "bytes": 6105
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/single_seed_resource_saving_20261027/single_seed_owner.py",
+      "published_path": "local_teacher_rebuild/native_candidates_20261027/engineering/single_seed_resource_saving_20261027/single_seed_owner.py",
+      "sha256": "f5c09293c5b21981bf9e30a974bbc869fecc3e39425d66beeb04af8e84553223",
+      "bytes": 2303
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/single_seed_resource_saving_20261027/single_seed_worker.py",
+      "published_path": "local_teacher_rebuild/native_candidates_20261027/engineering/single_seed_resource_saving_20261027/single_seed_worker.py",
+      "sha256": "79cb4fa0a2926f76af43173cd1e51a5e713a42bfc8dc4d5dc1e6ba167b228e5a",
+      "bytes": 423
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/single_seed_resource_saving_20261027/prepare_and_launch.py",
+      "published_path": "local_teacher_rebuild/native_candidates_20261027/engineering/single_seed_resource_saving_20261027/prepare_and_launch.py",
+      "sha256": "206637ae5d74b6ef2bd2e660a013649bbd58397e5fc01d9af4cc75b57c5b462b",
+      "bytes": 5351
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/single_seed_resource_saving_20261027/OWNER_SPEC.json",
+      "published_path": "local_teacher_rebuild/native_candidates_20261027/engineering/single_seed_resource_saving_20261027/OWNER_SPEC.json",
+      "sha256": "321943ee0a606dd1ba42052cf799d0d85948183c69c1c7c44c72140324a047ab",
+      "bytes": 3441
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/single_seed_resource_saving_20261027/LAUNCH.json",
+      "published_path": "reports/round1_initial_20261027/resource_transition/LAUNCH.json",
+      "sha256": "2f656c38bc0c22ff991c309646bd2dfe17e20a8b1645d9ab50d6dcb59b2501a2",
+      "bytes": 2751
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/single_seed_resource_saving_20261027/ACTUAL_LIVE_ADOPTION.json",
+      "published_path": "reports/round1_initial_20261027/resource_transition/ACTUAL_LIVE_ADOPTION.json",
+      "sha256": "4bcc8e2fa1550cc38fb3d4bb0004b23fa6992f3db9da407a1e70854c2dc0e539",
+      "bytes": 2327
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/single_seed_20261027/USER_INSTRUCTION.json",
+      "published_path": "local_teacher_rebuild/native_candidates_20261027/engineering/single_seed_20261027/USER_INSTRUCTION.json",
+      "sha256": "ee19728c823cf4b1f939f1845f86ece1c0e7fd29b6060ec8ed0c6615f8487fe5",
+      "bytes": 928
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/single_seed_20261027/GPU_GRANT_REDUCTION.json",
+      "published_path": "local_teacher_rebuild/native_candidates_20261027/engineering/single_seed_20261027/GPU_GRANT_REDUCTION.json",
+      "sha256": "84c98609ad8a4b4bd2e50bedbe73cfce13c9065b0bb2647202f5c7b1d5c72976",
+      "bytes": 1643
     }
   ]
 }
