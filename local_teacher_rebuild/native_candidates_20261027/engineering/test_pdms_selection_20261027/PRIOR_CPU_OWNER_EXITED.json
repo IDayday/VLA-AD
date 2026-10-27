@@ -1,0 +1,43 @@
+{
+  "CPU_owner_leases_free": true,
+  "GPU_children_restarted_or_signalled": [],
+  "actual_exit_observed_by_pidfd": true,
+  "owner": {
+    "argv": [
+      "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+      "-B",
+      "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/single_seed_resource_saving_20261027/single_seed_owner.py"
+    ],
+    "name": "single_seed_four_run_owner",
+    "pid": 727949,
+    "start_ticks": "1455165543"
+  },
+  "retained_training_identities": {
+    "H_full_seed20261027": {
+      "child_pid": 1477475,
+      "child_start_ticks": 1454965688,
+      "host": "training-vlawm-tsinghua-zt",
+      "spec_sha256": "86c48493750e4f1e33de32d372c11a89c63b811ed5f30a91fe520e374eb53b3a"
+    },
+    "H_gain1_seed20261027": {
+      "child_pid": 500641,
+      "child_start_ticks": 160618219,
+      "host": "training-vlawm-tsinghua-zt5",
+      "spec_sha256": "7e4d5659171587f597c16c06fb2caf58c7fba53c8eb15669e4a5be374933fed8"
+    },
+    "H_mu_student_seed20261027": {
+      "child_pid": 442848,
+      "child_start_ticks": 1454966178,
+      "host": "training-vlawm-tsinghua-zt4",
+      "spec_sha256": "aa52eb110d849b504d8217734353f478693c13087d3b8b349d83c59fd77a93e0"
+    },
+    "H_mu_teacher_seed20261027": {
+      "child_pid": 710019,
+      "child_start_ticks": 1454947863,
+      "host": "training-vla-zt",
+      "spec_sha256": "93a15fac93c3db09d3a6ae41a7e730b3ed9fff999ab28a445a3a924255123cd5"
+    }
+  },
+  "signal": "SIGKILL_CPU_OWNER_ONLY",
+  "time": "2026-10-27T23:13:53.867043+00:00"
+}

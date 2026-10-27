@@ -1,0 +1,27 @@
+{
+  "time": "2026-10-27T23:15:14.807138+00:00",
+  "old_Test_endpoint_owner_actual_exit": {
+    "alive": false,
+    "command": "env ZT_AUTO_PROXY=0 OPENBLAS_CORETYPE=Sandybridge OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 /mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python -B /mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/test_endpoint_owner.py",
+    "ended_at": "2026-10-27T23:14:01+00:00",
+    "gpu": "-",
+    "log": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/dispatch/test_pdms_selection_owners_20261027/logs/full_test_endpoint_owner.log",
+    "name": "full_test_endpoint_owner",
+    "pid": 931558,
+    "returncode": 1,
+    "state": "failed",
+    "updated_at": "2026-10-27T23:14:01+00:00"
+  },
+  "CPU_suite_owner": {
+    "pid": 931650,
+    "start_ticks": "1458145512",
+    "argv": [
+      "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+      "-B",
+      "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/test_suite_owner.py"
+    ]
+  },
+  "CPU_suite_owner_pidfd_exit_verified": true,
+  "cause": "Shared inotify watch limit ENOSPC; no GPU evaluation child was admitted. Use actual checkpoint-existence fast path plus ETA-based sparse fallback, no shared sysctl change.",
+  "GPU_training_children_signalled_or_restarted": []
+}

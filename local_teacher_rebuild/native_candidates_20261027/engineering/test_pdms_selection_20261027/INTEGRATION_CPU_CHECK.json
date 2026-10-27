@@ -1,0 +1,39 @@
+{
+  "status": "PASS",
+  "time": "2026-10-27T23:11:47.249403+00:00",
+  "source_freeze_sha256": "c26470dc44516068b3370edd7e4d3c782ab28c157d2238a1a55d8e6cc5356769",
+  "actual_complete_checkpoint_admission_checks": [
+    {
+      "run": "H_full",
+      "epoch": 8,
+      "actual_checkpoint_sha256": "49b0ba84c03786beba220f25e73aa0e0af207893595b2dbf18c069a8a114a329",
+      "status": "PASS"
+    },
+    {
+      "run": "H_full",
+      "epoch": 16,
+      "actual_checkpoint_sha256": "20601e4e1c27e937e45955353b30da18779233f85036002dc3a918d1ff2986f9",
+      "status": "PASS"
+    },
+    {
+      "run": "H_gain1",
+      "epoch": 8,
+      "actual_checkpoint_sha256": "ce945c273b0498ea76164835412e2b86ff1de9944fcf37b010a541676ef246be",
+      "status": "PASS"
+    },
+    {
+      "run": "H_mu_teacher",
+      "epoch": 8,
+      "actual_checkpoint_sha256": "acbdb9b61d71651e87f7de9a3de26a5fa091d190b5e63c2df08538b0d8f31bed",
+      "status": "PASS"
+    },
+    {
+      "run": "H_mu_student",
+      "epoch": 8,
+      "actual_checkpoint_sha256": "edf22689754daa1ed0b8658a2f8c98cfd904a221780a98458738a93963587cab",
+      "status": "PASS"
+    }
+  ],
+  "frozen_training_numerical_source_unchanged": true,
+  "no_GPU_training_or_qualification_run": true
+}

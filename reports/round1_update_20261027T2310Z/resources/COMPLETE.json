@@ -1,0 +1,40 @@
+{
+  "at": "2026-10-27T23:05:31.478008+00:00",
+  "status": "COMPLETE_NO_MIGRATION_NEEDED_ALREADY_PERMANENT",
+  "request_sha256": "955e7d3a808b975426431b798c7301f862898e3a41f7bf7a58f780054cce6b22",
+  "policy_before_sha256": "5e8f1f3f2df807eb0f84f1a04d00483aaabba4cbff55accf1d605aa09adfc490",
+  "policy_after_sha256": "026a9fa26042dfe8495d223f991334f8b97ff77c35e1fff52649d35b998e6b5b",
+  "active_run_placements": {
+    "H_full_seed20261027": {
+      "host": "training-vlawm-tsinghua-zt",
+      "status": "TRAINING"
+    },
+    "H_gain1_seed20261027": {
+      "host": "training-vlawm-tsinghua-zt5",
+      "status": "TRAINING"
+    },
+    "H_mu_student_seed20261027": {
+      "host": "training-vlawm-tsinghua-zt4",
+      "status": "TRAINING"
+    },
+    "H_mu_teacher_seed20261027": {
+      "host": "training-vla-zt",
+      "status": "TRAINING"
+    }
+  },
+  "all_four_original_training_pid_and_start_ticks_verified": {
+    "H_full_seed20261027": true,
+    "H_gain1_seed20261027": true,
+    "H_mu_student_seed20261027": true,
+    "H_mu_teacher_seed20261027": true
+  },
+  "withdrawn_hosts_read_only_audit_all_reachable_no_project_processes": [
+    "training-vlawm-tsinghua-zt6",
+    "training-rl-zt2",
+    "training-vlawm-tsinghua-zt2",
+    "training-vlawm-zt"
+  ],
+  "processes_stopped_or_restarted": [],
+  "training_HEAD_unchanged": true,
+  "other_tasks_and_global_grants_unchanged": true
+}

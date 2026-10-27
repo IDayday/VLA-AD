@@ -1,0 +1,79 @@
+{
+  "status": "ALL_FOUR_ACTUALLY_SCORING_TEST_WITH_UNCHANGED_LIVE_TRAINERS",
+  "observed_at": "2026-10-27T23:16:36.315025+00:00",
+  "startup_witness_sha256": "187fc21b4736350476d2185b01b5e97adcfd81556a376b7b9c7529250f00e1fa",
+  "scope_freeze_sha256": "756ef307b991b6ad4bdc3ba999aa6cc0ce1161cf110a4197d8aee83c67a4224d",
+  "user_instruction_sha256": "4719528ddcad03dd9b0ba814eee675896f584ac5c8770ca1168922973f8bd7fc",
+  "runs": {
+    "H_full_seed20261027": {
+      "host": "training-vlawm-tsinghua-zt-worker-0",
+      "test_torchrun_pid": 2397943,
+      "test_torchrun_start_ticks": 1458171115,
+      "test_rank_actual_scored_records": 4,
+      "noises_per_record": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "training_global_step": 22625
+    },
+    "H_gain1_seed20261027": {
+      "host": "training-vlawm-tsinghua-zt5-worker-0",
+      "test_torchrun_pid": 2423221,
+      "test_torchrun_start_ticks": 163823619,
+      "test_rank_actual_scored_records": 4,
+      "noises_per_record": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "training_global_step": 20759
+    },
+    "H_mu_teacher_seed20261027": {
+      "host": "training-vla-zt-worker-0",
+      "test_torchrun_pid": 932705,
+      "test_torchrun_start_ticks": 1458153266,
+      "test_rank_actual_scored_records": 4,
+      "noises_per_record": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "training_global_step": 14858
+    },
+    "H_mu_student_seed20261027": {
+      "host": "training-vlawm-tsinghua-zt4-worker-0",
+      "test_torchrun_pid": 3192285,
+      "test_torchrun_start_ticks": 1458171569,
+      "test_rank_actual_scored_records": 4,
+      "noises_per_record": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "training_global_step": 13991
+    }
+  },
+  "test_scores_not_yet_complete": true,
+  "next_assistant_result_read_utc": "2026-10-28T00:15:00Z",
+  "current_training_seed": 20261027,
+  "all_four_full_40epoch_budgets_unchanged": true,
+  "active_CPU_owners": {
+    "full_test_endpoint_owner": {
+      "pid": 932602,
+      "started_at": "2026-10-27T23:15:16+00:00"
+    },
+    "full_suite_test_pdms_owner": {
+      "pid": 932831,
+      "started_at": "2026-10-27T23:15:24+00:00"
+    }
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "created": "2026-10-27T23:13:55.122639+00:00",
+  "pid": 931558,
+  "runs": {},
+  "schema": "recogdrive_test_endpoint_execution_v1",
+  "selection_population": "test",
+  "status": "RUNNING",
+  "tasks": {},
+  "test_used_for_model_selection": true,
+  "updated": "2026-10-27T23:13:55.122795+00:00",
+  "user_instruction": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/REQUEST.json",
+    "sha256": "4719528ddcad03dd9b0ba814eee675896f584ac5c8770ca1168922973f8bd7fc"
+  }
+}

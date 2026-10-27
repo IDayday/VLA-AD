@@ -1,0 +1,40 @@
+{
+  "pid": 931558,
+  "registered_endpoints": [
+    8,
+    16,
+    24,
+    32,
+    40
+  ],
+  "runs": {
+    "H_full_seed20261027": {
+      "epoch": 8,
+      "host": "training-vlawm-tsinghua-zt",
+      "status": "WAITING_CHECKPOINT"
+    },
+    "H_gain1_seed20261027": {
+      "epoch": 8,
+      "host": "training-vlawm-tsinghua-zt5",
+      "status": "WAITING_CHECKPOINT"
+    },
+    "H_mu_student_seed20261027": {
+      "epoch": 8,
+      "host": "training-vlawm-tsinghua-zt4",
+      "status": "WAITING_CHECKPOINT"
+    },
+    "H_mu_teacher_seed20261027": {
+      "epoch": 8,
+      "host": "training-vla-zt",
+      "status": "WAITING_CHECKPOINT"
+    }
+  },
+  "started": "2026-10-27T23:13:55.203170+00:00",
+  "status": "RUNNING",
+  "training_processes_unchanged": true,
+  "user_instruction": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/REQUEST.json",
+    "sha256": "4719528ddcad03dd9b0ba814eee675896f584ac5c8770ca1168922973f8bd7fc"
+  },
+  "waiting": "checkpoint filesystem events, no progress polling"
+}

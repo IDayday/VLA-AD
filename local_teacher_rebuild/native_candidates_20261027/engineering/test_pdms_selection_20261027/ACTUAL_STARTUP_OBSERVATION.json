@@ -1,0 +1,990 @@
+{
+  "observed_at": "2026-10-27T23:16:36.315025+00:00",
+  "owners": {
+    "full_test_endpoint_owner": {
+      "alive": true,
+      "command": "env ZT_AUTO_PROXY=0 OPENBLAS_CORETYPE=Sandybridge OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 /mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python -B /mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/test_endpoint_owner.py",
+      "gpu": "-",
+      "log": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/dispatch/test_pdms_selection_owners_20261027_v2/logs/full_test_endpoint_owner.log",
+      "name": "full_test_endpoint_owner",
+      "pid": 932602,
+      "started_at": "2026-10-27T23:15:16+00:00",
+      "state": "running",
+      "updated_at": "2026-10-27T23:15:16+00:00"
+    },
+    "full_suite_test_pdms_owner": {
+      "alive": true,
+      "command": "env ZT_AUTO_PROXY=0 OPENBLAS_CORETYPE=Sandybridge OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 /mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python -B /mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/test_suite_owner.py",
+      "gpu": "-",
+      "log": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/dispatch/test_pdms_selection_owners_20261027_v2/logs/full_suite_test_pdms_owner.log",
+      "name": "full_suite_test_pdms_owner",
+      "pid": 932831,
+      "started_at": "2026-10-27T23:15:24+00:00",
+      "state": "running",
+      "updated_at": "2026-10-27T23:15:24+00:00"
+    }
+  },
+  "runs": {
+    "H_full_seed20261027": {
+      "test_folder": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/test/epoch_008",
+      "job_status": {
+        "child_pid": 2397943,
+        "child_start_ticks": 1458171115,
+        "child_started": true,
+        "command": [
+          "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+          "-B",
+          "-m",
+          "torch.distributed.run",
+          "--standalone",
+          "--nproc_per_node=4",
+          "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/test_pdms_worker.py",
+          "--",
+          "--config",
+          "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/effective_config.yaml",
+          "--checkpoint",
+          "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/checkpoints/epoch_008.pt",
+          "--population",
+          "test",
+          "--out",
+          "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/test/epoch_008",
+          "--noise-indices",
+          "0",
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "gpu_index_and_free_mib_at_admission": {
+          "GPU-27c69c7c-eb37-82fb-6fa0-0777abd64056": [
+            1,
+            61842
+          ],
+          "GPU-31f9e6ef-4c0d-b5e0-7ddf-527f4a7dbcbc": [
+            3,
+            61940
+          ],
+          "GPU-51b3887b-3158-ece3-aa70-a52adb25160b": [
+            2,
+            61842
+          ],
+          "GPU-f0cd16db-c7f6-2226-c901-d1809277060e": [
+            0,
+            62036
+          ]
+        },
+        "gpu_uuids": [
+          "GPU-f0cd16db-c7f6-2226-c901-d1809277060e",
+          "GPU-27c69c7c-eb37-82fb-6fa0-0777abd64056",
+          "GPU-51b3887b-3158-ece3-aa70-a52adb25160b",
+          "GPU-31f9e6ef-4c0d-b5e0-7ddf-527f4a7dbcbc"
+        ],
+        "host": "training-vlawm-tsinghua-zt-worker-0",
+        "live_policy_sha256_at_admission": "578e026b789b40630e7c533876793fb8e2c7ca93c4f1466639fdd265145f563d",
+        "pid": 2365199,
+        "process_start_ticks": 1458170949,
+        "spec_sha256": "c5f85ffa1d3eacd9c45017c6a1b69d87e25054d19786c3f38042b9436455f34e",
+        "start": "2026-10-27T23:15:20.406040+00:00",
+        "status": "RUNNING"
+      },
+      "log_tail": "orting from timm.models.layers is deprecated, please import via timm.layers\n  warnings.warn(f\"Importing from {__name__} is deprecated, please import via timm.layers\", FutureWarning)\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/timm/models/layers/__init__.py:48: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers\n  warnings.warn(f\"Importing from {__name__} is deprecated, please import via timm.layers\", FutureWarning)\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.\n  import pynvml  # type: ignore[import]\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.\n  import pynvml  # type: ignore[import]\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.\n  import pynvml  # type: ignore[import]\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.\n  import pynvml  # type: ignore[import]\n",
+      "protocol_exists": true,
+      "protocol": {
+        "population": "test",
+        "scene_count": 12146,
+        "noise_indices": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "full_population": true,
+        "checkpoint_sha256": "49b0ba84c03786beba220f25e73aa0e0af207893595b2dbf18c069a8a114a329",
+        "test_used_for_model_selection": true,
+        "validation_used_for_model_selection": false,
+        "independent_held_out_test": false
+      },
+      "ranks": {
+        "rank_0000.jsonl": {
+          "first_actual_token": "431ae29947e95c26",
+          "noise_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "trajectory_shapes": [
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ]
+          ],
+          "actual_scores": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "rank_0001.jsonl": {
+          "first_actual_token": "4606b66d9fe75354",
+          "noise_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "trajectory_shapes": [
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ]
+          ],
+          "actual_scores": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "rank_0002.jsonl": {
+          "first_actual_token": "ae07b0ef14e25e47",
+          "noise_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "trajectory_shapes": [
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ]
+          ],
+          "actual_scores": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "rank_0003.jsonl": {
+          "first_actual_token": "210e056a17d1522d",
+          "noise_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "trajectory_shapes": [
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ]
+          ],
+          "actual_scores": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "training_state": 22625
+    },
+    "H_gain1_seed20261027": {
+      "test_folder": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_008",
+      "job_status": {
+        "child_pid": 2423221,
+        "child_start_ticks": 163823619,
+        "child_started": true,
+        "command": [
+          "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+          "-B",
+          "-m",
+          "torch.distributed.run",
+          "--standalone",
+          "--nproc_per_node=4",
+          "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/test_pdms_worker.py",
+          "--",
+          "--config",
+          "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/effective_config.yaml",
+          "--checkpoint",
+          "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_008.pt",
+          "--population",
+          "test",
+          "--out",
+          "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_008",
+          "--noise-indices",
+          "0",
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "gpu_index_and_free_mib_at_admission": {
+          "GPU-28ad5baf-48e8-8ea7-2e0b-514cc7f2d690": [
+            3,
+            78546
+          ],
+          "GPU-ba6629ed-35db-198b-d353-d6048cbdf36b": [
+            0,
+            78544
+          ],
+          "GPU-c976d64e-44ea-d8bd-a026-d1c1f14d4db6": [
+            1,
+            78448
+          ],
+          "GPU-e2a93cb8-47e2-0b2f-952e-bcfa5403ad24": [
+            2,
+            78450
+          ]
+        },
+        "gpu_uuids": [
+          "GPU-ba6629ed-35db-198b-d353-d6048cbdf36b",
+          "GPU-c976d64e-44ea-d8bd-a026-d1c1f14d4db6",
+          "GPU-e2a93cb8-47e2-0b2f-952e-bcfa5403ad24",
+          "GPU-28ad5baf-48e8-8ea7-2e0b-514cc7f2d690"
+        ],
+        "host": "training-vlawm-tsinghua-zt5-worker-0",
+        "live_policy_sha256_at_admission": "578e026b789b40630e7c533876793fb8e2c7ca93c4f1466639fdd265145f563d",
+        "pid": 2375822,
+        "process_start_ticks": 163823400,
+        "spec_sha256": "814f81796ccdc27cd1a352cb7ae777ea19f6b43a50d8435be0548f5a25a5c882",
+        "start": "2026-10-27T23:15:20.893120+00:00",
+        "status": "RUNNING"
+      },
+      "log_tail": "orting from timm.models.layers is deprecated, please import via timm.layers\n  warnings.warn(f\"Importing from {__name__} is deprecated, please import via timm.layers\", FutureWarning)\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/timm/models/layers/__init__.py:48: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers\n  warnings.warn(f\"Importing from {__name__} is deprecated, please import via timm.layers\", FutureWarning)\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.\n  import pynvml  # type: ignore[import]\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.\n  import pynvml  # type: ignore[import]\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.\n  import pynvml  # type: ignore[import]\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.\n  import pynvml  # type: ignore[import]\n",
+      "protocol_exists": true,
+      "protocol": {
+        "population": "test",
+        "scene_count": 12146,
+        "noise_indices": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "full_population": true,
+        "checkpoint_sha256": "ce945c273b0498ea76164835412e2b86ff1de9944fcf37b010a541676ef246be",
+        "test_used_for_model_selection": true,
+        "validation_used_for_model_selection": false,
+        "independent_held_out_test": false
+      },
+      "ranks": {
+        "rank_0000.jsonl": {
+          "first_actual_token": "431ae29947e95c26",
+          "noise_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "trajectory_shapes": [
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ]
+          ],
+          "actual_scores": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "rank_0001.jsonl": {
+          "first_actual_token": "4606b66d9fe75354",
+          "noise_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "trajectory_shapes": [
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ]
+          ],
+          "actual_scores": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "rank_0002.jsonl": {
+          "first_actual_token": "ae07b0ef14e25e47",
+          "noise_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "trajectory_shapes": [
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ]
+          ],
+          "actual_scores": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "rank_0003.jsonl": {
+          "first_actual_token": "210e056a17d1522d",
+          "noise_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "trajectory_shapes": [
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ]
+          ],
+          "actual_scores": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "training_state": 20759
+    },
+    "H_mu_teacher_seed20261027": {
+      "test_folder": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/test/epoch_008",
+      "job_status": {
+        "child_pid": 932705,
+        "child_start_ticks": 1458153266,
+        "child_started": true,
+        "command": [
+          "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+          "-B",
+          "-m",
+          "torch.distributed.run",
+          "--standalone",
+          "--nproc_per_node=4",
+          "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/test_pdms_worker.py",
+          "--",
+          "--config",
+          "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/effective_config.yaml",
+          "--checkpoint",
+          "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_008.pt",
+          "--population",
+          "test",
+          "--out",
+          "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/test/epoch_008",
+          "--noise-indices",
+          "0",
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "gpu_index_and_free_mib_at_admission": {
+          "GPU-562375d4-b1d6-f0d9-a68d-5a81e5272907": [
+            1,
+            79048
+          ],
+          "GPU-72a7d08b-16b7-7c64-a324-a08e043c6006": [
+            3,
+            79144
+          ],
+          "GPU-b8a35758-a506-a8a1-dca7-499c485068fc": [
+            2,
+            79048
+          ],
+          "GPU-f679bff0-a4a2-ae4f-0b85-74c519b45a9c": [
+            0,
+            79144
+          ]
+        },
+        "gpu_uuids": [
+          "GPU-f679bff0-a4a2-ae4f-0b85-74c519b45a9c",
+          "GPU-562375d4-b1d6-f0d9-a68d-5a81e5272907",
+          "GPU-b8a35758-a506-a8a1-dca7-499c485068fc",
+          "GPU-72a7d08b-16b7-7c64-a324-a08e043c6006"
+        ],
+        "host": "training-vla-zt-worker-0",
+        "live_policy_sha256_at_admission": "578e026b789b40630e7c533876793fb8e2c7ca93c4f1466639fdd265145f563d",
+        "pid": 932633,
+        "process_start_ticks": 1458153112,
+        "spec_sha256": "c969e4b774f30403d1e805edc07b73da30fb959a09650cf1536f4b7109a40210",
+        "start": "2026-10-27T23:15:19.168634+00:00",
+        "status": "RUNNING"
+      },
+      "log_tail": "orting from timm.models.layers is deprecated, please import via timm.layers\n  warnings.warn(f\"Importing from {__name__} is deprecated, please import via timm.layers\", FutureWarning)\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/timm/models/layers/__init__.py:48: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers\n  warnings.warn(f\"Importing from {__name__} is deprecated, please import via timm.layers\", FutureWarning)\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.\n  import pynvml  # type: ignore[import]\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.\n  import pynvml  # type: ignore[import]\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.\n  import pynvml  # type: ignore[import]\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.\n  import pynvml  # type: ignore[import]\n",
+      "protocol_exists": true,
+      "protocol": {
+        "population": "test",
+        "scene_count": 12146,
+        "noise_indices": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "full_population": true,
+        "checkpoint_sha256": "acbdb9b61d71651e87f7de9a3de26a5fa091d190b5e63c2df08538b0d8f31bed",
+        "test_used_for_model_selection": true,
+        "validation_used_for_model_selection": false,
+        "independent_held_out_test": false
+      },
+      "ranks": {
+        "rank_0000.jsonl": {
+          "first_actual_token": "431ae29947e95c26",
+          "noise_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "trajectory_shapes": [
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ]
+          ],
+          "actual_scores": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "rank_0001.jsonl": {
+          "first_actual_token": "4606b66d9fe75354",
+          "noise_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "trajectory_shapes": [
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ]
+          ],
+          "actual_scores": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "rank_0002.jsonl": {
+          "first_actual_token": "ae07b0ef14e25e47",
+          "noise_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "trajectory_shapes": [
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ]
+          ],
+          "actual_scores": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "rank_0003.jsonl": {
+          "first_actual_token": "210e056a17d1522d",
+          "noise_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "trajectory_shapes": [
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ]
+          ],
+          "actual_scores": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "training_state": 14858
+    },
+    "H_mu_student_seed20261027": {
+      "test_folder": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/test/epoch_008",
+      "job_status": {
+        "child_pid": 3192285,
+        "child_start_ticks": 1458171569,
+        "child_started": true,
+        "command": [
+          "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+          "-B",
+          "-m",
+          "torch.distributed.run",
+          "--standalone",
+          "--nproc_per_node=4",
+          "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/test_pdms_worker.py",
+          "--",
+          "--config",
+          "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/effective_config.yaml",
+          "--checkpoint",
+          "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_008.pt",
+          "--population",
+          "test",
+          "--out",
+          "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/test/epoch_008",
+          "--noise-indices",
+          "0",
+          "1",
+          "2",
+          "3",
+          "4"
+        ],
+        "gpu_index_and_free_mib_at_admission": {
+          "GPU-4fe15b93-9f87-08ea-699d-40375083da94": [
+            3,
+            79144
+          ],
+          "GPU-9d5086e9-c3c6-960a-702d-d1c5870b6b9f": [
+            1,
+            79048
+          ],
+          "GPU-a3f83a36-3e49-431e-4440-35f9e4d01a59": [
+            2,
+            79048
+          ],
+          "GPU-de0a113d-0ee7-6d02-f202-38ed7a2eba42": [
+            0,
+            79144
+          ]
+        },
+        "gpu_uuids": [
+          "GPU-de0a113d-0ee7-6d02-f202-38ed7a2eba42",
+          "GPU-9d5086e9-c3c6-960a-702d-d1c5870b6b9f",
+          "GPU-a3f83a36-3e49-431e-4440-35f9e4d01a59",
+          "GPU-4fe15b93-9f87-08ea-699d-40375083da94"
+        ],
+        "host": "training-vlawm-tsinghua-zt4-worker-0",
+        "live_policy_sha256_at_admission": "578e026b789b40630e7c533876793fb8e2c7ca93c4f1466639fdd265145f563d",
+        "pid": 3154492,
+        "process_start_ticks": 1458171409,
+        "spec_sha256": "c8315a948f00b746d472cd21f6b7596757e804b4889c12b51c68d0f3bf075693",
+        "start": "2026-10-27T23:15:20.496110+00:00",
+        "status": "RUNNING"
+      },
+      "log_tail": "orting from timm.models.layers is deprecated, please import via timm.layers\n  warnings.warn(f\"Importing from {__name__} is deprecated, please import via timm.layers\", FutureWarning)\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/timm/models/layers/__init__.py:48: FutureWarning: Importing from timm.models.layers is deprecated, please import via timm.layers\n  warnings.warn(f\"Importing from {__name__} is deprecated, please import via timm.layers\", FutureWarning)\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.\n  import pynvml  # type: ignore[import]\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.\n  import pynvml  # type: ignore[import]\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.\n  import pynvml  # type: ignore[import]\n/root/miniconda3/envs/ddp/lib/python3.10/site-packages/torch/cuda/__init__.py:61: FutureWarning: The pynvml package is deprecated. Please install nvidia-ml-py instead. If you did not install pynvml directly, please report this to the maintainers of the package that installed pynvml for you.\n  import pynvml  # type: ignore[import]\n",
+      "protocol_exists": true,
+      "protocol": {
+        "population": "test",
+        "scene_count": 12146,
+        "noise_indices": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "full_population": true,
+        "checkpoint_sha256": "edf22689754daa1ed0b8658a2f8c98cfd904a221780a98458738a93963587cab",
+        "test_used_for_model_selection": true,
+        "validation_used_for_model_selection": false,
+        "independent_held_out_test": false
+      },
+      "ranks": {
+        "rank_0000.jsonl": {
+          "first_actual_token": "431ae29947e95c26",
+          "noise_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "trajectory_shapes": [
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ]
+          ],
+          "actual_scores": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "rank_0001.jsonl": {
+          "first_actual_token": "4606b66d9fe75354",
+          "noise_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "trajectory_shapes": [
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ]
+          ],
+          "actual_scores": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "rank_0002.jsonl": {
+          "first_actual_token": "ae07b0ef14e25e47",
+          "noise_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "trajectory_shapes": [
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ]
+          ],
+          "actual_scores": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        },
+        "rank_0003.jsonl": {
+          "first_actual_token": "210e056a17d1522d",
+          "noise_indices": [
+            0,
+            1,
+            2,
+            3,
+            4
+          ],
+          "trajectory_shapes": [
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ],
+            [
+              8,
+              3
+            ]
+          ],
+          "actual_scores": [
+            1.0,
+            1.0,
+            1.0,
+            1.0,
+            1.0
+          ]
+        }
+      },
+      "training_state": 13991
+    }
+  },
+  "status": "ACTUAL_TEST_RUNNING_TRAINERS_CONTINUE"
+}

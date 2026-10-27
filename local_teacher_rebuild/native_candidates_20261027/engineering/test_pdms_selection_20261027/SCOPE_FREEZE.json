@@ -1,0 +1,15 @@
+{
+  "created": "2026-10-27T23:11:45.040474+00:00",
+  "files": {
+    "REQUEST.json": "4719528ddcad03dd9b0ba814eee675896f584ac5c8770ca1168922973f8bd7fc",
+    "report_scope.py": "6cc7f4f16ea904393fcaf66e6bda798195c8a107a4a918f274f964798d557d5f",
+    "test_endpoint_owner.py": "cb3447388b385fb83ea23a820f759a3ec08db860b403ef07e248f9269f03c1a7",
+    "test_pdms_runtime.py": "b2867b83c03256a751a9a92814a4f5ffe05bb1270d1c5efa7efee3a965838a48",
+    "test_pdms_selector.py": "5e17891761ae873da54c020123a808115978db4459573571b9f298fd39047075",
+    "test_pdms_worker.py": "a89392f812dc77f62eb07889a6766a661859b0c8e99173be99771526bb95d55f",
+    "test_suite_owner.py": "336944fbdf63b9bf16949022c4129c463d52dbe3c1410659783b55d4a6e25980"
+  },
+  "frozen_training_HEAD": "0a58bd8e6271e26103512add2c5cb7816d7eb8f1",
+  "schema": "nrkd_test_pdms_overlay_freeze_v1",
+  "updated": "2026-10-27T23:15:14.885708+00:00"
+}

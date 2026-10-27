@@ -1,6 +1,17 @@
 # 本机 ReCogDrive 蒸馏：代码与开训快照
 
-本分支保存本机实验代码和 2026-10-27 UTC 的真实开训记录。训练正在进行，尚无完整学生 Validation/Test 成绩。
+本分支保存本机实验代码、真实开训记录及后续用户要求的变更。训练正在进行；第8轮四组完整Validation及A第16轮Validation已完成，Test评测已切换为主判断和权重选择口径，完整Test成绩仍待生成。
+
+## 最新覆盖：Test PDMS选择与固定服务器（2026-10-27 23:15 UTC）
+
+用户要求“不再以验证集为判断指标，使用测试集的PDMS结果”。以此覆盖原指南和下文历史开训计划中的Validation-best选择及Test晚启动门槛。
+
+- 主判断与权重选择：完整Test 12,146场景 × 显式S0–S4，在epoch8/16/24/32/40评价；最高PDMS，完全同分取更早epoch。Test参与模型选择，不能称为独立held-out最终测试。
+- 四组单seed20261027完整40轮/53,640更新继续，原训练进程、代码HEAD、checkpoint资产/优化器/RNG身份不变；Test样本和教师目标不进入训练与损失定标。
+- 原训练内嵌Validation及最终表征、功能、新噪声Validation保留为诊断，不按Val排名或选权重。旧Val证据保留。最终选取写入新`checkpoints/test_pdms_best.json`和`TEST_PDMS_SELECTION_LOCK.json`。
+- [实际Test选择接线、源码与用户指令](local_teacher_rebuild/native_candidates_20261027/engineering/test_pdms_selection_20261027/)包含选择器、评测准入、完整端点执行owner、报告接线和CPU检查。该外部接线是必需入口；不能只直接调用冻结训练目录中的旧双seed/Validation默认控制器。
+- 四组在正式许可vla-zt、tsinghua-zt、tsinghua-zt4、tsinghua-zt5的原16GPU分配上继续训练，Test共享相同GPU。四个撤回临时节点读审计均未发现本项目进程，无GPU训练重启。[资源核查证明](reports/round1_update_20261027T2310Z/resources/COMPLETE.json)。
+- [完整训练loss历史与逐轮表格](local_teacher_rebuild/native_candidates_20261027/engineering/test_pdms_selection_20261027/loss_history_20261027T2310Z/LOSS_HISTORY_ANALYSIS.md)：截至该快照，A16轮H下降50.84%，B15轮48.79%，C/D10轮31.56%/31.54%；不是持续平台，仍不能将训练误差下降当作PDMS提升。
 
 ## 当前实验范围
 
@@ -71,7 +82,7 @@
 
 ## 后续正式评价
 
-每个epoch保存checkpoint。完整Validation为17,475场景×S0–S4，在epoch8/16/24/32/40执行并选择best，另保留epoch40 last。当前四个保留run均完成训练和规定验证、锁定best/last SHA之后，才进行完整Test12,146×S0–S4。Train行为用锁定8,192场景面板，完整Train表征误差另报。best另执行Validation S5–S9。
+每个epoch保存checkpoint。完整Test为12,146场景×S0–S4，在epoch8/16/24/32/40的实际权重完成后评测并按PDMS选择best，另保留epoch40 last。四组第8轮Test现已实际生成原生轨迹和真实评分，[运行接续证据](local_teacher_rebuild/native_candidates_20261027/engineering/test_pdms_selection_20261027/ACTUAL_ADOPTION.json)记录完整人群协议和四rank实际输出，当前尚非完整Test结果。最终best/last锁仍要求所有四组完整40轮及全部5个完整Test端点。原Validation17,475×S0–S4及best的S5–S9只作诊断；Train行为用锁定8,192场景面板，完整Train表征误差另报。
 
 ## 文件与限制
 

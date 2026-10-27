@@ -1,0 +1,49 @@
+{
+  "schema": "recogdrive_user_test_pdms_selection_override_v1",
+  "recorded_at": "2026-10-27T23:11:05.116648+00:00",
+  "instruction": "不再以验证集为判断指标，使用测试集的PDMS结果",
+  "selection_population": "test",
+  "selection_metric": "PDMS_points",
+  "test_scenes": 12146,
+  "noise_indices": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "selection_epochs": [
+    8,
+    16,
+    24,
+    32,
+    40
+  ],
+  "tie_break": "earlier_epoch",
+  "test_used_for_model_selection": true,
+  "independent_held_out_test": false,
+  "validation_used_for_model_selection": false,
+  "validation_role": "Existing inline Validation and final representation/function/new-noise diagnostics remain diagnostics only; no weight or arm selection uses Validation PDMS.",
+  "test_endpoint_may_start_before_all_training_complete": true,
+  "final_best_last_lock_requires_all_four_complete_40_epochs_and_five_full_test_endpoints": true,
+  "training_seeds": [
+    20261027
+  ],
+  "experiments": [
+    "H_full",
+    "H_gain1",
+    "H_mu_teacher",
+    "H_mu_student"
+  ],
+  "frozen_training_HEAD": "0a58bd8e6271e26103512add2c5cb7816d7eb8f1",
+  "training_budget_unchanged": {
+    "train_scenes": 85813,
+    "epochs": 40,
+    "global_batch": 64,
+    "updates_per_epoch": 1341,
+    "total_updates": 53640
+  },
+  "no_test_gradient_training_targets_or_loss_calibration": true,
+  "resource_scope": "Existing fixed-host 16 GPU allocation only; share with current training, no temporary hosts.",
+  "old_validation_results_preserved": true
+}

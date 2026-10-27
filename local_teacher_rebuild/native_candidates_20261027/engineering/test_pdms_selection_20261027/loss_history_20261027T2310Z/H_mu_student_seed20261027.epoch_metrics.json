@@ -1,0 +1,3652 @@
+{
+  "complete_epochs": 10,
+  "epochs": [
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_001.pt",
+        "checkpoint_sha256": "72454c677142db3702faf12bcfdaa4be9dedabb1f7484ed1fcfa6dbb79c9dc38",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_001.pt.COMPLETE.json",
+        "marker_sha256": "68c0c222498a934baab67dbe4404a47461884458538aa88e40c137bdf36c3db4",
+        "status": "PASS"
+      },
+      "clipped_updates": 637,
+      "duplicate_records_discarded": 0,
+      "epoch": 1,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.3657025490351515,
+      "first_record_time": "2026-10-27T14:21:31.465721+00:00",
+      "last_quarter_loss_mean": 0.2897241924010377,
+      "last_record_time": "2026-10-27T14:38:39.883462+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.3906403451341693,
+          "mean": 0.23602488455145298,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.07914696808994781,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.5574303116972539,
+          "mean": 0.3147765080412217,
+          "min": 0.14283373996477167,
+          "n": 1341,
+          "std": 0.0639691429531943,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.5574303116972539,
+          "mean": 0.3147765080412217,
+          "min": 0.14283373996477167,
+          "n": 1341,
+          "std": 0.0639691429531943,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 1,
+      "optimizer_step_last": 1341,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": -20.775998645503215,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 1.060760223865509,
+        "mean": 0.6631594400091857,
+        "min": 0.3471904872428803,
+        "n": 1341,
+        "std": 0.13615603575075208,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.04732710707482639,
+          "h_sum": 1857.1156816161874
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.8195393320048012,
+          "h_sum": 2406.987018098101
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 1.1096777193501741,
+          "h_sum": 1340.4906849750103
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.1449511951727118,
+          "h_sum": 643.462571687064
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.7134499090677122,
+          "h_sum": 4083.073829594517
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 1.1192844033888545,
+          "h_sum": 1106.972274951577
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.6294805959333102,
+          "h_sum": 5292.043370011339
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.6290464862066583,
+          "h_sum": 1553.1157744442392
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.35952942084040385,
+          "h_sum": 8728.655279163324
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 987.0636613611132,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.8953409259807641,
+          "min": 0.3382799220738266,
+          "n": 1341,
+          "std": 0.15254624960967958,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 2.95613169670105,
+          "mean": 1.0639299504975612,
+          "min": 0.4649149477481842,
+          "n": 1341,
+          "std": 0.3594644646573707,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 0.0001,
+          "mean": 5.003728560775541e-05,
+          "min": 7.457121551081283e-08,
+          "n": 1341,
+          "std": 2.88675054330612e-05,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 2.5797875970602036,
+          "mean": 0.7360653701425154,
+          "min": 0.4978543221950531,
+          "n": 1341,
+          "std": 0.14102978839743696,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.16543693345904883,
+        "mean": 0.058642423368127514,
+        "min": 0.0,
+        "n": 1341,
+        "std": 0.029030651832084614,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_002.pt",
+        "checkpoint_sha256": "c589e71d6ac19e5a80547df4ec74bfdfe83d387ef5ed7238bbd079effb8c56de",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_002.pt.COMPLETE.json",
+        "marker_sha256": "77577db5c22370ee7461ec263699679d2b30131ea0508bd46788e89341ab3b8d",
+        "status": "PASS"
+      },
+      "clipped_updates": 208,
+      "duplicate_records_discarded": 0,
+      "epoch": 2,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.28331151754622397,
+      "first_record_time": "2026-10-27T14:38:40.669368+00:00",
+      "last_quarter_loss_mean": 0.26219710652363126,
+      "last_record_time": "2026-10-27T14:55:51.390879+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.43818819969887157,
+          "mean": 0.28389998754092755,
+          "min": 0.1789757976929833,
+          "n": 1341,
+          "std": 0.03969304819837143,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.43713481901340856,
+          "mean": 0.27182016090793987,
+          "min": 0.1307336038125868,
+          "n": 1341,
+          "std": 0.047559090389337755,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.43713481901340856,
+          "mean": 0.27182016090793987,
+          "min": 0.1307336038125868,
+          "n": 1341,
+          "std": 0.047559090389337755,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 1342,
+      "optimizer_step_last": 2682,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": -7.45271890301733,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.8422739654779434,
+        "mean": 0.5510102171275739,
+        "min": 0.25769007942008393,
+        "n": 1341,
+        "std": 0.08452338106709048,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.05018413699680572,
+          "h_sum": 1969.2255357546564
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.8201143760337064,
+          "h_sum": 2408.6759224109956
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 1.0412520704939625,
+          "h_sum": 1257.8325011567067
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.1770216599033252,
+          "h_sum": 661.4861728656688
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.6563103594143378,
+          "h_sum": 3756.0641869282554
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 1.0974186871525708,
+          "h_sum": 1085.3470815938927
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.5049348640762702,
+          "h_sum": 4244.987402289204
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.6005499165766368,
+          "h_sum": 1482.7577440277164
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.2660567971400424,
+          "h_sum": 6459.326920965948
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 985.1134786047041,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.9762259408375193,
+          "min": 0.4357898190709788,
+          "n": 1341,
+          "std": 0.07053618100486941,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 2.2946841716766357,
+          "mean": 0.8233380289019088,
+          "min": 0.4067947268486023,
+          "n": 1341,
+          "std": 0.21449632027847076,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 0.0001,
+          "mean": 9.995140163503969e-05,
+          "min": 9.985429072864547e-05,
+          "n": 1341,
+          "std": 4.347988644803397e-08,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 1.3219814766198397,
+          "mean": 0.7346110951563789,
+          "min": 0.47659903205931187,
+          "n": 1341,
+          "std": 0.1489256642748778,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.15805221406059755,
+        "mean": 0.06655726500286296,
+        "min": 0.017862760288214,
+        "n": 1341,
+        "std": 0.022648676798629863,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_003.pt",
+        "checkpoint_sha256": "2dcaed2c91d6babfb7bc9833f0784b7747b2b711963e3bda02def21201073192",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_003.pt.COMPLETE.json",
+        "marker_sha256": "1cbc3996c9e8463bc9a51a2a166381b331ca3d9fbbc746668f360a163a2c3742",
+        "status": "PASS"
+      },
+      "clipped_updates": 130,
+      "duplicate_records_discarded": 0,
+      "epoch": 3,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.25832847319595775,
+      "first_record_time": "2026-10-27T14:57:52.995265+00:00",
+      "last_quarter_loss_mean": 0.2544079043481028,
+      "last_record_time": "2026-10-27T15:20:43.568097+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.4268309594830332,
+          "mean": 0.2906371778274113,
+          "min": 0.17087543527561494,
+          "n": 1341,
+          "std": 0.03687175858748632,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.015625,
+          "mean": 8.157272208173587e-05,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0011260193930564867,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.502226810734669,
+          "mean": 0.258344089992685,
+          "min": 0.11476182216051711,
+          "n": 1341,
+          "std": 0.04641074698960614,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.502226810734669,
+          "mean": 0.258344089992685,
+          "min": 0.11476182216051711,
+          "n": 1341,
+          "std": 0.04641074698960614,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 2683,
+      "optimizer_step_last": 4023,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": -1.5176681065586561,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.8240084451799458,
+        "mean": 0.52026403707241,
+        "min": 0.25096456111910254,
+        "n": 1341,
+        "std": 0.08274240549695408,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.04783889851820554,
+          "h_sum": 1877.1983778543854
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.8077389719394367,
+          "h_sum": 2372.3293605861254
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.9826829179350749,
+          "h_sum": 1187.0809648655704
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.1685160505552876,
+          "h_sum": 656.7060204120717
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.636421705818908,
+          "h_sum": 3642.24142240161
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 1.04948505363124,
+          "h_sum": 1037.9407180412963
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.4610115471600223,
+          "h_sum": 3875.7240769743075
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.5799513940099305,
+          "h_sum": 1431.8999918105183
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.25076861609672907,
+          "h_sum": 6088.160461596388
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 1313.763065867126,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.9887821794039868,
+          "min": 0.5781232329081275,
+          "n": 1341,
+          "std": 0.04459109341112619,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 1.729735016822815,
+          "mean": 0.758931009783663,
+          "min": 0.3979780972003937,
+          "n": 1341,
+          "std": 0.17780673146990142,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 9.985407328863263e-05,
+          "mean": 9.965997222271964e-05,
+          "min": 9.941767313240505e-05,
+          "n": 1341,
+          "std": 1.2654731113078434e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 1.3030202444642782,
+          "mean": 0.9796890871492364,
+          "min": 0.843633271753788,
+          "n": 1341,
+          "std": 0.05604169912682593,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.17480133594345357,
+        "mean": 0.06577832471845588,
+        "min": 0.011853509566101232,
+        "n": 1341,
+        "std": 0.022941582316179536,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_004.pt",
+        "checkpoint_sha256": "614455d0e15cb798b5cb0872744fe3ca27eb7ce11764bff7aed449946f1ac059",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_004.pt.COMPLETE.json",
+        "marker_sha256": "a24fb59860a7be0ec88a0d5e7efa8bdab15427c014e8d71d4ca7bfc75bf62e26",
+        "status": "PASS"
+      },
+      "clipped_updates": 103,
+      "duplicate_records_discarded": 0,
+      "epoch": 4,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.2502557698790473,
+      "first_record_time": "2026-10-27T15:20:44.751054+00:00",
+      "last_quarter_loss_mean": 0.2531994571154081,
+      "last_record_time": "2026-10-27T15:43:33.134034+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.4223483838924509,
+          "mean": 0.29386100910996676,
+          "min": 0.1747803567877683,
+          "n": 1341,
+          "std": 0.03723604147380221,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.015625,
+          "mean": 4.661298404670621e-05,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0008521473496104098,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.4135634983726959,
+          "mean": 0.2512065196839532,
+          "min": 0.12607722322627524,
+          "n": 1341,
+          "std": 0.047167342879632417,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.4135634983726959,
+          "mean": 0.2512065196839532,
+          "min": 0.12607722322627524,
+          "n": 1341,
+          "std": 0.047167342879632417,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 4024,
+      "optimizer_step_last": 5364,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": 1.1762714752924674,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.8083182546310127,
+        "mean": 0.5046874653553183,
+        "min": 0.2432443126140592,
+        "n": 1341,
+        "std": 0.08717905677325376,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.04661332216747162,
+          "h_sum": 1829.1067618515863
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.8001454573364261,
+          "h_sum": 2350.0272081970834
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.9592898058423776,
+          "h_sum": 1158.822085457592
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.1644524756843713,
+          "h_sum": 654.4222913346166
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.6228361453974064,
+          "h_sum": 3564.4912601093565
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 1.032995497448668,
+          "h_sum": 1021.6325469767326
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.4408893772228657,
+          "h_sum": 3706.556994312632
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.5704116373320111,
+          "h_sum": 1408.3463325727353
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.24150999229041695,
+          "h_sum": 5863.379592826743
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 1320.389538174495,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.9922452266478309,
+          "min": 0.5375726292060984,
+          "n": 1341,
+          "std": 0.03867980105651226,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 1.8602137565612793,
+          "mean": 0.7542192611251635,
+          "min": 0.42772042751312256,
+          "n": 1341,
+          "std": 0.1654832522421594,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 9.94172395814234e-05,
+          "mean": 9.907889468256759e-05,
+          "min": 9.869297887097338e-05,
+          "n": 1341,
+          "std": 2.0952600031780575e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 1.5335406474769115,
+          "mean": 0.9846305280943289,
+          "min": 0.7893133945763111,
+          "n": 1341,
+          "std": 0.060725777100499166,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.18179064565151748,
+        "mean": 0.06484517977888664,
+        "min": 0.01029055829253354,
+        "n": 1341,
+        "std": 0.02330345402021638,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_005.pt",
+        "checkpoint_sha256": "b89c29317ecf43f04fa2027551a8a14896d41a5f2302755fffc9cbb3e0f2cd6a",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_005.pt.COMPLETE.json",
+        "marker_sha256": "2dd1b64e1625a58a01397d5892612ddf0496aefd38c35d03505f322fcebb8c87",
+        "status": "PASS"
+      },
+      "clipped_updates": 357,
+      "duplicate_records_discarded": 0,
+      "epoch": 5,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.25140568149374026,
+      "first_record_time": "2026-10-27T15:45:32.439590+00:00",
+      "last_quarter_loss_mean": 0.30978270057948165,
+      "last_record_time": "2026-10-27T16:50:34.574562+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.4170724987725375,
+          "mean": 0.29644981673675697,
+          "min": 0.16881309666878522,
+          "n": 1341,
+          "std": 0.0383715583956294,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.03125,
+          "mean": 0.00033794413433862,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.002501731935020564,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.3985819434117275,
+          "mean": 0.24651301450356325,
+          "min": 0.10346224822831118,
+          "n": 1341,
+          "std": 0.04634965982379569,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.6464556532557708,
+          "mean": 0.2809757043534851,
+          "min": 0.11223731122584013,
+          "n": 1341,
+          "std": 0.06205334057060129,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 1.8978960475034512,
+          "mean": 0.27193731011927436,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.144198658231941,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.36372800059007204,
+          "mean": 0.03446268984992189,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.030783443503005225,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": 0.28258900759820016,
+          "mu_sum": 4842.727823210356,
+          "scheduled_scene_count": 17137.0
+        },
+        {
+          "j": 1,
+          "mu_mean": 0.29172025314992944,
+          "mu_sum": 5106.563031389514,
+          "scheduled_scene_count": 17505.0
+        },
+        {
+          "j": 2,
+          "mu_mean": 0.2665764373574027,
+          "mu_sum": 4551.792667877651,
+          "scheduled_scene_count": 17075.0
+        },
+        {
+          "j": 3,
+          "mu_mean": 0.24997364941998024,
+          "mu_sum": 4277.549088874702,
+          "scheduled_scene_count": 17112.0
+        },
+        {
+          "j": 4,
+          "mu_mean": 0.26831864000901234,
+          "mu_sum": 4557.123781913066,
+          "scheduled_scene_count": 16984.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 5365,
+      "optimizer_step_last": 6705,
+      "phase_update_counts": {
+        "ramp": 1341
+      },
+      "quarter_loss_change_percent": 23.220246550869984,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.7915680047590286,
+        "mean": 0.4950280467534482,
+        "min": 0.24083148121185924,
+        "n": 1341,
+        "std": 0.08436033182936037,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.04523168674164373,
+          "h_sum": 1774.8913877421
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.7888605541036087,
+          "h_sum": 2316.8834474022988
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.9404281097916746,
+          "h_sum": 1136.037156628343
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.1505181375875226,
+          "h_sum": 646.5911933241878
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.6285228538676516,
+          "h_sum": 3597.03629268457
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 1.009296679179807,
+          "h_sum": 998.1944157088292
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.4314871019042033,
+          "h_sum": 3627.5120657086372
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.5524731671453228,
+          "h_sum": 1364.056249681802
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.23448468179889217,
+          "h_sum": 5692.819104713504
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 3876.1868956685066,
+      "transition_scene_count": 85749,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.9594252597430003,
+          "min": 0.289887542291209,
+          "n": 1341,
+          "std": 0.09382521820140505,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 3.449613571166992,
+          "mean": 0.9061282091981702,
+          "min": 0.4271720051765442,
+          "n": 1341,
+          "std": 0.2551746816687161,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 9.869233202087486e-05,
+          "mean": 9.821193766944946e-05,
+          "min": 9.768490804436458e-05,
+          "n": 1341,
+          "std": 2.912541585537504e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 4.342207172885537,
+          "mean": 2.8905196835708478,
+          "min": 1.241204058751464,
+          "n": 1341,
+          "std": 0.11857895874497273,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.17123629324252013,
+        "mean": 0.06380265623985217,
+        "min": 0.012046034938688726,
+        "n": 1341,
+        "std": 0.023329773990441165,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_006.pt",
+        "checkpoint_sha256": "b1c347ad8bd5302628e51cbbe26dc47837ea5f071ab26a0bb3ba74c3756eec1d",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_006.pt.COMPLETE.json",
+        "marker_sha256": "9de034edc3beffdbe708421df118e00872ca081bd6893155e9efcb55288744c7",
+        "status": "PASS"
+      },
+      "clipped_updates": 1041,
+      "duplicate_records_discarded": 0,
+      "epoch": 6,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.3191863533179797,
+      "first_record_time": "2026-10-27T16:50:38.418777+00:00",
+      "last_quarter_loss_mean": 0.359938411429364,
+      "last_record_time": "2026-10-27T17:54:29.351406+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.44040899141669576,
+          "mean": 0.3000139886565064,
+          "min": 0.1889655195887761,
+          "n": 1341,
+          "std": 0.040321036618455965,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.03125,
+          "mean": 0.000780767482782329,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0037114522337614677,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.4010060808016078,
+          "mean": 0.24141411225133372,
+          "min": 0.12488713063487467,
+          "n": 1341,
+          "std": 0.046294697338062005,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.7714170890658352,
+          "mean": 0.3392147814044565,
+          "min": 0.15580488695570693,
+          "n": 1341,
+          "std": 0.08276667125010216,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 1.7676705202270568,
+          "mean": 0.26162161589778027,
+          "min": 0.07855090070455617,
+          "n": 1341,
+          "std": 0.1356306917477899,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.5012354504979157,
+          "mean": 0.0978006691531228,
+          "min": 0.02339050801083431,
+          "n": 1341,
+          "std": 0.05353402989709684,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": 0.27521661853046725,
+          "mu_sum": 4674.2790491214555,
+          "scheduled_scene_count": 16984.0
+        },
+        {
+          "j": 1,
+          "mu_mean": 0.2675846701279144,
+          "mu_sum": 4585.598491982069,
+          "scheduled_scene_count": 17137.0
+        },
+        {
+          "j": 2,
+          "mu_mean": 0.2594458010681605,
+          "mu_sum": 4541.59874769815,
+          "scheduled_scene_count": 17505.0
+        },
+        {
+          "j": 3,
+          "mu_mean": 0.24136217458917186,
+          "mu_sum": 4121.25913111011,
+          "scheduled_scene_count": 17075.0
+        },
+        {
+          "j": 4,
+          "mu_mean": 0.264597960795023,
+          "mu_sum": 4527.800305124434,
+          "scheduled_scene_count": 17112.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 6706,
+      "optimizer_step_last": 8046,
+      "phase_update_counts": {
+        "ramp": 1341
+      },
+      "quarter_loss_change_percent": 12.767481343660814,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.7532273822148601,
+        "mean": 0.48387839070630556,
+        "min": 0.240505788999144,
+        "n": 1341,
+        "std": 0.0865885943163818,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.04426145637125353,
+          "h_sum": 1736.8195480079885
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.7870222250752597,
+          "h_sum": 2311.4842750460375
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.8999450456667064,
+          "h_sum": 1087.1336151653813
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.138132690679743,
+          "h_sum": 639.6305721620156
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.6258805268229606,
+          "h_sum": 3581.914255007803
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 0.9859639772146783,
+          "h_sum": 975.1183734653168
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.418361613001607,
+          "h_sum": 3517.1660805045103
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.5474072612371047,
+          "h_sum": 1351.5485279944114
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.22718732874496395,
+          "h_sum": 5515.653967270235
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 3767.0985065009445,
+      "transition_scene_count": 85813,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.813652628488994,
+          "min": 0.07126485230962602,
+          "n": 1341,
+          "std": 0.17079169660093543,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 14.0321626663208,
+          "mean": 1.2964332875789413,
+          "min": 0.6148416996002197,
+          "n": 1341,
+          "std": 0.624596720257235,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 9.768405209038064e-05,
+          "mean": 9.706472394717959e-05,
+          "min": 9.639999862860319e-05,
+          "n": 1341,
+          "std": 3.711302899821171e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 4.6884436793625355,
+          "mean": 2.8091711457874307,
+          "min": 2.5929970256984234,
+          "n": 1341,
+          "std": 0.10303289034785816,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.17772473656114948,
+        "mean": 0.06315231946724503,
+        "min": 0.003882932638134662,
+        "n": 1341,
+        "std": 0.024362342275741737,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_007.pt",
+        "checkpoint_sha256": "3b37c33884d34961a4dd1da5aadc44ba82f6647e07db4a1e134f5537bfad6ac5",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_007.pt.COMPLETE.json",
+        "marker_sha256": "22ddf6a73d0ffcfc8f5e07dc46f97244e66f4b21ff9daf63e8d88349c6ae9610",
+        "status": "PASS"
+      },
+      "clipped_updates": 1263,
+      "duplicate_records_discarded": 0,
+      "epoch": 7,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.3620026007951169,
+      "first_record_time": "2026-10-27T17:56:29.660439+00:00",
+      "last_quarter_loss_mean": 0.36781113911622443,
+      "last_record_time": "2026-10-27T18:59:25.127134+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.4397042498660955,
+          "mean": 0.30478147147973367,
+          "min": 0.1945810252995109,
+          "n": 1341,
+          "std": 0.03996758935330552,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.03125,
+          "mean": 0.001328470045331127,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.004680365722876356,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.39589182386976063,
+          "mean": 0.235782848850163,
+          "min": 0.10156495443777658,
+          "n": 1341,
+          "std": 0.046545587981336345,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 1.1564258925907325,
+          "mean": 0.361218696136904,
+          "min": 0.15864920328476728,
+          "n": 1341,
+          "std": 0.09731410263415897,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 1.6597903583341846,
+          "mean": 0.2508716946745199,
+          "min": 0.08194213016588492,
+          "n": 1341,
+          "std": 0.13753820830446514,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.8298951781243886,
+          "mean": 0.12543584728674098,
+          "min": 0.04097106662334227,
+          "n": 1341,
+          "std": 0.06876910440815315,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": 0.268458009497721,
+          "mu_sum": 4593.853458525001,
+          "scheduled_scene_count": 17112.0
+        },
+        {
+          "j": 1,
+          "mu_mean": 0.2697587897945935,
+          "mu_sum": 4581.583285871376,
+          "scheduled_scene_count": 16984.0
+        },
+        {
+          "j": 2,
+          "mu_mean": 0.23465187716199623,
+          "mu_sum": 4021.2292189251293,
+          "scheduled_scene_count": 17137.0
+        },
+        {
+          "j": 3,
+          "mu_mean": 0.23591921910774494,
+          "mu_sum": 4129.765930481075,
+          "scheduled_scene_count": 17505.0
+        },
+        {
+          "j": 4,
+          "mu_mean": 0.24606857050084904,
+          "mu_sum": 4201.620841301998,
+          "scheduled_scene_count": 17075.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 8047,
+      "optimizer_step_last": 9387,
+      "phase_update_counts": {
+        "joint": 1341
+      },
+      "quarter_loss_change_percent": 1.6045570690236488,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.7783264355225996,
+        "mean": 0.4711320621224729,
+        "min": 0.20349673263262957,
+        "n": 1341,
+        "std": 0.08756359379169296,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.04352440336252009,
+          "h_sum": 1707.8975879452883
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.7802560541830114,
+          "h_sum": 2291.6120311355044
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.8860340457690684,
+          "h_sum": 1070.3291272890347
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.1183601023349248,
+          "h_sum": 628.5183775122277
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.6171618966881062,
+          "h_sum": 3532.0175347460317
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 0.9817614039236442,
+          "h_sum": 970.9620284804842
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.40502504656957405,
+          "h_sum": 3405.045566510409
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.528461842566475,
+          "h_sum": 1304.7722892966267
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.21921406481025754,
+          "h_sum": 5322.079065463433
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 3733.4946557786316,
+      "transition_scene_count": 85813,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.7171560814634551,
+          "min": 0.06136880499454949,
+          "n": 1341,
+          "std": 0.1716467732865815,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 16.294923782348633,
+          "mean": 1.511698157684204,
+          "min": 0.7429279685020447,
+          "n": 1341,
+          "std": 0.6807708804006128,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 9.639893912213606e-05,
+          "mean": 9.564469392134575e-05,
+          "min": 9.484658407282019e-05,
+          "n": 1341,
+          "std": 4.486166588455683e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 3.385705219581723,
+          "mean": 2.784112345845363,
+          "min": 2.569997737184167,
+          "n": 1341,
+          "std": 0.07678507973870782,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.1764616115293133,
+        "mean": 0.0627521122996734,
+        "min": 0.0105077908741805,
+        "n": 1341,
+        "std": 0.024582984943544852,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_008.pt",
+        "checkpoint_sha256": "edf22689754daa1ed0b8658a2f8c98cfd904a221780a98458738a93963587cab",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_008.pt.COMPLETE.json",
+        "marker_sha256": "769104a0094037078c5cfc5a0bbc554be657f5d69a20057050b83a8164984242",
+        "status": "PASS"
+      },
+      "clipped_updates": 1281,
+      "duplicate_records_discarded": 0,
+      "epoch": 8,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.34432817125441184,
+      "first_record_time": "2026-10-27T18:59:28.256034+00:00",
+      "last_quarter_loss_mean": 0.35476607835710844,
+      "last_record_time": "2026-10-27T20:02:18.481988+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.44477309427455214,
+          "mean": 0.30736370849285855,
+          "min": 0.167559156189842,
+          "n": 1341,
+          "std": 0.03995084560262458,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.046875,
+          "mean": 0.0024355284164403993,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.006192891923860882,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.4330485226037126,
+          "mean": 0.2294832372951234,
+          "min": 0.10744923990682764,
+          "n": 1341,
+          "std": 0.047453335368600455,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 1.10341926065405,
+          "mean": 0.34864734952245013,
+          "min": 0.14494516653803657,
+          "n": 1341,
+          "std": 0.09173776530071494,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 1.706497031532102,
+          "mean": 0.23832822448623933,
+          "min": 0.06799250864929718,
+          "n": 1341,
+          "std": 0.12563305450742768,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.8532485163867705,
+          "mean": 0.11916411222732673,
+          "min": 0.033996252767337864,
+          "n": 1341,
+          "std": 0.06281652717198798,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": 0.249603203134049,
+          "mu_sum": 4261.974693513886,
+          "scheduled_scene_count": 17075.0
+        },
+        {
+          "j": 1,
+          "mu_mean": 0.2559520269079738,
+          "mu_sum": 4379.8510844492475,
+          "scheduled_scene_count": 17112.0
+        },
+        {
+          "j": 2,
+          "mu_mean": 0.23290833434877356,
+          "mu_sum": 3955.71515057957,
+          "scheduled_scene_count": 16984.0
+        },
+        {
+          "j": 3,
+          "mu_mean": 0.2112879321913969,
+          "mu_sum": 3620.841293963969,
+          "scheduled_scene_count": 17137.0
+        },
+        {
+          "j": 4,
+          "mu_mean": 0.2418324881651518,
+          "mu_sum": 4233.277705330982,
+          "scheduled_scene_count": 17505.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 9388,
+      "optimizer_step_last": 10728,
+      "phase_update_counts": {
+        "joint": 1341
+      },
+      "quarter_loss_change_percent": 3.0313834225850878,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.7641519360510366,
+        "mean": 0.45852512381681565,
+        "min": 0.19591474267442457,
+        "n": 1341,
+        "std": 0.08634681685245076,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.04247164490729709,
+          "h_sum": 1666.5873461623378
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.7709442697955974,
+          "h_sum": 2264.2633203896694
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.8556165516615,
+          "h_sum": 1033.584794407092
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.1103525237806697,
+          "h_sum": 624.0181183647364
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.5994405226894812,
+          "h_sum": 3430.598111351901
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 0.9407705834853268,
+          "h_sum": 930.4221070669882
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.3971820061987567,
+          "h_sum": 3339.1091261129477
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.5208284854294226,
+          "h_sum": 1285.9255305252445
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.21081376503935695,
+          "h_sum": 5118.136587625508
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 3714.083894142881,
+      "transition_scene_count": 85813,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.7046975111276292,
+          "min": 0.1862632422056659,
+          "n": 1341,
+          "std": 0.16686748927248818,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 5.368745803833008,
+          "mean": 1.5211668676800199,
+          "min": 0.7043959498405457,
+          "n": 1341,
+          "std": 0.49647137867301816,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 9.48453278854385e-05,
+          "mean": 9.396105738357968e-05,
+          "min": 9.303473925157183e-05,
+          "n": 1341,
+          "std": 5.23203068762765e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 4.538122959434986,
+          "mean": 2.769637504953677,
+          "min": 2.565878579393029,
+          "n": 1341,
+          "std": 0.08774267382699363,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.15032492431591413,
+        "mean": 0.06108970083614722,
+        "min": 0.010373732663083501,
+        "n": 1341,
+        "std": 0.023261035459183697,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_009.pt",
+        "checkpoint_sha256": "053ca0e4650ca7b92cbbae40f08186e29598ec06f6b39877a83cca17f27b8f9a",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_009.pt.COMPLETE.json",
+        "marker_sha256": "9a1eb8aa90919a734fc3f708780f7d22e546adf37f585af8e2819af3976e98e3",
+        "status": "PASS"
+      },
+      "clipped_updates": 1296,
+      "duplicate_records_discarded": 0,
+      "epoch": 9,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.3394141138331501,
+      "first_record_time": "2026-10-27T20:38:57.212622+00:00",
+      "last_quarter_loss_mean": 0.3379007719539758,
+      "last_record_time": "2026-10-27T21:42:18.417730+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.43932483357165897,
+          "mean": 0.3100947872513114,
+          "min": 0.18492883943347105,
+          "n": 1341,
+          "std": 0.039745569950642885,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.0625,
+          "mean": 0.004055329612063441,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.008496899494991841,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.42618670886122345,
+          "mean": 0.22290220645955564,
+          "min": 0.11387105280687138,
+          "n": 1341,
+          "std": 0.04497099228279031,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.9352569335394492,
+          "mean": 0.3382296979240785,
+          "min": 0.15329605637305121,
+          "n": 1341,
+          "std": 0.08691826030270015,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 1.2870803086895535,
+          "mean": 0.23065498296482476,
+          "min": 0.06126310534949653,
+          "n": 1341,
+          "std": 0.12026917992666251,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.6435401585047202,
+          "mean": 0.11532749146452285,
+          "min": 0.030631553622811225,
+          "n": 1341,
+          "std": 0.06013458995626746,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": 0.24918970781376912,
+          "mu_sum": 4362.065835280028,
+          "scheduled_scene_count": 17505.0
+        },
+        {
+          "j": 1,
+          "mu_mean": 0.24153791642264816,
+          "mu_sum": 4124.259922916717,
+          "scheduled_scene_count": 17075.0
+        },
+        {
+          "j": 2,
+          "mu_mean": 0.22365833524965792,
+          "mu_sum": 3827.2414327921465,
+          "scheduled_scene_count": 17112.0
+        },
+        {
+          "j": 3,
+          "mu_mean": 0.20728050348875746,
+          "mu_sum": 3520.4520712530566,
+          "scheduled_scene_count": 16984.0
+        },
+        {
+          "j": 4,
+          "mu_mean": 0.23103091503288548,
+          "mu_sum": 3959.1767909185583,
+          "scheduled_scene_count": 17137.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 10729,
+      "optimizer_step_last": 12069,
+      "phase_update_counts": {
+        "joint": 1341
+      },
+      "quarter_loss_change_percent": -0.4458688715338055,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.7687761359848082,
+        "mean": 0.4453717004252594,
+        "min": 0.22152538308485722,
+        "n": 1341,
+        "std": 0.08479949803430314,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.04133348066199519,
+          "h_sum": 1621.925781176691
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.7604877382806804,
+          "h_sum": 2233.5524873303584
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.8229027145653464,
+          "h_sum": 994.0664791949384
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.1002574576429467,
+          "h_sum": 618.344691195336
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.5832422565208558,
+          "h_sum": 3337.895434068858
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 0.9368585292832583,
+          "h_sum": 926.5530854611425
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.3830958959568721,
+          "h_sum": 3220.687197309424
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.5021233851015965,
+          "h_sum": 1239.7426378158416
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.2032761862328552,
+          "h_sum": 4935.139249361258
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 3725.562139015645,
+      "transition_scene_count": 85813,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.6754649229587052,
+          "min": 0.08035889043642942,
+          "n": 1341,
+          "std": 0.16682247874108616,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 12.444173812866211,
+          "mean": 1.604003312781531,
+          "min": 0.7980867624282837,
+          "n": 1341,
+          "std": 0.623253895477189,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 9.30332945304442e-05,
+          "mean": 9.202473378024108e-05,
+          "min": 9.097621512291468e-05,
+          "n": 1341,
+          "std": 5.944021724229315e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 3.8045903723686934,
+          "mean": 2.7781969716746047,
+          "min": 2.559195440262556,
+          "n": 1341,
+          "std": 0.084447333571664,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.18237344657697846,
+        "mean": 0.059340748719048826,
+        "min": 0.0092383418486015,
+        "n": 1341,
+        "std": 0.023780521539854417,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_010.pt",
+        "checkpoint_sha256": "229b9cc7393d09e9e32ea5ed2d9c22264dd69a1440a780e163604d7fd6057e4b",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_010.pt.COMPLETE.json",
+        "marker_sha256": "fd5ffe14d3d7172f6f58ed7fe838438aada81d0868104d056da3884c49f44336",
+        "status": "PASS"
+      },
+      "clipped_updates": 1314,
+      "duplicate_records_discarded": 0,
+      "epoch": 10,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.3259675347849228,
+      "first_record_time": "2026-10-27T21:42:21.740612+00:00",
+      "last_quarter_loss_mean": 0.3380970211797815,
+      "last_record_time": "2026-10-27T22:46:21.835136+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.46394788977640145,
+          "mean": 0.31399812503296903,
+          "min": 0.1930106313181511,
+          "n": 1341,
+          "std": 0.04172499451364621,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.078125,
+          "mean": 0.007761061843776584,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.01137960151695498,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.37160625324759167,
+          "mean": 0.21550077684999633,
+          "min": 0.055628979108405474,
+          "n": 1341,
+          "std": 0.045159718158431617,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.9567947780074064,
+          "mean": 0.32547466528939034,
+          "min": 0.08388316905984539,
+          "n": 1341,
+          "std": 0.08956596490556329,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 1.3703592439217118,
+          "mean": 0.2199477769598928,
+          "min": 0.041164444258498634,
+          "n": 1341,
+          "std": 0.12037923087937898,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.685179617807762,
+          "mean": 0.10997388843939401,
+          "min": 0.02058222280015798,
+          "n": 1341,
+          "std": 0.06018961538609618,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": 0.23160465791631787,
+          "mu_sum": 3969.0090227119395,
+          "scheduled_scene_count": 17137.0
+        },
+        {
+          "j": 1,
+          "mu_mean": 0.2389896000264515,
+          "mu_sum": 4183.512948463033,
+          "scheduled_scene_count": 17505.0
+        },
+        {
+          "j": 2,
+          "mu_mean": 0.20800225293580096,
+          "mu_sum": 3551.6384688788016,
+          "scheduled_scene_count": 17075.0
+        },
+        {
+          "j": 3,
+          "mu_mean": 0.19943199041789314,
+          "mu_sum": 3412.6802200309876,
+          "scheduled_scene_count": 17112.0
+        },
+        {
+          "j": 4,
+          "mu_mean": 0.22123986835695464,
+          "mu_sum": 3757.5379241745177,
+          "scheduled_scene_count": 16984.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 12070,
+      "optimizer_step_last": 13410,
+      "phase_update_counts": {
+        "joint": 1341
+      },
+      "quarter_loss_change_percent": 3.7210719168281337,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.707136347745767,
+        "mean": 0.4298975510044155,
+        "min": 0.12923826769237284,
+        "n": 1341,
+        "std": 0.08509985244731792,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.04001537728892547,
+          "h_sum": 1570.2034048174355
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.7510222692058093,
+          "h_sum": 2205.7524046574617
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.8037527523179443,
+          "h_sum": 970.9333248000767
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.0933743285881505,
+          "h_sum": 614.4763726665406
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.5663584632598949,
+          "h_sum": 3241.2694852363784
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 0.8852238519584192,
+          "h_sum": 875.4863895868766
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.3689868723460737,
+          "h_sum": 3102.0726358134416
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.48992676613860336,
+          "h_sum": 1209.6291855962118
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.19371220696327182,
+          "h_sum": 4702.944960654313
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 3817.3501081317663,
+      "transition_scene_count": 85813,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.6470335144521177,
+          "min": 0.12936132582726032,
+          "n": 1341,
+          "std": 0.15781351006008962,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 7.73028564453125,
+          "mean": 1.6667709265245954,
+          "min": 0.6520923376083374,
+          "n": 1341,
+          "std": 0.5807750445275423,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 9.097459123797012e-05,
+          "mean": 8.984828139291121e-05,
+          "min": 8.868436251602056e-05,
+          "n": 1341,
+          "std": 6.617502674537677e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 4.464574849233031,
+          "mean": 2.846644375937186,
+          "min": 2.624883422628045,
+          "n": 1341,
+          "std": 0.14622197567853334,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.1395680176295476,
+        "mean": 0.057874451143672734,
+        "min": 0.005162139259794328,
+        "n": 1341,
+        "std": 0.02337273506272439,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "status": "NOT_CHECKED_PARTIAL_EPOCH"
+      },
+      "clipped_updates": 41,
+      "duplicate_records_discarded": 0,
+      "epoch": 11,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.2960831357273719,
+      "first_record_time": "2026-10-27T22:48:23.761030+00:00",
+      "last_quarter_loss_mean": 0.3025341753315729,
+      "last_record_time": "2026-10-27T22:50:23.627893+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.40636874823984404,
+          "mean": 0.32538061769096216,
+          "min": 0.26319944824323893,
+          "n": 41,
+          "std": 0.03861012132776755,
+          "weight": 2624.0
+        },
+        "cap_count": {
+          "max": 0.046875,
+          "mean": 0.008003048780487805,
+          "min": 0.0,
+          "n": 41,
+          "std": 0.010979314246103607,
+          "weight": 2624.0
+        },
+        "h": {
+          "max": 0.317223174543642,
+          "mean": 0.19520662194098604,
+          "min": 0.11129845327229759,
+          "n": 41,
+          "std": 0.03945277742614748,
+          "weight": 2624.0
+        },
+        "loss": {
+          "max": 0.6297681672069757,
+          "mean": 0.30362467923977166,
+          "min": 0.14760802240289195,
+          "n": 41,
+          "std": 0.096481085842085,
+          "weight": 2624.0
+        },
+        "mu": {
+          "max": 0.8905739262294787,
+          "mean": 0.2168361144333692,
+          "min": 0.07261913943253973,
+          "n": 41,
+          "std": 0.15217147386715268,
+          "weight": 2624.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.44528695219560177,
+          "mean": 0.10841805729878559,
+          "min": 0.036309569130594355,
+          "n": 41,
+          "std": 0.07608573625619948,
+          "weight": 2624.0
+        }
+      },
+      "missing_global_steps": [
+        13452,
+        13453,
+        13454,
+        13455,
+        13456,
+        13457,
+        13458,
+        13459,
+        13460,
+        13461,
+        13462,
+        13463,
+        13464,
+        13465,
+        13466,
+        13467,
+        13468,
+        13469,
+        13470,
+        13471,
+        13472,
+        13473,
+        13474,
+        13475,
+        13476,
+        13477,
+        13478,
+        13479,
+        13480,
+        13481,
+        13482,
+        13483,
+        13484,
+        13485,
+        13486,
+        13487,
+        13488,
+        13489,
+        13490,
+        13491,
+        13492,
+        13493,
+        13494,
+        13495,
+        13496,
+        13497,
+        13498,
+        13499,
+        13500,
+        13501,
+        13502,
+        13503,
+        13504,
+        13505,
+        13506,
+        13507,
+        13508,
+        13509,
+        13510,
+        13511,
+        13512,
+        13513,
+        13514,
+        13515,
+        13516,
+        13517,
+        13518,
+        13519,
+        13520,
+        13521,
+        13522,
+        13523,
+        13524,
+        13525,
+        13526,
+        13527,
+        13528,
+        13529,
+        13530,
+        13531,
+        13532,
+        13533,
+        13534,
+        13535,
+        13536,
+        13537,
+        13538,
+        13539,
+        13540,
+        13541,
+        13542,
+        13543,
+        13544,
+        13545,
+        13546,
+        13547,
+        13548,
+        13549,
+        13550,
+        13551,
+        13552,
+        13553,
+        13554,
+        13555,
+        13556,
+        13557,
+        13558,
+        13559,
+        13560,
+        13561,
+        13562,
+        13563,
+        13564,
+        13565,
+        13566,
+        13567,
+        13568,
+        13569,
+        13570,
+        13571,
+        13572,
+        13573,
+        13574,
+        13575,
+        13576,
+        13577,
+        13578,
+        13579,
+        13580,
+        13581,
+        13582,
+        13583,
+        13584,
+        13585,
+        13586,
+        13587,
+        13588,
+        13589,
+        13590,
+        13591,
+        13592,
+        13593,
+        13594,
+        13595,
+        13596,
+        13597,
+        13598,
+        13599,
+        13600,
+        13601,
+        13602,
+        13603,
+        13604,
+        13605,
+        13606,
+        13607,
+        13608,
+        13609,
+        13610,
+        13611,
+        13612,
+        13613,
+        13614,
+        13615,
+        13616,
+        13617,
+        13618,
+        13619,
+        13620,
+        13621,
+        13622,
+        13623,
+        13624,
+        13625,
+        13626,
+        13627,
+        13628,
+        13629,
+        13630,
+        13631,
+        13632,
+        13633,
+        13634,
+        13635,
+        13636,
+        13637,
+        13638,
+        13639,
+        13640,
+        13641,
+        13642,
+        13643,
+        13644,
+        13645,
+        13646,
+        13647,
+        13648,
+        13649,
+        13650,
+        13651,
+        13652,
+        13653,
+        13654,
+        13655,
+        13656,
+        13657,
+        13658,
+        13659,
+        13660,
+        13661,
+        13662,
+        13663,
+        13664,
+        13665,
+        13666,
+        13667,
+        13668,
+        13669,
+        13670,
+        13671,
+        13672,
+        13673,
+        13674,
+        13675,
+        13676,
+        13677,
+        13678,
+        13679,
+        13680,
+        13681,
+        13682,
+        13683,
+        13684,
+        13685,
+        13686,
+        13687,
+        13688,
+        13689,
+        13690,
+        13691,
+        13692,
+        13693,
+        13694,
+        13695,
+        13696,
+        13697,
+        13698,
+        13699,
+        13700,
+        13701,
+        13702,
+        13703,
+        13704,
+        13705,
+        13706,
+        13707,
+        13708,
+        13709,
+        13710,
+        13711,
+        13712,
+        13713,
+        13714,
+        13715,
+        13716,
+        13717,
+        13718,
+        13719,
+        13720,
+        13721,
+        13722,
+        13723,
+        13724,
+        13725,
+        13726,
+        13727,
+        13728,
+        13729,
+        13730,
+        13731,
+        13732,
+        13733,
+        13734,
+        13735,
+        13736,
+        13737,
+        13738,
+        13739,
+        13740,
+        13741,
+        13742,
+        13743,
+        13744,
+        13745,
+        13746,
+        13747,
+        13748,
+        13749,
+        13750,
+        13751,
+        13752,
+        13753,
+        13754,
+        13755,
+        13756,
+        13757,
+        13758,
+        13759,
+        13760,
+        13761,
+        13762,
+        13763,
+        13764,
+        13765,
+        13766,
+        13767,
+        13768,
+        13769,
+        13770,
+        13771,
+        13772,
+        13773,
+        13774,
+        13775,
+        13776,
+        13777,
+        13778,
+        13779,
+        13780,
+        13781,
+        13782,
+        13783,
+        13784,
+        13785,
+        13786,
+        13787,
+        13788,
+        13789,
+        13790,
+        13791,
+        13792,
+        13793,
+        13794,
+        13795,
+        13796,
+        13797,
+        13798,
+        13799,
+        13800,
+        13801,
+        13802,
+        13803,
+        13804,
+        13805,
+        13806,
+        13807,
+        13808,
+        13809,
+        13810,
+        13811,
+        13812,
+        13813,
+        13814,
+        13815,
+        13816,
+        13817,
+        13818,
+        13819,
+        13820,
+        13821,
+        13822,
+        13823,
+        13824,
+        13825,
+        13826,
+        13827,
+        13828,
+        13829,
+        13830,
+        13831,
+        13832,
+        13833,
+        13834,
+        13835,
+        13836,
+        13837,
+        13838,
+        13839,
+        13840,
+        13841,
+        13842,
+        13843,
+        13844,
+        13845,
+        13846,
+        13847,
+        13848,
+        13849,
+        13850,
+        13851,
+        13852,
+        13853,
+        13854,
+        13855,
+        13856,
+        13857,
+        13858,
+        13859,
+        13860,
+        13861,
+        13862,
+        13863,
+        13864,
+        13865,
+        13866,
+        13867,
+        13868,
+        13869,
+        13870,
+        13871,
+        13872,
+        13873,
+        13874,
+        13875,
+        13876,
+        13877,
+        13878,
+        13879,
+        13880,
+        13881,
+        13882,
+        13883,
+        13884,
+        13885,
+        13886,
+        13887,
+        13888,
+        13889,
+        13890,
+        13891,
+        13892,
+        13893,
+        13894,
+        13895,
+        13896,
+        13897,
+        13898,
+        13899,
+        13900,
+        13901,
+        13902,
+        13903,
+        13904,
+        13905,
+        13906,
+        13907,
+        13908,
+        13909,
+        13910,
+        13911,
+        13912,
+        13913,
+        13914,
+        13915,
+        13916,
+        13917,
+        13918,
+        13919,
+        13920,
+        13921,
+        13922,
+        13923,
+        13924,
+        13925,
+        13926,
+        13927,
+        13928,
+        13929,
+        13930,
+        13931,
+        13932,
+        13933,
+        13934,
+        13935,
+        13936,
+        13937,
+        13938,
+        13939,
+        13940,
+        13941,
+        13942,
+        13943,
+        13944,
+        13945,
+        13946,
+        13947,
+        13948,
+        13949,
+        13950,
+        13951,
+        13952,
+        13953,
+        13954,
+        13955,
+        13956,
+        13957,
+        13958,
+        13959,
+        13960,
+        13961,
+        13962,
+        13963,
+        13964,
+        13965,
+        13966,
+        13967,
+        13968,
+        13969,
+        13970,
+        13971,
+        13972,
+        13973,
+        13974,
+        13975,
+        13976,
+        13977,
+        13978,
+        13979,
+        13980,
+        13981,
+        13982,
+        13983,
+        13984,
+        13985,
+        13986,
+        13987,
+        13988,
+        13989,
+        13990,
+        13991,
+        13992,
+        13993,
+        13994,
+        13995,
+        13996,
+        13997,
+        13998,
+        13999,
+        14000,
+        14001,
+        14002,
+        14003,
+        14004,
+        14005,
+        14006,
+        14007,
+        14008,
+        14009,
+        14010,
+        14011,
+        14012,
+        14013,
+        14014,
+        14015,
+        14016,
+        14017,
+        14018,
+        14019,
+        14020,
+        14021,
+        14022,
+        14023,
+        14024,
+        14025,
+        14026,
+        14027,
+        14028,
+        14029,
+        14030,
+        14031,
+        14032,
+        14033,
+        14034,
+        14035,
+        14036,
+        14037,
+        14038,
+        14039,
+        14040,
+        14041,
+        14042,
+        14043,
+        14044,
+        14045,
+        14046,
+        14047,
+        14048,
+        14049,
+        14050,
+        14051,
+        14052,
+        14053,
+        14054,
+        14055,
+        14056,
+        14057,
+        14058,
+        14059,
+        14060,
+        14061,
+        14062,
+        14063,
+        14064,
+        14065,
+        14066,
+        14067,
+        14068,
+        14069,
+        14070,
+        14071,
+        14072,
+        14073,
+        14074,
+        14075,
+        14076,
+        14077,
+        14078,
+        14079,
+        14080,
+        14081,
+        14082,
+        14083,
+        14084,
+        14085,
+        14086,
+        14087,
+        14088,
+        14089,
+        14090,
+        14091,
+        14092,
+        14093,
+        14094,
+        14095,
+        14096,
+        14097,
+        14098,
+        14099,
+        14100,
+        14101,
+        14102,
+        14103,
+        14104,
+        14105,
+        14106,
+        14107,
+        14108,
+        14109,
+        14110,
+        14111,
+        14112,
+        14113,
+        14114,
+        14115,
+        14116,
+        14117,
+        14118,
+        14119,
+        14120,
+        14121,
+        14122,
+        14123,
+        14124,
+        14125,
+        14126,
+        14127,
+        14128,
+        14129,
+        14130,
+        14131,
+        14132,
+        14133,
+        14134,
+        14135,
+        14136,
+        14137,
+        14138,
+        14139,
+        14140,
+        14141,
+        14142,
+        14143,
+        14144,
+        14145,
+        14146,
+        14147,
+        14148,
+        14149,
+        14150,
+        14151,
+        14152,
+        14153,
+        14154,
+        14155,
+        14156,
+        14157,
+        14158,
+        14159,
+        14160,
+        14161,
+        14162,
+        14163,
+        14164,
+        14165,
+        14166,
+        14167,
+        14168,
+        14169,
+        14170,
+        14171,
+        14172,
+        14173,
+        14174,
+        14175,
+        14176,
+        14177,
+        14178,
+        14179,
+        14180,
+        14181,
+        14182,
+        14183,
+        14184,
+        14185,
+        14186,
+        14187,
+        14188,
+        14189,
+        14190,
+        14191,
+        14192,
+        14193,
+        14194,
+        14195,
+        14196,
+        14197,
+        14198,
+        14199,
+        14200,
+        14201,
+        14202,
+        14203,
+        14204,
+        14205,
+        14206,
+        14207,
+        14208,
+        14209,
+        14210,
+        14211,
+        14212,
+        14213,
+        14214,
+        14215,
+        14216,
+        14217,
+        14218,
+        14219,
+        14220,
+        14221,
+        14222,
+        14223,
+        14224,
+        14225,
+        14226,
+        14227,
+        14228,
+        14229,
+        14230,
+        14231,
+        14232,
+        14233,
+        14234,
+        14235,
+        14236,
+        14237,
+        14238,
+        14239,
+        14240,
+        14241,
+        14242,
+        14243,
+        14244,
+        14245,
+        14246,
+        14247,
+        14248,
+        14249,
+        14250,
+        14251,
+        14252,
+        14253,
+        14254,
+        14255,
+        14256,
+        14257,
+        14258,
+        14259,
+        14260,
+        14261,
+        14262,
+        14263,
+        14264,
+        14265,
+        14266,
+        14267,
+        14268,
+        14269,
+        14270,
+        14271,
+        14272,
+        14273,
+        14274,
+        14275,
+        14276,
+        14277,
+        14278,
+        14279,
+        14280,
+        14281,
+        14282,
+        14283,
+        14284,
+        14285,
+        14286,
+        14287,
+        14288,
+        14289,
+        14290,
+        14291,
+        14292,
+        14293,
+        14294,
+        14295,
+        14296,
+        14297,
+        14298,
+        14299,
+        14300,
+        14301,
+        14302,
+        14303,
+        14304,
+        14305,
+        14306,
+        14307,
+        14308,
+        14309,
+        14310,
+        14311,
+        14312,
+        14313,
+        14314,
+        14315,
+        14316,
+        14317,
+        14318,
+        14319,
+        14320,
+        14321,
+        14322,
+        14323,
+        14324,
+        14325,
+        14326,
+        14327,
+        14328,
+        14329,
+        14330,
+        14331,
+        14332,
+        14333,
+        14334,
+        14335,
+        14336,
+        14337,
+        14338,
+        14339,
+        14340,
+        14341,
+        14342,
+        14343,
+        14344,
+        14345,
+        14346,
+        14347,
+        14348,
+        14349,
+        14350,
+        14351,
+        14352,
+        14353,
+        14354,
+        14355,
+        14356,
+        14357,
+        14358,
+        14359,
+        14360,
+        14361,
+        14362,
+        14363,
+        14364,
+        14365,
+        14366,
+        14367,
+        14368,
+        14369,
+        14370,
+        14371,
+        14372,
+        14373,
+        14374,
+        14375,
+        14376,
+        14377,
+        14378,
+        14379,
+        14380,
+        14381,
+        14382,
+        14383,
+        14384,
+        14385,
+        14386,
+        14387,
+        14388,
+        14389,
+        14390,
+        14391,
+        14392,
+        14393,
+        14394,
+        14395,
+        14396,
+        14397,
+        14398,
+        14399,
+        14400,
+        14401,
+        14402,
+        14403,
+        14404,
+        14405,
+        14406,
+        14407,
+        14408,
+        14409,
+        14410,
+        14411,
+        14412,
+        14413,
+        14414,
+        14415,
+        14416,
+        14417,
+        14418,
+        14419,
+        14420,
+        14421,
+        14422,
+        14423,
+        14424,
+        14425,
+        14426,
+        14427,
+        14428,
+        14429,
+        14430,
+        14431,
+        14432,
+        14433,
+        14434,
+        14435,
+        14436,
+        14437,
+        14438,
+        14439,
+        14440,
+        14441,
+        14442,
+        14443,
+        14444,
+        14445,
+        14446,
+        14447,
+        14448,
+        14449,
+        14450,
+        14451,
+        14452,
+        14453,
+        14454,
+        14455,
+        14456,
+        14457,
+        14458,
+        14459,
+        14460,
+        14461,
+        14462,
+        14463,
+        14464,
+        14465,
+        14466,
+        14467,
+        14468,
+        14469,
+        14470,
+        14471,
+        14472,
+        14473,
+        14474,
+        14475,
+        14476,
+        14477,
+        14478,
+        14479,
+        14480,
+        14481,
+        14482,
+        14483,
+        14484,
+        14485,
+        14486,
+        14487,
+        14488,
+        14489,
+        14490,
+        14491,
+        14492,
+        14493,
+        14494,
+        14495,
+        14496,
+        14497,
+        14498,
+        14499,
+        14500,
+        14501,
+        14502,
+        14503,
+        14504,
+        14505,
+        14506,
+        14507,
+        14508,
+        14509,
+        14510,
+        14511,
+        14512,
+        14513,
+        14514,
+        14515,
+        14516,
+        14517,
+        14518,
+        14519,
+        14520,
+        14521,
+        14522,
+        14523,
+        14524,
+        14525,
+        14526,
+        14527,
+        14528,
+        14529,
+        14530,
+        14531,
+        14532,
+        14533,
+        14534,
+        14535,
+        14536,
+        14537,
+        14538,
+        14539,
+        14540,
+        14541,
+        14542,
+        14543,
+        14544,
+        14545,
+        14546,
+        14547,
+        14548,
+        14549,
+        14550,
+        14551,
+        14552,
+        14553,
+        14554,
+        14555,
+        14556,
+        14557,
+        14558,
+        14559,
+        14560,
+        14561,
+        14562,
+        14563,
+        14564,
+        14565,
+        14566,
+        14567,
+        14568,
+        14569,
+        14570,
+        14571,
+        14572,
+        14573,
+        14574,
+        14575,
+        14576,
+        14577,
+        14578,
+        14579,
+        14580,
+        14581,
+        14582,
+        14583,
+        14584,
+        14585,
+        14586,
+        14587,
+        14588,
+        14589,
+        14590,
+        14591,
+        14592,
+        14593,
+        14594,
+        14595,
+        14596,
+        14597,
+        14598,
+        14599,
+        14600,
+        14601,
+        14602,
+        14603,
+        14604,
+        14605,
+        14606,
+        14607,
+        14608,
+        14609,
+        14610,
+        14611,
+        14612,
+        14613,
+        14614,
+        14615,
+        14616,
+        14617,
+        14618,
+        14619,
+        14620,
+        14621,
+        14622,
+        14623,
+        14624,
+        14625,
+        14626,
+        14627,
+        14628,
+        14629,
+        14630,
+        14631,
+        14632,
+        14633,
+        14634,
+        14635,
+        14636,
+        14637,
+        14638,
+        14639,
+        14640,
+        14641,
+        14642,
+        14643,
+        14644,
+        14645,
+        14646,
+        14647,
+        14648,
+        14649,
+        14650,
+        14651,
+        14652,
+        14653,
+        14654,
+        14655,
+        14656,
+        14657,
+        14658,
+        14659,
+        14660,
+        14661,
+        14662,
+        14663,
+        14664,
+        14665,
+        14666,
+        14667,
+        14668,
+        14669,
+        14670,
+        14671,
+        14672,
+        14673,
+        14674,
+        14675,
+        14676,
+        14677,
+        14678,
+        14679,
+        14680,
+        14681,
+        14682,
+        14683,
+        14684,
+        14685,
+        14686,
+        14687,
+        14688,
+        14689,
+        14690,
+        14691,
+        14692,
+        14693,
+        14694,
+        14695,
+        14696,
+        14697,
+        14698,
+        14699,
+        14700,
+        14701,
+        14702,
+        14703,
+        14704,
+        14705,
+        14706,
+        14707,
+        14708,
+        14709,
+        14710,
+        14711,
+        14712,
+        14713,
+        14714,
+        14715,
+        14716,
+        14717,
+        14718,
+        14719,
+        14720,
+        14721,
+        14722,
+        14723,
+        14724,
+        14725,
+        14726,
+        14727,
+        14728,
+        14729,
+        14730,
+        14731,
+        14732,
+        14733,
+        14734,
+        14735,
+        14736,
+        14737,
+        14738,
+        14739,
+        14740,
+        14741,
+        14742,
+        14743,
+        14744,
+        14745,
+        14746,
+        14747,
+        14748,
+        14749,
+        14750,
+        14751
+      ],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": 0.19215919614350405,
+          "mu_sum": 97.42471244475655,
+          "scheduled_scene_count": 507.0
+        },
+        {
+          "j": 1,
+          "mu_mean": 0.2071364312440464,
+          "mu_sum": 111.64653644054101,
+          "scheduled_scene_count": 539.0
+        },
+        {
+          "j": 2,
+          "mu_mean": 0.24187724137040376,
+          "mu_sum": 135.4512551674261,
+          "scheduled_scene_count": 560.0
+        },
+        {
+          "j": 3,
+          "mu_mean": 0.21070465847494627,
+          "mu_sum": 108.30219445612238,
+          "scheduled_scene_count": 514.0
+        },
+        {
+          "j": 4,
+          "mu_mean": 0.23046282889744982,
+          "mu_sum": 116.15326576431471,
+          "scheduled_scene_count": 504.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 41,
+      "optimizer_step_first": 13411,
+      "optimizer_step_last": 13451,
+      "phase_update_counts": {
+        "joint": 41
+      },
+      "quarter_loss_change_percent": 2.178793327202877,
+      "real_samples": 2624,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.5430813973917711,
+        "mean": 0.381308724563973,
+        "min": 0.2435881364911508,
+        "n": 41,
+        "std": 0.07184963513706616,
+        "weight": 1106.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 1154.0,
+          "h_mean": 0.04184518527462304,
+          "h_sum": 48.289343806914985
+        },
+        "1": {
+          "count": 76.0,
+          "h_mean": 0.6864243091208904,
+          "h_sum": 52.168247493187664
+        },
+        "2": {
+          "count": 36.0,
+          "h_mean": 0.59220352401543,
+          "h_sum": 21.319326864555478
+        },
+        "3": {
+          "count": 17.0,
+          "h_mean": 0.9987678268157384,
+          "h_sum": 16.979053055867553
+        },
+        "4": {
+          "count": 172.0,
+          "h_mean": 0.5150181943949869,
+          "h_sum": 88.58312943593774
+        },
+        "5": {
+          "count": 29.0,
+          "h_mean": 0.811067717639601,
+          "h_sum": 23.520963811548427
+        },
+        "6": {
+          "count": 279.0,
+          "h_mean": 0.3442234526652055,
+          "h_sum": 96.03834329359233
+        },
+        "7": {
+          "count": 78.0,
+          "h_mean": 0.4393414696963961,
+          "h_sum": 34.26863463631889
+        },
+        "8": {
+          "count": 783.0,
+          "h_mean": 0.16737564952135928,
+          "h_sum": 131.05513357522432
+        }
+      },
+      "status": "PARTIAL",
+      "step_seconds_sum": 121.71687924303114,
+      "transition_scene_count": 2624,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 0.8516507201856034,
+          "mean": 0.658908451675351,
+          "min": 0.3310367122623401,
+          "n": 41,
+          "std": 0.12297135192622324,
+          "weight": 41.0
+        },
+        "grad_norm": {
+          "max": 3.02081298828125,
+          "mean": 1.5850676385367788,
+          "min": 1.1741902828216553,
+          "n": 41,
+          "std": 0.3762359860377265,
+          "weight": 41.0
+        },
+        "lr": {
+          "max": 8.86825699991786e-05,
+          "mean": 8.864668564758823e-05,
+          "min": 8.861076972812856e-05,
+          "n": 41,
+          "std": 2.123880985001759e-08,
+          "weight": 41.0
+        },
+        "step_seconds": {
+          "max": 4.914955956861377,
+          "mean": 2.9687043717812474,
+          "min": 2.749910306185484,
+          "n": 41,
+          "std": 0.3327168782508412,
+          "weight": 41.0
+        }
+      },
+      "valid_updates": 41,
+      "zero_target_h": {
+        "max": 0.11428817063278984,
+        "mean": 0.059614444404079855,
+        "min": 0.017760483153136285,
+        "n": 41,
+        "std": 0.02830818266902381,
+        "weight": 1518.0
+      }
+    }
+  ],
+  "mu_note": "mu is the normalized functional term before curriculum weight. Actual weighted contribution is mean(loss-h), never final_lambda*mean(mu) during ramp; scheduled step counts may include the zero-weight ramp boundary; transition_scene_count records actually executed supervision",
+  "run": "H_mu_student_seed20261027",
+  "schema": "nrkd_epoch_loss_statistics_v1",
+  "source": {
+    "bounded_size": 13847384,
+    "duplicate_global_steps": {},
+    "duplicate_records_discarded": 0,
+    "ignored_trailing_bytes": 0,
+    "invalid_lines": [],
+    "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/logs/train_metrics.jsonl",
+    "sha256": "1356c83358c2459587c099a1bba07e24bd547338bea194f37f3ebeb874c46bad",
+    "source_mtime_ns": 1793141423000000000,
+    "source_size_at_open": 13847384
+  },
+  "statistics_unit": "logged per-update batch means; loss/h/mu/actual_rms/cap_count use actual-scene weights; std is population std of update means, not per-scene std",
+  "subgroup_note": "zero-target/repair-target H statistics are retrospective diagnostics, not extra Base-keep objectives or training weights",
+  "training_seed": 20261027,
+  "trend_note": "Descriptive training loss only; batch loss need not decrease monotonically, and loss trend is not policy/PDMS acceptance."
+}

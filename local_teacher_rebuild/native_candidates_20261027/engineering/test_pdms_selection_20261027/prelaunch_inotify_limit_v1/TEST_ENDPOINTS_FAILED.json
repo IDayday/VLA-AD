@@ -1,0 +1,7 @@
+{
+  "error": "OSError(28, 'inotify_add_watch')",
+  "resume": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/test_endpoint_owner.py",
+  "status": "INCOMPLETE",
+  "time": "2026-10-27T23:13:55.259489+00:00",
+  "traceback": "Traceback (most recent call last):\n  File \"/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/test_endpoint_owner.py\", line 100, in main\n    future.result()\n  File \"/root/miniconda3/envs/ddp/lib/python3.10/concurrent/futures/_base.py\", line 451, in result\n    return self.__get_result()\n  File \"/root/miniconda3/envs/ddp/lib/python3.10/concurrent/futures/_base.py\", line 403, in __get_result\n    raise self._exception\n  File \"/root/miniconda3/envs/ddp/lib/python3.10/concurrent/futures/thread.py\", line 58, in run\n    result = self.fn(*self.args, **self.kwargs)\n  File \"/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/test_endpoint_owner.py\", line 69, in run_one\n    wait_for_artifact(marker)\n  File \"/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/test_pdms_runtime.py\", line 117, in wait_for_artifact\n    raise OSError(ctypes.get_errno(), 'inotify_add_watch')\nOSError: [Errno 28] inotify_add_watch\n"
+}

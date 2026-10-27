@@ -1,0 +1,21 @@
+{
+  "time": "2026-10-27T23:04:44.676476+00:00",
+  "instruction": "临时许可的服务器资源不再使用，任务迁移到许可的服务器上",
+  "task": "recogdrive_no_routing_round1_20261026",
+  "fixed_allowed_hosts": [
+    "training-vla-zt",
+    "training-vlawm-tsinghua-zt",
+    "training-vlawm-tsinghua-zt3",
+    "training-vlawm-tsinghua-zt4",
+    "training-vlawm-tsinghua-zt5"
+  ],
+  "withdrawn_hosts": [
+    "training-vlawm-tsinghua-zt6",
+    "training-rl-zt2",
+    "training-vlawm-tsinghua-zt2",
+    "training-vlawm-zt"
+  ],
+  "scope": "All current and future ReCogDrive teacher/student workers, evaluations, retries and dispatch; preserve unrelated jobs.",
+  "existing_four_runs_already_on_fixed_hosts": true,
+  "scientific_budget_and_seed_scope_unchanged": true
+}

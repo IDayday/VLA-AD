@@ -1,0 +1,4476 @@
+{
+  "complete_epochs": 15,
+  "epochs": [
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_001.pt",
+        "checkpoint_sha256": "1f4598ad610029eb5fd6f2612d33f44e41425532d24bfc3eb5f862ab3938da91",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_001.pt.COMPLETE.json",
+        "marker_sha256": "e9bad5c91ea71572b1bff39a6ed955dae81f4d75ab532865aac8e91e88efa2e4",
+        "status": "PASS"
+      },
+      "clipped_updates": 637,
+      "duplicate_records_discarded": 0,
+      "epoch": 1,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.3657025490351515,
+      "first_record_time": "2026-10-27T14:21:27.136724+00:00",
+      "last_quarter_loss_mean": 0.2897241924010377,
+      "last_record_time": "2026-10-27T15:05:46.694538+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.3906403451341693,
+          "mean": 0.23602488455145298,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.07914696808994781,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.5574303116972539,
+          "mean": 0.3147765080412217,
+          "min": 0.14283373996477167,
+          "n": 1341,
+          "std": 0.0639691429531943,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.5574303116972539,
+          "mean": 0.3147765080412217,
+          "min": 0.14283373996477167,
+          "n": 1341,
+          "std": 0.0639691429531943,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 1,
+      "optimizer_step_last": 1341,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": -20.775998645503215,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 1.060760223865509,
+        "mean": 0.6631594400091857,
+        "min": 0.3471904872428803,
+        "n": 1341,
+        "std": 0.13615603575075208,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.04732710707482639,
+          "h_sum": 1857.1156816161874
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.8195393320048012,
+          "h_sum": 2406.987018098101
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 1.1096777193501741,
+          "h_sum": 1340.4906849750103
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.1449511951727118,
+          "h_sum": 643.462571687064
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.7134499090677122,
+          "h_sum": 4083.073829594517
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 1.1192844033888545,
+          "h_sum": 1106.972274951577
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.6294805959333102,
+          "h_sum": 5292.043370011339
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.6290464862066583,
+          "h_sum": 1553.1157744442392
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.35952942084040385,
+          "h_sum": 8728.655279163324
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 2610.4864658100996,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.8953409259807641,
+          "min": 0.3382799220738266,
+          "n": 1341,
+          "std": 0.15254624960967958,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 2.95613169670105,
+          "mean": 1.0639299504975612,
+          "min": 0.4649149477481842,
+          "n": 1341,
+          "std": 0.3594644646573707,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 0.0001,
+          "mean": 5.003728560775541e-05,
+          "min": 7.457121551081283e-08,
+          "n": 1341,
+          "std": 2.88675054330612e-05,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 3.1275483621284366,
+          "mean": 1.9466714882998506,
+          "min": 1.2602130549494177,
+          "n": 1341,
+          "std": 0.12104287194164969,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.16543693345904883,
+        "mean": 0.058642423368127514,
+        "min": 0.0,
+        "n": 1341,
+        "std": 0.029030651832084614,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_002.pt",
+        "checkpoint_sha256": "122a7736e8d8d0047188fe550c4c2208864d5b288893e1f8714fcae171020eeb",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_002.pt.COMPLETE.json",
+        "marker_sha256": "00f9bb9f11a7881d569e9034f73ac90ec90e3e7907b08ef8168e31365ac03bdd",
+        "status": "PASS"
+      },
+      "clipped_updates": 208,
+      "duplicate_records_discarded": 0,
+      "epoch": 2,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.28331151754622397,
+      "first_record_time": "2026-10-27T15:05:48.890890+00:00",
+      "last_quarter_loss_mean": 0.26219710652363126,
+      "last_record_time": "2026-10-27T15:47:43.762932+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.43818819969887157,
+          "mean": 0.28389998754092755,
+          "min": 0.1789757976929833,
+          "n": 1341,
+          "std": 0.03969304819837143,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.43713481901340856,
+          "mean": 0.27182016090793987,
+          "min": 0.1307336038125868,
+          "n": 1341,
+          "std": 0.047559090389337755,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.43713481901340856,
+          "mean": 0.27182016090793987,
+          "min": 0.1307336038125868,
+          "n": 1341,
+          "std": 0.047559090389337755,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 1342,
+      "optimizer_step_last": 2682,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": -7.45271890301733,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.8422739654779434,
+        "mean": 0.5510102171275739,
+        "min": 0.25769007942008393,
+        "n": 1341,
+        "std": 0.08452338106709048,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.05018413699680572,
+          "h_sum": 1969.2255357546564
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.8201143760337064,
+          "h_sum": 2408.6759224109956
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 1.0412520704939625,
+          "h_sum": 1257.8325011567067
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.1770216599033252,
+          "h_sum": 661.4861728656688
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.6563103594143378,
+          "h_sum": 3756.0641869282554
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 1.0974186871525708,
+          "h_sum": 1085.3470815938927
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.5049348640762702,
+          "h_sum": 4244.987402289204
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.6005499165766368,
+          "h_sum": 1482.7577440277164
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.2660567971400424,
+          "h_sum": 6459.326920965948
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 2467.995697834529,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.9762259408375193,
+          "min": 0.4357898190709788,
+          "n": 1341,
+          "std": 0.07053618100486941,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 2.2946841716766357,
+          "mean": 0.8233380289019088,
+          "min": 0.4067947268486023,
+          "n": 1341,
+          "std": 0.21449632027847076,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 0.0001,
+          "mean": 9.995140163503969e-05,
+          "min": 9.985429072864547e-05,
+          "n": 1341,
+          "std": 4.347988644803397e-08,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 2.592206357046962,
+          "mean": 1.8404143906297756,
+          "min": 1.0419878538232297,
+          "n": 1341,
+          "std": 0.21767252273241638,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.15805221406059755,
+        "mean": 0.06655726500286296,
+        "min": 0.017862760288214,
+        "n": 1341,
+        "std": 0.022648676798629863,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_003.pt",
+        "checkpoint_sha256": "040f8f7d615537b6bae90f8c210cb5382b7e4275b26af2aa38ef89660e8a0ed1",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_003.pt.COMPLETE.json",
+        "marker_sha256": "bd4f7f83f6e0947536438015414b3264cc4c5fce826d8c92600e18f84ea53aaa",
+        "status": "PASS"
+      },
+      "clipped_updates": 130,
+      "duplicate_records_discarded": 0,
+      "epoch": 3,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.25832847319595775,
+      "first_record_time": "2026-10-27T15:50:14.784630+00:00",
+      "last_quarter_loss_mean": 0.2544079043481028,
+      "last_record_time": "2026-10-27T16:25:17.944789+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.4268309594830332,
+          "mean": 0.2906371778274113,
+          "min": 0.17087543527561494,
+          "n": 1341,
+          "std": 0.03687175858748632,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.015625,
+          "mean": 8.157272208173587e-05,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0011260193930564867,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.502226810734669,
+          "mean": 0.258344089992685,
+          "min": 0.11476182216051711,
+          "n": 1341,
+          "std": 0.04641074698960614,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.502226810734669,
+          "mean": 0.258344089992685,
+          "min": 0.11476182216051711,
+          "n": 1341,
+          "std": 0.04641074698960614,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 2683,
+      "optimizer_step_last": 4023,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": -1.5176681065586561,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.8240084451799458,
+        "mean": 0.52026403707241,
+        "min": 0.25096456111910254,
+        "n": 1341,
+        "std": 0.08274240549695408,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.04783889851820554,
+          "h_sum": 1877.1983778543854
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.8077389719394367,
+          "h_sum": 2372.3293605861254
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.9826829179350749,
+          "h_sum": 1187.0809648655704
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.1685160505552876,
+          "h_sum": 656.7060204120717
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.636421705818908,
+          "h_sum": 3642.24142240161
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 1.04948505363124,
+          "h_sum": 1037.9407180412963
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.4610115471600223,
+          "h_sum": 3875.7240769743075
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.5799513940099305,
+          "h_sum": 1431.8999918105183
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.25076861609672907,
+          "h_sum": 6088.160461596388
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 2073.1390904411674,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.9887821794039868,
+          "min": 0.5781232329081275,
+          "n": 1341,
+          "std": 0.04459109341112619,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 1.729735016822815,
+          "mean": 0.758931009783663,
+          "min": 0.3979780972003937,
+          "n": 1341,
+          "std": 0.17780673146990142,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 9.985407328863263e-05,
+          "mean": 9.965997222271964e-05,
+          "min": 9.941767313240505e-05,
+          "n": 1341,
+          "std": 1.2654731113078434e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 3.145537308882922,
+          "mean": 1.5459650189717877,
+          "min": 1.1548927519470453,
+          "n": 1341,
+          "std": 0.15856713500051892,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.17480133594345357,
+        "mean": 0.06577832471845588,
+        "min": 0.011853509566101232,
+        "n": 1341,
+        "std": 0.022941582316179536,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_004.pt",
+        "checkpoint_sha256": "7c454432d800ad3cea9fdce9dcfd6c6059a7b72c2a09d2d18aec855bf36afb2d",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_004.pt.COMPLETE.json",
+        "marker_sha256": "67a4bc30ad56e2bd7e2faa821633c7026a8a41ce3af692090b7d7010caca723d",
+        "status": "PASS"
+      },
+      "clipped_updates": 103,
+      "duplicate_records_discarded": 0,
+      "epoch": 4,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.2502557698790473,
+      "first_record_time": "2026-10-27T16:25:19.492008+00:00",
+      "last_quarter_loss_mean": 0.2531994571154081,
+      "last_record_time": "2026-10-27T16:59:24.199782+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.4223483838924509,
+          "mean": 0.29386100910996676,
+          "min": 0.1747803567877683,
+          "n": 1341,
+          "std": 0.03723604147380221,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.015625,
+          "mean": 4.661298404670621e-05,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0008521473496104098,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.4135634983726959,
+          "mean": 0.2512065196839532,
+          "min": 0.12607722322627524,
+          "n": 1341,
+          "std": 0.047167342879632417,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.4135634983726959,
+          "mean": 0.2512065196839532,
+          "min": 0.12607722322627524,
+          "n": 1341,
+          "std": 0.047167342879632417,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 4024,
+      "optimizer_step_last": 5364,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": 1.1762714752924674,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.8083182546310127,
+        "mean": 0.5046874653553183,
+        "min": 0.2432443126140592,
+        "n": 1341,
+        "std": 0.08717905677325376,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.04661332216747162,
+          "h_sum": 1829.1067618515863
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.8001454573364261,
+          "h_sum": 2350.0272081970834
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.9592898058423776,
+          "h_sum": 1158.822085457592
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.1644524756843713,
+          "h_sum": 654.4222913346166
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.6228361453974064,
+          "h_sum": 3564.4912601093565
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 1.032995497448668,
+          "h_sum": 1021.6325469767326
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.4408893772228657,
+          "h_sum": 3706.556994312632
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.5704116373320111,
+          "h_sum": 1408.3463325727353
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.24150999229041695,
+          "h_sum": 5863.379592826743
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 2015.3423810603563,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.9922452266478309,
+          "min": 0.5375726292060984,
+          "n": 1341,
+          "std": 0.03867980105651226,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 1.8602137565612793,
+          "mean": 0.7542192611251635,
+          "min": 0.42772042751312256,
+          "n": 1341,
+          "std": 0.1654832522421594,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 9.94172395814234e-05,
+          "mean": 9.907889468256759e-05,
+          "min": 9.869297887097338e-05,
+          "n": 1341,
+          "std": 2.0952600031780575e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 2.1594175070058554,
+          "mean": 1.502865310261265,
+          "min": 1.1724689800757915,
+          "n": 1341,
+          "std": 0.13706698763769515,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.18179064565151748,
+        "mean": 0.06484517977888664,
+        "min": 0.01029055829253354,
+        "n": 1341,
+        "std": 0.02330345402021638,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_005.pt",
+        "checkpoint_sha256": "18fac7577fb5392bd94378119a9311e3cd1b0bb4f56ade72f88be0a4d6e5fe69",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_005.pt.COMPLETE.json",
+        "marker_sha256": "22b606eccee9688656924f0c952df4bc0cab9f08ce3a6399bedcb2717ac3dd03",
+        "status": "PASS"
+      },
+      "clipped_updates": 101,
+      "duplicate_records_discarded": 0,
+      "epoch": 5,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.24260869349834813,
+      "first_record_time": "2026-10-27T17:02:06.132285+00:00",
+      "last_quarter_loss_mean": 0.24554197813241158,
+      "last_record_time": "2026-10-27T17:36:42.408963+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.42415323141686806,
+          "mean": 0.29717494552139323,
+          "min": 0.17213882980443818,
+          "n": 1341,
+          "std": 0.03818173669253842,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.03125,
+          "mean": 0.00033794413433862,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.002501731935020564,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.4041955633451835,
+          "mean": 0.24533965097261926,
+          "min": 0.10142269927337111,
+          "n": 1341,
+          "std": 0.046097946138221546,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.4041955633451835,
+          "mean": 0.24533965097261926,
+          "min": 0.10142269927337111,
+          "n": 1341,
+          "std": 0.046097946138221546,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 5365,
+      "optimizer_step_last": 6705,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": 1.2090599853477269,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.7892243155220058,
+        "mean": 0.49182897635421075,
+        "min": 0.23014379709797061,
+        "n": 1341,
+        "std": 0.08425392418645171,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.04558875218311299,
+          "h_sum": 1788.902635665354
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.7883613934577833,
+          "h_sum": 2315.4174125855097
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.9412427018969478,
+          "h_sum": 1137.021183891513
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.1521604073574034,
+          "h_sum": 647.5141489348607
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.6128056855856898,
+          "h_sum": 3507.0869386069025
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 1.0125314014072093,
+          "h_sum": 1001.39355599173
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.42871602663243225,
+          "h_sum": 3604.2156358988577
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.550182370309572,
+          "h_sum": 1358.4002722943333
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.234507771852884,
+          "h_sum": 5693.379685044318
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 1992.8609869983047,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.9909410203589774,
+          "min": 0.6186868990448884,
+          "n": 1341,
+          "std": 0.04164745468025104,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 1.6163264513015747,
+          "mean": 0.7576184236985547,
+          "min": 0.4242428243160248,
+          "n": 1341,
+          "std": 0.1656620561364748,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 9.869233202087486e-05,
+          "mean": 9.821193766944946e-05,
+          "min": 9.768490804436458e-05,
+          "n": 1341,
+          "std": 2.912541585537504e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 2.4002298009581864,
+          "mean": 1.4861006614454173,
+          "min": 1.2040073319803923,
+          "n": 1341,
+          "std": 0.1403834258926912,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.1702865747780272,
+        "mean": 0.06411860956951167,
+        "min": 0.013010914635263984,
+        "n": 1341,
+        "std": 0.023268414493174724,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_006.pt",
+        "checkpoint_sha256": "bc0a29ab6105403735b07774e9d6230ce899487ada6c09b928f6c5e13b60ed1a",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_006.pt.COMPLETE.json",
+        "marker_sha256": "979aeb70914de496bdc9518bb86959f35b179af0c8ee80027ee719eae327d2a1",
+        "status": "PASS"
+      },
+      "clipped_updates": 95,
+      "duplicate_records_discarded": 0,
+      "epoch": 6,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.242042801891619,
+      "first_record_time": "2026-10-27T17:36:44.457984+00:00",
+      "last_quarter_loss_mean": 0.23746546655378659,
+      "last_record_time": "2026-10-27T18:10:27.286407+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.42990281370555206,
+          "mean": 0.2997336377201172,
+          "min": 0.1853811480633593,
+          "n": 1341,
+          "std": 0.03909480488925988,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.03125,
+          "mean": 0.0005710090545721511,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0031126286239898833,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.3958695561844934,
+          "mean": 0.2390455278367988,
+          "min": 0.12022315283161333,
+          "n": 1341,
+          "std": 0.04590787986521805,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.3958695561844934,
+          "mean": 0.2390455278367988,
+          "min": 0.12022315283161333,
+          "n": 1341,
+          "std": 0.04590787986521805,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 6706,
+      "optimizer_step_last": 8046,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": -1.8911264049414012,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.7379452971696493,
+        "mean": 0.47837579940659436,
+        "min": 0.23014288997122398,
+        "n": 1341,
+        "std": 0.08590895055670095,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.044574633505629596,
+          "h_sum": 1749.1086187609053
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.7822391261195109,
+          "h_sum": 2297.4363134130035
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.9100359621243115,
+          "h_sum": 1099.3234422461683
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.1439559680145723,
+          "h_sum": 642.9032540241897
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.6005896240548012,
+          "h_sum": 3437.1744184656272
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 0.9846936038674559,
+          "h_sum": 973.8619742249139
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.41276391380051425,
+          "h_sum": 3470.106223320923
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.5392069747225227,
+          "h_sum": 1331.3020205899084
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.22703672523328028,
+          "h_sum": 5511.997615213579
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 1956.4026069899555,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.9929991843520695,
+          "min": 0.614382195515965,
+          "n": 1341,
+          "std": 0.03354225650044631,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 1.627651333808899,
+          "mean": 0.7615348823385217,
+          "min": 0.4266980290412903,
+          "n": 1341,
+          "std": 0.15345599331353973,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 9.768405209038064e-05,
+          "mean": 9.706472394717959e-05,
+          "min": 9.639999862860319e-05,
+          "n": 1341,
+          "std": 3.711302899821171e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 3.17095140600577,
+          "mean": 1.4589132043176403,
+          "min": 1.1633243018295616,
+          "n": 1341,
+          "std": 0.14262525059904124,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.15179206866014283,
+        "mean": 0.06308788348030196,
+        "min": 0.004218413835133106,
+        "n": 1341,
+        "std": 0.023582378663525652,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_007.pt",
+        "checkpoint_sha256": "a5eaa9170934786e04d135da271c1c5d7188139bc5403a4f4638127103055030",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_007.pt.COMPLETE.json",
+        "marker_sha256": "cbf42a6e76cb39a51165eb6c959cfa1c1032e27f2a4b469ca01b880e15a77b10",
+        "status": "PASS"
+      },
+      "clipped_updates": 129,
+      "duplicate_records_discarded": 0,
+      "epoch": 7,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.2322589482701666,
+      "first_record_time": "2026-10-27T18:13:10.110483+00:00",
+      "last_quarter_loss_mean": 0.23414178594211105,
+      "last_record_time": "2026-10-27T18:47:28.511862+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.4536432474450063,
+          "mean": 0.30304444712122025,
+          "min": 0.19243577588327326,
+          "n": 1341,
+          "std": 0.03896713615887049,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.03125,
+          "mean": 0.000990525910992507,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.004039386768834453,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.39624143285681157,
+          "mean": 0.23274274117345845,
+          "min": 0.10248017190144765,
+          "n": 1341,
+          "std": 0.04551192175926883,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.39624143285681157,
+          "mean": 0.23274274117345845,
+          "min": 0.10248017190144765,
+          "n": 1341,
+          "std": 0.04551192175926883,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 8047,
+      "optimizer_step_last": 9387,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": 0.8106631352494897,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.7737099850042299,
+        "mean": 0.4648182322875746,
+        "min": 0.21192965926369653,
+        "n": 1341,
+        "std": 0.08605362823848894,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.04368288282057958,
+          "h_sum": 1714.1163218795427
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.7697973042609695,
+          "h_sum": 2260.8946826144675
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.8939147625835103,
+          "h_sum": 1079.8490332008805
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.1162201363914517,
+          "h_sum": 627.3157166519959
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.5878278502461245,
+          "h_sum": 3364.1387869585706
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 0.9685566674882211,
+          "h_sum": 957.9025441458507
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.3972562552652769,
+          "h_sum": 3339.733338015183
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.5242576085148745,
+          "h_sum": 1294.392035423225
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.21970551072692449,
+          "h_sum": 5334.010389428273
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 2020.9479802027345,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.9920280714684702,
+          "min": 0.6037274372505073,
+          "n": 1341,
+          "std": 0.033839129176530536,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 1.656376600265503,
+          "mean": 0.7909426508244963,
+          "min": 0.47797495126724243,
+          "n": 1341,
+          "std": 0.14759366075340022,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 9.639893912213606e-05,
+          "mean": 9.564469392134575e-05,
+          "min": 9.484658407282019e-05,
+          "n": 1341,
+          "std": 4.486166588455683e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 2.584280655020848,
+          "mean": 1.5070454736784,
+          "min": 1.1937502769287676,
+          "n": 1341,
+          "std": 0.14599604601292737,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.17583103241008108,
+        "mean": 0.06211887290358849,
+        "min": 0.012145570309856827,
+        "n": 1341,
+        "std": 0.023529218974670345,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_008.pt",
+        "checkpoint_sha256": "ce945c273b0498ea76164835412e2b86ff1de9944fcf37b010a541676ef246be",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_008.pt.COMPLETE.json",
+        "marker_sha256": "7414b540e2a063bcad8f75bb0320a068b69b4a55da8a60c4174ed12d15253a34",
+        "status": "PASS"
+      },
+      "clipped_updates": 168,
+      "duplicate_records_discarded": 0,
+      "epoch": 8,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.22285117410860608,
+      "first_record_time": "2026-10-27T18:47:30.199348+00:00",
+      "last_quarter_loss_mean": 0.2286469960309234,
+      "last_record_time": "2026-10-27T19:16:10.730789+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.44826081286499986,
+          "mean": 0.30585144649733037,
+          "min": 0.1742515250912049,
+          "n": 1341,
+          "std": 0.03987479685173071,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.03125,
+          "mean": 0.00135177653735448,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.004555311662299437,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.427339648731504,
+          "mean": 0.22615145276413676,
+          "min": 0.10493267529204786,
+          "n": 1341,
+          "std": 0.04691466635195156,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.427339648731504,
+          "mean": 0.22615145276413676,
+          "min": 0.10493267529204786,
+          "n": 1341,
+          "std": 0.04691466635195156,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 9388,
+      "optimizer_step_last": 10728,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": 2.6007589798439756,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.7602063759629215,
+        "mean": 0.45141499267823604,
+        "min": 0.21400861454259773,
+        "n": 1341,
+        "std": 0.08540997285360497,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.042517825281224664,
+          "h_sum": 1668.3994640352557
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.7603927961857524,
+          "h_sum": 2233.273642397555
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.8586981711364177,
+          "h_sum": 1037.3073907327926
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.1097804707493857,
+          "h_sum": 623.6966245611547
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.5717628457446631,
+          "h_sum": 3272.198766196707
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 0.9314680623925969,
+          "h_sum": 921.2219137062784
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.38712016443747815,
+          "h_sum": 3254.519222425879
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.5094338180647493,
+          "h_sum": 1257.7920968018661
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.21164533714438505,
+          "h_sum": 5138.3254951913805
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 1682.5162597883027,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.988330566592866,
+          "min": 0.5702906755598733,
+          "n": 1341,
+          "std": 0.04111486352639591,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 1.753491759300232,
+          "mean": 0.8268392387830349,
+          "min": 0.4231710433959961,
+          "n": 1341,
+          "std": 0.1513798217366772,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 9.48453278854385e-05,
+          "mean": 9.396105738357968e-05,
+          "min": 9.303473925157183e-05,
+          "n": 1341,
+          "std": 5.23203068762765e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 2.4618032150901854,
+          "mean": 1.2546728260912026,
+          "min": 0.9335581469349563,
+          "n": 1341,
+          "std": 0.2082363513706128,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.15832158544761019,
+        "mean": 0.06053578875846006,
+        "min": 0.010557559236566214,
+        "n": 1341,
+        "std": 0.022736822959040115,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_009.pt",
+        "checkpoint_sha256": "99e77294fa00d7852d5f2b5e9d79772da7f9ca32e5e05527915389d3fa00b2f3",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_009.pt.COMPLETE.json",
+        "marker_sha256": "dedc82cb3f0691dc0323a7ace89e0f99334cdd7700c36700d8eb4d7b9071d90c",
+        "status": "PASS"
+      },
+      "clipped_updates": 293,
+      "duplicate_records_discarded": 0,
+      "epoch": 9,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.21812574472386698,
+      "first_record_time": "2026-10-27T19:58:00.885608+00:00",
+      "last_quarter_loss_mean": 0.21835555630739,
+      "last_record_time": "2026-10-27T20:23:24.228927+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.43387193240988153,
+          "mean": 0.309344134663707,
+          "min": 0.18375219898290118,
+          "n": 1341,
+          "std": 0.039173810751666205,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.046875,
+          "mean": 0.003099763439105963,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.007530411270994298,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.41711550036939116,
+          "mean": 0.2189932397214717,
+          "min": 0.11748390420416399,
+          "n": 1341,
+          "std": 0.04416564006085009,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.41711550036939116,
+          "mean": 0.2189932397214717,
+          "min": 0.11748390420416399,
+          "n": 1341,
+          "std": 0.04416564006085009,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 10729,
+      "optimizer_step_last": 12069,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": 0.1053573863158519,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.7562476230280785,
+        "mean": 0.43649774298372723,
+        "min": 0.21012816292368958,
+        "n": 1341,
+        "std": 0.08313360341784136,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.041478997224993194,
+          "h_sum": 1627.6358511087328
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.7465997221995774,
+          "h_sum": 2192.763384100159
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.8340532429150734,
+          "h_sum": 1007.5363174414088
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.1014363289245936,
+          "h_sum": 619.0072168556217
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.5567947149320058,
+          "h_sum": 3186.5361535558695
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 0.9147521152353048,
+          "h_sum": 904.6898419677163
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.36984141751410254,
+          "h_sum": 3109.25679704106
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.4962873668182234,
+          "h_sum": 1225.3335086741936
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.2026405721012394,
+          "h_sum": 4919.70780947389
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 1464.74631595565,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.9777356228753683,
+          "min": 0.45630301459095574,
+          "n": 1341,
+          "std": 0.05971545674929813,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 2.191526174545288,
+          "mean": 0.8914701351472284,
+          "min": 0.5181401968002319,
+          "n": 1341,
+          "std": 0.1679847658075748,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 9.30332945304442e-05,
+          "mean": 9.202473378024108e-05,
+          "min": 9.097621512291468e-05,
+          "n": 1341,
+          "std": 5.944021724229315e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 3.150184179889038,
+          "mean": 1.0922791319579792,
+          "min": 0.947662885999307,
+          "n": 1341,
+          "std": 0.08054165057442335,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.18867679405642823,
+        "mean": 0.059082085232201896,
+        "min": 0.00985079773090547,
+        "n": 1341,
+        "std": 0.02330150586841016,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_010.pt",
+        "checkpoint_sha256": "173b880ab16ad3037bd63a4f305630e1c348e3e687b9a0e2a17bb61e4782a652",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_010.pt.COMPLETE.json",
+        "marker_sha256": "4e125c439b751143e0ff936742ca353421d206aaa4b7988362e264786d649724",
+        "status": "PASS"
+      },
+      "clipped_updates": 490,
+      "duplicate_records_discarded": 0,
+      "epoch": 10,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.2095772050647336,
+      "first_record_time": "2026-10-27T20:23:25.604374+00:00",
+      "last_quarter_loss_mean": 0.21798679946880367,
+      "last_record_time": "2026-10-27T20:48:45.601682+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.47562721856778933,
+          "mean": 0.31330380703049876,
+          "min": 0.17980729193174566,
+          "n": 1341,
+          "std": 0.04184573904197033,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.0625,
+          "mean": 0.006071341172083484,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.009939309997521776,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.3891581181891297,
+          "mean": 0.21066058004452506,
+          "min": 0.06343738067738514,
+          "n": 1341,
+          "std": 0.044227093412013564,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.3891581181891297,
+          "mean": 0.21066058004452506,
+          "min": 0.06343738067738514,
+          "n": 1341,
+          "std": 0.044227093412013564,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 12070,
+      "optimizer_step_last": 13410,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": 4.012647463960861,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.7145053674757946,
+        "mean": 0.41922387813148243,
+        "min": 0.13107631134567782,
+        "n": 1341,
+        "std": 0.08403439266667866,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.040146053790399754,
+          "h_sum": 1575.3311507352864
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.7370635271487986,
+          "h_sum": 2164.7555792360217
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.806824398769396,
+          "h_sum": 974.6438737134304
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.0893651731076388,
+          "h_sum": 612.223227286493
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.5359399052211691,
+          "h_sum": 3067.1840775807505
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 0.8640143088804837,
+          "h_sum": 854.5101514827984
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.35521109689549146,
+          "h_sum": 2986.2596916003968
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.48447407875682735,
+          "h_sum": 1196.1665004506067
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.1913807604940707,
+          "h_sum": 4646.342103275048
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 1455.3267254999373,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.9561347538111896,
+          "min": 0.5184778080633896,
+          "n": 1341,
+          "std": 0.07885030066587646,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 1.928722858428955,
+          "mean": 0.9633293217638372,
+          "min": 0.4314939081668854,
+          "n": 1341,
+          "std": 0.17942412710557004,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 9.097459123797012e-05,
+          "mean": 8.984828139291121e-05,
+          "min": 8.868436251602056e-05,
+          "n": 1341,
+          "std": 6.617502674537677e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 2.110608478076756,
+          "mean": 1.0852548288590136,
+          "min": 0.9521614210680127,
+          "n": 1341,
+          "std": 0.06324640608720665,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.14124322821825863,
+        "mean": 0.05732307539083313,
+        "min": 0.007467142553222776,
+        "n": 1341,
+        "std": 0.022703896695072785,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_011.pt",
+        "checkpoint_sha256": "6b30b929ae7862b74b4f294a0d3ca99e2b06043ab6b2781b165634cfb55b450e",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_011.pt.COMPLETE.json",
+        "marker_sha256": "4f5a7bc3124c9175ecb6c8400a09f0da80e198374671a1d37a13470cec187cbf",
+        "status": "PASS"
+      },
+      "clipped_updates": 740,
+      "duplicate_records_discarded": 0,
+      "epoch": 11,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.1974666108927841,
+      "first_record_time": "2026-10-27T20:51:03.691349+00:00",
+      "last_quarter_loss_mean": 0.20458977673848827,
+      "last_record_time": "2026-10-27T21:16:40.520007+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.4508323629148387,
+          "mean": 0.3171492441977419,
+          "min": 0.1902754585810036,
+          "n": 1341,
+          "std": 0.04144579410383784,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.078125,
+          "mean": 0.009707153927726569,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.01296731583077537,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.3603921566855206,
+          "mean": 0.20211845282010657,
+          "min": 0.06701851383320445,
+          "n": 1341,
+          "std": 0.04193525332706647,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.3603921566855206,
+          "mean": 0.20211845282010657,
+          "min": 0.06701851383320445,
+          "n": 1341,
+          "std": 0.04193525332706647,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 13411,
+      "optimizer_step_last": 14751,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": 3.6072760926513014,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.667922098753759,
+        "mean": 0.4017113635118149,
+        "min": 0.1366477220220043,
+        "n": 1341,
+        "std": 0.07987765220807616,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.03882908090170542,
+          "h_sum": 1523.6531345829208
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.7226047269544977,
+          "h_sum": 2122.29008306536
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.7800668707824532,
+          "h_sum": 942.3207799052034
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.0545589803604412,
+          "h_sum": 592.6621469625679
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.5188652186040366,
+          "h_sum": 2969.465646070901
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 0.8315614764713418,
+          "h_sum": 822.4143002301571
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.33593936262101665,
+          "h_sum": 2824.242221554887
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.4661843171234761,
+          "h_sum": 1151.0090789778624
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.18108301344846964,
+          "h_sum": 4396.333400501946
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 1458.0121827928815,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.924283144776911,
+          "min": 0.49216529406622395,
+          "n": 1341,
+          "std": 0.10083593431108501,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 2.0318377017974854,
+          "mean": 1.0447679700289618,
+          "min": 0.4811607003211975,
+          "n": 1341,
+          "std": 0.19598976973314333,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 8.86825699991786e-05,
+          "mean": 8.74458158900048e-05,
+          "min": 8.617404554261665e-05,
+          "n": 1341,
+          "std": 7.248094282619493e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 1.6124889110215008,
+          "mean": 1.087257407004386,
+          "min": 0.9213173978496343,
+          "n": 1341,
+          "std": 0.0557451974109953,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.1735954409770343,
+        "mean": 0.05537605301746527,
+        "min": 0.007684651334364809,
+        "n": 1341,
+        "std": 0.02335728658872884,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_012.pt",
+        "checkpoint_sha256": "03f4ee38f21bd13c182dd9508c9615c00c7a0841463b9f7fa9e24be4ecaf16ed",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_012.pt.COMPLETE.json",
+        "marker_sha256": "7a60ee840b3cdb0af61034702d00fb7f3c8db89c3ddab741b8b47e7a5d3243d6",
+        "status": "PASS"
+      },
+      "clipped_updates": 936,
+      "duplicate_records_discarded": 0,
+      "epoch": 12,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.18911486054080157,
+      "first_record_time": "2026-10-27T21:16:41.946663+00:00",
+      "last_quarter_loss_mean": 0.1935402274831688,
+      "last_record_time": "2026-10-27T21:42:15.999212+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.46070079490166077,
+          "mean": 0.32100359345335105,
+          "min": 0.20635063712984275,
+          "n": 1341,
+          "std": 0.04176601519051026,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.09375,
+          "mean": 0.01433349259436216,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.015700835249598092,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.34458446183623437,
+          "mean": 0.19210265067828158,
+          "min": 0.07447431864102327,
+          "n": 1341,
+          "std": 0.04379325053119966,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.34458446183623437,
+          "mean": 0.19210265067828158,
+          "min": 0.07447431864102327,
+          "n": 1341,
+          "std": 0.04379325053119966,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 14752,
+      "optimizer_step_last": 16092,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": 2.340041882331323,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.7065621408654134,
+        "mean": 0.38251587398205344,
+        "min": 0.1389038980123587,
+        "n": 1341,
+        "std": 0.08424915066227927,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.036465195962430266,
+          "h_sum": 1430.8942895657638
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.7079362348074084,
+          "h_sum": 2079.2087216293585
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.742917562299714,
+          "h_sum": 897.4444152580545
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.0272520913696808,
+          "h_sum": 577.3156753497606
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.49279318129589517,
+          "h_sum": 2820.255376556408
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 0.7833128255971235,
+          "h_sum": 774.6963845155551
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.3206967048491132,
+          "h_sum": 2696.097197666495
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.45107317951467507,
+          "h_sum": 1113.6996802217327
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.1686832944184961,
+          "h_sum": 4095.2930218922484
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 1454.5288503852207,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.8834684777288568,
+          "min": 0.38951574647687465,
+          "n": 1341,
+          "std": 0.1182366406491954,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 2.5672903060913086,
+          "mean": 1.1240591369930442,
+          "min": 0.5671457648277283,
+          "n": 1341,
+          "std": 0.2202759943466869,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 8.617209601948121e-05,
+          "mean": 8.48329187777446e-05,
+          "min": 8.346154519383271e-05,
+          "n": 1341,
+          "std": 7.831699691184031e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 2.031708172056824,
+          "mean": 1.0846598436877113,
+          "min": 0.9470572189893574,
+          "n": 1341,
+          "std": 0.06180203919979022,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.14865885065975473,
+        "mean": 0.05210923485545951,
+        "min": 0.007122283998260406,
+        "n": 1341,
+        "std": 0.022129941044242166,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_013.pt",
+        "checkpoint_sha256": "1426e1f7e99b145df7d93c46b48578173e9caf7a67c088a41bc2c42c900e12af",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_013.pt.COMPLETE.json",
+        "marker_sha256": "64b41cdc0846fc9e6390784270c68f005aef0f372193f3c48978e2394475aae9",
+        "status": "PASS"
+      },
+      "clipped_updates": 1130,
+      "duplicate_records_discarded": 0,
+      "epoch": 13,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.17810235520351553,
+      "first_record_time": "2026-10-27T21:44:33.008940+00:00",
+      "last_quarter_loss_mean": 0.18712517984460095,
+      "last_record_time": "2026-10-27T22:10:10.987827+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.4784989862408474,
+          "mean": 0.3257700093863116,
+          "min": 0.18175241937050124,
+          "n": 1341,
+          "std": 0.0438238963979646,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.125,
+          "mean": 0.024634962068684232,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.02092108936122358,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.3439695762928068,
+          "mean": 0.1824052235619673,
+          "min": 0.06428004522456376,
+          "n": 1341,
+          "std": 0.0420744061757809,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.3439695762928068,
+          "mean": 0.1824052235619673,
+          "min": 0.06428004522456376,
+          "n": 1341,
+          "std": 0.0420744061757809,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 16093,
+      "optimizer_step_last": 17433,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": 5.0660894578149485,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.6815734621984209,
+        "mean": 0.3642020592342905,
+        "min": 0.1344636207310638,
+        "n": 1341,
+        "std": 0.08402569982974493,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.034090581408046584,
+          "h_sum": 1337.7144144517479
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.69076416800106,
+          "h_sum": 2028.7743614191131
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.7253556941933185,
+          "h_sum": 876.2296785855287
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 1.007134442134816,
+          "h_sum": 566.0095564797666
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.47028136510632657,
+          "h_sum": 2691.420252503507
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 0.741813895025643,
+          "h_sum": 733.6539421803609
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.30110322355841174,
+          "h_sum": 2531.3748004555673
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.44125020890835037,
+          "h_sum": 1089.446765794717
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.15644269205259054,
+          "h_sum": 3798.1156776527932
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 1516.0706556828227,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.820284902599792,
+          "min": 0.40809884188697687,
+          "n": 1341,
+          "std": 0.13422537479566973,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 2.4503867626190186,
+          "mean": 1.2421600990647437,
+          "min": 0.6019806861877441,
+          "n": 1341,
+          "std": 0.2508233819563625,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 8.345945130829267e-05,
+          "mean": 8.202653634425211e-05,
+          "min": 8.056445374769009e-05,
+          "n": 1341,
+          "std": 8.364529199206256e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 2.8087876841891557,
+          "mean": 1.1305523159454307,
+          "min": 0.9993402769323438,
+          "n": 1341,
+          "std": 0.09813205624310489,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.15979096086162567,
+        "mean": 0.048746648963148266,
+        "min": 0.005303592497057252,
+        "n": 1341,
+        "std": 0.022376438524065696,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_014.pt",
+        "checkpoint_sha256": "41f8c1b3f3150766d15517dc7064040a18406cfd891978a4d8b8e9e5ed48f9e3",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_014.pt.COMPLETE.json",
+        "marker_sha256": "4feda4309fa60b5d610284210e6ef8a11050bf5281eee740a3c39f86973ff25c",
+        "status": "PASS"
+      },
+      "clipped_updates": 1215,
+      "duplicate_records_discarded": 0,
+      "epoch": 14,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.17021294772145484,
+      "first_record_time": "2026-10-27T22:10:12.272321+00:00",
+      "last_quarter_loss_mean": 0.17416804581838385,
+      "last_record_time": "2026-10-27T22:35:37.750327+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.4774473367204123,
+          "mean": 0.3315506573489839,
+          "min": 0.20443619919055817,
+          "n": 1341,
+          "std": 0.04493491423131334,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.171875,
+          "mean": 0.0369757495950497,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.02677448857971577,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.2946638136403408,
+          "mean": 0.17203588435533612,
+          "min": 0.06341602646648425,
+          "n": 1341,
+          "std": 0.038834795079270845,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.2946638136403408,
+          "mean": 0.17203588435533612,
+          "min": 0.06341602646648425,
+          "n": 1341,
+          "std": 0.038834795079270845,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 17434,
+      "optimizer_step_last": 18774,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": 2.323617650639198,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.6225820302223677,
+        "mean": 0.3434847020135614,
+        "min": 0.09895201828995985,
+        "n": 1341,
+        "std": 0.07825799282096693,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.031961125886885815,
+          "h_sum": 1254.1545798013994
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.6764843216135865,
+          "h_sum": 1986.8344525791035
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.6832676825380372,
+          "h_sum": 825.3873605059489
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 0.983649354205942,
+          "h_sum": 552.8109370637394
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.44407733472566546,
+          "h_sum": 2541.4545866349836
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 0.6897736282122999,
+          "h_sum": 682.1861183019646
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.28349115303990696,
+          "h_sum": 2383.3101236064977
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.41511151348721964,
+          "h_sum": 1024.9103267999453
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.14465223078057818,
+          "h_sum": 3511.8668588908768
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 1502.9728570287116,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.7731351339466161,
+          "min": 0.3052688540256141,
+          "n": 1341,
+          "std": 0.13922785871552482,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 3.275800943374634,
+          "mean": 1.3332425665713175,
+          "min": 0.6731882095336914,
+          "n": 1341,
+          "std": 0.2812766508587582,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 8.056222907991571e-05,
+          "mean": 7.904486975216551e-05,
+          "min": 7.75015606720673e-05,
+          "n": 1341,
+          "std": 8.843123892922254e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 2.0363598668482155,
+          "mean": 1.1207851282839012,
+          "min": 0.9772132621146739,
+          "n": 1341,
+          "std": 0.10062934145194954,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.1319754847688789,
+        "mean": 0.04598526031611961,
+        "min": 0.005799884000713597,
+        "n": 1341,
+        "std": 0.02115786953409965,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_015.pt",
+        "checkpoint_sha256": "ff813e41de8238211a2673512e2dab55f4d892e9c245c378aa30f98020bf3e3b",
+        "marker": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_015.pt.COMPLETE.json",
+        "marker_sha256": "f33f2fec6d4d26879ae10cbbe032c3c3fec987e2ca58c8ad088795aaf9951bee",
+        "status": "PASS"
+      },
+      "clipped_updates": 1251,
+      "duplicate_records_discarded": 0,
+      "epoch": 15,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.1548834154069935,
+      "first_record_time": "2026-10-27T22:37:56.078419+00:00",
+      "last_quarter_loss_mean": 0.1661908786995299,
+      "last_record_time": "2026-10-27T23:03:56.034366+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.514594425773635,
+          "mean": 0.3367312017412834,
+          "min": 0.2091793656219122,
+          "n": 1341,
+          "std": 0.04610956509322392,
+          "weight": 85813.0
+        },
+        "cap_count": {
+          "max": 0.21875,
+          "mean": 0.05311549532122173,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.03186868677437311,
+          "weight": 85813.0
+        },
+        "h": {
+          "max": 0.32581610364854896,
+          "mean": 0.16119985746321128,
+          "min": 0.040418411805148935,
+          "n": 1341,
+          "std": 0.04053468893136708,
+          "weight": 85813.0
+        },
+        "loss": {
+          "max": 0.32581610364854896,
+          "mean": 0.16119985746321128,
+          "min": 0.040418411805148935,
+          "n": 1341,
+          "std": 0.04053468893136708,
+          "weight": 85813.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 1341,
+          "std": 0.0,
+          "weight": 85813.0
+        }
+      },
+      "missing_global_steps": [],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 1341,
+      "optimizer_step_first": 18775,
+      "optimizer_step_last": 20115,
+      "phase_update_counts": {
+        "H_only": 1341
+      },
+      "quarter_loss_change_percent": 7.300628839326229,
+      "real_samples": 85813,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.6171071361213063,
+        "mean": 0.3227204724102532,
+        "min": 0.07595051305058102,
+        "n": 1341,
+        "std": 0.08166253189891004,
+        "weight": 36359.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 39240.0,
+          "h_mean": 0.029321521808425333,
+          "h_sum": 1150.5765157626101
+        },
+        "1": {
+          "count": 2937.0,
+          "h_mean": 0.6533359660574073,
+          "h_sum": 1918.8477323106054
+        },
+        "2": {
+          "count": 1208.0,
+          "h_mean": 0.6499954271203505,
+          "h_sum": 785.1944759613834
+        },
+        "3": {
+          "count": 562.0,
+          "h_mean": 0.9638765216918711,
+          "h_sum": 541.6986051908316
+        },
+        "4": {
+          "count": 5723.0,
+          "h_mean": 0.4140850755312822,
+          "h_sum": 2369.808887265528
+        },
+        "5": {
+          "count": 989.0,
+          "h_mean": 0.6483158319242721,
+          "h_sum": 641.1843577731051
+        },
+        "6": {
+          "count": 8407.0,
+          "h_mean": 0.2645150048758405,
+          "h_sum": 2223.777645991191
+        },
+        "7": {
+          "count": 2469.0,
+          "h_mean": 0.40659367864929247,
+          "h_sum": 1003.8797925851031
+        },
+        "8": {
+          "count": 24278.0,
+          "h_mean": 0.13172729860986043,
+          "h_sum": 3198.0753556501913
+        }
+      },
+      "status": "COMPLETE",
+      "step_seconds_sum": 1533.5600591015536,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.7300016767625584,
+          "min": 0.3147611452002592,
+          "n": 1341,
+          "std": 0.1469410017983464,
+          "weight": 1341.0
+        },
+        "grad_norm": {
+          "max": 3.1770122051239014,
+          "mean": 1.424934968274534,
+          "min": 0.6210855841636658,
+          "n": 1341,
+          "std": 0.3228182629869168,
+          "weight": 1341.0
+        },
+        "lr": {
+          "max": 7.749921965043423e-05,
+          "mean": 7.590725699260377e-05,
+          "min": 7.429273076313303e-05,
+          "n": 1341,
+          "std": 9.264377550284503e-07,
+          "weight": 1341.0
+        },
+        "step_seconds": {
+          "max": 2.8711091610603034,
+          "mean": 1.143594376660368,
+          "min": 0.9812405130360276,
+          "n": 1341,
+          "std": 0.15298681791300514,
+          "weight": 1341.0
+        }
+      },
+      "valid_updates": 1341,
+      "zero_target_h": {
+        "max": 0.1372823240699536,
+        "mean": 0.04244853221430325,
+        "min": 0.004342419050358744,
+        "n": 1341,
+        "std": 0.02100028392325688,
+        "weight": 49454.0
+      }
+    },
+    {
+      "checkpoint": {
+        "status": "NOT_CHECKED_PARTIAL_EPOCH"
+      },
+      "clipped_updates": 257,
+      "duplicate_records_discarded": 0,
+      "epoch": 16,
+      "expected_real_samples": 85813,
+      "expected_updates": 1341,
+      "first_quarter_loss_mean": 0.1401258860530561,
+      "first_record_time": "2026-10-27T23:03:57.361060+00:00",
+      "last_quarter_loss_mean": 0.14616563681156106,
+      "last_record_time": "2026-10-27T23:09:24.307468+00:00",
+      "metrics": {
+        "actual_rms": {
+          "max": 0.45508874828725104,
+          "mean": 0.3456153722926087,
+          "min": 0.21620404218072564,
+          "n": 277,
+          "std": 0.04709863350523389,
+          "weight": 17728.0
+        },
+        "cap_count": {
+          "max": 0.171875,
+          "mean": 0.07553023465703972,
+          "min": 0.0,
+          "n": 277,
+          "std": 0.03434525772233378,
+          "weight": 17728.0
+        },
+        "h": {
+          "max": 0.27774121377660776,
+          "mean": 0.14320282380698013,
+          "min": 0.028499566061100268,
+          "n": 277,
+          "std": 0.038305024492250574,
+          "weight": 17728.0
+        },
+        "loss": {
+          "max": 0.27774121377660776,
+          "mean": 0.14320282380698013,
+          "min": 0.028499566061100268,
+          "n": 277,
+          "std": 0.038305024492250574,
+          "weight": 17728.0
+        },
+        "mu": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 277,
+          "std": 0.0,
+          "weight": 17728.0
+        },
+        "weighted_functional_contribution": {
+          "max": 0.0,
+          "mean": 0.0,
+          "min": 0.0,
+          "n": 277,
+          "std": 0.0,
+          "weight": 17728.0
+        }
+      },
+      "missing_global_steps": [
+        20393,
+        20394,
+        20395,
+        20396,
+        20397,
+        20398,
+        20399,
+        20400,
+        20401,
+        20402,
+        20403,
+        20404,
+        20405,
+        20406,
+        20407,
+        20408,
+        20409,
+        20410,
+        20411,
+        20412,
+        20413,
+        20414,
+        20415,
+        20416,
+        20417,
+        20418,
+        20419,
+        20420,
+        20421,
+        20422,
+        20423,
+        20424,
+        20425,
+        20426,
+        20427,
+        20428,
+        20429,
+        20430,
+        20431,
+        20432,
+        20433,
+        20434,
+        20435,
+        20436,
+        20437,
+        20438,
+        20439,
+        20440,
+        20441,
+        20442,
+        20443,
+        20444,
+        20445,
+        20446,
+        20447,
+        20448,
+        20449,
+        20450,
+        20451,
+        20452,
+        20453,
+        20454,
+        20455,
+        20456,
+        20457,
+        20458,
+        20459,
+        20460,
+        20461,
+        20462,
+        20463,
+        20464,
+        20465,
+        20466,
+        20467,
+        20468,
+        20469,
+        20470,
+        20471,
+        20472,
+        20473,
+        20474,
+        20475,
+        20476,
+        20477,
+        20478,
+        20479,
+        20480,
+        20481,
+        20482,
+        20483,
+        20484,
+        20485,
+        20486,
+        20487,
+        20488,
+        20489,
+        20490,
+        20491,
+        20492,
+        20493,
+        20494,
+        20495,
+        20496,
+        20497,
+        20498,
+        20499,
+        20500,
+        20501,
+        20502,
+        20503,
+        20504,
+        20505,
+        20506,
+        20507,
+        20508,
+        20509,
+        20510,
+        20511,
+        20512,
+        20513,
+        20514,
+        20515,
+        20516,
+        20517,
+        20518,
+        20519,
+        20520,
+        20521,
+        20522,
+        20523,
+        20524,
+        20525,
+        20526,
+        20527,
+        20528,
+        20529,
+        20530,
+        20531,
+        20532,
+        20533,
+        20534,
+        20535,
+        20536,
+        20537,
+        20538,
+        20539,
+        20540,
+        20541,
+        20542,
+        20543,
+        20544,
+        20545,
+        20546,
+        20547,
+        20548,
+        20549,
+        20550,
+        20551,
+        20552,
+        20553,
+        20554,
+        20555,
+        20556,
+        20557,
+        20558,
+        20559,
+        20560,
+        20561,
+        20562,
+        20563,
+        20564,
+        20565,
+        20566,
+        20567,
+        20568,
+        20569,
+        20570,
+        20571,
+        20572,
+        20573,
+        20574,
+        20575,
+        20576,
+        20577,
+        20578,
+        20579,
+        20580,
+        20581,
+        20582,
+        20583,
+        20584,
+        20585,
+        20586,
+        20587,
+        20588,
+        20589,
+        20590,
+        20591,
+        20592,
+        20593,
+        20594,
+        20595,
+        20596,
+        20597,
+        20598,
+        20599,
+        20600,
+        20601,
+        20602,
+        20603,
+        20604,
+        20605,
+        20606,
+        20607,
+        20608,
+        20609,
+        20610,
+        20611,
+        20612,
+        20613,
+        20614,
+        20615,
+        20616,
+        20617,
+        20618,
+        20619,
+        20620,
+        20621,
+        20622,
+        20623,
+        20624,
+        20625,
+        20626,
+        20627,
+        20628,
+        20629,
+        20630,
+        20631,
+        20632,
+        20633,
+        20634,
+        20635,
+        20636,
+        20637,
+        20638,
+        20639,
+        20640,
+        20641,
+        20642,
+        20643,
+        20644,
+        20645,
+        20646,
+        20647,
+        20648,
+        20649,
+        20650,
+        20651,
+        20652,
+        20653,
+        20654,
+        20655,
+        20656,
+        20657,
+        20658,
+        20659,
+        20660,
+        20661,
+        20662,
+        20663,
+        20664,
+        20665,
+        20666,
+        20667,
+        20668,
+        20669,
+        20670,
+        20671,
+        20672,
+        20673,
+        20674,
+        20675,
+        20676,
+        20677,
+        20678,
+        20679,
+        20680,
+        20681,
+        20682,
+        20683,
+        20684,
+        20685,
+        20686,
+        20687,
+        20688,
+        20689,
+        20690,
+        20691,
+        20692,
+        20693,
+        20694,
+        20695,
+        20696,
+        20697,
+        20698,
+        20699,
+        20700,
+        20701,
+        20702,
+        20703,
+        20704,
+        20705,
+        20706,
+        20707,
+        20708,
+        20709,
+        20710,
+        20711,
+        20712,
+        20713,
+        20714,
+        20715,
+        20716,
+        20717,
+        20718,
+        20719,
+        20720,
+        20721,
+        20722,
+        20723,
+        20724,
+        20725,
+        20726,
+        20727,
+        20728,
+        20729,
+        20730,
+        20731,
+        20732,
+        20733,
+        20734,
+        20735,
+        20736,
+        20737,
+        20738,
+        20739,
+        20740,
+        20741,
+        20742,
+        20743,
+        20744,
+        20745,
+        20746,
+        20747,
+        20748,
+        20749,
+        20750,
+        20751,
+        20752,
+        20753,
+        20754,
+        20755,
+        20756,
+        20757,
+        20758,
+        20759,
+        20760,
+        20761,
+        20762,
+        20763,
+        20764,
+        20765,
+        20766,
+        20767,
+        20768,
+        20769,
+        20770,
+        20771,
+        20772,
+        20773,
+        20774,
+        20775,
+        20776,
+        20777,
+        20778,
+        20779,
+        20780,
+        20781,
+        20782,
+        20783,
+        20784,
+        20785,
+        20786,
+        20787,
+        20788,
+        20789,
+        20790,
+        20791,
+        20792,
+        20793,
+        20794,
+        20795,
+        20796,
+        20797,
+        20798,
+        20799,
+        20800,
+        20801,
+        20802,
+        20803,
+        20804,
+        20805,
+        20806,
+        20807,
+        20808,
+        20809,
+        20810,
+        20811,
+        20812,
+        20813,
+        20814,
+        20815,
+        20816,
+        20817,
+        20818,
+        20819,
+        20820,
+        20821,
+        20822,
+        20823,
+        20824,
+        20825,
+        20826,
+        20827,
+        20828,
+        20829,
+        20830,
+        20831,
+        20832,
+        20833,
+        20834,
+        20835,
+        20836,
+        20837,
+        20838,
+        20839,
+        20840,
+        20841,
+        20842,
+        20843,
+        20844,
+        20845,
+        20846,
+        20847,
+        20848,
+        20849,
+        20850,
+        20851,
+        20852,
+        20853,
+        20854,
+        20855,
+        20856,
+        20857,
+        20858,
+        20859,
+        20860,
+        20861,
+        20862,
+        20863,
+        20864,
+        20865,
+        20866,
+        20867,
+        20868,
+        20869,
+        20870,
+        20871,
+        20872,
+        20873,
+        20874,
+        20875,
+        20876,
+        20877,
+        20878,
+        20879,
+        20880,
+        20881,
+        20882,
+        20883,
+        20884,
+        20885,
+        20886,
+        20887,
+        20888,
+        20889,
+        20890,
+        20891,
+        20892,
+        20893,
+        20894,
+        20895,
+        20896,
+        20897,
+        20898,
+        20899,
+        20900,
+        20901,
+        20902,
+        20903,
+        20904,
+        20905,
+        20906,
+        20907,
+        20908,
+        20909,
+        20910,
+        20911,
+        20912,
+        20913,
+        20914,
+        20915,
+        20916,
+        20917,
+        20918,
+        20919,
+        20920,
+        20921,
+        20922,
+        20923,
+        20924,
+        20925,
+        20926,
+        20927,
+        20928,
+        20929,
+        20930,
+        20931,
+        20932,
+        20933,
+        20934,
+        20935,
+        20936,
+        20937,
+        20938,
+        20939,
+        20940,
+        20941,
+        20942,
+        20943,
+        20944,
+        20945,
+        20946,
+        20947,
+        20948,
+        20949,
+        20950,
+        20951,
+        20952,
+        20953,
+        20954,
+        20955,
+        20956,
+        20957,
+        20958,
+        20959,
+        20960,
+        20961,
+        20962,
+        20963,
+        20964,
+        20965,
+        20966,
+        20967,
+        20968,
+        20969,
+        20970,
+        20971,
+        20972,
+        20973,
+        20974,
+        20975,
+        20976,
+        20977,
+        20978,
+        20979,
+        20980,
+        20981,
+        20982,
+        20983,
+        20984,
+        20985,
+        20986,
+        20987,
+        20988,
+        20989,
+        20990,
+        20991,
+        20992,
+        20993,
+        20994,
+        20995,
+        20996,
+        20997,
+        20998,
+        20999,
+        21000,
+        21001,
+        21002,
+        21003,
+        21004,
+        21005,
+        21006,
+        21007,
+        21008,
+        21009,
+        21010,
+        21011,
+        21012,
+        21013,
+        21014,
+        21015,
+        21016,
+        21017,
+        21018,
+        21019,
+        21020,
+        21021,
+        21022,
+        21023,
+        21024,
+        21025,
+        21026,
+        21027,
+        21028,
+        21029,
+        21030,
+        21031,
+        21032,
+        21033,
+        21034,
+        21035,
+        21036,
+        21037,
+        21038,
+        21039,
+        21040,
+        21041,
+        21042,
+        21043,
+        21044,
+        21045,
+        21046,
+        21047,
+        21048,
+        21049,
+        21050,
+        21051,
+        21052,
+        21053,
+        21054,
+        21055,
+        21056,
+        21057,
+        21058,
+        21059,
+        21060,
+        21061,
+        21062,
+        21063,
+        21064,
+        21065,
+        21066,
+        21067,
+        21068,
+        21069,
+        21070,
+        21071,
+        21072,
+        21073,
+        21074,
+        21075,
+        21076,
+        21077,
+        21078,
+        21079,
+        21080,
+        21081,
+        21082,
+        21083,
+        21084,
+        21085,
+        21086,
+        21087,
+        21088,
+        21089,
+        21090,
+        21091,
+        21092,
+        21093,
+        21094,
+        21095,
+        21096,
+        21097,
+        21098,
+        21099,
+        21100,
+        21101,
+        21102,
+        21103,
+        21104,
+        21105,
+        21106,
+        21107,
+        21108,
+        21109,
+        21110,
+        21111,
+        21112,
+        21113,
+        21114,
+        21115,
+        21116,
+        21117,
+        21118,
+        21119,
+        21120,
+        21121,
+        21122,
+        21123,
+        21124,
+        21125,
+        21126,
+        21127,
+        21128,
+        21129,
+        21130,
+        21131,
+        21132,
+        21133,
+        21134,
+        21135,
+        21136,
+        21137,
+        21138,
+        21139,
+        21140,
+        21141,
+        21142,
+        21143,
+        21144,
+        21145,
+        21146,
+        21147,
+        21148,
+        21149,
+        21150,
+        21151,
+        21152,
+        21153,
+        21154,
+        21155,
+        21156,
+        21157,
+        21158,
+        21159,
+        21160,
+        21161,
+        21162,
+        21163,
+        21164,
+        21165,
+        21166,
+        21167,
+        21168,
+        21169,
+        21170,
+        21171,
+        21172,
+        21173,
+        21174,
+        21175,
+        21176,
+        21177,
+        21178,
+        21179,
+        21180,
+        21181,
+        21182,
+        21183,
+        21184,
+        21185,
+        21186,
+        21187,
+        21188,
+        21189,
+        21190,
+        21191,
+        21192,
+        21193,
+        21194,
+        21195,
+        21196,
+        21197,
+        21198,
+        21199,
+        21200,
+        21201,
+        21202,
+        21203,
+        21204,
+        21205,
+        21206,
+        21207,
+        21208,
+        21209,
+        21210,
+        21211,
+        21212,
+        21213,
+        21214,
+        21215,
+        21216,
+        21217,
+        21218,
+        21219,
+        21220,
+        21221,
+        21222,
+        21223,
+        21224,
+        21225,
+        21226,
+        21227,
+        21228,
+        21229,
+        21230,
+        21231,
+        21232,
+        21233,
+        21234,
+        21235,
+        21236,
+        21237,
+        21238,
+        21239,
+        21240,
+        21241,
+        21242,
+        21243,
+        21244,
+        21245,
+        21246,
+        21247,
+        21248,
+        21249,
+        21250,
+        21251,
+        21252,
+        21253,
+        21254,
+        21255,
+        21256,
+        21257,
+        21258,
+        21259,
+        21260,
+        21261,
+        21262,
+        21263,
+        21264,
+        21265,
+        21266,
+        21267,
+        21268,
+        21269,
+        21270,
+        21271,
+        21272,
+        21273,
+        21274,
+        21275,
+        21276,
+        21277,
+        21278,
+        21279,
+        21280,
+        21281,
+        21282,
+        21283,
+        21284,
+        21285,
+        21286,
+        21287,
+        21288,
+        21289,
+        21290,
+        21291,
+        21292,
+        21293,
+        21294,
+        21295,
+        21296,
+        21297,
+        21298,
+        21299,
+        21300,
+        21301,
+        21302,
+        21303,
+        21304,
+        21305,
+        21306,
+        21307,
+        21308,
+        21309,
+        21310,
+        21311,
+        21312,
+        21313,
+        21314,
+        21315,
+        21316,
+        21317,
+        21318,
+        21319,
+        21320,
+        21321,
+        21322,
+        21323,
+        21324,
+        21325,
+        21326,
+        21327,
+        21328,
+        21329,
+        21330,
+        21331,
+        21332,
+        21333,
+        21334,
+        21335,
+        21336,
+        21337,
+        21338,
+        21339,
+        21340,
+        21341,
+        21342,
+        21343,
+        21344,
+        21345,
+        21346,
+        21347,
+        21348,
+        21349,
+        21350,
+        21351,
+        21352,
+        21353,
+        21354,
+        21355,
+        21356,
+        21357,
+        21358,
+        21359,
+        21360,
+        21361,
+        21362,
+        21363,
+        21364,
+        21365,
+        21366,
+        21367,
+        21368,
+        21369,
+        21370,
+        21371,
+        21372,
+        21373,
+        21374,
+        21375,
+        21376,
+        21377,
+        21378,
+        21379,
+        21380,
+        21381,
+        21382,
+        21383,
+        21384,
+        21385,
+        21386,
+        21387,
+        21388,
+        21389,
+        21390,
+        21391,
+        21392,
+        21393,
+        21394,
+        21395,
+        21396,
+        21397,
+        21398,
+        21399,
+        21400,
+        21401,
+        21402,
+        21403,
+        21404,
+        21405,
+        21406,
+        21407,
+        21408,
+        21409,
+        21410,
+        21411,
+        21412,
+        21413,
+        21414,
+        21415,
+        21416,
+        21417,
+        21418,
+        21419,
+        21420,
+        21421,
+        21422,
+        21423,
+        21424,
+        21425,
+        21426,
+        21427,
+        21428,
+        21429,
+        21430,
+        21431,
+        21432,
+        21433,
+        21434,
+        21435,
+        21436,
+        21437,
+        21438,
+        21439,
+        21440,
+        21441,
+        21442,
+        21443,
+        21444,
+        21445,
+        21446,
+        21447,
+        21448,
+        21449,
+        21450,
+        21451,
+        21452,
+        21453,
+        21454,
+        21455,
+        21456
+      ],
+      "mu_by_step": [
+        {
+          "j": 0,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 1,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 2,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 3,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        },
+        {
+          "j": 4,
+          "mu_mean": null,
+          "mu_sum": 0.0,
+          "scheduled_scene_count": 0.0
+        }
+      ],
+      "nonfinite_gradients_reported": 0,
+      "observed_updates": 277,
+      "optimizer_step_first": 20116,
+      "optimizer_step_last": 20392,
+      "phase_update_counts": {
+        "H_only": 277
+      },
+      "quarter_loss_change_percent": 4.310231983987678,
+      "real_samples": 17728,
+      "record_errors": [],
+      "repair_target_h": {
+        "max": 0.5626373018847869,
+        "mean": 0.2876658524454093,
+        "min": 0.06707789734573452,
+        "n": 277,
+        "std": 0.08012626219373907,
+        "weight": 7499.0
+      },
+      "source_groups": {
+        "0": {
+          "count": 8117.0,
+          "h_mean": 0.02573426006198311,
+          "h_sum": 208.8849889231169
+        },
+        "1": {
+          "count": 580.0,
+          "h_mean": 0.6404505190023287,
+          "h_sum": 371.46130102135066
+        },
+        "2": {
+          "count": 254.0,
+          "h_mean": 0.5739878548717577,
+          "h_sum": 145.79291513742646
+        },
+        "3": {
+          "count": 126.0,
+          "h_mean": 0.8993951129705815,
+          "h_sum": 113.32378423429327
+        },
+        "4": {
+          "count": 1214.0,
+          "h_mean": 0.3573739330276242,
+          "h_sum": 433.8519546955358
+        },
+        "5": {
+          "count": 215.0,
+          "h_mean": 0.5816696740546112,
+          "h_sum": 125.05897992174141
+        },
+        "6": {
+          "count": 1756.0,
+          "h_mean": 0.2357733784380647,
+          "h_sum": 414.0180525372416
+        },
+        "7": {
+          "count": 496.0,
+          "h_mean": 0.34104903749825566,
+          "h_sum": 169.16032259913482
+        },
+        "8": {
+          "count": 4970.0,
+          "h_mean": 0.11210208478476917,
+          "h_sum": 557.1473613803028
+        }
+      },
+      "status": "PARTIAL",
+      "step_seconds_sum": 323.37214547768235,
+      "transition_scene_count": 0,
+      "update_metrics": {
+        "grad_clip_ratio": {
+          "max": 1.0,
+          "mean": 0.7367508544481605,
+          "min": 0.3392614859676122,
+          "n": 277,
+          "std": 0.14909221122155414,
+          "weight": 277.0
+        },
+        "grad_norm": {
+          "max": 2.9475789070129395,
+          "mean": 1.4117941583106663,
+          "min": 0.6753891706466675,
+          "n": 277,
+          "std": 0.3244039636819389,
+          "weight": 277.0
+        },
+        "lr": {
+          "max": 7.429028857064518e-05,
+          "mean": 7.395238360162392e-05,
+          "min": 7.36136134934373e-05,
+          "n": 277,
+          "std": 1.960467283948402e-07,
+          "weight": 277.0
+        },
+        "step_seconds": {
+          "max": 4.632143770111725,
+          "mean": 1.1674084674284562,
+          "min": 0.9639098548796028,
+          "n": 277,
+          "std": 0.29615341045835647,
+          "weight": 277.0
+        }
+      },
+      "valid_updates": 277,
+      "zero_target_h": {
+        "max": 0.09841191259463238,
+        "mean": 0.037295281353213326,
+        "min": 0.00435859546250401,
+        "n": 277,
+        "std": 0.01951044049184796,
+        "weight": 10229.0
+      }
+    }
+  ],
+  "mu_note": "mu is the normalized functional term before curriculum weight. Actual weighted contribution is mean(loss-h), never final_lambda*mean(mu) during ramp; scheduled step counts may include the zero-weight ramp boundary; transition_scene_count records actually executed supervision",
+  "run": "H_gain1_seed20261027",
+  "schema": "nrkd_epoch_loss_statistics_v1",
+  "source": {
+    "bounded_size": 19845633,
+    "duplicate_global_steps": {},
+    "duplicate_records_discarded": 0,
+    "ignored_trailing_bytes": 0,
+    "invalid_lines": [],
+    "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/logs/train_metrics.jsonl",
+    "sha256": "c63a89653dcaaeddfe6cd20461796b9c5f6c1b57a9bfcc4c4abb1c75875af7d0",
+    "source_mtime_ns": 1793142564000000000,
+    "source_size_at_open": 19845633
+  },
+  "statistics_unit": "logged per-update batch means; loss/h/mu/actual_rms/cap_count use actual-scene weights; std is population std of update means, not per-scene std",
+  "subgroup_note": "zero-target/repair-target H statistics are retrospective diagnostics, not extra Base-keep objectives or training weights",
+  "training_seed": 20261027,
+  "trend_note": "Descriptive training loss only; batch loss need not decrease monotonically, and loss trend is not policy/PDMS acceptance."
+}

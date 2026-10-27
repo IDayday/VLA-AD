@@ -1,0 +1,14 @@
+{
+  "updated_at": "2026-10-27T23:17:18.701859+00:00",
+  "active_goal": "Four retained seed20261027 full40epochs and all Test selection endpoints plus full original diagnostics and finalreport",
+  "active_suite_CPU_pid": 932831,
+  "active_Test_endpoint_CPU_pid": 932602,
+  "scope": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027",
+  "dispatch": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/dispatch/test_pdms_selection_owners_20261027_v2",
+  "source_HEAD_frozen": "0a58bd8e6271e26103512add2c5cb7816d7eb8f1",
+  "new_selection": "completeTest12146xS0-S4 epochs8/16/24/32/40 maxPDMS/tieearlier",
+  "old_main_selections_are_superseded": true,
+  "no_GPU_training_restart": true,
+  "next_result_read_utc": "2026-10-28T00:15:00Z",
+  "note": "Do not duplicate Test endpoint owner or fullsuite owner. First V1CPU failed inotify limit beforeGPU; V2 has existingartifact fastpath and sparse ETA fallback; no shared environment/sysctl modification."
+}

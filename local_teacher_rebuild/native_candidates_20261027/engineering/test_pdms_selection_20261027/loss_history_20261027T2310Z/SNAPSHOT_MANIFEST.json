@@ -1,0 +1,38 @@
+{
+  "snapshot_utc": "2026-10-27T23:09:39.360115+00:00",
+  "scope": "One read of each sparse epoch sidecar JSON; no live training-log read; complete epoch statistics only",
+  "files": {
+    "H_full_seed20261027": {
+      "source": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/summaries/H_full_seed20261027/epoch_metrics.json",
+      "snapshot": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/loss_history_20261027T2310Z/H_full_seed20261027.epoch_metrics.json",
+      "sha256": "bab2daa6433311a19aa13e397e30098d2af0487f2563ed89b12d4be99a838e6c",
+      "source_mtime_utc": "2026-10-27T22:46:10+00:00",
+      "complete_epochs": 16,
+      "epoch_end": 16
+    },
+    "H_gain1_seed20261027": {
+      "source": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/summaries/H_gain1_seed20261027/epoch_metrics.json",
+      "snapshot": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/loss_history_20261027T2310Z/H_gain1_seed20261027.epoch_metrics.json",
+      "sha256": "72b9bb3914d8caa72ee8bc3052cd374f977f877c67b114ad000ea6c93f00ab64",
+      "source_mtime_utc": "2026-10-27T23:09:26+00:00",
+      "complete_epochs": 15,
+      "epoch_end": 15
+    },
+    "H_mu_teacher_seed20261027": {
+      "source": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/summaries/H_mu_teacher_seed20261027/epoch_metrics.json",
+      "snapshot": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/loss_history_20261027T2310Z/H_mu_teacher_seed20261027.epoch_metrics.json",
+      "sha256": "dfb843098163df4e465ffe6b691302cedf18ebe509c936e052a7abc3986101f3",
+      "source_mtime_utc": "2026-10-27T22:09:33+00:00",
+      "complete_epochs": 10,
+      "epoch_end": 10
+    },
+    "H_mu_student_seed20261027": {
+      "source": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/summaries/H_mu_student_seed20261027/epoch_metrics.json",
+      "snapshot": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/loss_history_20261027T2310Z/H_mu_student_seed20261027.epoch_metrics.json",
+      "sha256": "9b73abf83d81f54573d87f09c78488cee731ff69d29485d2117c2351843aa1a0",
+      "source_mtime_utc": "2026-10-27T22:50:26+00:00",
+      "complete_epochs": 10,
+      "epoch_end": 10
+    }
+  }
+}

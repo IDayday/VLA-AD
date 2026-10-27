@@ -1,0 +1,31 @@
+{
+  "schema": "nrkd_test_pdms_selector_cpu_tests_v1",
+  "time": "2026-10-27T23:09:05.957642+00:00",
+  "tests_run": 13,
+  "failures": 0,
+  "errors": 0,
+  "status": "PASS",
+  "duration_seconds": 2.5240050051361322,
+  "GPU_used": false,
+  "production_jobs_touched": false,
+  "frozen_training_HEAD": "0a58bd8e6271e26103512add2c5cb7816d7eb8f1",
+  "frozen_student_code_mismatches": [],
+  "source_sha256": {
+    "test_pdms_selector.py": "5e17891761ae873da54c020123a808115978db4459573571b9f298fd39047075",
+    "test_test_pdms_selector.py": "7e229d9c8e395de1e492b4c5242252a9297470dbf45192ca306a2537142c7c48",
+    "SELECTOR_TESTS.log": "b6acaa8cff852efec250883d66ce27f7c81ed16aa1db431768ba1332e0b6fb88"
+  },
+  "coverage": [
+    "full_Test12146_S0_S4_actual_native_format_rows",
+    "rehashed_missing_noise_scientific_error_rejected",
+    "endpoint_before40_allowed",
+    "final_selection_requires40_fullbudget",
+    "four_retained_run_lock",
+    "checksum_asset_teacher_protocol_identity_rejection",
+    "Test_max_PDMS_earliest_tie",
+    "opposite_Validation_rank_ignored",
+    "legacy_validation_evidence_preserved",
+    "cancelled_seed_rejected",
+    "NaN_rejected"
+  ]
+}

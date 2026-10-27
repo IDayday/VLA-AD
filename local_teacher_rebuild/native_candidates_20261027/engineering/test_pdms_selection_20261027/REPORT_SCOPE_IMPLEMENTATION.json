@@ -1,0 +1,22 @@
+{
+  "time": "2026-10-27T23:08:45.654169+00:00",
+  "status": "PASS",
+  "tests": 7,
+  "returncode": 0,
+  "scope": "CPU orchestration/report fixtures only; no training/model/evaluation process touched",
+  "files": {
+    "report_scope.py": "6cc7f4f16ea904393fcaf66e6bda798195c8a107a4a918f274f964798d557d5f",
+    "test_report_scope.py": "ac8eaa973fc40ebf2f4ce4871c327335cefe2f740a5bd7de23e4ed79aa2f6e3f",
+    "REPORT_SCOPE_CPU_TESTS.log": "75039fe4014574955d682bf9449df42c7682cca319f0efa4b86c8505bca4e0c6"
+  },
+  "frozen_aggregate_sha256": "133f1605b205c5c2d147d38e2fa540a515924c4dc96ed18b92a08f024d9d1035",
+  "interfaces": [
+    "install() after single_seed_scope.install and Test selector overrides",
+    "build_report(original_module=None)",
+    "transform_report_source(source) -> ast.Module(report_only)"
+  ],
+  "selection_file": "checkpoints/test_pdms_best.json",
+  "required_lock": "student_distillation.select_checkpoint.verify_selection_lock must already point to Test selector",
+  "evaluation_math_unchanged": true,
+  "production_controller_installed": false
+}

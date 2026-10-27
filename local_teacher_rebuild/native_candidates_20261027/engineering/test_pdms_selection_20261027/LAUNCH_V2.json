@@ -1,0 +1,32 @@
+{
+  "status": "TEST_PDMS_OWNERS_V2_LAUNCHED",
+  "time": "2026-10-27T23:15:16.167026+00:00",
+  "launch": {
+    "host": "training-vla-zt",
+    "pid": 932601,
+    "transport": "canonical_local_same_stable_launcher"
+  },
+  "jobs": [
+    [
+      "full_test_endpoint_owner",
+      "-",
+      [
+        "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+        "-B",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/test_endpoint_owner.py"
+      ]
+    ],
+    [
+      "full_suite_test_pdms_owner",
+      "-",
+      [
+        "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+        "-B",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/test_suite_owner.py"
+      ]
+    ]
+  ],
+  "source_freeze_sha256": "756ef307b991b6ad4bdc3ba999aa6cc0ce1161cf110a4197d8aee83c67a4224d",
+  "dispatch_directory": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/dispatch/test_pdms_selection_owners_20261027_v2",
+  "training_GPU_children_unchanged": true
+}
