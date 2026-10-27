@@ -19,9 +19,10 @@ _ADAPTER = importlib.util.module_from_spec(_SPEC)
 sys.modules[_SPEC.name] = _ADAPTER
 _SPEC.loader.exec_module(_ADAPTER)
 from queue_transport import install as _install_queue_transport
+from population_transport import install as _install_population_transport
 _APPROVED_CLONE = _ADAPTER.cloned_fitter
 def _cloned_with_queue_transport(root):
-    return _install_queue_transport(_APPROVED_CLONE(root))
+    return _install_population_transport(_install_queue_transport(_APPROVED_CLONE(root)))
 _ADAPTER.cloned_fitter = _cloned_with_queue_transport
 _FITTER = _ADAPTER.cloned_fitter(Path(__file__).resolve().parents[1])
 # Imported numerical functions keep the original code objects and use private

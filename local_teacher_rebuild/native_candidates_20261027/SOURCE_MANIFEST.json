@@ -1,12 +1,12 @@
 {
   "schema": "nrkd_native_candidate_production_source_v1",
-  "created_at": "2026-10-27T11:22:22.896295+00:00",
+  "created_at": "2026-10-27T11:29:07.075499+00:00",
   "teacher_root": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027",
   "files": [
     {
       "path": "code/fit_library.py",
       "active_source": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/code/fit_library.py",
-      "sha256": "73bd75a8d5dc269f20e9172ea1111190790376a0e662fde8e321db8c5044fe2d"
+      "sha256": "b3bb129a34d95d84d1ba9e0c7e914c5e18dad1873f82306db1e736e526687196"
     },
     {
       "path": "code/gt_controller_fast.py",
@@ -51,7 +51,7 @@
     {
       "path": "code/population_transport.py",
       "active_source": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/code/population_transport.py",
-      "sha256": "8ec051e070c2ccc198e54323f095a40da548a5f5aa2cf1a6790319c014a4c45d"
+      "sha256": "64714adb46ceb0a18d2086c55912ed33062d6de982fbf26df312fd84cf4ca3b3"
     },
     {
       "path": "code/preparation_identity.py",
@@ -111,7 +111,7 @@
     {
       "path": "engineering/permanent_fullflow/fullflow_teacher_owner.py",
       "active_source": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/permanent_fullflow/fullflow_teacher_owner.py",
-      "sha256": "07d11369b23258b906448488fcf4f58d86d1666502829e3394cffe5069bb69b8"
+      "sha256": "dff9059f05a7f030e983c85c62c8f711867be8df185ce82a96d8901f94e7bf83"
     },
     {
       "path": "engineering/permanent_fullflow/permanent_dispatch.py",
@@ -146,7 +146,7 @@
     {
       "path": "engineering/test_parallel_population_transport.py",
       "active_source": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_parallel_population_transport.py",
-      "sha256": "0299b9d8ba1c4387ee6f8ae602b147b8946d798cba5ffc4d040776d20602a82a"
+      "sha256": "f20142afd00399568a172dcf087471eac09713f385c35d9017c0a9ff369dd6ca"
     },
     {
       "path": "engineering/test_preparation_identity.py",

@@ -199,7 +199,21 @@ class Owner(original.Owner):
         for host,items in by_host.items():
             directory=stage/host
             if not (directory/'launcher.pid').exists():
-                self.live_headroom([a for a in allocation if a['host']==host]);dispatch.launch(host,directory,items)
+                intent=directory/'POPULATION_LAUNCH_INTENT.json'
+                if intent.exists():
+                    raise RuntimeError('UNKNOWN Native launcher acknowledgement; inspect actual registered processes before recovery: '+str(intent))
+                physical={}
+                for job in jobs:
+                    if job['host']==host:
+                        item=physical.setdefault(job['uuid'],{'host':host,'gpu':job['gpu'],'uuid':job['uuid'],
+                            'actors_per_gpu':0,'minimum_free_mb':self.args.minimum_free_mb})
+                        item['actors_per_gpu']+=1
+                self.live_headroom(list(physical.values()))
+                atomic(intent,{'status':'LAUNCHING_ACKNOWLEDGEMENT_REQUIRED','time':stamp(),
+                    'jobs':ref(path),'host':host,'worker_names':[item[0] for item in items]})
+                launch=dispatch.launch(host,directory,items)
+                atomic(intent,{'status':'LAUNCH_ACKNOWLEDGED','time':stamp(),'jobs':ref(path),
+                    'host':host,'worker_names':[item[0] for item in items],'launch':launch})
         return jobs
 
     def run(self):
