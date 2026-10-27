@@ -20,7 +20,7 @@ def main():
     for path in sorted((ROOT/'code').glob('*.py')):
         sources[Path('code')/path.name]=path
     for name in ('launch_local_owners.py','restart_waiting_local_owners.py','launch_fixed_tsinghua_gt.py',
-                 'snapshot_native_scope.py','test_round1_preparation_owner.py','test_preparation_identity.py',
+                 'snapshot_native_scope.py','test_round1_preparation_owner.py','test_preparation_identity.py','test_queue_transport.py',
                  'NATIVE_SCOPE_INTEGRATION.md','report_teacher_physical_costs.py','report_round1_paired_comparisons.py'):
         sources[Path('engineering')/name]=ROOT/'engineering'/name
     for name in ('fullflow_teacher_owner.py','permanent_dispatch.py','finalize_round1_physical_costs.py',

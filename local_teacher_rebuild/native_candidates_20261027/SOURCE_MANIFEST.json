@@ -1,12 +1,12 @@
 {
   "schema": "nrkd_native_candidate_production_source_v1",
-  "created_at": "2026-10-27T02:32:40.165202+00:00",
+  "created_at": "2026-10-27T06:22:44.279499+00:00",
   "teacher_root": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027",
   "files": [
     {
       "path": "code/fit_library.py",
       "active_source": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/code/fit_library.py",
-      "sha256": "1d89926c13659b2f8230baa1fca29a362cc08d9dbe71b5a62549666c3a3ee859"
+      "sha256": "73bd75a8d5dc269f20e9172ea1111190790376a0e662fde8e321db8c5044fe2d"
     },
     {
       "path": "code/gt_controller_fast.py",
@@ -54,6 +54,11 @@
       "sha256": "9193f415465f7fd9efd8bc55abe75b2867ab0bfc573c8261bd9705b77363ac20"
     },
     {
+      "path": "code/queue_transport.py",
+      "active_source": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/code/queue_transport.py",
+      "sha256": "41a59b470928bc98785801b87cf322ee0788114a98cdd3062b9724d4c0290fc5"
+    },
+    {
       "path": "code/round1_prepare_and_run.py",
       "active_source": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/code/round1_prepare_and_run.py",
       "sha256": "9f088f60ffac835993f1070ad30c28d15387f77d7e13c1cae353a73994cda291"
@@ -71,7 +76,7 @@
     {
       "path": "engineering/NATIVE_SCOPE_INTEGRATION.md",
       "active_source": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/NATIVE_SCOPE_INTEGRATION.md",
-      "sha256": "37dfe97155db111db27a461a5d3e041129d718b3e690ed58ddffd99fcc67c06a"
+      "sha256": "b4d304b3b6bcd0580c414bee67574db4eba0369d341b7d9fef250cd8e2108a6d"
     },
     {
       "path": "engineering/launch_fixed_tsinghua_gt.py",
@@ -131,12 +136,17 @@
     {
       "path": "engineering/snapshot_native_scope.py",
       "active_source": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/snapshot_native_scope.py",
-      "sha256": "90330379b967d06df77271835318dfb4e4240d3b25709629722afe09453bc93d"
+      "sha256": "f62ffc43f63a3adae7eb45e7a4c9786af42f0ffb7bb940de347d526a3a0b5eac"
     },
     {
       "path": "engineering/test_preparation_identity.py",
       "active_source": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_preparation_identity.py",
       "sha256": "c65fff7d1a58553dbef78a47e4ea11692644a77b071da20fa7a635bba695f8a5"
+    },
+    {
+      "path": "engineering/test_queue_transport.py",
+      "active_source": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_queue_transport.py",
+      "sha256": "9b9694b9fa5a3bfa0aff00d8f016963fdae174b574cac89babeccb4d46d12a91"
     },
     {
       "path": "engineering/test_round1_preparation_owner.py",
