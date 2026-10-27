@@ -1,0 +1,147 @@
+{
+  "schema": "nrkd_resources_v1",
+  "status": "PLANNED_NOT_READY",
+  "world_size": 4,
+  "authorization": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/engineering/direct48_transition/TEMPORARY_WITHDRAWAL_REQUEST.json",
+    "sha256": "934e93d022ea48bd67b87c984b6df4927f151c2d6979373f7904e8c0fbe0c208"
+  },
+  "resource_policy": {
+    "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/resources/PERMANENT_POLICY_SNAPSHOT_20261027.json",
+    "sha256": "72f9d3645a29254105908df1600c5dc78d972e17d06782cda5359600d5eb9298"
+  },
+  "live_policy_path": "/mnt/project/server_dispatch_policy.json",
+  "allocations": {
+    "H_full_seed20261027": {
+      "host": "training-vlawm-tsinghua-zt",
+      "python": "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+      "workdir": "/mnt/project/recogdrive-no-routing-round1-20261026",
+      "gpu_uuids": [
+        "GPU-f0cd16db-c7f6-2226-c901-d1809277060e",
+        "GPU-27c69c7c-eb37-82fb-6fa0-0777abd64056",
+        "GPU-51b3887b-3158-ece3-aa70-a52adb25160b",
+        "GPU-31f9e6ef-4c0d-b5e0-7ddf-527f4a7dbcbc"
+      ],
+      "min_free_memory_mib": 12000,
+      "sharing_other_real_jobs": true
+    },
+    "H_full_seed20261028": {
+      "host": "training-vlawm-tsinghua-zt",
+      "python": "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+      "workdir": "/mnt/project/recogdrive-no-routing-round1-20261026",
+      "gpu_uuids": [
+        "GPU-9bc364f5-5bf1-4ea5-d9fa-ee62b41cc79f",
+        "GPU-76726c77-ffe3-6f10-fb08-7782dac5d840",
+        "GPU-7d8d39a1-1f02-4099-1aaa-d3cc35c6d542",
+        "GPU-91fd88e4-a388-6b59-e684-13a463606f9e"
+      ],
+      "min_free_memory_mib": 12000,
+      "sharing_other_real_jobs": true
+    },
+    "H_gain1_seed20261027": {
+      "host": "training-vlawm-tsinghua-zt5",
+      "python": "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+      "workdir": "/mnt/project/recogdrive-no-routing-round1-20261026",
+      "gpu_uuids": [
+        "GPU-ba6629ed-35db-198b-d353-d6048cbdf36b",
+        "GPU-c976d64e-44ea-d8bd-a026-d1c1f14d4db6",
+        "GPU-e2a93cb8-47e2-0b2f-952e-bcfa5403ad24",
+        "GPU-28ad5baf-48e8-8ea7-2e0b-514cc7f2d690"
+      ],
+      "min_free_memory_mib": 12000,
+      "sharing_other_real_jobs": true
+    },
+    "H_gain1_seed20261028": {
+      "host": "training-vlawm-tsinghua-zt5",
+      "python": "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+      "workdir": "/mnt/project/recogdrive-no-routing-round1-20261026",
+      "gpu_uuids": [
+        "GPU-a7b3b440-0f0e-d35e-508a-98b368e9a753",
+        "GPU-07454d91-a706-9214-2999-0ec63e16c489",
+        "GPU-69f7a391-b4e5-fefd-2b4e-721834060a20",
+        "GPU-a4a674df-d68f-fa69-13be-0f089a4cd6af"
+      ],
+      "min_free_memory_mib": 12000,
+      "sharing_other_real_jobs": true
+    },
+    "H_mu_teacher_seed20261027": {
+      "host": "training-vla-zt",
+      "python": "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+      "workdir": "/mnt/project/recogdrive-no-routing-round1-20261026",
+      "gpu_uuids": [
+        "GPU-f679bff0-a4a2-ae4f-0b85-74c519b45a9c",
+        "GPU-562375d4-b1d6-f0d9-a68d-5a81e5272907",
+        "GPU-b8a35758-a506-a8a1-dca7-499c485068fc",
+        "GPU-72a7d08b-16b7-7c64-a324-a08e043c6006"
+      ],
+      "min_free_memory_mib": 12000,
+      "sharing_other_real_jobs": true,
+      "ssh_target": "local"
+    },
+    "H_mu_teacher_seed20261028": {
+      "host": "training-vla-zt",
+      "python": "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+      "workdir": "/mnt/project/recogdrive-no-routing-round1-20261026",
+      "gpu_uuids": [
+        "GPU-f35ae00b-0c9c-c01c-efba-e527cdd32f76",
+        "GPU-cba744b9-96c8-c3e2-f836-2f0126c038a0",
+        "GPU-017ee82b-e9ff-1f6c-547e-ca2ccf3363ac",
+        "GPU-621b6ab5-d5ba-4219-b7ca-8b9f84479900"
+      ],
+      "min_free_memory_mib": 12000,
+      "sharing_other_real_jobs": true,
+      "ssh_target": "local"
+    },
+    "H_mu_student_seed20261027": {
+      "host": "training-vlawm-tsinghua-zt4",
+      "python": "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+      "workdir": "/mnt/project/recogdrive-no-routing-round1-20261026",
+      "gpu_uuids": [
+        "GPU-de0a113d-0ee7-6d02-f202-38ed7a2eba42",
+        "GPU-9d5086e9-c3c6-960a-702d-d1c5870b6b9f",
+        "GPU-a3f83a36-3e49-431e-4440-35f9e4d01a59",
+        "GPU-4fe15b93-9f87-08ea-699d-40375083da94"
+      ],
+      "min_free_memory_mib": 12000,
+      "sharing_other_real_jobs": false
+    },
+    "H_mu_student_seed20261028": {
+      "host": "training-vlawm-tsinghua-zt4",
+      "python": "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+      "workdir": "/mnt/project/recogdrive-no-routing-round1-20261026",
+      "gpu_uuids": [
+        "GPU-b4cc3837-84f9-01b3-6610-a3d814cf383f",
+        "GPU-0e051448-fccb-5aa8-1389-460e0aa8a46f",
+        "GPU-af5442fd-0c84-7903-61fa-9e9c49eca2ce",
+        "GPU-568199b4-3db3-da75-7c8c-c9b94d0c28b7"
+      ],
+      "min_free_memory_mib": 12000,
+      "sharing_other_real_jobs": false
+    }
+  },
+  "permanent_only": true,
+  "inventory": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/engineering/direct48_transition/PERMANENT_32GPU_INVENTORY.json",
+    "sha256": "d01fb1ea1ab519932d6d1d3418ffef473c8dbe61c1c5e794aa29052a56ded322"
+  },
+  "allocation_reason": "Move the two C world4 runs from World-shared zt3 to currently idle fixed root8 after preparation finishes. Same numerical contract, world4/global64/16 accumulation and budgets; all other six pins preserved. Recheck grant/UUID/headroom before each formal dispatch.",
+  "created_at": "2026-10-27T14:01:54.750210+00:00",
+  "previous_plan": {
+    "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/resources/ROUND1_FIXED_32GPU_WITH_TSINGHUA_ALLOCATION.json",
+    "sha256": "609ff9194062245dd4d7a9c96038362f27aca7bcce87ec1072fcd90ef53d00a2"
+  },
+  "fixed_tsinghua_inventory": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/execution_watch/PERMANENT_TSINGHUA_INVENTORY_20261027T021348Z.json",
+    "sha256": "96430def526a7608e11b7487fe5bbf7925b3c3e8381d11673ad4856ddc245cf2"
+  },
+  "preparation_inventory_evidence": {
+    "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/resources/ROUND1_PREPARATION_FIXED_ROOT_4GPU_20261027.json",
+    "sha256": "5b7ec97cb527c372e719724429a4e2aea57ef6db1aa1e5cf23c5bc935e34d0d8"
+  },
+  "contention_evidence": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/target_timing_20261027/COMPARISON.json",
+    "sha256": "6432379b90fa884eaf39ad575ea9a4bce9ab8abbed21bfc78531b3c345133f74"
+  },
+  "resource_change_only": true,
+  "root_preparation_must_finish_before_formal_C_dispatch": true
+}

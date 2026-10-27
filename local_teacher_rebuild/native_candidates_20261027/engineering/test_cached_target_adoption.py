@@ -1,5 +1,5 @@
 """CPU-only admission tests using the completed candidate plus private mutations."""
-import ast,copy,json,sys,tempfile
+import ast,copy,json,os,subprocess,sys,tempfile
 from pathlib import Path
 from unittest.mock import patch
 ROOT=Path(__file__).resolve().parents[1]
@@ -56,11 +56,19 @@ def main():
     source=(ROOT/'code/local_teacher_suite.py').read_text();tree=ast.parse(source)
     target=next(n for n in ast.walk(tree) if isinstance(n,ast.FunctionDef) and n.name=='targets')
     assert "'PYTHONPATH='" in ast.unparse(target)
+    # A fresh CPU process launched from an unrelated cwd must resolve core
+    # before a GPU job has ever inserted its path (the actual recovery case).
+    with tempfile.TemporaryDirectory(prefix='prep_import_recovery_') as d:
+        program='''import importlib.util,sys\nfrom pathlib import Path\nfrom types import SimpleNamespace\nsys.path.insert(0,sys.argv[1])\nfrom round1_prepare_and_run import PreparationOwner\na=SimpleNamespace(results=Path(sys.argv[2]),root=Path(sys.argv[3]),code=Path(sys.argv[4]))\no=PreparationOwner(a)\nassert importlib.util.find_spec("student_distillation.asset_identity") is not None\n'''
+        environment=dict(os.environ);environment.pop('PYTHONPATH',None)
+        subprocess.run([sys.executable,'-B','-c',program,str(ROOT/'code'),d,str(ROOT),str(CODE)],
+                       cwd=d,env=environment,check=True,capture_output=True,text=True)
     receipt={'status':'PASS','time':stamp(),'actual_all85813_candidate_admitted':True,
       'construction_negative_mutations':len(mutations),'publication_live_unknown_or_tamper_rejections':4,
       'preparation_world4_student_pins_preserved':True,'Val_target_explicit_module_import_environment':True,
+      'fresh_unrelated_cwd_CPU_admission_import':True,
       'no_GPU_or_model_execution':True,'source_sha256':{p.name:sha(p) for p in (ROOT/'code/preparation_identity.py',ROOT/'code/cached_target_publication.py',ROOT/'code/round1_prepare_and_run.py')}}
-    path=ROOT/'engineering/cached_actual_target_adoption_20261027/CPU_ADMISSION_CHECK.json';atomic(path,receipt)
+    path=ROOT/'engineering/cached_actual_target_adoption_20261027'/('CPU_ADMISSION_CHECK.'+sha(ROOT/'code/round1_prepare_and_run.py')+'.json');atomic(path,receipt)
     print(json.dumps(receipt,indent=2))
 
 if __name__=='__main__':main()

@@ -35,6 +35,9 @@ def reference(path):
 class PreparationOwner:
     def __init__(self, args):
         self.args = args
+        # Admission also runs before the first GPU job on a resumed CPU cache.
+        # Resolve the reviewed package independently of launcher working dir.
+        sys.path.insert(0,str(args.code))
         self.folder = args.results / 'preparation_owner'
         self.folder.mkdir(parents=True, exist_ok=True)
         self.lock = (self.folder / 'OWNER.lock').open('a+')

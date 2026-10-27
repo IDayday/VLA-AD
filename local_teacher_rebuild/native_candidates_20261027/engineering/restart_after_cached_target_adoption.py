@@ -48,4 +48,31 @@ def main():
           'all_old_Target_and_CPU_exit_receipts_preserved':True})
     print(json.dumps(read(receipt),indent=2))
 
-if __name__=='__main__':main()
+def preparation_import_recovery():
+    grant()
+    old=ROOT/'dispatch/round1_preparation_native_candidates_owner_cached_actual_targets_20261027/status/round1_preparation_native_candidates_owner.json'
+    if read(old).get('pid')!=697344 or read(old).get('returncode')!=1 or Path('/proc/697344').exists():
+        raise RuntimeError('Previous prep invocation has not actually exited as recorded')
+    lock=RESULTS/'preparation_owner/OWNER.lock'
+    with lock.open('a+') as stream:fcntl.flock(stream,fcntl.LOCK_EX|fcntl.LOCK_NB)
+    from types import SimpleNamespace
+    owner=PreparationOwner.__new__(PreparationOwner);owner.args=SimpleNamespace(
+      code=Path('/mnt/project/recogdrive-no-routing-round1-20261026'),code_freeze=RESULTS/'protocol/CODE_FREEZE.json')
+    owner.code_gate();validate_publication(RESULTS/'targets/train/MANIFEST.json',RESULTS)
+    name='round1_preparation_native_candidates_owner'
+    directory=ROOT/'dispatch'/(name+'_import_recovery_20261027')
+    if (directory/'launcher.pid').exists():raise RuntimeError('Replacement already registered')
+    source=ROOT/'code/round1_prepare_and_run.py'
+    command=[PYTHON,'-B',str(source),'--root',str(ROOT),'--poll-seconds','30','--resources',
+      str(RESULTS/'resources/ROUND1_FIXED_32GPU_C_ROOT_ALLOCATION_20261027.json'),'--preparation-resources',
+      str(RESULTS/'resources/ROUND1_PREPARATION_FIXED_ROOT_4GPU_20261027.json')]
+    install();import dispatch
+    launch=dispatch.launch('training-vla-zt',directory,[(name,'-',command)])
+    value={'status':'CPU_IMPORT_RECOVERY_LAUNCHED_NOT_FORMAL_TRAINING_COMPLETION','time':stamp(),
+      'old_actual_exit':{'path':str(old),'sha256':sha(old)},'command':command,'launch':launch,
+      'actual_status':str(directory/'status'/(name+'.json')),'source_sha256':sha(source),
+      'freeze_sha256':sha(RESULTS/'protocol/CODE_FREEZE.json'),'healthy_main_and_all_GPU_jobs_preserved':True}
+    atomic(ROOT/'dispatch/CACHED_TARGET_PREP_IMPORT_RECOVERY.json',value);print(json.dumps(value,indent=2))
+
+if __name__=='__main__':
+    preparation_import_recovery() if '--preparation-import-recovery' in sys.argv else main()

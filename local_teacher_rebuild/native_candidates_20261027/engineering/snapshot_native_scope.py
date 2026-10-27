@@ -40,6 +40,7 @@ def main():
     sources[Path('resources/ROUND1_FIXED_32GPU_WITH_TSINGHUA_ALLOCATION.json')]=Path('/mnt/project/recogdrive-no-routing-round1-results-20261026/resources/ROUND1_FIXED_32GPU_WITH_TSINGHUA_ALLOCATION.json')
     sources[Path('resources/PARALLEL_TEACHER_TEST_ALLOCATION.json')]=ROOT/'engineering/parallel_test_20261027/TEST_ALLOCATION.json'
     sources[Path('resources/ROUND1_PREPARATION_FIXED_ROOT_4GPU_20261027.json')]=Path('/mnt/project/recogdrive-no-routing-round1-results-20261026/resources/ROUND1_PREPARATION_FIXED_ROOT_4GPU_20261027.json')
+    sources[Path('resources/ROUND1_FIXED_32GPU_C_ROOT_ALLOCATION_20261027.json')]=Path('/mnt/project/recogdrive-no-routing-round1-results-20261026/resources/ROUND1_FIXED_32GPU_C_ROOT_ALLOCATION_20261027.json')
     for target,source in sources.items():
         path=destination/target;path.parent.mkdir(parents=True,exist_ok=True)
         shutil.copyfile(source,path)
