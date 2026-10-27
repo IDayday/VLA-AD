@@ -219,13 +219,44 @@ class PreparationOwner:
                       inference_graph_receipt=str(self.args.results / 'qualification/NATIVE_INFERENCE_GRAPH_ADMISSION.json'),
                       bridge_factory='student_distillation.train:bridge_factory', results_root=str(self.args.results))
         folder = self.args.results / 'protocol'; folder.mkdir(parents=True, exist_ok=True)
-        path = folder / 'PATHS.json'
+        basic=getattr(self.args,'user_authorized_basic_normal_start',False)
+        if basic:values['qualification_receipt']=str(self.args.results/'qualification/USER_AUTHORIZED_BASIC_NORMAL_START.json')
+        path = folder / ('PATHS_BASIC_NORMAL_START.json' if basic else 'PATHS.json')
         if path.exists() and read(path) != values:
             raise ValueError('Actual registered paths changed')
         atomic(path, values)
-        config = folder / 'PATHS_CONFIG.json'
-        atomic(config, {'paths': values})
+        config = folder / ('PATHS_BASIC_NORMAL_START_CONFIG.json' if basic else 'PATHS_CONFIG.json')
+        overlay={'paths':values}
+        if basic:overlay['startup_admission_mode']='USER_AUTHORIZED_BASIC_NORMAL_START'
+        atomic(config,overlay)
         return values, path, config
+
+    def basic_normal_start(self,values):
+        from preparation_identity import qualification_identities
+        qualification=self.args.results/'qualification'
+        evidence={'user_instruction':self.args.root/'engineering/basic_normal_start_20261027/USER_INSTRUCTION_CANCELLED_FIVE.json',
+          'current_target_adoption':self.args.root/'engineering/cached_actual_target_adoption_20261027/COMPLETE.json',
+          'native_forward':qualification/'active_transition_cached_snapshot10/STUDENT_FORWARD_NATIVE_PARITY.json',
+          'active_Adam_recovery':qualification/'active_transition_cached_snapshot10/ACTIVE_TRANSITION_RECOVERY.json',
+          'world4_tail53':qualification/'ddp_engineering_snapshot1/DDP_TAIL_53.json',
+          'inference_graph':qualification/'NATIVE_INFERENCE_GRAPH_ADMISSION.json',
+          'teacher_query_cache':qualification/'TEACHER_QUERY_CACHE_ADMISSION.json',
+          'numerical_training_source':self.args.root/'engineering/basic_normal_start_20261027/TRAIN_NUMERICAL_SOURCE_IDENTITY.json'}
+        receipt={'schema':'nrkd_user_authorized_basic_normal_start_v1','status':'USER_AUTHORIZED_BASIC_NORMAL_START',
+          'formal_asset_qualification':False,'fresh_teacher_extended_qualification':'CANCELLED_BY_USER',
+          'runtime_extra_recovery_probes':'CANCELLED_BY_USER','created_at':stamp(),
+          'code_sha256':{str(p.relative_to(self.args.code)):sha(p) for p in sorted((self.args.code/'student_distillation').glob('*.py'))},
+          'identities':qualification_identities(values,self.args.results),
+          'execution':{'world_size':self.training_world_size,'global_batch_size':64,'microbatch_per_device':1,
+             'gradient_accumulation_steps':64//self.training_world_size,'DDP_adapter_only':True},
+          'evidence':{k:reference(p) for k,p in evidence.items()},
+          'formal_budget_unchanged':{'independent_runs':8,'epochs':40,'updates':53640,'train_scenes':85813}}
+        path=Path(values['qualification_receipt'])
+        if path.exists():
+            old=read(path);receipt['created_at']=old['created_at']
+            if old!=receipt:raise ValueError('Previously registered basic-start admission changed')
+        else:atomic(path,receipt)
+        self.update('USER_AUTHORIZED_BASIC_NORMAL_START',startup_admission=reference(path),fresh_extended_checks_not_claimed=True)
 
     def targets(self, population, uuid):
         manifest=self.args.results/'targets'/population/'MANIFEST.json'
@@ -404,28 +435,32 @@ class PreparationOwner:
             for future in futures:
                 future.result()
         self.update('CALIBRATING_TRAIN_ONLY')
+        calibration_config=self.args.results/'protocol/PATHS_CONFIG.json' if self.args.user_authorized_basic_normal_start else config_file
         self.gpu_job('train_calibration', self.preparation_host, [uuids[0]],
-                     ['-m', 'student_distillation.calibration', '--config', config_file, '--train-only',
+                     ['-m', 'student_distillation.calibration', '--config', calibration_config, '--train-only',
                       '--device', 'cuda:0', '--out', self.args.results / 'calibration'], values['calibration'])
-        common = ['--paths', self.paths_file, '--feature-manifest', values['feature_manifest'],
-                  '--input-statistics', self.args.results / 'calibration/BASE_INPUT_STATISTICS.json',
-                  '--reference-noise-manifest', values['evaluation_noise_manifest'],
-                  '--native-reference-cache-index', LEGACY / 'cache/train/INDEX.jsonl',
-                  '--teacher-bundle', values['teacher_bundle'], '--targets-manifest', values['targets_manifest'],
-                  '--calibration', values['calibration']]
-        ddp_out = self.args.results / 'qualification/formal_ddp'
-        self.update('QUALIFYING_NEW_TEACHER_WORLD_SIZE',training_world_size=self.training_world_size)
-        self.gpu_job('formal_ddp', self.preparation_host, preparation_uuids,
-                     ['-m', 'torch.distributed.run', '--standalone', '--nproc_per_node=' + str(self.training_world_size), '--module',
-                      'student_distillation.qualification', '--ddp-only', '--training-world-size', str(self.training_world_size), *common, '--out', ddp_out], ddp_out / 'DDP_TAIL_53.json')
-        self.gpu_job('formal_single', self.preparation_host, [uuids[1]],
-                     ['-m', 'student_distillation.qualification', *common, '--device', 'cuda:0', '--training-world-size', str(self.training_world_size),
-                      '--ddp-receipt', ddp_out / 'DDP_TAIL_53.json', '--control-scenes', '64',
-                      '--control-updates', '256', '--out', self.args.results / 'qualification/formal_single'],
-                     values['qualification_receipt'])
-        qualification = read(values['qualification_receipt'])
-        if qualification.get('status') != 'CODE_CHECKS_PASS' or qualification.get('formal_asset_qualification') is not True:
-            raise ValueError('Actual formal qualification did not complete all mandatory checks')
+        if self.args.user_authorized_basic_normal_start:
+            self.basic_normal_start(values)
+        else:
+            common = ['--paths', self.paths_file, '--feature-manifest', values['feature_manifest'],
+                      '--input-statistics', self.args.results / 'calibration/BASE_INPUT_STATISTICS.json',
+                      '--reference-noise-manifest', values['evaluation_noise_manifest'],
+                      '--native-reference-cache-index', LEGACY / 'cache/train/INDEX.jsonl',
+                      '--teacher-bundle', values['teacher_bundle'], '--targets-manifest', values['targets_manifest'],
+                      '--calibration', values['calibration']]
+            ddp_out = self.args.results / 'qualification/formal_ddp'
+            self.update('QUALIFYING_NEW_TEACHER_WORLD_SIZE',training_world_size=self.training_world_size)
+            self.gpu_job('formal_ddp', self.preparation_host, preparation_uuids,
+                         ['-m', 'torch.distributed.run', '--standalone', '--nproc_per_node=' + str(self.training_world_size), '--module',
+                          'student_distillation.qualification', '--ddp-only', '--training-world-size', str(self.training_world_size), *common, '--out', ddp_out], ddp_out / 'DDP_TAIL_53.json')
+            self.gpu_job('formal_single', self.preparation_host, [uuids[1]],
+                         ['-m', 'student_distillation.qualification', *common, '--device', 'cuda:0', '--training-world-size', str(self.training_world_size),
+                          '--ddp-receipt', ddp_out / 'DDP_TAIL_53.json', '--control-scenes', '64',
+                          '--control-updates', '256', '--out', self.args.results / 'qualification/formal_single'],
+                         values['qualification_receipt'])
+            qualification = read(values['qualification_receipt'])
+            if qualification.get('status') != 'CODE_CHECKS_PASS' or qualification.get('formal_asset_qualification') is not True:
+                raise ValueError('Actual formal qualification did not complete all mandatory checks')
         resources = self.ready_resources()
         command = [self.args.python, '-B', '-m', 'student_distillation.run_suite', '--config-dir',
                    str(self.args.code / 'configs/student_distillation'), '--paths-config', str(config_file),
@@ -457,6 +492,7 @@ def main():
     parser.add_argument('--code-freeze', type=Path, default=RESULTS / 'protocol/CODE_FREEZE.json')
     parser.add_argument('--poll-seconds', type=float, default=30)
     parser.add_argument('--engineering-retries', type=int, default=2)
+    parser.add_argument('--user-authorized-basic-normal-start',action='store_true',help='Explicit current user override: current assets/calibration plus existing engineering proofs, actual per-run initial replay; extended fresh qualification is not a startup barrier')
     args = parser.parse_args()
     if not 0 < args.poll_seconds <= 60:
         parser.error('poll-seconds must be in (0,60]')

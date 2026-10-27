@@ -79,6 +79,40 @@ def verify_qualification(cfg, identities=None):
     if not path or not Path(path).is_file():
         raise ValueError("Formal training requires the actual CODE_CHECKS_PASS qualification receipt")
     receipt = json.loads(Path(path).read_text())
+    if receipt.get("schema") == "nrkd_user_authorized_basic_normal_start_v1":
+        mode = "USER_AUTHORIZED_BASIC_NORMAL_START"
+        if (cfg.get("startup_admission_mode") != mode or receipt.get("status") != mode or
+                receipt.get("formal_asset_qualification") is not False or
+                receipt.get("fresh_teacher_extended_qualification") != "CANCELLED_BY_USER"):
+            raise ValueError("Basic normal start requires the explicit user-authorized mode")
+        if receipt.get("code_sha256") != identities["code_files"] or receipt.get("execution") != formal_execution(cfg):
+            raise ValueError("User-authorized startup code/execution identity differs")
+        for key in ("teacher_bundle", "feature_manifest", "targets_manifest", "calibration"):
+            if receipt.get("identities", {}).get(key + "_sha256") != identities["files"][key]["sha256"]:
+                raise ValueError("User-authorized startup current asset identity differs: " + key)
+        if receipt.get("identities", {}).get("checkpoint_sha256") != sha256(cfg["paths"]["checkpoint"]):
+            raise ValueError("User-authorized startup RL Base differs")
+        required = {"user_instruction", "current_target_adoption", "native_forward", "active_Adam_recovery",
+                    "world4_tail53", "inference_graph", "teacher_query_cache", "numerical_training_source"}
+        if set(receipt.get("evidence", {})) != required:
+            raise ValueError("User-authorized startup evidence is incomplete")
+        for ref in receipt["evidence"].values():
+            if not Path(ref["path"]).is_file() or sha256(ref["path"]) != ref["sha256"]:
+                raise ValueError("User-authorized startup evidence changed")
+        instruction = json.loads(Path(receipt["evidence"]["user_instruction"]["path"]).read_text())
+        if (instruction.get("activation") != mode or instruction.get("cancelled_not_deferred") is not True or
+                instruction.get("no_parallel_qualification_jobs") is not True or
+                receipt.get("runtime_extra_recovery_probes") != "CANCELLED_BY_USER"):
+            raise ValueError("Explicit user cancellation of extra qualification probes is missing")
+        from .losses import teacher_query_cache_settings
+        cache = teacher_query_cache_settings(cfg, refresh=True)
+        result = {"path": str(Path(path).resolve()), "sha256": sha256(path), "mode": mode,
+                  "formal_asset_qualification": False, "execution": formal_execution(cfg),
+                  "fresh_teacher_extended_qualification": receipt["fresh_teacher_extended_qualification"],
+                  "runtime_extra_recovery_probes": "CANCELLED_BY_USER"}
+        if cache is not None:
+            result["performance_admissions"] = {"teacher_query_cache": cache["admission"]}
+        return result
     if receipt.get("schema") != "nrkd_code_checks_v1" or receipt.get("status") != "CODE_CHECKS_PASS" or receipt.get("formal_asset_qualification") is not True:
         raise ValueError("Synthetic, pending, or partial engineering receipts cannot authorize formal training")
     if receipt.get("code_sha256") != identities["code_files"]:
@@ -426,6 +460,7 @@ def run(cfg, out, resume="auto", formal=True):
         if os.environ.get("CUBLAS_WORKSPACE_CONFIG") != ":4096:8":
             raise ValueError("Formal training requires the qualified startup CUBLAS_WORKSPACE_CONFIG=:4096:8")
     env = distributed.initialize()
+    basic_start = formal and verification.get("mode") == "USER_AUTHORIZED_BASIC_NORMAL_START"
     if formal and env.world_size != formal_execution(cfg)["world_size"]:
         raise ValueError("Actual torchrun WORLD_SIZE differs from the qualified effective configuration")
     torch.set_num_threads(int(cfg.get("runtime", {}).get("torch_threads", 1)))
@@ -461,7 +496,7 @@ def run(cfg, out, resume="auto", formal=True):
     if checkpoint:
         state = load_checkpoint(checkpoint, adapter, optimizer, scheduler, env, identities)
         progress, sampler = state["progress"], state["sampler"]
-    if not (out / "INITIAL_STEP_RECOVERY_CHECK.json").exists() and progress["epoch_index"] < cfg["training"]["epochs"]:
+    if not basic_start and not (out / "INITIAL_STEP_RECOVERY_CHECK.json").exists() and progress["epoch_index"] < cfg["training"]["epochs"]:
         if checkpoint is None:
             checkpoint = out / "checkpoints/initial.pt"
             save_checkpoint(checkpoint, adapter=adapter, optimizer=optimizer, scheduler=scheduler,
@@ -501,7 +536,7 @@ def run(cfg, out, resume="auto", formal=True):
                                 adapter=adapter, optimizer=optimizer, scheduler=scheduler, progress=progress,
                                 sampler=sampler, identities=identities, config=cfg, calibration=calibration,
                                 parameter_groups=groups, env=env)
-                if progress["global_step"] < cfg["training"]["total_optimizer_updates"]:
+                if not basic_start and progress["global_step"] < cfg["training"]["total_optimizer_updates"]:
                     check_path = out / "NEXT_UPDATE_TRAINED_ADAM_RECOVERY_CHECK.json"
                     if not check_path.exists():
                         verify_next_update(recovery_checkpoint, adapter, optimizer, scheduler, dataset, cfg, env,
@@ -582,13 +617,14 @@ def run(cfg, out, resume="auto", formal=True):
                               "checkpoint_sha256": sha256(out / "checkpoints" / f"epoch_{epoch:03d}.pt"),
                               "full_population": True, "mode": "student"})
             full_validation_evidence[str(epoch)] = sha256(folder / "COMPLETE.json")
-        recovery = json.loads((out / "NEXT_UPDATE_TRAINED_ADAM_RECOVERY_CHECK.json").read_text())
-        if recovery.get("status") != "PASS" or not recovery.get("trained_Adam_state"):
-            raise ValueError("Actual trained-Adam next-update recovery is incomplete")
-        if cfg["enable_transition_loss"]:
-            recovery = json.loads((out / "NEXT_UPDATE_FUNCTIONAL_RECOVERY_CHECK.json").read_text())
-            if recovery.get("status") != "PASS" or not recovery.get("trained_Adam_state") or not recovery.get("transition_loss_active"):
-                raise ValueError("Actual active C/D next-update recovery is incomplete")
+        if not basic_start:
+            recovery = json.loads((out / "NEXT_UPDATE_TRAINED_ADAM_RECOVERY_CHECK.json").read_text())
+            if recovery.get("status") != "PASS" or not recovery.get("trained_Adam_state"):
+                raise ValueError("Actual trained-Adam next-update recovery is incomplete")
+            if cfg["enable_transition_loss"]:
+                recovery = json.loads((out / "NEXT_UPDATE_FUNCTIONAL_RECOVERY_CHECK.json").read_text())
+                if recovery.get("status") != "PASS" or not recovery.get("trained_Adam_state") or not recovery.get("transition_loss_active"):
+                    raise ValueError("Actual active C/D next-update recovery is incomplete")
         atomic_json(out / "TRAIN_COMPLETE.json", {"status": "TRAIN_COMPLETE", **progress, "world_size": env.world_size,
                                                   "global_batch_size": cfg["training"]["global_batch_size"],
                                                   "microbatch_per_device": 1,

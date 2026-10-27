@@ -1,0 +1,18 @@
+{
+  "status": "PASS_NUMERICAL_FUNCTIONS_UNCHANGED",
+  "time": "2026-10-27T14:15:50.086791+00:00",
+  "baseline_commit": "2249a0621d18f3f3bc7bb3f8639f72c796808779",
+  "current_train_source_sha256": "79a37580561b920fc251d3c1993318d76fe5fd1d4c48029ce94f385c560ecace",
+  "functions": {
+    "formal_execution": "be4036c447295299df8897d81eeab4448709329fee923424e5eab5f6338a3bab",
+    "verify_formal_config": "0966fd54afc827f6573f77393a73a3a035f75be8fc1249409316c0713895b55c",
+    "WarmupCosine": "df03b44786ceb816d560eea699c6d12360ae6db91786924b44dc2121f130e4e0",
+    "make_optimizer": "4a111f419a47840d23a9c59bde9d9b5cc16ccacb07a06b365d343059007dfc72",
+    "make_adapter": "0e568099a106855ca7fcddcde33cf63d5fd28749492c0a9b0fd85f3401d57625",
+    "make_bridge": "e66a96f2f44d11a83b2b72679f50546512c662e1692601d2f94ec90544887eb0",
+    "verify_next_update": "cd1d2ea77c8a6a6dab819bc5bc693ade24c125051332646aa2a404eb62509fdb",
+    "train_update": "332c6483c6701d0d8bb774aec14a944e6a97043008c357b11c8d2abb74807f5f"
+  },
+  "changes": "Explicit user admission plus cancellation guards around extra probes; actual optimizer/loss/native/DDP/budget math unchanged",
+  "fresh_qualification_claimed": false
+}

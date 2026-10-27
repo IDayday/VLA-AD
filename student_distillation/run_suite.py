@@ -648,8 +648,11 @@ def run(args):
             config_path.write_text(yaml.safe_dump(cfg, sort_keys=False))
             configs[run_id] = (cfg, config_path)
             registry.run_update(run_id, config=str(config_path), config_sha256=sha256(config_path))
-    atomic_json(out / "CODE_CHECKS_PASS.json", {"status": "CODE_CHECKS_PASS", "source": qualification})
-    registry.value["status"] = "CODE_CHECKS_PASS"
+    basic_start = qualification.get("mode") == "USER_AUTHORIZED_BASIC_NORMAL_START"
+    admission_status = "USER_AUTHORIZED_BASIC_NORMAL_START" if basic_start else "CODE_CHECKS_PASS"
+    atomic_json(out / ("START_ADMISSION.json" if basic_start else "CODE_CHECKS_PASS.json"),
+                {"status": admission_status, "source": qualification})
+    registry.value["status"] = admission_status
     registry.value["asset_status"] = "ASSET_READY"
     registry.value["target_status"] = "TARGETS_READY"
     registry.value["asset_qualification"] = qualification
