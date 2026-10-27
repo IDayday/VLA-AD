@@ -29,3 +29,19 @@ it alone performs the original matrix collection, selection, repaired-cache inde
 and teacher report. Test does not fit teacher parameters or start student Test.
 The original Train actors, full budgets and frozen bundle remain in place.
 
+After the full Native Train/Test outputs and repaired-cache readback were sealed,
+an independent CPU target constructor verifies every scene's original H0, full
+teacher interface SHA, padding SHA, layout, source NPZ, selected actual shift,
+RMS/cap and token/index join. It derives both unchanged full and strict gain>1
+versions from one checked full interface. Its explicit execution identity is
+`cpu_verified_native_cache`; it does not claim a second CUDA prediction. All
+85,813 reconstructed full/gain1 shifts match the sealed Native selections, and
+all 12,146 completed CUDA Test shifts match the independent CPU reconstruction.
+Publication preserves the redundant CUDA partial folder and actual SIGTERM exit
+after exact owned PID/start/argv, kernel exit, wrapper exit and lease checks.
+The completed CUDA Test population is retained. Preparation-only root GPU0–3 can
+perform Train calibration and fresh chosen-world qualification while the formal
+student allocation remains independent. Validation target subprocesses now bind
+the reviewed implementation through explicit PYTHONPATH, preserving failed
+attempts and resuming at the next versioned attempt.
+

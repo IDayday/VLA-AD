@@ -1,0 +1,77 @@
+{
+  "schema": "nrkd_preparation_resources_v1",
+  "status": "PLANNED_FROM_ACTUAL_INVENTORY_RECHECK_ON_DISPATCH",
+  "scope": "PREPARATION_ONLY_NOT_EIGHT_RUN_RESOURCE_READINESS",
+  "recorded_at": "2026-10-27T13:56:03.965257+00:00",
+  "task": "recogdrive_no_routing_round1_20261026",
+  "live_policy_path": "/mnt/project/server_dispatch_policy.json",
+  "live_policy_observed": {
+    "path": "/mnt/project/server_dispatch_policy.json",
+    "sha256": "57d769680eb2d69b41638f0b0d95270223ca76bddad4927772be9047870c9477"
+  },
+  "formal_student_plan_preserved": {
+    "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/resources/ROUND1_FIXED_32GPU_WITH_TSINGHUA_ALLOCATION.json",
+    "sha256": "609ff9194062245dd4d7a9c96038362f27aca7bcce87ec1072fcd90ef53d00a2"
+  },
+  "allocation": {
+    "host": "training-vla-zt",
+    "actual_hostname": "training-vla-zt-worker-0",
+    "ssh_target": "local",
+    "python": "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+    "workdir": "/mnt/project/recogdrive-no-routing-round1-20261026",
+    "gpu_uuids": [
+      "GPU-f679bff0-a4a2-ae4f-0b85-74c519b45a9c",
+      "GPU-562375d4-b1d6-f0d9-a68d-5a81e5272907",
+      "GPU-b8a35758-a506-a8a1-dca7-499c485068fc",
+      "GPU-72a7d08b-16b7-7c64-a324-a08e043c6006"
+    ],
+    "gpu_indices": [
+      0,
+      1,
+      2,
+      3
+    ],
+    "min_free_memory_mib": 12000,
+    "sharing_other_real_jobs": true
+  },
+  "actual_inventory": [
+    {
+      "index": 0,
+      "uuid": "GPU-f679bff0-a4a2-ae4f-0b85-74c519b45a9c",
+      "memory_used_mib": 4,
+      "memory_free_mib": 81150,
+      "utilization_percent": 0
+    },
+    {
+      "index": 1,
+      "uuid": "GPU-562375d4-b1d6-f0d9-a68d-5a81e5272907",
+      "memory_used_mib": 4,
+      "memory_free_mib": 81150,
+      "utilization_percent": 0
+    },
+    {
+      "index": 2,
+      "uuid": "GPU-b8a35758-a506-a8a1-dca7-499c485068fc",
+      "memory_used_mib": 4,
+      "memory_free_mib": 81150,
+      "utilization_percent": 0
+    },
+    {
+      "index": 3,
+      "uuid": "GPU-72a7d08b-16b7-7c64-a324-a08e043c6006",
+      "memory_used_mib": 4,
+      "memory_free_mib": 81150,
+      "utilization_percent": 0
+    }
+  ],
+  "actual_all_root_compute_apps_query_empty": true,
+  "allowed_phases": [
+    "train_calibration",
+    "formal_ddp_world4",
+    "formal_single"
+  ],
+  "dispatch_condition": "native_scope must livecheck current grant, UUID/headroom and preserve all real/unknown occupants immediately before each child; no zero-utilization wait is required.",
+  "scientific_world_size": 4,
+  "formal_student_32_gpu_pins_changed": false,
+  "no_jobs_launched_by_root_for_this_plan": true
+}

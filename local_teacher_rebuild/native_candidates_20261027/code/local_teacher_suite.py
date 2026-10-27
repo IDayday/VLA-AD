@@ -410,7 +410,7 @@ class Owner:
                      teacher_bundle=str(self.args.root / 'frozen_teacher/BUNDLE.json'))
         config = self.folder / f'TARGET_PATHS_{population}.json'
         atomic(config, paths)
-        command = [self.args.python, '-B', '-m', 'student_distillation.build_targets', '--paths', str(config),
+        command = ['env','PYTHONPATH='+str(self.args.round1_repo),self.args.python, '-B', '-m', 'student_distillation.build_targets', '--paths', str(config),
                    '--population', population, '--target-versions', 'full', 'gain1', '--device', 'cuda', '--out', str(output)]
         if population != 'train':
             command += ['--diagnostic-only']

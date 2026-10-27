@@ -225,6 +225,17 @@ class PreparationOwner:
         return values, path, config
 
     def targets(self, population, uuid):
+        manifest=self.args.results/'targets'/population/'MANIFEST.json'
+        if manifest.exists() and read(manifest)['populations'][population]['identity'].get('execution_device_type')=='cpu_verified_native_cache':
+            from cached_target_publication import validate_publication
+            validate_publication(manifest,self.args.results)
+            if not self.gpu_output_complete('targets_'+population,manifest):
+                raise ValueError('Published cached actual target identity failed')
+            atomic(self.folder/f'targets_{population}.COMPLETE.json',{'status':'COMPLETE',
+                   'output':reference(manifest),'construction':'cpu_verified_native_cache',
+                   'publication':reference(manifest.parent/'ADOPTION.json')})
+            self.update('TARGETS_ACCEPTED',accepted_population=population)
+            return
         arguments = ['-m', 'student_distillation.build_targets', '--paths', self.paths_file,
                      '--population', population, '--target-versions', 'full', 'gain1', '--device', 'cuda:0',
                      '--out', self.args.results / 'targets']
@@ -375,13 +386,21 @@ class PreparationOwner:
         self.training_world_size = int(planned.get('world_size', len(allocation['gpu_uuids'])))
         if self.training_world_size not in (2, 4):
             raise ValueError('Permanent resource world size must be two or four')
-        self.preparation_host = allocation['host']
-        uuids = allocation['gpu_uuids'][:2]
+        preparation_plan=read(self.args.preparation_resources) if self.args.preparation_resources else None
+        preparation=preparation_plan['allocation'] if preparation_plan else allocation
+        self.preparation_host = preparation['host']
+        preparation_uuids=preparation['gpu_uuids']
+        if len(preparation_uuids)!=self.training_world_size or len(set(preparation_uuids))!=self.training_world_size:
+            raise ValueError('Preparation resource plan must contain the chosen world size distinct UUIDs')
+        uuids = preparation_uuids[:2]
+        self.update('PREPARING_TRAIN_TEST_TARGETS',preparation_host=self.preparation_host,
+                    preparation_gpu_uuids=preparation_uuids)
         with ThreadPoolExecutor(max_workers=2) as workers:
             futures = [workers.submit(self.targets, population, uuid)
                        for population, uuid in zip(('train', 'test'), uuids)]
             for future in futures:
                 future.result()
+        self.update('CALIBRATING_TRAIN_ONLY')
         self.gpu_job('train_calibration', self.preparation_host, [uuids[0]],
                      ['-m', 'student_distillation.calibration', '--config', config_file, '--train-only',
                       '--device', 'cuda:0', '--out', self.args.results / 'calibration'], values['calibration'])
@@ -392,7 +411,8 @@ class PreparationOwner:
                   '--teacher-bundle', values['teacher_bundle'], '--targets-manifest', values['targets_manifest'],
                   '--calibration', values['calibration']]
         ddp_out = self.args.results / 'qualification/formal_ddp'
-        self.gpu_job('formal_ddp', allocation['host'], allocation['gpu_uuids'],
+        self.update('QUALIFYING_NEW_TEACHER_WORLD_SIZE',training_world_size=self.training_world_size)
+        self.gpu_job('formal_ddp', self.preparation_host, preparation_uuids,
                      ['-m', 'torch.distributed.run', '--standalone', '--nproc_per_node=' + str(self.training_world_size), '--module',
                       'student_distillation.qualification', '--ddp-only', '--training-world-size', str(self.training_world_size), *common, '--out', ddp_out], ddp_out / 'DDP_TAIL_53.json')
         self.gpu_job('formal_single', self.preparation_host, [uuids[1]],
@@ -430,6 +450,7 @@ def main():
     parser.add_argument('--results', type=Path, default=RESULTS)
     parser.add_argument('--python', default=PYTHON)
     parser.add_argument('--resources', type=Path, default=RESULTS / 'resources/ROUND1_PERMANENT_32GPU_ALLOCATION.json')
+    parser.add_argument('--preparation-resources',type=Path,help='Preparation-only host/UUID plan; formal student allocation stays unchanged')
     parser.add_argument('--code-freeze', type=Path, default=RESULTS / 'protocol/CODE_FREEZE.json')
     parser.add_argument('--poll-seconds', type=float, default=30)
     parser.add_argument('--engineering-retries', type=int, default=2)

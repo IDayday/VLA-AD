@@ -139,7 +139,7 @@ def main():
         'both_external_fitter_source_changes_rejected_before_import':True,
         'real_Controller_current_identity_completed_attempt_reused_twice_without_launch':True,
         'GPU_model_training_or_real_asset_mutations':0,'synthetic_fixture_only':True,'formal_qualification':False}
-    atomic(ROOT/'engineering/PREPARATION_IDENTITY_CPU_CHECK.json',receipt);print(json.dumps(receipt,indent=2))
+    atomic(ROOT/'engineering'/('PREPARATION_IDENTITY_CPU_CHECK.'+sha(ROOT/'code/preparation_identity.py')+'.json'),receipt);print(json.dumps(receipt,indent=2))
 
 
 if __name__=='__main__':main()
