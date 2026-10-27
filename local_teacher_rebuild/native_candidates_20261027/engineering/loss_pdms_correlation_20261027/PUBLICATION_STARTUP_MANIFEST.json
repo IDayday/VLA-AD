@@ -1,0 +1,32 @@
+{
+  "at": "2026-10-27T23:38:40.237168+00:00",
+  "files": {
+    "ANALYSIS_CODE_FREEZE.v1.json": "9f9217d1995435aa2421bfc6c3b0072e2bf207d78e86053f1b3bd05a112fd84b",
+    "ACTUAL_STARTUP.json": "86fccd4f8dafe1a3bc797a25372459fbe33ee7faa08da09b4efc72b84fbeb29e",
+    "INPUT_MANIFEST.json": "3bb02fa83ab054f6276d6349762d9cd3716fd13fcae13d5ae7edd3ec46a6c803",
+    "METHODS_FOUR_ARMS.md": "4a3d58bdd59e9368b2f5d1dc791261150356ec1bb678f55f3bbfb16bb6752ee2",
+    "correlation_worker.py": "f71cfd4f01881392090d9bb5c5ea5250ba7f2476023484e84be4389fa9faf489",
+    "CORRELATION_ANALYSIS_README.md": "50cdf18d8f127352ff4d7fe06d69d7cd7b15675ed62e6ec9127a59f2120e2ae7",
+    "PRELAUNCH_CPU_CHECK.json": "4d95f1b165dee6bb6cf6492e7673858b73b0e7d14f32011ad07bdad3043b0e6b",
+    "ANALYSIS_CODE_FREEZE.json": "9e9426151d7ab3125a0f140fecd05328892846e1d3ba28f0093d9cf985425945",
+    "CORRELATION_CPU_TESTS.log": "8492dbef5909bc72ae32e8db8a35397554f75dd14ff13cce8e1a9e1fd66ba2b8",
+    "ACTUAL_OWNER.json": "02e7cb26649ed1c3c91e4ab6047ff1e63ef0a3c22f08554d296cf9f6e8522b96",
+    "SUPPLEMENTAL_HANDOFF.json": "13e3b2775f1de7689b0368ecef6742d23b5cc349dfe40d284e625cb52496ba8b",
+    "METHODS_SOURCE_RECEIPT.json": "9a4760188b05ce41d9a9526a5b4dc254d1f24e1f52145d679912bd7c939d2eef",
+    "REQUEST.json": "b04af7f0a0f1c983d51f045a1c1cfe45f931e547058316ad7de2bca9023bb779",
+    "correlation_owner.py": "9e197ee61aa3dcaba63cdca7e1964bcd2aaf885a209c3b0e3dd39177ef9ed3e8",
+    "SCOPE_FREEZE.json": "992ed1a6d52330f73fd4222e59bcafe511a94b8918e27c36f78cbdaa38f4e5bb",
+    "correlation_analysis.py": "5ecf8b21450134730ae24c6146b36d9ec8d01a235485d54e4f6e346df08ad2aa",
+    "supplemental_loss_metrics.py": "aeaf3e28971c8628800a0c3a8ca583404e06161c58e30b1e3ee786645619c12b",
+    "LAUNCH.json": "f645983fbadf46a6e09516f76d1c3716d9d2fc4439589853c3580d41c0cb222a",
+    "correlation_runtime.py": "7b35ae228717f03660d74748a58e184e2cd9116912bf7d3f347ddb41c6c1aaa5",
+    "ADDITIONAL_LOSS_METRICS_PLAN.json": "3df000bf72b7ab7e8329340079d19bd15fded89a1648a346e08698c0b1011d3c",
+    "test_supplemental_loss_metrics.py": "ded01dd82f186f0e1afedd69f378af38f3c134aadd37068f5f040bedae937946",
+    "A_EPOCH_LOSS_SNAPSHOT.json": "c7671c85141c34273a64278bc1ade750f6ed07294448c34b1c7e878997fa0221",
+    "EXECUTION_README.md": "f97b4d7d43fef3c14b8102807b31f41c1be7af07e3e14ad6b975f39c145ec660",
+    "test_correlation_analysis.py": "52bd719dc753e1c7300fd4b5c69453a217d6d024fe33d75ad3f62796c76942f6",
+    "CORRELATION_ANALYSIS_HANDOFF.json": "4e7013145ae4dc61853504f3c4d4a6362e0d2960fd956ecd64ff432ff5c7f4b0"
+  },
+  "correlation_results_pending": true,
+  "training_source_unchanged": true
+}

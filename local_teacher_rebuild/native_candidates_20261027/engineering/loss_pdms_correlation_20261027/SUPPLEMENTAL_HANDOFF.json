@@ -1,0 +1,14 @@
+{
+  "status": "SUPPLEMENTAL_CPU_IMPLEMENTATION_PASS",
+  "created_at": "2026-10-27T23:37:23.898224+00:00",
+  "source": "supplemental_loss_metrics.py",
+  "source_sha256": "aeaf3e28971c8628800a0c3a8ca583404e06161c58e30b1e3ee786645619c12b",
+  "test_source_sha256": "ded01dd82f186f0e1afedd69f378af38f3c134aadd37068f5f040bedae937946",
+  "cpu_tests_passed": 4,
+  "frozen_primary_source_sha256_unchanged": "5ecf8b21450134730ae24c6146b36d9ec8d01a235485d54e4f6e346df08ad2aa",
+  "reads_live_GPU_or_training_outputs": false,
+  "required_primary_status": "COMPLETE",
+  "estimated_runtime_seconds": 2,
+  "metric_count": 8,
+  "CLI": "python -B supplemental_loss_metrics.py --manifest INPUT_MANIFEST.json --analysis analysis/CORRELATION_ANALYSIS.json --out analysis"
+}

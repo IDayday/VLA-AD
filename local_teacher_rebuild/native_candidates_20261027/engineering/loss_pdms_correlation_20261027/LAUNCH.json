@@ -1,0 +1,17 @@
+{
+  "status": "A_CORRELATION_FULL_EVALUATION_OWNER_LAUNCHED",
+  "time": "2026-10-27T23:32:53.088095+00:00",
+  "launch": {
+    "host": "training-vla-zt",
+    "pid": 939826,
+    "transport": "canonical_local_same_stable_launcher"
+  },
+  "dispatch_directory": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/dispatch/A_loss_PDMS_correlation_20261027",
+  "command": [
+    "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+    "-B",
+    "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/loss_pdms_correlation_20261027/correlation_owner.py"
+  ],
+  "source_freeze_sha256": "992ed1a6d52330f73fd4222e59bcafe511a94b8918e27c36f78cbdaa38f4e5bb",
+  "actual_completion_requires_all5_fullTest_and_all5_Train8192_losses_and_correlation_report": true
+}

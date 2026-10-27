@@ -1,0 +1,29 @@
+{
+  "status": "CPU_IMPLEMENTATION_PASS_NO_GPU_OR_PRODUCTION_WRITES",
+  "time": "2026-10-27T23:33:30.234688+00:00",
+  "tests_run": 9,
+  "tests_passed": true,
+  "source_sha256": "5ecf8b21450134730ae24c6146b36d9ec8d01a235485d54e4f6e346df08ad2aa",
+  "test_sha256": "52bd719dc753e1c7300fd4b5c69453a217d6d024fe33d75ad3f62796c76942f6",
+  "test_log_sha256": "8492dbef5909bc72ae32e8db8a35397554f75dd14ff13cce8e1a9e1fd66ba2b8",
+  "actual_frozen_epoch_statistics_identity_verified": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/loss_pdms_correlation_20261027/A_EPOCH_LOSS_SNAPSHOT.json",
+    "sha256": "c7671c85141c34273a64278bc1ade750f6ed07294448c34b1c7e878997fa0221",
+    "selected_epochs": [
+      1,
+      4,
+      8,
+      12,
+      16
+    ]
+  },
+  "manifest_interface": "--manifest INPUT_MANIFEST.json --out OUTPUT_DIR",
+  "incomplete_exit_code": 2,
+  "complete_exit_code": 0,
+  "estimated_analysis_runtime_seconds": [
+    60,
+    180
+  ],
+  "runtime_estimate_IO_busy_buffer_seconds": 300,
+  "runtime_estimate_is_not_measurement": true
+}

@@ -1,0 +1,14 @@
+{
+  "schema": "nrkd_A_correlation_overlay_v1",
+  "at": "2026-10-27T23:32:50.961962+00:00",
+  "files": {
+    "REQUEST.json": "b04af7f0a0f1c983d51f045a1c1cfe45f931e547058316ad7de2bca9023bb779",
+    "INPUT_MANIFEST.json": "3bb02fa83ab054f6276d6349762d9cd3716fd13fcae13d5ae7edd3ec46a6c803",
+    "A_EPOCH_LOSS_SNAPSHOT.json": "c7671c85141c34273a64278bc1ade750f6ed07294448c34b1c7e878997fa0221",
+    "correlation_runtime.py": "7b35ae228717f03660d74748a58e184e2cd9116912bf7d3f347ddb41c6c1aaa5",
+    "correlation_worker.py": "f71cfd4f01881392090d9bb5c5ea5250ba7f2476023484e84be4389fa9faf489",
+    "correlation_owner.py": "9e197ee61aa3dcaba63cdca7e1964bcd2aaf885a209c3b0e3dd39177ef9ed3e8"
+  },
+  "native_numerical_source_unchanged": true,
+  "all_four_training_children_unchanged": true
+}

@@ -1,0 +1,46 @@
+{
+  "schema": "nrkd_A_loss_PDMS_correlation_request_v1",
+  "at": "2026-10-27T23:31:54.403000+00:00",
+  "instruction": "选取A组实验一些不同loss 的ckpts，评测测试集分数，统计下loss指标和测试集分数是否有相关性。并总结目前四组蒸馏方法，以及它们的区别",
+  "run_id": "H_full_seed20261027",
+  "epochs": [
+    1,
+    4,
+    8,
+    12,
+    16
+  ],
+  "checkpoint_selection_rule": "Epoch milestones fixed before looking at their Test scores, spanning high-to-low online H; not selected by Test score.",
+  "test_scenes": 12146,
+  "noise_indices": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "reuse_formal_test_epochs": [
+    8,
+    16
+  ],
+  "additional_test_epochs": [
+    1,
+    4,
+    12
+  ],
+  "fixed_Train_representation_panel_scenes": 8192,
+  "loss_indicators": [
+    "actual_scene_weighted_online_epoch_H",
+    "fixed_checkpoint_Train8192_panel_H_normalized"
+  ],
+  "association_metrics": [
+    "Pearson",
+    "Spearman"
+  ],
+  "do_not_change_primary_formal_selection_endpoints": true,
+  "test_is_already_used_for_model_selection": true,
+  "independent_held_out_test": false,
+  "no_early_stop_or_gradient_training_changes": true,
+  "original_training_HEAD": "0a58bd8e6271e26103512add2c5cb7816d7eb8f1",
+  "resources": "Existing fixed-host16GPU allocation only, qualified sharing; never temporary hosts."
+}

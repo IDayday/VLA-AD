@@ -1,0 +1,94 @@
+{
+  "created_at": "2026-10-27T23:30:44.453616+00:00",
+  "status": "METHODS_READ_ONLY_SOURCE_VERIFIED",
+  "training_HEAD": "0a58bd8e6271e26103512add2c5cb7816d7eb8f1",
+  "training_numerical_source_unchanged": true,
+  "active_seed": 20261027,
+  "sources": [
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-20261026/student_distillation/adapter.py",
+      "sha256": "77a91256ee4bfb952c3325e257bbdbe62c5bd7e1947a714227ee35478365525c"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-20261026/student_distillation/losses.py",
+      "sha256": "521182ff9759030dca54607c2bcdd692cbd889ab54473e1d7232e08127bc40bd"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-20261026/student_distillation/train.py",
+      "sha256": "79a37580561b920fc251d3c1993318d76fe5fd1d4c48029ce94f385c560ecace"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-20261026/student_distillation/native_bridge.py",
+      "sha256": "b3e6b3bf406ec6b0f8d4ea4e245de83e227bcf2fd8d502d4610f7428f5505665"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-20261026/student_distillation/noise.py",
+      "sha256": "053f1fa195632be032881c472cf298697e1658ccb339b638ce73a06bc6301ba8"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-20261026/student_distillation/build_targets.py",
+      "sha256": "b3eb4c3abdf32265bfe244c279cdea0bd695cedfb64cdc8f7ef598a97190b951"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-20261026/student_distillation/calibration.py",
+      "sha256": "2ba64c8b3be9a13da8b35fe1354a657eaf2596f5958917d71fdbd9241f70d739"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-20261026/student_distillation/feature_cache.py",
+      "sha256": "55b13cf6527b50919f71a3208d547d1123f9e3f5866906b7c3827f33be6c2ec3"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-20261026/student_distillation/evaluate.py",
+      "sha256": "3e47610575d296c1d7b1cdd6c1b7aad37cc43fddfd5f1d81f1798d54c721fc06"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/effective_config.yaml",
+      "sha256": "e4b8d0a7f15d73e0316482e8fb54dd9551e1f49ab65ff2ae3147437168bae905"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/TRAINABLE_PARAMETERS.json",
+      "sha256": "1a8e44f063fc389a7b3ba2e1a067da82d2a94198cf3ca513eb4cb1a06593c103"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/effective_config.yaml",
+      "sha256": "fcaa709758e60dbbd698dcf3225594333097fd0a9e384ee19343a09f5bff435e"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/TRAINABLE_PARAMETERS.json",
+      "sha256": "1a8e44f063fc389a7b3ba2e1a067da82d2a94198cf3ca513eb4cb1a06593c103"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/effective_config.yaml",
+      "sha256": "d23af71bd271471a1d8817e136b4effa2162a9ad0d29737f3477c9c4845b2bf4"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/TRAINABLE_PARAMETERS.json",
+      "sha256": "1a8e44f063fc389a7b3ba2e1a067da82d2a94198cf3ca513eb4cb1a06593c103"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/effective_config.yaml",
+      "sha256": "d7d2931216facc2184ba2c939dff8270839f9f70492a92b0f617cd6edc3363bb"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/TRAINABLE_PARAMETERS.json",
+      "sha256": "1a8e44f063fc389a7b3ba2e1a067da82d2a94198cf3ca513eb4cb1a06593c103"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/calibration/CALIBRATION.json",
+      "sha256": "fcaea8dcc7f3d82fcd3953bb23633f3073ebd2a614457392139b389e4ac0cc42"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/targets/train/MANIFEST.json",
+      "sha256": "a2d286ee6c1ef10fa5a5be8232a41111a4b6ee9ab31625df7ba924114da4f427"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/frozen_teacher/BUNDLE.json",
+      "sha256": "ed0a1bef8b27d89e7bb4eb8f32c93134204d66c42184ddecaa1831c5a7188dfc"
+    }
+  ],
+  "document": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/loss_pdms_correlation_20261027/METHODS_FOUR_ARMS.md",
+    "sha256": "4a3d58bdd59e9368b2f5d1dc791261150356ec1bb678f55f3bbfb16bb6752ee2"
+  },
+  "GPU_or_process_operations_performed": false
+}

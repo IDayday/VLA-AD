@@ -1,0 +1,9 @@
+{
+  "at": "2026-10-27T23:34:24.672545+00:00",
+  "files": {
+    "correlation_analysis.py": "5ecf8b21450134730ae24c6146b36d9ec8d01a235485d54e4f6e346df08ad2aa",
+    "test_correlation_analysis.py": "52bd719dc753e1c7300fd4b5c69453a217d6d024fe33d75ad3f62796c76942f6",
+    "METHODS_FOUR_ARMS.md": "4a3d58bdd59e9368b2f5d1dc791261150356ec1bb678f55f3bbfb16bb6752ee2"
+  },
+  "checks": "9 CPU analysis fixtures PASS; only frozen immutable manifests and real evaluation evidence accepted."
+}

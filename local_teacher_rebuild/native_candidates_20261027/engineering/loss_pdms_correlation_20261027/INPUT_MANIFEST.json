@@ -1,0 +1,52 @@
+{
+  "schema": "nrkd_loss_pdms_correlation_input_v1",
+  "run_id": "H_full_seed20261027",
+  "results_root": "/mnt/project/recogdrive-no-routing-round1-results-20261026",
+  "epochs": [
+    1,
+    4,
+    8,
+    12,
+    16
+  ],
+  "epoch_statistics": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/loss_pdms_correlation_20261027/A_EPOCH_LOSS_SNAPSHOT.json",
+    "sha256": "c7671c85141c34273a64278bc1ade750f6ed07294448c34b1c7e878997fa0221"
+  },
+  "request": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/loss_pdms_correlation_20261027/REQUEST.json",
+    "sha256": "b04af7f0a0f1c983d51f045a1c1cfe45f931e547058316ad7de2bca9023bb779"
+  },
+  "points": [
+    {
+      "epoch": 1,
+      "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/checkpoints/epoch_001.pt",
+      "test_evaluation": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/diagnostics/loss_pdms_correlation/epoch_001/test",
+      "train_panel_representation": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/diagnostics/loss_pdms_correlation/epoch_001/train_panel_representation"
+    },
+    {
+      "epoch": 4,
+      "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/checkpoints/epoch_004.pt",
+      "test_evaluation": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/diagnostics/loss_pdms_correlation/epoch_004/test",
+      "train_panel_representation": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/diagnostics/loss_pdms_correlation/epoch_004/train_panel_representation"
+    },
+    {
+      "epoch": 8,
+      "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/checkpoints/epoch_008.pt",
+      "test_evaluation": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/test/epoch_008",
+      "train_panel_representation": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/diagnostics/loss_pdms_correlation/epoch_008/train_panel_representation"
+    },
+    {
+      "epoch": 12,
+      "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/checkpoints/epoch_012.pt",
+      "test_evaluation": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/diagnostics/loss_pdms_correlation/epoch_012/test",
+      "train_panel_representation": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/diagnostics/loss_pdms_correlation/epoch_012/train_panel_representation"
+    },
+    {
+      "epoch": 16,
+      "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/checkpoints/epoch_016.pt",
+      "test_evaluation": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/test/epoch_016",
+      "train_panel_representation": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/diagnostics/loss_pdms_correlation/epoch_016/train_panel_representation"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+{
+  "at": "2026-10-27T23:36:37.937859+00:00",
+  "additional_CPU_analysis": "keep/repair subgroup losses and preservation diagnostics for the same five preselected A checkpoints",
+  "inputs": "Only frozen onlineepoch snapshot and completed mainverified Test/panel SUMMARY files; no new GPU evaluations",
+  "primary_analysis_or_selection_unchanged": true,
+  "no_causality_claims": true
+}

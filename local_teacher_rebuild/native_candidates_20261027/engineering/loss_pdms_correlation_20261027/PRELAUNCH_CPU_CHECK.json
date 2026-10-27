@@ -1,0 +1,46 @@
+{
+  "status": "PASS",
+  "actual_A_checkpoints": [
+    {
+      "epoch": 1,
+      "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/checkpoints/epoch_001.pt",
+      "sha256": "51e2a9661fe25441a5b0d26170d9b20dff01b6a541acd6834713b4231447a7da",
+      "checkpoint_complete_sha256": "76d4683a101a5851d0788b35e1f9ebb6cf62f9d6986ede8e4c724e83d5a3bfff",
+      "protocol_sha256": "b0aea5d5892ad9e971ec3110be9ed453f0b57aec7c799d3a54642cdd21fa1f5a",
+      "progress": {
+        "global_step": 1341,
+        "epoch_index": 1,
+        "global_batch_cursor": 0,
+        "real_scenes_seen": 85813
+      }
+    },
+    {
+      "epoch": 4,
+      "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/checkpoints/epoch_004.pt",
+      "sha256": "d4775f2b650a2103807bd28cf7246135029876e28826545ba2101702c774d883",
+      "checkpoint_complete_sha256": "f28fb307095622e9f715c0f5e1dd0f4e47c1b66e6ebc59cd62b105feadf2b55b",
+      "protocol_sha256": "b0aea5d5892ad9e971ec3110be9ed453f0b57aec7c799d3a54642cdd21fa1f5a",
+      "progress": {
+        "global_step": 5364,
+        "epoch_index": 4,
+        "global_batch_cursor": 0,
+        "real_scenes_seen": 343252
+      }
+    },
+    {
+      "epoch": 12,
+      "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/checkpoints/epoch_012.pt",
+      "sha256": "442341c7e697dedd9edfcecd2c430bd0400d4a1280fe70bd73bb7173da9c55f6",
+      "checkpoint_complete_sha256": "6167fcda13ccf8e14950dc8decedf00443d99eb59eae0136739fbf63e93dacbc",
+      "protocol_sha256": "b0aea5d5892ad9e971ec3110be9ed453f0b57aec7c799d3a54642cdd21fa1f5a",
+      "progress": {
+        "global_step": 16092,
+        "epoch_index": 12,
+        "global_batch_cursor": 0,
+        "real_scenes_seen": 1029756
+      }
+    }
+  ],
+  "formal_Test8_and16_not_duplicated": true,
+  "no_GPU_or_training_step_in_this_check": true
+}

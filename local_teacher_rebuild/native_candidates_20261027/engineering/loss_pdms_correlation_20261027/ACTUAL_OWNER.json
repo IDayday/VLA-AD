@@ -1,0 +1,25 @@
+{
+  "epochs": [
+    1,
+    4,
+    8,
+    12,
+    16
+  ],
+  "extra_Test_epochs": [
+    1,
+    4,
+    12
+  ],
+  "original_four_training_and_primary_Test_owners_unchanged": true,
+  "pid": 939827,
+  "resource_pins": {
+    "1": "training-vlawm-tsinghua-zt5",
+    "12": "training-vlawm-tsinghua-zt4",
+    "16": "training-vlawm-tsinghua-zt",
+    "4": "training-vla-zt",
+    "8": "training-vlawm-tsinghua-zt"
+  },
+  "started": "2026-10-27T23:32:54.357536+00:00",
+  "status": "RUNNING"
+}

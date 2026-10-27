@@ -93,3 +93,7 @@
 - [历史20261028配置与统计](reports/round1_initial_20261027/cancelled_seed20261028/)
 
 本次发布包含源码、配置、指纹、初始日志快照与统计，没有打包RL/VLM大权重、NAVSIM原始数据、505GB Base缓存、全量教师目标或训练checkpoint。JSON中的本机路径是实际执行溯源信息，迁机需映射并按SHA核对。完整实验报告待训练、验证和测试实际完成后另行提交。
+
+## A组不同loss权重与完整Test PDMS相关性
+
+用户要求已登记，预先选择epoch1/4/8/12/16，复用正式Test8/16并并行补评Test1/4/12；每点同时重算固定Train8192面板H。完整5点仍在生成，未给出任何相关系数。代码、实际启动记录、冻结输入和[四组方法说明](local_teacher_rebuild/native_candidates_20261027/engineering/loss_pdms_correlation_20261027/METHODS_FOUR_ARMS.md)位于[独立分析目录](local_teacher_rebuild/native_candidates_20261027/engineering/loss_pdms_correlation_20261027/)。本诊断不扩展正式best选择端点，也不改训练或增加物理GPU。
