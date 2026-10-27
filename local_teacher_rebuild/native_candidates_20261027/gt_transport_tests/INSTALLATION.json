@@ -1,0 +1,50 @@
+{
+  "status": "GENERIC_LOCAL_CANDIDATE_GT_TRANSPORT_INSTALLED",
+  "root": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027",
+  "sources": {
+    "gt_opt_controller.py": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/code/gt_opt_controller.py",
+      "sha256": "4f22abaec72a75e9a158ae9a9520c7452153f0f620fdd7f89a66e22b64266e4c"
+    },
+    "gt_opt_worker.py": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/code/gt_opt_worker.py",
+      "sha256": "12023b2a3882448c63259d46ef8804e58d0aa97cfce4bf2514fbe0530831aae8"
+    },
+    "gt_numeric.py": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/code/gt_numeric.py",
+      "sha256": "f172cbdf3d1813a1559a5e218b86fb30f7b7b62c58c75a9357c76784e134d8a7"
+    },
+    "gt_controller_fast.py": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/code/gt_controller_fast.py",
+      "sha256": "f2cd6a0b1040b58d553eb9118b77f95d467f6e50e02f6bdbd9c42c3d7fb88796"
+    },
+    "local_gt_reuse.py": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/code/local_gt_reuse.py",
+      "sha256": "f1c29049aa3f6b59c3f92e9602acc66035d4445a7051a9de7dff1ab016f31091"
+    },
+    "local_gt_initialize.py": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/code/local_gt_initialize.py",
+      "sha256": "1a3e5c072d3ac2844ef643edeb222ce31db7e778f892ac50aa62f5608301dc24"
+    }
+  },
+  "unchanged_numeric_methods": [
+    "_atomic",
+    "_arrays",
+    "shims",
+    "replay_noise",
+    "predict_gradient",
+    "prediction",
+    "trajectory",
+    "mask",
+    "suffix",
+    "verify_engine",
+    "prepare",
+    "run_config",
+    "export_selected"
+  ],
+  "original_archived_math_sources_modified": false,
+  "installer": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/engineering/local_gt_candidates_20261027/install_gt.py",
+    "sha256": "d0b7147d67bb74efb09aab12e0d3c2db5107b4915d72567236b5a504de71cba1"
+  }
+}

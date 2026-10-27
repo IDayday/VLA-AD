@@ -1,0 +1,13 @@
+# Native candidate production scope
+
+This directory records the source and metadata used by the formal local teacher root `/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027`. `SOURCE_MANIFEST.json` binds each exact copied file to its active source path and SHA. Operational absolute paths are intentionally preserved; this is a review snapshot of the actual execution, not a rewritten portable runtime.
+
+The full local Train Base S0 criterion selects 1,689 candidate inputs. The 1,416 verified intersections reuse completed original configurations after input/noise/semantic-configuration checks; 273 new candidates have actual raw Native input replay. All fifteen original GT search stages and all final candidate exports remain mandatory. Successful post S0 > 90 pair counts are determined after completion. The rederived ordinary panel is 9,881 scenes with original session membership, split into 7,878 fit and 2,003 calibration scenes.
+
+Only D / full384 clustering before shared D48 / K8 / enhanced double is fitted. Metadata adapters preserve original numerical function code objects and bind the archived original source. No historical PPU expert, basis, choice or score is used as formal teacher data. The shortened direct48 root contributes physical resource cost only.
+
+`engineering/permanent_fullflow/fullflow_teacher_owner.py` verifies the complete GT and actor-exit evidence, runs the original fitting/scoring pipeline, and directly executes the lossless CPU cache indexer after each actual full-population collection. Full Train/Test readiness starts preparation while independent Validation diagnostics can share authorized devices. The GPU-release marker remains informational. Current live policy, exact UUID and actual free capacity are checked for each new GPU child.
+
+The unchanged 21 student modules still require fresh qualification against this actual new teacher, followed by all eight A/B/C/D × seeds 20261027/20261028 runs, full40 epochs / Train85,813 / global64 / 53,640 updates. Full Validation, Test, diagnostics, paired comparisons and physical resource accounting must finish before REPORT_COMPLETE. Source freeze and background owner submission do not claim scientific completion.
+
+The previous `permanent_fullflow/` snapshot preserves the historical 1,850-candidate implementation and its transition history. The active production scope is the native candidate snapshot in this directory.

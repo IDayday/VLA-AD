@@ -392,8 +392,8 @@ class PreparationOwner:
             raise RuntimeError('Suite returned without all final results/report')
         # Actor walls overlap on shared GPUs. Report their interval union as a
         # distinct physical allocation cost before freezing the final report SHA.
-        subprocess.run([self.args.python, '-B', str(self.args.root / 'engineering/report_teacher_physical_costs.py'),
-                        '--include-gt', '--round1-report', str(self.args.results / 'ROUND1_REPORT.md')],
+        subprocess.run([self.args.python, '-B', str(self.args.root / 'engineering/permanent_fullflow/finalize_round1_physical_costs.py'),
+                        '--root', str(self.args.root), '--results', str(self.args.results), '--round1-report', str(self.args.results / 'ROUND1_REPORT.md')],
                        cwd=self.args.code, check=True)
         self.update('REPORT_COMPLETE', final_report=reference(self.args.results / 'ROUND1_REPORT.md'))
         atomic(self.folder / 'COMPLETE.json', self.state)

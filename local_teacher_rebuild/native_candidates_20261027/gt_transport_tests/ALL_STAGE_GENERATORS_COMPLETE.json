@@ -1,0 +1,367 @@
+{
+  "status": "PASS_ALL_ORIGINAL_GT_STAGE_GENERATORS_PRIVATE_CPU_FIXTURES",
+  "time": "2026-10-27T02:04:54.742574+00:00",
+  "fixture_root": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/engineering/local_gt_candidates_20261027/ALL_STAGE_GENERATORS_PRIVATE_FIXTURES/fixture_1793066662973222702",
+  "synthetic_only": true,
+  "live_ROOT_mutated": false,
+  "GPU_model_or_scoring_calls": 0,
+  "all_14_transitions": [
+    {
+      "stage": "strength_A",
+      "scenes": 3,
+      "configurations": 48,
+      "bindings": {
+        "main": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "main",
+          "function_code_sha256": "6c75904ea1984c466f4fccc4bf9336fb9e8fb2030ff0c5018fbf70bd884f4125",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "minimum_original_GT_loss": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "minimum_original_GT_loss",
+          "function_code_sha256": "3312fa48f0937c270f2254f2e16a3e8d84900f55620b8c40cd938fbd3486df95",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "transport_change": "one configuration per dynamic claim; original scene receipt after all configs"
+      },
+      "tasks_sha256": "bc42fcace9e8e7c12a04b689642ac85a1d540461686ee33cd1cb5f3e6f53964a"
+    },
+    {
+      "stage": "strength_B",
+      "scenes": 3,
+      "configurations": 108,
+      "bindings": {
+        "main": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "main",
+          "function_code_sha256": "6c75904ea1984c466f4fccc4bf9336fb9e8fb2030ff0c5018fbf70bd884f4125",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "minimum_original_GT_loss": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "minimum_original_GT_loss",
+          "function_code_sha256": "3312fa48f0937c270f2254f2e16a3e8d84900f55620b8c40cd938fbd3486df95",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "transport_change": "one configuration per dynamic claim; original scene receipt after all configs"
+      },
+      "tasks_sha256": "23eb8f9647981ab06d92d320a4352a63425fdfde15dcb6f22ee0df17815e1e53"
+    },
+    {
+      "stage": "strength_C",
+      "scenes": 3,
+      "configurations": 48,
+      "bindings": {
+        "main": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "main",
+          "function_code_sha256": "6c75904ea1984c466f4fccc4bf9336fb9e8fb2030ff0c5018fbf70bd884f4125",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "minimum_original_GT_loss": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "minimum_original_GT_loss",
+          "function_code_sha256": "3312fa48f0937c270f2254f2e16a3e8d84900f55620b8c40cd938fbd3486df95",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "transport_change": "one configuration per dynamic claim; original scene receipt after all configs"
+      },
+      "tasks_sha256": "08ece1b1adad506fb9f82a5eb1d7d28c6eb327dcbfdbde24a09d0f6a58664d98"
+    },
+    {
+      "stage": "pre_lift",
+      "scenes": 3,
+      "configurations": 18,
+      "bindings": {
+        "main": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "main",
+          "function_code_sha256": "6c75904ea1984c466f4fccc4bf9336fb9e8fb2030ff0c5018fbf70bd884f4125",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "minimum_original_GT_loss": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "minimum_original_GT_loss",
+          "function_code_sha256": "3312fa48f0937c270f2254f2e16a3e8d84900f55620b8c40cd938fbd3486df95",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "transport_change": "one configuration per dynamic claim; original scene receipt after all configs"
+      },
+      "tasks_sha256": "f1ac344f990351b20f332e399e4d8b9b980de8e011f9883d83a3473a6c4fb2c8"
+    },
+    {
+      "stage": "pre_A",
+      "scenes": 2,
+      "configurations": 16,
+      "bindings": {
+        "main": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "main",
+          "function_code_sha256": "6c75904ea1984c466f4fccc4bf9336fb9e8fb2030ff0c5018fbf70bd884f4125",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "minimum_original_GT_loss": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "minimum_original_GT_loss",
+          "function_code_sha256": "3312fa48f0937c270f2254f2e16a3e8d84900f55620b8c40cd938fbd3486df95",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "transport_change": "one configuration per dynamic claim; original scene receipt after all configs"
+      },
+      "tasks_sha256": "c58775989dee842bbbdbcacbe325698680976ce19f7b9c92ca8c89133745583c"
+    },
+    {
+      "stage": "pre_B",
+      "scenes": 2,
+      "configurations": 36,
+      "bindings": {
+        "main": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "main",
+          "function_code_sha256": "6c75904ea1984c466f4fccc4bf9336fb9e8fb2030ff0c5018fbf70bd884f4125",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "minimum_original_GT_loss": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "minimum_original_GT_loss",
+          "function_code_sha256": "3312fa48f0937c270f2254f2e16a3e8d84900f55620b8c40cd938fbd3486df95",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "transport_change": "one configuration per dynamic claim; original scene receipt after all configs"
+      },
+      "tasks_sha256": "484c75cadde65c4d566113902d1882e51213784401267446bdc11c526d40b5f6"
+    },
+    {
+      "stage": "pre_C",
+      "scenes": 2,
+      "configurations": 16,
+      "bindings": {
+        "main": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "main",
+          "function_code_sha256": "6c75904ea1984c466f4fccc4bf9336fb9e8fb2030ff0c5018fbf70bd884f4125",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "minimum_original_GT_loss": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "minimum_original_GT_loss",
+          "function_code_sha256": "3312fa48f0937c270f2254f2e16a3e8d84900f55620b8c40cd938fbd3486df95",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "transport_change": "one configuration per dynamic claim; original scene receipt after all configs"
+      },
+      "tasks_sha256": "5d2d202e8e2c328e9cde17e7a781307d2525c10b6593b36eb3f3deb2e7a2bc56"
+    },
+    {
+      "stage": "pre_progress",
+      "scenes": 5,
+      "configurations": 160,
+      "bindings": {
+        "main": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "main",
+          "function_code_sha256": "6c75904ea1984c466f4fccc4bf9336fb9e8fb2030ff0c5018fbf70bd884f4125",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "minimum_original_GT_loss": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "minimum_original_GT_loss",
+          "function_code_sha256": "3312fa48f0937c270f2254f2e16a3e8d84900f55620b8c40cd938fbd3486df95",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "transport_change": "one configuration per dynamic claim; original scene receipt after all configs"
+      },
+      "tasks_sha256": "8fc2f6e7913638ada62ac6199ad2aed74e24f6ce9e8e90488b0f2712aa91c2bb"
+    },
+    {
+      "stage": "pre_hard_gt",
+      "scenes": 4,
+      "configurations": 96,
+      "bindings": {
+        "main": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "main",
+          "function_code_sha256": "6c75904ea1984c466f4fccc4bf9336fb9e8fb2030ff0c5018fbf70bd884f4125",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "minimum_original_GT_loss": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "minimum_original_GT_loss",
+          "function_code_sha256": "3312fa48f0937c270f2254f2e16a3e8d84900f55620b8c40cd938fbd3486df95",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "transport_change": "one configuration per dynamic claim; original scene receipt after all configs"
+      },
+      "tasks_sha256": "77fe0da2c2880ed5f89e93eb6e56393ed8b97a70b0c652a33c28d49da0c3bfcf"
+    },
+    {
+      "stage": "post_A",
+      "scenes": 2,
+      "configurations": 16,
+      "bindings": {
+        "main": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "main",
+          "function_code_sha256": "6c75904ea1984c466f4fccc4bf9336fb9e8fb2030ff0c5018fbf70bd884f4125",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "minimum_original_GT_loss": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "minimum_original_GT_loss",
+          "function_code_sha256": "3312fa48f0937c270f2254f2e16a3e8d84900f55620b8c40cd938fbd3486df95",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "transport_change": "one configuration per dynamic claim; original scene receipt after all configs"
+      },
+      "tasks_sha256": "e89ea6ba09dbae97beb4f5a7b386379f6de4c95cd91824c4ce6f32ea08fe0ba2"
+    },
+    {
+      "stage": "post_B",
+      "scenes": 2,
+      "configurations": 60,
+      "bindings": {
+        "main": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "main",
+          "function_code_sha256": "6c75904ea1984c466f4fccc4bf9336fb9e8fb2030ff0c5018fbf70bd884f4125",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "minimum_original_GT_loss": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "minimum_original_GT_loss",
+          "function_code_sha256": "3312fa48f0937c270f2254f2e16a3e8d84900f55620b8c40cd938fbd3486df95",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "transport_change": "one configuration per dynamic claim; original scene receipt after all configs"
+      },
+      "tasks_sha256": "98cc4be630762bcaa7cba2d0a65580b2e2ef72854f7c719fbe48da949cc6902a"
+    },
+    {
+      "stage": "post_C",
+      "scenes": 2,
+      "configurations": 32,
+      "bindings": {
+        "main": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "main",
+          "function_code_sha256": "6c75904ea1984c466f4fccc4bf9336fb9e8fb2030ff0c5018fbf70bd884f4125",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "minimum_original_GT_loss": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "minimum_original_GT_loss",
+          "function_code_sha256": "3312fa48f0937c270f2254f2e16a3e8d84900f55620b8c40cd938fbd3486df95",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "transport_change": "one configuration per dynamic claim; original scene receipt after all configs"
+      },
+      "tasks_sha256": "d49a08c05154db10c5d676002218fa7a93681ba74cf92b13e763afff772b5ae0"
+    },
+    {
+      "stage": "post_from_pre",
+      "scenes": 2,
+      "configurations": 12,
+      "bindings": {
+        "main": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "main",
+          "function_code_sha256": "6c75904ea1984c466f4fccc4bf9336fb9e8fb2030ff0c5018fbf70bd884f4125",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "minimum_original_GT_loss": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "minimum_original_GT_loss",
+          "function_code_sha256": "3312fa48f0937c270f2254f2e16a3e8d84900f55620b8c40cd938fbd3486df95",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "transport_change": "one configuration per dynamic claim; original scene receipt after all configs"
+      },
+      "tasks_sha256": "18b9173a8143644ae487ed2f960ce81730d0e29c972cf8a94f71a674f36f60e6"
+    },
+    {
+      "stage": "post_progress",
+      "scenes": 2,
+      "configurations": 64,
+      "bindings": {
+        "main": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "main",
+          "function_code_sha256": "6c75904ea1984c466f4fccc4bf9336fb9e8fb2030ff0c5018fbf70bd884f4125",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "minimum_original_GT_loss": {
+          "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+          "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+          "function": "minimum_original_GT_loss",
+          "function_code_sha256": "3312fa48f0937c270f2254f2e16a3e8d84900f55620b8c40cd938fbd3486df95",
+          "binding": "unchanged __code__ / private FunctionType globals"
+        },
+        "transport_change": "one configuration per dynamic claim; original scene receipt after all configs"
+      },
+      "tasks_sha256": "085f86c45018786b0d55ae56e03b5bfe55fb1339ec7195e4b28487ee19611d5b"
+    }
+  ],
+  "export_planning": [
+    {
+      "name": "export",
+      "scenes": 8,
+      "tasks_sha256": "e151a734ae3d575e8509e6956ea199eb9319e8eba75f29b299354063cf587dd8"
+    },
+    {
+      "name": "export_pre",
+      "scenes": 8,
+      "tasks_sha256": "c40d2f0611da56a1f12ab74537f7d2f75cd5b18a2a87e76df9ff1a409823d20d"
+    },
+    {
+      "name": "export_post",
+      "scenes": 8,
+      "tasks_sha256": "159e4ec5cb959cb7becb5b2005430c17415a14cfb8765edc19ba8dddc625d155"
+    }
+  ],
+  "minimum_original_GT_loss_uses_actual_state_candidate_index": true,
+  "original_main_binding": {
+    "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+    "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+    "function": "main",
+    "function_code_sha256": "6c75904ea1984c466f4fccc4bf9336fb9e8fb2030ff0c5018fbf70bd884f4125",
+    "binding": "unchanged __code__ / private FunctionType globals"
+  },
+  "original_minimum_binding": {
+    "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_next_stage.py",
+    "file_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+    "function": "minimum_original_GT_loss",
+    "function_code_sha256": "3312fa48f0937c270f2254f2e16a3e8d84900f55620b8c40cd938fbd3486df95",
+    "binding": "unchanged __code__ / private FunctionType globals"
+  },
+  "source_sha256": "e408a77969794e2c8fd3aec4e11a82e6d963cf12013507bbe9298d63efd6f5d1",
+  "controller_source_sha256": "4f22abaec72a75e9a158ae9a9520c7452153f0f620fdd7f89a66e22b64266e4c",
+  "no_live_source_hot_edit": true
+}

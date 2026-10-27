@@ -4,6 +4,10 @@
   "shortened_cut_used_for_formal_teacher": false,
   "files": [
     {
+      "path": "finalize_round1_physical_costs.py",
+      "sha256": "9c5cbdc4dd7824f0d33d2d1693ce5cf8def2a7147b0c6f9002de4f390465e91e"
+    },
+    {
       "path": "fullflow_teacher_owner.py",
       "sha256": "58fb6df5d20e177c9740312a74137399de56a3b789a015caecbf4f33b3477ee2"
     },
@@ -13,7 +17,7 @@
     },
     {
       "path": "round1_prepare_and_run_permanent.py",
-      "sha256": "278129955e7bfc86efa59ae59122f1d60f26c193e2a6a1f8a08cab507521866c"
+      "sha256": "ff87c3240737f02172cdb8f8038b5b05aaa0d2bd903da8629602adcde1e53669"
     },
     {
       "path": "test_fullflow_owner.py",

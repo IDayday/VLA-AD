@@ -1,0 +1,107 @@
+{
+  "GPU_scorer_or_status_poll_calls": 0,
+  "artifacts": {
+    "LOCAL_FINAL_SPLIT.json": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/engineering/local_candidate_recheck_20261027/LOCAL_FINAL_SPLIT.json",
+      "sha256": "63a0576456c8e79a6bf36e143c0e67d4d55ddf306a402b6516750c6e5f019ffc"
+    },
+    "LOCAL_ORDINARY_PANEL.json": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/engineering/local_candidate_recheck_20261027/LOCAL_ORDINARY_PANEL.json",
+      "sha256": "b4e6fdfed81d0b445949b3c786366464068d09dcf93bd0d2b9451639d8bca8f3"
+    },
+    "LOCAL_PILOT32.json": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/engineering/local_candidate_recheck_20261027/LOCAL_PILOT32.json",
+      "sha256": "5e85c50a82224d981b3c3e38c4a9d7348c01a0a16fdabd422e8f0ea9b0dc7476"
+    }
+  },
+  "cal_full_population_counts": {
+    "failure": 347,
+    "high": 14380,
+    "mid": 1986
+  },
+  "cal_selected_counts": {
+    "failure": 347,
+    "high": 1210,
+    "mid": 446
+  },
+  "construction": {
+    "all_localS0_failures": 1689,
+    "category": "failureS0<.7,mid.7<=S0<=.9,highS0>.9",
+    "high_hash_controls": 6144,
+    "mean5_or_any5_used": false,
+    "mid_hash_controls": 2048,
+    "reference_priority": "sha256(OL_SESSION_CV|2026102531|reference8192|{category}|{token})",
+    "selected_order": "global_index ascending"
+  },
+  "derived_cal_count": 2003,
+  "derived_fit_count": 7878,
+  "elapsed_seconds": 3.7885475158691406,
+  "fit_full_population_counts": {
+    "failure": 1342,
+    "high": 60490,
+    "mid": 7268
+  },
+  "fit_selected_counts": {
+    "failure": 1342,
+    "high": 4934,
+    "mid": 1602
+  },
+  "fixed_sessions": {
+    "cal": 26,
+    "fit": 104,
+    "membership_preserved": true
+  },
+  "historical10042_category_transition_counts": {
+    "failure|failure": 1416,
+    "failure|high": 380,
+    "failure|mid": 54,
+    "high|failure": 13,
+    "high|high": 6053,
+    "high|mid": 78,
+    "mid|failure": 21,
+    "mid|high": 128,
+    "mid|mid": 1899
+  },
+  "isolation": {
+    "Base_scores_for_Validation_or_Test_not_opened": true,
+    "Train_Validation_sessions_disjoint": true,
+    "Train_only_selected": true,
+    "Validation_and_Test_tokens_excluded": true
+  },
+  "local_GT1689_outside_original10042": 239,
+  "local_ordinary_count": 9881,
+  "new273_GT_candidates_in_original10042": 34,
+  "new273_GT_candidates_outside_original10042": 239,
+  "ordinary_new_only": 439,
+  "ordinary_old_only": 600,
+  "ordinary_panel_intersection": 9442,
+  "original_ORDINARY10042_all5quality_exact_full_local_pool": true,
+  "original_ordinary_count": 10042,
+  "pilot32": {
+    "failure": 16,
+    "high": 12,
+    "mid": 4,
+    "natural_weights_recomputed": true
+  },
+  "production_files_or_workers_changed": false,
+  "schema": "nrkd_local_teacher_panel_recheck_v1",
+  "sources": {
+    "data_pack": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_data_pack_v1.py",
+      "sha256": "e7b329c274c0b87c31eb302f8deb8b68d8e11063497bd3abd03a7dcd7de47fd0"
+    },
+    "pilot_function": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_cv_shared48_cpu_v1.py",
+      "sha256": "112decec6281e15ca06cb349c72d3f9544592711809b86cd814c607746e2f311"
+    },
+    "session_metadata": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_session_cv_metadata_v1.py",
+      "sha256": "afb4afdfbd3d5130d3504fe2212c7de70dff01b15ff484344e8d9090a4672ab7"
+    },
+    "source_original_split": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/session_cv_metadata_v1/SPLITS.json",
+      "sha256": "979fb2fd8ffe4c4a83f28f984cdf5ce8d94de21199ca4c0bdc1bb96be031d4e6"
+    }
+  },
+  "status": "EXACT_LOCAL_CATEGORY_HASH_CONTROL_PANEL_REAPPLIED"
+}

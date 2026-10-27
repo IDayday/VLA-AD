@@ -1,0 +1,122 @@
+{
+  "GPU_scorer_or_status_poll_calls": 0,
+  "candidate_list": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/engineering/local_candidate_recheck_20261027/LOCAL_CANDIDATES.json",
+    "sha256": "42c56d81151a3778dac0dd84cfc2a376bdaf3e9f97feacad065158d0c195abad"
+  },
+  "created": "2026-10-27T01:21:09.944052+00:00",
+  "derived_reference_panel_followup": "COMPLETE",
+  "elapsed_seconds": 1.7737789154052734,
+  "full_native_features": {
+    "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/features/MANIFEST.ALL_POPULATIONS.json",
+    "sha256": "686beb5e118e2e96c67aa1c56af4db1a3c85c8bbba926c007c306ef61799fff4"
+  },
+  "intersection": 1416,
+  "intersection_list": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/engineering/local_candidate_recheck_20261027/INTERSECTION.json",
+    "sha256": "a10e80c05069a4940af9a78c73c63d19a0c7ac91df00cd1d2311a5850726835a"
+  },
+  "isolation": {
+    "Base_scores_for_Validation_or_Test_not_opened": true,
+    "Train_Validation_sessions_disjoint": true,
+    "Train_only_selected": true,
+    "Validation_and_Test_tokens_excluded": true
+  },
+  "local_Base_pool": {
+    "path": "/mnt/project/recogdrive-dc8-local-refit-20261026/inputs/LOCAL_TRAIN_BASE_POOL.npz",
+    "sha256": "3cbfbcacfb7a1df66df34b54a1f3bd7578c947152e1bb32fd3f66610984d20b1"
+  },
+  "local_GT_Train_count": 1689,
+  "local_Train_strata": {
+    "failure": 1689,
+    "high": 74870,
+    "mid": 9254
+  },
+  "local_panel_counts": {
+    "cal": 2003,
+    "fit": 7878,
+    "new273_inside_old10042": 34,
+    "new273_outside_old10042": 239,
+    "ordinary": 9881,
+    "pilot": 32,
+    "preserved_cal_sessions": 26,
+    "preserved_fit_sessions": 104
+  },
+  "new_only": 273,
+  "new_only_list": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/engineering/local_candidate_recheck_20261027/NEW_ONLY.json",
+    "sha256": "368fafb173c9ae1358958c725616a6090220930b4f47295bc98e95ce72078f01"
+  },
+  "no_old_PPU_categories_or_natural_weights_reused": true,
+  "no_production_edits_or_worker_changes": true,
+  "old_only": 434,
+  "old_only_list": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/engineering/local_candidate_recheck_20261027/OLD_ONLY.json",
+    "sha256": "819cb26fd753ccc12e34eb8d434a470643708c6dae7b8adb0c275e244080bc36"
+  },
+  "original_PPU_GT_Train_count": 1850,
+  "original_PPU_GT_Train_manifest": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/manifests/SCENES.json",
+    "sha256": "4370f52507c987b349ee2cc607fd9debb9130618821aa03557e687be7572ec09"
+  },
+  "original_rule_derivation": {
+    "GT_screening": "all Train/exploration Base_S0<.7; no fixedquota, no hashing and no teacher outcome in GTcandidate inclusion",
+    "g5_original_manifest": {
+      "Train_1850_equals_offline_audit_failure_set": true,
+      "Train_exploration": 1850,
+      "Validation": 438,
+      "total_Base_S0_failures_Train_Val": 2288
+    },
+    "limitation": "Original fullPPUS0scores.npy/SCENES_V1 payload was not reexecuted; frozenGTmanifest, savedCVmetadata and originalsource establishderivation. Localall85813actual5scores were checked.",
+    "local_ordinary9881": "all1689localfailures+2048hashlocalmid+6144hashlocalhigh",
+    "ordinary_audit_category": "historical_Base_S0_category copied into original audit_category, not canonicalGTqualification and not localrecomputedcategory",
+    "original_full_PPU_source_rows": {
+      "path": "/mnt/workspace/ReCogDrive/1021-representation_distillation_batch4/stage2_local_distillation/manifests/SCENES_V1.json",
+      "sha256": "cb5f72e84d0ddc51ef888ec70f1add90e4bab9c8922d67cc28754e95fc988ef9"
+    },
+    "original_ordinary10042": "all1850failures+2048hashmid+6144hashhigh"
+  },
+  "panel_followup": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/engineering/local_candidate_recheck_20261027/LOCAL_PANEL_RECHECK.json",
+    "sha256": "5a2f836f13b78fb69c4aab583e4b3f08ea0d26ebb3e5282fc58e18e26cc4453d"
+  },
+  "preserved_historical_information": "OriginalTrainpopulation/token/globalindices and104/26session memberships only; localcategories/controlselection/naturalweights recomputed.",
+  "rule": {
+    "failure": "Base_quality_float64[:,0,0] < 0.7",
+    "high": "Base_S0 > 0.9",
+    "mid": "0.7 <= Base_S0 <= 0.9",
+    "population": "original85813Train/exploration only; noValidation/Test",
+    "source_categories": {
+      "line": 19,
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_session_cv_metadata_v1.py",
+      "sha256": "afb4afdfbd3d5130d3504fe2212c7de70dff01b15ff484344e8d9090a4672ab7"
+    },
+    "source_data_pack": {
+      "line": 56,
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_data_pack_v1.py",
+      "sha256": "e7b329c274c0b87c31eb302f8deb8b68d8e11063497bd3abd03a7dcd7de47fd0"
+    },
+    "source_gt": {
+      "line": 4,
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1022-gt_assisted_representation_optimization/code/g5_prepare.py",
+      "sha256": "0fed625b82b486c983532d8b4a18bd95ee2857aa376551ee252082ea533e800c"
+    }
+  },
+  "schema": "nrkd_local_candidate_recheck_v1",
+  "source_adapters": {
+    "panel": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/engineering/local_candidate_recheck_20261027/recheck_panel.py",
+      "sha256": "122b363602d45eeda180bd9318e310cc0008e56884c6f54839f5320f76a5a7ce"
+    },
+    "screening": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/engineering/local_candidate_recheck_20261027/recheck_candidates.py",
+      "sha256": "1cedaeb81a0fb70e04b6c4a546d114789136aebc3610b1b5cb45a6db1a375916"
+    }
+  },
+  "source_checkpoint_sha256": "23fb949b10387efeff87e093703d5faf41b61b9e5ead16d4076661e3c7c08a20",
+  "status": "EXACT_ORIGINAL_RULE_REAPPLIED_LOCAL",
+  "wrong_rules_for_comparison_only": {
+    "any_five_below70": 2092,
+    "five_mean_below70": 1657
+  }
+}

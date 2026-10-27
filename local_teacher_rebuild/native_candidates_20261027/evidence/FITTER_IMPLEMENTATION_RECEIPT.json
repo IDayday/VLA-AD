@@ -1,0 +1,256 @@
+{
+  "CPU_validation": {
+    "checks": [
+      "real localmetadata joins and normalizedweights/fixedsessions",
+      "actualmissing1689exports blocks withrequired1689",
+      "originalnumericcodeidentity andforkpickle",
+      "generic1paircount/fullGTcompletiongate",
+      "pairarraysSHA/BasefullFP32SHA/paddingcorruption rejection",
+      "newrootTeacherOwner import contract"
+    ],
+    "device_visibility": "CUDA_VISIBLE_DEVICES empty",
+    "elapsed_seconds": 0.64,
+    "status": "PASS",
+    "tests": 6
+  },
+  "GPU_head_scorer_dispatch_or_process_signals": 0,
+  "OLD_fitter_or_evidence_edited": false,
+  "actual_preparation": {
+    "GT_candidates": 1689,
+    "Inner_fit_rows": 7878,
+    "cal_sessions": 26,
+    "calibration_rows": 2003,
+    "fit_sessions": 104,
+    "fixed_Train85813_student_budget_changed": false,
+    "local_categories_controlsampling_and_weights_recomputed": true,
+    "old_PPU_category_naturalweights_or_teacher_parameters_used": false,
+    "ordinary": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/fitting/ORDINARY_LOCAL.npz",
+      "sha256": "39dcc82cba242e21f854b7adecfd895e1f8a468804efd974a333e1b498b33a4e"
+    },
+    "ordinary_rows": 9881,
+    "pilot_count": 32,
+    "plan": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/fitting/PLAN.json",
+      "sha256": "3f15e2ee3ae7d8342c2dd7df624611bd1104a7afb3b91b4d3a837fc273c3c4e4"
+    },
+    "root": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027"
+  },
+  "formal_GT_and_teacher_fitting": "PENDING_FULL_ORIGINAL_DYNAMIC_CANDIDATE_GT_DATAFLOW",
+  "load_pairs_contract": {
+    "FAST_or_shortened_cut_formal_use": false,
+    "FP32_full_padding_and_Base_SHA": true,
+    "actual_local_Base_scores_verified_independent_pool": true,
+    "mandatory_export_marker": "native_gt/GT_POST_COMPLETE.json train_failures=actual_exports=dynamic1689",
+    "mandatory_search_marker": "native_gt/SEARCH_COMPLETE.json statusFULL_ORIGINAL_FINITE_GT_SEARCH_COMPLETE; explicitfull_original_finite_search_complete:false rejected",
+    "missing_pair_count_fail_closed": true,
+    "qualified_pair_rule": "BaseS0<.7 andselectedGTpostS0>.9",
+    "required": "dynamic PLAN.GT_candidate_count"
+  },
+  "numeric_identity": {
+    "family": {
+      "K": 8,
+      "order": "C_to_P",
+      "rank": 48,
+      "route": "D",
+      "view": "valid_shared384"
+    },
+    "fork_worker_pickle_resolves_same_function": true,
+    "original_ROOT_not_mutated": true,
+    "original_function_code_objects_identical": [
+      "build_space",
+      "fit_payload",
+      "mlp_fit",
+      "_fit_inner_cluster",
+      "cpu_cluster_map",
+      "pack",
+      "collect",
+      "refit",
+      "freeze"
+    ],
+    "original_operator_sources": [
+      {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_direction_experts_math_v2.py",
+        "sha256": "6e69dcf4604a8eb1b30940b613ecc6b73a6cf4fbe18d1b13f120f3f6475d2fa0"
+      },
+      {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_geometry_math_v1.py",
+        "sha256": "b10c34b092dd07d2f0cbd83bb483aae90b897f5a06d04d489d32d4d959ad2ba4"
+      },
+      {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_paired_mapping_math_v1.py",
+        "sha256": "938341d076ca53db75a5ff299efcf2b7a7f00c5ffb1862883b9f2e73c5d3e93b"
+      },
+      {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/code/p2_u1_repair_functions_v1.py",
+        "sha256": "00e18197078fa5b990eae16bc1943bb1ac40ffdd38ff4d5fcaab128106e8f619"
+      },
+      {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_cv_shared48_cpu_v1.py",
+        "sha256": "112decec6281e15ca06cb349c72d3f9544592711809b86cd814c607746e2f311"
+      },
+      {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_geometry_v1.py",
+        "sha256": "926d6a65d2006cb0ab266bece5e0cfa5c3baa380a92ac1bcb325d89091aa2b23"
+      },
+      {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_operators_v1.py",
+        "sha256": "5a1c901ba526ee2c34a6d093fa1d5d4b32603c07cf553ad869521de23896bdf9"
+      },
+      {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_pilot_fitter_v1.py",
+        "sha256": "658913fa79de12a3d46472eadcc60d3233b2212eeba183375e31d46c1e3d0f8b"
+      },
+      {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_pilot_selection_v1.py",
+        "sha256": "09135f8d275e2cb2e12532d7e2a81561fe73e392c52d02d1d6e2851edff5d9e2"
+      },
+      {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l2_formal_selection_v2.py",
+        "sha256": "16ae667e20a8098e8272b9d16ce61c866effcc5d4a8ea8c28a117973cb005afa"
+      },
+      {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l3_outer_refit_v1.py",
+        "sha256": "c942f78deacca26c86939e44044f2775b6c229c8d01dcd6f3a3c6017fecfd77d"
+      },
+      {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_stage_a_final_factory_v1.py",
+        "sha256": "1c6390f54935c2caca99498f3d5e096419e96bf1ee439860cb65b25ee370da0c"
+      }
+    ],
+    "source_math_bindings": [
+      {
+        "binding": "unchanged __code__ / private FunctionType globals",
+        "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_pilot_fitter_v1.py",
+        "file_sha256": "658913fa79de12a3d46472eadcc60d3233b2212eeba183375e31d46c1e3d0f8b",
+        "function": "ordinary_view",
+        "function_code_sha256": "6eb25e223edc3e8eee0e9782466d933f186fcbe20320ca2c69bc1e6f7ea3c1f4"
+      },
+      {
+        "binding": "unchanged __code__ / private FunctionType globals",
+        "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_pilot_fitter_v1.py",
+        "file_sha256": "658913fa79de12a3d46472eadcc60d3233b2212eeba183375e31d46c1e3d0f8b",
+        "function": "coordinates",
+        "function_code_sha256": "9d504eb74b161a5c3e7c1641388cd71d030e3cb06103736526b78c758f198d3b"
+      },
+      {
+        "binding": "unchanged __code__ / private FunctionType globals",
+        "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_pilot_fitter_v1.py",
+        "file_sha256": "658913fa79de12a3d46472eadcc60d3233b2212eeba183375e31d46c1e3d0f8b",
+        "function": "initialization",
+        "function_code_sha256": "6dc205b29c32605d2315dbd28a188ff74bdc7f97af9516b07c5fb125c5dc1b85"
+      },
+      {
+        "binding": "unchanged __code__ / private FunctionType globals",
+        "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_pilot_selection_v1.py",
+        "file_sha256": "09135f8d275e2cb2e12532d7e2a81561fe73e392c52d02d1d6e2851edff5d9e2",
+        "function": "canonical",
+        "function_code_sha256": "661dc38e3e5634c6bfee9dee3307ee06d3100f1a31df3ff3b05d0355d2bf56f6"
+      },
+      {
+        "binding": "unchanged __code__ / private FunctionType globals",
+        "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_pilot_selection_v1.py",
+        "file_sha256": "09135f8d275e2cb2e12532d7e2a81561fe73e392c52d02d1d6e2851edff5d9e2",
+        "function": "objective",
+        "function_code_sha256": "9b1150978d0a1f7b45e0b5a0e1980336dbf21c22b685021416fa017cce1f59f8"
+      },
+      {
+        "binding": "unchanged __code__ / private FunctionType globals",
+        "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_pilot_selection_v1.py",
+        "file_sha256": "09135f8d275e2cb2e12532d7e2a81561fe73e392c52d02d1d6e2851edff5d9e2",
+        "function": "optimize",
+        "function_code_sha256": "2c52c914b91fecc90040ec92c1e7cabe1bad5df95b151156854d725be784c79d"
+      },
+      {
+        "binding": "unchanged __code__ / private FunctionType globals",
+        "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l1_pilot_selection_v1.py",
+        "file_sha256": "09135f8d275e2cb2e12532d7e2a81561fe73e392c52d02d1d6e2851edff5d9e2",
+        "function": "marginal_methods",
+        "function_code_sha256": "d7dc6e280338d706a454891bafd92a3d18243d7434dc81f525f32e6c97b65fd1"
+      },
+      {
+        "binding": "unchanged __code__ / private FunctionType globals",
+        "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l2_formal_selection_v2.py",
+        "file_sha256": "16ae667e20a8098e8272b9d16ce61c866effcc5d4a8ea8c28a117973cb005afa",
+        "function": "optimize",
+        "function_code_sha256": "74fcbf9931ad045164560e686f6a9141fac94f4ac99fc7a793124ae5a32a5cb7"
+      },
+      {
+        "binding": "unchanged __code__ / private FunctionType globals",
+        "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l3_outer_refit_v1.py",
+        "file_sha256": "c942f78deacca26c86939e44044f2775b6c229c8d01dcd6f3a3c6017fecfd77d",
+        "function": "max_overlap",
+        "function_code_sha256": "de85adfbb5dce5b713f72a8d411c3846c5f4d092d3a3da6d532cb1acf5e437af"
+      },
+      {
+        "binding": "unchanged __code__ / private FunctionType globals",
+        "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l3_outer_refit_v1.py",
+        "file_sha256": "c942f78deacca26c86939e44044f2775b6c229c8d01dcd6f3a3c6017fecfd77d",
+        "function": "exact_matching",
+        "function_code_sha256": "c5b2f6d83787e886533fea89def95131f8762a0a565e54e8721459695c6b0e7f"
+      },
+      {
+        "binding": "unchanged __code__ / private FunctionType globals",
+        "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l3_outer_refit_v1.py",
+        "file_sha256": "c942f78deacca26c86939e44044f2775b6c229c8d01dcd6f3a3c6017fecfd77d",
+        "function": "adjusted_rand",
+        "function_code_sha256": "64d57fcc21da01533baab6c024be07c91e086e7d6b18a92052e12980cc2cac88"
+      },
+      {
+        "binding": "unchanged __code__ / private FunctionType globals",
+        "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l3_outer_refit_v1.py",
+        "file_sha256": "c942f78deacca26c86939e44044f2775b6c229c8d01dcd6f3a3c6017fecfd77d",
+        "function": "physical_hash",
+        "function_code_sha256": "2a26694c48b3d786f92bb377e5e2519036829889f2b9edaa6395d707bd85fa19"
+      },
+      {
+        "binding": "unchanged __code__ / private FunctionType globals",
+        "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_l3_outer_refit_v1.py",
+        "file_sha256": "c942f78deacca26c86939e44044f2775b6c229c8d01dcd6f3a3c6017fecfd77d",
+        "function": "fit_selected_paired",
+        "function_code_sha256": "81d025dd5cd806c4651e8ac503125ccdfc04b0d19900d4cbce31d60da0077408"
+      },
+      {
+        "binding": "unchanged __code__ / private FunctionType globals",
+        "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_cv_shared48_cpu_v1.py",
+        "file_sha256": "112decec6281e15ca06cb349c72d3f9544592711809b86cd814c607746e2f311",
+        "function": "hash_panel",
+        "function_code_sha256": "22c361f45399cf01c1cf90d7c15c18144d9e7be25b74c237aebeb0a352f267a4"
+      },
+      {
+        "binding": "unchanged __code__ / private FunctionType globals",
+        "file": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/source_snapshot/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/code/ol_cv_shared48_cpu_v1.py",
+        "file_sha256": "112decec6281e15ca06cb349c72d3f9544592711809b86cd814c607746e2f311",
+        "function": "pilot_panel",
+        "function_code_sha256": "bed2a084298fd0b0cf44a3e05b6ffccbcc7f0f248b62c936ade2ba42d7b5e0cd"
+      }
+    ],
+    "whole_variant": {
+      "cap_factor": 2.0,
+      "raw_shift_factor": 2.0
+    }
+  },
+  "owned_source_frozen": true,
+  "previous_preparation_header_versions_preserved": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/fitting/plan_versions",
+  "schema": "nrkd_local_candidate_fitter_adapter_receipt_v1",
+  "source": {
+    "CPU_fixture": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/engineering/local_candidate_recheck_20261027/test_fit_library_local.py",
+      "sha256": "3274f9ced92b8c08b88ae5c789adb230273761bda9eb55dc13bd2057c8b7e892"
+    },
+    "adapter": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/engineering/local_candidate_recheck_20261027/fit_library_local.py",
+      "sha256": "a1683540c91a9c42045249086d7e0bb08396e68f28db78306441e6115117a55f"
+    },
+    "new_root_entrypoint": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/code/fit_library.py",
+      "sha256": "b86177002e2af720cb8799aaeaeb17dc1eb97d14f786677641758ae6185c293d"
+    },
+    "original_fitter_unmodified": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/code/fit_library.py",
+      "sha256": "a86c7fee440909b769d2e17067f1a48aab6094d2871c9d76a124c475ac7c811a"
+    }
+  },
+  "status": "IMPLEMENTED_CPU_TRANSPORT_CHECKS_PASS_FULL_GT_PENDING",
+  "timestamp_utc": "2026-10-27T01:40:58.630570+00:00"
+}

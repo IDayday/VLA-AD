@@ -1,0 +1,13 @@
+# Local candidate scope integration
+
+The formal teacher root is this native-candidates experiment. Reapply the original Base S0 < 0.7 criterion to all 85,813 local Train scenes. The resulting 1,689 candidates comprise 1,416 verified old intersections and 273 new raw Native inputs. These are candidate inputs; the number of successful Base S0 < 70 / post S0 > 90 pairs remains unknown until complete GT search and export.
+
+The original fifteen optimization/search stages and the final export stage remain intact. Reuse is accepted only after local Base input, explicit noise and semantic configuration hashes agree. Every cumulative stage summary must cover each exact candidate index/token pair once. The teacher owner also checks every final export's directory, Train identity and same-execution interface/trajectory marker before fitting D / full384 clustering before shared D48 / K8 / enhanced double.
+
+The ordinary panel is rederived with the original sampling rule and session members: 9,881 scenes, 7,878 inner fit and 2,003 calibration. Numerical fitter functions retain their original code objects. Historical PPU experts, bases, choices and scores are not formal inputs. The abandoned direct48 root is included only in physical resource cost accounting.
+
+The teacher owner runs the lossless repaired-cache CPU indexer directly after each completed full Train, Test and Validation collection. This callback binds its reader paths to this root and uses the original durable CPU execution mechanism. No old-scope cache watcher is part of the formal chain.
+
+Full Train/Test readiness starts student targets, Train-only calibration and fresh formal teacher-bound GPU qualification. Independent full Validation diagnostics can share authorized devices. Per-child UUID/live-policy/headroom checks govern admission; the teacher GPU-release marker stays informational. All eight A/B/C/D × seeds 20261027/20261028 runs retain 40 epochs, global batch64 and 53,640 optimizer updates. Complete-through-report execution must reach REPORT_COMPLETE; an owner launch is not scientific completion.
+
+Only fixed permitted hosts are used, with unrelated and unknown work preserved. Result reads follow estimated stage completion windows. The producer queues and durable owners continue normal task scheduling while results are pending.
