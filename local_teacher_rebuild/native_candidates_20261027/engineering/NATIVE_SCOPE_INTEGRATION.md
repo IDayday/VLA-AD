@@ -17,3 +17,15 @@ Queue persistence uses 16 concurrent CPU writes into a once-verified, precreated
 Full Train/Test readiness starts student targets, Train-only calibration and fresh formal teacher-bound GPU qualification. Independent full Validation diagnostics can share authorized devices. Per-child UUID/live-policy/headroom checks govern admission; the teacher GPU-release marker stays informational. All eight A/B/C/D × seeds 20261027/20261028 runs retain 40 epochs, global batch64 and 53,640 optimizer updates. Complete-through-report execution must reach REPORT_COMPLETE; an owner launch is not scientific completion.
 
 Only fixed permitted hosts are used, with unrelated and unknown work preserved. Result reads follow estimated stage completion windows. The producer queues and durable owners continue normal task scheduling while results are pending.
+# Concurrent frozen-teacher Test production
+
+The user authorized full teacher Test scoring in parallel with Train on 2026-10-27.
+`fullflow_teacher_owner.py --test-prefetch-only` owns an independent CPU lease and
+registry under `teacher_test_prefetch`. It publishes the same full 12,146-scene,
+Base-first nine-branch, S0–S4 Native Test queue and canonical Test job manifests.
+Shared population queue and per-attempt dispatch locks prevent duplicate creation
+or launch. The main teacher owner adopts those exact jobs and retained receipts;
+it alone performs the original matrix collection, selection, repaired-cache index
+and teacher report. Test does not fit teacher parameters or start student Test.
+The original Train actors, full budgets and frozen bundle remain in place.
+

@@ -1,0 +1,362 @@
+[
+  {
+    "name": "parallel_test_training-vla-zt_gpu0",
+    "host": "training-vla-zt",
+    "gpu": 0,
+    "uuid": "GPU-f679bff0-a4a2-ae4f-0b85-74c519b45a9c",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vla-zt_gpu1",
+    "host": "training-vla-zt",
+    "gpu": 1,
+    "uuid": "GPU-562375d4-b1d6-f0d9-a68d-5a81e5272907",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vla-zt_gpu2",
+    "host": "training-vla-zt",
+    "gpu": 2,
+    "uuid": "GPU-b8a35758-a506-a8a1-dca7-499c485068fc",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vla-zt_gpu3",
+    "host": "training-vla-zt",
+    "gpu": 3,
+    "uuid": "GPU-72a7d08b-16b7-7c64-a324-a08e043c6006",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vla-zt_gpu4",
+    "host": "training-vla-zt",
+    "gpu": 4,
+    "uuid": "GPU-f35ae00b-0c9c-c01c-efba-e527cdd32f76",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vla-zt_gpu5",
+    "host": "training-vla-zt",
+    "gpu": 5,
+    "uuid": "GPU-cba744b9-96c8-c3e2-f836-2f0126c038a0",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vla-zt_gpu6",
+    "host": "training-vla-zt",
+    "gpu": 6,
+    "uuid": "GPU-017ee82b-e9ff-1f6c-547e-ca2ccf3363ac",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vla-zt_gpu7",
+    "host": "training-vla-zt",
+    "gpu": 7,
+    "uuid": "GPU-621b6ab5-d5ba-4219-b7ca-8b9f84479900",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt5_gpu0",
+    "host": "training-vlawm-tsinghua-zt5",
+    "gpu": 0,
+    "uuid": "GPU-ba6629ed-35db-198b-d353-d6048cbdf36b",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt5_gpu1",
+    "host": "training-vlawm-tsinghua-zt5",
+    "gpu": 1,
+    "uuid": "GPU-c976d64e-44ea-d8bd-a026-d1c1f14d4db6",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt5_gpu2",
+    "host": "training-vlawm-tsinghua-zt5",
+    "gpu": 2,
+    "uuid": "GPU-e2a93cb8-47e2-0b2f-952e-bcfa5403ad24",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt5_gpu3",
+    "host": "training-vlawm-tsinghua-zt5",
+    "gpu": 3,
+    "uuid": "GPU-28ad5baf-48e8-8ea7-2e0b-514cc7f2d690",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt5_gpu4",
+    "host": "training-vlawm-tsinghua-zt5",
+    "gpu": 4,
+    "uuid": "GPU-a7b3b440-0f0e-d35e-508a-98b368e9a753",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt5_gpu5",
+    "host": "training-vlawm-tsinghua-zt5",
+    "gpu": 5,
+    "uuid": "GPU-07454d91-a706-9214-2999-0ec63e16c489",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt5_gpu6",
+    "host": "training-vlawm-tsinghua-zt5",
+    "gpu": 6,
+    "uuid": "GPU-69f7a391-b4e5-fefd-2b4e-721834060a20",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt5_gpu7",
+    "host": "training-vlawm-tsinghua-zt5",
+    "gpu": 7,
+    "uuid": "GPU-a4a674df-d68f-fa69-13be-0f089a4cd6af",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt3_gpu0",
+    "host": "training-vlawm-tsinghua-zt3",
+    "gpu": 0,
+    "uuid": "GPU-ceb0d9a7-7b64-2fb1-cb83-962861ec73b9",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt3_gpu1",
+    "host": "training-vlawm-tsinghua-zt3",
+    "gpu": 1,
+    "uuid": "GPU-9e303222-565f-9aee-caa7-625ee7f12096",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt3_gpu2",
+    "host": "training-vlawm-tsinghua-zt3",
+    "gpu": 2,
+    "uuid": "GPU-37f16ed7-3b1b-4cb7-2462-70ef5abbd287",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt3_gpu3",
+    "host": "training-vlawm-tsinghua-zt3",
+    "gpu": 3,
+    "uuid": "GPU-cab4a3fa-dc7f-0762-9b23-8e0e8959e57a",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt3_gpu4",
+    "host": "training-vlawm-tsinghua-zt3",
+    "gpu": 4,
+    "uuid": "GPU-5d1dca72-ef65-13ce-ef85-2fde0bb2e62c",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt3_gpu5",
+    "host": "training-vlawm-tsinghua-zt3",
+    "gpu": 5,
+    "uuid": "GPU-4604e9db-bf91-9dd3-1b79-deb94646aa63",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt3_gpu6",
+    "host": "training-vlawm-tsinghua-zt3",
+    "gpu": 6,
+    "uuid": "GPU-3bad9a14-f891-5982-524b-b4a13a3cb734",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt3_gpu7",
+    "host": "training-vlawm-tsinghua-zt3",
+    "gpu": 7,
+    "uuid": "GPU-e9cb846f-5ccf-504c-5537-e2da39e661fd",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt4_gpu0",
+    "host": "training-vlawm-tsinghua-zt4",
+    "gpu": 0,
+    "uuid": "GPU-de0a113d-0ee7-6d02-f202-38ed7a2eba42",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt4_gpu1",
+    "host": "training-vlawm-tsinghua-zt4",
+    "gpu": 1,
+    "uuid": "GPU-9d5086e9-c3c6-960a-702d-d1c5870b6b9f",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt4_gpu2",
+    "host": "training-vlawm-tsinghua-zt4",
+    "gpu": 2,
+    "uuid": "GPU-a3f83a36-3e49-431e-4440-35f9e4d01a59",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt4_gpu3",
+    "host": "training-vlawm-tsinghua-zt4",
+    "gpu": 3,
+    "uuid": "GPU-4fe15b93-9f87-08ea-699d-40375083da94",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt4_gpu4",
+    "host": "training-vlawm-tsinghua-zt4",
+    "gpu": 4,
+    "uuid": "GPU-b4cc3837-84f9-01b3-6610-a3d814cf383f",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt4_gpu5",
+    "host": "training-vlawm-tsinghua-zt4",
+    "gpu": 5,
+    "uuid": "GPU-0e051448-fccb-5aa8-1389-460e0aa8a46f",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt4_gpu6",
+    "host": "training-vlawm-tsinghua-zt4",
+    "gpu": 6,
+    "uuid": "GPU-af5442fd-0c84-7903-61fa-9e9c49eca2ce",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt4_gpu7",
+    "host": "training-vlawm-tsinghua-zt4",
+    "gpu": 7,
+    "uuid": "GPU-568199b4-3db3-da75-7c8c-c9b94d0c28b7",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt_gpu0",
+    "host": "training-vlawm-tsinghua-zt",
+    "gpu": 0,
+    "uuid": "GPU-f0cd16db-c7f6-2226-c901-d1809277060e",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt_gpu1",
+    "host": "training-vlawm-tsinghua-zt",
+    "gpu": 1,
+    "uuid": "GPU-27c69c7c-eb37-82fb-6fa0-0777abd64056",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt_gpu2",
+    "host": "training-vlawm-tsinghua-zt",
+    "gpu": 2,
+    "uuid": "GPU-51b3887b-3158-ece3-aa70-a52adb25160b",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt_gpu3",
+    "host": "training-vlawm-tsinghua-zt",
+    "gpu": 3,
+    "uuid": "GPU-31f9e6ef-4c0d-b5e0-7ddf-527f4a7dbcbc",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt_gpu4",
+    "host": "training-vlawm-tsinghua-zt",
+    "gpu": 4,
+    "uuid": "GPU-9bc364f5-5bf1-4ea5-d9fa-ee62b41cc79f",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt_gpu5",
+    "host": "training-vlawm-tsinghua-zt",
+    "gpu": 5,
+    "uuid": "GPU-76726c77-ffe3-6f10-fb08-7782dac5d840",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt_gpu6",
+    "host": "training-vlawm-tsinghua-zt",
+    "gpu": 6,
+    "uuid": "GPU-7d8d39a1-1f02-4099-1aaa-d3cc35c6d542",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  },
+  {
+    "name": "parallel_test_training-vlawm-tsinghua-zt_gpu7",
+    "host": "training-vlawm-tsinghua-zt",
+    "gpu": 7,
+    "uuid": "GPU-91fd88e4-a388-6b59-e684-13a463606f9e",
+    "actors_per_gpu": 1,
+    "minimum_free_mb": 20000,
+    "sharing_other_real_jobs": true
+  }
+]

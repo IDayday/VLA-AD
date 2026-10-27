@@ -23,6 +23,7 @@ sys.path[:0]=[str(HERE),str(ROOT/'code')]
 from permanent_dispatch import admit, install, PYTHON, LEGACY
 from gt_numeric import atomic, read, sha, stamp, STAGES
 from fit_library import ref
+from population_transport import coordinated_queue,transport_lock
 
 SPEC=importlib.util.spec_from_file_location('_permanent_original_teacher_suite',ROOT/'code/local_teacher_suite.py')
 original=importlib.util.module_from_spec(SPEC);sys.modules[SPEC.name]=original;SPEC.loader.exec_module(original)
@@ -85,7 +86,9 @@ class Owner(original.Owner):
         if args.root.resolve()!=ROOT:raise ValueError('This adapter serves the verified local-candidate full-flow root')
         self.allocation=read(args.allocation);admit(self.allocation)
         self.validation_allocation=list(self.allocation)
-        self.folder=args.root/'teacher_suite';self.folder.mkdir(parents=True,exist_ok=True)
+        self.test_allocation=read(args.test_allocation) if getattr(args,'test_allocation',None) else self.allocation
+        admit(self.test_allocation)
+        self.folder=args.root/('teacher_test_prefetch' if getattr(args,'test_prefetch_only',False) else 'teacher_suite');self.folder.mkdir(parents=True,exist_ok=True)
         self.lock=(self.folder/'OWNER.lock').open('a+');fcntl.flock(self.lock,fcntl.LOCK_EX|fcntl.LOCK_NB)
         self.registry_path=self.folder/'REGISTRY.json'
         self.registry=read(self.registry_path) if self.registry_path.exists() else {'schema':'nrkd_local_teacher_suite_v1','stages':{},'history':[]}
@@ -96,7 +99,16 @@ class Owner(original.Owner):
         install();self.write('WAITING_FULL_ORIGINAL_GT')
 
     def cpu(self,name,arguments,complete_path=None):
-        super().cpu(name,arguments,complete_path)
+        if name in ('queue_train','queue_test','queue_validation'):
+            population=name.removeprefix('queue_')
+            adopted=coordinated_queue(self.args.root,population,self.args.features,
+                lambda:super(Owner,self).cpu(name,arguments,complete_path))
+            if adopted:
+                entry=self.registry['stages'].setdefault(name,{})
+                entry.update(status='COMPLETE',artifact=ref(complete_path),adopted_existing_identical_population_queue=True)
+                self.write()
+        else:
+            super().cpu(name,arguments,complete_path)
         if name in ('collect_train','collect_test','collect_validation'):
             self.build_repaired_cache_index(name.removeprefix('collect_'))
 
@@ -155,8 +167,14 @@ class Owner(original.Owner):
         return proof
 
     def launch_attempt(self,name,queue_folder,attempt,population):
+        relative=Path('dispatch/local_teacher')/name/f'attempt_{attempt:02d}'/'POPULATION_LAUNCH.lock'
+        with transport_lock(self.args.root,relative):
+            return self._launch_attempt_locked(name,queue_folder,attempt,population)
+
+    def _launch_attempt_locked(self,name,queue_folder,attempt,population):
         stage=self.args.root/'dispatch/local_teacher'/name/f'attempt_{attempt:02d}'
-        path=stage/'JOBS.json';allocation=self.validation_allocation if population=='validation' else self.allocation
+        path=stage/'JOBS.json'
+        allocation=self.validation_allocation if population=='validation' else self.test_allocation if population=='test' else self.allocation
         jobs=read(path) if path.exists() else []
         if not jobs:
             cohort='navtest' if population=='test' else 'navtrain'
@@ -197,6 +215,35 @@ class Owner(original.Owner):
                'time':stamp(),'allocation':ref(self.args.allocation),'teacher_complete':ref(self.folder/'COMPLETE.json'),
                'informational_not_student_prerequisite':True,'full_original_GT_flow':True})
 
+class TestPrefetchOwner(Owner):
+    """Only Native Test production; the main owner retains all collection/indexing."""
+    def run(self):
+        bundle=self.args.root/'frozen_teacher/BUNDLE.json'
+        if read(bundle).get('status')!='FROZEN_LOCAL_TEACHER':
+            raise ValueError('Concurrent Test requires the already-frozen teacher')
+        bundle_identity=ref(bundle)
+        self.cpu('queue_test',['queue-population','--population','test','--features',str(self.args.features)],
+                 self.args.root/'requests/test/QUEUE.json')
+        for attempt in range(self.args.engineering_retries+1):
+            jobs=self.launch_attempt('test',self.args.root/'requests/test',attempt,'test')
+            while True:
+                if ref(bundle)!=bundle_identity:raise ValueError('Frozen teacher changed during Test prefetch')
+                actors=original.actor_summary(jobs)
+                if actors['all_exited']:
+                    atomic(self.folder/f'attempt_{attempt:02d}_EXIT.json',actors)
+                    progress=original.queue_progress(self.args.root/'requests/test')
+                    if actors['all_exit_zero'] and progress['pending']==0:
+                        value={'status':'FULL_NATIVE_TEST_PREFETCH_COMPLETE','time':stamp(),
+                            'teacher_bundle':bundle_identity,'scenes':12146,'branches':9,'noise_indices':[0,1,2,3,4],
+                            'jobs':ref(self.args.root/'dispatch/local_teacher/test'/f'attempt_{attempt:02d}'/'JOBS.json'),
+                            'all_actual_actor_exits_zero':True,'collectors_selections_and_indexes_owned_by_main_owner':True,
+                            'student_Test_or_parameter_fit_performed':False}
+                        atomic(self.folder/'COMPLETE.json',value);self.write('NATIVE_TEST_PREFETCH_COMPLETE');return
+                    break
+                self.wait_tick('NATIVE_TEST_PREFETCH',actors_running=actors['pending_or_running'],
+                               actors_done=actors['done'],actors_failed=actors['failed'])
+        raise RuntimeError('Full Native Test prefetch exhausted bounded engineering attempts')
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--root',type=Path,default=ROOT)
@@ -206,6 +253,8 @@ def main():
     parser.add_argument('--paths',type=Path,default=LEGACY/'paths.local.json')
     parser.add_argument('--features',type=Path,default=original.RESULTS/'features/MANIFEST.ALL_POPULATIONS.json')
     parser.add_argument('--allocation',type=Path,default=HERE/'PERMANENT_TEACHER_ALLOCATION.json')
+    parser.add_argument('--test-allocation',type=Path)
+    parser.add_argument('--test-prefetch-only',action='store_true')
     parser.add_argument('--gt-exit-requirements',type=Path,default=ROOT/'dispatch/GT_EXIT_REQUIREMENTS.json')
     parser.add_argument('--noise-protocol',type=Path,default=original.OLD/'reference/noise/PROTOCOL.json')
     parser.add_argument('--noise-root',type=Path,default=original.OLD/'reference')
@@ -228,9 +277,10 @@ def main():
                'CPU_extension':'lossless_repaired_cache_index_after_actual_population_collection',
                'strict_full_original_GT_required':True,'no_production_registry_or_GPU_dispatch_modified':True}
         atomic(HERE/'CPU_PREFLIGHT.json',value);print(json.dumps(value),flush=True);return
-    try:Owner(args).run()
+    try:(TestPrefetchOwner(args) if args.test_prefetch_only else Owner(args)).run()
     except BaseException:
-        atomic(args.root/'teacher_suite/INCOMPLETE.json',{'status':'INCOMPLETE','time':stamp(),'traceback':traceback.format_exc(),
+        folder='teacher_test_prefetch' if args.test_prefetch_only else 'teacher_suite'
+        atomic(args.root/folder/'INCOMPLETE.json',{'status':'INCOMPLETE','time':stamp(),'traceback':traceback.format_exc(),
                'resume_argv':[sys.executable,__file__,*sys.argv[1:]],'full_original_GT_flow_required':True})
         raise
 

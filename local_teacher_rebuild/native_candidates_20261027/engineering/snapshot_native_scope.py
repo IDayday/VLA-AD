@@ -20,7 +20,7 @@ def main():
     for path in sorted((ROOT/'code').glob('*.py')):
         sources[Path('code')/path.name]=path
     for name in ('launch_local_owners.py','restart_waiting_local_owners.py','launch_fixed_tsinghua_gt.py',
-                 'snapshot_native_scope.py','test_round1_preparation_owner.py','test_preparation_identity.py','test_queue_transport.py',
+                 'snapshot_native_scope.py','test_round1_preparation_owner.py','test_preparation_identity.py','test_queue_transport.py','test_parallel_population_transport.py',
                  'NATIVE_SCOPE_INTEGRATION.md','report_teacher_physical_costs.py','report_round1_paired_comparisons.py'):
         sources[Path('engineering')/name]=ROOT/'engineering'/name
     for name in ('fullflow_teacher_owner.py','permanent_dispatch.py','finalize_round1_physical_costs.py',
@@ -38,6 +38,7 @@ def main():
         sources[Path('gt_transport_tests')/name]=gt_tests/name
     sources[Path('gt_transport_tests/ALL_STAGE_GENERATORS_COMPLETE.json')]=gt_tests/'ALL_STAGE_GENERATORS_PRIVATE_FIXTURES/COMPLETE.json'
     sources[Path('resources/ROUND1_FIXED_32GPU_WITH_TSINGHUA_ALLOCATION.json')]=Path('/mnt/project/recogdrive-no-routing-round1-results-20261026/resources/ROUND1_FIXED_32GPU_WITH_TSINGHUA_ALLOCATION.json')
+    sources[Path('resources/PARALLEL_TEACHER_TEST_ALLOCATION.json')]=ROOT/'engineering/parallel_test_20261027/TEST_ALLOCATION.json'
     for target,source in sources.items():
         path=destination/target;path.parent.mkdir(parents=True,exist_ok=True)
         shutil.copyfile(source,path)
