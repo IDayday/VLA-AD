@@ -1,0 +1,398 @@
+{
+  "time_utc": "2026-10-27T14:30:31.210261+00:00",
+  "scope": "one_user_requested_read_of_all8_existing_training_metrics",
+  "runs": {
+    "H_full_seed20261027": {
+      "log_snapshot": {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/H_full_seed20261027.jsonl",
+        "sha256": "bd7464ec1dc16dc19af878fa6d37cb223ce7658ef54a12034f09a28ed255ab35"
+      },
+      "first_step": 1,
+      "last_step": 587,
+      "epoch": 1,
+      "records": 587,
+      "duplicates_deduplicated": 0,
+      "trailing_partial_line_ignored": false,
+      "missing_steps": 0,
+      "window_updates": 100,
+      "first_window_weighted_loss": 0.5449093167865684,
+      "last_window_weighted_loss": 0.38052937109780033,
+      "relative_loss_change_percent": -30.166477361434595,
+      "nonfinite_loss_or_gradient_records": 0,
+      "loss_blocks": [
+        {
+          "first_step": 1,
+          "last_step": 100,
+          "loss": 0.5449093167865684
+        },
+        {
+          "first_step": 101,
+          "last_step": 200,
+          "loss": 0.46344699767812925
+        },
+        {
+          "first_step": 201,
+          "last_step": 300,
+          "loss": 0.4007046738766985
+        },
+        {
+          "first_step": 301,
+          "last_step": 400,
+          "loss": 0.3916492198805645
+        },
+        {
+          "first_step": 401,
+          "last_step": 500,
+          "loss": 0.37582689887356535
+        }
+      ],
+      "latest_step_seconds": 0.919555302709341,
+      "latest_time": "2026-10-27T14:30:30.339482+00:00",
+      "functional_loss_has_started": false,
+      "all_epoch1": true
+    },
+    "H_full_seed20261028": {
+      "log_snapshot": {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/H_full_seed20261028.jsonl",
+        "sha256": "d76fd01da6ace44523ed6072778b429274853ded02a3b7e233f5ab2f190744a1"
+      },
+      "first_step": 1,
+      "last_step": 589,
+      "epoch": 1,
+      "records": 589,
+      "duplicates_deduplicated": 0,
+      "trailing_partial_line_ignored": false,
+      "missing_steps": 0,
+      "window_updates": 100,
+      "first_window_weighted_loss": 0.5329234264944734,
+      "last_window_weighted_loss": 0.3704716837229626,
+      "relative_loss_change_percent": -30.48313035140997,
+      "nonfinite_loss_or_gradient_records": 0,
+      "loss_blocks": [
+        {
+          "first_step": 1,
+          "last_step": 100,
+          "loss": 0.5329234264944734
+        },
+        {
+          "first_step": 101,
+          "last_step": 200,
+          "loss": 0.47045128283479243
+        },
+        {
+          "first_step": 201,
+          "last_step": 300,
+          "loss": 0.4071985764637429
+        },
+        {
+          "first_step": 301,
+          "last_step": 400,
+          "loss": 0.38952025813887303
+        },
+        {
+          "first_step": 401,
+          "last_step": 500,
+          "loss": 0.3764622574657551
+        }
+      ],
+      "latest_step_seconds": 0.7330748662352562,
+      "latest_time": "2026-10-27T14:30:31.234155+00:00",
+      "functional_loss_has_started": false,
+      "all_epoch1": true
+    },
+    "H_gain1_seed20261027": {
+      "log_snapshot": {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/H_gain1_seed20261027.jsonl",
+        "sha256": "7a5e10a9855943282abe431f6629d9eb269020e276c69717c7e7105f96cacf7f"
+      },
+      "first_step": 1,
+      "last_step": 270,
+      "epoch": 1,
+      "records": 270,
+      "duplicates_deduplicated": 0,
+      "trailing_partial_line_ignored": false,
+      "missing_steps": 0,
+      "window_updates": 100,
+      "first_window_weighted_loss": 0.4302329697150795,
+      "last_window_weighted_loss": 0.33264387413471014,
+      "relative_loss_change_percent": -22.682849165417863,
+      "nonfinite_loss_or_gradient_records": 0,
+      "loss_blocks": [
+        {
+          "first_step": 1,
+          "last_step": 100,
+          "loss": 0.4302329697150795
+        },
+        {
+          "first_step": 101,
+          "last_step": 200,
+          "loss": 0.36424560866718025
+        }
+      ],
+      "latest_step_seconds": 1.8540486141573638,
+      "latest_time": "2026-10-27T14:30:29.928669+00:00",
+      "functional_loss_has_started": false,
+      "all_epoch1": true
+    },
+    "H_gain1_seed20261028": {
+      "log_snapshot": {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/H_gain1_seed20261028.jsonl",
+        "sha256": "f32885642138524393171496c73af2453647b64e71dcab69befb1156e5269ae8"
+      },
+      "first_step": 1,
+      "last_step": 271,
+      "epoch": 1,
+      "records": 271,
+      "duplicates_deduplicated": 0,
+      "trailing_partial_line_ignored": false,
+      "missing_steps": 0,
+      "window_updates": 100,
+      "first_window_weighted_loss": 0.4212835324139993,
+      "last_window_weighted_loss": 0.33785451844280945,
+      "relative_loss_change_percent": -19.803530770152054,
+      "nonfinite_loss_or_gradient_records": 0,
+      "loss_blocks": [
+        {
+          "first_step": 1,
+          "last_step": 100,
+          "loss": 0.4212835324139993
+        },
+        {
+          "first_step": 101,
+          "last_step": 200,
+          "loss": 0.3746026142717892
+        }
+      ],
+      "latest_step_seconds": 1.9035248479340225,
+      "latest_time": "2026-10-27T14:30:29.601226+00:00",
+      "functional_loss_has_started": false,
+      "all_epoch1": true
+    },
+    "H_mu_teacher_seed20261027": {
+      "log_snapshot": {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/H_mu_teacher_seed20261027.jsonl",
+        "sha256": "67cd1263897b4b877827efad4fd59fb5eca957e39430978fc674374dbfc290eb"
+      },
+      "first_step": 1,
+      "last_step": 752,
+      "epoch": 1,
+      "records": 752,
+      "duplicates_deduplicated": 0,
+      "trailing_partial_line_ignored": false,
+      "missing_steps": 0,
+      "window_updates": 100,
+      "first_window_weighted_loss": 0.4302329697150795,
+      "last_window_weighted_loss": 0.301277055126136,
+      "relative_loss_change_percent": -29.973508230748603,
+      "nonfinite_loss_or_gradient_records": 0,
+      "loss_blocks": [
+        {
+          "first_step": 1,
+          "last_step": 100,
+          "loss": 0.4302329697150795
+        },
+        {
+          "first_step": 101,
+          "last_step": 200,
+          "loss": 0.36424560866718025
+        },
+        {
+          "first_step": 201,
+          "last_step": 300,
+          "loss": 0.3254556528546345
+        },
+        {
+          "first_step": 301,
+          "last_step": 400,
+          "loss": 0.3094451083225522
+        },
+        {
+          "first_step": 401,
+          "last_step": 500,
+          "loss": 0.299003438552586
+        },
+        {
+          "first_step": 501,
+          "last_step": 600,
+          "loss": 0.30506816482333304
+        },
+        {
+          "first_step": 601,
+          "last_step": 700,
+          "loss": 0.3028746756878922
+        }
+      ],
+      "latest_step_seconds": 0.5916978418827057,
+      "latest_time": "2026-10-27T14:30:30.764220+00:00",
+      "functional_loss_has_started": false,
+      "all_epoch1": true
+    },
+    "H_mu_teacher_seed20261028": {
+      "log_snapshot": {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/H_mu_teacher_seed20261028.jsonl",
+        "sha256": "d170875d366f8867f773ac8dc77c610d04275d0ee1e43d9f2cd7fc517723cd2a"
+      },
+      "first_step": 1,
+      "last_step": 754,
+      "epoch": 1,
+      "records": 754,
+      "duplicates_deduplicated": 0,
+      "trailing_partial_line_ignored": false,
+      "missing_steps": 0,
+      "window_updates": 100,
+      "first_window_weighted_loss": 0.4212835324139993,
+      "last_window_weighted_loss": 0.2973563273556988,
+      "relative_loss_change_percent": -29.416579458538173,
+      "nonfinite_loss_or_gradient_records": 0,
+      "loss_blocks": [
+        {
+          "first_step": 1,
+          "last_step": 100,
+          "loss": 0.4212835324139993
+        },
+        {
+          "first_step": 101,
+          "last_step": 200,
+          "loss": 0.3746026142717892
+        },
+        {
+          "first_step": 201,
+          "last_step": 300,
+          "loss": 0.32528318236176346
+        },
+        {
+          "first_step": 301,
+          "last_step": 400,
+          "loss": 0.3158992123153166
+        },
+        {
+          "first_step": 401,
+          "last_step": 500,
+          "loss": 0.3023979976530518
+        },
+        {
+          "first_step": 501,
+          "last_step": 600,
+          "loss": 0.29983689014121867
+        },
+        {
+          "first_step": 601,
+          "last_step": 700,
+          "loss": 0.3066754539009526
+        }
+      ],
+      "latest_step_seconds": 0.5779979955404997,
+      "latest_time": "2026-10-27T14:30:30.750993+00:00",
+      "functional_loss_has_started": false,
+      "all_epoch1": true
+    },
+    "H_mu_student_seed20261027": {
+      "log_snapshot": {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/H_mu_student_seed20261027.jsonl",
+        "sha256": "f74e00cd54b8be5fe02de739af8ec5d40e06813f5f47f0b62b9c1f14227c8bf5"
+      },
+      "first_step": 1,
+      "last_step": 646,
+      "epoch": 1,
+      "records": 646,
+      "duplicates_deduplicated": 0,
+      "trailing_partial_line_ignored": false,
+      "missing_steps": 0,
+      "window_updates": 100,
+      "first_window_weighted_loss": 0.4302329697150795,
+      "last_window_weighted_loss": 0.30547180541217583,
+      "relative_loss_change_percent": -28.998513151032192,
+      "nonfinite_loss_or_gradient_records": 0,
+      "loss_blocks": [
+        {
+          "first_step": 1,
+          "last_step": 100,
+          "loss": 0.4302329697150795
+        },
+        {
+          "first_step": 101,
+          "last_step": 200,
+          "loss": 0.36424560866718025
+        },
+        {
+          "first_step": 201,
+          "last_step": 300,
+          "loss": 0.3254556528546345
+        },
+        {
+          "first_step": 301,
+          "last_step": 400,
+          "loss": 0.3094451083225522
+        },
+        {
+          "first_step": 401,
+          "last_step": 500,
+          "loss": 0.299003438552586
+        },
+        {
+          "first_step": 501,
+          "last_step": 600,
+          "loss": 0.30506816482333304
+        }
+      ],
+      "latest_step_seconds": 0.6231941990554333,
+      "latest_time": "2026-10-27T14:30:31.010495+00:00",
+      "functional_loss_has_started": false,
+      "all_epoch1": true
+    },
+    "H_mu_student_seed20261028": {
+      "log_snapshot": {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/H_mu_student_seed20261028.jsonl",
+        "sha256": "baa21620eae1d8703a55936fa840b3cc8959f9127174f1da81c5211f0d5b41a0"
+      },
+      "first_step": 1,
+      "last_step": 644,
+      "epoch": 1,
+      "records": 644,
+      "duplicates_deduplicated": 0,
+      "trailing_partial_line_ignored": false,
+      "missing_steps": 0,
+      "window_updates": 100,
+      "first_window_weighted_loss": 0.4212835324139993,
+      "last_window_weighted_loss": 0.305710582848742,
+      "relative_loss_change_percent": -27.433531261716325,
+      "nonfinite_loss_or_gradient_records": 0,
+      "loss_blocks": [
+        {
+          "first_step": 1,
+          "last_step": 100,
+          "loss": 0.4212835324139993
+        },
+        {
+          "first_step": 101,
+          "last_step": 200,
+          "loss": 0.3746026142717892
+        },
+        {
+          "first_step": 201,
+          "last_step": 300,
+          "loss": 0.32528318236176346
+        },
+        {
+          "first_step": 301,
+          "last_step": 400,
+          "loss": 0.3158992123153166
+        },
+        {
+          "first_step": 401,
+          "last_step": 500,
+          "loss": 0.3023979976530518
+        },
+        {
+          "first_step": 501,
+          "last_step": 600,
+          "loss": 0.29983689014121867
+        }
+      ],
+      "latest_step_seconds": 0.6128514409065247,
+      "latest_time": "2026-10-27T14:30:30.782279+00:00",
+      "functional_loss_has_started": false,
+      "all_epoch1": true
+    }
+  }
+}

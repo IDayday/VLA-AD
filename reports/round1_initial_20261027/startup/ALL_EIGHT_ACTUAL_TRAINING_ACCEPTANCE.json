@@ -1,0 +1,174 @@
+{
+  "status": "ALL_EIGHT_ACTUAL_FORMAL_OPTIMIZER_UPDATES_STARTED",
+  "time": "2026-10-27T14:24:22.189098+00:00",
+  "source_commit": "0a58bd8e6271e26103512add2c5cb7816d7eb8f1",
+  "freeze_sha256": "aa1372531dc34aa6fc46cf4c8e71fc6fedce1dbecceb6a74c9ef18e14ade9e00",
+  "runs": [
+    {
+      "run_id": "H_full_seed20261027",
+      "actual_updates_at_observation": 78,
+      "actor_status": {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/basic_normal_start_20261027/activation_snapshots/H_full_seed20261027.STATUS.json",
+        "sha256": "d110e0069f286616e6abd437dece5c3f38d04a0c94727b3a2f184802f22cfca1"
+      },
+      "asset_identities": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/ASSET_IDENTITIES.json",
+        "sha256": "98ca1174c82f099470f1de8d14503d8dd1f3fb4400e0fbd4900a45d5450df7f1"
+      },
+      "host": "training-vlawm-tsinghua-zt-worker-0",
+      "gpu_uuids": [
+        "GPU-f0cd16db-c7f6-2226-c901-d1809277060e",
+        "GPU-27c69c7c-eb37-82fb-6fa0-0777abd64056",
+        "GPU-51b3887b-3158-ece3-aa70-a52adb25160b",
+        "GPU-31f9e6ef-4c0d-b5e0-7ddf-527f4a7dbcbc"
+      ],
+      "actual_actor_status_source": "/mnt/project/recogdrive-no-routing-round1-results-20261026/jobs/train__H_full_seed20261027__attempt00/attempt_00000/STATUS.json"
+    },
+    {
+      "run_id": "H_full_seed20261028",
+      "actual_updates_at_observation": 79,
+      "actor_status": {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/basic_normal_start_20261027/activation_snapshots/H_full_seed20261028.STATUS.json",
+        "sha256": "ddc02c087e2fff156e28693cb9b47ced05ca52ba7da58ff44f72292a1b236095"
+      },
+      "asset_identities": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261028/ASSET_IDENTITIES.json",
+        "sha256": "ef943842e5e8a96cafa76c472661829124323c66290952d9f23be7d52a003b8b"
+      },
+      "host": "training-vlawm-tsinghua-zt-worker-0",
+      "gpu_uuids": [
+        "GPU-9bc364f5-5bf1-4ea5-d9fa-ee62b41cc79f",
+        "GPU-76726c77-ffe3-6f10-fb08-7782dac5d840",
+        "GPU-7d8d39a1-1f02-4099-1aaa-d3cc35c6d542",
+        "GPU-91fd88e4-a388-6b59-e684-13a463606f9e"
+      ],
+      "actual_actor_status_source": "/mnt/project/recogdrive-no-routing-round1-results-20261026/jobs/train__H_full_seed20261028__attempt00/attempt_00000/STATUS.json"
+    },
+    {
+      "run_id": "H_gain1_seed20261027",
+      "actual_updates_at_observation": 40,
+      "actor_status": {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/basic_normal_start_20261027/activation_snapshots/H_gain1_seed20261027.STATUS.json",
+        "sha256": "e5846edb837d311530c14d93a71ccc6452a8216ddc928690649cbbbdda355045"
+      },
+      "asset_identities": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/ASSET_IDENTITIES.json",
+        "sha256": "93e3edab2a7f5014b79c33cb047791fabc7ffeb1fae62f1cf488a949707585a1"
+      },
+      "host": "training-vlawm-tsinghua-zt5-worker-0",
+      "gpu_uuids": [
+        "GPU-ba6629ed-35db-198b-d353-d6048cbdf36b",
+        "GPU-c976d64e-44ea-d8bd-a026-d1c1f14d4db6",
+        "GPU-e2a93cb8-47e2-0b2f-952e-bcfa5403ad24",
+        "GPU-28ad5baf-48e8-8ea7-2e0b-514cc7f2d690"
+      ],
+      "actual_actor_status_source": "/mnt/project/recogdrive-no-routing-round1-results-20261026/jobs/train__H_gain1_seed20261027__attempt00/attempt_00000/STATUS.json"
+    },
+    {
+      "run_id": "H_gain1_seed20261028",
+      "actual_updates_at_observation": 40,
+      "actor_status": {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/basic_normal_start_20261027/activation_snapshots/H_gain1_seed20261028.STATUS.json",
+        "sha256": "b0f6c09b045500671e108a068709d96b39af19167cb582827b89701aec86da35"
+      },
+      "asset_identities": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261028/ASSET_IDENTITIES.json",
+        "sha256": "5ba50cef28e7f4119989140d6d6b6b413107d64003ec64fe5dba3f8999b60ff4"
+      },
+      "host": "training-vlawm-tsinghua-zt5-worker-0",
+      "gpu_uuids": [
+        "GPU-a7b3b440-0f0e-d35e-508a-98b368e9a753",
+        "GPU-07454d91-a706-9214-2999-0ec63e16c489",
+        "GPU-69f7a391-b4e5-fefd-2b4e-721834060a20",
+        "GPU-a4a674df-d68f-fa69-13be-0f089a4cd6af"
+      ],
+      "actual_actor_status_source": "/mnt/project/recogdrive-no-routing-round1-results-20261026/jobs/train__H_gain1_seed20261028__attempt00/attempt_00000/STATUS.json"
+    },
+    {
+      "run_id": "H_mu_student_seed20261027",
+      "actual_updates_at_observation": 71,
+      "actor_status": {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/basic_normal_start_20261027/activation_snapshots/H_mu_student_seed20261027.STATUS.json",
+        "sha256": "37e04c87ccebdb62a79394ec3dce5ba31d83b6ff7c517d49f2c5dd137508c24a"
+      },
+      "asset_identities": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/ASSET_IDENTITIES.json",
+        "sha256": "d1e7c4a5ba1b95c428d4940878a9c0baa3420148e6b0ce8feb0c68a698b351e4"
+      },
+      "host": "training-vlawm-tsinghua-zt4-worker-0",
+      "gpu_uuids": [
+        "GPU-de0a113d-0ee7-6d02-f202-38ed7a2eba42",
+        "GPU-9d5086e9-c3c6-960a-702d-d1c5870b6b9f",
+        "GPU-a3f83a36-3e49-431e-4440-35f9e4d01a59",
+        "GPU-4fe15b93-9f87-08ea-699d-40375083da94"
+      ],
+      "actual_actor_status_source": "/mnt/project/recogdrive-no-routing-round1-results-20261026/jobs/train__H_mu_student_seed20261027__attempt00/attempt_00000/STATUS.json"
+    },
+    {
+      "run_id": "H_mu_student_seed20261028",
+      "actual_updates_at_observation": 71,
+      "actor_status": {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/basic_normal_start_20261027/activation_snapshots/H_mu_student_seed20261028.STATUS.json",
+        "sha256": "922641f409abb696b6d3f5f498b66746d2b0f37f06d3b1555b3dfce96a2c55e8"
+      },
+      "asset_identities": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261028/ASSET_IDENTITIES.json",
+        "sha256": "1f13a91dc8e2d581efb4de0eca7778fbd30d168c3945af3d34c5ec151cd0e848"
+      },
+      "host": "training-vlawm-tsinghua-zt4-worker-0",
+      "gpu_uuids": [
+        "GPU-b4cc3837-84f9-01b3-6610-a3d814cf383f",
+        "GPU-0e051448-fccb-5aa8-1389-460e0aa8a46f",
+        "GPU-af5442fd-0c84-7903-61fa-9e9c49eca2ce",
+        "GPU-568199b4-3db3-da75-7c8c-c9b94d0c28b7"
+      ],
+      "actual_actor_status_source": "/mnt/project/recogdrive-no-routing-round1-results-20261026/jobs/train__H_mu_student_seed20261028__attempt00/attempt_00000/STATUS.json"
+    },
+    {
+      "run_id": "H_mu_teacher_seed20261027",
+      "actual_updates_at_observation": 77,
+      "actor_status": {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/basic_normal_start_20261027/activation_snapshots/H_mu_teacher_seed20261027.STATUS.json",
+        "sha256": "0825d29d967210d987b74e21157ee7fbd01cf8ea8e28bab104851b176b394a5d"
+      },
+      "asset_identities": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/ASSET_IDENTITIES.json",
+        "sha256": "8aaebd1b797eface07126a1431d075b5f5f0258379f3b8b174f64422d02931a1"
+      },
+      "host": "training-vla-zt-worker-0",
+      "gpu_uuids": [
+        "GPU-f679bff0-a4a2-ae4f-0b85-74c519b45a9c",
+        "GPU-562375d4-b1d6-f0d9-a68d-5a81e5272907",
+        "GPU-b8a35758-a506-a8a1-dca7-499c485068fc",
+        "GPU-72a7d08b-16b7-7c64-a324-a08e043c6006"
+      ],
+      "actual_actor_status_source": "/mnt/project/recogdrive-no-routing-round1-results-20261026/jobs/train__H_mu_teacher_seed20261027__attempt00/attempt_00000/STATUS.json"
+    },
+    {
+      "run_id": "H_mu_teacher_seed20261028",
+      "actual_updates_at_observation": 77,
+      "actor_status": {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/basic_normal_start_20261027/activation_snapshots/H_mu_teacher_seed20261028.STATUS.json",
+        "sha256": "ee11300465053857a6ee23df9b4077d178234b4d4ceeec81ee84807423bcacba"
+      },
+      "asset_identities": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261028/ASSET_IDENTITIES.json",
+        "sha256": "70e15e55a2878a4f63ed0fe377def95de5aa8672d7b1d3c124d603dc25a08a01"
+      },
+      "host": "training-vla-zt-worker-0",
+      "gpu_uuids": [
+        "GPU-f35ae00b-0c9c-c01c-efba-e527cdd32f76",
+        "GPU-cba744b9-96c8-c3e2-f836-2f0126c038a0",
+        "GPU-017ee82b-e9ff-1f6c-547e-ca2ccf3363ac",
+        "GPU-621b6ab5-d5ba-4219-b7ca-8b9f84479900"
+      ],
+      "actual_actor_status_source": "/mnt/project/recogdrive-no-routing-round1-results-20261026/jobs/train__H_mu_teacher_seed20261028__attempt00/attempt_00000/STATUS.json"
+    }
+  ],
+  "epochs_each": 40,
+  "total_updates_each": 53640,
+  "global_batch_size": 64,
+  "world_size": 4,
+  "extra_qualification": "CANCELLED_BY_USER",
+  "REPORT_COMPLETE": false
+}

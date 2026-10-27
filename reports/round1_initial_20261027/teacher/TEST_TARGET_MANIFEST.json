@@ -1,0 +1,108 @@
+{
+  "immutable_population": "test",
+  "populations": {
+    "test": {
+      "count": 12146,
+      "diagnostic_only": true,
+      "identity": {
+        "diagnostic_only": true,
+        "execution_device_type": "cuda",
+        "feature_manifest_sha256": "686beb5e118e2e96c67aa1c56af4db1a3c85c8bbba926c007c306ef61799fff4",
+        "feature_population_identity_sha256": "83264b8a20149739d9a560b49083ef7b75ad90fa15ef8c4993506f5709060da4",
+        "population": "test",
+        "selection_sha256": "cc78ca6e4b8492d510c7786f4417eb5a8f76d08f6aeec8cfe9cc9f2c095a5016",
+        "target_versions": [
+          "full",
+          "gain1"
+        ],
+        "teacher": {
+          "basis_sha256": "c112a20f51a9614771547a2523903d21910b8d93031c9ea3e5a6c3a05f9c3e82",
+          "bundle_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/frozen_teacher/BUNDLE.json",
+          "bundle_sha256": "ed0a1bef8b27d89e7bb4eb8f32c93134204d66c42184ddecaa1831c5a7188dfc",
+          "library_sha256": "4b04bc28a237f83bf35dc5a175e2affbfacfaff67af691c02b3c9cbc5d4f8b44",
+          "orthogonality_maxabs": 2.886579864025407e-15,
+          "per_slot_cap_in_d0": [
+            4.0,
+            4.0,
+            4.0,
+            4.0,
+            4.0,
+            4.0,
+            4.0,
+            4.0
+          ],
+          "runtime_predictor_sha256": "45df3515afdaa2752ee0e06149e301c2b7f29f1e71d9ccbb60238fadbb44d8f3",
+          "source_checkpoint_sha256": "23fb949b10387efeff87e093703d5faf41b61b9e5ead16d4076661e3c7c08a20",
+          "student_cap_in_d0": 4.0,
+          "teacher_identity": "24698776c612bea610952c30d6554069625bfae50cb7057d9560436876c06efb",
+          "teacher_origin": "local_refit"
+        }
+      },
+      "identity_sha256": "bb592c0fc6af7897d4b6907c3479c69305130bc934156b09b163cf135c898354",
+      "index": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/targets/test/INDEX.jsonl",
+        "sha256": "14297ad603512b79a16180c092a17ddaf2df9cdfccc81f0691a2a997357f326b"
+      },
+      "statistics": {
+        "base_points": 90.67922437631766,
+        "count": 12146,
+        "full_points": 96.55443602310596,
+        "gain1_points": 96.48933443086148,
+        "gain1_repair_count": 6039,
+        "historical_counts_are_not_constraints": true,
+        "identity": "NEW_LOCAL_FROZEN_TEACHER",
+        "original_choice_counts": [
+          4572,
+          472,
+          304,
+          137,
+          847,
+          186,
+          1405,
+          538,
+          3685
+        ]
+      },
+      "versions": {
+        "full": {
+          "shifts": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/targets/test/full_shifts.npy",
+            "sha256": "e8fb9b0041d6c4a411779c51620a692482b3248cb763ba0e3a61a01e50f878dd"
+          },
+          "zero_targets": 4572
+        },
+        "gain1": {
+          "shifts": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/targets/test/gain1_shifts.npy",
+            "sha256": "38f55e87dc7a9ea734eaa959ac0355612baaebfff7e7b3eb160c3f54df63c468"
+          },
+          "zero_targets": 6107
+        }
+      }
+    }
+  },
+  "schema": "nrkd_compact_targets_v1",
+  "teacher_identity": {
+    "basis_sha256": "c112a20f51a9614771547a2523903d21910b8d93031c9ea3e5a6c3a05f9c3e82",
+    "bundle_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/frozen_teacher/BUNDLE.json",
+    "bundle_sha256": "ed0a1bef8b27d89e7bb4eb8f32c93134204d66c42184ddecaa1831c5a7188dfc",
+    "library_sha256": "4b04bc28a237f83bf35dc5a175e2affbfacfaff67af691c02b3c9cbc5d4f8b44",
+    "orthogonality_maxabs": 2.886579864025407e-15,
+    "per_slot_cap_in_d0": [
+      4.0,
+      4.0,
+      4.0,
+      4.0,
+      4.0,
+      4.0,
+      4.0,
+      4.0
+    ],
+    "runtime_predictor_sha256": "45df3515afdaa2752ee0e06149e301c2b7f29f1e71d9ccbb60238fadbb44d8f3",
+    "source_checkpoint_sha256": "23fb949b10387efeff87e093703d5faf41b61b9e5ead16d4076661e3c7c08a20",
+    "student_cap_in_d0": 4.0,
+    "teacher_identity": "24698776c612bea610952c30d6554069625bfae50cb7057d9560436876c06efb",
+    "teacher_origin": "local_refit"
+  },
+  "teacher_origin": "local_refit"
+}

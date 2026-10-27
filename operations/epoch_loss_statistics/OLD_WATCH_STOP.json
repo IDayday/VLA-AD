@@ -1,0 +1,51 @@
+{
+  "schema": "nrkd_exact_CPU_watch_stop_v1",
+  "status": "EXACT_OLD_CPU_WATCH_EXIT_OBSERVED",
+  "time_utc": "2026-10-27T14:51:27.629388+00:00",
+  "hostname": "training-vla-zt-worker-0",
+  "user_instruction": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/single_seed_20261027/USER_INSTRUCTION.json",
+    "sha256": "ee19728c823cf4b1f939f1845f86ece1c0e7fd29b6060ec8ed0c6615f8487fe5"
+  },
+  "identity_before": {
+    "pid": 721087,
+    "start_ticks": 1455083672,
+    "argv": [
+      "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+      "-B",
+      "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/epoch_loss_statistics.py",
+      "watch",
+      "--state",
+      "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/SCHEDULE.json"
+    ],
+    "state": "S"
+  },
+  "identity_after_pidfd_open": {
+    "pid": 721087,
+    "start_ticks": 1455083672,
+    "argv": [
+      "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+      "-B",
+      "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/epoch_loss_statistics.py",
+      "watch",
+      "--state",
+      "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/SCHEDULE.json"
+    ],
+    "state": "S"
+  },
+  "pidfd_backend": "libc.syscall(pidfd_open=434,x86_64)",
+  "signal_backend": "libc.syscall(pidfd_send_signal=424)",
+  "signal_sent": "SIGTERM",
+  "only_signalled_pid": 721087,
+  "pidfd_exit_event": [
+    [
+      3,
+      1
+    ]
+  ],
+  "actual_exit_code": null,
+  "actual_exit_code_note": "Not a child of this stopping process; pidfd confirms exit, no returncode invented",
+  "CPU_lease_free_after_exit": true,
+  "GPU_processes_signalled": 0,
+  "production_changes": 0
+}

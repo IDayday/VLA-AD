@@ -1,0 +1,27 @@
+{
+  "status": "LOCAL_TEACHER_COMPLETE",
+  "all_registered_GPU_actors_exited": true,
+  "final_attempt_each_required_stage_exit_zero": true,
+  "failed_actor_attempts_retained": 67,
+  "costs": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/teacher_suite/COSTS.json",
+    "sha256": "f2c8559ce73acc34f1dff8720e7fd6c51c00d67bc3405ef1405d41a00721ed78"
+  },
+  "teacher_bundle": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/frozen_teacher/BUNDLE.json",
+    "sha256": "ed0a1bef8b27d89e7bb4eb8f32c93134204d66c42184ddecaa1831c5a7188dfc"
+  },
+  "Train_Test_targets_exclusively_owned_by_root_preparation": true,
+  "validation_targets": {
+    "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/targets/validation/MANIFEST.json",
+    "sha256": "5bb2699d09ba44d234632f1db45e4e7f4dc98cb5275bb11602da720a527a0708"
+  },
+  "validation_teacher_diagnostics": {
+    "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/VAL_TEACHER_DIAGNOSTICS.json",
+    "sha256": "3bc54233758ec09336d58c310ea1beb700fbce9366abdcc8cd1620a8b46b36a8"
+  },
+  "metadata_recovery": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/validation_diagnostic_publication_fix/ACTUAL_RECOVERY_RECEIPT.json",
+    "sha256": "57bab7b0e360c87d7e1760d9d015db98af7268269940aa8582f5f7a825743bb6"
+  }
+}

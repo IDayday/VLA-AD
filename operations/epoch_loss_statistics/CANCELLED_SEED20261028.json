@@ -1,0 +1,71 @@
+{
+  "status": "CANCELLED_BY_USER",
+  "user_instruction": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/single_seed_20261027/USER_INSTRUCTION.json",
+    "sha256": "ee19728c823cf4b1f939f1845f86ece1c0e7fd29b6060ec8ed0c6615f8487fe5"
+  },
+  "cancelled_runs": {
+    "H_full_seed20261028": {
+      "estimate_source": "actual last128 median step_seconds; actual functional-row median once observed; per-run remaining epoch steps + buffer; C/D epoch5 conservative4x/1800s only before observed functional rows; stale windows back off, evaluation duration unknown",
+      "expected_epoch_completion_utc": "2026-10-27T14:58:45.685595+00:00",
+      "last_read_utc": "2026-10-27T14:43:42.572431+00:00",
+      "last_step": 1530,
+      "last_summary_sha256": "8e4a38bd17bd03895ea3a3a75f1e3f7e131c401edddb8499ae2a40e015099e3c",
+      "median_recent_functional_step_seconds": null,
+      "median_step_seconds": 0.7839523991569877,
+      "next_epoch": 2,
+      "next_read_utc": null,
+      "state": "CANCELLED_BY_USER",
+      "unchanged_windows": 0,
+      "previous_next_read_utc": "2026-10-27T15:03:45.685595+00:00",
+      "reason": "User instructed no multiple training seeds; preserve existing artifacts and remove completion expectations"
+    },
+    "H_gain1_seed20261028": {
+      "estimate_source": "actual last128 median step_seconds; actual functional-row median once observed; per-run remaining epoch steps + buffer; C/D epoch5 conservative4x/1800s only before observed functional rows; stale windows back off, evaluation duration unknown",
+      "expected_epoch_completion_utc": "2026-10-27T15:04:39.975047+00:00",
+      "last_read_utc": "2026-10-27T14:43:42.765220+00:00",
+      "last_step": 677,
+      "last_summary_sha256": "10addf296e995f213909a5b48cba7eae89ead6d6741e797c1a71a76c0b0675a5",
+      "median_recent_functional_step_seconds": null,
+      "median_step_seconds": 1.8933882935671136,
+      "next_epoch": 1,
+      "next_read_utc": null,
+      "state": "CANCELLED_BY_USER",
+      "unchanged_windows": 0,
+      "previous_next_read_utc": "2026-10-27T15:09:39.975047+00:00",
+      "reason": "User instructed no multiple training seeds; preserve existing artifacts and remove completion expectations"
+    },
+    "H_mu_teacher_seed20261028": {
+      "estimate_source": "actual last128 median step_seconds; actual functional-row median once observed; per-run remaining epoch steps + buffer; C/D epoch5 conservative4x/1800s only before observed functional rows; stale windows back off, evaluation duration unknown",
+      "expected_epoch_completion_utc": "2026-10-27T14:46:21.835628+00:00",
+      "last_read_utc": "2026-10-27T14:43:43.151850+00:00",
+      "last_step": 2313,
+      "last_summary_sha256": "6c148ba716e22f9ad8993957d2d859c4cdf3fb7043d5c133361ed77e6cabebce",
+      "median_recent_functional_step_seconds": null,
+      "median_step_seconds": 0.43003733921796083,
+      "next_epoch": 2,
+      "next_read_utc": null,
+      "state": "CANCELLED_BY_USER",
+      "unchanged_windows": 0,
+      "previous_next_read_utc": "2026-10-27T14:53:43.151850+00:00",
+      "reason": "User instructed no multiple training seeds; preserve existing artifacts and remove completion expectations"
+    },
+    "H_mu_student_seed20261028": {
+      "estimate_source": "actual last128 median step_seconds; actual functional-row median once observed; per-run remaining epoch steps + buffer; C/D epoch5 conservative4x/1800s only before observed functional rows; stale windows back off, evaluation duration unknown",
+      "expected_epoch_completion_utc": "2026-10-27T14:53:22.174562+00:00",
+      "last_read_utc": "2026-10-27T14:43:43.492208+00:00",
+      "last_step": 1780,
+      "last_summary_sha256": "c9158ea1bcfda6f24b596e04de1bb9c50cac09bd166c6e94fc69414a97ad4605",
+      "median_recent_functional_step_seconds": null,
+      "median_step_seconds": 0.6415547160431743,
+      "next_epoch": 2,
+      "next_read_utc": null,
+      "state": "CANCELLED_BY_USER",
+      "unchanged_windows": 0,
+      "previous_next_read_utc": "2026-10-27T14:58:22.174562+00:00",
+      "reason": "User instructed no multiple training seeds; preserve existing artifacts and remove completion expectations"
+    }
+  },
+  "old_summaries_preserved": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/summaries",
+  "GPU_processes_touched": 0
+}

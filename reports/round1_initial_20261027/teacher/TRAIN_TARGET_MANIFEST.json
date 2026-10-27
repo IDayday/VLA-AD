@@ -1,0 +1,112 @@
+{
+  "immutable_population": "train",
+  "populations": {
+    "train": {
+      "construction_receipt": {
+        "path": "CONSTRUCTION.json",
+        "sha256": "0dd22dc3778b01e351f11fa14b5d71098db8d0a2e2402927a2dd833545e8176b"
+      },
+      "count": 85813,
+      "diagnostic_only": false,
+      "identity": {
+        "diagnostic_only": false,
+        "execution_device_type": "cpu_verified_native_cache",
+        "feature_manifest_sha256": "686beb5e118e2e96c67aa1c56af4db1a3c85c8bbba926c007c306ef61799fff4",
+        "feature_population_identity_sha256": "2067f5b261756178ace1e7d66f913b9bace14777a16b27ce364b5b72acc74999",
+        "population": "train",
+        "selection_sha256": "4ddf8abf6a7b6444e64673429fba70112a6d19014262d3349f783f0765f1457a",
+        "target_versions": [
+          "full",
+          "gain1"
+        ],
+        "teacher": {
+          "basis_sha256": "c112a20f51a9614771547a2523903d21910b8d93031c9ea3e5a6c3a05f9c3e82",
+          "bundle_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/frozen_teacher/BUNDLE.json",
+          "bundle_sha256": "ed0a1bef8b27d89e7bb4eb8f32c93134204d66c42184ddecaa1831c5a7188dfc",
+          "library_sha256": "4b04bc28a237f83bf35dc5a175e2affbfacfaff67af691c02b3c9cbc5d4f8b44",
+          "orthogonality_maxabs": 2.886579864025407e-15,
+          "per_slot_cap_in_d0": [
+            4.0,
+            4.0,
+            4.0,
+            4.0,
+            4.0,
+            4.0,
+            4.0,
+            4.0
+          ],
+          "runtime_predictor_sha256": "45df3515afdaa2752ee0e06149e301c2b7f29f1e71d9ccbb60238fadbb44d8f3",
+          "source_checkpoint_sha256": "23fb949b10387efeff87e093703d5faf41b61b9e5ead16d4076661e3c7c08a20",
+          "student_cap_in_d0": 4.0,
+          "teacher_identity": "24698776c612bea610952c30d6554069625bfae50cb7057d9560436876c06efb",
+          "teacher_origin": "local_refit"
+        }
+      },
+      "identity_sha256": "200f66b2b5913970d178ec3fd48094ef344707b882be129fb553240073fe08f1",
+      "index": {
+        "path": "INDEX.jsonl",
+        "sha256": "e2a98550944ec22c212b680f43d6eadbdd8f81924b02df52ce8a2628b5f6cd16"
+      },
+      "statistics": {
+        "base_points": 95.07208905799897,
+        "count": 85813,
+        "full_points": 97.52980207521718,
+        "gain1_points": 97.47006367858731,
+        "gain1_repair_count": 36359,
+        "historical_counts_are_not_constraints": true,
+        "identity": "NEW_LOCAL_FROZEN_TEACHER",
+        "original_choice_counts": [
+          39240,
+          2937,
+          1208,
+          562,
+          5723,
+          989,
+          8407,
+          2469,
+          24278
+        ]
+      },
+      "versions": {
+        "full": {
+          "shifts": {
+            "path": "full_shifts.npy",
+            "sha256": "e26883262eb32da7bb3e4da1be7c0997cbf9045b623ed9cb64432bdffab3f487"
+          },
+          "zero_targets": 39240
+        },
+        "gain1": {
+          "shifts": {
+            "path": "gain1_shifts.npy",
+            "sha256": "0bd70c1d2ea11a4ad32bb7e9ab9c8576f13e2bf390e701735d4715e562162d7b"
+          },
+          "zero_targets": 49454
+        }
+      }
+    }
+  },
+  "schema": "nrkd_compact_targets_v1",
+  "teacher_identity": {
+    "basis_sha256": "c112a20f51a9614771547a2523903d21910b8d93031c9ea3e5a6c3a05f9c3e82",
+    "bundle_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/frozen_teacher/BUNDLE.json",
+    "bundle_sha256": "ed0a1bef8b27d89e7bb4eb8f32c93134204d66c42184ddecaa1831c5a7188dfc",
+    "library_sha256": "4b04bc28a237f83bf35dc5a175e2affbfacfaff67af691c02b3c9cbc5d4f8b44",
+    "orthogonality_maxabs": 2.886579864025407e-15,
+    "per_slot_cap_in_d0": [
+      4.0,
+      4.0,
+      4.0,
+      4.0,
+      4.0,
+      4.0,
+      4.0,
+      4.0
+    ],
+    "runtime_predictor_sha256": "45df3515afdaa2752ee0e06149e301c2b7f29f1e71d9ccbb60238fadbb44d8f3",
+    "source_checkpoint_sha256": "23fb949b10387efeff87e093703d5faf41b61b9e5ead16d4076661e3c7c08a20",
+    "student_cap_in_d0": 4.0,
+    "teacher_identity": "24698776c612bea610952c30d6554069625bfae50cb7057d9560436876c06efb",
+    "teacher_origin": "local_refit"
+  },
+  "teacher_origin": "local_refit"
+}

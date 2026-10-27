@@ -1,0 +1,55 @@
+{
+  "schema": "nrkd_validation_teacher_diagnostics_v1",
+  "status": "COMPLETE",
+  "population": "validation",
+  "scenes": 17475,
+  "noise_indices": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "teacher_bundle_sha256": "ed0a1bef8b27d89e7bb4eb8f32c93134204d66c42184ddecaa1831c5a7188dfc",
+  "versions": [
+    "full",
+    "gain1"
+  ],
+  "artifacts": {
+    "teacher_bundle": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/frozen_teacher/BUNDLE.json",
+      "sha256": "ed0a1bef8b27d89e7bb4eb8f32c93134204d66c42184ddecaa1831c5a7188dfc"
+    },
+    "full_validation_teacher_summary": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/frozen_teacher/VALIDATION_EVALUATION.json",
+      "sha256": "87d603546c825daeb5fe9f174964792e4cf2f8a3a373d7f1e495e4c4393ab6e1"
+    },
+    "full_validation_candidate_matrix": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/requests/validation/MATRIX.npz",
+      "sha256": "1c29cc1754b8330f23889cbe00d494ab0b3711273bc6be62bdd406ac16d59039"
+    },
+    "validation_selection": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/frozen_teacher/selections/validation.npz",
+      "sha256": "e2b4289aeb4dc8952f7c70397f8befd994a07fca6f235163e00629066e71dd45"
+    },
+    "target_manifest": {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/targets/validation/MANIFEST.json",
+      "sha256": "5bb2699d09ba44d234632f1db45e4e7f4dc98cb5275bb11602da720a527a0708"
+    },
+    "target_index": {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/targets/validation/INDEX.jsonl",
+      "sha256": "1f1b06251fd38ac681549756ac2ac5189c7779ff0a8f95f02f0254713f855f44"
+    },
+    "target_full_shifts": {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/targets/validation/full_shifts.npy",
+      "sha256": "1bd8e4e9266a5faa8c511e8a115588366008aae105636bbccae42c62258a8777"
+    },
+    "target_gain1_shifts": {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/targets/validation/gain1_shifts.npy",
+      "sha256": "6026b7e9ee8ef1044a78cad1717dda3932593b0a7f01de25e64102c6f86721a1"
+    }
+  },
+  "posthoc_diagnostic_teacher": true,
+  "training_or_calibration_feedback": false,
+  "original_threshold_gain_points_strict_gt": 1.0
+}

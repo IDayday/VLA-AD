@@ -1,0 +1,135 @@
+{
+  "observed_at": "2026-10-27T14:39:05.326455+00:00",
+  "scope": "single_user_requested_actual_throughput_read",
+  "excludes_future_validation_Test_and_unmeasured_C_D_functional_stage": true,
+  "runs": {
+    "H_full_seed20261027": {
+      "global_step": 1195,
+      "epoch": 1,
+      "last_update_time": "2026-10-27T14:39:05.014333+00:00",
+      "mean_recent200_s_per_update": 0.8359401412867009,
+      "median_recent200_s_per_update": 0.8240797966718674,
+      "remaining_if_current_speed_hours": 12.178022419383618,
+      "remaining_if_current_speed_UTC": "2026-10-28T02:49:46.207165+00:00",
+      "full40_if_current_speed_hours": 12.455508105171845,
+      "remaining_until_epoch5_updates": 4169,
+      "remaining_until_epoch5_if_current_speed_hours": 0.96806512472896,
+      "functional_already_active": false,
+      "nonfinite_records": 0,
+      "exact_complete_epochs": []
+    },
+    "H_full_seed20261028": {
+      "global_step": 1194,
+      "epoch": 1,
+      "last_update_time": "2026-10-27T14:39:04.998281+00:00",
+      "mean_recent200_s_per_update": 0.837225409867242,
+      "median_recent200_s_per_update": 0.8265173546969891,
+      "remaining_if_current_speed_hours": 12.196978846082605,
+      "remaining_if_current_speed_UTC": "2026-10-28T02:50:54.450301+00:00",
+      "full40_if_current_speed_hours": 12.474658607021906,
+      "remaining_until_epoch5_updates": 4170,
+      "remaining_until_epoch5_if_current_speed_hours": 0.9697860997628887,
+      "functional_already_active": false,
+      "nonfinite_records": 0,
+      "exact_complete_epochs": []
+    },
+    "H_gain1_seed20261027": {
+      "global_step": 531,
+      "epoch": 1,
+      "last_update_time": "2026-10-27T14:39:05.379242+00:00",
+      "mean_recent200_s_per_update": 1.9390880011208356,
+      "median_recent200_s_per_update": 1.930055552511476,
+      "remaining_if_current_speed_hours": 28.606395736535127,
+      "remaining_if_current_speed_UTC": "2026-10-28T19:15:28.351107+00:00",
+      "full40_if_current_speed_hours": 28.89241121670045,
+      "remaining_until_epoch5_updates": 4833,
+      "remaining_until_epoch5_if_current_speed_hours": 2.6032256415047215,
+      "functional_already_active": false,
+      "nonfinite_records": 0,
+      "exact_complete_epochs": []
+    },
+    "H_gain1_seed20261028": {
+      "global_step": 534,
+      "epoch": 1,
+      "last_update_time": "2026-10-27T14:39:04.296906+00:00",
+      "mean_recent200_s_per_update": 1.9274596931925043,
+      "median_recent200_s_per_update": 1.911614438984543,
+      "remaining_if_current_speed_hours": 28.433242907411426,
+      "remaining_if_current_speed_UTC": "2026-10-28T19:05:05.000922+00:00",
+      "full40_if_current_speed_hours": 28.719149428568315,
+      "remaining_until_epoch5_updates": 4830,
+      "remaining_until_epoch5_if_current_speed_hours": 2.5860084216999435,
+      "functional_already_active": false,
+      "nonfinite_records": 0,
+      "exact_complete_epochs": []
+    },
+    "H_mu_teacher_seed20261027": {
+      "global_step": 1726,
+      "epoch": 2,
+      "last_update_time": "2026-10-27T14:39:05.401447+00:00",
+      "mean_recent200_s_per_update": 0.45444709167815744,
+      "median_recent200_s_per_update": 0.44962709210813046,
+      "remaining_if_current_speed_hours": 6.553379532605518,
+      "remaining_if_current_speed_UTC": "2026-10-27T21:12:17.492772+00:00",
+      "full40_if_current_speed_hours": 6.771261666004546,
+      "remaining_until_epoch5_updates": 3638,
+      "remaining_until_epoch5_if_current_speed_hours": 0.45924403320142687,
+      "functional_already_active": false,
+      "nonfinite_records": 0,
+      "exact_complete_epochs": [
+        1
+      ]
+    },
+    "H_mu_teacher_seed20261028": {
+      "global_step": 1721,
+      "epoch": 2,
+      "last_update_time": "2026-10-27T14:39:05.443673+00:00",
+      "mean_recent200_s_per_update": 0.4646418866608292,
+      "median_recent200_s_per_update": 0.460225872695446,
+      "remaining_if_current_speed_hours": 6.701039475984331,
+      "remaining_if_current_speed_UTC": "2026-10-27T21:21:09.068569+00:00",
+      "full40_if_current_speed_hours": 6.923164111246354,
+      "remaining_until_epoch5_updates": 3643,
+      "remaining_until_epoch5_if_current_speed_hours": 0.4701917758626113,
+      "functional_already_active": false,
+      "nonfinite_records": 0,
+      "exact_complete_epochs": [
+        1
+      ]
+    },
+    "H_mu_student_seed20261027": {
+      "global_step": 1379,
+      "epoch": 2,
+      "last_update_time": "2026-10-27T14:39:05.347181+00:00",
+      "mean_recent200_s_per_update": 0.65764463650994,
+      "median_recent200_s_per_update": 0.6510921902954578,
+      "remaining_if_current_speed_hours": 9.546990652401659,
+      "remaining_if_current_speed_UTC": "2026-10-28T00:11:54.492804+00:00",
+      "full40_if_current_speed_hours": 9.798905083998106,
+      "remaining_until_epoch5_updates": 3985,
+      "remaining_until_epoch5_if_current_speed_hours": 0.7279760768033642,
+      "functional_already_active": false,
+      "nonfinite_records": 0,
+      "exact_complete_epochs": [
+        1
+      ]
+    },
+    "H_mu_student_seed20261028": {
+      "global_step": 1376,
+      "epoch": 2,
+      "last_update_time": "2026-10-27T14:39:05.041718+00:00",
+      "mean_recent200_s_per_update": 0.658911836259067,
+      "median_recent200_s_per_update": 0.6570849008858204,
+      "remaining_if_current_speed_hours": 9.565935613956633,
+      "remaining_if_current_speed_UTC": "2026-10-28T00:13:02.694665+00:00",
+      "full40_if_current_speed_hours": 9.817786360260099,
+      "remaining_until_epoch5_updates": 3988,
+      "remaining_until_epoch5_if_current_speed_hours": 0.7299278897225443,
+      "functional_already_active": false,
+      "nonfinite_records": 0,
+      "exact_complete_epochs": [
+        1
+      ]
+    }
+  }
+}

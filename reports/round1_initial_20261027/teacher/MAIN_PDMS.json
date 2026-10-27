@@ -1,0 +1,194 @@
+{
+  "bundle_sha256": "ed0a1bef8b27d89e7bb4eb8f32c93134204d66c42184ddecaa1831c5a7188dfc",
+  "formula": {
+    "source": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_refit_20261026/code/fit_library.py",
+      "sha256": "a86c7fee440909b769d2e17067f1a48aab6094d2871c9d76a124c475ac7c811a"
+    },
+    "statements": [
+      "means = scores[:, :, :, 0].mean(2, dtype=np.float64)",
+      "q_points = means * np.float64(100.)",
+      "choice = q_points.argmax(1).astype(np.int64)"
+    ]
+  },
+  "populations": {
+    "test": {
+      "Base_PDMS_points": 90.67922437631766,
+      "choice_counts": [
+        4572,
+        472,
+        304,
+        137,
+        847,
+        186,
+        1405,
+        538,
+        3685
+      ],
+      "fixed_branch_all_five_noises": true,
+      "gain_points": 5.875211646788317,
+      "population": "test",
+      "scene_mean_degraded": 0,
+      "scene_mean_improved": 7574,
+      "scene_mean_unchanged": 4572,
+      "scenes": 12146,
+      "selection_formula_matches_original_collect_population_exactly": true,
+      "single_noise_degraded": 379,
+      "single_noise_improved": 36213,
+      "single_noise_unchanged": 24138,
+      "teacher_PDMS_points": 96.55443602310596
+    },
+    "train": {
+      "Base_PDMS_points": 95.07208905799897,
+      "choice_counts": [
+        39240,
+        2937,
+        1208,
+        562,
+        5723,
+        989,
+        8407,
+        2469,
+        24278
+      ],
+      "fixed_branch_all_five_noises": true,
+      "gain_points": 2.4577130172182016,
+      "population": "train",
+      "scene_mean_degraded": 0,
+      "scene_mean_improved": 46573,
+      "scene_mean_unchanged": 39240,
+      "scenes": 85813,
+      "selection_formula_matches_original_collect_population_exactly": true,
+      "single_noise_degraded": 1604,
+      "single_noise_improved": 221920,
+      "single_noise_unchanged": 205541,
+      "teacher_PDMS_points": 97.52980207521718
+    }
+  },
+  "seconds": 22.543651515617967,
+  "selection_rule": "Per-scene nine branches; S0-S4 PDMS FP64 mean then \u00d7100; Base-first argmax; one branch for all5. No threshold or extra filtering.",
+  "sources_so_far": {
+    "test": {
+      "Native_exit_acceptance": {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/parallel_test_20261027/FULL_TEST_NATIVE_EXIT_ACCEPTANCE.json",
+        "sha256": "8aa3ad55285fa5e2b70b13c2584264624bd365d91ba5f35172eb03f315965095"
+      },
+      "chain_ledger": {
+        "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/independent_full_teacher_effects_20261027/TEST_VERIFIED_CHAINS.jsonl",
+        "sha256": "8119aa7baa1bf853f0bbeb8d099276aaa7f206f55097512bf71899f679ab091c"
+      },
+      "coverage": {
+        "all_chain_SHA_and_task_result_Base_checks_passed": true,
+        "branches": 9,
+        "frozen_metadata_order_exact": true,
+        "noise_indices": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "scenes": 12146,
+        "seven_fields": [
+          "score",
+          "no_at_fault_collisions",
+          "drivable_area_compliance",
+          "time_to_collision_within_bound",
+          "ego_progress",
+          "comfort",
+          "driving_direction_compliance"
+        ],
+        "unique_global_indices": 12146,
+        "unique_task_ids": 12146,
+        "unique_tokens": 12146
+      },
+      "feature_index": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/features/test/INDEX.jsonl",
+        "sha256": "288a80055403ab329673e36c8d88162660eb4ae2a35863b9988f3411f21118f6"
+      },
+      "queue": {
+        "canonical_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/requests/test/QUEUE.json",
+        "sha256": "d946d6d4dc0389ea82b850730414ddc99d0d676c4f765b42ecb777a183b92577",
+        "snapshot": {
+          "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/independent_full_teacher_effects_20261027/test_QUEUE.snapshot.json",
+          "sha256": "d946d6d4dc0389ea82b850730414ddc99d0d676c4f765b42ecb777a183b92577"
+        }
+      },
+      "request": {
+        "canonical_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/requests/test/REQUEST.json",
+        "sha256": "2f3209631065867ac4603e626f68ccc68efe73cd0fc32f3a4ab2e6bc86ca7332",
+        "snapshot": {
+          "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/independent_full_teacher_effects_20261027/test_REQUEST.snapshot.json",
+          "sha256": "2f3209631065867ac4603e626f68ccc68efe73cd0fc32f3a4ab2e6bc86ca7332"
+        }
+      }
+    },
+    "train": {
+      "complete": {
+        "canonical_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/requests/train/COMPLETE.json",
+        "sha256": "5b2db95319290d27b8bd6744bb7882e56cf068c825922c390195c56b9aaa0dca",
+        "snapshot": {
+          "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/independent_full_teacher_effects_20261027/train_COMPLETE.snapshot.json",
+          "sha256": "5b2db95319290d27b8bd6744bb7882e56cf068c825922c390195c56b9aaa0dca"
+        }
+      },
+      "coverage": {
+        "branches": 9,
+        "frozen_metadata_order_exact": true,
+        "noise_indices": [
+          0,
+          1,
+          2,
+          3,
+          4
+        ],
+        "scenes": 85813,
+        "seven_fields": [
+          "score",
+          "no_at_fault_collisions",
+          "drivable_area_compliance",
+          "time_to_collision_within_bound",
+          "ego_progress",
+          "comfort",
+          "driving_direction_compliance"
+        ],
+        "unique_global_indices": 85813,
+        "unique_task_ids": 85813,
+        "unique_tokens": 85813
+      },
+      "feature_index": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/features/train/INDEX.jsonl",
+        "sha256": "87232f1f48d3add5a743a2390433b81394dc822af1e9db8d0931506eb40cb587"
+      },
+      "matrix": {
+        "canonical_reference": {
+          "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/requests/train/MATRIX.npz",
+          "sha256": "64992e546769a33bcdd104ea2547360605b3220068b1553240ed688a2cbc2a19"
+        },
+        "hardlink": {
+          "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/independent_full_teacher_effects_20261027/PINNED_TRAIN_MATRIX.npz",
+          "sha256": "64992e546769a33bcdd104ea2547360605b3220068b1553240ed688a2cbc2a19"
+        },
+        "same_payload_no_copy": true
+      },
+      "queue": {
+        "canonical_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/requests/train/QUEUE.json",
+        "sha256": "321b8a229b1545a42b6e96617684ca18a6145c412270974f750d6d9ffc15e528",
+        "snapshot": {
+          "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/independent_full_teacher_effects_20261027/train_QUEUE.snapshot.json",
+          "sha256": "321b8a229b1545a42b6e96617684ca18a6145c412270974f750d6d9ffc15e528"
+        }
+      },
+      "request": {
+        "canonical_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/requests/train/REQUEST.json",
+        "sha256": "0ac1e43a321169fbdafb2d5735e4c20a39699fc2566f79bdf20edb361f287582",
+        "snapshot": {
+          "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/independent_full_teacher_effects_20261027/train_REQUEST.snapshot.json",
+          "sha256": "0ac1e43a321169fbdafb2d5735e4c20a39699fc2566f79bdf20edb361f287582"
+        }
+      }
+    }
+  },
+  "status": "FULL_CLOSED_POPULATION_VERIFIED",
+  "teacher": "localA800 newly-refit offline fixed Oracle upper bound; not student or PPU"
+}

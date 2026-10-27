@@ -1,0 +1,60 @@
+{
+  "CODE_HEAD_modified": false,
+  "GPU_calls": 0,
+  "GPU_signals": 0,
+  "active_runs": [
+    "H_full_seed20261027",
+    "H_gain1_seed20261027",
+    "H_mu_teacher_seed20261027",
+    "H_mu_student_seed20261027"
+  ],
+  "cancelled_runs": [
+    "H_full_seed20261028",
+    "H_gain1_seed20261028",
+    "H_mu_teacher_seed20261028",
+    "H_mu_student_seed20261028"
+  ],
+  "cancelled_status": "CANCELLED_BY_USER",
+  "completion_status": "ALL_ACTIVE_RUNS_40_EPOCHS_COMPLETE",
+  "existing_summaries_copied_bytewise": true,
+  "initial_backfill_performed": false,
+  "initial_schedule": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/SCHEDULE_V2.json",
+    "sha256": "28a93af10755e23dcb54c1fe020bbd5dbef5c7f37ab1d8a7fe5ebf6bdf38b253"
+  },
+  "live_logs_read_by_migration": 0,
+  "old_cpu_stop": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/OLD_WATCH_STOP.json",
+    "sha256": "f0cd48c53b309b14e7bb0cfb4eda359b93273c4c168ac2e495fa01529eb591e2"
+  },
+  "original_windows_preserved": true,
+  "preserved_v1_root": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/preserved_v1",
+  "private_CPU_tests": {
+    "errors": 0,
+    "failures": 0,
+    "run": 8
+  },
+  "schema": "nrkd_single_seed_epoch_statistics_admission_v2",
+  "source": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/epoch_loss_statistics_v2.py",
+    "sha256": "ce4802930a3570443d01b1dd76fc5d39ca57e487bbde1af856923b38050cee62"
+  },
+  "status": "USER_AUTHORIZED_FOUR_RETAINED_RUNS",
+  "tests_source": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/test_epoch_loss_statistics_v2.py",
+    "sha256": "729801b12699b7df1ca61c872ab82e5c016fcc4f53914da6c96605295e8cb25a"
+  },
+  "time_utc": "2026-10-27T14:54:22.120174+00:00",
+  "unchanged_statistical_math_AST": {
+    "checkpoint_status": "bfdb1578dd484ad84f4cc209328b66a9a8b7b0e8b0658a7a89ac18ab487f1009",
+    "load_records": "2d38a0b5d5a4c0339993362103bd0aceeee0364fb43dec478b67068e38e4c322",
+    "moment": "92a00bf028426da5250b4b54eed6dc53bf8aec051ae561b8d6b9e4d338dade1d",
+    "next_window": "9ab7e4f88070eefca7398a563d68719290f468c4d44b9903cb61a4b25c2f8406",
+    "phase": "c1ebb4260f4bfca3be63e36e414f2bcb77ce258e29c9b757450e5efd96a95bdf",
+    "summarize_records": "5a46fc0af1b0fe8318437bd381604f4a74a7d80170fe54fca97d47538b929bce"
+  },
+  "user_instruction": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/single_seed_20261027/USER_INSTRUCTION.json",
+    "sha256": "ee19728c823cf4b1f939f1845f86ece1c0e7fd29b6060ec8ed0c6615f8487fe5"
+  }
+}

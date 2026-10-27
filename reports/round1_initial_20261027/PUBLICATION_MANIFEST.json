@@ -1,0 +1,480 @@
+{
+  "schema": "recogdrive_initial_publication_manifest_v1",
+  "packaged_at_utc": "2026-10-27T14:54:27.287265+00:00",
+  "training_code_commit": "0a58bd8e6271e26103512add2c5cb7816d7eb8f1",
+  "frozen_evidence_baseline": "6bb7119583513094a169b4c2f2dc2a05ac293aa3",
+  "local_teacher_source_evidence": "f85d4e557b12a7d05f5deb8d1640834cacd94d32",
+  "publication_scope": "Current experiment code and immutable initial-training evidence; active single seed20261027, archived cancelled seed20261028. This is not a completed experiment report.",
+  "files": [
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/basic_normal_start_20261027/STARTUP_OBSERVATION.1422Z.json",
+      "published_path": "reports/round1_initial_20261027/startup/STARTUP_OBSERVATION.1422Z.json",
+      "sha256": "6470dd9b1ca2b2fce55f67bf8e61eae758fdcf0fb37eca0814ee8ff0dde230e2",
+      "bytes": 16717
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/basic_normal_start_20261027/ALL_EIGHT_ACTUAL_TRAINING_ACCEPTANCE.json",
+      "published_path": "reports/round1_initial_20261027/startup/ALL_EIGHT_ACTUAL_TRAINING_ACCEPTANCE.json",
+      "sha256": "a1b11682344152140233ce076b9ffa30e399a97ac6e31b629f036864207053f9",
+      "bytes": 9314
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/basic_normal_start_20261027/USER_INSTRUCTION_CANCELLED_FIVE.json",
+      "published_path": "reports/round1_initial_20261027/protocol/USER_INSTRUCTION_CANCELLED_FIVE.json",
+      "sha256": "a557c69132dedd658bcd550f0f72dc5460f230de627459efe52faf58d1c9c2b7",
+      "bytes": 1470
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/single_seed_20261027/USER_INSTRUCTION.json",
+      "published_path": "reports/round1_initial_20261027/protocol/SINGLE_SEED_USER_INSTRUCTION.json",
+      "sha256": "ee19728c823cf4b1f939f1845f86ece1c0e7fd29b6060ec8ed0c6615f8487fe5",
+      "bytes": 928
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/single_seed_resource_saving_20261027/ALL_FOUR_SEED28_STOPPED.json",
+      "published_path": "reports/round1_initial_20261027/resource_transition/ALL_FOUR_SEED28_STOPPED.json",
+      "sha256": "a859c036764c500778619f7eecce84345b6bca3382ae99cec3490cb77834a22d",
+      "bytes": 3356
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/protocol/CODE_FREEZE.json",
+      "published_path": "reports/round1_initial_20261027/protocol/CODE_FREEZE.json",
+      "sha256": "aa1372531dc34aa6fc46cf4c8e71fc6fedce1dbecceb6a74c9ef18e14ade9e00",
+      "bytes": 14369
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/protocol/PATHS.json",
+      "published_path": "reports/round1_initial_20261027/protocol/PATHS.json",
+      "sha256": "8262e903eac4bd875c46ec2852c898e253a4d24050f6c8baad47bc7023426070",
+      "bytes": 2174
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/protocol/PATHS_CONFIG.json",
+      "published_path": "reports/round1_initial_20261027/protocol/PATHS_CONFIG.json",
+      "sha256": "d5761a55068906763f9fbb5b0473618102ae28c96cb2f5c7dcf4145080caf969",
+      "bytes": 2239
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/calibration/CALIBRATION.json",
+      "published_path": "reports/round1_initial_20261027/protocol/CALIBRATION.json",
+      "sha256": "fcaea8dcc7f3d82fcd3953bb23633f3073ebd2a614457392139b389e4ac0cc42",
+      "bytes": 192154
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/calibration/BASE_INPUT_STATISTICS.json",
+      "published_path": "reports/round1_initial_20261027/protocol/BASE_INPUT_STATISTICS.json",
+      "sha256": "520f84eedec9fa1651f16204451af6c9e0f56d9ad079187d5739dce1bcd37d4d",
+      "bytes": 131927
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/frozen_teacher/BUNDLE.json",
+      "published_path": "reports/round1_initial_20261027/teacher/BUNDLE.json",
+      "sha256": "ed0a1bef8b27d89e7bb4eb8f32c93134204d66c42184ddecaa1831c5a7188dfc",
+      "bytes": 14840
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/independent_full_teacher_effects_20261027/MAIN_PDMS.json",
+      "published_path": "reports/round1_initial_20261027/teacher/MAIN_PDMS.json",
+      "sha256": "74f0b7a653fb5a6152046307be86b970fe0d28dace0c63fab1507eafe2c82b0c",
+      "bytes": 7904
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/independent_full_teacher_effects_20261027/PPU_PROTOCOL_COMPARISON.md",
+      "published_path": "reports/round1_initial_20261027/teacher/PPU_PROTOCOL_COMPARISON.md",
+      "sha256": "f243db20a438860628c050379c1ebdd31f95862c6f1ddbff8008ae6daa872e89",
+      "bytes": 3621
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/teacher_suite/COMPLETE.json",
+      "published_path": "reports/round1_initial_20261027/teacher/LOCAL_TEACHER_COMPLETE.json",
+      "sha256": "8cfd28dce0860689261d0def9ff0b144050c74dfb001319c49dc47589e3bf81b",
+      "bytes": 1410
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/targets/train/MANIFEST.json",
+      "published_path": "reports/round1_initial_20261027/teacher/TRAIN_TARGET_MANIFEST.json",
+      "sha256": "a2d286ee6c1ef10fa5a5be8232a41111a4b6ee9ab31625df7ba924114da4f427",
+      "bytes": 4164
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/targets/test/MANIFEST.json",
+      "published_path": "reports/round1_initial_20261027/teacher/TEST_TARGET_MANIFEST.json",
+      "sha256": "ac45794f06e9e8586da53967667f229bb3ff988ef8c86e51dbad42463eb93f3e",
+      "bytes": 4182
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/VAL_TEACHER_DIAGNOSTICS.json",
+      "published_path": "reports/round1_initial_20261027/teacher/VAL_TEACHER_DIAGNOSTICS.json",
+      "sha256": "3bc54233758ec09336d58c310ea1beb700fbce9366abdcc8cd1620a8b46b36a8",
+      "bytes": 2390
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/TREND_SNAPSHOT.json",
+      "published_path": "reports/round1_initial_20261027/loss/TREND_SNAPSHOT.json",
+      "sha256": "b1f86789d49e6640dfdfa45ea655bd0ab02ab6180c89ea3d219fbe987b04383a",
+      "bytes": 12732
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/EARLY_TRAINING_LOSS.png",
+      "published_path": "reports/round1_initial_20261027/loss/EARLY_TRAINING_LOSS.png",
+      "sha256": "5c4e4186dd0ecabbb3ad31afe9abcdf64ad8bfec8fd6b4ffc1fa80546a05219e",
+      "bytes": 408818
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/EARLY_TRAINING_LOSS.svg",
+      "published_path": "reports/round1_initial_20261027/loss/EARLY_TRAINING_LOSS.svg",
+      "sha256": "e5b6ac7456420677df9271250c7db16ec652b38ba591e062abff4501f5b56c30",
+      "bytes": 257853
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/THROUGHPUT_ESTIMATE_20261027T143905Z.json",
+      "published_path": "reports/round1_initial_20261027/loss/THROUGHPUT_ESTIMATE_20261027T143905Z.json",
+      "sha256": "e62f07179a1931b94a48ae2bee4235e9b266f95259fcffc4511aba7d0c94f6b3",
+      "bytes": 5751
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/INITIAL_BACKFILL.json",
+      "published_path": "reports/round1_initial_20261027/loss/INITIAL_BACKFILL.json",
+      "sha256": "f998a93555d9c233a66039ec6927a8b0b6bdd02eb24b8cbae1a5e94b91cbd052",
+      "bytes": 6338
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/effective_config.yaml",
+      "published_path": "reports/round1_initial_20261027/active_seed20261027/H_full_seed20261027/effective_config.yaml",
+      "sha256": "e4b8d0a7f15d73e0316482e8fb54dd9551e1f49ab65ff2ae3147437168bae905",
+      "bytes": 5440
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/ASSET_IDENTITIES.json",
+      "published_path": "reports/round1_initial_20261027/active_seed20261027/H_full_seed20261027/ASSET_IDENTITIES.json",
+      "sha256": "98ca1174c82f099470f1de8d14503d8dd1f3fb4400e0fbd4900a45d5450df7f1",
+      "bytes": 4159
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/summaries/H_full_seed20261027/epoch_metrics.json",
+      "published_path": "reports/round1_initial_20261027/active_seed20261027/H_full_seed20261027/epoch_metrics.json",
+      "sha256": "da0e813ab68ed427a6bef8f47b7c9f6e699fef1f40ba526f4760797c04427468",
+      "bytes": 28823
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/summaries/H_full_seed20261027/epoch_metrics.csv",
+      "published_path": "reports/round1_initial_20261027/active_seed20261027/H_full_seed20261027/epoch_metrics.csv",
+      "sha256": "cb63ebc849d0eabd309616494bdaac164b05fa550a1f18a6885ca1c248732fbb",
+      "bytes": 842
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/H_full_seed20261027.jsonl",
+      "published_path": "reports/round1_initial_20261027/loss/raw_initial_logs/H_full_seed20261027.jsonl.gz",
+      "sha256": "54988959fa597548e8b17f2cce0feaaffb3b869b34885141acedd7f5e3fbf3b1",
+      "bytes": 130241,
+      "compression": "gzip, mtime=0"
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261028/effective_config.yaml",
+      "published_path": "reports/round1_initial_20261027/cancelled_seed20261028/H_full_seed20261028/effective_config.yaml",
+      "sha256": "588200ebeaad515e56525e1288d01eecd30d4d92c4c2af050560aab2f4565f14",
+      "bytes": 5440
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261028/ASSET_IDENTITIES.json",
+      "published_path": "reports/round1_initial_20261027/cancelled_seed20261028/H_full_seed20261028/ASSET_IDENTITIES.json",
+      "sha256": "ef943842e5e8a96cafa76c472661829124323c66290952d9f23be7d52a003b8b",
+      "bytes": 4159
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/summaries/H_full_seed20261028/epoch_metrics.json",
+      "published_path": "reports/round1_initial_20261027/cancelled_seed20261028/H_full_seed20261028/epoch_metrics.json",
+      "sha256": "8e4a38bd17bd03895ea3a3a75f1e3f7e131c401edddb8499ae2a40e015099e3c",
+      "bytes": 28837
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/summaries/H_full_seed20261028/epoch_metrics.csv",
+      "published_path": "reports/round1_initial_20261027/cancelled_seed20261028/H_full_seed20261028/epoch_metrics.csv",
+      "sha256": "06ad3b12448d9734f074f15108f71172dcca52af488491a2f042a66f4253dbf0",
+      "bytes": 838
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/H_full_seed20261028.jsonl",
+      "published_path": "reports/round1_initial_20261027/loss/raw_initial_logs/H_full_seed20261028.jsonl.gz",
+      "sha256": "66ea0d8788aa31d96330f242c23e4871ed100aae47d6c361d813aeb8c874c3a4",
+      "bytes": 130558,
+      "compression": "gzip, mtime=0"
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/effective_config.yaml",
+      "published_path": "reports/round1_initial_20261027/active_seed20261027/H_gain1_seed20261027/effective_config.yaml",
+      "sha256": "fcaa709758e60dbbd698dcf3225594333097fd0a9e384ee19343a09f5bff435e",
+      "bytes": 5442
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/ASSET_IDENTITIES.json",
+      "published_path": "reports/round1_initial_20261027/active_seed20261027/H_gain1_seed20261027/ASSET_IDENTITIES.json",
+      "sha256": "93e3edab2a7f5014b79c33cb047791fabc7ffeb1fae62f1cf488a949707585a1",
+      "bytes": 4159
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/summaries/H_gain1_seed20261027/epoch_metrics.json",
+      "published_path": "reports/round1_initial_20261027/active_seed20261027/H_gain1_seed20261027/epoch_metrics.json",
+      "sha256": "de20986f5aed24b7e1c0be86b7acba212b5fffafc9bd7eca42d807d6f045151f",
+      "bytes": 15854
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/summaries/H_gain1_seed20261027/epoch_metrics.csv",
+      "published_path": "reports/round1_initial_20261027/active_seed20261027/H_gain1_seed20261027/epoch_metrics.csv",
+      "sha256": "0b1b7ebaaa5ce1b9276e36db9a55afbe669c004922816df6af21c54ddf1650f0",
+      "bytes": 563
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/H_gain1_seed20261027.jsonl",
+      "published_path": "reports/round1_initial_20261027/loss/raw_initial_logs/H_gain1_seed20261027.jsonl.gz",
+      "sha256": "6255a92b3287eceb2e8f5879807ed8e67825ba3363c0902e6c6df1b842c2b083",
+      "bytes": 60554,
+      "compression": "gzip, mtime=0"
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261028/effective_config.yaml",
+      "published_path": "reports/round1_initial_20261027/cancelled_seed20261028/H_gain1_seed20261028/effective_config.yaml",
+      "sha256": "82048811663126ecd65859c355ae86ac1717b41c2b8636a8790ffba3a888745c",
+      "bytes": 5442
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261028/ASSET_IDENTITIES.json",
+      "published_path": "reports/round1_initial_20261027/cancelled_seed20261028/H_gain1_seed20261028/ASSET_IDENTITIES.json",
+      "sha256": "5ba50cef28e7f4119989140d6d6b6b413107d64003ec64fe5dba3f8999b60ff4",
+      "bytes": 4159
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/summaries/H_gain1_seed20261028/epoch_metrics.json",
+      "published_path": "reports/round1_initial_20261027/cancelled_seed20261028/H_gain1_seed20261028/epoch_metrics.json",
+      "sha256": "10addf296e995f213909a5b48cba7eae89ead6d6741e797c1a71a76c0b0675a5",
+      "bytes": 15792
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/summaries/H_gain1_seed20261028/epoch_metrics.csv",
+      "published_path": "reports/round1_initial_20261027/cancelled_seed20261028/H_gain1_seed20261028/epoch_metrics.csv",
+      "sha256": "f115747dac5a8be701e88abce7a2cdcfa258cf9818fa14a5912b271773825633",
+      "bytes": 560
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/H_gain1_seed20261028.jsonl",
+      "published_path": "reports/round1_initial_20261027/loss/raw_initial_logs/H_gain1_seed20261028.jsonl.gz",
+      "sha256": "72a57b097506f99007137962f6920d59c11b3497893fa0b2c4f2e04cbf6a53ac",
+      "bytes": 60649,
+      "compression": "gzip, mtime=0"
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/effective_config.yaml",
+      "published_path": "reports/round1_initial_20261027/active_seed20261027/H_mu_teacher_seed20261027/effective_config.yaml",
+      "sha256": "d23af71bd271471a1d8817e136b4effa2162a9ad0d29737f3477c9c4845b2bf4",
+      "bytes": 5449
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/ASSET_IDENTITIES.json",
+      "published_path": "reports/round1_initial_20261027/active_seed20261027/H_mu_teacher_seed20261027/ASSET_IDENTITIES.json",
+      "sha256": "8aaebd1b797eface07126a1431d075b5f5f0258379f3b8b174f64422d02931a1",
+      "bytes": 5532
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/summaries/H_mu_teacher_seed20261027/epoch_metrics.json",
+      "published_path": "reports/round1_initial_20261027/active_seed20261027/H_mu_teacher_seed20261027/epoch_metrics.json",
+      "sha256": "e66284e48af93d8f6cb826aa69ae0a5a7c1ac24d9fbed440fe82d3f5dfe23be9",
+      "bytes": 17877
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/summaries/H_mu_teacher_seed20261027/epoch_metrics.csv",
+      "published_path": "reports/round1_initial_20261027/active_seed20261027/H_mu_teacher_seed20261027/epoch_metrics.csv",
+      "sha256": "68cece35bd681befbd4fdffd4781f6d216b5caa08896f75d1d565d0190c2726a",
+      "bytes": 852
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/H_mu_teacher_seed20261027.jsonl",
+      "published_path": "reports/round1_initial_20261027/loss/raw_initial_logs/H_mu_teacher_seed20261027.jsonl.gz",
+      "sha256": "682b4d0b4b57e37a8c2ffa02f5b6a04d87e4959b96b561b2b0558f60f7afd0e9",
+      "bytes": 165191,
+      "compression": "gzip, mtime=0"
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261028/effective_config.yaml",
+      "published_path": "reports/round1_initial_20261027/cancelled_seed20261028/H_mu_teacher_seed20261028/effective_config.yaml",
+      "sha256": "4077be899eaa7068516f06768ed30838fac3c2757e4b00ddb9278be7ea6b2893",
+      "bytes": 5449
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261028/ASSET_IDENTITIES.json",
+      "published_path": "reports/round1_initial_20261027/cancelled_seed20261028/H_mu_teacher_seed20261028/ASSET_IDENTITIES.json",
+      "sha256": "70e15e55a2878a4f63ed0fe377def95de5aa8672d7b1d3c124d603dc25a08a01",
+      "bytes": 5532
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/summaries/H_mu_teacher_seed20261028/epoch_metrics.json",
+      "published_path": "reports/round1_initial_20261027/cancelled_seed20261028/H_mu_teacher_seed20261028/epoch_metrics.json",
+      "sha256": "6c148ba716e22f9ad8993957d2d859c4cdf3fb7043d5c133361ed77e6cabebce",
+      "bytes": 17934
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/summaries/H_mu_teacher_seed20261028/epoch_metrics.csv",
+      "published_path": "reports/round1_initial_20261027/cancelled_seed20261028/H_mu_teacher_seed20261028/epoch_metrics.csv",
+      "sha256": "4347b50f385f107292b7cdb47d71f2bd42cc43c5d60e19909bca025025fe434f",
+      "bytes": 857
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/H_mu_teacher_seed20261028.jsonl",
+      "published_path": "reports/round1_initial_20261027/loss/raw_initial_logs/H_mu_teacher_seed20261028.jsonl.gz",
+      "sha256": "fae3fa247513ba0352569169819ab54452bf1dd7b994ee957ba155350b737db8",
+      "bytes": 165504,
+      "compression": "gzip, mtime=0"
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/effective_config.yaml",
+      "published_path": "reports/round1_initial_20261027/active_seed20261027/H_mu_student_seed20261027/effective_config.yaml",
+      "sha256": "d7d2931216facc2184ba2c939dff8270839f9f70492a92b0f617cd6edc3363bb",
+      "bytes": 5449
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/ASSET_IDENTITIES.json",
+      "published_path": "reports/round1_initial_20261027/active_seed20261027/H_mu_student_seed20261027/ASSET_IDENTITIES.json",
+      "sha256": "d1e7c4a5ba1b95c428d4940878a9c0baa3420148e6b0ce8feb0c68a698b351e4",
+      "bytes": 4159
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/summaries/H_mu_student_seed20261027/epoch_metrics.json",
+      "published_path": "reports/round1_initial_20261027/active_seed20261027/H_mu_student_seed20261027/epoch_metrics.json",
+      "sha256": "4bdfc9915490494a7df265ab61f5283f7c55623171d2fdea39fc675e05eddec2",
+      "bytes": 25363
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/summaries/H_mu_student_seed20261027/epoch_metrics.csv",
+      "published_path": "reports/round1_initial_20261027/active_seed20261027/H_mu_student_seed20261027/epoch_metrics.csv",
+      "sha256": "933e90aeb319d812a9d79874f6c328224d65ac87535140e839f926092ee978c4",
+      "bytes": 852
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/H_mu_student_seed20261027.jsonl",
+      "published_path": "reports/round1_initial_20261027/loss/raw_initial_logs/H_mu_student_seed20261027.jsonl.gz",
+      "sha256": "5e62d6dfc3ee32a3ed02355b3a91d0e3db6a63eded1c207cf4f46db7ba1f2781",
+      "bytes": 142191,
+      "compression": "gzip, mtime=0"
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261028/effective_config.yaml",
+      "published_path": "reports/round1_initial_20261027/cancelled_seed20261028/H_mu_student_seed20261028/effective_config.yaml",
+      "sha256": "9706b04b3a1ebedd7728773028432fd121635e05b8779c6f63db278a9c8cde3a",
+      "bytes": 5449
+    },
+    {
+      "source_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261028/ASSET_IDENTITIES.json",
+      "published_path": "reports/round1_initial_20261027/cancelled_seed20261028/H_mu_student_seed20261028/ASSET_IDENTITIES.json",
+      "sha256": "1f13a91dc8e2d581efb4de0eca7778fbd30d168c3945af3d34c5ec151cd0e848",
+      "bytes": 4159
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/summaries/H_mu_student_seed20261028/epoch_metrics.json",
+      "published_path": "reports/round1_initial_20261027/cancelled_seed20261028/H_mu_student_seed20261028/epoch_metrics.json",
+      "sha256": "c9158ea1bcfda6f24b596e04de1bb9c50cac09bd166c6e94fc69414a97ad4605",
+      "bytes": 25388
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/summaries/H_mu_student_seed20261028/epoch_metrics.csv",
+      "published_path": "reports/round1_initial_20261027/cancelled_seed20261028/H_mu_student_seed20261028/epoch_metrics.csv",
+      "sha256": "4a5e3a3fde45158dcf846e7f7b3383b473663f49f6943503eb39464f9b11770f",
+      "bytes": 857
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/trend_snapshot_20261027T1430Z/H_mu_student_seed20261028.jsonl",
+      "published_path": "reports/round1_initial_20261027/loss/raw_initial_logs/H_mu_student_seed20261028.jsonl.gz",
+      "sha256": "ae09d08409841c7459b797c2636c0739bb24ebc7f191fbf547a68ca78146da8f",
+      "bytes": 141675,
+      "compression": "gzip, mtime=0"
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/ADMISSION_V2.json",
+      "published_path": "operations/epoch_loss_statistics/ADMISSION_V2.json",
+      "sha256": "a0305280103cb50e965419c00c98e48357cd891c2e751dad06d90840e3d5c312",
+      "bytes": 3006
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/CANCELLED_SEED20261028.json",
+      "published_path": "operations/epoch_loss_statistics/CANCELLED_SEED20261028.json",
+      "sha256": "e50da7f83114d035160e94cb3ac69eb79b478a2a0b08c9f467c2cabf2ce8ddbd",
+      "bytes": 4418
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/OLD_WATCH_STOP.json",
+      "published_path": "operations/epoch_loss_statistics/OLD_WATCH_STOP.json",
+      "sha256": "f0cd48c53b309b14e7bb0cfb4eda359b93273c4c168ac2e495fa01529eb591e2",
+      "bytes": 1993
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/README_V2.md",
+      "published_path": "operations/epoch_loss_statistics/README_V2.md",
+      "sha256": "19238bea11ba46a9c1ef4d53f68e1a8b9bf219d069c266383027286416dddd0f",
+      "bytes": 1480
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/WATCH_LAUNCH_V2.json",
+      "published_path": "operations/epoch_loss_statistics/WATCH_LAUNCH_V2.json",
+      "sha256": "c4be2e2c832054ae0b40175285feb570e8b97dcb3d33342e10c7acb80181502d",
+      "bytes": 2171
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/epoch_loss_statistics_v2.py",
+      "published_path": "operations/epoch_loss_statistics/epoch_loss_statistics_v2.py",
+      "sha256": "ce4802930a3570443d01b1dd76fc5d39ca57e487bbde1af856923b38050cee62",
+      "bytes": 26299
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/publication_initial_summaries/H_full_seed20261027/epoch_metrics.csv",
+      "published_path": "operations/epoch_loss_statistics/publication_initial_summaries/H_full_seed20261027/epoch_metrics.csv",
+      "sha256": "cb63ebc849d0eabd309616494bdaac164b05fa550a1f18a6885ca1c248732fbb",
+      "bytes": 842
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/publication_initial_summaries/H_full_seed20261027/epoch_metrics.json",
+      "published_path": "operations/epoch_loss_statistics/publication_initial_summaries/H_full_seed20261027/epoch_metrics.json",
+      "sha256": "da0e813ab68ed427a6bef8f47b7c9f6e699fef1f40ba526f4760797c04427468",
+      "bytes": 28823
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/publication_initial_summaries/H_gain1_seed20261027/epoch_metrics.csv",
+      "published_path": "operations/epoch_loss_statistics/publication_initial_summaries/H_gain1_seed20261027/epoch_metrics.csv",
+      "sha256": "0b1b7ebaaa5ce1b9276e36db9a55afbe669c004922816df6af21c54ddf1650f0",
+      "bytes": 563
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/publication_initial_summaries/H_gain1_seed20261027/epoch_metrics.json",
+      "published_path": "operations/epoch_loss_statistics/publication_initial_summaries/H_gain1_seed20261027/epoch_metrics.json",
+      "sha256": "de20986f5aed24b7e1c0be86b7acba212b5fffafc9bd7eca42d807d6f045151f",
+      "bytes": 15854
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/publication_initial_summaries/H_mu_student_seed20261027/epoch_metrics.csv",
+      "published_path": "operations/epoch_loss_statistics/publication_initial_summaries/H_mu_student_seed20261027/epoch_metrics.csv",
+      "sha256": "933e90aeb319d812a9d79874f6c328224d65ac87535140e839f926092ee978c4",
+      "bytes": 852
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/publication_initial_summaries/H_mu_student_seed20261027/epoch_metrics.json",
+      "published_path": "operations/epoch_loss_statistics/publication_initial_summaries/H_mu_student_seed20261027/epoch_metrics.json",
+      "sha256": "4bdfc9915490494a7df265ab61f5283f7c55623171d2fdea39fc675e05eddec2",
+      "bytes": 25363
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/publication_initial_summaries/H_mu_teacher_seed20261027/epoch_metrics.csv",
+      "published_path": "operations/epoch_loss_statistics/publication_initial_summaries/H_mu_teacher_seed20261027/epoch_metrics.csv",
+      "sha256": "68cece35bd681befbd4fdffd4781f6d216b5caa08896f75d1d565d0190c2726a",
+      "bytes": 852
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/publication_initial_summaries/H_mu_teacher_seed20261027/epoch_metrics.json",
+      "published_path": "operations/epoch_loss_statistics/publication_initial_summaries/H_mu_teacher_seed20261027/epoch_metrics.json",
+      "sha256": "e66284e48af93d8f6cb826aa69ae0a5a7c1ac24d9fbed440fe82d3f5dfe23be9",
+      "bytes": 17877
+    },
+    {
+      "source_path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/test_epoch_loss_statistics_v2.py",
+      "published_path": "operations/epoch_loss_statistics/test_epoch_loss_statistics_v2.py",
+      "sha256": "729801b12699b7df1ca61c872ab82e5c016fcc4f53914da6c96605295e8cb25a",
+      "bytes": 10878
+    }
+  ]
+}

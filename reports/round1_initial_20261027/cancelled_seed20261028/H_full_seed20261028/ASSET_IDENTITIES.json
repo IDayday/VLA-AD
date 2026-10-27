@@ -1,0 +1,61 @@
+{
+  "code_commit": "0a58bd8e6271e26103512add2c5cb7816d7eb8f1",
+  "code_files": {
+    "student_distillation/adapter.py": "77a91256ee4bfb952c3325e257bbdbe62c5bd7e1947a714227ee35478365525c",
+    "student_distillation/aggregate.py": "133f1605b205c5c2d147d38e2fa540a515924c4dc96ed18b92a08f024d9d1035",
+    "student_distillation/asset_identity.py": "5500fa44e223bfd79104081f87deae636747408c6083a96fda49b16b49630814",
+    "student_distillation/build_targets.py": "b3eb4c3abdf32265bfe244c279cdea0bd695cedfb64cdc8f7ef598a97190b951",
+    "student_distillation/calibration.py": "2ba64c8b3be9a13da8b35fe1354a657eaf2596f5958917d71fdbd9241f70d739",
+    "student_distillation/checkpointing.py": "1399c4fd2c4f47042ea33e89ca437322313eb86f17dd477a88d87995fc3417f7",
+    "student_distillation/data.py": "ac509043fcbf77e306d448aea9abcc23f2346770a34e4495bbc82eadae2beef6",
+    "student_distillation/distributed.py": "b21d1abf3d36eeee08bf14e198e94074921a720f032158dfc0c42b649a67d51c",
+    "student_distillation/evaluate.py": "3e47610575d296c1d7b1cdd6c1b7aad37cc43fddfd5f1d81f1798d54c721fc06",
+    "student_distillation/experiment_registry.py": "9dd16779be3a29801108088f22e0a10a667c36f545b46d0ffe3b9e477d9ef561",
+    "student_distillation/feature_cache.py": "55b13cf6527b50919f71a3208d547d1123f9e3f5866906b7c3827f33be6c2ec3",
+    "student_distillation/inference_graph.py": "3a78e871b9a722ae8c79e1909ebef9ac834ce263d6fe0c06811ce5372dbc8245",
+    "student_distillation/losses.py": "521182ff9759030dca54607c2bcdd692cbd889ab54473e1d7232e08127bc40bd",
+    "student_distillation/native_bridge.py": "b3e6b3bf406ec6b0f8d4ea4e245de83e227bcf2fd8d502d4610f7428f5505665",
+    "student_distillation/noise.py": "053f1fa195632be032881c472cf298697e1658ccb339b638ce73a06bc6301ba8",
+    "student_distillation/prepare_evaluation_noise.py": "5f392b3f11b5b06baa520cc61be2f478d33544ca665d2fba0530f5b1fd3850a5",
+    "student_distillation/qualification.py": "c4105a48d2b2febd64f7ec167cd68946a304047aeacc1f4e643e7aef74efda7d",
+    "student_distillation/run_suite.py": "7a353d50be5e8a17d4786a7af6485facb969afe71250ece86ddf1d1b8eef7f86",
+    "student_distillation/select_checkpoint.py": "0e06b0cbcde47b3a9324214ea4605b41062adf8baadfaed4f54f1ced1e565ed4",
+    "student_distillation/teacher_query_cache.py": "462ae9e41e28b61f369b75236a0d1c8c012f02a6a5738e421dc714006cf9f0a0",
+    "student_distillation/train.py": "79a37580561b920fc251d3c1993318d76fe5fd1d4c48029ce94f385c560ecace"
+  },
+  "code_sha256": "9b7086b50ede0b5f2c81e9ea3d90709d8d8282729189c11ebf0e453ad7468ae1",
+  "files": {
+    "calibration": {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/calibration/CALIBRATION.json",
+      "sha256": "fcaea8dcc7f3d82fcd3953bb23633f3073ebd2a614457392139b389e4ac0cc42"
+    },
+    "feature_manifest": {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/features/MANIFEST.ALL_POPULATIONS.json",
+      "sha256": "686beb5e118e2e96c67aa1c56af4db1a3c85c8bbba926c007c306ef61799fff4"
+    },
+    "targets_manifest": {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/targets/train/MANIFEST.json",
+      "sha256": "a2d286ee6c1ef10fa5a5be8232a41111a4b6ee9ab31625df7ba924114da4f427"
+    },
+    "teacher_bundle": {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/frozen_teacher/BUNDLE.json",
+      "sha256": "ed0a1bef8b27d89e7bb4eb8f32c93134204d66c42184ddecaa1831c5a7188dfc"
+    }
+  },
+  "protocol_sha256": "613b7d4bf244ed1a8e30350ae84031449ef86b64cb8ea766820f110f5d57400b",
+  "qualification": {
+    "execution": {
+      "DDP_adapter_only": true,
+      "global_batch_size": 64,
+      "gradient_accumulation_steps": 16,
+      "microbatch_per_device": 1,
+      "world_size": 4
+    },
+    "formal_asset_qualification": false,
+    "fresh_teacher_extended_qualification": "CANCELLED_BY_USER",
+    "mode": "USER_AUTHORIZED_BASIC_NORMAL_START",
+    "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/qualification/USER_AUTHORIZED_BASIC_NORMAL_START.json",
+    "runtime_extra_recovery_probes": "CANCELLED_BY_USER",
+    "sha256": "f6388f10ee2344c63b78622aa129a9b18058e434cfc60826b09a22246d1d1835"
+  }
+}

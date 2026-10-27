@@ -1,0 +1,29 @@
+{
+  "schema": "nrkd_user_instruction_single_seed_v1",
+  "time_utc": "2026-10-27T14:49:09.613182+00:00",
+  "instructions_zh": [
+    "不用开启多个seed",
+    "节省资源"
+  ],
+  "retained_training_seed": 20261027,
+  "cancelled_training_seed": 20261028,
+  "retained_runs": [
+    "H_full_seed20261027",
+    "H_gain1_seed20261027",
+    "H_mu_teacher_seed20261027",
+    "H_mu_student_seed20261027"
+  ],
+  "cancelled_runs": [
+    "H_full_seed20261028",
+    "H_gain1_seed20261028",
+    "H_mu_teacher_seed20261028",
+    "H_mu_student_seed20261028"
+  ],
+  "cancelled_seed_status": "CANCELLED_BY_USER",
+  "cancel_training_retry_evaluation_and_completion_expectations": true,
+  "keep_existing_checkpoints_and_logs": true,
+  "same_40_epochs_global64_per_retained_run": true,
+  "do_not_restart_healthy_retained_actors": true,
+  "training_code_HEAD_remains": "0a58bd8e6271e26103512add2c5cb7816d7eb8f1",
+  "stop_unrelated_jobs": false
+}

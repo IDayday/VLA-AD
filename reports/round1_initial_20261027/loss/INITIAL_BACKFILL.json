@@ -1,0 +1,198 @@
+{
+  "GPU_calls": 0,
+  "active_CODE_commit_unchanged": "0a58bd8e6271e26103512add2c5cb7816d7eb8f1",
+  "finished_utc": "2026-10-27T14:43:43.533760+00:00",
+  "observations": {
+    "H_full_seed20261027": {
+      "last_step": 1532,
+      "last_time": "2026-10-27T14:43:41.792242+00:00",
+      "median_recent_functional_step_seconds": null,
+      "median_recent_step_seconds": 0.7703637033700943
+    },
+    "H_full_seed20261028": {
+      "last_step": 1530,
+      "last_time": "2026-10-27T14:43:42.344235+00:00",
+      "median_recent_functional_step_seconds": null,
+      "median_recent_step_seconds": 0.7839523991569877
+    },
+    "H_gain1_seed20261027": {
+      "last_step": 672,
+      "last_time": "2026-10-27T14:43:40.830943+00:00",
+      "median_recent_functional_step_seconds": null,
+      "median_recent_step_seconds": 1.917398148914799
+    },
+    "H_gain1_seed20261028": {
+      "last_step": 677,
+      "last_time": "2026-10-27T14:43:42.120962+00:00",
+      "median_recent_functional_step_seconds": null,
+      "median_recent_step_seconds": 1.8933882935671136
+    },
+    "H_mu_student_seed20261027": {
+      "last_step": 1781,
+      "last_time": "2026-10-27T14:43:42.733475+00:00",
+      "median_recent_functional_step_seconds": null,
+      "median_recent_step_seconds": 0.6604607468470931
+    },
+    "H_mu_student_seed20261028": {
+      "last_step": 1780,
+      "last_time": "2026-10-27T14:43:43.072495+00:00",
+      "median_recent_functional_step_seconds": null,
+      "median_recent_step_seconds": 0.6415547160431743
+    },
+    "H_mu_teacher_seed20261027": {
+      "last_step": 2316,
+      "last_time": "2026-10-27T14:43:42.638511+00:00",
+      "median_recent_functional_step_seconds": null,
+      "median_recent_step_seconds": 0.42433500941842794
+    },
+    "H_mu_teacher_seed20261028": {
+      "last_step": 2313,
+      "last_time": "2026-10-27T14:43:42.817214+00:00",
+      "median_recent_functional_step_seconds": null,
+      "median_recent_step_seconds": 0.43003733921796083
+    }
+  },
+  "read_scope": "one_root_reviewed_user_authorized_initial_read_of8train_metrics_and_complete_epoch_checkpoint_sha_markers",
+  "runs": {
+    "H_full_seed20261027": {
+      "complete_epochs": 1,
+      "epoch_statuses": [
+        [
+          1,
+          "COMPLETE"
+        ],
+        [
+          2,
+          "PARTIAL"
+        ]
+      ],
+      "last_step": 1532,
+      "next_read_utc": "2026-10-27T15:03:28.346124+00:00",
+      "source_bounded_size": 1487467,
+      "source_sha256": "7127391b657e88d62c9c810c056f13680e01a7ff5aa0b0365341e70bc3979b50",
+      "summary_sha256": "da0e813ab68ed427a6bef8f47b7c9f6e699fef1f40ba526f4760797c04427468"
+    },
+    "H_full_seed20261028": {
+      "complete_epochs": 1,
+      "epoch_statuses": [
+        [
+          1,
+          "COMPLETE"
+        ],
+        [
+          2,
+          "PARTIAL"
+        ]
+      ],
+      "last_step": 1530,
+      "next_read_utc": "2026-10-27T15:03:45.685595+00:00",
+      "source_bounded_size": 1483839,
+      "source_sha256": "38edfd4ec88dac31768e28c3395842472ab6a5fa48454e174ded2d767d170286",
+      "summary_sha256": "8e4a38bd17bd03895ea3a3a75f1e3f7e131c401edddb8499ae2a40e015099e3c"
+    },
+    "H_gain1_seed20261027": {
+      "complete_epochs": 0,
+      "epoch_statuses": [
+        [
+          1,
+          "PARTIAL"
+        ]
+      ],
+      "last_step": 672,
+      "next_read_utc": "2026-10-27T15:10:05.402946+00:00",
+      "source_bounded_size": 652400,
+      "source_sha256": "d1c65801f7be316b1137a5bc43a4a9ab3fcbb3a1cf5d8df8f8eaaaabe7d93ecb",
+      "summary_sha256": "de20986f5aed24b7e1c0be86b7acba212b5fffafc9bd7eca42d807d6f045151f"
+    },
+    "H_gain1_seed20261028": {
+      "complete_epochs": 0,
+      "epoch_statuses": [
+        [
+          1,
+          "PARTIAL"
+        ]
+      ],
+      "last_step": 677,
+      "next_read_utc": "2026-10-27T15:09:39.975047+00:00",
+      "source_bounded_size": 656846,
+      "source_sha256": "92f83472a4d0a8128f26d0436fae044a5aa6af14fcfb6ee3aca285959348a273",
+      "summary_sha256": "10addf296e995f213909a5b48cba7eae89ead6d6741e797c1a71a76c0b0675a5"
+    },
+    "H_mu_student_seed20261027": {
+      "complete_epochs": 1,
+      "epoch_statuses": [
+        [
+          1,
+          "COMPLETE"
+        ],
+        [
+          2,
+          "PARTIAL"
+        ]
+      ],
+      "last_step": 1781,
+      "next_read_utc": "2026-10-27T14:58:38.392304+00:00",
+      "source_bounded_size": 1725682,
+      "source_sha256": "d6d1c70bcdee2ea0c0a4834acefb225b6ef412ecfa22a4fae9d7c61c177ea08c",
+      "summary_sha256": "4bdfc9915490494a7df265ab61f5283f7c55623171d2fdea39fc675e05eddec2"
+    },
+    "H_mu_student_seed20261028": {
+      "complete_epochs": 1,
+      "epoch_statuses": [
+        [
+          1,
+          "COMPLETE"
+        ],
+        [
+          2,
+          "PARTIAL"
+        ]
+      ],
+      "last_step": 1780,
+      "next_read_utc": "2026-10-27T14:58:22.174562+00:00",
+      "source_bounded_size": 1722292,
+      "source_sha256": "46b371f0a14b4fc3e0ef292923d1917b0aa52e0b39faea6dfec6485e118e6d10",
+      "summary_sha256": "c9158ea1bcfda6f24b596e04de1bb9c50cac09bd166c6e94fc69414a97ad4605"
+    },
+    "H_mu_teacher_seed20261027": {
+      "complete_epochs": 1,
+      "epoch_statuses": [
+        [
+          1,
+          "COMPLETE"
+        ],
+        [
+          2,
+          "PARTIAL"
+        ]
+      ],
+      "last_step": 2316,
+      "next_read_utc": "2026-10-27T14:53:42.975481+00:00",
+      "source_bounded_size": 2241723,
+      "source_sha256": "19916baefbbcf69c93fb0b6165e7cc70ddc4e3cee533e5e99e775b1246bf6494",
+      "summary_sha256": "e66284e48af93d8f6cb826aa69ae0a5a7c1ac24d9fbed440fe82d3f5dfe23be9"
+    },
+    "H_mu_teacher_seed20261028": {
+      "complete_epochs": 1,
+      "epoch_statuses": [
+        [
+          1,
+          "COMPLETE"
+        ],
+        [
+          2,
+          "PARTIAL"
+        ]
+      ],
+      "last_step": 2313,
+      "next_read_utc": "2026-10-27T14:53:43.151850+00:00",
+      "source_bounded_size": 2238235,
+      "source_sha256": "5c0b1de9f0e49b5e415a8554d69cbf0888ac994fcd70bf1866467c9316d7be70",
+      "summary_sha256": "6c148ba716e22f9ad8993957d2d859c4cdf3fb7043d5c133361ed77e6cabebce"
+    }
+  },
+  "schema": "nrkd_epoch_loss_initial_backfill_v1",
+  "source_sha256": "8881bb92c48f6c02a8133e25881bc0d35eb70f4b58968c57bc54240385ea4e44",
+  "status": "BACKFILL_COMPLETE",
+  "training_files_modified": 0
+}

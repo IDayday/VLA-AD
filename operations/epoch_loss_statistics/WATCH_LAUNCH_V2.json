@@ -1,0 +1,42 @@
+{
+  "GPU_processes_touched": 0,
+  "active_runs": [
+    "H_full_seed20261027",
+    "H_gain1_seed20261027",
+    "H_mu_student_seed20261027",
+    "H_mu_teacher_seed20261027"
+  ],
+  "admission": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/ADMISSION_V2.json",
+    "sha256": "a0305280103cb50e965419c00c98e48357cd891c2e751dad06d90840e3d5c312"
+  },
+  "command": [
+    "/mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python",
+    "-B",
+    "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/epoch_loss_statistics_v2.py",
+    "watch",
+    "--state",
+    "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/SCHEDULE_V2.json"
+  ],
+  "next_read_utc": "2026-10-27T14:53:42.975481+00:00",
+  "old_CPU_stop": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/OLD_WATCH_STOP.json",
+    "sha256": "f0cd48c53b309b14e7bb0cfb4eda359b93273c4c168ac2e495fa01529eb591e2"
+  },
+  "pid": 726765,
+  "production_HEAD_modified": false,
+  "schedule_sha256_at_launch": "28a93af10755e23dcb54c1fe020bbd5dbef5c7f37ab1d8a7fe5ebf6bdf38b253",
+  "schema": "nrkd_epoch_loss_watch_launch_single_seed_v2",
+  "source": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/epoch_loss_statistics_v2.py",
+    "sha256": "ce4802930a3570443d01b1dd76fc5d39ca57e487bbde1af856923b38050cee62"
+  },
+  "source_frozen_after_launch": true,
+  "start_ticks": 1455147530,
+  "started_utc": "2026-10-27T14:54:22.135907+00:00",
+  "status": "CPU_WATCH_LAUNCHED",
+  "user_instruction": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/single_seed_20261027/USER_INSTRUCTION.json",
+    "sha256": "ee19728c823cf4b1f939f1845f86ece1c0e7fd29b6060ec8ed0c6615f8487fe5"
+  }
+}

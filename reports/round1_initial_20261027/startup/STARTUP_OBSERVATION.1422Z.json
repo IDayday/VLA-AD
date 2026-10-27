@@ -1,0 +1,685 @@
+{
+  "time": "2026-10-27T14:22:51.649492+00:00",
+  "prep": {
+    "alive": true,
+    "command": "env ZT_AUTO_PROXY=0 OPENBLAS_CORETYPE=Sandybridge OPENBLAS_NUM_THREADS=1 OMP_NUM_THREADS=1 /mnt/project/recogdrive-distillation-first42-a800-20261022/.venv/bin/python -B /mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/code/round1_prepare_and_run.py --root /mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027 --poll-seconds 30 --resources /mnt/project/recogdrive-no-routing-round1-results-20261026/resources/ROUND1_FIXED_32GPU_C_ROOT_ALLOCATION_20261027.json --preparation-resources /mnt/project/recogdrive-no-routing-round1-results-20261026/resources/ROUND1_PREPARATION_FIXED_ROOT_4GPU_20261027.json --user-authorized-basic-normal-start",
+    "gpu": "-",
+    "log": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/dispatch/round1_preparation_native_candidates_owner_resource_binding_recovery_20261027/logs/round1_preparation_native_candidates_owner.log",
+    "name": "round1_preparation_native_candidates_owner",
+    "pid": 709785,
+    "started_at": "2026-10-27T14:20:48+00:00",
+    "state": "running",
+    "updated_at": "2026-10-27T14:20:48+00:00"
+  },
+  "suite_status": "USER_AUTHORIZED_BASIC_NORMAL_START",
+  "runs": {
+    "H_full_seed20261027": {
+      "registry_status": "TRAINING",
+      "host": "training-vlawm-tsinghua-zt",
+      "actual": {
+        "actual_rms": 0.039600981322346844,
+        "cap_count": 0.0,
+        "elapsed_seconds": 92.64241770841181,
+        "epoch": 1,
+        "epoch_index": 0,
+        "eta_seconds": 56515.73610654473,
+        "global_batch_cursor": 78,
+        "global_step": 78,
+        "grad_clip_ratio": 0.7565935805865737,
+        "grad_norm": 1.3217135667800903,
+        "h": 0.5582217880382814,
+        "loss": 0.5582217880382814,
+        "lr": 5.8165548098434e-06,
+        "mu": 0.0,
+        "mu_by_step": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "nonfinite_gradients": 0,
+        "real_scenes": 64,
+        "real_scenes_seen": 4992,
+        "repair_count": 36,
+        "repair_h": 0.9910226513942083,
+        "source_groups": {
+          "0": [
+            0.04937898425851017,
+            28.0
+          ],
+          "1": [
+            2.5932796597480774,
+            3.0
+          ],
+          "2": [
+            2.271191120147705,
+            2.0
+          ],
+          "3": [
+            1.1424291133880615,
+            1.0
+          ],
+          "4": [
+            6.6569613218307495,
+            6.0
+          ],
+          "6": [
+            6.341515243053436,
+            7.0
+          ],
+          "7": [
+            5.637974500656128,
+            5.0
+          ],
+          "8": [
+            11.03346449136734,
+            12.0
+          ]
+        },
+        "status": "TRAINING",
+        "step_seconds": 1.055146113038063,
+        "time": "2026-10-27T14:22:50.830167+00:00",
+        "transition_scene_count": 0,
+        "zero_count": 28,
+        "zero_h": 0.001763535152089649
+      }
+    },
+    "H_full_seed20261028": {
+      "registry_status": "TRAINING",
+      "host": "training-vlawm-tsinghua-zt",
+      "actual": {
+        "actual_rms": 0.041822204999400314,
+        "cap_count": 0.0,
+        "elapsed_seconds": 92.59800250455737,
+        "epoch": 1,
+        "epoch_index": 0,
+        "eta_seconds": 56417.15644880198,
+        "global_batch_cursor": 79,
+        "global_step": 79,
+        "grad_clip_ratio": 0.49416726950546797,
+        "grad_norm": 2.023606300354004,
+        "h": 0.544586564446945,
+        "loss": 0.544586564446945,
+        "lr": 5.891126025354213e-06,
+        "mu": 0.0,
+        "mu_by_step": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "nonfinite_gradients": 0,
+        "real_scenes": 64,
+        "real_scenes_seen": 5056,
+        "repair_count": 36,
+        "repair_h": 0.9666741556591458,
+        "source_groups": {
+          "0": [
+            0.05327052087523043,
+            28.0
+          ],
+          "1": [
+            1.1168936491012573,
+            1.0
+          ],
+          "2": [
+            1.135626196861267,
+            1.0
+          ],
+          "3": [
+            1.147335171699524,
+            1.0
+          ],
+          "4": [
+            4.437299132347107,
+            4.0
+          ],
+          "6": [
+            6.42216020822525,
+            7.0
+          ],
+          "7": [
+            2.251004457473755,
+            2.0
+          ],
+          "8": [
+            18.289950788021088,
+            20.0
+          ]
+        },
+        "status": "TRAINING",
+        "step_seconds": 1.0533253010362387,
+        "time": "2026-10-27T14:22:51.192092+00:00",
+        "transition_scene_count": 0,
+        "zero_count": 28,
+        "zero_h": 0.001902518602686801
+      }
+    },
+    "H_gain1_seed20261027": {
+      "registry_status": "TRAINING",
+      "host": "training-vlawm-tsinghua-zt5",
+      "actual": {
+        "actual_rms": 0.005936131825460382,
+        "cap_count": 0.0,
+        "elapsed_seconds": 85.60946705401875,
+        "epoch": 1,
+        "epoch_index": 0,
+        "eta_seconds": 119823.27919378877,
+        "global_batch_cursor": 40,
+        "global_step": 40,
+        "grad_clip_ratio": 1.0,
+        "grad_norm": 0.7554276585578918,
+        "h": 0.38814174716824823,
+        "loss": 0.38814174716824823,
+        "lr": 2.982848620432513e-06,
+        "mu": 0.0,
+        "mu_by_step": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "nonfinite_gradients": 0,
+        "real_scenes": 64,
+        "real_scenes_seen": 2560,
+        "repair_count": 24,
+        "repair_h": 1.0349795743823051,
+        "source_groups": {
+          "0": [
+            0.001151035214206786,
+            29.0
+          ],
+          "1": [
+            1.121875132106652,
+            3.0
+          ],
+          "3": [
+            1.1261053085327148,
+            1.0
+          ],
+          "4": [
+            5.607339065702035,
+            6.0
+          ],
+          "5": [
+            2.245855450630188,
+            2.0
+          ],
+          "6": [
+            4.116027411600953,
+            5.0
+          ],
+          "7": [
+            7.259986887220293e-05,
+            2.0
+          ],
+          "8": [
+            10.622645815112264,
+            16.0
+          ]
+        },
+        "status": "TRAINING",
+        "step_seconds": 2.2355089401826262,
+        "time": "2026-10-27T14:22:50.143545+00:00",
+        "transition_scene_count": 0,
+        "zero_count": 40,
+        "zero_h": 3.9050839814080976e-05
+      }
+    },
+    "H_gain1_seed20261028": {
+      "registry_status": "TRAINING",
+      "host": "training-vlawm-tsinghua-zt5",
+      "actual": {
+        "actual_rms": 0.006321242472751081,
+        "cap_count": 0.0,
+        "elapsed_seconds": 85.67410418996587,
+        "epoch": 1,
+        "epoch_index": 0,
+        "eta_seconds": 113504.9787197262,
+        "global_batch_cursor": 40,
+        "global_step": 40,
+        "grad_clip_ratio": 1.0,
+        "grad_norm": 0.9445074200630188,
+        "h": 0.4388107121452549,
+        "loss": 0.4388107121452549,
+        "lr": 2.982848620432513e-06,
+        "mu": 0.0,
+        "mu_by_step": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "nonfinite_gradients": 0,
+        "real_scenes": 64,
+        "real_scenes_seen": 2560,
+        "repair_count": 28,
+        "repair_h": 1.0029403205428804,
+        "source_groups": {
+          "0": [
+            0.001352269709968823,
+            31.0
+          ],
+          "1": [
+            2.001067817211151,
+            2.0
+          ],
+          "2": [
+            1.124155879020691,
+            1.0
+          ],
+          "4": [
+            5.605912477321908,
+            6.0
+          ],
+          "6": [
+            7.766739726066589,
+            8.0
+          ],
+          "7": [
+            0.00017449971710448153,
+            4.0
+          ],
+          "8": [
+            11.584482908248901,
+            12.0
+          ]
+        },
+        "status": "TRAINING",
+        "step_seconds": 2.117630199994892,
+        "time": "2026-10-27T14:22:50.174366+00:00",
+        "transition_scene_count": 0,
+        "zero_count": 36,
+        "zero_h": 4.3238947101700534e-05
+      }
+    },
+    "H_mu_student_seed20261027": {
+      "registry_status": "TRAINING",
+      "host": "training-vlawm-tsinghua-zt4",
+      "actual": {
+        "actual_rms": 0.030146131776898958,
+        "cap_count": 0.0,
+        "elapsed_seconds": 82.69841160066426,
+        "epoch": 1,
+        "epoch_index": 0,
+        "eta_seconds": 54782.34920927882,
+        "global_batch_cursor": 71,
+        "global_step": 71,
+        "grad_clip_ratio": 0.6585605528367434,
+        "grad_norm": 1.5184632539749146,
+        "h": 0.3945542672827287,
+        "loss": 0.3945542672827287,
+        "lr": 5.2945563012677106e-06,
+        "mu": 0.0,
+        "mu_by_step": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "nonfinite_gradients": 0,
+        "real_scenes": 64,
+        "real_scenes_seen": 4544,
+        "repair_count": 26,
+        "repair_h": 0.969756523003945,
+        "source_groups": {
+          "0": [
+            0.028491972712799907,
+            29.0
+          ],
+          "1": [
+            2.246475100517273,
+            2.0
+          ],
+          "2": [
+            2.258941173553467,
+            2.0
+          ],
+          "4": [
+            1.1165095323231071,
+            2.0
+          ],
+          "6": [
+            2.8231006860733032,
+            3.0
+          ],
+          "7": [
+            0.002024709712713957,
+            2.0
+          ],
+          "8": [
+            16.775929931201972,
+            24.0
+          ]
+        },
+        "status": "TRAINING",
+        "step_seconds": 1.0226502120494843,
+        "time": "2026-10-27T14:22:51.581077+00:00",
+        "transition_scene_count": 0,
+        "zero_count": 38,
+        "zero_h": 0.000994829157685959
+      }
+    },
+    "H_mu_student_seed20261028": {
+      "registry_status": "TRAINING",
+      "host": "training-vlawm-tsinghua-zt4",
+      "actual": {
+        "actual_rms": 0.03009781681070981,
+        "cap_count": 0.0,
+        "elapsed_seconds": 80.62941709719598,
+        "epoch": 1,
+        "epoch_index": 0,
+        "eta_seconds": 53002.49783645943,
+        "global_batch_cursor": 71,
+        "global_step": 71,
+        "grad_clip_ratio": 0.8684724089500424,
+        "grad_norm": 1.151447057723999,
+        "h": 0.333508443415667,
+        "loss": 0.333508443415667,
+        "lr": 5.2945563012677106e-06,
+        "mu": 0.0,
+        "mu_by_step": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "nonfinite_gradients": 0,
+        "real_scenes": 64,
+        "real_scenes_seen": 4544,
+        "repair_count": 22,
+        "repair_h": 0.9682798710736361,
+        "source_groups": {
+          "0": [
+            0.03680437064031139,
+            36.0
+          ],
+          "1": [
+            1.1354202032089233,
+            1.0
+          ],
+          "4": [
+            3.3497199446428567,
+            5.0
+          ],
+          "6": [
+            3.5835177302360535,
+            4.0
+          ],
+          "7": [
+            1.1306910514831543,
+            1.0
+          ],
+          "8": [
+            12.108387078391388,
+            17.0
+          ]
+        },
+        "status": "TRAINING",
+        "step_seconds": 0.9894248135387897,
+        "time": "2026-10-27T14:22:50.941021+00:00",
+        "transition_scene_count": 0,
+        "zero_count": 42,
+        "zero_h": 0.0010091241662545751
+      }
+    },
+    "H_mu_teacher_seed20261027": {
+      "registry_status": "TRAINING",
+      "host": "training-vla-zt",
+      "actual": {
+        "actual_rms": 0.03815457338783842,
+        "cap_count": 0.0,
+        "elapsed_seconds": 85.40379770472646,
+        "epoch": 1,
+        "epoch_index": 0,
+        "eta_seconds": 48135.809055430815,
+        "global_batch_cursor": 77,
+        "global_step": 77,
+        "grad_clip_ratio": 0.9544647061962548,
+        "grad_norm": 1.0477076768875122,
+        "h": 0.358797697659611,
+        "loss": 0.358797697659611,
+        "lr": 5.741983594332588e-06,
+        "mu": 0.0,
+        "mu_by_step": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "nonfinite_gradients": 0,
+        "real_scenes": 64,
+        "real_scenes_seen": 4928,
+        "repair_count": 24,
+        "repair_h": 0.9541122143467268,
+        "source_groups": {
+          "0": [
+            0.05531477101612836,
+            34.0
+          ],
+          "2": [
+            3.395884871482849,
+            3.0
+          ],
+          "4": [
+            2.229552279692143,
+            3.0
+          ],
+          "5": [
+            1.1240712404251099,
+            1.0
+          ],
+          "6": [
+            6.034358802600764,
+            9.0
+          ],
+          "8": [
+            10.12387068499811,
+            14.0
+          ]
+        },
+        "status": "TRAINING",
+        "step_seconds": 0.8986764941364527,
+        "time": "2026-10-27T14:22:51.463202+00:00",
+        "transition_scene_count": 0,
+        "zero_count": 40,
+        "zero_h": 0.0016089876473415643
+      }
+    },
+    "H_mu_teacher_seed20261028": {
+      "registry_status": "TRAINING",
+      "host": "training-vla-zt",
+      "actual": {
+        "actual_rms": 0.03861920371679634,
+        "cap_count": 0.0,
+        "elapsed_seconds": 84.80564026348293,
+        "epoch": 1,
+        "epoch_index": 0,
+        "eta_seconds": 48013.71880600974,
+        "global_batch_cursor": 77,
+        "global_step": 77,
+        "grad_clip_ratio": 0.7772713710970147,
+        "grad_norm": 1.2865519523620605,
+        "h": 0.340210275246136,
+        "loss": 0.340210275246136,
+        "lr": 5.741983594332588e-06,
+        "mu": 0.0,
+        "mu_by_step": [
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0
+          ]
+        ],
+        "nonfinite_gradients": 0,
+        "real_scenes": 64,
+        "real_scenes_seen": 4928,
+        "repair_count": 22,
+        "repair_h": 0.9865271882577376,
+        "source_groups": {
+          "0": [
+            0.05641530698630959,
+            34.0
+          ],
+          "1": [
+            0.995736300945282,
+            1.0
+          ],
+          "3": [
+            2.2888869047164917,
+            2.0
+          ],
+          "4": [
+            3.34469432674814,
+            5.0
+          ],
+          "6": [
+            1.0987563596572727,
+            2.0
+          ],
+          "7": [
+            1.132636547088623,
+            1.0
+          ],
+          "8": [
+            12.856331869610585,
+            19.0
+          ]
+        },
+        "status": "TRAINING",
+        "step_seconds": 0.8963971175253391,
+        "time": "2026-10-27T14:22:50.864907+00:00",
+        "transition_scene_count": 0,
+        "zero_count": 42,
+        "zero_h": 0.0016633208114875569
+      }
+    }
+  }
+}

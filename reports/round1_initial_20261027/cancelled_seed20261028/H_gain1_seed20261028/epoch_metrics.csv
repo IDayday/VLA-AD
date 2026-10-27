@@ -1,0 +1,2 @@
+run,epoch,status,valid_updates,real_samples,optimizer_step_first,optimizer_step_last,loss_mean,loss_min,loss_max,loss_std,h_mean,mu_mean,weighted_functional_contribution_mean,zero_h_mean,repair_h_mean,lr_mean,grad_norm_mean,grad_norm_max,cap_rate,nonfinite_gradients,step_seconds_sum
+H_gain1_seed20261028,1,PARTIAL,677,43328,1,677,0.335823688374419,0.13216296621249057,0.5656121276023924,0.06861393173693293,0.335823688374419,0.0,0.0,0.04938823778182703,0.7239547778011673,2.527964205816555e-05,1.1704599440009766,3.0350570678710938,0.0,0,1313.5629351257812

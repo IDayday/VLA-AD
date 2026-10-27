@@ -1,0 +1,33 @@
+{
+  "schema": "nrkd_user_instruction_cancel_extra_qualification_v1",
+  "time": "2026-10-27T14:15:14.745418+00:00",
+  "source": "active user messages",
+  "instructions_zh": [
+    "这五类验收没必要做",
+    "尽快开启正式蒸馏训练"
+  ],
+  "supersedes": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/basic_normal_start_20261027/USER_INSTRUCTION.json",
+    "sha256": "c4c2e704319dfeeddebc2beb8d670646a5d9deb0768d66c0926dc661944c1764"
+  },
+  "activation": "USER_AUTHORIZED_BASIC_NORMAL_START",
+  "cancelled_extra_qualification": [
+    "fresh_teacher_injection_and_native_replay_checks",
+    "standalone_zero_initialization_and_DiT_gradient_checks",
+    "64_scene_256_update_known_realizable_control",
+    "repeated_fresh_world4_tail53_check",
+    "extra_initial_periodic_or_active_transition_next_update_replay_comparisons"
+  ],
+  "cancelled_not_deferred": true,
+  "no_parallel_qualification_jobs": true,
+  "retained": [
+    "finish currently healthy fixedTrain loss calibration",
+    "actual formaltrain forward/backward/optimizer updates",
+    "finite loss and gradient guards with native clip",
+    "normal atomic checkpoint save/load with asset code optimizer scheduler RNG sampler identities",
+    "all8 formalruns full40epochs/global64 and allrequired Validation Test Trainmetrics reports"
+  ],
+  "no_fabricated_check_pass": true,
+  "resource_grants_expanded": false,
+  "old_nine_resumed": false
+}

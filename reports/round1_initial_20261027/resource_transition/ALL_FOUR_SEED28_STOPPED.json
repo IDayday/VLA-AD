@@ -1,0 +1,84 @@
+{
+  "status": "FOUR_SEED28_RUNS_CANCELLED_SIXTEEN_GPU_ALLOCATIONS_RELEASED",
+  "time": "2026-10-27T14:49:54.226369+00:00",
+  "runs": [
+    {
+      "status": "USER_CANCELLED_SEED28_ALL_FOUR_RANKS_EXITED",
+      "time": "2026-10-27T14:49:52.312164+00:00",
+      "host": "training-vlawm-tsinghua-zt-worker-0",
+      "run_id": "H_full_seed20261028",
+      "child_pid": 1477490,
+      "child_start_ticks": 1454965688,
+      "actual_wrapper_recorded_returncode": 1,
+      "gpu_uuids": [
+        "GPU-9bc364f5-5bf1-4ea5-d9fa-ee62b41cc79f",
+        "GPU-76726c77-ffe3-6f10-fb08-7782dac5d840",
+        "GPU-7d8d39a1-1f02-4099-1aaa-d3cc35c6d542",
+        "GPU-91fd88e4-a388-6b59-e684-13a463606f9e"
+      ],
+      "all_exact_rank_pidfd_exits_observed": true,
+      "family_and_attempt_leases_free": true,
+      "no_seed27_or_unknown_process_signalled": true,
+      "all_existing_checkpoints_and_outputs_preserved": true
+    },
+    {
+      "status": "USER_CANCELLED_SEED28_ALL_FOUR_RANKS_EXITED",
+      "time": "2026-10-27T14:49:54.139308+00:00",
+      "host": "training-vlawm-tsinghua-zt5-worker-0",
+      "run_id": "H_gain1_seed20261028",
+      "child_pid": 500640,
+      "child_start_ticks": 160618219,
+      "actual_wrapper_recorded_returncode": 1,
+      "gpu_uuids": [
+        "GPU-a7b3b440-0f0e-d35e-508a-98b368e9a753",
+        "GPU-07454d91-a706-9214-2999-0ec63e16c489",
+        "GPU-69f7a391-b4e5-fefd-2b4e-721834060a20",
+        "GPU-a4a674df-d68f-fa69-13be-0f089a4cd6af"
+      ],
+      "all_exact_rank_pidfd_exits_observed": true,
+      "family_and_attempt_leases_free": true,
+      "no_seed27_or_unknown_process_signalled": true,
+      "all_existing_checkpoints_and_outputs_preserved": true
+    },
+    {
+      "status": "USER_CANCELLED_SEED28_ALL_FOUR_RANKS_EXITED",
+      "time": "2026-10-27T14:49:52.266299+00:00",
+      "host": "training-vlawm-tsinghua-zt4-worker-0",
+      "run_id": "H_mu_student_seed20261028",
+      "child_pid": 443136,
+      "child_start_ticks": 1454966179,
+      "actual_wrapper_recorded_returncode": 1,
+      "gpu_uuids": [
+        "GPU-b4cc3837-84f9-01b3-6610-a3d814cf383f",
+        "GPU-0e051448-fccb-5aa8-1389-460e0aa8a46f",
+        "GPU-af5442fd-0c84-7903-61fa-9e9c49eca2ce",
+        "GPU-568199b4-3db3-da75-7c8c-c9b94d0c28b7"
+      ],
+      "all_exact_rank_pidfd_exits_observed": true,
+      "family_and_attempt_leases_free": true,
+      "no_seed27_or_unknown_process_signalled": true,
+      "all_existing_checkpoints_and_outputs_preserved": true
+    },
+    {
+      "status": "USER_CANCELLED_SEED28_ALL_FOUR_RANKS_EXITED",
+      "time": "2026-10-27T14:49:53.105484+00:00",
+      "host": "training-vla-zt-worker-0",
+      "run_id": "H_mu_teacher_seed20261028",
+      "child_pid": 710022,
+      "child_start_ticks": 1454947870,
+      "actual_wrapper_recorded_returncode": 1,
+      "gpu_uuids": [
+        "GPU-f35ae00b-0c9c-c01c-efba-e527cdd32f76",
+        "GPU-cba744b9-96c8-c3e2-f836-2f0126c038a0",
+        "GPU-017ee82b-e9ff-1f6c-547e-ca2ccf3363ac",
+        "GPU-621b6ab5-d5ba-4219-b7ca-8b9f84479900"
+      ],
+      "all_exact_rank_pidfd_exits_observed": true,
+      "family_and_attempt_leases_free": true,
+      "no_seed27_or_unknown_process_signalled": true,
+      "all_existing_checkpoints_and_outputs_preserved": true
+    }
+  ],
+  "seed20261027_four_runs_preserved": true,
+  "controller_retry_and_evaluation_held": true
+}
