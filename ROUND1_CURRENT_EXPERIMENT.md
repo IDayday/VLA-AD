@@ -49,7 +49,7 @@
 
 ## 实际停止与保留
 
-15:06:51 UTC 完成停止，15:12:10 UTC 完成清理。A 全部 1,106 个文件、97 份 checkpoint 的 SHA 全部保持不变。B/C/D 保留已完成 Test 关联权重和每个 run 最后完整 epoch，共12份；删除177个其他中间 `.pt`，4,409,115,022逻辑字节（4.106308GiB）。所有数据、教师、Base、缓存、原始日志、metadata、逐场景评价和报告保留。
+15:06:51 UTC 完成停止，15:12:10 UTC 完成清理。A 组全部 1,106 个文件均保留且元信息核验未变，其中 97 份 checkpoint 经 SHA256 核验未变。B/C/D 保留已完成 Test 关联权重和每个 run 最后完整 epoch，共12份；删除177个其他中间 `.pt`，4,409,115,022逻辑字节（4.106308GiB）。所有数据、教师、Base、缓存、原始日志、metadata、逐场景评价和报告保留。
 
 [实际停止收据](reports/round1_full_train_stopped_20261028/stop_cleanup/STOP_COMPLETE.json) · [实际清理收据](reports/round1_full_train_stopped_20261028/stop_cleanup/CLEANUP_COMPLETE.json) · [A保护核查](reports/round1_full_train_stopped_20261028/stop_cleanup/A_PROTECTED_AFTER.json) · [保留路径/SHA与last替代](reports/round1_full_train_stopped_20261028/stop_cleanup/inventory/KEEP.json)。本仓库只发布聚合结果和compact证据；大权重、原始轨迹与数据未上传。
 

@@ -83,13 +83,13 @@
     },
     {
       "path": "README.md",
-      "sha256": "86a012300aa301a092744938ad419066eb06dcf65af3f5587a328bad4972d4e9",
-      "bytes": 4555
+      "sha256": "6cbc2cb7419eb744c4ad88d73ff83cee6668d5750d1f690169bb0ed0cb83ea9a",
+      "bytes": 4591
     },
     {
       "path": "build_publication.py",
-      "sha256": "0b93eb15ea0e8ba5a9ca27d00f546305d4841a81eaffb0c00d2e6d34ee169e5e",
-      "bytes": 18526
+      "sha256": "af6ca6377c852ed47bfc33d82c693837cab96de487a03b1e720da72cd0837883",
+      "bytes": 18562
     },
     {
       "path": "provenance/COMPLETE.json",
@@ -142,5 +142,5 @@
       "bytes": 14363
     }
   ],
-  "total_bytes": 591516
+  "total_bytes": 591588
 }
