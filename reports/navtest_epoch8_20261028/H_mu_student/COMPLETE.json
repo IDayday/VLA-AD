@@ -1,0 +1,9 @@
+{
+  "artifacts": {
+    "PROTOCOL.json": "b510d5138e9dc3a36a4740ede2950cfe9e201485a1c8663d3ba34f1681002443",
+    "SUMMARY.json": "a6c90ec5e1a45177d93e1d389a78eb0de92dec1fa05a92b9df629967485afe8a",
+    "scene_scores.jsonl": "3b628dd09788876a37cdc04d6b0877ad022cc7c55686f054e637078f61e7e9aa"
+  },
+  "protocol_sha256": "d63ae783b9c44f0213a5cd6ea2f6af54bca5eba7596668f887aa824f4d1f737d",
+  "status": "COMPLETE"
+}

@@ -1,6 +1,6 @@
 # 本机 ReCogDrive 蒸馏：代码与开训快照
 
-本分支保存本机实验代码、真实开训记录及后续用户要求的变更。训练正在进行；第8轮四组完整Validation及A第16轮Validation已完成，Test评测已切换为主判断和权重选择口径，完整Test成绩仍待生成。
+本分支保存本机实验代码、真实开训记录及后续用户要求的变更。训练正在进行；第8轮四组完整Navtest已完成并核验，A/B/C/D分别88.726671/89.121595/89.286516/89.319965，同条件Base90.679224。Test为主判断和权重选择口径，后续轮次及A不同loss五点相关性仍在进行。
 
 ## 最新覆盖：Test PDMS选择与固定服务器（2026-10-27 23:15 UTC）
 
@@ -97,3 +97,7 @@
 ## A组不同loss权重与完整Test PDMS相关性
 
 用户要求已登记，预先选择epoch1/4/8/12/16，复用正式Test8/16并并行补评Test1/4/12；每点同时重算固定Train8192面板H。完整5点仍在生成，未给出任何相关系数。代码、实际启动记录、冻结输入和[四组方法说明](local_teacher_rebuild/native_candidates_20261027/engineering/loss_pdms_correlation_20261027/METHODS_FOUR_ARMS.md)位于[独立分析目录](local_teacher_rebuild/native_candidates_20261027/engineering/loss_pdms_correlation_20261027/)。本诊断不扩展正式best选择端点，也不改训练或增加物理GPU。
+
+## 首批完整Navtest结果（2026-10-28 00:18 UTC）
+
+[四组第8轮完整评分与A组已完成补评](reports/navtest_epoch8_20261028/NAVTEST_EPOCH8_RESULTS.md)。所有四组当前都低于Base；A第4/8/12轮分数随在线loss下降而下降，完整5点相关系数需等第1/16轮完成。当前不把训练loss下降表述为驾驶能力提升，四组完整40轮预算和后续所有评测继续。

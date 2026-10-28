@@ -1,0 +1,71 @@
+{
+  "artifact_kind": "behavior",
+  "calibration_sha256": "fcaea8dcc7f3d82fcd3953bb23633f3073ebd2a614457392139b389e4ac0cc42",
+  "checkpoint_sha256": "49b0ba84c03786beba220f25e73aa0e0af207893595b2dbf18c069a8a114a329",
+  "feature_manifest_sha256": "686beb5e118e2e96c67aa1c56af4db1a3c85c8bbba926c007c306ef61799fff4",
+  "full_population": true,
+  "independent_held_out_test": false,
+  "mode": "student",
+  "noise_identity": {
+    "manifest": "/mnt/project/recogdrive-no-routing-round1-results-20261026/reference_noise/EVALUATION_NOISE_MANIFEST.json",
+    "manifest_sha256": "07b71c1c153a365afe9cd35c19fd0da47173937e4230661e2e5c355d6a1b0408",
+    "noise_indices": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "path": "/mnt/project/recogdrive-first42-a800-20261022/reference/noise/navtest_noise.npy",
+    "population": "test",
+    "seed_fallback": false,
+    "sha256": "3d91d45b64345a5e4c8429aec1ddd0f558e9aa97f8beb706973ea3bb53a94cb2",
+    "source": "Original verified PPU explicit reference S0-S9",
+    "tokens_path": "/mnt/project/recogdrive-first42-a800-20261022/reference/manifests/navtest_scenes.json",
+    "tokens_sha256": "4bd6a6381919845fa93d20848b61b5f8948d4fe7483b6cd9c8e4a1e6439a0d5d"
+  },
+  "noise_indices": [
+    0,
+    1,
+    2,
+    3,
+    4
+  ],
+  "paired_scene_noise_base": true,
+  "population": "test",
+  "protocol_sha256": "92775a5483ff826cfb67724232911ba9aa8def586d8270b7da3af2877038986e",
+  "representation_only": false,
+  "scene_count": 12146,
+  "scoring": {
+    "proposal_sampling": {
+      "interval_length": 0.1,
+      "num_poses": 40
+    },
+    "scorer": {
+      "comfortable_weight": 2.0,
+      "driving_direction_weight": 0.0,
+      "progress_weight": 5.0,
+      "ttc_weight": 5.0
+    }
+  },
+  "selection_epochs": [
+    8,
+    16,
+    24,
+    32,
+    40
+  ],
+  "selection_population": "test",
+  "target_version": null,
+  "targets_manifest_sha256": null,
+  "teacher_bundle_sha256": "ed0a1bef8b27d89e7bb4eb8f32c93134204d66c42184ddecaa1831c5a7188dfc",
+  "test_used_for_model_selection": true,
+  "tokens_sha256": "3fa48b56906b25b15ec5839a62ff4f7173bb08c106400c9c1419c0356cb4fe57",
+  "user_instruction_sha256": "4719528ddcad03dd9b0ba814eee675896f584ac5c8770ca1168922973f8bd7fc",
+  "validation_used_for_model_selection": false
+}

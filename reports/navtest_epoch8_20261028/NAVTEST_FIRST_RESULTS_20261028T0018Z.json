@@ -1,0 +1,328 @@
+{
+  "observed_at": "2026-10-28T00:18:33.615069+00:00",
+  "formal_Test8": {
+    "H_full": {
+      "status": "VERIFIED_COMPLETE",
+      "behavior": {
+        "base_pdms_points": 90.67922437631766,
+        "degraded": 1046,
+        "delta_points": -1.9525530034909357,
+        "improved": 6729,
+        "negative_loss_sum_points": 41442.49603275651,
+        "pdms_points": 88.7266713728267,
+        "positive_gain_sum_points": 17726.787252355607,
+        "scenes": 12146,
+        "tied": 4371
+      },
+      "bootstrap": {
+        "base_pdms_points_95ci": [
+          89.41457017615119,
+          92.06134739142963
+        ],
+        "paired_delta_points_95ci": [
+          -2.4568957248901033,
+          -1.4515376546267498
+        ],
+        "replicates": 2000,
+        "seed": 20261027,
+        "student_pdms_points_95ci": [
+          87.20786356312848,
+          90.41896097481558
+        ],
+        "unit": "log"
+      },
+      "events": {
+        "new_dac_penalty": 1040,
+        "new_nc_penalty": 820,
+        "new_ttc_penalty": 1881,
+        "new_zero_score": 1779,
+        "paired_base_gt90_student_zero": 1208,
+        "scene_noise_pairs": 60730
+      },
+      "checkpoint_sha256": "49b0ba84c03786beba220f25e73aa0e0af207893595b2dbf18c069a8a114a329",
+      "scenes": 12146,
+      "noise_indices": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "summary_sha256": "14afd4db300d3a356254bec16c1cb9c2232d6b4c2804f8c34669db5662f7657a",
+      "complete_sha256": "f7bf8fcbf8855dd3edd676c2f2b8d595229dac51405b9720684c05c0223ee8ff",
+      "actual_job_status": "EXITED",
+      "actual_returncode": 0,
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/test/epoch_008"
+    },
+    "H_gain1": {
+      "status": "VERIFIED_COMPLETE",
+      "behavior": {
+        "base_pdms_points": 90.67922437631766,
+        "degraded": 949,
+        "delta_points": -1.557629122948555,
+        "improved": 6812,
+        "negative_loss_sum_points": 35960.4447767018,
+        "pdms_points": 89.1215952533691,
+        "positive_gain_sum_points": 17041.48144936865,
+        "scenes": 12146,
+        "tied": 4385
+      },
+      "bootstrap": {
+        "base_pdms_points_95ci": [
+          89.41457017615119,
+          92.06134739142963
+        ],
+        "paired_delta_points_95ci": [
+          -1.9728349918650434,
+          -1.1397876691371915
+        ],
+        "replicates": 2000,
+        "seed": 20261027,
+        "student_pdms_points_95ci": [
+          87.67816787734921,
+          90.73375033596326
+        ],
+        "unit": "log"
+      },
+      "events": {
+        "new_dac_penalty": 874,
+        "new_nc_penalty": 732,
+        "new_ttc_penalty": 1659,
+        "new_zero_score": 1533,
+        "paired_base_gt90_student_zero": 992,
+        "scene_noise_pairs": 60730
+      },
+      "checkpoint_sha256": "ce945c273b0498ea76164835412e2b86ff1de9944fcf37b010a541676ef246be",
+      "scenes": 12146,
+      "noise_indices": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "summary_sha256": "07732155a24385595754cd3f3e4603844872b8c38cb9fb9861607410fd20fb65",
+      "complete_sha256": "2b748e8e0afb247369794b2e2ae5ca0221ee423f26c9a7552ff6b70ec948afd3",
+      "actual_job_status": "EXITED",
+      "actual_returncode": 0,
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_008"
+    },
+    "H_mu_teacher": {
+      "status": "VERIFIED_COMPLETE",
+      "behavior": {
+        "base_pdms_points": 90.67922437631766,
+        "degraded": 902,
+        "delta_points": -1.392708704661904,
+        "improved": 6818,
+        "negative_loss_sum_points": 33204.20521800635,
+        "pdms_points": 89.28651567165574,
+        "positive_gain_sum_points": 16288.365291182869,
+        "scenes": 12146,
+        "tied": 4426
+      },
+      "bootstrap": {
+        "base_pdms_points_95ci": [
+          89.41457017615119,
+          92.06134739142963
+        ],
+        "paired_delta_points_95ci": [
+          -1.8194231043907165,
+          -0.9694961724308031
+        ],
+        "replicates": 2000,
+        "seed": 20261027,
+        "student_pdms_points_95ci": [
+          87.76749022607974,
+          90.93146089114697
+        ],
+        "unit": "log"
+      },
+      "events": {
+        "new_dac_penalty": 753,
+        "new_nc_penalty": 690,
+        "new_ttc_penalty": 1613,
+        "new_zero_score": 1393,
+        "paired_base_gt90_student_zero": 916,
+        "scene_noise_pairs": 60730
+      },
+      "checkpoint_sha256": "acbdb9b61d71651e87f7de9a3de26a5fa091d190b5e63c2df08538b0d8f31bed",
+      "scenes": 12146,
+      "noise_indices": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "summary_sha256": "65770eea1207f0c33861741a9c1be94548bbea9f89a853e21b8ce826f745be79",
+      "complete_sha256": "e6aa0dc9e43ff564e3286ba28042829f3b5cc2ff84a6bf01c0dcb96a5a29e690",
+      "actual_job_status": "EXITED",
+      "actual_returncode": 0,
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/test/epoch_008"
+    },
+    "H_mu_student": {
+      "status": "VERIFIED_COMPLETE",
+      "behavior": {
+        "base_pdms_points": 90.67922437631766,
+        "degraded": 895,
+        "delta_points": -1.3592591669061078,
+        "improved": 6831,
+        "negative_loss_sum_points": 32598.16871122765,
+        "pdms_points": 89.31996520941154,
+        "positive_gain_sum_points": 16088.60686998606,
+        "scenes": 12146,
+        "tied": 4420
+      },
+      "bootstrap": {
+        "base_pdms_points_95ci": [
+          89.41457017615119,
+          92.06134739142963
+        ],
+        "paired_delta_points_95ci": [
+          -1.7808664252759958,
+          -0.9406132042702121
+        ],
+        "replicates": 2000,
+        "seed": 20261027,
+        "student_pdms_points_95ci": [
+          87.81559679109678,
+          90.96037113951424
+        ],
+        "unit": "log"
+      },
+      "events": {
+        "new_dac_penalty": 745,
+        "new_nc_penalty": 674,
+        "new_ttc_penalty": 1559,
+        "new_zero_score": 1372,
+        "paired_base_gt90_student_zero": 904,
+        "scene_noise_pairs": 60730
+      },
+      "checkpoint_sha256": "edf22689754daa1ed0b8658a2f8c98cfd904a221780a98458738a93963587cab",
+      "scenes": 12146,
+      "noise_indices": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "summary_sha256": "a6c90ec5e1a45177d93e1d389a78eb0de92dec1fa05a92b9df629967485afe8a",
+      "complete_sha256": "36c819b7b3a23ef5816a591858cb2e757d29ad07ab4e65db84dbc2d940f92749",
+      "actual_job_status": "EXITED",
+      "actual_returncode": 0,
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/test/epoch_008"
+    }
+  },
+  "A_extra": {
+    "1": {
+      "status": "NOT_COMPLETE"
+    },
+    "4": {
+      "status": "VERIFIED_COMPLETE",
+      "behavior": {
+        "base_pdms_points": 90.67922437631766,
+        "degraded": 980,
+        "delta_points": -1.8076712996944078,
+        "improved": 6792,
+        "negative_loss_sum_points": 38861.37324898984,
+        "pdms_points": 88.87155307662323,
+        "positive_gain_sum_points": 16905.397642901567,
+        "scenes": 12146,
+        "tied": 4374
+      },
+      "bootstrap": {
+        "base_pdms_points_95ci": [
+          89.41457017615119,
+          92.06134739142963
+        ],
+        "paired_delta_points_95ci": [
+          -2.333607038457846,
+          -1.310676842544469
+        ],
+        "replicates": 2000,
+        "seed": 20261027,
+        "student_pdms_points_95ci": [
+          87.23855687421171,
+          90.64037124689526
+        ],
+        "unit": "log"
+      },
+      "events": {
+        "new_dac_penalty": 1127,
+        "new_nc_penalty": 677,
+        "new_ttc_penalty": 1547,
+        "new_zero_score": 1705,
+        "paired_base_gt90_student_zero": 1092,
+        "scene_noise_pairs": 60730
+      },
+      "checkpoint_sha256": "d4775f2b650a2103807bd28cf7246135029876e28826545ba2101702c774d883",
+      "scenes": 12146,
+      "noise_indices": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "summary_sha256": "7c9a050667d016b0dd0960fffdd6a9a8dd163f6879fb1cbca1b7bc3d137514af",
+      "complete_sha256": "40a8d08b67ceb3d9f0f79adec40b5cf1cbeee8656708e132fa9924c215bc33ef",
+      "actual_job_status": "EXITED",
+      "actual_returncode": 0,
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/diagnostics/loss_pdms_correlation/epoch_004/test"
+    },
+    "12": {
+      "status": "VERIFIED_COMPLETE",
+      "behavior": {
+        "base_pdms_points": 90.67922437631766,
+        "degraded": 1179,
+        "delta_points": -2.2652464266263097,
+        "improved": 6627,
+        "negative_loss_sum_points": 46423.92882891987,
+        "pdms_points": 88.41397794969134,
+        "positive_gain_sum_points": 18910.24573111671,
+        "scenes": 12146,
+        "tied": 4340
+      },
+      "bootstrap": {
+        "base_pdms_points_95ci": [
+          89.41457017615119,
+          92.06134739142963
+        ],
+        "paired_delta_points_95ci": [
+          -2.8066813949913465,
+          -1.638455704310336
+        ],
+        "replicates": 2000,
+        "seed": 20261027,
+        "student_pdms_points_95ci": [
+          86.69511619464973,
+          90.3107307429615
+        ],
+        "unit": "log"
+      },
+      "events": {
+        "new_dac_penalty": 1229,
+        "new_nc_penalty": 900,
+        "new_ttc_penalty": 2000,
+        "new_zero_score": 2015,
+        "paired_base_gt90_student_zero": 1356,
+        "scene_noise_pairs": 60730
+      },
+      "checkpoint_sha256": "442341c7e697dedd9edfcecd2c430bd0400d4a1280fe70bd73bb7173da9c55f6",
+      "scenes": 12146,
+      "noise_indices": [
+        0,
+        1,
+        2,
+        3,
+        4
+      ],
+      "summary_sha256": "d4d7b61a532f96818105f900501a1fc5e0820d58c4ac354f0a9867e092a8f7d7",
+      "complete_sha256": "82d34a2da775af6058a6d226f7884992f2bf7827fde250082fe79c8978878766",
+      "actual_job_status": "EXITED",
+      "actual_returncode": 0,
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/diagnostics/loss_pdms_correlation/epoch_012/test"
+    }
+  }
+}
