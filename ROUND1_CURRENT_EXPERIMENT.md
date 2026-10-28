@@ -101,3 +101,5 @@
 ## 首批完整Navtest结果（2026-10-28 00:18 UTC）
 
 [四组第8轮完整评分与A组已完成补评](reports/navtest_epoch8_20261028/NAVTEST_EPOCH8_RESULTS.md)。所有四组当前都低于Base；A第4/8/12轮分数随在线loss下降而下降，完整5点相关系数需等第1/16轮完成。当前不把训练loss下降表述为驾驶能力提升，四组完整40轮预算和后续所有评测继续。
+
+当前仅分数与对应loss的简表：[SCORES_AND_LOSS.md](reports/navtest_epoch8_20261028/SCORES_AND_LOSS.md) · [CSV](reports/navtest_epoch8_20261028/SCORES_AND_LOSS.csv)。
