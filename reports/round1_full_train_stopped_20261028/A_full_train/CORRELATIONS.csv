@@ -1,0 +1,7 @@
+cohort,comparison,observations,pearson,spearman,p_value,inference
+train,checkpoint_mean_H_vs_PDMS,5,-0.9992445282114302,-0.9999999999999998,,"descriptive association, not independence or causality"
+train,adjacent_mean_deltaH_vs_deltaPDMS,4,-0.9721742440617128,-0.9999999999999998,,"descriptive association, not independence or causality"
+train,adjacent_per_epoch_H_slope_vs_PDMS_slope,4,-0.9603161279566231,-0.9999999999999998,,"descriptive association, not independence or causality"
+test,checkpoint_mean_H_vs_PDMS,5,-0.9773383910307291,-0.9999999999999998,,"descriptive association, not independence or causality"
+test,adjacent_mean_deltaH_vs_deltaPDMS,4,-0.7895298493620925,-0.19999999999999996,,"descriptive association, not independence or causality"
+test,adjacent_per_epoch_H_slope_vs_PDMS_slope,4,-0.6982623168749401,-0.19999999999999996,,"descriptive association, not independence or causality"

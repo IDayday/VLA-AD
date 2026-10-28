@@ -1,0 +1,262 @@
+{
+  "status": "STOPPED_BY_USER",
+  "runs": [
+    {
+      "group": "B",
+      "run_id": "H_gain1_seed20261027",
+      "status": "STOPPED_BY_USER",
+      "latest_complete_training_epoch": 32,
+      "completed_Test_epochs": [
+        8,
+        16,
+        24
+      ],
+      "planned_40_epochs_completed": false
+    },
+    {
+      "group": "C",
+      "run_id": "H_mu_teacher_seed20261027",
+      "status": "STOPPED_BY_USER",
+      "latest_complete_training_epoch": 23,
+      "completed_Test_epochs": [
+        8,
+        16
+      ],
+      "planned_40_epochs_completed": false
+    },
+    {
+      "group": "D",
+      "run_id": "H_mu_student_seed20261027",
+      "status": "STOPPED_BY_USER",
+      "latest_complete_training_epoch": 21,
+      "completed_Test_epochs": [
+        8,
+        16
+      ],
+      "planned_40_epochs_completed": false
+    }
+  ],
+  "completed_Test_endpoints": [
+    {
+      "group": "B",
+      "run_id": "H_gain1_seed20261027",
+      "epoch": 8,
+      "target_version": "gain1",
+      "status": "COMPLETE_FULL_TEST_12146_S0_S4",
+      "Test_PDMS": 89.1215952533691,
+      "paired_Base_PDMS": 90.67922437631766,
+      "student_minus_Base_points": -1.557629122948555,
+      "online_epoch_H": 0.22615145276413676,
+      "online_epoch_total_loss": 0.22615145276413676,
+      "fixed_checkpoint_Test_H": 0.33414688759182126,
+      "checkpoint_sha256": "ce945c273b0498ea76164835412e2b86ff1de9944fcf37b010a541676ef246be"
+    },
+    {
+      "group": "B",
+      "run_id": "H_gain1_seed20261027",
+      "epoch": 16,
+      "target_version": "gain1",
+      "status": "COMPLETE_FULL_TEST_12146_S0_S4",
+      "Test_PDMS": 89.53359458019816,
+      "paired_Base_PDMS": 90.67922437631766,
+      "student_minus_Base_points": -1.1456297961194846,
+      "online_epoch_H": 0.15032168471040827,
+      "online_epoch_total_loss": 0.15032168471040827,
+      "fixed_checkpoint_Test_H": 0.37446341387547516,
+      "checkpoint_sha256": "e189001dfbaca6abcc844e503dac38cf414984eec6cb5c9595fc6f61bcbe3bbf"
+    },
+    {
+      "group": "B",
+      "run_id": "H_gain1_seed20261027",
+      "epoch": 24,
+      "target_version": "gain1",
+      "status": "COMPLETE_FULL_TEST_12146_S0_S4",
+      "Test_PDMS": 88.2921618600703,
+      "paired_Base_PDMS": 90.67922437631766,
+      "student_minus_Base_points": -2.3870625162473393,
+      "online_epoch_H": 0.0857890921432141,
+      "online_epoch_total_loss": 0.0857890921432141,
+      "fixed_checkpoint_Test_H": null,
+      "checkpoint_sha256": "f88bd810a2823d3349b8afdb692f1d9a5fe5448327d2be97b3f68f82b76a4909"
+    },
+    {
+      "group": "C",
+      "run_id": "H_mu_teacher_seed20261027",
+      "epoch": 8,
+      "target_version": "gain1",
+      "status": "COMPLETE_FULL_TEST_12146_S0_S4",
+      "Test_PDMS": 89.28651567165574,
+      "paired_Base_PDMS": 90.67922437631766,
+      "student_minus_Base_points": -1.392708704661904,
+      "online_epoch_H": 0.2294504787946175,
+      "online_epoch_total_loss": 0.34822875857353647,
+      "fixed_checkpoint_Test_H": 0.3361236007761176,
+      "checkpoint_sha256": "acbdb9b61d71651e87f7de9a3de26a5fa091d190b5e63c2df08538b0d8f31bed"
+    },
+    {
+      "group": "C",
+      "run_id": "H_mu_teacher_seed20261027",
+      "epoch": 16,
+      "target_version": "gain1",
+      "status": "COMPLETE_FULL_TEST_12146_S0_S4",
+      "Test_PDMS": 89.16275153348717,
+      "paired_Base_PDMS": 90.67922437631766,
+      "student_minus_Base_points": -1.5164728428304781,
+      "online_epoch_H": 0.16356256381572626,
+      "online_epoch_total_loss": 0.2365110199636112,
+      "fixed_checkpoint_Test_H": null,
+      "checkpoint_sha256": "9a44bb78a01f40978c8fceb755374f611e4614809f4bd4318f97e7151fa4fbfb"
+    },
+    {
+      "group": "D",
+      "run_id": "H_mu_student_seed20261027",
+      "epoch": 8,
+      "target_version": "gain1",
+      "status": "COMPLETE_FULL_TEST_12146_S0_S4",
+      "Test_PDMS": 89.31996520941154,
+      "paired_Base_PDMS": 90.67922437631766,
+      "student_minus_Base_points": -1.3592591669061078,
+      "online_epoch_H": 0.2294832372951234,
+      "online_epoch_total_loss": 0.34864734952245013,
+      "fixed_checkpoint_Test_H": 0.33636638841186745,
+      "checkpoint_sha256": "edf22689754daa1ed0b8658a2f8c98cfd904a221780a98458738a93963587cab"
+    },
+    {
+      "group": "D",
+      "run_id": "H_mu_student_seed20261027",
+      "epoch": 16,
+      "target_version": "gain1",
+      "status": "COMPLETE_FULL_TEST_12146_S0_S4",
+      "Test_PDMS": 89.25652735285679,
+      "paired_Base_PDMS": 90.67922437631766,
+      "student_minus_Base_points": -1.4226970234608503,
+      "online_epoch_H": 0.16338527738840034,
+      "online_epoch_total_loss": 0.2366280740719941,
+      "fixed_checkpoint_Test_H": null,
+      "checkpoint_sha256": "29c8fe512e2080976bbda4027a1a8c4de50f70f2bdf38dbcafc28d8a4e4315ca"
+    }
+  ],
+  "online_epoch_loss": [
+    {
+      "group": "B",
+      "run_id": "H_gain1_seed20261027",
+      "epoch": 8,
+      "real_scenes": 85813,
+      "updates": 1341,
+      "online_epoch_H": 0.22615145276413676,
+      "online_epoch_mu": 0.0,
+      "online_epoch_total_loss": 0.22615145276413676,
+      "definition": "real-scene-weighted changing-parameter epoch mean"
+    },
+    {
+      "group": "B",
+      "run_id": "H_gain1_seed20261027",
+      "epoch": 16,
+      "real_scenes": 85813,
+      "updates": 1341,
+      "online_epoch_H": 0.15032168471040827,
+      "online_epoch_mu": 0.0,
+      "online_epoch_total_loss": 0.15032168471040827,
+      "definition": "real-scene-weighted changing-parameter epoch mean"
+    },
+    {
+      "group": "B",
+      "run_id": "H_gain1_seed20261027",
+      "epoch": 24,
+      "real_scenes": 85813,
+      "updates": 1341,
+      "online_epoch_H": 0.0857890921432141,
+      "online_epoch_mu": 0.0,
+      "online_epoch_total_loss": 0.0857890921432141,
+      "definition": "real-scene-weighted changing-parameter epoch mean"
+    },
+    {
+      "group": "B",
+      "run_id": "H_gain1_seed20261027",
+      "epoch": 32,
+      "real_scenes": 85813,
+      "updates": 1341,
+      "online_epoch_H": 0.0531964763808006,
+      "online_epoch_mu": 0.0,
+      "online_epoch_total_loss": 0.0531964763808006,
+      "definition": "real-scene-weighted changing-parameter epoch mean"
+    },
+    {
+      "group": "C",
+      "run_id": "H_mu_teacher_seed20261027",
+      "epoch": 8,
+      "real_scenes": 85813,
+      "updates": 1341,
+      "online_epoch_H": 0.2294504787946175,
+      "online_epoch_mu": 0.23755655951224391,
+      "online_epoch_total_loss": 0.34822875857353647,
+      "definition": "real-scene-weighted changing-parameter epoch mean"
+    },
+    {
+      "group": "C",
+      "run_id": "H_mu_teacher_seed20261027",
+      "epoch": 16,
+      "real_scenes": 85813,
+      "updates": 1341,
+      "online_epoch_H": 0.16356256381572626,
+      "online_epoch_mu": 0.14589691242744066,
+      "online_epoch_total_loss": 0.2365110199636112,
+      "definition": "real-scene-weighted changing-parameter epoch mean"
+    },
+    {
+      "group": "C",
+      "run_id": "H_mu_teacher_seed20261027",
+      "epoch": 23,
+      "real_scenes": 85813,
+      "updates": 1341,
+      "online_epoch_H": 0.10390871706487483,
+      "online_epoch_mu": 0.07959423749254513,
+      "online_epoch_total_loss": 0.14370583577669538,
+      "definition": "real-scene-weighted changing-parameter epoch mean"
+    },
+    {
+      "group": "D",
+      "run_id": "H_mu_student_seed20261027",
+      "epoch": 8,
+      "real_scenes": 85813,
+      "updates": 1341,
+      "online_epoch_H": 0.2294832372951234,
+      "online_epoch_mu": 0.23832822448623933,
+      "online_epoch_total_loss": 0.34864734952245013,
+      "definition": "real-scene-weighted changing-parameter epoch mean"
+    },
+    {
+      "group": "D",
+      "run_id": "H_mu_student_seed20261027",
+      "epoch": 16,
+      "real_scenes": 85813,
+      "updates": 1341,
+      "online_epoch_H": 0.16338527738840034,
+      "online_epoch_mu": 0.1464855932234171,
+      "online_epoch_total_loss": 0.2366280740719941,
+      "definition": "real-scene-weighted changing-parameter epoch mean"
+    },
+    {
+      "group": "D",
+      "run_id": "H_mu_student_seed20261027",
+      "epoch": 21,
+      "real_scenes": 85813,
+      "updates": 1341,
+      "online_epoch_H": 0.11774583264924977,
+      "online_epoch_mu": 0.09553345385990435,
+      "online_epoch_total_loss": 0.16551255957350144,
+      "definition": "real-scene-weighted changing-parameter epoch mean"
+    }
+  ],
+  "B_epoch32_Test": {
+    "status": "STOPPED_PARTIAL",
+    "full_Test_PDMS": null
+  },
+  "warnings": [
+    "No B/C/D full-Train fixed-checkpoint H+behavior joint study.",
+    "All B/C/D representation targets are gain1; A uses full.",
+    "Online training loss is not fixed-checkpoint evaluation H.",
+    "C/D total loss includes scheduled functional mu; Test H excludes mu.",
+    "Test was used for model selection, not an independent holdout."
+  ]
+}

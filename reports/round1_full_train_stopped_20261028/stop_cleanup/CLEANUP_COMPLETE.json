@@ -1,0 +1,23 @@
+{
+  "status": "COMPLETE_USER_REQUESTED_DISTILLATION_STOP_AND_INTERMEDIATE_CHECKPOINT_CLEANUP",
+  "completed_utc": "2026-10-28T15:12:10.293169+00:00",
+  "all_owned_training_evaluation_controllers_stopped": true,
+  "automatic_resume_disabled": true,
+  "deleted_checkpoint_files": 177,
+  "deleted_logical_bytes": 4409115022,
+  "deleted_GiB": 4.106308354064822,
+  "kept_BCD_result_checkpoint_files": 12,
+  "all_A_assets": {
+    "status": "ALL_A_FILES_PRESERVED_UNCHANGED",
+    "files": 1106,
+    "checkpoint_SHA_verified": 97,
+    "before_manifest_SHA256": "6b9a6fea3ee09998d0e2e6ce6e7284bccd668593ad163a721f8df3c6ab8d1a26",
+    "changed_or_deleted_A_files": 0
+  },
+  "all_checkpoint_metadata_markers_preserved": true,
+  "all_logs_results_reports_features_targets_teacher_Base_preserved": true,
+  "only_unlinked_paths_are_listed_BCD_checkpoints_pt_files": true,
+  "delete_candidates_SHA256": "55ad51d2869619c8b95acba74dfb14156c4ca3acf6b2d0a3a24aecbe48f92bef",
+  "kept_manifest_SHA256": "60aa707a14467e877fe698d36d5d3e900c334f01e0370924938b82b28c2bd242",
+  "deletion_execution_SHA256": "5737ffad44f980f74be787aca5196299e38a66628c4dde2f5a565d57935658fa"
+}

@@ -1,0 +1,107 @@
+{
+  "status": "COMPLETE_FULL_TRAIN85813_H_PDMS_AND_REUSED_TEST_GENERALIZATION",
+  "completed_utc": "2026-10-28T14:23:26.551117+00:00",
+  "input_manifest_sha256": "2ff046b60425e2ffae16778b4e8514e22b2eeab811d5f5d2253beee90bc1b462",
+  "CPU_sources": {
+    "finish_full_train.py": "22cb38ad9ceae2873404d3674bb1f620a8e2dd50c27284a5ead943ad7497e5ed",
+    "analyze_full_train.py": "90845b143341ce98e1fe54586b5cc4a72e005a4f9404e93537e1b4d5af4db0ad",
+    "merge_full_train.py": "2142df8fc513f0aecdd419e84d37e74bafc19aa726ee6a6f053eb7ec0bbd1c7c",
+    "full_train_common.py": "6da26231430f62f25985e4ff3b33225397c9b4ba2bcec0487b67481d1cf11821"
+  },
+  "global_queue_join_signal": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/full_train_loss_pdms_generalization_20261028/dispatch/QUEUE_TERMINAL.json",
+    "sha256": "ed2843ade8f1252ad86d86ccbd98da1d1e051fefdc7bca747d2fc7eaed88815c",
+    "method": "inotify directory event with60s marker-only fallback; no score/status prefix polling"
+  },
+  "all760_new_native_shards_complete": true,
+  "launcher_pidfd_events": [
+    {
+      "pid": 1227640,
+      "event": "pidfd_opened"
+    },
+    {
+      "pid": 1227641,
+      "event": "pidfd_opened"
+    },
+    {
+      "pid": 1227642,
+      "event": "pidfd_opened"
+    },
+    {
+      "pid": 1227643,
+      "event": "pidfd_opened"
+    },
+    {
+      "pid": 1227644,
+      "event": "pidfd_opened"
+    },
+    {
+      "pid": 1227645,
+      "event": "pidfd_opened"
+    },
+    {
+      "pid": 1227646,
+      "event": "pidfd_opened"
+    },
+    {
+      "pid": 1227647,
+      "event": "pidfd_opened"
+    },
+    {
+      "pid": 1227648,
+      "event": "pidfd_opened"
+    },
+    {
+      "pid": 1227645,
+      "event": "actual_exit_observed_by_pidfd",
+      "time_utc": "2026-10-28T14:16:20.992363+00:00"
+    },
+    {
+      "pid": 1227647,
+      "event": "actual_exit_observed_by_pidfd",
+      "time_utc": "2026-10-28T14:16:54.762565+00:00"
+    },
+    {
+      "pid": 1227641,
+      "event": "actual_exit_observed_by_pidfd",
+      "time_utc": "2026-10-28T14:17:10.825173+00:00"
+    },
+    {
+      "pid": 1227640,
+      "event": "actual_exit_observed_by_pidfd",
+      "time_utc": "2026-10-28T14:20:10.597511+00:00"
+    },
+    {
+      "pid": 1227648,
+      "event": "actual_exit_observed_by_pidfd",
+      "time_utc": "2026-10-28T14:20:48.490507+00:00"
+    },
+    {
+      "pid": 1227643,
+      "event": "actual_exit_observed_by_pidfd",
+      "time_utc": "2026-10-28T14:21:11.875245+00:00"
+    },
+    {
+      "pid": 1227646,
+      "event": "actual_exit_observed_by_pidfd",
+      "time_utc": "2026-10-28T14:21:21.498066+00:00"
+    },
+    {
+      "pid": 1227644,
+      "event": "actual_exit_observed_by_pidfd",
+      "time_utc": "2026-10-28T14:21:28.232066+00:00"
+    },
+    {
+      "pid": 1227642,
+      "event": "actual_exit_observed_by_pidfd",
+      "time_utc": "2026-10-28T14:22:10.998693+00:00"
+    }
+  ],
+  "launchers_manifest_sha256": "7f3b51a786538ba4a2312b2a7293b87aebb491ebaf84a125d8472aa6f5355f95",
+  "launcher_control_retirement_exit_codes_not_used_as_numeric_failure": true,
+  "old8192_reused_not_rerun": true,
+  "new_Test_inference_or_scoring": 0,
+  "analysis_complete_sha256": "a587d18d0b102359f07fa986191a14e5ea6c5faf6bfeeaaf2ceb9f92efd4f16d",
+  "costs_sha256": "b4a9818205f2a665f21a642131686c8acadf061fdd54019fe10f8a75d1488688",
+  "owner_wall_seconds": 3028.249929158017
+}

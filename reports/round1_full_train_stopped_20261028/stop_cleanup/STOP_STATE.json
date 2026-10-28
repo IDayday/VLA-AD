@@ -1,0 +1,13 @@
+{
+  "status": "STOPPED_BY_USER",
+  "at": "2026-10-28T15:14:21.959731+00:00",
+  "training": false,
+  "evaluation": false,
+  "automatic_resume": false,
+  "automatic_retry": false,
+  "new_user_instruction_required_to_resume": true,
+  "scope": "Four no-routing distillation groups A/B/C/D and their automatic evaluation/monitor owners",
+  "A_everything_preserved": true,
+  "cleanup_complete": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/distillation_stop_cleanup_20261028/CLEANUP_COMPLETE.json",
+  "data_results_logs_configs_code_and_metadata_preserved": true
+}

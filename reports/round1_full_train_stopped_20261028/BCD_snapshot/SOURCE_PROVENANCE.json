@@ -1,0 +1,288 @@
+{
+  "sources": {
+    "H_gain1_seed20261027": {
+      "training_log_bounded_snapshot": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/logs/train_metrics.jsonl",
+        "bounded_size": 42129699,
+        "source_size_at_open": 42129699,
+        "source_mtime_ns": 1793197399000000000,
+        "sha256": "fdcc103f7d358008b2fd58d843893ab38be0acb54af696be145dddf7e8f1efe3",
+        "invalid_lines": [],
+        "ignored_trailing_bytes": 0,
+        "duplicate_global_steps": {},
+        "duplicate_records_discarded": 0
+      },
+      "training_target_identity": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/TARGET_IDENTITY.json",
+        "sha256": "ace634f0c37665848d73d51553201c3630540ffb8d3696375299c523f1e10367",
+        "bytes": 228
+      },
+      "effective_config": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/effective_config.yaml",
+        "sha256": "fcaa709758e60dbbd698dcf3225594333097fd0a9e384ee19343a09f5bff435e",
+        "bytes": 5442
+      },
+      "completed_Test": {
+        "8": {
+          "complete": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_008/COMPLETE.json",
+            "sha256": "2b748e8e0afb247369794b2e2ae5ca0221ee423f26c9a7552ff6b70ec948afd3",
+            "bytes": 408
+          },
+          "summary": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_008/SUMMARY.json",
+            "sha256": "07732155a24385595754cd3f3e4603844872b8c38cb9fb9861607410fd20fb65",
+            "bytes": 213913
+          },
+          "protocol": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_008/PROTOCOL.json",
+            "sha256": "2ffc7a1ce5b2ecae32d3e99f607d7a527da92097785c5153752e2f5e1b0f6e77",
+            "bytes": 2301
+          },
+          "scene_scores_sha256_as_recorded_by_COMPLETE": "b0dc6886c5e93d33fa25bec1555c6cdce3a492431f07ae060addd6f3fa6d7f9a"
+        },
+        "16": {
+          "complete": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_016/COMPLETE.json",
+            "sha256": "fc4f1eade908805157d065a8d8022f49f03fa8e87809ef3654267d2f45c2a0fd",
+            "bytes": 408
+          },
+          "summary": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_016/SUMMARY.json",
+            "sha256": "f1f8ea99f2ddd99d8db7d800c959f2acfd8441c7c733d9574faf2767a194237d",
+            "bytes": 185990
+          },
+          "protocol": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_016/PROTOCOL.json",
+            "sha256": "fb496c94a77b538fe147bd27c77824ea9454337bd7be4ecf7b5a10f44cd14910",
+            "bytes": 2301
+          },
+          "scene_scores_sha256_as_recorded_by_COMPLETE": "e8ac251a73ea4a80eb3c15ce3e0bf0ef2f5b1d6a329d659b1a789a1ef4c9fe1d"
+        },
+        "24": {
+          "complete": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_024/COMPLETE.json",
+            "sha256": "0ea82aeac5a4e3889b6d59fd8395235d66f765a89300cde88153546a723cca6c",
+            "bytes": 408
+          },
+          "summary": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_024/SUMMARY.json",
+            "sha256": "d39ac64720b4fbe612f1508dbc7aa0c2ca5454e646fc7cf19068f3e76b4a3d17",
+            "bytes": 277318
+          },
+          "protocol": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_024/PROTOCOL.json",
+            "sha256": "c9ecd6c825a646d9b7ab42d0f2b0339e4a511d97177b8a098ae52472f1696ba7",
+            "bytes": 2301
+          },
+          "scene_scores_sha256_as_recorded_by_COMPLETE": "38b6777378de5d97cc04e3c59d9dcd37970395dbeea6858cf2e023f10c39839b"
+        }
+      },
+      "completed_Test_H": {
+        "8": {
+          "complete": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/diagnostics/test_H/epoch_008/COMPLETE.json",
+            "sha256": "94f0ea638bb96661d7988a62c9d1db868b1fa81beca438ab37e6eaabf7872da5",
+            "bytes": 408
+          },
+          "summary": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/diagnostics/test_H/epoch_008/SUMMARY.json",
+            "sha256": "121356b7d9ad8c8dd8217692c88f3c49afb44ec526a57b1dd12ced61c6d205e5",
+            "bytes": 5071
+          },
+          "protocol": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/diagnostics/test_H/epoch_008/PROTOCOL.json",
+            "sha256": "aa9a76a25952d39440bb6725bc2bd7da561051133cd5c9d46141c534e12df66b",
+            "bytes": 1713
+          },
+          "scene_scores_sha256_as_recorded_by_COMPLETE": "ebacb7ca0ef8f4e52fef0e1a286e5b3047743315bd7dfa02ebc6447b55d7e9c2"
+        },
+        "16": {
+          "complete": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/diagnostics/test_H/epoch_016/COMPLETE.json",
+            "sha256": "40fdf664a8195a50e29b86672b3c74567c434df54763fdb5ac138238053d3757",
+            "bytes": 408
+          },
+          "summary": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/diagnostics/test_H/epoch_016/SUMMARY.json",
+            "sha256": "cd6ed51d2f4f59500d006478adcb3d1606ad85ac46dce4f837c2d02632c1b0bf",
+            "bytes": 5202
+          },
+          "protocol": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/diagnostics/test_H/epoch_016/PROTOCOL.json",
+            "sha256": "9a01b28daded4f73493491f39481e2ce79b8f1eba4e01bbb6dc08a133a7b4e48",
+            "bytes": 1713
+          },
+          "scene_scores_sha256_as_recorded_by_COMPLETE": "b96fef333f8c25c707f96d3a1120318bc63feb7f90b68778e3cdb4c7f07622c5"
+        }
+      }
+    },
+    "H_mu_teacher_seed20261027": {
+      "training_log_bounded_snapshot": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/logs/train_metrics.jsonl",
+        "bounded_size": 33599988,
+        "source_size_at_open": 33599988,
+        "source_mtime_ns": 1793199788000000000,
+        "sha256": "f3dd63086fb16f32f301feb56dba9c9e4a88282d3cb87f1f622199327a026d8c",
+        "invalid_lines": [],
+        "ignored_trailing_bytes": 0,
+        "duplicate_global_steps": {},
+        "duplicate_records_discarded": 0
+      },
+      "training_target_identity": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/TARGET_IDENTITY.json",
+        "sha256": "ace634f0c37665848d73d51553201c3630540ffb8d3696375299c523f1e10367",
+        "bytes": 228
+      },
+      "effective_config": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/effective_config.yaml",
+        "sha256": "d23af71bd271471a1d8817e136b4effa2162a9ad0d29737f3477c9c4845b2bf4",
+        "bytes": 5449
+      },
+      "completed_Test": {
+        "8": {
+          "complete": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/test/epoch_008/COMPLETE.json",
+            "sha256": "e6aa0dc9e43ff564e3286ba28042829f3b5cc2ff84a6bf01c0dcb96a5a29e690",
+            "bytes": 408
+          },
+          "summary": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/test/epoch_008/SUMMARY.json",
+            "sha256": "65770eea1207f0c33861741a9c1be94548bbea9f89a853e21b8ce826f745be79",
+            "bytes": 202022
+          },
+          "protocol": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/test/epoch_008/PROTOCOL.json",
+            "sha256": "0ebacf78a6444b8f94bdc4c1decefb4f18cd745a219f36984076e42858f65b4e",
+            "bytes": 2301
+          },
+          "scene_scores_sha256_as_recorded_by_COMPLETE": "4becb059c082686058d92e4a2f66f42054d3af258a621ca92b68d26711bce3ad"
+        },
+        "16": {
+          "complete": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/test/epoch_016/COMPLETE.json",
+            "sha256": "db78a1cb2b6566b9f5d59e41a61f1c88373fc964bb3a9bc2a39c099a599a1bad",
+            "bytes": 408
+          },
+          "summary": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/test/epoch_016/SUMMARY.json",
+            "sha256": "b95dfd0bbd478558559e04c56aab57a3d41a5e8c3fc4e8a39c4ba482bb881f83",
+            "bytes": 211379
+          },
+          "protocol": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/test/epoch_016/PROTOCOL.json",
+            "sha256": "6d61654ac423c8db86e42db260fb3e764f88a9d315a82b1894bfde4ffb8f320b",
+            "bytes": 2301
+          },
+          "scene_scores_sha256_as_recorded_by_COMPLETE": "407f767681ad2653c0dac4444f98ac5b28956eba9c1c6b9fb2689d0682df95f2"
+        }
+      },
+      "completed_Test_H": {
+        "8": {
+          "complete": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/diagnostics/test_H/epoch_008/COMPLETE.json",
+            "sha256": "5102f9e8beef16c195a05d3b44e669728e850f65e54bf9e192284e72ed646850",
+            "bytes": 408
+          },
+          "summary": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/diagnostics/test_H/epoch_008/SUMMARY.json",
+            "sha256": "d53b5b002e780d189548cbe1fdaa3fdfc4232a681ec7946e46b4d7828957e465",
+            "bytes": 5106
+          },
+          "protocol": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/diagnostics/test_H/epoch_008/PROTOCOL.json",
+            "sha256": "2c1acec5eb9eb142c974a2ddca55cd40aba93c03801b5d03c11c8dfa287b20e8",
+            "bytes": 1713
+          },
+          "scene_scores_sha256_as_recorded_by_COMPLETE": "a1bd0849a6dc0c9eeb44d1ece1f5fbb4a6d5b33258f4dbccb3a51015bcea5acf"
+        }
+      }
+    },
+    "H_mu_student_seed20261027": {
+      "training_log_bounded_snapshot": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/logs/train_metrics.jsonl",
+        "bounded_size": 30631479,
+        "source_size_at_open": 30631479,
+        "source_mtime_ns": 1793199789000000000,
+        "sha256": "1802a5b23b7c3f9a44ce6e562f2caf355a899a8c3241cdde6f2d3b2b2e3d3aa8",
+        "invalid_lines": [],
+        "ignored_trailing_bytes": 0,
+        "duplicate_global_steps": {},
+        "duplicate_records_discarded": 0
+      },
+      "training_target_identity": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/TARGET_IDENTITY.json",
+        "sha256": "ace634f0c37665848d73d51553201c3630540ffb8d3696375299c523f1e10367",
+        "bytes": 228
+      },
+      "effective_config": {
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/effective_config.yaml",
+        "sha256": "d7d2931216facc2184ba2c939dff8270839f9f70492a92b0f617cd6edc3363bb",
+        "bytes": 5449
+      },
+      "completed_Test": {
+        "8": {
+          "complete": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/test/epoch_008/COMPLETE.json",
+            "sha256": "36c819b7b3a23ef5816a591858cb2e757d29ad07ab4e65db84dbc2d940f92749",
+            "bytes": 408
+          },
+          "summary": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/test/epoch_008/SUMMARY.json",
+            "sha256": "a6c90ec5e1a45177d93e1d389a78eb0de92dec1fa05a92b9df629967485afe8a",
+            "bytes": 200097
+          },
+          "protocol": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/test/epoch_008/PROTOCOL.json",
+            "sha256": "b510d5138e9dc3a36a4740ede2950cfe9e201485a1c8663d3ba34f1681002443",
+            "bytes": 2301
+          },
+          "scene_scores_sha256_as_recorded_by_COMPLETE": "3b628dd09788876a37cdc04d6b0877ad022cc7c55686f054e637078f61e7e9aa"
+        },
+        "16": {
+          "complete": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/test/epoch_016/COMPLETE.json",
+            "sha256": "8c78461e1d2cb74aa67d2c74ea5f365818fd6ebd8daa0d8b2aed63424793f62e",
+            "bytes": 408
+          },
+          "summary": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/test/epoch_016/SUMMARY.json",
+            "sha256": "eb367845d71ef30a6d2eb5417531531813b8f70c46faedf024d12d4e9d0b7c90",
+            "bytes": 206563
+          },
+          "protocol": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/test/epoch_016/PROTOCOL.json",
+            "sha256": "b2e10776eb887af9e14b0ac1867ee9ab7172230e5e276c69fd82383fe90cb854",
+            "bytes": 2301
+          },
+          "scene_scores_sha256_as_recorded_by_COMPLETE": "366ec65250acbfab44482ead8cf6dd3fe19509016e409f047d690d088fc1dede"
+        }
+      },
+      "completed_Test_H": {
+        "8": {
+          "complete": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/diagnostics/test_H/epoch_008/COMPLETE.json",
+            "sha256": "128b0c2f6f051240d7e793e593db8feca9aed182e91192df7e38b7e0163cb5af",
+            "bytes": 408
+          },
+          "summary": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/diagnostics/test_H/epoch_008/SUMMARY.json",
+            "sha256": "c664b6b343d79ea706784a05ca393d0e71b5ffa441f98f12d7d4f316edbef6c0",
+            "bytes": 5096
+          },
+          "protocol": {
+            "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/diagnostics/test_H/epoch_008/PROTOCOL.json",
+            "sha256": "484dd2bae7fe0b2f78d79043d7ca0850f532cc967651bc1bb19269027478c729",
+            "bytes": 1713
+          },
+          "scene_scores_sha256_as_recorded_by_COMPLETE": "c9cb838ef36738237d9c311824986fa050666abe6139c9d8ea2b56f77a303b09"
+        }
+      }
+    }
+  },
+  "canonical_log_reader": {
+    "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/epoch_loss_statistics.py",
+    "sha256": "8881bb92c48f6c02a8133e25881bc0d35eb70f4b58968c57bc54240385ea4e44",
+    "bytes": 26025
+  }
+}

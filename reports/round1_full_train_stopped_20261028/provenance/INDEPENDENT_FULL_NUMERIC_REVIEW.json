@@ -1,0 +1,121 @@
+{
+  "status": "PASS_INDEPENDENT_COMPLETE_FULL_TRAIN_NUMERIC_AND_SOURCE_REVIEW",
+  "at": "2026-10-28T14:29:29.380979+00:00",
+  "full_Train_original_source_files": 765,
+  "full_Train_original_scene_epoch_rows": 429065,
+  "execution_counts": {
+    "reused_completed_Train8192_panel": 40960,
+    "new_fullTrain_native_shard": 388105
+  },
+  "full_Train_original_student_trajectory_count": 2145325,
+  "numeric_scene_checkpoint_CSV_rows_Train_plus_Test": 489795,
+  "adjacent_CSV_rows": 391836,
+  "maximum_original_score_component_difference_to_merged": 0.0,
+  "maximum_all35_Base_component_difference_to_frozen_anchors": 0.0,
+  "maximum_original_H_difference": 0.0,
+  "maximum_original_raw_MSE_difference": 0.0,
+  "all_raw_line_SHA_and_original_protocol_identities_verified": true,
+  "full_Test_reused_file_SHA_and_numeric_curves_unchanged": true,
+  "CPU_source_freeze_matches_owner": true,
+  "main_consumer_or_model_or_PDM_rerun": false,
+  "cohorts": {
+    "train": {
+      "H": [
+        0.3011308630077966,
+        0.2727733719178449,
+        0.1768379444332082,
+        0.09569249413665654,
+        0.05974116293117362
+      ],
+      "PDMS": [
+        94.99936195227681,
+        95.19826935874403,
+        95.8610067124528,
+        96.34781697838555,
+        96.6635437833515
+      ],
+      "student_minus_own_Base_points": [
+        -0.07272710572149406,
+        0.12618030074569625,
+        0.7889176544530914,
+        1.2757279203873875,
+        1.5914547253526095
+      ],
+      "teacher_gain_retention": [
+        -0.029591374262163215,
+        0.051340534823107825,
+        0.32099665376962555,
+        0.5190711492553923,
+        0.6475348074422146
+      ],
+      "H_PDMS_Pearson": -0.9992445282114301,
+      "H_PDMS_Spearman": -0.9999999999999999,
+      "e4_to32_deltaH": -0.241389700076623,
+      "e4_to32_deltaPDMS_points": 1.6641818310746856
+    },
+    "test": {
+      "H": [
+        0.39715673084307357,
+        0.40134600450265223,
+        0.44473159193785683,
+        0.5235399736037628,
+        0.5517736733177652
+      ],
+      "PDMS": [
+        88.87155307662377,
+        88.7266713728267,
+        88.69395826281131,
+        87.84657598849472,
+        87.7418977929671
+      ],
+      "student_minus_own_Base_points": [
+        -1.807671299694408,
+        -1.9525530034909424,
+        -1.9852661135064236,
+        -2.832648387823482,
+        -2.9373265833507345
+      ],
+      "teacher_gain_retention": [
+        -0.3076776477801554,
+        -0.332337474950081,
+        -0.33790546330218807,
+        -0.48213554815032744,
+        -0.49995247149205496
+      ],
+      "H_PDMS_Pearson": -0.9773383910307288,
+      "H_PDMS_Spearman": -0.9999999999999999,
+      "e4_to32_deltaH": 0.1546169424746916,
+      "e4_to32_deltaPDMS_points": -1.1296552836566747
+    }
+  },
+  "old_panel_representativeness": [
+    {
+      "epoch": 4,
+      "full_minus_old8192_PDMS_points": -0.09772279218782387,
+      "full_minus_old8192_H": 0.002266398395357583
+    },
+    {
+      "epoch": 8,
+      "full_minus_old8192_PDMS_points": 0.02716161688228169,
+      "full_minus_old8192_H": 0.0017090291255339451
+    },
+    {
+      "epoch": 16,
+      "full_minus_old8192_PDMS_points": 0.05525972051795236,
+      "full_minus_old8192_H": 0.0011707891898978806
+    },
+    {
+      "epoch": 24,
+      "full_minus_old8192_PDMS_points": -0.0462059029916162,
+      "full_minus_old8192_H": 0.0008222329186358263
+    },
+    {
+      "epoch": 32,
+      "full_minus_old8192_PDMS_points": -0.033407826128112106,
+      "full_minus_old8192_H": 0.0009525925937118804
+    }
+  ],
+  "maximum_abs_full_minus_old_panel_PDMS_points": 0.09772279218782387,
+  "analysis_complete_sha256": "a587d18d0b102359f07fa986191a14e5ea6c5faf6bfeeaaf2ceb9f92efd4f16d",
+  "wall_seconds": 89.84817792847753
+}

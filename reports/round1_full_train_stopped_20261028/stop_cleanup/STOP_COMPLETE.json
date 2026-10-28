@@ -1,0 +1,10 @@
+{
+  "status": "ALL_OWNED_DISTILLATION_PROCESSES_STOPPED",
+  "at": "2026-10-28T15:06:51.837872+00:00",
+  "verified_hosts": 5,
+  "owned_live_processes_after_stop": 0,
+  "automatic_resume_and_dispatch_disabled": true,
+  "A_assets_preserved": true,
+  "other_projects_untouched": true,
+  "user_request": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/distillation_stop_cleanup_20261028/REQUEST.json"
+}

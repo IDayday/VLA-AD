@@ -1,0 +1,19 @@
+{
+  "status": "COMPLETE_MEASURED_FINITE_FULL_TRAIN_EVALUATION_COSTS",
+  "native_shards": 760,
+  "successful_numeric_shards": 760,
+  "failed_numeric_attempts": 0,
+  "new_scene_epoch_records": 388105,
+  "reused_scene_epoch_records": 40960,
+  "new_student_trajectories": 1940525,
+  "unique_physical_GPUs": 40,
+  "numeric_worker_wall_seconds_sum": 422517.77934147755,
+  "GPU_process_resident_wall_hours_sum": 117.3660498170771,
+  "union_per_GPU_reserved_worker_wall_hours": 42.40429992947313,
+  "first_worker_start_utc": "2026-10-28T13:09:39.066982+00:00",
+  "last_worker_observed_exit_utc": "2026-10-28T14:21:15.618869+00:00",
+  "worker_execution_span_seconds": 4296.55188703537,
+  "cost_scope": "Worker lifetime/reservation measurements; multiple processes share a GPU, process-hours are not exclusive device-hours or exact kernel utilization. Eight legacy end-observation timestamps are upper bounds; see legacy_handoff/TIMING_NOTES.json.",
+  "new_Test_inference_or_scoring": 0,
+  "source_queue_SHA256": "d61cc751ab94899ae6f48da94396c270aeeec9f499bb9ae0f4a316aae16601d5"
+}

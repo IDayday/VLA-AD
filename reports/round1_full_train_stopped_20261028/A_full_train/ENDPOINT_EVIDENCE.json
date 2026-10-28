@@ -1,0 +1,45 @@
+{
+  "definition": "same physical-log bootstrap draw for both endpoints; no resampling checkpoints or noises as seeds",
+  "cohorts": {
+    "train": {
+      "from_epoch": 4,
+      "to_epoch": 32,
+      "delta_H": -0.24138970007661917,
+      "delta_H_log_cluster_CI95": [
+        -0.2502499952954158,
+        -0.2338548595532951
+      ],
+      "delta_PDMS_points": 1.664181831074103,
+      "delta_PDMS_log_cluster_CI95": [
+        1.368346952057275,
+        2.0259487507413336
+      ],
+      "epoch32_student_minus_own_Base_points": 1.5914547253526012,
+      "epoch32_student_minus_own_Base_log_cluster_CI95": [
+        1.4191717824480057,
+        1.80921086624784
+      ],
+      "epoch32_teacher_gain_retention": 0.64753480744221
+    },
+    "test": {
+      "from_epoch": 4,
+      "to_epoch": 32,
+      "delta_H": 0.15461694247469787,
+      "delta_H_log_cluster_CI95": [
+        0.14066184438501736,
+        0.16734996087547582
+      ],
+      "delta_PDMS_points": -1.1296552836563052,
+      "delta_PDMS_log_cluster_CI95": [
+        -1.5167640581176283,
+        -0.6895652232090715
+      ],
+      "epoch32_student_minus_own_Base_points": -2.9373265833507336,
+      "epoch32_student_minus_own_Base_log_cluster_CI95": [
+        -3.642304902452567,
+        -2.2320164837085623
+      ],
+      "epoch32_teacher_gain_retention": -0.49995247149205635
+    }
+  }
+}

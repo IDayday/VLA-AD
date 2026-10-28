@@ -1,0 +1,146 @@
+{
+  "status": "STOPPED_AND_CLEANUP_COMPLETE_RESULTS_ARCHIVE",
+  "files": [
+    {
+      "path": "A_full_train/ADJACENT_DIFFERENCES.csv",
+      "sha256": "70f1ea5e2aea645020effc1a563fd5c2eff1ec503b9287a593f81a7ef634618c",
+      "bytes": 2168
+    },
+    {
+      "path": "A_full_train/CHECKPOINT_CURVES.csv",
+      "sha256": "9996feb98e71b553229f8a389b689e13196ace3455f23ae2ac196966b2d05f5e",
+      "bytes": 4879
+    },
+    {
+      "path": "A_full_train/COMPLETE.json",
+      "sha256": "a587d18d0b102359f07fa986191a14e5ea6c5faf6bfeeaaf2ceb9f92efd4f16d",
+      "bytes": 1493
+    },
+    {
+      "path": "A_full_train/CORRELATIONS.csv",
+      "sha256": "1a15f70255bca4d17ffbb37f26c26ff46fee7dbbb9d94d581b1c183e711239b9",
+      "bytes": 910
+    },
+    {
+      "path": "A_full_train/ENDPOINT_EVIDENCE.json",
+      "sha256": "82c1e33973f032f4351a883748641dd3e32aed4e4be6dcba3282ca8f548314e8",
+      "bytes": 1352
+    },
+    {
+      "path": "A_full_train/FULL_TRAIN_H_PDMS_GENERALIZATION_REPORT.md",
+      "sha256": "8c42bd74b70b2d761a3450f2ac72eefd0a48ba6fdab5b07c1bf3d3abeb1cb8e0",
+      "bytes": 6444
+    },
+    {
+      "path": "A_full_train/FULL_TRAIN_TEST_H_PDMS_CURVES.png",
+      "sha256": "f9781c7beb5c5bf91c468cff208c2e0fe38ab662c405cf0af39ad13a42afdf58",
+      "bytes": 220559
+    },
+    {
+      "path": "A_full_train/KEEP_REPAIR_CURVES.csv",
+      "sha256": "79715876f2cd31f333624c7da887fdc26a5af6c705759168555508485618dd97",
+      "bytes": 13833
+    },
+    {
+      "path": "A_full_train/PANEL_REPRESENTATIVENESS.csv",
+      "sha256": "aac0d33241f8e7921bf1710aa19f97978e99656f361d3ae096d582581c8138f7",
+      "bytes": 1095
+    },
+    {
+      "path": "A_full_train/SOURCE_PROVENANCE.json",
+      "sha256": "53fa60619758051bbecd98c8fc0769be6aa2eb2a39b75ad94240bf379b1eba9e",
+      "bytes": 16506
+    },
+    {
+      "path": "A_full_train/SUMMARY.json",
+      "sha256": "a3c72933d658cad1f7fa429410f61d5e826d039edf333f3e23ac1ac5f23dfeb1",
+      "bytes": 211203
+    },
+    {
+      "path": "BCD_snapshot/ONLINE_EPOCH_LOSS.csv",
+      "sha256": "ddcb785bce807b393448ce50ea397d0adea9dba4867e1957c5c3670398162e83",
+      "bytes": 1540
+    },
+    {
+      "path": "BCD_snapshot/RESULTS.json",
+      "sha256": "65d973cf64d83157939cf7fd4f2deca27d73f4d161d081701e72e4cc234803fc",
+      "bytes": 8807
+    },
+    {
+      "path": "BCD_snapshot/RESULTS.md",
+      "sha256": "da809793497a32c8bc7b4ca2def2e4ce4231f2f838435916cec4d88dda1ee42c",
+      "bytes": 2144
+    },
+    {
+      "path": "BCD_snapshot/SOURCE_PROVENANCE.json",
+      "sha256": "5b25387ef3568b6dd6f0afa5cc9ef245eb7f9f73393b1746bc453ded178d5015",
+      "bytes": 15168
+    },
+    {
+      "path": "BCD_snapshot/TEST_SCORES_AND_LOSS.csv",
+      "sha256": "fe9431983f36356f2976202a47408d853702b31106b48ed977890811535b0cfb",
+      "bytes": 1840
+    },
+    {
+      "path": "README.md",
+      "sha256": "86a012300aa301a092744938ad419066eb06dcf65af3f5587a328bad4972d4e9",
+      "bytes": 4555
+    },
+    {
+      "path": "build_publication.py",
+      "sha256": "0b93eb15ea0e8ba5a9ca27d00f546305d4841a81eaffb0c00d2e6d34ee169e5e",
+      "bytes": 18526
+    },
+    {
+      "path": "provenance/COMPLETE.json",
+      "sha256": "dca77f9f4a99c467759c617fb2653bb901d89fda68131744922b288760c430d2",
+      "bytes": 3398
+    },
+    {
+      "path": "provenance/INDEPENDENT_FULL_NUMERIC_REVIEW.json",
+      "sha256": "98fc15b6e577ee8541d113c5da7a34161bc4aceb39ddb03c6f035d11ee0cd487",
+      "bytes": 3745
+    },
+    {
+      "path": "provenance/MEASURED_GPU_COSTS.json",
+      "sha256": "06c8e64c9461884cdbf49d251e7738c4ecfbe7e9582005cb440fac7a8e9caa26",
+      "bytes": 1072
+    },
+    {
+      "path": "provenance/ORIGINAL_SOURCE_IDENTITIES.json",
+      "sha256": "0b9ec5ae3b2c6dcc7def1243e7ade524dd5da47dbd920cfefb0c881968363f1d",
+      "bytes": 2819
+    },
+    {
+      "path": "stop_cleanup/A_PROTECTED_AFTER.json",
+      "sha256": "4448298726b8440d46d359679c6b8bb23168af395de88dbd6c0385545cca2cc0",
+      "bytes": 231
+    },
+    {
+      "path": "stop_cleanup/CLEANUP_COMPLETE.json",
+      "sha256": "038c45a3428af546df26dc2cc79ddee5b543a895baf978b3c13fe3ce182142f1",
+      "bytes": 1150
+    },
+    {
+      "path": "stop_cleanup/STOP_COMPLETE.json",
+      "sha256": "1d7d55b986a598e3f46d01991f7dfa007f62bd0f648eb96a2f5e4772b295dc40",
+      "bytes": 437
+    },
+    {
+      "path": "stop_cleanup/STOP_STATE.json",
+      "sha256": "5ec290f5436206a1719777969e742d28452c9c7728110e243e8bd148917fab87",
+      "bytes": 601
+    },
+    {
+      "path": "stop_cleanup/inventory/KEEP.json",
+      "sha256": "60aa707a14467e877fe698d36d5d3e900c334f01e0370924938b82b28c2bd242",
+      "bytes": 30678
+    },
+    {
+      "path": "stop_cleanup/inventory/SUMMARY.json",
+      "sha256": "fc7e66436e07e7830c36c4a388486447b77a78630ddbd02eb247752872609a43",
+      "bytes": 14363
+    }
+  ],
+  "total_bytes": 591516
+}

@@ -1,0 +1,11 @@
+group,run_id,epoch,real_scenes,updates,online_epoch_H,online_epoch_mu,online_epoch_total_loss,definition
+B,H_gain1_seed20261027,8,85813,1341,0.22615145276413676,0.0,0.22615145276413676,real-scene-weighted changing-parameter epoch mean
+B,H_gain1_seed20261027,16,85813,1341,0.15032168471040827,0.0,0.15032168471040827,real-scene-weighted changing-parameter epoch mean
+B,H_gain1_seed20261027,24,85813,1341,0.0857890921432141,0.0,0.0857890921432141,real-scene-weighted changing-parameter epoch mean
+B,H_gain1_seed20261027,32,85813,1341,0.0531964763808006,0.0,0.0531964763808006,real-scene-weighted changing-parameter epoch mean
+C,H_mu_teacher_seed20261027,8,85813,1341,0.2294504787946175,0.23755655951224391,0.34822875857353647,real-scene-weighted changing-parameter epoch mean
+C,H_mu_teacher_seed20261027,16,85813,1341,0.16356256381572626,0.14589691242744066,0.2365110199636112,real-scene-weighted changing-parameter epoch mean
+C,H_mu_teacher_seed20261027,23,85813,1341,0.10390871706487483,0.07959423749254513,0.14370583577669538,real-scene-weighted changing-parameter epoch mean
+D,H_mu_student_seed20261027,8,85813,1341,0.2294832372951234,0.23832822448623933,0.34864734952245013,real-scene-weighted changing-parameter epoch mean
+D,H_mu_student_seed20261027,16,85813,1341,0.16338527738840034,0.1464855932234171,0.2366280740719941,real-scene-weighted changing-parameter epoch mean
+D,H_mu_student_seed20261027,21,85813,1341,0.11774583264924977,0.09553345385990435,0.16551255957350144,real-scene-weighted changing-parameter epoch mean

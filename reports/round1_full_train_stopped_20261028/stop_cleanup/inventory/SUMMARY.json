@@ -1,0 +1,257 @@
+{
+  "inventory_started": "2026-10-28T15:09:06.848577+00:00",
+  "inventory_finished": "2026-10-28T15:09:13.967880+00:00",
+  "execution": "READ_ONLY_NO_DELETE_NO_SIGNALS",
+  "results_root": "/mnt/project/recogdrive-no-routing-round1-results-20261026",
+  "permitted_run_ids": [
+    "H_gain1_seed20261027",
+    "H_gain1_seed20261028",
+    "H_mu_teacher_seed20261027",
+    "H_mu_teacher_seed20261028",
+    "H_mu_student_seed20261027",
+    "H_mu_student_seed20261028"
+  ],
+  "protected_A_prefixes": [
+    "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027",
+    "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261028"
+  ],
+  "metadata_results_data_never_delete": [
+    "all .COMPLETE.json and other metadata",
+    "all logs/results/reports",
+    "all features/targets/noise/caches",
+    "frozen teacher library",
+    "RL Base/VLM",
+    "every A/H_full asset any seed"
+  ],
+  "identity_recheck_required_before_unlink": [
+    "sha256",
+    "dev",
+    "inode",
+    "size_bytes",
+    "mtime_ns",
+    "all_owned_processes_stopped"
+  ],
+  "changed_checkpoint_directories_during_snapshot": [],
+  "status": "INVENTORY_AND_PLAN_COMPLETE_NOT_DELETED",
+  "weight_files": 189,
+  "weight_apparent_bytes": 4705917366,
+  "delete_candidate_count": 177,
+  "delete_candidate_bytes": 4409115022,
+  "delete_candidate_GiB": 4.106308354064822,
+  "keep_count": 12,
+  "keep_bytes": 296802344,
+  "all_metadata_entries_retained": 189,
+  "runs": [
+    {
+      "run_id": "H_gain1_seed20261027",
+      "weight_count": 75,
+      "apparent_weight_bytes": 1867495290,
+      "latest_complete_epoch": {
+        "epoch": 32,
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_032.pt",
+        "sha256": "6814104ed6718cf56004cc2ddaa7c2802afcfec123f6cdf71e87723beaf454d4"
+      },
+      "best_completed_Test": {
+        "epoch": 16,
+        "PDMS_points": 89.53359458019816,
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_016.pt",
+        "checkpoint_sha256": "e189001dfbaca6abcc844e503dac38cf414984eec6cb5c9595fc6f61bcbe3bbf",
+        "test_summary": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_016/SUMMARY.json",
+        "test_summary_sha256": "f1f8ea99f2ddd99d8db7d800c959f2acfd8441c7c733d9574faf2767a194237d",
+        "test_complete": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_016/COMPLETE.json",
+        "test_complete_sha256": "fc4f1eade908805157d065a8d8022f49f03fa8e87809ef3654267d2f45c2a0fd"
+      },
+      "completed_Test_endpoints": [
+        {
+          "epoch": 8,
+          "PDMS_points": 89.1215952533691,
+          "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_008.pt",
+          "checkpoint_sha256": "ce945c273b0498ea76164835412e2b86ff1de9944fcf37b010a541676ef246be",
+          "test_summary": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_008/SUMMARY.json",
+          "test_summary_sha256": "07732155a24385595754cd3f3e4603844872b8c38cb9fb9861607410fd20fb65",
+          "test_complete": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_008/COMPLETE.json",
+          "test_complete_sha256": "2b748e8e0afb247369794b2e2ae5ca0221ee423f26c9a7552ff6b70ec948afd3"
+        },
+        {
+          "epoch": 16,
+          "PDMS_points": 89.53359458019816,
+          "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_016.pt",
+          "checkpoint_sha256": "e189001dfbaca6abcc844e503dac38cf414984eec6cb5c9595fc6f61bcbe3bbf",
+          "test_summary": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_016/SUMMARY.json",
+          "test_summary_sha256": "f1f8ea99f2ddd99d8db7d800c959f2acfd8441c7c733d9574faf2767a194237d",
+          "test_complete": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_016/COMPLETE.json",
+          "test_complete_sha256": "fc4f1eade908805157d065a8d8022f49f03fa8e87809ef3654267d2f45c2a0fd"
+        },
+        {
+          "epoch": 24,
+          "PDMS_points": 88.2921618600703,
+          "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_024.pt",
+          "checkpoint_sha256": "f88bd810a2823d3349b8afdb692f1d9a5fe5448327d2be97b3f68f82b76a4909",
+          "test_summary": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_024/SUMMARY.json",
+          "test_summary_sha256": "d39ac64720b4fbe612f1508dbc7aa0c2ca5454e646fc7cf19068f3e76b4a3d17",
+          "test_complete": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/test/epoch_024/COMPLETE.json",
+          "test_complete_sha256": "0ea82aeac5a4e3889b6d59fd8395235d66f765a89300cde88153546a723cca6c"
+        }
+      ],
+      "cancelled_second_seed": false,
+      "keep_files": [
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_008.pt",
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_016.pt",
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_024.pt",
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_032.pt"
+      ],
+      "candidate_count": 71,
+      "candidate_bytes": 1768562882
+    },
+    {
+      "run_id": "H_gain1_seed20261028",
+      "weight_count": 0,
+      "apparent_weight_bytes": 0,
+      "latest_complete_epoch": null,
+      "best_completed_Test": null,
+      "completed_Test_endpoints": [],
+      "cancelled_second_seed": true,
+      "keep_files": [],
+      "candidate_count": 0,
+      "candidate_bytes": 0
+    },
+    {
+      "run_id": "H_mu_teacher_seed20261027",
+      "weight_count": 55,
+      "apparent_weight_bytes": 1369630050,
+      "latest_complete_epoch": {
+        "epoch": 23,
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_023.pt",
+        "sha256": "88ca3fbc2d33c646865768439aa6cdb76734c431c619d4f3cbb923853cda1958"
+      },
+      "best_completed_Test": {
+        "epoch": 8,
+        "PDMS_points": 89.28651567165574,
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_008.pt",
+        "checkpoint_sha256": "acbdb9b61d71651e87f7de9a3de26a5fa091d190b5e63c2df08538b0d8f31bed",
+        "test_summary": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/test/epoch_008/SUMMARY.json",
+        "test_summary_sha256": "65770eea1207f0c33861741a9c1be94548bbea9f89a853e21b8ce826f745be79",
+        "test_complete": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/test/epoch_008/COMPLETE.json",
+        "test_complete_sha256": "e6aa0dc9e43ff564e3286ba28042829f3b5cc2ff84a6bf01c0dcb96a5a29e690"
+      },
+      "completed_Test_endpoints": [
+        {
+          "epoch": 8,
+          "PDMS_points": 89.28651567165574,
+          "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_008.pt",
+          "checkpoint_sha256": "acbdb9b61d71651e87f7de9a3de26a5fa091d190b5e63c2df08538b0d8f31bed",
+          "test_summary": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/test/epoch_008/SUMMARY.json",
+          "test_summary_sha256": "65770eea1207f0c33861741a9c1be94548bbea9f89a853e21b8ce826f745be79",
+          "test_complete": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/test/epoch_008/COMPLETE.json",
+          "test_complete_sha256": "e6aa0dc9e43ff564e3286ba28042829f3b5cc2ff84a6bf01c0dcb96a5a29e690"
+        },
+        {
+          "epoch": 16,
+          "PDMS_points": 89.16275153348717,
+          "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_016.pt",
+          "checkpoint_sha256": "9a44bb78a01f40978c8fceb755374f611e4614809f4bd4318f97e7151fa4fbfb",
+          "test_summary": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/test/epoch_016/SUMMARY.json",
+          "test_summary_sha256": "b95dfd0bbd478558559e04c56aab57a3d41a5e8c3fc4e8a39c4ba482bb881f83",
+          "test_complete": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/test/epoch_016/COMPLETE.json",
+          "test_complete_sha256": "db78a1cb2b6566b9f5d59e41a61f1c88373fc964bb3a9bc2a39c099a599a1bad"
+        }
+      ],
+      "cancelled_second_seed": false,
+      "keep_files": [
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_008.pt",
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_016.pt",
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_023.pt"
+      ],
+      "candidate_count": 52,
+      "candidate_bytes": 1295426712
+    },
+    {
+      "run_id": "H_mu_teacher_seed20261028",
+      "weight_count": 5,
+      "apparent_weight_bytes": 124267430,
+      "latest_complete_epoch": {
+        "epoch": 2,
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261028/checkpoints/epoch_002.pt",
+        "sha256": "0e0489f310229addea5088177a4233da5d783dd791b03380377f9a17acf34e45"
+      },
+      "best_completed_Test": null,
+      "completed_Test_endpoints": [],
+      "cancelled_second_seed": true,
+      "keep_files": [
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261028/checkpoints/epoch_002.pt"
+      ],
+      "candidate_count": 4,
+      "candidate_bytes": 99533112
+    },
+    {
+      "run_id": "H_mu_student_seed20261027",
+      "weight_count": 50,
+      "apparent_weight_bytes": 1244996860,
+      "latest_complete_epoch": {
+        "epoch": 21,
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_021.pt",
+        "sha256": "7dd63a83abc42dd7b345b97ff78dcdf2e206c159d7ed05fc55250322eeca09b6"
+      },
+      "best_completed_Test": {
+        "epoch": 8,
+        "PDMS_points": 89.31996520941154,
+        "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_008.pt",
+        "checkpoint_sha256": "edf22689754daa1ed0b8658a2f8c98cfd904a221780a98458738a93963587cab",
+        "test_summary": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/test/epoch_008/SUMMARY.json",
+        "test_summary_sha256": "a6c90ec5e1a45177d93e1d389a78eb0de92dec1fa05a92b9df629967485afe8a",
+        "test_complete": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/test/epoch_008/COMPLETE.json",
+        "test_complete_sha256": "36c819b7b3a23ef5816a591858cb2e757d29ad07ab4e65db84dbc2d940f92749"
+      },
+      "completed_Test_endpoints": [
+        {
+          "epoch": 8,
+          "PDMS_points": 89.31996520941154,
+          "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_008.pt",
+          "checkpoint_sha256": "edf22689754daa1ed0b8658a2f8c98cfd904a221780a98458738a93963587cab",
+          "test_summary": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/test/epoch_008/SUMMARY.json",
+          "test_summary_sha256": "a6c90ec5e1a45177d93e1d389a78eb0de92dec1fa05a92b9df629967485afe8a",
+          "test_complete": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/test/epoch_008/COMPLETE.json",
+          "test_complete_sha256": "36c819b7b3a23ef5816a591858cb2e757d29ad07ab4e65db84dbc2d940f92749"
+        },
+        {
+          "epoch": 16,
+          "PDMS_points": 89.25652735285679,
+          "checkpoint": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_016.pt",
+          "checkpoint_sha256": "29c8fe512e2080976bbda4027a1a8c4de50f70f2bdf38dbcafc28d8a4e4315ca",
+          "test_summary": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/test/epoch_016/SUMMARY.json",
+          "test_summary_sha256": "eb367845d71ef30a6d2eb5417531531813b8f70c46faedf024d12d4e9d0b7c90",
+          "test_complete": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/test/epoch_016/COMPLETE.json",
+          "test_complete_sha256": "8c78461e1d2cb74aa67d2c74ea5f365818fd6ebd8daa0d8b2aed63424793f62e"
+        }
+      ],
+      "cancelled_second_seed": false,
+      "keep_files": [
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_008.pt",
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_016.pt",
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_021.pt"
+      ],
+      "candidate_count": 47,
+      "candidate_bytes": 1170797554
+    },
+    {
+      "run_id": "H_mu_student_seed20261028",
+      "weight_count": 4,
+      "apparent_weight_bytes": 99527736,
+      "latest_complete_epoch": {
+        "epoch": 1,
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261028/checkpoints/epoch_001.pt",
+        "sha256": "561444f4ebfea0c0854740f58706a7db3e256ac742c4e1a1e5e907295defeac4"
+      },
+      "best_completed_Test": null,
+      "completed_Test_endpoints": [],
+      "cancelled_second_seed": true,
+      "keep_files": [
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261028/checkpoints/epoch_001.pt"
+      ],
+      "candidate_count": 3,
+      "candidate_bytes": 74794762
+    }
+  ],
+  "seconds": 7.148597531020641,
+  "source_sha256": "9965b9922539242f679e90fd7401279b7fc034eb7f9d2293defb83d6bf17107f"
+}

@@ -1,0 +1,579 @@
+{
+  "inventory_started": "2026-10-28T15:09:06.848577+00:00",
+  "inventory_finished": "2026-10-28T15:09:13.967880+00:00",
+  "execution": "READ_ONLY_NO_DELETE_NO_SIGNALS",
+  "results_root": "/mnt/project/recogdrive-no-routing-round1-results-20261026",
+  "permitted_run_ids": [
+    "H_gain1_seed20261027",
+    "H_gain1_seed20261028",
+    "H_mu_teacher_seed20261027",
+    "H_mu_teacher_seed20261028",
+    "H_mu_student_seed20261027",
+    "H_mu_student_seed20261028"
+  ],
+  "protected_A_prefixes": [
+    "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027",
+    "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261028"
+  ],
+  "metadata_results_data_never_delete": [
+    "all .COMPLETE.json and other metadata",
+    "all logs/results/reports",
+    "all features/targets/noise/caches",
+    "frozen teacher library",
+    "RL Base/VLM",
+    "every A/H_full asset any seed"
+  ],
+  "identity_recheck_required_before_unlink": [
+    "sha256",
+    "dev",
+    "inode",
+    "size_bytes",
+    "mtime_ns",
+    "all_owned_processes_stopped"
+  ],
+  "changed_checkpoint_directories_during_snapshot": [],
+  "status": "KEEP_RESULT_WEIGHTS_AND_ALL_A_ASSETS",
+  "count": 12,
+  "apparent_bytes": 296802344,
+  "files": [
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_008.pt",
+      "size_bytes": 24733102,
+      "allocated_bytes_stat_blocks": 24735744,
+      "inode": 144115938118082119,
+      "dev": 3789794614,
+      "mtime_ns": 1793128570000000000,
+      "link_count": 1,
+      "is_symlink": false,
+      "is_regular_file": true,
+      "symlink_target": null,
+      "resolved_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_008.pt",
+      "run_id": "H_gain1_seed20261027",
+      "sha256": "ce945c273b0498ea76164835412e2b86ff1de9944fcf37b010a541676ef246be",
+      "sha256_origin": "existing COMPLETE marker; weight bytes not rehashed by inventory",
+      "marker_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_008.pt.COMPLETE.json",
+      "marker_sha256": "7414b540e2a063bcad8f75bb0320a068b69b4a55da8a60c4174ed12d15253a34",
+      "checkpoint_status": "COMPLETE",
+      "progress": {
+        "epoch_index": 8,
+        "global_batch_cursor": 0,
+        "global_step": 10728,
+        "real_scenes_seen": 686504
+      },
+      "hardlink_peer_paths_in_scanned_BCD": [
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_008.pt"
+      ],
+      "protected_A_hardlink_peers": [],
+      "unaccounted_hardlink_count": 0,
+      "external_text_references": [
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/summaries/H_gain1_seed20261027/epoch_metrics.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/ACTUAL_STARTUP_OBSERVATION.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/TEST_EXECUTION_REGISTRY.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/loss_history_20261027T2310Z/H_gain1_seed20261027.epoch_metrics.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_representation_loss_20261028/EXECUTION_REGISTRY.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/train_loss_pdms_generalization_20261028/primary_test_wait_recovery/PRIOR_TEST_EXECUTION_REGISTRY.json"
+      ],
+      "incoming_known_symlinks": [],
+      "keep_reasons": [
+        "completed_formal_Test_result_weight"
+      ]
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_016.pt",
+      "size_bytes": 24733102,
+      "allocated_bytes_stat_blocks": 24735744,
+      "inode": 144115938118120255,
+      "dev": 3789794614,
+      "mtime_ns": 1793143938000000000,
+      "link_count": 1,
+      "is_symlink": false,
+      "is_regular_file": true,
+      "symlink_target": null,
+      "resolved_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_016.pt",
+      "run_id": "H_gain1_seed20261027",
+      "sha256": "e189001dfbaca6abcc844e503dac38cf414984eec6cb5c9595fc6f61bcbe3bbf",
+      "sha256_origin": "existing COMPLETE marker; weight bytes not rehashed by inventory",
+      "marker_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_016.pt.COMPLETE.json",
+      "marker_sha256": "56f2c259143185de2010675248430f7b743386d0176197e89a57a670eb3f2eb0",
+      "checkpoint_status": "COMPLETE",
+      "progress": {
+        "epoch_index": 16,
+        "global_batch_cursor": 0,
+        "global_step": 21456,
+        "real_scenes_seen": 1373008
+      },
+      "hardlink_peer_paths_in_scanned_BCD": [
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_016.pt"
+      ],
+      "protected_A_hardlink_peers": [],
+      "unaccounted_hardlink_count": 0,
+      "external_text_references": [
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/summaries/H_gain1_seed20261027/epoch_metrics.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/TEST_EXECUTION_REGISTRY.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_representation_loss_20261028/EXECUTION_REGISTRY.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/train_loss_pdms_generalization_20261028/primary_test_wait_recovery/PRIOR_TEST_EXECUTION_REGISTRY.json"
+      ],
+      "incoming_known_symlinks": [],
+      "keep_reasons": [
+        "completed_formal_Test_result_weight",
+        "best_completed_Test_checkpoint"
+      ]
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_024.pt",
+      "size_bytes": 24733102,
+      "allocated_bytes_stat_blocks": 24735744,
+      "inode": 144115938118158245,
+      "dev": 3789794614,
+      "mtime_ns": 1793169872000000000,
+      "link_count": 1,
+      "is_symlink": false,
+      "is_regular_file": true,
+      "symlink_target": null,
+      "resolved_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_024.pt",
+      "run_id": "H_gain1_seed20261027",
+      "sha256": "f88bd810a2823d3349b8afdb692f1d9a5fe5448327d2be97b3f68f82b76a4909",
+      "sha256_origin": "existing COMPLETE marker; weight bytes not rehashed by inventory",
+      "marker_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_024.pt.COMPLETE.json",
+      "marker_sha256": "f7635010fe6f86f089d9ad99227a32bc868144e10d06378702c84ad4fe6ae8a4",
+      "checkpoint_status": "COMPLETE",
+      "progress": {
+        "epoch_index": 24,
+        "global_batch_cursor": 0,
+        "global_step": 32184,
+        "real_scenes_seen": 2059512
+      },
+      "hardlink_peer_paths_in_scanned_BCD": [
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_024.pt"
+      ],
+      "protected_A_hardlink_peers": [],
+      "unaccounted_hardlink_count": 0,
+      "external_text_references": [
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/summaries/H_gain1_seed20261027/epoch_metrics.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/TEST_EXECUTION_REGISTRY.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/train_loss_pdms_generalization_20261028/primary_test_wait_recovery/PRIOR_TEST_EXECUTION_REGISTRY.json"
+      ],
+      "incoming_known_symlinks": [],
+      "keep_reasons": [
+        "completed_formal_Test_result_weight"
+      ]
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_032.pt",
+      "size_bytes": 24733102,
+      "allocated_bytes_stat_blocks": 24735744,
+      "inode": 144115939477064536,
+      "dev": 3789794614,
+      "mtime_ns": 1793197399000000000,
+      "link_count": 1,
+      "is_symlink": false,
+      "is_regular_file": true,
+      "symlink_target": null,
+      "resolved_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_032.pt",
+      "run_id": "H_gain1_seed20261027",
+      "sha256": "6814104ed6718cf56004cc2ddaa7c2802afcfec123f6cdf71e87723beaf454d4",
+      "sha256_origin": "existing COMPLETE marker; weight bytes not rehashed by inventory",
+      "marker_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_032.pt.COMPLETE.json",
+      "marker_sha256": "8508df713dd7e74a400e1a0edfad83549c6e7a159a37d8196dc29f5af8dd0ace",
+      "checkpoint_status": "COMPLETE",
+      "progress": {
+        "epoch_index": 32,
+        "global_batch_cursor": 0,
+        "global_step": 42912,
+        "real_scenes_seen": 2746016
+      },
+      "hardlink_peer_paths_in_scanned_BCD": [
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_032.pt"
+      ],
+      "protected_A_hardlink_peers": [],
+      "unaccounted_hardlink_count": 0,
+      "external_text_references": [
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/distillation_stop_cleanup_20261028/PROCESS_INVENTORY_HOSTS.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/distillation_stop_cleanup_20261028/stop_receipts/training-vlawm-tsinghua-zt5.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/summaries/H_gain1_seed20261027/epoch_metrics.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/TEST_EXECUTION_REGISTRY.json"
+      ],
+      "incoming_known_symlinks": [],
+      "keep_reasons": [
+        "latest_complete_epoch_representative"
+      ]
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_008.pt",
+      "size_bytes": 24734446,
+      "allocated_bytes_stat_blocks": 24735744,
+      "inode": 144115938084538922,
+      "dev": 3789794614,
+      "mtime_ns": 1793129536000000000,
+      "link_count": 1,
+      "is_symlink": false,
+      "is_regular_file": true,
+      "symlink_target": null,
+      "resolved_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_008.pt",
+      "run_id": "H_mu_teacher_seed20261027",
+      "sha256": "acbdb9b61d71651e87f7de9a3de26a5fa091d190b5e63c2df08538b0d8f31bed",
+      "sha256_origin": "existing COMPLETE marker; weight bytes not rehashed by inventory",
+      "marker_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_008.pt.COMPLETE.json",
+      "marker_sha256": "840be649324c92d304bc7902fd7dc3b788c9551d5904f1a511f5b1e004688f08",
+      "checkpoint_status": "COMPLETE",
+      "progress": {
+        "epoch_index": 8,
+        "global_batch_cursor": 0,
+        "global_step": 10728,
+        "real_scenes_seen": 686504
+      },
+      "hardlink_peer_paths_in_scanned_BCD": [
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_008.pt"
+      ],
+      "protected_A_hardlink_peers": [],
+      "unaccounted_hardlink_count": 0,
+      "external_text_references": [
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/summaries/H_mu_teacher_seed20261027/epoch_metrics.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/ACTUAL_STARTUP_OBSERVATION.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/TEST_EXECUTION_REGISTRY.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/loss_history_20261027T2310Z/H_mu_teacher_seed20261027.epoch_metrics.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_representation_loss_20261028/EXECUTION_REGISTRY.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/train_loss_pdms_generalization_20261028/primary_test_wait_recovery/PRIOR_TEST_EXECUTION_REGISTRY.json"
+      ],
+      "incoming_known_symlinks": [],
+      "keep_reasons": [
+        "completed_formal_Test_result_weight",
+        "best_completed_Test_checkpoint"
+      ]
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_016.pt",
+      "size_bytes": 24734446,
+      "allocated_bytes_stat_blocks": 24735744,
+      "inode": 144115938789182026,
+      "dev": 3789794614,
+      "mtime_ns": 1793164078000000000,
+      "link_count": 1,
+      "is_symlink": false,
+      "is_regular_file": true,
+      "symlink_target": null,
+      "resolved_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_016.pt",
+      "run_id": "H_mu_teacher_seed20261027",
+      "sha256": "9a44bb78a01f40978c8fceb755374f611e4614809f4bd4318f97e7151fa4fbfb",
+      "sha256_origin": "existing COMPLETE marker; weight bytes not rehashed by inventory",
+      "marker_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_016.pt.COMPLETE.json",
+      "marker_sha256": "b16b36b999f4d6185fe2b7b9e9d1a00a15f0236be0246572355b5bb30e61afe2",
+      "checkpoint_status": "COMPLETE",
+      "progress": {
+        "epoch_index": 16,
+        "global_batch_cursor": 0,
+        "global_step": 21456,
+        "real_scenes_seen": 1373008
+      },
+      "hardlink_peer_paths_in_scanned_BCD": [
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_016.pt"
+      ],
+      "protected_A_hardlink_peers": [],
+      "unaccounted_hardlink_count": 0,
+      "external_text_references": [
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/summaries/H_mu_teacher_seed20261027/epoch_metrics.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/TEST_EXECUTION_REGISTRY.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/train_loss_pdms_generalization_20261028/primary_test_wait_recovery/PRIOR_TEST_EXECUTION_REGISTRY.json"
+      ],
+      "incoming_known_symlinks": [],
+      "keep_reasons": [
+        "completed_formal_Test_result_weight"
+      ]
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_023.pt",
+      "size_bytes": 24734446,
+      "allocated_bytes_stat_blocks": 24735744,
+      "inode": 144115939460347769,
+      "dev": 3789794614,
+      "mtime_ns": 1793197482000000000,
+      "link_count": 1,
+      "is_symlink": false,
+      "is_regular_file": true,
+      "symlink_target": null,
+      "resolved_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_023.pt",
+      "run_id": "H_mu_teacher_seed20261027",
+      "sha256": "88ca3fbc2d33c646865768439aa6cdb76734c431c619d4f3cbb923853cda1958",
+      "sha256_origin": "existing COMPLETE marker; weight bytes not rehashed by inventory",
+      "marker_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_023.pt.COMPLETE.json",
+      "marker_sha256": "c076d8baadefdaa0eba7b1760765a26e3e749c63a6438f4bf0701597e8e59595",
+      "checkpoint_status": "COMPLETE",
+      "progress": {
+        "epoch_index": 23,
+        "global_batch_cursor": 0,
+        "global_step": 30843,
+        "real_scenes_seen": 1973699
+      },
+      "hardlink_peer_paths_in_scanned_BCD": [
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_023.pt"
+      ],
+      "protected_A_hardlink_peers": [],
+      "unaccounted_hardlink_count": 0,
+      "external_text_references": [
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/summaries/H_mu_teacher_seed20261027/epoch_metrics.json"
+      ],
+      "incoming_known_symlinks": [],
+      "keep_reasons": [
+        "latest_complete_epoch_representative"
+      ]
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261028/checkpoints/epoch_002.pt",
+      "size_bytes": 24734318,
+      "allocated_bytes_stat_blocks": 24735744,
+      "inode": 144115937849743381,
+      "dev": 3789794614,
+      "mtime_ns": 1793112391000000000,
+      "link_count": 1,
+      "is_symlink": false,
+      "is_regular_file": true,
+      "symlink_target": null,
+      "resolved_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261028/checkpoints/epoch_002.pt",
+      "run_id": "H_mu_teacher_seed20261028",
+      "sha256": "0e0489f310229addea5088177a4233da5d783dd791b03380377f9a17acf34e45",
+      "sha256_origin": "existing COMPLETE marker; weight bytes not rehashed by inventory",
+      "marker_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261028/checkpoints/epoch_002.pt.COMPLETE.json",
+      "marker_sha256": "f5f542f6b027b4d5401e691c9c6a2e802fb1223decd29e216b22981a547d85fd",
+      "checkpoint_status": "COMPLETE",
+      "progress": {
+        "epoch_index": 2,
+        "global_batch_cursor": 0,
+        "global_step": 2682,
+        "real_scenes_seen": 171626
+      },
+      "hardlink_peer_paths_in_scanned_BCD": [
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261028/checkpoints/epoch_002.pt"
+      ],
+      "protected_A_hardlink_peers": [],
+      "unaccounted_hardlink_count": 0,
+      "external_text_references": [],
+      "incoming_known_symlinks": [],
+      "keep_reasons": [
+        "latest_complete_epoch_representative"
+      ]
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_008.pt",
+      "size_bytes": 24733102,
+      "allocated_bytes_stat_blocks": 24735744,
+      "inode": 144115938067808494,
+      "dev": 3789794614,
+      "mtime_ns": 1793131338000000000,
+      "link_count": 1,
+      "is_symlink": false,
+      "is_regular_file": true,
+      "symlink_target": null,
+      "resolved_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_008.pt",
+      "run_id": "H_mu_student_seed20261027",
+      "sha256": "edf22689754daa1ed0b8658a2f8c98cfd904a221780a98458738a93963587cab",
+      "sha256_origin": "existing COMPLETE marker; weight bytes not rehashed by inventory",
+      "marker_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_008.pt.COMPLETE.json",
+      "marker_sha256": "769104a0094037078c5cfc5a0bbc554be657f5d69a20057050b83a8164984242",
+      "checkpoint_status": "COMPLETE",
+      "progress": {
+        "epoch_index": 8,
+        "global_batch_cursor": 0,
+        "global_step": 10728,
+        "real_scenes_seen": 686504
+      },
+      "hardlink_peer_paths_in_scanned_BCD": [
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_008.pt"
+      ],
+      "protected_A_hardlink_peers": [],
+      "unaccounted_hardlink_count": 0,
+      "external_text_references": [
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/summaries/H_mu_student_seed20261027/epoch_metrics.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/ACTUAL_STARTUP_OBSERVATION.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/TEST_EXECUTION_REGISTRY.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/loss_history_20261027T2310Z/H_mu_student_seed20261027.epoch_metrics.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_representation_loss_20261028/EXECUTION_REGISTRY.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/train_loss_pdms_generalization_20261028/primary_test_wait_recovery/PRIOR_TEST_EXECUTION_REGISTRY.json"
+      ],
+      "incoming_known_symlinks": [],
+      "keep_reasons": [
+        "completed_formal_Test_result_weight",
+        "best_completed_Test_checkpoint"
+      ]
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_016.pt",
+      "size_bytes": 24733102,
+      "allocated_bytes_stat_blocks": 24735744,
+      "inode": 144115938940160937,
+      "dev": 3789794614,
+      "mtime_ns": 1793169215000000000,
+      "link_count": 1,
+      "is_symlink": false,
+      "is_regular_file": true,
+      "symlink_target": null,
+      "resolved_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_016.pt",
+      "run_id": "H_mu_student_seed20261027",
+      "sha256": "29c8fe512e2080976bbda4027a1a8c4de50f70f2bdf38dbcafc28d8a4e4315ca",
+      "sha256_origin": "existing COMPLETE marker; weight bytes not rehashed by inventory",
+      "marker_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_016.pt.COMPLETE.json",
+      "marker_sha256": "728e97aa482bdae7f83c8ce07fb0ae6c8c8e5ef58cfe8ac44cb5fefbe34bb1b1",
+      "checkpoint_status": "COMPLETE",
+      "progress": {
+        "epoch_index": 16,
+        "global_batch_cursor": 0,
+        "global_step": 21456,
+        "real_scenes_seen": 1373008
+      },
+      "hardlink_peer_paths_in_scanned_BCD": [
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_016.pt"
+      ],
+      "protected_A_hardlink_peers": [],
+      "unaccounted_hardlink_count": 0,
+      "external_text_references": [
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/summaries/H_mu_student_seed20261027/epoch_metrics.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/test_pdms_selection_20261027/TEST_EXECUTION_REGISTRY.json",
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/train_loss_pdms_generalization_20261028/primary_test_wait_recovery/PRIOR_TEST_EXECUTION_REGISTRY.json"
+      ],
+      "incoming_known_symlinks": [],
+      "keep_reasons": [
+        "completed_formal_Test_result_weight"
+      ]
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_021.pt",
+      "size_bytes": 24733102,
+      "allocated_bytes_stat_blocks": 24735744,
+      "inode": 144115939527374079,
+      "dev": 3789794614,
+      "mtime_ns": 1793196913000000000,
+      "link_count": 1,
+      "is_symlink": false,
+      "is_regular_file": true,
+      "symlink_target": null,
+      "resolved_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_021.pt",
+      "run_id": "H_mu_student_seed20261027",
+      "sha256": "7dd63a83abc42dd7b345b97ff78dcdf2e206c159d7ed05fc55250322eeca09b6",
+      "sha256_origin": "existing COMPLETE marker; weight bytes not rehashed by inventory",
+      "marker_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_021.pt.COMPLETE.json",
+      "marker_sha256": "f1eceeb932ef21ba3d68969a47a4fb5aa88b600ea212c40bb0499ce31a4ea07b",
+      "checkpoint_status": "COMPLETE",
+      "progress": {
+        "epoch_index": 21,
+        "global_batch_cursor": 0,
+        "global_step": 28161,
+        "real_scenes_seen": 1802073
+      },
+      "hardlink_peer_paths_in_scanned_BCD": [
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_021.pt"
+      ],
+      "protected_A_hardlink_peers": [],
+      "unaccounted_hardlink_count": 0,
+      "external_text_references": [
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/active_seed20261027_v2/summaries/H_mu_student_seed20261027/epoch_metrics.json"
+      ],
+      "incoming_known_symlinks": [],
+      "keep_reasons": [
+        "latest_complete_epoch_representative"
+      ]
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261028/checkpoints/epoch_001.pt",
+      "size_bytes": 24732974,
+      "allocated_bytes_stat_blocks": 24735744,
+      "inode": 144115937883228791,
+      "dev": 3789794614,
+      "mtime_ns": 1793111922000000000,
+      "link_count": 1,
+      "is_symlink": false,
+      "is_regular_file": true,
+      "symlink_target": null,
+      "resolved_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261028/checkpoints/epoch_001.pt",
+      "run_id": "H_mu_student_seed20261028",
+      "sha256": "561444f4ebfea0c0854740f58706a7db3e256ac742c4e1a1e5e907295defeac4",
+      "sha256_origin": "existing COMPLETE marker; weight bytes not rehashed by inventory",
+      "marker_path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261028/checkpoints/epoch_001.pt.COMPLETE.json",
+      "marker_sha256": "707769ec2c5c543fd9ddd837d6885b824c08beccd4a51de94c1d25c95c8a58aa",
+      "checkpoint_status": "COMPLETE",
+      "progress": {
+        "epoch_index": 1,
+        "global_batch_cursor": 0,
+        "global_step": 1341,
+        "real_scenes_seen": 85813
+      },
+      "hardlink_peer_paths_in_scanned_BCD": [
+        "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261028/checkpoints/epoch_001.pt"
+      ],
+      "protected_A_hardlink_peers": [],
+      "unaccounted_hardlink_count": 0,
+      "external_text_references": [
+        "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/epoch_loss_statistics_20261027/summaries/H_mu_student_seed20261028/epoch_metrics.json"
+      ],
+      "incoming_known_symlinks": [],
+      "keep_reasons": [
+        "latest_complete_epoch_representative"
+      ]
+    }
+  ],
+  "protected_A_inventory_counts": {
+    "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027": {
+      "weight_files": 94,
+      "all_assets_protected": true
+    },
+    "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261028": {
+      "weight_files": 3,
+      "all_assets_protected": true
+    }
+  },
+  "last_aliases": [
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/last.pt",
+      "is_symlink": false,
+      "link_count": 1,
+      "same_COMPLETE_SHA_as_retained_latest_epoch": true,
+      "retained_canonical_epoch": {
+        "epoch": 32,
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_gain1_seed20261027/checkpoints/epoch_032.pt",
+        "sha256": "6814104ed6718cf56004cc2ddaa7c2802afcfec123f6cdf71e87723beaf454d4"
+      }
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/last.pt",
+      "is_symlink": false,
+      "link_count": 1,
+      "same_COMPLETE_SHA_as_retained_latest_epoch": true,
+      "retained_canonical_epoch": {
+        "epoch": 23,
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261027/checkpoints/epoch_023.pt",
+        "sha256": "88ca3fbc2d33c646865768439aa6cdb76734c431c619d4f3cbb923853cda1958"
+      }
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261028/checkpoints/last.pt",
+      "is_symlink": false,
+      "link_count": 1,
+      "same_COMPLETE_SHA_as_retained_latest_epoch": true,
+      "retained_canonical_epoch": {
+        "epoch": 2,
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_teacher_seed20261028/checkpoints/epoch_002.pt",
+        "sha256": "0e0489f310229addea5088177a4233da5d783dd791b03380377f9a17acf34e45"
+      }
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/last.pt",
+      "is_symlink": false,
+      "link_count": 1,
+      "same_COMPLETE_SHA_as_retained_latest_epoch": true,
+      "retained_canonical_epoch": {
+        "epoch": 21,
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261027/checkpoints/epoch_021.pt",
+        "sha256": "7dd63a83abc42dd7b345b97ff78dcdf2e206c159d7ed05fc55250322eeca09b6"
+      }
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261028/checkpoints/last.pt",
+      "is_symlink": false,
+      "link_count": 1,
+      "same_COMPLETE_SHA_as_retained_latest_epoch": true,
+      "retained_canonical_epoch": {
+        "epoch": 1,
+        "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_mu_student_seed20261028/checkpoints/epoch_001.pt",
+        "sha256": "561444f4ebfea0c0854740f58706a7db3e256ac742c4e1a1e5e907295defeac4"
+      }
+    }
+  ]
+}

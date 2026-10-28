@@ -1,0 +1,320 @@
+{
+  "input_manifest_sha256": "2ff046b60425e2ffae16778b4e8514e22b2eeab811d5f5d2253beee90bc1b462",
+  "unchanged_native_reader_statistics_sha256": "b7292ef60d8954c47d0d41d5467716e8c50d6a6bd79eba3cef1016f6d24810a2",
+  "full_Train_merges": [
+    {
+      "epoch": 4,
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/full_train_loss_pdms_generalization_20261028/merged/epoch_004",
+      "complete_sha256": "11f938abdc25288c6693c754fd4dc934f1abbfaaae44f45bac9ba4307ffe57d5",
+      "numeric_sha256": "5dc79481b0d2ba16f4a340447c8ed4c3a77599c898fee0b1d7d7b960bc940499",
+      "source_rows_sha256": "49bf79a61c8767ea7c527a86a992e4ab1b394b396b196f48988d3bc0270530e3"
+    },
+    {
+      "epoch": 8,
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/full_train_loss_pdms_generalization_20261028/merged/epoch_008",
+      "complete_sha256": "2f3ff6ea50da728f731decc78ba8e2289bff77b49a5b791d449a939eb09838d3",
+      "numeric_sha256": "f8a790160d0cfe5c91280c2c1b903d0f90da02be53f672d8d685eea8a6e789e3",
+      "source_rows_sha256": "d1bce6117fc84236e6a0ea0aa434c23f94b31a4bbcb2897720d3987ebe167c3a"
+    },
+    {
+      "epoch": 16,
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/full_train_loss_pdms_generalization_20261028/merged/epoch_016",
+      "complete_sha256": "c2ebc46d5b6bf0a9dea63391a4df364c912302ce450057054135c7eefa22b7e3",
+      "numeric_sha256": "980c11a4d8bf2e15e57d35486502f9c615174e8583eee96dc26b244087fcbc91",
+      "source_rows_sha256": "bce5d15fe6feaad871d4f366ec14a2de448d7d0af1916ed5763ae8928ca982cb"
+    },
+    {
+      "epoch": 24,
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/full_train_loss_pdms_generalization_20261028/merged/epoch_024",
+      "complete_sha256": "80b314f986dece47a5d0901b12dff64cd0bdcd0e805a9d6b788f13d3e4abb6ee",
+      "numeric_sha256": "e02e8534bd9ef2f90e10bba34fb97ac52da00c799c0b4225a9b0b3d2e3f235c5",
+      "source_rows_sha256": "4e36165158c31e9722fe192f37cc00c8026a2c3c329cadbec36efc3b383dc516"
+    },
+    {
+      "epoch": 32,
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/full_train_loss_pdms_generalization_20261028/merged/epoch_032",
+      "complete_sha256": "4fb7554502d3601a2d00893659808673a54f38d5c7e502c76a478c997609321b",
+      "numeric_sha256": "eb77926f84447b934a3fe3c95c24a628afa7d11fbe35ee310e99f010a841aaf4",
+      "source_rows_sha256": "99f94257d4bac3ac25ae50111424be14c0723a5afc861baa6b88cb2c14850519"
+    }
+  ],
+  "existing_full_Test_sources_reused": [
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/diagnostics/loss_pdms_correlation/epoch_004/test",
+      "complete_sha256": "40a8d08b67ceb3d9f0f79adec40b5cf1cbeee8656708e132fa9924c215bc33ef",
+      "protocol_sha256": "8fe2bc77f9878eb3aae81c1bcb2c7de9b6496e98631f3dd0879f493f11f43fb6",
+      "scene_scores_sha256": "7788d7724918ffd748b47bdd73f319f07f3f5e93120ea6442356c93cb3bcd770",
+      "checkpoint_sha256": "d4775f2b650a2103807bd28cf7246135029876e28826545ba2101702c774d883",
+      "scene_count": 12146,
+      "scoring": {
+        "proposal_sampling": {
+          "interval_length": 0.1,
+          "num_poses": 40
+        },
+        "scorer": {
+          "comfortable_weight": 2.0,
+          "driving_direction_weight": 0.0,
+          "progress_weight": 5.0,
+          "ttc_weight": 5.0
+        }
+      },
+      "feature_manifest_sha256": "686beb5e118e2e96c67aa1c56af4db1a3c85c8bbba926c007c306ef61799fff4",
+      "targets_manifest_sha256": null,
+      "same_frozen_Train_calibration_sha256": "fcaea8dcc7f3d82fcd3953bb23633f3073ebd2a614457392139b389e4ac0cc42",
+      "max_abs_paired_Base_minus_anchor_native_units": 0.0,
+      "noise_bank_SHA_values": [
+        "3d91d45b64345a5e4c8429aec1ddd0f558e9aa97f8beb706973ea3bb53a94cb2"
+      ],
+      "execution": "read_only_reuse_of_existing_full_Test_behavior"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/diagnostics/test_H/epoch_004",
+      "complete_sha256": "c157ae9b951c1dffa3688298d11074f9697897f0860ba4f709c0470c491085b8",
+      "protocol_sha256": "7b5f6d015a8a72facd3e0a4641df4986d3a34e99faebb7da64809030d841d1fb",
+      "scene_scores_sha256": "af3a3ed418bd968c64c5654dfb1572701615ab2e9c435310ed37ac07c98b7d1a",
+      "checkpoint_sha256": "d4775f2b650a2103807bd28cf7246135029876e28826545ba2101702c774d883",
+      "scene_count": 12146,
+      "scoring": {
+        "proposal_sampling": {
+          "interval_length": 0.1,
+          "num_poses": 40
+        },
+        "scorer": {
+          "comfortable_weight": 2.0,
+          "driving_direction_weight": 0.0,
+          "progress_weight": 5.0,
+          "ttc_weight": 5.0
+        }
+      },
+      "feature_manifest_sha256": "686beb5e118e2e96c67aa1c56af4db1a3c85c8bbba926c007c306ef61799fff4",
+      "targets_manifest_sha256": "ac45794f06e9e8586da53967667f229bb3ff988ef8c86e51dbad42463eb93f3e",
+      "same_frozen_Train_calibration_sha256": "fcaea8dcc7f3d82fcd3953bb23633f3073ebd2a614457392139b389e4ac0cc42",
+      "max_abs_paired_Base_minus_anchor_native_units": 0.0,
+      "noise_bank_SHA_values": [],
+      "execution": "read_only_reuse_of_existing_full_Test_H"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/test/epoch_008",
+      "complete_sha256": "f7bf8fcbf8855dd3edd676c2f2b8d595229dac51405b9720684c05c0223ee8ff",
+      "protocol_sha256": "92775a5483ff826cfb67724232911ba9aa8def586d8270b7da3af2877038986e",
+      "scene_scores_sha256": "3b743c5d406817a3741c9d895ff8a606da2bd8fe955d839a49a8c123bb4fa6fb",
+      "checkpoint_sha256": "49b0ba84c03786beba220f25e73aa0e0af207893595b2dbf18c069a8a114a329",
+      "scene_count": 12146,
+      "scoring": {
+        "proposal_sampling": {
+          "interval_length": 0.1,
+          "num_poses": 40
+        },
+        "scorer": {
+          "comfortable_weight": 2.0,
+          "driving_direction_weight": 0.0,
+          "progress_weight": 5.0,
+          "ttc_weight": 5.0
+        }
+      },
+      "feature_manifest_sha256": "686beb5e118e2e96c67aa1c56af4db1a3c85c8bbba926c007c306ef61799fff4",
+      "targets_manifest_sha256": null,
+      "same_frozen_Train_calibration_sha256": "fcaea8dcc7f3d82fcd3953bb23633f3073ebd2a614457392139b389e4ac0cc42",
+      "max_abs_paired_Base_minus_anchor_native_units": 0.0,
+      "noise_bank_SHA_values": [
+        "3d91d45b64345a5e4c8429aec1ddd0f558e9aa97f8beb706973ea3bb53a94cb2"
+      ],
+      "execution": "read_only_reuse_of_existing_full_Test_behavior"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/diagnostics/test_H/epoch_008",
+      "complete_sha256": "6f344b9038ba0cbaa0295a4a6874aaf060ba5b6e379388239b1622966a624778",
+      "protocol_sha256": "e84b0979a299adf0716bad02d3937389de69df0f032af77326eb017ff65b9a20",
+      "scene_scores_sha256": "9dfc6ff387aa6742c1f5a687939bc4805eedf72f06751118c90c4e359ca47c79",
+      "checkpoint_sha256": "49b0ba84c03786beba220f25e73aa0e0af207893595b2dbf18c069a8a114a329",
+      "scene_count": 12146,
+      "scoring": {
+        "proposal_sampling": {
+          "interval_length": 0.1,
+          "num_poses": 40
+        },
+        "scorer": {
+          "comfortable_weight": 2.0,
+          "driving_direction_weight": 0.0,
+          "progress_weight": 5.0,
+          "ttc_weight": 5.0
+        }
+      },
+      "feature_manifest_sha256": "686beb5e118e2e96c67aa1c56af4db1a3c85c8bbba926c007c306ef61799fff4",
+      "targets_manifest_sha256": "ac45794f06e9e8586da53967667f229bb3ff988ef8c86e51dbad42463eb93f3e",
+      "same_frozen_Train_calibration_sha256": "fcaea8dcc7f3d82fcd3953bb23633f3073ebd2a614457392139b389e4ac0cc42",
+      "max_abs_paired_Base_minus_anchor_native_units": 0.0,
+      "noise_bank_SHA_values": [],
+      "execution": "read_only_reuse_of_existing_full_Test_H"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/test/epoch_016",
+      "complete_sha256": "09194b3a969f33a31e689779ab30863767d6ee81f554abb0dc51b87e73f0c9bb",
+      "protocol_sha256": "8ab89abb0e5220087e417f32b333dafc79e11ea86188bb43f692d47cadebe208",
+      "scene_scores_sha256": "8d8381875881890dc1af507028c6a3ef841a0057e9c9910b7d3aefa428acb3a0",
+      "checkpoint_sha256": "20601e4e1c27e937e45955353b30da18779233f85036002dc3a918d1ff2986f9",
+      "scene_count": 12146,
+      "scoring": {
+        "proposal_sampling": {
+          "interval_length": 0.1,
+          "num_poses": 40
+        },
+        "scorer": {
+          "comfortable_weight": 2.0,
+          "driving_direction_weight": 0.0,
+          "progress_weight": 5.0,
+          "ttc_weight": 5.0
+        }
+      },
+      "feature_manifest_sha256": "686beb5e118e2e96c67aa1c56af4db1a3c85c8bbba926c007c306ef61799fff4",
+      "targets_manifest_sha256": null,
+      "same_frozen_Train_calibration_sha256": "fcaea8dcc7f3d82fcd3953bb23633f3073ebd2a614457392139b389e4ac0cc42",
+      "max_abs_paired_Base_minus_anchor_native_units": 0.0,
+      "noise_bank_SHA_values": [
+        "3d91d45b64345a5e4c8429aec1ddd0f558e9aa97f8beb706973ea3bb53a94cb2"
+      ],
+      "execution": "read_only_reuse_of_existing_full_Test_behavior"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/diagnostics/test_H/epoch_016",
+      "complete_sha256": "513e8c09d4e13a91d4a33cd319651b1e52815492073834193f2945c2d6eafe8d",
+      "protocol_sha256": "eac324a31861494290ed3fcaf1cb9cc802bfa39511ccae4bd36c7e3375b2ed83",
+      "scene_scores_sha256": "c1eb941d7ac344b08005c5e39c6405b470a58bd6e2a9e47db8dbc779631cc283",
+      "checkpoint_sha256": "20601e4e1c27e937e45955353b30da18779233f85036002dc3a918d1ff2986f9",
+      "scene_count": 12146,
+      "scoring": {
+        "proposal_sampling": {
+          "interval_length": 0.1,
+          "num_poses": 40
+        },
+        "scorer": {
+          "comfortable_weight": 2.0,
+          "driving_direction_weight": 0.0,
+          "progress_weight": 5.0,
+          "ttc_weight": 5.0
+        }
+      },
+      "feature_manifest_sha256": "686beb5e118e2e96c67aa1c56af4db1a3c85c8bbba926c007c306ef61799fff4",
+      "targets_manifest_sha256": "ac45794f06e9e8586da53967667f229bb3ff988ef8c86e51dbad42463eb93f3e",
+      "same_frozen_Train_calibration_sha256": "fcaea8dcc7f3d82fcd3953bb23633f3073ebd2a614457392139b389e4ac0cc42",
+      "max_abs_paired_Base_minus_anchor_native_units": 0.0,
+      "noise_bank_SHA_values": [],
+      "execution": "read_only_reuse_of_existing_full_Test_H"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/test/epoch_024",
+      "complete_sha256": "eb14518c06596526727bc848e6504563b28592aee188ca185ef256a8167e4afe",
+      "protocol_sha256": "3b24c6dc3f63bc024181322f8675fac47565a87f925cf58f12efa9bd795a86c9",
+      "scene_scores_sha256": "f5343a377130915264bf7d46a6c64c2018276c0969ca6e15e7f8519c81c188c8",
+      "checkpoint_sha256": "7d31ec302017f9c3ce775ed62d41b68a5b3dff3238f73db71486aef8c581410c",
+      "scene_count": 12146,
+      "scoring": {
+        "proposal_sampling": {
+          "interval_length": 0.1,
+          "num_poses": 40
+        },
+        "scorer": {
+          "comfortable_weight": 2.0,
+          "driving_direction_weight": 0.0,
+          "progress_weight": 5.0,
+          "ttc_weight": 5.0
+        }
+      },
+      "feature_manifest_sha256": "686beb5e118e2e96c67aa1c56af4db1a3c85c8bbba926c007c306ef61799fff4",
+      "targets_manifest_sha256": null,
+      "same_frozen_Train_calibration_sha256": "fcaea8dcc7f3d82fcd3953bb23633f3073ebd2a614457392139b389e4ac0cc42",
+      "max_abs_paired_Base_minus_anchor_native_units": 0.0,
+      "noise_bank_SHA_values": [
+        "3d91d45b64345a5e4c8429aec1ddd0f558e9aa97f8beb706973ea3bb53a94cb2"
+      ],
+      "execution": "read_only_reuse_of_existing_full_Test_behavior"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/train_loss_pdms_generalization_20261028/results/test_H/epoch_024",
+      "complete_sha256": "4d03b52d107953f18388cc07aec290ca0a208b45a64d87970671319fa49d5a5b",
+      "protocol_sha256": "c6ad4d4d649f266361a32f4876fc0c2eb294050929e52ac2fd66a19194eb0795",
+      "scene_scores_sha256": "bb28ee2d32dd1ea3cc37293fa516699a83e498c17e79c4666bb73ad485469644",
+      "checkpoint_sha256": "7d31ec302017f9c3ce775ed62d41b68a5b3dff3238f73db71486aef8c581410c",
+      "scene_count": 12146,
+      "scoring": {
+        "proposal_sampling": {
+          "interval_length": 0.1,
+          "num_poses": 40
+        },
+        "scorer": {
+          "comfortable_weight": 2.0,
+          "driving_direction_weight": 0.0,
+          "progress_weight": 5.0,
+          "ttc_weight": 5.0
+        }
+      },
+      "feature_manifest_sha256": "686beb5e118e2e96c67aa1c56af4db1a3c85c8bbba926c007c306ef61799fff4",
+      "targets_manifest_sha256": "ac45794f06e9e8586da53967667f229bb3ff988ef8c86e51dbad42463eb93f3e",
+      "same_frozen_Train_calibration_sha256": "fcaea8dcc7f3d82fcd3953bb23633f3073ebd2a614457392139b389e4ac0cc42",
+      "max_abs_paired_Base_minus_anchor_native_units": 0.0,
+      "noise_bank_SHA_values": [],
+      "execution": "read_only_reuse_of_existing_full_Test_H"
+    },
+    {
+      "path": "/mnt/project/recogdrive-no-routing-round1-results-20261026/H_full_seed20261027/test/epoch_032",
+      "complete_sha256": "93bfaaf6cd4352e3afd44e05a7ba89eb4595df89342777b16b6eef4ffe26c6ba",
+      "protocol_sha256": "701335a742eedb597340b5e81fd9eff5b635c268edc9741b068ebf1bbe189ce6",
+      "scene_scores_sha256": "2532c57dd07fc27ffb34a7010350732499ab1ac6ff19c0c02fc4ac48cae0cffb",
+      "checkpoint_sha256": "c4ad4fc18ba38e8cbc633d3846b93e09ebf408601b5f49e4b2a64604cc71d159",
+      "scene_count": 12146,
+      "scoring": {
+        "proposal_sampling": {
+          "interval_length": 0.1,
+          "num_poses": 40
+        },
+        "scorer": {
+          "comfortable_weight": 2.0,
+          "driving_direction_weight": 0.0,
+          "progress_weight": 5.0,
+          "ttc_weight": 5.0
+        }
+      },
+      "feature_manifest_sha256": "686beb5e118e2e96c67aa1c56af4db1a3c85c8bbba926c007c306ef61799fff4",
+      "targets_manifest_sha256": null,
+      "same_frozen_Train_calibration_sha256": "fcaea8dcc7f3d82fcd3953bb23633f3073ebd2a614457392139b389e4ac0cc42",
+      "max_abs_paired_Base_minus_anchor_native_units": 0.0,
+      "noise_bank_SHA_values": [
+        "3d91d45b64345a5e4c8429aec1ddd0f558e9aa97f8beb706973ea3bb53a94cb2"
+      ],
+      "execution": "read_only_reuse_of_existing_full_Test_behavior"
+    },
+    {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/train_loss_pdms_generalization_20261028/results/test_H/epoch_032",
+      "complete_sha256": "2ab466a9d43297b249995fcfad35147dacb7e117de69d7733b05a4c4401dec6e",
+      "protocol_sha256": "4f099884ab6a51593f4f2bf76ffaacbded34368359ca2735d2bff0e13319d2c0",
+      "scene_scores_sha256": "a40f5f22930940290a6237b84096081b1a337d1edbf73973ca6d73703c950182",
+      "checkpoint_sha256": "c4ad4fc18ba38e8cbc633d3846b93e09ebf408601b5f49e4b2a64604cc71d159",
+      "scene_count": 12146,
+      "scoring": {
+        "proposal_sampling": {
+          "interval_length": 0.1,
+          "num_poses": 40
+        },
+        "scorer": {
+          "comfortable_weight": 2.0,
+          "driving_direction_weight": 0.0,
+          "progress_weight": 5.0,
+          "ttc_weight": 5.0
+        }
+      },
+      "feature_manifest_sha256": "686beb5e118e2e96c67aa1c56af4db1a3c85c8bbba926c007c306ef61799fff4",
+      "targets_manifest_sha256": "ac45794f06e9e8586da53967667f229bb3ff988ef8c86e51dbad42463eb93f3e",
+      "same_frozen_Train_calibration_sha256": "fcaea8dcc7f3d82fcd3953bb23633f3073ebd2a614457392139b389e4ac0cc42",
+      "max_abs_paired_Base_minus_anchor_native_units": 0.0,
+      "noise_bank_SHA_values": [],
+      "execution": "read_only_reuse_of_existing_full_Test_H"
+    }
+  ],
+  "analysis_sources": {
+    "finish_full_train.py": "22cb38ad9ceae2873404d3674bb1f620a8e2dd50c27284a5ead943ad7497e5ed",
+    "analyze_full_train.py": "90845b143341ce98e1fe54586b5cc4a72e005a4f9404e93537e1b4d5af4db0ad",
+    "merge_full_train.py": "2142df8fc513f0aecdd419e84d37e74bafc19aa726ee6a6f053eb7ec0bbd1c7c",
+    "full_train_common.py": "6da26231430f62f25985e4ff3b33225397c9b4ba2bcec0487b67481d1cf11821"
+  },
+  "new_GPU_model_or_PDM_execution_in_CPU_analysis": false
+}

@@ -1,0 +1,28 @@
+{
+  "status": "COMPLETE_FULL_TRAIN85813_AND_REUSED_FULL_TEST12146_H_PDMS",
+  "epochs": [
+    4,
+    8,
+    16,
+    24,
+    32
+  ],
+  "train_scenes_per_checkpoint": 85813,
+  "Test_scenes_per_checkpoint": 12146,
+  "input_manifest_sha256": "2ff046b60425e2ffae16778b4e8514e22b2eeab811d5f5d2253beee90bc1b462",
+  "full_population_and_source_coverage_verified": true,
+  "seconds": 20.010414607822895,
+  "completed_utc": "2026-10-28T14:23:25.851984+00:00",
+  "files": {
+    "PER_PHYSICAL_LOG_CHECKPOINTS.csv": "ff7616923c2334b5ebc9cd7ced620189019512bcc37232bab6db133415135478",
+    "FULL_TRAIN_H_PDMS_GENERALIZATION_REPORT.md": "8c42bd74b70b2d761a3450f2ac72eefd0a48ba6fdab5b07c1bf3d3abeb1cb8e0",
+    "ENDPOINT_EVIDENCE.json": "82c1e33973f032f4351a883748641dd3e32aed4e4be6dcba3282ca8f548314e8",
+    "FULL_TRAIN_TEST_H_PDMS_CURVES.png": "f9781c7beb5c5bf91c468cff208c2e0fe38ab662c405cf0af39ad13a42afdf58",
+    "PANEL_REPRESENTATIVENESS.csv": "aac0d33241f8e7921bf1710aa19f97978e99656f361d3ae096d582581c8138f7",
+    "PER_SCENE_CHECKPOINTS.csv": "8b38604c8b5173568ec04f837cc87ed2931db00035a08600194376fb4208581a",
+    "PER_SCENE_ADJACENT_DELTAS.csv": "cc83fb903fed5de5b9f0bfd5cc3abea01c888d67fa762a1f748a4e33c0e32fdc",
+    "SOURCE_PROVENANCE.json": "53fa60619758051bbecd98c8fc0769be6aa2eb2a39b75ad94240bf379b1eba9e",
+    "CHECKPOINT_CURVES.csv": "9996feb98e71b553229f8a389b689e13196ace3455f23ae2ac196966b2d05f5e",
+    "SUMMARY.json": "a3c72933d658cad1f7fa429410f61d5e826d039edf333f3e23ac1ac5f23dfeb1"
+  }
+}

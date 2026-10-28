@@ -1,0 +1,52 @@
+{
+  "publication_is_existing_results_serialization_only": true,
+  "source_references": [
+    {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/full_train_loss_pdms_generalization_20261028/INPUT_MANIFEST.json",
+      "sha256": "2ff046b60425e2ffae16778b4e8514e22b2eeab811d5f5d2253beee90bc1b462",
+      "bytes": 50833
+    },
+    {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/full_train_loss_pdms_generalization_20261028/ANALYSIS_FREEZE.json",
+      "sha256": "5c08d84897a24b5fe39ecf125a578d3b971d27bd63eccf1c68ba41b643753936",
+      "bytes": 2271
+    },
+    {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/full_train_loss_pdms_generalization_20261028/analysis/COMPLETE.json",
+      "sha256": "a587d18d0b102359f07fa986191a14e5ea6c5faf6bfeeaaf2ceb9f92efd4f16d",
+      "bytes": 1493
+    },
+    {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/full_train_loss_pdms_generalization_20261028/analysis/SUMMARY.json",
+      "sha256": "a3c72933d658cad1f7fa429410f61d5e826d039edf333f3e23ac1ac5f23dfeb1",
+      "bytes": 211203
+    },
+    {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/full_train_loss_pdms_generalization_20261028/analysis/SOURCE_PROVENANCE.json",
+      "sha256": "53fa60619758051bbecd98c8fc0769be6aa2eb2a39b75ad94240bf379b1eba9e",
+      "bytes": 16506
+    },
+    {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/full_train_loss_pdms_generalization_20261028/completion/INDEPENDENT_FULL_NUMERIC_REVIEW.json",
+      "sha256": "98fc15b6e577ee8541d113c5da7a34161bc4aceb39ddb03c6f035d11ee0cd487",
+      "bytes": 3745
+    },
+    {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/distillation_stop_cleanup_20261028/STOP_COMPLETE.json",
+      "sha256": "1d7d55b986a598e3f46d01991f7dfa007f62bd0f648eb96a2f5e4772b295dc40",
+      "bytes": 437
+    },
+    {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/distillation_stop_cleanup_20261028/CLEANUP_COMPLETE.json",
+      "sha256": "038c45a3428af546df26dc2cc79ddee5b543a895baf978b3c13fe3ce182142f1",
+      "bytes": 1150
+    },
+    {
+      "path": "/mnt/project/VLA-AD/experiments/recogdrive_dc8_native_candidates_20261027/engineering/distillation_stop_cleanup_20261028/A_PROTECTED_AFTER.json",
+      "sha256": "4448298726b8440d46d359679c6b8bb23168af395de88dbd6c0385545cca2cc0",
+      "bytes": 231
+    }
+  ],
+  "no_model_inference_scoring_training_or_new_scientific_acceptance": true,
+  "raw_trajectories_large_arrays_weights_remain_local": true
+}
