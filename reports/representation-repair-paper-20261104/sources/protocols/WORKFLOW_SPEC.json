@@ -1,0 +1,65 @@
+{
+  "status": "FROZEN_B13_REPRODUCIBLE_MAIN_WORKFLOW",
+  "time": "2026-11-02T16:03:44.308229+00:00",
+  "selection": {
+    "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage2_strength/MAIN_METHOD_SELECTION.json",
+    "sha256": "617175c1256924b80d45932131f48779302fc3a2d833dab1930662fc5c65c0c5"
+  },
+  "sources": {
+    "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage0_sources/INITIALIZATIONS.json",
+    "sha256": "a055202786948c709307d0b92572c4a162e20d3331ece5e0e3b583930648d844"
+  },
+  "experts": {
+    "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage0_sources/EXPERT_SOURCE_AUDIT.json",
+    "sha256": "db9404701b2b2c34815855fd23831a5eba4a37aaa5bd0aed2edfaf9c7186c12b"
+  },
+  "course": "DIRECT3",
+  "lambda_fixed": 1.5,
+  "stages": [
+    {
+      "stage": "offline experts",
+      "operation": "same-scene TRAIN Base/high-quality paired states; normalized differential D48; full384 direction K8; fixed eight shared operators; dose scales request and cap"
+    },
+    {
+      "stage": "A",
+      "initialization": "original native RL G, zero noise adapter",
+      "objective": "16x final original-G state MSE",
+      "data": "fixed natural TRAIN32768",
+      "epochs": 4,
+      "calls": "2+2+1 native-time spans",
+      "global_batch": 32,
+      "learning_rate": 1e-05,
+      "optimizer_reset_epochs": [
+        1,
+        3
+      ]
+    },
+    {
+      "stage": "F/H",
+      "initialization": "official native DrivoR release",
+      "updates": "scorer attention and six component heads",
+      "data": "full natural TRAIN85813",
+      "epochs": 4,
+      "objective": "six-component BCE + PDMS-gap weighted pairwise ranking",
+      "scene": "single current front; frozen native visual encoder",
+      "learning_rates": {
+        "attention": 1e-05,
+        "heads": 3e-05
+      }
+    },
+    {
+      "stage": "selection",
+      "rule": "full TUNE epochs0..4; dose by three-seed TUNE mean; representative by TUNE only"
+    },
+    {
+      "stage": "inference",
+      "operation": "one frozen driving-prefix and front scorer feature encoding; apply8experts+Base; A3 candidate previews; joint nine-candidate F/H; selectone; runoriginal G fromstart"
+    }
+  ],
+  "original_G_unchanged": true,
+  "proxy_not_native_G_prefix": true,
+  "new_training_real_only": true,
+  "non_CEM": true,
+  "protocol": "fixed scene decision from S0 preview, S0-S4 original execution",
+  "historical_learned_parents_used": false
+}

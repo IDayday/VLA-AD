@@ -1,0 +1,45 @@
+{
+  "status": "PASS_B13_ORDINARY_SESSION_SPLITS",
+  "time": "2026-11-02T13:38:26.317905+00:00",
+  "source": {
+    "path": "/mnt/workspace/ReCogDrive/1028-drivor_trajectory_selection_batch8/stage2/manifests/DATA.json",
+    "sha256": "304620be359d440af24ef808a989c33e9559cecc097368f2399afcf2caa7b720"
+  },
+  "populations": {
+    "TRAIN": {
+      "scenes": 85813,
+      "sessions": 130
+    },
+    "TUNE": {
+      "scenes": 17475,
+      "sessions": 32
+    },
+    "TEST": {
+      "scenes": 12146,
+      "sessions": 44
+    }
+  },
+  "checks": [
+    {
+      "left": "TRAIN",
+      "right": "TUNE",
+      "index_overlap": 0,
+      "session_overlap": 0
+    },
+    {
+      "left": "TRAIN",
+      "right": "TEST",
+      "index_overlap": 0,
+      "session_overlap": 0
+    },
+    {
+      "left": "TUNE",
+      "right": "TEST",
+      "index_overlap": 0,
+      "session_overlap": 0
+    }
+  ],
+  "behavior_training_scenes": 32768,
+  "all_behavior_training_in_TRAIN": true,
+  "teacher_target": "native G final denoising state at S0; not mean trajectory"
+}

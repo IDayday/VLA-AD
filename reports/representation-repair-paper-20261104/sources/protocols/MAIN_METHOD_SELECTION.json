@@ -1,0 +1,219 @@
+{
+  "status": "FROZEN_B13_MAIN_METHOD_BY_FULL_TUNE",
+  "time": "2026-11-02T16:03:36.163619+00:00",
+  "course": "DIRECT3",
+  "chosen_dose": "L15",
+  "lambda_fixed": 1.5,
+  "mean_TUNE_PDMS": {
+    "L1": 95.70874233973872,
+    "L15": 95.78722620660686,
+    "L2": 95.74169711178492
+  },
+  "representative": {
+    "dose": "L15",
+    "lambda_fixed": 1.5,
+    "seed": 20261028,
+    "name": "MAIN_L15_S20261028",
+    "config": {
+      "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/configs/strength/L15_S20261028.json",
+      "sha256": "a137dc08ad07ecf123c1d28a08aa2094583b0e47046d26a9f2b228d5c3f38654"
+    },
+    "epoch": 4,
+    "TUNE_PDMS": 95.7916361013567,
+    "scorer": {
+      "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/scorers/MAIN_L15_S20261028/formal/epoch4/weights.pt",
+      "sha256": "7019e00114f1422f127bc2914c81e4e80fb85374868d581772f23fe29d36002e"
+    },
+    "auxiliary": {
+      "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/runs/MAIN_L15_S20261028/formal/epoch4/weights.pt",
+      "sha256": "8675c5f435f7613cd03b929b359e6798db312974a0ca969c5a94eeebf8abef5e"
+    }
+  },
+  "models": [
+    {
+      "dose": "L1",
+      "lambda_fixed": 1.0,
+      "seed": 20261026,
+      "name": "DIRECT3_S20261026",
+      "config": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/configs/core/DIRECT3_S20261026.json",
+        "sha256": "9a29a5a9b219252e00b4b5a147d7e962d537f22681eea621d9c0f6b2b8ddf19c"
+      },
+      "epoch": 3,
+      "TUNE_PDMS": 95.71363556841386,
+      "scorer": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/scorers/DIRECT3_S20261026/formal/epoch3/weights.pt",
+        "sha256": "6bf41b1381e567e7ddc4848ccb6b75fc675abeab3d182a72d0efede28a56f2ab"
+      },
+      "auxiliary": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/runs/DIRECT3_S20261026/formal/epoch4/weights.pt",
+        "sha256": "b69bd3296e82096dd39db42ab4a044e51122d1a569b62acffa41632625f14106"
+      }
+    },
+    {
+      "dose": "L1",
+      "lambda_fixed": 1.0,
+      "seed": 20261027,
+      "name": "DIRECT3_S20261027",
+      "config": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/configs/core/DIRECT3_S20261027.json",
+        "sha256": "b2d43093a8e8b1e36d14e0031db8dfcc9a1c2f6c7c1df83396beae19c9bc2027"
+      },
+      "epoch": 4,
+      "TUNE_PDMS": 95.69773146164835,
+      "scorer": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/scorers/DIRECT3_S20261027/formal/epoch4/weights.pt",
+        "sha256": "6677028f5d1cc105630912fde9820c9cbb06482aafa8771f007a16830251d3c2"
+      },
+      "auxiliary": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/runs/DIRECT3_S20261027/formal/epoch4/weights.pt",
+        "sha256": "9588ffb16d79229e8860f2f5b4dfb6553d1e37cacb41f3aea66c12e436505d48"
+      }
+    },
+    {
+      "dose": "L1",
+      "lambda_fixed": 1.0,
+      "seed": 20261028,
+      "name": "DIRECT3_S20261028",
+      "config": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/configs/core/DIRECT3_S20261028.json",
+        "sha256": "e46bc809acd375d134c6084ca49e7f70050d726ca2547b92f3dad32a95c5418d"
+      },
+      "epoch": 4,
+      "TUNE_PDMS": 95.71485998915396,
+      "scorer": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/scorers/DIRECT3_S20261028/formal/epoch4/weights.pt",
+        "sha256": "ed9b79260a4502f65122b691611be4491e46736585977551b0d23bb45d1da4b5"
+      },
+      "auxiliary": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/runs/DIRECT3_S20261028/formal/epoch4/weights.pt",
+        "sha256": "7cabe52cc1d1d5529d1d618d7d32b391dde5230ab4bc4e952d12f3444838aa27"
+      }
+    },
+    {
+      "dose": "L15",
+      "lambda_fixed": 1.5,
+      "seed": 20261026,
+      "name": "MAIN_L15_S20261026",
+      "config": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/configs/strength/L15_S20261026.json",
+        "sha256": "0afda67cfe60233c379d864e1992b0de402499b6b817270cfa0ecb0d58202291"
+      },
+      "epoch": 4,
+      "TUNE_PDMS": 95.78768506460467,
+      "scorer": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/scorers/MAIN_L15_S20261026/formal/epoch4/weights.pt",
+        "sha256": "2b300c1bc311354c396d8bc598b651cf9a45e91ef892d34529a21aa470094f64"
+      },
+      "auxiliary": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/runs/MAIN_L15_S20261026/formal/epoch4/weights.pt",
+        "sha256": "51ec38c99a70a1b797231c58a974ae38792c14c348a33c200ebfdc62a9f99a84"
+      }
+    },
+    {
+      "dose": "L15",
+      "lambda_fixed": 1.5,
+      "seed": 20261027,
+      "name": "MAIN_L15_S20261027",
+      "config": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/configs/strength/L15_S20261027.json",
+        "sha256": "f0cd4a8c9bda580be6766b1b68498d58b13509992859aaa6e73f4164cd67bb8d"
+      },
+      "epoch": 4,
+      "TUNE_PDMS": 95.7823574538592,
+      "scorer": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/scorers/MAIN_L15_S20261027/formal/epoch4/weights.pt",
+        "sha256": "2d90e4d8bbbd287e1395b80a7d55bd58c74b206559028daa32af999f3b186769"
+      },
+      "auxiliary": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/runs/MAIN_L15_S20261027/formal/epoch4/weights.pt",
+        "sha256": "1c3897f2869f4875f4a6f76ce12b5bcc86354237bd368236965cf66ee940311b"
+      }
+    },
+    {
+      "dose": "L15",
+      "lambda_fixed": 1.5,
+      "seed": 20261028,
+      "name": "MAIN_L15_S20261028",
+      "config": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/configs/strength/L15_S20261028.json",
+        "sha256": "a137dc08ad07ecf123c1d28a08aa2094583b0e47046d26a9f2b228d5c3f38654"
+      },
+      "epoch": 4,
+      "TUNE_PDMS": 95.7916361013567,
+      "scorer": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/scorers/MAIN_L15_S20261028/formal/epoch4/weights.pt",
+        "sha256": "7019e00114f1422f127bc2914c81e4e80fb85374868d581772f23fe29d36002e"
+      },
+      "auxiliary": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/runs/MAIN_L15_S20261028/formal/epoch4/weights.pt",
+        "sha256": "8675c5f435f7613cd03b929b359e6798db312974a0ca969c5a94eeebf8abef5e"
+      }
+    },
+    {
+      "dose": "L2",
+      "lambda_fixed": 2.0,
+      "seed": 20261026,
+      "name": "MAIN_L2_S20261026",
+      "config": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/configs/strength/L2_S20261026.json",
+        "sha256": "294abb45965d950218190fc4edb138394e98fa0139ee9d34f2cffce67c811d3c"
+      },
+      "epoch": 4,
+      "TUNE_PDMS": 95.74321669945465,
+      "scorer": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/scorers/MAIN_L2_S20261026/formal/epoch4/weights.pt",
+        "sha256": "44630032e501ba74c74f45aedde22ae3b8a7377b996578ae029d82643de89df4"
+      },
+      "auxiliary": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/runs/MAIN_L2_S20261026/formal/epoch4/weights.pt",
+        "sha256": "097b440d33c656010bce462f464e92cd48c1e386bef9f323302e033cc0488fc6"
+      }
+    },
+    {
+      "dose": "L2",
+      "lambda_fixed": 2.0,
+      "seed": 20261027,
+      "name": "MAIN_L2_S20261027",
+      "config": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/configs/strength/L2_S20261027.json",
+        "sha256": "a58cbdea30b6868b4ea40602d3e44a82d35d5118961a1ef77c3bd2d15c075a9c"
+      },
+      "epoch": 4,
+      "TUNE_PDMS": 95.72753381637126,
+      "scorer": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/scorers/MAIN_L2_S20261027/formal/epoch4/weights.pt",
+        "sha256": "64c4dda46cc31cd6617f43bbab3380da2d465e012ae3ded45f860b81c1d1c0c0"
+      },
+      "auxiliary": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/runs/MAIN_L2_S20261027/formal/epoch4/weights.pt",
+        "sha256": "e3395d43b6ab4d3895c8d8437c081739d63c94f59521641a8d4ba07eb253f975"
+      }
+    },
+    {
+      "dose": "L2",
+      "lambda_fixed": 2.0,
+      "seed": 20261028,
+      "name": "MAIN_L2_S20261028",
+      "config": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/configs/strength/L2_S20261028.json",
+        "sha256": "bf8dd438d455cde89cb7b02bb4d5c335a98ec2ab3b993771532168440821df2d"
+      },
+      "epoch": 4,
+      "TUNE_PDMS": 95.75434081952886,
+      "scorer": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/scorers/MAIN_L2_S20261028/formal/epoch4/weights.pt",
+        "sha256": "840434c510fb08fff0985ecaf1da5e23454b39142c18a3585ceda8447634fae9"
+      },
+      "auxiliary": {
+        "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/stage1_workflow/runs/MAIN_L2_S20261028/formal/epoch4/weights.pt",
+        "sha256": "c04befaf4106b9df4e2e4054ccbfb73bddd4d26fa2376377dc69da2ac2920345"
+      }
+    }
+  ],
+  "TEST_used_to_choose": false,
+  "all_new_training_real_only": true,
+  "non_CEM": true,
+  "online": "single front, A3 proxy nine candidates then one selected original G run",
+  "protocol": "fixed S0 probe decision reused across S0-S4"
+}

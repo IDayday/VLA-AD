@@ -1,0 +1,11 @@
+{
+  "status": "PASS_READ_ONLY_SAVED_EVIDENCE_REVIEW",
+  "time_UTC": "2026-11-04T00:44:05.843672+00:00",
+  "scope": "Saved selected-policy arrays, argmax choices, means, seed SDs, source hashes and existing official-replay receipts. No trajectory generation, scorer rerun, training or cloud task management.",
+  "selected_policy_populations_recomputed": 158,
+  "unique_selected_policy_populations_recomputed": 156,
+  "reference_hash_checks": 374,
+  "current_five_report_registry_matches": true,
+  "historical_receipt_note": "09:44 delivery receipt predates 09:48 report regeneration; current REPORT_FINALIZATION registry matches all five reports.",
+  "reference_scope": "Saved-policy means and argmax recomputed; existing official EC replay receipts cross-checked. No inference, scorer rerun or new training."
+}

@@ -1,0 +1,91 @@
+{
+  "status": "PASS_B13_V1_FIXED_EIGHT_EXPERTS_TRAIN_ONLY",
+  "time": "2026-11-02T13:44:09.604439+00:00",
+  "program": {
+    "path": "/mnt/workspace/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/preparation/v2/programs/D_C8_original.json",
+    "sha256": "f667651eda092b2bba4aa0ecdf586b91eb9364e5cd5fafba4ff8067b813687e5"
+  },
+  "bank": {
+    "path": "/mnt/workspace/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ACTUAL/ALLTRAIN/BANKS/stageA__72fed05876ef2f0d5890/RESULT.json",
+    "sha256": "aa07ec98302505021f7a816f138575f7564cc9eadafd83540101b412d9fd582e"
+  },
+  "fit_plan": {
+    "path": "/mnt/workspace/ReCogDrive/1024-representation_distillation_diagnosis_batch5/stage2/offline_library/preparation/stage_a_final_factory_v1/ALLTRAIN_PLAN.json",
+    "sha256": "699eca20d6fa951248313b201d5369627816adeb2f81b4a7884caa17a8484d76"
+  },
+  "qualified_training_pairs": 1807,
+  "ordinary_fit_scenes": 10042,
+  "training_sessions": 130,
+  "all_fitting_ids_in_current_TRAIN": true,
+  "TUNE_and_TEST_pair_fitting_overlap": 0,
+  "rank": 48,
+  "order": "full384 normalized direction clustering before projection",
+  "K": 8,
+  "operators": [
+    {
+      "slot": 2,
+      "cluster": 0,
+      "method": "mlp",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "pairs": 197
+    },
+    {
+      "slot": 1,
+      "cluster": 1,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "pairs": 182
+    },
+    {
+      "slot": 4,
+      "cluster": 2,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "pairs": 312
+    },
+    {
+      "slot": 0,
+      "cluster": 3,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "pairs": 219
+    },
+    {
+      "slot": 6,
+      "cluster": 4,
+      "method": "mlp",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "pairs": 184
+    },
+    {
+      "slot": 3,
+      "cluster": 5,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "pairs": 220
+    },
+    {
+      "slot": 7,
+      "cluster": 6,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "pairs": 278
+    },
+    {
+      "slot": 5,
+      "cluster": 7,
+      "method": "centroid_D0",
+      "alpha": 2.0,
+      "cap_D0": 2.0,
+      "pairs": 215
+    }
+  ],
+  "global_lambda_reference": "D_C8_original; existing per-expert alpha/cap are part of this reference; global factors scale both"
+}

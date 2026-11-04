@@ -1,0 +1,313 @@
+# 研究导航
+
+本页提供当前研究主线与历史工作入口。查结论先读报告，查代码、配置、缓存和执行证据进入对应任务目录；具体成绩与逐次运行状态不在这里重复维护。长期约定见[研究AGENTS.md](../AGENTS.md)。
+
+## 当前研究主线
+
+更新日期：2026-11-03。
+
+**当前进入表征修复方法定型与论文核心证据整理。** 以前期较强的同场景GT辅助配对专家库为基础，建立不依赖历史探索中间权重的可重复工作流。论文贡献和消融重心是配对、差分子空间及共享专家构建；三步辅助行为预估与DrivoR选择器负责兑现收益，选择侧只保留少数关键对照。第十三批S0—S2已完成明确初始化的三seed课程与力度比较，已冻结直接三步、1.5倍力度的纯真实主工作流。IL-v2的完整迁移、重复验收、官方聚合复核及两阶段评价已完成；五组前端端到端消融及必要复验已完成，11库33个独立模型均独立验收，各库使用自身真实反馈重训辅助行为与选择模块。合成RL保留足额配比控制，新增临界样本后训练；其后在真实与所选权重实际见过的合成场景上重建完整方法。IL-v1.1按用户最新要求改为同IL基模、同PDMS的干净重建，仅复用本分支同条件优化记录，不使用旧RL或IL-v2端点。另增K16／K32独立专家容量研究；IL-v1.1达到竞争门槛时，先完成其大K，再对冻结专家数做单独消融。各阶段状态与证据见正式报告。
+
+**部署主线为当前单前视、完整原动作生成前选择内部修复条件。** 第八至十二批已经研究候选行为摘要、专家库及选择能力，并按限定范围收尾；具体结论与成绩见各批报告。新的第十三批主流程只用真实数据和非CEM八专家，对1／1.5／2三档力度采用同一可重建训练课程；性能接近时优先更简洁的步骤。四视角可作离线评分教师，部署视角单独说明。此前92.8作为参考目标，不再因追逐单次最高观察无限扩展工程设计。实际九轨迹评分继续作为已有参照，终止新优化；CEM只作补充。
+
+第十三批另规划保留六分项评分头的v2完整方法迁移，后续固定使用IL基模，单阶段ePDMS训练和选模、两阶段只作独立迁移评价；低成本旧库目标适配为补充。合成数据改为先继续RL、再为新Base完整重建配对／专家／选择器，不做等预算真实继续RL控制。DDP模型迁移不在本批范围。各阶段细节、依赖和未执行边界见第十三批PLAN；独立v2线程的原始IL补评已验收，本批直接消费其结果，不重复评价或接管任务。
+
+同场景GT辅助优化得到的高质量反事实状态与Base失败状态配对，是新版专家库的构建基础。参数更新／教师蒸馏是团队并行的另一条路线，复用专家与教师资产；它不再是本导航默认的唯一主线。旧42候选R2教师与早期“先干预再蒸馏”的叙事保留在相应历史工作中。
+
+当前评价口径：
+
+- **主目标是总体PDMS。** 所有分数组都允许修复，Base始终是合法选项；碰撞、越界、零分等用于分析，不另设安全否决。
+- **区分三类证据。** 专家库事后上限、普通输入选择器的实际收益、参数更新后学生成绩分别报告；GT／未来信息只在其获准的构造或诊断环节使用。
+- **区分决策时机。** 同一场景跨噪声固定专家，与看到本次实际轨迹后逐噪声选择，属于不同信息条件；原力度、增强力度及混合库也分别标明。数据划分、历史测试使用和可泛化边界以各报告为准。
+
+第十一批、第十二批及独立NAVSIM v2评价均已按当前范围收尾并验收。第十二批最后完成CEM替换九选一／追加十四选一、训练期合成辅助／推理移除及自然／困难真实重复对照；追加有稳定增量，合成独特收益未坐实，已依用户限定结束探索，不重开架构／参数网格。所有CEM方案仅作补充，不作为论文主指标；目标未达到的边界见正式报告。实际节点与任务见CURRENT_HANDOFF，节点和启动器保留，不恢复旧批已暂停任务。
+
+### 近期优先阅读
+
+[第十三批PLAN：方法定型、核心消融与评价目标迁移](../1102-repair_framework_consolidation_batch13/PLAN.md)已进入执行，先定型v1核心工作流。包含可重建训练课程、三档力度、以前端表征修复为重心的消融、六头v2迁移、IL／RL基线选择，以及代表性合成RL后重新运行全工作流；每阶段独立报告，不绑定节点数量。
+
+[第十二批PLAN：单前视专家覆盖、合成数据与选择能力](../1102-single_front_repair_advancement_batch12/PLAN.md)已按用户收敛范围完成，五阶段报告与[CLOSEOUT](../1102-single_front_repair_advancement_batch12/CLOSEOUT.json)保留全部验收和结果角色。三条主线承接第十一批资产；未继续的条件支线与历史暂停任务不算科学负结果。
+
+| 要了解什么 | 入口 |
+| --- | --- |
+| 下一批如何形成可复现的论文方法 | [第十三批PLAN](../1102-repair_framework_consolidation_batch13/PLAN.md)：已进入执行，优先v1方法定型；核心贡献与消融集中在表征修复和专家构建。 |
+| 向导师汇报当前方法（第十二批进展副本） | [轻量外挂式驾驶策略增强](work-output/1102-representation_repair_briefing_batch12/representation_repair_briefing.html)：更新单前视代表、增强库与训练配置，区分预定末轮和自然TUNE主权重；原版保留，独立汇报任务。 |
+| 向导师汇报当前方法（截至第十一批） | [冻结驾驶策略的表征修复与前置选择](work-output/1102-representation_repair_briefing/representation_repair_briefing.html)：以最佳单前视模型为主，六项成绩／成本、两部分工作流和四路线训练配置；独立汇报材料，不是新实验批次。 |
+| 三条主线如何排查、最后得到什么 | [第十二批PLAN](../1102-single_front_repair_advancement_batch12/PLAN.md)；[综合交付报告](work-output/1102-single_front_repair_advancement_batch12/stage5_integration_and_delivery.html)：已收尾，专家库、合成关系监督、普通选择能力分别留证，CEM仅补充。 |
+| 当前专家库如何构造、潜力与误选损伤 | [第五批接口表征与专家库](work-output/1024-representation_distillation_diagnosis_batch5/interface_representation_repair.html) |
+| 已有实际选择进展 | [第八批实际轨迹评分](work-output/1028-drivor_trajectory_selection_batch8/drivor_trajectory_selection_stage1.html)；[第八批内部候选评分与诊断](work-output/1028-drivor_trajectory_selection_batch8/drivor_trajectory_selection_stage2.html) |
+| 当前的分阶段研究安排 | [第九批PLAN：内部表征选择与合成专家库扩展](../1030-latent_repair_selection_batch9/PLAN.md)（本轮已收尾；六阶段分别报告，不绑定节点） |
+| 下一批的诊断设计 | [第十批PLAN：候选行为表示与评分链路瓶颈](../1031-latent_selection_bottleneck_batch10/PLAN.md)（已完成；七阶段分别报告） |
+| 第九批当前已完成的阶段证据 | [候选信息诊断](work-output/1030-latent_repair_selection_batch9/stage1_candidate_information.html)；[合成配对](work-output/1030-latent_repair_selection_batch9/stage2_synthetic_pairs.html)；[专家容量](work-output/1030-latent_repair_selection_batch9/stage3_expert_capacity.html)；[力度校准](work-output/1030-latent_repair_selection_batch9/stage4_intervention_strength.html)；[跨库适配](work-output/1030-latent_repair_selection_batch9/stage5_transfer_and_joint_selection.html)；[完整评价与成本](work-output/1030-latent_repair_selection_batch9/stage6_full_evaluation_and_cost.html)（本轮已收尾；未扩展条件分支在报告中注明） |
+| 前置选择为什么困难、已排查哪些解释 | [第六批完整报告](work-output/1026-route_token_batch6/route_token.html)；[第七批第五阶段](work-output/1027-route_information_diagnosis_batch7/route_information_stage5.html)；其余阶段见下方任务条目 |
+| 向合作者解释整条研究逻辑 | [综合汇报（截至第七批）](work-output/1027-representation_research_briefing/representation_repair_briefing.html)；第八批另读其独立报告 |
+
+## 历史工作
+
+按任务名称中的日期由早到晚排列；同日有明确实验批次者按批次由小到大，其余辅助工作按目录名排列。DrivoR独立系列的“第一批”与表征修复总系列的批次分别命名。摘要保留研究问题和完成范围，详细结论以报告为准；历史“运行中”记录、暂缓计划和资源记录不构成当前待执行指令。
+
+### 0921-表征分析初试
+
+早期成功／失败表征观察与修复预实验，供理解最初假设和方法局限。当前只迁入报告，原始数据与代码未随同迁入；不与1016以来的新一轮正式实验混算。
+
+- 报告／说明：[阶段性报告](work-output/0921-表征分析初试/ReCogDrive失败场景表征研究阶段性报告.html)
+- 历史报告资料目录（原代码未迁入）：[0921-表征分析初试](work-output/0921-表征分析初试/)
+
+### 1002-data_analyse
+
+分析训练／测试分布、模型多次输出稳定性、成功失败反转与边界余量，以及C3样本的代表性和造数据价值。三项分析均已交付。
+
+- 报告／说明：[分布分析](work-output/1002-data_analyse/task1_distribution.html)；[输出稳定性](work-output/1002-data_analyse/task2_stability.html)；[C3分析](work-output/1002-data_analyse/task3_c3.html)
+- 任务目录：[1002-data_analyse](../1002-data_analyse/)
+
+### 1008-il_synthetic
+
+比较旧合成数据的IL混合训练与匹配预算的真实难例重采样；统一特征、训练位置与评价流程，完成两组正式训练和五噪声测试。用于区分数据补充方式与重训本身的影响。
+
+- 报告／说明：[合成混训](work-output/1008-il_synthetic/il_synthetic.html)；[真实重采样对照](work-output/1008-il_synthetic/resampling_control.html)
+- 任务目录：[1008-il_synthetic](../1008-il_synthetic/)
+
+### 1009-il_collision_expert
+
+以碰撞难例构造偏好专家，比较静态、刷新及纳入新增退化的多轮方案，并分析单模型修复与多候选互补。已完成；局部修复伴随正常能力损伤，候选互补不等于实际选择器有效。
+
+- 报告／说明：[碰撞专家实验](work-output/1009-il_collision_expert/collision_expert.html)
+- 任务目录：[1009-il_collision_expert](../1009-il_collision_expert/)
+
+### 1009-il_distill
+
+在广覆盖难例偏好微调中，加入固定官方IL教师的去噪预测约束，比较不同约束力度。已完成；保持约束减少部分损伤，也削弱修复，未确认整体净收益。
+
+- 报告／说明：[蒸馏式能力保持](work-output/1009-il_distill/il_distill.html)
+- 任务目录：[1009-il_distill](../1009-il_distill/)
+
+### 1009-il_preference
+
+用同一真实难例的正确目标与IL失败输出构造偏好配对，比较正例、正例加权和偏好微调。已完成；观察到局部修复信号，但普通场景有退化，未支持全分布净收益。
+
+- 报告／说明：[小规模偏好验证](work-output/1009-il_preference/preference_pilot.html)
+- 任务目录：[1009-il_preference](../1009-il_preference/)
+
+### 1009-il_preference_broad
+
+将偏好配对扩展到更广的训练难例，保持方法间预算和真实回放曝光一致。已完成；偏好的额外修复仍存在，整体保持问题未解决；本轮未使用合成数据或测试集训练。
+
+- 报告／说明：[广覆盖偏好微调](work-output/1009-il_preference_broad/preference_broad.html)
+- 任务目录：[1009-il_preference_broad](../1009-il_preference_broad/)
+
+### 1009-pdms_gap
+
+审计同一微调权重在历史流程与保存轨迹评价中的成绩差异，核查缓存、序列化、评分顺序与代码身份。小样本复评分一致，但未恢复全部历史代码差异，不能把根因写成已定位。
+
+- 报告／说明：[评价差异审计](work-output/1009-pdms_gap/pdms_gap.html)
+- 任务目录：[1009-pdms_gap](../1009-pdms_gap/)
+
+### 1010-il_baseline
+
+建立官方IL固定基线，覆盖真实训练集、旧合成数据和测试集五噪声，供合成混训、真实重采样与偏好修复共享。已完成输入、轨迹、评分和跨组一致性验收。
+
+- 报告／说明：[官方IL基线](work-output/1010-il_baseline/official_il_baseline.html)
+- 任务目录：[1010-il_baseline](../1010-il_baseline/)
+
+### 1010-il_collision_synthetic_ft
+
+在统一S0基线下开发真实／合成碰撞专家，比较正例、加权和偏好方法及固定曝光续训、难例刷新。已完成独立测试；额外修复与整体PDMS、原成功保持损伤同时存在。
+
+- 报告／说明：[碰撞合成微调](work-output/1010-il_collision_synthetic_ft/collision_synthetic_ft.html)
+- 任务目录：[1010-il_collision_synthetic_ft](../1010-il_collision_synthetic_ft/)
+
+### 1013-research_report_compilation
+
+将早期分布、数据补充、偏好修复和碰撞专家等报告按研究问题汇编，保留原证据与解释边界。仅报告整理，不新增实验；其他版式保存在同一报告目录。
+
+- 报告／说明：[研究汇编](work-output/1013-research_report_compilation/research_compilation.html)
+- 任务目录：[1013-research_report_compilation](../1013-research_report_compilation/)
+
+### 1013-vla_drive_repository_review
+
+DriveVLA-M0／VLA-Drive及Query Base相关源码快照与随库审阅资料入口。此项属于代码资料；随库历史记录不自动算作本工作区重新执行的实验。
+
+- 报告／说明：无独立正式HTML报告；[源码与部署说明](../1013-vla_drive_repository_review/source/README.md)
+- 任务目录：[1013-vla_drive_repository_review](../1013-vla_drive_repository_review/)
+
+### 1015-query_expert_partition
+
+历史专家数据划分方案，拟比较三个动作专家的多种训练分配。随研究主线转向RL Base表征修复而暂缓，未执行；不能因计划或前置基线存在而自动恢复。
+
+- 报告／说明：未执行，无实验结果报告；[保留方案](../1015-query_expert_partition/PLAN.json)
+- 任务目录：[1015-query_expert_partition](../1015-query_expert_partition/)
+
+### 1015-query_fp32_baseline
+
+完成DDP／Query模型固定权重的FP32动作路径基线，核验全量训练侧与已有测试侧逐场景结果。供该模型线后续分析复用，不与ReCogDrive RL Base混称同一基线。
+
+- 报告／说明：[Query固定基线](work-output/1015-query_fp32_baseline/baseline.html)
+- 任务目录：[1015-query_fp32_baseline](../1015-query_fp32_baseline/)
+
+### 1016-rl_representation_analysis
+
+表征研究第一批。建立ReCogDrive RL Base基线，分别观察自然成功／失败分布与同场景失败—GT加噪去噪配对，再开展动作头及视觉、语言、投影／接口的广泛子空间搜索与修复测试。已完成；表征差异、行为可控性、事后选择上限和普通修复净收益分开评价。
+
+- 报告／说明：[RL基线](work-output/1016-rl_representation_analysis/baseline.html)；[表征观察与修复](work-output/1016-rl_representation_analysis/representation_observation.html)
+- 任务目录：[1016-rl_representation_analysis](../1016-rl_representation_analysis/)
+
+### 1018-representation_repair_batch2
+
+表征修复第二批。探索VLM／接口处的多样化、专家化修复，以及独立拟合复验、自然留出、跨噪声迁移和精准触发上限。已完成；专家库潜力与在线选择困难分开判断，本批不含学生蒸馏。
+
+- 报告／说明：[第二批专家化修复](work-output/1018-representation_repair_batch2/representation_repair_batch2.html)
+- 任务目录：[1018-representation_repair_batch2](../1018-representation_repair_batch2/)
+
+### 1020-representation_teacher_portable
+
+封装第一批冻结修复配置、种子协议、重放与离线教师导出，提供跨服务器复现入口。工程交付已完成；原平台核验与异平台实际复现的边界在交接中区分。
+
+- 报告／说明：[来源研究报告](work-output/1016-rl_representation_analysis/representation_observation.html)；[迁移交接](../1020-representation_teacher_portable/HANDOFF.md)
+- 任务目录：[1020-representation_teacher_portable](../1020-representation_teacher_portable/)；[发布仓库](https://github.com/sjc786526-coder/-recogdrive-representation-teacher-1)
+
+### 1021-representation_repair_batch3
+
+表征修复第三批。完成首42候选在完整训练／测试上的五噪声评价，冻结R1／R2／R3口径及配套轨迹、下游接口；R2用于第四批蒸馏。后续扩库仅部分工程与分片完成，未整体验收并已暂缓；GT辅助优化后来转入1022独立任务。
+
+- 报告／说明：[首42教师结果（收录于第四批报告）](work-output/1021-representation_distillation_batch4/representation_distillation.html)
+- 任务目录：[1021-representation_repair_batch3](../1021-representation_repair_batch3/)；[原计划](../1021-representation_repair_batch3/PLAN.md)；[历史接续记录](../1021-representation_repair_batch3/CURRENT_HANDOFF.md)
+
+### 1021-representation_distillation_batch4
+
+教师蒸馏第四批，两阶段均已完成。首阶段用LoRA与投影更新比较H／T／HT；二阶段用指定模块局部全参更新，比较H／T／HT／仅最终接口监督。统一教师路径与局部监督未带来联合表征监督的稳定优势，教师收益仍未充分迁移到学生。
+
+- 报告／说明：[两阶段蒸馏报告](work-output/1021-representation_distillation_batch4/representation_distillation.html)
+- 任务目录：[1021-representation_distillation_batch4](../1021-representation_distillation_batch4/)；[二阶段代码与验收目录](../1021-representation_distillation_batch4/stage2_local_distillation/)
+
+### 1021-simscale_rl_baseline
+
+完成SimScale合成数据的RL Base全量推理与评分，供失败分布、合成数据利用和后续对照参考。使用4秒观测范围评分协议，不等同标准NAVSIM PDMS；早期迁移中状态已由完整验收取代。
+
+- 报告／说明：[SimScale基线与统计](work-output/1021-simscale_rl_baseline/status.html)
+- 任务目录：[1021-simscale_rl_baseline](../1021-simscale_rl_baseline/)
+
+### 1022-distillation_portable
+
+封装首42固定R2教师、首阶段H／T／HT训练器、权重、噪声库和重放依赖。大规模教师分片远端上传已停止，后补本地生成／重放方案；本地交付与原平台核验不等于A800／多卡已实际复现。
+
+- 报告／说明：[来源蒸馏报告](work-output/1021-representation_distillation_batch4/representation_distillation.html)；[交付说明](../1022-distillation_portable/github/README.md)；[教师重放](../1022-distillation_portable/github/TEACHER_REPLAY.md)
+- 任务目录：[1022-distillation_portable](../1022-distillation_portable/)
+
+### 1022-gt_assisted_representation_optimization
+
+完成投影前后接口的GT辅助逐场景内部状态优化、有限补搜和教师导出，并重新评分、检查固定扰动的跨噪声迁移。为后续同场景高质量状态配对提供资产；优化状态是有效反事实，不是唯一正确表征或可部署选择器。
+
+- 报告／说明：[GT辅助优化](work-output/1022-gt_assisted_representation_optimization/gt_optimization.html)
+- 任务目录：[1022-gt_assisted_representation_optimization](../1022-gt_assisted_representation_optimization/)
+
+### 1022-representation_research_synthesis
+
+按早期“构造内部教师→学生蒸馏”思路整理阶段性综合报告和演示，保留流程、子空间干预及局部更新示意。属于历史叙事与图示资料；当前框架和后续结果应看各批报告及1027综合汇报。
+
+- 报告／说明：[阶段性综合报告](work-output/1022-representation_research_synthesis/representation_research_synthesis.html)；[演示版](work-output/1022-representation_research_synthesis/representation_research_slides.html)
+- 任务目录：[1022-representation_research_synthesis](../1022-representation_research_synthesis/)
+
+### 1024-representation_distillation_diagnosis_batch5
+
+第五批分为诊断与新版接口专家库两部分。前者排查教师可学性、因果可达性、拟合与修复函数；后者复用同场景GT辅助高质量状态，比较配对差分／残差空间、聚类顺序、组内算子和力度，完成六套冻结库的完整评价。新版少量接口专家库是当前共同基础；会话交叉验证、匹配随机控制的实际覆盖和误选损伤分别保留。
+
+- 报告／说明：[诊断实验](work-output/1024-representation_distillation_diagnosis_batch5/representation_distillation_diagnosis.html)；[接口表征与专家库](work-output/1024-representation_distillation_diagnosis_batch5/interface_representation_repair.html)
+- 任务目录：[1024-representation_distillation_diagnosis_batch5](../1024-representation_distillation_diagnosis_batch5/)；[实验登记](../1024-representation_distillation_diagnosis_batch5/EXPERIMENT_REGISTER.md)；[六库评价目录](../1024-representation_distillation_diagnosis_batch5/stage2/offline_library/full_six_evaluation/)
+
+### 1026-route_token_batch6
+
+第六批完成三阶段ROUTE Token探索，覆盖查询数量、读出层、辅助适配、监督、数据配比、合成数据、计划输入、正则与联合设计。实际成绩未充分兑现专家库上限；报告逐配置区分完成、暂缓、工程异常和测试资格，保留全部检查点与诊断。
+
+- 报告／说明：[第六批完整报告](work-output/1026-route_token_batch6/route_token.html)
+- 任务目录：[1026-route_token_batch6](../1026-route_token_batch6/)；[实验覆盖审计](../1026-route_token_batch6/analysis/report_complete_v1/README.md)；[缓存复用](../1026-route_token_batch6/CACHE_REUSE.md)
+
+### 1026-interface_teacher_portable
+
+将第五批六套接口专家库、D48／R48基底、固定场景选择及教师导出API整理为跨平台交付。面向后续参数更新与复现，保留模型／种子／评分身份；不把工程迁移视为新增修复实验。
+
+- 报告／说明：[专家库来源报告](work-output/1024-representation_distillation_diagnosis_batch5/interface_representation_repair.html)；[迁移交接](../1026-interface_teacher_portable/HANDOFF.md)
+- 任务目录：[1026-interface_teacher_portable](../1026-interface_teacher_portable/)；[发布仓库](https://github.com/sjc786526-coder/-recogdrive-representation-teacher-2)
+
+### 1027-route_information_diagnosis_batch7
+
+第七批五阶段均已完成。依次研究简化选择任务、场景重编码与候选关系、推荐验收／候选后状态、几何代理对齐，以及采样／预处理、函数表达、关键对目标与辅助视觉可训练性。准确道路／NC事实有价值；关键对训练能改善中间能力，普通行为收益仍小且不稳定。信息缺失与读取不足尚未完全分开，真值诊断、事后上限与普通选择成绩不能互代。
+
+- 报告／说明：[阶段一：六组诊断](work-output/1027-route_information_diagnosis_batch7/route_information_diagnosis.html)；[阶段二：关系与验收](work-output/1027-route_information_diagnosis_batch7/route_information_stage2.html)；[阶段三：候选后状态与利用](work-output/1027-route_information_diagnosis_batch7/route_information_stage3.html)；[阶段四：代理对齐与精度](work-output/1027-route_information_diagnosis_batch7/route_information_stage4.html)；[阶段五：关键候选差异与行为价值](work-output/1027-route_information_diagnosis_batch7/route_information_stage5.html)
+- 任务目录：[1027-route_information_diagnosis_batch7](../1027-route_information_diagnosis_batch7/)；[阶段二目录](../1027-route_information_diagnosis_batch7/stage2/)；[阶段三目录](../1027-route_information_diagnosis_batch7/stage3/)；[阶段四目录](../1027-route_information_diagnosis_batch7/stage4/)；[阶段五目录及收尾](../1027-route_information_diagnosis_batch7/stage5/)
+
+### 1027-representation_research_briefing
+
+面向导师与研究者的综合汇报，整理到第六批三阶段、第七批四阶段的完成结果。以新版专家库为共同基础，区分推理时选择与参数化蒸馏，解释旧R2教师到同场景GT配对的转向；第八批进展另看其独立报告。
+
+- 报告／说明：[表征修复路线综合汇报](work-output/1027-representation_research_briefing/representation_repair_briefing.html)
+- 任务目录：[1027-representation_research_briefing](../1027-representation_research_briefing/)
+
+### 1028-drivor_batch1
+
+独立DrivoR模型线的第一批官方复现，完成其自身64候选生成、选择、全量重评分和候选分布分析。校正Oracle并列偏置，检查查询槽使用、行为摘要与独占贡献；64个查询槽不等于64套独立专家，也不等于ReCogDrive修复库。
+
+- 报告／说明：[DrivoR官方64候选复现与分布](work-output/1028-drivor_batch1/drivor_candidate_distribution.html)
+- 任务目录：[1028-drivor_batch1](../1028-drivor_batch1/)
+
+### 1028-drivor_trajectory_selection_batch8
+
+第八批阶段一（含混合17选1）已完成。冻结ReCogDrive与修复专家，分别用官方DrivoR及师兄score-only打分器，评价原力度／增强力度九选一和两库混合十七选一。官方原力度方案已兑现一部分修复净收益，增加候选上限不保证选择成绩提高；本轮读取当前实际轨迹、逐噪声选择，不能与前置路由或场景固定专家口径直接混比。
+
+第二阶段已按用户收缩后的范围完成：比较ReCogDrive视觉／语言材料、实际轨迹与接口候选摘要、评分初始化与分项／总分监督，并完成原生编码保留、查询定标、冻结评分迁移及前视教师适配诊断。接口预测可以兑现部分净收益，但强实际轨迹教师的能力不会自动转移给预测摘要；场景材料、查询格式和评分器适配应分别解释。原模型与专家冻结，采用场景固定专家、S0–S4均分口径，区别于阶段一逐噪声选择。旧弱前视教师只留参考，未启动的部分ReCog重复按用户要求搁置；完成范围和边界见第二阶段报告与验收记录。
+
+- 报告／说明：[实际轨迹评分与选择](work-output/1028-drivor_trajectory_selection_batch8/drivor_trajectory_selection_stage1.html)
+- 任务目录：[1028-drivor_trajectory_selection_batch8](../1028-drivor_trajectory_selection_batch8/)；[最新收尾](../1028-drivor_trajectory_selection_batch8/CLOSEOUT_CURRENT.json)；[混合17选1目录](../1028-drivor_trajectory_selection_batch8/mixed17/)
+- 第二阶段：[正式报告](work-output/1028-drivor_trajectory_selection_batch8/drivor_trajectory_selection_stage2.html)；[计划](../1028-drivor_trajectory_selection_batch8/PLAN.md)；[执行交接](../1028-drivor_trajectory_selection_batch8/stage2/CURRENT_HANDOFF.md)；[验收与收尾](../1028-drivor_trajectory_selection_batch8/stage2/CLOSEOUT.json)
+
+### 1029-simscale_gt_representation_optimization
+
+正在扩充同场景Base失败—GT辅助高质量状态配对：复用SimScale既有失败池，只优化接口投影后的384维位置，当前仅交付已全量完成的1022原始三档；A档已按用户要求暂停，A/B/C均为未完成、后续可补充范围，既有加强资产单独留存，不计入本次主统计或主配对清单。GT引导优化、实际S0 PDMS最高决定状态选择，实际输出>90入高质量配对池；原GT自身分数另记，不以GT>90提前筛掉样本。产出供后续与真实配对混合拟合专家库使用，本批不启动新专家／路由训练。SimScale沿用原四秒观测评分协议，保持来源与协议身份，不等同标准NAVSIM总分。
+
+- 报告／说明：[GT辅助投影后优化：全量初始成果，A/B/C未完成](work-output/1029-simscale_gt_representation_optimization/simscale_gt_representation_optimization.html)
+- 任务目录：[1029-simscale_gt_representation_optimization](../1029-simscale_gt_representation_optimization/)；[计划](../1029-simscale_gt_representation_optimization/PLAN.md)；[执行与接续](../1029-simscale_gt_representation_optimization/CURRENT_HANDOFF.md)
+
+### 1030-latent_repair_selection_batch9
+
+第九批已执行固定库信息、合成数量／质量与空间、K8—12容量、全局力度及匹配适配的主要对照，并对多组冻结候选完成完整测试。训练回测、匹配随机方向、查询残差及损失约束诊断与成本分段验收均已完成；方法选择由真实行为反馈决定，不将更低表征误差或更高库上限直接视为普通部署收益。以冻结RL Base、完整动作生成前的候选内容评价为主线，分六阶段研究：固定库的候选信息诊断、固定K的合成配对曲线、专家容量、力度校准、跨库迁移与有限联合适配、完整评价与成本。阶段一和阶段二并行推进，后继依赖具体冻结资产，全部计算通过共享队列动态领取，不绑定节点数量。单前视和四视角并列评价；实际轨迹评分继续作参照，真实总体PDMS为主指标。
+
+- 计划：[第九批实验PLAN](../1030-latent_repair_selection_batch9/PLAN.md)
+- 任务目录：[1030-latent_repair_selection_batch9](../1030-latent_repair_selection_batch9/)
+- 正式交付：六阶段HTML均已完成收尾，报告路径和依赖见PLAN；[收尾说明](../1030-latent_repair_selection_batch9/DELIVERY.md)记录完整评价、验收与节点保留范围，[执行交接](../1030-latent_repair_selection_batch9/CURRENT_HANDOFF.md)保留过程证据。
+
+### 1031-latent_selection_bottleneck_batch10
+
+第十批已完成预定核心及记录的机制补充，完整评价、训练/人口核查与独立执行重放均验收。固定原八专家库和原驾驶模型，分七阶段研究：剩余选择损失定位；候选编码器深度与工作Token；行为／评价输入来源；查询与场景交互后状态监督；冻结动作头行为映射与少步辅助；监督、泛化与合成辅助；联合验证及完整评价。容量和视角问题与此前的后果监督、行为蒸馏等方向并列，不以单次负对照关闭整个路线。单前视与四视角分别评价，按任务依赖动态调度，不指定节点数量。
+
+- 计划：[第十批实验PLAN](../1031-latent_selection_bottleneck_batch10/PLAN.md)
+- 任务目录：[1031-latent_selection_bottleneck_batch10](../1031-latent_selection_bottleneck_batch10/)
+- 正式交付：[阶段七综合报告](work-output/1031-latent_selection_bottleneck_batch10/stage7_integrated_evaluation.html)；[行为映射与目标诊断](work-output/1031-latent_selection_bottleneck_batch10/stage5_behavior_mapping.html)；其余阶段报告见同目录。
+- 验收与范围：[交付说明](../1031-latent_selection_bottleneck_batch10/DELIVERY.md)；[最终验收](../1031-latent_selection_bottleneck_batch10/FINAL_SCIENTIFIC_ACCEPTANCE.json)。未触发条件支线不作为负结论，节点与共享队列保持。
+
+### 1101-repair_selection_integration_batch11
+
+第十一批已完成六阶段及必要诊断：固定原专家库与原G，分别评价前视/四视角及轻量/辅助行为估计四赛道。后段精度诊断形成三次辅助计算的成本子路线；已找到满足分数目标的普通候选，完整TUNE主方案与最高TEST观察仍分开报告。原图部署、独立真实评分及最终验收完成；第十批已验收基线直接复用。具体成绩与范围以阶段六报告为准，不在导航维护数值副本。
+
+- [实验PLAN](../1101-repair_selection_integration_batch11/PLAN.md)；[执行交接](../1101-repair_selection_integration_batch11/CURRENT_HANDOFF.md)
+- 第十批补测最新入口：[阶段七综合报告](work-output/1031-latent_selection_bottleneck_batch10/stage7_integrated_evaluation.html)；[含原图部署的验收指针](../1031-latent_selection_bottleneck_batch10/FINAL_DELIVERY_LATEST.json)。旧验收和原报告版本保留。
+
+### 1102-repair_framework_consolidation_batch13
+
+第十三批主方法定型、IL-v2完整迁移及合成RL续训本身均已完成，分别独立定稿；前端端到端必要复验与续训后扩充数据修复重建也已独立验收、各自定稿；当前继续同IL／PDMS干净配对的IL-v1.1迁移及大K完整评价；旧混合来源IL-v1.1分支封存。新增K16／K32及1／1.5力度的独立容量研究，不覆盖既有核心报告。IL-v1.1满足门槛时先做多专家，再冻结专家数完成同套餐消融，消融另写报告。允许有依据的分阶段／两步到三步训练，但须从明确初始化完整重建；以纯真实数据、非CEM、同场景配对差分D48／全维先聚类K8为主，比较同流程三档力度。主要消融针对前端修复与专家库，选择器只保留必要对照。v2保持六头，用户固定IL后进行完整方法迁移；合成扩展使用代表性合成场景继续RL，再重新运行整个修复流程，不恢复已取消的真实续训控制或其他历史网格。
+
+- [实验PLAN](../1102-repair_framework_consolidation_batch13/PLAN.md)；[任务目录](../1102-repair_framework_consolidation_batch13/)
+- 阶段报告：[来源与协议](work-output/1102-repair_framework_consolidation_batch13/stage0_sources_and_protocol.html)；[训练课程](work-output/1102-repair_framework_consolidation_batch13/stage1_reproducible_workflow.html)；[力度与主结果](work-output/1102-repair_framework_consolidation_batch13/stage2_strength_and_main_results.html)；[前端消融](work-output/1102-repair_framework_consolidation_batch13/stage3_representation_ablations.html)；[IL-v2迁移](work-output/1102-repair_framework_consolidation_batch13/stage4_epdms_transfer.html)；[IL-v1.1迁移（独立报告）](work-output/1102-repair_framework_consolidation_batch13/stage4b_il_pdms_transfer.html)；[合成RL续训本身](work-output/1102-repair_framework_consolidation_batch13/stage5_synthetic_rl.html)；[续训Base上重建修复](work-output/1102-repair_framework_consolidation_batch13/stage6_repair_after_synthetic_rl.html)；[多专家容量（独立报告）](work-output/1102-repair_framework_consolidation_batch13/stage8_multi_expert_capacity.html)。进行中部分明确未完成边界；不接管独立IL基线任务。最新用户要求已扩充合成RL的足额配比／输入偏差控制及IL-v2的K7—10×三力度，具体预算、进度与结论留在PLAN和阶段报告。
+
+## 团队进展与维护
+
+团队工作来源见[团队工作进展](团队工作进展/团队工作进展.md)；共享数据、权重和源码的固定资料索引统一由[研究AGENTS.md](../AGENTS.md)指向。
+
+新增工作按上述格式补入时间序列。工作完成或方向变化时更新摘要与当前主线，避免把过期节点、排队状态和监控终端写成长期现状；具体成绩、完整对照、计划与接续记录保留在报告和任务目录。旧结论发生适用范围变化时明确标注，不用新结果改写历史实验身份。导航本身不授权启动或恢复实验。
+
+第十一批六阶段报告均已完成：[有效设计组合](work-output/1101-repair_selection_integration_batch11/stage1_effective_combinations.html)、[提案接受](work-output/1101-repair_selection_integration_batch11/stage2_selective_acceptance.html)、[行为目标](work-output/1101-repair_selection_integration_batch11/stage3_behavior_objective_alignment.html)、[数据覆盖](work-output/1101-repair_selection_integration_batch11/stage4_data_and_generalization.html)、[组合与后段精度诊断](work-output/1101-repair_selection_integration_batch11/stage5_integrated_tradeoffs.html)、[完整评价与原图部署](work-output/1101-repair_selection_integration_batch11/stage6_full_evaluation_and_deployment.html)。接续与资产指针见该批CURRENT_HANDOFF和FINAL_DELIVERY_LATEST；未经新指令不继续扩展实验。
+
+
+## NAVSIM v2 ePDMS 独立评价
+
+已完成并独立验收：固定非CEM最强单前视模型（增强库，训练期合成辅助、推理移除；自然TUNE主E2）与RL Base的单阶段完整TEST／TRAIN／TUNE，以及navhard两阶段评价。此前CEM模型只列补充；原力度D_C8_original与增强D_C8_double两套Oracle也已全量验收，CEM Oracle未执行。用户追加的原始IL补评也已完成：单阶段TEST更高，已按条件完成完整TRAIN／TUNE及合并回测；两阶段未显示IL优势。全部结果合并同一报告，与RL Base并列，保留分项、会话区间、完整EC及官方两阶段重放验收。该任务不计入任何实验批次，不按v2重新选模。历史暂缓网格不恢复，节点和启动器保留。
+
+- [独立报告](work-output/1102-navsim_v2_epdms_evaluation/navsim_v2_epdms.html)；[独立PLAN](../1102-navsim_v2_epdms_evaluation/PLAN.md)；[执行交接](../1102-navsim_v2_epdms_evaluation/CURRENT_HANDOFF.md)

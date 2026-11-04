@@ -1,0 +1,52 @@
+{
+  "status": "FROZEN_B13_IL_MAIN_WORKFLOW_BY_REPEATED_TUNE",
+  "time": "2026-11-03T07:12:04.956007+00:00",
+  "K": 10,
+  "dose": 1.5,
+  "representative": "IL_V2_K10_L15_S20261028",
+  "representative_config": {
+    "path": "/mnt/workspace/ReCogDrive/1102-repair_framework_consolidation_batch13/configs/IL_v2/K10_L15_S20261028.json",
+    "sha256": "aab59ada0d001381a22e6d52cb368488ed04a931c0440b1516327e9eb0979bb2"
+  },
+  "statistics": {
+    "TRAIN": {
+      "mean": 93.7590215937551,
+      "training_seed_SD": 0.003066776084521444,
+      "values": [
+        93.7608929145443,
+        93.76068953364289,
+        93.75548233307809
+      ],
+      "Base_ePDMS": 91.12005289288177,
+      "delta": 2.6389687008733205
+    },
+    "TUNE": {
+      "mean": 93.37806454047148,
+      "training_seed_SD": 0.009318611540576524,
+      "values": [
+        93.37142090303772,
+        93.37405607390875,
+        93.38871664446799
+      ],
+      "Base_ePDMS": 90.68569827006704,
+      "delta": 2.692366270404449
+    },
+    "TEST": {
+      "mean": 90.57777609926552,
+      "training_seed_SD": 0.02345787332241496,
+      "values": [
+        90.56534160128798,
+        90.60483343620625,
+        90.56315326030233
+      ],
+      "Base_ePDMS": 86.30030967784087,
+      "delta": 4.2774664214246485
+    }
+  },
+  "uses_TEST": false,
+  "criterion": "highest three-seed fullTUNE mean among predeclared shortlist; representative by TUNE",
+  "single_front": true,
+  "Base": "original IL",
+  "six_heads_only": true,
+  "two_stage_transfer_not_yet_evaluated": true
+}

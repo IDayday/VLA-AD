@@ -1,0 +1,5 @@
+﻿reference,control,TEST_PDMS_difference,session_bootstrap95CI_low,session_bootstrap95CI_high,sessions,uncertainty
+E1_DIRECTION_MATCHED,E2_RANDOM_GROUPS,0.18961559327021835,-0.035464050031884055,0.43885671486767686,44,descriptive; not training-seed CI; no multiplicity correction
+E1_DIRECTION_MATCHED,E3_SHUFFLED_PAIRS,0.19424015575556064,-0.0057627328529600355,0.4014900322132817,44,descriptive; not training-seed CI; no multiplicity correction
+R6_FIXED_NATIVE_CLUSTERS,E4_RANDOM_D48,0.325435686834054,0.1274598427045651,0.5667439861083045,44,descriptive; not training-seed CI; no multiplicity correction
+native_main_mixed_operator_bank,R6_FIXED_NATIVE_CLUSTERS,0.11121136988283764,0.011831823070429482,0.19478949012214009,44,descriptive; not training-seed CI; no multiplicity correction

@@ -1,0 +1,17 @@
+% Requires amsmath and amssymb. Equations summarize the frozen v1 implementation.
+\begin{align}
+d_i &= \operatorname{Pool}_{\mathrm{valid}}(h_i^\star-h_i), \\
+X_i &= d_i/\max(\rho_i,\epsilon),\qquad
+B=\operatorname{TopRightSingularVectors}_{48}(X),\quad B^\top B=I, \\
+u_i &= d_i/\lVert d_i\rVert_2,\qquad c_i=\operatorname{Cluster}_{384}(u_i), \\
+r_k(h)&=Bq_k(B^\top\operatorname{Pool}_{\mathrm{valid}}(h)), \\
+\delta_k^{(\lambda)}(h)&=\operatorname{Clip}_{\lambda b_k}\!\left(\lambda r_k(h)\right),\qquad\delta_0=0, \\
+h_\ell^{(k)}&=h_\ell+m_\ell\delta_k^{(\lambda)}(h), \\
+\widehat{k}&=\arg\max_{k\in\{0,\ldots,8\}}s_k\!\left(x,A_3(h^{(k)},\xi_0)\right), \\
+\tau&=G(h^{(\widehat{k})},\xi), \\
+\mathcal{L}_A&=16\operatorname{MSE}\!\left(a_{\mathrm{final}},g_{\mathrm{final}}\right), \\
+\mathcal{L}_{F/H}&=\mathcal{L}_{\mathrm{six\,components}}+\mathcal{L}_{\mathrm{gap\,weighted\,ranking}}.
+\end{align}
+% r_k includes the native per-expert alpha. Original bank alpha=2, cap=2D0.
+% Historical RL rho_i is the actual valid-token teacher RMS, not a substituted pooled RMS.
+% S0 preview selection is reused for S0--S4; proxy states are not original-G prefixes.
