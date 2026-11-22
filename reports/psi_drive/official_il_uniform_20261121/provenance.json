@@ -1,0 +1,75 @@
+{
+  "training_commit": "870d7167b17889dbdc89d1517f428cd8d8ee083d",
+  "stage1": {
+    "config_sha256": "6c7249180e5312db63e2279d06232a920f077157d56491bb59de319ed37c8656",
+    "repo": "owl10/ReCogDrive-VLM-2B",
+    "revision": "16873acca08e3c04ab229b3d973f39aeba9db68d",
+    "sha256": "79fb39297e322cd2d3dc68d4f23b86ff85806b336a4d5d0ed5db9b66e4034a3c"
+  },
+  "planner_sha256": "bc6d9c27acd91e7c879e0d0c0b93dd67d0cf0c7bfa516c57a020ed6eb8c2e1c4",
+  "support": {
+    "source_sha256": "b3009a61d93a0760288685660c59d950788fe98f1dab62a8de59a68ba3570498",
+    "uniform_sha256": "1bf0378bfe9f0a2179f58c80619fbbcc963ab25750202412be1b04e7e900c4f5",
+    "weights": "uniform over valid slots only",
+    "all_archive_rows_by_candidate_count": [
+      0,
+      65017,
+      31232,
+      7039
+    ]
+  },
+  "training": {
+    "train_scenes": 85109,
+    "validation_scenes": 18179,
+    "validation_target": "GT",
+    "single_node_epochs": 2,
+    "global_step_at_batch_scale": 1330,
+    "initial_global_batch": 128,
+    "final_global_batch": 256,
+    "initial_lr": 0.0001,
+    "final_lr": 0.0002,
+    "epochs_completed": 200,
+    "final_global_step": 67264,
+    "final_checkpoint_sha256": "54ccdef8a032d56a115ff3ca82f85fec0f647749d2ea3a88e2d923d363386379"
+  },
+  "checkpoints": [
+    {
+      "step": 37960,
+      "epoch_one_based": 112,
+      "filename": "epoch=111-step=37960.ckpt",
+      "sha256": "7fa757ed9f9c419be3b25a8dab3115ff988d96fc235226862206c398866d8b76"
+    },
+    {
+      "step": 50000,
+      "epoch_one_based": 149,
+      "filename": "step_00050000.ckpt",
+      "sha256": "3df0f3fdfe02e9bb84788f98afd021d0f1e1fc1a00b0b6f85c59f4621f2312b8"
+    },
+    {
+      "step": 60000,
+      "epoch_one_based": 179,
+      "filename": "step_00060000.ckpt",
+      "sha256": "8daf331a75f93f16f8baeb67c2245b80872f7b1c9be7976db007bde949640e6e"
+    }
+  ],
+  "psi_baseline": {
+    "name": "psi_sft_epoch011",
+    "sha256": "051ac3312a848b36eeeaccc3935e03582f9acc89737a99672349a5887faa0aff"
+  },
+  "evaluation": {
+    "nav_manifest_sha256": "7ef1218c6fc703f2d64b0b5de66bcaea71dcfe8d834e407811d22b56636fb981",
+    "nav_metric_sha256": "129857f904f7a06371839f83a6d7e4de843b17e536e10b686e9fbfb024f2497c",
+    "diag_manifest_sha256": "0b1eef080fe05408d225a26a2126868d796a61e416af0b68430e5fcde99cca76",
+    "nav_seed": 42,
+    "nav_precision": "BF16 Stage 1 and FP32 head",
+    "diagnostic_precision": "FP32 Stage 1 and FP32 head with TF32 disabled",
+    "diagnostic_seed": 2026091501,
+    "diagnostic_groups": 4,
+    "group_size": 16,
+    "nav_scenes": 12146,
+    "nav_logs": 136,
+    "diagnostic_scenes": 1000,
+    "diagnostic_logs": 512,
+    "psi_group_scores_sha256": "263645758c969f296d3e98f796b9ca8fcd297143069cf2d63260e68eba32f42c"
+  }
+}

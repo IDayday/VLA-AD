@@ -1,0 +1,14 @@
+{
+  "output": "run/evaluation_step_60000",
+  "checkpoint": "run/train/step_00060000.ckpt",
+  "train_args": "run/train/train_args.json",
+  "stage1": "assets/ReCogDrive-VLM-2B",
+  "nav_manifest": "assets/navtest_current_manifest_v1.json",
+  "nav_metric_index": "assets/navtest_full_metric_index.json",
+  "diagnostic_manifest": "assets/historical_sft_grpo_support/scenes.json",
+  "psi_models": "assets/historical_sft_grpo_support/models.json",
+  "psi_checkpoint": "assets/psi_sft_epoch011.ckpt",
+  "navtrain_logs": "assets/navtrain_logs",
+  "navtrain_sensors": "assets/navtrain_sensor_blobs",
+  "shared_features": "run/eval_stage1_features"
+}
